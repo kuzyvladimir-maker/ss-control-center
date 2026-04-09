@@ -1,0 +1,486 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model CsCase {
+  id           String   @id @default(cuid())
+  channel      String   // Amazon | Walmart
+  store        String?
+  orderId      String?
+  customerName String?
+  product      String?
+  productType  String?  // Frozen | Dry | Unknown
+  category     String?  // C1-C10
+  categoryName String?
+  priority     String?  // LOW | MEDIUM | HIGH | CRITICAL
+  language     String?  // English | Spanish
+  branch       String?  // A | B (for C3)
+  branchName   String?
+  response     String?
+  action       String?  // REPLACEMENT | REFUND | A2Z_GUARANTEE | ESCALATE | INFO | PHOTO_REQUEST
+  urgency      String?
+  internalNotes String?
+  imageData    String?  // base64 screenshot
+
+  // Carrier delay detection (v1.2)
+  carrierDelayDetected Boolean @default(false)
+  carrierBadge         String?  // "Claims Protected" | "Late Delivery Risk" | "Unknown"
+  shippedOnTime        Boolean?
+  promisedEdd          String?  // YYYY-MM-DD
+  actualDelivery       String?  // YYYY-MM-DD
+  daysLate             Int?
+
+  status       String   @default("open") // open | responded | resolved
+  resolution   String?
+  resolvedAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ShippingPlan {
+  id        String   @id @default(cuid())
+  date      String   // YYYY-MM-DD
+  status    String   @default("draft") // draft | approved | completed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items     ShippingPlanItem[]
+}
+
+model ShippingPlanItem {
+  id              String   @id @default(cuid())
+  planId          String
+  plan            ShippingPlan @relation(fields: [planId], references: [id])
+  orderNumber     String
+  orderId         String   // Veeqo order ID
+  channel         String
+  product         String
+  sku             String?
+  qty             Int      @default(1)
+  productType     String   // Frozen | Dry
+  weight          Float?
+  boxSize         String?
+  budgetMax       Float?
+  carrier         String?
+  service         String?
+  price           Float?
+  edd             String?  // EDD date
+  deliveryBy      String?  // Delivery By date
+  actualShipDay   String?  // Actual ship day
+  notes           String?
+  status          String   @default("pending") // pending | approved | bought | error | stop
+  trackingNumber  String?
+  labelPdfUrl     String?
+  allocationId    String?
+  carrierId       String?
+  remoteShipmentId String?
+  serviceType     String?
+  subCarrierId    String?
+  serviceCarrier  String?
+  totalNetCharge  String?
+  baseRate        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Store {
+  id        String   @id @default(cuid())
+  name      String
+  channel   String   // Amazon | Walmart
+  signature String   // Name used in CS responses
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
+
+model ProductTypeOverride {
+  id        String   @id @default(cuid())
+  productId Int      @unique // Veeqo product ID
+  type      String   // "Frozen" or "Dry"
+  createdAt DateTime @default(now())
+}
+
+// Frozen Delivery Analytics
+model FrozenIncident {
+  id                   String   @id @default(cuid())
+  createdAt            DateTime @default(now())
+
+  // Link to CS case
+  csCaseId             String?
+
+  // Order data
+  orderId              String
+  amazonOrderId        String?
+  trackingNumber       String?
+
+  // Product
+  sku                  String
+  productName          String
+  boxSize              String?  // XS/S/M/L/XL
+  weightLbs            Float?
+
+  // Shipping
+  carrier              String   // ups / fedex / usps
+  service              String   // "2nd Day Air" / "Ground" / etc.
+  shipDate             String   // YYYY-MM-DD
+  promisedEdd          String?  // YYYY-MM-DD
+  actualDelivery       String?  // YYYY-MM-DD
+  daysInTransit        Int?
+  daysLate             Int?
+  claimsProtectedBadge Boolean?
+  labelCost            Float?
+
+  // Destination
+  destZip              String?
+  destCity             String?
+  destState            String?
+  destLat              Float?
+  destLon              Float?
+
+  // Weather — origin (Tampa, FL)
+  originTempF          Float?
+  originFeelsLikeF     Float?
+  originTempHighF      Float?
+  originWeatherDesc    String?
+
+  // Weather — destination
+  destTempF            Float?
+  destFeelsLikeF       Float?
+  destTempHighF        Float?
+  destWeatherDesc      String?
+
+  // Outcome
+  outcome              String   @default("thawed") // thawed | unclear | ok
+  customerComplained   Boolean  @default(true)
+  resolution           String?  // a2z_guarantee / replacement / refund
+  notes                String?
+}
+
+model SkuRiskProfile {
+  id                String   @id @default(cuid())
+  updatedAt         DateTime @updatedAt
+
+  sku               String   @unique
+  productName       String
+
+  totalIncidents    Int      @default(0)
+  thawedCount       Int      @default(0)
+  thawRate          Float?
+
+  avgDaysInTransit  Float?
+  avgOriginTempF    Float?
+  avgDestTempF      Float?
+
+  mostCommonCarrier String?
+  mostCommonService String?
+
+  riskScore         Int      @default(0)  // 0-100
+  riskLevel         String   @default("unknown") // low / medium / high / critical
+
+  lastIncidentDate  String?
+}
+
+// Shipping Adjustments Monitor
+model ShippingAdjustment {
+  id                 String   @id @default(cuid())
+  createdAt          DateTime @default(now())
+
+  externalId         String   @unique  // from Amazon/Walmart API (dedup)
+  channel            String   // Amazon | Walmart
+
+  orderId            String
+  amazonOrderId      String?
+  walmartOrderId     String?
+
+  adjustmentDate     String   // YYYY-MM-DD
+  adjustmentType     String   // WeightAdjustment | DIMadjustment | CarrierAdjustment
+  adjustmentAmount   Float    // negative USD
+  adjustmentReason   String?
+
+  sku                String?
+  productName        String?
+  carrier            String?
+  service            String?
+  declaredWeightLbs  Float?
+  declaredDimL       Float?
+  declaredDimW       Float?
+  declaredDimH       Float?
+  originalLabelCost  Float?
+
+  adjustedWeightLbs  Float?
+  adjustedDimL       Float?
+  adjustedDimW       Float?
+  adjustedDimH       Float?
+
+  reviewed           Boolean  @default(false)
+  skuDataFixed       Boolean  @default(false)
+  notes              String?
+}
+
+model SkuAdjustmentProfile {
+  id                  String   @id @default(cuid())
+  updatedAt           DateTime @updatedAt
+
+  sku                 String   @unique
+  productName         String?
+
+  totalAdjustments    Int      @default(0)
+  totalAmountLost     Float    @default(0)
+  avgAdjustmentAmount Float?
+
+  mostCommonType      String?  // WeightAdjustment | DIMadjustment
+  needsSkuDbUpdate    Boolean  @default(false)
+  suggestedWeight     Float?
+
+  lastAdjustmentDate  String?
+  channel             String?  // where more frequent
+}
+
+// A-to-Z & Chargeback Claims
+model AtozzClaim {
+  id                    String   @id @default(cuid())
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  amazonOrderId         String
+  claimType             String   // A_TO_Z | CHARGEBACK
+  claimReason           String?  // INR | SNAD | Defective | Fraud
+  amount                Float?
+
+  detectedAt            DateTime @default(now())
+  deadline              String?  // YYYY-MM-DD
+  daysUntilDeadline     Int?
+
+  gmailMessageId        String?
+
+  // Evidence
+  trackingNumber        String?
+  carrier               String?
+  shipDate              String?
+  firstScanDate         String?
+  deliveredDate         String?
+  shippedOnTime         Boolean?
+  claimsProtectedBadge  Boolean?
+  evidenceSummary       String?  // JSON
+
+  // Strategy & Response
+  strategyType          String?  // BUY_SHIPPING_PROTECTION | PROOF_OF_DELIVERY | INR_DEFENSE | CARRIER_DELAY_DEFENSE | MANUAL_REVIEW
+  strategyConfidence    String?  // HIGH | MEDIUM | LOW
+  generatedResponse     String?
+  editedResponse        String?
+
+  // Status: NEW → EVIDENCE_GATHERED → RESPONSE_READY → SUBMITTED → DECIDED → APPEALED → CLOSED
+  status                String   @default("NEW")
+
+  // Amazon decision
+  amazonDecision        String?  // IN_OUR_FAVOR | AGAINST_US | AMAZON_FUNDED
+  decisionDate          String?
+  amountCharged         Float?
+  amountSaved           Float?
+
+  // Appeal
+  appealSubmitted       Boolean  @default(false)
+  appealText            String?
+  appealDecision        String?
+
+  vladimirNotes         String?
+  csCaseId              String?
+}
+
+// Feedback Manager
+model SellerFeedback {
+  id                  String   @id @default(cuid())
+  createdAt           DateTime @default(now())
+
+  amazonFeedbackId    String   @unique
+  orderId             String
+  amazonOrderId       String?
+  rating              Int      // 1-5
+  comments            String?
+  feedbackDate        String   // YYYY-MM-DD
+
+  store               String?
+  channel             String   @default("Amazon")
+
+  // AI classification
+  removable           Boolean?
+  removalCategory     String?  // PRODUCT_REVIEW | CARRIER_DELAY | OBSCENE | PERSONAL_INFO | PROMOTIONAL | PRICING_ONLY
+  removalConfidence   String?  // HIGH | MEDIUM | LOW
+  suggestedAction     String?  // REQUEST_REMOVAL | CONTACT_BUYER | RESPOND_PUBLICLY | MONITOR
+  aiReasoning         String?
+
+  removalRequestText  String?
+
+  // Status: NEW → ANALYZED → REMOVAL_SUBMITTED → REMOVED | DENIED | CONTACT_SENT | CLOSED
+  status              String   @default("NEW")
+
+  removalSubmittedAt  DateTime?
+  removalDecision     String?  // REMOVED | DENIED
+  removalDecisionAt   DateTime?
+
+  buyerContactSent    Boolean  @default(false)
+  buyerContactText    String?
+  buyerContactSentAt  DateTime?
+
+  csCaseId            String?
+  vladimirNotes       String?
+}
+
+model ProductReview {
+  id                  String   @id @default(cuid())
+  createdAt           DateTime @default(now())
+
+  asin                String
+  reviewId            String   @unique
+  rating              Int      // 1-5
+  title               String?
+  body                String?
+  reviewDate          String
+  verified            Boolean  @default(false)
+
+  store               String?
+
+  responseGenerated   String?
+  responseSubmitted   Boolean  @default(false)
+  responseSubmittedAt DateTime?
+
+  vladimirNotes       String?
+}
+
+// Account Health Monitor
+model AccountHealthSnapshot {
+  id                       String   @id @default(cuid())
+  createdAt                DateTime @default(now())
+  storeId                  String
+  storeName                String?
+  sellerId                 String?
+  status                   String   @default("pending") // healthy | warning | critical | error | pending
+
+  // ODR (60 days)
+  orderDefectRate          Float?
+  odrOrders60d             Int?     // total orders in 60d
+  negativeFeedbackCount    Int?
+  negativeFeedbackRate     Float?
+  atozClaimsCount          Int?
+  atozClaimsRate           Float?
+  chargebackCount          Int?
+  chargebackRate           Float?
+
+  // Late Shipment Rate — 10-day window
+  lateShipmentRate10d      Float?
+  lsr10dLate               Int?     // late orders
+  lsr10dTotal              Int?     // total orders
+
+  // Late Shipment Rate — 30-day window
+  lateShipmentRate30d      Float?
+  lsr30dLate               Int?
+  lsr30dTotal              Int?
+
+  // Pre-fulfillment Cancel Rate (7 days)
+  preFulfillmentCancelRate Float?
+  cancelCancelled          Int?
+  cancelTotal              Int?
+
+  // Valid Tracking Rate (30 days)
+  validTrackingRate        Float?
+  vtrTracked               Int?
+  vtrTotal                 Int?
+
+  // On-Time Delivery Rate (14 days)
+  onTimeDeliveryRate       Float?
+  otdrOnTime               Int?
+  otdrTotal                Int?
+
+  // Sync
+  syncStatus               String   @default("pending") // pending | syncing | done | error
+  syncError                String?
+  syncedAt                 DateTime?
+
+  alertCount               Int      @default(0)
+  criticalCount            Int      @default(0)
+  alertsJson               String?
+
+  @@index([storeId, createdAt])
+}
+
+model AccountAlert {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  storeId     String
+  storeName   String
+  level       String   // WARNING | CRITICAL
+  metric      String
+  value       Float
+  threshold   Float
+  message     String
+  resolved    Boolean  @default(false)
+  resolvedAt  DateTime?
+}
+
+model ReportSyncJob {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  storeId         String
+  reportType      String
+  amazonReportId  String?
+  amazonDocumentId String?
+  status          String   @default("requested") // requested | processing | downloading | done | error
+  error           String?
+  completedAt     DateTime?
+}
+
+// Amazon Orders (synced from SP-API)
+model AmazonOrder {
+  id                 String   @id @default(cuid())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  amazonOrderId      String   @unique
+  storeIndex         Int
+  status             String   // Pending | Unshipped | Shipped | Canceled
+  purchaseDate       DateTime
+  lastUpdateDate     DateTime?
+  orderTotal         Float    @default(0)
+  currency           String   @default("USD")
+
+  buyerName          String?
+  buyerEmail         String?
+
+  shipCity           String?
+  shipState          String?
+  shipZip            String?
+  shipCountry        String?
+
+  latestShipDate     DateTime?
+  latestDeliveryDate DateTime?
+  numberOfItems      Int      @default(0)
+  fulfillmentChannel String?
+  salesChannel       String?
+  cancellationReason String?
+
+  @@index([storeIndex, status])
+  @@index([purchaseDate])
+}
+
+// Sync log
+model SyncLog {
+  id          String   @id @default(cuid())
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  jobName     String   // orders | finances | feedback | health | claims
+  storeIndex  Int?
+  status      String   @default("running") // running | done | error
+  itemsSynced Int      @default(0)
+  error       String?
+}
