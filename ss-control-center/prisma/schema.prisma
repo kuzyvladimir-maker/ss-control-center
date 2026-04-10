@@ -472,6 +472,78 @@ model AmazonOrder {
   @@index([purchaseDate])
 }
 
+// Customer Hub — Buyer Messages
+model BuyerMessage {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  gmailMessageId  String?  @unique
+  gmailThreadId   String?
+
+  channel         String   @default("Amazon") // Amazon | Walmart
+  source          String   @default("gmail")  // gmail | screenshot
+  storeIndex      Int
+  storeName       String
+  storeEmail      String?
+
+  customerName    String?
+  customerEmail   String?
+  language        String   @default("English")
+
+  amazonOrderId   String?
+  orderDate       String?
+  orderTotal      Float?
+
+  product         String?
+  asin            String?
+  productType     String?
+  quantity        Int?
+
+  carrier         String?
+  service         String?
+  trackingNumber  String?
+  shipDate        String?
+  promisedEdd     String?
+  actualDelivery  String?
+  trackingStatus  String?
+  daysLate        Int?
+  boughtThroughVeeqo Boolean @default(false)
+  claimsProtected Boolean @default(false)
+  shippedOnTime   Boolean?
+
+  direction       String   @default("incoming")
+  customerMessage String?
+
+  problemType     String?
+  problemTypeName String?
+  riskLevel       String?
+  category        String?
+  categoryName    String?
+  priority        String?
+  action          String?
+  secondaryAction String?
+  whoShouldPay    String?
+  internalAction  String?
+  foodSafetyRisk  Boolean  @default(false)
+  atozRisk        String?
+
+  suggestedResponse String?
+  editedResponse    String?
+  responseSentAt    DateTime?
+  responseSentVia   String?
+
+  status          String   @default("NEW")
+  resolution      String?
+
+  frozenIncidentId String?
+  vladimirNotes   String?
+  imageData       String?
+
+  @@index([amazonOrderId])
+  @@index([storeIndex, status])
+}
+
 // Sync log
 model SyncLog {
   id          String   @id @default(cuid())

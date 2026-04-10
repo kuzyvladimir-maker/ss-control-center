@@ -143,6 +143,124 @@ function SyncPanel() {
   );
 }
 
+function GmailAccountsPanel() {
+  const [gmailResult, setGmailResult] = useState<{
+    type: "success" | "error";
+    email?: string;
+    token?: string;
+    reason?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const gmail = params.get("gmail");
+    if (gmail === "success") {
+      setGmailResult({
+        type: "success",
+        email: params.get("email") || "",
+        token: params.get("token") || "",
+      });
+    } else if (gmail === "error") {
+      setGmailResult({
+        type: "error",
+        reason: params.get("reason") || "Unknown error",
+      });
+    }
+  }, []);
+
+  const gmailAccounts = [
+    {
+      store: 1,
+      name: "Salutem Solutions",
+      email: "amazon@salutem.solutions",
+      envKey: "GMAIL_REFRESH_TOKEN_STORE1",
+      configured: !!process.env.NEXT_PUBLIC_GMAIL_STORE1_OK,
+    },
+    {
+      store: 2,
+      name: "Vladimir Personal",
+      email: "kuzy.vladimir@gmail.com",
+      envKey: "GMAIL_REFRESH_TOKEN_STORE2",
+      configured: !!process.env.NEXT_PUBLIC_GMAIL_STORE2_OK,
+    },
+  ];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Gmail Accounts for Customer Hub</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-xs text-slate-400">
+          Connect Gmail accounts to receive buyer messages from Amazon Buyer-Seller Messaging
+        </p>
+
+        {gmailResult?.type === "success" && (
+          <div className="rounded-md bg-green-50 border border-green-200 p-3 text-xs text-green-700 space-y-1">
+            <p className="font-medium">Gmail connected: {gmailResult.email}</p>
+            <p>Add this refresh token to your .env file:</p>
+            <code className="block bg-white rounded p-2 text-[10px] break-all border">
+              GMAIL_REFRESH_TOKEN_STORE?={gmailResult.token}
+            </code>
+            <p className="text-green-500">Then restart the dev server.</p>
+          </div>
+        )}
+
+        {gmailResult?.type === "error" && (
+          <div className="rounded-md bg-red-50 border border-red-200 p-3 text-xs text-red-700">
+            Gmail connection failed: {gmailResult.reason}
+          </div>
+        )}
+
+        <div className="space-y-2">
+          {gmailAccounts.map((acct) => (
+            <div
+              key={acct.store}
+              className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0"
+            >
+              <div className="flex items-center gap-3">
+                {acct.configured ? (
+                  <CheckCircle size={16} className="text-green-500" />
+                ) : (
+                  <XCircle size={16} className="text-slate-300" />
+                )}
+                <div>
+                  <span className="text-sm font-medium">Store {acct.store}: {acct.name}</span>
+                  <p className="text-[10px] text-slate-400">{acct.email}</p>
+                </div>
+              </div>
+              <Badge
+                className={
+                  acct.configured
+                    ? "bg-green-100 text-green-700"
+                    : "bg-slate-100 text-slate-400"
+                }
+              >
+                {acct.configured ? "Connected" : "Not connected"}
+              </Badge>
+            </div>
+          ))}
+        </div>
+
+        <Separator />
+
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-slate-400">
+            OAuth scope: gmail.readonly (read-only access)
+          </p>
+          <a href="/api/auth/gmail">
+            <Button variant="outline" size="sm">
+              <ExternalLink size={14} className="mr-1" />
+              Connect Gmail
+            </Button>
+          </a>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function SettingsPage() {
   const [connections, setConnections] = useState<ConnectionStatus[]>([
     { name: "Veeqo", status: "checking" },
@@ -451,6 +569,9 @@ export default function SettingsPage() {
 
       {/* Data Sync */}
       <SyncPanel />
+
+      {/* Gmail Accounts */}
+      <GmailAccountsPanel />
 
       {/* Amazon SP-API */}
       <Card>
