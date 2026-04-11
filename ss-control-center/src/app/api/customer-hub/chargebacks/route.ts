@@ -1,29 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// GET — list Chargebacks for the Customer Hub "Chargebacks" tab.
-// Chargebacks are stored alongside A-to-Z claims with claimType="CHARGEBACK".
-export async function GET(request: NextRequest) {
+// GET /api/customer-hub/chargebacks
+// Thin wrapper over the AtozzClaim table, filtered to claimType=CHARGEBACK.
+// Returns the same `{ claims, total }` shape as /api/customer-hub/atoz so
+// the two tabs can share the AtozDetail component.
+export async function GET() {
   try {
-    const sp = request.nextUrl.searchParams;
-    const status = sp.get("status");
-    const limit = parseInt(sp.get("limit") || "50");
-
-    const where: Record<string, unknown> = { claimType: "CHARGEBACK" };
-    if (status && status !== "all") where.status = status;
-
-    const [chargebacks, total] = await Promise.all([
+    const [claims, total] = await Promise.all([
       prisma.atozzClaim.findMany({
-        where,
+        where: { claimType: "CHARGEBACK" },
         orderBy: { createdAt: "desc" },
-        take: limit,
       }),
-      prisma.atozzClaim.count({ where }),
+      prisma.atozzClaim.count({ where: { claimType: "CHARGEBACK" } }),
     ]);
-
-    return NextResponse.json({ chargebacks, total });
+    return NextResponse.json({ claims, total });
   } catch (err) {
     console.error("[customer-hub/chargebacks] GET failed:", err);
-    return NextResponse.json({ chargebacks: [], total: 0 });
+    return NextResponse.json({ claims: [], total: 0 });
   }
 }
