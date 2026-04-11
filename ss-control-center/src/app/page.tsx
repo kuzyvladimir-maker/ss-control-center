@@ -8,7 +8,6 @@ import {
   MessageSquare,
   Scale,
   HeartPulse,
-  DollarSign,
   Loader2,
   ArrowRight,
   RefreshCw,
@@ -179,7 +178,7 @@ export default function DashboardPage() {
               Welcome to SS Control Center
             </p>
             <p className="text-xs text-blue-600 mb-4">
-              Click "Sync Orders" to pull data from Amazon SP-API for the first
+              Click &ldquo;Sync Orders&rdquo; to pull data from Amazon SP-API for the first
               time. This will populate all modules with real data.
             </p>
             <Button
@@ -276,9 +275,9 @@ export default function DashboardPage() {
               <Truck size={14} className="mr-1" /> Shipping Labels
             </Button>
           </Link>
-          <Link href="/customer-service">
+          <Link href="/customer-hub">
             <Button variant="outline" size="sm">
-              <MessageSquare size={14} className="mr-1" /> Customer Service
+              <MessageSquare size={14} className="mr-1" /> Customer Hub
             </Button>
           </Link>
           <Link href="/account-health">

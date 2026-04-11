@@ -117,16 +117,48 @@ function extractCustomerName(subject: string): string | null {
 }
 
 function extractAsin(html: string): string | null {
-  const match = html.match(/\/dp\/([A-Z0-9]{10})/);
-  return match ? match[1] : null;
+  // Try all /dp/<ASIN> and /gp/product/<ASIN> patterns, pick the first that
+  // looks like a valid ASIN (starts with B, length 10, alphanumeric).
+  const patterns = [
+    /\/dp\/([A-Z0-9]{10})(?:[/?#"]|$)/g,
+    /\/gp\/product\/([A-Z0-9]{10})(?:[/?#"]|$)/g,
+    /[?&]asin=([A-Z0-9]{10})(?:[&"]|$)/gi,
+  ];
+  for (const re of patterns) {
+    const matches = [...html.matchAll(re)];
+    for (const m of matches) {
+      const asin = m[1].toUpperCase();
+      if (/^B[A-Z0-9]{9}$/.test(asin)) return asin;
+    }
+    // Fallback: accept any 10-char alphanum match if no B-prefix found
+    if (matches.length > 0) return matches[0][1].toUpperCase();
+  }
+  return null;
 }
 
 function extractProductName(html: string): string | null {
-  // Amazon emails often have product name in a table cell after ASIN
-  const match = html.match(
-    /<td[^>]*>([^<]{5,100})<\/td>\s*<\/tr>/i
+  // Amazon buyer-message emails render the product row as:
+  //   <a href=".../dp/ASIN">Product Name</a>
+  // Try anchor-based match first (most reliable), then fall back to a
+  // stricter table-cell pattern that requires the row to contain a product link.
+  const anchorMatch = html.match(
+    /<a[^>]*href="[^"]*\/dp\/[A-Z0-9]{10}[^"]*"[^>]*>([^<]{3,200})<\/a>/i
   );
-  return match ? stripHtml(match[1]).trim() : null;
+  if (anchorMatch) {
+    const name = stripHtml(anchorMatch[1]).trim();
+    if (name.length >= 3) return name;
+  }
+
+  // Stricter table-cell fallback: require the row to contain a /dp/ link.
+  const rowMatch = html.match(
+    /<tr[^>]*>[\s\S]*?\/dp\/[A-Z0-9]{10}[\s\S]*?<td[^>]*>([^<]{5,200})<\/td>[\s\S]*?<\/tr>/i
+  );
+  if (rowMatch) {
+    const name = stripHtml(rowMatch[1]).trim();
+    if (name.length >= 3) return name;
+  }
+
+  return null;
 }
 
 function extractCustomerMessage(html: string, plainText: string): string {

@@ -68,7 +68,13 @@ export async function getCachedAccessToken(storeId: string): Promise<string> {
     return cached.token;
   }
 
-  const index = parseInt(storeId.replace("store", "")) || 1;
+  const match = storeId.match(/^store([1-5])$/);
+  if (!match) {
+    throw new Error(
+      `Invalid storeId "${storeId}". Expected "store1"–"store5".`
+    );
+  }
+  const index = parseInt(match[1], 10);
   const creds = getStoreCredentials(index);
   if (!creds) {
     throw new Error(`No credentials configured for ${storeId}`);
@@ -84,28 +90,23 @@ export async function getCachedAccessToken(storeId: string): Promise<string> {
   return accessToken;
 }
 
-/** Get access token by raw refresh token. Tries to find matching store credentials, then shared fallback. */
+/** Get access token by raw refresh token.
+ *  Only succeeds if the refresh token matches a configured store — no silent
+ *  fallback to STORE1, because LWA client credentials must match the app that
+ *  issued the refresh token (using another store's creds would either fail or,
+ *  worse, dereference the wrong account if apps happen to share credentials).
+ */
 export async function getAccessToken(refreshToken: string): Promise<string> {
-  // Find which store this refresh token belongs to
   for (let i = 1; i <= 5; i++) {
     const creds = getStoreCredentials(i);
     if (creds && creds.refreshToken === refreshToken) {
       return exchangeToken(creds);
     }
   }
-  // Shared fallback
-  const clientId =
-    process.env.AMAZON_SP_CLIENT_ID_STORE1 ||
-    process.env.AMAZON_SP_CLIENT_ID;
-  const clientSecret =
-    process.env.AMAZON_SP_CLIENT_SECRET_STORE1 ||
-    process.env.AMAZON_SP_CLIENT_SECRET;
-  if (!clientId || !clientSecret) {
-    throw new Error(
-      "No matching store credentials found. Set AMAZON_SP_CLIENT_ID_STORE{N} in .env"
-    );
-  }
-  return exchangeToken({ clientId, clientSecret, refreshToken });
+  throw new Error(
+    "No matching store credentials found for the provided refresh token. " +
+    "Ensure AMAZON_SP_REFRESH_TOKEN_STORE{N} is set and matches the token in use."
+  );
 }
 
 /** Get list of configured store IDs */

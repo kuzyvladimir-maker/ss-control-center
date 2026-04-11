@@ -1,16 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useMounted } from "@/lib/use-mounted";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   if (!mounted) {
     // Return a minimal shell so SSR and client match (empty, no dates)

@@ -154,7 +154,7 @@ export default function MessagesTab() {
               No messages yet
             </p>
             <p className="text-xs text-slate-400 mt-1">
-              Click "Sync Gmail" to fetch buyer messages from Amazon
+              Click &ldquo;Sync Gmail&rdquo; to fetch buyer messages from Amazon
             </p>
           </div>
         ) : (

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Loader2, CheckCircle, XCircle, Settings } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMounted } from "@/lib/use-mounted";
 
 interface Integration {
   name: string;
@@ -11,12 +12,11 @@ interface Integration {
 }
 
 export default function IntegrationsPage() {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
     fetch("/api/integrations")
       .then((r) => r.json())
       .then((d) => setIntegrations(d.integrations || []))

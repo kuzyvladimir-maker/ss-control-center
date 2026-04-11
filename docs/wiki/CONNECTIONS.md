@@ -1,0 +1,146 @@
+# 🗺️ CONNECTIONS — Карта связей Wiki
+
+Полная карта зависимостей между wiki-статьями проекта SS Control Center.
+
+---
+
+## Модули
+
+### [Dashboard](dashboard.md)
+← [Shipping Labels](shipping-labels.md), [Customer Hub](customer-hub.md), [Account Health](account-health.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md)
+
+### [Shipping Labels](shipping-labels.md)
+← [Veeqo API](veeqo-api.md), [SKU Database](google-sheets-sku-db.md), [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md)
+→ [Dashboard](dashboard.md), [n8n Автоматизация](n8n-automation.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md)
+⊂ [Выбор ставки](shipping-rate-selection.md), [Бюджет](budget-check-algorithm.md), [Weekend распределение](weekend-distribution.md), [Carrier rules](carrier-selection-rules.md), [Label filename](label-filename-format.md)
+
+### [Customer Hub](customer-hub.md)
+← [Gmail API](gmail-api.md), [Amazon SP-API](amazon-sp-api.md), [Claude AI](claude-ai.md), [Veeqo API](veeqo-api.md)
+→ [Dashboard](dashboard.md)
+⊂ [Decision Engine](customer-hub-decision-engine.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md)
+
+### [Account Health](account-health.md)
+← [Amazon SP-API](amazon-sp-api.md)
+→ [Dashboard](dashboard.md)
+⇔ [A-to-Z & Chargeback](atoz-chargeback.md) (ODR), [Feedback Manager](feedback-manager.md) (Negative Feedback), [Shipping Labels](shipping-labels.md) (LSR/VTR)
+
+### [Frozen Analytics](frozen-analytics.md)
+← [Veeqo API](veeqo-api.md), [Weather/Geocoding](weather-geocoding.md), [Shipping Labels](shipping-labels.md)
+⇔ [Customer Hub](customer-hub.md) (frozen жалобы), [Frozen/Dry классификация](frozen-dry-classification.md), [Frozen shipping rules](frozen-shipping-rules.md)
+
+### [Adjustments Monitor](adjustments-monitor.md)
+← [Amazon SP-API](amazon-sp-api.md), [SKU Database](google-sheets-sku-db.md)
+→ [Dashboard](dashboard.md)
+⇔ [Shipping Labels](shipping-labels.md) (label cost/carrier)
+
+---
+
+## Алгоритмы
+
+### [Выбор ставки](shipping-rate-selection.md)
+⊂ [Shipping Labels](shipping-labels.md)
+← [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md)
+→ [Бюджет](budget-check-algorithm.md)
+⇔ [Carrier rules](carrier-selection-rules.md)
+
+### [Budget Check](budget-check-algorithm.md)
+⊂ [Shipping Labels](shipping-labels.md)
+← [Выбор ставки](shipping-rate-selection.md)
+⇔ [Walmart ограничения](walmart-restrictions.md)
+
+### [Decision Engine](customer-hub-decision-engine.md)
+⊂ [Customer Hub](customer-hub.md)
+← [Claude AI](claude-ai.md), [Amazon SP-API](amazon-sp-api.md)
+→ [A-to-Z & Chargeback](atoz-chargeback.md)
+⇔ [Frozen shipping rules](frozen-shipping-rules.md)
+
+### [Frozen/Dry классификация](frozen-dry-classification.md)
+← [Veeqo API](veeqo-api.md) (теги)
+→ [Shipping Labels](shipping-labels.md), [Выбор ставки](shipping-rate-selection.md), [Бюджет](budget-check-algorithm.md)
+⇔ [Walmart ограничения](walmart-restrictions.md), [Frozen Analytics](frozen-analytics.md)
+
+### [Weekend Distribution](weekend-distribution.md)
+⊂ [Shipping Labels](shipping-labels.md), [n8n Автоматизация](n8n-automation.md)
+← [Frozen/Dry классификация](frozen-dry-classification.md), [Timezone правила](timezone-rules.md)
+⇔ [Frozen shipping rules](frozen-shipping-rules.md)
+
+---
+
+## Интеграции
+
+### [Veeqo API](veeqo-api.md)
+→ [Shipping Labels](shipping-labels.md), [Frozen Analytics](frozen-analytics.md), [Customer Hub](customer-hub.md), [n8n Автоматизация](n8n-automation.md)
+⇔ [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md), [SKU Database](google-sheets-sku-db.md)
+
+### [Amazon SP-API](amazon-sp-api.md)
+→ [Customer Hub](customer-hub.md), [Account Health](account-health.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md), [Adjustments Monitor](adjustments-monitor.md)
+⇔ [Gmail API](gmail-api.md), [External API Auth](external-api-auth.md)
+
+### [Gmail API](gmail-api.md)
+→ [Customer Hub](customer-hub.md) (Messages + Chargebacks)
+⇔ [Amazon SP-API](amazon-sp-api.md), [A-to-Z & Chargeback](atoz-chargeback.md)
+
+### [SKU Database](google-sheets-sku-db.md)
+→ [Shipping Labels](shipping-labels.md), [n8n Автоматизация](n8n-automation.md)
+⇔ [Adjustments Monitor](adjustments-monitor.md), [Veeqo API](veeqo-api.md)
+
+### [Claude AI](claude-ai.md)
+→ [Customer Hub](customer-hub.md), [Decision Engine](customer-hub-decision-engine.md), [Feedback Manager](feedback-manager.md), [A-to-Z & Chargeback](atoz-chargeback.md)
+
+### [Telegram](telegram-notifications.md)
+→ [Shipping Labels](shipping-labels.md), [n8n Автоматизация](n8n-automation.md), [Account Health](account-health.md)
+
+### [Weather/Geocoding](weather-geocoding.md)
+→ [Frozen Analytics](frozen-analytics.md)
+
+### [n8n Автоматизация](n8n-automation.md)
+Реализует [Shipping Labels](shipping-labels.md)
+← [Veeqo API](veeqo-api.md), [SKU Database](google-sheets-sku-db.md), [Telegram](telegram-notifications.md)
+⊂ [Выбор ставки](shipping-rate-selection.md), [Бюджет](budget-check-algorithm.md), [Weekend распределение](weekend-distribution.md), [Frozen/Dry классификация](frozen-dry-classification.md)
+
+---
+
+## Бизнес-правила
+
+### [Timezone правила](timezone-rules.md)
+→ [Shipping Labels](shipping-labels.md), [Выбор ставки](shipping-rate-selection.md), [n8n Автоматизация](n8n-automation.md), [Weekend распределение](weekend-distribution.md)
+← [Veeqo API](veeqo-api.md)
+
+### [Carrier Selection Rules](carrier-selection-rules.md)
+⊂ [Выбор ставки](shipping-rate-selection.md)
+⇔ [A-to-Z & Chargeback](atoz-chargeback.md) (Claims Protected), [SKU Database](google-sheets-sku-db.md)
+
+### [Walmart ограничения](walmart-restrictions.md)
+→ [Shipping Labels](shipping-labels.md), [Frozen/Dry классификация](frozen-dry-classification.md), [Бюджет](budget-check-algorithm.md)
+⇔ [Customer Hub](customer-hub.md)
+
+### [Frozen Shipping Rules](frozen-shipping-rules.md)
+→ [Shipping Labels](shipping-labels.md), [Выбор ставки](shipping-rate-selection.md), [Customer Hub](customer-hub.md), [Decision Engine](customer-hub-decision-engine.md)
+⇔ [Frozen Analytics](frozen-analytics.md), [Frozen/Dry классификация](frozen-dry-classification.md), [Weekend распределение](weekend-distribution.md)
+
+### [Label Filename Format](label-filename-format.md)
+⊂ [Shipping Labels](shipping-labels.md), [n8n Автоматизация](n8n-automation.md)
+
+---
+
+## Инфраструктура
+
+### [Database Schema](database-schema.md)
+→ все модули
+
+### [External API Auth](external-api-auth.md)
+⇔ [Amazon SP-API](amazon-sp-api.md), [Veeqo API](veeqo-api.md), [Архитектура проекта](project-architecture.md)
+
+### [Архитектура проекта](project-architecture.md)
+Обзорная статья, ссылается на все модули.
+
+---
+
+## Легенда
+- `←` зависит от
+- `→` используется в
+- `⊂` является частью
+- `⇔` двусторонняя связь
+
+---
+Последнее обновление: 2026-04-10

@@ -6,13 +6,22 @@ import {
 } from "@/lib/amazon-sp-api/finances";
 import { getConfiguredStores } from "@/lib/amazon-sp-api/auth";
 
+type ScannedAdjustment = {
+  orderId?: string;
+  date?: string;
+  type: string;
+  amount: number;
+  reason?: string;
+  sku?: string;
+  store: string;
+};
+
 export async function POST() {
   const fourteenDaysAgo = new Date(
     Date.now() - 14 * 24 * 60 * 60 * 1000
   ).toISOString();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const allAdjustments: any[] = [];
+  const allAdjustments: ScannedAdjustment[] = [];
   const stores = getConfiguredStores();
 
   for (const storeId of stores) {
@@ -30,35 +39,43 @@ export async function POST() {
     }
   }
 
-  // Save new adjustments (skip duplicates via externalId)
-  let newCount = 0;
-  for (const adj of allAdjustments) {
-    if (!adj.orderId) continue;
-    const externalId = `${adj.orderId}-${adj.date}-${adj.type}`;
+  // Build unique externalIds and bulk-check existence (avoid N+1 findUnique calls)
+  const candidates = allAdjustments
+    .filter((a) => a.orderId)
+    .map((a) => ({
+      adj: a,
+      externalId: `${a.orderId}-${a.date}-${a.type}`,
+    }));
 
-    try {
-      const exists = await prisma.shippingAdjustment.findUnique({
-        where: { externalId },
-      });
-      if (!exists) {
-        await prisma.shippingAdjustment.create({
-          data: {
-            externalId,
-            channel: "Amazon",
-            orderId: adj.orderId,
-            amazonOrderId: adj.orderId,
-            adjustmentDate: adj.date?.split("T")[0] || "",
-            adjustmentType: adj.type,
-            adjustmentAmount: adj.amount,
-            adjustmentReason: adj.reason,
-            sku: adj.sku,
-          },
-        });
-        newCount++;
-      }
-    } catch {
-      // skip duplicates silently
-    }
+  const existing = await prisma.shippingAdjustment.findMany({
+    where: { externalId: { in: candidates.map((c) => c.externalId) } },
+    select: { externalId: true },
+  });
+  const existingIds = new Set(existing.map((e) => e.externalId));
+
+  const toCreate = candidates
+    .filter((c) => !existingIds.has(c.externalId))
+    .map(({ adj, externalId }) => ({
+      externalId,
+      channel: "Amazon",
+      orderId: adj.orderId!,
+      amazonOrderId: adj.orderId!,
+      adjustmentDate: adj.date?.split("T")[0] || "",
+      adjustmentType: adj.type,
+      adjustmentAmount: adj.amount,
+      adjustmentReason: adj.reason,
+      sku: adj.sku,
+    }));
+
+  // We already filtered out existing rows via the `existingIds` set above, so
+  // a plain createMany is safe. (Prisma's `skipDuplicates` flag isn't typed for
+  // SQLite in this version of the client.)
+  let newCount = 0;
+  if (toCreate.length > 0) {
+    const result = await prisma.shippingAdjustment.createMany({
+      data: toCreate,
+    });
+    newCount = result.count;
   }
 
   return NextResponse.json({

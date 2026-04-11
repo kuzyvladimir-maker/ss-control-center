@@ -130,7 +130,6 @@ export async function enrichMessage(
           ) {
             enriched.boughtThroughVeeqo = true;
           }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if (Array.isArray(notes)) {
             enriched.boughtThroughVeeqo = notes.some(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -2,9 +2,22 @@ import { google } from "googleapis";
 
 const GMAIL_CLIENT_ID = process.env.GMAIL_CLIENT_ID;
 const GMAIL_CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET;
-const GMAIL_REDIRECT_URI =
-  process.env.GMAIL_REDIRECT_URI ||
-  "http://localhost:3000/api/auth/gmail/callback";
+
+// Resolve redirect URI at call time (not module load) so a missing env var in
+// production doesn't crash the entire server on import.
+// Priority: explicit env → Vercel deployment URL → local dev → error.
+function resolveRedirectUri(): string {
+  if (process.env.GMAIL_REDIRECT_URI) return process.env.GMAIL_REDIRECT_URI;
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}/api/auth/gmail/callback`;
+  }
+  if (process.env.NODE_ENV !== "production") {
+    return "http://localhost:3000/api/auth/gmail/callback";
+  }
+  throw new Error(
+    "GMAIL_REDIRECT_URI is not set. Define it in .env for production deployments."
+  );
+}
 
 // Email → store mapping
 const EMAIL_TO_STORE: Record<
@@ -19,7 +32,7 @@ export function createOAuth2Client(refreshToken?: string) {
   const client = new google.auth.OAuth2(
     GMAIL_CLIENT_ID,
     GMAIL_CLIENT_SECRET,
-    GMAIL_REDIRECT_URI
+    resolveRedirectUri()
   );
   if (refreshToken) {
     client.setCredentials({ refresh_token: refreshToken });

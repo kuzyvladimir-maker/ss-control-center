@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "session_start": {
+      "command": "echo '--- Session started at '$(date '+%Y-%m-%d %H:%M')"
+    }
+  }
+}

@@ -37,11 +37,9 @@ export async function GET() {
       const sid = `store${i}`;
 
       if (!token) {
-        console.log(`[AccountHealth] ${envKey}: not set`);
         stores.push({ storeIndex: i, configured: false, status: "not_configured" });
         continue;
       }
-      console.log(`[AccountHealth] ${envKey}: found (${token.substring(0, 10)}...)`);
 
       const latest = await prisma.accountHealthSnapshot.findFirst({
         where: { storeId: sid, syncStatus: "done" },

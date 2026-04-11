@@ -32,7 +32,6 @@ export async function syncOrders(storeIndex: number): Promise<number> {
   } while (nextToken);
 
   let synced = 0;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (const o of allOrders) {
     await prisma.amazonOrder.upsert({
       where: { amazonOrderId: o.AmazonOrderId },

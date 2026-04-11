@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   CheckCircle,
   XCircle,
@@ -144,30 +145,29 @@ function SyncPanel() {
 }
 
 function GmailAccountsPanel() {
-  const [gmailResult, setGmailResult] = useState<{
+  const searchParams = useSearchParams();
+  const gmailResult = useMemo<{
     type: "success" | "error";
     email?: string;
     token?: string;
     reason?: string;
-  } | null>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const gmail = params.get("gmail");
+  } | null>(() => {
+    const gmail = searchParams.get("gmail");
     if (gmail === "success") {
-      setGmailResult({
+      return {
         type: "success",
-        email: params.get("email") || "",
-        token: params.get("token") || "",
-      });
-    } else if (gmail === "error") {
-      setGmailResult({
-        type: "error",
-        reason: params.get("reason") || "Unknown error",
-      });
+        email: searchParams.get("email") || "",
+        token: searchParams.get("token") || "",
+      };
     }
-  }, []);
+    if (gmail === "error") {
+      return {
+        type: "error",
+        reason: searchParams.get("reason") || "Unknown error",
+      };
+    }
+    return null;
+  }, [searchParams]);
 
   const gmailAccounts = [
     {

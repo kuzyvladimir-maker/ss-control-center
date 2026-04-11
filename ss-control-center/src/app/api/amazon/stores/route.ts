@@ -25,7 +25,6 @@ export async function GET() {
         { storeId: `store${i}` }
       );
       const participations = data.payload || [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const usMp = participations.find(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (p: any) => p.marketplace?.id === "ATVPDKIKX0DER"

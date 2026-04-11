@@ -106,7 +106,9 @@ export async function analyzeMessage(
   input: AnalysisInput
 ): Promise<AnalysisResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || apiKey.includes("api_key")) {
+  // A valid Anthropic key starts with "sk-ant-". Anything else (missing,
+  // placeholder, or obviously malformed) triggers the heuristic fallback.
+  if (!apiKey || !apiKey.startsWith("sk-ant-")) {
     return fallbackResult(input);
   }
 

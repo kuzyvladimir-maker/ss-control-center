@@ -77,15 +77,20 @@ export async function POST(request: NextRequest) {
           30
         );
 
+        // Bulk-check which messages are already in DB (avoid N+1 queries)
+        const incomingIds = messageList
+          .map((m) => m.id)
+          .filter((id): id is string => Boolean(id));
+        const existing = await prisma.buyerMessage.findMany({
+          where: { gmailMessageId: { in: incomingIds } },
+          select: { gmailMessageId: true },
+        });
+        const existingIds = new Set(existing.map((e) => e.gmailMessageId));
+
         for (const msg of messageList) {
           const msgId = msg.id;
           if (!msgId) continue;
-
-          // Skip if already in DB
-          const exists = await prisma.buyerMessage.findUnique({
-            where: { gmailMessageId: msgId },
-          });
-          if (exists) continue;
+          if (existingIds.has(msgId)) continue;
 
           try {
             // Read full message
