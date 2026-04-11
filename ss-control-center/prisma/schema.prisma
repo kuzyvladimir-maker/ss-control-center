@@ -323,6 +323,7 @@ model SellerFeedback {
   aiReasoning         String?
 
   removalRequestText  String?
+  publicResponse      String?  // Claude-generated public reply for non-removable negative/positive feedback
 
   // Status: NEW → ANALYZED → REMOVAL_SUBMITTED → REMOVED | DENIED | CONTACT_SENT | CLOSED
   status              String   @default("NEW")
