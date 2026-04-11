@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Loader2, RefreshCw, Mail } from "lucide-react";
 import MessageDetail from "./MessageDetail";
+import ResponseDeadline from "./ResponseDeadline";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -44,6 +45,7 @@ const actionColors: Record<string, string> = {
 interface Message {
   id: string;
   createdAt: string;
+  receivedAt: string | null;
   status: string;
   storeName: string;
   customerName: string | null;
@@ -106,10 +108,13 @@ export default function MessagesTab() {
         body: JSON.stringify({ action: "sync" }),
       });
       const result = await res.json();
+      const parts: string[] = [];
+      parts.push(`Synced ${result.synced ?? 0} new`);
+      if (typeof result.confirmations === "number" && result.confirmations > 0) {
+        parts.push(`${result.confirmations} auto-resolved`);
+      }
       setSyncResult(
-        result.errors?.length
-          ? result.errors[0]
-          : `Synced ${result.synced} new messages`
+        result.errors?.length ? result.errors[0] : parts.join(" · ")
       );
       await fetchMessages(statusFilter);
     } catch {
@@ -154,9 +159,14 @@ export default function MessagesTab() {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             {syncResult && (
-              <span className="text-[10px] text-slate-400">{syncResult}</span>
+              <span
+                className="text-[10px] text-slate-400 max-w-[300px] truncate"
+                title={syncResult}
+              >
+                {syncResult}
+              </span>
             )}
             <Button
               variant="outline"
@@ -197,6 +207,7 @@ export default function MessagesTab() {
                 <TableHead>Category</TableHead>
                 <TableHead>Risk</TableHead>
                 <TableHead>Action</TableHead>
+                <TableHead>Respond By</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -270,6 +281,12 @@ export default function MessagesTab() {
                     ) : (
                       <span className="text-slate-300 text-xs">—</span>
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <ResponseDeadline
+                      createdAt={m.receivedAt || m.createdAt}
+                      status={m.status}
+                    />
                   </TableCell>
                 </TableRow>
               ))}

@@ -2,7 +2,7 @@
  * Parse Amazon buyer-seller emails from Gmail API response
  */
 
-import { EMAIL_TO_STORE } from "@/lib/gmail-api";
+import type { EmailToStoreMap } from "@/lib/gmail-api";
 
 export interface ParsedBuyerEmail {
   gmailMessageId: string;
@@ -111,9 +111,53 @@ function extractOrderId(subject: string, bodyText: string): string | null {
   return null;
 }
 
-function extractCustomerName(subject: string): string | null {
-  const match = subject.match(/from Amazon customer (.+?)[\s(]/);
-  return match ? match[1].trim() : null;
+// Extract customer name from either the email Subject or the From display
+// name. Amazon formats buyer-message subjects inconsistently and sometimes
+// the name only appears in the sender display name:
+//   From: "Alisa - Amazon Marketplace <xxx@marketplace.amazon.com>"
+//   Subject: "Inquiry from Amazon customer Alisa (Order: 114-...)"
+// We try the From header first (most reliable when present) then several
+// Subject patterns. Name character class is restricted to letters + space +
+// apostrophe + hyphen so we don't accidentally capture "(Order" or URL bits.
+function extractCustomerName(
+  subject: string,
+  fromHeader?: string
+): string | null {
+  const cleanName = (raw: string): string | null => {
+    const name = raw.trim().replace(/\s+/g, " ");
+    if (!name || name.length < 2) return null;
+    if (name.toLowerCase() === "customer") return null;
+    return name;
+  };
+
+  // 1) From header — quoted or unquoted display name followed by "- Amazon"
+  if (fromHeader) {
+    const m = fromHeader.match(/^"?([^"<-]+?)\s*[-–]\s*Amazon/i);
+    if (m) {
+      const name = cleanName(m[1]);
+      if (name) return name;
+    }
+  }
+
+  // 2) Subject patterns — strictest to loosest. Restrict name chars to
+  // [A-Za-z] + space + apostrophe + hyphen so we don't slurp "(Order".
+  const subjectPatterns: RegExp[] = [
+    /from Amazon customer ([A-Za-z][A-Za-z\s'-]+?)[\s(]/,
+    /from Amazon customer ([A-Za-z][A-Za-z\s'-]+?)$/,
+    /Amazon customer ([A-Za-z][A-Za-z\s'-]+?)[\s(]/,
+    // Subject starts with "Name - Shipping inquiry..."
+    /^([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)?)\s*[-–]\s*[A-Z]/,
+  ];
+
+  for (const re of subjectPatterns) {
+    const m = subject.match(re);
+    if (m) {
+      const name = cleanName(m[1]);
+      if (name) return name;
+    }
+  }
+
+  return null;
 }
 
 function extractAsin(html: string): string | null {
@@ -183,8 +227,17 @@ function extractCustomerMessage(html: string, plainText: string): string {
   return filtered.join("\n").trim() || plainText.substring(0, 2000);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function parseAmazonBuyerEmail(emailData: any): ParsedBuyerEmail | null {
+/**
+ * Parse a Gmail message into a ParsedBuyerEmail. The email→store mapping
+ * is passed in (not imported) so the caller can preload it once from the
+ * Setting table via `loadEmailToStoreMap()` and pass it into every call
+ * during a bulk sync.
+ */
+export function parseAmazonBuyerEmail(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  emailData: any,
+  emailToStoreMap: EmailToStoreMap
+): ParsedBuyerEmail | null {
   const headers = emailData.payload?.headers || [];
   const from = getHeader(headers, "From");
   const to = getHeader(headers, "To");
@@ -195,12 +248,14 @@ export function parseAmazonBuyerEmail(emailData: any): ParsedBuyerEmail | null {
     return null;
   }
 
-  // Determine store from To header
+  // Determine store from To header using the pre-loaded email→store map
+  // (built from Setting table + STORE{N}_NAME env vars). Case-insensitive.
   let storeIndex = 0;
   let storeName = "Unknown";
   let storeEmail = "";
-  for (const [email, info] of Object.entries(EMAIL_TO_STORE)) {
-    if (to.toLowerCase().includes(email.toLowerCase())) {
+  const toLower = to.toLowerCase();
+  for (const [email, info] of emailToStoreMap) {
+    if (toLower.includes(email)) {
       storeIndex = info.storeIndex;
       storeName = info.storeName;
       storeEmail = email;
@@ -208,7 +263,8 @@ export function parseAmazonBuyerEmail(emailData: any): ParsedBuyerEmail | null {
     }
   }
   if (storeIndex === 0) {
-    // Fallback: use first match from to field
+    // Fallback: no matching entry — pick the first email-looking token in
+    // To and keep going with an "Unknown Store" label.
     const emailMatch = to.match(/[\w.-]+@[\w.-]+/);
     storeEmail = emailMatch ? emailMatch[0] : to;
     storeIndex = 1;
@@ -219,16 +275,31 @@ export function parseAmazonBuyerEmail(emailData: any): ParsedBuyerEmail | null {
   const plainText = stripHtml(rawHtml);
 
   const amazonOrderId = extractOrderId(subject, plainText);
-  const customerName = extractCustomerName(subject);
+  const customerName = extractCustomerName(subject, from);
   const customerEmail = from.match(/<(.+?)>/)?.[1] || from;
   const asin = extractAsin(rawHtml);
   const productName = extractProductName(rawHtml);
   const customerMessage = extractCustomerMessage(rawHtml, plainText);
   const language = detectLanguage(customerMessage);
 
-  const internalDate = emailData.internalDate
-    ? new Date(parseInt(emailData.internalDate))
-    : new Date();
+  // Prefer the email's own "Date" header when present (represents the
+  // wall-clock time Amazon sent the message), falling back to Gmail's
+  // internalDate (when it landed in the mailbox), and finally to "now".
+  const dateHeader = getHeader(headers, "Date");
+  let receivedAt: Date = new Date();
+  if (dateHeader) {
+    const parsed = new Date(dateHeader);
+    if (!Number.isNaN(parsed.getTime())) {
+      receivedAt = parsed;
+    }
+  }
+  if (
+    receivedAt.getTime() === 0 ||
+    Number.isNaN(receivedAt.getTime()) ||
+    (!dateHeader && emailData.internalDate)
+  ) {
+    receivedAt = new Date(parseInt(emailData.internalDate));
+  }
 
   return {
     gmailMessageId: emailData.id,
@@ -243,6 +314,6 @@ export function parseAmazonBuyerEmail(emailData: any): ParsedBuyerEmail | null {
     productName,
     customerMessage,
     language,
-    receivedAt: internalDate,
+    receivedAt,
   };
 }

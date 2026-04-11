@@ -481,6 +481,10 @@ model BuyerMessage {
   id              String   @id @default(cuid())
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  // When Amazon actually delivered the message to us (from email Date header).
+  // Used for the 24-hour Amazon response deadline — createdAt is when we
+  // synced it into our DB, which can be hours/days later.
+  receivedAt      DateTime?
 
   gmailMessageId  String?  @unique
   gmailThreadId   String?
@@ -513,6 +517,13 @@ model BuyerMessage {
   trackingStatus  String?
   daysInTransit   Int?
   daysLate        Int?
+  // Shipping service tracking — detects mismatches between what the
+  // customer paid for (Amazon order's ShipmentServiceLevelCategory) and
+  // what we actually shipped via Veeqo. Drives T21 classification.
+  requestedShippingService String?
+  actualShippingService    String?
+  shippingMismatch         Boolean @default(false)
+  carrierEstimatedDelivery String?
   boughtThroughVeeqo Boolean @default(false)
   claimsProtected Boolean @default(false)
   shippedOnTime   Boolean?
@@ -545,6 +556,18 @@ model BuyerMessage {
   vladimirNotes   String?
   imageData       String?
 
+  // JSON blob of the last FactCheckResult from message-analyzer.ts. Stored
+  // so the UI can render warnings + confidence without recomputing on every
+  // render. Shape: { passed, confidence, mismatches: [{field, inResponse,
+  // actual, severity}] }
+  factCheckJson   String?
+
+  // AI reasoning + audit trail. Holds the internal "why this decision"
+  // explanation from the analyzer, plus any [AUTO-FIXED: …] markers
+  // appended by the validator. Used by the UI to surface the auto-fix
+  // banner and (eventually) for debugging.
+  reasoning       String?
+
   @@index([amazonOrderId])
   @@index([storeIndex, status])
 }
@@ -560,4 +583,43 @@ model SyncLog {
   status      String   @default("running") // running | done | error
   itemsSynced Int      @default(0)
   error       String?
+}
+
+// Customer Hub — Knowledge Base
+// Stores resolved customer-support cases so the Decision Engine can find
+// similar past situations before generating a new response. Seeded with
+// canonical scenarios (e.g. T21 shipping mismatch) and extended either
+// manually from the Save-to-KB button in MessageDetail or automatically
+// from high-confidence resolved cases.
+model KnowledgeBaseEntry {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Кейс
+  problemType   String   // T1-T21
+  scenario      String   // краткое описание ситуации
+  customerSaid  String   // что написал клиент (ключевые фразы)
+
+  // Контекст
+  trackingStatus     String?
+  shippingMismatch   Boolean @default(false)
+  productType        String?  // Frozen | Dry
+
+  // Решение
+  correctAction      String   // replacement | partial_refund | full_refund | redirect_amazon | etc.
+  correctResponse    String   // текст правильного ответа
+  reasoning          String   // почему это решение правильное
+  whoShouldPay       String?  // us | amazon | carrier
+
+  // Результат
+  outcome            String?  // positive | negative | neutral
+  customerSatisfied  Boolean?
+  atozFiled          Boolean  @default(false)
+
+  // Метаданные
+  source             String   @default("manual") // manual | auto_from_resolved_case
+  tags               String?  // comma-separated tags
+
+  @@index([problemType])
 }

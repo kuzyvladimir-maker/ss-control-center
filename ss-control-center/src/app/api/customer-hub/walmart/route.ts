@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { analyzeScreenshots } from "@/lib/claude";
+import { analyzeImagesWithFallback } from "@/lib/ai-vision";
 
 // POST /api/customer-hub/walmart
 // Body: { images: string[] } — array of base64 image data URIs (or raw base64).
@@ -111,15 +111,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey || !apiKey.startsWith("sk-ant-")) {
+    // AI vision helper tries Claude first, OpenAI as fallback. Returns 503
+    // only if neither provider is configured at all.
+    const anthropicOk = (process.env.ANTHROPIC_API_KEY || "").startsWith("sk-ant-");
+    const openaiOk = (process.env.OPENAI_API_KEY || "").startsWith("sk-");
+    if (!anthropicOk && !openaiOk) {
       return NextResponse.json(
-        { error: "Claude API is not configured on the server" },
+        {
+          error:
+            "No AI vision provider configured. Set ANTHROPIC_API_KEY or OPENAI_API_KEY in .env.",
+        },
         { status: 503 }
       );
     }
 
-    const analysis = await analyzeScreenshots(base64Images, WALMART_SYSTEM_PROMPT);
+    const analysis = await analyzeImagesWithFallback(
+      base64Images,
+      WALMART_SYSTEM_PROMPT
+    );
     return NextResponse.json({ analysis });
   } catch (err) {
     console.error("[customer-hub/walmart] POST failed:", err);

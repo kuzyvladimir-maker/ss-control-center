@@ -955,6 +955,346 @@ function LossSettingsPanel() {
   );
 }
 
+// ---------------------------------------------------------------------------
+// AI Providers panel — interactive Claude/OpenAI priority + model selection
+// ---------------------------------------------------------------------------
+// Reads /api/integrations/ai-providers for both status (keys configured) and
+// the currently-saved runtime config (primary provider + chosen models).
+// Writes changes back via PUT /api/settings under three keys:
+//   ai_primary_provider   "claude" | "openai"
+//   ai_claude_model        string from the CLAUDE_MODELS catalog
+//   ai_openai_model        string from the OPENAI_MODELS catalog
+
+interface AiModelOption {
+  id: string;
+  label: string;
+}
+
+interface AiProviderStatus {
+  configured: boolean;
+  model: string;
+  role: "primary" | "fallback";
+}
+
+interface AiProvidersResponse {
+  claude: AiProviderStatus;
+  openai: AiProviderStatus;
+  primaryProvider: "claude" | "openai" | null;
+  providerChain: Array<"claude" | "openai">;
+  availableModels: {
+    claude: AiModelOption[];
+    openai: AiModelOption[];
+  };
+  anyConfigured: boolean;
+  bothConfigured: boolean;
+}
+
+function AiProvidersPanel() {
+  const [data, setData] = useState<AiProvidersResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [primary, setPrimary] = useState<"claude" | "openai">("claude");
+  const [claudeModel, setClaudeModel] = useState<string>("");
+  const [openaiModel, setOpenaiModel] = useState<string>("");
+  const [saving, setSaving] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchStatus = useCallback(async () => {
+    try {
+      const res = await fetch("/api/integrations/ai-providers");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const d = (await res.json()) as AiProvidersResponse;
+      setData(d);
+      setPrimary(d.primaryProvider || "claude");
+      setClaudeModel(d.claude.model);
+      setOpenaiModel(d.openai.model);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStatus();
+  }, [fetchStatus]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          values: {
+            ai_primary_provider: primary,
+            ai_claude_model: claudeModel,
+            ai_openai_model: openaiModel,
+          },
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 2000);
+      await fetchStatus();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const claudeConfigured = data?.claude.configured ?? false;
+  const openaiConfigured = data?.openai.configured ?? false;
+  const claudeModels = data?.availableModels.claude || [];
+  const openaiModels = data?.availableModels.openai || [];
+
+  // Derive the currently-saved values (what the server is actually using)
+  // vs the draft values in the form, to show an unsaved-changes hint.
+  const isDirty =
+    !!data &&
+    (primary !== data.primaryProvider ||
+      claudeModel !== data.claude.model ||
+      openaiModel !== data.openai.model);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">AI Decision Engine</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-xs text-slate-400">
+          The Decision Engine uses one AI provider as primary and the other
+          as fallback. If the primary fails (API error, rate limit, no
+          credits), the system retries with the fallback automatically.
+          Changes below take effect on the next analysis — no restart needed.
+        </p>
+
+        {error && (
+          <div className="rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="flex items-center gap-2 py-2 text-xs text-slate-400">
+            <Loader2 size={14} className="animate-spin" /> Loading provider
+            status…
+          </div>
+        ) : (
+          <>
+            {/* Key status rows */}
+            <div className="space-y-2">
+              {[
+                {
+                  key: "claude" as const,
+                  label: "Claude (Anthropic)",
+                  configured: claudeConfigured,
+                },
+                {
+                  key: "openai" as const,
+                  label: "OpenAI",
+                  configured: openaiConfigured,
+                },
+              ].map(({ key, label, configured }) => {
+                const isPrimary = primary === key;
+                return (
+                  <div
+                    key={key}
+                    className="flex items-center justify-between gap-4 py-2 border-b border-slate-100 last:border-0"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      {configured ? (
+                        <CheckCircle
+                          size={16}
+                          className="text-green-500 shrink-0"
+                        />
+                      ) : (
+                        <XCircle
+                          size={16}
+                          className="text-slate-300 shrink-0"
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium">{label}</div>
+                        <p className="text-[10px] text-slate-400 truncate">
+                          API key:{" "}
+                          {configured ? (
+                            <span className="text-green-600">
+                              configured in .env
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">
+                              not set — add{" "}
+                              <code className="rounded bg-slate-50 px-1">
+                                {key === "claude"
+                                  ? "ANTHROPIC_API_KEY"
+                                  : "OPENAI_API_KEY"}
+                              </code>{" "}
+                              to .env
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge
+                      className={
+                        !configured
+                          ? "bg-slate-100 text-slate-400"
+                          : isPrimary
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-slate-100 text-slate-600"
+                      }
+                    >
+                      {!configured
+                        ? "Not configured"
+                        : isPrimary
+                          ? "Primary"
+                          : "Fallback"}
+                    </Badge>
+                  </div>
+                );
+              })}
+            </div>
+
+            <Separator />
+
+            {/* Priority + model selection */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-4">
+                <label
+                  htmlFor="ai-primary"
+                  className="text-sm text-slate-700 font-medium"
+                >
+                  Primary provider{" "}
+                  <span className="text-[10px] text-slate-400 font-normal">
+                    (tried first)
+                  </span>
+                </label>
+                <select
+                  id="ai-primary"
+                  value={primary}
+                  onChange={(e) =>
+                    setPrimary(e.target.value as "claude" | "openai")
+                  }
+                  className="w-52 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-400 focus:outline-none"
+                >
+                  <option value="claude" disabled={!claudeConfigured}>
+                    Claude (Anthropic)
+                    {!claudeConfigured ? " — not configured" : ""}
+                  </option>
+                  <option value="openai" disabled={!openaiConfigured}>
+                    OpenAI
+                    {!openaiConfigured ? " — not configured" : ""}
+                  </option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
+                <label
+                  htmlFor="claude-model"
+                  className="text-sm text-slate-700"
+                >
+                  Claude model
+                </label>
+                <select
+                  id="claude-model"
+                  value={claudeModel}
+                  onChange={(e) => setClaudeModel(e.target.value)}
+                  disabled={!claudeConfigured}
+                  className="w-52 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-400 focus:outline-none disabled:bg-slate-50 disabled:text-slate-400"
+                >
+                  {claudeModels.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.label}
+                    </option>
+                  ))}
+                  {/* If saved value is not in catalog, preserve it */}
+                  {claudeModel &&
+                    !claudeModels.some((m) => m.id === claudeModel) && (
+                      <option value={claudeModel}>{claudeModel}</option>
+                    )}
+                </select>
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
+                <label
+                  htmlFor="openai-model"
+                  className="text-sm text-slate-700"
+                >
+                  OpenAI model
+                </label>
+                <select
+                  id="openai-model"
+                  value={openaiModel}
+                  onChange={(e) => setOpenaiModel(e.target.value)}
+                  disabled={!openaiConfigured}
+                  className="w-52 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-400 focus:outline-none disabled:bg-slate-50 disabled:text-slate-400"
+                >
+                  {openaiModels.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.label}
+                    </option>
+                  ))}
+                  {openaiModel &&
+                    !openaiModels.some((m) => m.id === openaiModel) && (
+                      <option value={openaiModel}>{openaiModel}</option>
+                    )}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <div className="text-[10px] text-slate-400">
+                {data?.bothConfigured ? (
+                  <span className="text-green-600">
+                    ✓ Fallback chain active
+                  </span>
+                ) : data?.anyConfigured ? (
+                  <span className="text-amber-600">
+                    Only one provider available — add the other to enable
+                    fallback
+                  </span>
+                ) : (
+                  <span className="text-red-600">
+                    No providers configured — Decision Engine will use
+                    heuristic fallback only
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {savedFlash && (
+                  <span className="text-[10px] text-green-600">Saved ✓</span>
+                )}
+                {isDirty && !savedFlash && (
+                  <span className="text-[10px] text-amber-600">
+                    Unsaved changes
+                  </span>
+                )}
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={saving || !isDirty}
+                  className="text-xs"
+                >
+                  {saving ? (
+                    <Loader2 size={12} className="animate-spin mr-1" />
+                  ) : null}
+                  Save
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function SettingsPage() {
   const [connections, setConnections] = useState<ConnectionStatus[]>([
     { name: "Veeqo", status: "checking" },
@@ -1042,55 +1382,173 @@ export default function SettingsPage() {
   const incompleteCount = skuRows.filter((r) => !r.hasCompleteData).length;
 
   return (
-    <div className="space-y-6">
-      {/* API Connections */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">API Connections</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {connections.map((conn) => (
-            <div
-              key={conn.name}
-              className="flex items-center justify-between py-2"
-            >
-              <div className="flex items-center gap-3">
-                {conn.status === "checking" ? (
-                  <Loader2 size={16} className="animate-spin text-slate-400" />
-                ) : conn.status === "connected" ? (
-                  <CheckCircle size={16} className="text-green-500" />
-                ) : (
-                  <XCircle size={16} className="text-red-500" />
-                )}
-                <span className="text-sm font-medium">{conn.name}</span>
+    <div className="space-y-8">
+      {/* ================================================================= */}
+      {/* SECTION 1 — Connected Accounts (per-store credentials)            */}
+      {/* ================================================================= */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-800">
+            Connected Accounts
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Per-store credentials for Gmail and Amazon SP-API. Connect or
+            disconnect accounts without editing .env.
+          </p>
+        </div>
+
+        <GmailAccountsPanel />
+        <SpApiStoresPanel />
+      </section>
+
+      {/* ================================================================= */}
+      {/* SECTION 2 — AI Decision Engine                                    */}
+      {/* ================================================================= */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-800">
+            AI Decision Engine
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Choose primary and fallback AI providers for buyer message
+            analysis, Walmart screenshot analysis and feedback classification.
+          </p>
+        </div>
+
+        <AiProvidersPanel />
+      </section>
+
+      {/* ================================================================= */}
+      {/* SECTION 3 — External Services (single-credential integrations)    */}
+      {/* ================================================================= */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-800">
+            External Services
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Health check for third-party APIs used across the app.
+          </p>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">API Connections</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {connections.map((conn) => (
+              <div
+                key={conn.name}
+                className="flex items-center justify-between py-2"
+              >
+                <div className="flex items-center gap-3">
+                  {conn.status === "checking" ? (
+                    <Loader2 size={16} className="animate-spin text-slate-400" />
+                  ) : conn.status === "connected" ? (
+                    <CheckCircle size={16} className="text-green-500" />
+                  ) : (
+                    <XCircle size={16} className="text-red-500" />
+                  )}
+                  <span className="text-sm font-medium">{conn.name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {conn.detail && (
+                    <span className="text-xs text-slate-400">{conn.detail}</span>
+                  )}
+                  <Badge
+                    variant={
+                      conn.status === "connected" ? "default" : "secondary"
+                    }
+                    className={
+                      conn.status === "connected"
+                        ? "bg-green-100 text-green-700"
+                        : conn.status === "disconnected"
+                          ? "bg-red-100 text-red-700"
+                          : ""
+                    }
+                  >
+                    {conn.status === "checking"
+                      ? "Checking..."
+                      : conn.status === "connected"
+                        ? "Connected"
+                        : "Disconnected"}
+                  </Badge>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                {conn.detail && (
-                  <span className="text-xs text-slate-400">{conn.detail}</span>
-                )}
-                <Badge
-                  variant={
-                    conn.status === "connected" ? "default" : "secondary"
-                  }
-                  className={
-                    conn.status === "connected"
-                      ? "bg-green-100 text-green-700"
-                      : conn.status === "disconnected"
-                        ? "bg-red-100 text-red-700"
-                        : ""
-                  }
-                >
-                  {conn.status === "checking"
-                    ? "Checking..."
-                    : conn.status === "connected"
-                      ? "Connected"
-                      : "Disconnected"}
-                </Badge>
+            ))}
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* ================================================================= */}
+      {/* SECTION 4 — App Configuration                                     */}
+      {/* ================================================================= */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-800">
+            App Configuration
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Runtime settings that affect how the app calculates and notifies.
+          </p>
+        </div>
+
+        <LossSettingsPanel />
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Notifications</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-600">Telegram Chat ID</span>
+                <code className="rounded bg-slate-100 px-2 py-1 text-xs">
+                  486456466
+                </code>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-600">
+                  Notifications enabled
+                </span>
+                <Badge className="bg-green-100 text-green-700">Active</Badge>
               </div>
             </div>
-          ))}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">External API</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-slate-600 mb-3">
+              REST API for external systems (Claude agent, n8n, Telegram bot).
+              Protected with Bearer token.
+            </p>
+            <div className="rounded-md bg-slate-50 p-3 text-xs font-mono">
+              Authorization: Bearer &lt;SSCC_API_TOKEN&gt;
+            </div>
+            <p className="text-xs text-slate-400 mt-2">
+              Set SSCC_API_TOKEN in your .env file (minimum 32 characters)
+            </p>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* ================================================================= */}
+      {/* SECTION 5 — Data                                                  */}
+      {/* ================================================================= */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-800">Data</h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Sync operations and SKU database management.
+          </p>
+        </div>
+
+        <SyncPanel />
 
       {/* SKU Database */}
       <Card>
@@ -1261,60 +1719,7 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Data Sync */}
-      <SyncPanel />
-
-      {/* Gmail Accounts */}
-      <GmailAccountsPanel />
-
-      {/* Amazon SP-API */}
-      <SpApiStoresPanel />
-
-      {/* Loss Calculation Settings */}
-      <LossSettingsPanel />
-
-      {/* Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Notifications</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Telegram Chat ID</span>
-              <code className="rounded bg-slate-100 px-2 py-1 text-xs">
-                486456466
-              </code>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">
-                Notifications enabled
-              </span>
-              <Badge className="bg-green-100 text-green-700">Active</Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* External API */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">External API</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-slate-600 mb-3">
-            REST API for external systems (Claude agent, n8n, Telegram bot).
-            Protected with Bearer token.
-          </p>
-          <div className="rounded-md bg-slate-50 p-3 text-xs font-mono">
-            Authorization: Bearer &lt;SSCC_API_TOKEN&gt;
-          </div>
-          <p className="text-xs text-slate-400 mt-2">
-            Set SSCC_API_TOKEN in your .env file (minimum 32 characters)
-          </p>
-        </CardContent>
-      </Card>
+      </section>
     </div>
   );
 }

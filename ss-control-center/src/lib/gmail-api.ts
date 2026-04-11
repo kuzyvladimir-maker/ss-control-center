@@ -26,18 +26,20 @@ function resolveRedirectUri(): string {
   );
 }
 
-// Default email → store mapping. Used when an OAuth'd email matches a known
-// account so we can auto-assign the refresh token to the right store.
-const EMAIL_TO_STORE: Record<
-  string,
-  { storeIndex: number; storeName: string }
-> = {
-  "amazon@salutem.solutions": { storeIndex: 1, storeName: "Salutem Solutions" },
-  "kuzy.vladimir@gmail.com": { storeIndex: 2, storeName: "Vladimir Personal" },
-  "amz.commerce@salutem.solutions": { storeIndex: 3, storeName: "AMZ Commerce" },
-  "ancienmadina2@gmail.com": { storeIndex: 4, storeName: "Sirius International" },
-  "amazon.retailerdistributor@gmail.com": { storeIndex: 5, storeName: "Retailer Distributor" },
-};
+// Email → store mapping is resolved dynamically from the Setting table
+// (gmail_email_storeN keys populated during OAuth) paired with STORE{N}_NAME
+// env vars for display labels. See `loadEmailToStoreMap()` below.
+
+export interface EmailToStoreInfo {
+  storeIndex: number;
+  storeName: string;
+}
+
+export type EmailToStoreMap = Map<string, EmailToStoreInfo>;
+
+function storeNameForIndex(i: number): string {
+  return process.env[`STORE${i}_NAME`] || `Store ${i}`;
+}
 
 export function createOAuth2Client(refreshToken?: string) {
   if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET) {
@@ -105,6 +107,24 @@ export async function readMessage(refreshToken: string, messageId: string) {
   return res.data;
 }
 
+/** Read a thread with all its messages. Used to detect whether a buyer
+ * message has already been responded to — when the seller replies via
+ * Amazon Seller Central, Amazon sends a confirmation email to the seller
+ * Gmail inbox which lands in the same thread. Thread size > 1 is our
+ * heuristic for "already handled". `format: metadata` is enough — we only
+ * need message IDs, not full bodies, and it's much cheaper. */
+export async function readThread(refreshToken: string, threadId: string) {
+  const client = createOAuth2Client(refreshToken);
+  const gmail = google.gmail({ version: "v1", auth: client });
+  const res = await gmail.users.threads.get({
+    userId: "me",
+    id: threadId,
+    format: "metadata",
+    metadataHeaders: ["From", "Subject", "Date"],
+  });
+  return res.data;
+}
+
 // ---------------------------------------------------------------------------
 // Persistent Gmail account storage
 // ---------------------------------------------------------------------------
@@ -139,6 +159,44 @@ export async function deleteGmailAccount(storeIndex: number): Promise<void> {
   });
 }
 
+/**
+ * Build email → store mapping from the Setting table. Call this once per
+ * sync job and pass the result into parseAmazonBuyerEmail so lookups are
+ * O(1) without hitting the DB per message.
+ */
+export async function loadEmailToStoreMap(): Promise<EmailToStoreMap> {
+  const map: EmailToStoreMap = new Map();
+  const rows = await prisma.setting.findMany({
+    where: {
+      key: {
+        in: Array.from({ length: MAX_GMAIL_STORES }, (_, idx) =>
+          EMAIL_KEY(idx + 1)
+        ),
+      },
+    },
+  });
+  for (const row of rows) {
+    // key is "gmail_email_storeN" — parse out N
+    const match = row.key.match(/gmail_email_store(\d+)/);
+    if (!match) continue;
+    const storeIndex = parseInt(match[1], 10);
+    if (!row.value) continue;
+    map.set(row.value.toLowerCase(), {
+      storeIndex,
+      storeName: storeNameForIndex(storeIndex),
+    });
+  }
+  return map;
+}
+
+/** Case-insensitive lookup against a pre-loaded map. */
+export function lookupStoreByEmail(
+  email: string,
+  map: EmailToStoreMap
+): EmailToStoreInfo | null {
+  return map.get(email.toLowerCase()) || null;
+}
+
 async function readStoredAccount(
   storeIndex: number
 ): Promise<{ refreshToken: string; email: string | null } | null> {
@@ -169,39 +227,36 @@ export interface GmailAccountStatus {
 /**
  * List the configured status of all Gmail store slots without contacting
  * Google. Safe to call from the Settings UI on every render.
+ *
+ * storeName comes from STORE{N}_NAME env var (operator-controlled label).
+ * email comes from the Setting table (set during OAuth) with env fallback.
  */
 export async function listGmailAccountStatus(): Promise<GmailAccountStatus[]> {
-  const expectedByIndex = new Map<
-    number,
-    { email: string; storeName: string }
-  >();
-  for (const [email, info] of Object.entries(EMAIL_TO_STORE)) {
-    expectedByIndex.set(info.storeIndex, { email, storeName: info.storeName });
-  }
-
   const results: GmailAccountStatus[] = [];
   for (let i = 1; i <= MAX_GMAIL_STORES; i++) {
-    const expected = expectedByIndex.get(i) || null;
+    const storeName = storeNameForIndex(i);
     const [tokenRow, emailRow] = await Promise.all([
       prisma.setting.findUnique({ where: { key: TOKEN_KEY(i) } }),
       prisma.setting.findUnique({ where: { key: EMAIL_KEY(i) } }),
     ]);
     const envToken = process.env[`GMAIL_REFRESH_TOKEN_STORE${i}`];
+    const storedEmail = emailRow?.value || null;
+
     if (tokenRow?.value) {
       results.push({
         storeIndex: i,
-        storeName: expected?.storeName || `Store ${i}`,
-        expectedEmail: expected?.email || null,
+        storeName,
+        expectedEmail: storedEmail,
         configured: true,
-        email: emailRow?.value || null,
+        email: storedEmail,
         source: "db",
         error: null,
       });
     } else if (envToken) {
       results.push({
         storeIndex: i,
-        storeName: expected?.storeName || `Store ${i}`,
-        expectedEmail: expected?.email || null,
+        storeName,
+        expectedEmail: storedEmail,
         configured: true,
         email: null,
         source: "env",
@@ -210,8 +265,8 @@ export async function listGmailAccountStatus(): Promise<GmailAccountStatus[]> {
     } else {
       results.push({
         storeIndex: i,
-        storeName: expected?.storeName || `Store ${i}`,
-        expectedEmail: expected?.email || null,
+        storeName,
+        expectedEmail: storedEmail,
         configured: false,
         email: null,
         source: null,
@@ -225,6 +280,9 @@ export async function listGmailAccountStatus(): Promise<GmailAccountStatus[]> {
 /**
  * Load all connected Gmail accounts and verify each refresh token still
  * works by calling Gmail's profile endpoint. Used by the Messages sync job.
+ *
+ * Store metadata comes from STORE{N}_NAME env var, not from the legacy
+ * hardcoded EMAIL_TO_STORE constant.
  */
 export async function getConnectedGmailAccounts(): Promise<
   Array<{
@@ -240,12 +298,9 @@ export async function getConnectedGmailAccounts(): Promise<
     if (!stored) continue;
     try {
       const email = await getGmailProfile(stored.refreshToken);
-      const storeInfo = EMAIL_TO_STORE[email] || {
-        storeIndex: i,
-        storeName: `Store ${i}`,
-      };
       accounts.push({
-        ...storeInfo,
+        storeIndex: i,
+        storeName: storeNameForIndex(i),
         email,
         refreshToken: stored.refreshToken,
       });
@@ -255,9 +310,3 @@ export async function getConnectedGmailAccounts(): Promise<
   }
   return accounts;
 }
-
-export function getStoreByEmail(email: string) {
-  return EMAIL_TO_STORE[email] || null;
-}
-
-export { EMAIL_TO_STORE };

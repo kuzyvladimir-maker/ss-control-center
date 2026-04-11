@@ -4,10 +4,13 @@ import {
   getConnectedGmailAccounts,
   searchMessages,
   readMessage,
+  readThread,
+  loadEmailToStoreMap,
 } from "@/lib/gmail-api";
 import { parseAmazonBuyerEmail } from "@/lib/customer-hub/gmail-parser";
 import { enrichMessage } from "@/lib/customer-hub/message-enricher";
 import { analyzeMessage } from "@/lib/customer-hub/message-analyzer";
+import { seedKnowledgeBase } from "@/lib/customer-hub/knowledge-base";
 
 // GET — list messages from DB.
 // Default behaviour: only "active" (NEW + ANALYZED) incoming messages, so
@@ -47,10 +50,19 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Sort rules:
+    //  - Conversation-history mode (?orderId=…): chronological ASC so the
+    //    thread reads top-to-bottom like a chat transcript.
+    //  - Active view (default): oldest first, because "oldest" == closest
+    //    to the 24-hour Amazon response deadline. Urgent cases surface.
+    //  - Any other filter (Sent / Resolved / All): newest first.
+    const orderDirection: "asc" | "desc" =
+      orderId || status === "active" ? "asc" : "desc";
+
     const [messages, total] = await Promise.all([
       prisma.buyerMessage.findMany({
         where,
-        orderBy: { createdAt: orderId ? "asc" : "desc" },
+        orderBy: { createdAt: orderDirection },
         take: limit,
         skip: offset,
       }),
@@ -124,7 +136,23 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Seed the knowledge base on first sync run (idempotent — exits
+    // early if any KB entries already exist).
+    try {
+      await seedKnowledgeBase();
+    } catch (e) {
+      console.warn(
+        "[Sync] seedKnowledgeBase failed:",
+        e instanceof Error ? e.message : String(e)
+      );
+    }
+
+    // Preload email→store mapping once from Setting table so
+    // parseAmazonBuyerEmail doesn't hit the DB for every message.
+    const emailToStoreMap = await loadEmailToStoreMap();
+
     let totalSynced = 0;
+    let confirmationsSynced = 0;
     const errors: string[] = [];
 
     for (const account of accounts) {
@@ -157,8 +185,38 @@ export async function POST(request: NextRequest) {
             const fullMsg = await readMessage(account.refreshToken, msgId);
 
             // Parse
-            const parsed = parseAmazonBuyerEmail(fullMsg);
+            const parsed = parseAmazonBuyerEmail(fullMsg, emailToStoreMap);
             if (!parsed) continue; // Not a buyer message
+
+            // Thread-size heuristic for "already handled". When the seller
+            // replies via Amazon Seller Central, Amazon sends a
+            // confirmation email to the seller Gmail which lands in the
+            // same thread. If the thread has more than 1 message, the
+            // case is likely already resolved — mark it accordingly so
+            // it stays out of the Active queue.
+            let autoResolved = false;
+            if (parsed.gmailThreadId) {
+              try {
+                const thread = await readThread(
+                  account.refreshToken,
+                  parsed.gmailThreadId
+                );
+                const threadMsgCount = thread.messages?.length || 1;
+                if (threadMsgCount > 1) {
+                  autoResolved = true;
+                  console.log(
+                    `[Sync] Thread ${parsed.gmailThreadId} has ${threadMsgCount} messages — auto-marking as RESOLVED`
+                  );
+                }
+              } catch (threadErr) {
+                console.warn(
+                  "[Sync] Thread lookup failed:",
+                  threadErr instanceof Error
+                    ? threadErr.message
+                    : String(threadErr)
+                );
+              }
+            }
 
             // Enrich with SP-API + Veeqo
             const enriched = await enrichMessage(parsed);
@@ -168,6 +226,7 @@ export async function POST(request: NextRequest) {
               data: {
                 gmailMessageId: enriched.gmailMessageId,
                 gmailThreadId: enriched.gmailThreadId,
+                receivedAt: enriched.receivedAt,
                 channel: "Amazon",
                 source: "gmail",
                 storeIndex: enriched.storeIndex,
@@ -192,12 +251,19 @@ export async function POST(request: NextRequest) {
                 trackingStatus: enriched.trackingStatus,
                 daysInTransit: enriched.daysInTransit,
                 daysLate: enriched.daysLate,
+                requestedShippingService: enriched.requestedShippingService,
+                actualShippingService: enriched.actualShippingService,
+                shippingMismatch: enriched.shippingMismatch,
+                carrierEstimatedDelivery: enriched.carrierEstimatedDelivery,
                 boughtThroughVeeqo: enriched.boughtThroughVeeqo,
                 claimsProtected: enriched.claimsProtected,
                 shippedOnTime: enriched.shippedOnTime,
                 direction: "incoming",
                 customerMessage: enriched.customerMessage,
-                status: "NEW",
+                status: autoResolved ? "RESOLVED" : "NEW",
+                resolution: autoResolved
+                  ? "auto_resolved_gmail_thread"
+                  : null,
               },
             });
 
@@ -231,6 +297,13 @@ export async function POST(request: NextRequest) {
               }
             }
 
+            // Skip Claude analysis for auto-resolved messages — there's
+            // nothing to draft a response for, and it saves an API call.
+            if (autoResolved) {
+              totalSynced++;
+              continue;
+            }
+
             // Auto-analyze with Claude (non-blocking — don't fail sync if AI is down)
             try {
               // Get history for this order
@@ -260,6 +333,10 @@ export async function POST(request: NextRequest) {
                 actualDelivery: enriched.actualDelivery,
                 daysInTransit: enriched.daysInTransit,
                 daysLate: enriched.daysLate,
+                requestedShippingService: enriched.requestedShippingService,
+                actualShippingService: enriched.actualShippingService,
+                shippingMismatch: enriched.shippingMismatch,
+                carrierEstimatedDelivery: enriched.carrierEstimatedDelivery,
                 boughtThroughVeeqo: enriched.boughtThroughVeeqo,
                 claimsProtected: enriched.claimsProtected,
                 shippedOnTime: enriched.shippedOnTime,
@@ -287,10 +364,12 @@ export async function POST(request: NextRequest) {
                   foodSafetyRisk: analysis.foodSafetyRisk,
                   atozRisk: analysis.atozRisk,
                   suggestedResponse: analysis.suggestedResponse,
+                  reasoning: analysis.reasoning,
                   category: analysis.problemType,
                   categoryName: analysis.problemTypeName,
                   priority: analysis.riskLevel,
                   status: "ANALYZED",
+                  factCheckJson: JSON.stringify(analysis.factCheck),
                 },
               });
             } catch (aiErr) {
@@ -299,11 +378,108 @@ export async function POST(request: NextRequest) {
 
             totalSynced++;
           } catch (msgErr) {
+            // Log full error with stack to dev console, but return only a
+            // short first-line summary to the UI so we don't dump a Prisma
+            // error's full data payload into the sync result toast.
             console.error(`[Sync] Message ${msgId} failed:`, msgErr);
-            errors.push(
-              `Message ${msgId}: ${msgErr instanceof Error ? msgErr.message : "unknown"}`
-            );
+            const fullMsg =
+              msgErr instanceof Error ? msgErr.message : String(msgErr);
+            const shortMsg = fullMsg.split("\n")[0].slice(0, 200);
+            errors.push(`Message ${msgId}: ${shortMsg}`);
           }
+        }
+
+        // =============================================================
+        // Confirmation sweep — detect replies sent via Seller Central
+        // =============================================================
+        // Amazon Seller Central's "Confirmation Notifications" setting
+        // emails the seller when a buyer response is successfully
+        // delivered. If enabled, those confirmation emails land in this
+        // Gmail account and we can use them to auto-flip the original
+        // BuyerMessage to SENT without the operator clicking anything.
+        //
+        // Heuristic: search for emails whose subject contains any of
+        // "Your response", "message sent", "confirmation" sent to this
+        // account in the last 2 days, extract the Amazon Order ID via
+        // regex, then mark any matching NEW/ANALYZED BuyerMessage as
+        // SENT with responseSentVia=SELLER_CENTRAL.
+        try {
+          const confirmationQuery = `to:${account.email} (subject:"Your response" OR subject:"message sent" OR subject:"confirmation") newer_than:2d`;
+          const confirmations = await searchMessages(
+            account.refreshToken,
+            confirmationQuery,
+            30
+          );
+          for (const cm of confirmations) {
+            const cmId = cm.id;
+            if (!cmId) continue;
+            try {
+              const fullCm = await readMessage(account.refreshToken, cmId);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const headers: any[] = fullCm.payload?.headers || [];
+              const subject =
+                headers.find(
+                  (h) => h?.name?.toLowerCase() === "subject"
+                )?.value || "";
+              const snippet = fullCm.snippet || "";
+              const orderMatch =
+                subject.match(/(\d{3}-\d{7}-\d{7})/) ||
+                snippet.match(/(\d{3}-\d{7}-\d{7})/);
+              if (!orderMatch) continue;
+              const orderId = orderMatch[1];
+
+              // Parse confirmation email date for responseSentAt
+              const dateHeader =
+                headers.find((h) => h?.name?.toLowerCase() === "date")
+                  ?.value || null;
+              let sentAt = new Date();
+              if (dateHeader) {
+                const parsed = new Date(dateHeader);
+                if (!Number.isNaN(parsed.getTime())) sentAt = parsed;
+              } else if (fullCm.internalDate) {
+                sentAt = new Date(parseInt(fullCm.internalDate));
+              }
+
+              const target = await prisma.buyerMessage.findFirst({
+                where: {
+                  amazonOrderId: orderId,
+                  direction: "incoming",
+                  status: { in: ["NEW", "ANALYZED"] },
+                },
+                orderBy: { createdAt: "desc" },
+              });
+
+              if (target) {
+                await prisma.buyerMessage.update({
+                  where: { id: target.id },
+                  data: {
+                    status: "SENT",
+                    responseSentVia: "SELLER_CENTRAL",
+                    responseSentAt: sentAt,
+                  },
+                });
+                confirmationsSynced++;
+                console.log(
+                  "[Sync] Confirmation detected for order:",
+                  orderId,
+                  "-> marked",
+                  target.id,
+                  "as SENT"
+                );
+              }
+            } catch (cmErr) {
+              console.warn(
+                "[Sync] Confirmation email read failed:",
+                cmErr instanceof Error ? cmErr.message : String(cmErr)
+              );
+            }
+          }
+        } catch (confErr) {
+          console.warn(
+            "[Sync] Confirmation sweep failed for",
+            account.email,
+            confErr instanceof Error ? confErr.message : String(confErr)
+          );
         }
       } catch (acctErr) {
         console.error(
@@ -318,6 +494,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       synced: totalSynced,
+      confirmations: confirmationsSynced,
       accounts: accounts.length,
       errors: errors.length > 0 ? errors : undefined,
     });

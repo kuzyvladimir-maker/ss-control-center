@@ -8,7 +8,6 @@ import {
   Pencil,
   RefreshCw,
   Package,
-  Truck,
   User,
   Store,
   Check,
@@ -18,6 +17,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import ResponseDeadline from "./ResponseDeadline";
 
 const riskColors: Record<string, string> = {
   LOW: "bg-green-100 text-green-700",
@@ -40,6 +47,368 @@ const actionColors: Record<string, string> = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Msg = any;
 
+const trackingStatusColors: Record<string, string> = {
+  delivered: "bg-green-100 text-green-700",
+  in_transit: "bg-blue-100 text-blue-700",
+  exception: "bg-red-100 text-red-700",
+};
+
+function fmtDate(s: string | null | undefined): string {
+  if (!s) return "—";
+  // Accept both ISO datestrings and YYYY-MM-DD shortcuts
+  try {
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) return s;
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return s;
+  }
+}
+
+function ShippingTrackingSection({ message: m }: { message: Msg }) {
+  const hasAnyTracking =
+    m.carrier || m.trackingNumber || m.shipDate || m.trackingStatus;
+
+  if (!hasAnyTracking) {
+    return (
+      <div>
+        <p className="text-[10px] font-semibold text-slate-400 uppercase mb-2">
+          Shipping &amp; Tracking
+        </p>
+        <Badge className="bg-amber-100 text-amber-700 text-xs">
+          No tracking data found
+        </Badge>
+      </div>
+    );
+  }
+
+  const transitClass =
+    m.daysInTransit != null && m.daysInTransit > 3
+      ? "text-red-600 font-medium"
+      : "text-slate-700";
+  const lateClass =
+    m.daysLate && m.daysLate > 0
+      ? "text-red-600 font-medium"
+      : "text-slate-700";
+
+  return (
+    <div>
+      <p className="text-[10px] font-semibold text-slate-400 uppercase mb-2">
+        Shipping &amp; Tracking
+      </p>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+        <div>
+          <span className="text-slate-500">Carrier:</span>{" "}
+          <span className="font-medium">{m.carrier || "—"}</span>
+        </div>
+        <div>
+          <span className="text-slate-500">Service:</span>{" "}
+          {m.service || "—"}
+        </div>
+        <div className="col-span-2">
+          <span className="text-slate-500">Tracking #:</span>{" "}
+          {m.trackingNumber ? (
+            <code className="rounded bg-slate-100 px-1 font-mono text-[11px]">
+              {m.trackingNumber}
+            </code>
+          ) : (
+            "—"
+          )}
+        </div>
+        <div>
+          <span className="text-slate-500">Status:</span>{" "}
+          {m.trackingStatus ? (
+            <Badge
+              className={
+                trackingStatusColors[m.trackingStatus] ||
+                "bg-slate-100 text-slate-600"
+              }
+            >
+              {m.trackingStatus.replace(/_/g, " ")}
+            </Badge>
+          ) : (
+            "—"
+          )}
+        </div>
+        <div>
+          <span className="text-slate-500">Shipped:</span>{" "}
+          {fmtDate(m.shipDate)}
+        </div>
+        <div>
+          <span className="text-slate-500">Delivered:</span>{" "}
+          {fmtDate(m.actualDelivery)}
+        </div>
+        <div>
+          <span className="text-slate-500">Deliver By (EDD):</span>{" "}
+          {fmtDate(m.promisedEdd)}
+        </div>
+        <div>
+          <span className="text-slate-500">Transit Time:</span>{" "}
+          <span className={transitClass}>
+            {m.daysInTransit != null ? `${m.daysInTransit} days` : "—"}
+          </span>
+        </div>
+        <div>
+          <span className="text-slate-500">Days Late:</span>{" "}
+          <span className={lateClass}>
+            {m.daysLate != null ? m.daysLate : "—"}
+          </span>
+        </div>
+      </div>
+
+      {/* Badge row */}
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {m.boughtThroughVeeqo && (
+          <Badge className="bg-blue-100 text-blue-700 text-[10px]">
+            Buy Shipping (Veeqo)
+          </Badge>
+        )}
+        {m.claimsProtected && (
+          <Badge className="bg-green-100 text-green-700 text-[10px]">
+            Claims Protected
+          </Badge>
+        )}
+        {m.shippedOnTime === true && (
+          <Badge className="bg-green-100 text-green-700 text-[10px]">
+            Shipped On Time
+          </Badge>
+        )}
+        {m.shippedOnTime === false && (
+          <Badge className="bg-red-100 text-red-700 text-[10px]">
+            Late Shipment
+          </Badge>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Guardrail UI components — parse message.factCheckJson + policy heuristics
+// and surface warnings, confidence, and policy guidance inline.
+// ---------------------------------------------------------------------------
+
+interface FactCheckShape {
+  passed: boolean;
+  confidence: "HIGH" | "MEDIUM" | "LOW";
+  mismatches: Array<{
+    field: string;
+    inResponse: string;
+    actual: string;
+    severity: "error" | "warning";
+  }>;
+}
+
+function parseFactCheck(json: string | null | undefined): FactCheckShape | null {
+  if (!json) return null;
+  try {
+    const parsed = JSON.parse(json);
+    if (parsed && typeof parsed === "object") return parsed as FactCheckShape;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function ConfidenceIndicator({
+  factCheckJson,
+}: {
+  factCheckJson: string | null | undefined;
+}) {
+  const fc = parseFactCheck(factCheckJson);
+  if (!fc) {
+    return (
+      <span className="text-[10px] text-slate-400">Not checked</span>
+    );
+  }
+  const config = {
+    HIGH: {
+      color: "text-green-700 bg-green-50 border border-green-200",
+      icon: "✅",
+      label: "High confidence — facts verified",
+    },
+    MEDIUM: {
+      color: "text-yellow-700 bg-yellow-50 border border-yellow-200",
+      icon: "🟡",
+      label: "Medium — review recommended",
+    },
+    LOW: {
+      color: "text-red-700 bg-red-50 border border-red-200",
+      icon: "🔴",
+      label: "Low — manual review required",
+    },
+  } as const;
+  const c = config[fc.confidence] || config.MEDIUM;
+  return (
+    <span className={`text-[10px] px-2 py-0.5 rounded ${c.color}`}>
+      {c.icon} {c.label}
+    </span>
+  );
+}
+
+function ResponseWarnings({
+  message,
+  onFix,
+  fixing,
+}: {
+  message: Msg;
+  onFix?: () => void;
+  fixing?: boolean;
+}) {
+  const warnings: Array<{
+    type: "error" | "warning" | "info";
+    text: string;
+  }> = [];
+  const response: string = message.suggestedResponse || "";
+  const lower = response.toLowerCase();
+  const fc = parseFactCheck(message.factCheckJson);
+
+  // Fact check mismatches
+  if (fc && !fc.passed) {
+    for (const m of fc.mismatches) {
+      warnings.push({
+        type: m.severity === "error" ? "error" : "warning",
+        text: `Fact mismatch: Response says "${m.inResponse}" but actual data shows "${m.actual}"`,
+      });
+    }
+  }
+
+  // Policy-based warnings derived from the saved message state
+  if (
+    lower.includes("cancel") &&
+    message.trackingStatus &&
+    message.trackingStatus !== "pending"
+  ) {
+    warnings.push({
+      type: "error",
+      text: `Order already shipped (${message.trackingStatus}). Do not suggest cancellation.`,
+    });
+  }
+  if (lower.includes("refund") && message.whoShouldPay === "amazon") {
+    warnings.push({
+      type: "info",
+      text: "This case should be covered by Amazon, not seller refund. Consider redirecting to A-to-Z.",
+    });
+  }
+  if (
+    message.foodSafetyRisk &&
+    /safe|fresh|good condition/.test(lower)
+  ) {
+    warnings.push({
+      type: "error",
+      text: "Do not guarantee food safety after spoilage complaint.",
+    });
+  }
+
+  if (warnings.length === 0) return null;
+
+  const palette = {
+    error: "bg-red-50 text-red-800 border-red-200",
+    warning: "bg-yellow-50 text-yellow-800 border-yellow-200",
+    info: "bg-blue-50 text-blue-800 border-blue-200",
+  } as const;
+
+  const hasErrors = warnings.some((w) => w.type === "error");
+
+  return (
+    <div className="space-y-2 mb-2">
+      {warnings.map((w, i) => (
+        <div
+          key={i}
+          className={`text-xs px-3 py-2 rounded-md border flex items-start gap-2 ${palette[w.type]}`}
+        >
+          <span className="shrink-0">
+            {w.type === "error" ? "⚠️" : w.type === "warning" ? "🟡" : "ℹ️"}
+          </span>
+          <span className="flex-1">{w.text}</span>
+        </div>
+      ))}
+      {hasErrors && onFix && (
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onFix}
+            disabled={fixing}
+            className="text-xs border-red-300 text-red-700 hover:bg-red-50"
+          >
+            {fixing ? (
+              <Loader2 size={12} className="animate-spin mr-1" />
+            ) : null}
+            Fix to policy-compliant
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PolicyGuidance({ message }: { message: Msg }) {
+  const rules: string[] = [];
+
+  if (message.shippingMismatch) {
+    rules.push(
+      `⚠️ SHIPPING MISMATCH: Customer paid for "${message.requestedShippingService || "expedited"}" but shipped via "${message.actualShippingService || "standard"}"`
+    );
+    rules.push('Do NOT admit mismatch directly — say "fastest available option"');
+    rules.push("Do NOT suggest cancellation — order already shipped");
+    rules.push("Suggest: wait for delivery → return through Amazon if needed");
+    rules.push("Who pays: SELLER (our responsibility)");
+  }
+
+  if (message.trackingStatus === "in_transit") {
+    rules.push("Order is in transit — do NOT suggest cancellation");
+  }
+  if (message.trackingStatus === "delivered") {
+    rules.push("Order delivered — suggest return process if needed");
+  }
+
+  if (message.productType === "Frozen") {
+    rules.push("Frozen product — do NOT ask for return (food safety)");
+  }
+
+  if (message.boughtThroughVeeqo && message.daysLate && message.daysLate > 0) {
+    rules.push(
+      "Buy Shipping used + late delivery → Amazon should pay (Support case)"
+    );
+    rules.push("Do NOT use SAFE-T for carrier delay");
+  }
+
+  if (message.whoShouldPay === "amazon") {
+    rules.push("Redirect to Amazon CS or A-to-Z for resolution");
+    rules.push("Do NOT offer seller refund");
+  }
+
+  if (
+    typeof message.customerMessage === "string" &&
+    message.customerMessage.toLowerCase().includes("cancel") &&
+    message.trackingStatus === "in_transit"
+  ) {
+    rules.push(
+      "Customer wants to cancel but order shipped — explain and redirect to Amazon CS"
+    );
+  }
+
+  if (rules.length === 0) return null;
+
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+      <h4 className="text-[10px] font-semibold text-amber-700 uppercase mb-1">
+        Policy Guidance
+      </h4>
+      <ul className="text-xs text-amber-900 space-y-1">
+        {rules.map((r, i) => (
+          <li key={i}>• {r}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 interface MessageDetailProps {
   messageId: string;
   onClose: () => void;
@@ -59,6 +428,20 @@ export default function MessageDetail({
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [sentFlash, setSentFlash] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [rewriting, setRewriting] = useState<string | null>(null);
+  const [rewriteMenuOpen, setRewriteMenuOpen] = useState(false);
+  const [fixing, setFixing] = useState(false);
+  const [kbDialogOpen, setKbDialogOpen] = useState(false);
+  const [kbReasoning, setKbReasoning] = useState("");
+  const [kbOutcome, setKbOutcome] = useState<
+    "positive" | "negative" | "neutral"
+  >("positive");
+  const [kbTags, setKbTags] = useState("");
+  const [kbSaving, setKbSaving] = useState(false);
+  const [kbSavedFlash, setKbSavedFlash] = useState(false);
+  const [kbError, setKbError] = useState<string | null>(null);
 
   const fetchDetail = async () => {
     setLoading(true);
@@ -117,6 +500,160 @@ export default function MessageDetail({
     });
     setEditMode(false);
     await fetchDetail();
+  };
+
+  const handleStatusChange = async (newStatus: "RESOLVED" | "NEW") => {
+    setStatusUpdating(true);
+    setStatusError(null);
+    try {
+      const body: Record<string, unknown> = { status: newStatus };
+      // Clear resolution when reopening
+      if (newStatus === "NEW") body.resolution = null;
+      const res = await fetch(`/api/customer-hub/messages/${messageId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      await fetchDetail();
+    } catch (err) {
+      setStatusError(err instanceof Error ? err.message : "Update failed");
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
+
+  const handleSaveToKB = async () => {
+    if (!message) return;
+    if (!kbReasoning.trim()) {
+      setKbError("Reasoning is required — explain why this response was correct");
+      return;
+    }
+    setKbSaving(true);
+    setKbError(null);
+    try {
+      const correctResponse =
+        message.editedResponse ||
+        message.suggestedResponse ||
+        "";
+      const scenario =
+        (message.problemTypeName || message.problemType || "Customer case") +
+        (message.trackingStatus ? ` — ${message.trackingStatus}` : "") +
+        (message.shippingMismatch ? " — shipping mismatch" : "");
+      const res = await fetch("/api/customer-hub/knowledge-base", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          problemType: message.problemType || "T18",
+          scenario,
+          customerSaid: (message.customerMessage || "").substring(0, 500),
+          trackingStatus: message.trackingStatus,
+          shippingMismatch: !!message.shippingMismatch,
+          productType: message.productType,
+          correctAction: message.action || "investigate",
+          correctResponse,
+          reasoning: kbReasoning,
+          whoShouldPay: message.whoShouldPay,
+          outcome: kbOutcome,
+          tags: kbTags.trim() || null,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      setKbSavedFlash(true);
+      setTimeout(() => {
+        setKbSavedFlash(false);
+        setKbDialogOpen(false);
+        setKbReasoning("");
+        setKbTags("");
+      }, 1500);
+    } catch (err) {
+      setKbError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setKbSaving(false);
+    }
+  };
+
+  const handleFix = async () => {
+    setFixing(true);
+    try {
+      const res = await fetch(`/api/customer-hub/messages/${messageId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "fix" }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      await fetchDetail();
+    } catch (err) {
+      setSendError(
+        err instanceof Error ? err.message : "Fix failed"
+      );
+    } finally {
+      setFixing(false);
+    }
+  };
+
+  const handleRewrite = async (style: string) => {
+    setRewriting(style);
+    setRewriteMenuOpen(false);
+    try {
+      const res = await fetch(`/api/customer-hub/messages/${messageId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "rewrite", style }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      await fetchDetail();
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : "Rewrite failed");
+    } finally {
+      setRewriting(null);
+    }
+  };
+
+  const handleMarkRespondedInSC = async () => {
+    if (!message) return;
+    const ok = window.confirm(
+      "Mark as responded via Amazon Seller Central?\n\nThis will move the message to Sent. Use only if you already sent the reply directly from Seller Central."
+    );
+    if (!ok) return;
+
+    setStatusUpdating(true);
+    setStatusError(null);
+    try {
+      const res = await fetch(`/api/customer-hub/messages/${messageId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "SENT",
+          responseSentVia: "SELLER_CENTRAL",
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      setSentFlash(true);
+      setTimeout(() => setSentFlash(false), 3000);
+      await fetchDetail();
+    } catch (err) {
+      setStatusError(
+        err instanceof Error ? err.message : "Failed to mark responded"
+      );
+    } finally {
+      setStatusUpdating(false);
+    }
   };
 
   const handleSend = async () => {
@@ -198,33 +735,11 @@ export default function MessageDetail({
                 </Badge>
               )}
             </div>
-            {m.carrier && (
-              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                <Truck size={12} />
-                {m.carrier} {m.service || ""}
-                {m.trackingStatus && (
-                  <Badge variant="outline" className="text-[9px]">
-                    {m.trackingStatus}
-                  </Badge>
-                )}
-                {m.daysInTransit != null && (
-                  <span>
-                    {m.daysInTransit}d in transit
-                  </span>
-                )}
-                {m.daysLate && m.daysLate > 0 && (
-                  <span className="text-red-500">+{m.daysLate}d late</span>
-                )}
-                {m.claimsProtected && (
-                  <Badge className="bg-green-100 text-green-700 text-[9px]">
-                    Claims Protected
-                  </Badge>
-                )}
-                {m.problemType === "T20" && (
-                  <Badge className="bg-red-600 text-white text-[9px]">
-                    Repeat
-                  </Badge>
-                )}
+            {m.problemType === "T20" && (
+              <div className="flex items-center gap-2 text-xs">
+                <Badge className="bg-red-600 text-white text-[9px]">
+                  Repeat complaint
+                </Badge>
               </div>
             )}
           </div>
@@ -232,6 +747,83 @@ export default function MessageDetail({
             <X size={16} />
           </Button>
         </div>
+
+        {/* Status row — deadline + resolve / reopen controls */}
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          {m.status !== "SENT" && m.status !== "RESOLVED" ? (
+            <>
+              <ResponseDeadline
+                createdAt={m.receivedAt || m.createdAt}
+                status={m.status}
+              />
+              <span className="text-slate-400">
+                · Amazon requires response within 24 hours
+              </span>
+              <div className="ml-auto">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleStatusChange("RESOLVED")}
+                  disabled={statusUpdating}
+                  className="text-xs"
+                >
+                  {statusUpdating ? (
+                    <Loader2 size={12} className="animate-spin mr-1" />
+                  ) : (
+                    <Check size={12} className="mr-1" />
+                  )}
+                  Mark as Resolved
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <Badge className="bg-green-100 text-green-700">
+                {m.status === "SENT" ? "Sent" : "Resolved"}
+              </Badge>
+              {m.resolution === "auto_resolved_gmail_thread" && (
+                <span className="text-[10px] text-slate-500">
+                  · auto-resolved (Gmail thread has a reply)
+                </span>
+              )}
+              <div className="ml-auto flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setKbDialogOpen(true)}
+                  className="text-xs"
+                >
+                  📚 Save to KB
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleStatusChange("NEW")}
+                  disabled={statusUpdating}
+                  className="text-xs"
+                >
+                  {statusUpdating ? (
+                    <Loader2 size={12} className="animate-spin mr-1" />
+                  ) : (
+                    <RefreshCw size={12} className="mr-1" />
+                  )}
+                  Reopen
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+        {statusError && (
+          <p className="text-xs text-red-600">{statusError}</p>
+        )}
+
+        <Separator />
+
+        {/* Shipping & Tracking */}
+        <ShippingTrackingSection message={m} />
+
+        {/* Policy Guidance — warnings based on tracking/product/carrier */}
+        <PolicyGuidance message={m} />
 
         <Separator />
 
@@ -261,9 +853,12 @@ export default function MessageDetail({
 
         {m.problemType && (
           <div>
-            <p className="text-[10px] font-semibold text-slate-400 uppercase mb-2">
-              AI Analysis
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase">
+                AI Analysis
+              </p>
+              <ConfidenceIndicator factCheckJson={m.factCheckJson} />
+            </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
                 <span className="text-slate-500">Type:</span>{" "}
@@ -299,6 +894,27 @@ export default function MessageDetail({
               )}
             </div>
           </div>
+        )}
+
+        {/* Auto-fix banner — shows when validator rewrote the response */}
+        {responseText &&
+          typeof m.reasoning === "string" &&
+          m.reasoning.includes("[AUTO-FIXED:") && (
+            <div className="text-xs px-3 py-2 rounded-md border border-green-200 bg-green-50 text-green-800 flex items-start gap-2 mb-2">
+              <span className="shrink-0">🔧</span>
+              <span>
+                Response was automatically corrected for policy compliance.
+              </span>
+            </div>
+          )}
+
+        {/* Guardrail warnings: fact-check mismatches + policy red flags */}
+        {responseText && (
+          <ResponseWarnings
+            message={m}
+            onFix={handleFix}
+            fixing={fixing}
+          />
         )}
 
         {/* Suggested response */}
@@ -361,11 +977,60 @@ export default function MessageDetail({
                 )}
                 Re-analyze
               </Button>
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRewriteMenuOpen((o) => !o)}
+                  disabled={rewriting !== null}
+                >
+                  {rewriting !== null ? (
+                    <Loader2 size={12} className="animate-spin mr-1" />
+                  ) : null}
+                  Rewrite ▾
+                </Button>
+                {rewriteMenuOpen && (
+                  <div className="absolute right-0 top-full mt-1 z-10 w-52 rounded-md border border-slate-200 bg-white shadow-lg text-xs">
+                    {[
+                      { id: "polite", label: "More polite" },
+                      { id: "amazon_safe", label: "Amazon-safe" },
+                      { id: "shorter", label: "Shorter" },
+                      { id: "no_refund", label: "No refund language" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => handleRewrite(opt.id)}
+                        className="block w-full text-left px-3 py-2 hover:bg-slate-50 first:rounded-t-md last:rounded-b-md"
+                      >
+                        {opt.label}
+                        {rewriting === opt.id && " …"}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {m.status !== "SENT" && m.status !== "RESOLVED" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleMarkRespondedInSC}
+                  disabled={statusUpdating}
+                  className="ml-auto"
+                  title="Use this if you already replied to the customer directly in Amazon Seller Central"
+                >
+                  {statusUpdating ? (
+                    <Loader2 size={12} className="animate-spin mr-1" />
+                  ) : (
+                    <Check size={12} className="mr-1" />
+                  )}
+                  Responded in Seller Central
+                </Button>
+              )}
               <Button
                 size="sm"
                 onClick={handleSend}
                 disabled={sending || m.status === "SENT" || m.status === "RESOLVED"}
-                className="ml-auto bg-blue-600 hover:bg-blue-700"
+                className={`${m.status !== "SENT" && m.status !== "RESOLVED" ? "" : "ml-auto"} bg-blue-600 hover:bg-blue-700`}
               >
                 {sending ? (
                   <Loader2 size={12} className="animate-spin mr-1" />
