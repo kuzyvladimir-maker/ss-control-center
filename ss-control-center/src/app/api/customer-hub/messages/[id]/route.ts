@@ -53,23 +53,40 @@ export async function POST(
   }
 }
 
-// PATCH — update status, notes, edited response
+// PATCH — partial update. Only whitelisted fields are writeable through
+// this endpoint; anything else in the body is silently ignored. Marking a
+// message as RESOLVED auto-sets a default resolution tag if the caller
+// didn't supply one.
+const PATCHABLE_FIELDS = [
+  "status",
+  "resolution",
+  "editedResponse",
+  "vladimirNotes",
+] as const;
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const body = await request.json();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data: any = {};
-    if (body.status) data.status = body.status;
-    if (body.editedResponse !== undefined) data.editedResponse = body.editedResponse;
-    if (body.vladimirNotes !== undefined) data.vladimirNotes = body.vladimirNotes;
-    if (body.resolution) data.resolution = body.resolution;
+    const body = await request.json().catch(() => ({}));
+    const data: Record<string, unknown> = {};
+    for (const field of PATCHABLE_FIELDS) {
+      if (body[field] !== undefined) data[field] = body[field];
+    }
+    if (data.status === "RESOLVED" && !data.resolution) {
+      data.resolution = "resolved";
+    }
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json(
+        { error: "No patchable fields provided" },
+        { status: 400 }
+      );
+    }
 
     const updated = await prisma.buyerMessage.update({ where: { id }, data });
-    return NextResponse.json(updated);
+    return NextResponse.json({ message: updated });
   } catch (error) {
     console.error("Message PATCH error:", error);
     return NextResponse.json({ error: "Failed" }, { status: 500 });
@@ -128,6 +145,7 @@ async function runAnalysis(id: string) {
     shipDate: message.shipDate,
     promisedEdd: message.promisedEdd,
     actualDelivery: message.actualDelivery,
+    daysInTransit: message.daysInTransit,
     daysLate: message.daysLate,
     boughtThroughVeeqo: message.boughtThroughVeeqo,
     claimsProtected: message.claimsProtected,

@@ -511,6 +511,7 @@ model BuyerMessage {
   promisedEdd     String?
   actualDelivery  String?
   trackingStatus  String?
+  daysInTransit   Int?
   daysLate        Int?
   boughtThroughVeeqo Boolean @default(false)
   claimsProtected Boolean @default(false)

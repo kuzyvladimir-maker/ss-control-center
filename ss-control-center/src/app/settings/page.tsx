@@ -144,12 +144,31 @@ function SyncPanel() {
   );
 }
 
+interface GmailAccountStatus {
+  storeIndex: number;
+  storeName: string;
+  expectedEmail: string | null;
+  configured: boolean;
+  email: string | null;
+  source: "db" | "env" | null;
+  error: string | null;
+}
+
+interface GmailTestResult {
+  storeIndex: number;
+  ok: boolean;
+  email: string | null;
+  messagesTotal: number | null;
+  buyerMessagesLast2d: number | null;
+  error: string | null;
+}
+
 function GmailAccountsPanel() {
   const searchParams = useSearchParams();
   const gmailResult = useMemo<{
     type: "success" | "error";
     email?: string;
-    token?: string;
+    store?: string;
     reason?: string;
   } | null>(() => {
     const gmail = searchParams.get("gmail");
@@ -157,7 +176,7 @@ function GmailAccountsPanel() {
       return {
         type: "success",
         email: searchParams.get("email") || "",
-        token: searchParams.get("token") || "",
+        store: searchParams.get("store") || "",
       };
     }
     if (gmail === "error") {
@@ -169,93 +188,768 @@ function GmailAccountsPanel() {
     return null;
   }, [searchParams]);
 
-  const gmailAccounts = [
-    {
-      store: 1,
-      name: "Salutem Solutions",
-      email: "amazon@salutem.solutions",
-      envKey: "GMAIL_REFRESH_TOKEN_STORE1",
-      configured: !!process.env.NEXT_PUBLIC_GMAIL_STORE1_OK,
-    },
-    {
-      store: 2,
-      name: "Vladimir Personal",
-      email: "kuzy.vladimir@gmail.com",
-      envKey: "GMAIL_REFRESH_TOKEN_STORE2",
-      configured: !!process.env.NEXT_PUBLIC_GMAIL_STORE2_OK,
-    },
-  ];
+  const [oauthConfigured, setOauthConfigured] = useState<boolean | null>(null);
+  const [accounts, setAccounts] = useState<GmailAccountStatus[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [disconnecting, setDisconnecting] = useState<number | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+  const [testResults, setTestResults] = useState<Record<number, GmailTestResult> | null>(null);
+
+  const fetchStatus = useCallback(async () => {
+    try {
+      const res = await fetch("/api/integrations/gmail");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setOauthConfigured(!!data.oauthConfigured);
+      setAccounts(data.accounts || []);
+    } catch (err) {
+      setActionError(
+        err instanceof Error ? err.message : "Failed to load status"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStatus();
+  }, [fetchStatus]);
+
+  // Re-fetch after a successful OAuth round-trip so the new account shows up
+  // without a manual reload.
+  useEffect(() => {
+    if (gmailResult?.type === "success") fetchStatus();
+  }, [gmailResult, fetchStatus]);
+
+  const handleDisconnect = async (storeIndex: number) => {
+    setDisconnecting(storeIndex);
+    setActionError(null);
+    try {
+      const res = await fetch(
+        `/api/integrations/gmail?store=${storeIndex}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await fetchStatus();
+      // Clear old test results since the account list changed
+      setTestResults(null);
+    } catch (err) {
+      setActionError(
+        err instanceof Error ? err.message : "Failed to disconnect"
+      );
+    } finally {
+      setDisconnecting(null);
+    }
+  };
+
+  const handleTestAll = async () => {
+    setTesting(true);
+    setActionError(null);
+    try {
+      const res = await fetch("/api/integrations/gmail/test");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const byStore: Record<number, GmailTestResult> = {};
+      for (const r of (data.results || []) as GmailTestResult[]) {
+        byStore[r.storeIndex] = r;
+      }
+      setTestResults(byStore);
+    } catch (err) {
+      setActionError(
+        err instanceof Error ? err.message : "Failed to test accounts"
+      );
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const connectedCount = accounts.filter((a) => a.configured).length;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Gmail Accounts for Customer Hub</CardTitle>
+        <CardTitle className="text-base">
+          Gmail Accounts for Customer Hub
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-xs text-slate-400">
-          Connect Gmail accounts to receive buyer messages from Amazon Buyer-Seller Messaging
+          Connect a Gmail account per store to receive buyer messages,
+          chargeback notifications and feedback alerts. OAuth scope is
+          read-only; tokens are stored in the database and never in .env.
         </p>
 
-        {gmailResult?.type === "success" && (
-          <div className="rounded-md bg-green-50 border border-green-200 p-3 text-xs text-green-700 space-y-1">
-            <p className="font-medium">Gmail connected: {gmailResult.email}</p>
-            <p>Add this refresh token to your .env file:</p>
-            <code className="block bg-white rounded p-2 text-[10px] break-all border">
-              GMAIL_REFRESH_TOKEN_STORE?={gmailResult.token}
+        {oauthConfigured === false && (
+          <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 space-y-2">
+            <p className="font-medium">
+              Gmail OAuth is not configured yet.
+            </p>
+            <p>
+              Before you can connect any account, create a Google Cloud
+              project, enable the Gmail API, and add{" "}
+              <code className="rounded bg-white px-1">GMAIL_CLIENT_ID</code>{" "}
+              and{" "}
+              <code className="rounded bg-white px-1">
+                GMAIL_CLIENT_SECRET
+              </code>{" "}
+              to <code className="rounded bg-white px-1">.env</code>.
+              Authorized redirect URI:
+            </p>
+            <code className="block rounded bg-white px-2 py-1 break-all">
+              http://localhost:3000/api/auth/gmail/callback
             </code>
-            <p className="text-green-500">Then restart the dev server.</p>
+          </div>
+        )}
+
+        {gmailResult?.type === "success" && (
+          <div className="rounded-md border border-green-200 bg-green-50 p-3 text-xs text-green-700">
+            <p className="font-medium">
+              Connected {gmailResult.email}
+              {gmailResult.store ? ` to Store ${gmailResult.store}` : ""}
+            </p>
+            <p className="text-green-600">
+              Token saved to database — no restart needed.
+            </p>
           </div>
         )}
 
         {gmailResult?.type === "error" && (
-          <div className="rounded-md bg-red-50 border border-red-200 p-3 text-xs text-red-700">
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
             Gmail connection failed: {gmailResult.reason}
           </div>
         )}
 
-        <div className="space-y-2">
-          {gmailAccounts.map((acct) => (
-            <div
-              key={acct.store}
-              className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0"
-            >
-              <div className="flex items-center gap-3">
-                {acct.configured ? (
-                  <CheckCircle size={16} className="text-green-500" />
-                ) : (
-                  <XCircle size={16} className="text-slate-300" />
-                )}
-                <div>
-                  <span className="text-sm font-medium">Store {acct.store}: {acct.name}</span>
-                  <p className="text-[10px] text-slate-400">{acct.email}</p>
+        {actionError && (
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+            {actionError}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="flex items-center gap-2 py-4 text-xs text-slate-400">
+            <Loader2 size={14} className="animate-spin" /> Loading Gmail
+            status…
+          </div>
+        ) : (
+          <>
+            {connectedCount > 0 && (
+              <div className="flex items-center justify-between gap-2 rounded border border-slate-200 bg-slate-50/50 px-3 py-2">
+                <div className="text-xs text-slate-600">
+                  {testResults ? (
+                    <span>
+                      Tested {Object.keys(testResults).length} account
+                      {Object.keys(testResults).length !== 1 ? "s" : ""}:{" "}
+                      <span className="text-green-600 font-medium">
+                        {Object.values(testResults).filter((r) => r.ok).length}{" "}
+                        OK
+                      </span>
+                      {Object.values(testResults).filter((r) => !r.ok).length >
+                        0 && (
+                        <>
+                          {" · "}
+                          <span className="text-red-600 font-medium">
+                            {
+                              Object.values(testResults).filter((r) => !r.ok)
+                                .length
+                            }{" "}
+                            failed
+                          </span>
+                        </>
+                      )}
+                    </span>
+                  ) : (
+                    <span>
+                      Ping each connected account to verify tokens still work
+                      and see how much Amazon mail is waiting to sync.
+                    </span>
+                  )}
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleTestAll}
+                  disabled={testing}
+                  className="text-xs shrink-0"
+                >
+                  {testing ? (
+                    <Loader2 size={12} className="animate-spin mr-1" />
+                  ) : (
+                    <RefreshCw size={12} className="mr-1" />
+                  )}
+                  Test All Connections
+                </Button>
               </div>
-              <Badge
-                className={
-                  acct.configured
-                    ? "bg-green-100 text-green-700"
-                    : "bg-slate-100 text-slate-400"
-                }
-              >
-                {acct.configured ? "Connected" : "Not connected"}
-              </Badge>
+            )}
+
+            <div className="space-y-2">
+              {accounts.map((acct) => {
+                const connectHref = `/api/auth/gmail?store=${acct.storeIndex}`;
+                const isConnected = acct.configured;
+                const test = testResults?.[acct.storeIndex];
+                return (
+                  <div
+                    key={acct.storeIndex}
+                    className="flex items-center justify-between gap-4 py-2 border-b border-slate-100 last:border-0"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      {isConnected ? (
+                        <CheckCircle
+                          size={16}
+                          className="text-green-500 shrink-0"
+                        />
+                      ) : (
+                        <XCircle
+                          size={16}
+                          className="text-slate-300 shrink-0"
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium">
+                          Store {acct.storeIndex}: {acct.storeName}
+                        </div>
+                        <p className="text-[10px] text-slate-400 truncate">
+                          {acct.email ||
+                            acct.expectedEmail ||
+                            "No account assigned"}
+                          {acct.source === "env" && (
+                            <span className="ml-1 text-amber-600">
+                              (from .env — legacy)
+                            </span>
+                          )}
+                        </p>
+                        {test && test.ok && (
+                          <p className="text-[10px] text-green-600 mt-0.5">
+                            ✓ {test.messagesTotal?.toLocaleString() || "?"}{" "}
+                            total ·{" "}
+                            <span className="font-medium">
+                              {test.buyerMessagesLast2d}
+                            </span>{" "}
+                            Amazon message
+                            {test.buyerMessagesLast2d !== 1 ? "s" : ""} in last
+                            2d
+                          </p>
+                        )}
+                        {test && !test.ok && (
+                          <p className="text-[10px] text-red-600 mt-0.5 truncate">
+                            ✗ {test.error}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge
+                        className={
+                          test
+                            ? test.ok
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                            : isConnected
+                              ? "bg-green-100 text-green-700"
+                              : "bg-slate-100 text-slate-400"
+                        }
+                      >
+                        {test
+                          ? test.ok
+                            ? "Verified"
+                            : "Error"
+                          : isConnected
+                            ? "Connected"
+                            : "Not connected"}
+                      </Badge>
+                      {isConnected ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDisconnect(acct.storeIndex)}
+                          disabled={
+                            disconnecting === acct.storeIndex ||
+                            !oauthConfigured
+                          }
+                          className="text-xs"
+                        >
+                          {disconnecting === acct.storeIndex ? (
+                            <Loader2 size={12} className="animate-spin mr-1" />
+                          ) : null}
+                          Disconnect
+                        </Button>
+                      ) : (
+                        <a href={oauthConfigured ? connectHref : undefined}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={!oauthConfigured}
+                            className="text-xs"
+                          >
+                            <ExternalLink size={12} className="mr-1" />
+                            Connect
+                          </Button>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
+          </>
+        )}
+
+        <Separator />
+
+        <p className="text-[10px] text-slate-400">
+          Scope:{" "}
+          <code className="rounded bg-slate-50 px-1">gmail.readonly</code>{" "}
+          · Tokens stored in the{" "}
+          <code className="rounded bg-slate-50 px-1">Setting</code> table ·
+          Disconnect and reconnect to switch accounts.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Amazon SP-API panel — mirrors the GmailAccountsPanel UX
+// ---------------------------------------------------------------------------
+
+interface SpApiStoreStatus {
+  index: number;
+  name: string;
+  configured: boolean;
+}
+
+interface SpApiStoreTest {
+  index: number;
+  configured: boolean;
+  channel: string;
+  name: string;
+  marketplace?: string;
+  sellerId?: string;
+  error?: string;
+  comingSoon?: boolean;
+}
+
+function SpApiStoresPanel() {
+  const [stores, setStores] = useState<SpApiStoreStatus[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [testing, setTesting] = useState(false);
+  const [testResults, setTestResults] = useState<Record<number, SpApiStoreTest> | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchStatus = useCallback(async () => {
+    try {
+      const res = await fetch("/api/amazon/stores/status");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setStores(data.stores || []);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load SP-API status"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStatus();
+  }, [fetchStatus]);
+
+  const handleTestAll = async () => {
+    setTesting(true);
+    setError(null);
+    try {
+      // The /api/amazon/stores endpoint pings SP-API for each configured
+      // store (one /sellers/v1/marketplaceParticipations call per store) and
+      // returns either a marketplace + sellerId or an error string.
+      const res = await fetch("/api/amazon/stores");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const byIndex: Record<number, SpApiStoreTest> = {};
+      for (const s of (data.stores || []) as SpApiStoreTest[]) {
+        // Skip Walmart placeholder (index 6) from this panel
+        if (s.index <= 5) byIndex[s.index] = s;
+      }
+      setTestResults(byIndex);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to test SP-API"
+      );
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const configuredCount = stores.filter((s) => s.configured).length;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Amazon SP-API</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-xs text-slate-400">
+          Amazon Seller Partner API — orders, messaging, reports, finances,
+          account health. Credentials are set per store in{" "}
+          <code className="rounded bg-slate-50 px-1">.env</code> via{" "}
+          <code className="rounded bg-slate-50 px-1">
+            AMAZON_SP_REFRESH_TOKEN_STORE{"{"}N{"}"}
+          </code>
+          .
+        </p>
+
+        {error && (
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="flex items-center gap-2 py-4 text-xs text-slate-400">
+            <Loader2 size={14} className="animate-spin" /> Loading SP-API
+            status…
+          </div>
+        ) : (
+          <>
+            {configuredCount > 0 && (
+              <div className="flex items-center justify-between gap-2 rounded border border-slate-200 bg-slate-50/50 px-3 py-2">
+                <div className="text-xs text-slate-600">
+                  {(() => {
+                    if (!testResults) {
+                      return (
+                        <span>
+                          Ping each configured store via{" "}
+                          <code className="rounded bg-white px-1">
+                            /sellers/v1/marketplaceParticipations
+                          </code>{" "}
+                          to verify credentials and fetch seller ID.
+                        </span>
+                      );
+                    }
+                    // Only count stores that have credentials — the endpoint
+                    // also returns rows for unconfigured slots which we ignore.
+                    const relevant = Object.values(testResults).filter(
+                      (r) => r.configured
+                    );
+                    const ok = relevant.filter((r) => !r.error).length;
+                    const failed = relevant.filter((r) => r.error).length;
+                    return (
+                      <span>
+                        Tested {relevant.length} store
+                        {relevant.length !== 1 ? "s" : ""}:{" "}
+                        <span className="text-green-600 font-medium">
+                          {ok} OK
+                        </span>
+                        {failed > 0 && (
+                          <>
+                            {" · "}
+                            <span className="text-red-600 font-medium">
+                              {failed} failed
+                            </span>
+                          </>
+                        )}
+                      </span>
+                    );
+                  })()}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleTestAll}
+                  disabled={testing}
+                  className="text-xs shrink-0"
+                >
+                  {testing ? (
+                    <Loader2 size={12} className="animate-spin mr-1" />
+                  ) : (
+                    <RefreshCw size={12} className="mr-1" />
+                  )}
+                  Test All Connections
+                </Button>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              {stores.map((store) => {
+                // Only consider a test result if the store actually has
+                // credentials. The /api/amazon/stores endpoint returns a row
+                // for every slot including unconfigured ones (for analytics
+                // page compatibility), so we must gate on store.configured
+                // before treating a result as a verification.
+                const test =
+                  store.configured && testResults?.[store.index]
+                    ? testResults[store.index]
+                    : null;
+                const testOk = test && !test.error;
+                const testFailed = test && !!test.error;
+                return (
+                  <div
+                    key={store.index}
+                    className="flex items-center justify-between gap-4 py-2 border-b border-slate-100 last:border-0"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      {store.configured ? (
+                        <CheckCircle
+                          size={16}
+                          className="text-green-500 shrink-0"
+                        />
+                      ) : (
+                        <XCircle
+                          size={16}
+                          className="text-slate-300 shrink-0"
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium">
+                          Store {store.index}: {store.name}
+                        </div>
+                        <p className="text-[10px] text-slate-400 truncate">
+                          {store.configured
+                            ? `Credentials: AMAZON_SP_*_STORE${store.index}`
+                            : "No credentials in .env"}
+                        </p>
+                        {testOk && test.marketplace && (
+                          <p className="text-[10px] text-green-600 mt-0.5 truncate">
+                            ✓ {test.marketplace}
+                            {test.sellerId && (
+                              <>
+                                {" · Seller ID: "}
+                                <code className="rounded bg-slate-50 px-1">
+                                  {test.sellerId}
+                                </code>
+                              </>
+                            )}
+                          </p>
+                        )}
+                        {testFailed && (
+                          <p className="text-[10px] text-red-600 mt-0.5 truncate">
+                            ✗ {test.error}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge
+                        className={
+                          !store.configured
+                            ? "bg-slate-100 text-slate-400"
+                            : testOk
+                              ? "bg-green-100 text-green-700"
+                              : testFailed
+                                ? "bg-red-100 text-red-700"
+                                : "bg-green-100 text-green-700"
+                        }
+                      >
+                        {!store.configured
+                          ? "Not configured"
+                          : testOk
+                            ? "Verified"
+                            : testFailed
+                              ? "Error"
+                              : "Configured"}
+                      </Badge>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         <Separator />
 
         <div className="flex items-center justify-between">
-          <p className="text-xs text-slate-400">
-            OAuth scope: gmail.readonly (read-only access)
+          <p className="text-[10px] text-slate-400">
+            Auth: LWA refresh tokens per store · Fallback to shared{" "}
+            <code className="rounded bg-slate-50 px-1">
+              AMAZON_SP_CLIENT_*
+            </code>{" "}
+            removed for security.
           </p>
-          <a href="/api/auth/gmail">
-            <Button variant="outline" size="sm">
-              <ExternalLink size={14} className="mr-1" />
-              Connect Gmail
+          <a href="/settings/api-test">
+            <Button variant="ghost" size="sm" className="text-xs">
+              <ExternalLink size={12} className="mr-1" />
+              Advanced test page
             </Button>
           </a>
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Loss calculation settings panel
+// ---------------------------------------------------------------------------
+// Reads and writes two values from the Setting table that the losses endpoint
+// uses to compute replacement cost estimates:
+//   cogs_percent            — cost of goods as % of sale price (default 40)
+//   replacement_label_cost  — estimated shipping label cost per replacement
+// Both are stored as strings in Setting.value and parsed by the API.
+
+function LossSettingsPanel() {
+  const [cogs, setCogs] = useState<string>("");
+  const [labelCost, setLabelCost] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/settings?keys=cogs_percent,replacement_label_cost")
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        const v = data.values || {};
+        setCogs(v.cogs_percent ?? "40");
+        setLabelCost(v.replacement_label_cost ?? "12");
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCogs("40");
+          setLabelCost("12");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleSave = async () => {
+    setError(null);
+    const cogsNum = parseFloat(cogs);
+    const labelNum = parseFloat(labelCost);
+    if (!Number.isFinite(cogsNum) || cogsNum < 0 || cogsNum > 100) {
+      setError("COGS % must be a number between 0 and 100");
+      return;
+    }
+    if (!Number.isFinite(labelNum) || labelNum < 0) {
+      setError("Label cost must be a non-negative number");
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          values: {
+            cogs_percent: String(cogsNum),
+            replacement_label_cost: String(labelNum),
+          },
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Loss Calculation Settings</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-xs text-slate-400">
+          These values are used by the Losses dashboard on{" "}
+          <code className="rounded bg-slate-50 px-1">/customer-hub</code> to
+          estimate the real cost of replacements. Changes take effect on the
+          next dashboard refresh — no restart needed.
+        </p>
+
+        {error && (
+          <div className="rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="flex items-center gap-2 py-2 text-xs text-slate-400">
+            <Loader2 size={14} className="animate-spin" /> Loading settings…
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between gap-4">
+              <label
+                htmlFor="cogs-percent"
+                className="text-sm text-slate-700"
+              >
+                COGS %{" "}
+                <span className="text-[10px] text-slate-400">
+                  (cost of goods as % of sale price)
+                </span>
+              </label>
+              <div className="flex items-center gap-1 shrink-0">
+                <input
+                  id="cogs-percent"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={cogs}
+                  onChange={(e) => setCogs(e.target.value)}
+                  className="w-20 rounded border border-slate-200 px-2 py-1 text-sm text-right focus:border-blue-400 focus:outline-none"
+                />
+                <span className="text-sm text-slate-500">%</span>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="flex items-center justify-between gap-4">
+              <label
+                htmlFor="label-cost"
+                className="text-sm text-slate-700"
+              >
+                Replacement label cost{" "}
+                <span className="text-[10px] text-slate-400">
+                  (estimated shipping per replacement)
+                </span>
+              </label>
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="text-sm text-slate-500">$</span>
+                <input
+                  id="label-cost"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={labelCost}
+                  onChange={(e) => setLabelCost(e.target.value)}
+                  className="w-20 rounded border border-slate-200 px-2 py-1 text-sm text-right focus:border-blue-400 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              {savedFlash && (
+                <span className="text-[10px] text-green-600">Saved ✓</span>
+              )}
+              <Button
+                size="sm"
+                onClick={handleSave}
+                disabled={saving}
+                className="text-xs"
+              >
+                {saving ? (
+                  <Loader2 size={12} className="animate-spin mr-1" />
+                ) : null}
+                Save
+              </Button>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
@@ -574,35 +1268,10 @@ export default function SettingsPage() {
       <GmailAccountsPanel />
 
       {/* Amazon SP-API */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Amazon SP-API</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Application ID</span>
-              <code className="rounded bg-slate-100 px-2 py-1 text-xs">
-                {process.env.NEXT_PUBLIC_AMAZON_SP_CLIENT_ID
-                  ? process.env.NEXT_PUBLIC_AMAZON_SP_CLIENT_ID.substring(0, 30) + "..."
-                  : "Configured (server-side)"}
-              </code>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Stores configured</span>
-              <span className="text-sm font-medium">1/5</span>
-            </div>
-            <Separator />
-            <a href="/settings/api-test">
-              <Button variant="outline" size="sm" className="w-full">
-                <ExternalLink size={14} className="mr-1" />
-                Test SP-API Connection
-              </Button>
-            </a>
-          </div>
-        </CardContent>
-      </Card>
+      <SpApiStoresPanel />
+
+      {/* Loss Calculation Settings */}
+      <LossSettingsPanel />
 
       {/* Notifications */}
       <Card>

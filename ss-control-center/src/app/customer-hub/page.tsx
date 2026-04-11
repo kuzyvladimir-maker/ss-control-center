@@ -3,6 +3,8 @@
 import { useState } from "react";
 import HubStatsCards from "@/components/customer-hub/HubStatsCards";
 import StoreFilter from "@/components/customer-hub/StoreFilter";
+import PeriodFilter from "@/components/customer-hub/PeriodFilter";
+import LossesDashboard from "@/components/customer-hub/LossesDashboard";
 import CustomerHubTabs from "@/components/customer-hub/CustomerHubTabs";
 import MessagesTab from "@/components/customer-hub/MessagesTab";
 import AtozTab from "@/components/customer-hub/AtozTab";
@@ -12,6 +14,7 @@ import WalmartCaseModal from "@/components/customer-hub/WalmartCaseModal";
 
 export default function CustomerHubPage() {
   const [storeFilter, setStoreFilter] = useState("all");
+  const [period, setPeriod] = useState(30);
 
   return (
     <div className="space-y-4">
@@ -19,13 +22,22 @@ export default function CustomerHubPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold text-slate-800">Customer Hub</h1>
         <div className="flex items-center gap-3">
+          <PeriodFilter value={period} onChange={setPeriod} />
           <StoreFilter value={storeFilter} onChange={setStoreFilter} />
           <WalmartCaseModal />
         </div>
       </div>
 
-      {/* Stats — fetches from /api/customer-hub/stats */}
-      <HubStatsCards />
+      {/* Stats — 4 cards with live counts */}
+      <HubStatsCards period={period} store={storeFilter} />
+
+      {/* Losses dashboard — collapsible. Remounts on period/store change so
+          the inner useEffect re-runs without needing setState in the body. */}
+      <LossesDashboard
+        key={`${period}-${storeFilter}`}
+        period={period}
+        store={storeFilter}
+      />
 
       {/* Tabs */}
       <CustomerHubTabs

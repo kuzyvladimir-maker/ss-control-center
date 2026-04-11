@@ -18,11 +18,15 @@ export interface EnrichedMessage extends ParsedBuyerEmail {
   promisedEdd: string | null;
   actualDelivery: string | null;
   trackingStatus: string | null;
+  daysInTransit: number | null;
   daysLate: number | null;
   boughtThroughVeeqo: boolean;
   claimsProtected: boolean;
   shippedOnTime: boolean | null;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type VeeqoShipment = any;
 
 export async function enrichMessage(
   parsed: ParsedBuyerEmail
@@ -41,6 +45,7 @@ export async function enrichMessage(
     promisedEdd: null,
     actualDelivery: null,
     trackingStatus: null,
+    daysInTransit: null,
     daysLate: null,
     boughtThroughVeeqo: false,
     claimsProtected: false,
@@ -50,6 +55,9 @@ export async function enrichMessage(
   if (!parsed.amazonOrderId) return enriched;
 
   const storeId = `store${parsed.storeIndex}`;
+  // Amazon's "latest ship date" promise — used for on-time shipment check.
+  // Separate from promisedEdd (latest delivery date).
+  let latestShipDate: string | null = null;
 
   // 1. SP-API: Order details
   try {
@@ -64,6 +72,7 @@ export async function enrichMessage(
         ? parseFloat(order.OrderTotal.Amount)
         : null;
       enriched.promisedEdd = order.LatestDeliveryDate?.split("T")[0] || null;
+      latestShipDate = order.LatestShipDate?.split("T")[0] || null;
     }
   } catch (e) {
     console.error(
@@ -93,11 +102,14 @@ export async function enrichMessage(
   }
 
   // 3. Veeqo: tracking info
-  try {
-    const VEEQO_API_KEY = process.env.VEEQO_API_KEY;
-    const VEEQO_BASE_URL =
-      process.env.VEEQO_BASE_URL || "https://api.veeqo.com";
+  let veeqoShipment: VeeqoShipment | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let veeqoAllocation: any = null;
+  const VEEQO_API_KEY = process.env.VEEQO_API_KEY;
+  const VEEQO_BASE_URL =
+    process.env.VEEQO_BASE_URL || "https://api.veeqo.com";
 
+  try {
     if (VEEQO_API_KEY) {
       const veeqoRes = await fetch(
         `${VEEQO_BASE_URL}/orders?query=${parsed.amazonOrderId}&page_size=5`,
@@ -112,14 +124,15 @@ export async function enrichMessage(
         );
 
         if (match) {
-          const alloc = match.allocations?.[0];
-          const shipment = alloc?.shipment;
+          veeqoAllocation = match.allocations?.[0];
+          veeqoShipment = veeqoAllocation?.shipment || null;
 
-          if (shipment) {
-            enriched.trackingNumber = shipment.tracking_number || null;
-            enriched.carrier = shipment.carrier_name || null;
-            enriched.service = shipment.service_name || null;
-            enriched.shipDate = shipment.shipped_at?.split("T")[0] || null;
+          if (veeqoShipment) {
+            enriched.trackingNumber = veeqoShipment.tracking_number || null;
+            enriched.carrier = veeqoShipment.carrier_name || null;
+            enriched.service = veeqoShipment.service_name || null;
+            enriched.shipDate =
+              veeqoShipment.shipped_at?.split("T")[0] || null;
           }
 
           // Check employee_notes for "Label Purchased"
@@ -160,15 +173,96 @@ export async function enrichMessage(
     );
   }
 
-  // Calculate daysLate if we have delivery data
-  if (enriched.promisedEdd && enriched.actualDelivery) {
-    const edd = new Date(enriched.promisedEdd);
-    const actual = new Date(enriched.actualDelivery);
-    const diff = Math.round(
-      (actual.getTime() - edd.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    enriched.daysLate = diff > 0 ? diff : null;
+  // 4. Tracking status — derive from allocation/shipment fields
+  if (veeqoAllocation) {
+    const allocStatus: string = veeqoAllocation.status || "";
+    if (allocStatus === "delivered" || veeqoShipment?.delivery_date) {
+      enriched.trackingStatus = "delivered";
+      enriched.actualDelivery =
+        veeqoShipment?.delivery_date?.split("T")[0] || null;
+    } else if (allocStatus === "shipped" || veeqoShipment?.tracking_number) {
+      enriched.trackingStatus = "in_transit";
+    } else if (allocStatus === "cancelled") {
+      enriched.trackingStatus = "exception";
+    }
   }
+
+  // 5. Shipment detail fallback — fetch tracking events if we don't yet know
+  // delivery date and have a shipment id. Veeqo's /shipments/:id endpoint
+  // exposes tracking_events that sometimes carry a "delivered" status the
+  // parent /orders query doesn't.
+  if (VEEQO_API_KEY && veeqoShipment?.id && !enriched.actualDelivery) {
+    try {
+      const shipDetailRes = await fetch(
+        `${VEEQO_BASE_URL}/shipments/${veeqoShipment.id}`,
+        { headers: { "x-api-key": VEEQO_API_KEY } }
+      );
+      if (shipDetailRes.ok) {
+        const shipDetail = await shipDetailRes.json();
+        if (shipDetail.delivery_date) {
+          enriched.actualDelivery = shipDetail.delivery_date.split("T")[0];
+          enriched.trackingStatus = "delivered";
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const events: any[] = shipDetail.tracking_events || [];
+        if (events.length > 0) {
+          const lastEvent = events[events.length - 1];
+          const descr = lastEvent?.description?.toLowerCase?.() || "";
+          if (lastEvent?.status === "delivered" || descr.includes("delivered")) {
+            enriched.trackingStatus = "delivered";
+            enriched.actualDelivery =
+              enriched.actualDelivery ||
+              lastEvent?.happened_at?.split("T")[0] ||
+              null;
+          }
+        }
+      }
+    } catch (e) {
+      console.error(
+        "[Enricher] Veeqo shipment detail failed:",
+        e instanceof Error ? e.message : e
+      );
+    }
+  }
+
+  // 6. Transit duration — days the package has been in motion. If delivered,
+  // this is the actual trip length; otherwise it counts from shipDate to
+  // today so Claude knows "package has been in transit for N days".
+  if (enriched.shipDate) {
+    const shipDateObj = new Date(enriched.shipDate);
+    const endDate = enriched.actualDelivery
+      ? new Date(enriched.actualDelivery)
+      : new Date();
+    const diff = Math.round(
+      (endDate.getTime() - shipDateObj.getTime()) / 86_400_000
+    );
+    enriched.daysInTransit = Number.isFinite(diff) && diff >= 0 ? diff : null;
+  }
+
+  // 7. Days late — positive values only. For in-transit orders compared to
+  // today; for delivered orders compared to actual delivery date.
+  if (enriched.promisedEdd) {
+    const eddDate = new Date(enriched.promisedEdd);
+    const compareDate = enriched.actualDelivery
+      ? new Date(enriched.actualDelivery)
+      : new Date();
+    const diff = Math.round(
+      (compareDate.getTime() - eddDate.getTime()) / 86_400_000
+    );
+    enriched.daysLate = diff > 0 ? diff : 0;
+  }
+
+  // 8. Shipped on time — did we ship by Amazon's latestShipDate promise?
+  if (enriched.shipDate && latestShipDate) {
+    enriched.shippedOnTime = enriched.shipDate <= latestShipDate;
+  } else if (enriched.shipDate) {
+    // Default to true if Amazon didn't return a ship-by date but we shipped
+    enriched.shippedOnTime = true;
+  }
+
+  // 9. Claims Protected — Veeqo Buy Shipping AND shipped on time
+  enriched.claimsProtected =
+    enriched.boughtThroughVeeqo && enriched.shippedOnTime === true;
 
   return enriched;
 }

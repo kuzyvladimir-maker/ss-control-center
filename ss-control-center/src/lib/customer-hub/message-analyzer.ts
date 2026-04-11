@@ -49,12 +49,42 @@ HARD RULES:
 - If message #3+ from same customer → CRITICAL priority, prefer refund
 - If Claims Protected + shipped on time + carrier delayed → redirect to A-to-Z
 
-RESPONSE FORMAT:
-1. Thank you / apology (if appropriate)
-2. One factual sentence based on tracking/order data
-3. One resolution sentence
-4. Professional closing with store name
-Keep response 4-8 sentences. Language MUST match customer's language.`;
+RESPONSE FORMAT — STRICT RULES:
+1. ALWAYS start with "Dear {customerName}," on the first line
+   - Use the exact customer name from context
+   - If name is unknown, use "Dear Customer,"
+   - For Spanish: "Estimado/a {customerName},"
+   - NEVER skip the greeting line
+2. Empty line after greeting
+3. Thank-you or apology sentence
+4. One factual sentence using ACTUAL tracking data provided in context
+   (carrier, status, delivery date, days in transit)
+5. One clear resolution sentence
+6. Empty line before closing
+7. "Best regards," on its own line
+8. The store name on the next line
+
+EXAMPLE:
+"Dear Cathy,
+
+Thank you for reaching out about your recent order. I can see your package
+was shipped via UPS Ground on April 2 and was delivered on April 5 after
+3 days in transit. Since this appears to be a carrier delivery issue
+outside of our control, I recommend filing an A-to-Z claim with Amazon
+for the fastest resolution.
+
+Best regards,
+Salutem Solutions"
+
+CRITICAL RULES FOR THE RESPONSE:
+- ALWAYS address the customer by name on the first line
+- ALWAYS reference the actual tracking data (carrier, dates, transit time)
+  from the SHIPPING section in the context
+- NEVER guess tracking status — only use what is provided
+- If tracking fields are null / Unknown — say "We are currently checking
+  the status of your shipment" instead of inventing details
+- Keep the response 4–8 sentences
+- Match the customer's language (English or Spanish)`;
 
 export interface AnalysisInput {
   customerMessage: string;
@@ -73,6 +103,7 @@ export interface AnalysisInput {
   shipDate: string | null;
   promisedEdd: string | null;
   actualDelivery: string | null;
+  daysInTransit: number | null;
   daysLate: number | null;
   boughtThroughVeeqo: boolean;
   claimsProtected: boolean;
@@ -156,6 +187,7 @@ SHIPPING:
 - Ship Date: ${input.shipDate || "Unknown"}
 - Promised EDD: ${input.promisedEdd || "Unknown"}
 - Actual Delivery: ${input.actualDelivery || "Unknown"}
+- Days In Transit: ${input.daysInTransit ?? "Unknown"}
 - Days Late: ${input.daysLate ?? "N/A"}
 - Buy Shipping (Veeqo): ${input.boughtThroughVeeqo ? "YES" : "NO"}
 - Claims Protected: ${input.claimsProtected ? "YES" : "NO"}

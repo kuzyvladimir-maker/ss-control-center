@@ -9,24 +9,48 @@ import { parseAmazonBuyerEmail } from "@/lib/customer-hub/gmail-parser";
 import { enrichMessage } from "@/lib/customer-hub/message-enricher";
 import { analyzeMessage } from "@/lib/customer-hub/message-analyzer";
 
-// GET — list messages from DB
+// GET — list messages from DB.
+// Default behaviour: only "active" (NEW + ANALYZED) incoming messages, so
+// the Messages tab shows only what still needs a reply. Pass
+// ?status=sent|resolved|all to override, or ?orderId=... to load the full
+// conversation history for a single order (both incoming + outgoing, all
+// statuses).
 export async function GET(request: NextRequest) {
   try {
     const sp = request.nextUrl.searchParams;
     const store = sp.get("store");
-    const status = sp.get("status");
+    const status = (sp.get("status") || "active").toLowerCase();
+    const orderId = sp.get("orderId");
     const limit = parseInt(sp.get("limit") || "50");
     const offset = parseInt(sp.get("offset") || "0");
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = { direction: "incoming" };
-    if (store && store !== "all") where.storeIndex = parseInt(store);
-    if (status && status !== "all") where.status = status;
+    const where: any = {};
+
+    if (orderId) {
+      // Conversation-history mode — return everything for this order,
+      // ignoring direction/status filters
+      where.amazonOrderId = orderId;
+    } else {
+      where.direction = "incoming";
+      if (store && store !== "all") where.storeIndex = parseInt(store);
+
+      if (status === "active") {
+        where.status = { in: ["NEW", "ANALYZED"] };
+      } else if (status === "sent") {
+        where.status = "SENT";
+      } else if (status === "resolved") {
+        where.status = "RESOLVED";
+      } else if (status !== "all") {
+        // treat unknown values as a literal status match
+        where.status = status.toUpperCase();
+      }
+    }
 
     const [messages, total] = await Promise.all([
       prisma.buyerMessage.findMany({
         where,
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: orderId ? "asc" : "desc" },
         take: limit,
         skip: offset,
       }),
@@ -40,10 +64,46 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST — sync messages from Gmail
+// POST — sync messages from Gmail, or save a Walmart case from screenshots.
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
+
+    // Save a Walmart case analysis as a BuyerMessage row so it shows up in
+    // the Messages tab alongside Amazon messages. Called by WalmartCaseModal
+    // after the Claude vision analysis completes.
+    if (body.action === "save_walmart") {
+      const d = body.data || {};
+      if (!d.suggestedResponse && !d.customerMessage) {
+        return NextResponse.json(
+          { error: "Walmart save requires analysis data" },
+          { status: 400 }
+        );
+      }
+      const msg = await prisma.buyerMessage.create({
+        data: {
+          channel: "Walmart",
+          source: "screenshot",
+          storeIndex: 0, // 0 = Walmart (not one of the 5 Amazon store slots)
+          storeName: "Walmart",
+          customerName: d.customerName || null,
+          amazonOrderId: d.orderId || null,
+          product: d.product || null,
+          customerMessage: d.customerMessage || null,
+          direction: "incoming",
+          problemType: d.problemType || null,
+          problemTypeName: d.problemTypeName || null,
+          riskLevel: d.riskLevel || null,
+          action: d.action || null,
+          whoShouldPay: d.whoShouldPay || null,
+          suggestedResponse: d.suggestedResponse || null,
+          status: "ANALYZED",
+          imageData: typeof d.imageData === "string" ? d.imageData : null,
+        },
+      });
+      return NextResponse.json({ message: msg });
+    }
+
     if (body.action !== "sync") {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
@@ -130,6 +190,7 @@ export async function POST(request: NextRequest) {
                 promisedEdd: enriched.promisedEdd,
                 actualDelivery: enriched.actualDelivery,
                 trackingStatus: enriched.trackingStatus,
+                daysInTransit: enriched.daysInTransit,
                 daysLate: enriched.daysLate,
                 boughtThroughVeeqo: enriched.boughtThroughVeeqo,
                 claimsProtected: enriched.claimsProtected,
@@ -139,6 +200,36 @@ export async function POST(request: NextRequest) {
                 status: "NEW",
               },
             });
+
+            // Repeat-complaint escalation: if the same customer has already
+            // written to us about this order, bump the priority and mark the
+            // problem type as T20 (Repeat complaint). This runs BEFORE Claude
+            // analysis so the AI sees the escalated context.
+            if (enriched.amazonOrderId) {
+              const previousCount = await prisma.buyerMessage.count({
+                where: {
+                  amazonOrderId: enriched.amazonOrderId,
+                  direction: "incoming",
+                  id: { not: saved.id },
+                },
+              });
+              if (previousCount > 0) {
+                const escalatedPriority =
+                  previousCount >= 2 ? "CRITICAL" : "HIGH";
+                await prisma.buyerMessage.update({
+                  where: { id: saved.id },
+                  data: {
+                    priority: escalatedPriority,
+                    riskLevel: escalatedPriority,
+                    problemType: previousCount >= 2 ? "T20" : undefined,
+                    problemTypeName:
+                      previousCount >= 2
+                        ? "Repeat complaint (3+ messages)"
+                        : undefined,
+                  },
+                });
+              }
+            }
 
             // Auto-analyze with Claude (non-blocking — don't fail sync if AI is down)
             try {
@@ -167,6 +258,7 @@ export async function POST(request: NextRequest) {
                 shipDate: enriched.shipDate,
                 promisedEdd: enriched.promisedEdd,
                 actualDelivery: enriched.actualDelivery,
+                daysInTransit: enriched.daysInTransit,
                 daysLate: enriched.daysLate,
                 boughtThroughVeeqo: enriched.boughtThroughVeeqo,
                 claimsProtected: enriched.claimsProtected,

@@ -56,6 +56,9 @@ export default function MessageDetail({
   const [editMode, setEditMode] = useState(false);
   const [editText, setEditText] = useState("");
   const [copied, setCopied] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [sentFlash, setSentFlash] = useState(false);
 
   const fetchDetail = async () => {
     setLoading(true);
@@ -116,6 +119,39 @@ export default function MessageDetail({
     await fetchDetail();
   };
 
+  const handleSend = async () => {
+    if (!message) return;
+    const text = message.editedResponse || message.suggestedResponse || "";
+    if (!text) {
+      setSendError("No response text to send");
+      return;
+    }
+    const ok = window.confirm(
+      `Send this response to ${message.customerName || "the customer"} via SP-API Messaging?\n\nThis cannot be undone.`
+    );
+    if (!ok) return;
+
+    setSending(true);
+    setSendError(null);
+    try {
+      const res = await fetch(
+        `/api/customer-hub/messages/${messageId}/send`,
+        { method: "POST" }
+      );
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      setSentFlash(true);
+      setTimeout(() => setSentFlash(false), 3000);
+      await fetchDetail();
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : "Send failed");
+    } finally {
+      setSending(false);
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -163,7 +199,7 @@ export default function MessageDetail({
               )}
             </div>
             {m.carrier && (
-              <div className="flex items-center gap-2 text-xs text-slate-400">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
                 <Truck size={12} />
                 {m.carrier} {m.service || ""}
                 {m.trackingStatus && (
@@ -171,12 +207,22 @@ export default function MessageDetail({
                     {m.trackingStatus}
                   </Badge>
                 )}
+                {m.daysInTransit != null && (
+                  <span>
+                    {m.daysInTransit}d in transit
+                  </span>
+                )}
                 {m.daysLate && m.daysLate > 0 && (
                   <span className="text-red-500">+{m.daysLate}d late</span>
                 )}
                 {m.claimsProtected && (
                   <Badge className="bg-green-100 text-green-700 text-[9px]">
                     Claims Protected
+                  </Badge>
+                )}
+                {m.problemType === "T20" && (
+                  <Badge className="bg-red-600 text-white text-[9px]">
+                    Repeat
                   </Badge>
                 )}
               </div>
@@ -315,10 +361,28 @@ export default function MessageDetail({
                 )}
                 Re-analyze
               </Button>
-              <Button size="sm" disabled className="ml-auto">
-                Send via API
+              <Button
+                size="sm"
+                onClick={handleSend}
+                disabled={sending || m.status === "SENT" || m.status === "RESOLVED"}
+                className="ml-auto bg-blue-600 hover:bg-blue-700"
+              >
+                {sending ? (
+                  <Loader2 size={12} className="animate-spin mr-1" />
+                ) : null}
+                {m.status === "SENT" || m.status === "RESOLVED"
+                  ? "Already sent"
+                  : "Send via SP-API"}
               </Button>
             </div>
+            {sendError && (
+              <p className="text-xs text-red-600 mt-2">{sendError}</p>
+            )}
+            {sentFlash && (
+              <p className="text-xs text-green-600 mt-2">
+                ✓ Sent via SP-API Messaging
+              </p>
+            )}
           </div>
         )}
 

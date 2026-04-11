@@ -1,10 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MessageSquare, Scale, CreditCard, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-export default function HubStatsCards() {
+interface HubStatsCardsProps {
+  // Period + store are accepted so the cards can refetch when the global
+  // filters at the top of Customer Hub change. The /api/customer-hub/stats
+  // endpoint currently ignores these and returns global counts; plumbing is
+  // in place so it can start respecting them without UI changes.
+  period?: number;
+  store?: string;
+}
+
+export default function HubStatsCards({
+  period = 30,
+  store = "all",
+}: HubStatsCardsProps) {
   const [stats, setStats] = useState({
     unreadMessages: 0,
     activeAtoz: 0,
@@ -13,11 +25,15 @@ export default function HubStatsCards() {
   });
 
   useEffect(() => {
-    fetch("/api/customer-hub/stats")
+    const params = new URLSearchParams({
+      period: String(period),
+      store,
+    });
+    fetch(`/api/customer-hub/stats?${params.toString()}`)
       .then((r) => r.json())
       .then(setStats)
       .catch(() => {});
-  }, []);
+  }, [period, store]);
 
   const cards = [
     { label: "Unread Messages", value: stats.unreadMessages, icon: MessageSquare, color: "text-blue-600", bg: "bg-blue-50" },

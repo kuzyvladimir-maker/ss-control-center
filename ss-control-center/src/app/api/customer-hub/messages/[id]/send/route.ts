@@ -1,19 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sendResponse } from "@/lib/customer-hub/response-sender";
 
 // POST /api/customer-hub/messages/:id/send
-// Sends a response to the buyer via SP-API Messaging.
-// Not yet implemented — wire up to src/lib/amazon-sp-api/messaging.ts when ready.
+// Sends the prepared response for the given BuyerMessage via SP-API
+// Messaging. Returns 422 on handled failures (Walmart, missing fields,
+// SP-API errors) so the UI can show a specific error; 500 on unexpected
+// exceptions.
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  return NextResponse.json(
-    {
-      id,
-      sent: false,
-      error: "Sending buyer messages is not yet wired up to SP-API Messaging.",
-    },
-    { status: 501 }
-  );
+  try {
+    const { id } = await params;
+    const result = await sendResponse(id);
+    return NextResponse.json(result, { status: result.success ? 200 : 422 });
+  } catch (err) {
+    console.error("[customer-hub/messages/:id/send] unhandled:", err);
+    return NextResponse.json(
+      {
+        success: false,
+        method: "MANUAL",
+        error: err instanceof Error ? err.message : "Unexpected error",
+      },
+      { status: 500 }
+    );
+  }
 }
