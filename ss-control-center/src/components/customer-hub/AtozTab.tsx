@@ -34,17 +34,42 @@ interface Claim {
   strategyType: string | null;
   strategyConfidence: string | null;
   status: string;
+  amazonDecision: string | null;
+  amountCharged: number | null;
+  amountSaved: number | null;
+  appealSubmitted: boolean;
+  carrier: string | null;
+  shipDate: string | null;
 }
 
-const statusColors: Record<string, string> = {
-  NEW: "bg-red-100 text-red-700",
-  EVIDENCE_GATHERED: "bg-amber-100 text-amber-700",
-  RESPONSE_READY: "bg-blue-100 text-blue-700",
-  SUBMITTED: "bg-green-100 text-green-700",
-  DECIDED: "bg-slate-100 text-slate-700",
-  APPEALED: "bg-purple-100 text-purple-700",
-  CLOSED: "bg-slate-100 text-slate-500",
-};
+function statusLabel(
+  status: string,
+  decision: string | null
+): { text: string; color: string } {
+  if (status === "DECIDED" || status === "CLOSED") {
+    if (decision === "AMAZON_FUNDED")
+      return { text: "Amazon Funded", color: "bg-green-100 text-green-700" };
+    if (decision === "IN_OUR_FAVOR")
+      return { text: "Won", color: "bg-green-100 text-green-700" };
+    if (decision === "AGAINST_US")
+      return { text: "We Lost", color: "bg-red-100 text-red-700" };
+    return { text: "Decided", color: "bg-slate-100 text-slate-700" };
+  }
+  const map: Record<string, { text: string; color: string }> = {
+    NEW: { text: "Needs Response", color: "bg-red-100 text-red-700" },
+    EVIDENCE_GATHERED: {
+      text: "Evidence Ready",
+      color: "bg-amber-100 text-amber-700",
+    },
+    RESPONSE_READY: {
+      text: "Response Ready",
+      color: "bg-blue-100 text-blue-700",
+    },
+    SUBMITTED: { text: "Submitted", color: "bg-green-100 text-green-700" },
+    APPEALED: { text: "Appealed", color: "bg-purple-100 text-purple-700" },
+  };
+  return map[status] || { text: status, color: "bg-slate-100 text-slate-500" };
+}
 
 // Compute days until deadline from a YYYY-MM-DD string on the client.
 function daysUntil(deadline: string | null): number | null {
@@ -279,14 +304,50 @@ export default function AtozTab({
             </DialogContent>
           </Dialog>
 
+          {/* Summary cards */}
+          {claims.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 px-4 py-3 border-b border-slate-100 text-xs">
+              <div className="rounded bg-slate-50 p-2 text-center">
+                <div className="text-lg font-bold text-slate-700">{total}</div>
+                <div className="text-slate-500">Total</div>
+              </div>
+              <div className="rounded bg-amber-50 p-2 text-center">
+                <div className="text-lg font-bold text-amber-700">
+                  {claims.filter((c) => !c.amazonDecision && c.status !== "CLOSED").length}
+                </div>
+                <div className="text-amber-600">Pending</div>
+              </div>
+              <div className="rounded bg-green-50 p-2 text-center">
+                <div className="text-lg font-bold text-green-700">
+                  {claims.filter((c) => c.amazonDecision === "AMAZON_FUNDED" || c.amazonDecision === "IN_OUR_FAVOR").length}
+                </div>
+                <div className="text-green-600">Won / Amazon Funded</div>
+              </div>
+              <div className="rounded bg-red-50 p-2 text-center">
+                <div className="text-lg font-bold text-red-700">
+                  {claims.filter((c) => c.amazonDecision === "AGAINST_US").length}
+                </div>
+                <div className="text-red-600">We Lost</div>
+              </div>
+              <div className="rounded bg-slate-50 p-2 text-center">
+                <div className="text-lg font-bold text-green-700">
+                  ${claims.reduce((sum, c) => sum + (c.amountSaved || 0), 0).toFixed(0)}
+                </div>
+                <div className="text-slate-500">
+                  Saved / <span className="text-red-600">${claims.reduce((sum, c) => sum + (c.amountCharged || 0), 0).toFixed(0)} Lost</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {claims.length === 0 ? (
             <div className="py-12 text-center">
               <Scale size={32} className="mx-auto text-slate-300 mb-3" />
               <p className="text-sm font-medium text-slate-600">
-                No A-to-Z claims
+                No {label.toLowerCase()}s
               </p>
               <p className="text-xs text-slate-400 mt-1">
-                Claims will appear here once detected via SP-API Reports.
+                Press Sync to load from Gmail notifications.
               </p>
             </div>
           ) : (
@@ -295,9 +356,10 @@ export default function AtozTab({
                 <TableRow>
                   <TableHead>Status</TableHead>
                   <TableHead>Order ID</TableHead>
-                  <TableHead>Reason</TableHead>
+                  <TableHead>Carrier</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   <TableHead>Deadline</TableHead>
+                  <TableHead>Who Paid</TableHead>
                   <TableHead>Strategy</TableHead>
                 </TableRow>
               </TableHeader>
@@ -305,28 +367,41 @@ export default function AtozTab({
                 {claims.map((c) => {
                   const days = daysUntil(c.deadline);
                   const urgent = days !== null && days <= 2;
+                  const sl = statusLabel(c.status, c.amazonDecision);
+                  const isLoss = c.amazonDecision === "AGAINST_US";
+                  const isWon =
+                    c.amazonDecision === "AMAZON_FUNDED" ||
+                    c.amazonDecision === "IN_OUR_FAVOR";
                   return (
                     <TableRow
                       key={c.id}
                       className={`cursor-pointer hover:bg-slate-50 ${
                         selectedId === c.id ? "bg-blue-50" : ""
-                      } ${urgent ? "bg-red-50/40" : ""}`}
+                      } ${urgent ? "bg-red-50/40" : ""} ${
+                        isLoss ? "bg-red-50/30" : ""
+                      }`}
                       onClick={() =>
                         setSelectedId(selectedId === c.id ? null : c.id)
                       }
                     >
                       <TableCell>
-                        <Badge className={statusColors[c.status] || ""}>
-                          {c.status}
-                        </Badge>
+                        <Badge className={sl.color}>{sl.text}</Badge>
                       </TableCell>
                       <TableCell className="font-mono text-xs">
                         {c.amazonOrderId}
                       </TableCell>
                       <TableCell className="text-xs">
-                        {c.claimReason || "—"}
+                        {c.carrier || "—"}
                       </TableCell>
-                      <TableCell className="text-right text-xs font-medium">
+                      <TableCell
+                        className={`text-right text-xs font-medium ${
+                          isLoss
+                            ? "text-red-600"
+                            : isWon
+                              ? "text-green-600"
+                              : ""
+                        }`}
+                      >
                         {c.amount != null ? `$${c.amount.toFixed(2)}` : "—"}
                       </TableCell>
                       <TableCell className="text-xs">
@@ -335,6 +410,19 @@ export default function AtozTab({
                           <Badge className="ml-1 bg-red-100 text-red-700 text-[9px]">
                             {days}d left
                           </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        {isWon ? (
+                          <span className="text-green-600 font-medium">
+                            Amazon
+                          </span>
+                        ) : isLoss ? (
+                          <span className="text-red-600 font-medium">
+                            Us {!c.appealSubmitted && "(Appeal?)"}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">Pending</span>
                         )}
                       </TableCell>
                       <TableCell>

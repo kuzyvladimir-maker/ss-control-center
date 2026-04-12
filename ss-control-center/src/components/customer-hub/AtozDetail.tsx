@@ -1,45 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, X, AlertTriangle } from "lucide-react";
+import {
+  Loader2,
+  X,
+  AlertTriangle,
+  ClipboardCopy,
+  ShieldCheck,
+  ShieldX,
+  RefreshCw,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DefenseStrategyBadge from "@/components/claims/DefenseStrategyBadge";
 
-interface Claim {
-  id: string;
-  amazonOrderId: string;
-  claimType: string;
-  claimReason: string | null;
-  amount: number | null;
-  deadline: string | null;
-  trackingNumber: string | null;
-  carrier: string | null;
-  shipDate: string | null;
-  firstScanDate: string | null;
-  deliveredDate: string | null;
-  shippedOnTime: boolean | null;
-  claimsProtectedBadge: boolean | null;
-  strategyType: string | null;
-  strategyConfidence: string | null;
-  generatedResponse: string | null;
-  editedResponse: string | null;
-  status: string;
-  amazonDecision: string | null;
-  vladimirNotes: string | null;
-  createdAt: string;
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Claim = any;
 
-const statusColors: Record<string, string> = {
-  NEW: "bg-red-100 text-red-700",
-  EVIDENCE_GATHERED: "bg-amber-100 text-amber-700",
-  RESPONSE_READY: "bg-blue-100 text-blue-700",
-  SUBMITTED: "bg-green-100 text-green-700",
-  DECIDED: "bg-slate-100 text-slate-700",
-  APPEALED: "bg-purple-100 text-purple-700",
-  CLOSED: "bg-slate-100 text-slate-500",
-};
+// Status colors removed — statusLabel() in AtozTab handles display
 
 interface AtozDetailProps {
   claimId: string;
@@ -62,29 +42,70 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
   const [claim, setClaim] = useState<Claim | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
+  const [notesDraft, setNotesDraft] = useState("");
+  const [savingNotes, setSavingNotes] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
+  const fetchClaim = () => {
+    setLoading(true);
     fetch(`/api/customer-hub/atoz/${claimId}`)
       .then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then((data) => {
-        if (cancelled) return;
-        setClaim(data.claim || data);
+        const c = data.claim || data;
+        setClaim(c);
+        setNotesDraft(c.vladimirNotes || "");
       })
-      .catch((err) => {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Failed to load");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Failed to load")
+      )
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchClaim();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
+
+  const handleAnalyze = async () => {
+    setAnalyzing(true);
+    try {
+      await fetch(`/api/customer-hub/atoz/${claimId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "analyze" }),
+      });
+      fetchClaim();
+    } catch {
+      /* ignore */
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const handleCopy = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(label);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  const handlePatch = async (data: Record<string, unknown>) => {
+    await fetch(`/api/customer-hub/atoz/${claimId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    fetchClaim();
+  };
+
+  const handleSaveNotes = async () => {
+    setSavingNotes(true);
+    await handlePatch({ vladimirNotes: notesDraft });
+    setSavingNotes(false);
+  };
 
   if (loading) {
     return (
@@ -112,10 +133,16 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
     );
   }
 
-  const days = daysUntil(claim.deadline);
-  const isChargeback = claim.claimType === "CHARGEBACK";
+  const c = claim;
+  const days = daysUntil(c.deadline);
+  const isChargeback = c.claimType === "CHARGEBACK";
   const deadlineLabel = isChargeback ? "Reply-By" : "Deadline";
-  const response = claim.editedResponse || claim.generatedResponse;
+  const response = c.editedResponse || c.generatedResponse;
+  const isLoss = c.amazonDecision === "AGAINST_US";
+  const isWon =
+    c.amazonDecision === "AMAZON_FUNDED" ||
+    c.amazonDecision === "IN_OUR_FAVOR";
+  const canAppeal = isLoss && !c.appealSubmitted;
 
   return (
     <Card>
@@ -125,11 +152,8 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
             {isChargeback ? "Chargeback" : "A-to-Z"}
           </Badge>
           <span className="font-mono text-xs text-slate-600">
-            {claim.amazonOrderId}
+            {c.amazonOrderId}
           </span>
-          <Badge className={statusColors[claim.status] || ""}>
-            {claim.status}
-          </Badge>
           {days !== null && days <= 3 && (
             <Badge className="bg-red-600 text-white gap-1">
               <AlertTriangle size={10} />
@@ -143,21 +167,76 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
       </CardHeader>
 
       <CardContent className="space-y-4 text-xs">
+        {/* Decision banner */}
+        {isWon && (
+          <div className="rounded-md border border-green-300 bg-green-50 p-3 flex items-center gap-2">
+            <ShieldCheck size={18} className="text-green-600 shrink-0" />
+            <div>
+              <div className="font-semibold text-green-800">
+                {c.amazonDecision === "AMAZON_FUNDED"
+                  ? "Amazon funded this claim"
+                  : "Decided in our favor"}
+              </div>
+              {c.amountSaved != null && c.amountSaved > 0 && (
+                <div className="text-green-700">
+                  Saved: <strong>${c.amountSaved.toFixed(2)}</strong>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {isLoss && (
+          <div className="rounded-md border border-red-300 bg-red-50 p-3 flex items-start gap-2">
+            <ShieldX size={18} className="text-red-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <div className="font-semibold text-red-800">
+                Decided against us — we lost this claim
+              </div>
+              {c.amountCharged != null && c.amountCharged > 0 && (
+                <div className="text-red-700">
+                  Charged: <strong>${c.amountCharged.toFixed(2)}</strong>
+                </div>
+              )}
+              {canAppeal && (
+                <div className="mt-2 text-red-700 text-[11px]">
+                  You can appeal this decision in Amazon Seller Central.
+                  Generate an appeal text below and submit it through the
+                  Resolution Center.
+                </div>
+              )}
+              {c.appealSubmitted && (
+                <div className="mt-1 text-purple-700">
+                  Appeal submitted. Waiting for Amazon review.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Facts grid */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-3">
           <div>
             <span className="text-slate-500">Reason:</span>{" "}
-            {claim.claimReason || "—"}
+            {c.claimReason || "—"}
           </div>
           <div>
             <span className="text-slate-500">Amount:</span>{" "}
-            <span className="font-medium text-slate-800">
-              {claim.amount != null ? `$${claim.amount.toFixed(2)}` : "—"}
+            <span
+              className={`font-medium ${
+                isLoss
+                  ? "text-red-600"
+                  : isWon
+                    ? "text-green-600"
+                    : "text-slate-800"
+              }`}
+            >
+              {c.amount != null ? `$${c.amount.toFixed(2)}` : "—"}
             </span>
           </div>
           <div>
             <span className="text-slate-500">{deadlineLabel}:</span>{" "}
-            {claim.deadline || "—"}
+            {c.deadline || "—"}
             {days !== null && (
               <span
                 className={`ml-1 ${
@@ -174,13 +253,13 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
           </div>
           <div>
             <span className="text-slate-500">Carrier:</span>{" "}
-            {claim.carrier || "—"}
+            {c.carrier || "—"}
           </div>
           <div>
             <span className="text-slate-500">Tracking:</span>{" "}
-            {claim.trackingNumber ? (
+            {c.trackingNumber ? (
               <code className="bg-slate-100 px-1 rounded">
-                {claim.trackingNumber}
+                {c.trackingNumber}
               </code>
             ) : (
               "—"
@@ -188,55 +267,157 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
           </div>
           <div>
             <span className="text-slate-500">Ship date:</span>{" "}
-            {claim.shipDate || "—"}
+            {c.shipDate || "—"}
           </div>
           <div>
             <span className="text-slate-500">First scan:</span>{" "}
-            {claim.firstScanDate || "—"}
+            {c.firstScanDate || "—"}
           </div>
           <div>
             <span className="text-slate-500">Delivered:</span>{" "}
-            {claim.deliveredDate || "—"}
+            {c.deliveredDate || "—"}
           </div>
           <div>
             <span className="text-slate-500">Shipped on time:</span>{" "}
-            {claim.shippedOnTime == null
+            {c.shippedOnTime == null
               ? "—"
-              : claim.shippedOnTime
-                ? "Yes"
-                : "No"}
+              : c.shippedOnTime
+                ? "Yes ✓"
+                : "No ✗"}
+          </div>
+          <div>
+            <span className="text-slate-500">Claims Protected:</span>{" "}
+            {c.claimsProtectedBadge ? (
+              <span className="text-green-600 font-medium">Yes ✓</span>
+            ) : (
+              "—"
+            )}
           </div>
         </div>
 
         {/* Strategy */}
-        {claim.strategyType && (
+        {c.strategyType && (
           <div className="flex items-center gap-2 pt-1">
             <span className="text-slate-500">Defense strategy:</span>
             <DefenseStrategyBadge
-              strategyType={claim.strategyType}
-              confidence={claim.strategyConfidence}
+              strategyType={c.strategyType}
+              confidence={c.strategyConfidence}
             />
           </div>
         )}
 
-        {/* Generated / edited response */}
+        {/* Action buttons */}
+        <div className="flex items-center gap-2 pt-2 flex-wrap">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleAnalyze}
+            disabled={analyzing}
+          >
+            {analyzing ? (
+              <Loader2 size={12} className="animate-spin mr-1" />
+            ) : (
+              <RefreshCw size={12} className="mr-1" />
+            )}
+            {response ? "Re-generate Response" : "Generate Response"}
+          </Button>
+
+          {canAppeal && (
+            <Button
+              size="sm"
+              className="bg-purple-600 hover:bg-purple-700"
+              onClick={handleAnalyze}
+              disabled={analyzing}
+            >
+              {analyzing ? (
+                <Loader2 size={12} className="animate-spin mr-1" />
+              ) : null}
+              Generate Appeal
+            </Button>
+          )}
+
+          {!isLoss && !isWon && c.status !== "SUBMITTED" && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handlePatch({ status: "SUBMITTED" })}
+            >
+              Mark as Submitted
+            </Button>
+          )}
+        </div>
+
+        {/* Generated response */}
         {response && (
           <div>
-            <p className="text-slate-500 font-medium mb-1">
-              {claim.editedResponse ? "Edited Response" : "Generated Response"}:
-            </p>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-slate-500 font-medium">
+                Amazon Response (for case portal):
+              </p>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleCopy(response, "amazon")}
+              >
+                <ClipboardCopy size={12} className="mr-1" />
+                {copied === "amazon" ? "Copied!" : "Copy"}
+              </Button>
+            </div>
             <div className="whitespace-pre-wrap rounded border border-slate-200 bg-white p-3">
               {response}
             </div>
           </div>
         )}
 
-        {/* Notes */}
-        {claim.vladimirNotes && (
-          <div className="rounded bg-amber-50 p-2 text-amber-800">
-            <strong>Notes:</strong> {claim.vladimirNotes}
+        {/* Appeal text (if loss + generated) */}
+        {c.appealText && (
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-purple-700 font-medium">Appeal Text:</p>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleCopy(c.appealText, "appeal")}
+              >
+                <ClipboardCopy size={12} className="mr-1" />
+                {copied === "appeal" ? "Copied!" : "Copy Appeal"}
+              </Button>
+            </div>
+            <div className="whitespace-pre-wrap rounded border border-purple-200 bg-purple-50 p-3">
+              {c.appealText}
+            </div>
+            {!c.appealSubmitted && (
+              <Button
+                size="sm"
+                className="mt-2 bg-purple-600 hover:bg-purple-700"
+                onClick={() =>
+                  handlePatch({
+                    appealSubmitted: true,
+                    status: "APPEALED",
+                  })
+                }
+              >
+                Mark Appeal as Submitted
+              </Button>
+            )}
           </div>
         )}
+
+        {/* Notes */}
+        <div>
+          <p className="text-slate-500 font-medium mb-1">Notes:</p>
+          <Textarea
+            value={notesDraft}
+            onChange={(e) => setNotesDraft(e.target.value)}
+            onBlur={handleSaveNotes}
+            rows={2}
+            placeholder="Internal notes..."
+            className="text-xs"
+          />
+          {savingNotes && (
+            <span className="text-[10px] text-slate-400">Saving...</span>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
