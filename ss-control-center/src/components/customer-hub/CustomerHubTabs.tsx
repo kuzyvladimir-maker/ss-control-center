@@ -10,6 +10,8 @@ interface CustomerHubTabsProps {
   atozContent: React.ReactNode;
   chargebacksContent: React.ReactNode;
   feedbackContent: React.ReactNode;
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 function CountBadge({ count }: { count: number }) {
@@ -27,9 +29,15 @@ export default function CustomerHubTabs({
   atozContent,
   chargebacksContent,
   feedbackContent,
+  activeTab,
+  onTabChange,
 }: CustomerHubTabsProps) {
   return (
-    <Tabs defaultValue="messages">
+    <Tabs
+      defaultValue="messages"
+      value={activeTab}
+      onValueChange={onTabChange}
+    >
       <TabsList variant="line" className="mb-4">
         <TabsTrigger value="messages" className="gap-1 px-4">
           <MessageSquare size={14} />

@@ -15,6 +15,7 @@ import WalmartCaseModal from "@/components/customer-hub/WalmartCaseModal";
 export default function CustomerHubPage() {
   const [storeFilter, setStoreFilter] = useState("all");
   const [period, setPeriod] = useState(30);
+  const [activeTab, setActiveTab] = useState("messages");
 
   return (
     <div className="space-y-4">
@@ -28,8 +29,12 @@ export default function CustomerHubPage() {
         </div>
       </div>
 
-      {/* Stats — 4 cards with live counts */}
-      <HubStatsCards period={period} store={storeFilter} />
+      {/* Stats — 4 cards with live counts. Click a card to switch tab */}
+      <HubStatsCards
+        period={period}
+        store={storeFilter}
+        onCardClick={(tab: string) => setActiveTab(tab)}
+      />
 
       {/* Losses dashboard — collapsible. Remounts on period/store change so
           the inner useEffect re-runs without needing setState in the body. */}
@@ -39,12 +44,27 @@ export default function CustomerHubPage() {
         store={storeFilter}
       />
 
-      {/* Tabs */}
+      {/* Tabs — period + store are passed down so filtering is
+          synchronized with the dashboard above */}
       <CustomerHubTabs
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
         counts={{ messages: 0, atoz: 0, chargebacks: 0, feedback: 0 }}
         messagesContent={<MessagesTab />}
-        atozContent={<AtozTab />}
-        chargebacksContent={<ChargebacksTab />}
+        atozContent={
+          <AtozTab
+            key={`atoz-${period}-${storeFilter}`}
+            period={period}
+            store={storeFilter}
+          />
+        }
+        chargebacksContent={
+          <ChargebacksTab
+            key={`cb-${period}-${storeFilter}`}
+            period={period}
+            store={storeFilter}
+          />
+        }
         feedbackContent={<FeedbackTab />}
       />
     </div>

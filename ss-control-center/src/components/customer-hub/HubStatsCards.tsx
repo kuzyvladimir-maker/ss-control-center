@@ -5,12 +5,10 @@ import { MessageSquare, Scale, CreditCard, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface HubStatsCardsProps {
-  // Period + store are accepted so the cards can refetch when the global
-  // filters at the top of Customer Hub change. The /api/customer-hub/stats
-  // endpoint currently ignores these and returns global counts; plumbing is
-  // in place so it can start respecting them without UI changes.
   period?: number;
   store?: string;
+  /** When provided, clicking a card switches to that tab */
+  onCardClick?: (tabKey: string) => void;
 }
 
 interface HubStats {
@@ -24,6 +22,7 @@ interface HubStats {
 export default function HubStatsCards({
   period = 30,
   store = "all",
+  onCardClick,
 }: HubStatsCardsProps) {
   const [stats, setStats] = useState<HubStats>({
     unreadMessages: 0,
@@ -94,7 +93,11 @@ export default function HubStatsCards({
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {cards.map((c) => (
-        <Card key={c.key}>
+        <Card
+          key={c.key}
+          className={onCardClick ? "cursor-pointer hover:border-blue-300 transition-colors" : ""}
+          onClick={() => onCardClick?.(c.key)}
+        >
           <CardContent className="flex items-center gap-3 py-3">
             <div className={`rounded-lg p-2 ${c.bg}`}>
               <c.icon size={16} className={c.color} />

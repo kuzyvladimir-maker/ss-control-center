@@ -259,6 +259,14 @@ model AtozzClaim {
   claimType             String   // A_TO_Z | CHARGEBACK
   claimReason           String?  // INR | SNAD | Defective | Fraud
   amount                Float?
+  storeIndex            Int      @default(1)
+  storeName             String?
+  // Full order context pulled from SP-API on enrichment
+  customerName          String?
+  product               String?
+  orderDate             String?
+  orderTotal            Float?
+  claimText             String?  // The buyer's actual claim/complaint text
 
   detectedAt            DateTime @default(now())
   deadline              String?  // YYYY-MM-DD

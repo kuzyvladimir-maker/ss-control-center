@@ -214,84 +214,142 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
           </div>
         )}
 
-        {/* Facts grid */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-3">
-          <div>
-            <span className="text-slate-500">Reason:</span>{" "}
-            {c.claimReason || "—"}
+        {/* Order context */}
+        {(c.customerName || c.product || c.orderDate) && (
+          <div className="rounded bg-slate-50 p-3 space-y-1">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase">
+              Order Details
+            </p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 md:grid-cols-3">
+              {c.customerName && (
+                <div>
+                  <span className="text-slate-500">Customer:</span>{" "}
+                  <span className="font-medium">{c.customerName}</span>
+                </div>
+              )}
+              {c.product && (
+                <div className="col-span-2">
+                  <span className="text-slate-500">Product:</span>{" "}
+                  {c.product}
+                </div>
+              )}
+              {c.orderDate && (
+                <div>
+                  <span className="text-slate-500">Order date:</span>{" "}
+                  {c.orderDate}
+                </div>
+              )}
+              {c.orderTotal != null && (
+                <div>
+                  <span className="text-slate-500">Order total:</span>{" "}
+                  ${c.orderTotal.toFixed(2)}
+                </div>
+              )}
+              {c.storeName && (
+                <div>
+                  <span className="text-slate-500">Store:</span>{" "}
+                  {c.storeName}
+                </div>
+              )}
+            </div>
           </div>
+        )}
+
+        {/* Claim text (buyer's complaint) */}
+        {c.claimText && (
           <div>
-            <span className="text-slate-500">Amount:</span>{" "}
-            <span
-              className={`font-medium ${
-                isLoss
-                  ? "text-red-600"
-                  : isWon
-                    ? "text-green-600"
-                    : "text-slate-800"
-              }`}
-            >
-              {c.amount != null ? `$${c.amount.toFixed(2)}` : "—"}
-            </span>
+            <p className="text-[10px] font-semibold text-slate-400 uppercase mb-1">
+              Buyer Claim Text
+            </p>
+            <div className="rounded bg-amber-50 border border-amber-200 p-3 text-amber-900 whitespace-pre-wrap">
+              {c.claimText}
+            </div>
           </div>
-          <div>
-            <span className="text-slate-500">{deadlineLabel}:</span>{" "}
-            {c.deadline || "—"}
-            {days !== null && (
+        )}
+
+        {/* Shipping & Evidence */}
+        <div>
+          <p className="text-[10px] font-semibold text-slate-400 uppercase mb-1">
+            Shipping Evidence
+          </p>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-3">
+            <div>
+              <span className="text-slate-500">Claim amount:</span>{" "}
               <span
-                className={`ml-1 ${
-                  days <= 1
-                    ? "text-red-600 font-bold"
-                    : days <= 3
-                      ? "text-red-600"
-                      : "text-slate-400"
+                className={`font-medium ${
+                  isLoss
+                    ? "text-red-600"
+                    : isWon
+                      ? "text-green-600"
+                      : "text-slate-800"
                 }`}
               >
-                ({days}d)
+                {c.amount != null ? `$${c.amount.toFixed(2)}` : "—"}
               </span>
-            )}
-          </div>
-          <div>
-            <span className="text-slate-500">Carrier:</span>{" "}
-            {c.carrier || "—"}
-          </div>
-          <div>
-            <span className="text-slate-500">Tracking:</span>{" "}
-            {c.trackingNumber ? (
-              <code className="bg-slate-100 px-1 rounded">
-                {c.trackingNumber}
-              </code>
-            ) : (
-              "—"
-            )}
-          </div>
-          <div>
-            <span className="text-slate-500">Ship date:</span>{" "}
-            {c.shipDate || "—"}
-          </div>
-          <div>
-            <span className="text-slate-500">First scan:</span>{" "}
-            {c.firstScanDate || "—"}
-          </div>
-          <div>
-            <span className="text-slate-500">Delivered:</span>{" "}
-            {c.deliveredDate || "—"}
-          </div>
-          <div>
-            <span className="text-slate-500">Shipped on time:</span>{" "}
-            {c.shippedOnTime == null
-              ? "—"
-              : c.shippedOnTime
-                ? "Yes ✓"
-                : "No ✗"}
-          </div>
-          <div>
-            <span className="text-slate-500">Claims Protected:</span>{" "}
-            {c.claimsProtectedBadge ? (
-              <span className="text-green-600 font-medium">Yes ✓</span>
-            ) : (
-              "—"
-            )}
+            </div>
+            <div>
+              <span className="text-slate-500">Reason:</span>{" "}
+              {c.claimReason || "—"}
+            </div>
+            <div>
+              <span className="text-slate-500">{deadlineLabel}:</span>{" "}
+              {c.deadline || "—"}
+              {days !== null && (
+                <span
+                  className={`ml-1 ${
+                    days <= 1
+                      ? "text-red-600 font-bold"
+                      : days <= 3
+                        ? "text-red-600"
+                        : "text-slate-400"
+                  }`}
+                >
+                  ({days}d)
+                </span>
+              )}
+            </div>
+            <div>
+              <span className="text-slate-500">Carrier:</span>{" "}
+              {c.carrier || "—"}
+            </div>
+            <div>
+              <span className="text-slate-500">Tracking:</span>{" "}
+              {c.trackingNumber ? (
+                <code className="bg-slate-100 px-1 rounded">
+                  {c.trackingNumber}
+                </code>
+              ) : (
+                "—"
+              )}
+            </div>
+            <div>
+              <span className="text-slate-500">Ship date:</span>{" "}
+              {c.shipDate || "—"}
+            </div>
+            <div>
+              <span className="text-slate-500">First scan:</span>{" "}
+              {c.firstScanDate || "—"}
+            </div>
+            <div>
+              <span className="text-slate-500">Delivered:</span>{" "}
+              {c.deliveredDate || "—"}
+            </div>
+            <div>
+              <span className="text-slate-500">Shipped on time:</span>{" "}
+              {c.shippedOnTime == null
+                ? "—"
+                : c.shippedOnTime
+                  ? "Yes ✓"
+                  : "No ✗"}
+            </div>
+            <div>
+              <span className="text-slate-500">Claims Protected:</span>{" "}
+              {c.claimsProtectedBadge ? (
+                <span className="text-green-600 font-medium">Yes ✓</span>
+              ) : (
+                "—"
+              )}
+            </div>
           </div>
         </div>
 

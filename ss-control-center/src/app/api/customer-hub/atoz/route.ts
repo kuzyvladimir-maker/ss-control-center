@@ -18,7 +18,7 @@ async function enrichClaim(claimId: string, amazonOrderId: string, storeIndex: n
   const storeId = `store${storeIndex || 1}`;
   const updates: Record<string, unknown> = {};
 
-  // SP-API Orders
+  // SP-API Orders — pull full order context
   try {
     const orderRes = await spApiGet(
       `/orders/v0/orders/${amazonOrderId}`,
@@ -32,7 +32,28 @@ async function enrichClaim(claimId: string, amazonOrderId: string, storeIndex: n
       if (shipDate && latestShipDate) {
         updates.shippedOnTime = shipDate <= latestShipDate;
       }
+      if (order.PurchaseDate) {
+        updates.orderDate = order.PurchaseDate.split("T")[0];
+      }
+      if (order.OrderTotal?.Amount) {
+        updates.orderTotal = parseFloat(order.OrderTotal.Amount);
+      }
+      // Customer name from shipping address
+      const addr = order.ShippingAddress;
+      if (addr?.Name) updates.customerName = addr.Name;
     }
+
+    // SP-API Order Items — product name
+    try {
+      const itemsRes = await spApiGet(
+        `/orders/v0/orders/${amazonOrderId}/orderItems`,
+        { storeId }
+      );
+      const items = itemsRes.payload?.OrderItems || [];
+      if (items.length > 0) {
+        updates.product = items[0].Title || null;
+      }
+    } catch { /* non-blocking */ }
   } catch {
     // non-blocking
   }
@@ -123,10 +144,19 @@ export async function GET(request: NextRequest) {
     const sp = request.nextUrl.searchParams;
     const type = sp.get("type") || "A_TO_Z";
     const status = sp.get("status");
+    const store = sp.get("store");
+    const periodDays = sp.get("period");
     const limit = parseInt(sp.get("limit") || "50");
 
-    const where: Record<string, unknown> = { claimType: type };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = { claimType: type };
     if (status && status !== "all") where.status = status;
+    if (store && store !== "all") where.storeIndex = parseInt(store);
+    if (periodDays) {
+      const since = new Date();
+      since.setDate(since.getDate() - parseInt(periodDays));
+      where.createdAt = { gte: since };
+    }
 
     const [claims, total] = await Promise.all([
       prisma.atozzClaim.findMany({
@@ -237,6 +267,8 @@ export async function POST(request: NextRequest) {
                         amount: atoz.amount,
                         deadline: atoz.deadline,
                         gmailMessageId: msgId,
+                        storeIndex: atoz.storeIndex,
+                        storeName: atoz.storeName,
                         status:
                           atoz.emailType === "decision"
                             ? "DECIDED"
@@ -295,6 +327,8 @@ export async function POST(request: NextRequest) {
                         amount: cb.amount,
                         deadline: cb.deadline,
                         gmailMessageId: msgId,
+                        storeIndex: cb.storeIndex,
+                        storeName: cb.storeName,
                         status:
                           cb.emailType === "decision"
                             ? "DECIDED"

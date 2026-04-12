@@ -40,6 +40,8 @@ interface Claim {
   appealSubmitted: boolean;
   carrier: string | null;
   shipDate: string | null;
+  storeName: string | null;
+  storeIndex: number;
 }
 
 function statusLabel(
@@ -84,8 +86,12 @@ function daysUntil(deadline: string | null): number | null {
 
 export default function AtozTab({
   claimType = "A_TO_Z",
+  period: parentPeriod,
+  store: parentStore,
 }: {
   claimType?: "A_TO_Z" | "CHARGEBACK";
+  period?: number;
+  store?: string;
 }) {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [total, setTotal] = useState(0);
@@ -96,7 +102,11 @@ export default function AtozTab({
   const [addError, setAddError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
-  const [period, setPeriod] = useState(30);
+  const [period, setPeriod] = useState(parentPeriod || 30);
+
+  // Sync local period with parent when parent changes
+  const effectivePeriod = parentPeriod || period;
+  const effectiveStore = parentStore || "all";
 
   const label = claimType === "CHARGEBACK" ? "Chargeback" : "A-to-Z Claim";
 
@@ -129,7 +139,13 @@ export default function AtozTab({
 
   const fetchClaims = () => {
     setLoading(true);
-    fetch(`/api/customer-hub/atoz?type=${claimType}&limit=50`)
+    const params = new URLSearchParams({
+      type: claimType,
+      limit: "50",
+      period: String(effectivePeriod),
+    });
+    if (effectiveStore !== "all") params.set("store", effectiveStore);
+    fetch(`/api/customer-hub/atoz?${params}`)
       .then((r) => r.json())
       .then((data) => {
         setClaims(data.claims || []);
@@ -145,7 +161,7 @@ export default function AtozTab({
   useEffect(() => {
     fetchClaims();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [claimType]);
+  }, [claimType, effectivePeriod, effectiveStore]);
 
   const handleAddClaim = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -355,6 +371,7 @@ export default function AtozTab({
               <TableHeader>
                 <TableRow>
                   <TableHead>Status</TableHead>
+                  <TableHead>Store</TableHead>
                   <TableHead>Order ID</TableHead>
                   <TableHead>Carrier</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
@@ -386,6 +403,9 @@ export default function AtozTab({
                     >
                       <TableCell>
                         <Badge className={sl.color}>{sl.text}</Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-slate-600 max-w-[100px] truncate">
+                        {c.storeName || `Store ${c.storeIndex}`}
                       </TableCell>
                       <TableCell className="font-mono text-xs">
                         {c.amazonOrderId}
