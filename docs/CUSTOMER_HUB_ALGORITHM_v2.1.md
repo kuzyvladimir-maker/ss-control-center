@@ -17,6 +17,8 @@ Customer Hub — **единая страница** (`/customer-hub`) с 4 таб
 
 **Ключевой принцип v2:** агент работает через API напрямую. Скриншоты УБРАНЫ. Все данные — из Gmail API + Amazon SP-API.
 
+> 📋 Полный маппинг Amazon уведомлений и Gmail queries → `docs/AMAZON_NOTIFICATIONS_MAP.md`
+
 ---
 
 ## АККАУНТЫ

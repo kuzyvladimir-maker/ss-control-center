@@ -40,7 +40,7 @@
 - `ProductReview` — отзывы на товар
 
 ## 🔗 Связи
-- **Зависит от:** [Gmail API](gmail-api.md), [Amazon SP-API](amazon-sp-api.md), [Claude AI](claude-ai.md), [Veeqo API](veeqo-api.md)
+- **Зависит от:** [Gmail API](gmail-api.md), [Amazon SP-API](amazon-sp-api.md), [Claude AI](claude-ai.md), [Veeqo API](veeqo-api.md), [Amazon Notifications Map](amazon-notifications-map.md) (источники и приоритеты email-уведомлений)
 - **Используется в:** [Dashboard](dashboard.md)
 - **Связанные модули:** [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md), [Frozen Analytics](frozen-analytics.md)
 - **Заменяет:** Legacy `/customer-service`, `/claims/atoz`, `/feedback`

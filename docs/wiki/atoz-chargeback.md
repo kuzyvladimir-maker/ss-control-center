@@ -26,7 +26,7 @@
 - `AtozzClaim` — Status: NEW → EVIDENCE_GATHERED → RESPONSE_READY → SUBMITTED → DECIDED → APPEALED → CLOSED
 
 ## 🔗 Связи
-- **Зависит от:** [Amazon SP-API](amazon-sp-api.md), [Gmail API](gmail-api.md) (chargebacks), [Claude AI](claude-ai.md)
+- **Зависит от:** [Amazon SP-API](amazon-sp-api.md), [Gmail API](gmail-api.md) (chargebacks), [Claude AI](claude-ai.md), [Amazon Notifications Map](amazon-notifications-map.md) (chargebacks — только канал через Gmail, нет в SP-API)
 - **Влияет на:** [Account Health](account-health.md) (ODR: A-to-Z rate + Chargeback rate)
 - **Часть:** [Customer Hub](customer-hub.md)
 - **См. также:** [Carrier selection rules](carrier-selection-rules.md) (Claims Protected badge)

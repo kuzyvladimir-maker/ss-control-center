@@ -5,6 +5,9 @@
 import { spApiGet } from "@/lib/amazon-sp-api/client";
 import { prisma } from "@/lib/prisma";
 import type { ParsedBuyerEmail } from "./gmail-parser";
+import { getUpsTracking, type UpsTrackingEvent } from "@/lib/carriers/ups-tracking";
+import { getFedexTracking } from "@/lib/carriers/fedex-tracking";
+import { getUspsTracking } from "@/lib/carriers/usps-tracking";
 
 export interface EnrichedMessage extends ParsedBuyerEmail {
   orderDate: string | null;
@@ -25,6 +28,12 @@ export interface EnrichedMessage extends ParsedBuyerEmail {
   actualShippingService: string | null;
   shippingMismatch: boolean;
   carrierEstimatedDelivery: string | null;
+  trackingEvents: UpsTrackingEvent[] | null;
+  /** True if any tracking event explicitly says "delay/delayed/exception/
+   *  weather/late/missed delivery". This is documentary evidence of
+   *  carrier fault — used by the analyzer to redirect carrier-fault
+   *  cases to Amazon A-to-Z (Buy Shipping Claims Protection). */
+  carrierSelfDeclaredDelay: boolean;
   boughtThroughVeeqo: boolean;
   claimsProtected: boolean;
   shippedOnTime: boolean | null;
@@ -62,6 +71,8 @@ export async function enrichMessage(
     actualShippingService: null,
     shippingMismatch: false,
     carrierEstimatedDelivery: null,
+    trackingEvents: null,
+    carrierSelfDeclaredDelay: false,
     boughtThroughVeeqo: false,
     claimsProtected: false,
     shippedOnTime: null,
@@ -223,6 +234,10 @@ export async function enrichMessage(
 
             // Carrier name can live in several places depending on Veeqo
             // setup. Try the most specific first and fall back.
+            // Note: Veeqo returns "Buy Shipping" (billing program label)
+            // instead of a real carrier when we purchased via Amazon Buy
+            // Shipping. That's useless for customer-facing copy, so we
+            // skip it and derive the carrier from service_name below.
             const carrierCandidates = [
               veeqoShipment.carrier_name,
               veeqoShipment.carrier?.name,
@@ -230,9 +245,22 @@ export async function enrichMessage(
               veeqoAllocation?.carrier_name,
             ].filter(
               (v: unknown): v is string =>
-                typeof v === "string" && v.length > 0
+                typeof v === "string" &&
+                v.length > 0 &&
+                v.toLowerCase() !== "buy shipping"
             );
-            enriched.carrier = carrierCandidates[0] || null;
+            let resolvedCarrier = carrierCandidates[0] || null;
+            // Fall back to deriving from service_name if nothing useful
+            // came back. "UPS® Ground" → "UPS", "USPS Priority" → "USPS"
+            if (!resolvedCarrier) {
+              const svc = (veeqoShipment.service_name || "").toLowerCase();
+              if (svc.includes("ups")) resolvedCarrier = "UPS";
+              else if (svc.includes("usps") || svc.includes("priority"))
+                resolvedCarrier = "USPS";
+              else if (svc.includes("fedex")) resolvedCarrier = "FedEx";
+              else if (svc.includes("dhl")) resolvedCarrier = "DHL";
+            }
+            enriched.carrier = resolvedCarrier;
 
             const serviceCandidates = [
               veeqoShipment.service_name,
@@ -257,7 +285,19 @@ export async function enrichMessage(
               shipCandidates[0]?.split("T")[0] || null;
           }
 
-          // Check employee_notes for "Label Purchased"
+          // Buy Shipping detection — per Vladimir's policy, ALL of our
+          // labels are purchased through Amazon Buy Shipping via Veeqo.
+          // Therefore: if a Veeqo shipment with a tracking number exists,
+          // we used Buy Shipping. Don't try to parse employee_notes — that
+          // string was unreliable and stayed false even on real Buy
+          // Shipping orders, which broke claimsProtected detection
+          // downstream. The "Label Purchased" check is kept as additional
+          // confirmation but no longer the only signal.
+          if (veeqoShipment?.tracking_number || veeqoShipment?.id) {
+            enriched.boughtThroughVeeqo = true;
+          }
+          // Belt-and-braces: also pick up the legacy "Label Purchased"
+          // marker if Veeqo set it explicitly.
           const notes = match.employee_notes || "";
           if (
             typeof notes === "string" &&
@@ -266,13 +306,14 @@ export async function enrichMessage(
             enriched.boughtThroughVeeqo = true;
           }
           if (Array.isArray(notes)) {
-            enriched.boughtThroughVeeqo = notes.some(
+            const hasLabelNote = notes.some(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (n: any) =>
                 typeof n === "string"
                   ? n.includes("Label Purchased")
                   : n?.text?.includes("Label Purchased")
             );
+            if (hasLabelNote) enriched.boughtThroughVeeqo = true;
           }
 
           // Determine product type from Veeqo product tags
@@ -309,11 +350,14 @@ export async function enrichMessage(
     }
   }
 
-  // 5. Shipment detail fallback — fetch tracking events if we don't yet know
-  // delivery date and have a shipment id. Veeqo's /shipments/:id endpoint
-  // exposes tracking_events that sometimes carry a "delivered" status the
-  // parent /orders query doesn't.
-  if (VEEQO_API_KEY && veeqoShipment?.id && !enriched.actualDelivery) {
+  // 5. Shipment detail fetch — Veeqo's /shipments/:id endpoint exposes
+  // tracking_events (for delivered detection) AND an updated
+  // estimated_delivery_date field that reflects the carrier's current
+  // promise, which is NOT the same as Amazon's LatestDeliveryDate (which
+  // stays frozen at the original purchase promise). We need the fresh
+  // carrier ETA so customer-facing templates don't quote a stale date.
+  let shipDetailEstimatedDelivery: string | null = null;
+  if (VEEQO_API_KEY && veeqoShipment?.id) {
     try {
       const shipDetailRes = await fetch(
         `${VEEQO_BASE_URL}/shipments/${veeqoShipment.id}`,
@@ -321,27 +365,146 @@ export async function enrichMessage(
       );
       if (shipDetailRes.ok) {
         const shipDetail = await shipDetailRes.json();
-        if (shipDetail.delivery_date) {
+        // Try several field names — Veeqo has historically renamed this
+        const estCandidates = [
+          shipDetail.estimated_delivery_date,
+          shipDetail.expected_delivery_date,
+          shipDetail.carrier_estimated_delivery_date,
+        ].filter(
+          (v: unknown): v is string => typeof v === "string" && v.length > 0
+        );
+        if (estCandidates.length > 0) {
+          shipDetailEstimatedDelivery = estCandidates[0].split("T")[0];
+          console.log(
+            "[Enricher] Veeqo shipment detail estimated_delivery:",
+            shipDetailEstimatedDelivery
+          );
+        }
+
+        if (shipDetail.delivery_date && !enriched.actualDelivery) {
           enriched.actualDelivery = shipDetail.delivery_date.split("T")[0];
           enriched.trackingStatus = "delivered";
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const events: any[] = shipDetail.tracking_events || [];
-        if (events.length > 0) {
+        // Detect "delivered" status from events
+        if (events.length > 0 && !enriched.actualDelivery) {
           const lastEvent = events[events.length - 1];
           const descr = lastEvent?.description?.toLowerCase?.() || "";
           if (lastEvent?.status === "delivered" || descr.includes("delivered")) {
             enriched.trackingStatus = "delivered";
             enriched.actualDelivery =
-              enriched.actualDelivery ||
-              lastEvent?.happened_at?.split("T")[0] ||
+              lastEvent?.happened_at?.split("T")[0] || null;
+          }
+        }
+        // Look for an "expected delivery" event if we still don't have an ETA
+        if (!shipDetailEstimatedDelivery && events.length > 0) {
+          for (let i = events.length - 1; i >= 0; i--) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const e: any = events[i];
+            const estField =
+              e?.estimated_delivery_date ||
+              e?.expected_delivery ||
               null;
+            if (typeof estField === "string" && estField.length > 0) {
+              shipDetailEstimatedDelivery = estField.split("T")[0];
+              console.log(
+                "[Enricher] Estimated delivery from tracking event:",
+                shipDetailEstimatedDelivery
+              );
+              break;
+            }
           }
         }
       }
     } catch (e) {
       console.error(
         "[Enricher] Veeqo shipment detail failed:",
+        e instanceof Error ? e.message : e
+      );
+    }
+  }
+
+  // 5c. Carrier direct API — UPS / FedEx Tracking. When the carrier is
+  //   UPS or FedEx and we have a tracking number, fetch the carrier's own
+  //   details. This is the only reliable source for the current
+  //   (re-)scheduled delivery date after pickup; Veeqo's shipment endpoint
+  //   doesn't expose it, and Amazon's LatestDeliveryDate is frozen at
+  //   purchase time. Also pulls the full event history so the analyzer
+  //   can reason over "where exactly is the package and what happened
+  //   at each step". USPS will be added the same way once those keys
+  //   are provisioned.
+  const carrierUpper = (enriched.carrier || "").toUpperCase();
+  const carrierServiceHint =
+    (enriched.actualShippingService || enriched.service || "").toUpperCase();
+  const carrierBlob = `${carrierUpper} ${carrierServiceHint}`;
+
+  let carrierLookup:
+    | "ups"
+    | "fedex"
+    | "usps"
+    | null = null;
+  if (carrierBlob.includes("UPS")) carrierLookup = "ups";
+  else if (carrierBlob.includes("FEDEX") || carrierBlob.includes("FED EX"))
+    carrierLookup = "fedex";
+  else if (
+    carrierBlob.includes("USPS") ||
+    carrierBlob.includes("PRIORITY MAIL") ||
+    carrierBlob.includes("FIRST CLASS") ||
+    carrierBlob.includes("GROUND ADVANTAGE")
+  )
+    carrierLookup = "usps";
+
+  if (carrierLookup && enriched.trackingNumber) {
+    try {
+      console.log(
+        `[Enricher] ${carrierLookup.toUpperCase()} direct tracking lookup for`,
+        enriched.trackingNumber
+      );
+      const info =
+        carrierLookup === "ups"
+          ? await getUpsTracking(enriched.trackingNumber)
+          : carrierLookup === "fedex"
+            ? await getFedexTracking(enriched.trackingNumber)
+            : await getUspsTracking(enriched.trackingNumber);
+
+      if (info) {
+        console.log(
+          `[Enricher] ${carrierLookup.toUpperCase()} response:`,
+          JSON.stringify({
+            currentStatus: info.currentStatus,
+            estimatedDelivery: info.estimatedDelivery,
+            actualDelivery: info.actualDelivery,
+            events: info.events.length,
+          })
+        );
+
+        // Carrier ETA takes priority over any Veeqo-sourced value —
+        // the carrier's own data is authoritative for their shipments.
+        if (info.estimatedDelivery) {
+          shipDetailEstimatedDelivery = info.estimatedDelivery;
+        }
+
+        // If the carrier says delivered, propagate immediately.
+        if (info.delivered && info.actualDelivery) {
+          enriched.actualDelivery = info.actualDelivery;
+          enriched.trackingStatus = "delivered";
+        } else if (info.currentStatus && !enriched.trackingStatus) {
+          const s = info.currentStatus.toLowerCase();
+          if (s.includes("transit") || s.includes("on the way")) {
+            enriched.trackingStatus = "in_transit";
+          } else if (s.includes("exception")) {
+            enriched.trackingStatus = "exception";
+          }
+        }
+
+        if (info.events.length > 0) {
+          enriched.trackingEvents = info.events;
+        }
+      }
+    } catch (e) {
+      console.error(
+        `[Enricher] ${carrierLookup.toUpperCase()} tracking lookup failed:`,
         e instanceof Error ? e.message : e
       );
     }
@@ -446,6 +609,31 @@ export async function enrichMessage(
   enriched.claimsProtected =
     enriched.boughtThroughVeeqo && enriched.shippedOnTime === true;
 
+  // 9b. Carrier-self-declared delay — scan tracking events for documentary
+  //     proof that the carrier itself flagged a delay/exception/late event.
+  //     This is the strongest signal for "carrier fault" routing per
+  //     CUSTOMER_HUB_ALGORITHM_v3.0 §9. The analyzer uses this together
+  //     with claimsProtected to redirect customer to Amazon A-to-Z.
+  if (enriched.trackingEvents && enriched.trackingEvents.length > 0) {
+    const delayKeywords = [
+      "delay",
+      "delayed",
+      "exception",
+      "weather",
+      "missed",
+      "late",
+      "rescheduled",
+      "unable to deliver",
+    ];
+    enriched.carrierSelfDeclaredDelay = enriched.trackingEvents.some((e) => {
+      const blob = `${e.description || ""} ${e.status || ""}`.toLowerCase();
+      return delayKeywords.some((kw) => blob.includes(kw));
+    });
+    if (enriched.carrierSelfDeclaredDelay) {
+      console.log("[Enricher] Carrier self-declared delay detected in events");
+    }
+  }
+
   // 10. Shipping service mismatch detection (T21)
   //   Compare ShipmentServiceLevelCategory from Amazon (Next Day / Expedited
   //   / Priority / Overnight) with the actual Veeqo shipping service label.
@@ -480,10 +668,13 @@ export async function enrichMessage(
     }
   }
 
-  // 11. Carrier estimated delivery — Veeqo sometimes exposes this under
-  //   shipment.estimated_delivery_date or tracking_events. Fall back to
-  //   promisedEdd if we don't have anything more specific.
+  // 11. Carrier estimated delivery — only trust real carrier-sourced ETAs
+  //   (shipment detail fetch, then shipment-level fields). We deliberately
+  //   do NOT fall back to promisedEdd here: that's Amazon's original
+  //   purchase-time promise, frozen at checkout, and quoting it as a
+  //   "carrier ETA" misleads customers when the real carrier has re-ETA'd.
   const estimatedCandidates = [
+    shipDetailEstimatedDelivery,
     veeqoShipment?.estimated_delivery_date,
     veeqoShipment?.expected_delivery_date,
     veeqoAllocation?.estimated_delivery_date,
@@ -491,7 +682,7 @@ export async function enrichMessage(
     (v: unknown): v is string => typeof v === "string" && v.length > 0
   );
   enriched.carrierEstimatedDelivery =
-    estimatedCandidates[0]?.split("T")[0] || enriched.promisedEdd || null;
+    estimatedCandidates[0]?.split("T")[0] || null;
 
   console.log(
     "[Enricher] FINAL enriched data:",

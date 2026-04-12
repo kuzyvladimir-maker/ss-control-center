@@ -35,7 +35,7 @@
 ## 🔗 Связи
 - **Зависит от:** [Veeqo API](veeqo-api.md), [SKU Database](google-sheets-sku-db.md), [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md)
 - **Используется в:** [Dashboard](dashboard.md), [n8n Автоматизация](n8n-automation.md)
-- **Связанные модули:** [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md)
+- **Связанные модули:** [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md), [Amazon Notifications Map](amazon-notifications-map.md) (FBA Inbound Problems, Merchant Order backup alerts)
 - **Алгоритмы:** [Выбор ставки](shipping-rate-selection.md), [Бюджет](budget-check-algorithm.md), [Weekend распределение](weekend-distribution.md), [Правила carrier](carrier-selection-rules.md)
 - **См. также:** [Walmart ограничения](walmart-restrictions.md), [Формат имени PDF](label-filename-format.md)
 

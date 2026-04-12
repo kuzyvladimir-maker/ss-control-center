@@ -36,22 +36,51 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/customer-hub/feedback
-// Actions: { action: "sync" } → triggers feedback sync from SP-API Reports.
-// Currently a stub — real sync will land when SP-API Feedback Reports is wired up.
+// Actions:
+//   { action: "sync" }   → triggers feedback sync from SP-API Reports (stub)
+//   { action: "create" } → manually add a feedback entry (until sync is wired)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
-    if (body.action !== "sync") {
-      return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+
+    if (body.action === "sync") {
+      return NextResponse.json({
+        synced: 0,
+        message: "SP-API Feedback Reports sync coming soon",
+      });
     }
-    return NextResponse.json({
-      synced: 0,
-      message: "SP-API Feedback Reports sync coming soon",
-    });
+
+    if (body.action === "create") {
+      const d = body.data || {};
+      if (!d.comments) {
+        return NextResponse.json(
+          { error: "Comment is required" },
+          { status: 400 }
+        );
+      }
+
+      const feedback = await prisma.sellerFeedback.create({
+        data: {
+          amazonFeedbackId: `manual-${Date.now()}`,
+          orderId: d.orderId || null,
+          amazonOrderId: d.orderId || null,
+          rating: typeof d.rating === "number" ? d.rating : 3,
+          comments: d.comments,
+          feedbackDate: d.feedbackDate || new Date().toISOString().split("T")[0],
+          store: d.store || null,
+          channel: d.channel || "Amazon",
+          status: "NEW",
+        },
+      });
+
+      return NextResponse.json({ feedback });
+    }
+
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (err) {
     console.error("[customer-hub/feedback] POST failed:", err);
     return NextResponse.json(
-      { error: "Sync failed" },
+      { error: err instanceof Error ? err.message : "Failed" },
       { status: 500 }
     );
   }

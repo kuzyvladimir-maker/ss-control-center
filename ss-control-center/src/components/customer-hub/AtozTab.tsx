@@ -1,9 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Scale } from "lucide-react";
+import { Loader2, Scale, Plus, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -48,34 +57,109 @@ function daysUntil(deadline: string | null): number | null {
   return Math.ceil((target.getTime() - today.getTime()) / 86_400_000);
 }
 
-export default function AtozTab() {
+export default function AtozTab({
+  claimType = "A_TO_Z",
+}: {
+  claimType?: "A_TO_Z" | "CHARGEBACK";
+}) {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addSaving, setAddSaving] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [period, setPeriod] = useState(30);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/customer-hub/atoz?type=A_TO_Z&limit=50")
+  const label = claimType === "CHARGEBACK" ? "Chargeback" : "A-to-Z Claim";
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncMessage(null);
+    try {
+      const res = await fetch("/api/customer-hub/atoz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "sync",
+          type: claimType,
+          period,
+        }),
+      });
+      const data = await res.json();
+      setSyncMessage(
+        data.synced > 0
+          ? `Synced ${data.synced} new ${label.toLowerCase()}${data.synced !== 1 ? "s" : ""}`
+          : `No new ${label.toLowerCase()}s found`
+      );
+      fetchClaims();
+    } catch {
+      setSyncMessage("Sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const fetchClaims = () => {
+    setLoading(true);
+    fetch(`/api/customer-hub/atoz?type=${claimType}&limit=50`)
       .then((r) => r.json())
       .then((data) => {
-        if (cancelled) return;
         setClaims(data.claims || []);
         setTotal(data.total || 0);
       })
       .catch(() => {
-        if (!cancelled) {
-          setClaims([]);
-          setTotal(0);
-        }
+        setClaims([]);
+        setTotal(0);
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchClaims();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [claimType]);
+
+  const handleAddClaim = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setAddSaving(true);
+    setAddError(null);
+    const fd = new FormData(e.currentTarget);
+    const orderId = (fd.get("orderId") as string) || "";
+    if (!/^\d{3}-\d{7}-\d{7}$/.test(orderId)) {
+      setAddError("Order ID must be in format 123-1234567-1234567");
+      setAddSaving(false);
+      return;
+    }
+    try {
+      const res = await fetch("/api/customer-hub/atoz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create",
+          data: {
+            amazonOrderId: orderId,
+            claimType,
+            storeIndex: parseInt(fd.get("storeIndex") as string) || 1,
+            claimReason: fd.get("reason") || "OTHER",
+            amount: parseFloat(fd.get("amount") as string) || 0,
+            deadline: fd.get("deadline") || null,
+            vladimirNotes: fd.get("notes") || null,
+          },
+        }),
       });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      setAddOpen(false);
+      fetchClaims();
+    } catch (err) {
+      setAddError(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setAddSaving(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -94,9 +178,106 @@ export default function AtozTab() {
         <CardContent className="p-0">
           <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100">
             <span className="text-xs text-slate-500">
-              {total} claim{total !== 1 ? "s" : ""}
+              {total} {label.toLowerCase()}{total !== 1 ? "s" : ""}
+              {syncMessage && (
+                <span className="ml-2 text-[10px] text-slate-400">
+                  {syncMessage}
+                </span>
+              )}
             </span>
+            <div className="flex items-center gap-2">
+              <select
+                value={period}
+                onChange={(e) => setPeriod(parseInt(e.target.value))}
+                className="rounded border px-2 py-1 text-xs"
+              >
+                <option value={7}>7 days</option>
+                <option value={30}>30 days</option>
+                <option value={90}>90 days</option>
+              </select>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleSync}
+                disabled={syncing}
+              >
+                {syncing ? (
+                  <Loader2 size={12} className="animate-spin mr-1" />
+                ) : (
+                  <RefreshCw size={12} className="mr-1" />
+                )}
+                Sync
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => { setAddOpen(true); setAddError(null); }}
+              >
+                <Plus size={12} className="mr-1" /> Add
+              </Button>
+            </div>
           </div>
+
+          {/* Add claim/chargeback modal */}
+          <Dialog open={addOpen} onOpenChange={setAddOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add {label}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleAddClaim} className="space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-slate-500">Order ID *</label>
+                  <Input name="orderId" placeholder="123-1234567-1234567" required />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-500">Store</label>
+                  <select name="storeIndex" className="w-full rounded border px-3 py-2 text-sm">
+                    <option value="1">Salutem Solutions</option>
+                    <option value="2">Vladimir Personal</option>
+                    <option value="3">AMZ Commerce</option>
+                    <option value="4">Sirius International</option>
+                    <option value="5">Retailer Distributor</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-500">Reason</label>
+                  <select name="reason" className="w-full rounded border px-3 py-2 text-sm">
+                    <option value="INR">Item Not Received (INR)</option>
+                    <option value="SNAD">Significantly Not As Described (SNAD)</option>
+                    <option value="NOT_AS_DESCRIBED">Not As Described</option>
+                    <option value="SERVICE_ISSUE">Service Issue</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs font-medium text-slate-500">Amount ($) *</label>
+                    <Input name="amount" type="number" step="0.01" required />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-500">Deadline</label>
+                    <Input name="deadline" type="date" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-500">Notes</label>
+                  <Textarea name="notes" rows={2} placeholder="Optional internal notes" />
+                </div>
+                {addError && (
+                  <p className="text-xs text-red-600">{addError}</p>
+                )}
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setAddOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" size="sm" disabled={addSaving}>
+                    {addSaving ? <Loader2 size={12} className="animate-spin mr-1" /> : null}
+                    Create
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
 
           {claims.length === 0 ? (
             <div className="py-12 text-center">

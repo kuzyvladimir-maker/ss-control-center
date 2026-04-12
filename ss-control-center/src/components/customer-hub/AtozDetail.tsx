@@ -65,14 +65,14 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/claims/atoz/${claimId}`)
+    fetch(`/api/customer-hub/atoz/${claimId}`)
       .then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then((data) => {
         if (cancelled) return;
-        setClaim(data);
+        setClaim(data.claim || data);
       })
       .catch((err) => {
         if (cancelled) return;

@@ -10,6 +10,7 @@ import {
 import { parseAmazonBuyerEmail } from "@/lib/customer-hub/gmail-parser";
 import { enrichMessage } from "@/lib/customer-hub/message-enricher";
 import { analyzeMessage } from "@/lib/customer-hub/message-analyzer";
+import { translateText } from "@/lib/customer-hub/translator";
 import { seedKnowledgeBase } from "@/lib/customer-hub/knowledge-base";
 
 // GET — list messages from DB.
@@ -153,6 +154,7 @@ export async function POST(request: NextRequest) {
 
     let totalSynced = 0;
     let confirmationsSynced = 0;
+    let autoResolvedStale = 0;
     const errors: string[] = [];
 
     for (const account of accounts) {
@@ -255,11 +257,20 @@ export async function POST(request: NextRequest) {
                 actualShippingService: enriched.actualShippingService,
                 shippingMismatch: enriched.shippingMismatch,
                 carrierEstimatedDelivery: enriched.carrierEstimatedDelivery,
+                trackingEvents: enriched.trackingEvents
+                  ? JSON.stringify(enriched.trackingEvents)
+                  : null,
                 boughtThroughVeeqo: enriched.boughtThroughVeeqo,
                 claimsProtected: enriched.claimsProtected,
                 shippedOnTime: enriched.shippedOnTime,
                 direction: "incoming",
                 customerMessage: enriched.customerMessage,
+                customerMessageRu: enriched.customerMessage
+                  ? await translateText(
+                      enriched.customerMessage,
+                      "en-ru"
+                    ).catch(() => null)
+                  : null,
                 status: autoResolved ? "RESOLVED" : "NEW",
                 resolution: autoResolved
                   ? "auto_resolved_gmail_thread"
@@ -319,6 +330,7 @@ export async function POST(request: NextRequest) {
                 customerName: enriched.customerName,
                 language: enriched.language,
                 storeName: enriched.storeName,
+                channel: "Amazon",
                 amazonOrderId: enriched.amazonOrderId,
                 orderDate: enriched.orderDate,
                 orderTotal: enriched.orderTotal,
@@ -337,6 +349,7 @@ export async function POST(request: NextRequest) {
                 actualShippingService: enriched.actualShippingService,
                 shippingMismatch: enriched.shippingMismatch,
                 carrierEstimatedDelivery: enriched.carrierEstimatedDelivery,
+                trackingEvents: enriched.trackingEvents,
                 boughtThroughVeeqo: enriched.boughtThroughVeeqo,
                 claimsProtected: enriched.claimsProtected,
                 shippedOnTime: enriched.shippedOnTime,
@@ -351,6 +364,13 @@ export async function POST(request: NextRequest) {
                 hasNegativeFeedback: false,
               });
 
+              const suggestedRu = analysis.suggestedResponse
+                ? await translateText(
+                    analysis.suggestedResponse,
+                    "en-ru"
+                  ).catch(() => null)
+                : null;
+
               await prisma.buyerMessage.update({
                 where: { id: saved.id },
                 data: {
@@ -364,6 +384,8 @@ export async function POST(request: NextRequest) {
                   foodSafetyRisk: analysis.foodSafetyRisk,
                   atozRisk: analysis.atozRisk,
                   suggestedResponse: analysis.suggestedResponse,
+                  suggestedResponseRu: suggestedRu,
+                  supplierReorderNote: analysis.supplierReorderNote,
                   reasoning: analysis.reasoning,
                   category: analysis.problemType,
                   categoryName: analysis.problemTypeName,
@@ -394,17 +416,24 @@ export async function POST(request: NextRequest) {
         // =============================================================
         // Amazon Seller Central's "Confirmation Notifications" setting
         // emails the seller when a buyer response is successfully
-        // delivered. If enabled, those confirmation emails land in this
-        // Gmail account and we can use them to auto-flip the original
-        // BuyerMessage to SENT without the operator clicking anything.
+        // delivered. The confirmation comes from donotreply@amazon.com
+        // with subject like "Your e-mail to {CustomerName}" and body
+        // containing "Order ID: 113-XXXXXXX-XXXXXXX" followed by a copy
+        // of the seller's message between "Begin message" / "End message"
+        // markers.
         //
-        // Heuristic: search for emails whose subject contains any of
-        // "Your response", "message sent", "confirmation" sent to this
-        // account in the last 2 days, extract the Amazon Order ID via
-        // regex, then mark any matching NEW/ANALYZED BuyerMessage as
-        // SENT with responseSentVia=SELLER_CENTRAL.
+        // We pull those emails, extract the Order ID via regex, then
+        // mark any matching NEW/ANALYZED BuyerMessage as SENT with
+        // responseSentVia=SELLER_CENTRAL.
+        //
+        // Old filter used subject patterns like "Your response" /
+        // "message sent" / "confirmation" — none of those match Amazon's
+        // actual subject format (verified from a real confirmation email
+        // 2026-04-11). Real pattern: subject starts with "Your e-mail to".
+        // Sender filter + 7-day window catches cases where sync runs
+        // less frequently than every 2 days.
         try {
-          const confirmationQuery = `to:${account.email} (subject:"Your response" OR subject:"message sent" OR subject:"confirmation") newer_than:2d`;
+          const confirmationQuery = `from:donotreply@amazon.com to:${account.email} subject:"Your e-mail to" newer_than:7d`;
           const confirmations = await searchMessages(
             account.refreshToken,
             confirmationQuery,
@@ -481,6 +510,79 @@ export async function POST(request: NextRequest) {
             confErr instanceof Error ? confErr.message : String(confErr)
           );
         }
+
+        // =============================================================
+        // Stale ANALYZED re-check — close out cases we already replied to
+        // =============================================================
+        // The first-sync thread heuristic + confirmation sweep above only
+        // catch responses delivered while syncing. Anything we reply to
+        // via Seller Central later (without Confirmation Notifications
+        // enabled) leaves the BuyerMessage stuck at ANALYZED forever and
+        // it visibly rots as OVERDUE in the UI.
+        //
+        // This pass walks every ANALYZED message for the current account
+        // older than 6 hours and re-fetches its Gmail thread. If the
+        // thread now has more than one message, it means a follow-up
+        // landed (either us replying via Seller Central, or the buyer
+        // sending a follow-up after our reply) — either way the original
+        // case is no longer "needs first response" and can be auto-
+        // resolved. The 6h floor avoids racing against fresh syncs.
+        try {
+          const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+          const stale = await prisma.buyerMessage.findMany({
+            where: {
+              storeIndex: account.storeIndex,
+              status: { in: ["NEW", "ANALYZED"] },
+              direction: "incoming",
+              gmailThreadId: { not: null },
+              receivedAt: { lt: sixHoursAgo },
+            },
+            select: {
+              id: true,
+              gmailThreadId: true,
+              amazonOrderId: true,
+            },
+            take: 100,
+          });
+
+          for (const sm of stale) {
+            if (!sm.gmailThreadId) continue;
+            try {
+              const thread = await readThread(
+                account.refreshToken,
+                sm.gmailThreadId
+              );
+              const count = thread.messages?.length || 1;
+              if (count > 1) {
+                await prisma.buyerMessage.update({
+                  where: { id: sm.id },
+                  data: {
+                    status: "RESOLVED",
+                    resolution: "auto_resolved_thread_grew",
+                  },
+                });
+                autoResolvedStale++;
+                console.log(
+                  `[Sync] Stale re-check: ${sm.id} (thread ${sm.gmailThreadId}, ${count} msgs) → RESOLVED`
+                );
+              }
+            } catch (recheckErr) {
+              console.warn(
+                "[Sync] Stale re-check thread fetch failed for",
+                sm.id,
+                recheckErr instanceof Error
+                  ? recheckErr.message
+                  : String(recheckErr)
+              );
+            }
+          }
+        } catch (staleErr) {
+          console.warn(
+            "[Sync] Stale ANALYZED re-check failed for",
+            account.email,
+            staleErr instanceof Error ? staleErr.message : String(staleErr)
+          );
+        }
       } catch (acctErr) {
         console.error(
           `[Sync] Account ${account.email} failed:`,
@@ -495,6 +597,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       synced: totalSynced,
       confirmations: confirmationsSynced,
+      autoResolved: autoResolvedStale,
       accounts: accounts.length,
       errors: errors.length > 0 ? errors : undefined,
     });

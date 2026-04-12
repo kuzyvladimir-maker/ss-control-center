@@ -15,6 +15,7 @@
 ## 📦 Модули
 - [Dashboard](dashboard.md) — главная страница, карточки, сводка
 - [Shipping Labels](shipping-labels.md) — план + покупка labels через Veeqo
+- [Shipment Monitor](shipment-monitor.md) — мониторинг доставок, детекция проблем, подготовка claims (спроектирован, после Phase 1)
 - [Customer Hub](customer-hub.md) — Messages, A-to-Z, Chargebacks, Feedback (в разработке)
 - [Account Health](account-health.md) — мониторинг 5 аккаунтов, ODR/LSR/VTR
 - [Frozen Analytics](frozen-analytics.md) — инциденты с frozen, SKU risk profiles
@@ -33,6 +34,8 @@
 - [Veeqo API](veeqo-api.md) — заказы, ставки, покупка labels
 - [Amazon SP-API](amazon-sp-api.md) — orders, messaging, reports, health, finances
 - [Gmail API](gmail-api.md) — buyer messages, chargeback notifications
+- [Carrier Tracking APIs](carrier-tracking-apis.md) — UPS Tracking (FedEx/USPS в планах), реальный carrier ETA + события
+- [Amazon Notifications Map](amazon-notifications-map.md) — маппинг ~30 типов email-уведомлений → модули + Gmail queries
 - [SKU Database (Google Sheets)](google-sheets-sku-db.md) — веса и размеры
 - [Claude AI](claude-ai.md) — Decision Engine, генерация ответов
 - [Telegram](telegram-notifications.md) — уведомления Владимиру
@@ -46,6 +49,9 @@
 - [Frozen Shipping Rules](frozen-shipping-rules.md) — ≤3 дня, food safety CS
 - [Label Filename Format](label-filename-format.md) — формат имени PDF
 
+## 📌 Отложенные задачи (TODO)
+- [Деплой на Vercel + Postgres](deploy-to-vercel-plan.md) — план публикации в интернет, ~1ч 15м, отложен 2026-04-10
+
 ## Решения и паттерны
 - (будет дополняться по ходу разработки)
 
@@ -53,4 +59,4 @@
 - (будет дополняться по ходу разработки)
 
 ---
-Последнее обновление: 2026-04-10
+Последнее обновление: 2026-04-11

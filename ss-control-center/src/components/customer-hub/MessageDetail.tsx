@@ -424,9 +424,26 @@ export default function MessageDetail({
   const [analyzing, setAnalyzing] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editText, setEditText] = useState("");
+  // Russian working copy of the edited response. The English textarea
+  // (`editText`) remains the canonical value that gets saved as
+  // `editedResponse` and sent to Amazon. The Russian textarea is a working
+  // language for Vladimir: typing in either column and blurring triggers
+  // a translation of the other column so both stay in sync.
+  const [editTextRu, setEditTextRu] = useState("");
+  const [translatingEn, setTranslatingEn] = useState(false);
+  const [translatingRu, setTranslatingRu] = useState(false);
   const [copied, setCopied] = useState(false);
   const [sending, setSending] = useState(false);
-  const [sendError, setSendError] = useState<string | null>(null);
+  // Send-error state — can be a red error (auth/role/config) or a
+  // yellow "messaging closed" hint (Amazon gating the action per-order).
+  // The sender endpoint returns messagingClosed:true when the order is
+  // outside Amazon's buyer-seller-messaging window or the specific
+  // action is not in the allowed list — that's operational, not a bug.
+  const [sendError, setSendError] = useState<{
+    message: string;
+    messagingClosed?: boolean;
+    allowedActions?: string[];
+  } | null>(null);
   const [sentFlash, setSentFlash] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
@@ -453,6 +470,11 @@ export default function MessageDetail({
       setEditText(
         data.message?.editedResponse ||
           data.message?.suggestedResponse ||
+          ""
+      );
+      setEditTextRu(
+        data.message?.editedResponseRu ||
+          data.message?.suggestedResponseRu ||
           ""
       );
     } catch {
@@ -496,10 +518,69 @@ export default function MessageDetail({
     await fetch(`/api/customer-hub/messages/${messageId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ editedResponse: editText }),
+      body: JSON.stringify({
+        editedResponse: editText,
+        editedResponseRu: editTextRu || null,
+      }),
     });
     setEditMode(false);
     await fetchDetail();
+  };
+
+  // Translate the English column into Russian and write the result into
+  // `editTextRu`. Triggered on blur of the EN textarea when the operator
+  // has changed the text. No-op if translator fails.
+  const syncRuFromEn = async () => {
+    const text = editText.trim();
+    if (!text) {
+      setEditTextRu("");
+      return;
+    }
+    setTranslatingRu(true);
+    try {
+      const res = await fetch(
+        `/api/customer-hub/messages/${messageId}/translate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, direction: "en-ru" }),
+        }
+      );
+      const data = await res.json();
+      if (res.ok && typeof data.translation === "string") {
+        setEditTextRu(data.translation);
+      }
+    } catch (err) {
+      console.warn("[MessageDetail] EN→RU translation failed:", err);
+    } finally {
+      setTranslatingRu(false);
+    }
+  };
+
+  // Translate the Russian column into English. The EN result becomes the
+  // canonical `editText` and will be saved as `editedResponse` on Save.
+  const syncEnFromRu = async () => {
+    const text = editTextRu.trim();
+    if (!text) return;
+    setTranslatingEn(true);
+    try {
+      const res = await fetch(
+        `/api/customer-hub/messages/${messageId}/translate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, direction: "ru-en" }),
+        }
+      );
+      const data = await res.json();
+      if (res.ok && typeof data.translation === "string") {
+        setEditText(data.translation);
+      }
+    } catch (err) {
+      console.warn("[MessageDetail] RU→EN translation failed:", err);
+    } finally {
+      setTranslatingEn(false);
+    }
   };
 
   const handleStatusChange = async (newStatus: "RESOLVED" | "NEW") => {
@@ -593,9 +674,9 @@ export default function MessageDetail({
       }
       await fetchDetail();
     } catch (err) {
-      setSendError(
-        err instanceof Error ? err.message : "Fix failed"
-      );
+      setSendError({
+        message: err instanceof Error ? err.message : "Fix failed",
+      });
     } finally {
       setFixing(false);
     }
@@ -616,7 +697,9 @@ export default function MessageDetail({
       }
       await fetchDetail();
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : "Rewrite failed");
+      setSendError({
+        message: err instanceof Error ? err.message : "Rewrite failed",
+      });
     } finally {
       setRewriting(null);
     }
@@ -660,7 +743,7 @@ export default function MessageDetail({
     if (!message) return;
     const text = message.editedResponse || message.suggestedResponse || "";
     if (!text) {
-      setSendError("No response text to send");
+      setSendError({ message: "No response text to send" });
       return;
     }
     const ok = window.confirm(
@@ -677,13 +760,22 @@ export default function MessageDetail({
       );
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || `HTTP ${res.status}`);
+        setSendError({
+          message: data.error || `HTTP ${res.status}`,
+          messagingClosed: data.messagingClosed === true,
+          allowedActions: Array.isArray(data.allowedActions)
+            ? data.allowedActions
+            : undefined,
+        });
+        return;
       }
       setSentFlash(true);
       setTimeout(() => setSentFlash(false), 3000);
       await fetchDetail();
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : "Send failed");
+      setSendError({
+        message: err instanceof Error ? err.message : "Send failed",
+      });
     } finally {
       setSending(false);
     }
@@ -827,13 +919,37 @@ export default function MessageDetail({
 
         <Separator />
 
-        {/* Customer message */}
+        {/* Customer message — bilingual (EN canonical | RU working copy).
+            Both are read-only; the RU column is auto-translated on sync
+            and back-filled on re-analyze. */}
         <div>
           <p className="text-[10px] font-semibold text-slate-400 uppercase mb-1">
             Customer Message
           </p>
-          <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 whitespace-pre-wrap">
-            {m.customerMessage || "No message text"}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div>
+              <p className="text-[9px] font-semibold text-slate-400 uppercase mb-1">
+                🇬🇧 English
+              </p>
+              <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 whitespace-pre-wrap min-h-[4rem]">
+                {m.customerMessage || "No message text"}
+              </div>
+            </div>
+            <div>
+              <p className="text-[9px] font-semibold text-slate-400 uppercase mb-1">
+                🇷🇺 Русский
+              </p>
+              <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 whitespace-pre-wrap min-h-[4rem]">
+                {m.customerMessageRu ||
+                  (m.customerMessage ? (
+                    <span className="text-slate-400 italic">
+                      Перевод недоступен (переведётся при следующем Re-analyze)
+                    </span>
+                  ) : (
+                    "Нет текста"
+                  ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -896,15 +1012,60 @@ export default function MessageDetail({
           </div>
         )}
 
-        {/* Auto-fix banner — shows when validator rewrote the response */}
+        {/* Auto-fix banner — shows when validator rewrote the response
+            via the manual Fix button */}
         {responseText &&
           typeof m.reasoning === "string" &&
           m.reasoning.includes("[AUTO-FIXED:") && (
             <div className="text-xs px-3 py-2 rounded-md border border-green-200 bg-green-50 text-green-800 flex items-start gap-2 mb-2">
               <span className="shrink-0">🔧</span>
               <span>
-                Response was automatically corrected for policy compliance.
+                Response was corrected for policy compliance via Fix button.
               </span>
+            </div>
+          )}
+
+        {/* Supplier reorder banner — model decided action=replacement and
+            wrote a structured supplierReorderNote. Vladimir is a reseller
+            with no inventory, so every replacement requires a clone order
+            in Veeqo. Phase 2 will auto-create via Veeqo API; for now this
+            banner is the explicit handoff to the operator. */}
+        {m.supplierReorderNote && (
+          <div className="text-xs px-3 py-2 rounded-md border border-blue-300 bg-blue-50 text-blue-900 flex items-start gap-2 mb-2">
+            <span className="shrink-0">🛒</span>
+            <div className="flex-1">
+              <div className="font-semibold mb-0.5">
+                Supplier reorder required
+              </div>
+              <div className="text-blue-800 whitespace-pre-wrap font-mono text-[11px]">
+                {m.supplierReorderNote}
+              </div>
+              <div className="text-[10px] text-blue-700 mt-1">
+                Action needed: clone this order in Veeqo with the note above.
+                Phase 2 will automate via Veeqo API.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Needs-review banner — violation(s) detected but NOT auto-fixed.
+            Operator should review the original model output, edit, or
+            trigger the Fix button. */}
+        {responseText &&
+          typeof m.reasoning === "string" &&
+          m.reasoning.includes("[NEEDS REVIEW:") && (
+            <div className="text-xs px-3 py-2 rounded-md border border-amber-300 bg-amber-50 text-amber-900 flex items-start gap-2 mb-2">
+              <span className="shrink-0">⚠️</span>
+              <div>
+                <div className="font-semibold mb-0.5">
+                  Needs review — policy violation detected
+                </div>
+                <div className="text-amber-800">
+                  {m.reasoning
+                    .match(/\[NEEDS REVIEW:([^\]]+)\]/)?.[1]
+                    ?.trim() || "See reasoning for details."}
+                </div>
+              </div>
             </div>
           )}
 
@@ -917,7 +1078,9 @@ export default function MessageDetail({
           />
         )}
 
-        {/* Suggested response */}
+        {/* Suggested response — bilingual editor. English is canonical
+            (what gets sent to the buyer); Russian is a working copy.
+            Editing one column and blurring auto-translates the other. */}
         {responseText && (
           <div>
             <p className="text-[10px] font-semibold text-slate-400 uppercase mb-1">
@@ -925,14 +1088,60 @@ export default function MessageDetail({
             </p>
             {editMode ? (
               <div className="space-y-2">
-                <Textarea
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  rows={8}
-                  className="text-sm"
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[9px] font-semibold text-slate-400 uppercase">
+                        🇬🇧 English (canonical)
+                      </p>
+                      {translatingEn && (
+                        <span className="text-[9px] text-slate-400 flex items-center gap-1">
+                          <Loader2 size={10} className="animate-spin" />
+                          translating…
+                        </span>
+                      )}
+                    </div>
+                    <Textarea
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      onBlur={syncRuFromEn}
+                      rows={10}
+                      className="text-sm"
+                      disabled={translatingEn}
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[9px] font-semibold text-slate-400 uppercase">
+                        🇷🇺 Русский (рабочий)
+                      </p>
+                      {translatingRu && (
+                        <span className="text-[9px] text-slate-400 flex items-center gap-1">
+                          <Loader2 size={10} className="animate-spin" />
+                          перевод…
+                        </span>
+                      )}
+                    </div>
+                    <Textarea
+                      value={editTextRu}
+                      onChange={(e) => setEditTextRu(e.target.value)}
+                      onBlur={syncEnFromRu}
+                      rows={10}
+                      className="text-sm"
+                      disabled={translatingRu}
+                    />
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Правь любую из колонок — при уходе фокуса вторая колонка
+                  автоматически переведётся. Отправляется английская версия.
+                </p>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={handleSaveEdit}>
+                  <Button
+                    size="sm"
+                    onClick={handleSaveEdit}
+                    disabled={translatingEn || translatingRu}
+                  >
                     <Check size={12} className="mr-1" /> Save
                   </Button>
                   <Button
@@ -945,8 +1154,28 @@ export default function MessageDetail({
                 </div>
               </div>
             ) : (
-              <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 whitespace-pre-wrap">
-                {m.editedResponse || m.suggestedResponse}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div>
+                  <p className="text-[9px] font-semibold text-slate-400 uppercase mb-1">
+                    🇬🇧 English
+                  </p>
+                  <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 whitespace-pre-wrap min-h-[6rem]">
+                    {m.editedResponse || m.suggestedResponse}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[9px] font-semibold text-slate-400 uppercase mb-1">
+                    🇷🇺 Русский
+                  </p>
+                  <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 whitespace-pre-wrap min-h-[6rem]">
+                    {m.editedResponseRu ||
+                      m.suggestedResponseRu || (
+                        <span className="text-slate-400 italic">
+                          Перевод недоступен (появится после Re-analyze)
+                        </span>
+                      )}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1040,8 +1269,29 @@ export default function MessageDetail({
                   : "Send via SP-API"}
               </Button>
             </div>
-            {sendError && (
-              <p className="text-xs text-red-600 mt-2">{sendError}</p>
+            {sendError && sendError.messagingClosed && (
+              <div className="mt-2 rounded-md border border-amber-300 bg-amber-50 text-amber-900 text-xs px-3 py-2 flex items-start gap-2">
+                <span className="shrink-0">⚠️</span>
+                <div>
+                  <div className="font-semibold mb-0.5">
+                    Amazon messaging window is closed for this order
+                  </div>
+                  <div className="text-amber-800">{sendError.message}</div>
+                  <div className="text-[10px] text-amber-700 mt-1">
+                    Next step: reply in Amazon Seller Central manually, then
+                    click <b>&ldquo;Responded in Seller Central&rdquo;</b>{" "}
+                    below to mark this case as sent.
+                  </div>
+                </div>
+              </div>
+            )}
+            {sendError && !sendError.messagingClosed && (
+              <div className="mt-2 rounded-md border border-red-300 bg-red-50 text-red-800 text-xs px-3 py-2 flex items-start gap-2">
+                <span className="shrink-0">❌</span>
+                <div className="font-mono text-[11px] break-all">
+                  {sendError.message}
+                </div>
+              </div>
             )}
             {sentFlash && (
               <p className="text-xs text-green-600 mt-2">
@@ -1086,6 +1336,140 @@ export default function MessageDetail({
           </div>
         )}
       </CardContent>
+
+      {/* Save-to-Knowledge-Base dialog */}
+      <Dialog open={kbDialogOpen} onOpenChange={setKbDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Save to Knowledge Base</DialogTitle>
+            <DialogDescription>
+              Capture this resolved case so the Decision Engine can use it
+              as guidance for future similar messages.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 text-xs">
+            <div>
+              <label className="text-slate-500 font-medium">Scenario</label>
+              <p className="text-slate-700 mt-0.5">
+                {m.problemTypeName || m.problemType || "Customer case"}
+                {m.trackingStatus ? ` — ${m.trackingStatus}` : ""}
+                {m.shippingMismatch ? " — shipping mismatch" : ""}
+              </p>
+            </div>
+
+            <div>
+              <label className="text-slate-500 font-medium">
+                Correct Action
+              </label>
+              <p className="text-slate-700 mt-0.5">
+                {m.action || "investigate"}
+              </p>
+            </div>
+
+            <div>
+              <label className="text-slate-500 font-medium">
+                Correct Response
+              </label>
+              <div className="mt-1 rounded bg-slate-50 p-2 text-[11px] whitespace-pre-wrap max-h-32 overflow-y-auto">
+                {m.editedResponse || m.suggestedResponse || "(no response)"}
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="kb-reasoning"
+                className="text-slate-500 font-medium"
+              >
+                Reasoning <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                id="kb-reasoning"
+                value={kbReasoning}
+                onChange={(e) => setKbReasoning(e.target.value)}
+                rows={3}
+                placeholder="Why is this the correct response? What pattern should future cases follow?"
+                className="w-full mt-1 rounded border border-slate-200 p-2 text-xs focus:border-blue-400 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="kb-outcome"
+                className="text-slate-500 font-medium"
+              >
+                Outcome
+              </label>
+              <select
+                id="kb-outcome"
+                value={kbOutcome}
+                onChange={(e) =>
+                  setKbOutcome(
+                    e.target.value as "positive" | "negative" | "neutral"
+                  )
+                }
+                className="w-full mt-1 rounded border border-slate-200 p-2 text-xs focus:border-blue-400 focus:outline-none"
+              >
+                <option value="positive">Positive</option>
+                <option value="neutral">Neutral</option>
+                <option value="negative">Negative</option>
+              </select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="kb-tags"
+                className="text-slate-500 font-medium"
+              >
+                Tags (comma-separated)
+              </label>
+              <input
+                id="kb-tags"
+                type="text"
+                value={kbTags}
+                onChange={(e) => setKbTags(e.target.value)}
+                placeholder="shipping_mismatch, next_day, cancel_request"
+                className="w-full mt-1 rounded border border-slate-200 p-2 text-xs focus:border-blue-400 focus:outline-none"
+              />
+            </div>
+
+            {kbError && (
+              <div className="rounded border border-red-200 bg-red-50 p-2 text-red-700">
+                {kbError}
+              </div>
+            )}
+
+            {kbSavedFlash && (
+              <div className="rounded border border-green-200 bg-green-50 p-2 text-green-700">
+                ✓ Saved to Knowledge Base
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setKbDialogOpen(false)}
+                disabled={kbSaving}
+                className="text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSaveToKB}
+                disabled={kbSaving}
+                className="text-xs"
+              >
+                {kbSaving ? (
+                  <Loader2 size={12} className="animate-spin mr-1" />
+                ) : null}
+                Save to KB
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

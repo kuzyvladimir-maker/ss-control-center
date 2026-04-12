@@ -27,7 +27,7 @@
 - `ProductReview` — отзывы на товар
 
 ## 🔗 Связи
-- **Зависит от:** [Amazon SP-API](amazon-sp-api.md), [Claude AI](claude-ai.md)
+- **Зависит от:** [Amazon SP-API](amazon-sp-api.md), [Claude AI](claude-ai.md), [Amazon Notifications Map](amazon-notifications-map.md) (Buyer Abuse Prevention Actions — через Gmail)
 - **Влияет на:** [Account Health](account-health.md) (Negative Feedback → ODR)
 - **Часть:** [Customer Hub](customer-hub.md)
 - **Бизнес-правило:** Никогда не предлагать скидки/компенсации за изменение отзыва

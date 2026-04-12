@@ -32,7 +32,7 @@
 - `AccountAlert` — алерты по метрикам
 
 ## 🔗 Связи
-- **Зависит от:** [Amazon SP-API](amazon-sp-api.md)
+- **Зависит от:** [Amazon SP-API](amazon-sp-api.md), [Amazon Notifications Map](amazon-notifications-map.md) (Listing compliance, removals, Business Updates через Gmail — нет в SP-API)
 - **Используется в:** [Dashboard](dashboard.md)
 - **Связанные модули:** [A-to-Z & Chargeback](atoz-chargeback.md) (влияет на ODR), [Feedback Manager](feedback-manager.md) (Negative Feedback → ODR), [Shipping Labels](shipping-labels.md) (LSR/VTR)
 - **См. также:** [Database Schema](database-schema.md)

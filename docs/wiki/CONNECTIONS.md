@@ -7,11 +7,11 @@
 ## Модули
 
 ### [Dashboard](dashboard.md)
-← [Shipping Labels](shipping-labels.md), [Customer Hub](customer-hub.md), [Account Health](account-health.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md)
+← [Shipping Labels](shipping-labels.md), [Customer Hub](customer-hub.md), [Account Health](account-health.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md), [Shipment Monitor](shipment-monitor.md)
 
 ### [Shipping Labels](shipping-labels.md)
 ← [Veeqo API](veeqo-api.md), [SKU Database](google-sheets-sku-db.md), [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md)
-→ [Dashboard](dashboard.md), [n8n Автоматизация](n8n-automation.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md)
+→ [Dashboard](dashboard.md), [n8n Автоматизация](n8n-automation.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md), [Shipment Monitor](shipment-monitor.md)
 ⊂ [Выбор ставки](shipping-rate-selection.md), [Бюджет](budget-check-algorithm.md), [Weekend распределение](weekend-distribution.md), [Carrier rules](carrier-selection-rules.md), [Label filename](label-filename-format.md)
 
 ### [Customer Hub](customer-hub.md)
@@ -25,13 +25,18 @@
 ⇔ [A-to-Z & Chargeback](atoz-chargeback.md) (ODR), [Feedback Manager](feedback-manager.md) (Negative Feedback), [Shipping Labels](shipping-labels.md) (LSR/VTR)
 
 ### [Frozen Analytics](frozen-analytics.md)
-← [Veeqo API](veeqo-api.md), [Weather/Geocoding](weather-geocoding.md), [Shipping Labels](shipping-labels.md)
+← [Veeqo API](veeqo-api.md), [Weather/Geocoding](weather-geocoding.md), [Shipping Labels](shipping-labels.md), [Shipment Monitor](shipment-monitor.md)
 ⇔ [Customer Hub](customer-hub.md) (frozen жалобы), [Frozen/Dry классификация](frozen-dry-classification.md), [Frozen shipping rules](frozen-shipping-rules.md)
 
 ### [Adjustments Monitor](adjustments-monitor.md)
 ← [Amazon SP-API](amazon-sp-api.md), [SKU Database](google-sheets-sku-db.md)
 → [Dashboard](dashboard.md)
 ⇔ [Shipping Labels](shipping-labels.md) (label cost/carrier)
+
+### [Shipment Monitor](shipment-monitor.md)
+← [Veeqo API](veeqo-api.md) (tracking events), [Shipping Labels](shipping-labels.md) (label data), [Carrier APIs](carrier-tracking-apis.md) (Level 2)
+→ [Dashboard](dashboard.md), [Frozen Analytics](frozen-analytics.md) (delivery timeline)
+⇔ [Customer Hub](customer-hub.md) (delivery issues), [Telegram](telegram-notifications.md) (daily report)
 
 ---
 
@@ -69,7 +74,7 @@
 ## Интеграции
 
 ### [Veeqo API](veeqo-api.md)
-→ [Shipping Labels](shipping-labels.md), [Frozen Analytics](frozen-analytics.md), [Customer Hub](customer-hub.md), [n8n Автоматизация](n8n-automation.md)
+→ [Shipping Labels](shipping-labels.md), [Frozen Analytics](frozen-analytics.md), [Customer Hub](customer-hub.md), [n8n Автоматизация](n8n-automation.md), [Shipment Monitor](shipment-monitor.md)
 ⇔ [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md), [SKU Database](google-sheets-sku-db.md)
 
 ### [Amazon SP-API](amazon-sp-api.md)
@@ -78,7 +83,12 @@
 
 ### [Gmail API](gmail-api.md)
 → [Customer Hub](customer-hub.md) (Messages + Chargebacks)
-⇔ [Amazon SP-API](amazon-sp-api.md), [A-to-Z & Chargeback](atoz-chargeback.md)
+⇔ [Amazon SP-API](amazon-sp-api.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Amazon Notifications Map](amazon-notifications-map.md)
+
+### [Amazon Notifications Map](amazon-notifications-map.md)
+← [Gmail API](gmail-api.md), [Amazon SP-API](amazon-sp-api.md)
+→ [Customer Hub](customer-hub.md), [Account Health](account-health.md), [Shipping Labels](shipping-labels.md), [Adjustments Monitor](adjustments-monitor.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md)
+⇔ [Dashboard](dashboard.md) (счётчики), [Decision Engine](customer-hub-decision-engine.md), [n8n Автоматизация](n8n-automation.md)
 
 ### [SKU Database](google-sheets-sku-db.md)
 → [Shipping Labels](shipping-labels.md), [n8n Автоматизация](n8n-automation.md)
@@ -88,10 +98,13 @@
 → [Customer Hub](customer-hub.md), [Decision Engine](customer-hub-decision-engine.md), [Feedback Manager](feedback-manager.md), [A-to-Z & Chargeback](atoz-chargeback.md)
 
 ### [Telegram](telegram-notifications.md)
-→ [Shipping Labels](shipping-labels.md), [n8n Автоматизация](n8n-automation.md), [Account Health](account-health.md)
+→ [Shipping Labels](shipping-labels.md), [n8n Автоматизация](n8n-automation.md), [Account Health](account-health.md), [Shipment Monitor](shipment-monitor.md)
 
 ### [Weather/Geocoding](weather-geocoding.md)
 → [Frozen Analytics](frozen-analytics.md)
+
+### [Carrier Tracking APIs](carrier-tracking-apis.md)
+→ [Shipment Monitor](shipment-monitor.md) (Level 2), [Frozen Analytics](frozen-analytics.md)
 
 ### [n8n Автоматизация](n8n-automation.md)
 Реализует [Shipping Labels](shipping-labels.md)
@@ -143,4 +156,4 @@
 - `⇔` двусторонняя связь
 
 ---
-Последнее обновление: 2026-04-10
+Последнее обновление: 2026-04-11

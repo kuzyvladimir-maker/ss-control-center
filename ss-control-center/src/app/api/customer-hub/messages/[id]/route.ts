@@ -6,6 +6,120 @@ import {
   validateAndFixResponse,
 } from "@/lib/customer-hub/message-analyzer";
 import type { AnalysisInput } from "@/lib/customer-hub/message-analyzer";
+import { translateText } from "@/lib/customer-hub/translator";
+import { enrichMessage } from "@/lib/customer-hub/message-enricher";
+import type { ParsedBuyerEmail } from "@/lib/customer-hub/gmail-parser";
+
+/**
+ * Re-run the enricher on a stored BuyerMessage. Builds a synthetic
+ * ParsedBuyerEmail from the row, calls enrichMessage to refresh shipping
+ * facts (Amazon SP-API + Veeqo + carrier direct API), and writes the
+ * fresh fields back to the row. Used by runAnalysis so re-analyze
+ * always works against current carrier ETAs, not stale snapshots from
+ * the original sync.
+ */
+async function reEnrichStoredMessage(messageId: string) {
+  const m = await prisma.buyerMessage.findUnique({ where: { id: messageId } });
+  if (!m) return null;
+
+  const synthetic: ParsedBuyerEmail = {
+    gmailMessageId: m.gmailMessageId || "",
+    gmailThreadId: m.gmailThreadId || null,
+    storeIndex: m.storeIndex,
+    storeName: m.storeName,
+    storeEmail: m.storeEmail || "",
+    customerName: m.customerName,
+    customerEmail: m.customerEmail,
+    amazonOrderId: m.amazonOrderId,
+    asin: m.asin,
+    productName: m.product,
+    customerMessage: m.customerMessage || "",
+    language: m.language === "Spanish" ? "Spanish" : "English",
+    receivedAt: m.receivedAt || m.createdAt,
+  };
+
+  try {
+    const enriched = await enrichMessage(synthetic);
+    await prisma.buyerMessage.update({
+      where: { id: messageId },
+      data: {
+        orderDate: enriched.orderDate,
+        orderTotal: enriched.orderTotal,
+        product: enriched.product,
+        productType: enriched.productType,
+        quantity: enriched.quantity,
+        carrier: enriched.carrier,
+        service: enriched.service,
+        trackingNumber: enriched.trackingNumber,
+        shipDate: enriched.shipDate,
+        promisedEdd: enriched.promisedEdd,
+        actualDelivery: enriched.actualDelivery,
+        trackingStatus: enriched.trackingStatus,
+        daysInTransit: enriched.daysInTransit,
+        daysLate: enriched.daysLate,
+        requestedShippingService: enriched.requestedShippingService,
+        actualShippingService: enriched.actualShippingService,
+        shippingMismatch: enriched.shippingMismatch,
+        carrierEstimatedDelivery: enriched.carrierEstimatedDelivery,
+        trackingEvents: enriched.trackingEvents
+          ? JSON.stringify(enriched.trackingEvents)
+          : null,
+        boughtThroughVeeqo: enriched.boughtThroughVeeqo,
+        claimsProtected: enriched.claimsProtected,
+        shippedOnTime: enriched.shippedOnTime,
+      },
+    });
+    return await prisma.buyerMessage.findUnique({ where: { id: messageId } });
+  } catch (e) {
+    console.error(
+      "[reEnrichStoredMessage] failed:",
+      e instanceof Error ? e.message : String(e)
+    );
+    return m;
+  }
+}
+
+/**
+ * Parse the JSON-encoded trackingEvents column from the DB back into the
+ * shape expected by AnalysisInput. Returns null on empty/invalid.
+ */
+function parseStoredTrackingEvents(
+  stored: string | null | undefined
+): AnalysisInput["trackingEvents"] {
+  if (!stored) return null;
+  try {
+    const parsed = JSON.parse(stored);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Mirror of message-enricher.ts detection — scans tracking events for
+ * documentary delay/exception evidence. Used by the per-message route
+ * when reading tracking from DB without re-fetching from carrier.
+ */
+function detectCarrierDelay(
+  events: AnalysisInput["trackingEvents"]
+): boolean {
+  if (!events || events.length === 0) return false;
+  const delayKeywords = [
+    "delay",
+    "delayed",
+    "exception",
+    "weather",
+    "missed",
+    "late",
+    "rescheduled",
+    "unable to deliver",
+  ];
+  return events.some((e) => {
+    const blob = `${e.description || ""} ${e.status || ""}`.toLowerCase();
+    return delayKeywords.some((kw) => blob.includes(kw));
+  });
+}
 
 // GET — single message with conversation history
 export async function GET(
@@ -76,6 +190,7 @@ const PATCHABLE_FIELDS = [
   "status",
   "resolution",
   "editedResponse",
+  "editedResponseRu",
   "vladimirNotes",
   "responseSentVia",
   "responseSentAt",
@@ -118,7 +233,11 @@ export async function PATCH(
 }
 
 async function runAnalysis(id: string) {
-  const message = await prisma.buyerMessage.findUnique({ where: { id } });
+  // Refresh shipping facts (Amazon SP-API + Veeqo + carrier API) before
+  // re-running the model. Without this, re-analyze always reasons over
+  // the snapshot from the original sync — so newer carrier ETAs from
+  // UPS/FedEx/USPS direct lookups never reach the model.
+  const message = await reEnrichStoredMessage(id);
   if (!message) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -175,6 +294,11 @@ async function runAnalysis(id: string) {
     actualShippingService: message.actualShippingService,
     shippingMismatch: message.shippingMismatch,
     carrierEstimatedDelivery: message.carrierEstimatedDelivery,
+    trackingEvents: parseStoredTrackingEvents(message.trackingEvents),
+    carrierSelfDeclaredDelay: detectCarrierDelay(
+      parseStoredTrackingEvents(message.trackingEvents)
+    ),
+    channel: message.channel || "Amazon",
     boughtThroughVeeqo: message.boughtThroughVeeqo,
     claimsProtected: message.claimsProtected,
     shippedOnTime: message.shippedOnTime,
@@ -188,6 +312,19 @@ async function runAnalysis(id: string) {
     hasAtozClaim,
     hasNegativeFeedback,
   });
+
+  // Re-translate the new response + make sure customerMessage is translated
+  // (back-fill for messages synced before the translator existed).
+  const [suggestedRu, customerRu] = await Promise.all([
+    result.suggestedResponse
+      ? translateText(result.suggestedResponse, "en-ru").catch(() => null)
+      : Promise.resolve(null),
+    message.customerMessageRu
+      ? Promise.resolve(message.customerMessageRu)
+      : message.customerMessage
+        ? translateText(message.customerMessage, "en-ru").catch(() => null)
+        : Promise.resolve(null),
+  ]);
 
   // Save analysis to DB
   const updated = await prisma.buyerMessage.update({
@@ -203,6 +340,9 @@ async function runAnalysis(id: string) {
       foodSafetyRisk: result.foodSafetyRisk,
       atozRisk: result.atozRisk,
       suggestedResponse: result.suggestedResponse,
+      suggestedResponseRu: suggestedRu,
+      supplierReorderNote: result.supplierReorderNote,
+      customerMessageRu: customerRu,
       category: result.problemType,
       categoryName: result.problemTypeName,
       priority: result.riskLevel,
@@ -278,6 +418,11 @@ async function runRewrite(id: string, style: unknown) {
     actualShippingService: message.actualShippingService,
     shippingMismatch: message.shippingMismatch,
     carrierEstimatedDelivery: message.carrierEstimatedDelivery,
+    trackingEvents: parseStoredTrackingEvents(message.trackingEvents),
+    carrierSelfDeclaredDelay: detectCarrierDelay(
+      parseStoredTrackingEvents(message.trackingEvents)
+    ),
+    channel: message.channel || "Amazon",
     boughtThroughVeeqo: message.boughtThroughVeeqo,
     claimsProtected: message.claimsProtected,
     shippedOnTime: message.shippedOnTime,
@@ -294,10 +439,15 @@ async function runRewrite(id: string, style: unknown) {
   });
 
   // Only touch the response text + fact check — keep the rest intact.
+  const suggestedRu = result.suggestedResponse
+    ? await translateText(result.suggestedResponse, "en-ru").catch(() => null)
+    : null;
   const updated = await prisma.buyerMessage.update({
     where: { id },
     data: {
       suggestedResponse: result.suggestedResponse,
+      suggestedResponseRu: suggestedRu,
+      supplierReorderNote: result.supplierReorderNote,
       factCheckJson: JSON.stringify(result.factCheck),
     },
   });
@@ -348,6 +498,11 @@ async function runFix(id: string) {
     actualShippingService: message.actualShippingService,
     shippingMismatch: message.shippingMismatch,
     carrierEstimatedDelivery: message.carrierEstimatedDelivery,
+    trackingEvents: parseStoredTrackingEvents(message.trackingEvents),
+    carrierSelfDeclaredDelay: detectCarrierDelay(
+      parseStoredTrackingEvents(message.trackingEvents)
+    ),
+    channel: message.channel || "Amazon",
     boughtThroughVeeqo: message.boughtThroughVeeqo,
     claimsProtected: message.claimsProtected,
     shippedOnTime: message.shippedOnTime,
@@ -383,17 +538,27 @@ async function runFix(id: string) {
 
   const newResponse = validation.response;
   const newFactCheck = factCheckResponse(newResponse, input);
+  const newResponseRu = await translateText(newResponse, "en-ru").catch(
+    () => null
+  );
   // Merge [AUTO-FIXED: ...] marker into reasoning so the UI banner shows
   const fixMarker = `[AUTO-FIXED: ${validation.fixReason}]`;
   const existingReasoning = message.reasoning || "";
-  const reasoning = existingReasoning.includes("[AUTO-FIXED:")
-    ? existingReasoning
-    : `${existingReasoning} ${fixMarker}`.trim();
+  // Strip any prior [NEEDS REVIEW: ...] tag — the fix button just
+  // addressed it, so leaving it in the UI would be confusing.
+  const cleanedReasoning = existingReasoning.replace(
+    /\[NEEDS REVIEW:[^\]]*\]/g,
+    ""
+  );
+  const reasoning = cleanedReasoning.includes("[AUTO-FIXED:")
+    ? cleanedReasoning
+    : `${cleanedReasoning} ${fixMarker}`.trim();
 
   const updated = await prisma.buyerMessage.update({
     where: { id },
     data: {
       suggestedResponse: newResponse,
+      suggestedResponseRu: newResponseRu,
       factCheckJson: JSON.stringify(newFactCheck),
       reasoning,
     },

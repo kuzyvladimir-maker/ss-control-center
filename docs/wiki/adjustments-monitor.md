@@ -25,7 +25,7 @@
 - `SkuAdjustmentProfile` — профили по SKU
 
 ## 🔗 Связи
-- **Зависит от:** [Amazon SP-API](amazon-sp-api.md), [SKU Database](google-sheets-sku-db.md)
+- **Зависит от:** [Amazon SP-API](amazon-sp-api.md), [SKU Database](google-sheets-sku-db.md), [Amazon Notifications Map](amazon-notifications-map.md) (Refund Notifications + Inventory removals как триггеры синхронизации)
 - **Используется в:** [Dashboard](dashboard.md)
 - **Связанные модули:** [Shipping Labels](shipping-labels.md) (label cost, carrier)
 - **См. также:** [Database Schema](database-schema.md)
