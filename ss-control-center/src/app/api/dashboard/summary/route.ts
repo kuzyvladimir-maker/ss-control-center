@@ -75,14 +75,13 @@ export async function GET() {
       },
       syncedAt: new Date().toISOString(),
     });
-  } catch {
-    return NextResponse.json({
-      orders: { total30d: 0, awaitingShipment: 0, shippedToday: 0, store1: 0, store2: 0 },
-      customerService: { openCases: 0 },
-      claims: { active: 0 },
-      health: { issues: 0 },
-      adjustments: { monthlyTotal: 0 },
-      syncedAt: new Date().toISOString(),
-    });
+  } catch (error) {
+    console.error("[dashboard/summary] GET failed:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to load dashboard summary",
+      },
+      { status: 500 }
+    );
   }
 }

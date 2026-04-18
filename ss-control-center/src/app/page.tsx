@@ -28,6 +28,7 @@ interface DashboardData {
   health: { issues: number };
   adjustments: { monthlyTotal: number };
   syncedAt: string;
+  error?: string;
 }
 
 interface SyncStatus {
@@ -39,6 +40,7 @@ interface SyncStatus {
     claims: { count: number };
   };
   lastSync: string | null;
+  error?: string;
 }
 
 export default function DashboardPage() {
@@ -47,6 +49,7 @@ export default function DashboardPage() {
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [pageError, setPageError] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -55,12 +58,30 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!mounted) return;
     setLoading(true);
+    setPageError(null);
     Promise.all([
-      fetch("/api/dashboard/summary").then((r) => r.json()).catch(() => null),
-      fetch("/api/sync/status").then((r) => r.json()).catch(() => null),
+      fetch("/api/dashboard/summary").then(async (r) => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          throw new Error(data.error || `Dashboard summary failed (${r.status})`);
+        }
+        return data as DashboardData;
+      }),
+      fetch("/api/sync/status").then(async (r) => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          throw new Error(data.error || `Sync status failed (${r.status})`);
+        }
+        return data as SyncStatus;
+      }),
     ]).then(([d, s]) => {
       setData(d);
       setSyncStatus(s);
+      setLoading(false);
+    }).catch((err) => {
+      setData(null);
+      setSyncStatus(null);
+      setPageError(err instanceof Error ? err.message : "Failed to load dashboard");
       setLoading(false);
     });
   }, [mounted]);
@@ -75,13 +96,26 @@ export default function DashboardPage() {
       });
       // Reload data
       const [d, s] = await Promise.all([
-        fetch("/api/dashboard/summary").then((r) => r.json()).catch(() => null),
-        fetch("/api/sync/status").then((r) => r.json()).catch(() => null),
+        fetch("/api/dashboard/summary").then(async (r) => {
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok) {
+            throw new Error(data.error || `Dashboard summary failed (${r.status})`);
+          }
+          return data as DashboardData;
+        }),
+        fetch("/api/sync/status").then(async (r) => {
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok) {
+            throw new Error(data.error || `Sync status failed (${r.status})`);
+          }
+          return data as SyncStatus;
+        }),
       ]);
       setData(d);
       setSyncStatus(s);
-    } catch {
-      /* ignore */
+      setPageError(null);
+    } catch (err) {
+      setPageError(err instanceof Error ? err.message : "Failed to refresh dashboard");
     } finally {
       setSyncing(false);
     }
@@ -139,6 +173,14 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {pageError && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="py-4 text-sm text-red-700">
+            {pageError}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

@@ -29,14 +29,14 @@ export async function POST(request: NextRequest) {
       });
 
       return NextResponse.json({ success: true, method: "sheets_api" });
-    } catch {
-      // If Google Sheets write fails, return success with manual flag
-      // so the UI can still update the plan item
+    } catch (err) {
       return NextResponse.json({
-        success: true,
-        method: "manual",
-        message: `SKU data saved locally. Please also add SKU ${data.sku} to Google Sheets manually.`,
-      });
+        error:
+          err instanceof Error
+            ? err.message
+            : `Failed to write SKU ${data.sku} to Google Sheets.`,
+        manualRequired: true,
+      }, { status: 502 });
     }
   } catch (error) {
     console.error("Fix SKU error:", error);

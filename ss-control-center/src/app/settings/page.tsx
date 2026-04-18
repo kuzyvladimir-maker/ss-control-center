@@ -49,26 +49,45 @@ function SyncPanel() {
     lastSync: string | null;
   } | null>(null);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/sync/status")
-      .then((r) => r.json())
-      .then(setStatus)
-      .catch(() => {});
+      .then(async (r) => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+        return data;
+      })
+      .then((data) => {
+        setStatus(data);
+        setError(null);
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Failed to load sync status");
+      });
   }, []);
 
   const runSync = async (job: string) => {
     setSyncing(job);
+    setError(null);
     try {
-      await fetch("/api/sync", {
+      const res = await fetch("/api/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ job }),
       });
-      const s = await fetch("/api/sync/status").then((r) => r.json());
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(result.error || `Sync failed (${res.status})`);
+      }
+      const sRes = await fetch("/api/sync/status");
+      const s = await sRes.json().catch(() => ({}));
+      if (!sRes.ok) {
+        throw new Error(s.error || `HTTP ${sRes.status}`);
+      }
       setStatus(s);
-    } catch {
-      /* ignore */
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to run sync");
     } finally {
       setSyncing(null);
     }
@@ -99,6 +118,11 @@ function SyncPanel() {
         </Button>
       </CardHeader>
       <CardContent className="space-y-2">
+        {error && (
+          <div className="rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+            {error}
+          </div>
+        )}
         {status?.lastSync && (
           <p className="text-xs text-slate-400 mb-2">
             Last sync:{" "}

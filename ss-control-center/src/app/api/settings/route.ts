@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+const ALLOWED_SETTINGS_KEYS = new Set([
+  "cogs_percent",
+  "replacement_label_cost",
+  "ai_primary_provider",
+  "ai_claude_model",
+  "ai_openai_model",
+]);
+
 // GET /api/settings?keys=cogs_percent,replacement_label_cost
 // Returns { values: { key: value, ... } } for the requested keys. Missing
 // keys are omitted (caller provides fallbacks).
@@ -13,6 +21,13 @@ export async function GET(request: NextRequest) {
       .filter(Boolean);
     if (keys.length === 0) {
       return NextResponse.json({ values: {} });
+    }
+    const invalidKeys = keys.filter((key) => !ALLOWED_SETTINGS_KEYS.has(key));
+    if (invalidKeys.length > 0) {
+      return NextResponse.json(
+        { error: `Unsupported setting key(s): ${invalidKeys.join(", ")}` },
+        { status: 400 }
+      );
     }
     const rows = await prisma.setting.findMany({
       where: { key: { in: keys } },
@@ -54,6 +69,12 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json(
           { error: `Invalid key "${key}"` },
           { status: 400 }
+        );
+      }
+      if (!ALLOWED_SETTINGS_KEYS.has(key)) {
+        return NextResponse.json(
+          { error: `Unsupported setting key "${key}"` },
+          { status: 403 }
         );
       }
     }

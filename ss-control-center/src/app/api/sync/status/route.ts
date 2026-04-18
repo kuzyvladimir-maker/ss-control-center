@@ -40,16 +40,11 @@ export async function GET() {
       },
       lastSync: lastSync?.completedAt,
     });
-  } catch {
-    return NextResponse.json({
-      stores: { configured: 0, total: 5 },
-      data: {
-        orders: { count: 0, perStore: {} },
-        adjustments: { count: 0 },
-        feedback: { count: 0 },
-        claims: { count: 0 },
-      },
-      lastSync: null,
-    });
+  } catch (error) {
+    console.error("[sync/status] GET failed:", error);
+    return NextResponse.json(
+      { error: "Failed to load sync status" },
+      { status: 500 }
+    );
   }
 }

@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
   response.cookies.set("sscc-session", token, {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 30, // 30 days

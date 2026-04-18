@@ -6,12 +6,19 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 function createPrismaClient() {
   // Production (Vercel/Turso): use remote libsql URL + auth token
-  // Development (local): use local SQLite file
+  // Otherwise prefer DATABASE_URL so runtime and Prisma CLI point to the
+  // same database in development.
   const tursoUrl = process.env.TURSO_DATABASE_URL;
   const tursoToken = process.env.TURSO_AUTH_TOKEN;
+  const databaseUrl = process.env.DATABASE_URL;
 
   if (tursoUrl && tursoToken) {
     const adapter = new PrismaLibSql({ url: tursoUrl, authToken: tursoToken });
+    return new PrismaClient({ adapter });
+  }
+
+  if (databaseUrl) {
+    const adapter = new PrismaLibSql({ url: databaseUrl });
     return new PrismaClient({ adapter });
   }
 

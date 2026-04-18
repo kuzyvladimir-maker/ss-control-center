@@ -1,7 +1,21 @@
 // Fetches SKU data from existing Google Sheets "SKU Shipping Database v2"
 // Sheet must be shared as "Anyone with the link can view"
 
-const SHEET_ID = process.env.GOOGLE_SHEETS_ID!;
+function getSheetId(): string {
+  const sheetId = process.env.GOOGLE_SHEETS_ID;
+  if (!sheetId) {
+    throw new Error("GOOGLE_SHEETS_ID is not configured");
+  }
+  return sheetId;
+}
+
+function getSheetsApiKey(): string {
+  const apiKey = process.env.GOOGLE_SHEETS_API_KEY;
+  if (!apiKey) {
+    throw new Error("GOOGLE_SHEETS_API_KEY is not configured");
+  }
+  return apiKey;
+}
 
 export interface SkuRow {
   sku: string;           // Column A
@@ -50,7 +64,8 @@ function parseNumber(val: string): number | null {
 
 export async function fetchSkuDatabase(): Promise<SkuRow[]> {
   // Use Google Sheets CSV export (requires sheet to be publicly viewable)
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+  const sheetId = getSheetId();
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
 
   const res = await fetch(url, {
     next: { revalidate: 300 }, // Cache for 5 minutes
@@ -122,7 +137,9 @@ export async function appendSkuRow(data: {
   weight: number;
   weightFedex: number;
 }): Promise<boolean> {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!A:K:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS&key=${process.env.GOOGLE_SHEETS_API_KEY || ""}`;
+  const sheetId = getSheetId();
+  const apiKey = getSheetsApiKey();
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A:K:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS&key=${apiKey}`;
 
   // Columns: A=SKU, B=Title, C=Marketplace, D=Category, E=Length, F=Width, G=Height, H=Weight, I=SampleCount, J=Notes, K=WeightFedex
   const row = [

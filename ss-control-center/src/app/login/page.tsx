@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -8,9 +8,35 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [registrationEnabled, setRegistrationEnabled] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/auth/register")
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (!cancelled) {
+          setRegistrationEnabled(data.enabled === true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRegistrationEnabled(false);
+          setMode("login");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,26 +84,34 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => { setMode("login"); setError(""); }}
-            className={`flex-1 rounded-md py-2 text-sm font-medium transition ${
+            className={`rounded-md py-2 text-sm font-medium transition ${
               mode === "login"
                 ? "bg-white text-gray-900 shadow"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+            } ${registrationEnabled ? "flex-1" : "w-full"}`}
           >
             Sign In
           </button>
-          <button
-            type="button"
-            onClick={() => { setMode("register"); setError(""); }}
-            className={`flex-1 rounded-md py-2 text-sm font-medium transition ${
-              mode === "register"
-                ? "bg-white text-gray-900 shadow"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Create Account
-          </button>
+          {registrationEnabled && (
+            <button
+              type="button"
+              onClick={() => { setMode("register"); setError(""); }}
+              className={`flex-1 rounded-md py-2 text-sm font-medium transition ${
+                mode === "register"
+                  ? "bg-white text-gray-900 shadow"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Create Account
+            </button>
+          )}
         </div>
+
+        {!registrationEnabled && (
+          <p className="mb-4 text-center text-xs text-gray-500">
+            Registration is disabled after the initial account is created.
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -97,7 +131,7 @@ export default function LoginPage() {
             />
           </div>
 
-          {mode === "register" && (
+          {mode === "register" && registrationEnabled && (
             <div>
               <label htmlFor="displayName" className="block text-sm font-medium text-gray-700">
                 Display Name <span className="text-gray-400">(optional)</span>
