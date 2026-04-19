@@ -13,6 +13,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import WalmartPerformancePanel from "@/components/account-health/WalmartPerformancePanel";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type StoreData = any;
@@ -372,6 +373,8 @@ export default function AccountHealthPage() {
           ))}
         </div>
       )}
+
+      <WalmartPerformancePanel />
     </div>
   );
 }

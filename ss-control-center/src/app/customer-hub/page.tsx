@@ -11,6 +11,7 @@ import AtozTab from "@/components/customer-hub/AtozTab";
 import ChargebacksTab from "@/components/customer-hub/ChargebacksTab";
 import FeedbackTab from "@/components/customer-hub/FeedbackTab";
 import WalmartCaseModal from "@/components/customer-hub/WalmartCaseModal";
+import WalmartSyncButton from "@/components/customer-hub/WalmartSyncButton";
 
 export default function CustomerHubPage() {
   const [storeFilter, setStoreFilter] = useState("all");
@@ -25,6 +26,7 @@ export default function CustomerHubPage() {
         <div className="flex items-center gap-3">
           <PeriodFilter value={period} onChange={setPeriod} />
           <StoreFilter value={storeFilter} onChange={setStoreFilter} />
+          <WalmartSyncButton />
           <WalmartCaseModal />
         </div>
       </div>

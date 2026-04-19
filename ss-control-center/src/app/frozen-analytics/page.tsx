@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import IncidentsTable from "@/components/frozen-analytics/IncidentsTable";
 import SkuRiskTable from "@/components/frozen-analytics/SkuRiskTable";
 import PatternsDashboard from "@/components/frozen-analytics/PatternsDashboard";
+import WalmartBaselineCard from "@/components/frozen-analytics/WalmartBaselineCard";
 
 export default function FrozenAnalyticsPage() {
   const [mounted, setMounted] = useState(false);
@@ -95,6 +96,7 @@ export default function FrozenAnalyticsPage() {
 
   return (
     <div className="space-y-6">
+      <WalmartBaselineCard />
       <Tabs defaultValue="incidents">
         <TabsList variant="line" className="mb-4">
           <TabsTrigger value="incidents" className="gap-1.5 px-4">

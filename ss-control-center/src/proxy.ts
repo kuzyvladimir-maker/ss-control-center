@@ -22,6 +22,12 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Vercel cron jobs bypass the session check; the route itself validates
+  // the CRON_SECRET bearer token, so outside callers can't spoof it.
+  if (pathname.startsWith("/api/cron/")) {
+    return NextResponse.next();
+  }
+
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
