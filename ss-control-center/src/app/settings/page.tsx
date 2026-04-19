@@ -1408,6 +1408,28 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8">
       {/* ================================================================= */}
+      {/* SECTION 0 — User permissions / invites                            */}
+      {/* ================================================================= */}
+      <section className="space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-800">
+              User Permissions
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Invite teammates by email and manage their access roles.
+            </p>
+          </div>
+          <a
+            href="/settings/users"
+            className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Manage users →
+          </a>
+        </div>
+      </section>
+
+      {/* ================================================================= */}
       {/* SECTION 1 — Connected Accounts (per-store credentials)            */}
       {/* ================================================================= */}
       <section className="space-y-4">

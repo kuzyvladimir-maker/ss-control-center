@@ -24,10 +24,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = createSessionToken();
+    const token = createSessionToken(user.id);
     const response = NextResponse.json({
       ok: true,
-      user: { username: user.username, displayName: user.displayName },
+      user: { username: user.username, displayName: user.displayName, role: user.role },
     });
 
     response.cookies.set("sscc-session", token, {

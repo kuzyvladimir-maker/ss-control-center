@@ -13,7 +13,27 @@ model User {
   username     String   @unique
   passwordHash String
   displayName  String?
+  // "admin" can manage invites and other users; "member" is a regular user.
+  // The first registered user is automatically admin.
+  role         String   @default("member")
   createdAt    DateTime @default(now())
+}
+
+// Single-use invitations issued by an admin. A new user can only register
+// by visiting an invite link with a valid (unused, unexpired) token.
+model Invite {
+  id           String    @id @default(cuid())
+  email        String                          // target email (lower-cased)
+  token        String    @unique               // unguessable URL-safe token
+  role         String    @default("member")    // role to assign on accept
+  createdById  String                          // user.id of the admin who created it
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime                        // typically now() + 7 days
+  acceptedAt   DateTime?                       // null while pending
+  acceptedByUserId String?                     // user.id once accepted
+  revokedAt    DateTime?                       // admin can revoke before use
+
+  @@index([email])
 }
 
 model CsCase {

@@ -1,55 +1,67 @@
 import { createHash, randomBytes, timingSafeEqual } from "crypto";
 
 // --- Session tokens ---
+// Format: "sscc:{userId}:{issuedAtMs}:{nonceHex}:{hmacHex}"
+// The signature covers everything before the last colon.
 
 const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
-export function createSessionToken(): string {
+export interface SessionPayload {
+  userId: string;
+  issuedAt: number;
+}
+
+export function createSessionToken(userId: string): string {
   const secret = process.env.NEXTAUTH_SECRET!;
-  const payload = `sscc:${Date.now()}:${randomBytes(8).toString("hex")}`;
+  const payload = `sscc:${userId}:${Date.now()}:${randomBytes(8).toString("hex")}`;
   const hash = createHash("sha256")
     .update(payload + secret)
     .digest("hex");
   return `${payload}:${hash}`;
 }
 
-export function verifySessionToken(token: string): boolean {
+/**
+ * Returns the validated payload (userId + issuedAt) if the token is good,
+ * else null.
+ */
+export function verifySession(token: string): SessionPayload | null {
   const secret = process.env.NEXTAUTH_SECRET;
-  if (!secret || !token) return false;
+  if (!secret || !token) return null;
 
   const lastColon = token.lastIndexOf(":");
-  if (lastColon === -1) return false;
+  if (lastColon === -1) return null;
 
   const payload = token.slice(0, lastColon);
   const providedHash = token.slice(lastColon + 1);
-  const payloadParts = payload.split(":");
-  const issuedAt = Number(payloadParts[1]);
+  const parts = payload.split(":");
 
-  if (
-    payloadParts.length !== 3 ||
-    payloadParts[0] !== "sscc" ||
-    !Number.isFinite(issuedAt)
-  ) {
-    return false;
-  }
+  if (parts.length !== 4 || parts[0] !== "sscc") return null;
 
-  if (Date.now() - issuedAt > SESSION_MAX_AGE_MS) {
-    return false;
-  }
+  const userId = parts[1];
+  const issuedAt = Number(parts[2]);
+  if (!userId || !Number.isFinite(issuedAt)) return null;
+  if (Date.now() - issuedAt > SESSION_MAX_AGE_MS) return null;
 
   const expectedHash = createHash("sha256")
     .update(payload + secret)
     .digest("hex");
 
-  // Timing-safe comparison to prevent timing attacks
   try {
-    return timingSafeEqual(
+    const ok = timingSafeEqual(
       Buffer.from(providedHash, "hex"),
       Buffer.from(expectedHash, "hex")
     );
+    if (!ok) return null;
   } catch {
-    return false;
+    return null;
   }
+
+  return { userId, issuedAt };
+}
+
+/** Backwards-compatible boolean check for the proxy/middleware layer. */
+export function verifySessionToken(token: string): boolean {
+  return verifySession(token) !== null;
 }
 
 // --- Password hashing (SHA-256 + salt) ---
@@ -78,4 +90,10 @@ export function verifyPassword(password: string, stored: string): boolean {
   } catch {
     return false;
   }
+}
+
+// --- Invite tokens (URL-safe, unguessable) ---
+
+export function generateInviteToken(): string {
+  return randomBytes(32).toString("base64url");
 }
