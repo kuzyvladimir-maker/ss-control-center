@@ -56,17 +56,32 @@ export default function LoginPage() {
         body: JSON.stringify(body),
       });
 
-      const data = await res.json();
+      // Read body once as text, then try to parse as JSON. This way an empty
+      // or non-JSON body still produces a useful error instead of swallowing
+      // it as a generic "Network error".
+      const rawText = await res.text();
+      let data: { error?: string; ok?: boolean } = {};
+      try {
+        data = rawText ? JSON.parse(rawText) : {};
+      } catch {
+        // non-JSON response — keep rawText for the error message below
+      }
 
       if (res.ok) {
         router.push("/");
         router.refresh();
-      } else {
-        setError(data.error || "Something went wrong");
-        setLoading(false);
+        return;
       }
-    } catch {
-      setError("Network error");
+
+      const message =
+        data.error ||
+        (rawText ? rawText.slice(0, 200) : `Server returned HTTP ${res.status}`);
+      setError(message);
+      setLoading(false);
+    } catch (err) {
+      setError(
+        err instanceof Error ? `Network: ${err.message}` : "Network error"
+      );
       setLoading(false);
     }
   }
