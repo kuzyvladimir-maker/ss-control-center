@@ -1,20 +1,21 @@
 "use client";
 import { Tags } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { ComingSoon } from "@/components/kit";
 
 export default function ListingsPage() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-lg font-semibold text-slate-800">Product Listings</h1>
-      <Card>
-        <CardContent className="py-12 text-center">
-          <Tags size={32} className="mx-auto text-slate-300 mb-3" />
-          <p className="text-sm font-medium text-slate-600">Manage product listings across all stores</p>
-          <p className="text-xs text-slate-400 mt-1">Powered by Sellbrite API</p>
-          <p className="text-xs text-green-600 mt-3">API credentials: Configured</p>
-          <p className="text-xs text-slate-400">Integration in development</p>
-        </CardContent>
-      </Card>
-    </div>
+    <ComingSoon
+      title="Product listings"
+      tagline="Centralised view of every SKU across Amazon and Walmart, sourced from Sellbrite."
+      icon={<Tags size={20} />}
+      bullets={[
+        "Live pricing, BSR, and review counts per ASIN",
+        "Compare cross-marketplace listings for the same SKU",
+        "Bulk edit titles, bullets, and prices through Sellbrite",
+        "Flag listings missing dimensions, weight, or category tags",
+      ]}
+      eta="Sellbrite API connected · UI in design"
+      cta={{ label: "Open Settings → Sellbrite", href: "/settings" }}
+    />
   );
 }

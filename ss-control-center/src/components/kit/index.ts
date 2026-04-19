@@ -7,3 +7,4 @@ export { FilterTabs } from "./FilterTabs";
 export type { FilterTab } from "./FilterTabs";
 export { Btn } from "./Btn";
 export { Panel, PanelHeader, PanelBody } from "./Card";
+export { ComingSoon } from "./ComingSoon";

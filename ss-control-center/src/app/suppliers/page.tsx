@@ -1,23 +1,20 @@
 "use client";
-import { ShoppingCart } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Package } from "lucide-react";
+import { ComingSoon } from "@/components/kit";
 
 export default function SuppliersPage() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800">Supplier Management</h1>
-        <Button size="sm" disabled>Add Supplier</Button>
-      </div>
-      <Card>
-        <CardContent className="py-12 text-center">
-          <ShoppingCart size={32} className="mx-auto text-slate-300 mb-3" />
-          <p className="text-sm font-medium text-slate-600">Manage suppliers and purchase orders</p>
-          <p className="text-xs text-slate-400 mt-1">Track inventory sources and reorder schedules</p>
-          <p className="text-xs text-slate-400 mt-3">Module in development</p>
-        </CardContent>
-      </Card>
-    </div>
+    <ComingSoon
+      title="Suppliers"
+      tagline="Track every wholesaler, their PO history, lead times, and reorder triggers in one place."
+      icon={<Package size={20} />}
+      bullets={[
+        "Supplier directory with contact, terms, and lead time",
+        "Open purchase orders with ETA + receive workflow",
+        "Auto-reorder triggers based on Veeqo stock-on-hand",
+        "Per-SKU sourcing history and cost trend",
+      ]}
+      eta="Phase 2 · planned for Q3"
+    />
   );
 }
