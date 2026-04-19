@@ -119,12 +119,12 @@ function SyncPanel() {
       </CardHeader>
       <CardContent className="space-y-2">
         {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+          <div className="rounded-md border border-danger/20 bg-danger-tint p-2 text-xs text-danger">
             {error}
           </div>
         )}
         {status?.lastSync && (
-          <p className="text-xs text-slate-400 mb-2">
+          <p className="text-xs text-ink-3 mb-2">
             Last sync:{" "}
             {new Date(status.lastSync).toLocaleString("en-US", {
               month: "short",
@@ -137,7 +137,7 @@ function SyncPanel() {
         {syncItems.map((item) => (
           <div
             key={item.key}
-            className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0"
+            className="flex items-center justify-between py-2 border-b border-rule last:border-0"
           >
             <div className="flex items-center gap-2">
               <span>{item.icon}</span>
@@ -298,14 +298,14 @@ function GmailAccountsPanel() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-ink-3">
           Connect a Gmail account per store to receive buyer messages,
           chargeback notifications and feedback alerts. OAuth scope is
           read-only; tokens are stored in the database and never in .env.
         </p>
 
         {oauthConfigured === false && (
-          <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 space-y-2">
+          <div className="rounded-md border border-warn/30 bg-warn-tint p-3 text-xs text-warn-strong space-y-2">
             <p className="font-medium">
               Gmail OAuth is not configured yet.
             </p>
@@ -327,44 +327,44 @@ function GmailAccountsPanel() {
         )}
 
         {gmailResult?.type === "success" && (
-          <div className="rounded-md border border-green-200 bg-green-50 p-3 text-xs text-green-700">
+          <div className="rounded-md border border-green-200 bg-green-soft p-3 text-xs text-green-ink">
             <p className="font-medium">
               Connected {gmailResult.email}
               {gmailResult.store ? ` to Store ${gmailResult.store}` : ""}
             </p>
-            <p className="text-green-600">
+            <p className="text-green">
               Token saved to database — no restart needed.
             </p>
           </div>
         )}
 
         {gmailResult?.type === "error" && (
-          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+          <div className="rounded-md border border-danger/20 bg-danger-tint p-3 text-xs text-danger">
             Gmail connection failed: {gmailResult.reason}
           </div>
         )}
 
         {actionError && (
-          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+          <div className="rounded-md border border-danger/20 bg-danger-tint p-3 text-xs text-danger">
             {actionError}
           </div>
         )}
 
         {loading ? (
-          <div className="flex items-center gap-2 py-4 text-xs text-slate-400">
+          <div className="flex items-center gap-2 py-4 text-xs text-ink-3">
             <Loader2 size={14} className="animate-spin" /> Loading Gmail
             status…
           </div>
         ) : (
           <>
             {connectedCount > 0 && (
-              <div className="flex items-center justify-between gap-2 rounded border border-slate-200 bg-slate-50/50 px-3 py-2">
-                <div className="text-xs text-slate-600">
+              <div className="flex items-center justify-between gap-2 rounded border border-rule bg-surface-tint/50 px-3 py-2">
+                <div className="text-xs text-ink-2">
                   {testResults ? (
                     <span>
                       Tested {Object.keys(testResults).length} account
                       {Object.keys(testResults).length !== 1 ? "s" : ""}:{" "}
-                      <span className="text-green-600 font-medium">
+                      <span className="text-green font-medium">
                         {Object.values(testResults).filter((r) => r.ok).length}{" "}
                         OK
                       </span>
@@ -372,7 +372,7 @@ function GmailAccountsPanel() {
                         0 && (
                         <>
                           {" · "}
-                          <span className="text-red-600 font-medium">
+                          <span className="text-danger font-medium">
                             {
                               Object.values(testResults).filter((r) => !r.ok)
                                 .length
@@ -414,36 +414,36 @@ function GmailAccountsPanel() {
                 return (
                   <div
                     key={acct.storeIndex}
-                    className="flex items-center justify-between gap-4 py-2 border-b border-slate-100 last:border-0"
+                    className="flex items-center justify-between gap-4 py-2 border-b border-rule last:border-0"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {isConnected ? (
                         <CheckCircle
                           size={16}
-                          className="text-green-500 shrink-0"
+                          className="text-green shrink-0"
                         />
                       ) : (
                         <XCircle
                           size={16}
-                          className="text-slate-300 shrink-0"
+                          className="text-ink-4 shrink-0"
                         />
                       )}
                       <div className="min-w-0">
                         <div className="text-sm font-medium">
                           Store {acct.storeIndex}: {acct.storeName}
                         </div>
-                        <p className="text-[10px] text-slate-400 truncate">
+                        <p className="text-[10px] text-ink-3 truncate">
                           {acct.email ||
                             acct.expectedEmail ||
                             "No account assigned"}
                           {acct.source === "env" && (
-                            <span className="ml-1 text-amber-600">
+                            <span className="ml-1 text-warn">
                               (from .env — legacy)
                             </span>
                           )}
                         </p>
                         {test && test.ok && (
-                          <p className="text-[10px] text-green-600 mt-0.5">
+                          <p className="text-[10px] text-green mt-0.5">
                             ✓ {test.messagesTotal?.toLocaleString() || "?"}{" "}
                             total ·{" "}
                             <span className="font-medium">
@@ -455,7 +455,7 @@ function GmailAccountsPanel() {
                           </p>
                         )}
                         {test && !test.ok && (
-                          <p className="text-[10px] text-red-600 mt-0.5 truncate">
+                          <p className="text-[10px] text-danger mt-0.5 truncate">
                             ✗ {test.error}
                           </p>
                         )}
@@ -466,11 +466,11 @@ function GmailAccountsPanel() {
                         className={
                           test
                             ? test.ok
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
+                              ? "bg-green-soft2 text-green-ink"
+                              : "bg-danger-tint text-danger"
                             : isConnected
-                              ? "bg-green-100 text-green-700"
-                              : "bg-slate-100 text-slate-400"
+                              ? "bg-green-soft2 text-green-ink"
+                              : "bg-bg-elev text-ink-3"
                         }
                       >
                         {test
@@ -520,11 +520,11 @@ function GmailAccountsPanel() {
 
         <Separator />
 
-        <p className="text-[10px] text-slate-400">
+        <p className="text-[10px] text-ink-3">
           Scope:{" "}
-          <code className="rounded bg-slate-50 px-1">gmail.readonly</code>{" "}
+          <code className="rounded bg-surface-tint px-1">gmail.readonly</code>{" "}
           · Tokens stored in the{" "}
-          <code className="rounded bg-slate-50 px-1">Setting</code> table ·
+          <code className="rounded bg-surface-tint px-1">Setting</code> table ·
           Disconnect and reconnect to switch accounts.
         </p>
       </CardContent>
@@ -612,32 +612,32 @@ function SpApiStoresPanel() {
         <CardTitle className="text-base">Amazon SP-API</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-ink-3">
           Amazon Seller Partner API — orders, messaging, reports, finances,
           account health. Credentials are set per store in{" "}
-          <code className="rounded bg-slate-50 px-1">.env</code> via{" "}
-          <code className="rounded bg-slate-50 px-1">
+          <code className="rounded bg-surface-tint px-1">.env</code> via{" "}
+          <code className="rounded bg-surface-tint px-1">
             AMAZON_SP_REFRESH_TOKEN_STORE{"{"}N{"}"}
           </code>
           .
         </p>
 
         {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+          <div className="rounded-md border border-danger/20 bg-danger-tint p-3 text-xs text-danger">
             {error}
           </div>
         )}
 
         {loading ? (
-          <div className="flex items-center gap-2 py-4 text-xs text-slate-400">
+          <div className="flex items-center gap-2 py-4 text-xs text-ink-3">
             <Loader2 size={14} className="animate-spin" /> Loading SP-API
             status…
           </div>
         ) : (
           <>
             {configuredCount > 0 && (
-              <div className="flex items-center justify-between gap-2 rounded border border-slate-200 bg-slate-50/50 px-3 py-2">
-                <div className="text-xs text-slate-600">
+              <div className="flex items-center justify-between gap-2 rounded border border-rule bg-surface-tint/50 px-3 py-2">
+                <div className="text-xs text-ink-2">
                   {(() => {
                     if (!testResults) {
                       return (
@@ -661,13 +661,13 @@ function SpApiStoresPanel() {
                       <span>
                         Tested {relevant.length} store
                         {relevant.length !== 1 ? "s" : ""}:{" "}
-                        <span className="text-green-600 font-medium">
+                        <span className="text-green font-medium">
                           {ok} OK
                         </span>
                         {failed > 0 && (
                           <>
                             {" · "}
-                            <span className="text-red-600 font-medium">
+                            <span className="text-danger font-medium">
                               {failed} failed
                             </span>
                           </>
@@ -709,36 +709,36 @@ function SpApiStoresPanel() {
                 return (
                   <div
                     key={store.index}
-                    className="flex items-center justify-between gap-4 py-2 border-b border-slate-100 last:border-0"
+                    className="flex items-center justify-between gap-4 py-2 border-b border-rule last:border-0"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {store.configured ? (
                         <CheckCircle
                           size={16}
-                          className="text-green-500 shrink-0"
+                          className="text-green shrink-0"
                         />
                       ) : (
                         <XCircle
                           size={16}
-                          className="text-slate-300 shrink-0"
+                          className="text-ink-4 shrink-0"
                         />
                       )}
                       <div className="min-w-0">
                         <div className="text-sm font-medium">
                           Store {store.index}: {store.name}
                         </div>
-                        <p className="text-[10px] text-slate-400 truncate">
+                        <p className="text-[10px] text-ink-3 truncate">
                           {store.configured
                             ? `Credentials: AMAZON_SP_*_STORE${store.index}`
                             : "No credentials in .env"}
                         </p>
                         {testOk && test.marketplace && (
-                          <p className="text-[10px] text-green-600 mt-0.5 truncate">
+                          <p className="text-[10px] text-green mt-0.5 truncate">
                             ✓ {test.marketplace}
                             {test.sellerId && (
                               <>
                                 {" · Seller ID: "}
-                                <code className="rounded bg-slate-50 px-1">
+                                <code className="rounded bg-surface-tint px-1">
                                   {test.sellerId}
                                 </code>
                               </>
@@ -746,7 +746,7 @@ function SpApiStoresPanel() {
                           </p>
                         )}
                         {testFailed && (
-                          <p className="text-[10px] text-red-600 mt-0.5 truncate">
+                          <p className="text-[10px] text-danger mt-0.5 truncate">
                             ✗ {test.error}
                           </p>
                         )}
@@ -756,12 +756,12 @@ function SpApiStoresPanel() {
                       <Badge
                         className={
                           !store.configured
-                            ? "bg-slate-100 text-slate-400"
+                            ? "bg-bg-elev text-ink-3"
                             : testOk
-                              ? "bg-green-100 text-green-700"
+                              ? "bg-green-soft2 text-green-ink"
                               : testFailed
-                                ? "bg-red-100 text-red-700"
-                                : "bg-green-100 text-green-700"
+                                ? "bg-danger-tint text-danger"
+                                : "bg-green-soft2 text-green-ink"
                         }
                       >
                         {!store.configured
@@ -783,9 +783,9 @@ function SpApiStoresPanel() {
         <Separator />
 
         <div className="flex items-center justify-between">
-          <p className="text-[10px] text-slate-400">
+          <p className="text-[10px] text-ink-3">
             Auth: LWA refresh tokens per store · Fallback to shared{" "}
-            <code className="rounded bg-slate-50 px-1">
+            <code className="rounded bg-surface-tint px-1">
               AMAZON_SP_CLIENT_*
             </code>{" "}
             removed for security.
@@ -886,21 +886,21 @@ function LossSettingsPanel() {
         <CardTitle className="text-base">Loss Calculation Settings</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-ink-3">
           These values are used by the Losses dashboard on{" "}
-          <code className="rounded bg-slate-50 px-1">/customer-hub</code> to
+          <code className="rounded bg-surface-tint px-1">/customer-hub</code> to
           estimate the real cost of replacements. Changes take effect on the
           next dashboard refresh — no restart needed.
         </p>
 
         {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+          <div className="rounded-md border border-danger/20 bg-danger-tint p-2 text-xs text-danger">
             {error}
           </div>
         )}
 
         {loading ? (
-          <div className="flex items-center gap-2 py-2 text-xs text-slate-400">
+          <div className="flex items-center gap-2 py-2 text-xs text-ink-3">
             <Loader2 size={14} className="animate-spin" /> Loading settings…
           </div>
         ) : (
@@ -908,10 +908,10 @@ function LossSettingsPanel() {
             <div className="flex items-center justify-between gap-4">
               <label
                 htmlFor="cogs-percent"
-                className="text-sm text-slate-700"
+                className="text-sm text-ink"
               >
                 COGS %{" "}
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-ink-3">
                   (cost of goods as % of sale price)
                 </span>
               </label>
@@ -924,9 +924,9 @@ function LossSettingsPanel() {
                   step={1}
                   value={cogs}
                   onChange={(e) => setCogs(e.target.value)}
-                  className="w-20 rounded border border-slate-200 px-2 py-1 text-sm text-right focus:border-blue-400 focus:outline-none"
+                  className="w-20 rounded border border-rule px-2 py-1 text-sm text-right focus:border-green focus:outline-none"
                 />
-                <span className="text-sm text-slate-500">%</span>
+                <span className="text-sm text-ink-3">%</span>
               </div>
             </div>
 
@@ -935,15 +935,15 @@ function LossSettingsPanel() {
             <div className="flex items-center justify-between gap-4">
               <label
                 htmlFor="label-cost"
-                className="text-sm text-slate-700"
+                className="text-sm text-ink"
               >
                 Replacement label cost{" "}
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-ink-3">
                   (estimated shipping per replacement)
                 </span>
               </label>
               <div className="flex items-center gap-1 shrink-0">
-                <span className="text-sm text-slate-500">$</span>
+                <span className="text-sm text-ink-3">$</span>
                 <input
                   id="label-cost"
                   type="number"
@@ -951,14 +951,14 @@ function LossSettingsPanel() {
                   step={0.01}
                   value={labelCost}
                   onChange={(e) => setLabelCost(e.target.value)}
-                  className="w-20 rounded border border-slate-200 px-2 py-1 text-sm text-right focus:border-blue-400 focus:outline-none"
+                  className="w-20 rounded border border-rule px-2 py-1 text-sm text-right focus:border-green focus:outline-none"
                 />
               </div>
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-1">
               {savedFlash && (
-                <span className="text-[10px] text-green-600">Saved ✓</span>
+                <span className="text-[10px] text-green">Saved ✓</span>
               )}
               <Button
                 size="sm"
@@ -1091,7 +1091,7 @@ function AiProvidersPanel() {
         <CardTitle className="text-base">AI Decision Engine</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-ink-3">
           The Decision Engine uses one AI provider as primary and the other
           as fallback. If the primary fails (API error, rate limit, no
           credits), the system retries with the fallback automatically.
@@ -1099,13 +1099,13 @@ function AiProvidersPanel() {
         </p>
 
         {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+          <div className="rounded-md border border-danger/20 bg-danger-tint p-2 text-xs text-danger">
             {error}
           </div>
         )}
 
         {loading ? (
-          <div className="flex items-center gap-2 py-2 text-xs text-slate-400">
+          <div className="flex items-center gap-2 py-2 text-xs text-ink-3">
             <Loader2 size={14} className="animate-spin" /> Loading provider
             status…
           </div>
@@ -1129,32 +1129,32 @@ function AiProvidersPanel() {
                 return (
                   <div
                     key={key}
-                    className="flex items-center justify-between gap-4 py-2 border-b border-slate-100 last:border-0"
+                    className="flex items-center justify-between gap-4 py-2 border-b border-rule last:border-0"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {configured ? (
                         <CheckCircle
                           size={16}
-                          className="text-green-500 shrink-0"
+                          className="text-green shrink-0"
                         />
                       ) : (
                         <XCircle
                           size={16}
-                          className="text-slate-300 shrink-0"
+                          className="text-ink-4 shrink-0"
                         />
                       )}
                       <div className="min-w-0">
                         <div className="text-sm font-medium">{label}</div>
-                        <p className="text-[10px] text-slate-400 truncate">
+                        <p className="text-[10px] text-ink-3 truncate">
                           API key:{" "}
                           {configured ? (
-                            <span className="text-green-600">
+                            <span className="text-green">
                               configured in .env
                             </span>
                           ) : (
-                            <span className="text-slate-400">
+                            <span className="text-ink-3">
                               not set — add{" "}
-                              <code className="rounded bg-slate-50 px-1">
+                              <code className="rounded bg-surface-tint px-1">
                                 {key === "claude"
                                   ? "ANTHROPIC_API_KEY"
                                   : "OPENAI_API_KEY"}
@@ -1168,10 +1168,10 @@ function AiProvidersPanel() {
                     <Badge
                       className={
                         !configured
-                          ? "bg-slate-100 text-slate-400"
+                          ? "bg-bg-elev text-ink-3"
                           : isPrimary
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-slate-100 text-slate-600"
+                            ? "bg-green-soft2 text-green-deep"
+                            : "bg-bg-elev text-ink-2"
                       }
                     >
                       {!configured
@@ -1192,10 +1192,10 @@ function AiProvidersPanel() {
               <div className="flex items-center justify-between gap-4">
                 <label
                   htmlFor="ai-primary"
-                  className="text-sm text-slate-700 font-medium"
+                  className="text-sm text-ink font-medium"
                 >
                   Primary provider{" "}
-                  <span className="text-[10px] text-slate-400 font-normal">
+                  <span className="text-[10px] text-ink-3 font-normal">
                     (tried first)
                   </span>
                 </label>
@@ -1205,7 +1205,7 @@ function AiProvidersPanel() {
                   onChange={(e) =>
                     setPrimary(e.target.value as "claude" | "openai")
                   }
-                  className="w-52 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-400 focus:outline-none"
+                  className="w-52 rounded border border-rule px-2 py-1 text-sm focus:border-green focus:outline-none"
                 >
                   <option value="claude" disabled={!claudeConfigured}>
                     Claude (Anthropic)
@@ -1221,7 +1221,7 @@ function AiProvidersPanel() {
               <div className="flex items-center justify-between gap-4">
                 <label
                   htmlFor="claude-model"
-                  className="text-sm text-slate-700"
+                  className="text-sm text-ink"
                 >
                   Claude model
                 </label>
@@ -1230,7 +1230,7 @@ function AiProvidersPanel() {
                   value={claudeModel}
                   onChange={(e) => setClaudeModel(e.target.value)}
                   disabled={!claudeConfigured}
-                  className="w-52 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-400 focus:outline-none disabled:bg-slate-50 disabled:text-slate-400"
+                  className="w-52 rounded border border-rule px-2 py-1 text-sm focus:border-green focus:outline-none disabled:bg-surface-tint disabled:text-ink-3"
                 >
                   {claudeModels.map((m) => (
                     <option key={m.id} value={m.id}>
@@ -1248,7 +1248,7 @@ function AiProvidersPanel() {
               <div className="flex items-center justify-between gap-4">
                 <label
                   htmlFor="openai-model"
-                  className="text-sm text-slate-700"
+                  className="text-sm text-ink"
                 >
                   OpenAI model
                 </label>
@@ -1257,7 +1257,7 @@ function AiProvidersPanel() {
                   value={openaiModel}
                   onChange={(e) => setOpenaiModel(e.target.value)}
                   disabled={!openaiConfigured}
-                  className="w-52 rounded border border-slate-200 px-2 py-1 text-sm focus:border-blue-400 focus:outline-none disabled:bg-slate-50 disabled:text-slate-400"
+                  className="w-52 rounded border border-rule px-2 py-1 text-sm focus:border-green focus:outline-none disabled:bg-surface-tint disabled:text-ink-3"
                 >
                   {openaiModels.map((m) => (
                     <option key={m.id} value={m.id}>
@@ -1273,18 +1273,18 @@ function AiProvidersPanel() {
             </div>
 
             <div className="flex items-center justify-between gap-2 pt-1">
-              <div className="text-[10px] text-slate-400">
+              <div className="text-[10px] text-ink-3">
                 {data?.bothConfigured ? (
-                  <span className="text-green-600">
+                  <span className="text-green">
                     ✓ Fallback chain active
                   </span>
                 ) : data?.anyConfigured ? (
-                  <span className="text-amber-600">
+                  <span className="text-warn">
                     Only one provider available — add the other to enable
                     fallback
                   </span>
                 ) : (
-                  <span className="text-red-600">
+                  <span className="text-danger">
                     No providers configured — Decision Engine will use
                     heuristic fallback only
                   </span>
@@ -1292,10 +1292,10 @@ function AiProvidersPanel() {
               </div>
               <div className="flex items-center gap-2">
                 {savedFlash && (
-                  <span className="text-[10px] text-green-600">Saved ✓</span>
+                  <span className="text-[10px] text-green">Saved ✓</span>
                 )}
                 {isDirty && !savedFlash && (
-                  <span className="text-[10px] text-amber-600">
+                  <span className="text-[10px] text-warn">
                     Unsaved changes
                   </span>
                 )}
@@ -1446,10 +1446,10 @@ export default function SettingsPage() {
       {/* ================================================================= */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800">
+          <h2 className="text-sm font-semibold text-ink">
             Connected Accounts
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-ink-3 mt-0.5">
             Per-store credentials for Gmail and Amazon SP-API. Connect or
             disconnect accounts without editing .env.
           </p>
@@ -1464,10 +1464,10 @@ export default function SettingsPage() {
       {/* ================================================================= */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800">
+          <h2 className="text-sm font-semibold text-ink">
             AI Decision Engine
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-ink-3 mt-0.5">
             Choose primary and fallback AI providers for buyer message
             analysis, Walmart screenshot analysis and feedback classification.
           </p>
@@ -1481,10 +1481,10 @@ export default function SettingsPage() {
       {/* ================================================================= */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800">
+          <h2 className="text-sm font-semibold text-ink">
             External Services
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-ink-3 mt-0.5">
             Health check for third-party APIs used across the app.
           </p>
         </div>
@@ -1501,17 +1501,17 @@ export default function SettingsPage() {
               >
                 <div className="flex items-center gap-3">
                   {conn.status === "checking" ? (
-                    <Loader2 size={16} className="animate-spin text-slate-400" />
+                    <Loader2 size={16} className="animate-spin text-ink-3" />
                   ) : conn.status === "connected" ? (
-                    <CheckCircle size={16} className="text-green-500" />
+                    <CheckCircle size={16} className="text-green" />
                   ) : (
-                    <XCircle size={16} className="text-red-500" />
+                    <XCircle size={16} className="text-danger" />
                   )}
                   <span className="text-sm font-medium">{conn.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {conn.detail && (
-                    <span className="text-xs text-slate-400">{conn.detail}</span>
+                    <span className="text-xs text-ink-3">{conn.detail}</span>
                   )}
                   <Badge
                     variant={
@@ -1519,9 +1519,9 @@ export default function SettingsPage() {
                     }
                     className={
                       conn.status === "connected"
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-green-soft2 text-green-ink"
                         : conn.status === "disconnected"
-                          ? "bg-red-100 text-red-700"
+                          ? "bg-danger-tint text-danger"
                           : ""
                     }
                   >
@@ -1543,10 +1543,10 @@ export default function SettingsPage() {
       {/* ================================================================= */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800">
+          <h2 className="text-sm font-semibold text-ink">
             App Configuration
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-ink-3 mt-0.5">
             Runtime settings that affect how the app calculates and notifies.
           </p>
         </div>
@@ -1560,17 +1560,17 @@ export default function SettingsPage() {
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">Telegram Chat ID</span>
-                <code className="rounded bg-slate-100 px-2 py-1 text-xs">
+                <span className="text-sm text-ink-2">Telegram Chat ID</span>
+                <code className="rounded bg-bg-elev px-2 py-1 text-xs">
                   486456466
                 </code>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">
+                <span className="text-sm text-ink-2">
                   Notifications enabled
                 </span>
-                <Badge className="bg-green-100 text-green-700">Active</Badge>
+                <Badge className="bg-green-soft2 text-green-ink">Active</Badge>
               </div>
             </div>
           </CardContent>
@@ -1581,14 +1581,14 @@ export default function SettingsPage() {
             <CardTitle className="text-base">External API</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-slate-600 mb-3">
+            <p className="text-sm text-ink-2 mb-3">
               REST API for external systems (Claude agent, n8n, Telegram bot).
               Protected with Bearer token.
             </p>
-            <div className="rounded-md bg-slate-50 p-3 text-xs font-mono">
+            <div className="rounded-md bg-surface-tint p-3 text-xs font-mono">
               Authorization: Bearer &lt;SSCC_API_TOKEN&gt;
             </div>
-            <p className="text-xs text-slate-400 mt-2">
+            <p className="text-xs text-ink-3 mt-2">
               Set SSCC_API_TOKEN in your .env file (minimum 32 characters)
             </p>
           </CardContent>
@@ -1600,8 +1600,8 @@ export default function SettingsPage() {
       {/* ================================================================= */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800">Data</h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <h2 className="text-sm font-semibold text-ink">Data</h2>
+          <p className="text-xs text-ink-3 mt-0.5">
             Sync operations and SKU database management.
           </p>
         </div>
@@ -1613,7 +1613,7 @@ export default function SettingsPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-base">SKU Database</CardTitle>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-ink-3 mt-1">
               SKU Shipping Database v2 — weights, dimensions, box sizes
             </p>
           </div>
@@ -1622,7 +1622,7 @@ export default function SettingsPage() {
               <div className="flex items-center gap-2 text-xs">
                 <Badge variant="secondary">{skuRows.length} SKUs</Badge>
                 {incompleteCount > 0 && (
-                  <Badge className="bg-red-100 text-red-700">
+                  <Badge className="bg-danger-tint text-danger">
                     <AlertTriangle size={10} className="mr-1" />
                     {incompleteCount} incomplete
                   </Badge>
@@ -1656,9 +1656,9 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           {skuError && (
-            <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
+            <div className="mb-4 rounded-md bg-danger-tint p-3 text-sm text-danger">
               {skuError}
-              <p className="text-xs mt-1 text-red-500">
+              <p className="text-xs mt-1 text-danger">
                 Make sure the Google Sheet is shared as &quot;Anyone with the link can
                 view&quot;
               </p>
@@ -1671,14 +1671,14 @@ export default function SettingsPage() {
               <div className="relative mb-4">
                 <Search
                   size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"
                 />
                 <input
                   type="text"
                   placeholder="Search by SKU or product name..."
                   value={skuSearch}
                   onChange={(e) => setSkuSearch(e.target.value)}
-                  className="w-full rounded-md border border-slate-200 bg-white py-2 pl-10 pr-4 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                  className="w-full rounded-md border border-rule bg-white py-2 pl-10 pr-4 text-sm outline-none focus:border-green focus:ring-1 focus:ring-green"
                 />
               </div>
 
@@ -1701,7 +1701,7 @@ export default function SettingsPage() {
                   <TableBody>
                     {filteredSkus.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={9} className="text-center text-sm text-slate-400 py-8">
+                        <TableCell colSpan={9} className="text-center text-sm text-ink-3 py-8">
                           {skuSearch ? "No SKUs match your search" : "No data"}
                         </TableCell>
                       </TableRow>
@@ -1709,14 +1709,14 @@ export default function SettingsPage() {
                       filteredSkus.map((row) => (
                         <TableRow
                           key={row.sku}
-                          className={!row.hasCompleteData ? "bg-red-50" : ""}
+                          className={!row.hasCompleteData ? "bg-danger-tint" : ""}
                         >
                           <TableCell className="font-mono text-xs font-medium">
                             {row.sku}
                             {!row.hasCompleteData && (
                               <AlertTriangle
                                 size={12}
-                                className="ml-1 inline text-red-500"
+                                className="ml-1 inline text-danger"
                               />
                             )}
                           </TableCell>
@@ -1729,23 +1729,23 @@ export default function SettingsPage() {
                               variant="outline"
                               className={
                                 row.category === "Frozen"
-                                  ? "border-blue-300 text-blue-600 text-[10px]"
+                                  ? "border-green-soft2 text-green text-[10px]"
                                   : "text-[10px]"
                               }
                             >
                               {row.category || "—"}
                             </Badge>
                           </TableCell>
-                          <TableCell className={`text-xs text-right ${row.length === null ? "text-red-500 font-medium" : ""}`}>
+                          <TableCell className={`text-xs text-right ${row.length === null ? "text-danger font-medium" : ""}`}>
                             {row.length ?? "—"}
                           </TableCell>
-                          <TableCell className={`text-xs text-right ${row.width === null ? "text-red-500 font-medium" : ""}`}>
+                          <TableCell className={`text-xs text-right ${row.width === null ? "text-danger font-medium" : ""}`}>
                             {row.width ?? "—"}
                           </TableCell>
-                          <TableCell className={`text-xs text-right ${row.height === null ? "text-red-500 font-medium" : ""}`}>
+                          <TableCell className={`text-xs text-right ${row.height === null ? "text-danger font-medium" : ""}`}>
                             {row.height ?? "—"}
                           </TableCell>
-                          <TableCell className={`text-xs text-right ${row.weight === null ? "text-red-500 font-medium" : ""}`}>
+                          <TableCell className={`text-xs text-right ${row.weight === null ? "text-danger font-medium" : ""}`}>
                             {row.weight ?? "—"}
                           </TableCell>
                           <TableCell className="text-xs text-right">
@@ -1757,10 +1757,10 @@ export default function SettingsPage() {
                   </TableBody>
                 </Table>
               </div>
-              <p className="mt-2 text-xs text-slate-400">
+              <p className="mt-2 text-xs text-ink-3">
                 Showing {filteredSkus.length} of {skuRows.length} SKUs
                 {incompleteCount > 0 && (
-                  <span className="text-red-500">
+                  <span className="text-danger">
                     {" "}
                     — {incompleteCount} with missing data (highlighted in red)
                   </span>
@@ -1770,7 +1770,7 @@ export default function SettingsPage() {
           )}
 
           {!skuLoaded && !skuError && (
-            <p className="text-sm text-slate-400 py-4 text-center">
+            <p className="text-sm text-ink-3 py-4 text-center">
               Click &quot;Load Data&quot; to fetch SKU database from Google Sheets
             </p>
           )}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MessageSquare, Scale, CreditCard, Star } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { KpiCard } from "@/components/kit";
 
 interface HubStatsCardsProps {
   period?: number;
@@ -54,73 +54,67 @@ export default function HubStatsCards({
   const cards = [
     {
       key: "messages",
-      label: "Unread Messages",
+      label: "Unread messages",
       value: stats.unreadMessages,
-      urgent: stats.urgentMessages,
-      icon: MessageSquare,
-      color: "text-green",
-      bg: "bg-green-soft",
+      icon: <MessageSquare size={14} />,
+      iconVariant: "default" as const,
+      chips:
+        stats.urgentMessages > 0
+          ? [{ label: `${stats.urgentMessages} urgent`, variant: "urgent" as const }]
+          : undefined,
     },
     {
       key: "atoz",
       label: "Active A-to-Z",
       value: stats.activeAtoz,
-      urgent: 0,
-      icon: Scale,
-      color: "text-danger",
-      bg: "bg-danger-tint",
+      icon: <Scale size={14} />,
+      iconVariant: stats.activeAtoz > 0 ? ("warn" as const) : ("default" as const),
     },
     {
       key: "chargebacks",
-      label: "Active Chargebacks",
+      label: "Active chargebacks",
       value: stats.activeChargebacks,
-      urgent: 0,
-      icon: CreditCard,
-      color: "text-orange-600",
-      bg: "bg-orange-50",
+      icon: <CreditCard size={14} />,
+      iconVariant:
+        stats.activeChargebacks > 0 ? ("danger" as const) : ("default" as const),
     },
     {
       key: "feedback",
-      label: "New Feedback",
+      label: "New feedback",
       value: stats.newFeedback,
-      urgent: 0,
-      icon: Star,
-      color: "text-green",
-      bg: "bg-green-soft",
+      icon: <Star size={14} />,
+      iconVariant: "default" as const,
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map((c) => (
-        <Card
+        <div
           key={c.key}
-          className={onCardClick ? "cursor-pointer hover:border-blue-300 transition-colors" : ""}
+          role={onCardClick ? "button" : undefined}
+          tabIndex={onCardClick ? 0 : undefined}
+          className={
+            onCardClick
+              ? "cursor-pointer transition-all hover:-translate-y-0.5"
+              : undefined
+          }
           onClick={() => onCardClick?.(c.key)}
+          onKeyDown={(e) => {
+            if (onCardClick && (e.key === "Enter" || e.key === " ")) {
+              e.preventDefault();
+              onCardClick(c.key);
+            }
+          }}
         >
-          <CardContent className="flex items-center gap-3 py-3">
-            <div className={`rounded-lg p-2 ${c.bg}`}>
-              <c.icon size={16} className={c.color} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[10px] text-ink-3">{c.label}</p>
-              <div className="flex items-center gap-1.5">
-                <p
-                  className={`text-xl font-bold ${
-                    c.value > 0 ? c.color : "text-ink"
-                  }`}
-                >
-                  {c.value}
-                </p>
-                {c.urgent > 0 && (
-                  <span className="rounded-full bg-danger-tint px-1.5 py-0.5 text-[9px] font-semibold text-danger">
-                    {c.urgent} urgent
-                  </span>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          <KpiCard
+            label={c.label}
+            value={c.value}
+            icon={c.icon}
+            iconVariant={c.iconVariant}
+            chips={c.chips}
+          />
+        </div>
       ))}
     </div>
   );

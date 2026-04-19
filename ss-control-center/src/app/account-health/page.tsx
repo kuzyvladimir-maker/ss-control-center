@@ -14,6 +14,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import WalmartPerformancePanel from "@/components/account-health/WalmartPerformancePanel";
+import {
+  Btn,
+  HeroGreenCard,
+  HeroDivider,
+  HeroLabel,
+  KpiCard,
+  PageHead,
+  Sep,
+  SyncChip,
+} from "@/components/kit";
+import { Calendar, Plus } from "lucide-react";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type StoreData = any;
@@ -319,38 +330,159 @@ export default function AccountHealthPage() {
 
   if (!mounted) return null;
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-ink">Account Health</h1>
-          {data?.fetchedAt && (
-            <p className="text-xs text-ink-3">
-              {new Date(data.fetchedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-            </p>
-          )}
-        </div>
-        <Button variant="outline" size="sm" onClick={syncAll} disabled={syncingAll}>
-          {syncingAll ? <Loader2 size={14} className="animate-spin mr-1" /> : <RefreshCw size={14} className="mr-1" />}
-          {syncingAll ? "Syncing..." : "Sync All"}
-        </Button>
-      </div>
+  const s = data?.summary;
+  const overall: "healthy" | "warning" | "critical" = s
+    ? s.critical > 0
+      ? "critical"
+      : s.warning > 0
+        ? "warning"
+        : "healthy"
+    : "healthy";
+  const overallLabel =
+    overall === "critical"
+      ? "Critical"
+      : overall === "warning"
+        ? "Warning"
+        : "Healthy";
 
-      {data?.summary && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { label: "Configured", value: `${data.summary.configured}/${data.summary.total}`, color: "text-ink" },
-            { label: "Healthy", value: data.summary.healthy, color: "text-green" },
-            { label: "Warning", value: data.summary.warning, color: "text-warn" },
-            { label: "Critical", value: data.summary.critical, color: "text-danger" },
-          ].map((s) => (
-            <Card key={s.label}>
-              <CardContent className="py-3 text-center">
-                <p className="text-[10px] text-ink-3">{s.label}</p>
-                <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
-              </CardContent>
-            </Card>
-          ))}
+  return (
+    <div className="space-y-5">
+      <PageHead
+        title="Account Health"
+        syncChip={data?.fetchedAt && <SyncChip when={data.fetchedAt} />}
+        subtitle={
+          s ? (
+            <>
+              <span>
+                <strong className="text-ink tabular">{s.configured}</strong> of{" "}
+                {s.total} stores monitored
+              </span>
+              <Sep />
+              <span className="font-mono text-[10.5px] uppercase tracking-wider">
+                SP-API · 4H POLL
+              </span>
+            </>
+          ) : (
+            <span>Loading…</span>
+          )
+        }
+        actions={
+          <>
+            <Btn
+              icon={<RefreshCw size={13} />}
+              onClick={syncAll}
+              loading={syncingAll}
+              disabled={syncingAll}
+            >
+              {syncingAll ? "Syncing…" : "Refresh all"}
+            </Btn>
+            <Btn variant="ghost" icon={<Calendar size={13} />}>
+              90-day view
+            </Btn>
+            <Btn variant="primary" icon={<Plus size={13} />}>
+              Action plan
+            </Btn>
+          </>
+        }
+      />
+
+      {/* HERO: overall + summary */}
+      {s && (
+        <div className="grid gap-3 lg:grid-cols-[1.3fr_1fr_1fr]">
+          <HeroGreenCard>
+            <HeroLabel>Overall health</HeroLabel>
+            <div
+              className="mt-2 font-semibold leading-none"
+              style={{
+                fontSize: 44,
+                letterSpacing: "-0.04em",
+                color: "var(--green-cream)",
+              }}
+            >
+              {overallLabel}
+            </div>
+            <div
+              className="mt-2 max-w-md text-[12.5px]"
+              style={{ color: "rgba(240,232,208,0.78)" }}
+            >
+              {overall === "healthy"
+                ? `All ${s.configured} configured stores within Amazon limits.`
+                : overall === "warning"
+                  ? `${s.warning} store${s.warning > 1 ? "s" : ""} trending toward threshold.`
+                  : `${s.critical} store${s.critical > 1 ? "s" : ""} breaching policy — immediate action.`}
+            </div>
+
+            <HeroDivider className="my-4" />
+
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <HeroLabel>Stores at risk</HeroLabel>
+                <div
+                  className="mt-1 tabular"
+                  style={{ fontSize: 24, fontWeight: 600, color: "var(--green-cream)" }}
+                >
+                  {s.warning + s.critical}
+                  <span
+                    className="ml-1.5 text-[11px]"
+                    style={{ color: "rgba(240,232,208,0.6)" }}
+                  >
+                    of {s.total}
+                  </span>
+                </div>
+                <div
+                  className="mt-1 text-[11px]"
+                  style={{ color: "rgba(240,232,208,0.6)" }}
+                >
+                  {s.warning} warning · {s.critical} critical
+                </div>
+              </div>
+              <div>
+                <HeroLabel>Healthy stores</HeroLabel>
+                <div
+                  className="mt-1 tabular"
+                  style={{ fontSize: 24, fontWeight: 600, color: "var(--green-cream)" }}
+                >
+                  {s.healthy}
+                </div>
+                <div
+                  className="mt-1 text-[11px]"
+                  style={{ color: "rgba(240,232,208,0.6)" }}
+                >
+                  all metrics under limit
+                </div>
+              </div>
+            </div>
+          </HeroGreenCard>
+
+          <KpiCard
+            label="Configured"
+            value={`${s.configured}/${s.total}`}
+            trend={{
+              value: `${s.configured}`,
+              subText: "Amazon stores",
+            }}
+          />
+          <KpiCard
+            label="Healthy"
+            value={s.healthy}
+            iconVariant={s.healthy === s.configured ? "default" : "warn"}
+            chips={[
+              {
+                label:
+                  s.critical > 0
+                    ? `${s.critical} critical`
+                    : s.warning > 0
+                      ? `${s.warning} warn`
+                      : "all clear",
+                variant:
+                  s.critical > 0
+                    ? "urgent"
+                    : s.warning > 0
+                      ? "neutral"
+                      : "ok",
+              },
+            ]}
+          />
         </div>
       )}
 

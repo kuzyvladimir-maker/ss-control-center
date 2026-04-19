@@ -3,13 +3,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { Loader2, DollarSign, AlertTriangle, TrendingDown } from "lucide-react";
 import {
+  Btn,
+  FilterTabs,
   KpiCard,
   PageHead,
   Panel,
   PanelBody,
   PanelHeader,
+  Sep,
   StoreAvatar,
 } from "@/components/kit";
+import { Info, RefreshCw } from "lucide-react";
 import AdjustmentsTable from "@/components/adjustments/AdjustmentsTable";
 import SkuIssuesPanel from "@/components/adjustments/SkuIssuesPanel";
 
@@ -127,20 +131,72 @@ export default function AdjustmentsPage() {
       ]
     : [];
 
+  // Tab filter — filters adjustments by type / channel
+  const channelTabs = [
+    { id: "", label: "All", count: adjTotal },
+    {
+      id: "Amazon",
+      label: "Amazon",
+      count: adjustments.filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (a: any) => a.channel === "Amazon"
+      ).length,
+    },
+    {
+      id: "Walmart",
+      label: "Walmart",
+      count: adjustments.filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (a: any) => a.channel === "Walmart"
+      ).length,
+    },
+  ];
+
   return (
     <div className="space-y-5">
       <PageHead
         title="Adjustments"
         subtitle={
           stats ? (
-            <span className="tabular">
-              {stats.thisMonthCount + stats.last30Count} transactions tracked
-            </span>
+            <>
+              <span className="tabular">
+                <strong className="text-ink">
+                  {stats.thisMonthCount + stats.last30Count}
+                </strong>{" "}
+                transactions tracked
+              </span>
+              <Sep />
+              <span className="font-mono text-[10.5px] uppercase tracking-wider">
+                SP-API Finances v2024-06-19
+              </span>
+            </>
           ) : (
             <span>Loading…</span>
           )
         }
+        actions={
+          <Btn
+            icon={<RefreshCw size={13} />}
+            onClick={() => {
+              fetchStats();
+              fetchAdjustments();
+              fetchSkuProfiles();
+            }}
+          >
+            Refresh
+          </Btn>
+        }
       />
+
+      {/* Sync notice — SP-API has ~48h settlement delay */}
+      <div className="flex items-start gap-2 rounded-lg border border-rule bg-surface-tint px-4 py-2.5 text-[12.5px] text-ink-2">
+        <Info size={14} className="mt-0.5 shrink-0 text-ink-3" />
+        <div>
+          <strong className="text-ink">SP-API settlement delay.</strong> Amazon
+          posts shipping adjustments to the Finances endpoint ≈ 48 hours after
+          the event. Very recent rows will show up on the next sync.
+        </div>
+      </div>
 
       {/* KPI row */}
       {stats && (
@@ -175,11 +231,26 @@ export default function AdjustmentsPage() {
         <div className="flex items-center gap-2 rounded-lg border border-warn/20 bg-warn-tint px-4 py-2.5 text-[12.5px] text-warn-strong">
           <AlertTriangle size={14} />
           <span>
-            <strong>{stats.problematicSkus} SKU{stats.problematicSkus > 1 ? "s" : ""}</strong> with
-            systematic issues (corrected 3+ times in 30 days)
+            <strong>
+              {stats.problematicSkus} SKU
+              {stats.problematicSkus > 1 ? "s" : ""}
+            </strong>{" "}
+            with systematic issues (corrected 3+ times in 30 days)
           </span>
         </div>
       )}
+
+      {/* Filter tabs — channel */}
+      <FilterTabs
+        tabs={channelTabs}
+        active={filters.channel}
+        onChange={(id) => setFilters({ ...filters, channel: id })}
+        rightSlot={
+          <span className="text-[11px] font-mono uppercase tracking-wider text-ink-3 tabular">
+            {adjTotal} rows · last {filters.days}d
+          </span>
+        }
+      />
 
       {/* Adjustments list */}
       <Panel>
