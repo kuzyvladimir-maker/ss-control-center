@@ -11,6 +11,7 @@ import {
   Loader2,
   ArrowRight,
   RefreshCw,
+  Store,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,14 @@ interface DashboardData {
   claims: { active: number };
   health: { issues: number };
   adjustments: { monthlyTotal: number };
+  walmart?: {
+    ordersTotal30d: number;
+    ordersToday: number;
+    returnsPending: number;
+    refundsLast7d: number;
+    healthIssues: number;
+    healthStatus: "no-data" | "healthy" | "warning" | "critical";
+  };
   syncedAt: string;
   error?: string;
 }
@@ -168,6 +177,28 @@ export default function DashboardPage() {
               ? `Adjustments: $${Math.abs(data.adjustments.monthlyTotal).toFixed(2)}`
               : "",
         },
+        ...(data.walmart
+          ? [
+              {
+                title: "Walmart (30d)",
+                value: data.walmart.ordersTotal30d,
+                icon: Store,
+                color:
+                  data.walmart.healthStatus === "critical"
+                    ? "text-red-600"
+                    : data.walmart.healthStatus === "warning"
+                      ? "text-amber-600"
+                      : "text-blue-600",
+                bg:
+                  data.walmart.healthStatus === "critical"
+                    ? "bg-red-50"
+                    : data.walmart.healthStatus === "warning"
+                      ? "bg-amber-50"
+                      : "bg-blue-50",
+                sub: `Today: ${data.walmart.ordersToday} | Returns: ${data.walmart.returnsPending} | Refunds 7d: $${data.walmart.refundsLast7d.toFixed(2)}`,
+              },
+            ]
+          : []),
       ]
     : [];
 
