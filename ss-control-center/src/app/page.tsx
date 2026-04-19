@@ -1,20 +1,32 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ShoppingCart,
   Truck,
   MessageSquare,
-  Scale,
   HeartPulse,
-  Loader2,
-  ArrowRight,
+  Receipt,
   RefreshCw,
-  Store,
+  ArrowRight,
+  AlertTriangle,
+  Clock,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import {
+  Btn,
+  KpiCard,
+  PageHead,
+  Panel,
+  PanelBody,
+  PanelHeader,
+  Sep,
+  StatusChip,
+  StoreAvatar,
+  SyncChip,
+  TypeTag,
+  storeKeyFor,
+} from "@/components/kit";
 
 interface DashboardData {
   orders: {
@@ -40,336 +52,494 @@ interface DashboardData {
   error?: string;
 }
 
-interface SyncStatus {
-  stores: { configured: number; total: number };
-  data: {
-    orders: { count: number; perStore: Record<number, number> };
-    adjustments: { count: number };
-    feedback: { count: number };
-    claims: { count: number };
-  };
-  lastSync: string | null;
-  error?: string;
+interface OrderRow {
+  id: string;
+  amazonOrderId?: string | null;
+  storeIndex?: number | null;
+  storeName?: string | null;
+  marketplace?: string | null;
+  productName?: string | null;
+  productType?: string | null;
+  shipBy?: string | null;
+  status: string;
+}
+
+interface VeeqoOrder {
+  id?: number | string;
+  number?: string;
+  store_name?: string;
+  store?: { name?: string } | null;
+  channel?: { name?: string } | null;
+  due_date?: string | null;
+  dispatch_date?: string | null;
+  status?: string;
+  line_items?: Array<{
+    sellable?: { product_title?: string; tags?: Array<{ name?: string }> };
+  }>;
+}
+
+interface CsCaseRow {
+  id: string;
+  channel?: string | null;
+  store?: string | null;
+  orderId?: string | null;
+  category?: string | null;
+  categoryName?: string | null;
+  priority?: string | null;
+  createdAt: string;
+}
+
+function formatTime(date: string | null | undefined): string {
+  if (!date) return "—";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+
+function timeAgo(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(ms / 60000);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h`;
+  const d = Math.floor(h / 24);
+  return `${d}d`;
 }
 
 export default function DashboardPage() {
-  const [mounted, setMounted] = useState(false);
   const [data, setData] = useState<DashboardData | null>(null);
-  const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
+  const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [cases, setCases] = useState<CsCaseRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
-  const [pageError, setPageError] = useState<string | null>(null);
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
-    setMounted(true);
+    setNow(new Date());
+    const id = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(id);
   }, []);
 
-  useEffect(() => {
-    if (!mounted) return;
+  async function load() {
     setLoading(true);
-    setPageError(null);
-    Promise.all([
-      fetch("/api/dashboard/summary").then(async (r) => {
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) {
-          throw new Error(data.error || `Dashboard summary failed (${r.status})`);
-        }
-        return data as DashboardData;
-      }),
-      fetch("/api/sync/status").then(async (r) => {
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) {
-          throw new Error(data.error || `Sync status failed (${r.status})`);
-        }
-        return data as SyncStatus;
-      }),
-    ]).then(([d, s]) => {
-      setData(d);
-      setSyncStatus(s);
-      setLoading(false);
-    }).catch((err) => {
-      setData(null);
-      setSyncStatus(null);
-      setPageError(err instanceof Error ? err.message : "Failed to load dashboard");
-      setLoading(false);
-    });
-  }, [mounted]);
-
-  const runSync = async () => {
-    setSyncing(true);
     try {
-      await fetch("/api/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job: "orders" }),
-      });
-      // Reload data
-      const [d, s] = await Promise.all([
-        fetch("/api/dashboard/summary").then(async (r) => {
-          const data = await r.json().catch(() => ({}));
-          if (!r.ok) {
-            throw new Error(data.error || `Dashboard summary failed (${r.status})`);
-          }
-          return data as DashboardData;
-        }),
-        fetch("/api/sync/status").then(async (r) => {
-          const data = await r.json().catch(() => ({}));
-          if (!r.ok) {
-            throw new Error(data.error || `Sync status failed (${r.status})`);
-          }
-          return data as SyncStatus;
-        }),
+      const [summary, veeqo, cs] = await Promise.all([
+        fetch("/api/dashboard/summary").then((r) => (r.ok ? r.json() : null)),
+        fetch("/api/veeqo/orders?status=awaiting_fulfillment&page_size=10")
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null),
+        fetch("/api/customer-hub/messages?limit=4&status=NEW")
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null),
       ]);
-      setData(d);
-      setSyncStatus(s);
-      setPageError(null);
-    } catch (err) {
-      setPageError(err instanceof Error ? err.message : "Failed to refresh dashboard");
-    } finally {
-      setSyncing(false);
-    }
-  };
 
-  if (!mounted || loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="animate-spin text-slate-400" size={32} />
-      </div>
-    );
+      if (summary) setData(summary);
+
+      const veeqoRows: VeeqoOrder[] = Array.isArray(veeqo)
+        ? veeqo
+        : Array.isArray(veeqo?.orders)
+          ? veeqo.orders
+          : [];
+
+      const mapped: OrderRow[] = veeqoRows.slice(0, 8).map((o) => {
+        const item = o.line_items?.[0];
+        const productName = item?.sellable?.product_title;
+        const tags = item?.sellable?.tags || [];
+        const isFrozen = tags.some((t) => /frozen/i.test(t.name || ""));
+        const isDry = tags.some((t) => /dry/i.test(t.name || ""));
+        const channel =
+          o.channel?.name?.toLowerCase().includes("walmart")
+            ? "Walmart"
+            : "Amazon";
+        return {
+          id: String(o.number ?? o.id ?? ""),
+          amazonOrderId: o.number ?? null,
+          storeIndex: null,
+          storeName: o.store?.name ?? o.store_name ?? null,
+          marketplace: channel,
+          productName,
+          productType: isFrozen ? "Frozen" : isDry ? "Dry" : null,
+          shipBy: o.due_date ?? o.dispatch_date ?? null,
+          status: o.status === "shipped" ? "Shipped" : "Ready",
+        };
+      });
+      setOrders(mapped);
+
+      const messages: CsCaseRow[] = Array.isArray(cs?.messages)
+        ? cs.messages
+        : Array.isArray(cs)
+          ? cs
+          : [];
+      setCases(messages.slice(0, 4));
+    } finally {
+      setLoading(false);
+    }
   }
 
-  const hasData = syncStatus && syncStatus.data.orders.count > 0;
+  useEffect(() => {
+    load();
+  }, []);
 
-  const statCards = data
-    ? [
-        {
-          title: "Orders (30d)",
-          value: data.orders.total30d,
-          icon: ShoppingCart,
-          color: "text-blue-600",
-          bg: "bg-blue-50",
-          sub: `Store 1: ${data.orders.store1} | Store 2: ${data.orders.store2}`,
-        },
-        {
-          title: "Awaiting Ship",
-          value: data.orders.awaitingShipment,
-          icon: Truck,
-          color: "text-green-600",
-          bg: "bg-green-50",
-          sub: `Shipped today: ${data.orders.shippedToday}`,
-        },
-        {
-          title: "CS Cases Open",
-          value: data.customerService.openCases,
-          icon: MessageSquare,
-          color: "text-amber-600",
-          bg: "bg-amber-50",
-          sub: data.claims.active > 0 ? `${data.claims.active} A-to-Z active` : "",
-        },
-        {
-          title: "Health Issues",
-          value: data.health.issues,
-          icon: HeartPulse,
-          color: data.health.issues > 0 ? "text-red-600" : "text-green-600",
-          bg: data.health.issues > 0 ? "bg-red-50" : "bg-green-50",
-          sub:
-            data.adjustments.monthlyTotal < 0
-              ? `Adjustments: $${Math.abs(data.adjustments.monthlyTotal).toFixed(2)}`
-              : "",
-        },
-        ...(data.walmart
-          ? [
-              {
-                title: "Walmart (30d)",
-                value: data.walmart.ordersTotal30d,
-                icon: Store,
-                color:
-                  data.walmart.healthStatus === "critical"
-                    ? "text-red-600"
-                    : data.walmart.healthStatus === "warning"
-                      ? "text-amber-600"
-                      : "text-blue-600",
-                bg:
-                  data.walmart.healthStatus === "critical"
-                    ? "bg-red-50"
-                    : data.walmart.healthStatus === "warning"
-                      ? "bg-amber-50"
-                      : "bg-blue-50",
-                sub: `Today: ${data.walmart.ordersToday} | Returns: ${data.walmart.returnsPending} | Refunds 7d: $${data.walmart.refundsLast7d.toFixed(2)}`,
-              },
-            ]
-          : []),
-      ]
-    : [];
+  async function syncNow() {
+    setSyncing(true);
+    await fetch("/api/sync", { method: "POST" }).catch(() => undefined);
+    await load();
+    setSyncing(false);
+  }
+
+  const dateString = now
+    ? now.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        timeZone: "America/New_York",
+      })
+    : "";
+  const timeString = now
+    ? now.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "America/New_York",
+      })
+    : "";
+  const weekString = now ? `W${getWeek(now)}` : "";
+
+  const totalToShip = data?.orders.awaitingShipment ?? 0;
+  const shippedToday = data?.orders.shippedToday ?? 0;
 
   return (
-    <div className="space-y-6">
-      {pageError && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="py-4 text-sm text-red-700">
-            {pageError}
-          </CardContent>
-        </Card>
-      )}
+    <div className="space-y-5">
+      <PageHead
+        title="Dashboard"
+        syncChip={data?.syncedAt && <SyncChip when={data.syncedAt} />}
+        subtitle={
+          <>
+            <span>{dateString}</span>
+            <Sep />
+            <span>{timeString} ET</span>
+            <Sep />
+            <span className="rounded bg-bg-elev px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider text-ink-2">
+              {weekString}
+            </span>
+          </>
+        }
+        actions={
+          <>
+            <Btn icon={<RefreshCw size={13} />} onClick={syncNow} loading={syncing}>
+              {syncing ? "Syncing…" : "Refresh"}
+            </Btn>
+            <Link href="/shipping">
+              <Btn variant="primary" icon={<ArrowRight size={13} />}>
+                Generate plan
+              </Btn>
+            </Link>
+          </>
+        }
+      />
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-800">Dashboard</h1>
-          {syncStatus?.lastSync && (
-            <p className="text-xs text-slate-400">
-              Last sync:{" "}
-              {new Date(syncStatus.lastSync).toLocaleString("en-US", {
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-          )}
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={runSync}
-          disabled={syncing}
-        >
-          {syncing ? (
-            <Loader2 size={14} className="animate-spin mr-1" />
-          ) : (
-            <RefreshCw size={14} className="mr-1" />
-          )}
-          {syncing ? "Syncing..." : "Sync Orders"}
-        </Button>
+      {/* KPI row */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <KpiCard
+          label="Orders 30d"
+          value={data?.orders.total30d ?? "—"}
+          icon={<ShoppingCart size={14} />}
+          trend={{ value: `S1 ${data?.orders.store1 ?? 0} · S2 ${data?.orders.store2 ?? 0}`, subText: "by store" }}
+        />
+        <KpiCard
+          label="Awaiting ship"
+          value={totalToShip}
+          icon={<Truck size={14} />}
+          chips={[
+            { label: `${shippedToday} shipped today`, variant: "ok" },
+          ]}
+        />
+        <KpiCard
+          label="Cases open"
+          value={data?.customerService.openCases ?? 0}
+          icon={<MessageSquare size={14} />}
+          iconVariant={(data?.customerService.openCases ?? 0) > 0 ? "warn" : "default"}
+          chips={
+            (data?.claims.active ?? 0) > 0
+              ? [{ label: `${data?.claims.active} A-to-Z active`, variant: "urgent" }]
+              : undefined
+          }
+        />
+        <KpiCard
+          label="Health issues"
+          value={(data?.health.issues ?? 0) + (data?.walmart?.healthIssues ?? 0)}
+          icon={<HeartPulse size={14} />}
+          iconVariant={
+            (data?.health.issues ?? 0) + (data?.walmart?.healthIssues ?? 0) > 0
+              ? "danger"
+              : "default"
+          }
+          trend={
+            data?.adjustments.monthlyTotal && data.adjustments.monthlyTotal < 0
+              ? {
+                  value: `$${Math.abs(data.adjustments.monthlyTotal).toFixed(2)}`,
+                  positive: false,
+                  subText: "adj 30d",
+                }
+              : undefined
+          }
+        />
       </div>
 
-      {/* First sync prompt */}
-      {!hasData && (
-        <Card className="border-blue-200 bg-blue-50">
-          <CardContent className="py-6 text-center">
-            <p className="text-sm font-medium text-blue-800 mb-2">
-              Welcome to SS Control Center
-            </p>
-            <p className="text-xs text-blue-600 mb-4">
-              Click &ldquo;Sync Orders&rdquo; to pull data from Amazon SP-API for the first
-              time. This will populate all modules with real data.
-            </p>
-            <Button
-              onClick={runSync}
-              disabled={syncing}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {syncing ? (
-                <Loader2 size={14} className="animate-spin mr-1" />
-              ) : (
-                <RefreshCw size={14} className="mr-1" />
-              )}
-              {syncing ? "Syncing..." : "Sync Now"}
-            </Button>
-            {syncStatus && (
-              <p className="text-[10px] text-blue-400 mt-2">
-                {syncStatus.stores.configured} of {syncStatus.stores.total}{" "}
-                stores configured
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Stat cards */}
-      {data && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {statCards.map((stat) => (
-            <Card key={stat.title}>
-              <CardContent className="flex items-center gap-4 py-4">
-                <div className={`rounded-lg p-2.5 ${stat.bg}`}>
-                  <stat.icon size={20} className={stat.color} />
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500">{stat.title}</p>
-                  <p className="text-2xl font-bold text-slate-800">
-                    {stat.value}
-                  </p>
-                  {stat.sub && (
-                    <p className="text-[10px] text-slate-400">{stat.sub}</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+      {/* Walmart row (if available) */}
+      {data?.walmart && (
+        <div className="grid gap-3 sm:grid-cols-4">
+          <KpiCard
+            label="Walmart 30d"
+            value={data.walmart.ordersTotal30d}
+            icon={<StoreAvatar store="walmart" size="sm" />}
+            trend={{ value: `${data.walmart.ordersToday} today` }}
+          />
+          <KpiCard
+            label="Walmart returns"
+            value={data.walmart.returnsPending}
+            icon={<Receipt size={14} />}
+            iconVariant={data.walmart.returnsPending > 0 ? "warn" : "default"}
+          />
+          <KpiCard
+            label="Walmart refunds 7d"
+            value={`$${data.walmart.refundsLast7d.toFixed(0)}`}
+            icon={<Receipt size={14} />}
+          />
+          <KpiCard
+            label="Walmart health"
+            value={
+              data.walmart.healthStatus === "no-data"
+                ? "—"
+                : data.walmart.healthStatus === "healthy"
+                  ? "✓"
+                  : data.walmart.healthIssues
+            }
+            icon={<HeartPulse size={14} />}
+            iconVariant={
+              data.walmart.healthStatus === "critical"
+                ? "danger"
+                : data.walmart.healthStatus === "warning"
+                  ? "warn"
+                  : "default"
+            }
+          />
         </div>
       )}
 
-      {/* Sync status overview */}
-      {syncStatus && hasData && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Data Overview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 text-center">
-              <div>
-                <p className="text-2xl font-bold text-slate-800">
-                  {syncStatus.data.orders.count}
-                </p>
-                <p className="text-xs text-slate-400">Orders synced</p>
+      {/* Main grid */}
+      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+        {/* Today's orders */}
+        <Panel>
+          <PanelHeader
+            title="Awaiting fulfilment"
+            count={orders.length}
+            right={
+              <Link
+                href="/shipping"
+                className="text-[12px] font-medium text-green hover:text-green-deep"
+              >
+                Open plan →
+              </Link>
+            }
+          />
+          <PanelBody className="p-0">
+            {loading && orders.length === 0 ? (
+              <div className="flex items-center justify-center py-8 text-[12px] text-ink-3">
+                Loading orders…
               </div>
-              <div>
-                <p className="text-2xl font-bold text-slate-800">
-                  {syncStatus.data.adjustments.count}
-                </p>
-                <p className="text-xs text-slate-400">Adjustments</p>
+            ) : orders.length === 0 ? (
+              <div className="px-4 py-6 text-center text-[12px] text-ink-3">
+                No awaiting orders. Veeqo has nothing in queue.
               </div>
-              <div>
-                <p className="text-2xl font-bold text-slate-800">
-                  {syncStatus.data.feedback.count}
-                </p>
-                <p className="text-xs text-slate-400">Feedback records</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-slate-800">
-                  {syncStatus.data.claims.count}
-                </p>
-                <p className="text-xs text-slate-400">A-to-Z claims</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            ) : (
+              <table className="w-full text-[12.5px]">
+                <thead className="border-b border-rule">
+                  <tr className="text-[10.5px] font-mono uppercase tracking-[0.1em] text-ink-3">
+                    <th className="px-4 py-2.5 text-left font-medium">Order</th>
+                    <th className="px-4 py-2.5 text-left font-medium">Store</th>
+                    <th className="px-4 py-2.5 text-left font-medium">Product</th>
+                    <th className="px-4 py-2.5 text-left font-medium">Type</th>
+                    <th className="px-4 py-2.5 text-left font-medium">Ship by</th>
+                    <th className="px-4 py-2.5 text-left font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((o) => (
+                    <tr
+                      key={o.id}
+                      className="border-b border-rule last:border-0 hover:bg-surface-tint"
+                    >
+                      <td className="px-4 py-2.5 font-mono text-[12px] text-ink">
+                        {o.id}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <StoreAvatar
+                            store={storeKeyFor({
+                              marketplace: o.marketplace,
+                              storeIndex: o.storeIndex,
+                              storeName: o.storeName,
+                            })}
+                            size="sm"
+                          />
+                          <div className="leading-tight">
+                            <div className="text-ink">{o.storeName ?? "—"}</div>
+                            <div className="text-[10px] font-mono uppercase tracking-wider text-ink-3">
+                              {o.marketplace}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 text-ink-2 truncate max-w-[280px]">
+                        {o.productName ?? "—"}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <TypeTag type={o.productType} />
+                      </td>
+                      <td className="px-4 py-2.5 text-ink-2 tabular">
+                        {formatTime(o.shipBy)}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <StatusChip
+                          variant={o.status === "Shipped" ? "delivered" : "ready"}
+                        >
+                          {o.status}
+                        </StatusChip>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </PanelBody>
+        </Panel>
 
-      {/* Quick actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-3">
-          <Link href="/shipping">
-            <Button className="bg-blue-600 hover:bg-blue-700" size="sm">
-              <Truck size={14} className="mr-1" /> Shipping Labels
-            </Button>
-          </Link>
-          <Link href="/customer-hub">
-            <Button variant="outline" size="sm">
-              <MessageSquare size={14} className="mr-1" /> Customer Hub
-            </Button>
-          </Link>
-          <Link href="/account-health">
-            <Button variant="outline" size="sm">
-              <HeartPulse size={14} className="mr-1" /> Account Health
-            </Button>
-          </Link>
-          <Link href="/claims/atoz">
-            <Button variant="outline" size="sm">
-              <Scale size={14} className="mr-1" /> A-to-Z Claims
-            </Button>
-          </Link>
-          <Link href="/settings">
-            <Button variant="ghost" size="sm">
-              Settings <ArrowRight size={12} className="ml-1" />
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
+        {/* Right column */}
+        <div className="space-y-4">
+          {/* Shipping progress */}
+          <Panel className="bg-green-soft border-green-soft2">
+            <PanelBody>
+              <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-green-ink/70">
+                Shipping progress
+              </div>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="text-[34px] font-semibold leading-none tabular text-green-ink">
+                  {shippedToday}
+                </span>
+                <span className="text-[14px] text-green-ink/60 tabular">
+                  / {shippedToday + totalToShip}
+                </span>
+              </div>
+              <div className="text-[11.5px] text-green-ink/70 mt-1">
+                labels purchased today
+              </div>
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-green/20">
+                <div
+                  className="h-full rounded-full bg-green"
+                  style={{
+                    width: `${
+                      (shippedToday + totalToShip) > 0
+                        ? Math.round(
+                            (shippedToday / (shippedToday + totalToShip)) * 100
+                          )
+                        : 0
+                    }%`,
+                  }}
+                />
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3 text-[11.5px]">
+                <div>
+                  <div className="text-green-ink/60">Awaiting</div>
+                  <div className="text-green-ink font-semibold tabular">
+                    {totalToShip}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-green-ink/60">Shipped today</div>
+                  <div className="text-green-ink font-semibold tabular">
+                    {shippedToday}
+                  </div>
+                </div>
+              </div>
+            </PanelBody>
+          </Panel>
+
+          {/* Customer queue */}
+          <Panel>
+            <PanelHeader
+              title="Customer queue"
+              count={cases.length}
+              right={
+                <Link
+                  href="/customer-hub"
+                  className="text-[12px] font-medium text-green hover:text-green-deep"
+                >
+                  Open →
+                </Link>
+              }
+            />
+            <PanelBody className="p-0">
+              {cases.length === 0 ? (
+                <div className="px-4 py-6 text-center text-[12px] text-ink-3">
+                  No open cases.
+                </div>
+              ) : (
+                <div>
+                  {cases.map((c) => (
+                    <div
+                      key={c.id}
+                      className="flex items-start gap-3 border-b border-rule px-4 py-3 last:border-0 hover:bg-surface-tint"
+                    >
+                      <div
+                        className="grid h-7 w-7 place-items-center rounded-md"
+                        style={{
+                          background:
+                            c.priority === "HIGH" || c.priority === "CRITICAL"
+                              ? "var(--warn-tint)"
+                              : "var(--green-soft)",
+                          color:
+                            c.priority === "HIGH" || c.priority === "CRITICAL"
+                              ? "var(--warn-strong)"
+                              : "var(--green-ink)",
+                        }}
+                      >
+                        {c.priority === "HIGH" || c.priority === "CRITICAL" ? (
+                          <AlertTriangle size={13} />
+                        ) : (
+                          <Clock size={13} />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <div className="truncate text-[12.5px] font-medium text-ink">
+                            {c.category} · {c.categoryName ?? "Open case"}
+                          </div>
+                          <div className="text-[10.5px] font-mono text-ink-3">
+                            {timeAgo(c.createdAt)}
+                          </div>
+                        </div>
+                        <div className="text-[11px] text-ink-3 truncate">
+                          {c.channel ?? "Amazon"}
+                          {c.store && ` · ${c.store}`}
+                          {c.orderId && ` · ${c.orderId}`}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </PanelBody>
+          </Panel>
+        </div>
+      </div>
     </div>
   );
+}
+
+function getWeek(d: Date): number {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }

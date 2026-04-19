@@ -17,29 +17,29 @@ import {
 } from "@/components/ui/table";
 
 const statusDot: Record<string, string> = {
-  NEW: "bg-red-500",
+  NEW: "bg-danger-tint0",
   ANALYZED: "bg-yellow-500",
-  SENT: "bg-green-500",
-  RESPONDED: "bg-green-500",
+  SENT: "bg-green-soft0",
+  RESPONDED: "bg-green-soft0",
 };
 
 const riskColors: Record<string, string> = {
-  LOW: "bg-green-100 text-green-700",
-  MEDIUM: "bg-yellow-100 text-yellow-700",
-  HIGH: "bg-red-100 text-red-700",
+  LOW: "bg-green-soft2 text-green-ink",
+  MEDIUM: "bg-warn-tint text-warn-strong",
+  HIGH: "bg-danger-tint text-danger",
   CRITICAL: "bg-red-600 text-white",
 };
 
 const actionColors: Record<string, string> = {
-  REPLACEMENT: "bg-blue-100 text-blue-700",
+  REPLACEMENT: "bg-green-soft2 text-green-deep",
   REFUND: "bg-orange-100 text-orange-700",
-  A2Z_GUARANTEE: "bg-blue-100 text-blue-700",
-  CLARIFY: "bg-slate-100 text-slate-700",
-  REASSURE: "bg-green-100 text-green-700",
-  INVESTIGATE: "bg-amber-100 text-amber-700",
-  PHOTO_REQUEST: "bg-slate-100 text-slate-600",
-  ESCALATE: "bg-red-100 text-red-700",
-  INFO: "bg-slate-100 text-slate-600",
+  A2Z_GUARANTEE: "bg-green-soft2 text-green-deep",
+  CLARIFY: "bg-bg-elev text-ink",
+  REASSURE: "bg-green-soft2 text-green-ink",
+  INVESTIGATE: "bg-warn-tint text-warn-strong",
+  PHOTO_REQUEST: "bg-bg-elev text-ink-2",
+  ESCALATE: "bg-danger-tint text-danger",
+  INFO: "bg-bg-elev text-ink-2",
 };
 
 interface Message {
@@ -128,8 +128,8 @@ export default function MessagesTab() {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 size={20} className="animate-spin text-slate-400 mr-2" />
-          <span className="text-sm text-slate-500">Loading messages...</span>
+          <Loader2 size={20} className="animate-spin text-ink-3 mr-2" />
+          <span className="text-sm text-ink-3">Loading messages...</span>
         </CardContent>
       </Card>
     );
@@ -148,8 +148,8 @@ export default function MessagesTab() {
                 onClick={() => setStatusFilter(f.key)}
                 className={`px-2 py-1 rounded text-xs transition-colors ${
                   statusFilter === f.key
-                    ? "bg-blue-100 text-blue-700 font-medium"
-                    : "text-slate-500 hover:bg-slate-100"
+                    ? "bg-green-soft2 text-green-deep font-medium"
+                    : "text-ink-3 hover:bg-bg-elev"
                 }`}
               >
                 {f.label}
@@ -162,7 +162,7 @@ export default function MessagesTab() {
           <div className="flex items-center gap-2 min-w-0">
             {syncResult && (
               <span
-                className="text-[10px] text-slate-400 max-w-[300px] truncate"
+                className="text-[10px] text-ink-3 max-w-[300px] truncate"
                 title={syncResult}
               >
                 {syncResult}
@@ -187,11 +187,11 @@ export default function MessagesTab() {
 
         {messages.length === 0 ? (
           <div className="py-12 text-center">
-            <Mail size={32} className="mx-auto text-slate-300 mb-3" />
-            <p className="text-sm font-medium text-slate-600">
+            <Mail size={32} className="mx-auto text-ink-4 mb-3" />
+            <p className="text-sm font-medium text-ink-2">
               No messages yet
             </p>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-ink-3 mt-1">
               Click &ldquo;Sync Gmail&rdquo; to fetch buyer messages from Amazon
             </p>
           </div>
@@ -214,7 +214,7 @@ export default function MessagesTab() {
               {messages.map((m) => (
                 <TableRow
                   key={m.id}
-                  className={`cursor-pointer hover:bg-slate-50 ${selectedId === m.id ? "bg-blue-50" : ""}`}
+                  className={`cursor-pointer hover:bg-surface-tint ${selectedId === m.id ? "bg-green-soft" : ""}`}
                   onClick={() => setSelectedId(selectedId === m.id ? null : m.id)}
                 >
                   <TableCell className="px-4">
@@ -223,7 +223,7 @@ export default function MessagesTab() {
                       title={m.status}
                     />
                   </TableCell>
-                  <TableCell className="text-xs text-slate-500">
+                  <TableCell className="text-xs text-ink-3">
                     {new Date(m.createdAt).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
@@ -240,7 +240,7 @@ export default function MessagesTab() {
                       )}
                     </span>
                   </TableCell>
-                  <TableCell className="font-mono text-[10px] text-slate-400">
+                  <TableCell className="font-mono text-[10px] text-ink-3">
                     {m.amazonOrderId
                       ? m.amazonOrderId.substring(0, 15) + "..."
                       : "—"}
@@ -248,16 +248,16 @@ export default function MessagesTab() {
                   <TableCell className="text-xs">
                     {m.category && (
                       <>
-                        <span className="font-mono text-slate-500">
+                        <span className="font-mono text-ink-3">
                           {m.category}
                         </span>{" "}
-                        <span className="text-slate-400">
+                        <span className="text-ink-3">
                           {m.categoryName || ""}
                         </span>
                       </>
                     )}
                     {!m.category && (
-                      <span className="text-slate-300">Not analyzed</span>
+                      <span className="text-ink-4">Not analyzed</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -268,18 +268,18 @@ export default function MessagesTab() {
                         {m.riskLevel}
                       </Badge>
                     ) : (
-                      <span className="text-slate-300 text-xs">—</span>
+                      <span className="text-ink-4 text-xs">—</span>
                     )}
                   </TableCell>
                   <TableCell>
                     {m.action ? (
                       <Badge
-                        className={actionColors[m.action] || "bg-slate-100 text-slate-600"}
+                        className={actionColors[m.action] || "bg-bg-elev text-ink-2"}
                       >
                         {m.action}
                       </Badge>
                     ) : (
-                      <span className="text-slate-300 text-xs">—</span>
+                      <span className="text-ink-4 text-xs">—</span>
                     )}
                   </TableCell>
                   <TableCell>

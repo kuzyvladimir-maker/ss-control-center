@@ -58,8 +58,8 @@ export default function HubStatsCards({
       value: stats.unreadMessages,
       urgent: stats.urgentMessages,
       icon: MessageSquare,
-      color: "text-blue-600",
-      bg: "bg-blue-50",
+      color: "text-green",
+      bg: "bg-green-soft",
     },
     {
       key: "atoz",
@@ -67,8 +67,8 @@ export default function HubStatsCards({
       value: stats.activeAtoz,
       urgent: 0,
       icon: Scale,
-      color: "text-red-600",
-      bg: "bg-red-50",
+      color: "text-danger",
+      bg: "bg-danger-tint",
     },
     {
       key: "chargebacks",
@@ -85,8 +85,8 @@ export default function HubStatsCards({
       value: stats.newFeedback,
       urgent: 0,
       icon: Star,
-      color: "text-green-600",
-      bg: "bg-green-50",
+      color: "text-green",
+      bg: "bg-green-soft",
     },
   ];
 
@@ -103,17 +103,17 @@ export default function HubStatsCards({
               <c.icon size={16} className={c.color} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] text-slate-500">{c.label}</p>
+              <p className="text-[10px] text-ink-3">{c.label}</p>
               <div className="flex items-center gap-1.5">
                 <p
                   className={`text-xl font-bold ${
-                    c.value > 0 ? c.color : "text-slate-800"
+                    c.value > 0 ? c.color : "text-ink"
                   }`}
                 >
                   {c.value}
                 </p>
                 {c.urgent > 0 && (
-                  <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[9px] font-semibold text-red-700">
+                  <span className="rounded-full bg-danger-tint px-1.5 py-0.5 text-[9px] font-semibold text-danger">
                     {c.urgent} urgent
                   </span>
                 )}

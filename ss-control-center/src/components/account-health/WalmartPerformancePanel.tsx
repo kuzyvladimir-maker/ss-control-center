@@ -105,11 +105,11 @@ export default function WalmartPerformancePanel() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-slate-700">
+          <h2 className="text-sm font-semibold text-ink">
             Walmart Performance
           </h2>
           {data && data.issues > 0 && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
+            <span className="inline-flex items-center gap-1 rounded-full bg-danger-tint px-2 py-0.5 text-xs text-danger">
               <AlertTriangle size={12} /> {data.issues} issue
               {data.issues === 1 ? "" : "s"}
             </span>
@@ -126,20 +126,20 @@ export default function WalmartPerformancePanel() {
       </div>
 
       {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+        <div className="rounded-md border border-danger/20 bg-danger-tint px-3 py-2 text-xs text-danger">
           {error}
         </div>
       )}
 
       {loading && !data && (
-        <div className="flex items-center justify-center py-8 text-sm text-slate-400">
+        <div className="flex items-center justify-center py-8 text-sm text-ink-3">
           <Loader2 size={18} className="mr-2 animate-spin" /> Loading…
         </div>
       )}
 
       {!loading && data && data.items.length === 0 && (
         <Card>
-          <CardContent className="py-6 text-center text-sm text-slate-500">
+          <CardContent className="py-6 text-center text-sm text-ink-3">
             No Walmart performance snapshots yet. Click <b>Sync Walmart</b>{" "}
             to pull the first one.
           </CardContent>
@@ -148,7 +148,7 @@ export default function WalmartPerformancePanel() {
 
       {windows.map((w) => (
         <div key={w} className="space-y-1">
-          <p className="text-xs uppercase tracking-wide text-slate-400">
+          <p className="text-xs uppercase tracking-wide text-ink-3">
             Last {w} days
           </p>
           <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
@@ -158,16 +158,16 @@ export default function WalmartPerformancePanel() {
                 className={`border ${m.isHealthy ? "border-green-200" : "border-red-300"}`}
               >
                 <CardContent className="py-3">
-                  <p className="truncate text-[11px] text-slate-500" title={m.metric}>
+                  <p className="truncate text-[11px] text-ink-3" title={m.metric}>
                     {METRIC_LABELS[m.metric] ?? m.metric}
                   </p>
                   <p
-                    className={`text-lg font-bold ${m.isHealthy ? "text-green-700" : "text-red-700"}`}
+                    className={`text-lg font-bold ${m.isHealthy ? "text-green-ink" : "text-danger"}`}
                   >
                     {formatPercent(m.value)}
                   </p>
                   {m.threshold != null && (
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-[10px] text-ink-3">
                       threshold {formatPercent(m.threshold)}
                     </p>
                   )}

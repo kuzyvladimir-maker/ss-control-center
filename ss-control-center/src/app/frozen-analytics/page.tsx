@@ -120,7 +120,7 @@ export default function FrozenAnalyticsPage() {
               <CardTitle className="text-base flex items-center justify-between">
                 Frozen Delivery Incidents
                 {incidentsLoading && (
-                  <Loader2 size={16} className="animate-spin text-slate-400" />
+                  <Loader2 size={16} className="animate-spin text-ink-3" />
                 )}
               </CardTitle>
             </CardHeader>
@@ -142,7 +142,7 @@ export default function FrozenAnalyticsPage() {
               <CardTitle className="text-base flex items-center justify-between">
                 SKU Risk Analysis
                 {skuLoading && (
-                  <Loader2 size={16} className="animate-spin text-slate-400" />
+                  <Loader2 size={16} className="animate-spin text-ink-3" />
                 )}
               </CardTitle>
             </CardHeader>
@@ -156,12 +156,12 @@ export default function FrozenAnalyticsPage() {
         <TabsContent value="patterns">
           {patternsLoading ? (
             <div className="flex h-32 items-center justify-center">
-              <Loader2 size={24} className="animate-spin text-slate-400" />
+              <Loader2 size={24} className="animate-spin text-ink-3" />
             </div>
           ) : patterns ? (
             <PatternsDashboard data={patterns} />
           ) : (
-            <p className="text-sm text-slate-400 text-center py-8">
+            <p className="text-sm text-ink-3 text-center py-8">
               No data yet
             </p>
           )}

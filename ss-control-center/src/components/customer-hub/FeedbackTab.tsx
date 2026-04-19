@@ -37,13 +37,13 @@ interface Feedback {
 }
 
 const statusColors: Record<string, string> = {
-  NEW: "bg-slate-100 text-slate-600",
-  ANALYZED: "bg-blue-100 text-blue-700",
-  REMOVAL_SUBMITTED: "bg-amber-100 text-amber-700",
-  REMOVED: "bg-green-100 text-green-700",
-  DENIED: "bg-red-100 text-red-700",
+  NEW: "bg-bg-elev text-ink-2",
+  ANALYZED: "bg-green-soft2 text-green-deep",
+  REMOVAL_SUBMITTED: "bg-warn-tint text-warn-strong",
+  REMOVED: "bg-green-soft2 text-green-ink",
+  DENIED: "bg-danger-tint text-danger",
   CONTACT_SENT: "bg-purple-100 text-purple-700",
-  CLOSED: "bg-slate-100 text-slate-500",
+  CLOSED: "bg-bg-elev text-ink-3",
 };
 
 function Stars({ rating }: { rating: number }) {
@@ -171,8 +171,8 @@ export default function FeedbackTab() {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 size={20} className="animate-spin text-slate-400 mr-2" />
-          <span className="text-sm text-slate-500">Loading feedback…</span>
+          <Loader2 size={20} className="animate-spin text-ink-3 mr-2" />
+          <span className="text-sm text-ink-3">Loading feedback…</span>
         </CardContent>
       </Card>
     );
@@ -183,12 +183,12 @@ export default function FeedbackTab() {
       <Card>
         <CardContent className="p-0">
           <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100">
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-ink-3">
               {total} feedback{total !== 1 ? "s" : ""}
             </span>
             <div className="flex items-center gap-2">
               {syncMessage && (
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-ink-3">
                   {syncMessage}
                 </span>
               )}
@@ -224,12 +224,12 @@ export default function FeedbackTab() {
                 </DialogHeader>
                 <form onSubmit={handleAddFeedback} className="space-y-3">
                   <div>
-                    <label className="text-xs font-medium text-slate-500">Order ID (optional)</label>
+                    <label className="text-xs font-medium text-ink-3">Order ID (optional)</label>
                     <Input name="orderId" placeholder="123-1234567-1234567" />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-xs font-medium text-slate-500">Store</label>
+                      <label className="text-xs font-medium text-ink-3">Store</label>
                       <select name="storeIndex" className="w-full rounded border px-3 py-2 text-sm">
                         <option value="1">Salutem Solutions</option>
                         <option value="2">Vladimir Personal</option>
@@ -239,7 +239,7 @@ export default function FeedbackTab() {
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-slate-500">Rating *</label>
+                      <label className="text-xs font-medium text-ink-3">Rating *</label>
                       <select name="rating" className="w-full rounded border px-3 py-2 text-sm" required>
                         <option value="1">1 star</option>
                         <option value="2">2 stars</option>
@@ -250,14 +250,14 @@ export default function FeedbackTab() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-500">Feedback Date</label>
+                    <label className="text-xs font-medium text-ink-3">Feedback Date</label>
                     <Input name="feedbackDate" type="date" defaultValue={new Date().toISOString().split("T")[0]} />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-500">Comment *</label>
+                    <label className="text-xs font-medium text-ink-3">Comment *</label>
                     <Textarea name="comments" rows={3} required placeholder="Customer's feedback text" />
                   </div>
-                  {addError && <p className="text-xs text-red-600">{addError}</p>}
+                  {addError && <p className="text-xs text-danger">{addError}</p>}
                   <div className="flex justify-end gap-2 pt-2">
                     <Button type="button" variant="ghost" size="sm" onClick={() => setAddOpen(false)}>Cancel</Button>
                     <Button type="submit" size="sm" disabled={addSaving}>
@@ -272,11 +272,11 @@ export default function FeedbackTab() {
 
           {feedbacks.length === 0 ? (
             <div className="py-12 text-center">
-              <Star size={32} className="mx-auto text-slate-300 mb-3" />
-              <p className="text-sm font-medium text-slate-600">
+              <Star size={32} className="mx-auto text-ink-4 mb-3" />
+              <p className="text-sm font-medium text-ink-2">
                 No feedback yet
               </p>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-ink-3 mt-1">
                 Seller feedback will appear here once synced from SP-API
                 Reports.
               </p>
@@ -297,9 +297,9 @@ export default function FeedbackTab() {
                 {feedbacks.map((fb) => (
                   <TableRow
                     key={fb.id}
-                    className={`cursor-pointer hover:bg-slate-50 ${
-                      selectedId === fb.id ? "bg-blue-50" : ""
-                    } ${fb.rating <= 2 ? "bg-red-50/30" : ""}`}
+                    className={`cursor-pointer hover:bg-surface-tint ${
+                      selectedId === fb.id ? "bg-green-soft" : ""
+                    } ${fb.rating <= 2 ? "bg-danger-tint/30" : ""}`}
                     onClick={() =>
                       setSelectedId(selectedId === fb.id ? null : fb.id)
                     }
@@ -310,25 +310,25 @@ export default function FeedbackTab() {
                     <TableCell className="text-xs">
                       {fb.store || "—"}
                     </TableCell>
-                    <TableCell className="text-xs text-slate-500">
+                    <TableCell className="text-xs text-ink-3">
                       {fb.feedbackDate}
                     </TableCell>
                     <TableCell className="text-xs max-w-[300px] truncate">
                       {fb.comments || (
-                        <span className="text-slate-300">(no comment)</span>
+                        <span className="text-ink-4">(no comment)</span>
                       )}
                     </TableCell>
                     <TableCell>
                       {fb.removable === true ? (
-                        <Badge className="bg-green-100 text-green-700">
+                        <Badge className="bg-green-soft2 text-green-ink">
                           Yes
                         </Badge>
                       ) : fb.removable === false ? (
-                        <Badge className="bg-slate-100 text-slate-500">
+                        <Badge className="bg-bg-elev text-ink-3">
                           No
                         </Badge>
                       ) : (
-                        <span className="text-slate-300 text-xs">—</span>
+                        <span className="text-ink-4 text-xs">—</span>
                       )}
                     </TableCell>
                     <TableCell>

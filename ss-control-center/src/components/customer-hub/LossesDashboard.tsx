@@ -49,10 +49,10 @@ function BreakdownRow({
 }) {
   return (
     <div className="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
-      <span className="text-xs text-slate-600">{label}</span>
+      <span className="text-xs text-ink-2">{label}</span>
       <div className="text-xs">
-        <span className="font-medium text-slate-800">{fmtMoney(amount)}</span>
-        <span className="text-slate-400 ml-2">
+        <span className="font-medium text-ink">{fmtMoney(amount)}</span>
+        <span className="text-ink-3 ml-2">
           ({count} {unit})
         </span>
       </div>
@@ -101,7 +101,7 @@ export default function LossesDashboard({
   if (loading) {
     return (
       <Card>
-        <CardContent className="flex items-center gap-2 py-3 text-xs text-slate-400">
+        <CardContent className="flex items-center gap-2 py-3 text-xs text-ink-3">
           <Loader2 size={14} className="animate-spin" /> Loading losses…
         </CardContent>
       </Card>
@@ -111,7 +111,7 @@ export default function LossesDashboard({
   if (error || !data) {
     return (
       <Card>
-        <CardContent className="py-3 text-xs text-red-600">
+        <CardContent className="py-3 text-xs text-danger">
           {error || "No loss data available"}
         </CardContent>
       </Card>
@@ -125,37 +125,37 @@ export default function LossesDashboard({
       <CardContent className="p-0">
         <button
           onClick={() => setExpanded((e) => !e)}
-          className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-surface-tint transition-colors"
         >
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-red-50 p-2">
-              <TrendingDown size={16} className="text-red-600" />
+            <div className="rounded-lg bg-danger-tint p-2">
+              <TrendingDown size={16} className="text-danger" />
             </div>
             <div className="text-left">
-              <p className="text-[10px] text-slate-500">
+              <p className="text-[10px] text-ink-3">
                 Total losses · last {period} day{period !== 1 ? "s" : ""}
               </p>
-              <p className="text-xl font-bold text-red-600">{fmtMoney(total)}</p>
+              <p className="text-xl font-bold text-danger">{fmtMoney(total)}</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
             {saved.amount > 0 && (
               <div className="text-right">
-                <p className="text-[10px] text-slate-500 flex items-center gap-1 justify-end">
-                  <ShieldCheck size={10} className="text-green-600" /> Saved
+                <p className="text-[10px] text-ink-3 flex items-center gap-1 justify-end">
+                  <ShieldCheck size={10} className="text-green" /> Saved
                 </p>
-                <p className="text-sm font-medium text-green-600">
+                <p className="text-sm font-medium text-green">
                   {fmtMoney(saved.amount)}
                 </p>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px] text-ink-3">
                   {saved.count} claim{saved.count !== 1 ? "s" : ""} won
                 </p>
               </div>
             )}
             {expanded ? (
-              <ChevronUp size={16} className="text-slate-400" />
+              <ChevronUp size={16} className="text-ink-3" />
             ) : (
-              <ChevronDown size={16} className="text-slate-400" />
+              <ChevronDown size={16} className="text-ink-3" />
             )}
           </div>
         </button>
@@ -190,11 +190,11 @@ export default function LossesDashboard({
               unit="claims"
             />
             {total === 0 && (
-              <p className="text-[10px] text-slate-400 pt-2 text-center">
+              <p className="text-[10px] text-ink-3 pt-2 text-center">
                 No losses recorded in this period.
               </p>
             )}
-            <p className="text-[10px] text-slate-400 pt-2 border-t border-slate-100 mt-2">
+            <p className="text-[10px] text-ink-3 pt-2 border-t border-slate-100 mt-2">
               COGS {data.config.cogsPercent}% · replacement label{" "}
               {fmtMoney(data.config.replacementLabelCost)} · configurable in
               Settings

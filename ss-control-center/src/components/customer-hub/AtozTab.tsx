@@ -50,27 +50,27 @@ function statusLabel(
 ): { text: string; color: string } {
   if (status === "DECIDED" || status === "CLOSED") {
     if (decision === "AMAZON_FUNDED")
-      return { text: "Amazon Funded", color: "bg-green-100 text-green-700" };
+      return { text: "Amazon Funded", color: "bg-green-soft2 text-green-ink" };
     if (decision === "IN_OUR_FAVOR")
-      return { text: "Won", color: "bg-green-100 text-green-700" };
+      return { text: "Won", color: "bg-green-soft2 text-green-ink" };
     if (decision === "AGAINST_US")
-      return { text: "We Lost", color: "bg-red-100 text-red-700" };
-    return { text: "Decided", color: "bg-slate-100 text-slate-700" };
+      return { text: "We Lost", color: "bg-danger-tint text-danger" };
+    return { text: "Decided", color: "bg-bg-elev text-ink" };
   }
   const map: Record<string, { text: string; color: string }> = {
-    NEW: { text: "Needs Response", color: "bg-red-100 text-red-700" },
+    NEW: { text: "Needs Response", color: "bg-danger-tint text-danger" },
     EVIDENCE_GATHERED: {
       text: "Evidence Ready",
-      color: "bg-amber-100 text-amber-700",
+      color: "bg-warn-tint text-warn-strong",
     },
     RESPONSE_READY: {
       text: "Response Ready",
-      color: "bg-blue-100 text-blue-700",
+      color: "bg-green-soft2 text-green-deep",
     },
-    SUBMITTED: { text: "Submitted", color: "bg-green-100 text-green-700" },
+    SUBMITTED: { text: "Submitted", color: "bg-green-soft2 text-green-ink" },
     APPEALED: { text: "Appealed", color: "bg-purple-100 text-purple-700" },
   };
-  return map[status] || { text: status, color: "bg-slate-100 text-slate-500" };
+  return map[status] || { text: status, color: "bg-bg-elev text-ink-3" };
 }
 
 // Compute days until deadline from a YYYY-MM-DD string on the client.
@@ -206,8 +206,8 @@ export default function AtozTab({
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 size={20} className="animate-spin text-slate-400 mr-2" />
-          <span className="text-sm text-slate-500">Loading claims…</span>
+          <Loader2 size={20} className="animate-spin text-ink-3 mr-2" />
+          <span className="text-sm text-ink-3">Loading claims…</span>
         </CardContent>
       </Card>
     );
@@ -218,10 +218,10 @@ export default function AtozTab({
       <Card>
         <CardContent className="p-0">
           <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100">
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-ink-3">
               {total} {label.toLowerCase()}{total !== 1 ? "s" : ""}
               {syncMessage && (
-                <span className="ml-2 text-[10px] text-slate-400">
+                <span className="ml-2 text-[10px] text-ink-3">
                   {syncMessage}
                 </span>
               )}
@@ -267,11 +267,11 @@ export default function AtozTab({
               </DialogHeader>
               <form onSubmit={handleAddClaim} className="space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-slate-500">Order ID *</label>
+                  <label className="text-xs font-medium text-ink-3">Order ID *</label>
                   <Input name="orderId" placeholder="123-1234567-1234567" required />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-slate-500">Store</label>
+                  <label className="text-xs font-medium text-ink-3">Store</label>
                   <select name="storeIndex" className="w-full rounded border px-3 py-2 text-sm">
                     <option value="1">Salutem Solutions</option>
                     <option value="2">Vladimir Personal</option>
@@ -281,7 +281,7 @@ export default function AtozTab({
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-slate-500">Reason</label>
+                  <label className="text-xs font-medium text-ink-3">Reason</label>
                   <select name="reason" className="w-full rounded border px-3 py-2 text-sm">
                     <option value="INR">Item Not Received (INR)</option>
                     <option value="SNAD">Significantly Not As Described (SNAD)</option>
@@ -292,20 +292,20 @@ export default function AtozTab({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-xs font-medium text-slate-500">Amount ($) *</label>
+                    <label className="text-xs font-medium text-ink-3">Amount ($) *</label>
                     <Input name="amount" type="number" step="0.01" required />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-500">Deadline</label>
+                    <label className="text-xs font-medium text-ink-3">Deadline</label>
                     <Input name="deadline" type="date" />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-slate-500">Notes</label>
+                  <label className="text-xs font-medium text-ink-3">Notes</label>
                   <Textarea name="notes" rows={2} placeholder="Optional internal notes" />
                 </div>
                 {addError && (
-                  <p className="text-xs text-red-600">{addError}</p>
+                  <p className="text-xs text-danger">{addError}</p>
                 )}
                 <div className="flex justify-end gap-2 pt-2">
                   <Button type="button" variant="ghost" size="sm" onClick={() => setAddOpen(false)}>
@@ -323,34 +323,34 @@ export default function AtozTab({
           {/* Summary cards */}
           {claims.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2 px-4 py-3 border-b border-slate-100 text-xs">
-              <div className="rounded bg-slate-50 p-2 text-center">
-                <div className="text-lg font-bold text-slate-700">{total}</div>
-                <div className="text-slate-500">Total</div>
+              <div className="rounded bg-surface-tint p-2 text-center">
+                <div className="text-lg font-bold text-ink">{total}</div>
+                <div className="text-ink-3">Total</div>
               </div>
-              <div className="rounded bg-amber-50 p-2 text-center">
-                <div className="text-lg font-bold text-amber-700">
+              <div className="rounded bg-warn-tint p-2 text-center">
+                <div className="text-lg font-bold text-warn-strong">
                   {claims.filter((c) => !c.amazonDecision && c.status !== "CLOSED").length}
                 </div>
-                <div className="text-amber-600">Pending</div>
+                <div className="text-warn">Pending</div>
               </div>
-              <div className="rounded bg-green-50 p-2 text-center">
-                <div className="text-lg font-bold text-green-700">
+              <div className="rounded bg-green-soft p-2 text-center">
+                <div className="text-lg font-bold text-green-ink">
                   {claims.filter((c) => c.amazonDecision === "AMAZON_FUNDED" || c.amazonDecision === "IN_OUR_FAVOR").length}
                 </div>
-                <div className="text-green-600">Won / Amazon Funded</div>
+                <div className="text-green">Won / Amazon Funded</div>
               </div>
-              <div className="rounded bg-red-50 p-2 text-center">
-                <div className="text-lg font-bold text-red-700">
+              <div className="rounded bg-danger-tint p-2 text-center">
+                <div className="text-lg font-bold text-danger">
                   {claims.filter((c) => c.amazonDecision === "AGAINST_US").length}
                 </div>
-                <div className="text-red-600">We Lost</div>
+                <div className="text-danger">We Lost</div>
               </div>
-              <div className="rounded bg-slate-50 p-2 text-center">
-                <div className="text-lg font-bold text-green-700">
+              <div className="rounded bg-surface-tint p-2 text-center">
+                <div className="text-lg font-bold text-green-ink">
                   ${claims.reduce((sum, c) => sum + (c.amountSaved || 0), 0).toFixed(0)}
                 </div>
-                <div className="text-slate-500">
-                  Saved / <span className="text-red-600">${claims.reduce((sum, c) => sum + (c.amountCharged || 0), 0).toFixed(0)} Lost</span>
+                <div className="text-ink-3">
+                  Saved / <span className="text-danger">${claims.reduce((sum, c) => sum + (c.amountCharged || 0), 0).toFixed(0)} Lost</span>
                 </div>
               </div>
             </div>
@@ -358,11 +358,11 @@ export default function AtozTab({
 
           {claims.length === 0 ? (
             <div className="py-12 text-center">
-              <Scale size={32} className="mx-auto text-slate-300 mb-3" />
-              <p className="text-sm font-medium text-slate-600">
+              <Scale size={32} className="mx-auto text-ink-4 mb-3" />
+              <p className="text-sm font-medium text-ink-2">
                 No {label.toLowerCase()}s
               </p>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-ink-3 mt-1">
                 Press Sync to load from Gmail notifications.
               </p>
             </div>
@@ -392,10 +392,10 @@ export default function AtozTab({
                   return (
                     <TableRow
                       key={c.id}
-                      className={`cursor-pointer hover:bg-slate-50 ${
-                        selectedId === c.id ? "bg-blue-50" : ""
-                      } ${urgent ? "bg-red-50/40" : ""} ${
-                        isLoss ? "bg-red-50/30" : ""
+                      className={`cursor-pointer hover:bg-surface-tint ${
+                        selectedId === c.id ? "bg-green-soft" : ""
+                      } ${urgent ? "bg-danger-tint/40" : ""} ${
+                        isLoss ? "bg-danger-tint/30" : ""
                       }`}
                       onClick={() =>
                         setSelectedId(selectedId === c.id ? null : c.id)
@@ -404,7 +404,7 @@ export default function AtozTab({
                       <TableCell>
                         <Badge className={sl.color}>{sl.text}</Badge>
                       </TableCell>
-                      <TableCell className="text-xs text-slate-600 max-w-[100px] truncate">
+                      <TableCell className="text-xs text-ink-2 max-w-[100px] truncate">
                         {c.storeName || `Store ${c.storeIndex}`}
                       </TableCell>
                       <TableCell className="font-mono text-xs">
@@ -416,9 +416,9 @@ export default function AtozTab({
                       <TableCell
                         className={`text-right text-xs font-medium ${
                           isLoss
-                            ? "text-red-600"
+                            ? "text-danger"
                             : isWon
-                              ? "text-green-600"
+                              ? "text-green"
                               : ""
                         }`}
                       >
@@ -427,22 +427,22 @@ export default function AtozTab({
                       <TableCell className="text-xs">
                         {c.deadline || "—"}
                         {days !== null && days <= 3 && (
-                          <Badge className="ml-1 bg-red-100 text-red-700 text-[9px]">
+                          <Badge className="ml-1 bg-danger-tint text-danger text-[9px]">
                             {days}d left
                           </Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-xs">
                         {isWon ? (
-                          <span className="text-green-600 font-medium">
+                          <span className="text-green font-medium">
                             Amazon
                           </span>
                         ) : isLoss ? (
-                          <span className="text-red-600 font-medium">
+                          <span className="text-danger font-medium">
                             Us {!c.appealSubmitted && "(Appeal?)"}
                           </span>
                         ) : (
-                          <span className="text-slate-400">Pending</span>
+                          <span className="text-ink-3">Pending</span>
                         )}
                       </TableCell>
                       <TableCell>

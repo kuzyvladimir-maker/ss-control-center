@@ -160,16 +160,16 @@ export default function UsersSettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 size={20} className="mr-2 animate-spin text-slate-400" />
-        <span className="text-sm text-slate-500">Loading…</span>
+        <Loader2 size={20} className="mr-2 animate-spin text-ink-3" />
+        <span className="text-sm text-ink-3">Loading…</span>
       </div>
     );
   }
 
   if (pageError) {
     return (
-      <Card className="border-red-200 bg-red-50">
-        <CardContent className="py-6 text-sm text-red-700">
+      <Card className="border-danger/20 bg-danger-tint">
+        <CardContent className="py-6 text-sm text-danger">
           <AlertTriangle size={16} className="mr-1 inline" /> {pageError}
         </CardContent>
       </Card>
@@ -180,8 +180,8 @@ export default function UsersSettingsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-800">User Permissions</h1>
-          <p className="text-xs text-slate-400">
+          <h1 className="text-lg font-semibold text-ink">User Permissions</h1>
+          <p className="text-xs text-ink-3">
             Add new users by email — they receive a link to set their password.
           </p>
         </div>
@@ -203,7 +203,7 @@ export default function UsersSettingsPage() {
             className="flex flex-col gap-3 sm:flex-row sm:items-end"
           >
             <div className="flex-1">
-              <label className="block text-xs text-slate-500" htmlFor="email">
+              <label className="block text-xs text-ink-3" htmlFor="email">
                 Email
               </label>
               <input
@@ -213,11 +213,11 @@ export default function UsersSettingsPage() {
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
                 placeholder="user@example.com"
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-md border border-silver-line px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-xs text-slate-500" htmlFor="role">
+              <label className="block text-xs text-ink-3" htmlFor="role">
                 Role
               </label>
               <select
@@ -226,7 +226,7 @@ export default function UsersSettingsPage() {
                 onChange={(e) =>
                   setNewRole(e.target.value as "admin" | "member")
                 }
-                className="mt-1 block rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block rounded-md border border-silver-line px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
@@ -238,9 +238,9 @@ export default function UsersSettingsPage() {
             </Button>
           </form>
           {createError && (
-            <p className="mt-2 text-xs text-red-600">{createError}</p>
+            <p className="mt-2 text-xs text-danger">{createError}</p>
           )}
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-3 text-xs text-ink-3">
             Email delivery isn&apos;t wired yet — copy the invite link from the
             list below and send it manually.
           </p>
@@ -256,7 +256,7 @@ export default function UsersSettingsPage() {
         </CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
-            <thead className="border-b border-slate-200 text-left text-xs text-slate-500">
+            <thead className="border-b border-rule text-left text-xs text-ink-3">
               <tr>
                 <th className="px-4 py-2">Email</th>
                 <th className="px-4 py-2">Display name</th>
@@ -279,7 +279,7 @@ export default function UsersSettingsPage() {
                         onChange={(e) =>
                           changeRole(u, e.target.value as "admin" | "member")
                         }
-                        className="rounded border border-gray-300 px-2 py-1 text-xs disabled:opacity-50"
+                        className="rounded border border-silver-line px-2 py-1 text-xs disabled:opacity-50"
                       >
                         <option value="member">Member</option>
                         <option value="admin">Admin</option>
@@ -287,14 +287,14 @@ export default function UsersSettingsPage() {
                       {u.role === "admin" && (
                         <ShieldCheck
                           size={12}
-                          className="ml-1 inline text-blue-500"
+                          className="ml-1 inline text-green-mid"
                         />
                       )}
                       {isMe && (
-                        <span className="ml-2 text-xs text-slate-400">(you)</span>
+                        <span className="ml-2 text-xs text-ink-3">(you)</span>
                       )}
                     </td>
-                    <td className="px-4 py-2 text-xs text-slate-500">
+                    <td className="px-4 py-2 text-xs text-ink-3">
                       {new Date(u.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-2 text-right">
@@ -325,11 +325,11 @@ export default function UsersSettingsPage() {
         </CardHeader>
         <CardContent className="p-0">
           {invites.length === 0 && (
-            <p className="px-4 py-3 text-sm text-slate-500">No invites yet.</p>
+            <p className="px-4 py-3 text-sm text-ink-3">No invites yet.</p>
           )}
           {invites.length > 0 && (
             <table className="w-full text-sm">
-              <thead className="border-b border-slate-200 text-left text-xs text-slate-500">
+              <thead className="border-b border-rule text-left text-xs text-ink-3">
                 <tr>
                   <th className="px-4 py-2">Email</th>
                   <th className="px-4 py-2">Role</th>
@@ -348,27 +348,27 @@ export default function UsersSettingsPage() {
                       <span
                         className={
                           i.status === "pending"
-                            ? "text-amber-600"
+                            ? "text-warn"
                             : i.status === "accepted"
-                              ? "text-green-600"
-                              : "text-slate-400"
+                              ? "text-green"
+                              : "text-ink-3"
                         }
                       >
                         {i.status}
                       </span>
                     </td>
-                    <td className="px-4 py-2 text-xs text-slate-500">
+                    <td className="px-4 py-2 text-xs text-ink-3">
                       {new Date(i.expiresAt).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-2">
                       {i.status === "pending" ? (
                         <button
                           onClick={() => copyLink(i)}
-                          className="inline-flex items-center gap-1 rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
+                          className="inline-flex items-center gap-1 rounded border border-silver-line px-2 py-1 text-xs hover:bg-surface-tint"
                         >
                           {copiedId === i.id ? (
                             <>
-                              <Check size={12} className="text-green-600" /> Copied
+                              <Check size={12} className="text-green" /> Copied
                             </>
                           ) : (
                             <>
@@ -377,7 +377,7 @@ export default function UsersSettingsPage() {
                           )}
                         </button>
                       ) : (
-                        <span className="text-xs text-slate-400">—</span>
+                        <span className="text-xs text-ink-3">—</span>
                       )}
                     </td>
                     <td className="px-4 py-2 text-right">

@@ -45,16 +45,16 @@ export default function WalmartBaselineCard() {
   const { ordersTotal30d, returnsPending, refundsLast7d } = summary.walmart;
 
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-md border border-slate-200 bg-slate-50 px-4 py-2 text-xs text-slate-600">
-      <span className="inline-flex items-center gap-1 font-medium text-slate-700">
+    <div className="flex flex-wrap items-center gap-4 rounded-md border border-rule bg-surface-tint px-4 py-2 text-xs text-ink-2">
+      <span className="inline-flex items-center gap-1 font-medium text-ink">
         <Info size={13} /> Walmart baseline (non-frozen)
       </span>
       <span className="inline-flex items-center gap-1">
-        <ShoppingBag size={13} className="text-slate-400" />
+        <ShoppingBag size={13} className="text-ink-3" />
         {ordersTotal30d} orders / 30d
       </span>
       <span className="inline-flex items-center gap-1">
-        <PackageMinus size={13} className="text-slate-400" />
+        <PackageMinus size={13} className="text-ink-3" />
         {returnsPending} returns pending
       </span>
       <span>${refundsLast7d.toFixed(2)} refunds / 7d</span>

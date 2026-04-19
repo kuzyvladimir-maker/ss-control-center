@@ -22,7 +22,7 @@ export default function CustomerHubPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800">Customer Hub</h1>
+        <h1 className="text-lg font-semibold text-ink">Customer Hub</h1>
         <div className="flex items-center gap-3">
           <PeriodFilter value={period} onChange={setPeriod} />
           <StoreFilter value={storeFilter} onChange={setStoreFilter} />

@@ -41,7 +41,7 @@ export default function ResponseDeadline({
   if (status === "SENT" || status === "RESOLVED") {
     return (
       <span
-        className={`inline-flex items-center gap-1 text-xs text-green-600 ${className}`}
+        className={`inline-flex items-center gap-1 text-xs text-green ${className}`}
       >
         <Check size={12} />
         Responded
@@ -57,7 +57,7 @@ export default function ResponseDeadline({
   if (msLeft <= 0) {
     return (
       <span
-        className={`inline-flex items-center gap-1 text-xs font-semibold text-red-700 ${className}`}
+        className={`inline-flex items-center gap-1 text-xs font-semibold text-danger ${className}`}
       >
         <AlertTriangle size={12} />
         OVERDUE
@@ -68,7 +68,7 @@ export default function ResponseDeadline({
   if (hoursLeft <= 4) {
     return (
       <span
-        className={`inline-flex items-center gap-1 text-xs font-medium text-red-600 ${className}`}
+        className={`inline-flex items-center gap-1 text-xs font-medium text-danger ${className}`}
       >
         <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-red-600" />
         {hoursLeft}h left
@@ -79,16 +79,16 @@ export default function ResponseDeadline({
   if (hoursLeft <= 12) {
     return (
       <span
-        className={`inline-flex items-center gap-1 text-xs text-amber-600 ${className}`}
+        className={`inline-flex items-center gap-1 text-xs text-warn ${className}`}
       >
-        <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-amber-500" />
+        <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-warn-tint0" />
         {hoursLeft}h left
       </span>
     );
   }
 
   return (
-    <span className={`text-xs text-slate-500 ${className}`}>
+    <span className={`text-xs text-ink-3 ${className}`}>
       {hoursLeft}h left
     </span>
   );

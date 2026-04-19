@@ -31,13 +31,13 @@ interface FeedbackItem {
 }
 
 const statusColors: Record<string, string> = {
-  NEW: "bg-slate-100 text-slate-600",
-  ANALYZED: "bg-blue-100 text-blue-700",
-  REMOVAL_SUBMITTED: "bg-amber-100 text-amber-700",
-  REMOVED: "bg-green-100 text-green-700",
-  DENIED: "bg-red-100 text-red-700",
+  NEW: "bg-bg-elev text-ink-2",
+  ANALYZED: "bg-green-soft2 text-green-deep",
+  REMOVAL_SUBMITTED: "bg-warn-tint text-warn-strong",
+  REMOVED: "bg-green-soft2 text-green-ink",
+  DENIED: "bg-danger-tint text-danger",
   CONTACT_SENT: "bg-purple-100 text-purple-700",
-  CLOSED: "bg-slate-100 text-slate-500",
+  CLOSED: "bg-bg-elev text-ink-3",
 };
 
 function StarRating({ rating }: { rating: number }) {
@@ -75,7 +75,7 @@ export default function FeedbackTable({
         <select
           value={filters.rating}
           onChange={(e) => onFiltersChange({ ...filters, rating: e.target.value })}
-          className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm"
+          className="rounded-md border border-rule bg-white px-3 py-1.5 text-sm"
         >
           <option value="">All Ratings</option>
           <option value="negative">Negative (1-2)</option>
@@ -86,7 +86,7 @@ export default function FeedbackTable({
         <select
           value={filters.status}
           onChange={(e) => onFiltersChange({ ...filters, status: e.target.value })}
-          className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm"
+          className="rounded-md border border-rule bg-white px-3 py-1.5 text-sm"
         >
           <option value="">All Statuses</option>
           <option value="NEW">New</option>
@@ -95,13 +95,13 @@ export default function FeedbackTable({
           <option value="REMOVED">Removed</option>
           <option value="DENIED">Denied</option>
         </select>
-        <span className="text-xs text-slate-500 ml-auto">
+        <span className="text-xs text-ink-3 ml-auto">
           {total} feedback{total !== 1 ? "s" : ""}
         </span>
       </div>
 
       {items.length === 0 ? (
-        <p className="text-sm text-slate-400 py-4 text-center">No feedback found</p>
+        <p className="text-sm text-ink-3 py-4 text-center">No feedback found</p>
       ) : (
         <Table>
           <TableHeader>
@@ -121,20 +121,20 @@ export default function FeedbackTable({
               return (
                 <Fragment key={fb.id}>
                   <TableRow
-                    className={`cursor-pointer hover:bg-slate-50 ${fb.rating <= 2 ? "bg-red-50/30" : ""}`}
+                    className={`cursor-pointer hover:bg-surface-tint ${fb.rating <= 2 ? "bg-danger-tint/30" : ""}`}
                     onClick={() => setExpandedId(expanded ? null : fb.id)}
                   >
                     <TableCell className="px-2">
                       {expanded ? (
-                        <ChevronDown size={14} className="text-slate-400" />
+                        <ChevronDown size={14} className="text-ink-3" />
                       ) : (
-                        <ChevronRight size={14} className="text-slate-400" />
+                        <ChevronRight size={14} className="text-ink-3" />
                       )}
                     </TableCell>
                     <TableCell>
                       <StarRating rating={fb.rating} />
                     </TableCell>
-                    <TableCell className="text-xs text-slate-500">
+                    <TableCell className="text-xs text-ink-3">
                       {fb.feedbackDate}
                     </TableCell>
                     <TableCell className="font-mono text-xs">
@@ -145,13 +145,13 @@ export default function FeedbackTable({
                     </TableCell>
                     <TableCell>
                       {fb.removable === true && (
-                        <Badge className="bg-green-100 text-green-700">Removable</Badge>
+                        <Badge className="bg-green-soft2 text-green-ink">Removable</Badge>
                       )}
                       {fb.removable === false && (
-                        <Badge className="bg-slate-100 text-slate-500">Not removable</Badge>
+                        <Badge className="bg-bg-elev text-ink-3">Not removable</Badge>
                       )}
                       {fb.removable === null && (
-                        <Badge className="bg-slate-100 text-slate-400">Pending</Badge>
+                        <Badge className="bg-bg-elev text-ink-3">Pending</Badge>
                       )}
                     </TableCell>
                     <TableCell>
@@ -160,17 +160,17 @@ export default function FeedbackTable({
                   </TableRow>
                   {expanded && (
                     <TableRow key={`${fb.id}-detail`}>
-                      <TableCell colSpan={7} className="bg-slate-50 p-4">
+                      <TableCell colSpan={7} className="bg-surface-tint p-4">
                         <div className="space-y-3 text-xs">
                           <div>
-                            <span className="text-slate-500">Full comment:</span>
+                            <span className="text-ink-3">Full comment:</span>
                             <p className="mt-1 bg-white rounded border p-2">
                               {fb.comments || "No comment"}
                             </p>
                           </div>
 
                           {fb.aiReasoning && (
-                            <div className="rounded bg-blue-50 p-2 text-blue-700">
+                            <div className="rounded bg-green-soft p-2 text-green-deep">
                               <strong>AI Analysis:</strong> {fb.aiReasoning}
                               {fb.removalCategory && (
                                 <span className="ml-2">
@@ -182,7 +182,7 @@ export default function FeedbackTable({
 
                           {fb.removalRequestText && (
                             <div>
-                              <span className="text-slate-500 font-medium">Removal request text:</span>
+                              <span className="text-ink-3 font-medium">Removal request text:</span>
                               <div className="mt-1 bg-white rounded border p-2 whitespace-pre-wrap">
                                 {fb.removalRequestText}
                               </div>
@@ -190,7 +190,7 @@ export default function FeedbackTable({
                           )}
 
                           {fb.vladimirNotes && (
-                            <div className="rounded bg-amber-50 p-2 text-amber-800">
+                            <div className="rounded bg-warn-tint p-2 text-warn-strong">
                               <strong>Notes:</strong> {fb.vladimirNotes}
                             </div>
                           )}

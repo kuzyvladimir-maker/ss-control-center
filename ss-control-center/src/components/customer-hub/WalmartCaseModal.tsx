@@ -54,9 +54,9 @@ interface UploadedImage {
 }
 
 const riskColors: Record<string, string> = {
-  LOW: "bg-green-100 text-green-700",
-  MEDIUM: "bg-yellow-100 text-yellow-700",
-  HIGH: "bg-red-100 text-red-700",
+  LOW: "bg-green-soft2 text-green-ink",
+  MEDIUM: "bg-warn-tint text-warn-strong",
+  HIGH: "bg-danger-tint text-danger",
   CRITICAL: "bg-red-600 text-white",
 };
 
@@ -259,14 +259,14 @@ export default function WalmartCaseModal() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="inline-flex shrink-0 items-center justify-center gap-1 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+      <DialogTrigger className="inline-flex shrink-0 items-center justify-center gap-1 rounded-md border border-rule bg-white px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface-tint transition-colors">
         <Plus size={14} />
         Walmart Case
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ShoppingCart size={18} className="text-blue-600" />
+            <ShoppingCart size={18} className="text-green" />
             Walmart Case Analysis
           </DialogTitle>
           <DialogDescription>
@@ -276,7 +276,7 @@ export default function WalmartCaseModal() {
         </DialogHeader>
 
         {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700 flex items-start gap-2">
+          <div className="rounded-md border border-danger/20 bg-danger-tint p-3 text-xs text-danger flex items-start gap-2">
             <AlertTriangle size={14} className="shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -295,16 +295,16 @@ export default function WalmartCaseModal() {
               onClick={() => fileInputRef.current?.click()}
               className={`flex min-h-[140px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 transition-colors ${
                 isDragging
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50"
+                  ? "border-blue-500 bg-green-soft"
+                  : "border-silver-line bg-surface-tint hover:border-blue-400 hover:bg-green-soft"
               }`}
             >
-              <Upload className="mb-2 text-slate-400" size={28} />
-              <p className="text-xs text-slate-600">
+              <Upload className="mb-2 text-ink-3" size={28} />
+              <p className="text-xs text-ink-2">
                 Drag &amp; drop screenshots, click to browse, or paste from
                 clipboard (⌘V)
               </p>
-              <p className="text-[10px] text-slate-400 mt-1">
+              <p className="text-[10px] text-ink-3 mt-1">
                 Order details, customer message, tracking page — PNG or JPG
               </p>
             </div>
@@ -326,7 +326,7 @@ export default function WalmartCaseModal() {
                 {images.map((img) => (
                   <div
                     key={img.id}
-                    className="relative rounded border border-slate-200 overflow-hidden bg-slate-50 aspect-video"
+                    className="relative rounded border border-rule overflow-hidden bg-surface-tint aspect-video"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -339,7 +339,7 @@ export default function WalmartCaseModal() {
                         e.stopPropagation();
                         removeImage(img.id);
                       }}
-                      className="absolute top-1 right-1 rounded-full bg-white/90 p-0.5 text-red-600 hover:bg-white shadow-sm"
+                      className="absolute top-1 right-1 rounded-full bg-white/90 p-0.5 text-danger hover:bg-white shadow-sm"
                       aria-label="Remove image"
                     >
                       <X size={12} />
@@ -363,12 +363,12 @@ export default function WalmartCaseModal() {
         {/* -------------------- ANALYZING state -------------------- */}
         {state === "analyzing" && (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <Loader2 size={32} className="animate-spin text-blue-600" />
-            <p className="text-sm text-slate-600">
+            <Loader2 size={32} className="animate-spin text-green" />
+            <p className="text-sm text-ink-2">
               Analyzing {images.length} screenshot
               {images.length !== 1 ? "s" : ""}…
             </p>
-            <p className="text-[10px] text-slate-400">
+            <p className="text-[10px] text-ink-3">
               Sending to Claude vision — this usually takes 5–15 seconds
             </p>
           </div>
@@ -383,7 +383,7 @@ export default function WalmartCaseModal() {
                 {images.map((img) => (
                   <div
                     key={img.id}
-                    className="shrink-0 rounded border border-slate-200 overflow-hidden bg-slate-50 w-24 h-16"
+                    className="shrink-0 rounded border border-rule overflow-hidden bg-surface-tint w-24 h-16"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -397,8 +397,8 @@ export default function WalmartCaseModal() {
             )}
 
             {/* Analysis verdict */}
-            <div className="rounded border border-slate-200 p-3 space-y-2">
-              <p className="text-slate-500 font-medium">Analysis</p>
+            <div className="rounded border border-rule p-3 space-y-2">
+              <p className="text-ink-3 font-medium">Analysis</p>
               <div className="flex flex-wrap items-center gap-2">
                 {analysis.problemType && (
                   <Badge variant="outline">
@@ -412,31 +412,31 @@ export default function WalmartCaseModal() {
                   </Badge>
                 )}
                 {analysis.action && (
-                  <Badge className="bg-blue-100 text-blue-700">
+                  <Badge className="bg-green-soft2 text-green-deep">
                     Action: {analysis.action.replace(/_/g, " ")}
                   </Badge>
                 )}
                 {analysis.whoShouldPay && (
-                  <Badge className="bg-slate-100 text-slate-600">
+                  <Badge className="bg-bg-elev text-ink-2">
                     Pays: {analysis.whoShouldPay}
                   </Badge>
                 )}
               </div>
               {analysis.reasoning && (
-                <p className="text-slate-600">{analysis.reasoning}</p>
+                <p className="text-ink-2">{analysis.reasoning}</p>
               )}
             </div>
 
             {/* Extracted facts */}
-            <div className="rounded border border-slate-200 p-3 space-y-1">
-              <p className="text-slate-500 font-medium mb-1">
+            <div className="rounded border border-rule p-3 space-y-1">
+              <p className="text-ink-3 font-medium mb-1">
                 Extracted from screenshots
               </p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                 <div>
-                  <span className="text-slate-500">Order ID:</span>{" "}
+                  <span className="text-ink-3">Order ID:</span>{" "}
                   {analysis.orderId ? (
-                    <code className="bg-slate-50 rounded px-1">
+                    <code className="bg-surface-tint rounded px-1">
                       {analysis.orderId}
                     </code>
                   ) : (
@@ -444,18 +444,18 @@ export default function WalmartCaseModal() {
                   )}
                 </div>
                 <div>
-                  <span className="text-slate-500">Customer:</span>{" "}
+                  <span className="text-ink-3">Customer:</span>{" "}
                   {analysis.customerName || "—"}
                 </div>
                 <div className="col-span-2">
-                  <span className="text-slate-500">Product:</span>{" "}
+                  <span className="text-ink-3">Product:</span>{" "}
                   {analysis.product || "—"}
                 </div>
               </div>
               {analysis.customerMessage && (
                 <div className="mt-2">
-                  <p className="text-slate-500 mb-1">Customer message:</p>
-                  <div className="whitespace-pre-wrap rounded bg-slate-50 p-2 border border-slate-100">
+                  <p className="text-ink-3 mb-1">Customer message:</p>
+                  <div className="whitespace-pre-wrap rounded bg-surface-tint p-2 border border-slate-100">
                     {analysis.customerMessage}
                   </div>
                 </div>
@@ -463,16 +463,16 @@ export default function WalmartCaseModal() {
             </div>
 
             {/* Suggested response */}
-            <div className="rounded border border-slate-200 p-3 space-y-2">
+            <div className="rounded border border-rule p-3 space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-slate-500 font-medium">Suggested response</p>
+                <p className="text-ink-3 font-medium">Suggested response</p>
                 {!editingResponse && (
                   <button
                     onClick={() => {
                       setEditingResponse(true);
                       setResponseDraft(analysis.suggestedResponse || "");
                     }}
-                    className="text-[10px] text-blue-600 hover:underline"
+                    className="text-[10px] text-green hover:underline"
                   >
                     Edit
                   </button>
@@ -482,12 +482,12 @@ export default function WalmartCaseModal() {
                 <textarea
                   value={responseDraft}
                   onChange={(e) => setResponseDraft(e.target.value)}
-                  className="w-full min-h-[120px] rounded border border-slate-200 p-2 text-xs focus:border-blue-400 focus:outline-none"
+                  className="w-full min-h-[120px] rounded border border-rule p-2 text-xs focus:border-blue-400 focus:outline-none"
                 />
               ) : (
                 <div className="whitespace-pre-wrap rounded bg-white border border-slate-100 p-3">
                   {analysis.suggestedResponse || (
-                    <span className="text-slate-400 italic">(no response)</span>
+                    <span className="text-ink-3 italic">(no response)</span>
                   )}
                 </div>
               )}
@@ -503,7 +503,7 @@ export default function WalmartCaseModal() {
                 className="text-xs"
               >
                 {copied ? (
-                  <Check size={12} className="mr-1 text-green-600" />
+                  <Check size={12} className="mr-1 text-green" />
                 ) : (
                   <Copy size={12} className="mr-1" />
                 )}
@@ -522,7 +522,7 @@ export default function WalmartCaseModal() {
                 size="sm"
                 onClick={handleSave}
                 disabled={saving || saved}
-                className="text-xs bg-blue-600 hover:bg-blue-700"
+                className="text-xs bg-green hover:bg-green-deep"
               >
                 {saving ? (
                   <Loader2 size={12} className="animate-spin mr-1" />

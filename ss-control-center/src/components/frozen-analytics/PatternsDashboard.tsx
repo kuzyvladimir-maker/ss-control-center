@@ -26,21 +26,21 @@ interface PatternsData {
 }
 
 const levelColors = {
-  danger: "border-red-200 bg-red-50",
-  warning: "border-amber-200 bg-amber-50",
-  safe: "border-green-200 bg-green-50",
+  danger: "border-danger/20 bg-danger-tint",
+  warning: "border-warn/20 bg-warn-tint",
+  safe: "border-green-200 bg-green-soft",
 };
 
 const levelTextColors = {
-  danger: "text-red-700",
-  warning: "text-amber-700",
-  safe: "text-green-700",
+  danger: "text-danger",
+  warning: "text-warn-strong",
+  safe: "text-green-ink",
 };
 
 export default function PatternsDashboard({ data }: { data: PatternsData }) {
   if (data.totalIncidents === 0) {
     return (
-      <p className="text-sm text-slate-400 py-4 text-center">
+      <p className="text-sm text-ink-3 py-4 text-center">
         No pattern data yet. Patterns appear after multiple frozen incidents.
       </p>
     );
@@ -51,7 +51,7 @@ export default function PatternsDashboard({ data }: { data: PatternsData }) {
       {/* High risk combinations */}
       {data.combinations.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-slate-700">
+          <h3 className="text-sm font-semibold text-ink">
             Carrier/Service Combinations
           </h3>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -65,11 +65,11 @@ export default function PatternsDashboard({ data }: { data: PatternsData }) {
                 >
                   {combo.label}
                 </p>
-                <p className="text-xs text-slate-600 mt-1">
+                <p className="text-xs text-ink-2 mt-1">
                   {combo.thawed}/{combo.total} incidents ({combo.thawRate}% thaw
                   rate)
                 </p>
-                <p className="text-xs mt-1 text-slate-500">
+                <p className="text-xs mt-1 text-ink-3">
                   {combo.recommendation}
                 </p>
               </div>
@@ -106,8 +106,8 @@ export default function PatternsDashboard({ data }: { data: PatternsData }) {
                 >
                   {bucket.thawRate}%
                 </div>
-                <p className="text-xs text-slate-600">{bucket.label}</p>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-xs text-ink-2">{bucket.label}</p>
+                <p className="text-[10px] text-ink-3">
                   {bucket.total > 0
                     ? `${bucket.thawed}/${bucket.total}`
                     : "no data"}
@@ -148,8 +148,8 @@ export default function PatternsDashboard({ data }: { data: PatternsData }) {
                 >
                   {bucket.thawRate}%
                 </div>
-                <p className="text-xs text-slate-600">{bucket.label}</p>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-xs text-ink-2">{bucket.label}</p>
+                <p className="text-[10px] text-ink-3">
                   {bucket.total > 0
                     ? `${bucket.thawed}/${bucket.total}`
                     : "no data"}

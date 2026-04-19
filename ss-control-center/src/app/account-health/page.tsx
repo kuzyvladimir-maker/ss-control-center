@@ -31,25 +31,25 @@ const statusBorder: Record<string, string> = {
   critical: "border-red-500",
   error: "border-red-300",
   syncing: "border-blue-300",
-  pending: "border-slate-300",
-  not_configured: "border-slate-200",
+  pending: "border-silver-line",
+  not_configured: "border-rule",
 };
 
 const statusBadge: Record<string, { label: string; className: string }> = {
-  healthy: { label: "HEALTHY", className: "bg-green-100 text-green-700" },
-  warning: { label: "WARNING", className: "bg-amber-100 text-amber-700" },
+  healthy: { label: "HEALTHY", className: "bg-green-soft2 text-green-ink" },
+  warning: { label: "WARNING", className: "bg-warn-tint text-warn-strong" },
   critical: { label: "CRITICAL", className: "bg-red-600 text-white" },
-  error: { label: "ERROR", className: "bg-red-100 text-red-700" },
-  syncing: { label: "SYNCING", className: "bg-blue-100 text-blue-700" },
-  pending: { label: "PENDING", className: "bg-slate-100 text-slate-500" },
-  not_configured: { label: "NOT SET UP", className: "bg-slate-100 text-slate-400" },
+  error: { label: "ERROR", className: "bg-danger-tint text-danger" },
+  syncing: { label: "SYNCING", className: "bg-green-soft2 text-green-deep" },
+  pending: { label: "PENDING", className: "bg-bg-elev text-ink-3" },
+  not_configured: { label: "NOT SET UP", className: "bg-bg-elev text-ink-3" },
 };
 
 const statusIcon: Record<string, string> = {
   ok: "text-green-500",
   warning: "text-amber-500",
   critical: "text-red-500",
-  unknown: "text-slate-300",
+  unknown: "text-ink-4",
 };
 
 function MetricRow({
@@ -76,30 +76,30 @@ function MetricRow({
   return (
     <div
       className={`flex items-center justify-between py-1 px-2 rounded text-xs ${
-        isBad ? "bg-red-50" : isWarn ? "bg-amber-50/50" : ""
+        isBad ? "bg-danger-tint" : isWarn ? "bg-warn-tint/50" : ""
       } ${indent ? "ml-4" : ""}`}
     >
-      <span className={`${indent ? "text-slate-400" : "text-slate-600"}`}>
+      <span className={`${indent ? "text-ink-3" : "text-ink-2"}`}>
         {label}
         {period && !indent && (
-          <span className="text-slate-400 ml-1">({period})</span>
+          <span className="text-ink-3 ml-1">({period})</span>
         )}
       </span>
       <div className="flex items-center gap-2">
-        <span className={`font-mono font-semibold ${statusIcon[status] || "text-slate-400"}`}>
+        <span className={`font-mono font-semibold ${statusIcon[status] || "text-ink-3"}`}>
           {value !== null && value !== undefined ? `${value}%` : "—"}
         </span>
         {numerator !== null && numerator !== undefined && denominator !== null && denominator !== undefined && (
-          <span className="text-[10px] text-slate-400">
+          <span className="text-[10px] text-ink-3">
             ({numerator}/{denominator})
           </span>
         )}
         {status === "ok" && <CheckCircle size={12} className="text-green-500" />}
         {status === "warning" && <AlertTriangle size={12} className="text-amber-500" />}
         {status === "critical" && (
-          <span className="text-[10px] font-bold text-red-600">OVER</span>
+          <span className="text-[10px] font-bold text-danger">OVER</span>
         )}
-        <span className="text-[10px] text-slate-400">{limit}</span>
+        <span className="text-[10px] text-ink-3">{limit}</span>
       </div>
     </div>
   );
@@ -114,7 +114,7 @@ function StoreCard({
   onSync: (i: number) => void;
   syncing: boolean;
 }) {
-  const border = statusBorder[store.status] || "border-slate-200";
+  const border = statusBorder[store.status] || "border-rule";
   const badge = statusBadge[store.status] || statusBadge.not_configured;
 
   if (store.status === "not_configured") {
@@ -122,8 +122,8 @@ function StoreCard({
       <Card className={`border-2 ${border}`}>
         <CardContent className="py-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-medium text-sm text-slate-600 flex items-center gap-1.5">
-              <Store size={15} className="text-slate-400" />
+            <span className="font-medium text-sm text-ink-2 flex items-center gap-1.5">
+              <Store size={15} className="text-ink-3" />
               Store {store.storeIndex}
             </span>
             <Badge className={badge.className}>
@@ -131,8 +131,8 @@ function StoreCard({
               {badge.label}
             </Badge>
           </div>
-          <p className="text-xs text-slate-400">
-            Add <code className="bg-slate-100 px-1 rounded">AMAZON_SP_REFRESH_TOKEN_STORE{store.storeIndex}</code> to .env
+          <p className="text-xs text-ink-3">
+            Add <code className="bg-bg-elev px-1 rounded">AMAZON_SP_REFRESH_TOKEN_STORE{store.storeIndex}</code> to .env
           </p>
         </CardContent>
       </Card>
@@ -153,7 +153,7 @@ function StoreCard({
               {badge.label}
             </Badge>
           </div>
-          <p className="text-xs text-slate-400 mb-3">{store.message || "Waiting..."}</p>
+          <p className="text-xs text-ink-3 mb-3">{store.message || "Waiting..."}</p>
           <Button variant="outline" size="sm" onClick={() => onSync(store.storeIndex)} disabled={syncing}>
             {syncing ? <Loader2 size={12} className="animate-spin mr-1" /> : <RefreshCw size={12} className="mr-1" />}
             Sync Now
@@ -174,7 +174,7 @@ function StoreCard({
             </span>
             <Badge className={badge.className}><XCircle size={10} className="mr-1" />Error</Badge>
           </div>
-          <p className="text-xs text-red-600 break-all">{store.error || store.message}</p>
+          <p className="text-xs text-danger break-all">{store.error || store.message}</p>
         </CardContent>
       </Card>
     );
@@ -188,7 +188,7 @@ function StoreCard({
         {/* Header */}
         <div className="flex items-center justify-between mb-1">
           <span className="font-medium text-sm flex items-center gap-1.5">
-            <Store size={15} className="text-slate-600" />
+            <Store size={15} className="text-ink-2" />
             Store {store.storeIndex}
           </span>
           <Badge className={badge.className}>
@@ -199,16 +199,16 @@ function StoreCard({
           </Badge>
         </div>
         {store.storeName && (
-          <p className="text-xs text-slate-500 mb-3">
+          <p className="text-xs text-ink-3 mb-3">
             {store.storeName}
-            {store.sellerId && <span className="text-slate-400"> | {store.sellerId}</span>}
+            {store.sellerId && <span className="text-ink-3"> | {store.sellerId}</span>}
           </p>
         )}
 
         {m && (
           <div className="space-y-1">
             {/* Customer Service Performance */}
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
+            <p className="text-[10px] font-semibold text-ink-3 uppercase tracking-wide">
               Customer Service (60 days)
             </p>
             <MetricRow label="Order Defect Rate" value={m.odr?.value} status={m.odr?.status} limit={m.odr?.limit} period={m.odr?.period} numerator={null} denominator={m.odr?.orders} />
@@ -221,7 +221,7 @@ function StoreCard({
             )}
 
             {/* Shipping Performance */}
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mt-2">
+            <p className="text-[10px] font-semibold text-ink-3 uppercase tracking-wide mt-2">
               Shipping Performance
             </p>
             <MetricRow label="Late Shipment (10d)" value={m.lsr10d?.value} status={m.lsr10d?.status} limit={m.lsr10d?.limit} period="10 days" numerator={m.lsr10d?.numerator} denominator={m.lsr10d?.denominator} />
@@ -235,10 +235,10 @@ function StoreCard({
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between text-[10px] text-slate-400 pt-2 mt-2 border-t border-slate-100">
+        <div className="flex items-center justify-between text-[10px] text-ink-3 pt-2 mt-2 border-t border-slate-100">
           <span>
             {store.alertCount > 0 && (
-              <span className="text-amber-600 font-medium mr-2">
+              <span className="text-warn font-medium mr-2">
                 {store.alertCount} issue{store.alertCount > 1 ? "s" : ""}
               </span>
             )}
@@ -257,7 +257,7 @@ function StoreCard({
           <button
             onClick={() => onSync(store.storeIndex)}
             disabled={syncing}
-            className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
+            className="text-green-mid hover:text-green-deep flex items-center gap-1"
           >
             {syncing ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
             <span>Sync</span>
@@ -323,9 +323,9 @@ export default function AccountHealthPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-slate-800">Account Health</h1>
+          <h1 className="text-lg font-semibold text-ink">Account Health</h1>
           {data?.fetchedAt && (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-ink-3">
               {new Date(data.fetchedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
             </p>
           )}
@@ -339,14 +339,14 @@ export default function AccountHealthPage() {
       {data?.summary && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: "Configured", value: `${data.summary.configured}/${data.summary.total}`, color: "text-slate-800" },
-            { label: "Healthy", value: data.summary.healthy, color: "text-green-600" },
-            { label: "Warning", value: data.summary.warning, color: "text-amber-600" },
-            { label: "Critical", value: data.summary.critical, color: "text-red-600" },
+            { label: "Configured", value: `${data.summary.configured}/${data.summary.total}`, color: "text-ink" },
+            { label: "Healthy", value: data.summary.healthy, color: "text-green" },
+            { label: "Warning", value: data.summary.warning, color: "text-warn" },
+            { label: "Critical", value: data.summary.critical, color: "text-danger" },
           ].map((s) => (
             <Card key={s.label}>
               <CardContent className="py-3 text-center">
-                <p className="text-[10px] text-slate-500">{s.label}</p>
+                <p className="text-[10px] text-ink-3">{s.label}</p>
                 <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
               </CardContent>
             </Card>
@@ -356,8 +356,8 @@ export default function AccountHealthPage() {
 
       {loading && !data && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={24} className="animate-spin text-slate-400 mr-2" />
-          <span className="text-sm text-slate-500">Loading...</span>
+          <Loader2 size={24} className="animate-spin text-ink-3 mr-2" />
+          <span className="text-sm text-ink-3">Loading...</span>
         </div>
       )}
 

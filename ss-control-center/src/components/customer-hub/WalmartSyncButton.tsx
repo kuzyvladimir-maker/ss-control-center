@@ -97,7 +97,7 @@ export default function WalmartSyncButton() {
       </Button>
 
       {outcome.kind === "ok" && (
-        <span className="inline-flex items-center gap-1 text-xs text-green-700">
+        <span className="inline-flex items-center gap-1 text-xs text-green-ink">
           <CheckCircle2 size={14} />
           {outcome.ordersSynced} orders, {outcome.returnsSynced} returns
           {outcome.messagesCreated > 0 && (
@@ -108,7 +108,7 @@ export default function WalmartSyncButton() {
 
       {(outcome.kind === "error" || outcome.kind === "partial") && (
         <span
-          className="inline-flex max-w-[260px] items-center gap-1 truncate text-xs text-red-700"
+          className="inline-flex max-w-[260px] items-center gap-1 truncate text-xs text-danger"
           title={outcome.message}
         >
           <AlertCircle size={14} />

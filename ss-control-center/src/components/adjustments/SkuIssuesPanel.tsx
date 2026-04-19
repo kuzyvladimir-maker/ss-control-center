@@ -30,7 +30,7 @@ interface SkuIssuesPanelProps {
 export default function SkuIssuesPanel({ profiles }: SkuIssuesPanelProps) {
   if (profiles.length === 0) {
     return (
-      <p className="text-sm text-slate-400 py-4 text-center">
+      <p className="text-sm text-ink-3 py-4 text-center">
         No SKU adjustment data yet
       </p>
     );
@@ -60,16 +60,16 @@ export default function SkuIssuesPanel({ profiles }: SkuIssuesPanelProps) {
               <span
                 className={
                   p.totalAdjustments >= 5
-                    ? "text-red-600 font-bold"
+                    ? "text-danger font-bold"
                     : p.totalAdjustments >= 3
-                      ? "text-amber-600 font-semibold"
+                      ? "text-warn font-semibold"
                       : ""
                 }
               >
                 {p.totalAdjustments}x
               </span>
             </TableCell>
-            <TableCell className="text-right text-xs font-medium text-red-600">
+            <TableCell className="text-right text-xs font-medium text-danger">
               -${Math.abs(p.totalAmountLost).toFixed(2)}
             </TableCell>
             <TableCell className="text-xs">
@@ -86,11 +86,11 @@ export default function SkuIssuesPanel({ profiles }: SkuIssuesPanelProps) {
             </TableCell>
             <TableCell>
               {p.needsSkuDbUpdate ? (
-                <Badge className="bg-red-100 text-red-700">
+                <Badge className="bg-danger-tint text-danger">
                   Update SKU DB
                 </Badge>
               ) : (
-                <Badge className="bg-green-100 text-green-700">OK</Badge>
+                <Badge className="bg-green-soft2 text-green-ink">OK</Badge>
               )}
             </TableCell>
           </TableRow>

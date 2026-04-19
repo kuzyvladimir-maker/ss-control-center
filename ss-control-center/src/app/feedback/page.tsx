@@ -104,26 +104,26 @@ export default function FeedbackPage() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card>
           <CardContent className="py-4">
-            <p className="text-xs text-slate-500">Negative (1-2)</p>
-            <p className="text-2xl font-bold text-red-600">{negative}</p>
+            <p className="text-xs text-ink-3">Negative (1-2)</p>
+            <p className="text-2xl font-bold text-danger">{negative}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-4">
-            <p className="text-xs text-slate-500">Removable Found</p>
-            <p className="text-2xl font-bold text-green-600">{removable}</p>
+            <p className="text-xs text-ink-3">Removable Found</p>
+            <p className="text-2xl font-bold text-green">{removable}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-4">
-            <p className="text-xs text-slate-500">Removal Success</p>
-            <p className="text-2xl font-bold text-blue-600">{successRate}%</p>
+            <p className="text-xs text-ink-3">Removal Success</p>
+            <p className="text-2xl font-bold text-green">{successRate}%</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-4">
-            <p className="text-xs text-slate-500">Avg Rating</p>
-            <p className="text-2xl font-bold text-amber-600 flex items-center gap-1">
+            <p className="text-xs text-ink-3">Avg Rating</p>
+            <p className="text-2xl font-bold text-warn flex items-center gap-1">
               {avgRating} <Star size={16} className="fill-amber-400 text-amber-400" />
             </p>
           </CardContent>
@@ -147,7 +147,7 @@ export default function FeedbackPage() {
             <CardHeader>
               <CardTitle className="text-base flex items-center justify-between">
                 Seller Feedback
-                {fbLoading && <Loader2 size={16} className="animate-spin text-slate-400" />}
+                {fbLoading && <Loader2 size={16} className="animate-spin text-ink-3" />}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -166,12 +166,12 @@ export default function FeedbackPage() {
             <CardHeader>
               <CardTitle className="text-base flex items-center justify-between">
                 Product Reviews
-                {revLoading && <Loader2 size={16} className="animate-spin text-slate-400" />}
+                {revLoading && <Loader2 size={16} className="animate-spin text-ink-3" />}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {reviews.length === 0 ? (
-                <p className="text-sm text-slate-400 py-4 text-center">
+                <p className="text-sm text-ink-3 py-4 text-center">
                   No product reviews yet
                 </p>
               ) : (
@@ -180,7 +180,7 @@ export default function FeedbackPage() {
                   {reviews.map((r: any) => (
                     <div
                       key={r.id}
-                      className={`rounded-lg border p-3 ${r.rating <= 2 ? "border-red-200 bg-red-50/30" : "border-slate-200"}`}
+                      className={`rounded-lg border p-3 ${r.rating <= 2 ? "border-danger/20 bg-danger-tint/30" : "border-rule"}`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -201,12 +201,12 @@ export default function FeedbackPage() {
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-ink-3">
                           {r.reviewDate}
                         </span>
                       </div>
                       {r.body && (
-                        <p className="text-xs text-slate-600 mt-1">{r.body}</p>
+                        <p className="text-xs text-ink-2 mt-1">{r.body}</p>
                       )}
                     </div>
                   ))}

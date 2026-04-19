@@ -36,20 +36,20 @@ interface Feedback {
 }
 
 const statusColors: Record<string, string> = {
-  NEW: "bg-slate-100 text-slate-600",
-  ANALYZED: "bg-blue-100 text-blue-700",
-  REMOVAL_SUBMITTED: "bg-amber-100 text-amber-700",
-  REMOVED: "bg-green-100 text-green-700",
-  DENIED: "bg-red-100 text-red-700",
+  NEW: "bg-bg-elev text-ink-2",
+  ANALYZED: "bg-green-soft2 text-green-deep",
+  REMOVAL_SUBMITTED: "bg-warn-tint text-warn-strong",
+  REMOVED: "bg-green-soft2 text-green-ink",
+  DENIED: "bg-danger-tint text-danger",
   CONTACT_SENT: "bg-purple-100 text-purple-700",
-  CLOSED: "bg-slate-100 text-slate-500",
+  CLOSED: "bg-bg-elev text-ink-3",
 };
 
 const actionColors: Record<string, string> = {
-  REQUEST_REMOVAL: "bg-green-100 text-green-700",
-  CONTACT_BUYER: "bg-blue-100 text-blue-700",
+  REQUEST_REMOVAL: "bg-green-soft2 text-green-ink",
+  CONTACT_BUYER: "bg-green-soft2 text-green-deep",
   RESPOND_PUBLICLY: "bg-purple-100 text-purple-700",
-  MONITOR: "bg-slate-100 text-slate-600",
+  MONITOR: "bg-bg-elev text-ink-2",
 };
 
 function Stars({ rating }: { rating: number }) {
@@ -187,8 +187,8 @@ export default function FeedbackDetail({
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
-          <Loader2 size={18} className="animate-spin text-slate-400 mr-2" />
-          <span className="text-sm text-slate-500">Loading feedback…</span>
+          <Loader2 size={18} className="animate-spin text-ink-3 mr-2" />
+          <span className="text-sm text-ink-3">Loading feedback…</span>
         </CardContent>
       </Card>
     );
@@ -198,7 +198,7 @@ export default function FeedbackDetail({
     return (
       <Card>
         <CardContent className="flex items-center justify-between py-4">
-          <span className="text-sm text-red-600">
+          <span className="text-sm text-danger">
             {error || "Feedback not found"}
           </span>
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -223,10 +223,10 @@ export default function FeedbackDetail({
             {feedback.status}
           </Badge>
           {feedback.store && (
-            <span className="text-xs text-slate-500">{feedback.store}</span>
+            <span className="text-xs text-ink-3">{feedback.store}</span>
           )}
           {feedback.amazonOrderId && (
-            <span className="font-mono text-[10px] text-slate-400">
+            <span className="font-mono text-[10px] text-ink-3">
               {feedback.amazonOrderId}
             </span>
           )}
@@ -238,36 +238,36 @@ export default function FeedbackDetail({
 
       <CardContent className="space-y-4 text-xs">
         {error && (
-          <div className="rounded border border-red-200 bg-red-50 p-2 text-red-700">
+          <div className="rounded border border-danger/20 bg-danger-tint p-2 text-danger">
             {error}
           </div>
         )}
 
         {/* Customer comment */}
         <div>
-          <p className="text-slate-500 font-medium mb-1">Customer comment:</p>
-          <div className="whitespace-pre-wrap rounded border border-slate-200 bg-slate-50 p-3">
+          <p className="text-ink-3 font-medium mb-1">Customer comment:</p>
+          <div className="whitespace-pre-wrap rounded border border-rule bg-surface-tint p-3">
             {feedback.comments || (
-              <span className="text-slate-400 italic">(no comment)</span>
+              <span className="text-ink-3 italic">(no comment)</span>
             )}
           </div>
-          <p className="text-[10px] text-slate-400 mt-1">
+          <p className="text-[10px] text-ink-3 mt-1">
             Feedback date: {feedback.feedbackDate}
           </p>
         </div>
 
         {/* AI verdict */}
         {isAnalyzed && (
-          <div className="rounded border border-slate-200 p-3 space-y-2">
+          <div className="rounded border border-rule p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-slate-500 font-medium">AI analysis</span>
+              <span className="text-ink-3 font-medium">AI analysis</span>
               <div className="flex items-center gap-2">
                 {feedback.removable != null && (
                   <Badge
                     className={
                       feedback.removable
-                        ? "bg-green-100 text-green-700"
-                        : "bg-slate-100 text-slate-600"
+                        ? "bg-green-soft2 text-green-ink"
+                        : "bg-bg-elev text-ink-2"
                     }
                   >
                     {feedback.removable ? "Removable" : "Not removable"}
@@ -282,10 +282,10 @@ export default function FeedbackDetail({
                   <span
                     className={`text-[10px] font-semibold ${
                       feedback.removalConfidence === "HIGH"
-                        ? "text-green-600"
+                        ? "text-green"
                         : feedback.removalConfidence === "MEDIUM"
-                          ? "text-amber-600"
-                          : "text-red-600"
+                          ? "text-warn"
+                          : "text-danger"
                     }`}
                   >
                     {feedback.removalConfidence}
@@ -301,7 +301,7 @@ export default function FeedbackDetail({
               </div>
             </div>
             {feedback.aiReasoning && (
-              <p className="text-slate-600">{feedback.aiReasoning}</p>
+              <p className="text-ink-2">{feedback.aiReasoning}</p>
             )}
           </div>
         )}
@@ -309,10 +309,10 @@ export default function FeedbackDetail({
         {/* Removal request text */}
         {feedback.removalRequestText && (
           <div>
-            <p className="text-slate-500 font-medium mb-1">
+            <p className="text-ink-3 font-medium mb-1">
               Removal request text:
             </p>
-            <div className="whitespace-pre-wrap rounded border border-slate-200 bg-white p-3">
+            <div className="whitespace-pre-wrap rounded border border-rule bg-white p-3">
               {feedback.removalRequestText}
             </div>
           </div>
@@ -321,10 +321,10 @@ export default function FeedbackDetail({
         {/* Public response */}
         {feedback.publicResponse && (
           <div>
-            <p className="text-slate-500 font-medium mb-1">
+            <p className="text-ink-3 font-medium mb-1">
               Suggested public response:
             </p>
-            <div className="whitespace-pre-wrap rounded border border-slate-200 bg-white p-3">
+            <div className="whitespace-pre-wrap rounded border border-rule bg-white p-3">
               {feedback.publicResponse}
             </div>
           </div>
@@ -332,7 +332,7 @@ export default function FeedbackDetail({
 
         {/* Submission timestamp */}
         {feedback.removalSubmittedAt && (
-          <div className="rounded bg-amber-50 p-2 text-amber-800">
+          <div className="rounded bg-warn-tint p-2 text-warn-strong">
             Removal submitted at{" "}
             {new Date(feedback.removalSubmittedAt).toLocaleString()}
           </div>
@@ -342,7 +342,7 @@ export default function FeedbackDetail({
         <div>
           <label
             htmlFor={`notes-${feedbackId}`}
-            className="text-slate-500 font-medium mb-1 block"
+            className="text-ink-3 font-medium mb-1 block"
           >
             Notes
           </label>
@@ -352,10 +352,10 @@ export default function FeedbackDetail({
             onChange={(e) => setNotesDraft(e.target.value)}
             onBlur={handleSaveNotes}
             placeholder="Add internal notes…"
-            className="w-full min-h-[60px] rounded border border-slate-200 bg-white p-2 text-xs focus:border-blue-400 focus:outline-none"
+            className="w-full min-h-[60px] rounded border border-rule bg-white p-2 text-xs focus:border-blue-400 focus:outline-none"
           />
           {savingNotes && (
-            <p className="text-[10px] text-slate-400 mt-1">Saving…</p>
+            <p className="text-[10px] text-ink-3 mt-1">Saving…</p>
           )}
         </div>
 
@@ -384,7 +384,7 @@ export default function FeedbackDetail({
             className="text-xs"
           >
             {copied ? (
-              <Check size={12} className="mr-1 text-green-600" />
+              <Check size={12} className="mr-1 text-green" />
             ) : (
               <Copy size={12} className="mr-1" />
             )}

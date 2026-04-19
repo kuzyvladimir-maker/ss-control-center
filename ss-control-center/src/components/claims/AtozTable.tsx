@@ -35,19 +35,19 @@ interface Claim {
 }
 
 const statusColors: Record<string, string> = {
-  NEW: "bg-red-100 text-red-700",
-  EVIDENCE_GATHERED: "bg-amber-100 text-amber-700",
-  RESPONSE_READY: "bg-blue-100 text-blue-700",
-  SUBMITTED: "bg-green-100 text-green-700",
-  DECIDED: "bg-slate-100 text-slate-700",
+  NEW: "bg-danger-tint text-danger",
+  EVIDENCE_GATHERED: "bg-warn-tint text-warn-strong",
+  RESPONSE_READY: "bg-green-soft2 text-green-deep",
+  SUBMITTED: "bg-green-soft2 text-green-ink",
+  DECIDED: "bg-bg-elev text-ink",
   APPEALED: "bg-purple-100 text-purple-700",
-  CLOSED: "bg-slate-100 text-slate-500",
+  CLOSED: "bg-bg-elev text-ink-3",
 };
 
 const decisionColors: Record<string, string> = {
-  IN_OUR_FAVOR: "bg-green-100 text-green-700",
-  AMAZON_FUNDED: "bg-green-100 text-green-700",
-  AGAINST_US: "bg-red-100 text-red-700",
+  IN_OUR_FAVOR: "bg-green-soft2 text-green-ink",
+  AMAZON_FUNDED: "bg-green-soft2 text-green-ink",
+  AGAINST_US: "bg-danger-tint text-danger",
 };
 
 interface AtozTableProps {
@@ -60,7 +60,7 @@ export default function AtozTable({ claims, total }: AtozTableProps) {
 
   if (claims.length === 0) {
     return (
-      <p className="text-sm text-slate-400 py-4 text-center">
+      <p className="text-sm text-ink-3 py-4 text-center">
         No claims found. Claims appear here when detected from Amazon notifications.
       </p>
     );
@@ -68,7 +68,7 @@ export default function AtozTable({ claims, total }: AtozTableProps) {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-slate-500">{total} claim{total !== 1 ? "s" : ""}</p>
+      <p className="text-xs text-ink-3">{total} claim{total !== 1 ? "s" : ""}</p>
       <Table>
         <TableHeader>
           <TableRow>
@@ -89,14 +89,14 @@ export default function AtozTable({ claims, total }: AtozTableProps) {
             return (
               <Fragment key={c.id}>
                 <TableRow
-                  className={`cursor-pointer hover:bg-slate-50 ${urgent ? "bg-red-50/50" : ""}`}
+                  className={`cursor-pointer hover:bg-surface-tint ${urgent ? "bg-danger-tint/50" : ""}`}
                   onClick={() => setExpandedId(expanded ? null : c.id)}
                 >
                   <TableCell className="px-2">
                     {expanded ? (
-                      <ChevronDown size={14} className="text-slate-400" />
+                      <ChevronDown size={14} className="text-ink-3" />
                     ) : (
-                      <ChevronRight size={14} className="text-slate-400" />
+                      <ChevronRight size={14} className="text-ink-3" />
                     )}
                   </TableCell>
                   <TableCell className="px-1">
@@ -125,7 +125,7 @@ export default function AtozTable({ claims, total }: AtozTableProps) {
                     {c.deadline || "—"}
                     {c.daysUntilDeadline !== null && (
                       <span
-                        className={`ml-1 ${c.daysUntilDeadline <= 1 ? "text-red-600 font-bold" : c.daysUntilDeadline <= 3 ? "text-amber-600" : "text-slate-400"}`}
+                        className={`ml-1 ${c.daysUntilDeadline <= 1 ? "text-danger font-bold" : c.daysUntilDeadline <= 3 ? "text-warn" : "text-ink-3"}`}
                       >
                         ({c.daysUntilDeadline}d)
                       </span>
@@ -149,36 +149,36 @@ export default function AtozTable({ claims, total }: AtozTableProps) {
                 </TableRow>
                 {expanded && (
                   <TableRow key={`${c.id}-detail`}>
-                    <TableCell colSpan={8} className="bg-slate-50 p-4">
+                    <TableCell colSpan={8} className="bg-surface-tint p-4">
                       <div className="space-y-3 text-xs">
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <span className="text-slate-500">Reason:</span>{" "}
+                            <span className="text-ink-3">Reason:</span>{" "}
                             {c.claimReason || "—"}
                           </div>
                           <div>
-                            <span className="text-slate-500">Carrier:</span>{" "}
+                            <span className="text-ink-3">Carrier:</span>{" "}
                             {c.carrier || "—"}
                           </div>
                           <div>
-                            <span className="text-slate-500">Tracking:</span>{" "}
+                            <span className="text-ink-3">Tracking:</span>{" "}
                             <code className="bg-white px-1 rounded">
                               {c.trackingNumber || "—"}
                             </code>
                           </div>
                           <div>
-                            <span className="text-slate-500">Ship date:</span>{" "}
+                            <span className="text-ink-3">Ship date:</span>{" "}
                             {c.shipDate || "—"}
                           </div>
                           <div>
-                            <span className="text-slate-500">Delivered:</span>{" "}
+                            <span className="text-ink-3">Delivered:</span>{" "}
                             {c.deliveredDate || "—"}
                           </div>
                         </div>
 
                         {c.generatedResponse && (
                           <div>
-                            <p className="text-slate-500 font-medium mb-1">
+                            <p className="text-ink-3 font-medium mb-1">
                               Generated Response:
                             </p>
                             <div className="whitespace-pre-wrap rounded bg-white border p-3 text-xs">
@@ -188,7 +188,7 @@ export default function AtozTable({ claims, total }: AtozTableProps) {
                         )}
 
                         {c.vladimirNotes && (
-                          <div className="rounded bg-amber-50 p-2 text-amber-800">
+                          <div className="rounded bg-warn-tint p-2 text-warn-strong">
                             <strong>Notes:</strong> {c.vladimirNotes}
                           </div>
                         )}

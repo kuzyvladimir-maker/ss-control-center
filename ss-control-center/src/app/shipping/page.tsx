@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Btn, KpiCard, PageHead, Sep } from "@/components/kit";
 import {
   Table,
   TableBody,
@@ -327,84 +328,83 @@ export default function ShippingPage() {
   if (!mounted) return null;
 
   return (
-    <div className="space-y-6">
-      {/* Status bar */}
-      <Card>
-        <CardContent className="py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-500">Today: {today} (ET)</p>
-              {plan && (
+    <div className="space-y-5">
+      {/* Page head */}
+      <PageHead
+        title="Shipping labels"
+        subtitle={
+          plan ? (
+            <>
+              <span>{plan.dispatchDateFormatted}</span>
+              {plan.isWeekend && (
                 <>
-                  <p className="text-sm mt-1">
-                    <span className="text-slate-500">
-                      Showing orders for:{" "}
-                    </span>
-                    <span className="font-medium">
-                      {plan.dispatchDateFormatted}
-                    </span>
-                    {plan.isWeekend && (
-                      <span className="ml-2 text-xs text-amber-600">
-                        (weekend — showing next business day)
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-sm mt-0.5">
-                    Status:{" "}
-                    <span className="font-medium">
-                      {plan.total} orders / {plan.readyCount} ready /{" "}
-                      {plan.stopCount} need attention
-                    </span>
-                    {selectedCount > 0 && (
-                      <span className="ml-2 text-blue-600">
-                        ({selectedCount} selected)
-                      </span>
-                    )}
-                  </p>
+                  <Sep />
+                  <span className="text-warn">weekend → next biz day</span>
                 </>
               )}
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={generatePlan}
-                disabled={loading || buying}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {loading ? (
-                  <Loader2 className="mr-2 animate-spin" size={16} />
-                ) : (
-                  <RefreshCw className="mr-2" size={16} />
-                )}
-                Generate Plan
-              </Button>
-              <Button
-                onClick={buySelectedLabels}
-                disabled={buying || selectedCount === 0}
-                variant="default"
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {buying ? (
-                  <Loader2 className="mr-2 animate-spin" size={16} />
-                ) : (
-                  <ShoppingCart className="mr-2" size={16} />
-                )}
-                {buying
-                  ? buyProgress
-                  : `Buy Selected (${selectedCount})`}
-              </Button>
-              <Button variant="outline" disabled={!plan}>
-                <Download className="mr-2" size={16} />
-                Export
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+              <Sep />
+              <span className="tabular">
+                {plan.total} orders · {plan.readyCount} ready · {plan.stopCount} need attention
+              </span>
+            </>
+          ) : (
+            <span>Today: {today} (ET)</span>
+          )
+        }
+        actions={
+          <>
+            <Btn
+              icon={<RefreshCw size={13} />}
+              onClick={generatePlan}
+              disabled={loading || buying}
+              loading={loading}
+            >
+              {loading ? "Generating…" : "Generate plan"}
+            </Btn>
+            <Btn
+              variant="primary"
+              icon={<ShoppingCart size={13} />}
+              onClick={buySelectedLabels}
+              disabled={buying || selectedCount === 0}
+              loading={buying}
+            >
+              {buying ? buyProgress : `Buy selected (${selectedCount})`}
+            </Btn>
+            <Btn variant="ghost" icon={<Download size={13} />} disabled={!plan}>
+              Export
+            </Btn>
+          </>
+        }
+      />
+
+      {/* KPI row */}
+      {plan && (
+        <div className="grid gap-3 sm:grid-cols-4">
+          <KpiCard label="In plan" value={plan.total} icon={<Package size={14} />} />
+          <KpiCard
+            label="Ready to buy"
+            value={plan.readyCount}
+            icon={<ShoppingCart size={14} />}
+            iconVariant={plan.readyCount > 0 ? "default" : "warn"}
+          />
+          <KpiCard
+            label="Need attention"
+            value={plan.stopCount}
+            icon={<AlertTriangle size={14} />}
+            iconVariant={plan.stopCount > 0 ? "warn" : "default"}
+          />
+          <KpiCard
+            label="Selected"
+            value={selectedCount}
+            icon={<CheckCircle size={14} />}
+          />
+        </div>
+      )}
 
       {/* Buy result summary */}
       {buyResult && (
         <div
-          className={`rounded-md p-3 text-sm ${buyResult.errors.length > 0 ? "bg-amber-50 text-amber-800" : "bg-green-50 text-green-800"}`}
+          className={`rounded-lg border p-3 text-[13px] ${buyResult.errors.length > 0 ? "border-warn/30 bg-warn-tint text-warn-strong" : "border-green/20 bg-green-soft text-green-ink"}`}
         >
           <p className="font-medium">
             {buyResult.bought.length > 0 && (

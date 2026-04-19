@@ -31,16 +31,16 @@ export default function IntegrationsPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-lg font-semibold text-slate-800">Integrations</h1>
-        <p className="text-xs text-slate-400">
+        <h1 className="text-lg font-semibold text-ink">Integrations</h1>
+        <p className="text-xs text-ink-3">
           {connected}/{integrations.length} services connected
         </p>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 size={20} className="animate-spin text-slate-400 mr-2" />
-          <span className="text-sm text-slate-500">Checking connections...</span>
+          <Loader2 size={20} className="animate-spin text-ink-3 mr-2" />
+          <span className="text-sm text-ink-3">Checking connections...</span>
         </div>
       ) : (
         <Card>
@@ -59,19 +59,19 @@ export default function IntegrationsPage() {
                   ) : item.status === "error" ? (
                     <XCircle size={16} className="text-red-500" />
                   ) : (
-                    <Settings size={16} className="text-slate-300" />
+                    <Settings size={16} className="text-ink-4" />
                   )}
-                  <span className="text-sm font-medium text-slate-700">
+                  <span className="text-sm font-medium text-ink">
                     {item.name}
                   </span>
                 </div>
                 <span
                   className={`text-xs ${
                     item.status === "connected"
-                      ? "text-green-600"
+                      ? "text-green"
                       : item.status === "error"
-                        ? "text-red-600"
-                        : "text-slate-400"
+                        ? "text-danger"
+                        : "text-ink-3"
                   }`}
                 >
                   {item.detail}

@@ -81,12 +81,12 @@ export default function AtozClaimsPage() {
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Card>
             <CardContent className="flex items-center gap-3 py-4">
-              <div className="rounded-lg bg-red-50 p-2.5">
-                <Scale size={18} className="text-red-600" />
+              <div className="rounded-lg bg-danger-tint p-2.5">
+                <Scale size={18} className="text-danger" />
               </div>
               <div>
-                <p className="text-xs text-slate-500">Active Claims</p>
-                <p className="text-2xl font-bold text-slate-800">
+                <p className="text-xs text-ink-3">Active Claims</p>
+                <p className="text-2xl font-bold text-ink">
                   {stats.active}
                 </p>
               </div>
@@ -94,12 +94,12 @@ export default function AtozClaimsPage() {
           </Card>
           <Card>
             <CardContent className="flex items-center gap-3 py-4">
-              <div className="rounded-lg bg-blue-50 p-2.5">
-                <Loader2 size={18} className="text-blue-600" />
+              <div className="rounded-lg bg-green-soft p-2.5">
+                <Loader2 size={18} className="text-green" />
               </div>
               <div>
-                <p className="text-xs text-slate-500">Response Ready</p>
-                <p className="text-2xl font-bold text-slate-800">
+                <p className="text-xs text-ink-3">Response Ready</p>
+                <p className="text-2xl font-bold text-ink">
                   {stats.responseReady}
                 </p>
               </div>
@@ -107,15 +107,15 @@ export default function AtozClaimsPage() {
           </Card>
           <Card>
             <CardContent className="flex items-center gap-3 py-4">
-              <div className="rounded-lg bg-green-50 p-2.5">
-                <ShieldCheck size={18} className="text-green-600" />
+              <div className="rounded-lg bg-green-soft p-2.5">
+                <ShieldCheck size={18} className="text-green" />
               </div>
               <div>
-                <p className="text-xs text-slate-500">Won / Saved</p>
-                <p className="text-lg font-bold text-green-600">
+                <p className="text-xs text-ink-3">Won / Saved</p>
+                <p className="text-lg font-bold text-green">
                   ${stats.savedAmount.toFixed(2)}
                 </p>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px] text-ink-3">
                   {stats.won30d} claims
                 </p>
               </div>
@@ -123,15 +123,15 @@ export default function AtozClaimsPage() {
           </Card>
           <Card>
             <CardContent className="flex items-center gap-3 py-4">
-              <div className="rounded-lg bg-red-50 p-2.5">
-                <ShieldX size={18} className="text-red-600" />
+              <div className="rounded-lg bg-danger-tint p-2.5">
+                <ShieldX size={18} className="text-danger" />
               </div>
               <div>
-                <p className="text-xs text-slate-500">Lost</p>
-                <p className="text-lg font-bold text-red-600">
+                <p className="text-xs text-ink-3">Lost</p>
+                <p className="text-lg font-bold text-danger">
                   ${stats.lostAmount.toFixed(2)}
                 </p>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px] text-ink-3">
                   {stats.lost30d} claims
                 </p>
               </div>
@@ -143,12 +143,12 @@ export default function AtozClaimsPage() {
       {/* Saved vs Lost summary */}
       {stats && (stats.savedAmount > 0 || stats.lostAmount > 0) && (
         <div className="flex items-center gap-4 text-sm">
-          <DollarSign size={16} className="text-slate-400" />
-          <span className="text-green-600 font-medium">
+          <DollarSign size={16} className="text-ink-3" />
+          <span className="text-green font-medium">
             Saved: ${stats.savedAmount.toFixed(2)}
           </span>
-          <span className="text-slate-300">|</span>
-          <span className="text-red-600 font-medium">
+          <span className="text-ink-4">|</span>
+          <span className="text-danger font-medium">
             Lost: ${stats.lostAmount.toFixed(2)}
           </span>
         </div>
@@ -163,7 +163,7 @@ export default function AtozClaimsPage() {
               A-to-Z & Chargeback Claims
             </span>
             {loading && (
-              <Loader2 size={16} className="animate-spin text-slate-400" />
+              <Loader2 size={16} className="animate-spin text-ink-3" />
             )}
           </CardTitle>
         </CardHeader>

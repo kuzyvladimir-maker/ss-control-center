@@ -19,7 +19,7 @@ export default function PeriodFilter({ value, onChange }: PeriodFilterProps) {
     <select
       value={value}
       onChange={(e) => onChange(parseInt(e.target.value, 10))}
-      className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm"
+      className="rounded-md border border-rule bg-white px-3 py-1.5 text-sm"
     >
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>

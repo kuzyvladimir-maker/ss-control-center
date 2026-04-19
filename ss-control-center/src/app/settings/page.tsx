@@ -1406,23 +1406,35 @@ export default function SettingsPage() {
   const incompleteCount = skuRows.filter((r) => !r.hasCompleteData).length;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
+      <div className="pb-2">
+        <h1
+          className="font-semibold text-ink"
+          style={{ fontSize: 26, letterSpacing: "-0.025em", lineHeight: 1.1 }}
+        >
+          Settings
+        </h1>
+        <div className="mt-1 text-[12.5px] text-ink-3">
+          Configure your workspace, stores, and integrations.
+        </div>
+      </div>
+
       {/* ================================================================= */}
       {/* SECTION 0 — User permissions / invites                            */}
       {/* ================================================================= */}
       <section className="space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">
-              User Permissions
+            <h2 className="text-sm font-semibold text-ink">
+              User permissions
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="mt-0.5 text-xs text-ink-3">
               Invite teammates by email and manage their access roles.
             </p>
           </div>
           <a
             href="/settings/users"
-            className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center rounded-md border border-rule bg-surface px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface-tint"
           >
             Manage users →
           </a>

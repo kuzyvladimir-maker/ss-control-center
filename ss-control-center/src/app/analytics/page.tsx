@@ -35,11 +35,11 @@ interface StoreInfo {
 }
 
 const statusColors: Record<string, string> = {
-  Shipped: "bg-green-100 text-green-700",
-  Unshipped: "bg-amber-100 text-amber-700",
-  Pending: "bg-yellow-100 text-yellow-700",
-  Canceled: "bg-red-100 text-red-700",
-  PartiallyShipped: "bg-blue-100 text-blue-700",
+  Shipped: "bg-green-soft2 text-green-ink",
+  Unshipped: "bg-warn-tint text-warn-strong",
+  Pending: "bg-warn-tint text-warn-strong",
+  Canceled: "bg-danger-tint text-danger",
+  PartiallyShipped: "bg-green-soft2 text-green-deep",
 };
 
 export default function AnalyticsPage() {
@@ -93,14 +93,14 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-800">
+        <h1 className="text-lg font-semibold text-ink">
           Sales Analytics
         </h1>
         <div className="flex items-center gap-2">
           <select
             value={days}
             onChange={(e) => setDays(parseInt(e.target.value))}
-            className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs"
+            className="rounded-md border border-rule bg-white px-3 py-1.5 text-xs"
           >
             <option value={7}>Last 7 days</option>
             <option value={14}>Last 14 days</option>
@@ -131,13 +131,13 @@ export default function AnalyticsPage() {
 
       {/* No data state */}
       {data && data.summary.totalOrders === 0 && !loading && (
-        <Card className="border-slate-200">
+        <Card className="border-rule">
           <CardContent className="py-10 text-center">
-            <DollarSign size={32} className="mx-auto text-slate-300 mb-3" />
-            <p className="text-sm font-medium text-slate-600">
+            <DollarSign size={32} className="mx-auto text-ink-4 mb-3" />
+            <p className="text-sm font-medium text-ink-2">
               No order data yet
             </p>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-ink-3 mt-1">
               Go to Settings &rarr; Data Synchronization &rarr; Sync Orders to
               pull data from Amazon SP-API
             </p>
@@ -151,12 +151,12 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <Card>
               <CardContent className="flex items-center gap-3 py-4">
-                <div className="rounded-lg bg-green-50 p-2.5">
-                  <DollarSign size={18} className="text-green-600" />
+                <div className="rounded-lg bg-green-soft p-2.5">
+                  <DollarSign size={18} className="text-green" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Revenue</p>
-                  <p className="text-xl font-bold text-slate-800">
+                  <p className="text-xs text-ink-3">Revenue</p>
+                  <p className="text-xl font-bold text-ink">
                     ${data.summary.totalRevenue.toLocaleString()}
                   </p>
                 </div>
@@ -164,12 +164,12 @@ export default function AnalyticsPage() {
             </Card>
             <Card>
               <CardContent className="flex items-center gap-3 py-4">
-                <div className="rounded-lg bg-blue-50 p-2.5">
-                  <ShoppingCart size={18} className="text-blue-600" />
+                <div className="rounded-lg bg-green-soft p-2.5">
+                  <ShoppingCart size={18} className="text-green" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Orders</p>
-                  <p className="text-xl font-bold text-slate-800">
+                  <p className="text-xs text-ink-3">Orders</p>
+                  <p className="text-xl font-bold text-ink">
                     {data.summary.totalOrders}
                   </p>
                 </div>
@@ -177,12 +177,12 @@ export default function AnalyticsPage() {
             </Card>
             <Card>
               <CardContent className="flex items-center gap-3 py-4">
-                <div className="rounded-lg bg-amber-50 p-2.5">
-                  <TrendingUp size={18} className="text-amber-600" />
+                <div className="rounded-lg bg-warn-tint p-2.5">
+                  <TrendingUp size={18} className="text-warn" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Avg Order</p>
-                  <p className="text-xl font-bold text-slate-800">
+                  <p className="text-xs text-ink-3">Avg Order</p>
+                  <p className="text-xl font-bold text-ink">
                     ${data.summary.avgOrderValue.toFixed(2)}
                   </p>
                 </div>
@@ -194,8 +194,8 @@ export default function AnalyticsPage() {
                   <Package size={18} className="text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Shipped</p>
-                  <p className="text-xl font-bold text-slate-800">
+                  <p className="text-xs text-ink-3">Shipped</p>
+                  <p className="text-xl font-bold text-ink">
                     {data.summary.shipped}
                   </p>
                   {data.summary.cancelled > 0 && (
@@ -232,10 +232,10 @@ export default function AnalyticsPage() {
                       <div
                         className={`w-full rounded-t-sm transition-colors ${
                           isToday
-                            ? "bg-blue-500"
+                            ? "bg-green-soft0"
                             : day.revenue > 0
                               ? "bg-blue-300 hover:bg-blue-400"
-                              : "bg-slate-100"
+                              : "bg-bg-elev"
                         }`}
                         style={{ height: `${height}%` }}
                       />
@@ -254,7 +254,7 @@ export default function AnalyticsPage() {
                 })}
               </div>
               {/* X-axis labels */}
-              <div className="flex justify-between mt-1 text-[9px] text-slate-400">
+              <div className="flex justify-between mt-1 text-[9px] text-ink-3">
                 {data.dailyRevenue.length > 0 && (
                   <>
                     <span>
@@ -290,16 +290,16 @@ export default function AnalyticsPage() {
                 {data.byStatus.map((s) => (
                   <div
                     key={s.status}
-                    className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2"
+                    className="flex items-center gap-2 rounded-lg border border-rule px-3 py-2"
                   >
                     <Badge
                       className={
-                        statusColors[s.status] || "bg-slate-100 text-slate-600"
+                        statusColors[s.status] || "bg-bg-elev text-ink-2"
                       }
                     >
                       {s.status}
                     </Badge>
-                    <span className="text-sm font-bold text-slate-800">
+                    <span className="text-sm font-bold text-ink">
                       {s.count}
                     </span>
                   </div>

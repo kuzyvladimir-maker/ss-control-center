@@ -111,8 +111,8 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
-          <Loader2 size={18} className="animate-spin text-slate-400 mr-2" />
-          <span className="text-sm text-slate-500">Loading claim…</span>
+          <Loader2 size={18} className="animate-spin text-ink-3 mr-2" />
+          <span className="text-sm text-ink-3">Loading claim…</span>
         </CardContent>
       </Card>
     );
@@ -122,7 +122,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
     return (
       <Card>
         <CardContent className="flex items-center justify-between py-4">
-          <span className="text-sm text-red-600">
+          <span className="text-sm text-danger">
             {error || "Claim not found"}
           </span>
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -151,7 +151,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
           <Badge variant="outline">
             {isChargeback ? "Chargeback" : "A-to-Z"}
           </Badge>
-          <span className="font-mono text-xs text-slate-600">
+          <span className="font-mono text-xs text-ink-2">
             {c.amazonOrderId}
           </span>
           {days !== null && days <= 3 && (
@@ -169,8 +169,8 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
       <CardContent className="space-y-4 text-xs">
         {/* Decision banner */}
         {isWon && (
-          <div className="rounded-md border border-green-300 bg-green-50 p-3 flex items-center gap-2">
-            <ShieldCheck size={18} className="text-green-600 shrink-0" />
+          <div className="rounded-md border border-green-300 bg-green-soft p-3 flex items-center gap-2">
+            <ShieldCheck size={18} className="text-green shrink-0" />
             <div>
               <div className="font-semibold text-green-800">
                 {c.amazonDecision === "AMAZON_FUNDED"
@@ -178,7 +178,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
                   : "Decided in our favor"}
               </div>
               {c.amountSaved != null && c.amountSaved > 0 && (
-                <div className="text-green-700">
+                <div className="text-green-ink">
                   Saved: <strong>${c.amountSaved.toFixed(2)}</strong>
                 </div>
               )}
@@ -187,19 +187,19 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
         )}
 
         {isLoss && (
-          <div className="rounded-md border border-red-300 bg-red-50 p-3 flex items-start gap-2">
-            <ShieldX size={18} className="text-red-600 shrink-0 mt-0.5" />
+          <div className="rounded-md border border-red-300 bg-danger-tint p-3 flex items-start gap-2">
+            <ShieldX size={18} className="text-danger shrink-0 mt-0.5" />
             <div className="flex-1">
-              <div className="font-semibold text-red-800">
+              <div className="font-semibold text-danger">
                 Decided against us — we lost this claim
               </div>
               {c.amountCharged != null && c.amountCharged > 0 && (
-                <div className="text-red-700">
+                <div className="text-danger">
                   Charged: <strong>${c.amountCharged.toFixed(2)}</strong>
                 </div>
               )}
               {canAppeal && (
-                <div className="mt-2 text-red-700 text-[11px]">
+                <div className="mt-2 text-danger text-[11px]">
                   You can appeal this decision in Amazon Seller Central.
                   Generate an appeal text below and submit it through the
                   Resolution Center.
@@ -216,38 +216,38 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
 
         {/* Order context */}
         {(c.customerName || c.product || c.orderDate) && (
-          <div className="rounded bg-slate-50 p-3 space-y-1">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase">
+          <div className="rounded bg-surface-tint p-3 space-y-1">
+            <p className="text-[10px] font-semibold text-ink-3 uppercase">
               Order Details
             </p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 md:grid-cols-3">
               {c.customerName && (
                 <div>
-                  <span className="text-slate-500">Customer:</span>{" "}
+                  <span className="text-ink-3">Customer:</span>{" "}
                   <span className="font-medium">{c.customerName}</span>
                 </div>
               )}
               {c.product && (
                 <div className="col-span-2">
-                  <span className="text-slate-500">Product:</span>{" "}
+                  <span className="text-ink-3">Product:</span>{" "}
                   {c.product}
                 </div>
               )}
               {c.orderDate && (
                 <div>
-                  <span className="text-slate-500">Order date:</span>{" "}
+                  <span className="text-ink-3">Order date:</span>{" "}
                   {c.orderDate}
                 </div>
               )}
               {c.orderTotal != null && (
                 <div>
-                  <span className="text-slate-500">Order total:</span>{" "}
+                  <span className="text-ink-3">Order total:</span>{" "}
                   ${c.orderTotal.toFixed(2)}
                 </div>
               )}
               {c.storeName && (
                 <div>
-                  <span className="text-slate-500">Store:</span>{" "}
+                  <span className="text-ink-3">Store:</span>{" "}
                   {c.storeName}
                 </div>
               )}
@@ -258,10 +258,10 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
         {/* Claim text (buyer's complaint) */}
         {c.claimText && (
           <div>
-            <p className="text-[10px] font-semibold text-slate-400 uppercase mb-1">
+            <p className="text-[10px] font-semibold text-ink-3 uppercase mb-1">
               Buyer Claim Text
             </p>
-            <div className="rounded bg-amber-50 border border-amber-200 p-3 text-amber-900 whitespace-pre-wrap">
+            <div className="rounded bg-warn-tint border border-warn/20 p-3 text-amber-900 whitespace-pre-wrap">
               {c.claimText}
             </div>
           </div>
@@ -269,39 +269,39 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
 
         {/* Shipping & Evidence */}
         <div>
-          <p className="text-[10px] font-semibold text-slate-400 uppercase mb-1">
+          <p className="text-[10px] font-semibold text-ink-3 uppercase mb-1">
             Shipping Evidence
           </p>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-3">
             <div>
-              <span className="text-slate-500">Claim amount:</span>{" "}
+              <span className="text-ink-3">Claim amount:</span>{" "}
               <span
                 className={`font-medium ${
                   isLoss
-                    ? "text-red-600"
+                    ? "text-danger"
                     : isWon
-                      ? "text-green-600"
-                      : "text-slate-800"
+                      ? "text-green"
+                      : "text-ink"
                 }`}
               >
                 {c.amount != null ? `$${c.amount.toFixed(2)}` : "—"}
               </span>
             </div>
             <div>
-              <span className="text-slate-500">Reason:</span>{" "}
+              <span className="text-ink-3">Reason:</span>{" "}
               {c.claimReason || "—"}
             </div>
             <div>
-              <span className="text-slate-500">{deadlineLabel}:</span>{" "}
+              <span className="text-ink-3">{deadlineLabel}:</span>{" "}
               {c.deadline || "—"}
               {days !== null && (
                 <span
                   className={`ml-1 ${
                     days <= 1
-                      ? "text-red-600 font-bold"
+                      ? "text-danger font-bold"
                       : days <= 3
-                        ? "text-red-600"
-                        : "text-slate-400"
+                        ? "text-danger"
+                        : "text-ink-3"
                   }`}
                 >
                   ({days}d)
@@ -309,13 +309,13 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
               )}
             </div>
             <div>
-              <span className="text-slate-500">Carrier:</span>{" "}
+              <span className="text-ink-3">Carrier:</span>{" "}
               {c.carrier || "—"}
             </div>
             <div>
-              <span className="text-slate-500">Tracking:</span>{" "}
+              <span className="text-ink-3">Tracking:</span>{" "}
               {c.trackingNumber ? (
-                <code className="bg-slate-100 px-1 rounded">
+                <code className="bg-bg-elev px-1 rounded">
                   {c.trackingNumber}
                 </code>
               ) : (
@@ -323,19 +323,19 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
               )}
             </div>
             <div>
-              <span className="text-slate-500">Ship date:</span>{" "}
+              <span className="text-ink-3">Ship date:</span>{" "}
               {c.shipDate || "—"}
             </div>
             <div>
-              <span className="text-slate-500">First scan:</span>{" "}
+              <span className="text-ink-3">First scan:</span>{" "}
               {c.firstScanDate || "—"}
             </div>
             <div>
-              <span className="text-slate-500">Delivered:</span>{" "}
+              <span className="text-ink-3">Delivered:</span>{" "}
               {c.deliveredDate || "—"}
             </div>
             <div>
-              <span className="text-slate-500">Shipped on time:</span>{" "}
+              <span className="text-ink-3">Shipped on time:</span>{" "}
               {c.shippedOnTime == null
                 ? "—"
                 : c.shippedOnTime
@@ -343,9 +343,9 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
                   : "No ✗"}
             </div>
             <div>
-              <span className="text-slate-500">Claims Protected:</span>{" "}
+              <span className="text-ink-3">Claims Protected:</span>{" "}
               {c.claimsProtectedBadge ? (
-                <span className="text-green-600 font-medium">Yes ✓</span>
+                <span className="text-green font-medium">Yes ✓</span>
               ) : (
                 "—"
               )}
@@ -356,7 +356,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
         {/* Strategy */}
         {c.strategyType && (
           <div className="flex items-center gap-2 pt-1">
-            <span className="text-slate-500">Defense strategy:</span>
+            <span className="text-ink-3">Defense strategy:</span>
             <DefenseStrategyBadge
               strategyType={c.strategyType}
               confidence={c.strategyConfidence}
@@ -409,7 +409,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
         {response && (
           <div>
             <div className="flex items-center justify-between mb-1">
-              <p className="text-slate-500 font-medium">
+              <p className="text-ink-3 font-medium">
                 Amazon Response (for case portal):
               </p>
               <Button
@@ -421,7 +421,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
                 {copied === "amazon" ? "Copied!" : "Copy"}
               </Button>
             </div>
-            <div className="whitespace-pre-wrap rounded border border-slate-200 bg-white p-3">
+            <div className="whitespace-pre-wrap rounded border border-rule bg-white p-3">
               {response}
             </div>
           </div>
@@ -463,7 +463,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
 
         {/* Notes */}
         <div>
-          <p className="text-slate-500 font-medium mb-1">Notes:</p>
+          <p className="text-ink-3 font-medium mb-1">Notes:</p>
           <Textarea
             value={notesDraft}
             onChange={(e) => setNotesDraft(e.target.value)}
@@ -473,7 +473,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
             className="text-xs"
           />
           {savingNotes && (
-            <span className="text-[10px] text-slate-400">Saving...</span>
+            <span className="text-[10px] text-ink-3">Saving...</span>
           )}
         </div>
       </CardContent>

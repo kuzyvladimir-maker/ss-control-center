@@ -27,30 +27,30 @@ import {
 import ResponseDeadline from "./ResponseDeadline";
 
 const riskColors: Record<string, string> = {
-  LOW: "bg-green-100 text-green-700",
-  MEDIUM: "bg-yellow-100 text-yellow-700",
-  HIGH: "bg-red-100 text-red-700",
+  LOW: "bg-green-soft2 text-green-ink",
+  MEDIUM: "bg-warn-tint text-warn-strong",
+  HIGH: "bg-danger-tint text-danger",
   CRITICAL: "bg-red-600 text-white",
 };
 
 const actionColors: Record<string, string> = {
-  replacement: "bg-blue-100 text-blue-700",
+  replacement: "bg-green-soft2 text-green-deep",
   refund: "bg-orange-100 text-orange-700",
   full_refund: "bg-orange-100 text-orange-700",
-  partial_refund: "bg-amber-100 text-amber-700",
-  clarify: "bg-slate-100 text-slate-700",
-  reassure: "bg-green-100 text-green-700",
-  investigate: "bg-amber-100 text-amber-700",
-  redirect_amazon: "bg-blue-100 text-blue-700",
+  partial_refund: "bg-warn-tint text-warn-strong",
+  clarify: "bg-bg-elev text-ink",
+  reassure: "bg-green-soft2 text-green-ink",
+  investigate: "bg-warn-tint text-warn-strong",
+  redirect_amazon: "bg-green-soft2 text-green-deep",
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Msg = any;
 
 const trackingStatusColors: Record<string, string> = {
-  delivered: "bg-green-100 text-green-700",
-  in_transit: "bg-blue-100 text-blue-700",
-  exception: "bg-red-100 text-red-700",
+  delivered: "bg-green-soft2 text-green-ink",
+  in_transit: "bg-green-soft2 text-green-deep",
+  exception: "bg-danger-tint text-danger",
 };
 
 function fmtDate(s: string | null | undefined): string {
@@ -76,10 +76,10 @@ function ShippingTrackingSection({ message: m }: { message: Msg }) {
   if (!hasAnyTracking) {
     return (
       <div>
-        <p className="text-[10px] font-semibold text-slate-400 uppercase mb-2">
+        <p className="text-[10px] font-semibold text-ink-3 uppercase mb-2">
           Shipping &amp; Tracking
         </p>
-        <Badge className="bg-amber-100 text-amber-700 text-xs">
+        <Badge className="bg-warn-tint text-warn-strong text-xs">
           No tracking data found
         </Badge>
       </div>
@@ -88,31 +88,31 @@ function ShippingTrackingSection({ message: m }: { message: Msg }) {
 
   const transitClass =
     m.daysInTransit != null && m.daysInTransit > 3
-      ? "text-red-600 font-medium"
-      : "text-slate-700";
+      ? "text-danger font-medium"
+      : "text-ink";
   const lateClass =
     m.daysLate && m.daysLate > 0
-      ? "text-red-600 font-medium"
-      : "text-slate-700";
+      ? "text-danger font-medium"
+      : "text-ink";
 
   return (
     <div>
-      <p className="text-[10px] font-semibold text-slate-400 uppercase mb-2">
+      <p className="text-[10px] font-semibold text-ink-3 uppercase mb-2">
         Shipping &amp; Tracking
       </p>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
         <div>
-          <span className="text-slate-500">Carrier:</span>{" "}
+          <span className="text-ink-3">Carrier:</span>{" "}
           <span className="font-medium">{m.carrier || "—"}</span>
         </div>
         <div>
-          <span className="text-slate-500">Service:</span>{" "}
+          <span className="text-ink-3">Service:</span>{" "}
           {m.service || "—"}
         </div>
         <div className="col-span-2">
-          <span className="text-slate-500">Tracking #:</span>{" "}
+          <span className="text-ink-3">Tracking #:</span>{" "}
           {m.trackingNumber ? (
-            <code className="rounded bg-slate-100 px-1 font-mono text-[11px]">
+            <code className="rounded bg-bg-elev px-1 font-mono text-[11px]">
               {m.trackingNumber}
             </code>
           ) : (
@@ -120,12 +120,12 @@ function ShippingTrackingSection({ message: m }: { message: Msg }) {
           )}
         </div>
         <div>
-          <span className="text-slate-500">Status:</span>{" "}
+          <span className="text-ink-3">Status:</span>{" "}
           {m.trackingStatus ? (
             <Badge
               className={
                 trackingStatusColors[m.trackingStatus] ||
-                "bg-slate-100 text-slate-600"
+                "bg-bg-elev text-ink-2"
               }
             >
               {m.trackingStatus.replace(/_/g, " ")}
@@ -135,25 +135,25 @@ function ShippingTrackingSection({ message: m }: { message: Msg }) {
           )}
         </div>
         <div>
-          <span className="text-slate-500">Shipped:</span>{" "}
+          <span className="text-ink-3">Shipped:</span>{" "}
           {fmtDate(m.shipDate)}
         </div>
         <div>
-          <span className="text-slate-500">Delivered:</span>{" "}
+          <span className="text-ink-3">Delivered:</span>{" "}
           {fmtDate(m.actualDelivery)}
         </div>
         <div>
-          <span className="text-slate-500">Deliver By (EDD):</span>{" "}
+          <span className="text-ink-3">Deliver By (EDD):</span>{" "}
           {fmtDate(m.promisedEdd)}
         </div>
         <div>
-          <span className="text-slate-500">Transit Time:</span>{" "}
+          <span className="text-ink-3">Transit Time:</span>{" "}
           <span className={transitClass}>
             {m.daysInTransit != null ? `${m.daysInTransit} days` : "—"}
           </span>
         </div>
         <div>
-          <span className="text-slate-500">Days Late:</span>{" "}
+          <span className="text-ink-3">Days Late:</span>{" "}
           <span className={lateClass}>
             {m.daysLate != null ? m.daysLate : "—"}
           </span>
@@ -163,22 +163,22 @@ function ShippingTrackingSection({ message: m }: { message: Msg }) {
       {/* Badge row */}
       <div className="mt-2 flex flex-wrap gap-1.5">
         {m.boughtThroughVeeqo && (
-          <Badge className="bg-blue-100 text-blue-700 text-[10px]">
+          <Badge className="bg-green-soft2 text-green-deep text-[10px]">
             Buy Shipping (Veeqo)
           </Badge>
         )}
         {m.claimsProtected && (
-          <Badge className="bg-green-100 text-green-700 text-[10px]">
+          <Badge className="bg-green-soft2 text-green-ink text-[10px]">
             Claims Protected
           </Badge>
         )}
         {m.shippedOnTime === true && (
-          <Badge className="bg-green-100 text-green-700 text-[10px]">
+          <Badge className="bg-green-soft2 text-green-ink text-[10px]">
             Shipped On Time
           </Badge>
         )}
         {m.shippedOnTime === false && (
-          <Badge className="bg-red-100 text-red-700 text-[10px]">
+          <Badge className="bg-danger-tint text-danger text-[10px]">
             Late Shipment
           </Badge>
         )}
@@ -222,22 +222,22 @@ function ConfidenceIndicator({
   const fc = parseFactCheck(factCheckJson);
   if (!fc) {
     return (
-      <span className="text-[10px] text-slate-400">Not checked</span>
+      <span className="text-[10px] text-ink-3">Not checked</span>
     );
   }
   const config = {
     HIGH: {
-      color: "text-green-700 bg-green-50 border border-green-200",
+      color: "text-green-ink bg-green-soft border border-green-200",
       icon: "✅",
       label: "High confidence — facts verified",
     },
     MEDIUM: {
-      color: "text-yellow-700 bg-yellow-50 border border-yellow-200",
+      color: "text-warn-strong bg-yellow-50 border border-yellow-200",
       icon: "🟡",
       label: "Medium — review recommended",
     },
     LOW: {
-      color: "text-red-700 bg-red-50 border border-red-200",
+      color: "text-danger bg-danger-tint border border-danger/20",
       icon: "🔴",
       label: "Low — manual review required",
     },
@@ -307,9 +307,9 @@ function ResponseWarnings({
   if (warnings.length === 0) return null;
 
   const palette = {
-    error: "bg-red-50 text-red-800 border-red-200",
+    error: "bg-danger-tint text-danger border-danger/20",
     warning: "bg-yellow-50 text-yellow-800 border-yellow-200",
-    info: "bg-blue-50 text-blue-800 border-blue-200",
+    info: "bg-green-soft text-green-ink border-green-soft2",
   } as const;
 
   const hasErrors = warnings.some((w) => w.type === "error");
@@ -334,7 +334,7 @@ function ResponseWarnings({
             variant="outline"
             onClick={onFix}
             disabled={fixing}
-            className="text-xs border-red-300 text-red-700 hover:bg-red-50"
+            className="text-xs border-red-300 text-danger hover:bg-danger-tint"
           >
             {fixing ? (
               <Loader2 size={12} className="animate-spin mr-1" />
@@ -396,8 +396,8 @@ function PolicyGuidance({ message }: { message: Msg }) {
   if (rules.length === 0) return null;
 
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-      <h4 className="text-[10px] font-semibold text-amber-700 uppercase mb-1">
+    <div className="rounded-lg border border-warn/20 bg-warn-tint p-3">
+      <h4 className="text-[10px] font-semibold text-warn-strong uppercase mb-1">
         Policy Guidance
       </h4>
       <ul className="text-xs text-amber-900 space-y-1">
@@ -785,8 +785,8 @@ export default function MessageDetail({
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 size={20} className="animate-spin text-slate-400 mr-2" />
-          <span className="text-sm text-slate-500">Loading...</span>
+          <Loader2 size={20} className="animate-spin text-ink-3 mr-2" />
+          <span className="text-sm text-ink-3">Loading...</span>
         </CardContent>
       </Card>
     );
@@ -798,27 +798,27 @@ export default function MessageDetail({
     m.editedResponse || m.suggestedResponse || "";
 
   return (
-    <Card className="border-2 border-blue-200">
+    <Card className="border-2 border-green-soft2">
       <CardContent className="py-4 space-y-4">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs text-slate-500">
+            <div className="flex items-center gap-2 text-xs text-ink-3">
               <Store size={12} /> {m.storeName}
               {m.amazonOrderId && (
                 <>
-                  <span className="text-slate-300">|</span>
+                  <span className="text-ink-4">|</span>
                   <Package size={12} /> {m.amazonOrderId}
                 </>
               )}
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <User size={12} className="text-slate-400" />
+              <User size={12} className="text-ink-3" />
               <span className="font-medium">{m.customerName || "Customer"}</span>
               {m.product && (
                 <>
-                  <span className="text-slate-300">|</span>
-                  <span className="text-slate-500">{m.product}</span>
+                  <span className="text-ink-4">|</span>
+                  <span className="text-ink-3">{m.product}</span>
                 </>
               )}
               {m.productType && (
@@ -848,7 +848,7 @@ export default function MessageDetail({
                 createdAt={m.receivedAt || m.createdAt}
                 status={m.status}
               />
-              <span className="text-slate-400">
+              <span className="text-ink-3">
                 · Amazon requires response within 24 hours
               </span>
               <div className="ml-auto">
@@ -870,11 +870,11 @@ export default function MessageDetail({
             </>
           ) : (
             <>
-              <Badge className="bg-green-100 text-green-700">
+              <Badge className="bg-green-soft2 text-green-ink">
                 {m.status === "SENT" ? "Sent" : "Resolved"}
               </Badge>
               {m.resolution === "auto_resolved_gmail_thread" && (
-                <span className="text-[10px] text-slate-500">
+                <span className="text-[10px] text-ink-3">
                   · auto-resolved (Gmail thread has a reply)
                 </span>
               )}
@@ -906,7 +906,7 @@ export default function MessageDetail({
           )}
         </div>
         {statusError && (
-          <p className="text-xs text-red-600">{statusError}</p>
+          <p className="text-xs text-danger">{statusError}</p>
         )}
 
         <Separator />
@@ -923,26 +923,26 @@ export default function MessageDetail({
             Both are read-only; the RU column is auto-translated on sync
             and back-filled on re-analyze. */}
         <div>
-          <p className="text-[10px] font-semibold text-slate-400 uppercase mb-1">
+          <p className="text-[10px] font-semibold text-ink-3 uppercase mb-1">
             Customer Message
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div>
-              <p className="text-[9px] font-semibold text-slate-400 uppercase mb-1">
+              <p className="text-[9px] font-semibold text-ink-3 uppercase mb-1">
                 🇬🇧 English
               </p>
-              <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 whitespace-pre-wrap min-h-[4rem]">
+              <div className="rounded bg-surface-tint p-3 text-sm text-ink whitespace-pre-wrap min-h-[4rem]">
                 {m.customerMessage || "No message text"}
               </div>
             </div>
             <div>
-              <p className="text-[9px] font-semibold text-slate-400 uppercase mb-1">
+              <p className="text-[9px] font-semibold text-ink-3 uppercase mb-1">
                 🇷🇺 Русский
               </p>
-              <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 whitespace-pre-wrap min-h-[4rem]">
+              <div className="rounded bg-surface-tint p-3 text-sm text-ink whitespace-pre-wrap min-h-[4rem]">
                 {m.customerMessageRu ||
                   (m.customerMessage ? (
-                    <span className="text-slate-400 italic">
+                    <span className="text-ink-3 italic">
                       Перевод недоступен (переведётся при следующем Re-analyze)
                     </span>
                   ) : (
@@ -955,56 +955,56 @@ export default function MessageDetail({
 
         {/* Analysis */}
         {m.status === "NEW" && !analyzing && (
-          <Button onClick={handleAnalyze} className="bg-blue-600 hover:bg-blue-700 w-full">
+          <Button onClick={handleAnalyze} className="bg-green hover:bg-green-deep w-full">
             Analyze with AI
           </Button>
         )}
 
         {analyzing && (
           <div className="flex items-center justify-center py-4">
-            <Loader2 size={16} className="animate-spin text-blue-500 mr-2" />
-            <span className="text-xs text-slate-500">Analyzing with Claude...</span>
+            <Loader2 size={16} className="animate-spin text-green-mid mr-2" />
+            <span className="text-xs text-ink-3">Analyzing with Claude...</span>
           </div>
         )}
 
         {m.problemType && (
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase">
+              <p className="text-[10px] font-semibold text-ink-3 uppercase">
                 AI Analysis
               </p>
               <ConfidenceIndicator factCheckJson={m.factCheckJson} />
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
-                <span className="text-slate-500">Type:</span>{" "}
+                <span className="text-ink-3">Type:</span>{" "}
                 <span className="font-mono">{m.problemType}</span>{" "}
-                <span className="text-slate-500">{m.problemTypeName}</span>
+                <span className="text-ink-3">{m.problemTypeName}</span>
               </div>
               <div>
-                <span className="text-slate-500">Risk:</span>{" "}
+                <span className="text-ink-3">Risk:</span>{" "}
                 <Badge className={riskColors[m.riskLevel] || ""}>
                   {m.riskLevel}
                 </Badge>
               </div>
               <div>
-                <span className="text-slate-500">Action:</span>{" "}
-                <Badge className={actionColors[m.action] || "bg-slate-100 text-slate-600"}>
+                <span className="text-ink-3">Action:</span>{" "}
+                <Badge className={actionColors[m.action] || "bg-bg-elev text-ink-2"}>
                   {m.action}
                 </Badge>
               </div>
               <div>
-                <span className="text-slate-500">Who pays:</span>{" "}
+                <span className="text-ink-3">Who pays:</span>{" "}
                 <span className="font-medium">{m.whoShouldPay}</span>
               </div>
               {m.internalAction && m.internalAction !== "none" && (
                 <div className="col-span-2">
-                  <span className="text-slate-500">Internal:</span>{" "}
-                  <span className="text-amber-600">{m.internalAction}</span>
+                  <span className="text-ink-3">Internal:</span>{" "}
+                  <span className="text-warn">{m.internalAction}</span>
                 </div>
               )}
               {m.foodSafetyRisk && (
-                <div className="col-span-2 text-red-600 font-medium">
+                <div className="col-span-2 text-danger font-medium">
                   Food safety risk detected
                 </div>
               )}
@@ -1017,7 +1017,7 @@ export default function MessageDetail({
         {responseText &&
           typeof m.reasoning === "string" &&
           m.reasoning.includes("[AUTO-FIXED:") && (
-            <div className="text-xs px-3 py-2 rounded-md border border-green-200 bg-green-50 text-green-800 flex items-start gap-2 mb-2">
+            <div className="text-xs px-3 py-2 rounded-md border border-green-200 bg-green-soft text-green-800 flex items-start gap-2 mb-2">
               <span className="shrink-0">🔧</span>
               <span>
                 Response was corrected for policy compliance via Fix button.
@@ -1031,16 +1031,16 @@ export default function MessageDetail({
             in Veeqo. Phase 2 will auto-create via Veeqo API; for now this
             banner is the explicit handoff to the operator. */}
         {m.supplierReorderNote && (
-          <div className="text-xs px-3 py-2 rounded-md border border-blue-300 bg-blue-50 text-blue-900 flex items-start gap-2 mb-2">
+          <div className="text-xs px-3 py-2 rounded-md border border-blue-300 bg-green-soft text-blue-900 flex items-start gap-2 mb-2">
             <span className="shrink-0">🛒</span>
             <div className="flex-1">
               <div className="font-semibold mb-0.5">
                 Supplier reorder required
               </div>
-              <div className="text-blue-800 whitespace-pre-wrap font-mono text-[11px]">
+              <div className="text-green-ink whitespace-pre-wrap font-mono text-[11px]">
                 {m.supplierReorderNote}
               </div>
-              <div className="text-[10px] text-blue-700 mt-1">
+              <div className="text-[10px] text-green-deep mt-1">
                 Action needed: clone this order in Veeqo with the note above.
                 Phase 2 will automate via Veeqo API.
               </div>
@@ -1054,13 +1054,13 @@ export default function MessageDetail({
         {responseText &&
           typeof m.reasoning === "string" &&
           m.reasoning.includes("[NEEDS REVIEW:") && (
-            <div className="text-xs px-3 py-2 rounded-md border border-amber-300 bg-amber-50 text-amber-900 flex items-start gap-2 mb-2">
+            <div className="text-xs px-3 py-2 rounded-md border border-warn/30 bg-warn-tint text-amber-900 flex items-start gap-2 mb-2">
               <span className="shrink-0">⚠️</span>
               <div>
                 <div className="font-semibold mb-0.5">
                   Needs review — policy violation detected
                 </div>
-                <div className="text-amber-800">
+                <div className="text-warn-strong">
                   {m.reasoning
                     .match(/\[NEEDS REVIEW:([^\]]+)\]/)?.[1]
                     ?.trim() || "See reasoning for details."}
@@ -1083,7 +1083,7 @@ export default function MessageDetail({
             Editing one column and blurring auto-translates the other. */}
         {responseText && (
           <div>
-            <p className="text-[10px] font-semibold text-slate-400 uppercase mb-1">
+            <p className="text-[10px] font-semibold text-ink-3 uppercase mb-1">
               Suggested Response
             </p>
             {editMode ? (
@@ -1091,11 +1091,11 @@ export default function MessageDetail({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-[9px] font-semibold text-slate-400 uppercase">
+                      <p className="text-[9px] font-semibold text-ink-3 uppercase">
                         🇬🇧 English (canonical)
                       </p>
                       {translatingEn && (
-                        <span className="text-[9px] text-slate-400 flex items-center gap-1">
+                        <span className="text-[9px] text-ink-3 flex items-center gap-1">
                           <Loader2 size={10} className="animate-spin" />
                           translating…
                         </span>
@@ -1112,11 +1112,11 @@ export default function MessageDetail({
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-[9px] font-semibold text-slate-400 uppercase">
+                      <p className="text-[9px] font-semibold text-ink-3 uppercase">
                         🇷🇺 Русский (рабочий)
                       </p>
                       {translatingRu && (
-                        <span className="text-[9px] text-slate-400 flex items-center gap-1">
+                        <span className="text-[9px] text-ink-3 flex items-center gap-1">
                           <Loader2 size={10} className="animate-spin" />
                           перевод…
                         </span>
@@ -1132,7 +1132,7 @@ export default function MessageDetail({
                     />
                   </div>
                 </div>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px] text-ink-3">
                   Правь любую из колонок — при уходе фокуса вторая колонка
                   автоматически переведётся. Отправляется английская версия.
                 </p>
@@ -1156,21 +1156,21 @@ export default function MessageDetail({
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div>
-                  <p className="text-[9px] font-semibold text-slate-400 uppercase mb-1">
+                  <p className="text-[9px] font-semibold text-ink-3 uppercase mb-1">
                     🇬🇧 English
                   </p>
-                  <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 whitespace-pre-wrap min-h-[6rem]">
+                  <div className="rounded bg-surface-tint p-3 text-sm text-ink whitespace-pre-wrap min-h-[6rem]">
                     {m.editedResponse || m.suggestedResponse}
                   </div>
                 </div>
                 <div>
-                  <p className="text-[9px] font-semibold text-slate-400 uppercase mb-1">
+                  <p className="text-[9px] font-semibold text-ink-3 uppercase mb-1">
                     🇷🇺 Русский
                   </p>
-                  <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 whitespace-pre-wrap min-h-[6rem]">
+                  <div className="rounded bg-surface-tint p-3 text-sm text-ink whitespace-pre-wrap min-h-[6rem]">
                     {m.editedResponseRu ||
                       m.suggestedResponseRu || (
-                        <span className="text-slate-400 italic">
+                        <span className="text-ink-3 italic">
                           Перевод недоступен (появится после Re-analyze)
                         </span>
                       )}
@@ -1219,7 +1219,7 @@ export default function MessageDetail({
                   Rewrite ▾
                 </Button>
                 {rewriteMenuOpen && (
-                  <div className="absolute right-0 top-full mt-1 z-10 w-52 rounded-md border border-slate-200 bg-white shadow-lg text-xs">
+                  <div className="absolute right-0 top-full mt-1 z-10 w-52 rounded-md border border-rule bg-white shadow-lg text-xs">
                     {[
                       { id: "polite", label: "More polite" },
                       { id: "amazon_safe", label: "Amazon-safe" },
@@ -1229,7 +1229,7 @@ export default function MessageDetail({
                       <button
                         key={opt.id}
                         onClick={() => handleRewrite(opt.id)}
-                        className="block w-full text-left px-3 py-2 hover:bg-slate-50 first:rounded-t-md last:rounded-b-md"
+                        className="block w-full text-left px-3 py-2 hover:bg-surface-tint first:rounded-t-md last:rounded-b-md"
                       >
                         {opt.label}
                         {rewriting === opt.id && " …"}
@@ -1259,7 +1259,7 @@ export default function MessageDetail({
                 size="sm"
                 onClick={handleSend}
                 disabled={sending || m.status === "SENT" || m.status === "RESOLVED"}
-                className={`${m.status !== "SENT" && m.status !== "RESOLVED" ? "" : "ml-auto"} bg-blue-600 hover:bg-blue-700`}
+                className={`${m.status !== "SENT" && m.status !== "RESOLVED" ? "" : "ml-auto"} bg-green hover:bg-green-deep`}
               >
                 {sending ? (
                   <Loader2 size={12} className="animate-spin mr-1" />
@@ -1270,14 +1270,14 @@ export default function MessageDetail({
               </Button>
             </div>
             {sendError && sendError.messagingClosed && (
-              <div className="mt-2 rounded-md border border-amber-300 bg-amber-50 text-amber-900 text-xs px-3 py-2 flex items-start gap-2">
+              <div className="mt-2 rounded-md border border-warn/30 bg-warn-tint text-amber-900 text-xs px-3 py-2 flex items-start gap-2">
                 <span className="shrink-0">⚠️</span>
                 <div>
                   <div className="font-semibold mb-0.5">
                     Amazon messaging window is closed for this order
                   </div>
-                  <div className="text-amber-800">{sendError.message}</div>
-                  <div className="text-[10px] text-amber-700 mt-1">
+                  <div className="text-warn-strong">{sendError.message}</div>
+                  <div className="text-[10px] text-warn-strong mt-1">
                     Next step: reply in Amazon Seller Central manually, then
                     click <b>&ldquo;Responded in Seller Central&rdquo;</b>{" "}
                     below to mark this case as sent.
@@ -1286,7 +1286,7 @@ export default function MessageDetail({
               </div>
             )}
             {sendError && !sendError.messagingClosed && (
-              <div className="mt-2 rounded-md border border-red-300 bg-red-50 text-red-800 text-xs px-3 py-2 flex items-start gap-2">
+              <div className="mt-2 rounded-md border border-red-300 bg-danger-tint text-danger text-xs px-3 py-2 flex items-start gap-2">
                 <span className="shrink-0">❌</span>
                 <div className="font-mono text-[11px] break-all">
                   {sendError.message}
@@ -1294,7 +1294,7 @@ export default function MessageDetail({
               </div>
             )}
             {sentFlash && (
-              <p className="text-xs text-green-600 mt-2">
+              <p className="text-xs text-green mt-2">
                 ✓ Sent via SP-API Messaging
               </p>
             )}
@@ -1305,7 +1305,7 @@ export default function MessageDetail({
         {history.length > 0 && (
           <div>
             <Separator />
-            <p className="text-[10px] font-semibold text-slate-400 uppercase mt-3 mb-2">
+            <p className="text-[10px] font-semibold text-ink-3 uppercase mt-3 mb-2">
               Conversation History ({history.length + 1} messages)
             </p>
             <div className="space-y-1.5">
@@ -1314,11 +1314,11 @@ export default function MessageDetail({
                   key={h.id}
                   className={`rounded px-2.5 py-1.5 text-xs ${
                     h.direction === "incoming"
-                      ? "bg-slate-50 text-slate-700"
-                      : "bg-blue-50 text-blue-700"
+                      ? "bg-surface-tint text-ink"
+                      : "bg-green-soft text-green-deep"
                   }`}
                 >
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] text-ink-3">
                     [{new Date(h.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}]{" "}
                     {h.direction === "incoming" ? "CUSTOMER" : "OUR REPLY"}:
                   </span>{" "}
@@ -1326,7 +1326,7 @@ export default function MessageDetail({
                   {(h.customerMessage || "").length > 150 ? "..." : ""}
                 </div>
               ))}
-              <div className="rounded px-2.5 py-1.5 text-xs bg-yellow-50 text-yellow-700 border border-yellow-200">
+              <div className="rounded px-2.5 py-1.5 text-xs bg-yellow-50 text-warn-strong border border-yellow-200">
                 <span className="text-[10px] text-yellow-500">
                   [Current] CUSTOMER:
                 </span>{" "}
@@ -1350,8 +1350,8 @@ export default function MessageDetail({
 
           <div className="space-y-3 text-xs">
             <div>
-              <label className="text-slate-500 font-medium">Scenario</label>
-              <p className="text-slate-700 mt-0.5">
+              <label className="text-ink-3 font-medium">Scenario</label>
+              <p className="text-ink mt-0.5">
                 {m.problemTypeName || m.problemType || "Customer case"}
                 {m.trackingStatus ? ` — ${m.trackingStatus}` : ""}
                 {m.shippingMismatch ? " — shipping mismatch" : ""}
@@ -1359,19 +1359,19 @@ export default function MessageDetail({
             </div>
 
             <div>
-              <label className="text-slate-500 font-medium">
+              <label className="text-ink-3 font-medium">
                 Correct Action
               </label>
-              <p className="text-slate-700 mt-0.5">
+              <p className="text-ink mt-0.5">
                 {m.action || "investigate"}
               </p>
             </div>
 
             <div>
-              <label className="text-slate-500 font-medium">
+              <label className="text-ink-3 font-medium">
                 Correct Response
               </label>
-              <div className="mt-1 rounded bg-slate-50 p-2 text-[11px] whitespace-pre-wrap max-h-32 overflow-y-auto">
+              <div className="mt-1 rounded bg-surface-tint p-2 text-[11px] whitespace-pre-wrap max-h-32 overflow-y-auto">
                 {m.editedResponse || m.suggestedResponse || "(no response)"}
               </div>
             </div>
@@ -1379,7 +1379,7 @@ export default function MessageDetail({
             <div>
               <label
                 htmlFor="kb-reasoning"
-                className="text-slate-500 font-medium"
+                className="text-ink-3 font-medium"
               >
                 Reasoning <span className="text-red-500">*</span>
               </label>
@@ -1389,14 +1389,14 @@ export default function MessageDetail({
                 onChange={(e) => setKbReasoning(e.target.value)}
                 rows={3}
                 placeholder="Why is this the correct response? What pattern should future cases follow?"
-                className="w-full mt-1 rounded border border-slate-200 p-2 text-xs focus:border-blue-400 focus:outline-none"
+                className="w-full mt-1 rounded border border-rule p-2 text-xs focus:border-blue-400 focus:outline-none"
               />
             </div>
 
             <div>
               <label
                 htmlFor="kb-outcome"
-                className="text-slate-500 font-medium"
+                className="text-ink-3 font-medium"
               >
                 Outcome
               </label>
@@ -1408,7 +1408,7 @@ export default function MessageDetail({
                     e.target.value as "positive" | "negative" | "neutral"
                   )
                 }
-                className="w-full mt-1 rounded border border-slate-200 p-2 text-xs focus:border-blue-400 focus:outline-none"
+                className="w-full mt-1 rounded border border-rule p-2 text-xs focus:border-blue-400 focus:outline-none"
               >
                 <option value="positive">Positive</option>
                 <option value="neutral">Neutral</option>
@@ -1419,7 +1419,7 @@ export default function MessageDetail({
             <div>
               <label
                 htmlFor="kb-tags"
-                className="text-slate-500 font-medium"
+                className="text-ink-3 font-medium"
               >
                 Tags (comma-separated)
               </label>
@@ -1429,18 +1429,18 @@ export default function MessageDetail({
                 value={kbTags}
                 onChange={(e) => setKbTags(e.target.value)}
                 placeholder="shipping_mismatch, next_day, cancel_request"
-                className="w-full mt-1 rounded border border-slate-200 p-2 text-xs focus:border-blue-400 focus:outline-none"
+                className="w-full mt-1 rounded border border-rule p-2 text-xs focus:border-blue-400 focus:outline-none"
               />
             </div>
 
             {kbError && (
-              <div className="rounded border border-red-200 bg-red-50 p-2 text-red-700">
+              <div className="rounded border border-danger/20 bg-danger-tint p-2 text-danger">
                 {kbError}
               </div>
             )}
 
             {kbSavedFlash && (
-              <div className="rounded border border-green-200 bg-green-50 p-2 text-green-700">
+              <div className="rounded border border-green-200 bg-green-soft p-2 text-green-ink">
                 ✓ Saved to Knowledge Base
               </div>
             )}

@@ -16,10 +16,10 @@ interface Snapshot {
 }
 
 const statusColors: Record<string, string> = {
-  ACTIVE: "bg-green-100 text-green-700",
-  AT_RISK: "bg-amber-100 text-amber-700",
+  ACTIVE: "bg-green-soft2 text-green-ink",
+  AT_RISK: "bg-warn-tint text-warn-strong",
   SUSPENDED: "bg-red-600 text-white",
-  UNKNOWN: "bg-slate-100 text-slate-500",
+  UNKNOWN: "bg-bg-elev text-ink-3",
 };
 
 function metricStatus(
@@ -28,12 +28,12 @@ function metricStatus(
   critThreshold: number,
   higher: boolean
 ): string {
-  if (value === null) return "text-slate-400";
+  if (value === null) return "text-ink-3";
   const isCrit = higher ? value > critThreshold : value < critThreshold;
   const isWarn = higher ? value > warnThreshold : value < warnThreshold;
-  if (isCrit) return "text-red-600 font-bold";
-  if (isWarn) return "text-amber-600 font-semibold";
-  return "text-green-600";
+  if (isCrit) return "text-danger font-bold";
+  if (isWarn) return "text-warn font-semibold";
+  return "text-green";
 }
 
 export default function StoreHealthCard({ store }: { store: Snapshot }) {
@@ -43,7 +43,7 @@ export default function StoreHealthCard({ store }: { store: Snapshot }) {
     <Card className={isSuspended ? "border-red-500 border-2" : ""}>
       <CardContent className="py-4 space-y-2">
         <div className="flex items-center justify-between">
-          <span className="font-medium text-sm text-slate-800">
+          <span className="font-medium text-sm text-ink">
             {store.storeName}
           </span>
           <Badge className={statusColors[store.status] || ""}>
@@ -53,7 +53,7 @@ export default function StoreHealthCard({ store }: { store: Snapshot }) {
 
         <div className="grid grid-cols-2 gap-1 text-xs">
           <div>
-            <span className="text-slate-500">ODR: </span>
+            <span className="text-ink-3">ODR: </span>
             <span className={metricStatus(store.orderDefectRate, 0.5, 1, true)}>
               {store.orderDefectRate !== null
                 ? `${store.orderDefectRate}%`
@@ -61,7 +61,7 @@ export default function StoreHealthCard({ store }: { store: Snapshot }) {
             </span>
           </div>
           <div>
-            <span className="text-slate-500">Late Ship: </span>
+            <span className="text-ink-3">Late Ship: </span>
             <span
               className={metricStatus(store.lateShipmentRate, 3, 4, true)}
             >
@@ -71,7 +71,7 @@ export default function StoreHealthCard({ store }: { store: Snapshot }) {
             </span>
           </div>
           <div>
-            <span className="text-slate-500">Tracking: </span>
+            <span className="text-ink-3">Tracking: </span>
             <span
               className={metricStatus(store.validTrackingRate, 95, 90, false)}
             >
@@ -81,7 +81,7 @@ export default function StoreHealthCard({ store }: { store: Snapshot }) {
             </span>
           </div>
           <div>
-            <span className="text-slate-500">OTDR: </span>
+            <span className="text-ink-3">OTDR: </span>
             <span
               className={metricStatus(store.onTimeDeliveryRate, 95, 90, false)}
             >
@@ -93,7 +93,7 @@ export default function StoreHealthCard({ store }: { store: Snapshot }) {
         </div>
 
         {store.alertCount > 0 && (
-          <p className="text-[10px] text-amber-600">
+          <p className="text-[10px] text-warn">
             {store.criticalCount > 0
               ? `${store.criticalCount} critical, `
               : ""}

@@ -5,15 +5,15 @@ import { Badge } from "@/components/ui/badge";
 const strategyConfig: Record<string, { label: string; className: string }> = {
   BUY_SHIPPING_PROTECTION: {
     label: "Buy Shipping Protection",
-    className: "bg-green-100 text-green-700 border-green-200",
+    className: "bg-green-soft2 text-green-ink border-green-200",
   },
   PROOF_OF_DELIVERY: {
     label: "Proof of Delivery",
-    className: "bg-blue-100 text-blue-700 border-blue-200",
+    className: "bg-green-soft2 text-green-deep border-green-soft2",
   },
   INR_DEFENSE: {
     label: "INR Defense",
-    className: "bg-amber-100 text-amber-700 border-amber-200",
+    className: "bg-warn-tint text-warn-strong border-warn/20",
   },
   CARRIER_DELAY_DEFENSE: {
     label: "Carrier Delay",
@@ -21,14 +21,14 @@ const strategyConfig: Record<string, { label: string; className: string }> = {
   },
   MANUAL_REVIEW: {
     label: "Manual Review",
-    className: "bg-red-100 text-red-700 border-red-200",
+    className: "bg-danger-tint text-danger border-danger/20",
   },
 };
 
 const confidenceConfig: Record<string, string> = {
-  HIGH: "text-green-600",
-  MEDIUM: "text-amber-600",
-  LOW: "text-red-600",
+  HIGH: "text-green",
+  MEDIUM: "text-warn",
+  LOW: "text-danger",
 };
 
 interface DefenseStrategyBadgeProps {
@@ -42,7 +42,7 @@ export default function DefenseStrategyBadge({
 }: DefenseStrategyBadgeProps) {
   const sc = strategyConfig[strategyType || ""] || {
     label: strategyType || "Unknown",
-    className: "bg-slate-100 text-slate-600",
+    className: "bg-bg-elev text-ink-2",
   };
 
   return (

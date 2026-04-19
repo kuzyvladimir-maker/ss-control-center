@@ -18,23 +18,23 @@ export default function TransitTimeline({
   const isLate = daysLate !== null && daysLate > 0;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3">
-      <p className="text-xs font-medium text-slate-500 mb-2">Transit Timeline</p>
+    <div className="rounded-lg border border-rule bg-white p-3">
+      <p className="text-xs font-medium text-ink-3 mb-2">Transit Timeline</p>
       <div className="flex items-center gap-1 text-xs">
         {/* Ship date */}
         <div className="flex flex-col items-center">
-          <div className="h-3 w-3 rounded-full bg-green-500" />
-          <span className="mt-1 text-[10px] text-slate-500">Ship</span>
+          <div className="h-3 w-3 rounded-full bg-green-soft0" />
+          <span className="mt-1 text-[10px] text-ink-3">Ship</span>
           <span className="text-[10px] font-medium">{shipDate || "—"}</span>
         </div>
 
         {/* Line to EDD */}
-        <div className="flex-1 h-0.5 bg-slate-200 mx-1" />
+        <div className="flex-1 h-0.5 bg-bg-elev mx-1" />
 
         {/* EDD */}
         <div className="flex flex-col items-center">
-          <div className="h-3 w-3 rounded-full bg-blue-500" />
-          <span className="mt-1 text-[10px] text-slate-500">EDD</span>
+          <div className="h-3 w-3 rounded-full bg-green-soft0" />
+          <span className="mt-1 text-[10px] text-ink-3">EDD</span>
           <span className="text-[10px] font-medium">{promisedEdd || "—"}</span>
         </div>
 
@@ -46,9 +46,9 @@ export default function TransitTimeline({
         {/* Actual delivery */}
         <div className="flex flex-col items-center">
           <div
-            className={`h-3 w-3 rounded-full ${isLate ? "bg-red-500" : "bg-green-500"}`}
+            className={`h-3 w-3 rounded-full ${isLate ? "bg-danger-tint0" : "bg-green-soft0"}`}
           />
-          <span className="mt-1 text-[10px] text-slate-500">Actual</span>
+          <span className="mt-1 text-[10px] text-ink-3">Actual</span>
           <span className="text-[10px] font-medium">
             {actualDelivery || "—"}
           </span>
@@ -58,12 +58,12 @@ export default function TransitTimeline({
       {/* Summary */}
       <div className="mt-2 flex gap-3 text-[10px]">
         {daysInTransit !== null && (
-          <span className="text-slate-500">
+          <span className="text-ink-3">
             Transit: <strong>{daysInTransit}d</strong>
           </span>
         )}
         {isLate && (
-          <span className="text-red-600 font-medium">
+          <span className="text-danger font-medium">
             Late: +{daysLate}d
           </span>
         )}

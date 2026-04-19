@@ -29,10 +29,10 @@ interface SkuProfile {
 
 const riskConfig: Record<string, { label: string; className: string }> = {
   critical: { label: "Critical", className: "bg-red-600 text-white" },
-  high: { label: "High", className: "bg-red-100 text-red-700" },
-  medium: { label: "Medium", className: "bg-yellow-100 text-yellow-700" },
-  low: { label: "Low", className: "bg-green-100 text-green-700" },
-  unknown: { label: "Unknown", className: "bg-slate-100 text-slate-500" },
+  high: { label: "High", className: "bg-danger-tint text-danger" },
+  medium: { label: "Medium", className: "bg-warn-tint text-warn-strong" },
+  low: { label: "Low", className: "bg-green-soft2 text-green-ink" },
+  unknown: { label: "Unknown", className: "bg-bg-elev text-ink-3" },
 };
 
 interface SkuRiskTableProps {
@@ -42,7 +42,7 @@ interface SkuRiskTableProps {
 export default function SkuRiskTable({ profiles }: SkuRiskTableProps) {
   if (profiles.length === 0) {
     return (
-      <p className="text-sm text-slate-400 py-4 text-center">
+      <p className="text-sm text-ink-3 py-4 text-center">
         No SKU risk data yet. Data appears after frozen incidents are recorded.
       </p>
     );
@@ -74,7 +74,7 @@ export default function SkuRiskTable({ profiles }: SkuRiskTableProps) {
               <TableCell className="text-xs">
                 {p.totalIncidents}
                 {p.thawedCount > 0 && (
-                  <span className="text-red-600 ml-1">
+                  <span className="text-danger ml-1">
                     ({p.thawedCount} thawed)
                   </span>
                 )}
@@ -92,7 +92,7 @@ export default function SkuRiskTable({ profiles }: SkuRiskTableProps) {
               <TableCell className="text-xs">
                 {p.mostCommonCarrier || "—"}{" "}
                 {p.mostCommonService && (
-                  <span className="text-slate-400">{p.mostCommonService}</span>
+                  <span className="text-ink-3">{p.mostCommonService}</span>
                 )}
               </TableCell>
               <TableCell className="text-xs font-mono">
