@@ -4,20 +4,41 @@ import { verifySessionToken } from "@/lib/auth";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/api/external")) {
+  // ── 1. API key auth (Authorization: Bearer SSCC_API_TOKEN) ──────────
+  // Accepted on ALL /api/* routes so external clients (OpenClaw agent,
+  // automation scripts, etc.) can hit any endpoint with a single token.
+  // The token grants admin-equivalent permissions — `getCurrentUser` in
+  // src/lib/auth-server.ts synthesises a system admin identity for
+  // role-gated routes.
+  if (pathname.startsWith("/api/")) {
     const expectedToken = process.env.SSCC_API_TOKEN;
-    const token = request.headers.get("Authorization")?.replace("Bearer ", "");
-
-    if (!expectedToken || token !== expectedToken) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const bearer = request.headers
+      .get("Authorization")
+      ?.replace("Bearer ", "");
+    if (expectedToken && bearer === expectedToken) {
+      return NextResponse.next();
     }
-    return NextResponse.next();
+  }
+
+  // Legacy /api/external — previously the only place that accepted the
+  // Bearer token. Keep its hard 401 for back-compat (an unauthenticated
+  // call must NOT fall through to the cookie check below).
+  if (pathname.startsWith("/api/external")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   if (
     pathname === "/login" ||
     pathname === "/api/auth/login" ||
     pathname === "/api/auth/register"
+  ) {
+    return NextResponse.next();
+  }
+
+  // Public invite-accept routes
+  if (
+    pathname.startsWith("/invite/") ||
+    pathname.startsWith("/api/auth/invite/")
   ) {
     return NextResponse.next();
   }

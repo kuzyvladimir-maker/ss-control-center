@@ -17,9 +17,31 @@ export interface AuthedUser {
   role: string;
 }
 
+// Synthetic identity for requests authenticated with the SSCC_API_TOKEN.
+// External clients (OpenClaw, automation, scripts) carry no DB user but
+// must still pass `requireAuth` / `requireAdmin` checks to use admin-only
+// endpoints. We give them admin-equivalent rights and a recognisable
+// username so audit logs can distinguish them from real users.
+const API_TOKEN_USER: AuthedUser = {
+  id: "system:api-token",
+  username: "api@sscc.system",
+  displayName: "API Token (external)",
+  role: "admin",
+};
+
+function isApiTokenRequest(request: NextRequest): boolean {
+  const expected = process.env.SSCC_API_TOKEN;
+  if (!expected) return false;
+  const bearer = request.headers.get("Authorization")?.replace("Bearer ", "");
+  return bearer === expected;
+}
+
 export async function getCurrentUser(
   request: NextRequest
 ): Promise<AuthedUser | null> {
+  // External API clients (Bearer SSCC_API_TOKEN) get admin identity
+  if (isApiTokenRequest(request)) return API_TOKEN_USER;
+
   const token = request.cookies.get("sscc-session")?.value;
   if (!token) return null;
   const session = verifySession(token);
