@@ -1,28 +1,9 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Bell, LogOut, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Bell, LogOut, Search, ShieldCheck } from "lucide-react";
 import { useMounted } from "@/lib/use-mounted";
-
-const pageTitles: Record<string, string> = {
-  "/": "Dashboard",
-  "/shipping": "Shipping Labels",
-  "/customer-hub": "Customer Hub",
-  "/claims/atoz": "A-to-Z Claims",
-  "/feedback": "Feedback",
-  "/account-health": "Account Health",
-  "/frozen-analytics": "Frozen Analytics",
-  "/adjustments": "Adjustments",
-  "/listings": "Product Listings",
-  "/analytics": "Sales Analytics",
-  "/suppliers": "Suppliers",
-  "/promotions": "Promotions",
-  "/integrations": "Integrations",
-  "/settings": "Settings",
-  "/settings/users": "User Permissions",
-};
 
 interface MeUser {
   username: string;
@@ -31,9 +12,7 @@ interface MeUser {
 }
 
 export default function Header() {
-  const pathname = usePathname();
   const router = useRouter();
-  const title = pageTitles[pathname] || "SS Control Center";
   const mounted = useMounted();
   const [me, setMe] = useState<MeUser | null>(null);
 
@@ -44,23 +23,11 @@ export default function Header() {
       .then((j) => {
         if (!cancelled && j?.user) setMe(j.user);
       })
-      .catch(() => {
-        /* ignore */
-      });
+      .catch(() => undefined);
     return () => {
       cancelled = true;
     };
   }, []);
-
-  const today = mounted
-    ? new Date().toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        timeZone: "America/New_York",
-      })
-    : "";
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -68,38 +35,66 @@ export default function Header() {
     router.refresh();
   }
 
+  const initials =
+    me?.displayName
+      ?.split(/\s+/)
+      .map((p) => p[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() ||
+    me?.username?.slice(0, 2).toUpperCase() ||
+    "U";
+
   return (
-    <header className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-6">
-      <h1 className="text-lg font-semibold text-slate-800">{title}</h1>
-      <div className="flex items-center gap-4">
-        {mounted && today && (
-          <span className="text-sm text-slate-500">{today}</span>
-        )}
-        {me && (
-          <span
-            className="inline-flex items-center gap-1 text-xs text-slate-600"
-            title={me.username}
-          >
-            {me.role === "admin" && (
-              <ShieldCheck size={12} className="text-blue-500" />
-            )}
-            {me.displayName || me.username}
-          </span>
-        )}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell size={18} />
-        </Button>
-        {me && (
-          <Button
-            variant="ghost"
-            size="icon"
+    <header
+      className="flex shrink-0 items-center gap-3 border-b border-rule bg-surface px-6"
+      style={{ height: "var(--topbar-height)" }}
+    >
+      {/* Search */}
+      <div className="flex flex-1 items-center gap-2 max-w-[380px] rounded-md border border-rule bg-surface-tint px-3 py-1.5 text-[12.5px] text-ink-3">
+        <Search size={14} className="text-ink-3" />
+        <span className="flex-1 truncate">
+          Search orders, cases, SKUs…
+        </span>
+        <span className="kbd">⌘K</span>
+      </div>
+
+      <div className="flex-1" />
+
+      {/* Live pill */}
+      <div className="hidden items-center gap-1.5 rounded-md bg-green-soft px-2.5 py-1 text-[11px] font-medium text-green-ink sm:inline-flex">
+        <span className="live-dot" />
+        <span>5 stores live</span>
+      </div>
+
+      {/* Notifications */}
+      <button className="grid h-8 w-8 place-items-center rounded-md text-ink-2 hover:bg-bg-elev hover:text-ink">
+        <Bell size={16} />
+      </button>
+
+      {/* User chip */}
+      {me && mounted && (
+        <div className="flex items-center gap-2 rounded-full border border-rule bg-surface-tint pr-3">
+          <div className="grid h-7 w-7 place-items-center rounded-full bg-green text-[11px] font-semibold text-green-cream">
+            {initials}
+          </div>
+          <div className="hidden flex-col leading-tight sm:flex">
+            <div className="flex items-center gap-1 text-[12px] font-medium text-ink">
+              {me.displayName || me.username}
+              {me.role === "admin" && (
+                <ShieldCheck size={11} className="text-green" />
+              )}
+            </div>
+          </div>
+          <button
             onClick={logout}
             title="Sign out"
+            className="grid h-7 w-7 place-items-center rounded-full text-ink-3 hover:text-ink"
           >
-            <LogOut size={18} />
-          </Button>
-        )}
-      </div>
+            <LogOut size={13} />
+          </button>
+        </div>
+      )}
     </header>
   );
 }

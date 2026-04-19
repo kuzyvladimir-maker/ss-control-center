@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salutem — Shipping Labels</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #F4F3EF;
+  --bg-elev: #EDECE7;
+  --surface: #FFFFFF;
+  --surface-tint: #F8F7F3;
+  --ink: #15201B;
+  --ink-2: #4E554F;
+  --ink-3: #7A807B;
+  --ink-4: #AEB2AD;
+  --rule: rgba(21,32,27,0.08);
+  --rule-strong: rgba(21,32,27,0.16);
+  --green: #1F4D3F;
+  --green-deep: #14352B;
+  --green-mid: #3A6B5D;
+  --green-soft: #E6EEE9;
+  --green-soft2: #CDDDD5;
+  --green-ink: #12362C;
+  --green-cream: #F0E8D0;
+  --silver: #B5B8B5;
+  --silver-dark: #8E918E;
+  --silver-tint: #EAEBE9;
+  --silver-line: #D2D4D1;
+  --frozen: #2E6FA8;
+  --frozen-tint: #E5EEF6;
+  --frozen-deep: #1D4F7A;
+  --dry: #8B6B1C;
+  --dry-tint: #F3EDDD;
+  --warn: #A05B20;
+  --warn-tint: #F5E9DC;
+  --warn-strong: #8B4A18;
+  --danger: #9B2C2C;
+  --danger-tint: #F5E1E1;
+  --info: #2E6FA8;
+  --info-tint: #E5EEF6;
+  --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  letter-spacing: -0.005em;
+}
+
+button { font-family: inherit; }
+
+.app {
+  display: grid;
+  grid-template-columns: 236px 1fr;
+  min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar { background: var(--bg); border-right: 1px solid var(--rule); padding: 22px 14px; display: flex; flex-direction: column; }
+.brand { display: flex; align-items: center; gap: 11px; padding: 2px 10px 20px; }
+.brand-mark { width: 32px; height: 32px; background: var(--green); color: var(--green-cream); border-radius: 8px; display: grid; place-items: center; font-weight: 700; font-size: 14px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 0 0 1px var(--silver-line); }
+.brand-info { flex: 1; }
+.brand-name { font-weight: 700; font-size: 14.5px; letter-spacing: -0.02em; color: var(--ink); line-height: 1.1; }
+.brand-meta { font-family: var(--mono); font-size: 10px; color: var(--silver-dark); margin-top: 2px; letter-spacing: 0.04em; }
+.ws { margin: 0 2px 16px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.ws-dot { width: 7px; height: 7px; border-radius: 2px; background: var(--green); }
+.ws-label { font-size: 12.5px; color: var(--ink); font-weight: 500; flex: 1; }
+.ws-count { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+.ws svg { width: 12px; height: 12px; color: var(--ink-3); }
+
+.nav-section { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--silver-dark); padding: 12px 12px 6px; font-weight: 500; }
+.nav { display: flex; flex-direction: column; gap: 1px; }
+.nav-item { display: flex; align-items: center; gap: 11px; padding: 7px 12px; border-radius: 7px; color: var(--ink-2); cursor: pointer; font-size: 13px; }
+.nav-item svg { width: 16px; height: 16px; color: var(--ink-3); }
+.nav-item:hover { background: var(--bg-elev); color: var(--ink); }
+.nav-item.active { background: var(--green-soft); color: var(--green-ink); font-weight: 500; }
+.nav-item.active svg { color: var(--green); }
+.nav-item .pill { margin-left: auto; font-family: var(--mono); font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 500; }
+.nav-item .pill-active { background: var(--green); color: var(--green-cream); }
+.nav-item.disabled { opacity: 0.52; cursor: not-allowed; }
+.nav-item.disabled .coming { margin-left: auto; font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--silver-dark); }
+.nav-spacer { flex: 1; }
+
+/* ===== MAIN ===== */
+.main { display: flex; flex-direction: column; min-width: 0; }
+
+.topbar { display: flex; align-items: center; height: 56px; padding: 0 28px; border-bottom: 1px solid var(--rule); gap: 14px; }
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.breadcrumb a { color: var(--ink-3); text-decoration: none; }
+.breadcrumb .sep { color: var(--ink-4); }
+.breadcrumb .current { color: var(--ink); font-weight: 500; }
+.topbar-spacer { flex: 1; }
+.search { max-width: 300px; display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--bg-elev); border: 1px solid transparent; border-radius: 8px; color: var(--ink-3); font-size: 12.5px; cursor: pointer; }
+.search svg { width: 14px; height: 14px; }
+.search .kbd { margin-left: 16px; font-family: var(--mono); font-size: 10px; padding: 2px 5px; background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-3); }
+.live-pill { display: flex; align-items: center; gap: 7px; padding: 5px 10px 5px 9px; background: var(--green-soft); color: var(--green-ink); border-radius: 6px; font-size: 12px; font-weight: 500; }
+.live-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.icon-btn { width: 32px; height: 32px; display: grid; place-items: center; color: var(--ink-2); border-radius: 6px; cursor: pointer; position: relative; }
+.icon-btn:hover { background: var(--bg-elev); }
+.icon-btn .notif { position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); border: 1.5px solid var(--bg); }
+.user-chip { display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border: 1px solid var(--rule); border-radius: 18px; cursor: pointer; }
+.user-chip-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--green); color: var(--green-cream); display: grid; place-items: center; font-size: 11px; font-weight: 600; }
+.user-chip-name { font-size: 12.5px; font-weight: 500; }
+
+/* ===== CONTENT ===== */
+.content { padding: 28px 32px 120px; max-width: 1500px; width: 100%; }
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+.page-head-left { min-width: 0; }
+.page-title {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.page-title .plan-status {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 3px 8px;
+  background: var(--green-soft);
+  color: var(--green-ink);
+  border-radius: 4px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.page-subtitle {
+  color: var(--ink-2);
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.page-subtitle .sep { color: var(--ink-4); }
+.page-subtitle strong { color: var(--ink); font-weight: 500; }
+
+.page-actions { display: flex; gap: 8px; align-items: center; }
+
+.date-picker {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 3px;
+  background: var(--surface);
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+}
+.date-picker-btn {
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.date-picker-btn:hover { background: var(--bg-elev); color: var(--ink); }
+.date-picker-btn.active { background: var(--green); color: var(--green-cream); }
+.date-picker-date {
+  padding: 6px 12px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink);
+  border-left: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.date-picker-date svg { width: 12px; height: 12px; color: var(--ink-3); }
+
+.btn-sm {
+  font-size: 12.5px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink);
+}
+.btn-sm svg { width: 13px; height: 13px; }
+.btn-sm:hover { background: var(--surface-tint); border-color: var(--silver-dark); }
+.btn-sm.primary {
+  background: var(--green);
+  color: var(--green-cream);
+  border-color: var(--green);
+}
+.btn-sm.primary:hover { background: var(--green-deep); }
+
+/* ===== HOLD ALERT ===== */
+.hold-alert {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--warn-tint);
+  border: 1px solid rgba(160,91,32,0.18);
+  border-radius: 12px;
+  margin-bottom: 18px;
+}
+.hold-alert-icon {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  background: rgba(160,91,32,0.18);
+  color: var(--warn-strong);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.hold-alert-icon svg { width: 16px; height: 16px; }
+.hold-alert-body { flex: 1; min-width: 0; }
+.hold-alert-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--warn-strong);
+  margin-bottom: 2px;
+}
+.hold-alert-desc {
+  font-size: 12.5px;
+  color: var(--warn-strong);
+  opacity: 0.9;
+  line-height: 1.4;
+}
+.hold-alert-desc code {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  background: rgba(160,91,32,0.14);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+.hold-alert-action {
+  padding: 7px 14px;
+  background: var(--warn-strong);
+  color: white;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.hold-alert-action svg { width: 12px; height: 12px; }
+
+/* ===== KPI ROW ===== */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.kpi-label {
+  font-size: 11.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.kpi-icon {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  display: grid; place-items: center;
+  color: var(--green);
+  background: var(--green-soft);
+}
+.kpi-icon svg { width: 12px; height: 12px; }
+.kpi-icon.info { color: var(--info); background: var(--info-tint); }
+.kpi-icon.warn { color: var(--warn); background: var(--warn-tint); }
+.kpi-icon.silver { color: var(--silver-dark); background: var(--silver-tint); }
+
+.kpi-number {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+.kpi-number .unit {
+  font-size: 14px;
+  color: var(--ink-4);
+  font-weight: 400;
+  margin-left: 2px;
+}
+.kpi-sub {
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kpi-sub strong { color: var(--ink-2); font-weight: 500; }
+
+.kpi-chips { display: flex; gap: 5px; margin-top: 10px; }
+.chip {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.chip::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.chip-frozen { background: var(--frozen-tint); color: var(--frozen); }
+.chip-dry { background: var(--dry-tint); color: var(--dry); }
+
+.kpi-progress {
+  margin-top: 10px;
+  height: 3px;
+  background: var(--silver-tint);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.kpi-progress-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 2px;
+}
+
+/* ===== FILTER BAR ===== */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 8px 12px 8px 4px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 2px;
+}
+.filter-tab {
+  padding: 6px 12px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.filter-tab:hover { background: var(--bg-elev); }
+.filter-tab.active {
+  background: var(--green-soft);
+  color: var(--green-ink);
+}
+.filter-tab .count {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--silver-tint);
+  color: var(--silver-dark);
+  font-weight: 500;
+}
+.filter-tab.active .count {
+  background: var(--green);
+  color: var(--green-cream);
+}
+
+.filter-spacer { flex: 1; }
+
+.filter-meta {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  letter-spacing: 0.02em;
+}
+.filter-meta strong { color: var(--ink-2); font-weight: 500; }
+
+.sort-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-weight: 500;
+}
+.sort-btn:hover { background: var(--bg-elev); border-color: var(--rule); }
+.sort-btn svg { width: 12px; height: 12px; color: var(--ink-3); }
+
+/* ===== SHIPPING TABLE ===== */
+.ship-table {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ship-head-row {
+  display: grid;
+  grid-template-columns: 36px 1.2fr 1.5fr 0.7fr 0.7fr 0.9fr 1fr 1fr;
+  padding: 11px 18px;
+  background: var(--surface-tint);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--silver-dark);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  gap: 12px;
+  align-items: center;
+}
+.ship-head-row .check {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--silver-line);
+  border-radius: 4px;
+  background: var(--surface);
+}
+
+.ship-row {
+  display: grid;
+  grid-template-columns: 36px 1.2fr 1.5fr 0.7fr 0.7fr 0.9fr 1fr 1fr;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--rule);
+  gap: 12px;
+  align-items: center;
+  transition: background 0.12s;
+  cursor: pointer;
+}
+.ship-row:last-child { border-bottom: none; }
+.ship-row:hover { background: var(--surface-tint); }
+.ship-row.bought { background: rgba(230,238,233,0.3); }
+.ship-row.bought:hover { background: var(--green-soft); }
+.ship-row.hold { background: rgba(245,233,220,0.3); }
+.ship-row.hold:hover { background: var(--warn-tint); }
+
+.check-cell {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--silver-line);
+  border-radius: 4px;
+  background: var(--surface);
+  position: relative;
+  cursor: pointer;
+}
+.check-cell.checked {
+  background: var(--green);
+  border-color: var(--green);
+}
+.check-cell.checked::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 4px;
+  width: 4px; height: 8px;
+  border: solid var(--green-cream);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.check-cell.locked {
+  background: var(--silver-tint);
+  border-color: var(--silver-line);
+  cursor: not-allowed;
+}
+
+/* Order cell */
+.order-cell { min-width: 0; }
+.order-id {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  font-weight: 500;
+}
+.order-store {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+}
+.store-mini-avatar {
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  display: grid; place-items: center;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.sa-salutem { background: var(--green); color: var(--green-cream); }
+.sa-amzcom { background: var(--green-soft2); color: var(--green-ink); }
+.sa-sirius { background: var(--silver-dark); color: var(--bg); }
+.sa-walmart { background: var(--silver-tint); color: var(--silver-dark); box-shadow: inset 0 0 0 1px var(--silver); }
+.sa-retail { background: var(--green-mid); color: var(--green-cream); }
+.sa-personal { background: var(--bg-elev); color: var(--ink-2); }
+
+.store-mini-name {
+  font-size: 11.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.store-mini-channel {
+  font-size: 10px;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  margin-left: 4px;
+  letter-spacing: 0.04em;
+}
+
+/* Product cell */
+.product-cell { min-width: 0; }
+.product-name {
+  font-size: 12.5px;
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.product-sku {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+
+/* Type badge */
+.type-tag {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.type-frozen { background: var(--frozen-tint); color: var(--frozen); }
+.type-dry { background: var(--dry-tint); color: var(--dry); }
+.type-tag::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Weight */
+.weight {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.weight .unit { color: var(--ink-3); font-weight: 400; margin-left: 2px; }
+
+/* Destination */
+.dest-cell { min-width: 0; }
+.dest-primary {
+  font-size: 12px;
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1.3;
+}
+.dest-meta {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+.dest-meta .zip { color: var(--ink-2); }
+
+/* Ship by / deadline */
+.deadline-cell { min-width: 0; }
+.deadline-date {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1.3;
+}
+.deadline-meta {
+  font-size: 10.5px;
+  color: var(--ink-3);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--mono);
+  letter-spacing: 0.02em;
+}
+.deadline-urgent { color: var(--warn); }
+.deadline-meta.mon-trick {
+  color: var(--frozen);
+}
+.mon-trick-chip {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  padding: 1px 5px;
+  background: var(--frozen-tint);
+  color: var(--frozen);
+  border-radius: 3px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+/* Service/carrier */
+.service-cell { min-width: 0; }
+.service-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.carrier-logo {
+  width: 22px; height: 16px;
+  border-radius: 3px;
+  display: grid; place-items: center;
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.carrier-ups { background: #4C2C0E; color: #FFB500; }
+.carrier-fedex { background: #4D148C; color: white; font-size: 7px; }
+.carrier-usps { background: #004B87; color: white; font-size: 7px; }
+.service-name {
+  font-size: 12px;
+  color: var(--ink);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.service-rate {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink-2);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.service-rate .saving {
+  color: var(--green);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+/* Status + action */
+.status-cell {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.status-chip {
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.status-chip::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.status-ready { background: var(--surface); color: var(--ink-2); border-color: var(--rule-strong); }
+.status-bought { background: var(--green-soft); color: var(--green-ink); }
+.status-hold { background: var(--warn-tint); color: var(--warn-strong); }
+.status-pending { background: var(--silver-tint); color: var(--silver-dark); }
+
+.status-link {
+  font-size: 11.5px;
+  color: var(--green);
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* ===== STICKY ACTION BAR ===== */
+.action-bar {
+  position: fixed;
+  bottom: 16px;
+  left: 254px;
+  right: 20px;
+  padding: 14px 22px;
+  background: var(--surface);
+  border: 1px solid var(--silver-line);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow:
+    0 10px 30px rgba(21,32,27,0.08),
+    0 4px 10px rgba(21,32,27,0.04);
+  z-index: 10;
+}
+.action-bar::before {
+  content: '';
+  position: absolute;
+  left: 22px; right: 22px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--silver) 50%, transparent);
+  opacity: 0.5;
+}
+
+.action-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-right: 14px;
+  border-right: 1px solid var(--rule);
+}
+.action-summary-count {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--silver-dark);
+  font-weight: 500;
+}
+.action-summary-big {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+}
+.action-summary-big .num {
+  color: var(--green);
+  font-family: var(--mono);
+  margin-right: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.action-total {
+  display: flex;
+  flex-direction: column;
+  padding-right: 14px;
+}
+.action-total-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--silver-dark);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.action-total-value {
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.btn {
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink);
+  transition: all 0.15s;
+}
+.btn svg { width: 14px; height: 14px; }
+.btn:hover { background: var(--bg-elev); border-color: var(--silver-dark); }
+.btn-primary {
+  background: var(--green); border-color: var(--green);
+  color: var(--green-cream);
+}
+.btn-primary:hover { background: var(--green-deep); border-color: var(--green-deep); }
+.btn .count-badge {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  padding: 1px 6px;
+  background: rgba(240,232,208,0.18);
+  color: var(--green-cream);
+  border-radius: 3px;
+  font-weight: 500;
+  margin-left: 2px;
+}
+
+.action-bar-spacer { flex: 1; }
+
+.kbd-hint {
+  font-size: 11.5px;
+  color: var(--silver-dark);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.kbd-hint .kbd {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 5px;
+  background: var(--bg-elev);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  color: var(--ink-2);
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-info">
+        <div class="brand-name">Salutem</div>
+        <div class="brand-meta">CONTROL · V1.4</div>
+      </div>
+    </div>
+    <div class="ws">
+      <span class="ws-dot"></span>
+      <span class="ws-label">All stores</span>
+      <span class="ws-count">5</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    <div class="nav-section">Operations</div>
+    <nav class="nav">
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="9" rx="1.2"/><rect x="14" y="3" width="7" height="5" rx="1.2"/><rect x="14" y="12" width="7" height="9" rx="1.2"/><rect x="3" y="16" width="7" height="5" rx="1.2"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7h13v10H3z"/><path d="M16 10h4l1 3v4h-5z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        Shipping labels
+        <span class="pill pill-active">6</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12a8 8 0 1 1-3-6.2L21 4v5h-5"/></svg>
+        Customer hub
+        <span class="pill pill-active">3</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+        Adjustments
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
+        Shipment monitor
+      </div>
+    </nav>
+    <div class="nav-section">Insights</div>
+    <nav class="nav">
+      <div class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 20h18M6 16l4-6 4 3 5-8"/></svg>
+        Frozen analytics
+        <span class="coming">Soon</span>
+      </div>
+      <div class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Sales overview
+        <span class="coming">Soon</span>
+      </div>
+    </nav>
+    <div class="nav-spacer"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="#">Operations</a>
+        <span class="sep">/</span>
+        <span class="current">Shipping labels</span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <span>Search orders</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="live-pill"><span class="dot"></span>Veeqo connected</div>
+      <div class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span class="notif"></span>
+      </div>
+      <div class="user-chip">
+        <div class="user-chip-avatar">V</div>
+        <span class="user-chip-name">Vladimir K.</span>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- PAGE HEAD -->
+      <div class="page-head">
+        <div class="page-head-left">
+          <div class="page-title">
+            Shipping labels
+            <span class="plan-status">Plan #184 · Ready</span>
+          </div>
+          <div class="page-subtitle">
+            <span><strong>18 orders</strong> in today's plan</span>
+            <span class="sep">·</span>
+            <span>Generated 09:15 PDT</span>
+            <span class="sep">·</span>
+            <span>Next refresh in <strong>4m</strong></span>
+          </div>
+        </div>
+        <div class="page-actions">
+          <div class="date-picker">
+            <div class="date-picker-btn">Yesterday</div>
+            <div class="date-picker-btn active">Today</div>
+            <div class="date-picker-btn">Tomorrow</div>
+            <div class="date-picker-date">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              Mon · Apr 20
+            </div>
+          </div>
+          <button class="btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 9-9M3 4v5h5"/></svg>
+            Refresh rates
+          </button>
+          <button class="btn-sm primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Regenerate plan
+          </button>
+        </div>
+      </div>
+
+      <!-- HOLD ALERT -->
+      <div class="hold-alert">
+        <div class="hold-alert-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        </div>
+        <div class="hold-alert-body">
+          <div class="hold-alert-title">1 order on hold — requires attention</div>
+          <div class="hold-alert-desc">
+            Order <code>113-4847264</code> · RXBAR Protein 12ct is missing SKU dimensions in Google Sheets database. Cannot calculate shipping rate until dimensions are added.
+          </div>
+        </div>
+        <button class="hold-alert-action">
+          Fix SKU dimensions
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- KPI ROW -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <div class="kpi-label">In plan</div>
+            <div class="kpi-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h13v10H3z"/><path d="M16 10h4l1 3v4h-5z"/></svg>
+            </div>
+          </div>
+          <div class="kpi-number">18</div>
+          <div class="kpi-chips">
+            <span class="chip chip-frozen">5 frozen</span>
+            <span class="chip chip-dry">13 dry</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <div class="kpi-label">Labels bought</div>
+            <div class="kpi-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+            </div>
+          </div>
+          <div class="kpi-number">12<span class="unit">/ 18</span></div>
+          <div class="kpi-progress"><div class="kpi-progress-fill" style="width:67%"></div></div>
+          <div class="kpi-sub"><strong>67%</strong> complete</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <div class="kpi-label">Ready to buy</div>
+            <div class="kpi-icon silver">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
+            </div>
+          </div>
+          <div class="kpi-number">5</div>
+          <div class="kpi-sub">est. <strong>$62.40</strong> · one click away</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <div class="kpi-label">Spent today</div>
+            <div class="kpi-icon info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 6v12M15 9a3 3 0 0 0-3-3h-1a3 3 0 0 0 0 6h2a3 3 0 0 1 0 6h-1a3 3 0 0 1-3-3"/></svg>
+            </div>
+          </div>
+          <div class="kpi-number">$147<span class="unit">.82</span></div>
+          <div class="kpi-sub">avg <strong>$12.32</strong>/label · <strong>$2.84</strong> saved</div>
+        </div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <div class="filter-tabs">
+          <div class="filter-tab active">All <span class="count">18</span></div>
+          <div class="filter-tab">Ready <span class="count">5</span></div>
+          <div class="filter-tab">Bought <span class="count">12</span></div>
+          <div class="filter-tab">On hold <span class="count">1</span></div>
+          <div class="filter-tab">Frozen <span class="count">5</span></div>
+          <div class="filter-tab">Dry <span class="count">13</span></div>
+        </div>
+        <div class="filter-spacer"></div>
+        <div class="filter-meta">Sorted by <strong>deadline · asc</strong></div>
+        <button class="sort-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+          Sort
+        </button>
+        <button class="sort-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+          Columns
+        </button>
+      </div>
+
+      <!-- SHIPPING TABLE -->
+      <div class="ship-table">
+        <div class="ship-head-row">
+          <div class="check"></div>
+          <div>Order / Store</div>
+          <div>Product</div>
+          <div>Type</div>
+          <div>Weight</div>
+          <div>Ship to / by</div>
+          <div>Service</div>
+          <div style="text-align:right">Status</div>
+        </div>
+
+        <!-- Row 1: Ready to buy — frozen -->
+        <div class="ship-row">
+          <div class="check-cell checked"></div>
+          <div class="order-cell">
+            <div class="order-id">113-2847264</div>
+            <div class="order-store">
+              <div class="store-mini-avatar sa-salutem">SS</div>
+              <span class="store-mini-name">Salutem</span>
+              <span class="store-mini-channel">AMZ</span>
+            </div>
+          </div>
+          <div class="product-cell">
+            <div class="product-name">Jimmy Dean Sausage 12ct</div>
+            <div class="product-sku">JD-SAU-12 · 9×6×4 in</div>
+          </div>
+          <div><span class="type-tag type-frozen">Frozen</span></div>
+          <div class="weight">2.4<span class="unit">lb</span></div>
+          <div class="dest-cell">
+            <div class="dest-primary">Austin, TX</div>
+            <div class="dest-meta"><span class="zip">78704</span> · by <strong style="color:var(--ink)">Mon 4:00pm</strong></div>
+          </div>
+          <div class="service-cell">
+            <div class="service-top">
+              <div class="carrier-logo carrier-ups">UPS</div>
+              <div class="service-name">2nd Day Air · insulated</div>
+            </div>
+            <div class="service-rate">$18.42<span class="saving">saved $2.10</span></div>
+          </div>
+          <div class="status-cell">
+            <span class="status-chip status-ready">Ready</span>
+          </div>
+        </div>
+
+        <!-- Row 2: Ready — dry -->
+        <div class="ship-row">
+          <div class="check-cell checked"></div>
+          <div class="order-cell">
+            <div class="order-id">113-9574820</div>
+            <div class="order-store">
+              <div class="store-mini-avatar sa-amzcom">AZ</div>
+              <span class="store-mini-name">AMZ Commerce</span>
+              <span class="store-mini-channel">AMZ</span>
+            </div>
+          </div>
+          <div class="product-cell">
+            <div class="product-name">Quaker Oats Pack 6</div>
+            <div class="product-sku">QO-PACK-6 · 10×8×5 in</div>
+          </div>
+          <div><span class="type-tag type-dry">Dry</span></div>
+          <div class="weight">3.1<span class="unit">lb</span></div>
+          <div class="dest-cell">
+            <div class="dest-primary">Portland, OR</div>
+            <div class="dest-meta"><span class="zip">97205</span> · by <strong style="color:var(--ink)">Today 6:00pm</strong></div>
+          </div>
+          <div class="service-cell">
+            <div class="service-top">
+              <div class="carrier-logo carrier-usps">USPS</div>
+              <div class="service-name">Ground Advantage</div>
+            </div>
+            <div class="service-rate">$8.92</div>
+          </div>
+          <div class="status-cell">
+            <span class="status-chip status-ready">Ready</span>
+          </div>
+        </div>
+
+        <!-- Row 3: Already bought -->
+        <div class="ship-row bought">
+          <div class="check-cell locked">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:10px;height:10px;position:absolute;top:2px;left:2px;color:var(--silver-dark);"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="order-cell">
+            <div class="order-id">112-8274756</div>
+            <div class="order-store">
+              <div class="store-mini-avatar sa-sirius">SI</div>
+              <span class="store-mini-name">Sirius Intl</span>
+              <span class="store-mini-channel">AMZ</span>
+            </div>
+          </div>
+          <div class="product-cell">
+            <div class="product-name">Protein Bars Variety Pack</div>
+            <div class="product-sku">PB-VAR-24 · 11×7×3 in</div>
+          </div>
+          <div><span class="type-tag type-dry">Dry</span></div>
+          <div class="weight">1.8<span class="unit">lb</span></div>
+          <div class="dest-cell">
+            <div class="dest-primary">Denver, CO</div>
+            <div class="dest-meta"><span class="zip">80205</span> · by <strong style="color:var(--ink)">Today 6:00pm</strong></div>
+          </div>
+          <div class="service-cell">
+            <div class="service-top">
+              <div class="carrier-logo carrier-usps">USPS</div>
+              <div class="service-name">Priority</div>
+            </div>
+            <div class="service-rate">$11.20</div>
+          </div>
+          <div class="status-cell">
+            <span class="status-chip status-bought">Bought · 09:38</span>
+          </div>
+        </div>
+
+        <!-- Row 4: Bought — frozen with Monday trick -->
+        <div class="ship-row bought">
+          <div class="check-cell locked">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:10px;height:10px;position:absolute;top:2px;left:2px;color:var(--silver-dark);"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="order-cell">
+            <div class="order-id">WM-5827391</div>
+            <div class="order-store">
+              <div class="store-mini-avatar sa-walmart">WM</div>
+              <span class="store-mini-name">Salutem</span>
+              <span class="store-mini-channel">WMT</span>
+            </div>
+          </div>
+          <div class="product-cell">
+            <div class="product-name">Tyson Nuggets 2lb</div>
+            <div class="product-sku">TY-NUG-2 · 8×6×4 in</div>
+          </div>
+          <div><span class="type-tag type-frozen">Frozen</span></div>
+          <div class="weight">2.0<span class="unit">lb</span></div>
+          <div class="dest-cell">
+            <div class="dest-primary">Seattle, WA</div>
+            <div class="dest-meta"><span class="zip">98101</span> · by <strong style="color:var(--ink)">Mon 4:00pm</strong></div>
+          </div>
+          <div class="service-cell">
+            <div class="service-top">
+              <div class="carrier-logo carrier-ups">UPS</div>
+              <div class="service-name">Next Day Air Saver</div>
+            </div>
+            <div class="service-rate">$24.80</div>
+          </div>
+          <div class="status-cell">
+            <span class="status-chip status-bought">Bought · 09:41</span>
+          </div>
+        </div>
+
+        <!-- Row 5: Ready — frozen with Monday trick highlighted -->
+        <div class="ship-row">
+          <div class="check-cell checked"></div>
+          <div class="order-cell">
+            <div class="order-id">113-1847264</div>
+            <div class="order-store">
+              <div class="store-mini-avatar sa-salutem">SS</div>
+              <span class="store-mini-name">Salutem</span>
+              <span class="store-mini-channel">AMZ</span>
+            </div>
+          </div>
+          <div class="product-cell">
+            <div class="product-name">Kind Bars Dark Chocolate 12ct</div>
+            <div class="product-sku">KB-DCH-12 · 9×6×3 in</div>
+          </div>
+          <div><span class="type-tag type-dry">Dry</span></div>
+          <div class="weight">0.9<span class="unit">lb</span></div>
+          <div class="dest-cell">
+            <div class="dest-primary">Chicago, IL</div>
+            <div class="dest-meta"><span class="zip">60611</span> · by <strong style="color:var(--ink)">Today 6:00pm</strong></div>
+          </div>
+          <div class="service-cell">
+            <div class="service-top">
+              <div class="carrier-logo carrier-usps">USPS</div>
+              <div class="service-name">Ground Advantage</div>
+            </div>
+            <div class="service-rate">$6.85</div>
+          </div>
+          <div class="status-cell">
+            <span class="status-chip status-ready">Ready</span>
+          </div>
+        </div>
+
+        <!-- Row 6: On hold -->
+        <div class="ship-row hold">
+          <div class="check-cell locked">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:10px;height:10px;position:absolute;top:2px;left:2px;color:var(--warn-strong);"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="order-cell">
+            <div class="order-id">113-4847264</div>
+            <div class="order-store">
+              <div class="store-mini-avatar sa-retail">RD</div>
+              <span class="store-mini-name">Retailer Dist.</span>
+              <span class="store-mini-channel">AMZ</span>
+            </div>
+          </div>
+          <div class="product-cell">
+            <div class="product-name">RXBAR Protein 12ct</div>
+            <div class="product-sku" style="color:var(--warn)">missing dimensions in SKU DB</div>
+          </div>
+          <div><span class="type-tag type-dry">Dry</span></div>
+          <div class="weight" style="color:var(--warn)">?</div>
+          <div class="dest-cell">
+            <div class="dest-primary">Miami, FL</div>
+            <div class="dest-meta"><span class="zip">33101</span> · by <strong style="color:var(--warn)">Today 6:00pm</strong></div>
+          </div>
+          <div class="service-cell" style="color:var(--warn)">
+            <div class="service-top">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+              <div class="service-name">Cannot calculate</div>
+            </div>
+            <div class="service-rate" style="color:var(--warn-strong); font-weight:500">Add dimensions →</div>
+          </div>
+          <div class="status-cell">
+            <span class="status-chip status-hold">On hold</span>
+          </div>
+        </div>
+
+        <!-- Row 7: Ready -->
+        <div class="ship-row">
+          <div class="check-cell checked"></div>
+          <div class="order-cell">
+            <div class="order-id">112-5847264</div>
+            <div class="order-store">
+              <div class="store-mini-avatar sa-personal">PV</div>
+              <span class="store-mini-name">Personal</span>
+              <span class="store-mini-channel">AMZ</span>
+            </div>
+          </div>
+          <div class="product-cell">
+            <div class="product-name">Amy's Organic Soup 6ct</div>
+            <div class="product-sku">AM-SOUP-6 · 10×7×5 in</div>
+          </div>
+          <div><span class="type-tag type-dry">Dry</span></div>
+          <div class="weight">2.2<span class="unit">lb</span></div>
+          <div class="dest-cell">
+            <div class="dest-primary">Boston, MA</div>
+            <div class="dest-meta"><span class="zip">02116</span> · by <strong style="color:var(--ink)">Today 6:00pm</strong></div>
+          </div>
+          <div class="service-cell">
+            <div class="service-top">
+              <div class="carrier-logo carrier-fedex">FedEx</div>
+              <div class="service-name">Ground · no VAS</div>
+            </div>
+            <div class="service-rate">$9.14</div>
+          </div>
+          <div class="status-cell">
+            <span class="status-chip status-ready">Ready</span>
+          </div>
+        </div>
+
+        <!-- Row 8: Pending rate -->
+        <div class="ship-row">
+          <div class="check-cell"></div>
+          <div class="order-cell">
+            <div class="order-id">113-3849201</div>
+            <div class="order-store">
+              <div class="store-mini-avatar sa-salutem">SS</div>
+              <span class="store-mini-name">Salutem</span>
+              <span class="store-mini-channel">AMZ</span>
+            </div>
+          </div>
+          <div class="product-cell">
+            <div class="product-name">Barilla Pasta Bundle 6pk</div>
+            <div class="product-sku">BA-PAST-6 · 12×8×4 in</div>
+          </div>
+          <div><span class="type-tag type-dry">Dry</span></div>
+          <div class="weight">4.5<span class="unit">lb</span></div>
+          <div class="dest-cell">
+            <div class="dest-primary">Atlanta, GA</div>
+            <div class="dest-meta"><span class="zip">30308</span> · by <strong style="color:var(--ink)">Today 6:00pm</strong></div>
+          </div>
+          <div class="service-cell">
+            <div class="service-top">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--silver-dark)"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
+              <div class="service-name" style="color:var(--silver-dark)">Fetching rates…</div>
+            </div>
+            <div class="service-rate" style="color:var(--silver-dark)">—</div>
+          </div>
+          <div class="status-cell">
+            <span class="status-chip status-pending">Pending</span>
+          </div>
+        </div>
+
+        <!-- Row 9: Bought (another one for realism) -->
+        <div class="ship-row bought">
+          <div class="check-cell locked">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:10px;height:10px;position:absolute;top:2px;left:2px;color:var(--silver-dark);"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="order-cell">
+            <div class="order-id">113-7294018</div>
+            <div class="order-store">
+              <div class="store-mini-avatar sa-amzcom">AZ</div>
+              <span class="store-mini-name">AMZ Commerce</span>
+              <span class="store-mini-channel">AMZ</span>
+            </div>
+          </div>
+          <div class="product-cell">
+            <div class="product-name">Nature Valley Granola 18ct</div>
+            <div class="product-sku">NV-GRAN-18 · 11×8×4 in</div>
+          </div>
+          <div><span class="type-tag type-dry">Dry</span></div>
+          <div class="weight">1.6<span class="unit">lb</span></div>
+          <div class="dest-cell">
+            <div class="dest-primary">San Diego, CA</div>
+            <div class="dest-meta"><span class="zip">92101</span> · by <strong style="color:var(--ink)">Today 6:00pm</strong></div>
+          </div>
+          <div class="service-cell">
+            <div class="service-top">
+              <div class="carrier-logo carrier-usps">USPS</div>
+              <div class="service-name">Ground Advantage</div>
+            </div>
+            <div class="service-rate">$7.40</div>
+          </div>
+          <div class="status-cell">
+            <span class="status-chip status-bought">Bought · 09:22</span>
+          </div>
+        </div>
+
+        <!-- Row 10: Bought frozen -->
+        <div class="ship-row bought">
+          <div class="check-cell locked">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:10px;height:10px;position:absolute;top:2px;left:2px;color:var(--silver-dark);"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="order-cell">
+            <div class="order-id">113-5940287</div>
+            <div class="order-store">
+              <div class="store-mini-avatar sa-salutem">SS</div>
+              <span class="store-mini-name">Salutem</span>
+              <span class="store-mini-channel">AMZ</span>
+            </div>
+          </div>
+          <div class="product-cell">
+            <div class="product-name">Morningstar Veggie Burger</div>
+            <div class="product-sku">MS-VEG-4 · 8×6×3 in</div>
+          </div>
+          <div><span class="type-tag type-frozen">Frozen</span></div>
+          <div class="weight">1.4<span class="unit">lb</span></div>
+          <div class="dest-cell">
+            <div class="dest-primary">Phoenix, AZ</div>
+            <div class="dest-meta"><span class="zip">85001</span> · by <strong style="color:var(--ink)">Mon 4:00pm</strong></div>
+          </div>
+          <div class="service-cell">
+            <div class="service-top">
+              <div class="carrier-logo carrier-ups">UPS</div>
+              <div class="service-name">2nd Day Air · insulated</div>
+            </div>
+            <div class="service-rate">$16.30</div>
+          </div>
+          <div class="status-cell">
+            <span class="status-chip status-bought">Bought · 09:05</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- STICKY ACTION BAR -->
+    <div class="action-bar">
+      <div class="action-summary">
+        <div>
+          <div class="action-summary-count">Selected to buy</div>
+          <div class="action-summary-big"><span class="num">4</span>of 5 ready labels</div>
+        </div>
+      </div>
+      <div class="action-total">
+        <div class="action-total-label">Total cost</div>
+        <div class="action-total-value">$43.33</div>
+      </div>
+      <button class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        Buy selected labels
+        <span class="count-badge">4</span>
+      </button>
+      <button class="btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+        Select all ready
+      </button>
+      <button class="btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Export plan
+      </button>
+      <div class="action-bar-spacer"></div>
+      <div class="kbd-hint">
+        <span class="kbd">B</span>
+        <span>to buy selected</span>
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

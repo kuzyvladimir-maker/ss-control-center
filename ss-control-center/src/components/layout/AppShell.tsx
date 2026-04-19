@@ -6,26 +6,30 @@ import Header from "@/components/layout/Header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useMounted } from "@/lib/use-mounted";
 
+const STANDALONE_PREFIXES = ["/login", "/invite"];
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const mounted = useMounted();
   const pathname = usePathname();
 
-  // Login page renders without the app shell (no sidebar/header)
-  if (pathname === "/login") {
+  if (STANDALONE_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
     return <>{children}</>;
   }
 
   if (!mounted) {
-    // Return a minimal shell so SSR and client match (empty, no dates)
-    return <div className="flex h-screen w-full" />;
+    return <div className="flex h-screen w-full bg-bg" />;
   }
 
   return (
     <TooltipProvider>
       <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden bg-bg">
         <Header />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto" style={{ padding: "var(--content-padding)" }}>
+          <div className="mx-auto" style={{ maxWidth: "var(--content-max)" }}>
+            {children}
+          </div>
+        </main>
       </div>
     </TooltipProvider>
   );

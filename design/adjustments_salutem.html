@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salutem — Adjustments</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #F4F3EF;
+  --bg-elev: #EDECE7;
+  --surface: #FFFFFF;
+  --surface-tint: #F8F7F3;
+  --ink: #15201B;
+  --ink-2: #4E554F;
+  --ink-3: #7A807B;
+  --ink-4: #AEB2AD;
+  --rule: rgba(21,32,27,0.08);
+  --rule-strong: rgba(21,32,27,0.16);
+  --green: #1F4D3F;
+  --green-deep: #14352B;
+  --green-mid: #3A6B5D;
+  --green-soft: #E6EEE9;
+  --green-soft2: #CDDDD5;
+  --green-ink: #12362C;
+  --green-cream: #F0E8D0;
+  --silver: #B5B8B5;
+  --silver-dark: #8E918E;
+  --silver-tint: #EAEBE9;
+  --silver-line: #D2D4D1;
+  --frozen: #2E6FA8;
+  --frozen-tint: #E5EEF6;
+  --dry: #8B6B1C;
+  --dry-tint: #F3EDDD;
+  --warn: #A05B20;
+  --warn-tint: #F5E9DC;
+  --warn-strong: #8B4A18;
+  --danger: #9B2C2C;
+  --danger-tint: #F5E1E1;
+  --info: #2E6FA8;
+  --info-tint: #E5EEF6;
+  --purple: #5B4A7A;
+  --purple-tint: #EBE7F0;
+  --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  letter-spacing: -0.005em;
+}
+
+button { font-family: inherit; }
+
+.app {
+  display: grid;
+  grid-template-columns: 236px 1fr;
+  min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar { background: var(--bg); border-right: 1px solid var(--rule); padding: 22px 14px; display: flex; flex-direction: column; }
+.brand { display: flex; align-items: center; gap: 11px; padding: 2px 10px 20px; }
+.brand-mark { width: 32px; height: 32px; background: var(--green); color: var(--green-cream); border-radius: 8px; display: grid; place-items: center; font-weight: 700; font-size: 14px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 0 0 1px var(--silver-line); }
+.brand-info { flex: 1; }
+.brand-name { font-weight: 700; font-size: 14.5px; letter-spacing: -0.02em; color: var(--ink); line-height: 1.1; }
+.brand-meta { font-family: var(--mono); font-size: 10px; color: var(--silver-dark); margin-top: 2px; letter-spacing: 0.04em; }
+.ws { margin: 0 2px 16px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.ws-dot { width: 7px; height: 7px; border-radius: 2px; background: var(--green); }
+.ws-label { font-size: 12.5px; color: var(--ink); font-weight: 500; flex: 1; }
+.ws-count { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+.ws svg { width: 12px; height: 12px; color: var(--ink-3); }
+
+.nav-section { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--silver-dark); padding: 12px 12px 6px; font-weight: 500; }
+.nav { display: flex; flex-direction: column; gap: 1px; }
+.nav-item { display: flex; align-items: center; gap: 11px; padding: 7px 12px; border-radius: 7px; color: var(--ink-2); cursor: pointer; font-size: 13px; }
+.nav-item svg { width: 16px; height: 16px; color: var(--ink-3); }
+.nav-item:hover { background: var(--bg-elev); color: var(--ink); }
+.nav-item.active { background: var(--green-soft); color: var(--green-ink); font-weight: 500; }
+.nav-item.active svg { color: var(--green); }
+.nav-item .pill { margin-left: auto; font-family: var(--mono); font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 500; }
+.nav-item .pill-active { background: var(--green); color: var(--green-cream); }
+.nav-item.disabled { opacity: 0.52; cursor: not-allowed; }
+.nav-item.disabled .coming { margin-left: auto; font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--silver-dark); }
+.nav-spacer { flex: 1; }
+
+/* ===== MAIN ===== */
+.main { display: flex; flex-direction: column; min-width: 0; }
+
+.topbar { display: flex; align-items: center; height: 56px; padding: 0 28px; border-bottom: 1px solid var(--rule); gap: 14px; }
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.breadcrumb a { color: var(--ink-3); text-decoration: none; }
+.breadcrumb .sep { color: var(--ink-4); }
+.breadcrumb .current { color: var(--ink); font-weight: 500; }
+.topbar-spacer { flex: 1; }
+.search { max-width: 300px; display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--bg-elev); border: 1px solid transparent; border-radius: 8px; color: var(--ink-3); font-size: 12.5px; cursor: pointer; }
+.search svg { width: 14px; height: 14px; }
+.search .kbd { margin-left: 16px; font-family: var(--mono); font-size: 10px; padding: 2px 5px; background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-3); }
+.live-pill { display: flex; align-items: center; gap: 7px; padding: 5px 10px 5px 9px; background: var(--green-soft); color: var(--green-ink); border-radius: 6px; font-size: 12px; font-weight: 500; }
+.live-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.icon-btn { width: 32px; height: 32px; display: grid; place-items: center; color: var(--ink-2); border-radius: 6px; cursor: pointer; position: relative; }
+.icon-btn:hover { background: var(--bg-elev); }
+.icon-btn .notif { position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); border: 1.5px solid var(--bg); }
+.user-chip { display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border: 1px solid var(--rule); border-radius: 18px; cursor: pointer; }
+.user-chip-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--green); color: var(--green-cream); display: grid; place-items: center; font-size: 11px; font-weight: 600; }
+.user-chip-name { font-size: 12.5px; font-weight: 500; }
+
+/* ===== CONTENT ===== */
+.content { padding: 28px 32px 40px; max-width: 1500px; width: 100%; }
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+.page-head-left { min-width: 0; }
+.page-title {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sync-chip {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 3px 8px 3px 7px;
+  background: var(--green-soft);
+  color: var(--green-ink);
+  border-radius: 4px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sync-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.page-subtitle {
+  color: var(--ink-2);
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.page-subtitle .sep { color: var(--ink-4); }
+.page-subtitle strong { color: var(--ink); font-weight: 500; }
+
+.page-actions { display: flex; gap: 8px; align-items: center; }
+
+.date-picker {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 3px;
+  background: var(--surface);
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+}
+.date-picker-btn {
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.date-picker-btn:hover { background: var(--bg-elev); color: var(--ink); }
+.date-picker-btn.active { background: var(--green); color: var(--green-cream); }
+.date-picker-range {
+  padding: 6px 12px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink);
+  border-left: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.date-picker-range svg { width: 12px; height: 12px; color: var(--ink-3); }
+
+.btn-sm {
+  font-size: 12.5px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink);
+}
+.btn-sm svg { width: 13px; height: 13px; }
+.btn-sm:hover { background: var(--surface-tint); border-color: var(--silver-dark); }
+.btn-sm.primary {
+  background: var(--green);
+  color: var(--green-cream);
+  border-color: var(--green);
+}
+.btn-sm.primary:hover { background: var(--green-deep); }
+.btn-sm.ghost { border-color: transparent; }
+.btn-sm.ghost:hover { background: var(--bg-elev); border-color: var(--rule); }
+
+/* ===== SYNC NOTICE ===== */
+.sync-notice {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 18px;
+  background: var(--info-tint);
+  border: 1px solid rgba(46,111,168,0.18);
+  border-radius: 10px;
+  margin-bottom: 18px;
+}
+.sync-notice-icon {
+  width: 30px; height: 30px;
+  border-radius: 7px;
+  background: rgba(46,111,168,0.14);
+  color: var(--info);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.sync-notice-icon svg { width: 15px; height: 15px; }
+.sync-notice-body { flex: 1; min-width: 0; }
+.sync-notice-text {
+  font-size: 12.5px;
+  color: var(--info);
+  line-height: 1.4;
+  font-weight: 500;
+}
+.sync-notice-text strong { font-weight: 600; }
+.sync-notice-sub {
+  font-size: 11.5px;
+  color: var(--info);
+  opacity: 0.8;
+  margin-top: 2px;
+}
+.sync-notice-action {
+  padding: 7px 12px;
+  background: var(--info);
+  color: white;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.sync-notice-action svg { width: 12px; height: 12px; }
+.sync-notice-dismiss {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  display: grid; place-items: center;
+  color: var(--info);
+  cursor: pointer;
+  opacity: 0.7;
+}
+.sync-notice-dismiss:hover { background: rgba(46,111,168,0.12); opacity: 1; }
+.sync-notice-dismiss svg { width: 14px; height: 14px; }
+
+/* ===== KPI ROW ===== */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.kpi-label {
+  font-size: 12px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.kpi-icon {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  display: grid; place-items: center;
+}
+.kpi-icon.credit { color: var(--green); background: var(--green-soft); }
+.kpi-icon.debit { color: var(--ink-2); background: var(--silver-tint); }
+.kpi-icon.net { color: var(--green); background: var(--green-soft); }
+.kpi-icon.pending { color: var(--warn); background: var(--warn-tint); }
+.kpi-icon svg { width: 13px; height: 13px; }
+
+.kpi-number {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+.kpi-number.positive { color: var(--green); }
+.kpi-number .sign { color: var(--green); font-weight: 600; margin-right: 1px; }
+.kpi-number .sign-neg { color: var(--ink-2); font-weight: 600; margin-right: 1px; }
+.kpi-number .decimals { color: var(--ink-3); font-size: 18px; font-weight: 500; }
+
+.kpi-sub {
+  margin-top: 12px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kpi-sub strong { color: var(--ink-2); font-weight: 500; }
+
+.kpi-sparkline { height: 30px; width: 100%; margin-top: 6px; }
+
+/* ===== FILTER BAR ===== */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 8px 12px 8px 4px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 2px;
+}
+.filter-tab {
+  padding: 6px 12px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.filter-tab:hover { background: var(--bg-elev); }
+.filter-tab.active {
+  background: var(--green-soft);
+  color: var(--green-ink);
+}
+.filter-tab .count {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--silver-tint);
+  color: var(--silver-dark);
+  font-weight: 500;
+}
+.filter-tab.active .count {
+  background: var(--green);
+  color: var(--green-cream);
+}
+
+.filter-spacer { flex: 1; }
+
+.filter-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px 6px 12px;
+  background: var(--surface);
+  border: 1px solid var(--rule-strong);
+  border-radius: 7px;
+  font-size: 12px;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 500;
+}
+.filter-dropdown:hover { background: var(--bg-elev); }
+.filter-dropdown-label { color: var(--ink-3); }
+.filter-dropdown svg { width: 12px; height: 12px; color: var(--ink-3); }
+
+.filter-meta {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  letter-spacing: 0.02em;
+}
+.filter-meta strong { color: var(--ink-2); font-weight: 500; }
+
+/* ===== TABLE ===== */
+.tx-table {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tx-head-row {
+  display: grid;
+  grid-template-columns: 100px 130px 1.2fr 130px 1fr 1.4fr 110px;
+  padding: 11px 18px;
+  background: var(--surface-tint);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--silver-dark);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  gap: 12px;
+  align-items: center;
+}
+.tx-head-row .right { text-align: right; }
+
+.tx-row {
+  display: grid;
+  grid-template-columns: 100px 130px 1.2fr 130px 1fr 1.4fr 110px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--rule);
+  gap: 12px;
+  align-items: center;
+  transition: background 0.12s;
+  cursor: pointer;
+}
+.tx-row:last-child { border-bottom: none; }
+.tx-row:hover { background: var(--surface-tint); }
+
+/* Date */
+.tx-date { min-width: 0; }
+.tx-date-main {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  font-weight: 500;
+}
+.tx-date-sub {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+
+/* Transaction ID */
+.tx-id { min-width: 0; }
+.tx-id-main {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tx-id-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+.tx-id-source.api {
+  background: var(--info-tint);
+  color: var(--info);
+}
+.tx-id-source.csv {
+  background: var(--purple-tint);
+  color: var(--purple);
+}
+.tx-id-source.api::before,
+.tx-id-source.csv::before {
+  content: '';
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Type badge */
+.tx-type { min-width: 0; }
+.type-badge {
+  font-size: 11.5px;
+  padding: 3px 9px;
+  border-radius: 5px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.type-badge::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.type-fba-reimb { background: var(--green-soft); color: var(--green-ink); }
+.type-safet { background: var(--info-tint); color: var(--info); }
+.type-refund { background: var(--silver-tint); color: var(--silver-dark); }
+.type-chargeback { background: var(--danger-tint); color: var(--danger); }
+.type-fee { background: var(--dry-tint); color: var(--dry); }
+.type-promo { background: var(--purple-tint); color: var(--purple); }
+
+/* Store cell */
+.store-cell {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.store-mini-avatar {
+  width: 22px; height: 22px;
+  border-radius: 5px;
+  display: grid; place-items: center;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+}
+.sa-salutem { background: var(--green); color: var(--green-cream); }
+.sa-amzcom { background: var(--green-soft2); color: var(--green-ink); }
+.sa-sirius { background: var(--silver-dark); color: var(--bg); }
+.sa-walmart { background: var(--silver-tint); color: var(--silver-dark); box-shadow: inset 0 0 0 1px var(--silver); }
+.sa-retail { background: var(--green-mid); color: var(--green-cream); }
+.sa-personal { background: var(--bg-elev); color: var(--ink-2); }
+.store-name { font-size: 12px; color: var(--ink); font-weight: 500; }
+.store-channel { font-size: 10px; color: var(--ink-3); font-family: var(--mono); margin-top: 1px; }
+
+/* Linked order */
+.linked-order { min-width: 0; }
+.linked-order-id {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--green);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.linked-order-id svg { width: 10px; height: 10px; opacity: 0.7; }
+.linked-order-unlinked {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-4);
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.linked-order-sub {
+  font-size: 10.5px;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+
+/* Description */
+.tx-desc {
+  font-size: 12px;
+  color: var(--ink-2);
+  line-height: 1.4;
+  min-width: 0;
+}
+.tx-desc-main {
+  color: var(--ink);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tx-desc-sku {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+
+/* Amount */
+.tx-amount {
+  text-align: right;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+.tx-amount-main {
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.tx-amount.positive .tx-amount-main { color: var(--green); }
+.tx-amount.negative .tx-amount-main { color: var(--ink-2); }
+.tx-amount .decimals { font-weight: 500; opacity: 0.7; font-size: 12.5px; }
+.tx-amount-sub {
+  font-size: 10.5px;
+  color: var(--ink-3);
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-weight: 400;
+}
+
+/* ===== FOOTER TOTAL ===== */
+.tx-footer {
+  padding: 14px 18px;
+  background: var(--surface-tint);
+  border-top: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.tx-footer-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--silver-dark);
+  font-weight: 500;
+}
+.tx-footer-totals {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.tx-footer-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.tx-footer-stat-label {
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+.tx-footer-stat-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.tx-footer-stat-value.pos { color: var(--green); }
+.tx-footer-stat-sep { color: var(--ink-4); }
+
+.tx-footer-actions { display: flex; gap: 8px; }
+
+/* Pagination */
+.tx-pagination {
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  border-top: 1px solid var(--rule);
+  background: var(--surface);
+}
+.tx-pag-btn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--ink-2);
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid transparent;
+}
+.tx-pag-btn:hover { background: var(--bg-elev); border-color: var(--rule); }
+.tx-pag-btn svg { width: 12px; height: 12px; color: var(--ink-3); }
+.tx-pag-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+.tx-pag-info {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+.tx-pag-info strong { color: var(--ink); font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-info">
+        <div class="brand-name">Salutem</div>
+        <div class="brand-meta">CONTROL · V1.4</div>
+      </div>
+    </div>
+    <div class="ws">
+      <span class="ws-dot"></span>
+      <span class="ws-label">All stores</span>
+      <span class="ws-count">5</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    <div class="nav-section">Operations</div>
+    <nav class="nav">
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="9" rx="1.2"/><rect x="14" y="3" width="7" height="5" rx="1.2"/><rect x="14" y="12" width="7" height="9" rx="1.2"/><rect x="3" y="16" width="7" height="5" rx="1.2"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7h13v10H3z"/><path d="M16 10h4l1 3v4h-5z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        Shipping labels
+        <span class="pill pill-active">6</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12a8 8 0 1 1-3-6.2L21 4v5h-5"/></svg>
+        Customer hub
+        <span class="pill pill-active">3</span>
+      </div>
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+        Adjustments
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
+        Shipment monitor
+      </div>
+    </nav>
+    <div class="nav-section">Insights</div>
+    <nav class="nav">
+      <div class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 20h18M6 16l4-6 4 3 5-8"/></svg>
+        Frozen analytics
+        <span class="coming">Soon</span>
+      </div>
+      <div class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Sales overview
+        <span class="coming">Soon</span>
+      </div>
+    </nav>
+    <div class="nav-spacer"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="#">Operations</a>
+        <span class="sep">/</span>
+        <span class="current">Adjustments</span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <span>Search transactions</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="live-pill"><span class="dot"></span>SP-API synced</div>
+      <div class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span class="notif"></span>
+      </div>
+      <div class="user-chip">
+        <div class="user-chip-avatar">V</div>
+        <span class="user-chip-name">Vladimir K.</span>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- PAGE HEAD -->
+      <div class="page-head">
+        <div class="page-head-left">
+          <div class="page-title">
+            Adjustments
+            <span class="sync-chip"><span class="dot"></span>Last sync 3m ago</span>
+          </div>
+          <div class="page-subtitle">
+            <span>Finance transactions from <strong>SP-API v2024-06-19</strong></span>
+            <span class="sep">·</span>
+            <span><strong>47 transactions</strong> in period</span>
+            <span class="sep">·</span>
+            <span>Next sync in <strong>27m</strong></span>
+          </div>
+        </div>
+        <div class="page-actions">
+          <div class="date-picker">
+            <div class="date-picker-btn">7d</div>
+            <div class="date-picker-btn active">30d</div>
+            <div class="date-picker-btn">90d</div>
+            <div class="date-picker-range">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              Mar 21 — Apr 19
+            </div>
+          </div>
+          <button class="btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Upload CSV
+          </button>
+          <button class="btn-sm primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 10l-5-5-5 5M12 5v12" transform="rotate(180 12 10)"/></svg>
+            Export report
+          </button>
+        </div>
+      </div>
+
+      <!-- SYNC NOTICE -->
+      <div class="sync-notice">
+        <div class="sync-notice-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
+        </div>
+        <div class="sync-notice-body">
+          <div class="sync-notice-text">
+            <strong>2 transactions pending SP-API sync</strong> — transactions from the last 48 hours may not yet appear here.
+          </div>
+          <div class="sync-notice-sub">
+            Amazon's Finances API has up to 48-hour delay. Upload a CSV from Seller Central to fill the gap manually.
+          </div>
+        </div>
+        <button class="sync-notice-action">
+          Upload CSV
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <div class="sync-notice-dismiss">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </div>
+      </div>
+
+      <!-- KPI ROW -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <div class="kpi-label">Credits in</div>
+            <div class="kpi-icon credit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            </div>
+          </div>
+          <div class="kpi-number positive"><span class="sign">+</span>$337<span class="decimals">.50</span></div>
+          <svg class="kpi-sparkline" viewBox="0 0 200 30" preserveAspectRatio="none">
+            <polyline points="0,24 15,22 30,20 45,23 60,18 75,19 90,14 105,16 120,11 135,13 150,8 165,10 180,6 200,4" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+            <polyline points="0,24 15,22 30,20 45,23 60,18 75,19 90,14 105,16 120,11 135,13 150,8 165,10 180,6 200,4 200,30 0,30" fill="var(--green-soft)" stroke="none"/>
+          </svg>
+          <div class="kpi-sub">
+            <span><strong>21</strong> transactions</span>
+            <span>30d trend</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <div class="kpi-label">Debits out</div>
+            <div class="kpi-icon debit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+            </div>
+          </div>
+          <div class="kpi-number"><span class="sign-neg">−</span>$178<span class="decimals">.89</span></div>
+          <svg class="kpi-sparkline" viewBox="0 0 200 30" preserveAspectRatio="none">
+            <polyline points="0,20 15,18 30,22 45,19 60,23 75,21 90,24 105,22 120,26 135,23 150,25 165,27 180,24 200,26" fill="none" stroke="var(--silver-dark)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+            <polyline points="0,20 15,18 30,22 45,19 60,23 75,21 90,24 105,22 120,26 135,23 150,25 165,27 180,24 200,26 200,30 0,30" fill="var(--silver-tint)" stroke="none"/>
+          </svg>
+          <div class="kpi-sub">
+            <span><strong>18</strong> transactions</span>
+            <span>30d trend</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="border-color:var(--green-soft2); background:linear-gradient(180deg, var(--surface) 0%, rgba(230,238,233,0.3) 100%);">
+          <div class="kpi-head">
+            <div class="kpi-label">Net balance</div>
+            <div class="kpi-icon net">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>
+            </div>
+          </div>
+          <div class="kpi-number positive"><span class="sign">+</span>$158<span class="decimals">.61</span></div>
+          <div class="kpi-sub" style="margin-top: 20px;">
+            <span>Net gain this period</span>
+            <span style="color:var(--green); font-weight:500;">↑ 12% vs prev 30d</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <div class="kpi-label">Pending</div>
+            <div class="kpi-icon pending">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
+            </div>
+          </div>
+          <div class="kpi-number">2</div>
+          <div class="kpi-sub" style="margin-top: 20px;">
+            <span>awaiting SP-API sync</span>
+            <span style="color:var(--warn); font-weight:500;">est. 48h</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <div class="filter-tabs">
+          <div class="filter-tab active">All <span class="count">47</span></div>
+          <div class="filter-tab">Reimbursements <span class="count">8</span></div>
+          <div class="filter-tab">SAFE-T <span class="count">6</span></div>
+          <div class="filter-tab">Refunds <span class="count">15</span></div>
+          <div class="filter-tab">Fees <span class="count">12</span></div>
+          <div class="filter-tab">Chargebacks <span class="count">2</span></div>
+          <div class="filter-tab">Unlinked <span class="count">4</span></div>
+        </div>
+        <div class="filter-spacer"></div>
+        <div class="filter-dropdown">
+          <span class="filter-dropdown-label">Store:</span>
+          <span>All (5)</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div class="filter-dropdown">
+          <span class="filter-dropdown-label">Source:</span>
+          <span>SP-API + CSV</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="tx-table">
+        <div class="tx-head-row">
+          <div>Date</div>
+          <div>Transaction</div>
+          <div>Type</div>
+          <div>Store</div>
+          <div>Linked order</div>
+          <div>Description</div>
+          <div class="right">Amount</div>
+        </div>
+
+        <!-- Row 1: FBA Reimbursement -->
+        <div class="tx-row">
+          <div class="tx-date">
+            <div class="tx-date-main">Apr 18</div>
+            <div class="tx-date-sub">14:22 PDT</div>
+          </div>
+          <div class="tx-id">
+            <div class="tx-id-main">TXN-482018374</div>
+            <div class="tx-id-source api">SP-API</div>
+          </div>
+          <div class="tx-type">
+            <span class="type-badge type-fba-reimb">FBA Reimbursement</span>
+          </div>
+          <div>
+            <div class="store-cell">
+              <div class="store-mini-avatar sa-salutem">SS</div>
+              <div>
+                <div class="store-name">Salutem</div>
+                <div class="store-channel">AMZ</div>
+              </div>
+            </div>
+          </div>
+          <div class="linked-order">
+            <div class="linked-order-id">
+              113-2847264
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M7 7h10v10"/></svg>
+            </div>
+            <div class="linked-order-sub">Lost in warehouse</div>
+          </div>
+          <div class="tx-desc">
+            <div class="tx-desc-main">Jimmy Dean Sausage 12ct</div>
+            <div class="tx-desc-sku">JD-SAU-12 · 2 units damaged</div>
+          </div>
+          <div class="tx-amount positive">
+            <div class="tx-amount-main">+$127<span class="decimals">.40</span></div>
+            <div class="tx-amount-sub">reconciled</div>
+          </div>
+        </div>
+
+        <!-- Row 2: SAFE-T Claim -->
+        <div class="tx-row">
+          <div class="tx-date">
+            <div class="tx-date-main">Apr 17</div>
+            <div class="tx-date-sub">09:14 PDT</div>
+          </div>
+          <div class="tx-id">
+            <div class="tx-id-main">TXN-482015291</div>
+            <div class="tx-id-source api">SP-API</div>
+          </div>
+          <div class="tx-type">
+            <span class="type-badge type-safet">SAFE-T claim</span>
+          </div>
+          <div>
+            <div class="store-cell">
+              <div class="store-mini-avatar sa-walmart">WM</div>
+              <div>
+                <div class="store-name">Salutem</div>
+                <div class="store-channel">WMT</div>
+              </div>
+            </div>
+          </div>
+          <div class="linked-order">
+            <div class="linked-order-id">
+              WM-5740218
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M7 7h10v10"/></svg>
+            </div>
+            <div class="linked-order-sub">Shipping damage</div>
+          </div>
+          <div class="tx-desc">
+            <div class="tx-desc-main">Tyson Nuggets 2lb — reshipped</div>
+            <div class="tx-desc-sku">TY-NUG-2 · claim approved</div>
+          </div>
+          <div class="tx-amount positive">
+            <div class="tx-amount-main">+$42<span class="decimals">.80</span></div>
+            <div class="tx-amount-sub">approved Apr 17</div>
+          </div>
+        </div>
+
+        <!-- Row 3: Customer Refund -->
+        <div class="tx-row">
+          <div class="tx-date">
+            <div class="tx-date-main">Apr 16</div>
+            <div class="tx-date-sub">16:48 PDT</div>
+          </div>
+          <div class="tx-id">
+            <div class="tx-id-main">TXN-482009847</div>
+            <div class="tx-id-source api">SP-API</div>
+          </div>
+          <div class="tx-type">
+            <span class="type-badge type-refund">Customer refund</span>
+          </div>
+          <div>
+            <div class="store-cell">
+              <div class="store-mini-avatar sa-amzcom">AZ</div>
+              <div>
+                <div class="store-name">AMZ Commerce</div>
+                <div class="store-channel">AMZ</div>
+              </div>
+            </div>
+          </div>
+          <div class="linked-order">
+            <div class="linked-order-id">
+              113-8274019
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M7 7h10v10"/></svg>
+            </div>
+            <div class="linked-order-sub">Return processed</div>
+          </div>
+          <div class="tx-desc">
+            <div class="tx-desc-main">Protein Bars Variety Pack</div>
+            <div class="tx-desc-sku">PB-VAR-24 · buyer return</div>
+          </div>
+          <div class="tx-amount negative">
+            <div class="tx-amount-main">−$24<span class="decimals">.99</span></div>
+            <div class="tx-amount-sub">refunded</div>
+          </div>
+        </div>
+
+        <!-- Row 4: CSV manual upload -->
+        <div class="tx-row">
+          <div class="tx-date">
+            <div class="tx-date-main">Apr 16</div>
+            <div class="tx-date-sub">11:30 PDT</div>
+          </div>
+          <div class="tx-id">
+            <div class="tx-id-main">CSV-apr16-0042</div>
+            <div class="tx-id-source csv">MANUAL CSV</div>
+          </div>
+          <div class="tx-type">
+            <span class="type-badge type-safet">SAFE-T claim</span>
+          </div>
+          <div>
+            <div class="store-cell">
+              <div class="store-mini-avatar sa-salutem">SS</div>
+              <div>
+                <div class="store-name">Salutem</div>
+                <div class="store-channel">AMZ</div>
+              </div>
+            </div>
+          </div>
+          <div class="linked-order">
+            <div class="linked-order-id">
+              113-4928301
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M7 7h10v10"/></svg>
+            </div>
+            <div class="linked-order-sub">Customer damage</div>
+          </div>
+          <div class="tx-desc">
+            <div class="tx-desc-main">Quaker Oats Pack 6 — reshipped</div>
+            <div class="tx-desc-sku">QO-PACK-6 · uploaded manually</div>
+          </div>
+          <div class="tx-amount positive">
+            <div class="tx-amount-main">+$18<span class="decimals">.50</span></div>
+            <div class="tx-amount-sub">awaiting SP-API</div>
+          </div>
+        </div>
+
+        <!-- Row 5: Chargeback -->
+        <div class="tx-row">
+          <div class="tx-date">
+            <div class="tx-date-main">Apr 15</div>
+            <div class="tx-date-sub">08:57 PDT</div>
+          </div>
+          <div class="tx-id">
+            <div class="tx-id-main">TXN-481998127</div>
+            <div class="tx-id-source api">SP-API</div>
+          </div>
+          <div class="tx-type">
+            <span class="type-badge type-chargeback">Chargeback</span>
+          </div>
+          <div>
+            <div class="store-cell">
+              <div class="store-mini-avatar sa-sirius">SI</div>
+              <div>
+                <div class="store-name">Sirius Intl</div>
+                <div class="store-channel">AMZ</div>
+              </div>
+            </div>
+          </div>
+          <div class="linked-order">
+            <div class="linked-order-id">
+              112-7402981
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M7 7h10v10"/></svg>
+            </div>
+            <div class="linked-order-sub" style="color:var(--danger)">A-to-Z claim lost</div>
+          </div>
+          <div class="tx-desc">
+            <div class="tx-desc-main">Kind Bars Dark Chocolate 12ct</div>
+            <div class="tx-desc-sku">KB-DCH-12 · appeal available</div>
+          </div>
+          <div class="tx-amount negative">
+            <div class="tx-amount-main">−$32<span class="decimals">.00</span></div>
+            <div class="tx-amount-sub" style="color:var(--danger);">appealable</div>
+          </div>
+        </div>
+
+        <!-- Row 6: FBA Reimbursement (damaged) -->
+        <div class="tx-row">
+          <div class="tx-date">
+            <div class="tx-date-main">Apr 14</div>
+            <div class="tx-date-sub">22:15 PDT</div>
+          </div>
+          <div class="tx-id">
+            <div class="tx-id-main">TXN-481982014</div>
+            <div class="tx-id-source api">SP-API</div>
+          </div>
+          <div class="tx-type">
+            <span class="type-badge type-fba-reimb">FBA Reimbursement</span>
+          </div>
+          <div>
+            <div class="store-cell">
+              <div class="store-mini-avatar sa-salutem">SS</div>
+              <div>
+                <div class="store-name">Salutem</div>
+                <div class="store-channel">AMZ</div>
+              </div>
+            </div>
+          </div>
+          <div class="linked-order">
+            <span class="linked-order-unlinked">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+              no order
+            </span>
+            <div class="linked-order-sub">Inventory adjustment</div>
+          </div>
+          <div class="tx-desc">
+            <div class="tx-desc-main">Amy's Organic Soup 6ct</div>
+            <div class="tx-desc-sku">AM-SOUP-6 · warehouse damage</div>
+          </div>
+          <div class="tx-amount positive">
+            <div class="tx-amount-main">+$35<span class="decimals">.20</span></div>
+            <div class="tx-amount-sub">reconciled</div>
+          </div>
+        </div>
+
+        <!-- Row 7: Service Fee -->
+        <div class="tx-row">
+          <div class="tx-date">
+            <div class="tx-date-main">Apr 13</div>
+            <div class="tx-date-sub">18:02 PDT</div>
+          </div>
+          <div class="tx-id">
+            <div class="tx-id-main">TXN-481976552</div>
+            <div class="tx-id-source api">SP-API</div>
+          </div>
+          <div class="tx-type">
+            <span class="type-badge type-fee">Service fee</span>
+          </div>
+          <div>
+            <div class="store-cell">
+              <div class="store-mini-avatar sa-retail">RD</div>
+              <div>
+                <div class="store-name">Retailer Dist.</div>
+                <div class="store-channel">AMZ</div>
+              </div>
+            </div>
+          </div>
+          <div class="linked-order">
+            <span class="linked-order-unlinked">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+              no order
+            </span>
+            <div class="linked-order-sub">Subscription fee</div>
+          </div>
+          <div class="tx-desc">
+            <div class="tx-desc-main">Professional Seller plan — April</div>
+            <div class="tx-desc-sku">monthly subscription</div>
+          </div>
+          <div class="tx-amount negative">
+            <div class="tx-amount-main">−$39<span class="decimals">.99</span></div>
+            <div class="tx-amount-sub">recurring</div>
+          </div>
+        </div>
+
+        <!-- Row 8: Customer Refund -->
+        <div class="tx-row">
+          <div class="tx-date">
+            <div class="tx-date-main">Apr 12</div>
+            <div class="tx-date-sub">10:21 PDT</div>
+          </div>
+          <div class="tx-id">
+            <div class="tx-id-main">TXN-481960238</div>
+            <div class="tx-id-source api">SP-API</div>
+          </div>
+          <div class="tx-type">
+            <span class="type-badge type-refund">Customer refund</span>
+          </div>
+          <div>
+            <div class="store-cell">
+              <div class="store-mini-avatar sa-personal">PV</div>
+              <div>
+                <div class="store-name">Personal</div>
+                <div class="store-channel">AMZ</div>
+              </div>
+            </div>
+          </div>
+          <div class="linked-order">
+            <div class="linked-order-id">
+              112-5847264
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M7 7h10v10"/></svg>
+            </div>
+            <div class="linked-order-sub">Partial refund</div>
+          </div>
+          <div class="tx-desc">
+            <div class="tx-desc-main">RXBAR Protein 12ct — 1 of 2 returned</div>
+            <div class="tx-desc-sku">RX-PROT-12 · partial</div>
+          </div>
+          <div class="tx-amount negative">
+            <div class="tx-amount-main">−$12<span class="decimals">.50</span></div>
+            <div class="tx-amount-sub">refunded</div>
+          </div>
+        </div>
+
+        <!-- Row 9: Promotional Rebalancing -->
+        <div class="tx-row">
+          <div class="tx-date">
+            <div class="tx-date-main">Apr 10</div>
+            <div class="tx-date-sub">02:00 PDT</div>
+          </div>
+          <div class="tx-id">
+            <div class="tx-id-main">TXN-481934789</div>
+            <div class="tx-id-source api">SP-API</div>
+          </div>
+          <div class="tx-type">
+            <span class="type-badge type-promo">Promo rebalancing</span>
+          </div>
+          <div>
+            <div class="store-cell">
+              <div class="store-mini-avatar sa-amzcom">AZ</div>
+              <div>
+                <div class="store-name">AMZ Commerce</div>
+                <div class="store-channel">AMZ</div>
+              </div>
+            </div>
+          </div>
+          <div class="linked-order">
+            <span class="linked-order-unlinked">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+              no order
+            </span>
+            <div class="linked-order-sub">Coupon reconciliation</div>
+          </div>
+          <div class="tx-desc">
+            <div class="tx-desc-main">March promotion adjustment</div>
+            <div class="tx-desc-sku">SALE-MAR2026 · balance correction</div>
+          </div>
+          <div class="tx-amount positive">
+            <div class="tx-amount-main">+$8<span class="decimals">.40</span></div>
+            <div class="tx-amount-sub">reconciled</div>
+          </div>
+        </div>
+
+        <!-- Footer totals -->
+        <div class="tx-footer">
+          <span class="tx-footer-label">Showing 9 of 47</span>
+          <div class="tx-footer-totals">
+            <div class="tx-footer-stat">
+              <span class="tx-footer-stat-label">Credits:</span>
+              <span class="tx-footer-stat-value pos">+$232.30</span>
+            </div>
+            <span class="tx-footer-stat-sep">·</span>
+            <div class="tx-footer-stat">
+              <span class="tx-footer-stat-label">Debits:</span>
+              <span class="tx-footer-stat-value">−$109.48</span>
+            </div>
+            <span class="tx-footer-stat-sep">·</span>
+            <div class="tx-footer-stat">
+              <span class="tx-footer-stat-label">Net:</span>
+              <span class="tx-footer-stat-value pos">+$122.82</span>
+            </div>
+          </div>
+          <div class="tx-footer-actions">
+            <button class="btn-sm ghost">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 10l-5 5-5-5M12 15V3" transform="rotate(180 12 10.5)"/></svg>
+              Export visible
+            </button>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="tx-pagination">
+          <div class="tx-pag-btn disabled">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+            Previous
+          </div>
+          <div class="tx-pag-info">Page <strong>1</strong> of <strong>6</strong> · Rows 1–9</div>
+          <div class="tx-pag-btn">
+            Next
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

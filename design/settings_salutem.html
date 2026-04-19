@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salutem — Settings · Integrations</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #F4F3EF;
+  --bg-elev: #EDECE7;
+  --surface: #FFFFFF;
+  --surface-tint: #F8F7F3;
+  --ink: #15201B;
+  --ink-2: #4E554F;
+  --ink-3: #7A807B;
+  --ink-4: #AEB2AD;
+  --rule: rgba(21,32,27,0.08);
+  --rule-strong: rgba(21,32,27,0.16);
+  --green: #1F4D3F;
+  --green-deep: #14352B;
+  --green-mid: #3A6B5D;
+  --green-soft: #E6EEE9;
+  --green-soft2: #CDDDD5;
+  --green-ink: #12362C;
+  --green-cream: #F0E8D0;
+  --silver: #B5B8B5;
+  --silver-dark: #8E918E;
+  --silver-tint: #EAEBE9;
+  --silver-line: #D2D4D1;
+  --frozen: #2E6FA8;
+  --frozen-tint: #E5EEF6;
+  --dry: #8B6B1C;
+  --dry-tint: #F3EDDD;
+  --warn: #A05B20;
+  --warn-tint: #F5E9DC;
+  --warn-strong: #8B4A18;
+  --danger: #9B2C2C;
+  --danger-tint: #F5E1E1;
+  --info: #2E6FA8;
+  --info-tint: #E5EEF6;
+  --purple: #5B4A7A;
+  --purple-tint: #EBE7F0;
+  --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  letter-spacing: -0.005em;
+}
+
+button { font-family: inherit; }
+
+.app { display: grid; grid-template-columns: 236px 1fr; min-height: 100vh; }
+
+/* ===== SIDEBAR ===== */
+.sidebar { background: var(--bg); border-right: 1px solid var(--rule); padding: 22px 14px; display: flex; flex-direction: column; }
+.brand { display: flex; align-items: center; gap: 11px; padding: 2px 10px 20px; }
+.brand-mark { width: 32px; height: 32px; background: var(--green); color: var(--green-cream); border-radius: 8px; display: grid; place-items: center; font-weight: 700; font-size: 14px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 0 0 1px var(--silver-line); }
+.brand-info { flex: 1; }
+.brand-name { font-weight: 700; font-size: 14.5px; letter-spacing: -0.02em; color: var(--ink); line-height: 1.1; }
+.brand-meta { font-family: var(--mono); font-size: 10px; color: var(--silver-dark); margin-top: 2px; letter-spacing: 0.04em; }
+.ws { margin: 0 2px 16px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.ws-dot { width: 7px; height: 7px; border-radius: 2px; background: var(--green); }
+.ws-label { font-size: 12.5px; color: var(--ink); font-weight: 500; flex: 1; }
+.ws-count { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+.ws svg { width: 12px; height: 12px; color: var(--ink-3); }
+.nav-section { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--silver-dark); padding: 12px 12px 6px; font-weight: 500; }
+.nav { display: flex; flex-direction: column; gap: 1px; }
+.nav-item { display: flex; align-items: center; gap: 11px; padding: 7px 12px; border-radius: 7px; color: var(--ink-2); cursor: pointer; font-size: 13px; }
+.nav-item svg { width: 16px; height: 16px; color: var(--ink-3); }
+.nav-item:hover { background: var(--bg-elev); color: var(--ink); }
+.nav-item.active { background: var(--green-soft); color: var(--green-ink); font-weight: 500; }
+.nav-item.active svg { color: var(--green); }
+.nav-item .pill { margin-left: auto; font-family: var(--mono); font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 500; }
+.nav-item .pill-active { background: var(--green); color: var(--green-cream); }
+.nav-item .pill-warn { background: var(--warn); color: white; }
+.nav-item.disabled { opacity: 0.52; cursor: not-allowed; }
+.nav-item.disabled .coming { margin-left: auto; font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--silver-dark); }
+.nav-spacer { flex: 1; }
+
+/* ===== MAIN ===== */
+.main { display: flex; flex-direction: column; min-width: 0; }
+.topbar { display: flex; align-items: center; height: 56px; padding: 0 28px; border-bottom: 1px solid var(--rule); gap: 14px; }
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.breadcrumb a { color: var(--ink-3); text-decoration: none; }
+.breadcrumb .sep { color: var(--ink-4); }
+.breadcrumb .current { color: var(--ink); font-weight: 500; }
+.topbar-spacer { flex: 1; }
+.search { max-width: 300px; display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--bg-elev); border: 1px solid transparent; border-radius: 8px; color: var(--ink-3); font-size: 12.5px; cursor: pointer; }
+.search svg { width: 14px; height: 14px; }
+.search .kbd { margin-left: 16px; font-family: var(--mono); font-size: 10px; padding: 2px 5px; background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-3); }
+.live-pill { display: flex; align-items: center; gap: 7px; padding: 5px 10px 5px 9px; background: var(--green-soft); color: var(--green-ink); border-radius: 6px; font-size: 12px; font-weight: 500; }
+.live-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.icon-btn { width: 32px; height: 32px; display: grid; place-items: center; color: var(--ink-2); border-radius: 6px; cursor: pointer; position: relative; }
+.icon-btn:hover { background: var(--bg-elev); }
+.icon-btn .notif { position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); border: 1.5px solid var(--bg); }
+.user-chip { display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border: 1px solid var(--rule); border-radius: 18px; cursor: pointer; }
+.user-chip-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--green); color: var(--green-cream); display: grid; place-items: center; font-size: 11px; font-weight: 600; }
+.user-chip-name { font-size: 12.5px; font-weight: 500; }
+
+/* ===== SETTINGS LAYOUT ===== */
+.settings-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 40px;
+  padding: 32px 32px 40px;
+  max-width: 1400px;
+  width: 100%;
+}
+
+/* ===== SETTINGS SUB-NAV ===== */
+.settings-nav {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+}
+
+.settings-nav-head {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.settings-nav-sub {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin-bottom: 20px;
+}
+
+.settings-nav-section {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--silver-dark);
+  padding: 10px 10px 6px;
+  font-weight: 500;
+}
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+.settings-nav-item:hover { background: var(--bg-elev); color: var(--ink); }
+.settings-nav-item svg { width: 15px; height: 15px; color: var(--ink-3); }
+.settings-nav-item.active {
+  background: var(--green-soft);
+  color: var(--green-ink);
+  font-weight: 600;
+}
+.settings-nav-item.active svg { color: var(--green); }
+.settings-nav-item .count-badge {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 1px 6px;
+  background: var(--silver-tint);
+  color: var(--silver-dark);
+  border-radius: 3px;
+  font-weight: 500;
+}
+.settings-nav-item.active .count-badge {
+  background: var(--green);
+  color: var(--green-cream);
+}
+.settings-nav-item.warn-badge .count-badge {
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+.settings-nav-item.disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ===== CONTENT ===== */
+.settings-content { min-width: 0; }
+
+.content-head {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+.content-title {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+.content-sub {
+  font-size: 14px;
+  color: var(--ink-2);
+  max-width: 560px;
+  line-height: 1.5;
+}
+
+.btn-sm {
+  font-size: 12.5px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-sm svg { width: 13px; height: 13px; }
+.btn-sm:hover { background: var(--surface-tint); border-color: var(--silver-dark); }
+.btn-sm.primary { background: var(--green); color: var(--green-cream); border-color: var(--green); }
+.btn-sm.primary:hover { background: var(--green-deep); }
+.btn-sm.ghost { border-color: transparent; background: transparent; color: var(--ink-2); }
+.btn-sm.ghost:hover { background: var(--bg-elev); color: var(--ink); }
+
+/* ===== HEALTH SUMMARY ===== */
+.health-summary {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.health-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.health-pill .dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.health-pill .num {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+}
+.health-pill.healthy { border-color: var(--green-soft2); background: rgba(230,238,233,0.3); }
+.health-pill.healthy .dot { background: var(--green); }
+.health-pill.warn { border-color: rgba(160,91,32,0.22); }
+.health-pill.warn .dot { background: var(--warn); }
+.health-pill.pending .dot { background: var(--silver); }
+
+/* ===== INTEGRATION SECTIONS ===== */
+.integration-section { margin-bottom: 32px; }
+.integration-section:last-child { margin-bottom: 0; }
+
+.int-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.int-section-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--silver-dark);
+  font-weight: 500;
+}
+.int-section-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--silver-dark);
+  font-weight: 500;
+}
+
+/* ===== INTEGRATION CARD ===== */
+.int-card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.int-card:hover { border-color: var(--silver-line); }
+
+.int-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--rule);
+}
+.int-card.no-body .int-card-head { border-bottom: none; }
+
+.int-logo {
+  width: 40px; height: 40px;
+  border-radius: 9px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.03em;
+}
+.int-logo.amazon { background: #232F3E; color: #FF9900; font-size: 13px; }
+.int-logo.walmart { background: #0071DC; color: white; font-size: 10px; letter-spacing: 0.02em; }
+.int-logo.veeqo { background: #FF5A00; color: white; font-size: 11px; letter-spacing: 0.02em; }
+.int-logo.sellbrite { background: #14342F; color: #B8E1C2; font-size: 10px; letter-spacing: 0.04em; }
+.int-logo.gmail { background: #EA4335; color: white; font-size: 13px; }
+.int-logo.gdrive { background: #4285F4; color: white; }
+.int-logo.gsheets { background: #34A853; color: white; }
+.int-logo.anthropic { background: #CC785C; color: white; font-size: 10px; letter-spacing: 0.04em; }
+.int-logo.openai { background: #000000; color: white; font-size: 10px; letter-spacing: 0.04em; }
+.int-logo.telegram { background: #27A7E7; color: white; font-size: 18px; font-family: var(--serif); }
+
+.int-info { flex: 1; min-width: 0; }
+.int-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 2px;
+}
+.int-name-main {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.int-name-version {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  padding: 1px 6px;
+  background: var(--silver-tint);
+  color: var(--silver-dark);
+  border-radius: 3px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.int-desc {
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.int-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px 5px 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.int-status::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.int-status.connected { background: var(--green-soft); color: var(--green-ink); }
+.int-status.warning { background: var(--warn-tint); color: var(--warn-strong); }
+.int-status.error { background: var(--danger-tint); color: var(--danger); }
+.int-status.pending { background: var(--silver-tint); color: var(--silver-dark); }
+.int-status.trial { background: var(--info-tint); color: var(--info); }
+
+.int-menu {
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  color: var(--ink-3);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.int-menu:hover { background: var(--bg-elev); color: var(--ink); }
+.int-menu svg { width: 15px; height: 15px; }
+
+/* ===== CONNECTION ROW (for multi-connection cards) ===== */
+.conn-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.conn-row:last-child { border-bottom: none; }
+.conn-row:hover { background: var(--surface-tint); }
+.conn-row.disabled { opacity: 0.7; }
+
+.conn-icon {
+  width: 24px; height: 24px;
+  border-radius: 5px;
+  display: grid; place-items: center;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.ci-salutem { background: var(--green); color: var(--green-cream); }
+.ci-amzcom { background: var(--green-soft2); color: var(--green-ink); }
+.ci-sirius { background: var(--silver-dark); color: var(--bg); }
+.ci-walmart { background: var(--silver-tint); color: var(--silver-dark); box-shadow: inset 0 0 0 1px var(--silver); }
+.ci-retail { background: var(--green-mid); color: var(--green-cream); }
+.ci-personal { background: var(--bg-elev); color: var(--ink-2); }
+
+.conn-info { min-width: 0; }
+.conn-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.conn-meta {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  margin-top: 1px;
+  letter-spacing: 0.02em;
+}
+.conn-meta .sep { color: var(--ink-4); margin: 0 4px; }
+
+.conn-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-family: var(--mono);
+}
+.conn-details .label { color: var(--ink-3); }
+.conn-details .value { color: var(--ink-2); font-weight: 500; }
+
+.conn-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.conn-status-chip::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.conn-status-chip.ok { background: var(--green-soft); color: var(--green-ink); }
+.conn-status-chip.warn { background: var(--warn-tint); color: var(--warn-strong); }
+.conn-status-chip.pending { background: var(--silver-tint); color: var(--silver-dark); }
+.conn-status-chip.error { background: var(--danger-tint); color: var(--danger); }
+
+/* ===== INT CARD BODY (for cards with additional content) ===== */
+.int-card-body {
+  padding: 16px 18px;
+}
+
+.int-kv-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.int-kv {
+  background: var(--surface);
+  padding: 10px 12px;
+}
+.int-kv-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--silver-dark);
+  margin-bottom: 3px;
+  font-weight: 500;
+}
+.int-kv-value {
+  font-size: 12.5px;
+  color: var(--ink);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.int-kv-value.mono { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.02em; }
+.int-kv-value .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+
+.int-card-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--rule);
+}
+
+.int-card-footer {
+  padding: 10px 18px;
+  background: var(--surface-tint);
+  border-top: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+.int-card-footer strong { color: var(--ink-2); font-weight: 500; }
+.int-card-footer-action {
+  font-size: 11.5px;
+  color: var(--green);
+  cursor: pointer;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Trial warning special card */
+.int-card.trial-warning {
+  background: linear-gradient(180deg, var(--surface) 0%, rgba(245,233,220,0.18) 100%);
+  border-color: rgba(160,91,32,0.2);
+}
+
+/* Cost indicator */
+.cost-indicator {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.cost-indicator .amount { font-weight: 600; color: var(--ink); font-size: 13px; }
+.cost-indicator .period { color: var(--ink-3); font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-info">
+        <div class="brand-name">Salutem</div>
+        <div class="brand-meta">CONTROL · V1.4</div>
+      </div>
+    </div>
+    <div class="ws">
+      <span class="ws-dot"></span>
+      <span class="ws-label">All stores</span>
+      <span class="ws-count">5</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    <div class="nav-section">Operations</div>
+    <nav class="nav">
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="9" rx="1.2"/><rect x="14" y="3" width="7" height="5" rx="1.2"/><rect x="14" y="12" width="7" height="9" rx="1.2"/><rect x="3" y="16" width="7" height="5" rx="1.2"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7h13v10H3z"/><path d="M16 10h4l1 3v4h-5z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        Shipping labels
+        <span class="pill pill-active">6</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12a8 8 0 1 1-3-6.2L21 4v5h-5"/></svg>
+        Customer hub
+        <span class="pill pill-active">3</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+        Adjustments
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
+        Shipment monitor
+        <span class="pill pill-warn">1</span>
+      </div>
+    </nav>
+    <div class="nav-section">Insights</div>
+    <nav class="nav">
+      <div class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 20h18M6 16l4-6 4 3 5-8"/></svg>
+        Frozen analytics
+        <span class="coming">Soon</span>
+      </div>
+      <div class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Sales overview
+        <span class="coming">Soon</span>
+      </div>
+    </nav>
+    <div class="nav-spacer"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="#">Settings</a>
+        <span class="sep">/</span>
+        <span class="current">Integrations</span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <span>Search settings…</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      </div>
+      <div class="user-chip">
+        <div class="user-chip-avatar">V</div>
+        <span class="user-chip-name">Vladimir K.</span>
+      </div>
+    </div>
+
+    <!-- SETTINGS LAYOUT -->
+    <div class="settings-layout">
+
+      <!-- SUB-NAV -->
+      <aside class="settings-nav">
+        <div class="settings-nav-head">Settings</div>
+        <div class="settings-nav-sub">Configure your workspace, stores, and integrations.</div>
+
+        <div class="settings-nav-section">Workspace</div>
+        <div class="nav">
+          <div class="settings-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 0 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 0 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+            General
+          </div>
+          <div class="settings-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7h18M5 7V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2M6 12v9h12v-9M3 10h18"/></svg>
+            Stores
+            <span class="count-badge">5</span>
+          </div>
+          <div class="settings-nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 2v6m6-6v6M5 8h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8z"/></svg>
+            Integrations
+            <span class="count-badge">12</span>
+          </div>
+          <div class="settings-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>
+            SKU database
+          </div>
+        </div>
+
+        <div class="settings-nav-section">Alerts & access</div>
+        <div class="nav">
+          <div class="settings-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            Notifications
+          </div>
+          <div class="settings-nav-item warn-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
+            External API
+            <span class="count-badge">1 key</span>
+          </div>
+        </div>
+
+        <div class="settings-nav-section">Coming soon</div>
+        <div class="nav">
+          <div class="settings-nav-item disabled">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.9M18 3.1a4 4 0 0 1 0 7.8"/><circle cx="9" cy="7" r="4"/></svg>
+            Team members
+          </div>
+          <div class="settings-nav-item disabled">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            Billing
+          </div>
+        </div>
+      </aside>
+
+      <!-- CONTENT -->
+      <div class="settings-content">
+
+        <!-- HEAD -->
+        <div class="content-head">
+          <div>
+            <h1 class="content-title">Integrations</h1>
+            <p class="content-sub">
+              Manage API connections and third-party services. All credentials are encrypted at rest and never logged in plaintext.
+            </p>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 9-9M3 4v5h5"/></svg>
+              Sync all
+            </button>
+            <button class="btn-sm primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              Add integration
+            </button>
+          </div>
+        </div>
+
+        <!-- HEALTH SUMMARY -->
+        <div class="health-summary">
+          <span class="health-pill healthy">
+            <span class="dot"></span>
+            <span class="num">10</span>
+            <span>healthy</span>
+          </span>
+          <span class="health-pill warn">
+            <span class="dot"></span>
+            <span class="num">1</span>
+            <span>needs attention</span>
+          </span>
+          <span class="health-pill pending">
+            <span class="dot"></span>
+            <span class="num">3</span>
+            <span>not configured</span>
+          </span>
+          <span style="flex:1"></span>
+          <span class="health-pill" style="background:transparent; border-color:transparent;">
+            <span style="color:var(--ink-3); font-size:11.5px;">Total monthly spend</span>
+            <span class="num" style="color:var(--green);">$47.92</span>
+          </span>
+        </div>
+
+        <!-- ===== MARKETPLACE APIS ===== -->
+        <div class="integration-section">
+          <div class="int-section-head">
+            <span class="int-section-title">Marketplace APIs</span>
+            <span class="int-section-count">· 2 of 6 connected</span>
+          </div>
+
+          <!-- Amazon SP-API multi-store card -->
+          <div class="int-card">
+            <div class="int-card-head">
+              <div class="int-logo amazon">amz</div>
+              <div class="int-info">
+                <div class="int-name">
+                  <span class="int-name-main">Amazon SP-API</span>
+                  <span class="int-name-version">v2024-06-19</span>
+                </div>
+                <div class="int-desc">Private app "Salutem Command Center" · 7 roles · RDT off</div>
+              </div>
+              <span class="int-status connected">2 of 5 linked</span>
+              <div class="int-menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </div>
+            </div>
+
+            <div class="conn-row">
+              <div class="conn-icon ci-salutem">SS</div>
+              <div class="conn-info">
+                <div class="conn-name">Salutem Solutions</div>
+                <div class="conn-meta">STORE 1 <span class="sep">·</span> CLIENT ID amzn1.sp.solution.a48c…<span class="sep">·</span> Marketplace ATVPDKIKX0DER</div>
+              </div>
+              <div class="conn-details">
+                <span><span class="label">Last sync:</span> <span class="value">3m ago</span></span>
+              </div>
+              <span class="conn-status-chip ok">Connected</span>
+            </div>
+
+            <div class="conn-row">
+              <div class="conn-icon ci-personal">PV</div>
+              <div class="conn-info">
+                <div class="conn-name">Personal / Vladimir</div>
+                <div class="conn-meta">STORE 2 <span class="sep">·</span> CLIENT ID amzn1.sp.solution.c912…<span class="sep">·</span> Marketplace ATVPDKIKX0DER</div>
+              </div>
+              <div class="conn-details">
+                <span><span class="label">Last sync:</span> <span class="value">12m ago</span></span>
+              </div>
+              <span class="conn-status-chip ok">Connected</span>
+            </div>
+
+            <div class="conn-row">
+              <div class="conn-icon ci-amzcom">AZ</div>
+              <div class="conn-info">
+                <div class="conn-name">AMZ Commerce</div>
+                <div class="conn-meta">STORE 3 <span class="sep">·</span> Setup required · requires authorization flow</div>
+              </div>
+              <div class="conn-details">
+                <span style="color:var(--info); font-weight:500; cursor:pointer;">Connect →</span>
+              </div>
+              <span class="conn-status-chip pending">Not connected</span>
+            </div>
+
+            <div class="conn-row">
+              <div class="conn-icon ci-sirius">SI</div>
+              <div class="conn-info">
+                <div class="conn-name">Sirius International</div>
+                <div class="conn-meta">STORE 4 <span class="sep">·</span> Setup required</div>
+              </div>
+              <div class="conn-details">
+                <span style="color:var(--info); font-weight:500; cursor:pointer;">Connect →</span>
+              </div>
+              <span class="conn-status-chip pending">Not connected</span>
+            </div>
+
+            <div class="conn-row">
+              <div class="conn-icon ci-retail">RD</div>
+              <div class="conn-info">
+                <div class="conn-name">Retailer Distributor</div>
+                <div class="conn-meta">STORE 5 <span class="sep">·</span> Setup required</div>
+              </div>
+              <div class="conn-details">
+                <span style="color:var(--info); font-weight:500; cursor:pointer;">Connect →</span>
+              </div>
+              <span class="conn-status-chip pending">Not connected</span>
+            </div>
+
+            <div class="int-card-footer">
+              <span>Rate limit: <strong>0.5 req/sec</strong> for Finances · up to 48h sync delay</span>
+              <span class="int-card-footer-action">View API docs →</span>
+            </div>
+          </div>
+
+          <!-- Walmart -->
+          <div class="int-card no-body">
+            <div class="int-card-head">
+              <div class="int-logo walmart">WMT</div>
+              <div class="int-info">
+                <div class="int-name">
+                  <span class="int-name-main">Walmart Marketplace API</span>
+                </div>
+                <div class="int-desc">Access pending · applied Mar 2026, awaiting approval</div>
+              </div>
+              <span class="int-status pending">On pause</span>
+              <div class="int-menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== SHIPPING & INVENTORY ===== -->
+        <div class="integration-section">
+          <div class="int-section-head">
+            <span class="int-section-title">Shipping & Inventory</span>
+            <span class="int-section-count">· 2 connected</span>
+          </div>
+
+          <!-- Veeqo -->
+          <div class="int-card">
+            <div class="int-card-head">
+              <div class="int-logo veeqo">V</div>
+              <div class="int-info">
+                <div class="int-name">
+                  <span class="int-name-main">Veeqo</span>
+                </div>
+                <div class="int-desc">Primary for shipping labels, orders, and tracking events</div>
+              </div>
+              <span class="int-status connected">Connected</span>
+              <div class="int-menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </div>
+            </div>
+            <div class="int-card-body">
+              <div class="int-kv-grid">
+                <div class="int-kv">
+                  <div class="int-kv-label">Auth</div>
+                  <div class="int-kv-value mono">Vqt/5554…e79e</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Endpoint</div>
+                  <div class="int-kv-value mono">api.veeqo.com</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Linked stores</div>
+                  <div class="int-kv-value">5 of 5 <span class="dot"></span></div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Last sync</div>
+                  <div class="int-kv-value mono">2m ago</div>
+                </div>
+              </div>
+              <div class="int-card-actions">
+                <button class="btn-sm">Test connection</button>
+                <button class="btn-sm ghost">Edit credentials</button>
+                <button class="btn-sm ghost">View rate limits</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sellbrite (trial warning) -->
+          <div class="int-card trial-warning">
+            <div class="int-card-head">
+              <div class="int-logo sellbrite">SB</div>
+              <div class="int-info">
+                <div class="int-name">
+                  <span class="int-name-main">Sellbrite</span>
+                </div>
+                <div class="int-desc">Product listings and bulk edit · <strong style="color:var(--warn-strong)">12 days left in trial</strong></div>
+              </div>
+              <span class="int-status trial">Trial</span>
+              <div class="int-menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </div>
+            </div>
+            <div class="int-card-body">
+              <div class="int-kv-grid">
+                <div class="int-kv">
+                  <div class="int-kv-label">Account token</div>
+                  <div class="int-kv-value mono">1e8b87b4…2974c</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Plan</div>
+                  <div class="int-kv-value">Free trial</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Expires</div>
+                  <div class="int-kv-value mono" style="color:var(--warn)">May 01, 2026</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Products synced</div>
+                  <div class="int-kv-value">247 SKUs</div>
+                </div>
+              </div>
+              <div class="int-card-actions">
+                <button class="btn-sm primary">Upgrade to paid</button>
+                <button class="btn-sm ghost">Edit credentials</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== EMAIL ===== -->
+        <div class="integration-section">
+          <div class="int-section-head">
+            <span class="int-section-title">Email · Customer service</span>
+            <span class="int-section-count">· 5 of 5 accounts</span>
+          </div>
+
+          <div class="int-card">
+            <div class="int-card-head">
+              <div class="int-logo gmail">M</div>
+              <div class="int-info">
+                <div class="int-name">
+                  <span class="int-name-main">Gmail</span>
+                  <span class="int-name-version">OAUTH 2.0</span>
+                </div>
+                <div class="int-desc">5 store mailboxes linked for AI-driven customer service automation</div>
+              </div>
+              <span class="int-status connected">All healthy</span>
+              <div class="int-menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </div>
+            </div>
+            <div class="conn-row">
+              <div class="conn-icon ci-salutem">SS</div>
+              <div class="conn-info">
+                <div class="conn-name">kuzy.vladimir@gmail.com</div>
+                <div class="conn-meta">Salutem Solutions</div>
+              </div>
+              <div class="conn-details">
+                <span><span class="label">Unread:</span> <span class="value">23</span></span>
+              </div>
+              <span class="conn-status-chip ok">Connected</span>
+            </div>
+            <div class="conn-row">
+              <div class="conn-icon ci-amzcom">AZ</div>
+              <div class="conn-info">
+                <div class="conn-name">salutem.amzcommerce@gmail.com</div>
+                <div class="conn-meta">AMZ Commerce</div>
+              </div>
+              <div class="conn-details">
+                <span><span class="label">Unread:</span> <span class="value">8</span></span>
+              </div>
+              <span class="conn-status-chip ok">Connected</span>
+            </div>
+            <div class="conn-row">
+              <div class="conn-icon ci-sirius">SI</div>
+              <div class="conn-info">
+                <div class="conn-name">salutem.sirius@gmail.com</div>
+                <div class="conn-meta">Sirius International</div>
+              </div>
+              <div class="conn-details">
+                <span><span class="label">Unread:</span> <span class="value">2</span></span>
+              </div>
+              <span class="conn-status-chip ok">Connected</span>
+            </div>
+            <div class="conn-row">
+              <div class="conn-icon ci-retail">RD</div>
+              <div class="conn-info">
+                <div class="conn-name">salutem.retail@gmail.com</div>
+                <div class="conn-meta">Retailer Distributor</div>
+              </div>
+              <div class="conn-details">
+                <span><span class="label">Unread:</span> <span class="value">5</span></span>
+              </div>
+              <span class="conn-status-chip ok">Connected</span>
+            </div>
+            <div class="conn-row">
+              <div class="conn-icon ci-personal">PV</div>
+              <div class="conn-info">
+                <div class="conn-name">salutem.personal@gmail.com</div>
+                <div class="conn-meta">Personal</div>
+              </div>
+              <div class="conn-details">
+                <span><span class="label">Unread:</span> <span class="value">12</span></span>
+              </div>
+              <span class="conn-status-chip ok">Connected</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== AI PROVIDERS ===== -->
+        <div class="integration-section">
+          <div class="int-section-head">
+            <span class="int-section-title">AI providers</span>
+            <span class="int-section-count">· $15.70 this month</span>
+          </div>
+
+          <!-- Anthropic Claude -->
+          <div class="int-card">
+            <div class="int-card-head">
+              <div class="int-logo anthropic">AN</div>
+              <div class="int-info">
+                <div class="int-name">
+                  <span class="int-name-main">Anthropic Claude API</span>
+                </div>
+                <div class="int-desc">Customer screenshot analysis · draft response generation</div>
+              </div>
+              <span class="int-status connected">Connected</span>
+              <div class="int-menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </div>
+            </div>
+            <div class="int-card-body">
+              <div class="int-kv-grid">
+                <div class="int-kv">
+                  <div class="int-kv-label">API key</div>
+                  <div class="int-kv-value mono">sk-ant-api…Tg4A</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Models in use</div>
+                  <div class="int-kv-value mono" style="font-size:11px">sonnet-4.7 + haiku-4.5</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Spent (30d)</div>
+                  <div class="int-kv-value mono" style="color:var(--ink); font-weight:600;">$12.48</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Requests (30d)</div>
+                  <div class="int-kv-value mono">1,847</div>
+                </div>
+              </div>
+              <div class="int-card-actions">
+                <button class="btn-sm">View usage breakdown</button>
+                <button class="btn-sm ghost">Model settings</button>
+                <button class="btn-sm ghost">Set spending limit</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- OpenAI -->
+          <div class="int-card">
+            <div class="int-card-head">
+              <div class="int-logo openai">AI</div>
+              <div class="int-info">
+                <div class="int-name">
+                  <span class="int-name-main">OpenAI API</span>
+                </div>
+                <div class="int-desc">Fallback model · category classification · translations</div>
+              </div>
+              <span class="int-status connected">Connected</span>
+              <div class="int-menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </div>
+            </div>
+            <div class="int-card-body">
+              <div class="int-kv-grid">
+                <div class="int-kv">
+                  <div class="int-kv-label">API key</div>
+                  <div class="int-kv-value mono">sk-proj-abc…h92F</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Models in use</div>
+                  <div class="int-kv-value mono" style="font-size:11px">gpt-4o-mini</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Spent (30d)</div>
+                  <div class="int-kv-value mono" style="color:var(--ink); font-weight:600;">$3.22</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Requests (30d)</div>
+                  <div class="int-kv-value mono">612</div>
+                </div>
+              </div>
+              <div class="int-card-actions">
+                <button class="btn-sm">View usage breakdown</button>
+                <button class="btn-sm ghost">Edit credentials</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== NOTIFICATIONS ===== -->
+        <div class="integration-section">
+          <div class="int-section-head">
+            <span class="int-section-title">Notifications</span>
+          </div>
+
+          <div class="int-card">
+            <div class="int-card-head">
+              <div class="int-logo telegram">T</div>
+              <div class="int-info">
+                <div class="int-name">
+                  <span class="int-name-main">Telegram Bot</span>
+                </div>
+                <div class="int-desc">Alerts for exceptions, daily summaries, and label purchase confirmations</div>
+              </div>
+              <span class="int-status connected">Connected</span>
+              <div class="int-menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </div>
+            </div>
+            <div class="int-card-body">
+              <div class="int-kv-grid">
+                <div class="int-kv">
+                  <div class="int-kv-label">Chat ID</div>
+                  <div class="int-kv-value mono">486456466</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Bot</div>
+                  <div class="int-kv-value">@salutem_ops_bot</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Last notification</div>
+                  <div class="int-kv-value mono">2h ago</div>
+                </div>
+                <div class="int-kv">
+                  <div class="int-kv-label">Sent (30d)</div>
+                  <div class="int-kv-value mono">184</div>
+                </div>
+              </div>
+              <div class="int-card-actions">
+                <button class="btn-sm">Send test message</button>
+                <button class="btn-sm ghost">Notification rules</button>
+                <button class="btn-sm ghost">Quiet hours</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== STORAGE ===== -->
+        <div class="integration-section">
+          <div class="int-section-head">
+            <span class="int-section-title">Cloud storage</span>
+          </div>
+
+          <div class="int-card no-body">
+            <div class="int-card-head">
+              <div class="int-logo gdrive">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M8 3h8l8 13-4 5H4l-4-5zM4 16h16M8 3l-4 13M16 3l4 13"/></svg>
+              </div>
+              <div class="int-info">
+                <div class="int-name">
+                  <span class="int-name-main">Google Drive</span>
+                </div>
+                <div class="int-desc">Shipping label PDF archive · 2.4 GB / 15 GB used · folder <code style="font-family:var(--mono);font-size:11px;background:var(--bg-elev);padding:1px 5px;border-radius:3px">Shipping Labels</code></div>
+              </div>
+              <span class="int-status connected">Connected</span>
+              <div class="int-menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="int-card no-body">
+            <div class="int-card-head">
+              <div class="int-logo gsheets">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M4 2h11l5 5v15H4zM15 2v5h5M7 12h10M7 16h10M7 20h10M11 10v12"/></svg>
+              </div>
+              <div class="int-info">
+                <div class="int-name">
+                  <span class="int-name-main">SKU Database v2</span>
+                  <span class="int-name-version">GOOGLE SHEETS</span>
+                </div>
+                <div class="int-desc">247 SKUs · dimensions, weight, Frozen/Dry classification · anyone with link can view</div>
+              </div>
+              <span class="int-status connected">Synced</span>
+              <div class="int-menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

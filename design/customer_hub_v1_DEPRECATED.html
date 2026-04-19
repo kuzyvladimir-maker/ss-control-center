@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salutem — Customer Hub · Case #9184</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #F4F3EF;
+  --bg-elev: #EDECE7;
+  --surface: #FFFFFF;
+  --surface-tint: #F8F7F3;
+
+  --ink: #15201B;
+  --ink-2: #4E554F;
+  --ink-3: #7A807B;
+  --ink-4: #AEB2AD;
+
+  --rule: rgba(21,32,27,0.08);
+  --rule-strong: rgba(21,32,27,0.16);
+
+  --green: #1F4D3F;
+  --green-deep: #14352B;
+  --green-mid: #3A6B5D;
+  --green-soft: #E6EEE9;
+  --green-soft2: #CDDDD5;
+  --green-ink: #12362C;
+  --green-cream: #F0E8D0;
+
+  --silver: #B5B8B5;
+  --silver-dark: #8E918E;
+  --silver-tint: #EAEBE9;
+  --silver-line: #D2D4D1;
+
+  --frozen: #2E6FA8;
+  --frozen-tint: #E5EEF6;
+  --dry: #8B6B1C;
+  --dry-tint: #F3EDDD;
+  --warn: #A05B20;
+  --warn-tint: #F5E9DC;
+  --warn-strong: #8B4A18;
+  --danger: #9B2C2C;
+  --danger-tint: #F5E1E1;
+  --info: #2E6FA8;
+  --info-tint: #E5EEF6;
+
+  --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  letter-spacing: -0.005em;
+}
+
+button { font-family: inherit; }
+
+.app {
+  display: grid;
+  grid-template-columns: 236px 1fr;
+  min-height: 100vh;
+}
+
+/* ===== SIDEBAR (same as Dashboard) ===== */
+.sidebar {
+  background: var(--bg);
+  border-right: 1px solid var(--rule);
+  padding: 22px 14px;
+  display: flex;
+  flex-direction: column;
+}
+.brand {
+  display: flex; align-items: center; gap: 11px;
+  padding: 2px 10px 20px;
+}
+.brand-mark {
+  width: 32px; height: 32px;
+  background: var(--green);
+  color: var(--green-cream);
+  border-radius: 8px;
+  display: grid; place-items: center;
+  font-weight: 700; font-size: 14px;
+  letter-spacing: -0.03em;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 0 0 1px var(--silver-line);
+}
+.brand-info { flex: 1; }
+.brand-name { font-weight: 700; font-size: 14.5px; letter-spacing: -0.02em; color: var(--ink); line-height: 1.1; }
+.brand-meta { font-family: var(--mono); font-size: 10px; color: var(--silver-dark); margin-top: 2px; letter-spacing: 0.04em; }
+
+.ws { margin: 0 2px 16px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.ws-dot { width: 7px; height: 7px; border-radius: 2px; background: var(--green); }
+.ws-label { font-size: 12.5px; color: var(--ink); font-weight: 500; flex: 1; }
+.ws-count { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+.ws svg { width: 12px; height: 12px; color: var(--ink-3); }
+
+.nav-section { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--silver-dark); padding: 12px 12px 6px; font-weight: 500; }
+.nav { display: flex; flex-direction: column; gap: 1px; }
+.nav-item { display: flex; align-items: center; gap: 11px; padding: 7px 12px; border-radius: 7px; color: var(--ink-2); cursor: pointer; font-size: 13px; }
+.nav-item svg { width: 16px; height: 16px; color: var(--ink-3); }
+.nav-item:hover { background: var(--bg-elev); color: var(--ink); }
+.nav-item.active { background: var(--green-soft); color: var(--green-ink); font-weight: 500; }
+.nav-item.active svg { color: var(--green); }
+.nav-item .pill { margin-left: auto; font-family: var(--mono); font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 500; }
+.nav-item .pill-active { background: var(--green); color: var(--green-cream); }
+.nav-item.disabled { opacity: 0.52; cursor: not-allowed; }
+.nav-item.disabled .coming { margin-left: auto; font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--silver-dark); }
+.nav-spacer { flex: 1; }
+
+/* ===== MAIN ===== */
+.main { display: flex; flex-direction: column; min-width: 0; }
+
+.topbar {
+  display: flex; align-items: center;
+  height: 56px; padding: 0 28px;
+  border-bottom: 1px solid var(--rule); gap: 14px;
+}
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.breadcrumb a { color: var(--ink-3); text-decoration: none; }
+.breadcrumb a:hover { color: var(--ink); }
+.breadcrumb .sep { color: var(--ink-4); }
+.breadcrumb .current { color: var(--ink); font-weight: 500; }
+.topbar-spacer { flex: 1; }
+
+.search { max-width: 320px; display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--bg-elev); border: 1px solid transparent; border-radius: 8px; color: var(--ink-3); font-size: 12.5px; cursor: pointer; }
+.search svg { width: 14px; height: 14px; }
+.search .kbd { margin-left: 16px; font-family: var(--mono); font-size: 10px; padding: 2px 5px; background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-3); }
+
+.icon-btn { width: 32px; height: 32px; display: grid; place-items: center; color: var(--ink-2); border-radius: 6px; cursor: pointer; position: relative; }
+.icon-btn:hover { background: var(--bg-elev); }
+.icon-btn .notif { position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); border: 1.5px solid var(--bg); }
+
+.user-chip { display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border: 1px solid var(--rule); border-radius: 18px; cursor: pointer; }
+.user-chip-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--green); color: var(--green-cream); display: grid; place-items: center; font-size: 11px; font-weight: 600; }
+.user-chip-name { font-size: 12.5px; font-weight: 500; }
+
+/* ===== CASE HEADER ===== */
+.case-header {
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg);
+}
+
+.case-back {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  border-radius: 8px;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.case-back:hover { border-color: var(--silver-dark); color: var(--ink); }
+.case-back svg { width: 15px; height: 15px; }
+
+.case-identity { flex: 1; min-width: 0; }
+.case-id-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 4px;
+}
+.case-id {
+  font-size: 18px; font-weight: 600; letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.case-id .mono { font-family: var(--mono); font-size: 15px; font-weight: 500; color: var(--ink-2); margin-left: 2px; }
+.case-priority {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.case-priority.high { background: var(--warn-tint); color: var(--warn-strong); }
+.case-meta-row {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 12.5px; color: var(--ink-3);
+}
+.case-meta-row .dot { color: var(--ink-4); }
+.case-meta-row strong { color: var(--ink-2); font-weight: 500; }
+
+.case-nav {
+  display: flex; align-items: center; gap: 1px;
+  padding: 3px;
+  background: var(--bg-elev);
+  border-radius: 9px;
+  border: 1px solid var(--rule);
+}
+.case-nav-btn {
+  width: 30px; height: 28px;
+  display: grid; place-items: center;
+  border-radius: 6px;
+  color: var(--ink-2); cursor: pointer;
+}
+.case-nav-btn:hover { background: var(--surface); }
+.case-nav-btn svg { width: 14px; height: 14px; }
+.case-nav-center {
+  padding: 0 12px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+.case-nav-center strong { color: var(--ink); font-weight: 600; }
+
+.case-header-actions { display: flex; gap: 8px; }
+
+/* ===== CONTENT LAYOUT ===== */
+.content {
+  padding: 22px 32px 120px;
+  max-width: 1500px;
+  width: 100%;
+}
+
+/* Order context ribbon */
+.context-ribbon {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+.context-cell {
+  padding: 12px 16px;
+  border-right: 1px solid var(--rule);
+}
+.context-cell:last-child { border-right: none; }
+.context-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--silver-dark);
+  margin-bottom: 4px;
+}
+.context-value {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.context-value .mono { font-family: var(--mono); font-size: 12.5px; }
+.context-value.product { font-weight: 400; }
+.context-cell .store-avatar {
+  width: 22px; height: 22px;
+  border-radius: 5px;
+  background: var(--green);
+  color: var(--green-cream);
+  display: grid; place-items: center;
+  font-family: var(--mono);
+  font-size: 9px; font-weight: 600;
+}
+.type-tag {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center; gap: 5px;
+  font-weight: 500;
+}
+.type-frozen { background: var(--frozen-tint); color: var(--frozen); }
+.type-frozen::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* ===== MAIN SPLIT ===== */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-head {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.panel-title-icon {
+  width: 22px; height: 22px;
+  border-radius: 5px;
+  background: var(--green-soft);
+  color: var(--green);
+  display: grid; place-items: center;
+}
+.panel-title-icon svg { width: 13px; height: 13px; }
+.panel-head-actions { display: flex; gap: 6px; align-items: center; }
+.panel-chip {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--silver-tint);
+  color: var(--silver-dark);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.panel-chip.success {
+  background: var(--green-soft);
+  color: var(--green-ink);
+}
+
+.icon-btn-sm {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  display: grid; place-items: center;
+  color: var(--ink-2);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.icon-btn-sm:hover { background: var(--bg-elev); border-color: var(--rule); }
+.icon-btn-sm svg { width: 13px; height: 13px; }
+
+/* ===== SCREENSHOT VIEWER ===== */
+.screenshot-frame {
+  padding: 20px;
+  background: var(--surface-tint);
+  background-image:
+    linear-gradient(var(--rule) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+  background-size: 16px 16px;
+  position: relative;
+  min-height: 520px;
+}
+
+.screenshot-toolbar {
+  position: absolute;
+  top: 12px; right: 12px;
+  display: flex; gap: 2px;
+  padding: 3px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(21,32,27,0.04);
+}
+.tool-btn {
+  width: 28px; height: 28px;
+  border-radius: 5px;
+  display: grid; place-items: center;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-size: 11px;
+  font-family: var(--mono);
+}
+.tool-btn:hover { background: var(--bg-elev); }
+.tool-btn.active { background: var(--green-soft); color: var(--green-ink); }
+
+/* Simulated Amazon message screenshot */
+.amz-screenshot {
+  max-width: 440px;
+  margin: 0 auto;
+  background: #FFFFFF;
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 1px var(--silver-line),
+    0 6px 20px rgba(21,32,27,0.08),
+    0 2px 6px rgba(21,32,27,0.04);
+  overflow: hidden;
+  font-family: 'Amazon Ember', 'Inter Tight', sans-serif;
+}
+.amz-header {
+  background: #232F3E;
+  color: white;
+  padding: 10px 14px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.amz-logo {
+  font-weight: 700;
+  font-size: 14px;
+  color: #FF9900;
+  letter-spacing: -0.02em;
+}
+.amz-header-sep { color: rgba(255,255,255,0.4); }
+.amz-header-info { font-size: 11px; color: rgba(255,255,255,0.8); }
+.amz-subheader {
+  padding: 8px 14px;
+  border-bottom: 1px solid #E5E5E5;
+  background: #F3F3F3;
+  font-size: 11px;
+  color: #555;
+}
+.amz-order-info {
+  padding: 12px 14px;
+  border-bottom: 1px solid #E5E5E5;
+  font-size: 11.5px;
+}
+.amz-order-label { color: #767676; }
+.amz-order-value { color: #111; font-weight: 500; }
+.amz-order-id { color: #007185; font-family: monospace; }
+
+.amz-message {
+  padding: 16px 14px;
+}
+.amz-msg-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.amz-msg-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: #E8833A;
+  color: white;
+  display: grid; place-items: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+.amz-msg-from {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0F1111;
+}
+.amz-msg-time {
+  font-size: 11px;
+  color: #767676;
+  margin-top: 1px;
+}
+.amz-msg-subject {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0F1111;
+  margin-bottom: 10px;
+}
+.amz-msg-body {
+  font-size: 12.5px;
+  color: #0F1111;
+  line-height: 1.55;
+}
+.amz-msg-body p { margin-bottom: 10px; }
+.amz-msg-body p:last-child { margin-bottom: 0; }
+
+.amz-footer {
+  padding: 10px 14px;
+  background: #F8F8F8;
+  border-top: 1px solid #E5E5E5;
+  font-size: 11px;
+  color: #767676;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.amz-footer-link { color: #007185; }
+
+/* ===== AI ANALYSIS PANEL ===== */
+.analysis-body { padding: 16px 18px 18px; }
+
+.confidence-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--green-soft);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+.confidence-ring {
+  width: 32px; height: 32px;
+  position: relative;
+  flex-shrink: 0;
+}
+.confidence-pct {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green-ink);
+  position: absolute;
+  inset: 0;
+  display: grid; place-items: center;
+}
+.confidence-text {
+  flex: 1;
+}
+.confidence-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--green-ink);
+  margin-bottom: 1px;
+}
+.confidence-sub {
+  font-size: 11.5px;
+  color: var(--green-ink);
+  opacity: 0.8;
+}
+
+/* Meta grid */
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 9px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.meta-cell {
+  background: var(--surface);
+  padding: 10px 12px;
+}
+.meta-cell-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--silver-dark);
+  margin-bottom: 3px;
+}
+.meta-cell-value {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.meta-cell-value .badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--silver-tint);
+  color: var(--silver-dark);
+  font-weight: 500;
+}
+
+/* Category */
+.category-card {
+  padding: 12px 14px;
+  background: var(--green-soft);
+  border-radius: 9px;
+  margin-bottom: 16px;
+}
+.category-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.category-tag {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--green-ink);
+  background: rgba(31,77,63,0.14);
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+.category-branch {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--green-ink);
+  opacity: 0.75;
+}
+.category-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--green-ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 3px;
+}
+.category-desc {
+  font-size: 12px;
+  color: var(--green-ink);
+  opacity: 0.78;
+  line-height: 1.4;
+}
+
+/* Internal actions alert */
+.internal-alert {
+  padding: 11px 12px;
+  background: var(--warn-tint);
+  border-radius: 9px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.internal-alert-icon {
+  width: 22px; height: 22px;
+  border-radius: 5px;
+  background: rgba(160,91,32,0.18);
+  color: var(--warn-strong);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.internal-alert-icon svg { width: 12px; height: 12px; }
+.internal-alert-text {
+  font-size: 12px;
+  color: var(--warn-strong);
+  line-height: 1.45;
+}
+.internal-alert-text strong { font-weight: 600; }
+.internal-alert-text a {
+  color: var(--warn-strong);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ===== DRAFT RESPONSE PANEL ===== */
+.draft-panel {
+  grid-column: 1 / -1;
+}
+
+.draft-body { padding: 0; }
+
+.draft-tabs {
+  display: flex;
+  gap: 0;
+  padding: 10px 18px 0;
+  border-bottom: 1px solid var(--rule);
+  align-items: center;
+}
+.draft-tab {
+  font-size: 12.5px;
+  padding: 8px 14px;
+  color: var(--ink-3);
+  cursor: pointer;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.draft-tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--green);
+}
+.draft-tab .count {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 1px 5px;
+  background: var(--silver-tint);
+  color: var(--silver-dark);
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.draft-spacer { flex: 1; }
+.draft-tab-meta {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.draft-tab-meta .dot { color: var(--ink-4); }
+
+.draft-editor {
+  padding: 20px 24px 24px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ink);
+  min-height: 280px;
+  position: relative;
+}
+.draft-editor p { margin-bottom: 14px; }
+.draft-editor p:last-child { margin-bottom: 0; }
+.draft-var {
+  background: var(--green-soft);
+  color: var(--green-ink);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+  border: 1px dashed var(--green);
+  cursor: pointer;
+}
+.draft-var:hover { background: var(--green-soft2); }
+
+.draft-cursor {
+  display: inline-block;
+  width: 1.5px;
+  height: 16px;
+  background: var(--green);
+  animation: blink 1s infinite;
+  vertical-align: text-top;
+  margin-left: 1px;
+}
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+.draft-toolbar {
+  padding: 12px 18px;
+  border-top: 1px solid var(--rule);
+  background: var(--surface-tint);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.draft-toolbar-spacer { flex: 1; }
+.draft-chip {
+  font-size: 11.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.draft-chip svg { width: 12px; height: 12px; color: var(--ink-3); }
+.draft-chip .val { font-family: var(--mono); font-size: 11px; color: var(--ink); }
+
+/* ===== BOTTOM ACTION BAR ===== */
+.action-bar {
+  position: fixed;
+  bottom: 16px;
+  left: 254px;
+  right: 20px;
+  padding: 12px 20px;
+  background: var(--surface);
+  border: 1px solid var(--silver-line);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow:
+    0 10px 30px rgba(21,32,27,0.08),
+    0 4px 10px rgba(21,32,27,0.04);
+  z-index: 10;
+}
+.action-bar::before {
+  content: '';
+  position: absolute;
+  left: 20px; right: 20px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--silver) 50%, transparent);
+  opacity: 0.5;
+}
+.action-label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--silver-dark);
+  margin-right: 4px;
+  font-weight: 500;
+}
+.btn {
+  padding: 9px 15px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink);
+  transition: all 0.15s;
+}
+.btn svg { width: 14px; height: 14px; }
+.btn:hover { background: var(--bg-elev); border-color: var(--silver-dark); }
+.btn-primary {
+  background: var(--green); border-color: var(--green);
+  color: var(--green-cream);
+}
+.btn-primary:hover { background: var(--green-deep); border-color: var(--green-deep); }
+.btn-ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink-2);
+}
+.btn-ghost:hover { background: var(--bg-elev); color: var(--ink); }
+.btn-danger-ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--danger);
+}
+.btn-danger-ghost:hover { background: var(--danger-tint); }
+
+.action-bar-spacer { flex: 1; }
+
+.kbd-hint {
+  font-size: 11.5px;
+  color: var(--silver-dark);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.kbd-hint .kbd {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 5px;
+  background: var(--bg-elev);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  color: var(--ink-2);
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-info">
+        <div class="brand-name">Salutem</div>
+        <div class="brand-meta">CONTROL · V1.4</div>
+      </div>
+    </div>
+
+    <div class="ws">
+      <span class="ws-dot"></span>
+      <span class="ws-label">All stores</span>
+      <span class="ws-count">5</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+
+    <div class="nav-section">Operations</div>
+    <nav class="nav">
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="9" rx="1.2"/><rect x="14" y="3" width="7" height="5" rx="1.2"/><rect x="14" y="12" width="7" height="9" rx="1.2"/><rect x="3" y="16" width="7" height="5" rx="1.2"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7h13v10H3z"/><path d="M16 10h4l1 3v4h-5z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        Shipping labels
+        <span class="pill pill-active">6</span>
+      </div>
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12a8 8 0 1 1-3-6.2L21 4v5h-5"/></svg>
+        Customer hub
+        <span class="pill pill-active">3</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+        Adjustments
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
+        Shipment monitor
+      </div>
+    </nav>
+
+    <div class="nav-section">Insights</div>
+    <nav class="nav">
+      <div class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 20h18M6 16l4-6 4 3 5-8"/></svg>
+        Frozen analytics
+        <span class="coming">Soon</span>
+      </div>
+      <div class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Sales overview
+        <span class="coming">Soon</span>
+      </div>
+    </nav>
+    <div class="nav-spacer"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="#">Customer hub</a>
+        <span class="sep">/</span>
+        <span class="current">Case #9184</span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <span>Search cases</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span class="notif"></span>
+      </div>
+      <div class="user-chip">
+        <div class="user-chip-avatar">V</div>
+        <span class="user-chip-name">Vladimir K.</span>
+      </div>
+    </div>
+
+    <!-- CASE HEADER -->
+    <div class="case-header">
+      <div class="case-back" title="Back to queue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </div>
+      <div class="case-identity">
+        <div class="case-id-row">
+          <div class="case-id">Case <span class="mono">#9184</span></div>
+          <span class="case-priority high">● High priority</span>
+        </div>
+        <div class="case-meta-row">
+          <span>Opened <strong>2h 14m ago</strong></span>
+          <span class="dot">·</span>
+          <span>Amazon <strong>Salutem Solutions</strong></span>
+          <span class="dot">·</span>
+          <span>From <strong>John Patterson</strong></span>
+          <span class="dot">·</span>
+          <span>Respond within <strong>9h 46m</strong></span>
+        </div>
+      </div>
+      <div class="case-nav">
+        <div class="case-nav-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></div>
+        <div class="case-nav-center"><strong>1</strong> / 3</div>
+        <div class="case-nav-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ORDER CONTEXT RIBBON -->
+      <div class="context-ribbon">
+        <div class="context-cell">
+          <div class="context-label">Order ID</div>
+          <div class="context-value mono">113-2847264-9184301</div>
+        </div>
+        <div class="context-cell">
+          <div class="context-label">Store</div>
+          <div class="context-value">
+            <div class="store-avatar">SS</div>
+            Salutem Solutions
+          </div>
+        </div>
+        <div class="context-cell">
+          <div class="context-label">Product</div>
+          <div class="context-value product">Jimmy Dean Sausage 12ct</div>
+        </div>
+        <div class="context-cell">
+          <div class="context-label">Type</div>
+          <div class="context-value"><span class="type-tag type-frozen">Frozen</span></div>
+        </div>
+        <div class="context-cell">
+          <div class="context-label">Delivered</div>
+          <div class="context-value mono">Apr 16 · 2d ago</div>
+        </div>
+      </div>
+
+      <!-- SPLIT -->
+      <div class="split">
+
+        <!-- SCREENSHOT -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <div class="panel-title-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              </div>
+              Source · customer message
+            </div>
+            <div class="panel-head-actions">
+              <span class="panel-chip">PNG · 1.2 MB</span>
+              <div class="icon-btn-sm" title="Replace">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 9-9M3 4v5h5"/></svg>
+              </div>
+              <div class="icon-btn-sm" title="Open full-size">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 3h-6M21 3v6M21 3l-7 7M3 21h6M3 21v-6M3 21l7-7"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="screenshot-frame">
+            <div class="screenshot-toolbar">
+              <div class="tool-btn">−</div>
+              <div class="tool-btn active">100%</div>
+              <div class="tool-btn">+</div>
+            </div>
+
+            <div class="amz-screenshot">
+              <div class="amz-header">
+                <div class="amz-logo">amazon</div>
+                <span class="amz-header-sep">|</span>
+                <span class="amz-header-info">Seller Central · Messages</span>
+              </div>
+              <div class="amz-subheader">
+                Buyer-Seller Messaging Service
+              </div>
+              <div class="amz-order-info">
+                <div><span class="amz-order-label">Order: </span><span class="amz-order-id">113-2847264-9184301</span></div>
+                <div style="margin-top:3px"><span class="amz-order-label">Item: </span><span class="amz-order-value">Jimmy Dean Premium Pork Sausage, 12 ct</span></div>
+              </div>
+              <div class="amz-message">
+                <div class="amz-msg-header">
+                  <div class="amz-msg-avatar">J</div>
+                  <div>
+                    <div class="amz-msg-from">John Patterson</div>
+                    <div class="amz-msg-time">Apr 18, 2026 · 7:28 AM</div>
+                  </div>
+                </div>
+                <div class="amz-msg-subject">Item arrived thawed — need replacement</div>
+                <div class="amz-msg-body">
+                  <p>Hi, I received my Jimmy Dean sausages yesterday and the package was completely warm when I opened it. The product was soft and clearly had been thawed for some time during transit.</p>
+                  <p>I cannot use this product as it's a food safety issue. Could you please send me a replacement as soon as possible? I really needed these for this weekend.</p>
+                  <p>I have photos if you need them.</p>
+                  <p>Thanks,<br>John</p>
+                </div>
+              </div>
+              <div class="amz-footer">
+                <span>Reply directly through Seller Central</span>
+                <span class="amz-footer-link">Customer contact info →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ANALYSIS -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <div class="panel-title-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 2 7v10l10 5 10-5V7Z"/><path d="M2 7l10 5 10-5M12 22V12"/></svg>
+              </div>
+              AI analysis
+            </div>
+            <div class="panel-head-actions">
+              <span class="panel-chip success">● Analyzed · Claude Sonnet 4</span>
+            </div>
+          </div>
+          <div class="analysis-body">
+
+            <div class="confidence-bar">
+              <div class="confidence-ring">
+                <svg viewBox="0 0 32 32" width="32" height="32">
+                  <circle cx="16" cy="16" r="13" fill="none" stroke="rgba(31,77,63,0.15)" stroke-width="3"/>
+                  <circle cx="16" cy="16" r="13" fill="none" stroke="var(--green)" stroke-width="3" stroke-dasharray="81.6" stroke-dashoffset="4.9" stroke-linecap="round" transform="rotate(-90 16 16)"/>
+                </svg>
+                <div class="confidence-pct">94</div>
+              </div>
+              <div class="confidence-text">
+                <div class="confidence-label">High confidence match</div>
+                <div class="confidence-sub">40 similar cases in Knowledge Base</div>
+              </div>
+            </div>
+
+            <div class="category-card">
+              <div class="category-top">
+                <span class="category-tag">C3 · FROZEN THAWED</span>
+                <span class="category-branch">Branch A · replacement</span>
+              </div>
+              <div class="category-name">Frozen item arrived thawed on delivery</div>
+              <div class="category-desc">Customer received perishable food in unusable condition. Standard policy: immediate replacement, no refund offer, photo evidence optional.</div>
+            </div>
+
+            <div class="meta-grid">
+              <div class="meta-cell">
+                <div class="meta-cell-label">Channel</div>
+                <div class="meta-cell-value">Amazon <span class="badge">US</span></div>
+              </div>
+              <div class="meta-cell">
+                <div class="meta-cell-label">Customer</div>
+                <div class="meta-cell-value">John Patterson</div>
+              </div>
+              <div class="meta-cell">
+                <div class="meta-cell-label">Language</div>
+                <div class="meta-cell-value">English <span class="badge">EN-US</span></div>
+              </div>
+              <div class="meta-cell">
+                <div class="meta-cell-label">Action</div>
+                <div class="meta-cell-value">Send replacement</div>
+              </div>
+              <div class="meta-cell">
+                <div class="meta-cell-label">Respond within</div>
+                <div class="meta-cell-value">12 hours</div>
+              </div>
+              <div class="meta-cell">
+                <div class="meta-cell-label">Sentiment</div>
+                <div class="meta-cell-value">Concerned, polite</div>
+              </div>
+            </div>
+
+            <div class="internal-alert">
+              <div class="internal-alert-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+              </div>
+              <div class="internal-alert-text">
+                <strong>Internal action required:</strong> This is FBM order — file <strong>SAFE-T claim</strong> within 30 days to recover reshipment cost. Deadline: <strong>May 16, 2026</strong>. <a href="#">Open SAFE-T form →</a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- DRAFT RESPONSE -->
+      <div class="panel draft-panel">
+        <div class="draft-tabs">
+          <div class="draft-tab active">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Recommended reply
+          </div>
+          <div class="draft-tab">
+            Alternatives <span class="count">3</span>
+          </div>
+          <div class="draft-tab">
+            Knowledge base <span class="count">40</span>
+          </div>
+          <div class="draft-spacer"></div>
+          <div class="draft-tab-meta">
+            <span>Template: <strong style="color:var(--ink)">C3-A-v3</strong></span>
+            <span class="dot">·</span>
+            <span>136 words</span>
+          </div>
+        </div>
+
+        <div class="draft-editor">
+          <p>Dear <span class="draft-var">John</span>,</p>
+          <p>Thank you for reaching out, and I'm very sorry to hear that your <span class="draft-var">Jimmy Dean Sausage 12ct</span> arrived thawed. This should never happen, and I completely understand the frustration — especially with food you were planning to use this weekend.</p>
+          <p>I've issued a full replacement to the address on your original order. You'll receive a new tracking number by email within the next few hours, and the replacement will ship overnight in insulated packaging to ensure it arrives frozen.</p>
+          <p>You don't need to send back the damaged item or provide photos. Please dispose of the thawed product for your safety.</p>
+          <p>If anything else comes up, just reply to this message and I'll take care of it right away.</p>
+          <p>Best regards,<br><span class="draft-var">Salutem Solutions</span> Customer Care<span class="draft-cursor"></span></p>
+        </div>
+
+        <div class="draft-toolbar">
+          <span class="draft-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12 11 14 15 10"/><circle cx="12" cy="12" r="9"/></svg>
+            No emoji · Amazon safe
+          </span>
+          <span class="draft-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+            No discount offer · policy compliant
+          </span>
+          <span class="draft-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h10M4 17h16"/></svg>
+            Tone: <span class="val">warm-professional</span>
+          </span>
+          <div class="draft-toolbar-spacer"></div>
+          <button class="btn" style="padding: 6px 11px; font-size: 12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4z"/></svg>
+            Edit
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ACTION BAR -->
+    <div class="action-bar">
+      <span class="action-label">Ready</span>
+      <button class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
+        Send & mark resolved
+      </button>
+      <button class="btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="2" width="14" height="14" rx="2"/><path d="M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2"/></svg>
+        Copy to clipboard
+      </button>
+      <button class="btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 9-9M3 4v5h5"/></svg>
+        Regenerate
+      </button>
+      <button class="btn-ghost btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        Skip to next case
+      </button>
+      <div class="action-bar-spacer"></div>
+      <div class="kbd-hint">
+        <span class="kbd">⌘</span><span class="kbd">↵</span>
+        <span>to send</span>
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

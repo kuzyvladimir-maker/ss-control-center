@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter_Tight, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const interTight = Inter_Tight({
+  variable: "--font-inter-tight",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "SS Control Center",
+  title: "Salutem Control",
   description: "Salutem Solutions E-Commerce Control Center",
 };
 
@@ -27,11 +29,11 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning={true}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${interTight.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body
         suppressHydrationWarning={true}
-        className="flex h-screen overflow-hidden bg-white"
+        className="flex h-screen overflow-hidden bg-bg text-ink"
       >
         <AppShell>{children}</AppShell>
       </body>
