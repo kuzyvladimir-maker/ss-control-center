@@ -517,6 +517,10 @@ model BuyerMessage {
   language        String   @default("English")
 
   amazonOrderId   String?
+  // Walmart-specific identifiers — populated when channel='Walmart' and
+  // the source is the direct Marketplace API (not a screenshot upload).
+  walmartOrderId  String?
+  walmartReturnId String?
   orderDate       String?
   orderTotal      Float?
 
@@ -660,4 +664,90 @@ model KnowledgeBaseEntry {
   channel            String   @default("Amazon") // Amazon | Walmart — different rulebooks
 
   @@index([problemType])
+}
+
+// ----------------------------------------------------------------------------
+// Walmart Marketplace API — direct integration models
+// ----------------------------------------------------------------------------
+
+// Walmart orders synced from /v3/orders. Mirrors the AmazonOrder pattern.
+model WalmartOrder {
+  id                    String   @id @default(cuid())
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  purchaseOrderId       String   @unique  // Walmart PO ID — primary key in their API
+  customerOrderId       String              // human-friendly order number
+  customerEmailId       String?
+  storeIndex            Int      @default(1)
+
+  status                String              // Created | Acknowledged | Shipped | Delivered | Cancelled
+  shipNodeType          String?             // SellerFulfilled | WFSFulfilled | 3PLFulfilled
+  orderType             String?
+  orderDate             DateTime
+  estimatedShipDate     DateTime?
+  estimatedDeliveryDate DateTime?
+
+  orderTotal            Float    @default(0)
+  currency              String   @default("USD")
+
+  shipCity              String?
+  shipState             String?
+  shipZip               String?
+  shipCountry           String?
+
+  numberOfItems         Int      @default(0)
+  // JSON dump of the full order payload — preserves every field we don't
+  // model explicitly so reanalysis / debugging never has to re-fetch.
+  rawData               String
+
+  @@index([storeIndex, status])
+  @@index([orderDate])
+  @@index([customerOrderId])
+}
+
+// Per-row reconciliation report transactions. Each row is one money event.
+model WalmartReconTransaction {
+  id                         String   @id @default(cuid())
+  createdAt                  DateTime @default(now())
+
+  storeIndex                 Int      @default(1)
+  reportDate                 DateTime           // settlement date the row came from
+  transactionPostedTimestamp DateTime
+  transactionType            String              // Sales | Refunds | Adjustments | Fees
+  transactionDescription     String?
+
+  purchaseOrderId            String?
+  customerOrderId            String?
+  sku                        String?
+  productName                String?
+  quantity                   Int?
+  amount                     Float
+  feeType                    String?
+
+  rawData                    String
+
+  // Dedup compound key: same posted-timestamp + PO + type + amount = same row.
+  @@unique([transactionPostedTimestamp, purchaseOrderId, transactionType, amount], name: "walmart_recon_dedup")
+  @@index([reportDate])
+  @@index([transactionType])
+  @@index([storeIndex, reportDate])
+}
+
+// Snapshot of a Walmart Seller Performance metric at a point in time.
+// We keep history so trends can be plotted over weeks/months.
+model WalmartPerformanceSnapshot {
+  id          String   @id @default(cuid())
+  capturedAt  DateTime @default(now())
+
+  storeIndex  Int      @default(1)
+  windowDays  Int                              // 14 | 30 | 60 | 90
+  metric      String                           // onTimeDelivery | validTrackingRate | ...
+  value       Float                            // percent or ratio
+  threshold   Float?                           // Walmart's healthy threshold for this metric
+  isHealthy   Boolean
+
+  rawData     String
+
+  @@index([storeIndex, metric, capturedAt])
 }
