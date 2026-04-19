@@ -50,7 +50,12 @@ function buildQuery(params: ReturnsListParams): Record<string, string | number> 
 }
 
 function parsePage(payload: any): ReturnsPage {
-  const raw = unwrapList<any>(payload?.returnOrders, "returnOrder");
+  // Walmart returns response shape:
+  //   { meta: { totalCount, nextCursor, limit }, returnOrders: [ {...}, ... ] }
+  // returnOrders is already a flat array (NOT wrapped as { returnOrder: [...] }).
+  const raw = Array.isArray(payload?.returnOrders)
+    ? payload.returnOrders
+    : unwrapList<any>(payload?.returnOrders, "returnOrder");
   const returns = raw.map(mapReturn);
   return {
     returns,

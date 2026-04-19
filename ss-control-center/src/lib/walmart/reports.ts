@@ -18,6 +18,20 @@ import type { WalmartReconReportMeta, WalmartReconTransaction } from "./types";
 
 const MAX_LIMIT = 2000;
 
+/** Walmart returns recon dates as MMDDYYYY (US format). Convert to YYYY-MM-DD. */
+function mmddyyyyToISO(s: string): string | null {
+  const m = /^(\d{2})(\d{2})(\d{4})$/.exec(s);
+  if (!m) return null;
+  return `${m[3]}-${m[1]}-${m[2]}`;
+}
+
+/** Reverse: ISO `YYYY-MM-DD` back to Walmart's MMDDYYYY for reconFile calls. */
+function isoToMMDDYYYY(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return iso;
+  return `${m[2]}${m[3]}${m[1]}`;
+}
+
 export interface ReconReportPage {
   meta: WalmartReconReportMeta;
   transactions: WalmartReconTransaction[];
@@ -26,34 +40,63 @@ export interface ReconReportPage {
 export class WalmartReportsApi {
   constructor(private client: WalmartClient) {}
 
-  /** Dates for which recon reports are available (latest first). */
+  /**
+   * Dates for which recon reports are available, returned newest-first as
+   * ISO `YYYY-MM-DD` strings.
+   *
+   * Walmart returns `{ availableApReportDates: ["MMDDYYYY", ...] }` — the
+   * raw format is the same one the reconFile endpoint expects, so we keep
+   * the original strings around for the fetch call (see `availableRaw`).
+   */
   async getAvailableReconReportDates(): Promise<string[]> {
+    const raw = await this.getAvailableReconReportDatesRaw();
+    return raw
+      .map((d) => mmddyyyyToISO(d))
+      .filter((d): d is string => !!d)
+      .sort()
+      .reverse();
+  }
+
+  /** Raw `MMDDYYYY` strings as returned by Walmart — pass through to reconFile. */
+  async getAvailableReconReportDatesRaw(): Promise<string[]> {
     const data = await this.client.request<any>(
       "GET",
       "/report/reconreport/availableReconFiles"
     );
-    // Response is { availableReconFiles: [{ reportDate: "YYYY-MM-DD" }, ...] }
-    const files: any[] = data?.availableReconFiles ?? data ?? [];
-    const dates = files
-      .map((f) => f?.reportDate ?? f?.date)
+    const dates: unknown =
+      data?.availableApReportDates ??
+      data?.availableReconFiles ??
+      data;
+    if (!Array.isArray(dates)) return [];
+    return dates
+      .map((f) =>
+        typeof f === "string"
+          ? f
+          : f?.reportDate ?? f?.date ?? null
+      )
       .filter((d): d is string => typeof d === "string" && d.length > 0);
-    dates.sort().reverse();
-    return dates;
   }
 
-  /** Fetch one page of the recon report for a given date. */
+  /**
+   * Fetch one page of the recon report for a given date. Accepts either
+   * `YYYY-MM-DD` (preferred) or Walmart's native `MMDDYYYY`.
+   */
   async getReconReport(params: {
     reportDate: string;
     pageNo?: number;
     limit?: number;
   }): Promise<ReconReportPage> {
     const limit = Math.min(params.limit ?? 1000, MAX_LIMIT);
+    // Normalize to MMDDYYYY for the API call
+    const apiDate = /^\d{4}-\d{2}-\d{2}$/.test(params.reportDate)
+      ? isoToMMDDYYYY(params.reportDate)
+      : params.reportDate;
     const data = await this.client.request<any>(
       "GET",
       "/report/reconreport/reconFile",
       {
         params: {
-          reportDate: params.reportDate,
+          reportDate: apiDate,
           pageNo: params.pageNo ?? 1,
           limit,
         },

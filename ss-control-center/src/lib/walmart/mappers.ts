@@ -254,12 +254,19 @@ export function mapReturn(raw: any): WalmartReturn {
       best = line.status!;
     }
   }
+  // Walmart payload uses customerEmailId / returnOrderDate / customerName{firstName,lastName}
+  const customerEmail =
+    raw?.customerEmail ?? raw?.customerEmailId ?? undefined;
+  const returnDate =
+    parseWalmartDate(raw?.returnDate) ??
+    parseWalmartDate(raw?.returnOrderDate) ??
+    new Date(0);
   return {
     returnOrderId: String(raw?.returnOrderId ?? ""),
     customerOrderId: String(raw?.customerOrderId ?? ""),
     purchaseOrderId: raw?.purchaseOrderId,
-    customerEmail: raw?.customerEmail,
-    returnDate: parseWalmartDate(raw?.returnDate) ?? new Date(0),
+    customerEmail,
+    returnDate,
     returnLines,
     status: best,
     raw,
