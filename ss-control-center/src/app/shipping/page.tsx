@@ -16,7 +16,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Btn, KpiCard, PageHead, Sep } from "@/components/kit";
+import {
+  Btn,
+  CarrierBadge,
+  KpiCard,
+  PageHead,
+  Panel,
+  Sep,
+  StatusChip,
+  statusVariantFor,
+  StoreAvatar,
+  storeKeyFor,
+  TypeTag,
+} from "@/components/kit";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -438,236 +451,267 @@ export default function ShippingPage() {
 
       {/* Plan table */}
       {plan && plan.orders.length > 0 ? (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">
-              Shipping Plan — {plan.date}
-            </CardTitle>
-            <div className="flex items-center gap-1">
-              <Button
-                variant={allSelected ? "default" : "outline"}
+        <>
+          <Panel>
+            <div className="flex flex-wrap items-center gap-2 border-b border-rule px-4 py-2.5">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={toggleSelectAll}
+                disabled={buying || selectableIds.size === 0}
+                className="h-3.5 w-3.5 rounded border-silver-line accent-[var(--green)]"
+              />
+              <Btn
                 size="sm"
-                className="h-7 text-xs px-2.5"
+                variant={allSelected ? "primary" : "default"}
                 onClick={toggleSelectAll}
                 disabled={buying || selectableIds.size === 0}
               >
-                Select All
-              </Button>
-              <Button
-                variant={
-                  selectedCount > 0 &&
-                  [...selected].every((id) => {
-                    const o = plan.orders.find((x) => x.id === id);
-                    return o?.productType === "Frozen";
-                  }) &&
-                  plan.orders.filter(
-                    (o) =>
-                      o.status === "pending" && o.productType === "Frozen"
-                  ).length === selectedCount
-                    ? "default"
-                    : "outline"
-                }
+                Select all
+              </Btn>
+              <Btn
                 size="sm"
-                className="h-7 text-xs px-2.5"
+                variant="default"
+                icon={<Snowflake size={12} />}
                 onClick={() => selectByType("Frozen")}
                 disabled={buying}
               >
-                <Snowflake size={12} className="mr-1" />
                 Frozen
-              </Button>
-              <Button
-                variant={
-                  selectedCount > 0 &&
-                  [...selected].every((id) => {
-                    const o = plan.orders.find((x) => x.id === id);
-                    return o?.productType === "Dry";
-                  }) &&
-                  plan.orders.filter(
-                    (o) =>
-                      o.status === "pending" && o.productType === "Dry"
-                  ).length === selectedCount
-                    ? "default"
-                    : "outline"
-                }
+              </Btn>
+              <Btn
                 size="sm"
-                className="h-7 text-xs px-2.5"
+                variant="default"
+                icon={<Package size={12} />}
                 onClick={() => selectByType("Dry")}
                 disabled={buying}
               >
-                <Package size={12} className="mr-1" />
                 Dry
-              </Button>
-              <Button
-                variant="outline"
+              </Btn>
+              <Btn
                 size="sm"
-                className="h-7 text-xs px-2.5"
+                variant="ghost"
                 onClick={deselectAll}
                 disabled={buying || selectedCount === 0}
               >
                 Deselect
-              </Button>
+              </Btn>
+              <div className="flex-1" />
+              <span className="text-[11px] font-mono uppercase tracking-wider text-ink-3 tabular">
+                {plan.total} orders · {plan.readyCount} ready · {plan.stopCount} attention
+              </span>
             </div>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[40px]">
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      onChange={toggleSelectAll}
-                      disabled={buying || selectableIds.size === 0}
-                      className="h-4 w-4 rounded border-slate-300 accent-blue-600"
-                    />
-                  </TableHead>
-                  <TableHead className="w-[40px]">#</TableHead>
-                  <TableHead>Order</TableHead>
-                  <TableHead>Channel</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Carrier</TableHead>
-                  <TableHead>Service</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead>EDD</TableHead>
-                  <TableHead>Delivery By</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {plan.orders.map((item, idx) => {
-                  const isSelectable = item.status === "pending";
-                  const isChecked = selected.has(item.id);
 
-                  return (
-                    <TableRow
-                      key={item.id}
-                      className={
-                        item.status === "stop" || item.status === "error"
-                          ? "bg-red-50"
-                          : item.status === "bought"
-                            ? "bg-green-50"
-                            : isChecked
-                              ? "bg-blue-50/50"
-                              : ""
-                      }
-                    >
-                      <TableCell>
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => toggleSelect(item.id)}
-                          disabled={!isSelectable || buying}
-                          className="h-4 w-4 rounded border-slate-300 accent-blue-600 disabled:opacity-30"
-                        />
-                      </TableCell>
-                      <TableCell className="text-xs text-slate-500">
-                        {idx + 1}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">
+            {/* Grid-based ship table — matches design/shipping_labels_salutem.html */}
+            <div className="grid grid-cols-[36px_minmax(160px,1.3fr)_minmax(180px,1.8fr)_90px_90px_140px_minmax(120px,1fr)_120px] border-b border-rule bg-surface-tint px-4 py-2 text-[10px] font-mono uppercase tracking-[0.1em] text-ink-3">
+              <div />
+              <div>Order / Store</div>
+              <div>Product</div>
+              <div>Type</div>
+              <div>Weight</div>
+              <div>Ship to / by</div>
+              <div>Service</div>
+              <div className="text-right">Status</div>
+            </div>
+
+            <div>
+              {plan.orders.map((item) => {
+                const isSelectable = item.status === "pending";
+                const isChecked = selected.has(item.id);
+                const isBought = item.status === "bought";
+                const needsAttention =
+                  item.status === "stop" || item.status === "error";
+                const channelIsWalmart = /walmart/i.test(item.channel);
+
+                return (
+                  <div
+                    key={item.id}
+                    className={cn(
+                      "grid grid-cols-[36px_minmax(160px,1.3fr)_minmax(180px,1.8fr)_90px_90px_140px_minmax(120px,1fr)_120px] items-start gap-2 border-b border-rule px-4 py-3 text-[12.5px] last:border-0",
+                      isBought && "opacity-70",
+                      needsAttention && "bg-warn-tint/30",
+                      isChecked && !needsAttention && "bg-green-soft/40"
+                    )}
+                  >
+                    <div className="pt-0.5">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleSelect(item.id)}
+                        disabled={!isSelectable || buying}
+                        className="h-3.5 w-3.5 rounded border-silver-line accent-[var(--green)] disabled:opacity-30"
+                      />
+                    </div>
+
+                    {/* Order / Store */}
+                    <div className="min-w-0">
+                      <div className="font-mono text-[12px] text-ink">
                         {item.orderNumber}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {item.channel}
-                      </TableCell>
-                      <TableCell className="max-w-[200px] truncate text-xs">
-                        {item.product}
-                      </TableCell>
-                      <TableCell>
-                        {item.productType === "Frozen" ? (
-                          <Badge
-                            variant="outline"
-                            className="border-blue-300 text-blue-600"
-                          >
-                            <Snowflake size={12} className="mr-1" />
-                            Frozen
-                          </Badge>
+                      </div>
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <StoreAvatar
+                          store={
+                            channelIsWalmart
+                              ? "walmart"
+                              : storeKeyFor({ storeName: item.channel })
+                          }
+                          size="sm"
+                        />
+                        <span className="truncate text-[11.5px] text-ink-2">
+                          {item.channel}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Product */}
+                    <div className="min-w-0">
+                      <div className="truncate text-ink">{item.product}</div>
+                      <div className="mt-0.5 font-mono text-[10.5px] uppercase tracking-wider text-ink-3">
+                        {item.sku}
+                      </div>
+                    </div>
+
+                    {/* Type */}
+                    <div>
+                      <TypeTag type={item.productType} />
+                    </div>
+
+                    {/* Weight */}
+                    <div className="tabular text-[12px] text-ink-2">
+                      {item.weight != null ? (
+                        <>
+                          {item.weight}
+                          <span className="ml-0.5 text-[10.5px] text-ink-3">lb</span>
+                        </>
+                      ) : (
+                        "—"
+                      )}
+                    </div>
+
+                    {/* Dest / by */}
+                    <div className="min-w-0">
+                      <div className="truncate text-[11.5px] text-ink-2">
+                        {item.notes?.match(/to \w+/)?.[0] ?? "—"}
+                      </div>
+                      <div className="mt-0.5 text-[11px] tabular text-ink-3">
+                        {item.deliveryBy ? (
+                          <>
+                            by{" "}
+                            <span className="text-ink">{item.deliveryBy}</span>
+                          </>
+                        ) : item.edd ? (
+                          `EDD ${item.edd}`
                         ) : (
-                          <Badge variant="outline">
-                            <Package size={12} className="mr-1" />
-                            Dry
-                          </Badge>
+                          "—"
                         )}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {item.carrier || "—"}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {item.service || "—"}
-                      </TableCell>
-                      <TableCell className="text-right text-xs">
-                        {item.price != null
-                          ? `$${item.price.toFixed(2)}`
-                          : "—"}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {item.edd || "—"}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {item.deliveryBy || "—"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          {statusIcons[item.status]}
-                          <span className="text-xs">
-                            {statusLabels[item.status] || item.status}
+                      </div>
+                    </div>
+
+                    {/* Service */}
+                    <div className="min-w-0">
+                      {item.carrier ? (
+                        <div className="flex items-center gap-1.5">
+                          <CarrierBadge carrier={item.carrier} />
+                          <span className="truncate text-[11.5px] text-ink-2">
+                            {item.service ?? ""}
                           </span>
                         </div>
-                        {item.notes && (
-                          <p
-                            className={`text-[10px] text-red-500 mt-0.5 ${isClickableError(item.notes) ? "underline cursor-pointer hover:text-red-700" : ""}`}
-                            onClick={() => isClickableError(item.notes) && handleErrorClick(item)}
-                          >
-                            {item.notes}
-                          </p>
-                        )}
-                        {item.status === "bought" && (
-                          <p className="text-[10px] text-green-600 mt-0.5">
-                            {item.carrier} {item.service} ${item.price?.toFixed(2)}
-                            {item.trackingNumber &&
-                              typeof item.trackingNumber === "string" &&
-                              !item.trackingNumber.startsWith("[") &&
-                              ` | ${item.trackingNumber}`}
-                          </p>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      ) : plan ? (
-        <Card>
-          <CardContent className="py-8 text-center text-slate-400">
-            No orders found for today
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="py-8 text-center text-slate-400">
-            Click &quot;Generate Plan&quot; to fetch today&apos;s orders
-          </CardContent>
-        </Card>
-      )}
+                      ) : (
+                        <span className="text-[11.5px] text-ink-3">—</span>
+                      )}
+                      {item.price != null && (
+                        <div className="mt-0.5 text-[12px] font-semibold tabular text-ink">
+                          ${item.price.toFixed(2)}
+                        </div>
+                      )}
+                    </div>
 
-      {/* Legend */}
-      <div className="flex items-center gap-4 text-xs text-slate-500">
-        <span>Legend:</span>
-        <span className="flex items-center gap-1">
-          <Snowflake size={12} className="text-blue-500" /> Frozen
-        </span>
-        <span className="flex items-center gap-1">
-          <Package size={12} /> Dry
-        </span>
-        <span className="flex items-center gap-1">
-          <CheckCircle size={12} className="text-green-500" /> Bought
-        </span>
-        <span className="flex items-center gap-1">
-          <XCircle size={12} className="text-red-500" /> Needs Review
-        </span>
-      </div>
+                    {/* Status */}
+                    <div className="flex flex-col items-end gap-1">
+                      <StatusChip variant={statusVariantFor(item.status)}>
+                        {statusLabels[item.status] || item.status}
+                      </StatusChip>
+                      {item.status === "bought" && item.trackingNumber &&
+                        typeof item.trackingNumber === "string" &&
+                        !item.trackingNumber.startsWith("[") && (
+                          <div className="font-mono text-[10px] text-ink-3">
+                            {item.trackingNumber}
+                          </div>
+                        )}
+                      {item.notes && (
+                        <div
+                          className={cn(
+                            "text-right text-[10.5px] leading-tight",
+                            needsAttention ? "text-warn-strong" : "text-ink-3",
+                            isClickableError(item.notes) &&
+                              "cursor-pointer underline hover:text-danger"
+                          )}
+                          onClick={() =>
+                            isClickableError(item.notes) && handleErrorClick(item)
+                          }
+                        >
+                          {item.notes}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Panel>
+
+          {/* Sticky action bar — appears when something is selected */}
+          {selectedCount > 0 && (
+            <div className="sticky bottom-0 z-10 -mx-4 flex items-center gap-3 border-t border-rule bg-surface/95 px-4 py-3 backdrop-blur-md">
+              <div className="leading-tight">
+                <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-ink-3">
+                  Selected to buy
+                </div>
+                <div className="text-[14px] font-semibold text-ink">
+                  <span className="kpi-number" style={{ fontSize: 20 }}>
+                    {selectedCount}
+                  </span>
+                  <span className="ml-1 text-ink-3 font-normal tabular">
+                    of {plan.readyCount} ready labels
+                  </span>
+                </div>
+              </div>
+              <div className="flex-1" />
+              <Btn
+                variant="ghost"
+                onClick={deselectAll}
+                disabled={buying}
+              >
+                Clear selection
+              </Btn>
+              <Btn
+                variant="primary"
+                icon={<ShoppingCart size={13} />}
+                onClick={buySelectedLabels}
+                disabled={buying}
+                loading={buying}
+              >
+                {buying ? buyProgress : "Buy selected"}
+              </Btn>
+              <div className="hidden items-center gap-1.5 text-[11px] text-ink-3 sm:flex">
+                <span className="kbd">B</span>
+                <span>to buy</span>
+              </div>
+            </div>
+          )}
+        </>
+      ) : plan ? (
+        <Panel>
+          <div className="py-8 text-center text-[13px] text-ink-3">
+            No orders found for today
+          </div>
+        </Panel>
+      ) : (
+        <Panel>
+          <div className="py-8 text-center text-[13px] text-ink-3">
+            Click <strong className="text-ink">Generate plan</strong> to fetch today&apos;s orders
+          </div>
+        </Panel>
+      )}
 
       {/* ── Tag Fix Modal ── */}
       <Dialog open={!!tagModal} onOpenChange={(open) => !open && setTagModal(null)}>
