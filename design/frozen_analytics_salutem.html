@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salutem — Frozen Analytics</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #F4F3EF;
+  --bg-elev: #EDECE7;
+  --surface: #FFFFFF;
+  --surface-tint: #F8F7F3;
+  --ink: #15201B;
+  --ink-2: #4E554F;
+  --ink-3: #7A807B;
+  --ink-4: #AEB2AD;
+  --rule: rgba(21,32,27,0.08);
+  --rule-strong: rgba(21,32,27,0.16);
+  --green: #1F4D3F;
+  --green-deep: #14352B;
+  --green-mid: #3A6B5D;
+  --green-soft: #E6EEE9;
+  --green-soft2: #CDDDD5;
+  --green-ink: #12362C;
+  --green-cream: #F0E8D0;
+  --silver: #B5B8B5;
+  --silver-dark: #8E918E;
+  --silver-tint: #EAEBE9;
+  --silver-line: #D2D4D1;
+  --frozen: #2E6FA8;
+  --frozen-tint: #E5EEF6;
+  --frozen-deep: #1D4F7A;
+  --dry: #8B6B1C;
+  --dry-tint: #F3EDDD;
+  --warn: #A05B20;
+  --warn-tint: #F5E9DC;
+  --warn-strong: #8B4A18;
+  --danger: #9B2C2C;
+  --danger-tint: #F5E1E1;
+  --info: #2E6FA8;
+  --info-tint: #E5EEF6;
+  --heat-1: #F5E9DC;
+  --heat-2: #EFCBA8;
+  --heat-3: #E19E69;
+  --heat-4: #C97A43;
+  --heat-5: #A0512A;
+  --cool-1: #E5EEF6;
+  --cool-2: #BFD6EA;
+  --cool-3: #8FB9D9;
+  --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  letter-spacing: -0.005em;
+}
+button { font-family: inherit; }
+
+.app { display: grid; grid-template-columns: 236px 1fr; min-height: 100vh; }
+
+/* ===== SIDEBAR ===== */
+.sidebar { background: var(--bg); border-right: 1px solid var(--rule); padding: 22px 14px; display: flex; flex-direction: column; }
+.brand { display: flex; align-items: center; gap: 11px; padding: 2px 10px 20px; }
+.brand-mark { width: 32px; height: 32px; background: var(--green); color: var(--green-cream); border-radius: 8px; display: grid; place-items: center; font-weight: 700; font-size: 14px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 0 0 1px var(--silver-line); }
+.brand-info { flex: 1; }
+.brand-name { font-weight: 700; font-size: 14.5px; letter-spacing: -0.02em; color: var(--ink); line-height: 1.1; }
+.brand-meta { font-family: var(--mono); font-size: 10px; color: var(--silver-dark); margin-top: 2px; letter-spacing: 0.04em; }
+
+.ws { margin: 0 2px 16px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.15s; }
+.ws:hover { border-color: var(--silver-line); background: var(--surface-tint); }
+.ws-dot { width: 7px; height: 7px; border-radius: 2px; background: var(--green); }
+.ws-label { font-size: 12.5px; color: var(--ink); font-weight: 500; flex: 1; }
+.ws-count { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+.ws svg { width: 12px; height: 12px; color: var(--ink-3); }
+
+.nav-section { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--silver-dark); padding: 12px 12px 6px; font-weight: 500; }
+.nav { display: flex; flex-direction: column; gap: 1px; }
+.nav-item { display: flex; align-items: center; gap: 11px; padding: 7px 12px; border-radius: 7px; color: var(--ink-2); cursor: pointer; transition: background 0.15s, color 0.15s; font-size: 13px; }
+.nav-item svg { width: 16px; height: 16px; color: var(--ink-3); }
+.nav-item:hover { background: var(--bg-elev); color: var(--ink); }
+.nav-item:hover svg { color: var(--ink-2); }
+.nav-item.active { background: var(--green-soft); color: var(--green-ink); font-weight: 500; }
+.nav-item.active svg { color: var(--green); }
+.nav-item .pill { margin-left: auto; font-family: var(--mono); font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 500; }
+.nav-item .pill-active { background: var(--green); color: var(--green-cream); }
+.nav-item .pill-warn { background: var(--warn-tint); color: var(--warn-strong); }
+.nav-item.disabled { opacity: 0.52; cursor: not-allowed; }
+.nav-item.disabled .coming { margin-left: auto; font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--silver-dark); }
+.nav-spacer { flex: 1; }
+
+.helper { margin: 8px 2px 0; padding: 14px 16px; background: var(--green); border-radius: 10px; color: var(--green-cream); position: relative; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
+.helper::before { content: ''; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; border-radius: 50%; background: rgba(240,232,208,0.05); }
+.helper-title { font-size: 12.5px; font-weight: 600; margin-bottom: 3px; position: relative; }
+.helper-sub { font-size: 11.5px; color: rgba(240,232,208,0.72); line-height: 1.4; margin-bottom: 10px; position: relative; }
+.helper-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 500; color: var(--green-cream); background: rgba(240,232,208,0.14); padding: 4px 10px; border-radius: 5px; border: 1px solid rgba(240,232,208,0.22); cursor: pointer; position: relative; }
+
+/* ===== MAIN ===== */
+.main { display: flex; flex-direction: column; min-width: 0; }
+
+.topbar { display: flex; align-items: center; height: 56px; padding: 0 28px; border-bottom: 1px solid var(--rule); gap: 14px; background: var(--bg); }
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-3); }
+.breadcrumb .crumb-current { color: var(--ink); font-weight: 500; }
+.breadcrumb .crumb-sep { color: var(--ink-4); }
+
+.search { max-width: 340px; flex: 1; display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--bg-elev); border: 1px solid transparent; border-radius: 8px; color: var(--ink-3); font-size: 12.5px; cursor: pointer; transition: all 0.15s; }
+.search:hover { border-color: var(--silver-line); background: var(--surface); }
+.search svg { width: 14px; height: 14px; }
+.search .kbd { margin-left: auto; font-family: var(--mono); font-size: 10px; padding: 2px 5px; background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-3); }
+.topbar-spacer { flex: 1; }
+
+.live-pill { display: flex; align-items: center; gap: 7px; padding: 5px 10px 5px 9px; background: var(--frozen-tint); color: var(--frozen-deep); border-radius: 6px; font-size: 12px; font-weight: 500; }
+.live-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--frozen); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.icon-btn { width: 32px; height: 32px; display: grid; place-items: center; color: var(--ink-2); border-radius: 6px; cursor: pointer; position: relative; }
+.icon-btn:hover { background: var(--bg-elev); }
+.icon-btn .notif { position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); border: 1.5px solid var(--bg); }
+
+.user-chip { display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border: 1px solid var(--rule); border-radius: 18px; cursor: pointer; }
+.user-chip:hover { background: var(--surface); border-color: var(--silver-line); }
+.user-chip-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--green); color: var(--green-cream); display: grid; place-items: center; font-size: 11px; font-weight: 600; }
+.user-chip-name { font-size: 12.5px; font-weight: 500; color: var(--ink); }
+
+.content { padding: 28px 32px 40px; max-width: 1500px; width: 100%; }
+
+.page-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
+.page-title-row { display: flex; align-items: center; gap: 12px; }
+.page-title { font-size: 24px; font-weight: 600; letter-spacing: -0.025em; color: var(--ink); line-height: 1.1; }
+.sync-chip { font-family: var(--mono); font-size: 10.5px; color: var(--frozen-deep); background: var(--frozen-tint); padding: 4px 9px; border-radius: 5px; font-weight: 500; letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 6px; }
+.sync-chip::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--frozen); animation: pulse 2s ease-in-out infinite; }
+.page-subtitle { color: var(--ink-2); font-size: 13px; margin-top: 6px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.page-subtitle .sep { color: var(--ink-4); }
+.page-subtitle .label-strong { color: var(--ink); font-weight: 500; }
+.page-subtitle .mono { font-family: var(--mono); font-size: 11.5px; color: var(--silver-dark); letter-spacing: 0.04em; }
+.page-actions { display: flex; gap: 8px; }
+
+.btn-sm { font-size: 12.5px; padding: 8px 13px; border-radius: 7px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink); transition: all 0.15s; }
+.btn-sm svg { width: 13px; height: 13px; }
+.btn-sm:hover { background: var(--surface-tint); border-color: var(--silver-dark); }
+.btn-sm.primary { background: var(--green); color: var(--green-cream); border-color: var(--green); }
+.btn-sm.primary:hover { background: var(--green-deep); border-color: var(--green-deep); }
+.btn-sm.frozen-btn { background: var(--frozen); color: white; border-color: var(--frozen); }
+.btn-sm.frozen-btn:hover { background: var(--frozen-deep); }
+
+/* ===== TAMPA WEATHER + KPI ROW ===== */
+.top-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 22px; }
+
+.kpi-card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: 18px 20px 16px; transition: border-color 0.15s; }
+.kpi-card:hover { border-color: var(--silver-line); }
+
+.kpi-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.kpi-label { font-size: 12px; color: var(--ink-2); font-weight: 500; }
+.kpi-icon { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; color: var(--frozen); background: var(--frozen-tint); }
+.kpi-icon svg { width: 13px; height: 13px; }
+.kpi-icon.warn { color: var(--warn); background: var(--warn-tint); }
+.kpi-icon.danger { color: var(--danger); background: var(--danger-tint); }
+.kpi-icon.heat { color: var(--heat-5); background: var(--heat-1); }
+
+.kpi-number { font-size: 30px; font-weight: 600; letter-spacing: -0.03em; color: var(--ink); line-height: 1; font-variant-numeric: tabular-nums; }
+.kpi-number .unit { font-size: 16px; color: var(--ink-4); font-weight: 400; margin-left: 2px; }
+.kpi-number.warn-num { color: var(--warn); }
+
+.kpi-foot { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.kpi-sub-text { font-size: 11.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.kpi-sub-text strong { color: var(--ink-2); font-weight: 500; }
+
+.kpi-chips { display: flex; gap: 5px; flex-wrap: wrap; }
+.chip { font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; }
+.chip-frozen { background: var(--frozen-tint); color: var(--frozen); }
+.chip-hot { background: var(--heat-1); color: var(--heat-5); }
+.chip-ok { background: var(--green-soft); color: var(--green-ink); }
+.chip-bad { background: var(--danger-tint); color: var(--danger); }
+.chip::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+/* Tampa special card */
+.tampa-card { background: linear-gradient(135deg, var(--heat-1) 0%, var(--heat-2) 100%); border: 1px solid var(--heat-2); position: relative; overflow: hidden; }
+.tampa-card::after { content: ''; position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; border-radius: 50%; background: rgba(160,91,32,0.08); }
+.tampa-card .kpi-icon { background: rgba(255,255,255,0.55); color: var(--heat-5); }
+.tampa-card .kpi-label { color: var(--heat-5); font-weight: 600; }
+.tampa-card .kpi-number { color: var(--heat-5); position: relative; }
+.tampa-card .kpi-sub-text { color: var(--heat-5); opacity: 0.8; position: relative; }
+
+/* ===== SECTION HEADERS ===== */
+.section-head { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 14px; }
+.section-title { font-size: 16px; font-weight: 600; letter-spacing: -0.015em; color: var(--ink); display: flex; align-items: center; gap: 10px; }
+.section-title .count { font-family: var(--mono); font-size: 11px; color: var(--silver-dark); font-weight: 500; letter-spacing: 0.04em; }
+.section-title .count.danger { color: var(--danger); background: var(--danger-tint); padding: 2px 7px; border-radius: 4px; }
+.section-sub { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
+.section-actions { display: flex; gap: 6px; }
+
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 22px; }
+.card-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--rule); }
+.card-title { font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; color: var(--ink); }
+.card-title .count { font-family: var(--mono); font-size: 11px; color: var(--silver-dark); background: var(--silver-tint); padding: 2px 7px; border-radius: 4px; font-weight: 500; }
+.card-tabs { display: flex; gap: 2px; background: var(--bg-elev); padding: 3px; border-radius: 7px; }
+.card-tab { font-size: 11.5px; padding: 4px 10px; border-radius: 5px; color: var(--ink-2); cursor: pointer; font-weight: 500; }
+.card-tab.active { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--silver-line); }
+
+/* ===== FILTER BAR (incidents) ===== */
+.filterbar { padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--rule); flex-wrap: wrap; background: var(--surface-tint); }
+.filterbar-label { font-family: var(--mono); font-size: 10.5px; color: var(--silver-dark); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500; }
+.dropdown { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; color: var(--ink-2); cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.15s; }
+.dropdown:hover { border-color: var(--silver-dark); }
+.dropdown svg { width: 11px; height: 11px; }
+.filterbar-spacer { flex: 1; }
+
+/* ===== INCIDENTS TABLE ===== */
+.inc-table { width: 100%; border-collapse: collapse; }
+.inc-table th { text-align: left; padding: 11px 16px; font-size: 10.5px; font-weight: 500; color: var(--silver-dark); border-bottom: 1px solid var(--rule); text-transform: uppercase; letter-spacing: 0.1em; background: var(--surface-tint); }
+.inc-table td { padding: 13px 16px; font-size: 12.5px; border-bottom: 1px solid var(--rule); vertical-align: middle; color: var(--ink); }
+.inc-table tr:last-child td { border-bottom: none; }
+.inc-table tr:hover td { background: var(--surface-tint); cursor: pointer; }
+.inc-table tr.expanded td { background: var(--frozen-tint); }
+
+.inc-date { font-family: var(--mono); font-size: 11.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.inc-date .rel { display: block; font-size: 10px; color: var(--silver-dark); margin-top: 1px; letter-spacing: 0.04em; }
+
+.sku-code { font-family: var(--mono); font-weight: 600; font-size: 12px; color: var(--ink); letter-spacing: -0.01em; }
+.sku-name { font-size: 11px; color: var(--ink-3); margin-top: 1px; font-weight: 400; }
+
+.carrier-chip { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 10.5px; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.04em; font-weight: 500; }
+.carrier-ups { background: #3A1F04; color: #F7B500; }
+.carrier-fedex { background: #2E1F5E; color: #FF6600; }
+.carrier-usps { background: #003087; color: #FFFFFF; }
+
+.service-chip { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); padding: 2px 6px; border-radius: 4px; background: var(--bg-elev); letter-spacing: 0.02em; }
+
+.days-cell { font-family: var(--mono); font-weight: 600; font-size: 12.5px; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 6px; }
+.days-cell .days-bar { width: 36px; height: 4px; border-radius: 2px; background: var(--silver-tint); overflow: hidden; }
+.days-cell .days-bar > div { height: 100%; background: var(--warn); }
+.days-cell.ok .days-bar > div { background: var(--green); }
+.days-cell.danger .days-bar > div { background: var(--danger); }
+
+.temp-cell { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 600; }
+.temp-heat { color: var(--heat-5); }
+.temp-ok { color: var(--ink-2); }
+.temp-cool { color: var(--frozen); }
+.temp-dot { width: 8px; height: 8px; border-radius: 50%; }
+.temp-dot.hot { background: var(--heat-5); }
+.temp-dot.warm { background: var(--heat-3); }
+.temp-dot.cool { background: var(--cool-3); }
+
+.outcome-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; padding: 3px 9px; border-radius: 5px; font-weight: 500; letter-spacing: 0.01em; }
+.outcome-pill::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.out-thawed { background: var(--danger-tint); color: var(--danger); font-weight: 600; }
+.out-partial { background: var(--warn-tint); color: var(--warn-strong); }
+.out-ok { background: var(--green-soft); color: var(--green-ink); }
+.out-complaint { background: var(--warn-tint); color: var(--warn); }
+
+/* Expanded detail row */
+.detail-panel-row td { padding: 0 !important; background: var(--surface-tint) !important; }
+.detail-inner { padding: 18px 20px; display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 18px; }
+.detail-block { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; }
+.detail-block-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--silver-dark); font-weight: 500; margin-bottom: 8px; }
+
+/* Transit timeline */
+.timeline { position: relative; padding: 10px 8px 20px; }
+.timeline-rail { position: relative; height: 6px; background: var(--silver-tint); border-radius: 3px; margin: 30px 10px 20px; }
+.timeline-fill { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, var(--frozen) 0%, var(--cool-3) 50%, var(--heat-3) 100%); border-radius: 3px; }
+.timeline-stop { position: absolute; top: -6px; width: 18px; height: 18px; border-radius: 50%; background: var(--surface); border: 2.5px solid var(--frozen); transform: translateX(-50%); display: grid; place-items: center; }
+.timeline-stop.ok { border-color: var(--green); }
+.timeline-stop.late { border-color: var(--danger); background: var(--danger); }
+.timeline-stop.late::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--surface); }
+.timeline-label { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 10px; color: var(--ink-2); white-space: nowrap; letter-spacing: 0.04em; }
+.timeline-label .meta { display: block; color: var(--silver-dark); font-size: 9.5px; margin-top: 1px; }
+.timeline-day { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 10px; color: var(--ink-3); white-space: nowrap; letter-spacing: 0.04em; }
+
+/* Weather mini */
+.weather-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.weather-tile { padding: 10px 12px; background: var(--bg-elev); border-radius: 8px; }
+.weather-tile.hot { background: linear-gradient(135deg, var(--heat-1), var(--heat-2)); }
+.weather-tile.cool { background: var(--frozen-tint); }
+.weather-tile-label { font-family: var(--mono); font-size: 9.5px; color: var(--silver-dark); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px; font-weight: 500; }
+.weather-tile.hot .weather-tile-label { color: var(--heat-5); }
+.weather-tile.cool .weather-tile-label { color: var(--frozen-deep); }
+.weather-tile-val { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; color: var(--ink); }
+.weather-tile.hot .weather-tile-val { color: var(--heat-5); }
+.weather-tile.cool .weather-tile-val { color: var(--frozen-deep); }
+.weather-tile-meta { font-size: 10.5px; color: var(--ink-3); margin-top: 2px; }
+
+/* Customer voice block */
+.quote-mini { font-size: 12.5px; color: var(--ink); line-height: 1.5; padding: 10px 12px; background: var(--bg-elev); border-left: 3px solid var(--warn); border-radius: 0 6px 6px 0; margin-bottom: 8px; font-style: italic; }
+.decision-list { list-style: none; padding: 0; }
+.decision-list li { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--ink-2); padding: 4px 0; }
+.decision-list li::before { content: '→'; color: var(--frozen); font-weight: 600; flex-shrink: 0; }
+
+/* ===== SKU RISK ANALYSIS ===== */
+.sku-table { width: 100%; border-collapse: collapse; }
+.sku-table th { text-align: left; padding: 11px 16px; font-size: 10.5px; font-weight: 500; color: var(--silver-dark); border-bottom: 1px solid var(--rule); text-transform: uppercase; letter-spacing: 0.1em; background: var(--surface-tint); }
+.sku-table td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid var(--rule); vertical-align: middle; color: var(--ink); }
+.sku-table tr:last-child td { border-bottom: none; }
+.sku-table tr:hover td { background: var(--surface-tint); cursor: pointer; }
+
+.risk-bar-wrap { display: flex; align-items: center; gap: 10px; }
+.risk-bar { flex: 1; height: 8px; background: var(--silver-tint); border-radius: 4px; overflow: hidden; max-width: 220px; position: relative; }
+.risk-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+.risk-bar-fill.low { background: linear-gradient(90deg, var(--green), var(--green-mid)); }
+.risk-bar-fill.med { background: linear-gradient(90deg, var(--silver), var(--warn)); }
+.risk-bar-fill.high { background: linear-gradient(90deg, var(--warn), var(--danger)); }
+.risk-bar-fill.crit { background: linear-gradient(90deg, var(--danger), #7A1F1F); }
+.risk-score { font-family: var(--mono); font-weight: 600; font-size: 13px; font-variant-numeric: tabular-nums; min-width: 42px; text-align: right; }
+.risk-pill-inline { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; padding: 2px 7px; border-radius: 4px; font-weight: 600; font-family: var(--mono); letter-spacing: 0.04em; text-transform: uppercase; }
+.risk-pill-inline::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.rpi-low { background: var(--green-soft); color: var(--green-ink); }
+.rpi-med { background: var(--silver-tint); color: var(--silver-dark); }
+.rpi-high { background: var(--warn-tint); color: var(--warn); }
+.rpi-crit { background: var(--danger-tint); color: var(--danger); }
+
+.spark { width: 64px; height: 20px; }
+
+/* ===== PATTERNS DASHBOARD ===== */
+.patterns-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; margin-bottom: 22px; }
+
+/* High risk combos cards */
+.combo-card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 12px;
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 10px;
+  position: relative; overflow: hidden;
+}
+.combo-card.critical { border-color: var(--danger-tint); background: linear-gradient(135deg, rgba(155,44,44,0.03), transparent 60%); border-left: 3px solid var(--danger); padding-left: 15px; }
+.combo-card.high { border-color: var(--warn-tint); border-left: 3px solid var(--warn); padding-left: 15px; }
+.combo-card.medium { border-left: 3px solid var(--silver); padding-left: 15px; }
+.combo-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.combo-pct { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; color: var(--ink); line-height: 1; }
+.combo-pct.critical { color: var(--danger); }
+.combo-pct.high { color: var(--warn); }
+.combo-fraction { font-family: var(--mono); font-size: 11px; color: var(--ink-3); letter-spacing: 0.04em; margin-left: 4px; }
+.combo-body { }
+.combo-factors { display: flex; flex-wrap: wrap; gap: 6px; }
+.combo-factor { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 3px 9px; border-radius: 5px; background: var(--bg-elev); color: var(--ink); font-weight: 500; }
+.combo-factor.ups { background: #3A1F04; color: #F7B500; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em; }
+.combo-factor.fedex { background: #2E1F5E; color: #FF6600; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em; }
+.combo-factor.usps { background: #003087; color: white; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em; }
+.combo-factor.temp { background: var(--heat-1); color: var(--heat-5); }
+.combo-factor.transit { background: var(--warn-tint); color: var(--warn-strong); }
+.combo-factor.service { background: var(--silver-tint); color: var(--silver-dark); font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em; }
+.combo-note { font-size: 11.5px; color: var(--ink-3); line-height: 1.4; padding-top: 8px; border-top: 1px dashed var(--rule); }
+
+.combo-list { display: flex; flex-direction: column; gap: 10px; padding: 16px 20px; }
+
+/* Histogram */
+.hist-body { padding: 18px 20px; }
+.hist-bars { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding: 8px 0 4px; border-bottom: 1px solid var(--rule); }
+.hist-col { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
+.hist-bar { width: 100%; background: var(--cool-3); border-radius: 3px 3px 0 0; transition: all 0.2s; position: relative; }
+.hist-bar.warm { background: var(--heat-3); }
+.hist-bar.hot { background: var(--heat-5); }
+.hist-bar.med { background: var(--heat-2); }
+.hist-bar:hover { filter: brightness(1.15); cursor: pointer; }
+.hist-bar-val { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 10px; color: var(--ink-2); font-weight: 500; }
+.hist-labels { display: flex; margin-top: 6px; }
+.hist-label { flex: 1; text-align: center; font-family: var(--mono); font-size: 10px; color: var(--ink-3); letter-spacing: 0.04em; }
+.hist-xlabel { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--silver-dark); margin-top: 10px; font-weight: 500; text-align: center; }
+
+/* Second patterns row */
+.patterns-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* Correlation grid */
+.corr-grid { padding: 16px 20px; }
+.corr-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.corr-table th { padding: 6px 4px; font-family: var(--mono); font-size: 9.5px; color: var(--silver-dark); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; text-align: center; border-bottom: 1px solid var(--rule); }
+.corr-table td { padding: 6px 4px; text-align: center; font-family: var(--mono); font-size: 11px; font-variant-numeric: tabular-nums; font-weight: 500; border-radius: 4px; }
+.corr-table td:first-child { text-align: left; font-family: var(--mono); color: var(--ink-3); font-weight: 500; padding-left: 8px; }
+.corr-0 { background: var(--green-soft); color: var(--green-ink); }
+.corr-1 { background: #E8F0E0; color: var(--green-ink); }
+.corr-2 { background: #F2EAC8; color: var(--dry); }
+.corr-3 { background: var(--heat-1); color: var(--warn); }
+.corr-4 { background: var(--heat-2); color: var(--warn-strong); }
+.corr-5 { background: var(--heat-3); color: #5C2A0F; }
+.corr-6 { background: var(--heat-4); color: white; }
+.corr-7 { background: var(--heat-5); color: white; }
+
+/* Carrier ranking */
+.carrier-rank { padding: 14px 20px; }
+.carrier-row { display: grid; grid-template-columns: 90px 1fr 80px 64px; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--rule); align-items: center; }
+.carrier-row:last-child { border-bottom: none; }
+.carrier-row-name { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11.5px; font-weight: 500; }
+.carrier-row-bar { height: 6px; background: var(--silver-tint); border-radius: 3px; overflow: hidden; position: relative; }
+.carrier-row-bar > div { height: 100%; border-radius: 3px; }
+.carrier-row-stat { font-family: var(--mono); font-size: 11.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; text-align: right; font-weight: 500; }
+.carrier-row-trend { font-family: var(--mono); font-size: 10.5px; font-variant-numeric: tabular-nums; font-weight: 500; }
+.trend-up { color: var(--danger); }
+.trend-down { color: var(--green-ink); }
+.trend-flat { color: var(--silver-dark); }
+
+/* ===== Weather panel (Tampa hero) ===== */
+.tampa-hero { background: linear-gradient(135deg, var(--heat-5) 0%, var(--heat-4) 55%, var(--heat-3) 100%); border-radius: var(--radius-lg); padding: 22px 24px; color: white; margin-bottom: 22px; position: relative; overflow: hidden; }
+.tampa-hero::before { content: ''; position: absolute; top: -80px; right: -80px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle at center, rgba(255,255,255,0.18) 0%, transparent 60%); }
+.tampa-hero-row { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; position: relative; }
+
+.tampa-eyebrow { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.7); font-weight: 500; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.tampa-eyebrow::before { content: ''; width: 12px; height: 1px; background: rgba(255,255,255,0.6); }
+.tampa-big { font-size: 58px; font-weight: 600; letter-spacing: -0.035em; line-height: 1; font-variant-numeric: tabular-nums; }
+.tampa-big .unit { font-size: 26px; opacity: 0.7; margin-left: 2px; }
+.tampa-cap { font-size: 12.5px; color: rgba(255,255,255,0.75); margin-top: 6px; }
+
+.tampa-forecast { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+.forecast-day { padding: 10px 8px; background: rgba(255,255,255,0.12); border-radius: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+.forecast-day.today { background: rgba(255,255,255,0.28); border-color: rgba(255,255,255,0.4); }
+.forecast-day.danger { background: rgba(155,44,44,0.35); border-color: rgba(255,255,255,0.15); }
+.fd-label { font-family: var(--mono); font-size: 10px; color: rgba(255,255,255,0.85); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; margin-bottom: 6px; }
+.fd-temp { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: white; }
+.fd-temp .lo { font-size: 12px; opacity: 0.65; font-weight: 400; margin-left: 4px; }
+.fd-flag { font-family: var(--mono); font-size: 9px; color: rgba(255,255,255,0.7); letter-spacing: 0.04em; margin-top: 3px; }
+
+.tampa-footer { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.18); display: flex; align-items: center; gap: 16px; font-size: 11.5px; color: rgba(255,255,255,0.82); font-family: var(--mono); letter-spacing: 0.04em; position: relative; }
+.tampa-footer .sep { color: rgba(255,255,255,0.4); }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-info">
+        <div class="brand-name">Salutem</div>
+        <div class="brand-meta">CONTROL · V1.4</div>
+      </div>
+    </div>
+
+    <div class="ws">
+      <span class="ws-dot"></span>
+      <span class="ws-label">All stores</span>
+      <span class="ws-count">5</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+
+    <div class="nav-section">Operations</div>
+    <nav class="nav">
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="9" rx="1.2"/><rect x="14" y="3" width="7" height="5" rx="1.2"/><rect x="14" y="12" width="7" height="9" rx="1.2"/><rect x="3" y="16" width="7" height="5" rx="1.2"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3.4 12a9 9 0 1 0 9-9"/><path d="M12 7v5l3 2"/><path d="M3 6l2-2 2 2"/></svg>
+        Account health
+        <span class="pill pill-warn">1</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7h13v10H3z"/><path d="M16 10h4l1 3v4h-5z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        Shipping labels
+        <span class="pill pill-active">6</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12a8 8 0 1 1-3-6.2L21 4v5h-5"/></svg>
+        Customer hub
+        <span class="pill pill-active">7</span>
+      </div>
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 20h18M6 16l4-6 4 3 5-8"/></svg>
+        Frozen analytics
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+        Adjustments
+      </div>
+    </nav>
+
+    <div class="nav-section">Phase 2</div>
+    <nav class="nav">
+      <div class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2a10 10 0 1 0 10 10h-10Z"/><path d="M12 2v10h10a10 10 0 0 0-10-10Z"/></svg>
+        Product listings
+        <span class="coming">Soon</span>
+      </div>
+      <div class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Sales analytics
+        <span class="coming">Soon</span>
+      </div>
+    </nav>
+
+    <div class="nav-spacer"></div>
+
+    <div class="nav" style="margin-bottom:4px;">
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </div>
+    </div>
+
+    <div class="helper">
+      <div class="helper-title">Tampa 91°F today</div>
+      <div class="helper-sub">5-day avg rising · avoid UPS Ground for 3+ day deliveries</div>
+      <div class="helper-btn">See recommendations →</div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span>Operations</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Frozen Analytics</span>
+      </div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <span>Search SKU, order, ZIP…</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <div class="live-pill"><span class="dot"></span>Open-Meteo live</div>
+      <div class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span class="notif"></span>
+      </div>
+      <div class="user-chip">
+        <div class="user-chip-avatar">V</div>
+        <span class="user-chip-name">Vladimir K.</span>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- PAGE HEAD -->
+      <div class="page-head">
+        <div>
+          <div class="page-title-row">
+            <div class="page-title">Frozen Analytics</div>
+            <span class="sync-chip">Last sync 6m ago</span>
+          </div>
+          <div class="page-subtitle">
+            <span class="label-strong">24 incidents</span>
+            <span>logged last 90 days</span>
+            <span class="sep">·</span>
+            <span class="mono">VEEQO TRACKING + OPEN-METEO + ZIPPOPOTAM</span>
+            <span class="sep">·</span>
+            <span>Tampa origin 27.9506, -82.4572</span>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 9-9M3 4v5h5"/></svg>
+            Recalculate risk
+          </button>
+          <button class="btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+            Export CSV
+          </button>
+          <button class="btn-sm primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Apply rules
+          </button>
+        </div>
+      </div>
+
+      <!-- TAMPA HERO -->
+      <div class="tampa-hero">
+        <div class="tampa-hero-row">
+          <div>
+            <div class="tampa-eyebrow">Tampa origin · today</div>
+            <div class="tampa-big">91<span class="unit">°F</span></div>
+            <div class="tampa-cap">Partly sunny · heat index 98°F · 63% humidity</div>
+          </div>
+          <div>
+            <div class="tampa-eyebrow" style="margin-bottom:12px;">7-day forecast · shipping window</div>
+            <div class="tampa-forecast">
+              <div class="forecast-day today">
+                <div class="fd-label">TUE 19</div>
+                <div class="fd-temp">91°<span class="lo">76°</span></div>
+                <div class="fd-flag">TODAY</div>
+              </div>
+              <div class="forecast-day danger">
+                <div class="fd-label">WED 20</div>
+                <div class="fd-temp">93°<span class="lo">77°</span></div>
+                <div class="fd-flag">RISK ↑</div>
+              </div>
+              <div class="forecast-day danger">
+                <div class="fd-label">THU 21</div>
+                <div class="fd-temp">94°<span class="lo">78°</span></div>
+                <div class="fd-flag">RISK ↑</div>
+              </div>
+              <div class="forecast-day">
+                <div class="fd-label">FRI 22</div>
+                <div class="fd-temp">89°<span class="lo">74°</span></div>
+                <div class="fd-flag">OK</div>
+              </div>
+              <div class="forecast-day">
+                <div class="fd-label">SAT 23</div>
+                <div class="fd-temp">85°<span class="lo">71°</span></div>
+                <div class="fd-flag">OK</div>
+              </div>
+              <div class="forecast-day">
+                <div class="fd-label">SUN 24</div>
+                <div class="fd-temp">87°<span class="lo">72°</span></div>
+                <div class="fd-flag">OK</div>
+              </div>
+              <div class="forecast-day">
+                <div class="fd-label">MON 25</div>
+                <div class="fd-temp">90°<span class="lo">75°</span></div>
+                <div class="fd-flag">WATCH</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tampa-footer">
+          <span>OPEN-METEO · UPDATED 4m AGO</span>
+          <span class="sep">·</span>
+          <span>THRESHOLD 85°F · 2 DAYS EXCEEDING</span>
+          <span class="sep">·</span>
+          <span>RECOMMEND: UPS 2nd-Day Air or hold frozen until Fri</span>
+        </div>
+      </div>
+
+      <!-- KPI ROW -->
+      <div class="top-grid">
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <div class="kpi-label">Frozen incidents</div>
+            <div class="kpi-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m2 12 3-3 3 3M5 9v10M12 2l3 3 3-3M15 5v14M12 22l-3-3-3 3M9 19V9"/></svg>
+            </div>
+          </div>
+          <div class="kpi-number">24</div>
+          <div class="kpi-foot">
+            <div class="kpi-chips">
+              <span class="chip chip-bad">14 thawed</span>
+              <span class="chip chip-hot">6 partial</span>
+              <span class="chip chip-ok">4 soft</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <div class="kpi-label">Thaw rate</div>
+            <div class="kpi-icon warn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v8M4.93 10.93 10 15M19.07 10.93 14 15M2 22h20"/></svg>
+            </div>
+          </div>
+          <div class="kpi-number warn-num">8.3<span class="unit">%</span></div>
+          <div class="kpi-foot">
+            <div class="kpi-sub-text"><strong>24 / 289</strong> frozen orders · 90d</div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-head">
+            <div class="kpi-label">Avg transit days</div>
+            <div class="kpi-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+            </div>
+          </div>
+          <div class="kpi-number">3.4<span class="unit">d</span></div>
+          <div class="kpi-foot">
+            <div class="kpi-sub-text">incidents avg <strong>4.8d</strong> vs <strong>2.9d</strong> clean</div>
+          </div>
+        </div>
+
+        <div class="kpi-card tampa-card">
+          <div class="kpi-head">
+            <div class="kpi-label">Tampa 5-day avg</div>
+            <div class="kpi-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+            </div>
+          </div>
+          <div class="kpi-number">90<span class="unit">°F</span></div>
+          <div class="kpi-foot">
+            <div class="kpi-sub-text"><strong>+4°F</strong> vs seasonal avg · 2 days &gt; 85°F</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SECTION 1: INCIDENTS LOG ============ -->
+      <div class="section-head">
+        <div>
+          <div class="section-title">Incidents log <span class="count">24 total · 90d window</span></div>
+          <div class="section-sub">Every frozen order reported as thawed, soft, or damaged. Click a row to see the full thermal timeline.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="filterbar">
+          <span class="filterbar-label">Filter</span>
+          <div class="dropdown">Carriers: all
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div class="dropdown">Services: all
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div class="dropdown">Outcome: all
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div class="dropdown">Tampa &gt;85°F
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div class="dropdown">Last 90 days
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div class="filterbar-spacer"></div>
+          <span class="filterbar-label">Showing 8 of 24</span>
+        </div>
+
+        <table class="inc-table">
+          <thead>
+            <tr>
+              <th style="width:84px;">Date</th>
+              <th>SKU · Product</th>
+              <th style="width:84px;">Carrier</th>
+              <th style="width:76px;">Service</th>
+              <th style="width:74px;">Days</th>
+              <th style="width:80px;">Tampa°</th>
+              <th style="width:84px;">Dest°</th>
+              <th style="width:110px;">Outcome</th>
+              <th style="width:20px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- EXPANDED ROW -->
+            <tr class="expanded">
+              <td class="inc-date">Apr 17<span class="rel">2d ago</span></td>
+              <td>
+                <div class="sku-code">JD-SEBC-12</div>
+                <div class="sku-name">Jimmy Dean Sausage Egg Biscuit · 12ct</div>
+              </td>
+              <td><span class="carrier-chip carrier-ups">UPS</span></td>
+              <td><span class="service-chip">Ground</span></td>
+              <td><span class="days-cell danger"><span class="days-bar"><div style="width:100%"></div></span>5</span></td>
+              <td><span class="temp-cell temp-heat"><span class="temp-dot hot"></span>93°F</span></td>
+              <td><span class="temp-cell temp-heat"><span class="temp-dot hot"></span>88°F</span></td>
+              <td><span class="outcome-pill out-thawed">Thawed</span></td>
+              <td>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--frozen)" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>
+              </td>
+            </tr>
+            <tr class="detail-panel-row">
+              <td colspan="9">
+                <div class="detail-inner">
+                  <!-- Timeline -->
+                  <div class="detail-block" style="grid-column: span 2;">
+                    <div class="detail-block-label">Transit timeline · Tampa → Phoenix 85032</div>
+                    <div class="timeline">
+                      <div class="timeline-rail">
+                        <div class="timeline-fill" style="width:100%;"></div>
+                        <div class="timeline-stop ok" style="left:0%;">
+                          <div class="timeline-label">Shipped<span class="meta">APR 12 · 14:30</span></div>
+                          <div class="timeline-day">Day 0 · 82°F</div>
+                        </div>
+                        <div class="timeline-stop" style="left:25%;">
+                          <div class="timeline-label">Memphis hub<span class="meta">APR 14</span></div>
+                          <div class="timeline-day">Day 2 · 75°F</div>
+                        </div>
+                        <div class="timeline-stop" style="left:60%;">
+                          <div class="timeline-label">Expected<span class="meta">APR 15</span></div>
+                          <div class="timeline-day">EDD · 3d</div>
+                        </div>
+                        <div class="timeline-stop late" style="left:100%;">
+                          <div class="timeline-label" style="color:var(--danger); font-weight:600;">Delivered late<span class="meta">APR 17 · 16:42</span></div>
+                          <div class="timeline-day">Day 5 · 88°F · thawed</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Weather -->
+                  <div class="detail-block">
+                    <div class="detail-block-label">Temperature exposure</div>
+                    <div class="weather-mini">
+                      <div class="weather-tile hot">
+                        <div class="weather-tile-label">Tampa origin</div>
+                        <div class="weather-tile-val">93°F</div>
+                        <div class="weather-tile-meta">ship day · humid 68%</div>
+                      </div>
+                      <div class="weather-tile hot">
+                        <div class="weather-tile-label">Phoenix dest</div>
+                        <div class="weather-tile-val">88°F</div>
+                        <div class="weather-tile-meta">arrival · dry 19%</div>
+                      </div>
+                      <div class="weather-tile">
+                        <div class="weather-tile-label">Transit high</div>
+                        <div class="weather-tile-val">95°F</div>
+                        <div class="weather-tile-meta">Memphis day 3</div>
+                      </div>
+                      <div class="weather-tile">
+                        <div class="weather-tile-label">Route avg</div>
+                        <div class="weather-tile-val">84°F</div>
+                        <div class="weather-tile-meta">above 80° all 5 days</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Customer + Decision -->
+                  <div class="detail-block" style="grid-column: span 3;">
+                    <div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 16px;">
+                      <div>
+                        <div class="detail-block-label">Customer report · Mike Rodriguez</div>
+                        <div class="quote-mini">"Box arrived today, everything was warm. The sausage patties are soft, ice packs melted completely. Photo attached."</div>
+                        <div style="font-family:var(--mono); font-size:10.5px; color:var(--silver-dark); letter-spacing:0.04em;">113-9184726-5829134 · Salutem Solutions · T4 thawed food (C2) · photo verified</div>
+                      </div>
+                      <div>
+                        <div class="detail-block-label">Risk score breakdown</div>
+                        <div style="font-family:var(--mono); font-size:11px; color:var(--ink-2); line-height:1.7;">
+                          <div>Thaw rate       · <strong style="color:var(--danger)">+42</strong> / 50</div>
+                          <div>Transit days    · <strong style="color:var(--danger)">+28</strong> / 30</div>
+                          <div>Temp combined   · <strong style="color:var(--warn)">+18</strong> / 20</div>
+                          <div style="border-top:1px solid var(--rule); margin-top:4px; padding-top:4px;">
+                            <strong style="color:var(--danger); font-size:13px;">Total: 88 / 100 · CRITICAL</strong>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <div class="detail-block-label">Decision engine</div>
+                        <ul class="decision-list">
+                          <li>Full refund recommended · $28.99</li>
+                          <li>Amazon A-to-Z funded (Buy Shipping ✓)</li>
+                          <li>Flag JD-SEBC-12 · 2nd thaw 30d</li>
+                          <li>Block UPS Ground this ZIP zone</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 2 -->
+            <tr>
+              <td class="inc-date">Apr 14<span class="rel">5d ago</span></td>
+              <td>
+                <div class="sku-code">TY-WINGS-5</div>
+                <div class="sku-name">Tyson Anytizers Wings · 5 lb</div>
+              </td>
+              <td><span class="carrier-chip carrier-fedex">FDX</span></td>
+              <td><span class="service-chip">Ground</span></td>
+              <td><span class="days-cell"><span class="days-bar"><div style="width:80%"></div></span>4</span></td>
+              <td><span class="temp-cell temp-heat"><span class="temp-dot hot"></span>89°F</span></td>
+              <td><span class="temp-cell temp-heat"><span class="temp-dot warm"></span>82°F</span></td>
+              <td><span class="outcome-pill out-thawed">Thawed</span></td>
+              <td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-4)" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></td>
+            </tr>
+
+            <!-- Row 3 -->
+            <tr>
+              <td class="inc-date">Apr 11<span class="rel">8d ago</span></td>
+              <td>
+                <div class="sku-code">JD-CROS-12</div>
+                <div class="sku-name">Jimmy Dean Sausage Croissant · 12ct</div>
+              </td>
+              <td><span class="carrier-chip carrier-ups">UPS</span></td>
+              <td><span class="service-chip">Ground</span></td>
+              <td><span class="days-cell"><span class="days-bar"><div style="width:60%"></div></span>3</span></td>
+              <td><span class="temp-cell temp-heat"><span class="temp-dot warm"></span>86°F</span></td>
+              <td><span class="temp-cell temp-ok"><span class="temp-dot warm"></span>78°F</span></td>
+              <td><span class="outcome-pill out-partial">Partial</span></td>
+              <td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-4)" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></td>
+            </tr>
+
+            <!-- Row 4 -->
+            <tr>
+              <td class="inc-date">Apr 8<span class="rel">11d</span></td>
+              <td>
+                <div class="sku-code">FR-CHKN-6</div>
+                <div class="sku-name">Freshpet Chicken Patties · 6 lb</div>
+              </td>
+              <td><span class="carrier-chip carrier-ups">UPS</span></td>
+              <td><span class="service-chip">Ground</span></td>
+              <td><span class="days-cell danger"><span class="days-bar"><div style="width:100%"></div></span>5</span></td>
+              <td><span class="temp-cell temp-heat"><span class="temp-dot hot"></span>90°F</span></td>
+              <td><span class="temp-cell temp-heat"><span class="temp-dot hot"></span>85°F</span></td>
+              <td><span class="outcome-pill out-thawed">Thawed</span></td>
+              <td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-4)" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></td>
+            </tr>
+
+            <!-- Row 5 -->
+            <tr>
+              <td class="inc-date">Apr 6<span class="rel">13d</span></td>
+              <td>
+                <div class="sku-code">AM-BURR-8</div>
+                <div class="sku-name">Amy's Organic Bean Burritos · 8 ct</div>
+              </td>
+              <td><span class="carrier-chip carrier-fedex">FDX</span></td>
+              <td><span class="service-chip">2Day</span></td>
+              <td><span class="days-cell ok"><span class="days-bar"><div style="width:40%"></div></span>2</span></td>
+              <td><span class="temp-cell temp-heat"><span class="temp-dot warm"></span>87°F</span></td>
+              <td><span class="temp-cell temp-ok"><span class="temp-dot warm"></span>74°F</span></td>
+              <td><span class="outcome-pill out-complaint">Soft</span></td>
+              <td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-4)" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></td>
+            </tr>
+
+            <!-- Row 6 -->
+            <tr>
+              <td class="inc-date">Apr 3<span class="rel">16d</span></td>
+              <td>
+                <div class="sku-code">TY-WINGS-5</div>
+                <div class="sku-name">Tyson Anytizers Wings · 5 lb</div>
+              </td>
+              <td><span class="carrier-chip carrier-usps">USPS</span></td>
+              <td><span class="service-chip">Priority</span></td>
+              <td><span class="days-cell"><span class="days-bar"><div style="width:60%"></div></span>3</span></td>
+              <td><span class="temp-cell temp-heat"><span class="temp-dot warm"></span>84°F</span></td>
+              <td><span class="temp-cell temp-cool"><span class="temp-dot cool"></span>61°F</span></td>
+              <td><span class="outcome-pill out-ok">No issue</span></td>
+              <td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-4)" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></td>
+            </tr>
+
+            <!-- Row 7 -->
+            <tr>
+              <td class="inc-date">Mar 30<span class="rel">20d</span></td>
+              <td>
+                <div class="sku-code">JD-SEBC-12</div>
+                <div class="sku-name">Jimmy Dean Sausage Egg Biscuit · 12ct</div>
+              </td>
+              <td><span class="carrier-chip carrier-ups">UPS</span></td>
+              <td><span class="service-chip">Ground</span></td>
+              <td><span class="days-cell"><span class="days-bar"><div style="width:80%"></div></span>4</span></td>
+              <td><span class="temp-cell temp-heat"><span class="temp-dot warm"></span>88°F</span></td>
+              <td><span class="temp-cell temp-heat"><span class="temp-dot warm"></span>81°F</span></td>
+              <td><span class="outcome-pill out-thawed">Thawed</span></td>
+              <td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-4)" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></td>
+            </tr>
+
+            <!-- Row 8 -->
+            <tr>
+              <td class="inc-date">Mar 27<span class="rel">23d</span></td>
+              <td>
+                <div class="sku-code">FR-CHKN-6</div>
+                <div class="sku-name">Freshpet Chicken Patties · 6 lb</div>
+              </td>
+              <td><span class="carrier-chip carrier-fedex">FDX</span></td>
+              <td><span class="service-chip">Ground</span></td>
+              <td><span class="days-cell"><span class="days-bar"><div style="width:60%"></div></span>3</span></td>
+              <td><span class="temp-cell temp-ok"><span class="temp-dot warm"></span>82°F</span></td>
+              <td><span class="temp-cell temp-ok"><span class="temp-dot warm"></span>77°F</span></td>
+              <td><span class="outcome-pill out-partial">Partial</span></td>
+              <td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-4)" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="padding: 12px 20px; display:flex; align-items:center; justify-content:space-between; border-top: 1px solid var(--rule); font-size:11.5px; color:var(--ink-3);">
+          <span>Showing 8 of 24 incidents · sorted by date desc</span>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-sm" style="padding:5px 10px; font-size:11.5px;">Prev</button>
+            <button class="btn-sm" style="padding:5px 10px; font-size:11.5px;">Next</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SECTION 2: SKU RISK ANALYSIS ============ -->
+      <div class="section-head">
+        <div>
+          <div class="section-title">SKU risk analysis <span class="count">8 frozen SKUs · scored 0–100</span></div>
+          <div class="section-sub">Risk score = 50pt thaw rate + 30pt transit exposure + 20pt temperature. Click a SKU for shipping-rule suggestions.</div>
+        </div>
+        <div class="section-actions">
+          <button class="btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            Table view
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <table class="sku-table">
+          <thead>
+            <tr>
+              <th style="width:190px;">SKU</th>
+              <th>Product</th>
+              <th style="width:80px;">Incidents</th>
+              <th style="width:90px;">Avg days</th>
+              <th style="width:70px;">Trend</th>
+              <th style="width:320px;">Risk score (0–100)</th>
+              <th style="width:100px;">Level</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="sku-code">JD-SEBC-12</span></td>
+              <td style="color:var(--ink-2);">Jimmy Dean Sausage Egg Biscuit · 12ct</td>
+              <td><span style="font-family:var(--mono); font-weight:600;">6</span> <span style="color:var(--silver-dark); font-family:var(--mono); font-size:10.5px;">/ 34</span></td>
+              <td style="font-family:var(--mono); font-weight:500;">4.3d</td>
+              <td>
+                <svg class="spark" viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,16 10,14 20,12 30,10 40,8 50,5 64,3" fill="none" stroke="var(--danger)" stroke-width="1.5"/></svg>
+              </td>
+              <td>
+                <div class="risk-bar-wrap">
+                  <div class="risk-bar"><div class="risk-bar-fill crit" style="width:88%;"></div></div>
+                  <span class="risk-score" style="color:var(--danger);">88</span>
+                </div>
+              </td>
+              <td><span class="risk-pill-inline rpi-crit">CRIT</span></td>
+            </tr>
+            <tr>
+              <td><span class="sku-code">TY-WINGS-5</span></td>
+              <td style="color:var(--ink-2);">Tyson Anytizers Wings · 5 lb</td>
+              <td><span style="font-family:var(--mono); font-weight:600;">5</span> <span style="color:var(--silver-dark); font-family:var(--mono); font-size:10.5px;">/ 28</span></td>
+              <td style="font-family:var(--mono); font-weight:500;">3.8d</td>
+              <td>
+                <svg class="spark" viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,14 10,13 20,11 30,10 40,7 50,6 64,5" fill="none" stroke="var(--warn)" stroke-width="1.5"/></svg>
+              </td>
+              <td>
+                <div class="risk-bar-wrap">
+                  <div class="risk-bar"><div class="risk-bar-fill high" style="width:74%;"></div></div>
+                  <span class="risk-score" style="color:var(--warn);">74</span>
+                </div>
+              </td>
+              <td><span class="risk-pill-inline rpi-high">HIGH</span></td>
+            </tr>
+            <tr>
+              <td><span class="sku-code">FR-CHKN-6</span></td>
+              <td style="color:var(--ink-2);">Freshpet Chicken Patties · 6 lb</td>
+              <td><span style="font-family:var(--mono); font-weight:600;">4</span> <span style="color:var(--silver-dark); font-family:var(--mono); font-size:10.5px;">/ 21</span></td>
+              <td style="font-family:var(--mono); font-weight:500;">4.1d</td>
+              <td>
+                <svg class="spark" viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,10 10,12 20,8 30,14 40,9 50,7 64,6" fill="none" stroke="var(--warn)" stroke-width="1.5"/></svg>
+              </td>
+              <td>
+                <div class="risk-bar-wrap">
+                  <div class="risk-bar"><div class="risk-bar-fill high" style="width:67%;"></div></div>
+                  <span class="risk-score" style="color:var(--warn);">67</span>
+                </div>
+              </td>
+              <td><span class="risk-pill-inline rpi-high">HIGH</span></td>
+            </tr>
+            <tr>
+              <td><span class="sku-code">JD-CROS-12</span></td>
+              <td style="color:var(--ink-2);">Jimmy Dean Sausage Croissant · 12ct</td>
+              <td><span style="font-family:var(--mono); font-weight:600;">3</span> <span style="color:var(--silver-dark); font-family:var(--mono); font-size:10.5px;">/ 29</span></td>
+              <td style="font-family:var(--mono); font-weight:500;">3.2d</td>
+              <td>
+                <svg class="spark" viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,8 10,10 20,11 30,9 40,10 50,11 64,10" fill="none" stroke="var(--silver-dark)" stroke-width="1.5"/></svg>
+              </td>
+              <td>
+                <div class="risk-bar-wrap">
+                  <div class="risk-bar"><div class="risk-bar-fill med" style="width:48%;"></div></div>
+                  <span class="risk-score" style="color:var(--silver-dark);">48</span>
+                </div>
+              </td>
+              <td><span class="risk-pill-inline rpi-med">MED</span></td>
+            </tr>
+            <tr>
+              <td><span class="sku-code">AM-BURR-8</span></td>
+              <td style="color:var(--ink-2);">Amy's Organic Bean Burritos · 8ct</td>
+              <td><span style="font-family:var(--mono); font-weight:600;">2</span> <span style="color:var(--silver-dark); font-family:var(--mono); font-size:10.5px;">/ 41</span></td>
+              <td style="font-family:var(--mono); font-weight:500;">2.7d</td>
+              <td>
+                <svg class="spark" viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,12 10,11 20,13 30,12 40,14 50,13 64,15" fill="none" stroke="var(--green)" stroke-width="1.5"/></svg>
+              </td>
+              <td>
+                <div class="risk-bar-wrap">
+                  <div class="risk-bar"><div class="risk-bar-fill med" style="width:32%;"></div></div>
+                  <span class="risk-score" style="color:var(--silver-dark);">32</span>
+                </div>
+              </td>
+              <td><span class="risk-pill-inline rpi-med">MED</span></td>
+            </tr>
+            <tr>
+              <td><span class="sku-code">TY-NUGT-2</span></td>
+              <td style="color:var(--ink-2);">Tyson Nuggets · 2 lb</td>
+              <td><span style="font-family:var(--mono); font-weight:600;">2</span> <span style="color:var(--silver-dark); font-family:var(--mono); font-size:10.5px;">/ 52</span></td>
+              <td style="font-family:var(--mono); font-weight:500;">2.8d</td>
+              <td>
+                <svg class="spark" viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,12 10,13 20,14 30,13 40,14 50,15 64,15" fill="none" stroke="var(--green)" stroke-width="1.5"/></svg>
+              </td>
+              <td>
+                <div class="risk-bar-wrap">
+                  <div class="risk-bar"><div class="risk-bar-fill low" style="width:24%;"></div></div>
+                  <span class="risk-score" style="color:var(--green-ink);">24</span>
+                </div>
+              </td>
+              <td><span class="risk-pill-inline rpi-low">LOW</span></td>
+            </tr>
+            <tr>
+              <td><span class="sku-code">FR-TRKY-4</span></td>
+              <td style="color:var(--ink-2);">Freshpet Turkey Slices · 4 lb</td>
+              <td><span style="font-family:var(--mono); font-weight:600;">1</span> <span style="color:var(--silver-dark); font-family:var(--mono); font-size:10.5px;">/ 36</span></td>
+              <td style="font-family:var(--mono); font-weight:500;">2.5d</td>
+              <td>
+                <svg class="spark" viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,13 10,14 20,14 30,15 40,15 50,16 64,16" fill="none" stroke="var(--green)" stroke-width="1.5"/></svg>
+              </td>
+              <td>
+                <div class="risk-bar-wrap">
+                  <div class="risk-bar"><div class="risk-bar-fill low" style="width:18%;"></div></div>
+                  <span class="risk-score" style="color:var(--green-ink);">18</span>
+                </div>
+              </td>
+              <td><span class="risk-pill-inline rpi-low">LOW</span></td>
+            </tr>
+            <tr>
+              <td><span class="sku-code">JD-PAN-6</span></td>
+              <td style="color:var(--ink-2);">Jimmy Dean Pancake Bites · 6ct</td>
+              <td><span style="font-family:var(--mono); font-weight:600;">1</span> <span style="color:var(--silver-dark); font-family:var(--mono); font-size:10.5px;">/ 48</span></td>
+              <td style="font-family:var(--mono); font-weight:500;">2.4d</td>
+              <td>
+                <svg class="spark" viewBox="0 0 64 20" preserveAspectRatio="none"><polyline points="0,14 10,15 20,15 30,16 40,15 50,16 64,17" fill="none" stroke="var(--green)" stroke-width="1.5"/></svg>
+              </td>
+              <td>
+                <div class="risk-bar-wrap">
+                  <div class="risk-bar"><div class="risk-bar-fill low" style="width:14%;"></div></div>
+                  <span class="risk-score" style="color:var(--green-ink);">14</span>
+                </div>
+              </td>
+              <td><span class="risk-pill-inline rpi-low">LOW</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ============ SECTION 3: PATTERNS DASHBOARD ============ -->
+      <div class="section-head">
+        <div>
+          <div class="section-title">Patterns dashboard <span class="count">what's causing thaws</span></div>
+          <div class="section-sub">Surfaces the highest-risk combinations across carrier · service · Tampa temperature · transit days.</div>
+        </div>
+      </div>
+
+      <div class="patterns-grid">
+        <!-- LEFT: High-risk combinations list -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-head">
+            <div class="card-title">High-risk combinations <span class="count">top 4</span></div>
+            <div style="font-family:var(--mono); font-size:10.5px; color:var(--silver-dark); letter-spacing:0.04em;">MIN N ≥ 3 · SORTED BY THAW %</div>
+          </div>
+          <div class="combo-list">
+            <div class="combo-card critical">
+              <div class="combo-head">
+                <div class="combo-pct critical">100<span style="font-size:18px; color:var(--danger); opacity:0.8;">%</span></div>
+                <div class="combo-fraction">6 of 6 shipments</div>
+              </div>
+              <div class="combo-factors">
+                <span class="combo-factor ups">UPS</span>
+                <span class="combo-factor service">Ground</span>
+                <span class="combo-factor temp">Tampa ≥ 85°F</span>
+                <span class="combo-factor transit">Transit &gt; 3 days</span>
+              </div>
+              <div class="combo-note">Every shipment with this combination has thawed. Hard block recommended. Route via UPS 2nd-Day Air or hold until cooler window.</div>
+            </div>
+
+            <div class="combo-card high">
+              <div class="combo-head">
+                <div class="combo-pct high">75<span style="font-size:18px; color:var(--warn); opacity:0.8;">%</span></div>
+                <div class="combo-fraction">3 of 4 shipments</div>
+              </div>
+              <div class="combo-factors">
+                <span class="combo-factor fedex">FedEx</span>
+                <span class="combo-factor service">Ground</span>
+                <span class="combo-factor temp">Tampa 82–85°F</span>
+                <span class="combo-factor transit">Transit 4 days</span>
+              </div>
+              <div class="combo-note">FedEx Ground with 4-day transit in warm weather. Consider 2Day service for &lt;$3/kg margin difference.</div>
+            </div>
+
+            <div class="combo-card high">
+              <div class="combo-head">
+                <div class="combo-pct high">60<span style="font-size:18px; color:var(--warn); opacity:0.8;">%</span></div>
+                <div class="combo-fraction">3 of 5 shipments</div>
+              </div>
+              <div class="combo-factors">
+                <span class="combo-factor temp">Dest ≥ 80°F</span>
+                <span class="combo-factor transit">Transit &gt; 3 days</span>
+                <span class="combo-factor">SKU high-water</span>
+              </div>
+              <div class="combo-note">Destinations with high arrival temps and long transit. Thaw correlates with SKU water content (JD-SEBC-12, FR-CHKN-6).</div>
+            </div>
+
+            <div class="combo-card medium">
+              <div class="combo-head">
+                <div class="combo-pct">22<span style="font-size:18px; color:var(--ink-3); opacity:0.8;">%</span></div>
+                <div class="combo-fraction">2 of 9 shipments</div>
+              </div>
+              <div class="combo-factors">
+                <span class="combo-factor usps">USPS</span>
+                <span class="combo-factor service">Priority</span>
+                <span class="combo-factor transit">Transit &le; 3 days</span>
+              </div>
+              <div class="combo-note">USPS Priority remains the safest tested path for frozen in 2–3 day windows, below overall thaw rate of 8.3%.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Histogram — Thaw rate by transit days -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-head">
+            <div class="card-title">Thaw rate by transit days</div>
+            <div class="card-tabs">
+              <div class="card-tab active">Days</div>
+              <div class="card-tab">Tampa°F</div>
+            </div>
+          </div>
+          <div class="hist-body">
+            <div class="hist-bars">
+              <div class="hist-col">
+                <div class="hist-bar" style="height:8%; background:var(--green);"><div class="hist-bar-val">1.2%</div></div>
+              </div>
+              <div class="hist-col">
+                <div class="hist-bar" style="height:18%; background:var(--green-mid);"><div class="hist-bar-val">3.1%</div></div>
+              </div>
+              <div class="hist-col">
+                <div class="hist-bar med" style="height:42%;"><div class="hist-bar-val">7.4%</div></div>
+              </div>
+              <div class="hist-col">
+                <div class="hist-bar warm" style="height:72%;"><div class="hist-bar-val">18%</div></div>
+              </div>
+              <div class="hist-col">
+                <div class="hist-bar hot" style="height:96%;"><div class="hist-bar-val">38%</div></div>
+              </div>
+              <div class="hist-col">
+                <div class="hist-bar hot" style="height:100%;"><div class="hist-bar-val">62%</div></div>
+              </div>
+            </div>
+            <div class="hist-labels">
+              <div class="hist-label">1d</div>
+              <div class="hist-label">2d</div>
+              <div class="hist-label">3d</div>
+              <div class="hist-label">4d</div>
+              <div class="hist-label">5d</div>
+              <div class="hist-label">6d+</div>
+            </div>
+            <div class="hist-xlabel">Transit days · thaw rate %</div>
+            <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--rule); font-size:11.5px; color:var(--ink-3); line-height:1.5;">
+              <strong style="color:var(--ink);">Inflection at 4 days.</strong> Thaw rate more than doubles between day 3 and day 4. Recommend hard cap at 3-day transit for frozen SKUs scoring above 40.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Second row of patterns -->
+      <div class="patterns-row-2">
+        <!-- Correlation heatmap -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-head">
+            <div class="card-title">Carrier × Tampa temp · thaw %</div>
+            <div style="font-family:var(--mono); font-size:10.5px; color:var(--silver-dark); letter-spacing:0.04em;">HEATMAP · 90d</div>
+          </div>
+          <div class="corr-grid">
+            <table class="corr-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>&lt;80°F</th>
+                  <th>80–82</th>
+                  <th>82–85</th>
+                  <th>85–88</th>
+                  <th>88–91</th>
+                  <th>≥91°F</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>UPS Grnd</td>
+                  <td class="corr-1">2%</td>
+                  <td class="corr-2">6%</td>
+                  <td class="corr-3">18%</td>
+                  <td class="corr-5">48%</td>
+                  <td class="corr-6">72%</td>
+                  <td class="corr-7">100%</td>
+                </tr>
+                <tr>
+                  <td>UPS 2Day</td>
+                  <td class="corr-0">0%</td>
+                  <td class="corr-0">0%</td>
+                  <td class="corr-1">2%</td>
+                  <td class="corr-2">8%</td>
+                  <td class="corr-3">14%</td>
+                  <td class="corr-4">22%</td>
+                </tr>
+                <tr>
+                  <td>FDX Grnd</td>
+                  <td class="corr-1">2%</td>
+                  <td class="corr-2">8%</td>
+                  <td class="corr-4">22%</td>
+                  <td class="corr-5">44%</td>
+                  <td class="corr-6">62%</td>
+                  <td class="corr-7">88%</td>
+                </tr>
+                <tr>
+                  <td>FDX 2Day</td>
+                  <td class="corr-0">0%</td>
+                  <td class="corr-1">1%</td>
+                  <td class="corr-2">6%</td>
+                  <td class="corr-3">12%</td>
+                  <td class="corr-4">18%</td>
+                  <td class="corr-5">28%</td>
+                </tr>
+                <tr>
+                  <td>USPS Pri</td>
+                  <td class="corr-0">0%</td>
+                  <td class="corr-1">2%</td>
+                  <td class="corr-2">6%</td>
+                  <td class="corr-3">14%</td>
+                  <td class="corr-4">24%</td>
+                  <td class="corr-5">36%</td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--rule); font-size:11.5px; color:var(--ink-3); line-height:1.5;">
+              <strong style="color:var(--ink);">Clear threshold at 85°F.</strong> Ground services tolerable below 82°F Tampa origin; 2Day services hold up through 88°F. Above 88°F, no service stays under 20% thaw.
+            </div>
+          </div>
+        </div>
+
+        <!-- Carrier performance rank -->
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-head">
+            <div class="card-title">Carrier performance · 90d</div>
+            <div style="font-family:var(--mono); font-size:10.5px; color:var(--silver-dark); letter-spacing:0.04em;">FROZEN SKUs ONLY</div>
+          </div>
+          <div class="carrier-rank">
+            <div class="carrier-row">
+              <div class="carrier-row-name"><span class="carrier-chip carrier-usps">USPS</span> Priority</div>
+              <div class="carrier-row-bar"><div style="width:22%; background:var(--warn);"></div></div>
+              <div class="carrier-row-stat">4.1% thaw</div>
+              <div class="carrier-row-trend trend-down">↓ 1.2</div>
+            </div>
+            <div class="carrier-row">
+              <div class="carrier-row-name"><span class="carrier-chip carrier-fedex">FDX</span> 2Day</div>
+              <div class="carrier-row-bar"><div style="width:34%; background:var(--warn);"></div></div>
+              <div class="carrier-row-stat">6.2% thaw</div>
+              <div class="carrier-row-trend trend-flat">—</div>
+            </div>
+            <div class="carrier-row">
+              <div class="carrier-row-name"><span class="carrier-chip carrier-ups">UPS</span> 2Day</div>
+              <div class="carrier-row-bar"><div style="width:38%; background:var(--warn);"></div></div>
+              <div class="carrier-row-stat">7.0% thaw</div>
+              <div class="carrier-row-trend trend-down">↓ 0.8</div>
+            </div>
+            <div class="carrier-row">
+              <div class="carrier-row-name"><span class="carrier-chip carrier-fedex">FDX</span> Ground</div>
+              <div class="carrier-row-bar"><div style="width:70%; background:var(--heat-3);"></div></div>
+              <div class="carrier-row-stat">13.2% thaw</div>
+              <div class="carrier-row-trend trend-up">↑ 2.1</div>
+            </div>
+            <div class="carrier-row">
+              <div class="carrier-row-name"><span class="carrier-chip carrier-ups">UPS</span> Ground</div>
+              <div class="carrier-row-bar"><div style="width:90%; background:var(--danger);"></div></div>
+              <div class="carrier-row-stat">16.8% thaw</div>
+              <div class="carrier-row-trend trend-up">↑ 3.6</div>
+            </div>
+            <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--rule); font-size:11.5px; color:var(--ink-3); line-height:1.5;">
+              <strong style="color:var(--ink);">Ground services deteriorating.</strong> UPS Ground up 3.6pp vs prior 90d on the back of Southeast heat. Consider carrier mix: USPS Priority + UPS 2Day.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>

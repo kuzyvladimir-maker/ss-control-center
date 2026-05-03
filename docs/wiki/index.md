@@ -7,9 +7,13 @@
 
 ---
 
+## 🎨 Design / UI
+- [Design System и mockup‘ы](design/index.md) — Salutem Design System v1.0, каталог 7 HTML mockup'ов в `/design/` (source of truth для Next.js UI)
+
 ## 🏗️ Архитектура
 - [Архитектура проекта](project-architecture.md) — стек, модули, структура
 - [Database Schema](database-schema.md) — Prisma, 19 моделей
+- [Auth System (UI login)](auth-system.md) — логин в UI Control Center, SHA-256+salt, session cookies
 - [External API Auth](external-api-auth.md) — Bearer token, middleware, MCP Server
 
 ## 📦 Модули
@@ -33,6 +37,7 @@
 ## 🔌 Интеграции
 - [Veeqo API](veeqo-api.md) — заказы, ставки, покупка labels
 - [Amazon SP-API](amazon-sp-api.md) — orders, messaging, reports, health, finances
+- [Walmart Marketplace API](walmart-api.md) — orders, returns, recon reports, seller performance (2026-04-18)
 - [Gmail API](gmail-api.md) — buyer messages, chargeback notifications
 - [Carrier Tracking APIs](carrier-tracking-apis.md) — UPS Tracking (FedEx/USPS в планах), реальный carrier ETA + события
 - [Amazon Notifications Map](amazon-notifications-map.md) — маппинг ~30 типов email-уведомлений → модули + Gmail queries
@@ -59,4 +64,4 @@
 - (будет дополняться по ходу разработки)
 
 ---
-Последнее обновление: 2026-04-11
+Последнее обновление: 2026-04-19 (+ design/)

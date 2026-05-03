@@ -87,10 +87,16 @@ button { font-family: inherit; }
 .nav-item.active svg { color: var(--green); }
 .nav-item .pill { margin-left: auto; font-family: var(--mono); font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 500; }
 .nav-item .pill-active { background: var(--green); color: var(--green-cream); }
-.nav-item .pill-warn { background: var(--warn); color: white; }
+.nav-item .pill-warn { background: var(--warn-tint); color: var(--warn-strong); }
 .nav-item.disabled { opacity: 0.52; cursor: not-allowed; }
 .nav-item.disabled .coming { margin-left: auto; font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--silver-dark); }
 .nav-spacer { flex: 1; }
+
+.helper { margin: 8px 2px 0; padding: 14px 16px; background: var(--green); border-radius: 10px; color: var(--green-cream); position: relative; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
+.helper::before { content: ''; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; border-radius: 50%; background: rgba(240,232,208,0.05); }
+.helper-title { font-size: 12.5px; font-weight: 600; margin-bottom: 3px; position: relative; }
+.helper-sub { font-size: 11.5px; color: rgba(240,232,208,0.72); line-height: 1.4; margin-bottom: 10px; position: relative; }
+.helper-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 500; color: var(--green-cream); background: rgba(240,232,208,0.14); padding: 4px 10px; border-radius: 5px; border: 1px solid rgba(240,232,208,0.22); cursor: pointer; position: relative; }
 
 /* ===== MAIN ===== */
 .main { display: flex; flex-direction: column; min-width: 0; }
@@ -586,6 +592,11 @@ button { font-family: inherit; }
         Dashboard
       </div>
       <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3.4 12a9 9 0 1 0 9-9"/><path d="M12 7v5l3 2"/><path d="M3 6l2-2 2 2"/></svg>
+        Account health
+        <span class="pill pill-warn">1</span>
+      </div>
+      <div class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7h13v10H3z"/><path d="M16 10h4l1 3v4h-5z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
         Shipping labels
         <span class="pill pill-active">6</span>
@@ -593,32 +604,42 @@ button { font-family: inherit; }
       <div class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12a8 8 0 1 1-3-6.2L21 4v5h-5"/></svg>
         Customer hub
-        <span class="pill pill-active">3</span>
+        <span class="pill pill-active">7</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 20h18M6 16l4-6 4 3 5-8"/></svg>
+        Frozen analytics
       </div>
       <div class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
         Adjustments
       </div>
-      <div class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
-        Shipment monitor
-        <span class="pill pill-warn">1</span>
-      </div>
     </nav>
-    <div class="nav-section">Insights</div>
+    <div class="nav-section">Phase 2</div>
     <nav class="nav">
       <div class="nav-item disabled">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 20h18M6 16l4-6 4 3 5-8"/></svg>
-        Frozen analytics
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2a10 10 0 1 0 10 10h-10Z"/><path d="M12 2v10h10a10 10 0 0 0-10-10Z"/></svg>
+        Product listings
         <span class="coming">Soon</span>
       </div>
       <div class="nav-item disabled">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-        Sales overview
+        Sales analytics
         <span class="coming">Soon</span>
       </div>
     </nav>
     <div class="nav-spacer"></div>
+    <div class="nav" style="margin-bottom:4px;">
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </div>
+    </div>
+    <div class="helper">
+      <div class="helper-title">12 integrations configured</div>
+      <div class="helper-sub">10 healthy · 1 needs attention · Sellbrite trial 12d left</div>
+      <div class="helper-btn">Sync all →</div>
+    </div>
   </aside>
 
   <!-- MAIN -->

@@ -81,6 +81,11 @@
 → [Customer Hub](customer-hub.md), [Account Health](account-health.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md), [Adjustments Monitor](adjustments-monitor.md)
 ⇔ [Gmail API](gmail-api.md), [External API Auth](external-api-auth.md)
 
+### [Walmart Marketplace API](walmart-api.md)
+→ [Customer Hub](customer-hub.md) (orders + returns sync, заменяет screenshot schema), [Adjustments Monitor](adjustments-monitor.md) (recon reports), [Account Health](account-health.md) (Seller Performance), [Shipment Monitor](shipment-monitor.md) (Level 1.5 tracking), [Shipping Labels](shipping-labels.md) (verification endpoint), [Dashboard](dashboard.md)
+⇔ [Veeqo API](veeqo-api.md) (Veeqo использует delegated Walmart key), [External API Auth](external-api-auth.md)
+← [Walmart ограничения](walmart-restrictions.md)
+
 ### [Gmail API](gmail-api.md)
 → [Customer Hub](customer-hub.md) (Messages + Chargebacks)
 ⇔ [Amazon SP-API](amazon-sp-api.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Amazon Notifications Map](amazon-notifications-map.md)
@@ -136,6 +141,28 @@
 
 ---
 
+## Design / UI mockups
+
+### [Design System](design/index.md)
+Каталог HTML‑mockup'ов в `/design/` и описание Salutem Design System v1.0. Источник визуальной правды для Next.js реализации.
+
+**Design tokens (source of truth):**
+- `design/DESIGN_TOKENS.md` ⊂ все `design/*.html` (CSS variables, типографика, радиусы)
+
+**Module ↔ mockup (двусторонние связи):**
+- `design/dashboard_salutem.html` ⇔ [Dashboard](dashboard.md)
+- `design/account_health_salutem.html` ⇔ [Account Health](account-health.md)
+- `design/shipping_labels_salutem.html` ⇔ [Shipping Labels](shipping-labels.md)
+- `design/customer_hub_salutem_v2.html` ⇔ [Customer Hub](customer-hub.md), [Decision Engine](customer-hub-decision-engine.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md)
+- `design/frozen_analytics_salutem.html` ⇔ [Frozen Analytics](frozen-analytics.md)
+- `design/adjustments_salutem.html` ⇔ [Adjustments Monitor](adjustments-monitor.md)
+- `design/settings_salutem.html` ⇔ [External API Auth](external-api-auth.md), [Amazon SP-API](amazon-sp-api.md), [Veeqo API](veeqo-api.md), [Gmail API](gmail-api.md), [Claude AI](claude-ai.md), [Telegram](telegram-notifications.md), [SKU Database](google-sheets-sku-db.md), [Walmart API](walmart-api.md)
+
+**Deprecated:**
+- `design/customer_hub_v1_DEPRECATED.html` — архив v1, до алгоритма v2.1
+
+---
+
 ## Инфраструктура
 
 ### [Database Schema](database-schema.md)
@@ -143,6 +170,10 @@
 
 ### [External API Auth](external-api-auth.md)
 ⇔ [Amazon SP-API](amazon-sp-api.md), [Veeqo API](veeqo-api.md), [Архитектура проекта](project-architecture.md)
+
+### [Auth System (UI login)](auth-system.md)
+← [Database Schema](database-schema.md) (модель User), Turso cloud DB
+⇔ [External API Auth](external-api-auth.md) (параллельный механизм), [Архитектура проекта](project-architecture.md), [Деплой на Vercel](deploy-to-vercel-plan.md)
 
 ### [Архитектура проекта](project-architecture.md)
 Обзорная статья, ссылается на все модули.
@@ -156,4 +187,4 @@
 - `⇔` двусторонняя связь
 
 ---
-Последнее обновление: 2026-04-11
+Последнее обновление: 2026-04-19 (+ design/ mockups)

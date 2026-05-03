@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salutem — Account Health</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #F4F3EF;
+  --bg-elev: #EDECE7;
+  --surface: #FFFFFF;
+  --surface-tint: #F8F7F3;
+  --ink: #15201B;
+  --ink-2: #4E554F;
+  --ink-3: #7A807B;
+  --ink-4: #AEB2AD;
+  --rule: rgba(21,32,27,0.08);
+  --rule-strong: rgba(21,32,27,0.16);
+  --green: #1F4D3F;
+  --green-deep: #14352B;
+  --green-mid: #3A6B5D;
+  --green-soft: #E6EEE9;
+  --green-soft2: #CDDDD5;
+  --green-ink: #12362C;
+  --green-cream: #F0E8D0;
+  --silver: #B5B8B5;
+  --silver-dark: #8E918E;
+  --silver-tint: #EAEBE9;
+  --silver-line: #D2D4D1;
+  --frozen: #2E6FA8;
+  --frozen-tint: #E5EEF6;
+  --dry: #8B6B1C;
+  --dry-tint: #F3EDDD;
+  --warn: #A05B20;
+  --warn-tint: #F5E9DC;
+  --warn-strong: #8B4A18;
+  --danger: #9B2C2C;
+  --danger-tint: #F5E1E1;
+  --info: #2E6FA8;
+  --info-tint: #E5EEF6;
+  --purple: #5B4A7A;
+  --purple-tint: #EBE7F0;
+  --sans: 'Inter Tight', -apple-system, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  letter-spacing: -0.005em;
+}
+button { font-family: inherit; }
+
+.app { display: grid; grid-template-columns: 236px 1fr; min-height: 100vh; }
+
+/* ===== SIDEBAR ===== */
+.sidebar { background: var(--bg); border-right: 1px solid var(--rule); padding: 22px 14px; display: flex; flex-direction: column; }
+.brand { display: flex; align-items: center; gap: 11px; padding: 2px 10px 20px; }
+.brand-mark { width: 32px; height: 32px; background: var(--green); color: var(--green-cream); border-radius: 8px; display: grid; place-items: center; font-weight: 700; font-size: 14px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 0 0 1px var(--silver-line); }
+.brand-info { flex: 1; }
+.brand-name { font-weight: 700; font-size: 14.5px; letter-spacing: -0.02em; color: var(--ink); line-height: 1.1; }
+.brand-meta { font-family: var(--mono); font-size: 10px; color: var(--silver-dark); margin-top: 2px; letter-spacing: 0.04em; }
+
+.ws { margin: 0 2px 16px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.15s; }
+.ws:hover { border-color: var(--silver-line); background: var(--surface-tint); }
+.ws-dot { width: 7px; height: 7px; border-radius: 2px; background: var(--green); }
+.ws-label { font-size: 12.5px; color: var(--ink); font-weight: 500; flex: 1; }
+.ws-count { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+.ws svg { width: 12px; height: 12px; color: var(--ink-3); }
+
+.nav-section { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--silver-dark); padding: 12px 12px 6px; font-weight: 500; }
+.nav { display: flex; flex-direction: column; gap: 1px; }
+.nav-item { display: flex; align-items: center; gap: 11px; padding: 7px 12px; border-radius: 7px; color: var(--ink-2); cursor: pointer; transition: background 0.15s, color 0.15s; font-size: 13px; }
+.nav-item svg { width: 16px; height: 16px; color: var(--ink-3); }
+.nav-item:hover { background: var(--bg-elev); color: var(--ink); }
+.nav-item:hover svg { color: var(--ink-2); }
+.nav-item.active { background: var(--green-soft); color: var(--green-ink); font-weight: 500; }
+.nav-item.active svg { color: var(--green); }
+.nav-item .pill { margin-left: auto; font-family: var(--mono); font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 500; }
+.nav-item .pill-active { background: var(--green); color: var(--green-cream); }
+.nav-item .pill-warn { background: var(--warn-tint); color: var(--warn-strong); }
+.nav-item.disabled { opacity: 0.52; cursor: not-allowed; }
+.nav-item.disabled .coming { margin-left: auto; font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--silver-dark); }
+.nav-spacer { flex: 1; }
+
+.helper { margin: 8px 2px 0; padding: 14px 16px; background: var(--green); border-radius: 10px; color: var(--green-cream); position: relative; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
+.helper::before { content: ''; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; border-radius: 50%; background: rgba(240,232,208,0.05); }
+.helper-title { font-size: 12.5px; font-weight: 600; margin-bottom: 3px; position: relative; }
+.helper-sub { font-size: 11.5px; color: rgba(240,232,208,0.72); line-height: 1.4; margin-bottom: 10px; position: relative; }
+.helper-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 500; color: var(--green-cream); background: rgba(240,232,208,0.14); padding: 4px 10px; border-radius: 5px; border: 1px solid rgba(240,232,208,0.22); cursor: pointer; position: relative; }
+
+/* ===== MAIN ===== */
+.main { display: flex; flex-direction: column; min-width: 0; }
+
+.topbar { display: flex; align-items: center; height: 56px; padding: 0 28px; border-bottom: 1px solid var(--rule); gap: 14px; background: var(--bg); }
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-3); }
+.breadcrumb .crumb-current { color: var(--ink); font-weight: 500; }
+.breadcrumb .crumb-sep { color: var(--ink-4); }
+
+.search { max-width: 340px; flex: 1; display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--bg-elev); border: 1px solid transparent; border-radius: 8px; color: var(--ink-3); font-size: 12.5px; cursor: pointer; transition: all 0.15s; }
+.search:hover { border-color: var(--silver-line); background: var(--surface); }
+.search svg { width: 14px; height: 14px; }
+.search .kbd { margin-left: auto; font-family: var(--mono); font-size: 10px; padding: 2px 5px; background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-3); }
+.topbar-spacer { flex: 1; }
+
+.live-pill { display: flex; align-items: center; gap: 7px; padding: 5px 10px 5px 9px; background: var(--green-soft); color: var(--green-ink); border-radius: 6px; font-size: 12px; font-weight: 500; }
+.live-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.icon-btn { width: 32px; height: 32px; display: grid; place-items: center; color: var(--ink-2); border-radius: 6px; cursor: pointer; position: relative; }
+.icon-btn:hover { background: var(--bg-elev); }
+.icon-btn .notif { position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); border: 1.5px solid var(--bg); }
+
+.user-chip { display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border: 1px solid var(--rule); border-radius: 18px; cursor: pointer; }
+.user-chip:hover { background: var(--surface); border-color: var(--silver-line); }
+.user-chip-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--green); color: var(--green-cream); display: grid; place-items: center; font-size: 11px; font-weight: 600; }
+.user-chip-name { font-size: 12.5px; font-weight: 500; color: var(--ink); }
+
+/* Content */
+.content { padding: 28px 32px 40px; max-width: 1500px; width: 100%; }
+
+.page-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
+.page-title-row { display: flex; align-items: center; gap: 12px; }
+.page-title { font-size: 24px; font-weight: 600; letter-spacing: -0.025em; color: var(--ink); line-height: 1.1; }
+.sync-chip { font-family: var(--mono); font-size: 10.5px; color: var(--green-ink); background: var(--green-soft); padding: 4px 9px; border-radius: 5px; font-weight: 500; letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 6px; }
+.sync-chip::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: pulse 2s ease-in-out infinite; }
+.page-subtitle { color: var(--ink-2); font-size: 13px; margin-top: 6px; display: flex; align-items: center; gap: 10px; }
+.page-subtitle .sep { color: var(--ink-4); }
+.page-subtitle .label-strong { color: var(--ink); font-weight: 500; }
+.page-subtitle .mono { font-family: var(--mono); font-size: 11.5px; color: var(--silver-dark); letter-spacing: 0.04em; }
+.page-actions { display: flex; gap: 8px; }
+
+.btn-sm { font-size: 12.5px; padding: 8px 13px; border-radius: 7px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink); transition: all 0.15s; }
+.btn-sm svg { width: 13px; height: 13px; }
+.btn-sm:hover { background: var(--surface-tint); border-color: var(--silver-dark); }
+.btn-sm.primary { background: var(--green); color: var(--green-cream); border-color: var(--green); }
+.btn-sm.primary:hover { background: var(--green-deep); border-color: var(--green-deep); }
+
+/* ===== OVERALL HEALTH HERO ===== */
+.hero-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 22px; }
+
+.hero-card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: 20px 22px; position: relative; overflow: hidden; }
+.hero-card:hover { border-color: var(--silver-line); }
+
+.hero-card.hero-overall { background: var(--green); color: var(--green-cream); position: relative; }
+.hero-card.hero-overall::before { content: ''; position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; border-radius: 50%; background: rgba(240,232,208,0.05); }
+.hero-card.hero-overall::after { content: ''; position: absolute; bottom: -50px; left: -50px; width: 140px; height: 140px; border-radius: 50%; background: rgba(181,184,181,0.06); }
+
+.hero-eyebrow { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 14px; font-weight: 500; color: rgba(240,232,208,0.65); display: flex; align-items: center; gap: 8px; position: relative; }
+.hero-eyebrow::before { content: ''; width: 8px; height: 1px; background: rgba(240,232,208,0.5); }
+.hero-card:not(.hero-overall) .hero-eyebrow { color: var(--silver-dark); }
+.hero-card:not(.hero-overall) .hero-eyebrow::before { background: var(--silver); }
+
+.hero-big { font-size: 44px; font-weight: 600; letter-spacing: -0.035em; line-height: 1; font-variant-numeric: tabular-nums; position: relative; }
+.hero-big .of { font-size: 22px; opacity: 0.55; font-weight: 400; margin-left: 4px; }
+.hero-caption { font-size: 12.5px; margin-top: 5px; position: relative; }
+.hero-card.hero-overall .hero-caption { color: rgba(240,232,208,0.75); }
+.hero-card:not(.hero-overall) .hero-caption { color: var(--ink-3); }
+
+.hero-meta-row { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(240,232,208,0.14); display: grid; grid-template-columns: 1fr 1fr; gap: 14px; position: relative; }
+.hero-card:not(.hero-overall) .hero-meta-row { border-top-color: var(--rule); }
+.hero-meta-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; font-weight: 500; }
+.hero-card.hero-overall .hero-meta-label { color: rgba(240,232,208,0.6); }
+.hero-card:not(.hero-overall) .hero-meta-label { color: var(--silver-dark); }
+.hero-meta-value { font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.hero-meta-sub { font-size: 10.5px; margin-top: 2px; }
+.hero-card.hero-overall .hero-meta-sub { color: rgba(240,232,208,0.55); }
+.hero-card:not(.hero-overall) .hero-meta-sub { color: var(--silver-dark); }
+
+/* For ODR / LSR / VTR simple hero */
+.metric-hero-body { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+.metric-hero-body .num { font-size: 32px; font-weight: 600; letter-spacing: -0.03em; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1; }
+.metric-hero-body .unit { font-size: 15px; color: var(--ink-3); }
+.threshold-bar { margin-top: 16px; position: relative; height: 6px; background: var(--silver-tint); border-radius: 3px; overflow: hidden; }
+.threshold-fill { position: absolute; top: 0; left: 0; height: 100%; background: var(--green); border-radius: 3px; }
+.threshold-marker { position: absolute; top: -4px; height: 14px; width: 2px; background: var(--ink-2); }
+.threshold-marker::after { content: 'limit'; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 9.5px; color: var(--silver-dark); letter-spacing: 0.04em; }
+.threshold-legend { margin-top: 28px; display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--ink-3); }
+.threshold-legend .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.threshold-ok { color: var(--green-ink); font-weight: 500; }
+
+/* ===== ALERTS BAND ===== */
+.alerts-card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 22px; }
+.alerts-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--rule); }
+.alerts-title { font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; color: var(--ink); }
+.alerts-title .count { font-family: var(--mono); font-size: 11px; color: var(--warn-strong); background: var(--warn-tint); padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+.alerts-legend { display: flex; gap: 14px; font-family: var(--mono); font-size: 10.5px; color: var(--silver-dark); letter-spacing: 0.04em; }
+.alerts-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.alerts-legend .dot { width: 6px; height: 6px; border-radius: 50%; }
+.dot-crit { background: var(--danger); }
+.dot-warn { background: var(--warn); }
+.dot-info { background: var(--info); }
+
+.alert-row { display: grid; grid-template-columns: 40px 1fr auto; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--rule); align-items: center; }
+.alert-row:last-child { border-bottom: none; }
+.alert-row:hover { background: var(--surface-tint); cursor: pointer; }
+
+.alert-icon { width: 36px; height: 36px; border-radius: 9px; display: grid; place-items: center; }
+.alert-icon.crit { background: var(--danger-tint); color: var(--danger); }
+.alert-icon.warn { background: var(--warn-tint); color: var(--warn); }
+.alert-icon.info { background: var(--info-tint); color: var(--info); }
+.alert-icon svg { width: 16px; height: 16px; }
+
+.alert-body { min-width: 0; }
+.alert-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 3px; flex-wrap: wrap; }
+.alert-title { font-size: 13px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+.alert-source { font-family: var(--mono); font-size: 10.5px; color: var(--silver-dark); letter-spacing: 0.04em; background: var(--bg-elev); padding: 1px 7px; border-radius: 4px; }
+.alert-sub { font-size: 12px; color: var(--ink-2); line-height: 1.4; }
+.alert-meta { margin-top: 4px; font-size: 11px; color: var(--ink-3); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.alert-meta .sep { color: var(--ink-4); }
+
+.alert-actions { display: flex; gap: 6px; align-items: center; }
+.alert-age { font-family: var(--mono); font-size: 11px; color: var(--silver-dark); }
+.btn-mini { padding: 6px 11px; font-size: 11.5px; font-weight: 500; border-radius: 6px; border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+.btn-mini:hover { background: var(--bg-elev); border-color: var(--silver-dark); }
+.btn-mini svg { width: 11px; height: 11px; }
+.btn-mini.primary { background: var(--green); color: var(--green-cream); border-color: var(--green); }
+.btn-mini.primary:hover { background: var(--green-deep); border-color: var(--green-deep); }
+
+/* ===== STORE GRID ===== */
+.stores-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.section-title { font-size: 16px; font-weight: 600; letter-spacing: -0.015em; color: var(--ink); display: flex; align-items: center; gap: 10px; }
+.section-title .count { font-family: var(--mono); font-size: 11px; color: var(--silver-dark); font-weight: 500; letter-spacing: 0.04em; }
+.section-sub { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
+
+.stores-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+
+.store-card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: 18px 20px 16px; position: relative; transition: border-color 0.15s; }
+.store-card:hover { border-color: var(--silver-line); }
+.store-card.has-warn { border-left: 3px solid var(--warn); padding-left: 17px; }
+.store-card.has-crit { border-left: 3px solid var(--danger); padding-left: 17px; background: linear-gradient(to right, rgba(155,44,44,0.02), transparent 40%); }
+
+.store-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.store-avatar-lg { width: 36px; height: 36px; border-radius: 9px; display: grid; place-items: center; font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: -0.01em; flex-shrink: 0; }
+.sa-salutem { background: var(--green); color: var(--green-cream); }
+.sa-amzcom { background: var(--green-soft2); color: var(--green-ink); }
+.sa-sirius { background: var(--silver-dark); color: var(--bg); }
+.sa-walmart { background: var(--silver-tint); color: var(--silver-dark); box-shadow: inset 0 0 0 1px var(--silver); }
+.sa-retail { background: var(--green-mid); color: var(--green-cream); }
+.sa-personal { background: var(--bg-elev); color: var(--ink-2); }
+.store-info { flex: 1; min-width: 0; }
+.store-name { font-size: 14px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; line-height: 1.2; }
+.store-channel { font-family: var(--mono); font-size: 10.5px; color: var(--silver-dark); margin-top: 2px; letter-spacing: 0.04em; }
+.store-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 500; }
+.store-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.store-badge-healthy { background: var(--green-soft); color: var(--green-ink); }
+.store-badge-watch { background: var(--warn-tint); color: var(--warn); }
+.store-badge-critical { background: var(--danger-tint); color: var(--danger); font-weight: 600; }
+
+/* Metric rows inside store card */
+.metric-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.metric-row:last-child { border-bottom: none; }
+.metric-key { font-family: var(--mono); font-size: 10.5px; color: var(--silver-dark); letter-spacing: 0.08em; text-transform: uppercase; flex-shrink: 0; width: 56px; font-weight: 500; }
+.metric-main { flex: 1; min-width: 0; }
+.metric-head { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; }
+.metric-num { font-size: 15px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.metric-unit { font-size: 10.5px; color: var(--ink-3); font-family: var(--mono); }
+.metric-target { margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--silver-dark); letter-spacing: 0.04em; }
+
+.metric-bar { height: 4px; background: var(--silver-tint); border-radius: 2px; overflow: hidden; position: relative; }
+.metric-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+.metric-bar-fill.ok { background: var(--green); }
+.metric-bar-fill.warn { background: var(--warn); }
+.metric-bar-fill.crit { background: var(--danger); }
+.metric-bar-limit { position: absolute; top: -2px; height: 8px; width: 1.5px; background: var(--ink-2); opacity: 0.7; }
+
+.store-foot { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--rule); }
+.store-foot-label { font-family: var(--mono); font-size: 10px; color: var(--silver-dark); letter-spacing: 0.08em; text-transform: uppercase; }
+.listing-compliance { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: 500; }
+.listing-ok { background: var(--green-soft); color: var(--green-ink); }
+.listing-warn { background: var(--warn-tint); color: var(--warn); }
+.listing-ok::before, .listing-warn::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+/* ===== TREND CHART ROW ===== */
+.trend-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); overflow: hidden; }
+.card-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--rule); }
+.card-title { font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; color: var(--ink); }
+.card-title .count { font-family: var(--mono); font-size: 11px; color: var(--silver-dark); background: var(--silver-tint); padding: 2px 7px; border-radius: 4px; font-weight: 500; }
+.card-tabs { display: flex; gap: 2px; background: var(--bg-elev); padding: 3px; border-radius: 7px; }
+.card-tab { font-size: 11.5px; padding: 4px 10px; border-radius: 5px; color: var(--ink-2); cursor: pointer; font-weight: 500; }
+.card-tab.active { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--silver-line); }
+
+.chart-body { padding: 20px; }
+.chart-legend { display: flex; gap: 14px; margin-bottom: 14px; font-size: 11.5px; color: var(--ink-2); font-weight: 500; font-family: var(--mono); letter-spacing: 0.04em; }
+.chart-legend .item { display: inline-flex; align-items: center; gap: 6px; }
+.chart-legend .line-swatch { width: 14px; height: 2px; border-radius: 1px; }
+.chart-svg { width: 100%; display: block; }
+
+/* Side column events */
+.event-row { padding: 12px 20px; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: flex-start; }
+.event-row:last-child { border-bottom: none; }
+.event-row:hover { background: var(--surface-tint); cursor: pointer; }
+.event-date { font-family: var(--mono); font-size: 10.5px; color: var(--silver-dark); letter-spacing: 0.04em; padding: 2px 6px; background: var(--bg-elev); border-radius: 4px; text-align: center; min-width: 48px; }
+.event-body {}
+.event-title { font-size: 12.5px; font-weight: 500; color: var(--ink); margin-bottom: 3px; }
+.event-meta { font-size: 11px; color: var(--ink-3); display: flex; align-items: center; gap: 6px; }
+.event-meta .dot-mini { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
+
+/* Thresholds reference table */
+.thresh-card { margin-top: 20px; }
+.thresh-table { width: 100%; border-collapse: collapse; }
+.thresh-table th { text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 500; color: var(--silver-dark); border-bottom: 1px solid var(--rule); text-transform: uppercase; letter-spacing: 0.08em; }
+.thresh-table td { padding: 12px 16px; font-size: 12.5px; border-bottom: 1px solid var(--rule); vertical-align: middle; color: var(--ink); }
+.thresh-table tr:last-child td { border-bottom: none; }
+.thresh-code { font-family: var(--mono); font-weight: 600; font-size: 13px; }
+.thresh-limit { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink-2); }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-info">
+        <div class="brand-name">Salutem</div>
+        <div class="brand-meta">CONTROL · V1.4</div>
+      </div>
+    </div>
+
+    <div class="ws">
+      <span class="ws-dot"></span>
+      <span class="ws-label">All stores</span>
+      <span class="ws-count">5</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+
+    <div class="nav-section">Operations</div>
+    <nav class="nav">
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="9" rx="1.2"/><rect x="14" y="3" width="7" height="5" rx="1.2"/><rect x="14" y="12" width="7" height="9" rx="1.2"/><rect x="3" y="16" width="7" height="5" rx="1.2"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3.4 12a9 9 0 1 0 9-9"/><path d="M12 7v5l3 2"/><path d="M3 6l2-2 2 2"/></svg>
+        Account health
+        <span class="pill pill-warn">1</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7h13v10H3z"/><path d="M16 10h4l1 3v4h-5z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        Shipping labels
+        <span class="pill pill-active">6</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12a8 8 0 1 1-3-6.2L21 4v5h-5"/></svg>
+        Customer hub
+        <span class="pill pill-active">7</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 20h18M6 16l4-6 4 3 5-8"/></svg>
+        Frozen analytics
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+        Adjustments
+      </div>
+    </nav>
+
+    <div class="nav-section">Phase 2</div>
+    <nav class="nav">
+      <div class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2a10 10 0 1 0 10 10h-10Z"/><path d="M12 2v10h10a10 10 0 0 0-10-10Z"/></svg>
+        Product listings
+        <span class="coming">Soon</span>
+      </div>
+      <div class="nav-item disabled">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Sales analytics
+        <span class="coming">Soon</span>
+      </div>
+    </nav>
+
+    <div class="nav-spacer"></div>
+
+    <div class="nav" style="margin-bottom:4px;">
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </div>
+    </div>
+
+    <div class="helper">
+      <div class="helper-title">One store needs attention</div>
+      <div class="helper-sub">Salutem · ODR trending up · 0.41% (limit 1%)</div>
+      <div class="helper-btn">Open snapshot →</div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span>Operations</span>
+        <span class="crumb-sep">/</span>
+        <span class="crumb-current">Account Health</span>
+      </div>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <span>Search alerts, stores, policies…</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="topbar-spacer"></div>
+      <div class="live-pill"><span class="dot"></span>5 stores live</div>
+      <div class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span class="notif"></span>
+      </div>
+      <div class="user-chip">
+        <div class="user-chip-avatar">V</div>
+        <span class="user-chip-name">Vladimir K.</span>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- PAGE HEAD -->
+      <div class="page-head">
+        <div>
+          <div class="page-title-row">
+            <div class="page-title">Account Health</div>
+            <span class="sync-chip">Last sync 11m ago</span>
+          </div>
+          <div class="page-subtitle">
+            <span class="label-strong">5 Amazon stores</span>
+            <span>monitored · all under threshold</span>
+            <span class="sep">·</span>
+            <span class="mono">SP-API ACCOUNT HEALTH · 4H POLL</span>
+            <span class="sep">·</span>
+            <span>next check 16:30 PDT</span>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 9-9M3 4v5h5"/></svg>
+            Refresh all
+          </button>
+          <button class="btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+            90-day view
+          </button>
+          <button class="btn-sm primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M5 12h14"/></svg>
+            Action plan
+          </button>
+        </div>
+      </div>
+
+      <!-- HERO ROW: overall status + 3 key metrics -->
+      <div class="hero-grid">
+        <div class="hero-card hero-overall">
+          <div class="hero-eyebrow">Overall health</div>
+          <div style="position:relative;">
+            <div class="hero-big">Healthy</div>
+            <div class="hero-caption">All metrics within Amazon limits · no warnings from Seller Support</div>
+          </div>
+          <div class="hero-meta-row">
+            <div>
+              <div class="hero-meta-label">Active alerts</div>
+              <div class="hero-meta-value">1 <span style="font-size:11.5px; opacity:0.6; margin-left:4px;">watch</span></div>
+              <div class="hero-meta-sub">0 critical · 1 warn · 0 info</div>
+            </div>
+            <div>
+              <div class="hero-meta-label">Stores at risk</div>
+              <div class="hero-meta-value">1 <span style="font-size:11.5px; opacity:0.6; margin-left:4px;">of 5</span></div>
+              <div class="hero-meta-sub">Salutem · ODR trending</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="hero-eyebrow">Worst ODR (7-day)</div>
+          <div class="metric-hero-body">
+            <span class="num">0.41</span>
+            <span class="unit">%</span>
+            <span style="margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--warn); background:var(--warn-tint); padding:2px 7px; border-radius:4px; letter-spacing:0.04em; font-weight:500;">↑ trending</span>
+          </div>
+          <div class="threshold-bar">
+            <div class="threshold-fill" style="width:41%; background:var(--warn);"></div>
+            <div class="threshold-marker" style="left:100%;"></div>
+          </div>
+          <div class="threshold-legend">
+            <span><span class="threshold-ok">Salutem</span> 0.41%</span>
+            <span class="mono">LIMIT 1.00%</span>
+          </div>
+          <div class="hero-meta-row">
+            <div>
+              <div class="hero-meta-label">A-to-Z</div>
+              <div class="hero-meta-value">2 of 487 orders</div>
+              <div class="hero-meta-sub">last 60 days</div>
+            </div>
+            <div>
+              <div class="hero-meta-label">Chargebacks</div>
+              <div class="hero-meta-value">0</div>
+              <div class="hero-meta-sub">no impact this period</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="hero-eyebrow">LSR &middot; VTR snapshot</div>
+          <div class="metric-hero-body">
+            <span class="num">0.61</span>
+            <span class="unit">% LSR</span>
+            <span style="margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--green-ink); background:var(--green-soft); padding:2px 7px; border-radius:4px; letter-spacing:0.04em; font-weight:500;">↓ improving</span>
+          </div>
+          <div class="threshold-bar">
+            <div class="threshold-fill" style="width:24%; background:var(--green);"></div>
+            <div class="threshold-marker" style="left:100%;"></div>
+          </div>
+          <div class="threshold-legend">
+            <span><span class="threshold-ok">All stores</span> below 2.5%</span>
+            <span class="mono">LIMIT 2.50%</span>
+          </div>
+          <div class="hero-meta-row">
+            <div>
+              <div class="hero-meta-label">Best VTR</div>
+              <div class="hero-meta-value">99.2%</div>
+              <div class="hero-meta-sub">Retailer Dist.</div>
+            </div>
+            <div>
+              <div class="hero-meta-label">Lowest VTR</div>
+              <div class="hero-meta-value">96.8%</div>
+              <div class="hero-meta-sub">Sirius &middot; target 95%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALERTS BAND -->
+      <div class="alerts-card">
+        <div class="alerts-head">
+          <div class="alerts-title">
+            Active alerts
+            <span class="count">1 warn · 0 critical</span>
+          </div>
+          <div class="alerts-legend">
+            <span><span class="dot dot-crit"></span>Critical</span>
+            <span><span class="dot dot-warn"></span>Warn</span>
+            <span><span class="dot dot-info"></span>Info</span>
+          </div>
+        </div>
+
+        <!-- Warn: ODR approaching threshold -->
+        <div class="alert-row">
+          <div class="alert-icon warn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4M12 17h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+          </div>
+          <div class="alert-body">
+            <div class="alert-top">
+              <div class="alert-title">ODR trending upward on Salutem Solutions</div>
+              <span class="alert-source">SP-API · Account Health</span>
+            </div>
+            <div class="alert-sub">Order Defect Rate rose from 0.22% to 0.41% over the past 7 days. Driven by 2 A-to-Z claims on frozen orders delivered late via FedEx Ground.</div>
+            <div class="alert-meta">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <div style="width:18px; height:18px; border-radius:4px; display:grid; place-items:center; font-family:var(--mono); font-size:8px; font-weight:600;" class="sa-salutem">SS</div>
+                <span>Salutem Solutions</span>
+              </div>
+              <span class="sep">·</span>
+              <span>Current 0.41% &middot; limit 1.0%</span>
+              <span class="sep">·</span>
+              <span>Detected Apr 18 · 14:22 PDT</span>
+            </div>
+          </div>
+          <div class="alert-actions">
+            <span class="alert-age">3h</span>
+            <button class="btn-mini primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              Review drivers
+            </button>
+          </div>
+        </div>
+
+        <!-- Info: Listing compliance -->
+        <div class="alert-row">
+          <div class="alert-icon info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a10 10 0 1 0 10 10h-10Z"/><path d="M12 2v10h10a10 10 0 0 0-10-10Z"/></svg>
+          </div>
+          <div class="alert-body">
+            <div class="alert-top">
+              <div class="alert-title">3 listings need compliance attention on AMZ Commerce</div>
+              <span class="alert-source">GMAIL · listing-compliance@amazon.com</span>
+            </div>
+            <div class="alert-sub">Amazon requests updated ingredient panel and allergen declaration for three frozen meal SKUs. No suppression threatened yet &mdash; respond within 14 days.</div>
+            <div class="alert-meta">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <div style="width:18px; height:18px; border-radius:4px; display:grid; place-items:center; font-family:var(--mono); font-size:8px; font-weight:600;" class="sa-amzcom">AZ</div>
+                <span>AMZ Commerce</span>
+              </div>
+              <span class="sep">·</span>
+              <span>JD-SEBC-12 · TY-WINGS-5 · AM-BURR-8</span>
+              <span class="sep">·</span>
+              <span>Received Apr 16 &middot; 12d remaining</span>
+            </div>
+          </div>
+          <div class="alert-actions">
+            <span class="alert-age">2d</span>
+            <button class="btn-mini">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 1 1-3-6.2L21 4v5h-5"/></svg>
+              Open email
+            </button>
+            <button class="btn-mini">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+              Assign
+            </button>
+          </div>
+        </div>
+
+        <!-- Info: policy digest -->
+        <div class="alert-row">
+          <div class="alert-icon info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+          </div>
+          <div class="alert-body">
+            <div class="alert-top">
+              <div class="alert-title">Policy digest · Q2 2026 update summary available</div>
+              <span class="alert-source">AMAZON POLICY · WEEKLY DIGEST</span>
+            </div>
+            <div class="alert-sub">3 policy changes affecting frozen food sellers: SFP eligibility window, allergen labeling, and new Buy Shipping rates. Review before Apr 30.</div>
+            <div class="alert-meta">
+              <span>Applies to: all 5 stores</span>
+              <span class="sep">·</span>
+              <span>Issued Apr 15</span>
+            </div>
+          </div>
+          <div class="alert-actions">
+            <span class="alert-age">4d</span>
+            <button class="btn-mini">Read</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PER-STORE SNAPSHOTS -->
+      <div class="stores-head">
+        <div>
+          <div class="section-title">Per-store snapshots <span class="count">5 active accounts</span></div>
+          <div class="section-sub">Each store shows its own ODR / LSR / VTR, Buy Box snapshot and listing compliance count.</div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <div class="btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Grid
+          </div>
+          <div class="btn-sm" style="background:var(--surface-tint);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            List
+          </div>
+        </div>
+      </div>
+
+      <div class="stores-grid">
+        <!-- Store 1: Salutem — WARN -->
+        <div class="store-card has-warn">
+          <div class="store-card-head">
+            <div class="store-avatar-lg sa-salutem">SS</div>
+            <div class="store-info">
+              <div class="store-name">Salutem Solutions</div>
+              <div class="store-channel">AMAZON · STORE1</div>
+            </div>
+            <span class="store-badge store-badge-watch">Watch</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">ODR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">0.41</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">limit 1.00%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill warn" style="width:41%;"></div>
+                <div class="metric-bar-limit" style="left:100%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">LSR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">0.61</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">limit 2.50%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:24%;"></div>
+                <div class="metric-bar-limit" style="left:100%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">VTR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">98.4</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">target 95.0%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:98%;"></div>
+                <div class="metric-bar-limit" style="left:95%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="store-foot">
+            <span class="store-foot-label">Listings</span>
+            <span class="listing-compliance listing-ok">0 issues</span>
+            <span style="margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--silver-dark);">Buy box 76%</span>
+          </div>
+        </div>
+
+        <!-- Store 2: Vladimir Personal -->
+        <div class="store-card">
+          <div class="store-card-head">
+            <div class="store-avatar-lg sa-personal">PV</div>
+            <div class="store-info">
+              <div class="store-name">Vladimir Personal</div>
+              <div class="store-channel">AMAZON · STORE2</div>
+            </div>
+            <span class="store-badge store-badge-healthy">Healthy</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">ODR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">0.18</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">limit 1.00%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:18%;"></div>
+                <div class="metric-bar-limit" style="left:100%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">LSR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">0.32</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">limit 2.50%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:13%;"></div>
+                <div class="metric-bar-limit" style="left:100%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">VTR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">98.9</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">target 95.0%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:99%;"></div>
+                <div class="metric-bar-limit" style="left:95%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="store-foot">
+            <span class="store-foot-label">Listings</span>
+            <span class="listing-compliance listing-ok">0 issues</span>
+            <span style="margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--silver-dark);">Buy box 82%</span>
+          </div>
+        </div>
+
+        <!-- Store 3: AMZ Commerce — WARN on listing compliance -->
+        <div class="store-card has-warn">
+          <div class="store-card-head">
+            <div class="store-avatar-lg sa-amzcom">AZ</div>
+            <div class="store-info">
+              <div class="store-name">AMZ Commerce</div>
+              <div class="store-channel">AMAZON · STORE3</div>
+            </div>
+            <span class="store-badge store-badge-watch">Watch</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">ODR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">0.22</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">limit 1.00%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:22%;"></div>
+                <div class="metric-bar-limit" style="left:100%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">LSR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">0.44</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">limit 2.50%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:18%;"></div>
+                <div class="metric-bar-limit" style="left:100%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">VTR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">97.6</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">target 95.0%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:97%;"></div>
+                <div class="metric-bar-limit" style="left:95%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="store-foot">
+            <span class="store-foot-label">Listings</span>
+            <span class="listing-compliance listing-warn">3 compliance</span>
+            <span style="margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--silver-dark);">Buy box 68%</span>
+          </div>
+        </div>
+
+        <!-- Store 4: Sirius -->
+        <div class="store-card">
+          <div class="store-card-head">
+            <div class="store-avatar-lg sa-sirius">SI</div>
+            <div class="store-info">
+              <div class="store-name">Sirius International</div>
+              <div class="store-channel">AMAZON · STORE4</div>
+            </div>
+            <span class="store-badge store-badge-healthy">Healthy</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">ODR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">0.12</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">limit 1.00%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:12%;"></div>
+                <div class="metric-bar-limit" style="left:100%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">LSR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">0.28</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">limit 2.50%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:11%;"></div>
+                <div class="metric-bar-limit" style="left:100%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">VTR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">96.8</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">target 95.0%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:97%;"></div>
+                <div class="metric-bar-limit" style="left:95%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="store-foot">
+            <span class="store-foot-label">Listings</span>
+            <span class="listing-compliance listing-ok">0 issues</span>
+            <span style="margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--silver-dark);">Buy box 71%</span>
+          </div>
+        </div>
+
+        <!-- Store 5: Retailer Distributor -->
+        <div class="store-card">
+          <div class="store-card-head">
+            <div class="store-avatar-lg sa-retail">RD</div>
+            <div class="store-info">
+              <div class="store-name">Retailer Distributor</div>
+              <div class="store-channel">AMAZON · STORE5</div>
+            </div>
+            <span class="store-badge store-badge-healthy">Healthy</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">ODR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">0.09</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">limit 1.00%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:9%;"></div>
+                <div class="metric-bar-limit" style="left:100%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">LSR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">0.21</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">limit 2.50%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:8%;"></div>
+                <div class="metric-bar-limit" style="left:100%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">VTR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">99.2</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">target 95.0%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:99%;"></div>
+                <div class="metric-bar-limit" style="left:95%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="store-foot">
+            <span class="store-foot-label">Listings</span>
+            <span class="listing-compliance listing-ok">0 issues</span>
+            <span style="margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--silver-dark);">Buy box 79%</span>
+          </div>
+        </div>
+
+        <!-- Walmart is separate (non-Amazon) -->
+        <div class="store-card" style="opacity:0.85;">
+          <div class="store-card-head">
+            <div class="store-avatar-lg sa-walmart">WM</div>
+            <div class="store-info">
+              <div class="store-name">Salutem · Walmart</div>
+              <div class="store-channel">WALMART · MANUAL</div>
+            </div>
+            <span class="store-badge store-badge-healthy">Healthy</span>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">SRR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">98.1</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">target 95.0%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:98%;"></div>
+                <div class="metric-bar-limit" style="left:95%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">OTD</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">96.4</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">target 95.0%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:96%;"></div>
+                <div class="metric-bar-limit" style="left:95%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-key">CDR</div>
+            <div class="metric-main">
+              <div class="metric-head">
+                <span class="metric-num">1.8</span>
+                <span class="metric-unit">%</span>
+                <span class="metric-target">limit 3.0%</span>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-bar-fill ok" style="width:60%;"></div>
+                <div class="metric-bar-limit" style="left:100%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="store-foot">
+            <span class="store-foot-label">API</span>
+            <span class="listing-compliance listing-warn">Pending access</span>
+            <span style="margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--silver-dark);">Manual only</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRENDS + EVENTS -->
+      <div class="trend-grid">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">ODR trend · per store <span class="count">30d</span></div>
+            <div class="card-tabs">
+              <div class="card-tab">7d</div>
+              <div class="card-tab active">30d</div>
+              <div class="card-tab">90d</div>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="chart-legend">
+              <span class="item"><span class="line-swatch" style="background:var(--green);"></span>Salutem</span>
+              <span class="item"><span class="line-swatch" style="background:var(--green-soft2);"></span>AMZ Com</span>
+              <span class="item"><span class="line-swatch" style="background:var(--silver-dark);"></span>Sirius</span>
+              <span class="item"><span class="line-swatch" style="background:var(--green-mid);"></span>Retailer</span>
+              <span class="item"><span class="line-swatch" style="background:var(--ink-2);"></span>Personal</span>
+              <span class="item" style="margin-left:auto;"><span class="line-swatch" style="background:var(--danger); height:1.5px;"></span>1% limit</span>
+            </div>
+            <svg class="chart-svg" viewBox="0 0 800 220" preserveAspectRatio="none">
+              <!-- Grid -->
+              <line x1="50" y1="20" x2="800" y2="20" stroke="var(--rule)" stroke-dasharray="3,3" />
+              <line x1="50" y1="70" x2="800" y2="70" stroke="var(--rule)" stroke-dasharray="3,3" />
+              <line x1="50" y1="120" x2="800" y2="120" stroke="var(--rule)" stroke-dasharray="3,3" />
+              <line x1="50" y1="170" x2="800" y2="170" stroke="var(--rule)" stroke-dasharray="3,3" />
+              <!-- Y labels -->
+              <text x="8" y="24" fill="var(--silver-dark)" font-family="JetBrains Mono" font-size="10">1.0%</text>
+              <text x="8" y="74" fill="var(--silver-dark)" font-family="JetBrains Mono" font-size="10">0.75%</text>
+              <text x="8" y="124" fill="var(--silver-dark)" font-family="JetBrains Mono" font-size="10">0.5%</text>
+              <text x="8" y="174" fill="var(--silver-dark)" font-family="JetBrains Mono" font-size="10">0.25%</text>
+              <text x="8" y="214" fill="var(--silver-dark)" font-family="JetBrains Mono" font-size="10">0.0%</text>
+              <!-- Threshold line at 1% -->
+              <line x1="50" y1="20" x2="800" y2="20" stroke="var(--danger)" stroke-width="1.5" stroke-dasharray="5,3"/>
+              <!-- Salutem (climbs to 0.41 %) -->
+              <polyline points="50,190 110,182 170,178 230,170 290,164 350,160 410,150 470,140 530,135 590,130 650,124 710,118 770,112" fill="none" stroke="var(--green)" stroke-width="2" stroke-linejoin="round"/>
+              <circle cx="770" cy="112" r="3.5" fill="var(--green)"/>
+              <!-- AMZ Com -->
+              <polyline points="50,180 110,178 170,176 230,174 290,172 350,170 410,168 470,166 530,164 590,162 650,160 710,158 770,156" fill="none" stroke="var(--green-soft2)" stroke-width="2" stroke-linejoin="round"/>
+              <circle cx="770" cy="156" r="3.5" fill="var(--green-soft2)"/>
+              <!-- Sirius -->
+              <polyline points="50,186 110,184 170,184 230,182 290,182 350,181 410,180 470,180 530,180 590,179 650,178 710,178 770,178" fill="none" stroke="var(--silver-dark)" stroke-width="2" stroke-linejoin="round"/>
+              <circle cx="770" cy="178" r="3.5" fill="var(--silver-dark)"/>
+              <!-- Retailer -->
+              <polyline points="50,198 110,197 170,196 230,196 290,196 350,195 410,194 470,194 530,193 590,192 650,192 710,192 770,191" fill="none" stroke="var(--green-mid)" stroke-width="2" stroke-linejoin="round"/>
+              <circle cx="770" cy="191" r="3.5" fill="var(--green-mid)"/>
+              <!-- Personal -->
+              <polyline points="50,188 110,187 170,186 230,185 290,184 350,183 410,183 470,182 530,181 590,181 650,180 710,180 770,180" fill="none" stroke="var(--ink-2)" stroke-width="2" stroke-linejoin="round" stroke-dasharray="4,2"/>
+              <circle cx="770" cy="180" r="3.5" fill="var(--ink-2)"/>
+              <!-- X labels -->
+              <text x="50" y="215" fill="var(--silver-dark)" font-family="JetBrains Mono" font-size="10">Mar 20</text>
+              <text x="230" y="215" fill="var(--silver-dark)" font-family="JetBrains Mono" font-size="10">Mar 28</text>
+              <text x="410" y="215" fill="var(--silver-dark)" font-family="JetBrains Mono" font-size="10">Apr 4</text>
+              <text x="590" y="215" fill="var(--silver-dark)" font-family="JetBrains Mono" font-size="10">Apr 11</text>
+              <text x="744" y="215" fill="var(--silver-dark)" font-family="JetBrains Mono" font-size="10">Apr 18</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Event stream -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Recent events</div>
+            <div style="font-size:11px; color:var(--green-ink); cursor:pointer; font-weight:500;">All →</div>
+          </div>
+          <div>
+            <div class="event-row">
+              <div class="event-date">APR 18</div>
+              <div class="event-body">
+                <div class="event-title">ODR climbed to 0.41% on Salutem</div>
+                <div class="event-meta"><span class="dot-mini" style="background:var(--warn);"></span> Warn &middot; +2 A-to-Z on frozen</div>
+              </div>
+            </div>
+            <div class="event-row">
+              <div class="event-date">APR 16</div>
+              <div class="event-body">
+                <div class="event-title">Listing compliance email for AMZ Commerce</div>
+                <div class="event-meta"><span class="dot-mini" style="background:var(--info);"></span> Gmail &middot; 3 SKUs &middot; 14-day window</div>
+              </div>
+            </div>
+            <div class="event-row">
+              <div class="event-date">APR 15</div>
+              <div class="event-body">
+                <div class="event-title">Amazon Q2 policy digest published</div>
+                <div class="event-meta"><span class="dot-mini" style="background:var(--info);"></span> Info &middot; 3 changes</div>
+              </div>
+            </div>
+            <div class="event-row">
+              <div class="event-date">APR 12</div>
+              <div class="event-body">
+                <div class="event-title">A-to-Z claim won on Salutem &middot; $45.99</div>
+                <div class="event-meta"><span class="dot-mini" style="background:var(--green);"></span> Amazon funded &middot; PoD strategy</div>
+              </div>
+            </div>
+            <div class="event-row">
+              <div class="event-date">APR 9</div>
+              <div class="event-body">
+                <div class="event-title">Chargeback received on Salutem &middot; $108.84</div>
+                <div class="event-meta"><span class="dot-mini" style="background:var(--danger);"></span> Reply-by Apr 16</div>
+              </div>
+            </div>
+            <div class="event-row">
+              <div class="event-date">APR 7</div>
+              <div class="event-body">
+                <div class="event-title">FedEx Ground outage in Southeast</div>
+                <div class="event-meta"><span class="dot-mini" style="background:var(--warn);"></span> Carrier &middot; 6 orders delayed</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POLICY THRESHOLDS REFERENCE -->
+      <div class="card thresh-card">
+        <div class="card-head">
+          <div class="card-title">Policy thresholds</div>
+          <div style="font-family:var(--mono); font-size:10.5px; color:var(--silver-dark); letter-spacing:0.04em;">REFERENCE · Amazon seller performance</div>
+        </div>
+        <table class="thresh-table">
+          <thead>
+            <tr>
+              <th style="width:80px;">Metric</th>
+              <th>Name</th>
+              <th style="width:120px;">Limit</th>
+              <th style="width:160px;">Alert at</th>
+              <th>Definition</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="thresh-code">ODR</span></td>
+              <td>Order Defect Rate</td>
+              <td><span class="thresh-limit">&lt; 1.00%</span></td>
+              <td><span class="thresh-limit" style="color:var(--warn);">0.50%</span> &middot; watch</td>
+              <td style="color:var(--ink-2);">Orders with A-to-Z, chargeback, or negative feedback / total orders, 60d</td>
+            </tr>
+            <tr>
+              <td><span class="thresh-code">LSR</span></td>
+              <td>Late Shipment Rate</td>
+              <td><span class="thresh-limit">&lt; 2.50%</span></td>
+              <td><span class="thresh-limit" style="color:var(--warn);">1.50%</span> &middot; watch</td>
+              <td style="color:var(--ink-2);">Orders confirmed after expected ship date / total shippable, 10d & 30d</td>
+            </tr>
+            <tr>
+              <td><span class="thresh-code">VTR</span></td>
+              <td>Valid Tracking Rate</td>
+              <td><span class="thresh-limit">&gt; 95.0%</span></td>
+              <td><span class="thresh-limit" style="color:var(--warn);">96.0%</span> &middot; watch</td>
+              <td style="color:var(--ink-2);">Shipments with valid tracking accepted by carrier, 30d, by category</td>
+            </tr>
+            <tr>
+              <td><span class="thresh-code">CCR</span></td>
+              <td>Cancellation Rate</td>
+              <td><span class="thresh-limit">&lt; 2.50%</span></td>
+              <td><span class="thresh-limit" style="color:var(--warn);">1.50%</span> &middot; watch</td>
+              <td style="color:var(--ink-2);">Seller-initiated cancellations / total orders, 7d</td>
+            </tr>
+            <tr>
+              <td><span class="thresh-code">RDR</span></td>
+              <td>Return Dissatisfaction Rate</td>
+              <td><span class="thresh-limit">&lt; 10.0%</span></td>
+              <td><span class="thresh-limit" style="color:var(--warn);">8.0%</span> &middot; watch</td>
+              <td style="color:var(--ink-2);">Negative return experiences / return requests, 60d</td>
+            </tr>
+            <tr>
+              <td><span class="thresh-code">POF</span></td>
+              <td>Policy compliance</td>
+              <td><span class="thresh-limit">0 violations</span></td>
+              <td><span class="thresh-limit" style="color:var(--info);">any email</span></td>
+              <td style="color:var(--ink-2);">Restricted products, authenticity, safety &mdash; monitored via Gmail listing-compliance@</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+</body>
+</html>
