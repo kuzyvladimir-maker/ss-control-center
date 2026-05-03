@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshCw, Loader2, AlertCircle } from "lucide-react";
 import { Btn, FilterTabs, PageHead, type FilterTab } from "@/components/kit";
 import {
   ProcurementList,
   type ProcurementOrderCard,
 } from "./components/ProcurementList";
+import type {
+  CardAction,
+  ActionResult,
+} from "./components/ProcurementCard";
 
 type SortKey = "shipBy" | "title";
 
@@ -14,6 +18,12 @@ const SORT_TABS: FilterTab<SortKey>[] = [
   { id: "shipBy", label: "По срочности" },
   { id: "title", label: "По названию" },
 ];
+
+const ACTION_PATH: Record<CardAction["kind"], string> = {
+  bought: "bought",
+  partial: "partial",
+  undo: "undo",
+};
 
 export default function ProcurementPage() {
   const [cards, setCards] = useState<ProcurementOrderCard[]>([]);
@@ -41,6 +51,101 @@ export default function ProcurementPage() {
       setLoading(false);
     }
   }
+
+  /**
+   * Apply an action optimistically, then call the server. On failure the
+   * UI reverts to the previous status. Cards that become "bought" stay
+   * visible until the next refresh — that's the spec ("карточка не
+   * исчезает, она просто меняет визуальный статус").
+   */
+  const handleAction = useCallback(
+    async (
+      lineItemId: string,
+      orderId: string,
+      action: CardAction
+    ): Promise<ActionResult> => {
+      // Snapshot for rollback
+      let previousStatus: ProcurementOrderCard["status"] = null;
+      let previousRemaining = 0;
+
+      const optimistic = (() => {
+        if (action.kind === "bought") {
+          return { kind: "bought" as const };
+        }
+        if (action.kind === "partial") {
+          return { kind: "remain" as const, remaining: action.remaining };
+        }
+        return null;
+      })();
+
+      setCards((prev) =>
+        prev.map((c) => {
+          if (c.lineItemId !== lineItemId) return c;
+          previousStatus = c.status;
+          previousRemaining = c.remaining;
+          return {
+            ...c,
+            status: optimistic,
+            remaining:
+              action.kind === "partial"
+                ? action.remaining
+                : action.kind === "bought"
+                  ? 0
+                  : c.quantityOrdered,
+          };
+        })
+      );
+
+      try {
+        const res = await fetch(
+          `/api/procurement/items/${encodeURIComponent(
+            lineItemId
+          )}/${ACTION_PATH[action.kind]}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(
+              action.kind === "partial"
+                ? { orderId, remaining: action.remaining }
+                : { orderId }
+            ),
+          }
+        );
+        const json = (await res.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        if (!res.ok) {
+          // Revert
+          setCards((prev) =>
+            prev.map((c) =>
+              c.lineItemId === lineItemId
+                ? { ...c, status: previousStatus, remaining: previousRemaining }
+                : c
+            )
+          );
+          return {
+            ok: false,
+            error: json.error ?? `HTTP ${res.status}`,
+          };
+        }
+        return { ok: true };
+      } catch (e: unknown) {
+        // Revert
+        setCards((prev) =>
+          prev.map((c) =>
+            c.lineItemId === lineItemId
+              ? { ...c, status: previousStatus, remaining: previousRemaining }
+              : c
+          )
+        );
+        return {
+          ok: false,
+          error: e instanceof Error ? e.message : "Network error",
+        };
+      }
+    },
+    []
+  );
 
   // Sort cards: by ship-by ascending (urgent first) OR by title alphabetically.
   // Cards with no ship-by sink to the bottom in the shipBy view.
@@ -138,7 +243,7 @@ export default function ProcurementPage() {
           Список пуст — всё закуплено
         </div>
       ) : (
-        <ProcurementList cards={sortedCards} />
+        <ProcurementList cards={sortedCards} onAction={handleAction} />
       )}
     </div>
   );

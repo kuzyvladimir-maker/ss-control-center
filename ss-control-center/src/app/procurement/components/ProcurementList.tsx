@@ -2,7 +2,12 @@
 
 import { Zap, Calendar, Store, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ProcurementCard, type ProcurementCardData } from "./ProcurementCard";
+import {
+  ProcurementCard,
+  type ProcurementCardData,
+  type CardAction,
+  type ActionResult,
+} from "./ProcurementCard";
 
 export interface ProcurementOrderCard extends ProcurementCardData {
   orderId: string;
@@ -15,6 +20,11 @@ export interface ProcurementOrderCard extends ProcurementCardData {
 
 interface ProcurementListProps {
   cards: ProcurementOrderCard[];
+  onAction: (
+    lineItemId: string,
+    orderId: string,
+    action: CardAction
+  ) => Promise<ActionResult>;
 }
 
 function formatShipBy(iso: string | null): string | null {
@@ -49,7 +59,7 @@ function channelDot(channel: string): string {
   return "bg-bg-elev text-ink-3";
 }
 
-export function ProcurementList({ cards }: ProcurementListProps) {
+export function ProcurementList({ cards, onAction }: ProcurementListProps) {
   // Group by orderId, preserving the order coming from the backend (already
   // sorted by ship-by or by title there).
   const groups: Array<{ orderId: string; items: ProcurementOrderCard[] }> = [];
@@ -138,7 +148,13 @@ export function ProcurementList({ cards }: ProcurementListProps) {
             {/* Cards */}
             <div>
               {items.map((c) => (
-                <ProcurementCard key={c.lineItemId} card={c} />
+                <ProcurementCard
+                  key={c.lineItemId}
+                  card={c}
+                  onAction={(lineItemId, action) =>
+                    onAction(lineItemId, c.orderId, action)
+                  }
+                />
               ))}
             </div>
           </div>
