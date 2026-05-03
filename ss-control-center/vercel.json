@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/walmart",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/procurement-priority",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
