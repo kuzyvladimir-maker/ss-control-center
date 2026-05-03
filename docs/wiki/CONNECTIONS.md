@@ -10,9 +10,15 @@
 ← [Shipping Labels](shipping-labels.md), [Customer Hub](customer-hub.md), [Account Health](account-health.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md), [Shipment Monitor](shipment-monitor.md)
 
 ### [Shipping Labels](shipping-labels.md)
-← [Veeqo API](veeqo-api.md), [SKU Database](google-sheets-sku-db.md), [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md)
+← [Veeqo API](veeqo-api.md), [SKU Database](google-sheets-sku-db.md), [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md), [Procurement](procurement-module.md) (ждёт тега `Placed` на заказе перед покупкой этикетки)
 → [Dashboard](dashboard.md), [n8n Автоматизация](n8n-automation.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md), [Shipment Monitor](shipment-monitor.md)
 ⊂ [Выбор ставки](shipping-rate-selection.md), [Бюджет](budget-check-algorithm.md), [Weekend распределение](weekend-distribution.md), [Carrier rules](carrier-selection-rules.md), [Label filename](label-filename-format.md)
+
+### [Procurement](procurement-module.md)
+← [Veeqo API](veeqo-api.md) (orders + products + tags + internal notes)
+→ [Shipping Labels](shipping-labels.md) (ставит тег `Placed` → Shipping Labels автоматически видит заказ как готовый к покупке этикетки; раньше тег ставился вручную), [Telegram](telegram-notifications.md) (Phase 7 — уведомления о приоритетных заказах)
+⊂ SS Control Center (auth, design system, Turso БД)
+⇔ SKUStorePriority (новая таблица в БД)
 
 ### [Customer Hub](customer-hub.md)
 ← [Gmail API](gmail-api.md), [Amazon SP-API](amazon-sp-api.md), [Claude AI](claude-ai.md), [Veeqo API](veeqo-api.md)

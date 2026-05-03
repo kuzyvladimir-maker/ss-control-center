@@ -1,7 +1,7 @@
 const VEEQO_API_KEY = process.env.VEEQO_API_KEY!;
 const VEEQO_BASE_URL = process.env.VEEQO_BASE_URL || "https://api.veeqo.com";
 
-async function veeqoFetch(path: string, options?: RequestInit) {
+export async function veeqoFetch(path: string, options?: RequestInit) {
   const res = await fetch(`${VEEQO_BASE_URL}${path}`, {
     ...options,
     headers: {

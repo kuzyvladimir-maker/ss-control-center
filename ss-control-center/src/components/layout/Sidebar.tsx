@@ -14,6 +14,7 @@ import {
   Package,
   Settings,
   ChevronDown,
+  ShoppingCart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -44,6 +45,11 @@ const operationsItems = (s: DashboardSummary): NavItem[] => [
     pillCount:
       (s.health?.issues ?? 0) + (s.walmart?.healthIssues ?? 0) || undefined,
     pillVariant: "warn",
+  },
+  {
+    title: "Procurement",
+    href: "/procurement",
+    icon: ShoppingCart,
   },
   {
     title: "Shipping labels",

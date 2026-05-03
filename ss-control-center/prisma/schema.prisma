@@ -771,3 +771,41 @@ model WalmartPerformanceSnapshot {
 
   @@index([storeIndex, metric, capturedAt])
 }
+
+// Procurement: where to buy each SKU (store priority).
+// Populated/edited in later phases — Phase 1 only declares the schema.
+model SKUStorePriority {
+  id        String   @id @default(cuid())
+  sku       String
+  storeName String
+  priority  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sku, storeName])
+  @@index([sku])
+}
+
+// Procurement: action queue for offline mode (Phase 6).
+model ProcurementSyncQueue {
+  id           String    @id @default(cuid())
+  lineItemId   String
+  orderId      String
+  action       String
+  payload      Json
+  status       String    @default("pending")
+  createdAt    DateTime  @default(now())
+  syncedAt     DateTime?
+  errorMessage String?
+
+  @@index([status])
+}
+
+// Procurement: log of priority-order notifications (Phase 7).
+model ProcurementNotificationLog {
+  id         String   @id @default(cuid())
+  orderId    String   @unique
+  notifiedAt DateTime @default(now())
+
+  @@index([notifiedAt])
+}
