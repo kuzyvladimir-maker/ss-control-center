@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter_Tight, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
@@ -18,6 +18,26 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Salutem Control",
   description: "Salutem Solutions E-Commerce Control Center",
+  manifest: "/manifest.json",
+  // iOS Home Screen treatment — when Vladimir uses
+  // Share → "Add to Home Screen" on iPhone, the page launches
+  // fullscreen (no browser chrome) and looks like a native app.
+  appleWebApp: {
+    capable: true,
+    title: "Salutem",
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1F4D3F",
+  // Don't let iOS auto-zoom when tapping inputs on the procurement page.
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
