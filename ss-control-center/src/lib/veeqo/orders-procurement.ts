@@ -15,6 +15,7 @@ export interface ProcurementCard {
   orderNumber: string;
   channel: string; // "Amazon" | "Walmart" | "eBay" | ...
   storeName: string; // e.g. one of the 5 Amazon accounts
+  customerName: string | null;
 
   // Product
   productId: string;
@@ -29,7 +30,7 @@ export interface ProcurementCard {
   // Status from [PROCUREMENT] block
   status: LineItemStatus | null;
 
-  // Deadlines
+  // Deadlines (ISO strings as Veeqo returns them)
   shipBy: string | null;
   expectedDispatchDate: string | null;
 
@@ -38,10 +39,9 @@ export interface ProcurementCard {
   shippingMethod: string | null;
 }
 
-// Loose shape of an order returned from the Veeqo API. Field names are
-// best-effort; many of these are guesses confirmed by other modules in this
-// repo. Anything missing falls back to safe defaults rather than crashing.
-type VeeqoOrder = {
+// Loose shape of an order returned from the Veeqo API. We use unknown-tolerant
+// reads everywhere so renames or shape drift in Veeqo don't crash the page.
+type VeeqoOrder = Record<string, unknown> & {
   id?: string | number;
   number?: string;
   channel?: { type_code?: string; name?: string };
@@ -50,23 +50,74 @@ type VeeqoOrder = {
   expected_dispatch_date?: string;
   is_premium?: boolean;
   priority?: string;
+  customer?: { full_name?: string; first_name?: string; last_name?: string };
   line_items?: VeeqoLineItem[];
-} & Record<string, unknown>;
+};
 
 type VeeqoLineItem = {
   id?: string | number;
   quantity?: number;
-  sellable?: {
-    sku_code?: string;
-    sku?: string;
-    title?: string;
-    product?: {
-      id?: string | number;
-      title?: string;
-      images?: Array<{ src?: string; url?: string }>;
-    };
-  };
+  sellable?: VeeqoSellable;
 };
+
+type VeeqoSellable = {
+  sku_code?: string;
+  sku?: string;
+  title?: string;
+  product_title?: string;
+  image_url?: string;
+  main_image?: { src?: string; url?: string };
+  product?: VeeqoProduct;
+};
+
+type VeeqoProduct = {
+  id?: string | number;
+  title?: string;
+  name?: string;
+  main_image_src?: string;
+  main_image_url?: string;
+  image_url?: string;
+  images?: Array<{
+    src?: string;
+    url?: string;
+    image_url?: string;
+    src_thumbnail?: string;
+  }>;
+};
+
+// Try a long list of field paths Veeqo has been observed to use for product
+// images across channels. First non-empty wins. Returning `null` means "no
+// image found" — the UI shows a placeholder.
+function pickImageUrl(li: VeeqoLineItem): string | null {
+  const sellable = li.sellable ?? {};
+  const product = sellable.product ?? {};
+  const candidates: Array<unknown> = [
+    sellable.image_url,
+    sellable.main_image?.src,
+    sellable.main_image?.url,
+    product.main_image_src,
+    product.main_image_url,
+    product.image_url,
+    product.images?.[0]?.src,
+    product.images?.[0]?.url,
+    product.images?.[0]?.image_url,
+    product.images?.[0]?.src_thumbnail,
+  ];
+  for (const c of candidates) {
+    if (typeof c === "string" && c.trim()) return c;
+  }
+  return null;
+}
+
+function pickCustomerName(order: VeeqoOrder): string | null {
+  const c = order.customer;
+  if (!c) return null;
+  if (typeof c.full_name === "string" && c.full_name.trim()) return c.full_name;
+  const parts = [c.first_name, c.last_name].filter(
+    (p): p is string => typeof p === "string" && p.trim().length > 0
+  );
+  return parts.length > 0 ? parts.join(" ") : null;
+}
 
 /**
  * Top-level fetcher for the Procurement page.
@@ -75,11 +126,6 @@ type VeeqoLineItem = {
  *   3. Expand into per-line-item cards
  *   4. Apply the [PROCUREMENT] note block (skip already-bought lines,
  *      adjust `remaining` for partial buys)
- *
- * NB: Several Veeqo field names below (channel.type_code, is_premium, image
- * shape) are educated guesses. Phase 1's success criteria don't depend on
- * any single one being correct — anything missing falls back to a safe
- * default. Tighten in Phase 2 once we've inspected a real response.
  */
 export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
   const allOrders: VeeqoOrder[] = [];
@@ -120,7 +166,6 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
 
       const sellable = li.sellable ?? {};
       const product = sellable.product ?? {};
-      const images = product.images ?? [];
 
       cards.push({
         lineItemId,
@@ -128,9 +173,15 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
         orderNumber: order.number ?? String(order.id ?? ""),
         channel: order.channel?.type_code ?? order.channel?.name ?? "Unknown",
         storeName: order.channel?.name ?? "Unknown",
+        customerName: pickCustomerName(order),
         productId: String(product.id ?? ""),
-        productTitle: product.title ?? sellable.title ?? "?",
-        productImageUrl: images[0]?.src ?? images[0]?.url ?? null,
+        productTitle:
+          product.title ??
+          product.name ??
+          sellable.title ??
+          sellable.product_title ??
+          "?",
+        productImageUrl: pickImageUrl(li),
         sku: sellable.sku_code ?? sellable.sku ?? "",
         quantityOrdered,
         remaining,
