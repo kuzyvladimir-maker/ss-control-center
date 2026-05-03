@@ -78,20 +78,23 @@ export function ProcurementCard({
   const status = card.status;
   const isBought = status?.kind === "bought";
   const isPartial = status?.kind === "remain";
-  const listingsToBuy = isPartial ? card.remaining : card.quantityOrdered;
-
-  // Default the partial input to the current remaining (or full quantity if
-  // we're entering partial mode for the first time, minus 1 — most common
-  // case is "I bought one, one left").
-  const [partialValue, setPartialValue] = useState<number>(
-    isPartial ? card.remaining : Math.max(1, card.quantityOrdered - 1)
-  );
 
   const pack = useMemo(
     () => parsePackSize(card.productTitle),
     [card.productTitle]
   );
-  const physicalTotal = pack ? listingsToBuy * pack.size : null;
+
+  // Total physical units required for this line:
+  //   listings × packSize  (or just listings when no pack pattern in title).
+  // For Del Monte ordered ×1 with "Pack of 6" in title → 6 cans.
+  // For Wings ordered ×5 with no pack pattern → 5.
+  const totalPhysical = card.quantityOrdered * (pack?.size ?? 1);
+
+  // remain:N in the [PROCUREMENT] notes block stores PHYSICAL UNITS still
+  // needed (so Vladimir can mark "bought 4 of 6 cans, 2 to go" even when the
+  // listing-level qty is just 1). When there's no status yet, "remaining"
+  // displays as the full physical total.
+  const remainingPhysical = isPartial ? card.remaining : totalPhysical;
 
   const handleCopy = async () => {
     try {
@@ -232,27 +235,28 @@ export function ProcurementCard({
               >
                 <span>
                   {isPartial ? "Осталось купить:" : "Купить:"}{" "}
-                  {physicalTotal ?? listingsToBuy} шт
+                  {remainingPhysical} шт
                 </span>
               </div>
-              {physicalTotal !== null && pack !== null && (
+              {pack !== null && !isPartial && (
                 <span className="text-[11.5px] tabular text-ink-3">
-                  {listingsToBuy} ×{" "}
+                  {card.quantityOrdered} ×{" "}
                   <span className="font-medium text-ink-2">{pack.label}</span>
-                  {isPartial && (
+                </span>
+              )}
+              {isPartial && (
+                <span className="text-[11.5px] tabular text-ink-3">
+                  из {totalPhysical} шт всего
+                  {pack !== null && (
                     <>
                       {" "}
-                      из {card.quantityOrdered} ×{" "}
+                      ({card.quantityOrdered} ×{" "}
                       <span className="font-medium text-ink-2">
                         {pack.label}
                       </span>
+                      )
                     </>
                   )}
-                </span>
-              )}
-              {physicalTotal === null && isPartial && (
-                <span className="text-[11.5px] tabular text-ink-3">
-                  из {card.quantityOrdered} шт
                 </span>
               )}
             </div>
@@ -270,8 +274,10 @@ export function ProcurementCard({
           <div className="mt-3">
             {partialMode ? (
               <PartialInput
-                initial={partialValue}
-                max={card.quantityOrdered}
+                initialPhysical={
+                  isPartial ? card.remaining : Math.max(1, totalPhysical - 1)
+                }
+                totalPhysical={totalPhysical}
                 pack={pack}
                 pending={pending === "partial"}
                 onCancel={() => {
@@ -279,7 +285,6 @@ export function ProcurementCard({
                   setActionError(null);
                 }}
                 onSave={(n) => {
-                  setPartialValue(n);
                   void dispatch({ kind: "partial", remaining: n });
                 }}
               />
@@ -358,33 +363,61 @@ export function ProcurementCard({
 }
 
 interface PartialInputProps {
-  initial: number;
-  max: number;
+  /** Starting value for the stepper, in PHYSICAL UNITS still needed. */
+  initialPhysical: number;
+  /** Total physical units required for this line (listings × packSize). */
+  totalPhysical: number;
   pack: { size: number; label: string } | null;
   pending: boolean;
-  onSave: (remaining: number) => void;
+  onSave: (remainingPhysical: number) => void;
   onCancel: () => void;
 }
 
 /**
- * Inline number stepper for "сколько ещё осталось купить". Range 1..max,
- * since 0 = bought (use the bought button) and >max would mean you bought
- * negative (use undo).
+ * Inline stepper for "сколько ещё нужно купить" in PHYSICAL UNITS.
+ *
+ * Range 1..totalPhysical-1, since:
+ *   - 0  = everything bought (use the "Купил всё" button instead)
+ *   - =totalPhysical = nothing bought (use undo)
+ *
+ * For Del Monte ordered ×1 with "Pack of 6" in title, totalPhysical=6,
+ * so the stepper offers 1..5. For Wings ordered ×5 with no pack pattern,
+ * totalPhysical=5, stepper offers 1..4.
  */
 function PartialInput({
-  initial,
-  max,
+  initialPhysical,
+  totalPhysical,
   pack,
   pending,
   onSave,
   onCancel,
 }: PartialInputProps) {
+  const stepperMax = Math.max(1, totalPhysical - 1);
   const [n, setN] = useState<number>(
-    Math.max(1, Math.min(initial, max))
+    Math.max(1, Math.min(initialPhysical, stepperMax))
   );
 
   const dec = () => setN((v) => Math.max(1, v - 1));
-  const inc = () => setN((v) => Math.min(max, v + 1));
+  const inc = () => setN((v) => Math.min(stepperMax, v + 1));
+
+  // If totalPhysical is 1 (single physical unit), partial doesn't make
+  // sense — there's nothing between bought and not bought. Show a hint
+  // instead of a broken stepper.
+  if (totalPhysical <= 1) {
+    return (
+      <div className="rounded-md border border-rule bg-surface-tint px-2.5 py-2">
+        <div className="text-[12px] text-ink-2">
+          Этот товар — одна физическая единица. Используй «Купил всё» или
+          оставь как есть.
+        </div>
+        <div className="mt-2">
+          <Btn variant="ghost" size="sm" onClick={onCancel}>
+            Закрыть
+          </Btn>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-md border border-rule bg-surface-tint px-2.5 py-2">
@@ -405,19 +438,20 @@ function PartialInput({
           <input
             type="number"
             min={1}
-            max={max}
+            max={stepperMax}
             value={n}
             onChange={(e) => {
               const v = parseInt(e.target.value, 10);
-              if (Number.isFinite(v)) setN(Math.max(1, Math.min(max, v)));
+              if (Number.isFinite(v))
+                setN(Math.max(1, Math.min(stepperMax, v)));
             }}
             disabled={pending}
-            className="h-9 w-12 border-x border-rule bg-surface text-center text-[14px] font-semibold tabular text-ink outline-none"
+            className="h-9 w-14 border-x border-rule bg-surface text-center text-[14px] font-semibold tabular text-ink outline-none"
           />
           <button
             type="button"
             onClick={inc}
-            disabled={n >= max || pending}
+            disabled={n >= stepperMax || pending}
             className="h-9 w-9 text-[15px] font-semibold text-ink-2 hover:bg-bg-elev disabled:opacity-40"
             aria-label="+1"
           >
@@ -425,7 +459,8 @@ function PartialInput({
           </button>
         </div>
         <span className="text-[11.5px] tabular text-ink-3">
-          из {max} {pack ? `× ${pack.label} = ${n * pack.size} шт` : "шт"}
+          из {totalPhysical} шт всего
+          {pack ? ` (× ${pack.label})` : ""}
         </span>
       </div>
       <div className="mt-2 flex items-center gap-2">
