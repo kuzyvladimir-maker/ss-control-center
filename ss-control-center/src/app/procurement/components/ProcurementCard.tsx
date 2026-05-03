@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Copy, Check, ImageOff, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { parsePackSize } from "@/lib/procurement/pack-size";
 import { PhotoLightbox } from "./PhotoLightbox";
 
 export interface ProcurementCardData {
@@ -31,9 +32,13 @@ export function ProcurementCard({ card }: ProcurementCardProps) {
   const [copied, setCopied] = useState(false);
 
   const isPartial = card.status?.kind === "remain";
-  const qtyLabel = isPartial
-    ? `Осталось купить: ${card.remaining} из ${card.quantityOrdered}`
-    : `Купить: ${card.quantityOrdered} шт`;
+  const listingsToBuy = isPartial ? card.remaining : card.quantityOrdered;
+
+  // If the title encodes a pack size ("Pack of 7"), surface the *physical*
+  // total (listings × pack size) so Vladimir grabs the right number off
+  // the shelf. Falls back to plain "N шт" when no pattern matches.
+  const pack = useMemo(() => parsePackSize(card.productTitle), [card.productTitle]);
+  const physicalTotal = pack ? listingsToBuy * pack.size : null;
 
   const handleCopy = async () => {
     try {
@@ -113,15 +118,38 @@ export function ProcurementCard({ card }: ProcurementCardProps) {
             )}
           </div>
 
-          <div
-            className={cn(
-              "mt-2 inline-flex items-center rounded-md px-2 py-0.5 text-[12.5px] font-semibold tabular",
-              isPartial
-                ? "bg-warn-tint text-warn-strong"
-                : "bg-green-soft text-green-ink"
+          <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <div
+              className={cn(
+                "inline-flex items-baseline gap-1 rounded-md px-2 py-0.5 text-[14px] font-semibold tabular",
+                isPartial
+                  ? "bg-warn-tint text-warn-strong"
+                  : "bg-green-soft text-green-ink"
+              )}
+            >
+              <span>
+                {isPartial ? "Осталось купить:" : "Купить:"}{" "}
+                {physicalTotal ?? listingsToBuy} шт
+              </span>
+            </div>
+            {physicalTotal !== null && pack !== null && (
+              <span className="text-[11.5px] tabular text-ink-3">
+                {listingsToBuy} ×{" "}
+                <span className="font-medium text-ink-2">{pack.label}</span>
+                {isPartial && (
+                  <>
+                    {" "}
+                    из {card.quantityOrdered} ×{" "}
+                    <span className="font-medium text-ink-2">{pack.label}</span>
+                  </>
+                )}
+              </span>
             )}
-          >
-            {qtyLabel}
+            {physicalTotal === null && isPartial && (
+              <span className="text-[11.5px] tabular text-ink-3">
+                из {card.quantityOrdered} шт
+              </span>
+            )}
           </div>
         </div>
       </div>
