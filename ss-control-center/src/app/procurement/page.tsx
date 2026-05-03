@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { RefreshCw, Loader2, AlertCircle } from "lucide-react";
+import { RefreshCw, Loader2, AlertCircle, Search, X } from "lucide-react";
 import { Btn, FilterTabs, PageHead, type FilterTab } from "@/components/kit";
 import {
   ProcurementList,
@@ -31,6 +31,7 @@ export default function ProcurementPage() {
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<SortKey>("shipBy");
   const [lastSync, setLastSync] = useState<Date | null>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     void load();
@@ -147,10 +148,25 @@ export default function ProcurementPage() {
     []
   );
 
+  // Filter by search query first (case-insensitive substring across
+  // title / SKU / order number / customer), then sort.
+  const filteredCards = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return cards;
+    return cards.filter((c) => {
+      return (
+        c.productTitle.toLowerCase().includes(q) ||
+        c.sku.toLowerCase().includes(q) ||
+        c.orderNumber.toLowerCase().includes(q) ||
+        (c.customerName?.toLowerCase().includes(q) ?? false)
+      );
+    });
+  }, [cards, search]);
+
   // Sort cards: by ship-by ascending (urgent first) OR by title alphabetically.
   // Cards with no ship-by sink to the bottom in the shipBy view.
   const sortedCards = useMemo(() => {
-    const arr = [...cards];
+    const arr = [...filteredCards];
     if (sort === "shipBy") {
       arr.sort((a, b) => {
         const aT = a.shipBy
@@ -171,7 +187,7 @@ export default function ProcurementPage() {
       );
     }
     return arr;
-  }, [cards, sort]);
+  }, [filteredCards, sort]);
 
   // Distinct order count — Vladimir compares this against Veeqo's "orders" count
   const orderCount = useMemo(() => {
@@ -179,17 +195,36 @@ export default function ProcurementPage() {
     return ids.size;
   }, [cards]);
 
+  const filteredOrderCount = useMemo(() => {
+    const ids = new Set(filteredCards.map((c) => c.orderId));
+    return ids.size;
+  }, [filteredCards]);
+
   return (
     <div className="mx-auto w-full max-w-[820px] px-4 pb-12 pt-5 sm:px-6">
       <PageHead
         title="Procurement"
         subtitle={
           <>
-            <span className="font-medium text-ink-2">
-              {orderCount} заказов
-            </span>
-            <span className="text-ink-4">·</span>
-            <span>{cards.length} товаров</span>
+            {search ? (
+              <>
+                <span className="font-medium text-ink-2">
+                  {filteredOrderCount} из {orderCount} заказов
+                </span>
+                <span className="text-ink-4">·</span>
+                <span>
+                  {filteredCards.length} из {cards.length} товаров
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="font-medium text-ink-2">
+                  {orderCount} заказов
+                </span>
+                <span className="text-ink-4">·</span>
+                <span>{cards.length} товаров</span>
+              </>
+            )}
             {lastSync && (
               <>
                 <span className="text-ink-4">·</span>
@@ -215,6 +250,28 @@ export default function ProcurementPage() {
           </Btn>
         }
       />
+
+      {/* Search */}
+      <div className="mb-3 flex items-center gap-2 rounded-lg border border-rule bg-surface px-3 py-2">
+        <Search size={15} className="text-ink-3" />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Поиск: товар, SKU, номер заказа, клиент…"
+          className="flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-ink-4"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => setSearch("")}
+            className="inline-flex h-6 w-6 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink"
+            aria-label="Clear search"
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
 
       <FilterTabs
         tabs={SORT_TABS}
