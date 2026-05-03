@@ -27,6 +27,9 @@ const ACTION_PATH: Record<CardAction["kind"], string> = {
 
 export default function ProcurementPage() {
   const [cards, setCards] = useState<ProcurementOrderCard[]>([]);
+  const [prioritiesBySku, setPrioritiesBySku] = useState<
+    Record<string, string[]>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<SortKey>("shipBy");
@@ -44,8 +47,34 @@ export default function ProcurementPage() {
       const res = await fetch("/api/procurement/items");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setCards(data.cards ?? []);
+      const newCards: ProcurementOrderCard[] = data.cards ?? [];
+      setCards(newCards);
       setLastSync(new Date());
+
+      // Background-load store priorities for the SKUs we just received.
+      // Failure is non-fatal — the page still works without store chips.
+      const skus = Array.from(
+        new Set(newCards.map((c) => c.sku).filter(Boolean))
+      );
+      if (skus.length > 0) {
+        try {
+          const params = new URLSearchParams();
+          for (const s of skus) params.append("sku", s);
+          const r = await fetch(
+            `/api/procurement/sku-stores?${params.toString()}`
+          );
+          if (r.ok) {
+            const j = (await r.json()) as {
+              prioritiesBySku?: Record<string, string[]>;
+            };
+            setPrioritiesBySku(j.prioritiesBySku ?? {});
+          }
+        } catch {
+          /* non-fatal */
+        }
+      } else {
+        setPrioritiesBySku({});
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
@@ -300,7 +329,11 @@ export default function ProcurementPage() {
           Список пуст — всё закуплено
         </div>
       ) : (
-        <ProcurementList cards={sortedCards} onAction={handleAction} />
+        <ProcurementList
+          cards={sortedCards}
+          onAction={handleAction}
+          prioritiesBySku={prioritiesBySku}
+        />
       )}
     </div>
   );

@@ -25,6 +25,8 @@ interface ProcurementListProps {
     orderId: string,
     action: CardAction
   ) => Promise<ActionResult>;
+  /** SKU → ordered store names. Empty/missing entry means "not configured". */
+  prioritiesBySku?: Readonly<Record<string, ReadonlyArray<string>>>;
 }
 
 function formatShipBy(iso: string | null): string | null {
@@ -59,7 +61,11 @@ function channelDot(channel: string): string {
   return "bg-bg-elev text-ink-3";
 }
 
-export function ProcurementList({ cards, onAction }: ProcurementListProps) {
+export function ProcurementList({
+  cards,
+  onAction,
+  prioritiesBySku,
+}: ProcurementListProps) {
   // Group by orderId, preserving the order coming from the backend (already
   // sorted by ship-by or by title there).
   const groups: Array<{ orderId: string; items: ProcurementOrderCard[] }> = [];
@@ -151,6 +157,7 @@ export function ProcurementList({ cards, onAction }: ProcurementListProps) {
                 <ProcurementCard
                   key={c.lineItemId}
                   card={c}
+                  storePriorities={prioritiesBySku?.[c.sku] ?? []}
                   onAction={(lineItemId, action) =>
                     onAction(lineItemId, c.orderId, action)
                   }

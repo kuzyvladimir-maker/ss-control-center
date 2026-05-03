@@ -9,11 +9,14 @@ import {
   Loader2,
   Undo2,
   AlertCircle,
+  Store,
+  Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Btn } from "@/components/kit";
 import { parsePackSize } from "@/lib/procurement/pack-size";
 import { PhotoLightbox } from "./PhotoLightbox";
+import { StorePriorityPopup } from "./StorePriorityPopup";
 
 export interface ProcurementCardData {
   lineItemId: string;
@@ -46,6 +49,11 @@ interface ProcurementCardProps {
    * server rejects so the card can revert.
    */
   onAction: (lineItemId: string, action: CardAction) => Promise<ActionResult>;
+  /**
+   * Ordered list of stores Vladimir buys this SKU from, if known.
+   * Empty array → no priorities set yet, show the pencil to invite editing.
+   */
+  storePriorities?: ReadonlyArray<string>;
 }
 
 /**
@@ -55,12 +63,17 @@ interface ProcurementCardProps {
  *   - "Купил частично" → ask for remaining count, save
  *   - "Откат" → undo the last action on this line
  */
-export function ProcurementCard({ card, onAction }: ProcurementCardProps) {
+export function ProcurementCard({
+  card,
+  onAction,
+  storePriorities = [],
+}: ProcurementCardProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [pending, setPending] = useState<null | CardAction["kind"]>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [partialMode, setPartialMode] = useState(false);
+  const [storePopupOpen, setStorePopupOpen] = useState(false);
 
   const status = card.status;
   const isBought = status?.kind === "bought";
@@ -186,6 +199,26 @@ export function ProcurementCard({ card, onAction }: ProcurementCardProps) {
             )}
           </div>
 
+          {/* Store priority chips — clickable to edit */}
+          {card.sku && (
+            <button
+              type="button"
+              onClick={() => setStorePopupOpen(true)}
+              className="mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-md border border-rule bg-surface-tint px-2 py-0.5 text-[11px] tabular text-ink-2 transition-colors hover:border-silver-line hover:bg-bg-elev"
+              title="Где покупать этот SKU"
+            >
+              <Store size={11} className="shrink-0 text-ink-3" />
+              {storePriorities.length > 0 ? (
+                <span className="truncate">
+                  {storePriorities.join(" → ")}
+                </span>
+              ) : (
+                <span className="text-ink-3">Магазины не указаны</span>
+              )}
+              <Pencil size={10} className="shrink-0 text-ink-4" />
+            </button>
+          )}
+
           {/* Quantity display */}
           {!isBought && (
             <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -310,6 +343,14 @@ export function ProcurementCard({ card, onAction }: ProcurementCardProps) {
           src={card.productImageUrl}
           alt={card.productTitle}
           onClose={() => setLightboxOpen(false)}
+        />
+      )}
+
+      {storePopupOpen && card.sku && (
+        <StorePriorityPopup
+          sku={card.sku}
+          productTitle={card.productTitle}
+          onClose={() => setStorePopupOpen(false)}
         />
       )}
     </>
