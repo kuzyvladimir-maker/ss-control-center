@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { fetchProcurementCards } from "@/lib/veeqo/orders-procurement";
 
 export async function GET() {
   try {
@@ -81,6 +82,19 @@ export async function GET() {
       }),
     ]);
 
+    // Procurement: distinct orders that still have unbought lines.
+    // The Veeqo fetch is heavy, so swallow failures — a missing badge is
+    // better than a broken sidebar.
+    let procurementOrdersToBuy = 0;
+    try {
+      const cards = await fetchProcurementCards();
+      const distinctOrders = new Set<string>();
+      for (const c of cards) distinctOrders.add(c.orderId);
+      procurementOrdersToBuy = distinctOrders.size;
+    } catch (err) {
+      console.error("[dashboard/summary] procurement count failed:", err);
+    }
+
     // Health issues from latest Amazon snapshots (dedup by storeId)
     const latestByStore = new Map<string, (typeof healthSnapshots)[0]>();
     for (const snap of healthSnapshots) {
@@ -112,6 +126,7 @@ export async function GET() {
       customerService: { openCases: openCsCases },
       claims: { active: activeClaims },
       health: { issues: healthIssues },
+      procurement: { ordersToBuy: procurementOrdersToBuy },
       adjustments: {
         monthlyTotal: adjustmentsSum._sum.adjustmentAmount || 0,
       },

@@ -34,6 +34,7 @@ interface DashboardSummary {
   claims?: { active?: number };
   health?: { issues?: number };
   walmart?: { healthIssues?: number };
+  procurement?: { ordersToBuy?: number };
 }
 
 const operationsItems = (s: DashboardSummary): NavItem[] => [
@@ -50,6 +51,8 @@ const operationsItems = (s: DashboardSummary): NavItem[] => [
     title: "Procurement",
     href: "/procurement",
     icon: ShoppingCart,
+    pillCount: s.procurement?.ordersToBuy || undefined,
+    pillVariant: "active",
   },
   {
     title: "Shipping labels",
