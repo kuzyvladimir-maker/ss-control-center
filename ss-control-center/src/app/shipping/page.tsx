@@ -444,7 +444,7 @@ export default function ShippingPage() {
       )}
 
       {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+        <div className="rounded-md bg-danger-tint p-3 text-sm text-danger">
           {error}
         </div>
       )}
@@ -501,7 +501,8 @@ export default function ShippingPage() {
               </span>
             </div>
 
-            {/* Grid-based ship table — matches design/shipping_labels_salutem.html */}
+            {/* DESKTOP grid (≥ md) — matches design/shipping_labels_salutem.html */}
+            <div className="hidden md:block">
             <div className="grid grid-cols-[36px_minmax(160px,1.3fr)_minmax(180px,1.8fr)_90px_90px_140px_minmax(120px,1fr)_120px] border-b border-rule bg-surface-tint px-4 py-2 text-[10px] font-mono uppercase tracking-[0.1em] text-ink-3">
               <div />
               <div>Order / Store</div>
@@ -657,6 +658,148 @@ export default function ShippingPage() {
                 );
               })}
             </div>
+            </div>
+
+            {/* MOBILE cards (< md) */}
+            <div className="md:hidden divide-y divide-rule">
+              {plan.orders.map((item) => {
+                const isSelectable = item.status === "pending";
+                const isChecked = selected.has(item.id);
+                const isBought = item.status === "bought";
+                const needsAttention =
+                  item.status === "stop" || item.status === "error";
+                const channelIsWalmart = /walmart/i.test(item.channel);
+
+                return (
+                  <div
+                    key={item.id}
+                    className={cn(
+                      "px-4 py-3 transition-colors",
+                      isBought && "opacity-70",
+                      needsAttention && "bg-warn-tint/30",
+                      isChecked && !needsAttention && "bg-green-soft/40"
+                    )}
+                  >
+                    {/* HEAD: checkbox + order# + status */}
+                    <div className="flex items-start gap-2 mb-2">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleSelect(item.id)}
+                        disabled={!isSelectable || buying}
+                        className="h-5 w-5 mt-0.5 shrink-0 rounded border-silver-line accent-[var(--green)] disabled:opacity-30"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="font-mono text-[13px] text-ink">
+                          {item.orderNumber}
+                        </div>
+                        <div className="mt-0.5 flex items-center gap-1.5">
+                          <StoreAvatar
+                            store={
+                              channelIsWalmart
+                                ? "walmart"
+                                : storeKeyFor({ storeName: item.channel })
+                            }
+                            size="sm"
+                          />
+                          <span className="truncate text-[11.5px] text-ink-2">
+                            {item.channel}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="shrink-0">
+                        <StatusChip variant={statusVariantFor(item.status)}>
+                          {statusLabels[item.status] || item.status}
+                        </StatusChip>
+                      </div>
+                    </div>
+
+                    {/* BODY: product + sku */}
+                    <div className="mb-2">
+                      <div className="text-[12.5px] text-ink truncate">
+                        {item.product}
+                      </div>
+                      <div className="mt-0.5 font-mono text-[10.5px] uppercase tracking-wider text-ink-3">
+                        {item.sku}
+                      </div>
+                    </div>
+
+                    {/* META row: type + weight + ship-to */}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] mb-2">
+                      <TypeTag type={item.productType} />
+                      {item.weight != null && (
+                        <span className="tabular text-ink-2">
+                          {item.weight}
+                          <span className="text-[10px] text-ink-3 ml-0.5">
+                            lb
+                          </span>
+                        </span>
+                      )}
+                      {item.notes?.match(/to \w+/)?.[0] && (
+                        <span className="text-ink-2">
+                          {item.notes.match(/to \w+/)![0]}
+                        </span>
+                      )}
+                      {item.deliveryBy ? (
+                        <span className="tabular text-ink-3">
+                          by{" "}
+                          <span className="text-ink">{item.deliveryBy}</span>
+                        </span>
+                      ) : item.edd ? (
+                        <span className="tabular text-ink-3">
+                          EDD {item.edd}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {/* SERVICE row: carrier + price */}
+                    {item.carrier && (
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <CarrierBadge carrier={item.carrier} />
+                          <span className="truncate text-[11.5px] text-ink-2">
+                            {item.service ?? ""}
+                          </span>
+                        </div>
+                        {item.price != null && (
+                          <div className="text-[13px] font-semibold tabular text-ink shrink-0">
+                            ${item.price.toFixed(2)}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* TRACKING (if bought) */}
+                    {item.status === "bought" &&
+                      item.trackingNumber &&
+                      typeof item.trackingNumber === "string" &&
+                      !item.trackingNumber.startsWith("[") && (
+                        <div className="font-mono text-[10.5px] text-ink-3 mt-1">
+                          {item.trackingNumber}
+                        </div>
+                      )}
+
+                    {/* NOTES */}
+                    {item.notes && (
+                      <div
+                        className={cn(
+                          "text-[10.5px] leading-tight mt-1",
+                          needsAttention ? "text-warn-strong" : "text-ink-3",
+                          isClickableError(item.notes) &&
+                            "cursor-pointer underline hover:text-danger"
+                        )}
+                        onClick={() =>
+                          isClickableError(item.notes) &&
+                          handleErrorClick(item)
+                        }
+                      >
+                        {item.notes}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </Panel>
 
           {/* Sticky action bar — appears when something is selected */}
@@ -725,15 +868,15 @@ export default function ShippingPage() {
           {tagModal && (
             <div className="space-y-3 text-sm">
               <div>
-                <Label className="text-slate-500">Product</Label>
+                <Label className="text-ink-3">Product</Label>
                 <p className="font-medium">{tagModal.product}</p>
               </div>
               <div>
-                <Label className="text-slate-500">SKU</Label>
+                <Label className="text-ink-3">SKU</Label>
                 <p className="font-mono text-xs">{tagModal.sku}</p>
               </div>
               <div>
-                <Label className="text-slate-500">Order</Label>
+                <Label className="text-ink-3">Order</Label>
                 <p className="font-mono text-xs">{tagModal.orderNumber}</p>
               </div>
             </div>
@@ -742,7 +885,7 @@ export default function ShippingPage() {
             <Button
               onClick={() => fixTag("Frozen")}
               disabled={fixLoading}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-green hover:bg-green-deep text-green-cream"
             >
               {fixLoading ? <Loader2 className="mr-1 animate-spin" size={14} /> : <Snowflake size={14} className="mr-1" />}
               Set Frozen
@@ -772,15 +915,15 @@ export default function ShippingPage() {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <Label className="text-slate-500">SKU</Label>
+                  <Label className="text-ink-3">SKU</Label>
                   <Input value={skuModal.sku} disabled className="font-mono" />
                 </div>
                 <div>
-                  <Label className="text-slate-500">Product</Label>
+                  <Label className="text-ink-3">Product</Label>
                   <Input value={skuModal.product} disabled className="text-xs" />
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
                   <Label>Weight (lbs)</Label>
                   <Input
@@ -822,7 +965,7 @@ export default function ShippingPage() {
                   />
                 </div>
               </div>
-              <div className="w-1/2">
+              <div className="w-full sm:w-1/2">
                 <Label>FedEx One Rate Weight (lbs)</Label>
                 <Input
                   type="number"
@@ -831,7 +974,7 @@ export default function ShippingPage() {
                   value={skuForm.weightFedex}
                   onChange={(e) => setSkuForm((f) => ({ ...f, weightFedex: e.target.value }))}
                 />
-                <p className="text-[10px] text-slate-400 mt-0.5">
+                <p className="text-[10px] text-ink-4 mt-0.5">
                   Leave empty to auto-calculate (weight x 1.25)
                 </p>
               </div>
@@ -841,7 +984,7 @@ export default function ShippingPage() {
             <Button
               onClick={fixSku}
               disabled={fixLoading || !skuForm.weight || !skuForm.length || !skuForm.width || !skuForm.height}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-green hover:bg-green-deep text-green-cream"
             >
               {fixLoading && <Loader2 className="mr-1 animate-spin" size={14} />}
               Save to SKU Database

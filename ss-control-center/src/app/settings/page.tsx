@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 interface ConnectionStatus {
   name: string;
@@ -101,7 +102,7 @@ function SyncPanel() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <CardTitle className="text-base">Data Synchronization</CardTitle>
         <Button
           variant="outline"
@@ -312,22 +313,22 @@ function GmailAccountsPanel() {
             <p>
               Before you can connect any account, create a Google Cloud
               project, enable the Gmail API, and add{" "}
-              <code className="rounded bg-white px-1">GMAIL_CLIENT_ID</code>{" "}
+              <code className="rounded bg-surface px-1">GMAIL_CLIENT_ID</code>{" "}
               and{" "}
-              <code className="rounded bg-white px-1">
+              <code className="rounded bg-surface px-1">
                 GMAIL_CLIENT_SECRET
               </code>{" "}
-              to <code className="rounded bg-white px-1">.env</code>.
+              to <code className="rounded bg-surface px-1">.env</code>.
               Authorized redirect URI:
             </p>
-            <code className="block rounded bg-white px-2 py-1 break-all">
+            <code className="block rounded bg-surface px-2 py-1 break-all">
               http://localhost:3000/api/auth/gmail/callback
             </code>
           </div>
         )}
 
         {gmailResult?.type === "success" && (
-          <div className="rounded-md border border-green-200 bg-green-soft p-3 text-xs text-green-ink">
+          <div className="rounded-md border border-green-soft2 bg-green-soft p-3 text-xs text-green-ink">
             <p className="font-medium">
               Connected {gmailResult.email}
               {gmailResult.store ? ` to Store ${gmailResult.store}` : ""}
@@ -358,7 +359,7 @@ function GmailAccountsPanel() {
         ) : (
           <>
             {connectedCount > 0 && (
-              <div className="flex items-center justify-between gap-2 rounded border border-rule bg-surface-tint/50 px-3 py-2">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 rounded border border-rule bg-surface-tint/50 px-3 py-2">
                 <div className="text-xs text-ink-2">
                   {testResults ? (
                     <span>
@@ -414,7 +415,7 @@ function GmailAccountsPanel() {
                 return (
                   <div
                     key={acct.storeIndex}
-                    className="flex items-center justify-between gap-4 py-2 border-b border-rule last:border-0"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 py-3 border-b border-rule last:border-0"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {isConnected ? (
@@ -461,7 +462,7 @@ function GmailAccountsPanel() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 sm:shrink-0 self-start sm:self-center flex-wrap">
                       <Badge
                         className={
                           test
@@ -636,14 +637,14 @@ function SpApiStoresPanel() {
         ) : (
           <>
             {configuredCount > 0 && (
-              <div className="flex items-center justify-between gap-2 rounded border border-rule bg-surface-tint/50 px-3 py-2">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 rounded border border-rule bg-surface-tint/50 px-3 py-2">
                 <div className="text-xs text-ink-2">
                   {(() => {
                     if (!testResults) {
                       return (
                         <span>
                           Ping each configured store via{" "}
-                          <code className="rounded bg-white px-1">
+                          <code className="rounded bg-surface px-1">
                             /sellers/v1/marketplaceParticipations
                           </code>{" "}
                           to verify credentials and fetch seller ID.
@@ -709,7 +710,7 @@ function SpApiStoresPanel() {
                 return (
                   <div
                     key={store.index}
-                    className="flex items-center justify-between gap-4 py-2 border-b border-rule last:border-0"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 py-3 border-b border-rule last:border-0"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {store.configured ? (
@@ -752,7 +753,7 @@ function SpApiStoresPanel() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 sm:shrink-0 self-start sm:self-center flex-wrap">
                       <Badge
                         className={
                           !store.configured
@@ -782,7 +783,7 @@ function SpApiStoresPanel() {
 
         <Separator />
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <p className="text-[10px] text-ink-3">
             Auth: LWA refresh tokens per store · Fallback to shared{" "}
             <code className="rounded bg-surface-tint px-1">
@@ -905,7 +906,7 @@ function LossSettingsPanel() {
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
               <label
                 htmlFor="cogs-percent"
                 className="text-sm text-ink"
@@ -932,7 +933,7 @@ function LossSettingsPanel() {
 
             <Separator />
 
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
               <label
                 htmlFor="label-cost"
                 className="text-sm text-ink"
@@ -1129,7 +1130,7 @@ function AiProvidersPanel() {
                 return (
                   <div
                     key={key}
-                    className="flex items-center justify-between gap-4 py-2 border-b border-rule last:border-0"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 py-3 border-b border-rule last:border-0"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {configured ? (
@@ -1189,7 +1190,7 @@ function AiProvidersPanel() {
 
             {/* Priority + model selection */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
                 <label
                   htmlFor="ai-primary"
                   className="text-sm text-ink font-medium"
@@ -1205,7 +1206,7 @@ function AiProvidersPanel() {
                   onChange={(e) =>
                     setPrimary(e.target.value as "claude" | "openai")
                   }
-                  className="w-52 rounded border border-rule px-2 py-1 text-sm focus:border-green focus:outline-none"
+                  className="w-full sm:w-52 rounded border border-rule px-2 py-1 text-sm focus:border-green focus:outline-none"
                 >
                   <option value="claude" disabled={!claudeConfigured}>
                     Claude (Anthropic)
@@ -1218,7 +1219,7 @@ function AiProvidersPanel() {
                 </select>
               </div>
 
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
                 <label
                   htmlFor="claude-model"
                   className="text-sm text-ink"
@@ -1230,7 +1231,7 @@ function AiProvidersPanel() {
                   value={claudeModel}
                   onChange={(e) => setClaudeModel(e.target.value)}
                   disabled={!claudeConfigured}
-                  className="w-52 rounded border border-rule px-2 py-1 text-sm focus:border-green focus:outline-none disabled:bg-surface-tint disabled:text-ink-3"
+                  className="w-full sm:w-52 rounded border border-rule px-2 py-1 text-sm focus:border-green focus:outline-none disabled:bg-surface-tint disabled:text-ink-3"
                 >
                   {claudeModels.map((m) => (
                     <option key={m.id} value={m.id}>
@@ -1245,7 +1246,7 @@ function AiProvidersPanel() {
                 </select>
               </div>
 
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
                 <label
                   htmlFor="openai-model"
                   className="text-sm text-ink"
@@ -1257,7 +1258,7 @@ function AiProvidersPanel() {
                   value={openaiModel}
                   onChange={(e) => setOpenaiModel(e.target.value)}
                   disabled={!openaiConfigured}
-                  className="w-52 rounded border border-rule px-2 py-1 text-sm focus:border-green focus:outline-none disabled:bg-surface-tint disabled:text-ink-3"
+                  className="w-full sm:w-52 rounded border border-rule px-2 py-1 text-sm focus:border-green focus:outline-none disabled:bg-surface-tint disabled:text-ink-3"
                 >
                   {openaiModels.map((m) => (
                     <option key={m.id} value={m.id}>
@@ -1610,7 +1611,7 @@ export default function SettingsPage() {
 
       {/* SKU Database */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <CardTitle className="text-base">SKU Database</CardTitle>
             <p className="text-xs text-ink-3 mt-1">
@@ -1678,24 +1679,24 @@ export default function SettingsPage() {
                   placeholder="Search by SKU or product name..."
                   value={skuSearch}
                   onChange={(e) => setSkuSearch(e.target.value)}
-                  className="w-full rounded-md border border-rule bg-white py-2 pl-10 pr-4 text-sm outline-none focus:border-green focus:ring-1 focus:ring-green"
+                  className="w-full rounded-md border border-rule bg-surface py-2 pl-10 pr-4 text-sm outline-none focus:border-green focus:ring-1 focus:ring-green"
                 />
               </div>
 
-              {/* Table */}
-              <div className="max-h-[500px] overflow-auto rounded-md border">
+              {/* DESKTOP table */}
+              <div className="hidden md:block max-h-[500px] overflow-auto rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="sticky top-0 bg-white">SKU</TableHead>
-                      <TableHead className="sticky top-0 bg-white">Product Title</TableHead>
-                      <TableHead className="sticky top-0 bg-white">Marketplace</TableHead>
-                      <TableHead className="sticky top-0 bg-white">Category</TableHead>
-                      <TableHead className="sticky top-0 bg-white text-right">L (in)</TableHead>
-                      <TableHead className="sticky top-0 bg-white text-right">W (in)</TableHead>
-                      <TableHead className="sticky top-0 bg-white text-right">H (in)</TableHead>
-                      <TableHead className="sticky top-0 bg-white text-right">Weight (lbs)</TableHead>
-                      <TableHead className="sticky top-0 bg-white text-right">FedEx 1R (lbs)</TableHead>
+                      <TableHead className="sticky top-0 bg-surface">SKU</TableHead>
+                      <TableHead className="sticky top-0 bg-surface">Product Title</TableHead>
+                      <TableHead className="sticky top-0 bg-surface">Marketplace</TableHead>
+                      <TableHead className="sticky top-0 bg-surface">Category</TableHead>
+                      <TableHead className="sticky top-0 bg-surface text-right">L (in)</TableHead>
+                      <TableHead className="sticky top-0 bg-surface text-right">W (in)</TableHead>
+                      <TableHead className="sticky top-0 bg-surface text-right">H (in)</TableHead>
+                      <TableHead className="sticky top-0 bg-surface text-right">Weight (lbs)</TableHead>
+                      <TableHead className="sticky top-0 bg-surface text-right">FedEx 1R (lbs)</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1757,6 +1758,126 @@ export default function SettingsPage() {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* MOBILE cards */}
+              <div className="md:hidden max-h-[500px] overflow-auto rounded-md border border-rule divide-y divide-rule">
+                {filteredSkus.length === 0 ? (
+                  <div className="text-center text-sm text-ink-3 py-8">
+                    {skuSearch ? "No SKUs match your search" : "No data"}
+                  </div>
+                ) : (
+                  filteredSkus.map((row) => (
+                    <div
+                      key={row.sku}
+                      className={cn(
+                        "px-4 py-3",
+                        !row.hasCompleteData && "bg-danger-tint"
+                      )}
+                    >
+                      {/* HEAD: SKU + warning + category */}
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          <span className="font-mono text-[13px] font-medium text-ink truncate">
+                            {row.sku}
+                          </span>
+                          {!row.hasCompleteData && (
+                            <AlertTriangle
+                              size={13}
+                              className="text-danger shrink-0"
+                            />
+                          )}
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "shrink-0 text-[10px]",
+                            row.category === "Frozen" &&
+                              "border-green-soft2 text-green"
+                          )}
+                        >
+                          {row.category || "—"}
+                        </Badge>
+                      </div>
+
+                      {/* SUB: product title */}
+                      <div className="text-[12px] text-ink-2 line-clamp-2 mb-2">
+                        {row.productTitle}
+                      </div>
+
+                      {/* DIMENSIONS grid */}
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11.5px] tabular">
+                        <div className="flex justify-between">
+                          <span className="text-ink-3">L:</span>
+                          <span
+                            className={cn(
+                              row.length === null
+                                ? "text-danger font-medium"
+                                : "text-ink"
+                            )}
+                          >
+                            {row.length ?? "—"}{" "}
+                            <span className="text-ink-3">in</span>
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-ink-3">W:</span>
+                          <span
+                            className={cn(
+                              row.width === null
+                                ? "text-danger font-medium"
+                                : "text-ink"
+                            )}
+                          >
+                            {row.width ?? "—"}{" "}
+                            <span className="text-ink-3">in</span>
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-ink-3">H:</span>
+                          <span
+                            className={cn(
+                              row.height === null
+                                ? "text-danger font-medium"
+                                : "text-ink"
+                            )}
+                          >
+                            {row.height ?? "—"}{" "}
+                            <span className="text-ink-3">in</span>
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-ink-3">Wt:</span>
+                          <span
+                            className={cn(
+                              row.weight === null
+                                ? "text-danger font-medium"
+                                : "text-ink"
+                            )}
+                          >
+                            {row.weight ?? "—"}{" "}
+                            <span className="text-ink-3">lb</span>
+                          </span>
+                        </div>
+                        {row.weightFedex !== null && (
+                          <div className="flex justify-between col-span-2">
+                            <span className="text-ink-3">FedEx 1R:</span>
+                            <span className="text-ink">
+                              {row.weightFedex}{" "}
+                              <span className="text-ink-3">lb</span>
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* FOOTER: marketplace */}
+                      <div className="mt-1.5 text-[10.5px] text-ink-3">
+                        {row.marketplace}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
               <p className="mt-2 text-xs text-ink-3">
                 Showing {filteredSkus.length} of {skuRows.length} SKUs
                 {incompleteCount > 0 && (

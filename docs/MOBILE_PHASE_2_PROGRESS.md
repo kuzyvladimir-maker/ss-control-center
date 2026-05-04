@@ -25,15 +25,15 @@
 - [x] 2C — git commit
 
 ## Phase 2D — Shipping + Settings (самые сложные)
-- [ ] 2D.1 — Shipping main grid → mobile-cards
-- [ ] 2D.2 — Shipping skuModal grid-cols-4 → grid-cols-2 sm:grid-cols-4
-- [ ] 2D.3 — Shipping tagModal & skuModal — рефикс blue palette → Salutem
-- [ ] 2D.4 — Shipping error block bg-red-50 → bg-danger-tint
-- [ ] 2D.5 — Settings SKU Database (9 колонок) → mobile-cards
-- [ ] 2D.6 — Settings GmailAccountsPanel rows → flex-col sm:flex-row
-- [ ] 2D.7 — Settings SpApiStoresPanel rows → flex-col sm:flex-row
-- [ ] 2D.8 — Settings AiProvidersPanel selects → w-52 → w-full sm:w-52
-- [ ] 2D — git commit
+- [x] 2D.1 — Shipping main grid → mobile-cards
+- [x] 2D.2 — Shipping skuModal grid-cols-4 → grid-cols-2 sm:grid-cols-4 + FedEx w-1/2 → w-full sm:w-1/2
+- [x] 2D.3 — Shipping tagModal/skuModal blue → Salutem (text-slate-500 → text-ink-3, bg-blue-600 → bg-green, text-slate-400 → text-ink-4)
+- [x] 2D.4 — Shipping error block bg-red-50 → bg-danger-tint
+- [x] 2D.5 — Settings SKU Database (9 колонок) → mobile-cards (sticky header bg-white → bg-surface, search input bg-white → bg-surface, CardHeader flex-col sm:flex-row)
+- [x] 2D.6 — Settings GmailAccountsPanel rows → flex-col sm:flex-row + 'Test all' row also flex-col
+- [x] 2D.7 — Settings SpApiStoresPanel rows → flex-col sm:flex-row + Auth/Advanced row stacks
+- [x] 2D.8 — Settings AiProvidersPanel selects w-52 → w-full sm:w-52, status rows stacked, LossSettingsPanel COGS/label rows stacked
+- [x] 2D — git commit
 
 ## Bonus / опциональные
 - [ ] B.1 — Procurement badge: добавить ordersToBuy в /api/dashboard/summary
