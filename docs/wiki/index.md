@@ -38,6 +38,7 @@
 
 ## 🔌 Интеграции
 - [Veeqo API](veeqo-api.md) — заказы, ставки, покупка labels
+- [Veeqo API Quirks](veeqo-api-quirks.md) — подводные камни, что не работает несмотря на 200 OK (order tags → /bulk_tagging, не PUT)
 - [Amazon SP-API](amazon-sp-api.md) — orders, messaging, reports, health, finances
 - [Walmart Marketplace API](walmart-api.md) — orders, returns, recon reports, seller performance (2026-04-18)
 - [Gmail API](gmail-api.md) — buyer messages, chargeback notifications
@@ -63,7 +64,7 @@
 - (будет дополняться по ходу разработки)
 
 ## Известные проблемы и грабли
-- (будет дополняться по ходу разработки)
+- [Veeqo API Quirks](veeqo-api-quirks.md) — order tags нельзя ставить через `PUT /orders/{id}` (silently no-op); работает только `POST /bulk_tagging`. Найдено 2026-05-04.
 
 ---
-Последнее обновление: 2026-05-03 (+ mobile-adaptation)
+Последнее обновление: 2026-05-04 (+ veeqo-api-quirks: order tags → /bulk_tagging fix)
