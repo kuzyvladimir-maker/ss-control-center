@@ -27,6 +27,10 @@ interface ProcurementListProps {
   ) => Promise<ActionResult>;
   /** SKU → ordered store names. Empty/missing entry means "not configured". */
   prioritiesBySku?: Readonly<Record<string, ReadonlyArray<string>>>;
+  /** Set of currently bulk-selected lineItemIds. */
+  selected?: ReadonlySet<string>;
+  /** Toggle bulk-selection of a single line. */
+  onToggleSelect?: (lineItemId: string) => void;
 }
 
 function formatShipBy(iso: string | null): string | null {
@@ -65,6 +69,8 @@ export function ProcurementList({
   cards,
   onAction,
   prioritiesBySku,
+  selected,
+  onToggleSelect,
 }: ProcurementListProps) {
   // Group by orderId, preserving the order coming from the backend (already
   // sorted by ship-by or by title there).
@@ -158,6 +164,8 @@ export function ProcurementList({
                   key={c.lineItemId}
                   card={c}
                   storePriorities={prioritiesBySku?.[c.sku] ?? []}
+                  selected={selected?.has(c.lineItemId) ?? false}
+                  onToggleSelect={onToggleSelect}
                   onAction={(lineItemId, action) =>
                     onAction(lineItemId, c.orderId, action)
                   }

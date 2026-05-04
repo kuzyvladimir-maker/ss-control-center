@@ -54,6 +54,10 @@ interface ProcurementCardProps {
    * Empty array → no priorities set yet, show the pencil to invite editing.
    */
   storePriorities?: ReadonlyArray<string>;
+  /** Whether this card is in the bulk-select set. */
+  selected?: boolean;
+  /** Toggle this card's selection state. */
+  onToggleSelect?: (lineItemId: string) => void;
 }
 
 /**
@@ -67,6 +71,8 @@ export function ProcurementCard({
   card,
   onAction,
   storePriorities = [],
+  selected = false,
+  onToggleSelect,
 }: ProcurementCardProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -124,9 +130,29 @@ export function ProcurementCard({
         className={cn(
           "flex gap-3 border-t border-rule/60 px-3 py-3 first:border-t-0 sm:px-4",
           isBought && "bg-green-soft/40",
-          isPartial && "bg-warn-tint/30"
+          isPartial && "bg-warn-tint/30",
+          selected && "bg-green-soft/60 ring-2 ring-inset ring-green/40"
         )}
       >
+        {/* Bulk-select checkbox (only when not bought; bought cards stay
+            visible until refresh and shouldn't be re-selected). */}
+        {!isBought && onToggleSelect && (
+          <button
+            type="button"
+            onClick={() => onToggleSelect(card.lineItemId)}
+            className={cn(
+              "flex h-5 w-5 shrink-0 items-center justify-center self-start rounded-md border transition-colors",
+              selected
+                ? "border-green bg-green text-green-cream"
+                : "border-rule-strong bg-surface text-transparent hover:border-green-mid hover:bg-green-soft"
+            )}
+            aria-label={selected ? "Убрать выделение" : "Выбрать"}
+            aria-pressed={selected}
+          >
+            <Check size={13} strokeWidth={3} />
+          </button>
+        )}
+
         {/* Photo (tap → fullscreen) */}
         <button
           type="button"

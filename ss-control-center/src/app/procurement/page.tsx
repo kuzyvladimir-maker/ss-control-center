@@ -1,8 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { RefreshCw, Loader2, AlertCircle, Search, X } from "lucide-react";
+import {
+  RefreshCw,
+  Loader2,
+  AlertCircle,
+  Search,
+  X,
+  Check,
+  ShoppingCart,
+} from "lucide-react";
 import { Btn, FilterTabs, PageHead, type FilterTab } from "@/components/kit";
+import { cn } from "@/lib/utils";
 import {
   ProcurementList,
   type ProcurementOrderCard,
@@ -35,6 +44,23 @@ export default function ProcurementPage() {
   const [sort, setSort] = useState<SortKey>("shipBy");
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [search, setSearch] = useState("");
+
+  // Bulk-select state
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkProgress, setBulkProgress] = useState<{
+    done: number;
+    total: number;
+    errors: number;
+  } | null>(null);
+
+  const toggleSelect = useCallback((lineItemId: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(lineItemId)) next.delete(lineItemId);
+      else next.add(lineItemId);
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     void load();
@@ -81,6 +107,64 @@ export default function ProcurementPage() {
       setLoading(false);
     }
   }
+
+  /**
+   * Mark every selected line item as "bought" — sequentially, since each
+   * call reads-then-writes order state and parallel calls on the same
+   * order would race. Errors are counted and reported but don't stop the
+   * batch; the user gets a final tally.
+   */
+  const handleBulkBought = useCallback(async () => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    setBulkProgress({ done: 0, total: ids.length, errors: 0 });
+
+    let errors = 0;
+    for (let i = 0; i < ids.length; i++) {
+      const lineItemId = ids[i]!;
+      const card = cards.find((c) => c.lineItemId === lineItemId);
+      if (!card) {
+        errors++;
+        setBulkProgress({ done: i + 1, total: ids.length, errors });
+        continue;
+      }
+      try {
+        const r = await fetch(
+          `/api/procurement/items/${encodeURIComponent(lineItemId)}/bought`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId: card.orderId }),
+          }
+        );
+        if (!r.ok) {
+          errors++;
+        } else {
+          // Mark this card as bought in local state immediately
+          setCards((prev) =>
+            prev.map((c) =>
+              c.lineItemId === lineItemId
+                ? { ...c, status: { kind: "bought" }, remaining: 0 }
+                : c
+            )
+          );
+          setSelected((prev) => {
+            const next = new Set(prev);
+            next.delete(lineItemId);
+            return next;
+          });
+        }
+      } catch {
+        errors++;
+      }
+      setBulkProgress({ done: i + 1, total: ids.length, errors });
+    }
+
+    // Hold the final tally for a moment so the user sees the result
+    setTimeout(() => setBulkProgress(null), 2500);
+  }, [selected, cards]);
+
+  const clearSelection = useCallback(() => setSelected(new Set()), []);
 
   /**
    * Apply an action optimistically, then call the server. On failure the
@@ -333,7 +417,77 @@ export default function ProcurementPage() {
           cards={sortedCards}
           onAction={handleAction}
           prioritiesBySku={prioritiesBySku}
+          selected={selected}
+          onToggleSelect={toggleSelect}
         />
+      )}
+
+      {/* Bulk action bar — appears when 1+ selected */}
+      {(selected.size > 0 || bulkProgress) && (
+        <div
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-surface px-4 py-3 shadow-[0_-8px_24px_-12px_rgba(21,32,27,0.18)]"
+          style={{
+            paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+          }}
+        >
+          <div className="mx-auto flex max-w-[820px] items-center gap-2">
+            {bulkProgress ? (
+              <>
+                <Loader2
+                  size={15}
+                  className={cn(
+                    "shrink-0",
+                    bulkProgress.done < bulkProgress.total &&
+                      "animate-spin text-green"
+                  )}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13px] font-semibold text-ink">
+                    {bulkProgress.done < bulkProgress.total
+                      ? `Сохранение… ${bulkProgress.done} из ${bulkProgress.total}`
+                      : bulkProgress.errors === 0
+                        ? `Готово — ${bulkProgress.total} отмечено`
+                        : `${bulkProgress.total - bulkProgress.errors} отмечено, ${bulkProgress.errors} с ошибкой`}
+                  </div>
+                  {bulkProgress.errors > 0 && (
+                    <div className="text-[11.5px] tabular text-danger">
+                      Ошибки в Veeqo — обнови страницу и проверь, что
+                      успело записаться
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <ShoppingCart size={15} className="shrink-0 text-ink-2" />
+                <div className="min-w-0 flex-1 text-[13px] font-semibold text-ink">
+                  Выбрано: {selected.size}{" "}
+                  {selected.size === 1
+                    ? "товар"
+                    : selected.size < 5
+                      ? "товара"
+                      : "товаров"}
+                </div>
+                <Btn
+                  variant="ghost"
+                  size="md"
+                  onClick={clearSelection}
+                  icon={<X size={14} />}
+                >
+                  Снять
+                </Btn>
+                <Btn
+                  variant="primary"
+                  size="md"
+                  onClick={handleBulkBought}
+                  icon={<Check size={14} />}
+                >
+                  Купил всё
+                </Btn>
+              </>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
