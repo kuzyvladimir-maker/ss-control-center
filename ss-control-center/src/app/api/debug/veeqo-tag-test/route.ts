@@ -64,37 +64,47 @@ export async function GET(req: NextRequest) {
     body: () => unknown;
   };
 
+  // Resolve tag id from /tags
+  const allTags = (await veeqoFetch(`/tags`)) as Array<{
+    id: number;
+    name: string;
+  }>;
+  const tagRecord = allTags.find((t) => t.name === tagName);
+  if (!tagRecord) {
+    return NextResponse.json(
+      {
+        error: `Tag '${tagName}' not found in /tags. Available: ${allTags
+          .map((t) => t.name)
+          .join(", ")}`,
+      },
+      { status: 404 }
+    );
+  }
+  const tagId = tagRecord.id;
+
   const variants: Variant[] = [
     {
-      label: "A. tags_attributes_only_name",
-      body: () => ({ order: { tags_attributes: [{ name: tagName }] } }),
+      label: "G. tags_attributes_id",
+      body: () => ({ order: { tags_attributes: [{ id: tagId }] } }),
     },
     {
-      label: "B. tags_attributes_name_colour",
-      body: () => ({
-        order: { tags_attributes: [{ name: tagName, colour: "blue" }] },
-      }),
+      label: "H. tag_ids_array",
+      body: () => ({ order: { tag_ids: [tagId] } }),
     },
     {
-      label: "C. tag_list_array",
+      label: "I. tags_array_id_objects",
+      body: () => ({ order: { tags: [{ id: tagId }] } }),
+    },
+    {
+      label: "J. tag_list_with_id_lookup_then_name",
       body: () => ({ order: { tag_list: [tagName] } }),
-    },
-    {
-      label: "D. tag_list_string_csv",
-      body: () => ({ order: { tag_list: tagName } }),
-    },
-    {
-      label: "E. tags_array_objects",
-      body: () => ({ order: { tags: [{ name: tagName }] } }),
-    },
-    {
-      label: "F. tags_array_strings",
-      body: () => ({ order: { tags: [tagName] } }),
     },
   ];
 
   const results: Array<{
     label: string;
+    method?: string;
+    path?: string;
     body: unknown;
     before: string[];
     after: string[];
@@ -103,16 +113,21 @@ export async function GET(req: NextRequest) {
     apiResponseTags?: unknown;
   }> = [];
 
-  for (const v of variants) {
+  // Helper to try one PUT/POST variant in isolation and record result.
+  async function runVariant(
+    label: string,
+    method: "PUT" | "POST",
+    path: string,
+    body: unknown
+  ) {
     const beforeOrder = (await veeqoFetch(`/orders/${orderId}`)) as VeeqoOrder;
     const beforeNames = getOrderTags(beforeOrder as never).map((t) => t.name);
 
-    const body = v.body();
     let apiResponse: unknown = null;
     let errorMsg: string | undefined;
     try {
-      apiResponse = await veeqoFetch(`/orders/${orderId}`, {
-        method: "PUT",
+      apiResponse = await veeqoFetch(path, {
+        method,
         body: JSON.stringify(body),
       });
     } catch (e: unknown) {
@@ -126,7 +141,9 @@ export async function GET(req: NextRequest) {
       (apiResponse as { tags?: unknown } | null)?.tags ?? null;
 
     results.push({
-      label: v.label,
+      label,
+      method,
+      path,
       body,
       before: beforeNames,
       after: afterNames,
@@ -134,11 +151,44 @@ export async function GET(req: NextRequest) {
       ...(errorMsg ? { error: errorMsg } : {}),
       apiResponseTags: apiTagsField,
     });
-
-    // If a variant succeeded in adding the tag, no need to keep banging
-    // — but DO record the next variants' "already-present" status so we
-    // can see consistent state.
   }
+
+  // 1. PUT /orders/{id} with the order-wrapping shapes from `variants`.
+  for (const v of variants) {
+    await runVariant(v.label, "PUT", `/orders/${orderId}`, v.body());
+  }
+
+  // 2. Direct sub-resource attempts.
+  await runVariant(
+    "K. POST /orders/{id}/tags  body{tag:{id}}",
+    "POST",
+    `/orders/${orderId}/tags`,
+    { tag: { id: tagId } }
+  );
+  await runVariant(
+    "L. POST /orders/{id}/tags  body{id}",
+    "POST",
+    `/orders/${orderId}/tags`,
+    { id: tagId }
+  );
+  await runVariant(
+    "M. POST /orders/{id}/tags  body{tag_id}",
+    "POST",
+    `/orders/${orderId}/tags`,
+    { tag_id: tagId }
+  );
+  await runVariant(
+    "N. POST /orders/{id}/tags  body{name}",
+    "POST",
+    `/orders/${orderId}/tags`,
+    { name: tagName }
+  );
+  await runVariant(
+    "O. PUT /orders/{id}/tags  body{tag_ids:[id]}",
+    "PUT",
+    `/orders/${orderId}/tags`,
+    { tag_ids: [tagId] }
+  );
 
   return NextResponse.json({ orderId, number, tag: tagName, results });
 }
