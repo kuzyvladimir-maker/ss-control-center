@@ -37,11 +37,11 @@ interface HealthResponse {
 }
 
 const statusBorder: Record<string, string> = {
-  healthy: "border-green-400",
-  warning: "border-amber-400",
-  critical: "border-red-500",
-  error: "border-red-300",
-  syncing: "border-blue-300",
+  healthy: "border-green",
+  warning: "border-warn-strong",
+  critical: "border-danger",
+  error: "border-danger",
+  syncing: "border-info",
   pending: "border-silver-line",
   not_configured: "border-rule",
 };
@@ -49,7 +49,7 @@ const statusBorder: Record<string, string> = {
 const statusBadge: Record<string, { label: string; className: string }> = {
   healthy: { label: "HEALTHY", className: "bg-green-soft2 text-green-ink" },
   warning: { label: "WARNING", className: "bg-warn-tint text-warn-strong" },
-  critical: { label: "CRITICAL", className: "bg-red-600 text-white" },
+  critical: { label: "CRITICAL", className: "bg-danger text-green-cream" },
   error: { label: "ERROR", className: "bg-danger-tint text-danger" },
   syncing: { label: "SYNCING", className: "bg-green-soft2 text-green-deep" },
   pending: { label: "PENDING", className: "bg-bg-elev text-ink-3" },
@@ -57,9 +57,9 @@ const statusBadge: Record<string, { label: string; className: string }> = {
 };
 
 const statusIcon: Record<string, string> = {
-  ok: "text-green-500",
-  warning: "text-amber-500",
-  critical: "text-red-500",
+  ok: "text-green",
+  warning: "text-warn-strong",
+  critical: "text-danger",
   unknown: "text-ink-4",
 };
 
@@ -86,7 +86,7 @@ function MetricRow({
   const isWarn = status === "warning";
   return (
     <div
-      className={`flex items-center justify-between py-1 px-2 rounded text-xs ${
+      className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 py-1 px-2 rounded text-xs ${
         isBad ? "bg-danger-tint" : isWarn ? "bg-warn-tint/50" : ""
       } ${indent ? "ml-4" : ""}`}
     >
@@ -96,7 +96,7 @@ function MetricRow({
           <span className="text-ink-3 ml-1">({period})</span>
         )}
       </span>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between sm:justify-end gap-2">
         <span className={`font-mono font-semibold ${statusIcon[status] || "text-ink-3"}`}>
           {value !== null && value !== undefined ? `${value}%` : "—"}
         </span>
@@ -105,8 +105,8 @@ function MetricRow({
             ({numerator}/{denominator})
           </span>
         )}
-        {status === "ok" && <CheckCircle size={12} className="text-green-500" />}
-        {status === "warning" && <AlertTriangle size={12} className="text-amber-500" />}
+        {status === "ok" && <CheckCircle size={12} className="text-green" />}
+        {status === "warning" && <AlertTriangle size={12} className="text-warn-strong" />}
         {status === "critical" && (
           <span className="text-[10px] font-bold text-danger">OVER</span>
         )}
@@ -180,7 +180,7 @@ function StoreCard({
         <CardContent className="py-5">
           <div className="flex items-center justify-between mb-2">
             <span className="font-medium text-sm flex items-center gap-1.5">
-              <Store size={15} className="text-red-400" />
+              <Store size={15} className="text-danger" />
               Store {store.storeIndex}
             </span>
             <Badge className={badge.className}><XCircle size={10} className="mr-1" />Error</Badge>
@@ -246,7 +246,7 @@ function StoreCard({
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between text-[10px] text-ink-3 pt-2 mt-2 border-t border-slate-100">
+        <div className="flex items-center justify-between text-[10px] text-ink-3 pt-2 mt-2 border-t border-rule">
           <span>
             {store.alertCount > 0 && (
               <span className="text-warn font-medium mr-2">

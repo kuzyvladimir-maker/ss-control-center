@@ -36,7 +36,7 @@ const statusColors: Record<string, string> = {
   REMOVAL_SUBMITTED: "bg-warn-tint text-warn-strong",
   REMOVED: "bg-green-soft2 text-green-ink",
   DENIED: "bg-danger-tint text-danger",
-  CONTACT_SENT: "bg-purple-100 text-purple-700",
+  CONTACT_SENT: "bg-purple-tint text-purple",
   CLOSED: "bg-bg-elev text-ink-3",
 };
 
@@ -47,7 +47,7 @@ function StarRating({ rating }: { rating: number }) {
         <Star
           key={s}
           size={12}
-          className={s <= rating ? "fill-amber-400 text-amber-400" : "text-slate-200"}
+          className={s <= rating ? "fill-warn text-warn" : "text-ink-4"}
         />
       ))}
     </span>
@@ -75,7 +75,7 @@ export default function FeedbackTable({
         <select
           value={filters.rating}
           onChange={(e) => onFiltersChange({ ...filters, rating: e.target.value })}
-          className="rounded-md border border-rule bg-white px-3 py-1.5 text-sm"
+          className="rounded-md border border-rule bg-surface px-3 py-1.5 text-sm"
         >
           <option value="">All Ratings</option>
           <option value="negative">Negative (1-2)</option>
@@ -86,7 +86,7 @@ export default function FeedbackTable({
         <select
           value={filters.status}
           onChange={(e) => onFiltersChange({ ...filters, status: e.target.value })}
-          className="rounded-md border border-rule bg-white px-3 py-1.5 text-sm"
+          className="rounded-md border border-rule bg-surface px-3 py-1.5 text-sm"
         >
           <option value="">All Statuses</option>
           <option value="NEW">New</option>
@@ -103,6 +103,8 @@ export default function FeedbackTable({
       {items.length === 0 ? (
         <p className="text-sm text-ink-3 py-4 text-center">No feedback found</p>
       ) : (
+        <>
+        <div className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -164,7 +166,7 @@ export default function FeedbackTable({
                         <div className="space-y-3 text-xs">
                           <div>
                             <span className="text-ink-3">Full comment:</span>
-                            <p className="mt-1 bg-white rounded border p-2">
+                            <p className="mt-1 bg-surface rounded border p-2">
                               {fb.comments || "No comment"}
                             </p>
                           </div>
@@ -183,7 +185,7 @@ export default function FeedbackTable({
                           {fb.removalRequestText && (
                             <div>
                               <span className="text-ink-3 font-medium">Removal request text:</span>
-                              <div className="mt-1 bg-white rounded border p-2 whitespace-pre-wrap">
+                              <div className="mt-1 bg-surface rounded border p-2 whitespace-pre-wrap">
                                 {fb.removalRequestText}
                               </div>
                             </div>
@@ -203,6 +205,109 @@ export default function FeedbackTable({
             })}
           </TableBody>
         </Table>
+        </div>
+
+        {/* MOBILE cards */}
+        <div className="md:hidden divide-y divide-rule rounded-md border border-rule overflow-hidden">
+          {items.map((fb) => {
+            const expanded = expandedId === fb.id;
+            return (
+              <div key={fb.id}>
+                <button
+                  onClick={() => setExpandedId(expanded ? null : fb.id)}
+                  className={`w-full text-left px-4 py-3 transition-colors hover:bg-surface-tint active:bg-bg-elev ${
+                    fb.rating <= 2 && !expanded ? "bg-danger-tint/30" : ""
+                  }`}
+                >
+                  {/* HEAD: rating + status */}
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <StarRating rating={fb.rating} />
+                    <Badge
+                      className={`${statusColors[fb.status] || ""} text-[10px]`}
+                    >
+                      {fb.status}
+                    </Badge>
+                  </div>
+
+                  {/* SUB: order + date */}
+                  <div className="text-[11.5px] text-ink-3 mb-1.5">
+                    <span className="font-mono">
+                      {fb.orderId.length > 19
+                        ? fb.orderId.slice(0, 19) + "…"
+                        : fb.orderId}
+                    </span>
+                    <span className="mx-1.5 text-ink-4">·</span>
+                    <span className="tabular">{fb.feedbackDate}</span>
+                  </div>
+
+                  {/* BODY: comment */}
+                  <div className="text-[12px] text-ink-2 line-clamp-3 mb-2">
+                    {fb.comments || (
+                      <span className="text-ink-4">(no comment)</span>
+                    )}
+                  </div>
+
+                  {/* FOOTER: removable + chevron */}
+                  <div className="flex items-center justify-between gap-2 text-[10.5px] text-ink-3">
+                    {fb.removable === true ? (
+                      <Badge className="bg-green-soft2 text-green-ink text-[9px]">
+                        Removable
+                      </Badge>
+                    ) : fb.removable === false ? (
+                      <Badge className="bg-bg-elev text-ink-3 text-[9px]">
+                        Not removable
+                      </Badge>
+                    ) : (
+                      <span className="text-ink-4">Pending analysis</span>
+                    )}
+                    {expanded ? (
+                      <ChevronDown size={12} />
+                    ) : (
+                      <ChevronRight size={12} />
+                    )}
+                  </div>
+                </button>
+
+                {expanded && (
+                  <div className="bg-surface-tint px-4 pb-3 pt-1 space-y-2 text-[11.5px]">
+                    <div>
+                      <div className="text-ink-3 font-medium">Full comment</div>
+                      <div className="mt-1 bg-surface rounded border border-rule p-2 text-ink-2">
+                        {fb.comments || "No comment"}
+                      </div>
+                    </div>
+                    {fb.aiReasoning && (
+                      <div className="rounded bg-green-soft p-2 text-green-deep">
+                        <strong>AI:</strong> {fb.aiReasoning}
+                        {fb.removalCategory && (
+                          <span className="ml-2">
+                            Category: <strong>{fb.removalCategory}</strong>
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {fb.removalRequestText && (
+                      <div>
+                        <div className="text-ink-3 font-medium">
+                          Removal request
+                        </div>
+                        <div className="mt-1 bg-surface rounded border border-rule p-2 whitespace-pre-wrap text-ink-2">
+                          {fb.removalRequestText}
+                        </div>
+                      </div>
+                    )}
+                    {fb.vladimirNotes && (
+                      <div className="rounded bg-warn-tint p-2 text-warn-strong">
+                        <strong>Notes:</strong> {fb.vladimirNotes}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        </>
       )}
     </div>
   );

@@ -72,7 +72,7 @@ export default function IncidentsTable({
           onChange={(e) =>
             onFiltersChange({ ...filters, carrier: e.target.value })
           }
-          className="rounded-md border border-rule bg-white px-3 py-1.5 text-sm"
+          className="rounded-md border border-rule bg-surface px-3 py-1.5 text-sm"
         >
           <option value="">All Carriers</option>
           <option value="ups">UPS</option>
@@ -84,7 +84,7 @@ export default function IncidentsTable({
           onChange={(e) =>
             onFiltersChange({ ...filters, days: e.target.value })
           }
-          className="rounded-md border border-rule bg-white px-3 py-1.5 text-sm"
+          className="rounded-md border border-rule bg-surface px-3 py-1.5 text-sm"
         >
           <option value="30">Last 30 days</option>
           <option value="60">Last 60 days</option>
@@ -101,6 +101,8 @@ export default function IncidentsTable({
           No incidents found
         </p>
       ) : (
+        <>
+        <div className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -210,7 +212,7 @@ export default function IncidentsTable({
                           </div>
 
                           {inc.notes && (
-                            <p className="text-xs text-ink-3 bg-white rounded p-2 border">
+                            <p className="text-xs text-ink-3 bg-surface rounded p-2 border">
                               {inc.notes}
                             </p>
                           )}
@@ -223,6 +225,127 @@ export default function IncidentsTable({
             })}
           </TableBody>
         </Table>
+        </div>
+
+        {/* MOBILE cards */}
+        <div className="md:hidden divide-y divide-rule rounded-md border border-rule overflow-hidden">
+          {incidents.map((inc) => {
+            const expanded = expandedId === inc.id;
+            const oc = outcomeConfig[inc.outcome] || outcomeConfig.thawed;
+            return (
+              <div key={inc.id}>
+                <button
+                  onClick={() => setExpandedId(expanded ? null : inc.id)}
+                  className="w-full text-left px-4 py-3 transition-colors hover:bg-surface-tint active:bg-bg-elev"
+                >
+                  {/* HEAD: order id + outcome */}
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <span className="font-mono text-[12.5px] text-ink truncate">
+                      {inc.orderId}
+                    </span>
+                    <Badge className={`${oc.className} text-[10px] shrink-0`}>
+                      {oc.icon}
+                    </Badge>
+                  </div>
+
+                  {/* SUB: sku + product */}
+                  <div className="text-[11.5px] text-ink-3 mb-1.5">
+                    <span className="font-mono">{inc.sku}</span>
+                    {inc.productName && (
+                      <>
+                        <span className="mx-1.5 text-ink-4">·</span>
+                        <span className="truncate">{inc.productName}</span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* META row: carrier + temps + transit */}
+                  <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-[11px] mb-1">
+                    <span className="text-ink-2">
+                      {inc.carrier} {inc.service}
+                    </span>
+                    {inc.daysInTransit !== null && (
+                      <span className="text-ink-2 tabular">
+                        {inc.daysInTransit}d
+                        {inc.daysLate && inc.daysLate > 0 && (
+                          <span className="text-danger ml-0.5">
+                            +{inc.daysLate}
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* FOOTER: temps + ship date */}
+                  <div className="flex items-center justify-between gap-2 text-[10.5px] text-ink-3">
+                    <span className="tabular">
+                      {inc.originTempF !== null && (
+                        <>Tampa {Math.round(inc.originTempF)}°F</>
+                      )}
+                      {inc.destTempF !== null && (
+                        <>
+                          {" → "}
+                          Dest {Math.round(inc.destTempF)}°F
+                        </>
+                      )}
+                    </span>
+                    <span className="tabular">
+                      {new Date(inc.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                      {expanded ? (
+                        <ChevronDown size={10} className="inline ml-1" />
+                      ) : (
+                        <ChevronRight size={10} className="inline ml-1" />
+                      )}
+                    </span>
+                  </div>
+                </button>
+
+                {expanded && (
+                  <div className="bg-surface-tint px-4 pb-3 pt-1 space-y-3">
+                    <TransitTimeline
+                      shipDate={inc.shipDate}
+                      promisedEdd={inc.promisedEdd}
+                      actualDelivery={inc.actualDelivery}
+                      daysInTransit={inc.daysInTransit}
+                      daysLate={inc.daysLate}
+                    />
+                    <div className="grid grid-cols-1 gap-3">
+                      <WeatherBlock
+                        label="Tampa, FL (origin)"
+                        date={inc.shipDate}
+                        tempF={inc.originTempF}
+                        feelsLikeF={inc.originFeelsLikeF}
+                        highF={inc.originTempHighF}
+                        description={inc.originWeatherDesc}
+                      />
+                      <WeatherBlock
+                        label={
+                          inc.destCity && inc.destState
+                            ? `${inc.destCity}, ${inc.destState}`
+                            : "Destination"
+                        }
+                        date={inc.actualDelivery}
+                        tempF={inc.destTempF}
+                        feelsLikeF={inc.destFeelsLikeF}
+                        highF={inc.destTempHighF}
+                        description={inc.destWeatherDesc}
+                      />
+                    </div>
+                    {inc.notes && (
+                      <p className="text-[11.5px] text-ink-3 bg-surface rounded p-2 border border-rule">
+                        {inc.notes}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        </>
       )}
     </div>
   );

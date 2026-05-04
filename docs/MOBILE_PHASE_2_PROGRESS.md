@@ -17,12 +17,12 @@
 - [x] 2B — git commit
 
 ## Phase 2C — Frozen + Claims + Feedback + Account Health
-- [ ] 2C.1 — Frozen IncidentsTable → mobile-cards
-- [ ] 2C.2 — Frozen SkuRiskTable → mobile-cards
-- [ ] 2C.3 — Claims AtozTable → mobile-cards
-- [ ] 2C.4 — Feedback FeedbackTable → mobile-cards
-- [ ] 2C.5 — Account Health MetricRow → flex-col sm:flex-row
-- [ ] 2C — git commit
+- [x] 2C.1 — Frozen IncidentsTable → mobile-cards (with expand)
+- [x] 2C.2 — Frozen SkuRiskTable → mobile-cards
+- [x] 2C.3 — Claims AtozTable → mobile-cards (with expand)
+- [x] 2C.4 — Feedback FeedbackTable → mobile-cards (with expand)
+- [x] 2C.5 — Account Health MetricRow → flex-col sm:flex-row + statusBorder/Badge palette cleanup
+- [x] 2C — git commit
 
 ## Phase 2D — Shipping + Settings (самые сложные)
 - [ ] 2D.1 — Shipping main grid → mobile-cards
