@@ -57,14 +57,39 @@
 - MetricRow в Account Health — точечный фикс (`flex-col sm:flex-row` или скрыть второстепенное)
 - skuModal в Shipping (`grid-cols-4` → `grid-cols-2 sm:grid-cols-4`) — точечный фикс
 
-### Phase 1 — Procurement Mobile (🔥 ПРИОРИТЕТ ℒ1)
-Страница `/procurement` — это исходно мобильный сценарий: Vladimir использует её в магазине (Publix, Walmart, BJ’s) в руках с телефоном для разметки `Placed`/`Need More` по заказам. Поэтому мобильная версия здесь — **не nice-to-have, а must-have**.
+### Phase 1 — App Shell + Procurement Mobile ✅ ЗАВЕРШЁН (2026-05-04)
 
-**Открытие аудита (2026-05-03):** сама страница уже mobile-first. Используются карточки (не таблицы), узкий контейнер `max-w-[820px]`, fullscreen lightbox с pinch-zoom, stepper с 36px touch-targets. Блокер для реального mobile-использования — только App Shell (sidebar 236px всё равно рендерится).
+App Shell адаптирован под мобильные устройства:
+- Sidebar превращается в drawer на `< 768px` (shadcn Sheet, slide from left, 280px)
+- Hamburger button в Header открывает drawer
+- Search bar заменён на иконку-кнопку на мобиле (full search UX — Phase 2)
+- Content padding уменьшен с 32px до 16px на мобиле
+- Procurement card touch-targets подняты до 36px на мобиле (`h-9 w-9 md:h-7 md:w-7`)
+- Procurement search input минимум 40px на мобиле для удобного тапа
 
-**Поэтому Phase 1 промпт = в основном работа над App Shell** (Sidebar→Drawer, Header→hamburger, padding) + минорные полировки в Procurement (увеличение touch-targets вторичных кнопок). Это сильно упрощает работу: 2–4 часа Claude Code вместо дня.
+**Новые файлы:**
+- `src/lib/use-is-mobile.ts` — useMediaQuery hook (заготовка для Phase 2 conditional rendering)
+- `src/lib/mobile-nav-context.tsx` — MobileNavProvider + useMobileNav hook
+- `src/components/layout/SidebarContent.tsx` — извлечённый контент sidebar для переиспользования
+- `src/components/layout/MobileNav.tsx` — обёртка над shadcn Sheet с SidebarContent внутри
 
-Отдельный промпт для Claude Code: `docs/CLAUDE_CODE_PROMPT_MOBILE_PROCUREMENT.md` (пишется первым).
+**Изменённые файлы:**
+- `src/app/layout.tsx` — обёрнут в MobileNavProvider
+- `src/components/layout/AppShell.tsx` — рендерит и Sidebar, и MobileNav; padding через Tailwind вместо CSS-var
+- `src/components/layout/Sidebar.tsx` — превращён в desktop-only обёртку (`hidden md:flex`)
+- `src/components/layout/Header.tsx` — hamburger (md:hidden), responsive search
+- `src/app/procurement/page.tsx` — search input высота
+- `src/app/procurement/components/ProcurementCard.tsx` — copy-button touch target
+- `src/app/procurement/components/StorePriorityPopup.tsx` — ↑/↓/удалить touch targets
+
+**Что осталось на Phase 2 / отдельные задачи (упомянуто в исходном промпте):**
+- ~10 таблиц → mobile-cards
+- MessageDetail action row `flex-wrap`
+- MetricRow в Account Health StoreCard
+- skuModal в Shipping `grid-cols-4` → `grid-cols-2 sm:grid-cols-4`
+- Settings GmailAccountsPanel/SpApiStoresPanel rows
+- Полноценный mobile search-функционал (сейчас иконка-плейсхолдер)
+- Ребрендинг легаси страниц на синей Tailwind-палитре (Login, Invite, cs/StoreTabs) — отдельный промпт
 
 ### Phase 2 — Mobile для остальных страниц
 После Procurement — общий фундаментальный промпт на все остальные модули: `docs/CLAUDE_CODE_PROMPT_MOBILE_ADAPTATION.md`. Включает:

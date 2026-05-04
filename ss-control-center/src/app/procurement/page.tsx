@@ -375,8 +375,8 @@ export default function ProcurementPage() {
         }
       />
 
-      {/* Search */}
-      <div className="mb-3 flex items-center gap-2 rounded-lg border border-rule bg-surface px-3 py-2">
+      {/* Search — taller on mobile for comfortable thumb-tap */}
+      <div className="mb-3 flex min-h-10 items-center gap-2 rounded-lg border border-rule bg-surface px-3 py-2.5 md:min-h-0 md:py-2">
         <Search size={15} className="text-ink-3" />
         <input
           type="search"
@@ -389,7 +389,7 @@ export default function ProcurementPage() {
           <button
             type="button"
             onClick={() => setSearch("")}
-            className="inline-flex h-6 w-6 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink md:h-6 md:w-6"
             aria-label="Clear search"
           >
             <X size={14} />

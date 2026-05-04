@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Bell, LogOut, Search, ShieldCheck } from "lucide-react";
+import { Bell, LogOut, Menu, Search, ShieldCheck } from "lucide-react";
 import { useMounted } from "@/lib/use-mounted";
+import { useMobileNav } from "@/lib/mobile-nav-context";
 
 interface MeUser {
   username: string;
@@ -15,6 +16,7 @@ export default function Header() {
   const router = useRouter();
   const mounted = useMounted();
   const [me, setMe] = useState<MeUser | null>(null);
+  const { setOpen: setMobileNavOpen } = useMobileNav();
 
   useEffect(() => {
     let cancelled = false;
@@ -47,17 +49,36 @@ export default function Header() {
 
   return (
     <header
-      className="flex shrink-0 items-center gap-3 border-b border-rule bg-surface px-6"
+      className="flex shrink-0 items-center gap-2 border-b border-rule bg-surface px-3 md:gap-3 md:px-6"
       style={{ height: "var(--topbar-height)" }}
     >
-      {/* Search */}
-      <div className="flex flex-1 items-center gap-2 max-w-[380px] rounded-md border border-rule bg-surface-tint px-3 py-1.5 text-[12.5px] text-ink-3">
+      {/* Hamburger (mobile only) — opens the drawer */}
+      <button
+        type="button"
+        onClick={() => setMobileNavOpen(true)}
+        aria-label="Open navigation menu"
+        className="grid h-9 w-9 place-items-center rounded-md text-ink-2 hover:bg-bg-elev hover:text-ink md:hidden"
+      >
+        <Menu size={18} />
+      </button>
+
+      {/* Search bar (desktop only) */}
+      <div className="hidden md:flex flex-1 items-center gap-2 max-w-[380px] rounded-md border border-rule bg-surface-tint px-3 py-1.5 text-[12.5px] text-ink-3">
         <Search size={14} className="text-ink-3" />
         <span className="flex-1 truncate">
           Search orders, cases, SKUs…
         </span>
         <span className="kbd">⌘K</span>
       </div>
+
+      {/* Search icon button (mobile only) — full search UX is Phase 2 */}
+      <button
+        type="button"
+        aria-label="Search"
+        className="grid h-9 w-9 place-items-center rounded-md text-ink-2 hover:bg-bg-elev hover:text-ink md:hidden"
+      >
+        <Search size={18} />
+      </button>
 
       <div className="flex-1" />
 
@@ -68,7 +89,11 @@ export default function Header() {
       </div>
 
       {/* Notifications */}
-      <button className="grid h-8 w-8 place-items-center rounded-md text-ink-2 hover:bg-bg-elev hover:text-ink">
+      <button
+        type="button"
+        aria-label="Notifications"
+        className="grid h-8 w-8 place-items-center rounded-md text-ink-2 hover:bg-bg-elev hover:text-ink"
+      >
         <Bell size={16} />
       </button>
 
@@ -88,7 +113,9 @@ export default function Header() {
           </div>
           <button
             onClick={logout}
+            type="button"
             title="Sign out"
+            aria-label="Sign out"
             className="grid h-7 w-7 place-items-center rounded-full text-ink-3 hover:text-ink"
           >
             <LogOut size={13} />

@@ -210,7 +210,7 @@ export function StorePriorityPopup({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink md:h-7 md:w-7"
             aria-label="Close"
           >
             <X size={15} />
@@ -264,7 +264,7 @@ export function StorePriorityPopup({
                         type="button"
                         onClick={() => move(idx, -1)}
                         disabled={idx === 0}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink disabled:opacity-30"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink disabled:opacity-30 md:h-7 md:w-7"
                         aria-label="Move up"
                       >
                         <ChevronUp size={14} />
@@ -273,7 +273,7 @@ export function StorePriorityPopup({
                         type="button"
                         onClick={() => move(idx, 1)}
                         disabled={idx === list.length - 1}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink disabled:opacity-30"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink disabled:opacity-30 md:h-7 md:w-7"
                         aria-label="Move down"
                       >
                         <ChevronDown size={14} />
@@ -281,7 +281,7 @@ export function StorePriorityPopup({
                       <button
                         type="button"
                         onClick={() => remove(idx)}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-3 hover:bg-danger-tint hover:text-danger"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md text-ink-3 hover:bg-danger-tint hover:text-danger md:h-7 md:w-7"
                         aria-label="Remove"
                       >
                         <Trash2 size={14} />

@@ -168,11 +168,13 @@
 - `design/customer_hub_v1_DEPRECATED.html` — архив v1, до алгоритма v2.1
 
 ### [Mobile Adaptation](mobile-adaptation.md)
-Аудит и план мобильной адаптации всех страниц. Брейкпоинт md (768px), sidebar→drawer, table→cards.
+Аудит и план мобильной адаптации всех страниц. Брейкпоинт md (768px), sidebar→drawer, table→cards. **Phase 1 завершён 2026-05-04** (App Shell + Procurement).
 
 ← [Design System](design/index.md) (токены остаются как есть), [Архитектура проекта](project-architecture.md) (Next.js 16, Tailwind v4, shadcn/ui)
-⇔ [Dashboard](dashboard.md), [Customer Hub](customer-hub.md), [Shipping Labels](shipping-labels.md), [Adjustments Monitor](adjustments-monitor.md) (все основные страницы требуют mobile-cards)
-→ будущий `CLAUDE_CODE_PROMPT_MOBILE_ADAPTATION.md`
+⇔ [Dashboard](dashboard.md), [Customer Hub](customer-hub.md), [Shipping Labels](shipping-labels.md), [Adjustments Monitor](adjustments-monitor.md) (все основные страницы требуют mobile-cards — Phase 2)
+⊂ AppShell (фундамент изменился в Phase 1), Sidebar (превращён в desktop-only обёртку), Header (hamburger), Procurement (touch-targets)
+← MobileNavContext (новый — `src/lib/mobile-nav-context.tsx`), shadcn/ui:Sheet
+→ будущий `CLAUDE_CODE_PROMPT_MOBILE_ADAPTATION.md` (Phase 2)
 
 ---
 
@@ -200,4 +202,4 @@
 - `⇔` двусторонняя связь
 
 ---
-Последнее обновление: 2026-05-03 (+ mobile-adaptation)
+Последнее обновление: 2026-05-04 (+ mobile-adaptation Phase 1 done, veeqo-api-quirks)

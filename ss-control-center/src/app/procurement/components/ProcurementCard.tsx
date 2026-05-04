@@ -202,7 +202,7 @@ export function ProcurementCard({
             <button
               type="button"
               onClick={handleCopy}
-              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-bg-elev hover:text-ink"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-bg-elev hover:text-ink md:h-7 md:w-7"
               aria-label="Copy product name"
               title="Copy name"
             >
