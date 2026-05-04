@@ -173,13 +173,12 @@
 ⊂ Salutem Design System
 
 ### [Mobile Adaptation](mobile-adaptation.md)
-Аудит и план мобильной адаптации всех страниц. Брейкпоинт md (768px), sidebar→drawer, table→cards. **Phase 1 завершён 2026-05-04** (App Shell + Procurement).
+**Phase 2 завершён 2026-05-04** — все таблицы проекта поддерживают мобильное отображение через паттерн "table + cards в одном компоненте". Phase 1 (App Shell) и Phase 2 (таблицы) вместе покрывают весь UI.
 
-← [Design System](design/index.md) (токены остаются как есть), [Архитектура проекта](project-architecture.md) (Next.js 16, Tailwind v4, shadcn/ui)
-⇔ [Dashboard](dashboard.md), [Customer Hub](customer-hub.md), [Shipping Labels](shipping-labels.md), [Adjustments Monitor](adjustments-monitor.md) (все основные страницы требуют mobile-cards — Phase 2)
-⊂ AppShell (фундамент изменился в Phase 1), Sidebar (превращён в desktop-only обёртку), Header (hamburger), Procurement (touch-targets)
-← MobileNavContext (новый — `src/lib/mobile-nav-context.tsx`), shadcn/ui:Sheet
-→ будущий `CLAUDE_CODE_PROMPT_MOBILE_ADAPTATION.md` (Phase 2)
+← [Design System](design/index.md) (токены не менялись), [Архитектура проекта](project-architecture.md) (Next.js 16, Tailwind v4, shadcn/ui)
+⇔ ВСЕ модули (Dashboard, Customer Hub, Adjustments, Frozen Analytics, Claims, Feedback, Shipping, Settings, Account Health) — каждый имеет mobile-version
+⊂ AppShell (Phase 1), Sidebar→drawer (Phase 1), Header→hamburger (Phase 1), 13 таблиц→cards (Phase 2)
+← MobileNavContext, shadcn/ui:Sheet
 
 ---
 
@@ -207,4 +206,4 @@
 - `⇔` двусторонняя связь
 
 ---
-Последнее обновление: 2026-05-04 (+ mobile-adaptation Phase 1 done, veeqo-api-quirks)
+Последнее обновление: 2026-05-04 (+ mobile-adaptation Phase 2 done — full mobile coverage)

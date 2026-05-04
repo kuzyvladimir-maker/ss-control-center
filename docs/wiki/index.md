@@ -67,4 +67,4 @@
 - [Veeqo API Quirks](veeqo-api-quirks.md) — order tags нельзя ставить через `PUT /orders/{id}` (silently no-op); работает только `POST /bulk_tagging`. Найдено 2026-05-04.
 
 ---
-Последнее обновление: 2026-05-04 (+ veeqo-api-quirks; legacy-rebrand 2026-05)
+Последнее обновление: 2026-05-04 (+ mobile-adaptation Phase 2 — full mobile coverage)
