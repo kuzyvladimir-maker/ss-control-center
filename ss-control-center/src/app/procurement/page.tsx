@@ -44,6 +44,11 @@ export default function ProcurementPage() {
   const [sort, setSort] = useState<SortKey>("shipBy");
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [search, setSearch] = useState("");
+  // Quick filter by sales channel (toggle: click = on, click again = off).
+  // null = show all channels.
+  const [channelFilter, setChannelFilter] = useState<"amazon" | "walmart" | null>(
+    null
+  );
 
   // Bulk-select state
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -261,20 +266,26 @@ export default function ProcurementPage() {
     []
   );
 
-  // Filter by search query first (case-insensitive substring across
-  // title / SKU / order number / customer), then sort.
+  // Filter by channel chip first, then by search query (case-insensitive
+  // substring across title / SKU / order number / customer), then sort.
   const filteredCards = useMemo(() => {
+    let arr = cards;
+    if (channelFilter) {
+      arr = arr.filter((c) => c.channel.toLowerCase().includes(channelFilter));
+    }
     const q = search.trim().toLowerCase();
-    if (!q) return cards;
-    return cards.filter((c) => {
-      return (
-        c.productTitle.toLowerCase().includes(q) ||
-        c.sku.toLowerCase().includes(q) ||
-        c.orderNumber.toLowerCase().includes(q) ||
-        (c.customerName?.toLowerCase().includes(q) ?? false)
-      );
-    });
-  }, [cards, search]);
+    if (q) {
+      arr = arr.filter((c) => {
+        return (
+          c.productTitle.toLowerCase().includes(q) ||
+          c.sku.toLowerCase().includes(q) ||
+          c.orderNumber.toLowerCase().includes(q) ||
+          (c.customerName?.toLowerCase().includes(q) ?? false)
+        );
+      });
+    }
+    return arr;
+  }, [cards, search, channelFilter]);
 
   // Sort cards: by ship-by ascending (urgent first) OR by title alphabetically.
   // Cards with no ship-by sink to the bottom in the shipBy view.
@@ -384,6 +395,40 @@ export default function ProcurementPage() {
             <X size={14} />
           </button>
         )}
+      </div>
+
+      {/* Quick channel filters (toggle on/off). */}
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() =>
+            setChannelFilter((prev) => (prev === "amazon" ? null : "amazon"))
+          }
+          className={cn(
+            "inline-flex h-7 items-center rounded-md border px-2.5 text-[12px] font-medium transition-colors",
+            channelFilter === "amazon"
+              ? "border-warn-strong bg-warn-tint text-warn-strong"
+              : "border-rule bg-surface text-ink-2 hover:bg-bg-elev"
+          )}
+          aria-pressed={channelFilter === "amazon"}
+        >
+          Amazon
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            setChannelFilter((prev) => (prev === "walmart" ? null : "walmart"))
+          }
+          className={cn(
+            "inline-flex h-7 items-center rounded-md border px-2.5 text-[12px] font-medium transition-colors",
+            channelFilter === "walmart"
+              ? "border-info bg-info-tint text-info"
+              : "border-rule bg-surface text-ink-2 hover:bg-bg-elev"
+          )}
+          aria-pressed={channelFilter === "walmart"}
+        >
+          Walmart
+        </button>
       </div>
 
       <FilterTabs
