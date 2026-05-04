@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Btn, FilterTabs, PageHead, type FilterTab } from "@/components/kit";
 import { cn } from "@/lib/utils";
+import { usePullToRefresh } from "@/lib/use-pull-to-refresh";
 import {
   ProcurementList,
   type ProcurementOrderCard,
@@ -105,6 +106,12 @@ export default function ProcurementPage() {
   );
   // Quick filter by ship-by date bucket. null = show all dates.
   const [shipByFilter, setShipByFilter] = useState<ShipByBucket | null>(null);
+
+  // Pull-to-refresh on mobile. Returns easedPull in px (0..120).
+  // Threshold 80 → release at that distance triggers a reload.
+  const easedPull = usePullToRefresh(() => {
+    void load();
+  });
 
   // Bulk-select state
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -417,6 +424,36 @@ export default function ProcurementPage() {
 
   return (
     <div className="mx-auto w-full max-w-[820px] px-4 pb-12 pt-5 sm:px-6">
+      {/* Pull-to-refresh indicator. Sits below the App Shell Header and
+          fades in / scales up as the user pulls. Past the 80px threshold
+          the icon flips so the gesture feels confirmed before release. */}
+      {easedPull > 0 && (
+        <div
+          className="pointer-events-none fixed inset-x-0 z-40 flex justify-center"
+          style={{ top: "calc(var(--topbar-height) + 8px)" }}
+        >
+          <div
+            className="flex items-center gap-2 rounded-full bg-surface px-3 py-1.5 text-[12px] font-medium text-ink-2 shadow-md ring-1 ring-rule"
+            style={{
+              opacity: Math.min(1, easedPull / 40),
+              transform: `translateY(${Math.min(28, easedPull / 4)}px)`,
+            }}
+          >
+            <RefreshCw
+              size={14}
+              className={cn(
+                "transition-transform duration-200",
+                easedPull >= 80 && "rotate-180 text-green"
+              )}
+            />
+            <span>
+              {easedPull >= 80
+                ? "Отпусти чтобы обновить"
+                : "Потяни чтобы обновить"}
+            </span>
+          </div>
+        </div>
+      )}
       <PageHead
         title="Procurement"
         subtitle={
