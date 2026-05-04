@@ -61,14 +61,21 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const out = matches.map((o) => ({
-      id: o.id,
-      number: o.number,
-      status: o.status,
-      channel: o.channel?.name,
-      tags: getOrderTags(o as never),
-      internalNotes: getInternalNotes(o as Record<string, unknown>),
-    }));
+    const out = matches.map((o) => {
+      const r = o as Record<string, unknown>;
+      return {
+        id: o.id,
+        number: o.number,
+        status: o.status,
+        channel: o.channel?.name,
+        tags: getOrderTags(o as never),
+        deliver_by: r.deliver_by ?? null,
+        dispatch_date: r.dispatch_date ?? null,
+        expected_dispatch_date: r.expected_dispatch_date ?? null,
+        due_date: r.due_date ?? null,
+        internalNotes: getInternalNotes(r),
+      };
+    });
     return NextResponse.json({ matches: out });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Unknown error";
