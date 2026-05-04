@@ -31,6 +31,9 @@ interface ProcurementListProps {
   selected?: ReadonlySet<string>;
   /** Toggle bulk-selection of a single line. */
   onToggleSelect?: (lineItemId: string) => void;
+  /** Bubble up new store priorities from the popup so the page can refresh
+   *  its cache and every card showing this SKU updates instantly. */
+  onPrioritiesSaved?: (sku: string, storeNames: ReadonlyArray<string>) => void;
 }
 
 function formatShipBy(iso: string | null): string | null {
@@ -71,6 +74,7 @@ export function ProcurementList({
   prioritiesBySku,
   selected,
   onToggleSelect,
+  onPrioritiesSaved,
 }: ProcurementListProps) {
   // Group by orderId, preserving the order coming from the backend (already
   // sorted by ship-by or by title there).
@@ -166,6 +170,7 @@ export function ProcurementList({
                   storePriorities={prioritiesBySku?.[c.sku] ?? []}
                   selected={selected?.has(c.lineItemId) ?? false}
                   onToggleSelect={onToggleSelect}
+                  onPrioritiesSaved={onPrioritiesSaved}
                   onAction={(lineItemId, action) =>
                     onAction(lineItemId, c.orderId, action)
                   }

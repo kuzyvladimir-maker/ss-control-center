@@ -6,6 +6,7 @@
 export const STORE_OPTIONS: ReadonlyArray<string> = [
   "Publix",
   "Walmart",
+  "Target",
   "BJ's",
   "Sam's Club",
   "Costco",

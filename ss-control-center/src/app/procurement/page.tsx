@@ -419,6 +419,9 @@ export default function ProcurementPage() {
           prioritiesBySku={prioritiesBySku}
           selected={selected}
           onToggleSelect={toggleSelect}
+          onPrioritiesSaved={(sku, storeNames) =>
+            setPrioritiesBySku((prev) => ({ ...prev, [sku]: [...storeNames] }))
+          }
         />
       )}
 

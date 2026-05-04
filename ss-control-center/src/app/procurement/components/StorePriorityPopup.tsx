@@ -22,6 +22,8 @@ interface StorePriorityPopupProps {
   sku: string;
   productTitle: string;
   onClose: () => void;
+  /** Called after a successful save with the new ordered list of stores. */
+  onSaved?: (sku: string, storeNames: ReadonlyArray<string>) => void;
 }
 
 /**
@@ -35,6 +37,7 @@ export function StorePriorityPopup({
   sku,
   productTitle,
   onClose,
+  onSaved,
 }: StorePriorityPopupProps) {
   const [list, setList] = useState<PriorityEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +129,24 @@ export function StorePriorityPopup({
   };
 
   const save = async () => {
+    // If Vladimir picked a store from the dropdown but forgot to click
+    // "Добавить", treat Save as if Add+Save: include that store as the next
+    // priority. Without this people lose their selection on save.
+    let toSave = list;
+    if (
+      addingStore &&
+      !list.some(
+        (e) => e.storeName.toLowerCase() === addingStore.toLowerCase()
+      )
+    ) {
+      toSave = [
+        ...list,
+        { storeName: addingStore, priority: list.length + 1 },
+      ];
+      setList(toSave);
+      setAddingStore("");
+    }
+
     setSaving(true);
     setError(null);
     try {
@@ -134,7 +155,7 @@ export function StorePriorityPopup({
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ priorities: list }),
+          body: JSON.stringify({ priorities: toSave }),
         }
       );
       const data = (await res.json().catch(() => ({}))) as {
@@ -146,6 +167,10 @@ export function StorePriorityPopup({
         if (data.dbReady === false) setDbReady(false);
         return;
       }
+      onSaved?.(
+        sku,
+        toSave.map((e) => e.storeName)
+      );
       onClose();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Network error");

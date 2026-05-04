@@ -58,6 +58,9 @@ interface ProcurementCardProps {
   selected?: boolean;
   /** Toggle this card's selection state. */
   onToggleSelect?: (lineItemId: string) => void;
+  /** Bubble up new store priorities so the page can refresh its cache and
+   *  the chip on this card updates immediately. */
+  onPrioritiesSaved?: (sku: string, storeNames: ReadonlyArray<string>) => void;
 }
 
 /**
@@ -73,6 +76,7 @@ export function ProcurementCard({
   storePriorities = [],
   selected = false,
   onToggleSelect,
+  onPrioritiesSaved,
 }: ProcurementCardProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -382,6 +386,7 @@ export function ProcurementCard({
           sku={card.sku}
           productTitle={card.productTitle}
           onClose={() => setStorePopupOpen(false)}
+          onSaved={onPrioritiesSaved}
         />
       )}
     </>
