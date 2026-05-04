@@ -12,9 +12,12 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const probes = [
     "/tags",
-    "/tags?page_size=100",
-    "/orders/tags",
-    "/order_tags",
+    "/taggings",
+    "/tag_taggings",
+    "/orders?tags=Placed&page_size=2",
+    "/orders?tag_ids[]=13274001&page_size=2",
+    "/orders?tag=Placed&page_size=2",
+    "/orders?taggable_tag_ids=13274001&page_size=2",
   ];
 
   const results: Array<{
