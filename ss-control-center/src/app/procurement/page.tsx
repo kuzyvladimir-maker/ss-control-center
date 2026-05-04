@@ -28,6 +28,60 @@ const SORT_TABS: FilterTab<SortKey>[] = [
   { id: "title", label: "По названию" },
 ];
 
+type ShipByBucket = "overdue" | "today" | "tomorrow" | "dayafter" | "later";
+
+/** Calendar-day bucket for the ship-by date, in the user's local timezone.
+ *  Mirrors what Veeqo shows in its order list (Today / Tomorrow / 2 days). */
+function shipByBucket(iso: string | null): ShipByBucket | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const now = new Date();
+  const diffDays = Math.floor(
+    (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) -
+      Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) /
+      86_400_000
+  );
+  if (diffDays < 0) return "overdue";
+  if (diffDays === 0) return "today";
+  if (diffDays === 1) return "tomorrow";
+  if (diffDays === 2) return "dayafter";
+  return "later";
+}
+
+const SHIP_BY_OPTIONS: Array<{
+  id: ShipByBucket;
+  label: string;
+  /** Tailwind classes for the button when active. */
+  activeCls: string;
+}> = [
+  {
+    id: "overdue",
+    label: "Просрочено",
+    activeCls: "border-danger bg-danger-tint text-danger",
+  },
+  {
+    id: "today",
+    label: "Сегодня",
+    activeCls: "border-warn-strong bg-warn-tint text-warn-strong",
+  },
+  {
+    id: "tomorrow",
+    label: "Завтра",
+    activeCls: "border-info bg-info-tint text-info",
+  },
+  {
+    id: "dayafter",
+    label: "Послезавтра",
+    activeCls: "border-green bg-green-soft text-green-ink",
+  },
+  {
+    id: "later",
+    label: "Позже",
+    activeCls: "border-rule-strong bg-bg-elev text-ink",
+  },
+];
+
 const ACTION_PATH: Record<CardAction["kind"], string> = {
   bought: "bought",
   partial: "partial",
@@ -49,6 +103,8 @@ export default function ProcurementPage() {
   const [channelFilter, setChannelFilter] = useState<"amazon" | "walmart" | null>(
     null
   );
+  // Quick filter by ship-by date bucket. null = show all dates.
+  const [shipByFilter, setShipByFilter] = useState<ShipByBucket | null>(null);
 
   // Bulk-select state
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -266,12 +322,16 @@ export default function ProcurementPage() {
     []
   );
 
-  // Filter by channel chip first, then by search query (case-insensitive
-  // substring across title / SKU / order number / customer), then sort.
+  // Filter by channel chip + ship-by chip, then by search query
+  // (case-insensitive substring across title / SKU / order number / customer),
+  // then sort.
   const filteredCards = useMemo(() => {
     let arr = cards;
     if (channelFilter) {
       arr = arr.filter((c) => c.channel.toLowerCase().includes(channelFilter));
+    }
+    if (shipByFilter) {
+      arr = arr.filter((c) => shipByBucket(c.shipBy) === shipByFilter);
     }
     const q = search.trim().toLowerCase();
     if (q) {
@@ -285,7 +345,7 @@ export default function ProcurementPage() {
       });
     }
     return arr;
-  }, [cards, search, channelFilter]);
+  }, [cards, search, channelFilter, shipByFilter]);
 
   // Sort cards: by ship-by ascending (urgent first) OR by title alphabetically.
   // Cards with no ship-by sink to the bottom in the shipBy view.
@@ -324,13 +384,44 @@ export default function ProcurementPage() {
     return ids.size;
   }, [filteredCards]);
 
+  // Card-counts per ship-by bucket — shown as a small number on each chip
+  // so Vladimir sees urgency at a glance without applying the filter.
+  // Counted distinct orders, not line items, to mirror the procurement list
+  // grouping.
+  const shipByCounts = useMemo(() => {
+    const counts: Record<ShipByBucket, Set<string>> = {
+      overdue: new Set(),
+      today: new Set(),
+      tomorrow: new Set(),
+      dayafter: new Set(),
+      later: new Set(),
+    };
+    // Apply channel filter only — search shouldn't change urgency overview
+    const base = channelFilter
+      ? cards.filter((c) =>
+          c.channel.toLowerCase().includes(channelFilter)
+        )
+      : cards;
+    for (const c of base) {
+      const b = shipByBucket(c.shipBy);
+      if (b) counts[b].add(c.orderId);
+    }
+    return {
+      overdue: counts.overdue.size,
+      today: counts.today.size,
+      tomorrow: counts.tomorrow.size,
+      dayafter: counts.dayafter.size,
+      later: counts.later.size,
+    };
+  }, [cards, channelFilter]);
+
   return (
     <div className="mx-auto w-full max-w-[820px] px-4 pb-12 pt-5 sm:px-6">
       <PageHead
         title="Procurement"
         subtitle={
           <>
-            {search ? (
+            {search || channelFilter || shipByFilter ? (
               <>
                 <span className="font-medium text-ink-2">
                   {filteredOrderCount} из {orderCount} заказов
@@ -362,81 +453,144 @@ export default function ProcurementPage() {
             )}
           </>
         }
-        actions={
-          <Btn
-            variant="default"
-            size="md"
-            onClick={load}
-            loading={loading}
-            icon={!loading && <RefreshCw size={13} />}
-          >
-            Обновить
-          </Btn>
-        }
       />
 
-      {/* Search — taller on mobile for comfortable thumb-tap */}
-      <div className="mb-3 flex min-h-10 items-center gap-2 rounded-lg border border-rule bg-surface px-3 py-2.5 md:min-h-0 md:py-2">
-        <Search size={15} className="text-ink-3" />
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Поиск: товар, SKU, номер заказа, клиент…"
-          className="flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-ink-4"
-        />
-        {search && (
+      {/* Sticky filter toolbar — search, channel/ship-by chips, sort tabs,
+          and a persistent "Обновить" button. Sticks under the Header so all
+          of this is reachable at any scroll depth. */}
+      <div className="sticky top-0 z-20 -mx-4 mb-3 border-b border-rule bg-bg/95 px-4 pb-2 pt-2 backdrop-blur-sm sm:-mx-6 sm:px-6">
+        {/* Row 1: Search + persistent refresh */}
+        <div className="flex items-center gap-2">
+          <div className="flex min-h-10 flex-1 items-center gap-2 rounded-lg border border-rule bg-surface px-3 py-2.5 md:min-h-0 md:py-2">
+            <Search size={15} className="text-ink-3" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Поиск: товар, SKU, номер заказа, клиент…"
+              className="flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-ink-4"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink md:h-6 md:w-6"
+                aria-label="Очистить поиск"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
           <button
             type="button"
-            onClick={() => setSearch("")}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink md:h-6 md:w-6"
-            aria-label="Clear search"
+            onClick={load}
+            disabled={loading}
+            className="inline-flex h-10 items-center gap-1.5 rounded-md border border-rule bg-surface px-3 text-[12.5px] font-medium text-ink-2 transition-colors hover:bg-bg-elev hover:text-ink disabled:opacity-60 md:h-9"
+            aria-label="Обновить список"
+            title="Обновить"
           >
-            <X size={14} />
+            <RefreshCw
+              size={14}
+              className={cn(loading && "animate-spin")}
+            />
+            <span className="hidden sm:inline">Обновить</span>
           </button>
-        )}
-      </div>
+        </div>
 
-      {/* Quick channel filters (toggle on/off). */}
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() =>
-            setChannelFilter((prev) => (prev === "amazon" ? null : "amazon"))
-          }
-          className={cn(
-            "inline-flex h-7 items-center rounded-md border px-2.5 text-[12px] font-medium transition-colors",
-            channelFilter === "amazon"
-              ? "border-warn-strong bg-warn-tint text-warn-strong"
-              : "border-rule bg-surface text-ink-2 hover:bg-bg-elev"
-          )}
-          aria-pressed={channelFilter === "amazon"}
-        >
-          Amazon
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            setChannelFilter((prev) => (prev === "walmart" ? null : "walmart"))
-          }
-          className={cn(
-            "inline-flex h-7 items-center rounded-md border px-2.5 text-[12px] font-medium transition-colors",
-            channelFilter === "walmart"
-              ? "border-info bg-info-tint text-info"
-              : "border-rule bg-surface text-ink-2 hover:bg-bg-elev"
-          )}
-          aria-pressed={channelFilter === "walmart"}
-        >
-          Walmart
-        </button>
-      </div>
+        {/* Row 2: Quick filter chips — channels + ship-by, single horizontal
+            scrollable row so they all fit on a 380px iPhone. */}
+        <div className="-mx-4 mt-2 flex items-center gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:-mx-6 sm:px-6 [&::-webkit-scrollbar]:hidden">
+          <button
+            type="button"
+            onClick={() =>
+              setChannelFilter((prev) => (prev === "amazon" ? null : "amazon"))
+            }
+            className={cn(
+              "inline-flex h-7 shrink-0 items-center rounded-md border px-2.5 text-[12px] font-medium transition-colors",
+              channelFilter === "amazon"
+                ? "border-warn-strong bg-warn-tint text-warn-strong"
+                : "border-rule bg-surface text-ink-2 hover:bg-bg-elev"
+            )}
+            aria-pressed={channelFilter === "amazon"}
+          >
+            Amazon
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setChannelFilter((prev) => (prev === "walmart" ? null : "walmart"))
+            }
+            className={cn(
+              "inline-flex h-7 shrink-0 items-center rounded-md border px-2.5 text-[12px] font-medium transition-colors",
+              channelFilter === "walmart"
+                ? "border-info bg-info-tint text-info"
+                : "border-rule bg-surface text-ink-2 hover:bg-bg-elev"
+            )}
+            aria-pressed={channelFilter === "walmart"}
+          >
+            Walmart
+          </button>
 
-      <FilterTabs
-        tabs={SORT_TABS}
-        active={sort}
-        onChange={setSort}
-        className="mb-3"
-      />
+          {/* Divider */}
+          <span className="mx-1 h-4 w-px shrink-0 bg-rule" aria-hidden />
+
+          {/* "Все" — резетит ship-by фильтр; всегда показан, активен когда
+              shipByFilter == null. */}
+          <button
+            type="button"
+            onClick={() => setShipByFilter(null)}
+            className={cn(
+              "inline-flex h-7 shrink-0 items-center rounded-md border px-2.5 text-[12px] font-medium transition-colors",
+              shipByFilter === null
+                ? "border-rule-strong bg-bg-elev text-ink"
+                : "border-rule bg-surface text-ink-2 hover:bg-bg-elev"
+            )}
+            aria-pressed={shipByFilter === null}
+          >
+            Все дни
+          </button>
+          {SHIP_BY_OPTIONS.map((opt) => {
+            const count = shipByCounts[opt.id];
+            const active = shipByFilter === opt.id;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() =>
+                  setShipByFilter((prev) => (prev === opt.id ? null : opt.id))
+                }
+                className={cn(
+                  "inline-flex h-7 shrink-0 items-center gap-1 rounded-md border px-2.5 text-[12px] font-medium transition-colors",
+                  active
+                    ? opt.activeCls
+                    : "border-rule bg-surface text-ink-2 hover:bg-bg-elev"
+                )}
+                aria-pressed={active}
+              >
+                {opt.label}
+                {count > 0 && (
+                  <span
+                    className={cn(
+                      "tabular text-[10.5px] font-semibold",
+                      active ? "" : "text-ink-3"
+                    )}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Row 3: Sort tabs */}
+        <FilterTabs
+          tabs={SORT_TABS}
+          active={sort}
+          onChange={setSort}
+          className="mt-2"
+        />
+      </div>
 
       {error && (
         <div className="mb-3 flex items-start gap-2 rounded-lg border border-danger/20 bg-danger-tint px-3 py-2 text-[13px] text-danger">

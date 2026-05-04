@@ -52,14 +52,15 @@ export default function Header() {
       className="flex shrink-0 items-center gap-2 border-b border-rule bg-surface px-3 md:gap-3 md:px-6"
       style={{ height: "var(--topbar-height)" }}
     >
-      {/* Hamburger (mobile only) — opens the drawer */}
+      {/* Hamburger (mobile only) — opens the drawer. Visible border + tinted
+          bg so it reads as a tappable button on light header background. */}
       <button
         type="button"
         onClick={() => setMobileNavOpen(true)}
-        aria-label="Open navigation menu"
-        className="grid h-9 w-9 place-items-center rounded-md text-ink-2 hover:bg-bg-elev hover:text-ink md:hidden"
+        aria-label="Открыть меню"
+        className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-rule bg-surface-tint text-ink hover:bg-bg-elev md:hidden"
       >
-        <Menu size={18} />
+        <Menu size={20} strokeWidth={2.2} />
       </button>
 
       {/* Search bar (desktop only) */}
