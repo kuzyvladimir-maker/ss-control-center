@@ -146,6 +146,18 @@ export async function GET(req: NextRequest) {
       path: `/orders/${orderId}/tags`,
       body: { tag_ids: [tagId] },
     },
+    P: {
+      label: "POST /bulk_tagging body{order_ids,tag_ids}",
+      method: "POST",
+      path: `/bulk_tagging`,
+      body: { order_ids: [Number(orderId)], tag_ids: [tagId] },
+    },
+    Q: {
+      label: "PUT /bulk_tagging body{order_ids,tag_ids}",
+      method: "PUT",
+      path: `/bulk_tagging`,
+      body: { order_ids: [Number(orderId)], tag_ids: [tagId] },
+    },
   };
 
   const variant = VARIANTS[variantKey];
