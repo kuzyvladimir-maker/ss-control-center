@@ -5,31 +5,16 @@
     }
   },
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
-      "Bash(npm run lint)",
-      "Bash(npm run build)",
-      "Bash(npm run dev)",
-      "Bash(npm install)",
-      "Bash(npm install:*)",
-      "Bash(npx prisma generate)",
-      "Bash(npx prisma db push:*)",
-      "Bash(npx tsc:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push)",
-      "Bash(git push origin:*)",
-      "Bash(git -C * add:*)",
-      "Bash(git -C * commit:*)",
-      "Bash(git -C * push)",
-      "Bash(git -C * push origin:*)",
-      "Bash(curl -s:*)",
-      "Bash(curl -sL:*)",
-      "Bash(curl -I:*)",
-      "Bash(gh run list:*)",
-      "Bash(gh run view:*)",
-      "Bash(gh repo view:*)",
-      "Bash(jq:*)",
-      "Bash(python3 -c:*)"
+      "Edit",
+      "Edit(*)",
+      "Write",
+      "Write(*)",
+      "Read",
+      "Read(*)",
+      "TodoWrite",
+      "Bash(*)"
     ]
   }
 }

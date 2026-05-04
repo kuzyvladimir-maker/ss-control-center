@@ -9,6 +9,7 @@
 
 ## 🎨 Design / UI
 - [Design System и mockup‘ы](design/index.md) — Salutem Design System v1.0, каталог 7 HTML mockup'ов в `/design/` (source of truth для Next.js UI)
+- [Mobile Adaptation](mobile-adaptation.md) — аудит мобильной адаптации, план перехода (sidebar→drawer, table→cards, breakpoint md=768px)
 
 ## 🏗️ Архитектура
 - [Архитектура проекта](project-architecture.md) — стек, модули, структура
@@ -65,4 +66,4 @@
 - (будет дополняться по ходу разработки)
 
 ---
-Последнее обновление: 2026-04-19 (+ design/)
+Последнее обновление: 2026-05-03 (+ mobile-adaptation)

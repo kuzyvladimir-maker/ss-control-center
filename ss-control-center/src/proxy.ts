@@ -49,6 +49,13 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Temporary debug endpoints (read-only Veeqo introspection) — public
+  // while we trace the procurement <-> Veeqo tag-sync issue. Will be
+  // removed once verified.
+  if (pathname.startsWith("/api/debug/")) {
+    return NextResponse.next();
+  }
+
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
