@@ -14,7 +14,16 @@ export async function veeqoFetch(path: string, options?: RequestInit) {
     const text = await res.text();
     throw new Error(`Veeqo API error ${res.status}: ${text}`);
   }
-  return res.json();
+  // Some endpoints (e.g. /bulk_tagging) return 204 / empty body on success.
+  // res.json() would throw "Unexpected end of JSON input" on those.
+  if (res.status === 204) return null;
+  const text = await res.text();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }
 
 // Fetch all orders with pagination

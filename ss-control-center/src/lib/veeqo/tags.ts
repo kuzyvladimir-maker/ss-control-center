@@ -71,46 +71,98 @@ export function colourFor(tagName: string): string {
 }
 
 /**
- * Add a tag to an order. Phase 1 does NOT call this — kept here so Phase 3
- * (the "купил всё" action) can use it.
+ * Cache of all available company tags (id ↔ name lookup). Tags rarely
+ * change, so we cache for the lifetime of the serverless function.
+ * Refreshed on demand via `getTagId` if a name isn't found.
+ */
+let tagsCache: Array<{ id: number; name: string }> | null = null;
+
+async function loadTags(force = false): Promise<Array<{ id: number; name: string }>> {
+  if (!force && tagsCache) return tagsCache;
+  const data = (await veeqoFetch(`/tags`)) as Array<{ id: number; name: string }>;
+  tagsCache = Array.isArray(data) ? data : [];
+  return tagsCache;
+}
+
+async function getTagId(tagName: string): Promise<number | null> {
+  let tags = await loadTags();
+  let found = tags.find((t) => t.name === tagName);
+  if (!found) {
+    // Maybe a brand new tag was just created — refresh once
+    tags = await loadTags(true);
+    found = tags.find((t) => t.name === tagName);
+  }
+  return found?.id ?? null;
+}
+
+/**
+ * Attach an existing tag to one or more orders via Veeqo's bulk-tagging
+ * endpoint. This is the ONE shape Veeqo's REST API actually accepts for
+ * order-tag mutations — `PUT /orders/{id}` with `tags_attributes` or
+ * `tag_list` returns 200 but silently does nothing.
  *
- * TODO(phase-3): The exact Veeqo endpoint for tag mutation isn't documented in
- * MASTER_PROMPT_v3.1.md (`POST /orders/{id}/tags` is noted as not working).
- * Try in this order when wiring Phase 3:
- *   1. PUT /orders/{id} with { order: { tag_list: ["Placed", ...] } }
- *   2. PUT /orders/{id} with { order: { tags_attributes: [...] } } (mirrors setProductTag)
- *   3. POST /orders/{id}/tags
- * If none work, ping Veeqo support — Vladimir has a contact.
+ * Reference: https://developers.veeqo.com/api/operations/untagging-orders/
+ * (POST is the symmetric tagging endpoint, same body shape as DELETE)
+ */
+export async function bulkTagOrders(
+  orderIds: ReadonlyArray<string | number>,
+  tagIds: ReadonlyArray<number>
+): Promise<void> {
+  if (orderIds.length === 0 || tagIds.length === 0) return;
+  await veeqoFetch(`/bulk_tagging`, {
+    method: "POST",
+    body: JSON.stringify({
+      order_ids: orderIds.map((id) => Number(id)),
+      tag_ids: [...tagIds],
+    }),
+  });
+}
+
+/**
+ * Remove existing tag(s) from one or more orders via the documented
+ * `DELETE /bulk_tagging` endpoint.
+ */
+export async function bulkUntagOrders(
+  orderIds: ReadonlyArray<string | number>,
+  tagIds: ReadonlyArray<number>
+): Promise<void> {
+  if (orderIds.length === 0 || tagIds.length === 0) return;
+  await veeqoFetch(`/bulk_tagging`, {
+    method: "DELETE",
+    body: JSON.stringify({
+      order_ids: orderIds.map((id) => Number(id)),
+      tag_ids: [...tagIds],
+    }),
+  });
+}
+
+/**
+ * Convenience wrapper: attach a tag to an order by name. Resolves the
+ * tag id from /tags first.
  */
 export async function addTagToOrder(
   orderId: string | number,
   tagName: string
 ): Promise<void> {
-  const order = await veeqoFetch(`/orders/${orderId}`);
-  const currentTags = getOrderTagNames(order);
-  if (currentTags.includes(tagName)) return;
-
-  const newTags = [...currentTags, tagName];
-  await veeqoFetch(`/orders/${orderId}`, {
-    method: "PUT",
-    body: JSON.stringify({ order: { tag_list: newTags } }),
-  });
+  const id = await getTagId(tagName);
+  if (id == null) {
+    throw new Error(
+      `Tag '${tagName}' not found in Veeqo company tags — create it in the Veeqo UI first`
+    );
+  }
+  await bulkTagOrders([orderId], [id]);
 }
 
 /**
- * Remove a tag from an order. See TODO on `addTagToOrder` re: endpoint shape.
+ * Convenience wrapper: remove a tag from an order by name.
  */
 export async function removeTagFromOrder(
   orderId: string | number,
   tagName: string
 ): Promise<void> {
-  const order = await veeqoFetch(`/orders/${orderId}`);
-  const currentTags = getOrderTagNames(order);
-  const newTags = currentTags.filter((t) => t !== tagName);
-  if (newTags.length === currentTags.length) return;
-
-  await veeqoFetch(`/orders/${orderId}`, {
-    method: "PUT",
-    body: JSON.stringify({ order: { tag_list: newTags } }),
-  });
+  const id = await getTagId(tagName);
+  if (id == null) return; // tag doesn't even exist; nothing to remove
+  await bulkUntagOrders([orderId], [id]);
 }
+
+export { getTagId };

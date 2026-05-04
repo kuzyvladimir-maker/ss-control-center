@@ -2,8 +2,9 @@ import { veeqoFetch } from "@/lib/veeqo/client";
 import {
   getOrderTags,
   PROCUREMENT_TAGS,
-  colourFor,
-  type OrderTag,
+  bulkTagOrders,
+  bulkUntagOrders,
+  getTagId,
 } from "@/lib/veeqo/tags";
 import { getInternalNotes } from "@/lib/veeqo/notes";
 import {
@@ -44,63 +45,21 @@ function shortNameFor(li: NonNullable<VeeqoOrder["line_items"]>[number]): string
 }
 
 /**
- * Build the `tags_attributes` array for a Rails-style nested-attributes PUT.
- *
- * For each tag the order ENDS UP with:
- *   - if it was already on the order with a known id → we let it be (don't include)
- *   - if it's new → include `{ name, colour }` to add it
- * For each managed tag the order CURRENTLY has but should NOT have:
- *   - include `{ id, _destroy: true }` so Rails removes it
- *
- * Non-managed tags (canceled, Заказано у Майка, channel-set tags, etc.) are
- * left untouched.
- */
-function buildTagsAttributes(
-  current: ReadonlyArray<OrderTag>,
-  desiredManagedSet: ReadonlySet<string>
-): Array<Record<string, unknown>> {
-  const ops: Array<Record<string, unknown>> = [];
-
-  // Destroy managed tags that are present but not desired
-  for (const t of current) {
-    if (!MANAGED_TAGS.includes(t.name)) continue; // not managed by us
-    if (desiredManagedSet.has(t.name)) continue; // keep it
-    if (t.id == null) continue; // can't destroy without id
-    ops.push({ id: t.id, _destroy: true });
-  }
-
-  // Add managed tags that aren't already on the order
-  const currentNames = new Set(current.map((t) => t.name));
-  for (const name of desiredManagedSet) {
-    if (currentNames.has(name)) continue;
-    ops.push({ name, colour: colourFor(name) });
-  }
-
-  return ops;
-}
-
-/**
  * Apply a procurement action to an order and persist it back to Veeqo.
  *
- * The Veeqo PUT format we use here mirrors what `setProductTag()` and
- * `addEmployeeNote()` already do successfully in this codebase — Rails
- * nested-attributes shape:
- *   {
- *     order: {
- *       tags_attributes: [
- *         { id: 123, _destroy: true },     // remove existing managed tag
- *         { name: "Need More", colour: "yellow" }  // add new
- *       ],
- *       employee_notes_attributes: [
- *         { text: "[PROCUREMENT]\n…\n[/PROCUREMENT]" }  // append a note
- *       ]
- *     }
- *   }
+ * Two side effects, sent as separate API calls because Veeqo handles them
+ * via different endpoints:
  *
- * Notes are append-only: each action adds a new employee_note record.
- * The parser later reads the LAST [PROCUREMENT] block found in the
- * combined notes (multiple blocks accumulate as Vladimir takes more
- * actions on the same order — most recent wins).
+ *   1. employee_notes — appended via PUT /orders/{id} with the Rails
+ *      nested-attributes shape:
+ *        { order: { employee_notes_attributes: [{ text: "[PROCUREMENT]…" }] } }
+ *      Notes are append-only; the parser picks the LAST [PROCUREMENT] block.
+ *
+ *   2. tags — POST/DELETE /bulk_tagging with { order_ids, tag_ids }.
+ *      tags_attributes / tag_list / etc. on /orders/{id} return 200 but
+ *      silently no-op (verified empirically — see docs/wiki/veeqo-quirks.md).
+ *      The /bulk_tagging endpoint is the only working path for adding /
+ *      removing tags on existing orders.
  */
 export async function applyProcurementAction(
   orderId: string,
@@ -171,32 +130,62 @@ export async function applyProcurementAction(
   if (addNeedMore) desiredManagedTags.add(PROCUREMENT_TAGS.NEED_MORE);
 
   const currentTags = getOrderTags(order as never);
-  const tagsAttributes = buildTagsAttributes(currentTags, desiredManagedTags);
-
-  // --- 4. Persist to Veeqo (single PUT, nested attributes) ----------------
-  const orderPayload: Record<string, unknown> = {};
-  if (tagsAttributes.length > 0) {
-    orderPayload.tags_attributes = tagsAttributes;
+  const currentManaged = new Set(
+    currentTags
+      .filter((t) => MANAGED_TAGS.includes(t.name))
+      .map((t) => t.name)
+  );
+  const tagsToAdd: string[] = [];
+  const tagsToRemove: string[] = [];
+  for (const name of desiredManagedTags) {
+    if (!currentManaged.has(name)) tagsToAdd.push(name);
   }
+  for (const name of currentManaged) {
+    if (!desiredManagedTags.has(name)) tagsToRemove.push(name);
+  }
+
+  // --- 4. Persist notes (PUT /orders/{id}) --------------------------------
+  const notesPayload: Record<string, unknown> = {};
   if (newBlockText) {
     // APPEND a new note containing the latest [PROCUREMENT] state. The parser
     // picks the LAST block found in concatenated notes, so older blocks
     // become inert.
-    orderPayload.employee_notes_attributes = [{ text: newBlockText }];
+    notesPayload.employee_notes_attributes = [{ text: newBlockText }];
   } else if (currentNotes.includes("[PROCUREMENT]")) {
     // Undo to empty state — just append an empty marker so the latest block
     // is empty (parser returns no items).
-    orderPayload.employee_notes_attributes = [
+    notesPayload.employee_notes_attributes = [
       { text: "[PROCUREMENT]\n[/PROCUREMENT]" },
     ];
   }
 
   let veeqoResponse: unknown = undefined;
-  if (Object.keys(orderPayload).length > 0) {
+  if (Object.keys(notesPayload).length > 0) {
     veeqoResponse = await veeqoFetch(`/orders/${orderId}`, {
       method: "PUT",
-      body: JSON.stringify({ order: orderPayload }),
+      body: JSON.stringify({ order: notesPayload }),
     });
+  }
+
+  // --- 5. Persist managed tags via /bulk_tagging --------------------------
+  // Resolve names to ids. If a tag doesn't exist in Veeqo yet we silently
+  // skip (rather than fail the whole action) — the notes block is the
+  // source of truth, the tag is just visual sugar.
+  if (tagsToAdd.length > 0) {
+    const ids: number[] = [];
+    for (const name of tagsToAdd) {
+      const id = await getTagId(name);
+      if (id != null) ids.push(id);
+    }
+    if (ids.length > 0) await bulkTagOrders([orderId], ids);
+  }
+  if (tagsToRemove.length > 0) {
+    const ids: number[] = [];
+    for (const name of tagsToRemove) {
+      const id = await getTagId(name);
+      if (id != null) ids.push(id);
+    }
+    if (ids.length > 0) await bulkUntagOrders([orderId], ids);
   }
 
   return {
