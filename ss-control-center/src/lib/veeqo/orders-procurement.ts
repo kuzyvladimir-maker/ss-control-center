@@ -46,8 +46,18 @@ type VeeqoOrder = Record<string, unknown> & {
   number?: string;
   channel?: { type_code?: string; name?: string };
   delivery_method?: { name?: string };
-  deliver_by?: string;
+  // Veeqo exposes a small zoo of date fields. Names + meanings observed live:
+  //   dispatch_date           — when the seller must ship out (THIS is what
+  //                              Vladimir cares about for procurement urgency)
+  //   expected_dispatch_date  — sometimes set, often null
+  //   due_date                — deliver-by date (when customer expects it)
+  //   deliver_by              — older alias, frequently null
+  // We pick dispatch_date first and only fall back to delivery dates so the
+  // "Ship by today / tomorrow" labels match what Veeqo's own UI shows.
+  dispatch_date?: string;
   expected_dispatch_date?: string;
+  due_date?: string;
+  deliver_by?: string;
   is_premium?: boolean;
   priority?: string;
   customer?: { full_name?: string; first_name?: string; last_name?: string };
@@ -186,7 +196,12 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
         quantityOrdered,
         remaining,
         status,
-        shipBy: order.deliver_by ?? null,
+        shipBy:
+          order.dispatch_date ??
+          order.expected_dispatch_date ??
+          order.due_date ??
+          order.deliver_by ??
+          null,
         expectedDispatchDate: order.expected_dispatch_date ?? null,
         isPremium: Boolean(order.is_premium ?? order.priority === "premium"),
         shippingMethod: order.delivery_method?.name ?? null,
