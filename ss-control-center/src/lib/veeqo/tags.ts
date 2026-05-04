@@ -15,28 +15,42 @@ export const PROCUREMENT_TAGS = PROCUREMENT_TAG_NAMES;
 export type ProcurementTag =
   (typeof PROCUREMENT_TAG_NAMES)[keyof typeof PROCUREMENT_TAG_NAMES];
 
-// Veeqo tag entries arrive either as plain strings or as objects with `name`.
-type RawTag = string | { name?: string } | null | undefined;
+// Veeqo tag entries arrive either as plain strings or as objects with `id`/`name`.
+type RawTag = string | { id?: number | string; name?: string } | null | undefined;
 
 interface OrderLike {
   tags?: RawTag[] | null;
 }
 
+export interface OrderTag {
+  id: number | string | null; // null when API returned a plain string
+  name: string;
+}
+
 /**
- * Returns the list of tag names attached to an order.
- * Tolerates both shapes Veeqo returns (string[] or {name}[]).
+ * Returns the full list of tags on an order with both id and name.
+ * Tolerates both shapes Veeqo returns.
+ *
+ * The id is needed to send `tags_attributes: [{ id, _destroy: true }]`
+ * when removing a tag via PUT /orders/{id} — Rails-style nested
+ * attributes require the existing record id.
  */
-export function getOrderTagNames(order: OrderLike | null | undefined): string[] {
+export function getOrderTags(order: OrderLike | null | undefined): OrderTag[] {
   if (!order?.tags || !Array.isArray(order.tags)) return [];
-  const out: string[] = [];
+  const out: OrderTag[] = [];
   for (const t of order.tags) {
     if (typeof t === "string") {
-      if (t) out.push(t);
+      if (t) out.push({ id: null, name: t });
     } else if (t && typeof t === "object" && typeof t.name === "string" && t.name) {
-      out.push(t.name);
+      out.push({ id: t.id ?? null, name: t.name });
     }
   }
   return out;
+}
+
+/** Convenience: just the names. */
+export function getOrderTagNames(order: OrderLike | null | undefined): string[] {
+  return getOrderTags(order).map((t) => t.name);
 }
 
 /**
@@ -47,6 +61,13 @@ export function hasTag(
   tagName: string
 ): boolean {
   return getOrderTagNames(order).includes(tagName);
+}
+
+/** Default colour for our managed procurement tags. */
+export function colourFor(tagName: string): string {
+  if (tagName === PROCUREMENT_TAGS.PLACED) return "blue";
+  if (tagName === PROCUREMENT_TAGS.NEED_MORE) return "yellow";
+  return "grey";
 }
 
 /**

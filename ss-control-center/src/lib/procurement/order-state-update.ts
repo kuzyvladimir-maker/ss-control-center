@@ -1,10 +1,14 @@
 import { veeqoFetch } from "@/lib/veeqo/client";
-import { getOrderTagNames, PROCUREMENT_TAGS } from "@/lib/veeqo/tags";
+import {
+  getOrderTags,
+  PROCUREMENT_TAGS,
+  colourFor,
+  type OrderTag,
+} from "@/lib/veeqo/tags";
 import { getInternalNotes } from "@/lib/veeqo/notes";
 import {
   parseProcurementBlock,
   serializeProcurementBlock,
-  replaceProcurementBlockInNotes,
   type LineItemStatus,
   type ProcurementBlock,
 } from "@/lib/veeqo/procurement-notes-parser";
@@ -25,22 +29,78 @@ interface VeeqoOrder {
   [k: string]: unknown;
 }
 
+const MANAGED_TAGS: ReadonlyArray<string> = [
+  PROCUREMENT_TAGS.PLACED,
+  PROCUREMENT_TAGS.NEED_MORE,
+];
+
 /** Short, human-readable name to put inside the [PROCUREMENT] block line. */
 function shortNameFor(li: NonNullable<VeeqoOrder["line_items"]>[number]): string {
   const sellable = li.sellable ?? {};
   const product = sellable.product ?? {};
   const raw =
     product.title ?? product.name ?? sellable.title ?? `li-${li.id ?? "?"}`;
-  // Trim long titles so the block stays readable in Veeqo.
   return raw.length > 40 ? raw.slice(0, 37).trimEnd() + "…" : raw;
 }
 
 /**
- * Apply a procurement action to an order and persist it back to Veeqo
- * in a SINGLE PUT (notes + tag_list together). Returns the new in-app
- * status of the line item so the UI can reconcile optimistic state.
+ * Build the `tags_attributes` array for a Rails-style nested-attributes PUT.
  *
- * The caller (an API route) is expected to authenticate the request.
+ * For each tag the order ENDS UP with:
+ *   - if it was already on the order with a known id → we let it be (don't include)
+ *   - if it's new → include `{ name, colour }` to add it
+ * For each managed tag the order CURRENTLY has but should NOT have:
+ *   - include `{ id, _destroy: true }` so Rails removes it
+ *
+ * Non-managed tags (canceled, Заказано у Майка, channel-set tags, etc.) are
+ * left untouched.
+ */
+function buildTagsAttributes(
+  current: ReadonlyArray<OrderTag>,
+  desiredManagedSet: ReadonlySet<string>
+): Array<Record<string, unknown>> {
+  const ops: Array<Record<string, unknown>> = [];
+
+  // Destroy managed tags that are present but not desired
+  for (const t of current) {
+    if (!MANAGED_TAGS.includes(t.name)) continue; // not managed by us
+    if (desiredManagedSet.has(t.name)) continue; // keep it
+    if (t.id == null) continue; // can't destroy without id
+    ops.push({ id: t.id, _destroy: true });
+  }
+
+  // Add managed tags that aren't already on the order
+  const currentNames = new Set(current.map((t) => t.name));
+  for (const name of desiredManagedSet) {
+    if (currentNames.has(name)) continue;
+    ops.push({ name, colour: colourFor(name) });
+  }
+
+  return ops;
+}
+
+/**
+ * Apply a procurement action to an order and persist it back to Veeqo.
+ *
+ * The Veeqo PUT format we use here mirrors what `setProductTag()` and
+ * `addEmployeeNote()` already do successfully in this codebase — Rails
+ * nested-attributes shape:
+ *   {
+ *     order: {
+ *       tags_attributes: [
+ *         { id: 123, _destroy: true },     // remove existing managed tag
+ *         { name: "Need More", colour: "yellow" }  // add new
+ *       ],
+ *       employee_notes_attributes: [
+ *         { text: "[PROCUREMENT]\n…\n[/PROCUREMENT]" }  // append a note
+ *       ]
+ *     }
+ *   }
+ *
+ * Notes are append-only: each action adds a new employee_note record.
+ * The parser later reads the LAST [PROCUREMENT] block found in the
+ * combined notes (multiple blocks accumulate as Vladimir takes more
+ * actions on the same order — most recent wins).
  */
 export async function applyProcurementAction(
   orderId: string,
@@ -49,7 +109,8 @@ export async function applyProcurementAction(
 ): Promise<{
   lineItemId: string;
   newStatus: LineItemStatus | null;
-  orderTags: string[];
+  managedTags: string[];
+  veeqoResponse?: unknown;
 }> {
   // --- 1. Fetch current order state ---------------------------------------
   const order = (await veeqoFetch(`/orders/${orderId}`)) as VeeqoOrder;
@@ -85,14 +146,12 @@ export async function applyProcurementAction(
     newStatusForLine = { kind: "remain", remaining: action.remaining };
     newStatuses.set(lineItemId, newStatusForLine);
   } else {
-    // undo
     newStatuses.delete(lineItemId);
     newStatusForLine = null;
   }
 
   const newBlock: ProcurementBlock = { items: newStatuses };
 
-  // Build a short-name lookup so the serialized block stays readable.
   const shortNames = new Map<string, string>();
   for (const li of lineItems) {
     const id = String(li.id ?? "");
@@ -101,42 +160,49 @@ export async function applyProcurementAction(
   }
 
   const newBlockText = serializeProcurementBlock(newBlock, shortNames);
-  const newNotes = replaceProcurementBlockInNotes(currentNotes, newBlockText);
 
-  // --- 3. Decide the order-level tags -------------------------------------
+  // --- 3. Decide the order-level managed tags -----------------------------
   const { addPlaced, addNeedMore } = decideOrderTags(
     allLineItemIds,
     newStatuses
   );
+  const desiredManagedTags = new Set<string>();
+  if (addPlaced) desiredManagedTags.add(PROCUREMENT_TAGS.PLACED);
+  if (addNeedMore) desiredManagedTags.add(PROCUREMENT_TAGS.NEED_MORE);
 
-  const currentTags = getOrderTagNames(order as never);
-  // Strip our managed tags, then re-add based on the decision. Tags that
-  // aren't ours (e.g. Заказано у Майка, canceled, channel-specific tags
-  // Vladimir set manually) are preserved.
-  const preserved = currentTags.filter(
-    (t) => t !== PROCUREMENT_TAGS.PLACED && t !== PROCUREMENT_TAGS.NEED_MORE
-  );
-  const newTags = [...preserved];
-  if (addPlaced) newTags.push(PROCUREMENT_TAGS.PLACED);
-  if (addNeedMore) newTags.push(PROCUREMENT_TAGS.NEED_MORE);
+  const currentTags = getOrderTags(order as never);
+  const tagsAttributes = buildTagsAttributes(currentTags, desiredManagedTags);
 
-  // --- 4. Persist to Veeqo (single PUT) -----------------------------------
-  // We send notes + tag_list in one call so the order can't be left half-
-  // updated. If Veeqo rejects one of the fields, the whole update fails
-  // and the caller sees the underlying error.
-  await veeqoFetch(`/orders/${orderId}`, {
-    method: "PUT",
-    body: JSON.stringify({
-      order: {
-        tag_list: newTags,
-        employee_notes: newNotes,
-      },
-    }),
-  });
+  // --- 4. Persist to Veeqo (single PUT, nested attributes) ----------------
+  const orderPayload: Record<string, unknown> = {};
+  if (tagsAttributes.length > 0) {
+    orderPayload.tags_attributes = tagsAttributes;
+  }
+  if (newBlockText) {
+    // APPEND a new note containing the latest [PROCUREMENT] state. The parser
+    // picks the LAST block found in concatenated notes, so older blocks
+    // become inert.
+    orderPayload.employee_notes_attributes = [{ text: newBlockText }];
+  } else if (currentNotes.includes("[PROCUREMENT]")) {
+    // Undo to empty state — just append an empty marker so the latest block
+    // is empty (parser returns no items).
+    orderPayload.employee_notes_attributes = [
+      { text: "[PROCUREMENT]\n[/PROCUREMENT]" },
+    ];
+  }
+
+  let veeqoResponse: unknown = undefined;
+  if (Object.keys(orderPayload).length > 0) {
+    veeqoResponse = await veeqoFetch(`/orders/${orderId}`, {
+      method: "PUT",
+      body: JSON.stringify({ order: orderPayload }),
+    });
+  }
 
   return {
     lineItemId,
     newStatus: newStatusForLine,
-    orderTags: newTags,
+    managedTags: Array.from(desiredManagedTags),
+    veeqoResponse,
   };
 }

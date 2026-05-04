@@ -25,16 +25,20 @@ export interface ProcurementBlock {
 /**
  * Parse the [PROCUREMENT] block out of notes. Returns an empty Map when the
  * block is absent or malformed.
+ *
+ * If multiple blocks are present (because order-state-update appends a new
+ * note for each action rather than rewriting the existing one), we read
+ * the LAST one — most recent wins.
  */
 export function parseProcurementBlock(notes: string): ProcurementBlock {
   const items = new Map<string, LineItemStatus>();
   if (!notes) return { items };
 
-  const startIdx = notes.indexOf(BLOCK_START);
-  const endIdx = notes.indexOf(BLOCK_END);
-  if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
-    return { items };
-  }
+  // Walk backwards: find the last END tag, then the last START before it.
+  const endIdx = notes.lastIndexOf(BLOCK_END);
+  if (endIdx === -1) return { items };
+  const startIdx = notes.lastIndexOf(BLOCK_START, endIdx);
+  if (startIdx === -1) return { items };
 
   const blockContent = notes
     .slice(startIdx + BLOCK_START.length, endIdx)
