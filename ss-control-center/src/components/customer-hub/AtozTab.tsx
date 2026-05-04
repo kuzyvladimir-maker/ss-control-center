@@ -68,7 +68,7 @@ function statusLabel(
       color: "bg-green-soft2 text-green-deep",
     },
     SUBMITTED: { text: "Submitted", color: "bg-green-soft2 text-green-ink" },
-    APPEALED: { text: "Appealed", color: "bg-purple-100 text-purple-700" },
+    APPEALED: { text: "Appealed", color: "bg-purple-tint text-purple" },
   };
   return map[status] || { text: status, color: "bg-bg-elev text-ink-3" };
 }
@@ -217,7 +217,7 @@ export default function AtozTab({
     <>
       <Card>
         <CardContent className="p-0">
-          <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-rule">
             <span className="text-xs text-ink-3">
               {total} {label.toLowerCase()}{total !== 1 ? "s" : ""}
               {syncMessage && (
@@ -322,7 +322,7 @@ export default function AtozTab({
 
           {/* Summary cards */}
           {claims.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 px-4 py-3 border-b border-slate-100 text-xs">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 px-4 py-3 border-b border-rule text-xs">
               <div className="rounded bg-surface-tint p-2 text-center">
                 <div className="text-lg font-bold text-ink">{total}</div>
                 <div className="text-ink-3">Total</div>
@@ -367,20 +367,102 @@ export default function AtozTab({
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Store</TableHead>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Carrier</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Deadline</TableHead>
-                  <TableHead>Who Paid</TableHead>
-                  <TableHead>Strategy</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* DESKTOP table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Store</TableHead>
+                      <TableHead>Order ID</TableHead>
+                      <TableHead>Carrier</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead>Deadline</TableHead>
+                      <TableHead>Who Paid</TableHead>
+                      <TableHead>Strategy</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {claims.map((c) => {
+                      const days = daysUntil(c.deadline);
+                      const urgent = days !== null && days <= 2;
+                      const sl = statusLabel(c.status, c.amazonDecision);
+                      const isLoss = c.amazonDecision === "AGAINST_US";
+                      const isWon =
+                        c.amazonDecision === "AMAZON_FUNDED" ||
+                        c.amazonDecision === "IN_OUR_FAVOR";
+                      return (
+                        <TableRow
+                          key={c.id}
+                          className={`cursor-pointer hover:bg-surface-tint ${
+                            selectedId === c.id ? "bg-green-soft" : ""
+                          } ${urgent ? "bg-danger-tint/40" : ""} ${
+                            isLoss ? "bg-danger-tint/30" : ""
+                          }`}
+                          onClick={() =>
+                            setSelectedId(selectedId === c.id ? null : c.id)
+                          }
+                        >
+                          <TableCell>
+                            <Badge className={sl.color}>{sl.text}</Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-ink-2 max-w-[100px] truncate">
+                            {c.storeName || `Store ${c.storeIndex}`}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {c.amazonOrderId}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {c.carrier || "—"}
+                          </TableCell>
+                          <TableCell
+                            className={`text-right text-xs font-medium ${
+                              isLoss
+                                ? "text-danger"
+                                : isWon
+                                  ? "text-green"
+                                  : ""
+                            }`}
+                          >
+                            {c.amount != null ? `$${c.amount.toFixed(2)}` : "—"}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {c.deadline || "—"}
+                            {days !== null && days <= 3 && (
+                              <Badge className="ml-1 bg-danger-tint text-danger text-[9px]">
+                                {days}d left
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {isWon ? (
+                              <span className="text-green font-medium">
+                                Amazon
+                              </span>
+                            ) : isLoss ? (
+                              <span className="text-danger font-medium">
+                                Us {!c.appealSubmitted && "(Appeal?)"}
+                              </span>
+                            ) : (
+                              <span className="text-ink-3">Pending</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <DefenseStrategyBadge
+                              strategyType={c.strategyType}
+                              confidence={c.strategyConfidence}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* MOBILE cards */}
+              <div className="md:hidden divide-y divide-rule">
                 {claims.map((c) => {
                   const days = daysUntil(c.deadline);
                   const urgent = days !== null && days <= 2;
@@ -390,72 +472,86 @@ export default function AtozTab({
                     c.amazonDecision === "AMAZON_FUNDED" ||
                     c.amazonDecision === "IN_OUR_FAVOR";
                   return (
-                    <TableRow
+                    <button
                       key={c.id}
-                      className={`cursor-pointer hover:bg-surface-tint ${
-                        selectedId === c.id ? "bg-green-soft" : ""
-                      } ${urgent ? "bg-danger-tint/40" : ""} ${
-                        isLoss ? "bg-danger-tint/30" : ""
-                      }`}
                       onClick={() =>
                         setSelectedId(selectedId === c.id ? null : c.id)
                       }
+                      className={`w-full text-left px-4 py-3 transition-colors hover:bg-surface-tint active:bg-bg-elev ${
+                        selectedId === c.id ? "bg-green-soft" : ""
+                      } ${urgent && selectedId !== c.id ? "bg-danger-tint/40" : ""} ${
+                        isLoss && selectedId !== c.id ? "bg-danger-tint/30" : ""
+                      }`}
                     >
-                      <TableCell>
-                        <Badge className={sl.color}>{sl.text}</Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-ink-2 max-w-[100px] truncate">
-                        {c.storeName || `Store ${c.storeIndex}`}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">
-                        {c.amazonOrderId}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {c.carrier || "—"}
-                      </TableCell>
-                      <TableCell
-                        className={`text-right text-xs font-medium ${
-                          isLoss
-                            ? "text-danger"
-                            : isWon
-                              ? "text-green"
-                              : ""
-                        }`}
-                      >
-                        {c.amount != null ? `$${c.amount.toFixed(2)}` : "—"}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {c.deadline || "—"}
-                        {days !== null && days <= 3 && (
-                          <Badge className="ml-1 bg-danger-tint text-danger text-[9px]">
-                            {days}d left
-                          </Badge>
+                      {/* HEAD: order ID + amount */}
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <span className="font-mono text-[13px] text-ink truncate">
+                          {c.amazonOrderId}
+                        </span>
+                        <span
+                          className={`shrink-0 text-[13px] font-semibold tabular ${
+                            isLoss
+                              ? "text-danger"
+                              : isWon
+                                ? "text-green"
+                                : "text-ink"
+                          }`}
+                        >
+                          {c.amount != null ? `$${c.amount.toFixed(2)}` : "—"}
+                        </span>
+                      </div>
+
+                      {/* SUB: store · carrier · strategy */}
+                      <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-[11.5px] text-ink-3 mb-2">
+                        <span className="truncate">
+                          {c.storeName || `Store ${c.storeIndex}`}
+                        </span>
+                        {c.carrier && (
+                          <>
+                            <span className="text-ink-4">·</span>
+                            <span>{c.carrier}</span>
+                          </>
                         )}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {isWon ? (
-                          <span className="text-green font-medium">
-                            Amazon
-                          </span>
-                        ) : isLoss ? (
-                          <span className="text-danger font-medium">
-                            Us {!c.appealSubmitted && "(Appeal?)"}
-                          </span>
-                        ) : (
-                          <span className="text-ink-3">Pending</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
                         <DefenseStrategyBadge
                           strategyType={c.strategyType}
                           confidence={c.strategyConfidence}
                         />
-                      </TableCell>
-                    </TableRow>
+                      </div>
+
+                      {/* ACTION row: status badge + deadline */}
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <Badge className={`${sl.color} text-[10px]`}>
+                          {sl.text}
+                        </Badge>
+                        <div className="text-[10.5px] tabular text-ink-3 flex items-center gap-1">
+                          {c.deadline || "—"}
+                          {days !== null && days <= 3 && (
+                            <Badge className="bg-danger-tint text-danger text-[9px]">
+                              {days}d
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* FOOTER: who paid */}
+                      <div className="text-[10.5px] text-ink-3">
+                        {isWon ? (
+                          <span className="text-green font-medium">
+                            Amazon paid
+                          </span>
+                        ) : isLoss ? (
+                          <span className="text-danger font-medium">
+                            We paid {!c.appealSubmitted && "(Appeal?)"}
+                          </span>
+                        ) : (
+                          <span>Pending</span>
+                        )}
+                      </div>
+                    </button>
                   );
                 })}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

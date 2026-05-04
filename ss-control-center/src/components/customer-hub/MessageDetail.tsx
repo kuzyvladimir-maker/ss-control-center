@@ -975,7 +975,7 @@ export default function MessageDetail({
               </p>
               <ConfidenceIndicator factCheckJson={m.factCheckJson} />
             </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <div>
                 <span className="text-ink-3">Type:</span>{" "}
                 <span className="font-mono">{m.problemType}</span>{" "}
@@ -1179,7 +1179,7 @@ export default function MessageDetail({
               </div>
             )}
 
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex flex-wrap items-center gap-2 mt-2">
               <Button variant="outline" size="sm" onClick={handleCopy}>
                 <ClipboardCopy size={12} className="mr-1" />
                 {copied ? "Copied!" : "Copy"}
@@ -1219,7 +1219,7 @@ export default function MessageDetail({
                   Rewrite ▾
                 </Button>
                 {rewriteMenuOpen && (
-                  <div className="absolute right-0 top-full mt-1 z-10 w-52 rounded-md border border-rule bg-white shadow-lg text-xs">
+                  <div className="absolute right-0 top-full mt-1 z-10 w-52 rounded-md border border-rule bg-surface shadow-lg text-xs">
                     {[
                       { id: "polite", label: "More polite" },
                       { id: "amazon_safe", label: "Amazon-safe" },

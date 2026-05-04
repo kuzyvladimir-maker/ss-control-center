@@ -42,7 +42,7 @@ const statusColors: Record<string, string> = {
   REMOVAL_SUBMITTED: "bg-warn-tint text-warn-strong",
   REMOVED: "bg-green-soft2 text-green-ink",
   DENIED: "bg-danger-tint text-danger",
-  CONTACT_SENT: "bg-purple-100 text-purple-700",
+  CONTACT_SENT: "bg-purple-tint text-purple",
   CLOSED: "bg-bg-elev text-ink-3",
 };
 
@@ -54,7 +54,7 @@ function Stars({ rating }: { rating: number }) {
           key={s}
           size={12}
           className={
-            s <= rating ? "fill-amber-400 text-amber-400" : "text-slate-200"
+            s <= rating ? "fill-warn text-warn" : "text-ink-4"
           }
         />
       ))}
@@ -182,7 +182,7 @@ export default function FeedbackTab() {
     <>
       <Card>
         <CardContent className="p-0">
-          <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-rule">
             <span className="text-xs text-ink-3">
               {total} feedback{total !== 1 ? "s" : ""}
             </span>
@@ -282,64 +282,130 @@ export default function FeedbackTab() {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Rating</TableHead>
-                  <TableHead>Store</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Comment</TableHead>
-                  <TableHead>Removable?</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* DESKTOP table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Rating</TableHead>
+                      <TableHead>Store</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Comment</TableHead>
+                      <TableHead>Removable?</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {feedbacks.map((fb) => (
+                      <TableRow
+                        key={fb.id}
+                        className={`cursor-pointer hover:bg-surface-tint ${
+                          selectedId === fb.id ? "bg-green-soft" : ""
+                        } ${fb.rating <= 2 ? "bg-danger-tint/30" : ""}`}
+                        onClick={() =>
+                          setSelectedId(selectedId === fb.id ? null : fb.id)
+                        }
+                      >
+                        <TableCell>
+                          <Stars rating={fb.rating} />
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {fb.store || "—"}
+                        </TableCell>
+                        <TableCell className="text-xs text-ink-3">
+                          {fb.feedbackDate}
+                        </TableCell>
+                        <TableCell className="text-xs max-w-[300px] truncate">
+                          {fb.comments || (
+                            <span className="text-ink-4">(no comment)</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {fb.removable === true ? (
+                            <Badge className="bg-green-soft2 text-green-ink">
+                              Yes
+                            </Badge>
+                          ) : fb.removable === false ? (
+                            <Badge className="bg-bg-elev text-ink-3">
+                              No
+                            </Badge>
+                          ) : (
+                            <span className="text-ink-4 text-xs">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={statusColors[fb.status] || ""}>
+                            {fb.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* MOBILE cards */}
+              <div className="md:hidden divide-y divide-rule">
                 {feedbacks.map((fb) => (
-                  <TableRow
+                  <button
                     key={fb.id}
-                    className={`cursor-pointer hover:bg-surface-tint ${
-                      selectedId === fb.id ? "bg-green-soft" : ""
-                    } ${fb.rating <= 2 ? "bg-danger-tint/30" : ""}`}
                     onClick={() =>
                       setSelectedId(selectedId === fb.id ? null : fb.id)
                     }
+                    className={`w-full text-left px-4 py-3 transition-colors hover:bg-surface-tint active:bg-bg-elev ${
+                      selectedId === fb.id ? "bg-green-soft" : ""
+                    } ${
+                      fb.rating <= 2 && selectedId !== fb.id
+                        ? "bg-danger-tint/30"
+                        : ""
+                    }`}
                   >
-                    <TableCell>
+                    {/* HEAD: rating + status */}
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
                       <Stars rating={fb.rating} />
-                    </TableCell>
-                    <TableCell className="text-xs">
+                      <Badge
+                        className={`${statusColors[fb.status] || ""} text-[10px]`}
+                      >
+                        {fb.status}
+                      </Badge>
+                    </div>
+
+                    {/* SUB: store + date */}
+                    <div className="text-[11.5px] text-ink-3 mb-1.5 truncate">
                       {fb.store || "—"}
-                    </TableCell>
-                    <TableCell className="text-xs text-ink-3">
-                      {fb.feedbackDate}
-                    </TableCell>
-                    <TableCell className="text-xs max-w-[300px] truncate">
+                      <span className="mx-1.5 text-ink-4">·</span>
+                      <span className="tabular">{fb.feedbackDate}</span>
+                    </div>
+
+                    {/* BODY: comment */}
+                    <div className="text-[12px] text-ink-2 line-clamp-3 mb-1.5">
                       {fb.comments || (
                         <span className="text-ink-4">(no comment)</span>
                       )}
-                    </TableCell>
-                    <TableCell>
+                    </div>
+
+                    {/* FOOTER: order id + removable badge */}
+                    <div className="flex items-center justify-between gap-2 text-[10.5px] text-ink-3">
+                      <span className="font-mono truncate">
+                        {fb.amazonOrderId
+                          ? fb.amazonOrderId.substring(0, 19) + "…"
+                          : "—"}
+                      </span>
                       {fb.removable === true ? (
-                        <Badge className="bg-green-soft2 text-green-ink">
-                          Yes
+                        <Badge className="bg-green-soft2 text-green-ink text-[9px] shrink-0">
+                          Removable
                         </Badge>
                       ) : fb.removable === false ? (
-                        <Badge className="bg-bg-elev text-ink-3">
-                          No
+                        <Badge className="bg-bg-elev text-ink-3 text-[9px] shrink-0">
+                          Not removable
                         </Badge>
-                      ) : (
-                        <span className="text-ink-4 text-xs">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={statusColors[fb.status] || ""}>
-                        {fb.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
+                      ) : null}
+                    </div>
+                  </button>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

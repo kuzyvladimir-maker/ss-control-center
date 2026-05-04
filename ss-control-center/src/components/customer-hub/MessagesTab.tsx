@@ -17,22 +17,22 @@ import {
 } from "@/components/ui/table";
 
 const statusDot: Record<string, string> = {
-  NEW: "bg-danger-tint0",
-  ANALYZED: "bg-yellow-500",
-  SENT: "bg-green-soft0",
-  RESPONDED: "bg-green-soft0",
+  NEW: "bg-danger",
+  ANALYZED: "bg-warn-strong",
+  SENT: "bg-green",
+  RESPONDED: "bg-green",
 };
 
 const riskColors: Record<string, string> = {
   LOW: "bg-green-soft2 text-green-ink",
   MEDIUM: "bg-warn-tint text-warn-strong",
   HIGH: "bg-danger-tint text-danger",
-  CRITICAL: "bg-red-600 text-white",
+  CRITICAL: "bg-danger text-green-cream",
 };
 
 const actionColors: Record<string, string> = {
   REPLACEMENT: "bg-green-soft2 text-green-deep",
-  REFUND: "bg-orange-100 text-orange-700",
+  REFUND: "bg-warn-tint text-warn-strong",
   A2Z_GUARANTEE: "bg-green-soft2 text-green-deep",
   CLARIFY: "bg-bg-elev text-ink",
   REASSURE: "bg-green-soft2 text-green-ink",
@@ -140,7 +140,7 @@ export default function MessagesTab() {
     <Card>
       <CardContent className="p-0">
         {/* Filter tabs + sync bar */}
-        <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-slate-100">
+        <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-rule">
           <div className="flex items-center gap-1">
             {STATUS_FILTERS.map((f) => (
               <button
@@ -196,102 +196,193 @@ export default function MessagesTab() {
             </p>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-10"></TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Store</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Order</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Risk</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead>Respond By</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <>
+            {/* DESKTOP table (≥ md) */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10"></TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Store</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Order</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Risk</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Respond By</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {messages.map((m) => (
+                    <TableRow
+                      key={m.id}
+                      className={`cursor-pointer hover:bg-surface-tint ${selectedId === m.id ? "bg-green-soft" : ""}`}
+                      onClick={() => setSelectedId(selectedId === m.id ? null : m.id)}
+                    >
+                      <TableCell className="px-4">
+                        <span
+                          className={`inline-block h-2.5 w-2.5 rounded-full ${statusDot[m.status] || "bg-ink-4"}`}
+                          title={m.status}
+                        />
+                      </TableCell>
+                      <TableCell className="text-xs text-ink-3">
+                        {new Date(m.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </TableCell>
+                      <TableCell className="text-xs">{m.storeName}</TableCell>
+                      <TableCell className="text-xs font-medium">
+                        <span className="inline-flex items-center gap-1">
+                          {m.customerName || "Customer"}
+                          {m.problemType === "T20" && (
+                            <Badge className="bg-danger text-green-cream text-[9px] px-1 py-0">
+                              Repeat
+                            </Badge>
+                          )}
+                        </span>
+                      </TableCell>
+                      <TableCell className="font-mono text-[10px] text-ink-3">
+                        {m.amazonOrderId
+                          ? m.amazonOrderId.substring(0, 15) + "..."
+                          : "—"}
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        {m.category && (
+                          <>
+                            <span className="font-mono text-ink-3">
+                              {m.category}
+                            </span>{" "}
+                            <span className="text-ink-3">
+                              {m.categoryName || ""}
+                            </span>
+                          </>
+                        )}
+                        {!m.category && (
+                          <span className="text-ink-4">Not analyzed</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {m.riskLevel ? (
+                          <Badge
+                            className={riskColors[m.riskLevel] || ""}
+                          >
+                            {m.riskLevel}
+                          </Badge>
+                        ) : (
+                          <span className="text-ink-4 text-xs">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {m.action ? (
+                          <Badge
+                            className={actionColors[m.action] || "bg-bg-elev text-ink-2"}
+                          >
+                            {m.action}
+                          </Badge>
+                        ) : (
+                          <span className="text-ink-4 text-xs">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <ResponseDeadline
+                          createdAt={m.receivedAt || m.createdAt}
+                          status={m.status}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* MOBILE cards (< md) */}
+            <div className="md:hidden divide-y divide-rule">
               {messages.map((m) => (
-                <TableRow
+                <button
                   key={m.id}
-                  className={`cursor-pointer hover:bg-surface-tint ${selectedId === m.id ? "bg-green-soft" : ""}`}
-                  onClick={() => setSelectedId(selectedId === m.id ? null : m.id)}
+                  onClick={() =>
+                    setSelectedId(selectedId === m.id ? null : m.id)
+                  }
+                  className={`w-full text-left px-4 py-3 transition-colors hover:bg-surface-tint active:bg-bg-elev ${selectedId === m.id ? "bg-green-soft" : ""}`}
                 >
-                  <TableCell className="px-4">
-                    <span
-                      className={`inline-block h-2.5 w-2.5 rounded-full ${statusDot[m.status] || "bg-slate-300"}`}
-                      title={m.status}
-                    />
-                  </TableCell>
-                  <TableCell className="text-xs text-ink-3">
-                    {new Date(m.createdAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </TableCell>
-                  <TableCell className="text-xs">{m.storeName}</TableCell>
-                  <TableCell className="text-xs font-medium">
-                    <span className="inline-flex items-center gap-1">
-                      {m.customerName || "Customer"}
+                  {/* HEAD: customer + status dot + risk badge */}
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span
+                        className={`inline-block h-2.5 w-2.5 rounded-full shrink-0 ${statusDot[m.status] || "bg-ink-4"}`}
+                        title={m.status}
+                      />
+                      <span className="text-[13.5px] font-medium text-ink truncate">
+                        {m.customerName || "Customer"}
+                      </span>
                       {m.problemType === "T20" && (
-                        <Badge className="bg-red-600 text-white text-[9px] px-1 py-0">
+                        <Badge className="bg-danger-tint text-danger text-[9px] px-1 py-0 shrink-0">
                           Repeat
                         </Badge>
                       )}
-                    </span>
-                  </TableCell>
-                  <TableCell className="font-mono text-[10px] text-ink-3">
-                    {m.amazonOrderId
-                      ? m.amazonOrderId.substring(0, 15) + "..."
-                      : "—"}
-                  </TableCell>
-                  <TableCell className="text-xs">
-                    {m.category && (
-                      <>
-                        <span className="font-mono text-ink-3">
-                          {m.category}
-                        </span>{" "}
-                        <span className="text-ink-3">
-                          {m.categoryName || ""}
-                        </span>
-                      </>
-                    )}
-                    {!m.category && (
-                      <span className="text-ink-4">Not analyzed</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {m.riskLevel ? (
+                    </div>
+                    {m.riskLevel && (
                       <Badge
-                        className={riskColors[m.riskLevel] || ""}
+                        className={`${riskColors[m.riskLevel] || ""} shrink-0 text-[10px]`}
                       >
                         {m.riskLevel}
                       </Badge>
-                    ) : (
-                      <span className="text-ink-4 text-xs">—</span>
                     )}
-                  </TableCell>
-                  <TableCell>
+                  </div>
+
+                  {/* SUB: store + category */}
+                  <div className="text-[11.5px] text-ink-3 mb-1.5 truncate">
+                    {m.storeName}
+                    {m.category && (
+                      <>
+                        <span className="mx-1.5 text-ink-4">·</span>
+                        <span className="font-mono">{m.category}</span>
+                        {m.categoryName && <span> {m.categoryName}</span>}
+                      </>
+                    )}
+                  </div>
+
+                  {/* ACTION row: action badge + deadline */}
+                  <div className="flex items-center justify-between gap-2 mb-1">
                     {m.action ? (
                       <Badge
-                        className={actionColors[m.action] || "bg-bg-elev text-ink-2"}
+                        className={`${actionColors[m.action] || "bg-bg-elev text-ink-2"} text-[10px]`}
                       >
                         {m.action}
                       </Badge>
                     ) : (
-                      <span className="text-ink-4 text-xs">—</span>
+                      <span className="text-ink-4 text-[10.5px]">
+                        Not analyzed
+                      </span>
                     )}
-                  </TableCell>
-                  <TableCell>
-                    <ResponseDeadline
-                      createdAt={m.receivedAt || m.createdAt}
-                      status={m.status}
-                    />
-                  </TableCell>
-                </TableRow>
+                    <div className="shrink-0">
+                      <ResponseDeadline
+                        createdAt={m.receivedAt || m.createdAt}
+                        status={m.status}
+                      />
+                    </div>
+                  </div>
+
+                  {/* FOOTER: order id + date */}
+                  <div className="flex items-center justify-between gap-2 text-[10.5px] text-ink-3">
+                    <span className="font-mono truncate">
+                      {m.amazonOrderId
+                        ? m.amazonOrderId.substring(0, 19) + "…"
+                        : "—"}
+                    </span>
+                    <span className="tabular shrink-0">
+                      {new Date(m.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                </button>
               ))}
-            </TableBody>
-          </Table>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>
