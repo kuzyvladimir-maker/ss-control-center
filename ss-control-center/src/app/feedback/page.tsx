@@ -124,7 +124,7 @@ export default function FeedbackPage() {
           <CardContent className="py-4">
             <p className="text-xs text-ink-3">Avg Rating</p>
             <p className="text-2xl font-bold text-warn flex items-center gap-1">
-              {avgRating} <Star size={16} className="fill-amber-400 text-amber-400" />
+              {avgRating} <Star size={16} className="fill-warn text-warn" />
             </p>
           </CardContent>
         </Card>
@@ -190,8 +190,8 @@ export default function FeedbackPage() {
                               size={12}
                               className={
                                 s <= r.rating
-                                  ? "fill-amber-400 text-amber-400"
-                                  : "text-slate-200"
+                                  ? "fill-warn text-warn"
+                                  : "text-ink-4"
                               }
                             />
                           ))}

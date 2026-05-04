@@ -92,10 +92,10 @@ interface BuyResult {
 }
 
 const statusIcons: Record<string, React.ReactNode> = {
-  pending: <Clock size={14} className="text-yellow-500" />,
-  bought: <CheckCircle size={14} className="text-green-500" />,
-  error: <XCircle size={14} className="text-red-500" />,
-  stop: <AlertTriangle size={14} className="text-red-500" />,
+  pending: <Clock size={14} className="text-warn-strong" />,
+  bought: <CheckCircle size={14} className="text-green" />,
+  error: <XCircle size={14} className="text-danger" />,
+  stop: <AlertTriangle size={14} className="text-danger" />,
 };
 
 const statusLabels: Record<string, string> = {

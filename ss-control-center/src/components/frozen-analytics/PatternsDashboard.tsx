@@ -28,7 +28,7 @@ interface PatternsData {
 const levelColors = {
   danger: "border-danger/20 bg-danger-tint",
   warning: "border-warn/20 bg-warn-tint",
-  safe: "border-green-200 bg-green-soft",
+  safe: "border-green-soft2 bg-green-soft",
 };
 
 const levelTextColors = {

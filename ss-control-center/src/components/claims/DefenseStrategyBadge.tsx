@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 const strategyConfig: Record<string, { label: string; className: string }> = {
   BUY_SHIPPING_PROTECTION: {
     label: "Buy Shipping Protection",
-    className: "bg-green-soft2 text-green-ink border-green-200",
+    className: "bg-green-soft2 text-green-ink border-green-soft2",
   },
   PROOF_OF_DELIVERY: {
     label: "Proof of Delivery",
@@ -17,7 +17,7 @@ const strategyConfig: Record<string, { label: string; className: string }> = {
   },
   CARRIER_DELAY_DEFENSE: {
     label: "Carrier Delay",
-    className: "bg-orange-100 text-orange-700 border-orange-200",
+    className: "bg-warn-tint text-warn-strong border-warn-strong",
   },
   MANUAL_REVIEW: {
     label: "Manual Review",

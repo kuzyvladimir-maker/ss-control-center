@@ -30,13 +30,13 @@ const riskColors: Record<string, string> = {
   LOW: "bg-green-soft2 text-green-ink",
   MEDIUM: "bg-warn-tint text-warn-strong",
   HIGH: "bg-danger-tint text-danger",
-  CRITICAL: "bg-red-600 text-white",
+  CRITICAL: "bg-danger text-green-cream",
 };
 
 const actionColors: Record<string, string> = {
   replacement: "bg-green-soft2 text-green-deep",
-  refund: "bg-orange-100 text-orange-700",
-  full_refund: "bg-orange-100 text-orange-700",
+  refund: "bg-warn-tint text-warn-strong",
+  full_refund: "bg-warn-tint text-warn-strong",
   partial_refund: "bg-warn-tint text-warn-strong",
   clarify: "bg-bg-elev text-ink",
   reassure: "bg-green-soft2 text-green-ink",
@@ -227,12 +227,12 @@ function ConfidenceIndicator({
   }
   const config = {
     HIGH: {
-      color: "text-green-ink bg-green-soft border border-green-200",
+      color: "text-green-ink bg-green-soft border border-green-soft2",
       icon: "✅",
       label: "High confidence — facts verified",
     },
     MEDIUM: {
-      color: "text-warn-strong bg-yellow-50 border border-yellow-200",
+      color: "text-warn-strong bg-warn-tint border border-warn-strong",
       icon: "🟡",
       label: "Medium — review recommended",
     },
@@ -308,7 +308,7 @@ function ResponseWarnings({
 
   const palette = {
     error: "bg-danger-tint text-danger border-danger/20",
-    warning: "bg-yellow-50 text-yellow-800 border-yellow-200",
+    warning: "bg-warn-tint text-warn-strong border-warn-strong",
     info: "bg-green-soft text-green-ink border-green-soft2",
   } as const;
 
@@ -334,7 +334,7 @@ function ResponseWarnings({
             variant="outline"
             onClick={onFix}
             disabled={fixing}
-            className="text-xs border-red-300 text-danger hover:bg-danger-tint"
+            className="text-xs border-danger text-danger hover:bg-danger-tint"
           >
             {fixing ? (
               <Loader2 size={12} className="animate-spin mr-1" />
@@ -400,7 +400,7 @@ function PolicyGuidance({ message }: { message: Msg }) {
       <h4 className="text-[10px] font-semibold text-warn-strong uppercase mb-1">
         Policy Guidance
       </h4>
-      <ul className="text-xs text-amber-900 space-y-1">
+      <ul className="text-xs text-warn-strong space-y-1">
         {rules.map((r, i) => (
           <li key={i}>• {r}</li>
         ))}
@@ -829,7 +829,7 @@ export default function MessageDetail({
             </div>
             {m.problemType === "T20" && (
               <div className="flex items-center gap-2 text-xs">
-                <Badge className="bg-red-600 text-white text-[9px]">
+                <Badge className="bg-danger text-green-cream text-[9px]">
                   Repeat complaint
                 </Badge>
               </div>
@@ -1017,7 +1017,7 @@ export default function MessageDetail({
         {responseText &&
           typeof m.reasoning === "string" &&
           m.reasoning.includes("[AUTO-FIXED:") && (
-            <div className="text-xs px-3 py-2 rounded-md border border-green-200 bg-green-soft text-green-800 flex items-start gap-2 mb-2">
+            <div className="text-xs px-3 py-2 rounded-md border border-green-soft2 bg-green-soft text-green-800 flex items-start gap-2 mb-2">
               <span className="shrink-0">🔧</span>
               <span>
                 Response was corrected for policy compliance via Fix button.
@@ -1031,7 +1031,7 @@ export default function MessageDetail({
             in Veeqo. Phase 2 will auto-create via Veeqo API; for now this
             banner is the explicit handoff to the operator. */}
         {m.supplierReorderNote && (
-          <div className="text-xs px-3 py-2 rounded-md border border-blue-300 bg-green-soft text-blue-900 flex items-start gap-2 mb-2">
+          <div className="text-xs px-3 py-2 rounded-md border border-info bg-green-soft text-green-deep flex items-start gap-2 mb-2">
             <span className="shrink-0">🛒</span>
             <div className="flex-1">
               <div className="font-semibold mb-0.5">
@@ -1054,7 +1054,7 @@ export default function MessageDetail({
         {responseText &&
           typeof m.reasoning === "string" &&
           m.reasoning.includes("[NEEDS REVIEW:") && (
-            <div className="text-xs px-3 py-2 rounded-md border border-warn/30 bg-warn-tint text-amber-900 flex items-start gap-2 mb-2">
+            <div className="text-xs px-3 py-2 rounded-md border border-warn/30 bg-warn-tint text-warn-strong flex items-start gap-2 mb-2">
               <span className="shrink-0">⚠️</span>
               <div>
                 <div className="font-semibold mb-0.5">
@@ -1270,7 +1270,7 @@ export default function MessageDetail({
               </Button>
             </div>
             {sendError && sendError.messagingClosed && (
-              <div className="mt-2 rounded-md border border-warn/30 bg-warn-tint text-amber-900 text-xs px-3 py-2 flex items-start gap-2">
+              <div className="mt-2 rounded-md border border-warn/30 bg-warn-tint text-warn-strong text-xs px-3 py-2 flex items-start gap-2">
                 <span className="shrink-0">⚠️</span>
                 <div>
                   <div className="font-semibold mb-0.5">
@@ -1286,7 +1286,7 @@ export default function MessageDetail({
               </div>
             )}
             {sendError && !sendError.messagingClosed && (
-              <div className="mt-2 rounded-md border border-red-300 bg-danger-tint text-danger text-xs px-3 py-2 flex items-start gap-2">
+              <div className="mt-2 rounded-md border border-danger bg-danger-tint text-danger text-xs px-3 py-2 flex items-start gap-2">
                 <span className="shrink-0">❌</span>
                 <div className="font-mono text-[11px] break-all">
                   {sendError.message}
@@ -1326,8 +1326,8 @@ export default function MessageDetail({
                   {(h.customerMessage || "").length > 150 ? "..." : ""}
                 </div>
               ))}
-              <div className="rounded px-2.5 py-1.5 text-xs bg-yellow-50 text-warn-strong border border-yellow-200">
-                <span className="text-[10px] text-yellow-500">
+              <div className="rounded px-2.5 py-1.5 text-xs bg-warn-tint text-warn-strong border border-warn-strong">
+                <span className="text-[10px] text-warn-strong">
                   [Current] CUSTOMER:
                 </span>{" "}
                 {(m.customerMessage || "").substring(0, 150)}
@@ -1381,7 +1381,7 @@ export default function MessageDetail({
                 htmlFor="kb-reasoning"
                 className="text-ink-3 font-medium"
               >
-                Reasoning <span className="text-red-500">*</span>
+                Reasoning <span className="text-danger">*</span>
               </label>
               <textarea
                 id="kb-reasoning"
@@ -1389,7 +1389,7 @@ export default function MessageDetail({
                 onChange={(e) => setKbReasoning(e.target.value)}
                 rows={3}
                 placeholder="Why is this the correct response? What pattern should future cases follow?"
-                className="w-full mt-1 rounded border border-rule p-2 text-xs focus:border-blue-400 focus:outline-none"
+                className="w-full mt-1 rounded border border-rule p-2 text-xs focus:border-green-mid focus:outline-none"
               />
             </div>
 
@@ -1408,7 +1408,7 @@ export default function MessageDetail({
                     e.target.value as "positive" | "negative" | "neutral"
                   )
                 }
-                className="w-full mt-1 rounded border border-rule p-2 text-xs focus:border-blue-400 focus:outline-none"
+                className="w-full mt-1 rounded border border-rule p-2 text-xs focus:border-green-mid focus:outline-none"
               >
                 <option value="positive">Positive</option>
                 <option value="neutral">Neutral</option>
@@ -1429,7 +1429,7 @@ export default function MessageDetail({
                 value={kbTags}
                 onChange={(e) => setKbTags(e.target.value)}
                 placeholder="shipping_mismatch, next_day, cancel_request"
-                className="w-full mt-1 rounded border border-rule p-2 text-xs focus:border-blue-400 focus:outline-none"
+                className="w-full mt-1 rounded border border-rule p-2 text-xs focus:border-green-mid focus:outline-none"
               />
             </div>
 
@@ -1440,7 +1440,7 @@ export default function MessageDetail({
             )}
 
             {kbSavedFlash && (
-              <div className="rounded border border-green-200 bg-green-soft p-2 text-green-ink">
+              <div className="rounded border border-green-soft2 bg-green-soft p-2 text-green-ink">
                 ✓ Saved to Knowledge Base
               </div>
             )}

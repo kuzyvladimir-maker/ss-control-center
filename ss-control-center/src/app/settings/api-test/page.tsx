@@ -122,7 +122,7 @@ export default function ApiTestPage() {
                 key={store.store}
                 className={
                   store.status === "ok"
-                    ? "border-green-200"
+                    ? "border-green-soft2"
                     : store.status === "error"
                       ? "border-danger/20"
                       : "border-rule"
@@ -131,10 +131,10 @@ export default function ApiTestPage() {
                 <CardContent className="py-4">
                   <div className="flex items-start gap-3">
                     {store.status === "ok" && (
-                      <CheckCircle size={20} className="text-green-500 mt-0.5 shrink-0" />
+                      <CheckCircle size={20} className="text-green mt-0.5 shrink-0" />
                     )}
                     {store.status === "error" && (
-                      <XCircle size={20} className="text-red-500 mt-0.5 shrink-0" />
+                      <XCircle size={20} className="text-danger mt-0.5 shrink-0" />
                     )}
                     {store.status === "not_configured" && (
                       <AlertTriangle size={20} className="text-ink-4 mt-0.5 shrink-0" />

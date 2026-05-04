@@ -12,25 +12,25 @@ interface WeatherBlockProps {
 }
 
 function weatherIcon(desc: string | null) {
-  if (!desc) return <Sun size={18} className="text-amber-500" />;
+  if (!desc) return <Sun size={18} className="text-warn-strong" />;
   const d = desc.toLowerCase();
   if (d.includes("rain") || d.includes("drizzle") || d.includes("shower"))
     return <CloudRain size={18} className="text-green-mid" />;
   if (d.includes("snow"))
-    return <Snowflake size={18} className="text-blue-300" />;
+    return <Snowflake size={18} className="text-info" />;
   if (d.includes("fog"))
     return <CloudFog size={18} className="text-ink-3" />;
   if (d.includes("cloud") || d.includes("overcast"))
     return <Cloud size={18} className="text-ink-3" />;
-  return <Sun size={18} className="text-amber-500" />;
+  return <Sun size={18} className="text-warn-strong" />;
 }
 
 function tempColor(tempF: number | null): string {
   if (tempF === null) return "text-ink-3";
   if (tempF >= 90) return "text-danger font-bold";
-  if (tempF >= 85) return "text-orange-600 font-semibold";
+  if (tempF >= 85) return "text-warn-strong font-semibold";
   if (tempF >= 80) return "text-warn";
-  if (tempF >= 75) return "text-yellow-600";
+  if (tempF >= 75) return "text-warn-strong";
   return "text-green";
 }
 

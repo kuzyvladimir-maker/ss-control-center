@@ -199,7 +199,7 @@ export default function AnalyticsPage() {
                     {data.summary.shipped}
                   </p>
                   {data.summary.cancelled > 0 && (
-                    <p className="text-[10px] text-red-500">
+                    <p className="text-[10px] text-danger">
                       {data.summary.cancelled} cancelled
                     </p>
                   )}
@@ -234,14 +234,14 @@ export default function AnalyticsPage() {
                           isToday
                             ? "bg-green-soft0"
                             : day.revenue > 0
-                              ? "bg-blue-300 hover:bg-blue-400"
+                              ? "bg-info-tint hover:bg-info"
                               : "bg-bg-elev"
                         }`}
                         style={{ height: `${height}%` }}
                       />
                       {/* Tooltip */}
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-10">
-                        <div className="bg-slate-800 text-white text-[9px] rounded px-1.5 py-1 whitespace-nowrap">
+                        <div className="bg-ink text-green-cream text-[9px] rounded px-1.5 py-1 whitespace-nowrap">
                           {new Date(day.date + "T12:00:00").toLocaleDateString(
                             "en-US",
                             { month: "short", day: "numeric" }

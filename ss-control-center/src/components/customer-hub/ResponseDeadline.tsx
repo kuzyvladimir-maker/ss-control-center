@@ -70,7 +70,7 @@ export default function ResponseDeadline({
       <span
         className={`inline-flex items-center gap-1 text-xs font-medium text-danger ${className}`}
       >
-        <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-red-600" />
+        <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-danger" />
         {hoursLeft}h left
       </span>
     );

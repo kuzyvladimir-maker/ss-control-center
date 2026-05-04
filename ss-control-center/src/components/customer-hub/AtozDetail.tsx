@@ -155,7 +155,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
             {c.amazonOrderId}
           </span>
           {days !== null && days <= 3 && (
-            <Badge className="bg-red-600 text-white gap-1">
+            <Badge className="bg-danger text-green-cream gap-1">
               <AlertTriangle size={10} />
               {days}d left
             </Badge>
@@ -169,7 +169,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
       <CardContent className="space-y-4 text-xs">
         {/* Decision banner */}
         {isWon && (
-          <div className="rounded-md border border-green-300 bg-green-soft p-3 flex items-center gap-2">
+          <div className="rounded-md border border-green-soft2 bg-green-soft p-3 flex items-center gap-2">
             <ShieldCheck size={18} className="text-green shrink-0" />
             <div>
               <div className="font-semibold text-green-800">
@@ -187,7 +187,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
         )}
 
         {isLoss && (
-          <div className="rounded-md border border-red-300 bg-danger-tint p-3 flex items-start gap-2">
+          <div className="rounded-md border border-danger bg-danger-tint p-3 flex items-start gap-2">
             <ShieldX size={18} className="text-danger shrink-0 mt-0.5" />
             <div className="flex-1">
               <div className="font-semibold text-danger">
@@ -206,7 +206,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
                 </div>
               )}
               {c.appealSubmitted && (
-                <div className="mt-1 text-purple-700">
+                <div className="mt-1 text-purple">
                   Appeal submitted. Waiting for Amazon review.
                 </div>
               )}
@@ -261,7 +261,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
             <p className="text-[10px] font-semibold text-ink-3 uppercase mb-1">
               Buyer Claim Text
             </p>
-            <div className="rounded bg-warn-tint border border-warn/20 p-3 text-amber-900 whitespace-pre-wrap">
+            <div className="rounded bg-warn-tint border border-warn/20 p-3 text-warn-strong whitespace-pre-wrap">
               {c.claimText}
             </div>
           </div>
@@ -383,7 +383,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
           {canAppeal && (
             <Button
               size="sm"
-              className="bg-purple-600 hover:bg-purple-700"
+              className="bg-purple hover:bg-purple"
               onClick={handleAnalyze}
               disabled={analyzing}
             >
@@ -431,7 +431,7 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
         {c.appealText && (
           <div>
             <div className="flex items-center justify-between mb-1">
-              <p className="text-purple-700 font-medium">Appeal Text:</p>
+              <p className="text-purple font-medium">Appeal Text:</p>
               <Button
                 size="sm"
                 variant="ghost"
@@ -441,13 +441,13 @@ export default function AtozDetail({ claimId, onClose }: AtozDetailProps) {
                 {copied === "appeal" ? "Copied!" : "Copy Appeal"}
               </Button>
             </div>
-            <div className="whitespace-pre-wrap rounded border border-purple-200 bg-purple-50 p-3">
+            <div className="whitespace-pre-wrap rounded border border-purple bg-purple-tint p-3">
               {c.appealText}
             </div>
             {!c.appealSubmitted && (
               <Button
                 size="sm"
-                className="mt-2 bg-purple-600 hover:bg-purple-700"
+                className="mt-2 bg-purple hover:bg-purple"
                 onClick={() =>
                   handlePatch({
                     appealSubmitted: true,

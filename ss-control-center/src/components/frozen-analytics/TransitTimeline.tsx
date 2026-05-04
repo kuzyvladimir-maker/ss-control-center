@@ -40,7 +40,7 @@ export default function TransitTimeline({
 
         {/* Line to actual */}
         <div
-          className={`flex-1 h-0.5 mx-1 ${isLate ? "bg-red-300" : "bg-green-200"}`}
+          className={`flex-1 h-0.5 mx-1 ${isLate ? "bg-warn-tint" : "bg-green-soft2"}`}
         />
 
         {/* Actual delivery */}

@@ -48,7 +48,7 @@ function BreakdownRow({
   unit?: string;
 }) {
   return (
-    <div className="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
+    <div className="flex items-center justify-between py-1.5 border-b border-rule last:border-0">
       <span className="text-xs text-ink-2">{label}</span>
       <div className="text-xs">
         <span className="font-medium text-ink">{fmtMoney(amount)}</span>
@@ -161,7 +161,7 @@ export default function LossesDashboard({
         </button>
 
         {expanded && (
-          <div className="border-t border-slate-100 px-4 py-3 space-y-0">
+          <div className="border-t border-rule px-4 py-3 space-y-0">
             <BreakdownRow
               label="Refunds"
               amount={breakdown.refunds.amount}
@@ -194,7 +194,7 @@ export default function LossesDashboard({
                 No losses recorded in this period.
               </p>
             )}
-            <p className="text-[10px] text-ink-3 pt-2 border-t border-slate-100 mt-2">
+            <p className="text-[10px] text-ink-3 pt-2 border-t border-rule mt-2">
               COGS {data.config.cogsPercent}% · replacement label{" "}
               {fmtMoney(data.config.replacementLabelCost)} · configurable in
               Settings

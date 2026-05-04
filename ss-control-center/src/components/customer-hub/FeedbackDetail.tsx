@@ -41,14 +41,14 @@ const statusColors: Record<string, string> = {
   REMOVAL_SUBMITTED: "bg-warn-tint text-warn-strong",
   REMOVED: "bg-green-soft2 text-green-ink",
   DENIED: "bg-danger-tint text-danger",
-  CONTACT_SENT: "bg-purple-100 text-purple-700",
+  CONTACT_SENT: "bg-purple-tint text-purple",
   CLOSED: "bg-bg-elev text-ink-3",
 };
 
 const actionColors: Record<string, string> = {
   REQUEST_REMOVAL: "bg-green-soft2 text-green-ink",
   CONTACT_BUYER: "bg-green-soft2 text-green-deep",
-  RESPOND_PUBLICLY: "bg-purple-100 text-purple-700",
+  RESPOND_PUBLICLY: "bg-purple-tint text-purple",
   MONITOR: "bg-bg-elev text-ink-2",
 };
 
@@ -60,7 +60,7 @@ function Stars({ rating }: { rating: number }) {
           key={s}
           size={14}
           className={
-            s <= rating ? "fill-amber-400 text-amber-400" : "text-slate-200"
+            s <= rating ? "fill-warn text-warn" : "text-ink-4"
           }
         />
       ))}
@@ -352,7 +352,7 @@ export default function FeedbackDetail({
             onChange={(e) => setNotesDraft(e.target.value)}
             onBlur={handleSaveNotes}
             placeholder="Add internal notes…"
-            className="w-full min-h-[60px] rounded border border-rule bg-white p-2 text-xs focus:border-blue-400 focus:outline-none"
+            className="w-full min-h-[60px] rounded border border-rule bg-white p-2 text-xs focus:border-green-mid focus:outline-none"
           />
           {savingNotes && (
             <p className="text-[10px] text-ink-3 mt-1">Saving…</p>
@@ -395,7 +395,7 @@ export default function FeedbackDetail({
             size="sm"
             onClick={handleMarkSubmitted}
             disabled={!canMarkSubmitted || submitting}
-            className="text-xs bg-amber-600 hover:bg-amber-700"
+            className="text-xs bg-warn-strong hover:bg-warn-strong"
           >
             {submitting ? (
               <Loader2 size={12} className="animate-spin mr-1" />

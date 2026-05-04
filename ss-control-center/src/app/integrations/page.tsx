@@ -51,13 +51,13 @@ export default function IntegrationsPage() {
             {integrations.map((item) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0"
+                className="flex items-center justify-between py-2.5 border-b border-rule last:border-0"
               >
                 <div className="flex items-center gap-3">
                   {item.status === "connected" ? (
-                    <CheckCircle size={16} className="text-green-500" />
+                    <CheckCircle size={16} className="text-green" />
                   ) : item.status === "error" ? (
-                    <XCircle size={16} className="text-red-500" />
+                    <XCircle size={16} className="text-danger" />
                   ) : (
                     <Settings size={16} className="text-ink-4" />
                   )}

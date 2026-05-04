@@ -57,7 +57,7 @@ const riskColors: Record<string, string> = {
   LOW: "bg-green-soft2 text-green-ink",
   MEDIUM: "bg-warn-tint text-warn-strong",
   HIGH: "bg-danger-tint text-danger",
-  CRITICAL: "bg-red-600 text-white",
+  CRITICAL: "bg-danger text-green-cream",
 };
 
 // ---------------------------------------------------------------------------
@@ -295,8 +295,8 @@ export default function WalmartCaseModal() {
               onClick={() => fileInputRef.current?.click()}
               className={`flex min-h-[140px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 transition-colors ${
                 isDragging
-                  ? "border-blue-500 bg-green-soft"
-                  : "border-silver-line bg-surface-tint hover:border-blue-400 hover:bg-green-soft"
+                  ? "border-green bg-green-soft"
+                  : "border-silver-line bg-surface-tint hover:border-green-mid hover:bg-green-soft"
               }`}
             >
               <Upload className="mb-2 text-ink-3" size={28} />
@@ -455,7 +455,7 @@ export default function WalmartCaseModal() {
               {analysis.customerMessage && (
                 <div className="mt-2">
                   <p className="text-ink-3 mb-1">Customer message:</p>
-                  <div className="whitespace-pre-wrap rounded bg-surface-tint p-2 border border-slate-100">
+                  <div className="whitespace-pre-wrap rounded bg-surface-tint p-2 border border-rule">
                     {analysis.customerMessage}
                   </div>
                 </div>
@@ -482,10 +482,10 @@ export default function WalmartCaseModal() {
                 <textarea
                   value={responseDraft}
                   onChange={(e) => setResponseDraft(e.target.value)}
-                  className="w-full min-h-[120px] rounded border border-rule p-2 text-xs focus:border-blue-400 focus:outline-none"
+                  className="w-full min-h-[120px] rounded border border-rule p-2 text-xs focus:border-green-mid focus:outline-none"
                 />
               ) : (
-                <div className="whitespace-pre-wrap rounded bg-white border border-slate-100 p-3">
+                <div className="whitespace-pre-wrap rounded bg-white border border-rule p-3">
                   {analysis.suggestedResponse || (
                     <span className="text-ink-3 italic">(no response)</span>
                   )}

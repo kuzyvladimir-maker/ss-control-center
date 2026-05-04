@@ -18,7 +18,7 @@ interface Snapshot {
 const statusColors: Record<string, string> = {
   ACTIVE: "bg-green-soft2 text-green-ink",
   AT_RISK: "bg-warn-tint text-warn-strong",
-  SUSPENDED: "bg-red-600 text-white",
+  SUSPENDED: "bg-danger text-green-cream",
   UNKNOWN: "bg-bg-elev text-ink-3",
 };
 
@@ -40,7 +40,7 @@ export default function StoreHealthCard({ store }: { store: Snapshot }) {
   const isSuspended = store.status === "SUSPENDED";
 
   return (
-    <Card className={isSuspended ? "border-red-500 border-2" : ""}>
+    <Card className={isSuspended ? "border-danger border-2" : ""}>
       <CardContent className="py-4 space-y-2">
         <div className="flex items-center justify-between">
           <span className="font-medium text-sm text-ink">

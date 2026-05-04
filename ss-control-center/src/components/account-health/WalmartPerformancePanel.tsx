@@ -155,7 +155,7 @@ export default function WalmartPerformancePanel() {
             {byWindow.get(w)!.map((m) => (
               <Card
                 key={`${w}-${m.metric}`}
-                className={`border ${m.isHealthy ? "border-green-200" : "border-red-300"}`}
+                className={`border ${m.isHealthy ? "border-green-soft2" : "border-danger"}`}
               >
                 <CardContent className="py-3">
                   <p className="truncate text-[11px] text-ink-3" title={m.metric}>

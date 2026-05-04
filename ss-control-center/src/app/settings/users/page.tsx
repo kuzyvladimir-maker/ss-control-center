@@ -213,7 +213,7 @@ export default function UsersSettingsPage() {
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
                 placeholder="user@example.com"
-                className="mt-1 block w-full rounded-md border border-silver-line px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-md border border-silver-line px-3 py-2 text-sm shadow-sm focus:border-green focus:outline-none focus:ring-1 focus:ring-green-mid"
               />
             </div>
             <div>
@@ -226,7 +226,7 @@ export default function UsersSettingsPage() {
                 onChange={(e) =>
                   setNewRole(e.target.value as "admin" | "member")
                 }
-                className="mt-1 block rounded-md border border-silver-line px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="mt-1 block rounded-md border border-silver-line px-3 py-2 text-sm shadow-sm focus:border-green focus:outline-none focus:ring-1 focus:ring-green-mid"
               >
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
@@ -269,7 +269,7 @@ export default function UsersSettingsPage() {
               {users.map((u) => {
                 const isMe = u.id === me?.id;
                 return (
-                  <tr key={u.id} className="border-b border-slate-100">
+                  <tr key={u.id} className="border-b border-rule">
                     <td className="px-4 py-2 font-medium">{u.username}</td>
                     <td className="px-4 py-2">{u.displayName || "—"}</td>
                     <td className="px-4 py-2">
@@ -341,7 +341,7 @@ export default function UsersSettingsPage() {
               </thead>
               <tbody>
                 {invites.map((i) => (
-                  <tr key={i.id} className="border-b border-slate-100">
+                  <tr key={i.id} className="border-b border-rule">
                     <td className="px-4 py-2">{i.email}</td>
                     <td className="px-4 py-2">{i.role}</td>
                     <td className="px-4 py-2">
