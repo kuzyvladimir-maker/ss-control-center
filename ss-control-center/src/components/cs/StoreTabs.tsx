@@ -24,7 +24,7 @@ export default function StoreTabs({
   onSelect,
 }: StoreTabsProps) {
   return (
-    <div className="flex gap-1 overflow-x-auto border-b border-slate-200 pb-px">
+    <div className="flex gap-1 overflow-x-auto border-b border-rule pb-px">
       {stores.map((store) => {
         const isActive = store.index === activeStore;
         const isDisabled = !store.configured || store.comingSoon;
@@ -37,10 +37,10 @@ export default function StoreTabs({
             disabled={isDisabled}
             className={`relative flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium whitespace-nowrap transition-colors rounded-t-md ${
               isActive
-                ? "text-blue-600 bg-blue-50/50 border-b-2 border-blue-600"
+                ? "text-green-ink bg-green-soft border-b-2 border-green"
                 : isDisabled
-                  ? "text-slate-300 cursor-not-allowed"
-                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                  ? "text-ink-4 cursor-not-allowed"
+                  : "text-ink-3 hover:text-ink hover:bg-bg-elev"
             }`}
           >
             {isWalmart ? (
@@ -58,12 +58,12 @@ export default function StoreTabs({
               </Badge>
             )}
             {!store.configured && !store.comingSoon && (
-              <span className="text-[9px] text-slate-300 ml-0.5">
+              <span className="text-[9px] text-ink-4 ml-0.5">
                 (not set)
               </span>
             )}
             {store.error && (
-              <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+              <span className="h-1.5 w-1.5 rounded-full bg-danger" />
             )}
           </button>
         );

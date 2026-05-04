@@ -61,10 +61,10 @@
 - [Деплой на Vercel + Postgres](deploy-to-vercel-plan.md) — план публикации в интернет, ~1ч 15м, отложен 2026-04-10
 
 ## Решения и паттерны
-- (будет дополняться по ходу разработки)
+- [Legacy Rebrand 2026-05](legacy-rebrand-2026-05.md) — миграция Login/Invite/StoreTabs на Salutem Design System
 
 ## Известные проблемы и грабли
 - [Veeqo API Quirks](veeqo-api-quirks.md) — order tags нельзя ставить через `PUT /orders/{id}` (silently no-op); работает только `POST /bulk_tagging`. Найдено 2026-05-04.
 
 ---
-Последнее обновление: 2026-05-04 (+ veeqo-api-quirks: order tags → /bulk_tagging fix)
+Последнее обновление: 2026-05-04 (+ veeqo-api-quirks; legacy-rebrand 2026-05)

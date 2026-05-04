@@ -167,6 +167,11 @@
 **Deprecated:**
 - `design/customer_hub_v1_DEPRECATED.html` — архив v1, до алгоритма v2.1
 
+### [Legacy Rebrand 2026-05](legacy-rebrand-2026-05.md)
+← [Mobile Adaptation](mobile-adaptation.md) (баг обнаружен в Phase 0 audit)
+→ [Auth System](auth-system.md), [Customer Hub](customer-hub.md)
+⊂ Salutem Design System
+
 ### [Mobile Adaptation](mobile-adaptation.md)
 Аудит и план мобильной адаптации всех страниц. Брейкпоинт md (768px), sidebar→drawer, table→cards. **Phase 1 завершён 2026-05-04** (App Shell + Procurement).
 
