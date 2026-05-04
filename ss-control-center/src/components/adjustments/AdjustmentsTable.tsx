@@ -64,7 +64,7 @@ export default function AdjustmentsTable({
           onChange={(e) =>
             onFiltersChange({ ...filters, channel: e.target.value })
           }
-          className="rounded-md border border-rule bg-white px-3 py-1.5 text-sm"
+          className="rounded-md border border-rule bg-surface px-3 py-1.5 text-sm"
         >
           <option value="">All Channels</option>
           <option value="Amazon">Amazon</option>
@@ -75,7 +75,7 @@ export default function AdjustmentsTable({
           onChange={(e) =>
             onFiltersChange({ ...filters, days: e.target.value })
           }
-          className="rounded-md border border-rule bg-white px-3 py-1.5 text-sm"
+          className="rounded-md border border-rule bg-surface px-3 py-1.5 text-sm"
         >
           <option value="14">Last 14 days</option>
           <option value="30">Last 30 days</option>
@@ -92,6 +92,8 @@ export default function AdjustmentsTable({
           No adjustments found
         </p>
       ) : (
+        <>
+        <div className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -228,7 +230,7 @@ export default function AdjustmentsTable({
                           )}
 
                           {adj.notes && (
-                            <p className="text-ink-3 bg-white rounded p-2 border">
+                            <p className="text-ink-3 bg-surface rounded p-2 border">
                               {adj.notes}
                             </p>
                           )}
@@ -241,6 +243,141 @@ export default function AdjustmentsTable({
             })}
           </TableBody>
         </Table>
+        </div>
+
+        {/* MOBILE cards (< md) */}
+        <div className="md:hidden divide-y divide-rule rounded-md border border-rule overflow-hidden">
+          {adjustments.map((adj) => {
+            const expanded = expandedId === adj.id;
+            return (
+              <div key={adj.id}>
+                <button
+                  onClick={() => setExpandedId(expanded ? null : adj.id)}
+                  className="w-full text-left px-4 py-3 transition-colors hover:bg-surface-tint active:bg-bg-elev"
+                >
+                  {/* HEAD: order id + amount */}
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <span className="font-mono text-[13px] text-ink truncate">
+                      {adj.orderId}
+                    </span>
+                    <span className="shrink-0 text-[13px] font-semibold tabular text-danger">
+                      ${Math.abs(adj.adjustmentAmount).toFixed(2)}
+                    </span>
+                  </div>
+
+                  {/* SUB: sku + type */}
+                  <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-[11.5px] text-ink-3 mb-2">
+                    {adj.sku && (
+                      <span className="font-mono">{adj.sku}</span>
+                    )}
+                    {adj.sku && (
+                      <span className="text-ink-4">·</span>
+                    )}
+                    <Badge variant="outline" className="text-[10px]">
+                      {typeLabels[adj.adjustmentType] || adj.adjustmentType}
+                    </Badge>
+                  </div>
+
+                  {/* ACTION row: channel + status */}
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[11.5px] text-ink-2">
+                      {adj.channel}
+                    </span>
+                    <Badge
+                      className={
+                        adj.reviewed
+                          ? "bg-green-soft2 text-green-ink text-[10px]"
+                          : "bg-bg-elev text-ink-3 text-[10px]"
+                      }
+                    >
+                      {adj.reviewed ? "Reviewed" : "New"}
+                    </Badge>
+                  </div>
+
+                  {/* FOOTER: date */}
+                  <div className="flex items-center justify-between gap-2 text-[10.5px] text-ink-3">
+                    <span className="tabular">{adj.adjustmentDate}</span>
+                    {expanded ? (
+                      <ChevronDown size={12} />
+                    ) : (
+                      <ChevronRight size={12} />
+                    )}
+                  </div>
+                </button>
+
+                {expanded && (
+                  <div className="bg-surface-tint px-4 pb-3 pt-1 grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11.5px]">
+                    <div>
+                      <div className="text-ink-3">Product</div>
+                      <div className="text-ink-2">{adj.productName ?? "—"}</div>
+                    </div>
+                    <div>
+                      <div className="text-ink-3">Carrier</div>
+                      <div className="text-ink-2">
+                        {adj.carrier ?? "—"} {adj.service ?? ""}
+                      </div>
+                    </div>
+                    {(adj.declaredWeightLbs || adj.adjustedWeightLbs) && (
+                      <div className="sm:col-span-2 rounded-lg border border-rule p-3 grid grid-cols-2 gap-3 bg-surface">
+                        <div>
+                          <p className="text-ink-3 font-medium mb-1">Declared</p>
+                          {adj.declaredWeightLbs && (
+                            <p>{adj.declaredWeightLbs} lbs</p>
+                          )}
+                          {adj.declaredDimL && (
+                            <p>
+                              {adj.declaredDimL}×{adj.declaredDimW}×
+                              {adj.declaredDimH}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-danger font-medium mb-1">
+                            Adjusted
+                          </p>
+                          {adj.adjustedWeightLbs && (
+                            <p>
+                              {adj.adjustedWeightLbs} lbs
+                              {adj.declaredWeightLbs && (
+                                <span className="text-danger ml-1">
+                                  (+
+                                  {(
+                                    adj.adjustedWeightLbs -
+                                    adj.declaredWeightLbs
+                                  ).toFixed(1)}
+                                  )
+                                </span>
+                              )}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {adj.originalLabelCost && (
+                      <div className="sm:col-span-2 text-ink-2">
+                        <span className="text-ink-3">Label:</span>{" "}
+                        ${adj.originalLabelCost.toFixed(2)} →{" "}
+                        ${(
+                          adj.originalLabelCost +
+                          Math.abs(adj.adjustmentAmount)
+                        ).toFixed(2)}{" "}
+                        <span className="text-danger">
+                          (+${Math.abs(adj.adjustmentAmount).toFixed(2)})
+                        </span>
+                      </div>
+                    )}
+                    {adj.notes && (
+                      <div className="sm:col-span-2 text-ink-3 bg-surface rounded p-2 border border-rule">
+                        {adj.notes}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        </>
       )}
     </div>
   );

@@ -11,10 +11,10 @@
 - [x] 2A — git commit
 
 ## Phase 2B — Dashboard + Adjustments
-- [ ] 2B.1 — Dashboard awaiting-fulfilment (6 колонок) → mobile-cards
-- [ ] 2B.2 — AdjustmentsTable (8 колонок) → mobile-cards
-- [ ] 2B.3 — SkuIssuesPanel (7 колонок) → mobile-cards
-- [ ] 2B — git commit
+- [x] 2B.1 — Dashboard awaiting-fulfilment (6 колонок) → mobile-cards
+- [x] 2B.2 — AdjustmentsTable (8 колонок, expand-rows) → mobile-cards
+- [x] 2B.3 — SkuIssuesPanel (7 колонок) → mobile-cards
+- [x] 2B — git commit
 
 ## Phase 2C — Frozen + Claims + Feedback + Account Health
 - [ ] 2C.1 — Frozen IncidentsTable → mobile-cards

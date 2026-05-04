@@ -352,64 +352,123 @@ export default function DashboardPage() {
                 No awaiting orders. Veeqo has nothing in queue.
               </div>
             ) : (
-              <table className="w-full text-[12.5px]">
-                <thead className="border-b border-rule">
-                  <tr className="text-[10.5px] font-mono uppercase tracking-[0.1em] text-ink-3">
-                    <th className="px-4 py-2.5 text-left font-medium">Order</th>
-                    <th className="px-4 py-2.5 text-left font-medium">Store</th>
-                    <th className="px-4 py-2.5 text-left font-medium">Product</th>
-                    <th className="px-4 py-2.5 text-left font-medium">Type</th>
-                    <th className="px-4 py-2.5 text-left font-medium">Ship by</th>
-                    <th className="px-4 py-2.5 text-left font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((o) => (
-                    <tr
-                      key={o.id}
-                      className="border-b border-rule last:border-0 hover:bg-surface-tint"
-                    >
-                      <td className="px-4 py-2.5 font-mono text-[12px] text-ink">
-                        {o.id}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <StoreAvatar
-                            store={storeKeyFor({
-                              marketplace: o.marketplace,
-                              storeIndex: o.storeIndex,
-                              storeName: o.storeName,
-                            })}
-                            size="sm"
-                          />
-                          <div className="leading-tight">
-                            <div className="text-ink">{o.storeName ?? "—"}</div>
-                            <div className="text-[10px] font-mono uppercase tracking-wider text-ink-3">
-                              {o.marketplace}
+              <>
+                {/* DESKTOP table (≥ md) */}
+                <div className="hidden md:block">
+                  <table className="w-full text-[12.5px]">
+                    <thead className="border-b border-rule">
+                      <tr className="text-[10.5px] font-mono uppercase tracking-[0.1em] text-ink-3">
+                        <th className="px-4 py-2.5 text-left font-medium">Order</th>
+                        <th className="px-4 py-2.5 text-left font-medium">Store</th>
+                        <th className="px-4 py-2.5 text-left font-medium">Product</th>
+                        <th className="px-4 py-2.5 text-left font-medium">Type</th>
+                        <th className="px-4 py-2.5 text-left font-medium">Ship by</th>
+                        <th className="px-4 py-2.5 text-left font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.map((o) => (
+                        <tr
+                          key={o.id}
+                          className="border-b border-rule last:border-0 hover:bg-surface-tint"
+                        >
+                          <td className="px-4 py-2.5 font-mono text-[12px] text-ink">
+                            {o.id}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <div className="flex items-center gap-2">
+                              <StoreAvatar
+                                store={storeKeyFor({
+                                  marketplace: o.marketplace,
+                                  storeIndex: o.storeIndex,
+                                  storeName: o.storeName,
+                                })}
+                                size="sm"
+                              />
+                              <div className="leading-tight">
+                                <div className="text-ink">{o.storeName ?? "—"}</div>
+                                <div className="text-[10px] font-mono uppercase tracking-wider text-ink-3">
+                                  {o.marketplace}
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-2.5 text-ink-2 truncate max-w-[280px]">
-                        {o.productName ?? "—"}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <TypeTag type={o.productType} />
-                      </td>
-                      <td className="px-4 py-2.5 text-ink-2 tabular">
-                        {formatTime(o.shipBy)}
-                      </td>
-                      <td className="px-4 py-2.5">
+                          </td>
+                          <td className="px-4 py-2.5 text-ink-2 truncate max-w-[280px]">
+                            {o.productName ?? "—"}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <TypeTag type={o.productType} />
+                          </td>
+                          <td className="px-4 py-2.5 text-ink-2 tabular">
+                            {formatTime(o.shipBy)}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <StatusChip
+                              variant={o.status === "Shipped" ? "delivered" : "ready"}
+                            >
+                              {o.status}
+                            </StatusChip>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* MOBILE cards (< md) */}
+                <div className="md:hidden divide-y divide-rule">
+                  {orders.map((o) => (
+                    <div key={o.id} className="px-4 py-3">
+                      {/* HEAD: order id + status */}
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <span className="font-mono text-[13px] text-ink truncate">
+                          {o.id}
+                        </span>
                         <StatusChip
-                          variant={o.status === "Shipped" ? "delivered" : "ready"}
+                          variant={
+                            o.status === "Shipped" ? "delivered" : "ready"
+                          }
                         >
                           {o.status}
                         </StatusChip>
-                      </td>
-                    </tr>
+                      </div>
+
+                      {/* SUB: store with avatar */}
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <StoreAvatar
+                          store={storeKeyFor({
+                            marketplace: o.marketplace,
+                            storeIndex: o.storeIndex,
+                            storeName: o.storeName,
+                          })}
+                          size="sm"
+                        />
+                        <div className="min-w-0 flex-1 leading-tight">
+                          <div className="text-[12px] text-ink truncate">
+                            {o.storeName ?? "—"}
+                          </div>
+                          <div className="text-[10px] font-mono uppercase tracking-wider text-ink-3">
+                            {o.marketplace}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* BODY: product */}
+                      <div className="text-[12px] text-ink-2 truncate mb-1.5">
+                        {o.productName ?? "—"}
+                      </div>
+
+                      {/* FOOTER: type + ship-by */}
+                      <div className="flex items-center justify-between gap-2 text-[11px]">
+                        <TypeTag type={o.productType} />
+                        <span className="text-ink-3 tabular">
+                          {formatTime(o.shipBy)}
+                        </span>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </>
             )}
           </PanelBody>
         </Panel>
