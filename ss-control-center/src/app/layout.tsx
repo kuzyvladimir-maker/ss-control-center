@@ -3,6 +3,7 @@ import { Inter_Tight, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
 import { MobileNavProvider } from "@/lib/mobile-nav-context";
+import { StoreFilterProvider } from "@/lib/store-filter/StoreFilterContext";
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
@@ -56,9 +57,11 @@ export default function RootLayout({
         suppressHydrationWarning={true}
         className="flex h-screen overflow-hidden bg-bg text-ink"
       >
-        <MobileNavProvider>
-          <AppShell>{children}</AppShell>
-        </MobileNavProvider>
+        <StoreFilterProvider>
+          <MobileNavProvider>
+            <AppShell>{children}</AppShell>
+          </MobileNavProvider>
+        </StoreFilterProvider>
       </body>
     </html>
   );
