@@ -1,14 +1,109 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchProcurementCards } from "@/lib/veeqo/orders-procurement";
 
-export async function GET() {
+// Resolve a CSV `storeIds` param into the native filter keys used by
+// AmazonOrder / WalmartOrder / etc. Returns `null` for "no filter — show all"
+// when the param is missing OR every active store is selected.
+async function resolveStoreFilter(searchParams: URLSearchParams) {
+  const raw = searchParams.get("storeIds");
+  const allStores = await prisma.store.findMany({ where: { active: true } });
+  const total = allStores.length;
+
+  // Missing or empty CSV → show everything.
+  if (!raw) {
+    return {
+      amazonStoreIndexes: null as number[] | null,
+      walmartStoreIndexes: null as number[] | null,
+      walmartSellerIds: null as string[] | null,
+      noneSelected: false,
+      total,
+    };
+  }
+
+  const requested = new Set(raw.split(",").map((s) => s.trim()).filter(Boolean));
+  if (requested.size === 0) {
+    return {
+      amazonStoreIndexes: [] as number[],
+      walmartStoreIndexes: [] as number[],
+      walmartSellerIds: [] as string[],
+      noneSelected: true,
+      total,
+    };
+  }
+
+  // If the caller selected every store, treat as null (no filter) so we
+  // skip the IN-list overhead.
+  if (requested.size === total && allStores.every((s) => requested.has(s.id))) {
+    return {
+      amazonStoreIndexes: null,
+      walmartStoreIndexes: null,
+      walmartSellerIds: null,
+      noneSelected: false,
+      total,
+    };
+  }
+
+  const chosen = allStores.filter((s) => requested.has(s.id));
+  const amazonStoreIndexes = chosen
+    .filter((s) => s.channel === "Amazon" && s.storeIndex != null)
+    .map((s) => s.storeIndex as number);
+  const walmartStores = chosen.filter((s) => s.channel === "Walmart");
+  const walmartStoreIndexes = walmartStores
+    .map((s) => s.storeIndex)
+    .filter((x): x is number => x != null);
+  const walmartSellerIds = walmartStores
+    .map((s) => s.sellerId)
+    .filter((x): x is string => !!x);
+
+  return {
+    amazonStoreIndexes,
+    walmartStoreIndexes,
+    walmartSellerIds,
+    noneSelected: false,
+    total,
+  };
+}
+
+export async function GET(request: NextRequest) {
   try {
+    const filter = await resolveStoreFilter(request.nextUrl.searchParams);
     const now = new Date();
     const todayStart = new Date(now);
     todayStart.setHours(0, 0, 0, 0);
     const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000);
+
+    // When the caller explicitly selected zero stores, short-circuit with
+    // zeroed-out values rather than running every aggregation.
+    if (filter.noneSelected) {
+      return NextResponse.json(emptyResponse());
+    }
+
+    // Build Amazon filter clause once — every Amazon-side aggregation reuses it.
+    const amazonStoreFilter =
+      filter.amazonStoreIndexes !== null
+        ? filter.amazonStoreIndexes.length > 0
+          ? { storeIndex: { in: filter.amazonStoreIndexes } }
+          : { storeIndex: { in: [-1] } } // matches nothing
+        : {};
+
+    // Walmart side — gate every Walmart query on at least one Walmart store
+    // being selected. When none, return empty Walmart payload (the Dashboard
+    // hides that row entirely via the hasWalmart flag client-side).
+    const walmartSelected =
+      filter.walmartStoreIndexes === null ||
+      filter.walmartStoreIndexes.length > 0 ||
+      (filter.walmartSellerIds?.length ?? 0) > 0;
+
+    const walmartStoreFilter =
+      filter.walmartStoreIndexes !== null
+        ? walmartSelected
+          ? filter.walmartStoreIndexes.length > 0
+            ? { storeIndex: { in: filter.walmartStoreIndexes } }
+            : {}
+          : { storeIndex: { in: [-1] } }
+        : {};
 
     const [
       totalOrders,
@@ -28,13 +123,16 @@ export async function GET() {
       walmartPerfLatest,
     ] = await Promise.all([
       prisma.amazonOrder.count({
-        where: { purchaseDate: { gte: thirtyDaysAgo } },
+        where: { purchaseDate: { gte: thirtyDaysAgo }, ...amazonStoreFilter },
       }),
-      prisma.amazonOrder.count({ where: { status: "Unshipped" } }),
+      prisma.amazonOrder.count({
+        where: { status: "Unshipped", ...amazonStoreFilter },
+      }),
       prisma.amazonOrder.count({
         where: {
           status: "Shipped",
           lastUpdateDate: { gte: todayStart },
+          ...amazonStoreFilter,
         },
       }),
       prisma.csCase.count({ where: { status: "open" } }),
@@ -43,6 +141,11 @@ export async function GET() {
           status: {
             in: ["NEW", "EVIDENCE_GATHERED", "RESPONSE_READY", "SUBMITTED"],
           },
+          ...(filter.amazonStoreIndexes !== null
+            ? filter.amazonStoreIndexes.length > 0
+              ? { storeIndex: { in: filter.amazonStoreIndexes } }
+              : { storeIndex: { in: [-1] } }
+            : {}),
         },
       }),
       prisma.accountHealthSnapshot.findMany({
@@ -54,37 +157,58 @@ export async function GET() {
         _sum: { adjustmentAmount: true },
         where: { createdAt: { gte: thirtyDaysAgo } },
       }),
-      prisma.amazonOrder.count({ where: { storeIndex: 1 } }),
-      prisma.amazonOrder.count({ where: { storeIndex: 2 } }),
-      prisma.walmartOrder.count({
-        where: { orderDate: { gte: thirtyDaysAgo } },
+      prisma.amazonOrder.count({
+        where: { storeIndex: 1, ...amazonStoreFilter },
       }),
-      prisma.walmartOrder.count({
-        where: { orderDate: { gte: todayStart } },
+      prisma.amazonOrder.count({
+        where: { storeIndex: 2, ...amazonStoreFilter },
       }),
-      prisma.buyerMessage.count({
-        where: {
-          channel: "Walmart",
-          walmartReturnId: { not: null },
-          status: { in: ["NEW", "ANALYZED"] },
-        },
-      }),
-      prisma.walmartReconTransaction.aggregate({
-        _sum: { amount: true },
-        where: {
-          transactionType: "Refunds",
-          transactionPostedTimestamp: { gte: sevenDaysAgo },
-        },
-      }),
-      prisma.walmartPerformanceSnapshot.findMany({
-        orderBy: { capturedAt: "desc" },
-        take: 50,
-      }),
+      walmartSelected
+        ? prisma.walmartOrder.count({
+            where: {
+              orderDate: { gte: thirtyDaysAgo },
+              ...walmartStoreFilter,
+            },
+          })
+        : 0,
+      walmartSelected
+        ? prisma.walmartOrder.count({
+            where: {
+              orderDate: { gte: todayStart },
+              ...walmartStoreFilter,
+            },
+          })
+        : 0,
+      walmartSelected
+        ? prisma.buyerMessage.count({
+            where: {
+              channel: "Walmart",
+              walmartReturnId: { not: null },
+              status: { in: ["NEW", "ANALYZED"] },
+            },
+          })
+        : 0,
+      walmartSelected
+        ? prisma.walmartReconTransaction.aggregate({
+            _sum: { amount: true },
+            where: {
+              transactionType: "Refunds",
+              transactionPostedTimestamp: { gte: sevenDaysAgo },
+              ...walmartStoreFilter,
+            },
+          })
+        : { _sum: { amount: 0 } },
+      walmartSelected
+        ? prisma.walmartPerformanceSnapshot.findMany({
+            orderBy: { capturedAt: "desc" },
+            take: 50,
+            where: walmartStoreFilter,
+          })
+        : [],
     ]);
 
-    // Procurement: distinct orders that still have unbought lines.
-    // The Veeqo fetch is heavy, so swallow failures — a missing badge is
-    // better than a broken sidebar.
+    // Procurement (Veeqo) is unfiltered — the API doesn't expose a per-store
+    // dimension that maps to our Store table cleanly. Surface it as-is.
     let procurementOrdersToBuy = 0;
     try {
       const cards = await fetchProcurementCards();
@@ -95,7 +219,6 @@ export async function GET() {
       console.error("[dashboard/summary] procurement count failed:", err);
     }
 
-    // Health issues from latest Amazon snapshots (dedup by storeId)
     const latestByStore = new Map<string, (typeof healthSnapshots)[0]>();
     for (const snap of healthSnapshots) {
       if (!latestByStore.has(snap.storeId)) latestByStore.set(snap.storeId, snap);
@@ -104,8 +227,6 @@ export async function GET() {
       (s) => s.status === "critical" || s.status === "warning"
     ).length;
 
-    // Walmart Performance: latest snapshot per (windowDays, metric); count
-    // those flagged unhealthy.
     const latestPerf = new Map<string, (typeof walmartPerfLatest)[number]>();
     for (const s of walmartPerfLatest) {
       const key = `${s.windowDays}|${s.metric}`;
@@ -114,6 +235,27 @@ export async function GET() {
     const walmartHealthIssues = Array.from(latestPerf.values()).filter(
       (s) => !s.isHealthy
     ).length;
+
+    const walmartPayload = walmartSelected
+      ? {
+          ordersTotal30d: walmartOrdersTotal30d as number,
+          ordersToday: walmartOrdersToday as number,
+          returnsPending: walmartReturnsRecent as number,
+          refundsLast7d: Math.abs(
+            (walmartRefundsSum7d as { _sum: { amount: number | null } })._sum
+              .amount || 0
+          ),
+          healthIssues: walmartHealthIssues,
+          healthStatus:
+            walmartPerfLatest.length === 0
+              ? ("no-data" as const)
+              : walmartHealthIssues === 0
+                ? ("healthy" as const)
+                : walmartHealthIssues < 3
+                  ? ("warning" as const)
+                  : ("critical" as const),
+        }
+      : null;
 
     return NextResponse.json({
       orders: {
@@ -130,30 +272,33 @@ export async function GET() {
       adjustments: {
         monthlyTotal: adjustmentsSum._sum.adjustmentAmount || 0,
       },
-      walmart: {
-        ordersTotal30d: walmartOrdersTotal30d,
-        ordersToday: walmartOrdersToday,
-        returnsPending: walmartReturnsRecent,
-        refundsLast7d: Math.abs(walmartRefundsSum7d._sum.amount || 0),
-        healthIssues: walmartHealthIssues,
-        healthStatus:
-          walmartPerfLatest.length === 0
-            ? "no-data"
-            : walmartHealthIssues === 0
-              ? "healthy"
-              : walmartHealthIssues < 3
-                ? "warning"
-                : "critical",
-      },
+      walmart: walmartPayload,
       syncedAt: new Date().toISOString(),
     });
   } catch (error) {
     console.error("[dashboard/summary] GET failed:", error);
     return NextResponse.json(
-      {
-        error: "Failed to load dashboard summary",
-      },
+      { error: "Failed to load dashboard summary" },
       { status: 500 }
     );
   }
+}
+
+function emptyResponse() {
+  return {
+    orders: {
+      total30d: 0,
+      awaitingShipment: 0,
+      shippedToday: 0,
+      store1: 0,
+      store2: 0,
+    },
+    customerService: { openCases: 0 },
+    claims: { active: 0 },
+    health: { issues: 0 },
+    procurement: { ordersToBuy: 0 },
+    adjustments: { monthlyTotal: 0 },
+    walmart: null,
+    syncedAt: new Date().toISOString(),
+  };
 }

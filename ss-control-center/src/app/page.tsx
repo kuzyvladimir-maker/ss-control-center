@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useStoreFilter } from "@/lib/store-filter/StoreFilterContext";
 import {
   ShoppingCart,
   Truck,
@@ -47,7 +48,7 @@ interface DashboardData {
     refundsLast7d: number;
     healthIssues: number;
     healthStatus: "no-data" | "healthy" | "warning" | "critical";
-  };
+  } | null;
   syncedAt: string;
   error?: string;
 }
@@ -107,6 +108,17 @@ function timeAgo(iso: string): string {
 }
 
 export default function DashboardPage() {
+  const {
+    selectedStoreIds,
+    isLoading: filterLoading,
+    hasWalmart,
+    hasAmazon,
+    isAllSelected,
+    selectedStores,
+    allStores,
+    toQueryString,
+  } = useStoreFilter();
+
   const [data, setData] = useState<DashboardData | null>(null);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [cases, setCases] = useState<CsCaseRow[]>([]);
@@ -120,12 +132,29 @@ export default function DashboardPage() {
     return () => clearInterval(id);
   }, []);
 
-  async function load() {
+  // Cheap, stable key for the selection so the load effect re-runs only
+  // when the actual set of selected stores changes.
+  const filterKey = [...selectedStoreIds].sort().join(",");
+
+  const load = useCallback(async () => {
     setLoading(true);
     try {
+      const summaryQs = toQueryString();
+      // Selected store names so we can ask Veeqo for only those marketplaces.
+      // Veeqo's filter is by channel/store name, not our id — best-effort.
+      const veeqoQs = isAllSelected
+        ? ""
+        : `&store_names=${encodeURIComponent(
+            selectedStores.map((s) => s.name).join(",")
+          )}`;
+
       const [summary, veeqo, cs] = await Promise.all([
-        fetch("/api/dashboard/summary").then((r) => (r.ok ? r.json() : null)),
-        fetch("/api/veeqo/orders?status=awaiting_fulfillment&page_size=10")
+        fetch(`/api/dashboard/summary${summaryQs ? `?${summaryQs}` : ""}`).then(
+          (r) => (r.ok ? r.json() : null)
+        ),
+        fetch(
+          `/api/veeqo/orders?status=awaiting_fulfillment&page_size=10${veeqoQs}`
+        )
           .then((r) => (r.ok ? r.json() : null))
           .catch(() => null),
         fetch("/api/customer-hub/messages?limit=4&status=NEW")
@@ -141,7 +170,34 @@ export default function DashboardPage() {
           ? veeqo.orders
           : [];
 
-      const mapped: OrderRow[] = veeqoRows.slice(0, 8).map((o) => {
+      // Selected store-name set for client-side filtering of Veeqo rows
+      // (Veeqo doesn't reliably accept a multi-store filter in its API).
+      const selectedNamesLower = new Set(
+        selectedStores.map((s) => s.name.toLowerCase())
+      );
+
+      const filteredVeeqo = isAllSelected
+        ? veeqoRows
+        : veeqoRows.filter((o) => {
+            const channel = o.channel?.name?.toLowerCase() || "";
+            const storeName = (
+              o.store?.name ||
+              o.store_name ||
+              ""
+            ).toLowerCase();
+            // Walmart row → keep if any Walmart store selected.
+            if (channel.includes("walmart")) return hasWalmart;
+            // Amazon row → keep only if its store name matches one of the
+            // selected Amazon stores. Fall back to "keep" if we can't match
+            // (better to show an order than to silently hide it).
+            if (!storeName) return hasAmazon;
+            for (const n of selectedNamesLower) {
+              if (storeName.includes(n) || n.includes(storeName)) return true;
+            }
+            return false;
+          });
+
+      const mapped: OrderRow[] = filteredVeeqo.slice(0, 8).map((o) => {
         const item = o.line_items?.[0];
         const productName = item?.sellable?.product_title;
         const tags = item?.sellable?.tags || [];
@@ -165,20 +221,40 @@ export default function DashboardPage() {
       });
       setOrders(mapped);
 
-      const messages: CsCaseRow[] = Array.isArray(cs?.messages)
+      const allMessages: CsCaseRow[] = Array.isArray(cs?.messages)
         ? cs.messages
         : Array.isArray(cs)
           ? cs
           : [];
-      setCases(messages.slice(0, 4));
+      // Customer queue follows channel selection — Walmart cases only when
+      // hasWalmart, Amazon cases only when hasAmazon.
+      const filteredMessages = isAllSelected
+        ? allMessages
+        : allMessages.filter((m) => {
+            const channel = (m.channel || "Amazon").toLowerCase();
+            return channel.includes("walmart") ? hasWalmart : hasAmazon;
+          });
+      setCases(filteredMessages.slice(0, 4));
     } finally {
       setLoading(false);
     }
-  }
+    // load is rebuilt whenever the active filter set changes — selectedStores
+    // / hasAmazon etc. are derived from `filterKey`, so depending on that
+    // single string keeps the dependency list tight.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterKey, isAllSelected, hasAmazon, hasWalmart]);
 
   useEffect(() => {
+    if (filterLoading) return;
+    if (selectedStoreIds.length === 0) {
+      setData(null);
+      setOrders([]);
+      setCases([]);
+      setLoading(false);
+      return;
+    }
     load();
-  }, []);
+  }, [load, filterLoading, selectedStoreIds.length]);
 
   async function syncNow() {
     setSyncing(true);
@@ -206,6 +282,8 @@ export default function DashboardPage() {
 
   const totalToShip = data?.orders.awaitingShipment ?? 0;
   const shippedToday = data?.orders.shippedToday ?? 0;
+  const noStoresSelected =
+    !filterLoading && allStores.length > 0 && selectedStoreIds.length === 0;
 
   return (
     <div className="space-y-5">
@@ -237,6 +315,23 @@ export default function DashboardPage() {
         }
       />
 
+      {noStoresSelected && (
+        <Panel>
+          <PanelBody>
+            <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
+              <div className="text-[14px] font-medium text-ink">
+                Select at least one store to view dashboard data.
+              </div>
+              <div className="text-[12px] text-ink-3">
+                Use the store selector in the sidebar to choose which stores to include.
+              </div>
+            </div>
+          </PanelBody>
+        </Panel>
+      )}
+
+      {!noStoresSelected && (
+      <>
       {/* KPI row */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
@@ -285,8 +380,10 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Walmart row (if available) */}
-      {data?.walmart && (
+      {/* Walmart row — gated by both data presence AND at least one
+          Walmart store being selected in the global filter. Hides
+          entirely (no "—" placeholders) when Walmart is deselected. */}
+      {data?.walmart && hasWalmart && (
         <div className="grid gap-3 sm:grid-cols-4">
           <KpiCard
             label="Walmart 30d"
@@ -591,6 +688,8 @@ export default function DashboardPage() {
           </Panel>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
