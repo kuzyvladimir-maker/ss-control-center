@@ -194,6 +194,12 @@
 ← [Database Schema](database-schema.md) (модель User), Turso cloud DB
 ⇔ [External API Auth](external-api-auth.md) (параллельный механизм), [Архитектура проекта](project-architecture.md), [Деплой на Vercel](deploy-to-vercel-plan.md)
 
+### [Store Filter System](store-filter-system.md)
+← [Database Schema](database-schema.md) (`Store.channel` / `Store.storeIndex` / `Store.sellerId`)
+→ [Dashboard](dashboard.md)
+⇔ `src/components/layout/Sidebar.tsx` (StoreFilterSelector), `src/components/layout/Header.tsx` (StoresLiveBadge)
+Phase 2 planned → [Customer Hub](customer-hub.md), [Adjustments Monitor](adjustments-monitor.md), [Account Health](account-health.md), [Shipping Labels](shipping-labels.md)
+
 ### [Архитектура проекта](project-architecture.md)
 Обзорная статья, ссылается на все модули.
 
@@ -206,4 +212,4 @@
 - `⇔` двусторонняя связь
 
 ---
-Последнее обновление: 2026-05-04 (+ mobile-adaptation Phase 2 done — full mobile coverage)
+Последнее обновление: 2026-05-12 (+ store-filter-system Phase 1 — Dashboard)

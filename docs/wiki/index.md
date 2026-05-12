@@ -19,6 +19,7 @@
 
 ## 📦 Модули
 - [Dashboard](dashboard.md) — главная страница, карточки, сводка
+- [Store Filter System](store-filter-system.md) — глобальный мульти-селект магазинов (Phase 1: Dashboard) — 2026-05-12
 - [Procurement Module](./procurement-module.md) — мобильный закуп товара в магазинах (Publix, Walmart, BJ's). Выборка из Veeqo по тегам, фильтрация workflow-меток, разметка через `Placed` / `Need More`. Будущая основа агента-автозакупщика.
 - [Shipping Labels](shipping-labels.md) — план + покупка labels через Veeqo
 - [Shipment Monitor](shipment-monitor.md) — мониторинг доставок, детекция проблем, подготовка claims (спроектирован, после Phase 1)
