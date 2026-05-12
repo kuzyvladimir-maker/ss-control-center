@@ -13,11 +13,11 @@ import {
   TrendingUp,
   Package,
   Settings,
-  ChevronDown,
   ShoppingCart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { StoreFilterSelector } from "@/components/layout/StoreFilterSelector";
 
 interface NavItem {
   title: string;
@@ -194,14 +194,10 @@ export default function SidebarContent({
         </div>
       </div>
 
-      {/* Workspace switcher (placeholder — real switch later) */}
-      <div className="mx-3 mt-3 flex items-center gap-2 rounded-md border border-rule bg-surface-tint px-2.5 py-1.5 text-[12px] text-ink">
-        <span className="live-dot" />
-        <span className="flex-1">All stores</span>
-        <span className="rounded bg-bg-elev px-1.5 text-[10px] font-semibold text-ink-2">
-          5
-        </span>
-        <ChevronDown size={13} className="text-ink-3" />
+      {/* Global store filter — drives all Dashboard data. See
+          src/lib/store-filter/StoreFilterContext.tsx */}
+      <div className="mx-3 mt-3">
+        <StoreFilterSelector />
       </div>
 
       {/* Operations */}

@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { Bell, LogOut, Menu, Search, ShieldCheck } from "lucide-react";
 import { useMounted } from "@/lib/use-mounted";
 import { useMobileNav } from "@/lib/mobile-nav-context";
+import { useStoreFilter } from "@/lib/store-filter/StoreFilterContext";
+import { cn } from "@/lib/utils";
 
 interface MeUser {
   username: string;
@@ -83,11 +85,8 @@ export default function Header() {
 
       <div className="flex-1" />
 
-      {/* Live pill */}
-      <div className="hidden items-center gap-1.5 rounded-md bg-green-soft px-2.5 py-1 text-[11px] font-medium text-green-ink sm:inline-flex">
-        <span className="live-dot" />
-        <span>5 stores live</span>
-      </div>
+      {/* Live pill — reflects the global store filter selection */}
+      <StoresLiveBadge />
 
       {/* Notifications */}
       <button
@@ -124,5 +123,33 @@ export default function Header() {
         </div>
       )}
     </header>
+  );
+}
+
+function StoresLiveBadge() {
+  const { selectedStoreIds, allStores, isAllSelected, isLoading } =
+    useStoreFilter();
+
+  if (isLoading || allStores.length === 0) return null;
+
+  const noSelection = selectedStoreIds.length === 0;
+  const label = noSelection
+    ? "No stores selected"
+    : isAllSelected
+      ? `All ${allStores.length} stores live`
+      : `${selectedStoreIds.length} of ${allStores.length} stores`;
+
+  return (
+    <div
+      className={cn(
+        "hidden items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium sm:inline-flex",
+        noSelection
+          ? "bg-bg-elev text-ink-3"
+          : "bg-green-soft text-green-ink"
+      )}
+    >
+      <span className={cn("live-dot", noSelection && "opacity-30")} />
+      <span className="tabular">{label}</span>
+    </div>
   );
 }
