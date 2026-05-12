@@ -123,8 +123,13 @@ model Store {
   id        String   @id @default(cuid())
   name      String
   channel   String   // Amazon | Walmart
-  signature String   // Name used in CS responses
+  signature String   @default("") // Name used in CS responses
   active    Boolean  @default(true)
+  // Bridge to the underlying order/transaction tables. Amazon stores use a
+  // 1..5 integer (matches AmazonOrder.storeIndex / AtozzClaim.storeIndex /
+  // BuyerMessage.storeIndex). Walmart stores use the Marketplace Seller ID.
+  storeIndex Int?
+  sellerId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
