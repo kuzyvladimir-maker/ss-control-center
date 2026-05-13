@@ -11,6 +11,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { spApiGet } from "./client";
+import { fetchAccountHealthRating } from "./account-health-rating";
+import { fetchPolicyCompliance } from "./policy-compliance";
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -187,6 +189,13 @@ export async function syncStoreHealth(storeIndex: number) {
     const alertCount = statuses.filter((s) => s === "warning" || s === "critical").length;
     const criticalCount = statuses.filter((s) => s === "critical").length;
 
+    // ── Account Health v2 — pull AHR + Policy Compliance ────────────────
+    // Both helpers swallow auth/permission errors (Selling Partner Insights
+    // role may not be approved yet) and return null/empty defaults, so the
+    // base ODR/LSR sync keeps working regardless.
+    const ahr = await fetchAccountHealthRating(storeIndex);
+    const policyCategories = await fetchPolicyCompliance(storeIndex);
+
     // ========== SAVE ==========
     await prisma.accountHealthSnapshot.update({
       where: { id: snapshot.id },
@@ -224,10 +233,44 @@ export async function syncStoreHealth(storeIndex: number) {
 
         alertCount,
         criticalCount,
+        // v2 additions
+        accountHealthRating: ahr?.rating ?? null,
+        accountHealthRatingStatus: ahr?.status ?? null,
         syncStatus: "done",
         syncedAt: new Date(),
       },
     });
+
+    // Replace this snapshot's policy categories. Cascade deletes details.
+    await prisma.policyViolationCategory.deleteMany({
+      where: { snapshotId: snapshot.id },
+    });
+    for (const cat of policyCategories) {
+      const created = await prisma.policyViolationCategory.create({
+        data: {
+          snapshotId: snapshot.id,
+          category: cat.category,
+          displayName: cat.displayName,
+          count: cat.count,
+          status: cat.status,
+        },
+      });
+      if (cat.details.length > 0) {
+        await prisma.policyViolationDetail.createMany({
+          data: cat.details.map((d) => ({
+            categoryId: created.id,
+            asin: d.asin ?? null,
+            sku: d.sku ?? null,
+            listingTitle: d.listingTitle ?? null,
+            violationType: d.violationType,
+            severity: d.severity,
+            message: d.message,
+            reportedAt: new Date(d.reportedAt),
+            amazonReferenceId: d.amazonReferenceId ?? null,
+          })),
+        });
+      }
+    }
 
     console.log(
       `[AccountHealth] ${storeId}: ${overallStatus} | ODR ${odr}% | LSR10 ${lateShipmentRate10d}% LSR30 ${lateShipmentRate30d}% | Cancel ${cancelRate}% | VTR ${validTrackingRate}% | OTDR ${otdr ?? "n/a"}%`
