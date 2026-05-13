@@ -5,12 +5,21 @@
 
 import { getCachedAccessToken } from "./auth";
 
+// Some deploy platforms (incl. Vercel via UI copy-paste) silently keep
+// wrapping quotes or trailing newlines on env values. A stray newline in
+// MARKETPLACE_ID makes Amazon's /orders endpoint return an empty list —
+// no error, just zero rows — which is hard to spot. Strip defensively.
+function cleanEnv(value: string | undefined): string | undefined {
+  if (!value) return value;
+  return value.trim().replace(/^['"]|['"]$/g, "");
+}
+
 const SP_API_ENDPOINT =
-  process.env.AMAZON_SP_ENDPOINT ||
+  cleanEnv(process.env.AMAZON_SP_ENDPOINT) ||
   "https://sellingpartnerapi-na.amazon.com";
 
 export const MARKETPLACE_ID =
-  process.env.AMAZON_SP_MARKETPLACE_ID || "ATVPDKIKX0DER";
+  cleanEnv(process.env.AMAZON_SP_MARKETPLACE_ID) || "ATVPDKIKX0DER";
 
 export interface SpApiOptions {
   storeId?: string;
