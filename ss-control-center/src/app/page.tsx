@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useStoreFilter } from "@/lib/store-filter/StoreFilterContext";
+import { SalesCardsRow } from "@/components/dashboard/SalesCardsRow";
 import {
   ShoppingCart,
   Truck,
@@ -332,6 +333,10 @@ export default function DashboardPage() {
 
       {!noStoresSelected && (
       <>
+      {/* Sales row — 5-period gross revenue. Lives ABOVE the operations KPI row;
+          see docs/SALES_CARDS_DASHBOARD_SPEC_v1_0.md */}
+      <SalesCardsRow />
+
       {/* KPI row */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
