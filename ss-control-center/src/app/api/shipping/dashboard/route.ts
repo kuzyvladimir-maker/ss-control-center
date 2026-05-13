@@ -343,6 +343,13 @@ export async function GET() {
         if (state === "ready_to_buy") totals.readyToBuy++;
       }
 
+      // Money fields Veeqo already gave us on each order. Cheap, no extra
+      // API call needed — surface them so the row is informative without
+      // touching /api/shipping/plan.
+      const orderTotal =
+        Number(o.total_price ?? o.subtotal_price ?? 0) || 0;
+      const customerPaidShipping = Number(o.delivery_cost ?? 0) || 0;
+
       orders.push({
         orderId: String(o.id),
         orderNumber: String(o.number ?? o.id),
@@ -357,6 +364,9 @@ export async function GET() {
         items: itemsWithType,
         packingSignature: reqsProfile ? sig : null,
         packingProfileFound: reqsProfile ? profileBySig.has(sig) : null,
+        orderTotal,
+        customerPaidShipping,
+        currency: o.currency_code ?? "USD",
       });
     }
 

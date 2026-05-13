@@ -73,6 +73,25 @@ interface DashboardOrder {
   items: DashboardItem[];
   packingSignature: string | null;
   packingProfileFound: boolean | null;
+  orderTotal: number;
+  customerPaidShipping: number;
+  currency: string;
+}
+
+interface PlanItem {
+  id: string;
+  orderNumber: string;
+  carrier: string | null;
+  service: string | null;
+  price: number | null;
+  edd: string | null;
+  status: string;
+  notes: string | null;
+}
+
+interface PlanResponse {
+  planId: string;
+  orders: PlanItem[];
 }
 
 interface StoreTotals {
@@ -117,6 +136,10 @@ const BUCKET_TABS: { id: ShipByBucket; label: string; activeCls: string }[] = [
 
 export default function ShippingLabelsPage() {
   const [data, setData] = useState<DashboardResponse | null>(null);
+  const [plan, setPlan] = useState<PlanResponse | null>(null);
+  // Per-order plan results when "Refresh rates" runs on a subset (e.g. after
+  // an attention reason is fixed, we re-fetch rates only for that one order).
+  const [planLoading, setPlanLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -126,6 +149,7 @@ export default function ShippingLabelsPage() {
 
   const [buying, setBuying] = useState(false);
   const [buyMsg, setBuyMsg] = useState<string | null>(null);
+  const [buyingRow, setBuyingRow] = useState<string | null>(null);
 
   // Modal state
   const [classifyModal, setClassifyModal] = useState<DashboardOrder | null>(
@@ -138,14 +162,34 @@ export default function ShippingLabelsPage() {
     setLoading(true);
     setError(null);
     try {
-      const r = await fetch("/api/shipping/dashboard");
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const j = (await r.json()) as DashboardResponse;
-      setData(j);
+      // Two parallel fetches: dashboard gives us state + $ fields for every
+      // awaiting order (cheap); plan computes carrier / service / price for
+      // the orders eligible to ship today (slower — calls Veeqo rates per
+      // allocation). Showing dashboard immediately lets the operator scroll
+      // while plan rates trickle in.
+      setPlanLoading(true);
+      const dashRes = await fetch("/api/shipping/dashboard");
+      if (!dashRes.ok) throw new Error(`HTTP ${dashRes.status}`);
+      const dashJson = (await dashRes.json()) as DashboardResponse;
+      setData(dashJson);
+      setLoading(false);
+
+      // Plan runs against today's dispatch target — same logic that powers
+      // the legacy /shipping page Generate Plan button.
+      try {
+        const planRes = await fetch("/api/shipping/plan");
+        if (planRes.ok) {
+          const planJson = (await planRes.json()) as PlanResponse;
+          setPlan(planJson);
+        }
+      } catch {
+        /* plan failure is non-fatal — page still shows dashboard */
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
-    } finally {
       setLoading(false);
+    } finally {
+      setPlanLoading(false);
     }
   }, []);
 
@@ -180,6 +224,15 @@ export default function ShippingLabelsPage() {
     const waiting = orders.filter((o) => o.state === "waiting_placed").length;
     return { all, ready, attention, waiting };
   }, [orders]);
+
+  // Index plan rows by orderNumber so the OrderRow can pick up carrier /
+  // price / EDD without an extra lookup at render time. Plan keys on
+  // orderNumber (Amazon-format), same as dashboard, so the merge is clean.
+  const planByOrderNumber = useMemo(() => {
+    const m = new Map<string, PlanItem>();
+    if (plan) for (const p of plan.orders) m.set(p.orderNumber, p);
+    return m;
+  }, [plan]);
 
   // ── Actions ─────────────────────────────────────────────────────────
   function toggleAll() {
@@ -236,6 +289,48 @@ export default function ShippingLabelsPage() {
       setBuyMsg(e instanceof Error ? e.message : String(e));
     } finally {
       setBuying(false);
+    }
+  }
+
+  // Per-row Buy — uses the planId fetched at page load. If the order is
+  // missing from that plan (rare: just-resolved attention), we fall back
+  // to re-running plan with ?orderIds=ID first.
+  async function buyOne(o: DashboardOrder) {
+    setBuyingRow(o.orderId);
+    setBuyMsg(`Buying label for ${o.orderNumber}…`);
+    try {
+      let planId = plan?.planId ?? null;
+      let planItemId =
+        plan?.orders.find(
+          (p) => p.orderNumber === o.orderNumber && p.status === "pending"
+        )?.id ?? null;
+      if (!planId || !planItemId) {
+        const r = await fetch(
+          `/api/shipping/plan?orderIds=${encodeURIComponent(o.orderId)}`
+        );
+        const j = await r.json();
+        if (!r.ok) throw new Error(j?.error || "Failed to plan");
+        planId = j.planId;
+        const item = (j.orders ?? []).find(
+          (p: { orderNumber: string; status: string }) =>
+            p.orderNumber === o.orderNumber && p.status === "pending"
+        );
+        if (!item) throw new Error("No buyable rate found for this order");
+        planItemId = item.id;
+      }
+      const buyRes = await fetch("/api/shipping/buy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId, itemIds: [planItemId] }),
+      });
+      const buyJson = await buyRes.json();
+      if (!buyRes.ok) throw new Error(buyJson?.error || "Failed to buy");
+      setBuyMsg(`Bought ${o.orderNumber}`);
+      await load();
+    } catch (e) {
+      setBuyMsg(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBuyingRow(null);
     }
   }
 
@@ -405,11 +500,15 @@ export default function ShippingLabelsPage() {
             <OrderRow
               key={o.orderId}
               order={o}
+              plan={planByOrderNumber.get(o.orderNumber) ?? null}
+              planLoading={planLoading}
               selected={selected.has(o.orderId)}
+              buying={buyingRow === o.orderId}
               onToggleSelected={() => toggleOne(o.orderId)}
               onClassify={() => setClassifyModal(o)}
               onManual={() => setManualModal(o)}
               onPacking={() => setPackingModal(o)}
+              onBuy={() => buyOne(o)}
             />
           ))
         )}
@@ -452,32 +551,50 @@ export default function ShippingLabelsPage() {
 
 function OrderRow({
   order,
+  plan,
+  planLoading,
   selected,
+  buying,
   onToggleSelected,
   onClassify,
   onManual,
   onPacking,
+  onBuy,
 }: {
   order: DashboardOrder;
+  plan: PlanItem | null;
+  planLoading: boolean;
   selected: boolean;
+  buying: boolean;
   onToggleSelected: () => void;
   onClassify: () => void;
   onManual: () => void;
   onPacking: () => void;
+  onBuy: () => void;
 }) {
   const isReady = order.state === "ready_to_buy";
   const isAttn = order.state === "need_attention";
   const isWaiting = order.state === "waiting_placed";
   const isBought = order.state === "bought";
 
-  const itemLine = order.items
-    .map(
-      (i) =>
-        `${i.productTitle} × ${i.quantity}${
-          i.knownType ? "" : " (unknown type)"
-        }`
-    )
-    .join(" + ");
+  const fmt$ = (v: number) =>
+    `$${v.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+
+  // Label cost recommendation comes from /api/shipping/plan. If plan is
+  // still in flight (planLoading) we show a spinner; if plan is in but
+  // this order has status="stop", we show the stop reason from the plan.
+  const planPending = plan && plan.status === "pending";
+  const planStop = plan && plan.status !== "pending" && plan.notes;
+
+  // Margin sanity: customer paid X for shipping, label costs Y. Positive
+  // margin = we made money on shipping; negative = we ate the difference.
+  const shippingMargin =
+    plan?.price != null
+      ? order.customerPaidShipping - plan.price
+      : null;
 
   return (
     <div
@@ -492,6 +609,7 @@ function OrderRow({
               : "border-rule"
       )}
     >
+      {/* Top row: select + identity + type tag */}
       <div className="flex items-start gap-3">
         {isReady ? (
           <input
@@ -513,7 +631,7 @@ function OrderRow({
         )}
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <span className="font-mono text-[12px] text-ink">
               {order.orderNumber}
             </span>
@@ -525,61 +643,25 @@ function OrderRow({
                 · Ship by {order.shipBy}
               </span>
             )}
-          </div>
-          <div className="mt-0.5 truncate text-[12px] text-ink-2">
-            {itemLine}
+            {order.deliverBy && (
+              <span className="text-[11px] text-ink-3">
+                · Deliver by {order.deliverBy}
+              </span>
+            )}
           </div>
 
-          {/* Action area per state */}
-          {isAttn && (
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[11px] font-medium text-warn-strong">
-                {order.needAttentionReason
-                  ? ATTENTION_LABELS[order.needAttentionReason]
-                  : "Needs review"}
-              </span>
-              {order.needAttentionReason === "no_type" && (
-                <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-[11.5px]"
-                    onClick={onClassify}
-                  >
-                    <Sparkles size={12} className="mr-1" /> Classify with AI
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-[11.5px]"
-                    onClick={onManual}
-                  >
-                    Set manually
-                  </Button>
-                </>
-              )}
-              {order.needAttentionReason === "no_packing" && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-[11.5px]"
-                  onClick={onPacking}
-                >
-                  <Package size={12} className="mr-1" /> Set packing profile
-                </Button>
-              )}
-            </div>
-          )}
-          {isWaiting && (
-            <div className="mt-1 text-[11px] text-ink-3">
-              Waiting for procurement (no <code>Placed</code> tag yet).
-            </div>
-          )}
-          {isBought && (
-            <div className="mt-1 text-[11px] text-green-ink">
-              Label already purchased.
-            </div>
-          )}
+          {/* Items list — each on its own line so multi-item orders read clearly. */}
+          <ul className="mt-1 space-y-0.5">
+            {order.items.map((i) => (
+              <li key={i.sku} className="truncate text-[12px] text-ink-2">
+                <span className="font-medium text-ink">{i.productTitle}</span>{" "}
+                <span className="text-ink-3">× {i.quantity}</span>{" "}
+                <span className="font-mono text-[10.5px] text-ink-3">
+                  ({i.sku})
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="shrink-0">
@@ -588,6 +670,181 @@ function OrderRow({
           )}
         </div>
       </div>
+
+      {/* Money + carrier grid — visible on every state where it makes sense. */}
+      {!isWaiting && (
+        <div className="mt-2.5 ml-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 text-[11.5px]">
+          <Cell label="Order total" value={fmt$(order.orderTotal)} />
+          <Cell
+            label="Customer paid shipping"
+            value={fmt$(order.customerPaidShipping)}
+          />
+          {isReady && (
+            <Cell
+              label="Label cost"
+              value={
+                planLoading && !plan
+                  ? "loading…"
+                  : plan?.price != null
+                    ? fmt$(plan.price)
+                    : planStop
+                      ? "stopped"
+                      : "—"
+              }
+              valueClass={
+                shippingMargin != null && shippingMargin < 0
+                  ? "text-danger"
+                  : "text-ink"
+              }
+              sub={
+                shippingMargin != null
+                  ? `margin ${shippingMargin >= 0 ? "+" : ""}${fmt$(shippingMargin)}`
+                  : undefined
+              }
+            />
+          )}
+          {isReady && (
+            <Cell
+              label="Carrier"
+              value={
+                plan?.carrier && plan.service
+                  ? `${plan.carrier} ${plan.service}`
+                  : planLoading
+                    ? "loading…"
+                    : "—"
+              }
+              sub={plan?.edd ? `EDD ${plan.edd}` : undefined}
+            />
+          )}
+          {isBought && (
+            <Cell
+              label="Label cost (bought)"
+              value={
+                plan?.price != null ? fmt$(plan.price) : "—"
+              }
+            />
+          )}
+        </div>
+      )}
+
+      {/* Action area per state */}
+      {isAttn && (
+        <div className="mt-2 ml-6 flex flex-wrap items-center gap-2">
+          <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[11px] font-medium text-warn-strong">
+            {order.needAttentionReason
+              ? ATTENTION_LABELS[order.needAttentionReason]
+              : "Needs review"}
+          </span>
+          {order.needAttentionReason === "no_type" && (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-[11.5px]"
+                onClick={onClassify}
+              >
+                <Sparkles size={12} className="mr-1" /> Classify with AI
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-[11.5px]"
+                onClick={onManual}
+              >
+                Set manually
+              </Button>
+            </>
+          )}
+          {order.needAttentionReason === "no_packing" && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-[11.5px]"
+              onClick={onPacking}
+            >
+              <Package size={12} className="mr-1" /> Set packing profile
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Ready row: per-row Buy + (when plan stopped) the reason. */}
+      {isReady && (
+        <div className="mt-2 ml-6 flex flex-wrap items-center justify-between gap-2">
+          {planStop ? (
+            <span className="rounded bg-danger-tint px-1.5 py-0.5 text-[11px] font-medium text-danger">
+              {plan?.notes}
+            </span>
+          ) : (
+            <span className="text-[11px] text-ink-3">
+              {planPending
+                ? "Rate ready — confirm to buy"
+                : planLoading
+                  ? "Calculating best rate…"
+                  : "Awaiting rate"}
+            </span>
+          )}
+          <Button
+            size="sm"
+            onClick={onBuy}
+            disabled={buying || !planPending}
+            className="h-7 text-[11.5px]"
+          >
+            {buying ? (
+              <>
+                <Loader2 size={12} className="mr-1 animate-spin" />
+                Buying…
+              </>
+            ) : (
+              <>
+                <ShoppingCart size={12} className="mr-1" /> Buy label
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+
+      {isWaiting && (
+        <div className="mt-1 ml-6 text-[11px] text-ink-3">
+          Waiting for procurement (no <code>Placed</code> tag yet).
+        </div>
+      )}
+      {isBought && (
+        <div className="mt-1 ml-6 text-[11px] text-green-ink">
+          Label already purchased.
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Cell({
+  label,
+  value,
+  sub,
+  valueClass,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  valueClass?: string;
+}) {
+  return (
+    <div className="rounded bg-surface-tint px-2 py-1.5">
+      <div className="text-[10px] font-mono uppercase tracking-wider text-ink-3">
+        {label}
+      </div>
+      <div
+        className={cn(
+          "mt-0.5 truncate font-semibold tabular",
+          valueClass || "text-ink"
+        )}
+      >
+        {value}
+      </div>
+      {sub && (
+        <div className="truncate text-[10.5px] text-ink-3">{sub}</div>
+      )}
     </div>
   );
 }
