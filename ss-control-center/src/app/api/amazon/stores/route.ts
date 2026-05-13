@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStoreCredentials } from "@/lib/amazon-sp-api/auth";
 import { spApiGet } from "@/lib/amazon-sp-api/client";
+import { getWalmartStoreStatus } from "@/lib/walmart";
 
 export async function GET() {
   const stores = [];
@@ -49,13 +50,15 @@ export async function GET() {
     }
   }
 
-  // Walmart placeholder
+  // Walmart — show the real env-driven status so the UI doesn't pretend
+  // Walmart is a stub when credentials are actually in place.
+  const walmartStatus = getWalmartStoreStatus(1);
   stores.push({
     index: 6,
-    configured: false,
+    configured: walmartStatus.configured,
     channel: "Walmart",
-    name: "Walmart",
-    comingSoon: true,
+    name: walmartStatus.storeName,
+    comingSoon: !walmartStatus.configured,
   });
 
   return NextResponse.json({ stores });

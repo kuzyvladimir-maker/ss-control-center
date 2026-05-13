@@ -2,6 +2,7 @@ export {
   WalmartClient,
   WalmartApiError,
   getWalmartClient,
+  getWalmartStoreStatus,
 } from "./client";
 export type { WalmartCredentials, WalmartTokenInfo } from "./client";
 

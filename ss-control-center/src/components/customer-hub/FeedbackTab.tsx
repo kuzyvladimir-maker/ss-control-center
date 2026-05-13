@@ -66,8 +66,8 @@ export default function FeedbackTab() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
-  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  // Sync UI is disabled until SP-API Feedback Reports auto-sync is
+  // implemented — see disabled "Sync (manual only)" button below.
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [addSaving, setAddSaving] = useState(false);
@@ -125,24 +125,7 @@ export default function FeedbackTab() {
     fetchFeedbacks();
   }, []);
 
-  const handleSync = async () => {
-    setSyncing(true);
-    setSyncMessage(null);
-    try {
-      const res = await fetch("/api/customer-hub/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "sync" }),
-      });
-      const data = await res.json();
-      setSyncMessage(data.message || `Synced ${data.synced || 0}`);
-      await fetchFeedbacks();
-    } catch {
-      setSyncMessage("Sync failed");
-    } finally {
-      setSyncing(false);
-    }
-  };
+
 
   // Merge the updated feedback from the detail panel back into the list so
   // badges/status refresh without a full refetch.
@@ -187,11 +170,6 @@ export default function FeedbackTab() {
               {total} feedback{total !== 1 ? "s" : ""}
             </span>
             <div className="flex items-center gap-2">
-              {syncMessage && (
-                <span className="text-[10px] text-ink-3">
-                  {syncMessage}
-                </span>
-              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -200,19 +178,19 @@ export default function FeedbackTab() {
               >
                 <Plus size={12} className="mr-1" /> Add Feedback
               </Button>
+              {/* SP-API Feedback Reports auto-sync is not wired yet — the
+                  button is disabled with a clarifying title so the operator
+                  doesn't assume sync is active. Re-enable when the backend
+                  in /api/customer-hub/feedback (action="sync") is implemented. */}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleSync}
-                disabled={syncing}
+                disabled
+                title="Automatic sync not implemented — use Add Feedback for manual entries"
                 className="text-xs"
               >
-                {syncing ? (
-                  <Loader2 size={12} className="animate-spin mr-1" />
-                ) : (
-                  <RefreshCw size={12} className="mr-1" />
-                )}
-                Sync Feedback
+                <RefreshCw size={12} className="mr-1" />
+                Sync (manual only)
               </Button>
             </div>
 

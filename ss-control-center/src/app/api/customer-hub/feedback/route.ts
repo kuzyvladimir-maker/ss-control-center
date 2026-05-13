@@ -44,9 +44,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
 
     if (body.action === "sync") {
+      // SP-API Feedback Reports auto-sync is not implemented yet.
+      // The UI surfaces this honestly via the disabled "Sync Feedback" button
+      // (see src/components/customer-hub/FeedbackTab.tsx). Keep the endpoint
+      // responding 200 with a clear message so any existing automation that
+      // hits it doesn't break — just no-op.
       return NextResponse.json({
         synced: 0,
-        message: "SP-API Feedback Reports sync coming soon",
+        manualOnly: true,
+        message:
+          "Automatic feedback sync not implemented. Use Add Feedback to enter manually.",
       });
     }
 

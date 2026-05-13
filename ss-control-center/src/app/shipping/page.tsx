@@ -8,14 +8,10 @@ import {
   Loader2,
   AlertTriangle,
   CheckCircle,
-  XCircle,
-  Clock,
   Snowflake,
   Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Btn,
   CarrierBadge,
@@ -30,14 +26,6 @@ import {
   TypeTag,
 } from "@/components/kit";
 import { cn } from "@/lib/utils";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -90,13 +78,6 @@ interface BuyResult {
   errors: { orderNumber: string; error: string; itemId: string }[];
   total: number;
 }
-
-const statusIcons: Record<string, React.ReactNode> = {
-  pending: <Clock size={14} className="text-warn-strong" />,
-  bought: <CheckCircle size={14} className="text-green" />,
-  error: <XCircle size={14} className="text-danger" />,
-  stop: <AlertTriangle size={14} className="text-danger" />,
-};
 
 const statusLabels: Record<string, string> = {
   pending: "Ready",

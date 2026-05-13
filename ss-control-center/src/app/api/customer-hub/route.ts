@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getStoreCredentials } from "@/lib/amazon-sp-api/auth";
+import { getWalmartStoreStatus } from "@/lib/walmart";
 
 export async function GET() {
   try {
@@ -99,12 +100,15 @@ export async function GET() {
       });
     }
 
-    // Walmart placeholder
+    // Walmart — reflect actual env-configured store(s) instead of a hard
+    // "not configured" placeholder. We surface index 6 to keep the slot
+    // index stable for existing UI assumptions, and add a per-store name.
+    const walmartStatus = getWalmartStoreStatus(1);
     storeCards.push({
       index: 6,
-      name: "Walmart",
+      name: walmartStatus.storeName,
       channel: "Walmart",
-      configured: false,
+      configured: walmartStatus.configured,
     });
 
     // Global totals

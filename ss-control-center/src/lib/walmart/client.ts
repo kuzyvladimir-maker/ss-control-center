@@ -74,23 +74,47 @@ export class WalmartApiError extends Error {
   }
 }
 
-function getCredentials(storeIndex: number): WalmartCredentials {
+/**
+ * Non-throwing config probe. Returns whether a Walmart store has all three
+ * required env vars and the resolved name when so. Used by status surfaces
+ * (`/api/integrations`, `/api/amazon/stores`, `/api/customer-hub`) so they
+ * report Walmart accurately instead of hardcoding "not configured".
+ */
+export function getWalmartStoreStatus(storeIndex: number): {
+  configured: boolean;
+  storeName: string;
+  sellerId: string | null;
+} {
   const n = storeIndex;
   const clientId = process.env[`WALMART_CLIENT_ID_STORE${n}`];
   const clientSecret = process.env[`WALMART_CLIENT_SECRET_STORE${n}`];
   const sellerId = process.env[`WALMART_STORE${n}_SELLER_ID`];
   const storeName =
     process.env[`WALMART_STORE${n}_NAME`] || `Walmart Store ${n}`;
+  return {
+    configured: Boolean(clientId && clientSecret && sellerId),
+    storeName,
+    sellerId: sellerId || null,
+  };
+}
 
-  if (!clientId || !clientSecret || !sellerId) {
+function getCredentials(storeIndex: number): WalmartCredentials {
+  const s = getWalmartStoreStatus(storeIndex);
+  if (!s.configured) {
     throw new Error(
-      `Walmart credentials missing for store ${n}. ` +
-        `Set WALMART_CLIENT_ID_STORE${n}, WALMART_CLIENT_SECRET_STORE${n}, ` +
-        `WALMART_STORE${n}_SELLER_ID in env.`
+      `Walmart credentials missing for store ${storeIndex}. ` +
+        `Set WALMART_CLIENT_ID_STORE${storeIndex}, ` +
+        `WALMART_CLIENT_SECRET_STORE${storeIndex}, ` +
+        `WALMART_STORE${storeIndex}_SELLER_ID in env.`
     );
   }
-
-  return { clientId, clientSecret, sellerId, storeName };
+  const n = storeIndex;
+  return {
+    clientId: process.env[`WALMART_CLIENT_ID_STORE${n}`]!,
+    clientSecret: process.env[`WALMART_CLIENT_SECRET_STORE${n}`]!,
+    sellerId: s.sellerId!,
+    storeName: s.storeName,
+  };
 }
 
 /** Sleep helper with jitter for backoff. */

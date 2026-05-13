@@ -80,7 +80,9 @@ const operationsItems = (s: DashboardSummary): NavItem[] => [
 
 const phase2Items: NavItem[] = [
   { title: "Product listings", href: "/listings", icon: Tags, disabled: true },
-  { title: "Sales overview", href: "/analytics", icon: TrendingUp, disabled: true },
+  // /analytics is a real 314-line page — keep nav consistent with reality.
+  // Product listings + Suppliers remain stubs and stay disabled.
+  { title: "Sales overview", href: "/analytics", icon: TrendingUp },
   { title: "Suppliers", href: "/suppliers", icon: Package, disabled: true },
 ];
 

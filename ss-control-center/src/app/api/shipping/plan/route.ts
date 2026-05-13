@@ -188,11 +188,23 @@ export async function GET() {
     const isAfterNoon = nowNY.getHours() >= 12;
 
     let skuDatabase: SkuRow[] = [];
+    // Surface a clear warning when the SKU DB fails to load due to env config
+    // (vs genuinely empty data) — otherwise every order falls out for "no SKU"
+    // and the failure looks like missing product entries.
+    let skuLoadError: string | null = null;
     try {
       skuDatabase = await fetchSkuDatabase();
     } catch (e) {
+      skuLoadError = e instanceof Error ? e.message : String(e);
       console.error("Failed to fetch SKU database:", e);
     }
+    const skuConfigStatus = !process.env.GOOGLE_SHEETS_ID
+      ? "missing-id"
+      : !process.env.GOOGLE_SHEETS_API_KEY
+        ? "missing-api-key"
+        : skuLoadError
+          ? "load-failed"
+          : "ok";
 
     const orders = await fetchAllOrders();
 
@@ -205,6 +217,8 @@ export async function GET() {
       isWeekend: weekend,
       isAfterNoon,
       skuCount: skuDatabase.length,
+      skuLoadError,
+      skuConfigStatus,
       filters: {
         afterPlacedTag: 0,
         afterDispatchDate: 0,

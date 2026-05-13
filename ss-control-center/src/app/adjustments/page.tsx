@@ -98,39 +98,6 @@ export default function AdjustmentsPage() {
 
   if (!mounted) return null;
 
-  const statCards = stats
-    ? [
-        {
-          title: "This Month",
-          value: `$${Math.abs(stats.thisMonth).toFixed(2)}`,
-          sub: `${stats.thisMonthCount} adj.`,
-          color: "text-danger",
-          bg: "bg-danger-tint",
-        },
-        {
-          title: "Last 30 Days",
-          value: `$${Math.abs(stats.last30Days).toFixed(2)}`,
-          sub: `${stats.last30Count} adj.`,
-          color: "text-warn-strong",
-          bg: "bg-warn-tint",
-        },
-        {
-          title: "Amazon Total",
-          value: `$${Math.abs(stats.amazonTotal).toFixed(2)}`,
-          sub: "",
-          color: "text-warn-strong",
-          bg: "bg-warn-tint",
-        },
-        {
-          title: "Walmart Total",
-          value: `$${Math.abs(stats.walmartTotal).toFixed(2)}`,
-          sub: "",
-          color: "text-green",
-          bg: "bg-info-tint",
-        },
-      ]
-    : [];
-
   // Tab filter — filters adjustments by type / channel
   const channelTabs = [
     { id: "", label: "All", count: adjTotal },

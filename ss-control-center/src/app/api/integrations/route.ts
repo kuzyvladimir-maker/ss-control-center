@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStoreCredentials } from "@/lib/amazon-sp-api/auth";
+import { getWalmartStoreStatus } from "@/lib/walmart";
 
 export async function GET() {
   const integrations = [];
@@ -36,8 +37,18 @@ export async function GET() {
   // Google Sheets
   integrations.push({
     name: "Google Sheets",
-    status: process.env.GOOGLE_SHEETS_ID ? "connected" : "not_configured",
-    detail: process.env.GOOGLE_SHEETS_ID ? "SKU Database connected" : "Add GOOGLE_SHEETS_ID to .env",
+    // Google Sheets read access requires BOTH the sheet ID and an API key —
+    // the lib/google-sheets.ts loader throws without GOOGLE_SHEETS_API_KEY.
+    status:
+      process.env.GOOGLE_SHEETS_ID && process.env.GOOGLE_SHEETS_API_KEY
+        ? "connected"
+        : "not_configured",
+    detail:
+      process.env.GOOGLE_SHEETS_ID && process.env.GOOGLE_SHEETS_API_KEY
+        ? "SKU Database connected"
+        : !process.env.GOOGLE_SHEETS_ID
+          ? "Add GOOGLE_SHEETS_ID to .env"
+          : "Add GOOGLE_SHEETS_API_KEY to .env (sheet ID set, key missing)",
   });
 
   // Google Drive
@@ -61,11 +72,19 @@ export async function GET() {
     detail: process.env.ANTHROPIC_API_KEY ? "CS Analysis active" : "Add ANTHROPIC_API_KEY to .env",
   });
 
-  // Walmart
+  // Walmart — scan up to 5 store slots, list the configured ones.
+  const walmartConfigured: string[] = [];
+  for (let i = 1; i <= 5; i++) {
+    const s = getWalmartStoreStatus(i);
+    if (s.configured) walmartConfigured.push(s.storeName);
+  }
   integrations.push({
     name: "Walmart API",
-    status: "not_configured",
-    detail: "Not configured yet",
+    status: walmartConfigured.length > 0 ? "connected" : "not_configured",
+    detail:
+      walmartConfigured.length > 0
+        ? `${walmartConfigured.length} store(s): ${walmartConfigured.join(", ")}`
+        : "Add WALMART_CLIENT_ID_STORE{n}, WALMART_CLIENT_SECRET_STORE{n}, WALMART_STORE{n}_SELLER_ID to .env",
   });
 
   return NextResponse.json({ integrations });
