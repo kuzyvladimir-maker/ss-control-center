@@ -7,7 +7,7 @@
     },
     {
       "path": "/api/cron/account-health-amazon",
-      "schedule": "0 */4 * * *"
+      "schedule": "0 7 * * *"
     },
     {
       "path": "/api/cron/account-health-walmart",
