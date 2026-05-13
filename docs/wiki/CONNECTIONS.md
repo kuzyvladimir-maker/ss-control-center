@@ -196,9 +196,15 @@
 
 ### [Store Filter System](store-filter-system.md)
 ← [Database Schema](database-schema.md) (`Store.channel` / `Store.storeIndex` / `Store.sellerId`)
-→ [Dashboard](dashboard.md)
+→ [Dashboard](dashboard.md), [Sales Cards on Dashboard](sales-cards-dashboard.md)
 ⇔ `src/components/layout/Sidebar.tsx` (StoreFilterSelector), `src/components/layout/Header.tsx` (StoresLiveBadge)
 Phase 2 planned → [Customer Hub](customer-hub.md), [Adjustments Monitor](adjustments-monitor.md), [Account Health](account-health.md), [Shipping Labels](shipping-labels.md)
+
+### [Sales Cards on Dashboard](sales-cards-dashboard.md)
+← [Store Filter System](store-filter-system.md), [Database Schema](database-schema.md) (`AmazonOrder`, `WalmartOrder`), [Amazon SP-API](amazon-sp-api.md), [Walmart API](walmart-api.md)
+→ [Dashboard](dashboard.md)
+⇔ `scripts/backfill-orders.ts` (data fresh-ness)
+Phase 2 planned → sales-analytics-module (полноценная страница `/analytics`)
 
 ### [Архитектура проекта](project-architecture.md)
 Обзорная статья, ссылается на все модули.
@@ -212,4 +218,4 @@ Phase 2 planned → [Customer Hub](customer-hub.md), [Adjustments Monitor](adjus
 - `⇔` двусторонняя связь
 
 ---
-Последнее обновление: 2026-05-12 (+ store-filter-system Phase 1 — Dashboard)
+Последнее обновление: 2026-05-12 (+ sales-cards-dashboard Phase 1)
