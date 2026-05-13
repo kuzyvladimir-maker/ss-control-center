@@ -17,8 +17,32 @@ import {
   WalmartSellerPerformanceApi,
   type PerformanceWindow,
 } from "@/lib/walmart/seller-performance";
+import { WalmartItemsApi } from "@/lib/walmart/items";
+import { evaluateCriticalAlerts } from "@/lib/account-health/critical-alert-evaluator";
 
-const DEFAULT_WINDOWS: PerformanceWindow[] = [30, 90];
+const DEFAULT_WINDOWS: PerformanceWindow[] = [30, 60, 90];
+
+// Maps Walmart's canonical metric names + window to the flat keys used by
+// alert-rules.ts (e.g. "onTimeDelivery" + 30 → "onTimeDelivery30d").
+function toFlatMetricKey(metric: string, days: number): string | null {
+  const W = days === 60 ? "60d" : "30d";
+  switch (metric) {
+    case "onTimeDelivery":
+      return `onTimeDelivery${W}`;
+    case "cancellationRate":
+      return `cancellations${W}`;
+    case "validTrackingRate":
+      return `validTracking${W}`;
+    case "responseRate":
+      return `sellerResponse${W}`;
+    case "onTimeShipment":
+      return `lateShipment${W}`;
+    case "refundRate":
+      return `returns${W}`;
+    default:
+      return null;
+  }
+}
 
 export async function POST(request: NextRequest) {
   let body: { storeIndex?: number; windows?: number[] } = {};
@@ -43,12 +67,17 @@ export async function POST(request: NextRequest) {
   }
 
   const api = new WalmartSellerPerformanceApi(client);
+  const itemsApi = new WalmartItemsApi(client);
 
   const results: Array<{
     windowDays: number;
     metricsCaptured: number;
     error?: string;
   }> = [];
+
+  // Flat key→value map for the alert evaluator. Populated as we walk the
+  // performance summaries below.
+  const metricsMap: Record<string, number | null> = {};
 
   for (const w of windows) {
     try {
@@ -63,10 +92,13 @@ export async function POST(request: NextRequest) {
             value: m.value,
             threshold: m.threshold,
             isHealthy: m.isHealthy,
+            status: m.isHealthy ? "GOOD" : "URGENT",
             rawData: JSON.stringify(m.raw ?? null),
           },
         });
         captured++;
+        const key = toFlatMetricKey(m.metric, m.windowDays);
+        if (key) metricsMap[key] = m.value;
       }
       results.push({ windowDays: w, metricsCaptured: captured });
     } catch (err) {
@@ -78,7 +110,74 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, storeIndex, results });
+  // ── Item compliance pull (Account Health v2) ─────────────────────────
+  let itemsTouched = 0;
+  try {
+    const issues = await itemsApi.getCompliance();
+    for (const issue of issues) {
+      await prisma.walmartItemCompliance.upsert({
+        where: {
+          walmart_item_compliance_dedup: {
+            itemId: issue.itemId,
+            issueType: issue.issueType,
+          },
+        },
+        create: {
+          storeIndex,
+          itemId: issue.itemId,
+          sku: issue.sku ?? null,
+          title: issue.title ?? null,
+          issueType: issue.issueType,
+          issueDetails: issue.issueDetails ?? null,
+          severity: issue.severity,
+          reportedAt: issue.reportedAt,
+        },
+        update: {
+          storeIndex,
+          sku: issue.sku ?? null,
+          title: issue.title ?? null,
+          issueDetails: issue.issueDetails ?? null,
+          severity: issue.severity,
+          status: "OPEN",
+        },
+      });
+      itemsTouched++;
+    }
+    metricsMap.newItemCompliance = issues.length;
+  } catch (err) {
+    console.warn(
+      `[Walmart sync] store${storeIndex} items failed:`,
+      err instanceof Error ? err.message : err
+    );
+  }
+
+  // ── Run alert evaluator ──────────────────────────────────────────────
+  let alertsCreated = 0;
+  try {
+    const store = await prisma.store.findFirst({
+      where: { storeIndex, channel: "Walmart" },
+      select: { id: true, name: true },
+    });
+    if (store) {
+      const created = await evaluateCriticalAlerts({
+        storeId: store.id,
+        storeName: store.name,
+        channel: "Walmart",
+        metrics: metricsMap,
+      });
+      alertsCreated = created.length;
+    }
+  } catch (err) {
+    console.error("[Walmart sync] alert evaluation failed:", err);
+  }
+
+  return NextResponse.json({
+    ok: true,
+    storeIndex,
+    results,
+    itemsTouched,
+    alertsCreated,
+  });
 }
 
 export async function GET() {
