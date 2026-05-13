@@ -25,7 +25,9 @@
 - [Shipping Labels](shipping-labels.md) — план + покупка labels через Veeqo
 - [Shipment Monitor](shipment-monitor.md) — мониторинг доставок, детекция проблем, подготовка claims (спроектирован, после Phase 1)
 - [Customer Hub](customer-hub.md) — Messages, A-to-Z, Chargebacks, Feedback (в разработке)
-- [Account Health](account-health.md) — мониторинг 5 аккаунтов, ODR/LSR/VTR
+- [Account Health v2.0](account-health-v2.md) — мониторинг Amazon (AHR + Policy Compliance × 10 категорий + ODR/LSR/VTR) + Walmart (8 metrics + Item Compliance), 2 таба, drill-down по нарушениям — 2026-05-12
+- [Critical Alerts Engine](critical-alerts.md) — Telegram + UI push при пересечении критических порогов Amazon/Walmart — 2026-05-12
+- [Account Health (исходный)](account-health.md) — предыдущая версия, оставлена как reference
 - [Frozen Analytics](frozen-analytics.md) — инциденты с frozen, SKU risk profiles
 - [Adjustments Monitor](adjustments-monitor.md) — корректировки веса/размеров
 - [A-to-Z & Chargeback](atoz-chargeback.md) — защита от претензий
@@ -69,4 +71,4 @@
 - [Veeqo API Quirks](veeqo-api-quirks.md) — order tags нельзя ставить через `PUT /orders/{id}` (silently no-op); работает только `POST /bulk_tagging`. Найдено 2026-05-04.
 
 ---
-Последнее обновление: 2026-05-04 (+ mobile-adaptation Phase 2 — full mobile coverage)
+Последнее обновление: 2026-05-12 (+ Account Health v2 + Critical Alerts engine)
