@@ -101,14 +101,11 @@ export function WalmartHealthTab({ refreshNonce }: { refreshNonce: number }) {
   // payload prominently. When a second account lands, we'll iterate.
   const store = data.stores[0];
 
-  // Pick out the 30d metrics for the standards grid; pull 60d for the
-  // feedback / refunds row that Walmart reports on a longer window.
-  const metric30 = (key: string) =>
-    store.metrics.find((m) => m.metric === key && m.windowDays === 30);
-  const metric60 = (key: string) =>
-    store.metrics.find((m) => m.metric === key && m.windowDays === 60);
-
-  const breaches = store.metrics.filter((m) => !m.isHealthy).length;
+  // Walmart's Seller Performance API is only available to sellers enrolled
+  // in their (gated) Insights program. Our account returns 404 on every
+  // performance / scorecard endpoint, so we show a clear placeholder
+  // instead of an empty grid that looks broken.
+  const performanceAvailable = store.metrics.length > 0;
 
   return (
     <div className="space-y-5">
@@ -116,31 +113,27 @@ export function WalmartHealthTab({ refreshNonce }: { refreshNonce: number }) {
       <div className="grid gap-3 sm:grid-cols-3">
         <KpiCard
           label="Walmart overall"
-          value={breaches > 0 ? `${breaches} breach${breaches === 1 ? "" : "es"}` : "Healthy"}
+          value={
+            store.itemCompliance.urgent > 0
+              ? `${store.itemCompliance.urgent} urgent`
+              : store.itemCompliance.monitor > 0
+                ? "Monitor"
+                : "Healthy"
+          }
           icon={<HeartPulse size={14} />}
-          iconVariant={breaches > 0 ? "danger" : "default"}
+          iconVariant={
+            store.itemCompliance.urgent > 0
+              ? "danger"
+              : store.itemCompliance.monitor > 0
+                ? "warn"
+                : "default"
+          }
           trend={{ value: store.storeName }}
         />
         <KpiCard
-          label="Urgent issues"
-          value={
-            store.itemCompliance.urgent > 0
-              ? store.itemCompliance.urgent
-              : breaches > 0
-                ? breaches
-                : "—"
-          }
+          label="Listings needing review"
+          value={store.itemCompliance.monitor + store.itemCompliance.urgent}
           icon={<AlertTriangle size={14} />}
-          iconVariant={
-            store.itemCompliance.urgent > 0 || breaches > 0
-              ? "danger"
-              : "default"
-          }
-        />
-        <KpiCard
-          label="Item compliance"
-          value={store.itemCompliance.totalIssues}
-          icon={<Package size={14} />}
           iconVariant={
             store.itemCompliance.urgent > 0
               ? "danger"
@@ -152,57 +145,111 @@ export function WalmartHealthTab({ refreshNonce }: { refreshNonce: number }) {
             value: `${store.itemCompliance.urgent} urgent · ${store.itemCompliance.monitor} monitor`,
           }}
         />
+        <KpiCard
+          label="Performance metrics"
+          value={performanceAvailable ? "Live" : "Not available"}
+          icon={<Package size={14} />}
+          iconVariant="default"
+          trend={{
+            value: performanceAvailable
+              ? "via Marketplace API"
+              : "Walmart Seller Center only",
+          }}
+        />
       </div>
 
-      {/* Performance standards (30d primary) */}
-      <Panel>
-        <PanelHeader
-          title="Performance standards"
-          right={<span className="text-[11px] text-ink-3">30-day window</span>}
-        />
-        <PanelBody>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {Object.entries(METRIC_LABELS).map(([key, meta]) => {
-              const m = metric30(key);
-              return (
-                <MetricCard
-                  key={key}
-                  label={meta.label}
-                  value={m?.value ?? null}
-                  threshold={meta.threshold}
-                  healthy={m?.isHealthy ?? null}
-                />
-              );
-            })}
-          </div>
-        </PanelBody>
-      </Panel>
+      {/* Performance standards block — only when API actually returned data.
+          Most sellers (us included) hit 404 on /sellerPerformance/*, so the
+          panel below renders only when at least one metric was captured. */}
+      {performanceAvailable ? (
+        <Panel>
+          <PanelHeader
+            title="Performance standards"
+            right={
+              <span className="text-[11px] text-ink-3">30-day window</span>
+            }
+          />
+          <PanelBody>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {Object.entries(METRIC_LABELS).map(([key, meta]) => {
+                const m = store.metrics.find(
+                  (x) => x.metric === key && x.windowDays === 30
+                );
+                return (
+                  <MetricCard
+                    key={key}
+                    label={meta.label}
+                    value={m?.value ?? null}
+                    threshold={meta.threshold}
+                    healthy={m?.isHealthy ?? null}
+                  />
+                );
+              })}
+            </div>
+          </PanelBody>
+        </Panel>
+      ) : (
+        <Panel>
+          <PanelHeader title="Performance metrics" />
+          <PanelBody>
+            <div className="rounded-md bg-surface-tint p-4 text-[12.5px] text-ink-2">
+              <div className="mb-1 font-medium text-ink">
+                Not available via API for this account
+              </div>
+              Walmart&apos;s Seller Performance / Scorecard endpoints
+              (<code>/v3/sellerPerformance/*</code>, <code>/v3/insights/*</code>) return{" "}
+              <code>404 CONTENT_NOT_FOUND</code> for our seller account.
+              These metrics are accessible only via{" "}
+              <a
+                href="https://seller.walmart.com/account/performance"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green hover:text-green-deep underline"
+              >
+                Walmart Seller Center
+              </a>
+              . Item-compliance issues (below) are pulled successfully via
+              the public <code>/v3/items</code> endpoint.
+            </div>
+          </PanelBody>
+        </Panel>
+      )}
 
-      {/* 60d window — feedback/returns family */}
-      <Panel>
-        <PanelHeader
-          title="Long-window metrics"
-          right={<span className="text-[11px] text-ink-3">60-day window</span>}
-        />
-        <PanelBody>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <MetricCard
-              label="Refund rate"
-              value={metric60("refundRate")?.value ?? null}
-              threshold="≤ 6%"
-              healthy={metric60("refundRate")?.isHealthy ?? null}
-            />
-          </div>
-        </PanelBody>
-      </Panel>
-
-      {/* Item Compliance */}
+      {/* Item Compliance — what Walmart's /v3/items API flagged. Each row is
+          one product in our catalog Walmart considers problematic. */}
       <Panel>
         <PanelHeader
           title="Item compliance"
           count={store.itemCompliance.totalIssues}
+          right={
+            <span className="text-[11px] text-ink-3">
+              listings Walmart flagged for review
+            </span>
+          }
         />
-        <PanelBody className="p-0">
+        <PanelBody>
+          {/* Severity legend — explains what URGENT vs MONITOR means so the
+              operator doesn't have to guess. */}
+          <div className="mb-3 rounded-md bg-surface-tint p-3 text-[11.5px] text-ink-2">
+            <div className="font-medium text-ink mb-1">What this means</div>
+            <div className="space-y-0.5">
+              <div>
+                <span className="inline-flex w-[70px] rounded bg-danger-tint px-1.5 py-0.5 text-[10.5px] font-mono uppercase text-danger">
+                  Urgent
+                </span>{" "}
+                — listing blocked or troubled. Sales likely affected. Fix
+                ASAP.
+              </div>
+              <div>
+                <span className="inline-flex w-[70px] rounded bg-warn-tint px-1.5 py-0.5 text-[10.5px] font-mono uppercase text-warn-strong">
+                  Monitor
+                </span>{" "}
+                — published with errors / system problem. Listing live but
+                Walmart wants attention. Not urgent.
+              </div>
+            </div>
+          </div>
+
           {store.itemCompliance.items.length === 0 ? (
             <div className="px-4 py-6 text-center text-[12px] text-ink-3">
               No open compliance issues right now.
@@ -249,6 +296,11 @@ export function WalmartHealthTab({ refreshNonce }: { refreshNonce: number }) {
                   ))}
                 </tbody>
               </table>
+              {store.itemCompliance.items.length > 25 && (
+                <div className="border-t border-rule px-4 py-2 text-center text-[11px] text-ink-3">
+                  Showing first 25 of {store.itemCompliance.items.length}
+                </div>
+              )}
             </div>
           )}
         </PanelBody>

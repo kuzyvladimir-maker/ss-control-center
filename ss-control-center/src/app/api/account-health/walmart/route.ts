@@ -49,8 +49,9 @@ export async function GET(request: NextRequest) {
 
     const itemCompliance = await prisma.walmartItemCompliance.findMany({
       where: { storeIndex: idx, status: "OPEN" },
-      orderBy: { capturedAt: "desc" },
-      take: 50,
+      // Urgent first so blocked/troubled listings surface above MONITOR rows.
+      orderBy: [{ severity: "asc" }, { capturedAt: "desc" }],
+      take: 200,
     });
 
     result.push({
