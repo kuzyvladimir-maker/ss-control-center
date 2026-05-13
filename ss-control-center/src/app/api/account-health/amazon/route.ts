@@ -92,6 +92,10 @@ export async function GET(request: NextRequest) {
     },
     null
   );
+  // A store is "at risk" if Amazon's AHR puts it below the safe zone (<400)
+  // OR any of the standard shipping/ODR thresholds is breached OR any
+  // policy category is in CRITICAL state. This matches what the Amazon
+  // Account Health page calls out as "issues".
   const breaches = result.filter((r) => {
     const snap = r.snapshot as
       | {
@@ -100,10 +104,22 @@ export async function GET(request: NextRequest) {
           validTrackingRate?: number;
           onTimeDeliveryRate?: number;
           orderDefectRate?: number;
+          accountHealthRating?: number | null;
+          accountHealthRatingStatus?: string | null;
         }
       | null;
     if (!snap) return false;
+    const ahrAtRisk =
+      snap.accountHealthRatingStatus === "AT_RISK" ||
+      snap.accountHealthRatingStatus === "AT_RISK_OF_DEACTIVATION" ||
+      (typeof snap.accountHealthRating === "number" &&
+        snap.accountHealthRating < 400);
+    const policyHot = r.policyCategories.some(
+      (p) => p.status === "CRITICAL"
+    );
     return (
+      ahrAtRisk ||
+      policyHot ||
       snap.status === "critical" ||
       (snap.orderDefectRate ?? 0) >= 1 ||
       (snap.lateShipmentRate30d ?? 0) >= 4 ||
