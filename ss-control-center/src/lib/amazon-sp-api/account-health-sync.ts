@@ -13,6 +13,7 @@ import { prisma } from "@/lib/prisma";
 import { spApiGet } from "./client";
 import { fetchAccountHealthRating } from "./account-health-rating";
 import { fetchPolicyCompliance } from "./policy-compliance";
+import { evaluateCriticalAlerts } from "@/lib/account-health/critical-alert-evaluator";
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -272,10 +273,46 @@ export async function syncStoreHealth(storeIndex: number) {
       }
     }
 
+    // ── Run alert evaluator against the fresh metrics ────────────────
+    // Build a flat key→value map matching the names used in alert-rules.ts.
+    // Policy "newPolicyViolation_*" deltas need the previous snapshot for
+    // a baseline; for now we surface the current count as the new delta
+    // (this is conservative — alerts fire when category count > 0).
+    const policyDelta: Record<string, number> = {};
+    for (const cat of policyCategories) {
+      policyDelta[`newPolicyViolation_${cat.category}`] = cat.count;
+    }
+    let alertsCreated = 0;
+    try {
+      const store = await prisma.store.findFirst({
+        where: { storeIndex, channel: "Amazon" },
+        select: { id: true, name: true },
+      });
+      if (store) {
+        const created = await evaluateCriticalAlerts({
+          storeId: store.id,
+          storeName: store.name,
+          channel: "Amazon",
+          metrics: {
+            accountHealthRating: ahr?.rating ?? null,
+            orderDefectRate: odr,
+            lateShipmentRate30d: lateShipmentRate30d,
+            preFulfillmentCancelRate: cancelRate,
+            validTrackingRate: validTrackingRate,
+            onTimeDeliveryRate: otdr,
+            ...policyDelta,
+          },
+        });
+        alertsCreated = created.length;
+      }
+    } catch (err) {
+      console.error("[AccountHealth] alert evaluation failed:", err);
+    }
+
     console.log(
-      `[AccountHealth] ${storeId}: ${overallStatus} | ODR ${odr}% | LSR10 ${lateShipmentRate10d}% LSR30 ${lateShipmentRate30d}% | Cancel ${cancelRate}% | VTR ${validTrackingRate}% | OTDR ${otdr ?? "n/a"}%`
+      `[AccountHealth] ${storeId}: ${overallStatus} | ODR ${odr}% | LSR10 ${lateShipmentRate10d}% LSR30 ${lateShipmentRate30d}% | Cancel ${cancelRate}% | VTR ${validTrackingRate}% | OTDR ${otdr ?? "n/a"}% | alerts ${alertsCreated}`
     );
-    return { success: true, storeIndex, status: overallStatus };
+    return { success: true, storeIndex, status: overallStatus, alertsCreated };
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     await prisma.accountHealthSnapshot.update({
