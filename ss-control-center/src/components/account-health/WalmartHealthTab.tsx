@@ -84,6 +84,8 @@ export function WalmartHealthTab({ refreshNonce }: { refreshNonce: number }) {
 
   useEffect(() => {
     load();
+    const id = setInterval(load, 60_000);
+    return () => clearInterval(id);
   }, [load, refreshNonce]);
 
   if (loading && !data) return <div className="text-[12px] text-ink-3">Loading…</div>;

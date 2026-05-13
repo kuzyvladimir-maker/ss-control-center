@@ -94,6 +94,11 @@ export function AmazonHealthTab({ refreshNonce }: { refreshNonce: number }) {
 
   useEffect(() => {
     load();
+    // Light polling so the snapshot stays fresh while the operator watches
+    // the page; cron writes happen every 4 hours but they're not aligned
+    // with when the user opens the tab.
+    const id = setInterval(load, 60_000);
+    return () => clearInterval(id);
   }, [load, refreshNonce]);
 
   if (loading && !data) return <div className="text-[12px] text-ink-3">Loading…</div>;
