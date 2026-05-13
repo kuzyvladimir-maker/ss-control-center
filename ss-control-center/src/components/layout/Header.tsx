@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Bell, LogOut, Menu, Search, ShieldCheck } from "lucide-react";
+import { LogOut, Menu, Search, ShieldCheck } from "lucide-react";
+import { CriticalAlertsBell } from "@/components/critical-alerts/CriticalAlertsBell";
 import { useMounted } from "@/lib/use-mounted";
 import { useMobileNav } from "@/lib/mobile-nav-context";
 import { useStoreFilter } from "@/lib/store-filter/StoreFilterContext";
@@ -88,14 +89,8 @@ export default function Header() {
       {/* Live pill — reflects the global store filter selection */}
       <StoresLiveBadge />
 
-      {/* Notifications */}
-      <button
-        type="button"
-        aria-label="Notifications"
-        className="grid h-8 w-8 place-items-center rounded-md text-ink-2 hover:bg-bg-elev hover:text-ink"
-      >
-        <Bell size={16} />
-      </button>
+      {/* Critical alerts feed — polls /api/alerts/unacknowledged */}
+      <CriticalAlertsBell />
 
       {/* User chip */}
       {me && mounted && (
