@@ -60,10 +60,12 @@ interface Response {
   stores: StoreRow[];
   summary: {
     total: number;
+    configured: number;
     breaches: number;
     healthy: number;
-    worstAhr: number | null;
+    worstAhr: { store: string; value: number } | null;
     worstOdr: { store: string; value: number } | null;
+    openPolicyViolations: number;
   };
 }
 
@@ -109,50 +111,54 @@ export function AmazonHealthTab({ refreshNonce }: { refreshNonce: number }) {
       {/* Hero row */}
       <div className="grid gap-3 sm:grid-cols-3">
         <KpiCard
-          label="Overall health"
+          label="At risk"
           value={
-            data.summary.breaches > 0
-              ? `${data.summary.breaches} of ${data.summary.total} at risk`
-              : data.summary.total > 0
-                ? "All healthy"
-                : "No data"
+            data.summary.configured > 0
+              ? `${data.summary.breaches} of ${data.summary.configured}`
+              : "No data"
           }
           icon={<HeartPulse size={14} />}
           iconVariant={data.summary.breaches > 0 ? "danger" : "default"}
+          trend={{
+            value:
+              data.summary.breaches > 0
+                ? "stores need action"
+                : "all stores OK",
+          }}
         />
         <KpiCard
-          label="Worst AHR"
-          value={data.summary.worstAhr ?? "—"}
+          label="Lowest AHR"
+          value={data.summary.worstAhr ? data.summary.worstAhr.value : "—"}
           icon={<ShieldCheck size={14} />}
           iconVariant={
-            data.summary.worstAhr != null && data.summary.worstAhr < 200
+            data.summary.worstAhr && data.summary.worstAhr.value < 160
               ? "danger"
-              : data.summary.worstAhr != null && data.summary.worstAhr < 400
+              : data.summary.worstAhr && data.summary.worstAhr.value < 200
                 ? "warn"
                 : "default"
           }
           trend={
-            data.summary.worstAhr != null
-              ? { value: zoneLabel(data.summary.worstAhr) }
+            data.summary.worstAhr
+              ? {
+                  value: data.summary.worstAhr.store,
+                  subText: zoneLabel(data.summary.worstAhr.value),
+                }
               : undefined
           }
         />
         <KpiCard
-          label="Worst ODR"
-          value={
-            data.summary.worstOdr
-              ? `${data.summary.worstOdr.value.toFixed(2)}%`
-              : "—"
-          }
+          label="Open policy violations"
+          value={data.summary.openPolicyViolations}
           icon={<AlertTriangle size={14} />}
           iconVariant={
-            (data.summary.worstOdr?.value ?? 0) >= 1 ? "danger" : "default"
+            data.summary.openPolicyViolations > 0 ? "danger" : "default"
           }
-          trend={
-            data.summary.worstOdr
-              ? { value: data.summary.worstOdr.store, subText: "target < 1%" }
-              : undefined
-          }
+          trend={{
+            value:
+              data.summary.openPolicyViolations > 0
+                ? "across all stores"
+                : "none",
+          }}
         />
       </div>
 
@@ -261,40 +267,65 @@ export function AmazonHealthTab({ refreshNonce }: { refreshNonce: number }) {
   );
 }
 
+// AHR zones — driven by Amazon's actual deactivation policy:
+//   <160  Critical: imminent deactivation risk → red
+//   160-199 At Risk of Deactivation → red (same tier, slightly milder)
+//   200-399 Warned by Amazon → amber/warn
+//   ≥400  Good → green
 function zoneLabel(ahr: number) {
+  if (ahr < 160) return "Critical";
   if (ahr < 200) return "At Risk of Deactivation";
-  if (ahr < 400) return "At Risk";
+  if (ahr < 400) return "Warned";
   return "Good";
 }
 
+function ahrBarClass(ahr: number | null): string {
+  if (ahr == null) return "bg-bg-elev";
+  if (ahr < 160) return "bg-danger";
+  if (ahr < 200) return "bg-danger/80";
+  if (ahr < 400) return "bg-warn-strong";
+  return "bg-green";
+}
+
+function ahrTextClass(ahr: number | null): string {
+  if (ahr == null) return "text-ink-3";
+  if (ahr < 200) return "text-danger";
+  if (ahr < 400) return "text-warn-strong";
+  return "text-green";
+}
+
 function AhrRow({ row }: { row: StoreRow }) {
-  const ahr = row.snapshot?.accountHealthRating;
-  const status = row.snapshot?.accountHealthRatingStatus ?? null;
+  const ahr = row.snapshot?.accountHealthRating ?? null;
   const pct =
     ahr != null ? Math.min(100, Math.max(0, (ahr / 1000) * 100)) : null;
   const zone = ahr != null ? zoneLabel(ahr) : "—";
-  const zoneClr =
-    ahr == null
-      ? "bg-bg-elev"
-      : ahr < 200
-        ? "bg-danger"
-        : ahr < 400
-          ? "bg-warn-strong"
-          : "bg-green";
+  const barCls = ahrBarClass(ahr);
+  const numCls = ahrTextClass(ahr);
 
   return (
     <div>
       <div className="flex items-baseline justify-between text-[12.5px]">
         <span className="font-medium text-ink">{row.storeName}</span>
-        <span className="tabular text-ink-2">
-          {ahr != null ? `${ahr} / 1000` : "—"}
-          <span className="ml-2 text-[11px] text-ink-3">{status ? zone : "no AHR yet"}</span>
+        <span className="tabular">
+          <span className={cn("font-semibold", numCls)}>
+            {ahr != null ? ahr : "—"}
+          </span>
+          <span className="ml-1 text-ink-3">/ 1000</span>
+          <span className={cn("ml-2 text-[11px]", numCls)}>
+            {ahr != null ? zone : "no AHR yet"}
+          </span>
         </span>
       </div>
-      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-bg-elev">
+      <div className="relative mt-1.5 h-2 overflow-hidden rounded-full bg-bg-elev">
         <div
-          className={cn("h-full transition-all", zoneClr)}
+          className={cn("h-full transition-all", barCls)}
           style={{ width: pct != null ? `${pct}%` : "0%" }}
+        />
+        {/* Threshold marker at 200 (deactivation line) */}
+        <div
+          className="pointer-events-none absolute top-0 h-full w-px bg-ink/40"
+          style={{ left: "20%" }}
+          aria-hidden
         />
       </div>
       <div className="mt-1 flex justify-between text-[9.5px] font-mono uppercase tracking-wider text-ink-3">
@@ -332,7 +363,12 @@ function PerformanceCard({ row }: { row: StoreRow }) {
       />
       <PanelBody className="space-y-3 text-[12.5px]">
         <Section title="CUSTOMER SERVICE (60d)">
-          <Row label="Order defect rate" value={fmtPct(s?.orderDefectRate)} bad={(s?.orderDefectRate ?? 0) >= 1} />
+          <Row
+            label="Order defect rate"
+            target="< 1%"
+            value={fmtPct(s?.orderDefectRate)}
+            bad={(s?.orderDefectRate ?? 0) >= 1}
+          />
           <Row label="Negative feedback" value={fmtPct(s?.negativeFeedbackRate)} />
           <Row label="A-to-Z claims" value={fmtPct(s?.atozClaimsRate)} />
           <Row label="Chargebacks" value={fmtPct(s?.chargebackRate)} />
@@ -340,6 +376,7 @@ function PerformanceCard({ row }: { row: StoreRow }) {
         <Section title="SHIPPING PERFORMANCE">
           <Row
             label="Late shipment (10d)"
+            target="< 4%"
             value={fmtPct(s?.lateShipmentRate10d)}
             bad={lateOver10}
             sub={
@@ -350,6 +387,7 @@ function PerformanceCard({ row }: { row: StoreRow }) {
           />
           <Row
             label="Late shipment (30d)"
+            target="< 4%"
             value={fmtPct(s?.lateShipmentRate30d)}
             bad={lateOver30}
             sub={
@@ -360,6 +398,7 @@ function PerformanceCard({ row }: { row: StoreRow }) {
           />
           <Row
             label="Cancel rate (7d)"
+            target="< 2.5%"
             value={fmtPct(s?.preFulfillmentCancelRate)}
             bad={cancelOver}
             sub={
@@ -370,6 +409,7 @@ function PerformanceCard({ row }: { row: StoreRow }) {
           />
           <Row
             label="Valid tracking (30d)"
+            target="> 95%"
             value={fmtPct(s?.validTrackingRate)}
             bad={vtrUnder}
             sub={
@@ -380,6 +420,7 @@ function PerformanceCard({ row }: { row: StoreRow }) {
           />
           <Row
             label="On-time delivery (14d)"
+            target="> 90%"
             value={fmtPct(s?.onTimeDeliveryRate)}
             bad={otdrUnder}
             sub={
@@ -416,15 +457,26 @@ function Row({
   value,
   bad,
   sub,
+  target,
 }: {
   label: string;
   value: string;
   bad?: boolean;
   sub?: string;
+  /** Amazon-defined acceptable threshold for this metric, e.g. "< 4%".
+   *  Shown next to the label so the operator doesn't have to remember it. */
+  target?: string;
 }) {
   return (
     <div className="flex items-baseline justify-between">
-      <span className="text-ink-2">{label}</span>
+      <span className="text-ink-2">
+        {label}
+        {target && (
+          <span className="ml-1.5 text-[10.5px] font-mono uppercase text-ink-3">
+            target {target}
+          </span>
+        )}
+      </span>
       <span
         className={cn(
           "tabular font-medium",

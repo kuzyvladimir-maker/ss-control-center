@@ -79,10 +79,16 @@ export async function GET(request: NextRequest) {
   }
 
   // Hero summary
-  const ahrs = result
-    .map((r) => (r.snapshot as { accountHealthRating?: number } | null)?.accountHealthRating)
-    .filter((v): v is number => typeof v === "number");
-  const worstAhr = ahrs.length ? Math.min(...ahrs) : null;
+  const worstAhrRow = result.reduce<{ store: string; value: number } | null>(
+    (acc, r) => {
+      const v = (r.snapshot as { accountHealthRating?: number } | null)
+        ?.accountHealthRating;
+      if (typeof v !== "number") return acc;
+      if (!acc || v < acc.value) return { store: r.storeName, value: v };
+      return acc;
+    },
+    null
+  );
   const worstOdr = result.reduce<{ store: string; value: number } | null>(
     (acc, r) => {
       const v = (r.snapshot as { orderDefectRate?: number } | null)?.orderDefectRate;
@@ -92,50 +98,60 @@ export async function GET(request: NextRequest) {
     },
     null
   );
-  // A store is "at risk" if Amazon's AHR puts it below the safe zone (<400)
-  // OR any of the standard shipping/ODR thresholds is breached OR any
-  // policy category is in CRITICAL state. This matches what the Amazon
-  // Account Health page calls out as "issues".
+  // Total open policy violations across all stores (sum of defectsCount).
+  const openPolicyViolations = result.reduce(
+    (sum, r) => sum + r.policyCategories.reduce((s, p) => s + p.count, 0),
+    0
+  );
+  // A store is "at risk" by Amazon's deactivation criteria, NOT "at risk"
+  // in the broad sense. The line is:
+  //   - AHR < 200  (deactivation threshold per Amazon docs / Seller Central)
+  //   - OR a hard shipping/ODR threshold is breached (ODR ≥ 1%, LSR ≥ 4%,
+  //     Cancel ≥ 2.5%, VTR ≤ 95%, OTDR ≤ 90%)
+  //   - OR any policy category has an open violation
+  // AHR in the 200–399 "warned" band is NOT at-risk here — it's a warning
+  // but Amazon doesn't deactivate over it.
   const breaches = result.filter((r) => {
     const snap = r.snapshot as
       | {
-          status?: string;
           lateShipmentRate30d?: number;
           validTrackingRate?: number;
           onTimeDeliveryRate?: number;
           orderDefectRate?: number;
+          preFulfillmentCancelRate?: number;
           accountHealthRating?: number | null;
-          accountHealthRatingStatus?: string | null;
         }
       | null;
     if (!snap) return false;
-    const ahrAtRisk =
-      snap.accountHealthRatingStatus === "AT_RISK" ||
-      snap.accountHealthRatingStatus === "AT_RISK_OF_DEACTIVATION" ||
-      (typeof snap.accountHealthRating === "number" &&
-        snap.accountHealthRating < 400);
-    const policyHot = r.policyCategories.some(
-      (p) => p.status === "CRITICAL"
-    );
+    const ahrCritical =
+      typeof snap.accountHealthRating === "number" &&
+      snap.accountHealthRating < 200;
+    const policyHot = r.policyCategories.some((p) => p.count > 0);
     return (
-      ahrAtRisk ||
+      ahrCritical ||
       policyHot ||
-      snap.status === "critical" ||
       (snap.orderDefectRate ?? 0) >= 1 ||
       (snap.lateShipmentRate30d ?? 0) >= 4 ||
+      (snap.preFulfillmentCancelRate ?? 0) >= 2.5 ||
       (snap.validTrackingRate ?? 100) <= 95 ||
       (snap.onTimeDeliveryRate ?? 100) <= 90
     );
   }).length;
 
+  // Configured stores = those that have a snapshot (sync ran for them).
+  // Stores without snapshots (no SP-API creds yet) shouldn't pollute the
+  // "X of Y" count in the hero card.
+  const configured = result.filter((r) => r.snapshot !== null).length;
   return NextResponse.json({
     stores: result,
     summary: {
       total: result.length,
+      configured,
       breaches,
-      healthy: result.length - breaches,
-      worstAhr,
+      healthy: configured - breaches,
+      worstAhr: worstAhrRow,
       worstOdr,
+      openPolicyViolations,
     },
   });
 }
