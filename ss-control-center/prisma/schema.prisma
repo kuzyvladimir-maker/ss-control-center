@@ -22,116 +22,116 @@ model User {
 // Single-use invitations issued by an admin. A new user can only register
 // by visiting an invite link with a valid (unused, unexpired) token.
 model Invite {
-  id           String    @id @default(cuid())
-  email        String                          // target email (lower-cased)
-  token        String    @unique               // unguessable URL-safe token
-  role         String    @default("member")    // role to assign on accept
-  createdById  String                          // user.id of the admin who created it
-  createdAt    DateTime  @default(now())
-  expiresAt    DateTime                        // typically now() + 7 days
-  acceptedAt   DateTime?                       // null while pending
-  acceptedByUserId String?                     // user.id once accepted
-  revokedAt    DateTime?                       // admin can revoke before use
+  id               String    @id @default(cuid())
+  email            String // target email (lower-cased)
+  token            String    @unique // unguessable URL-safe token
+  role             String    @default("member") // role to assign on accept
+  createdById      String // user.id of the admin who created it
+  createdAt        DateTime  @default(now())
+  expiresAt        DateTime // typically now() + 7 days
+  acceptedAt       DateTime? // null while pending
+  acceptedByUserId String? // user.id once accepted
+  revokedAt        DateTime? // admin can revoke before use
 
   @@index([email])
 }
 
 model CsCase {
-  id           String   @id @default(cuid())
-  channel      String   // Amazon | Walmart
-  store        String?
-  orderId      String?
-  customerName String?
-  product      String?
-  productType  String?  // Frozen | Dry | Unknown
-  category     String?  // C1-C10
-  categoryName String?
-  priority     String?  // LOW | MEDIUM | HIGH | CRITICAL
-  language     String?  // English | Spanish
-  branch       String?  // A | B (for C3)
-  branchName   String?
-  response     String?
-  action       String?  // REPLACEMENT | REFUND | A2Z_GUARANTEE | ESCALATE | INFO | PHOTO_REQUEST
-  urgency      String?
+  id            String  @id @default(cuid())
+  channel       String // Amazon | Walmart
+  store         String?
+  orderId       String?
+  customerName  String?
+  product       String?
+  productType   String? // Frozen | Dry | Unknown
+  category      String? // C1-C10
+  categoryName  String?
+  priority      String? // LOW | MEDIUM | HIGH | CRITICAL
+  language      String? // English | Spanish
+  branch        String? // A | B (for C3)
+  branchName    String?
+  response      String?
+  action        String? // REPLACEMENT | REFUND | A2Z_GUARANTEE | ESCALATE | INFO | PHOTO_REQUEST
+  urgency       String?
   internalNotes String?
-  imageData    String?  // base64 screenshot
+  imageData     String? // base64 screenshot
 
   // Carrier delay detection (v1.2)
-  carrierDelayDetected Boolean @default(false)
-  carrierBadge         String?  // "Claims Protected" | "Late Delivery Risk" | "Unknown"
+  carrierDelayDetected Boolean  @default(false)
+  carrierBadge         String? // "Claims Protected" | "Late Delivery Risk" | "Unknown"
   shippedOnTime        Boolean?
-  promisedEdd          String?  // YYYY-MM-DD
-  actualDelivery       String?  // YYYY-MM-DD
+  promisedEdd          String? // YYYY-MM-DD
+  actualDelivery       String? // YYYY-MM-DD
   daysLate             Int?
 
-  status       String   @default("open") // open | responded | resolved
-  resolution   String?
-  resolvedAt   DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  status     String    @default("open") // open | responded | resolved
+  resolution String?
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
 
 model ShippingPlan {
-  id        String   @id @default(cuid())
-  date      String   // YYYY-MM-DD
-  status    String   @default("draft") // draft | approved | completed
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String             @id @default(cuid())
+  date      String // YYYY-MM-DD
+  status    String             @default("draft") // draft | approved | completed
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
   items     ShippingPlanItem[]
 }
 
 model ShippingPlanItem {
-  id              String   @id @default(cuid())
-  planId          String
-  plan            ShippingPlan @relation(fields: [planId], references: [id])
-  orderNumber     String
-  orderId         String   // Veeqo order ID
-  channel         String
-  product         String
-  sku             String?
-  qty             Int      @default(1)
-  productType     String   // Frozen | Dry
-  weight          Float?
-  boxSize         String?
-  budgetMax       Float?
-  carrier         String?
-  service         String?
-  price           Float?
-  edd             String?  // EDD date
-  deliveryBy      String?  // Delivery By date
-  actualShipDay   String?  // Actual ship day
-  notes           String?
-  status          String   @default("pending") // pending | approved | bought | error | stop
-  trackingNumber  String?
-  labelPdfUrl     String?
-  allocationId    String?
-  carrierId       String?
+  id               String       @id @default(cuid())
+  planId           String
+  plan             ShippingPlan @relation(fields: [planId], references: [id])
+  orderNumber      String
+  orderId          String // Veeqo order ID
+  channel          String
+  product          String
+  sku              String?
+  qty              Int          @default(1)
+  productType      String // Frozen | Dry
+  weight           Float?
+  boxSize          String?
+  budgetMax        Float?
+  carrier          String?
+  service          String?
+  price            Float?
+  edd              String? // EDD date
+  deliveryBy       String? // Delivery By date
+  actualShipDay    String? // Actual ship day
+  notes            String?
+  status           String       @default("pending") // pending | approved | bought | error | stop
+  trackingNumber   String?
+  labelPdfUrl      String?
+  allocationId     String?
+  carrierId        String?
   remoteShipmentId String?
-  serviceType     String?
-  subCarrierId    String?
-  serviceCarrier  String?
-  totalNetCharge  String?
-  baseRate        String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  serviceType      String?
+  subCarrierId     String?
+  serviceCarrier   String?
+  totalNetCharge   String?
+  baseRate         String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
   @@index([planId])
   @@index([orderId])
 }
 
 model Store {
-  id        String   @id @default(cuid())
-  name      String
-  channel   String   // Amazon | Walmart
-  signature String   @default("") // Name used in CS responses
-  active    Boolean  @default(true)
+  id         String   @id @default(cuid())
+  name       String
+  channel    String // Amazon | Walmart
+  signature  String   @default("") // Name used in CS responses
+  active     Boolean  @default(true)
   // Bridge to the underlying order/transaction tables. Amazon stores use a
   // 1..5 integer (matches AmazonOrder.storeIndex / AtozzClaim.storeIndex /
   // BuyerMessage.storeIndex). Walmart stores use the Marketplace Seller ID.
   storeIndex Int?
-  sellerId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  sellerId   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Setting {
@@ -143,294 +143,294 @@ model Setting {
 model ProductTypeOverride {
   id        String   @id @default(cuid())
   productId Int      @unique // Veeqo product ID
-  type      String   // "Frozen" or "Dry"
+  type      String // "Frozen" or "Dry"
   createdAt DateTime @default(now())
 }
 
 // Frozen Delivery Analytics
 model FrozenIncident {
-  id                   String   @id @default(cuid())
-  createdAt            DateTime @default(now())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
   // Link to CS case
-  csCaseId             String?
+  csCaseId String?
 
   // Order data
-  orderId              String
-  amazonOrderId        String?
-  trackingNumber       String?
+  orderId        String
+  amazonOrderId  String?
+  trackingNumber String?
 
   // Product
-  sku                  String
-  productName          String
-  boxSize              String?  // XS/S/M/L/XL
-  weightLbs            Float?
+  sku         String
+  productName String
+  boxSize     String? // XS/S/M/L/XL
+  weightLbs   Float?
 
   // Shipping
-  carrier              String   // ups / fedex / usps
-  service              String   // "2nd Day Air" / "Ground" / etc.
-  shipDate             String   // YYYY-MM-DD
-  promisedEdd          String?  // YYYY-MM-DD
-  actualDelivery       String?  // YYYY-MM-DD
+  carrier              String // ups / fedex / usps
+  service              String // "2nd Day Air" / "Ground" / etc.
+  shipDate             String // YYYY-MM-DD
+  promisedEdd          String? // YYYY-MM-DD
+  actualDelivery       String? // YYYY-MM-DD
   daysInTransit        Int?
   daysLate             Int?
   claimsProtectedBadge Boolean?
   labelCost            Float?
 
   // Destination
-  destZip              String?
-  destCity             String?
-  destState            String?
-  destLat              Float?
-  destLon              Float?
+  destZip   String?
+  destCity  String?
+  destState String?
+  destLat   Float?
+  destLon   Float?
 
   // Weather — origin (Tampa, FL)
-  originTempF          Float?
-  originFeelsLikeF     Float?
-  originTempHighF      Float?
-  originWeatherDesc    String?
+  originTempF       Float?
+  originFeelsLikeF  Float?
+  originTempHighF   Float?
+  originWeatherDesc String?
 
   // Weather — destination
-  destTempF            Float?
-  destFeelsLikeF       Float?
-  destTempHighF        Float?
-  destWeatherDesc      String?
+  destTempF       Float?
+  destFeelsLikeF  Float?
+  destTempHighF   Float?
+  destWeatherDesc String?
 
   // Outcome
-  outcome              String   @default("thawed") // thawed | unclear | ok
-  customerComplained   Boolean  @default(true)
-  resolution           String?  // a2z_guarantee / replacement / refund
-  notes                String?
+  outcome            String  @default("thawed") // thawed | unclear | ok
+  customerComplained Boolean @default(true)
+  resolution         String? // a2z_guarantee / replacement / refund
+  notes              String?
 }
 
 model SkuRiskProfile {
-  id                String   @id @default(cuid())
-  updatedAt         DateTime @updatedAt
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
 
-  sku               String   @unique
-  productName       String
+  sku         String @unique
+  productName String
 
-  totalIncidents    Int      @default(0)
-  thawedCount       Int      @default(0)
-  thawRate          Float?
+  totalIncidents Int    @default(0)
+  thawedCount    Int    @default(0)
+  thawRate       Float?
 
-  avgDaysInTransit  Float?
-  avgOriginTempF    Float?
-  avgDestTempF      Float?
+  avgDaysInTransit Float?
+  avgOriginTempF   Float?
+  avgDestTempF     Float?
 
   mostCommonCarrier String?
   mostCommonService String?
 
-  riskScore         Int      @default(0)  // 0-100
-  riskLevel         String   @default("unknown") // low / medium / high / critical
+  riskScore Int    @default(0) // 0-100
+  riskLevel String @default("unknown") // low / medium / high / critical
 
-  lastIncidentDate  String?
+  lastIncidentDate String?
 }
 
 // Shipping Adjustments Monitor
 model ShippingAdjustment {
-  id                 String   @id @default(cuid())
-  createdAt          DateTime @default(now())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
-  externalId         String   @unique  // from Amazon/Walmart API (dedup)
-  channel            String   // Amazon | Walmart
+  externalId String @unique // from Amazon/Walmart API (dedup)
+  channel    String // Amazon | Walmart
 
-  orderId            String
-  amazonOrderId      String?
-  walmartOrderId     String?
+  orderId        String
+  amazonOrderId  String?
+  walmartOrderId String?
 
-  adjustmentDate     String   // YYYY-MM-DD
-  adjustmentType     String   // WeightAdjustment | DIMadjustment | CarrierAdjustment
-  adjustmentAmount   Float    // negative USD
-  adjustmentReason   String?
+  adjustmentDate   String // YYYY-MM-DD
+  adjustmentType   String // WeightAdjustment | DIMadjustment | CarrierAdjustment
+  adjustmentAmount Float // negative USD
+  adjustmentReason String?
 
-  sku                String?
-  productName        String?
-  carrier            String?
-  service            String?
-  declaredWeightLbs  Float?
-  declaredDimL       Float?
-  declaredDimW       Float?
-  declaredDimH       Float?
-  originalLabelCost  Float?
+  sku               String?
+  productName       String?
+  carrier           String?
+  service           String?
+  declaredWeightLbs Float?
+  declaredDimL      Float?
+  declaredDimW      Float?
+  declaredDimH      Float?
+  originalLabelCost Float?
 
-  adjustedWeightLbs  Float?
-  adjustedDimL       Float?
-  adjustedDimW       Float?
-  adjustedDimH       Float?
+  adjustedWeightLbs Float?
+  adjustedDimL      Float?
+  adjustedDimW      Float?
+  adjustedDimH      Float?
 
-  reviewed           Boolean  @default(false)
-  skuDataFixed       Boolean  @default(false)
-  notes              String?
+  reviewed     Boolean @default(false)
+  skuDataFixed Boolean @default(false)
+  notes        String?
 }
 
 model SkuAdjustmentProfile {
-  id                  String   @id @default(cuid())
-  updatedAt           DateTime @updatedAt
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
 
-  sku                 String   @unique
-  productName         String?
+  sku         String  @unique
+  productName String?
 
-  totalAdjustments    Int      @default(0)
-  totalAmountLost     Float    @default(0)
+  totalAdjustments    Int    @default(0)
+  totalAmountLost     Float  @default(0)
   avgAdjustmentAmount Float?
 
-  mostCommonType      String?  // WeightAdjustment | DIMadjustment
-  needsSkuDbUpdate    Boolean  @default(false)
-  suggestedWeight     Float?
+  mostCommonType   String? // WeightAdjustment | DIMadjustment
+  needsSkuDbUpdate Boolean @default(false)
+  suggestedWeight  Float?
 
-  lastAdjustmentDate  String?
-  channel             String?  // where more frequent
+  lastAdjustmentDate String?
+  channel            String? // where more frequent
 }
 
 // A-to-Z & Chargeback Claims
 model AtozzClaim {
-  id                    String   @id @default(cuid())
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  amazonOrderId         String
-  claimType             String   // A_TO_Z | CHARGEBACK
-  claimReason           String?  // INR | SNAD | Defective | Fraud
-  amount                Float?
-  storeIndex            Int      @default(1)
-  storeName             String?
+  amazonOrderId String
+  claimType     String // A_TO_Z | CHARGEBACK
+  claimReason   String? // INR | SNAD | Defective | Fraud
+  amount        Float?
+  storeIndex    Int     @default(1)
+  storeName     String?
   // Full order context pulled from SP-API on enrichment
-  customerName          String?
-  product               String?
-  orderDate             String?
-  orderTotal            Float?
-  claimText             String?  // The buyer's actual claim/complaint text
+  customerName  String?
+  product       String?
+  orderDate     String?
+  orderTotal    Float?
+  claimText     String? // The buyer's actual claim/complaint text
 
-  detectedAt            DateTime @default(now())
-  deadline              String?  // YYYY-MM-DD
-  daysUntilDeadline     Int?
+  detectedAt        DateTime @default(now())
+  deadline          String? // YYYY-MM-DD
+  daysUntilDeadline Int?
 
-  gmailMessageId        String?
+  gmailMessageId String?
 
   // Evidence
-  trackingNumber        String?
-  carrier               String?
-  shipDate              String?
-  firstScanDate         String?
-  deliveredDate         String?
-  shippedOnTime         Boolean?
-  claimsProtectedBadge  Boolean?
-  evidenceSummary       String?  // JSON
+  trackingNumber       String?
+  carrier              String?
+  shipDate             String?
+  firstScanDate        String?
+  deliveredDate        String?
+  shippedOnTime        Boolean?
+  claimsProtectedBadge Boolean?
+  evidenceSummary      String? // JSON
 
   // Strategy & Response
-  strategyType          String?  // BUY_SHIPPING_PROTECTION | PROOF_OF_DELIVERY | INR_DEFENSE | CARRIER_DELAY_DEFENSE | MANUAL_REVIEW
-  strategyConfidence    String?  // HIGH | MEDIUM | LOW
-  generatedResponse     String?
-  editedResponse        String?
+  strategyType       String? // BUY_SHIPPING_PROTECTION | PROOF_OF_DELIVERY | INR_DEFENSE | CARRIER_DELAY_DEFENSE | MANUAL_REVIEW
+  strategyConfidence String? // HIGH | MEDIUM | LOW
+  generatedResponse  String?
+  editedResponse     String?
 
   // Status: NEW → EVIDENCE_GATHERED → RESPONSE_READY → SUBMITTED → DECIDED → APPEALED → CLOSED
-  status                String   @default("NEW")
+  status String @default("NEW")
 
   // Amazon decision
-  amazonDecision        String?  // IN_OUR_FAVOR | AGAINST_US | AMAZON_FUNDED
-  decisionDate          String?
-  amountCharged         Float?
-  amountSaved           Float?
+  amazonDecision String? // IN_OUR_FAVOR | AGAINST_US | AMAZON_FUNDED
+  decisionDate   String?
+  amountCharged  Float?
+  amountSaved    Float?
 
   // Appeal
-  appealSubmitted       Boolean  @default(false)
-  appealText            String?
-  appealDecision        String?
+  appealSubmitted Boolean @default(false)
+  appealText      String?
+  appealDecision  String?
 
-  vladimirNotes         String?
-  csCaseId              String?
+  vladimirNotes String?
+  csCaseId      String?
 }
 
 // Feedback Manager
 model SellerFeedback {
-  id                  String   @id @default(cuid())
-  createdAt           DateTime @default(now())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
-  amazonFeedbackId    String   @unique
-  orderId             String
-  amazonOrderId       String?
-  rating              Int      // 1-5
-  comments            String?
-  feedbackDate        String   // YYYY-MM-DD
+  amazonFeedbackId String  @unique
+  orderId          String
+  amazonOrderId    String?
+  rating           Int // 1-5
+  comments         String?
+  feedbackDate     String // YYYY-MM-DD
 
-  store               String?
-  channel             String   @default("Amazon")
+  store   String?
+  channel String  @default("Amazon")
 
   // AI classification
-  removable           Boolean?
-  removalCategory     String?  // PRODUCT_REVIEW | CARRIER_DELAY | OBSCENE | PERSONAL_INFO | PROMOTIONAL | PRICING_ONLY
-  removalConfidence   String?  // HIGH | MEDIUM | LOW
-  suggestedAction     String?  // REQUEST_REMOVAL | CONTACT_BUYER | RESPOND_PUBLICLY | MONITOR
-  aiReasoning         String?
+  removable         Boolean?
+  removalCategory   String? // PRODUCT_REVIEW | CARRIER_DELAY | OBSCENE | PERSONAL_INFO | PROMOTIONAL | PRICING_ONLY
+  removalConfidence String? // HIGH | MEDIUM | LOW
+  suggestedAction   String? // REQUEST_REMOVAL | CONTACT_BUYER | RESPOND_PUBLICLY | MONITOR
+  aiReasoning       String?
 
-  removalRequestText  String?
-  publicResponse      String?  // Claude-generated public reply for non-removable negative/positive feedback
+  removalRequestText String?
+  publicResponse     String? // Claude-generated public reply for non-removable negative/positive feedback
 
   // Status: NEW → ANALYZED → REMOVAL_SUBMITTED → REMOVED | DENIED | CONTACT_SENT | CLOSED
-  status              String   @default("NEW")
+  status String @default("NEW")
 
-  removalSubmittedAt  DateTime?
-  removalDecision     String?  // REMOVED | DENIED
-  removalDecisionAt   DateTime?
+  removalSubmittedAt DateTime?
+  removalDecision    String? // REMOVED | DENIED
+  removalDecisionAt  DateTime?
 
-  buyerContactSent    Boolean  @default(false)
-  buyerContactText    String?
-  buyerContactSentAt  DateTime?
+  buyerContactSent   Boolean   @default(false)
+  buyerContactText   String?
+  buyerContactSentAt DateTime?
 
-  csCaseId            String?
-  vladimirNotes       String?
+  csCaseId      String?
+  vladimirNotes String?
 }
 
 model ProductReview {
-  id                  String   @id @default(cuid())
-  createdAt           DateTime @default(now())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
-  asin                String
-  reviewId            String   @unique
-  rating              Int      // 1-5
-  title               String?
-  body                String?
-  reviewDate          String
-  verified            Boolean  @default(false)
+  asin       String
+  reviewId   String  @unique
+  rating     Int // 1-5
+  title      String?
+  body       String?
+  reviewDate String
+  verified   Boolean @default(false)
 
-  store               String?
+  store String?
 
   responseGenerated   String?
-  responseSubmitted   Boolean  @default(false)
+  responseSubmitted   Boolean   @default(false)
   responseSubmittedAt DateTime?
 
-  vladimirNotes       String?
+  vladimirNotes String?
 }
 
 // Account Health Monitor
 model AccountHealthSnapshot {
-  id                       String   @id @default(cuid())
-  createdAt                DateTime @default(now())
-  storeId                  String
-  storeName                String?
-  sellerId                 String?
-  status                   String   @default("pending") // healthy | warning | critical | error | pending
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  storeId   String
+  storeName String?
+  sellerId  String?
+  status    String   @default("pending") // healthy | warning | critical | error | pending
 
   // ODR (60 days)
-  orderDefectRate          Float?
-  odrOrders60d             Int?     // total orders in 60d
-  negativeFeedbackCount    Int?
-  negativeFeedbackRate     Float?
-  atozClaimsCount          Int?
-  atozClaimsRate           Float?
-  chargebackCount          Int?
-  chargebackRate           Float?
+  orderDefectRate       Float?
+  odrOrders60d          Int? // total orders in 60d
+  negativeFeedbackCount Int?
+  negativeFeedbackRate  Float?
+  atozClaimsCount       Int?
+  atozClaimsRate        Float?
+  chargebackCount       Int?
+  chargebackRate        Float?
 
   // Late Shipment Rate — 10-day window
-  lateShipmentRate10d      Float?
-  lsr10dLate               Int?     // late orders
-  lsr10dTotal              Int?     // total orders
+  lateShipmentRate10d Float?
+  lsr10dLate          Int? // late orders
+  lsr10dTotal         Int? // total orders
 
   // Late Shipment Rate — 30-day window
-  lateShipmentRate30d      Float?
-  lsr30dLate               Int?
-  lsr30dTotal              Int?
+  lateShipmentRate30d Float?
+  lsr30dLate          Int?
+  lsr30dTotal         Int?
 
   // Pre-fulfillment Cancel Rate (7 days)
   preFulfillmentCancelRate Float?
@@ -438,78 +438,143 @@ model AccountHealthSnapshot {
   cancelTotal              Int?
 
   // Valid Tracking Rate (30 days)
-  validTrackingRate        Float?
-  vtrTracked               Int?
-  vtrTotal                 Int?
+  validTrackingRate Float?
+  vtrTracked        Int?
+  vtrTotal          Int?
 
   // On-Time Delivery Rate (14 days)
-  onTimeDeliveryRate       Float?
-  otdrOnTime               Int?
-  otdrTotal                Int?
+  onTimeDeliveryRate Float?
+  otdrOnTime         Int?
+  otdrTotal          Int?
 
   // Sync
-  syncStatus               String   @default("pending") // pending | syncing | done | error
-  syncError                String?
-  syncedAt                 DateTime?
+  syncStatus String    @default("pending") // pending | syncing | done | error
+  syncError  String?
+  syncedAt   DateTime?
 
-  alertCount               Int      @default(0)
-  criticalCount            Int      @default(0)
-  alertsJson               String?
+  alertCount    Int     @default(0)
+  criticalCount Int     @default(0)
+  alertsJson    String?
+
+  // ── Account Health v2 additions ─────────────────────────────────────────
+
+  // Aggregate AHR (0..1000) and zone label fetched alongside the ODR/LSR
+  // metrics. May be null when SP-API Selling Partner Insights role isn't
+  // approved yet — see src/lib/amazon-sp-api/account-health-rating.ts.
+  accountHealthRating       Int?
+  accountHealthRatingStatus String? // AT_RISK_OF_DEACTIVATION | AT_RISK | GOOD
+
+  // ODR breakdown by fulfillment channel
+  odrSellerFulfilled         Float?
+  odrSellerFulfilledOrders   Int?
+  odrFulfilledByAmazon       Float?
+  odrFulfilledByAmazonOrders Int?
+
+  // Customer-service sub-metrics by fulfillment channel
+  negativeFeedbackSF  Float?
+  negativeFeedbackFBA Float?
+  atozClaimsRateSF    Float?
+  atozClaimsRateFBA   Float?
+  chargebackRateSF    Float?
+  chargebackRateFBA   Float?
+
+  policyCategories PolicyViolationCategory[]
 
   @@index([storeId, createdAt])
 }
 
+// ─── Account Health v2: Policy Compliance ──────────────────────────────────
+// One row per category per snapshot (10 fixed categories). Drill-down to
+// individual listings lives in PolicyViolationDetail.
+model PolicyViolationCategory {
+  id         String                @id @default(cuid())
+  snapshotId String
+  snapshot   AccountHealthSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  category    String // SUSPECTED_IP | RECEIVED_IP_COMPLAINTS | PRODUCT_AUTHENTICITY | PRODUCT_CONDITION | FOOD_SAFETY | LISTING_POLICY | RESTRICTED_PRODUCT | CUSTOMER_REVIEWS_POLICY | OTHER_POLICY | REGULATORY_COMPLIANCE
+  displayName String
+  count       Int      @default(0)
+  status      String // OK | WARNING | CRITICAL
+  detectedAt  DateTime @default(now())
+
+  details PolicyViolationDetail[]
+
+  @@index([snapshotId])
+  @@index([category])
+}
+
+model PolicyViolationDetail {
+  id         String                  @id @default(cuid())
+  categoryId String
+  category   PolicyViolationCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  asin              String?
+  sku               String?
+  listingTitle      String?
+  violationType     String
+  severity          String // CRITICAL | HIGH | MEDIUM | LOW
+  message           String
+  reportedAt        DateTime
+  resolvedAt        DateTime?
+  status            String    @default("OPEN") // OPEN | RESOLVED | IN_REVIEW
+  amazonReferenceId String?
+
+  @@index([categoryId])
+  @@index([asin])
+  @@index([status])
+}
+
 model AccountAlert {
-  id          String   @id @default(cuid())
-  createdAt   DateTime @default(now())
-  storeId     String
-  storeName   String
-  level       String   // WARNING | CRITICAL
-  metric      String
-  value       Float
-  threshold   Float
-  message     String
-  resolved    Boolean  @default(false)
-  resolvedAt  DateTime?
+  id         String    @id @default(cuid())
+  createdAt  DateTime  @default(now())
+  storeId    String
+  storeName  String
+  level      String // WARNING | CRITICAL
+  metric     String
+  value      Float
+  threshold  Float
+  message    String
+  resolved   Boolean   @default(false)
+  resolvedAt DateTime?
 }
 
 model ReportSyncJob {
-  id              String   @id @default(cuid())
-  createdAt       DateTime @default(now())
-  storeId         String
-  reportType      String
-  amazonReportId  String?
+  id               String    @id @default(cuid())
+  createdAt        DateTime  @default(now())
+  storeId          String
+  reportType       String
+  amazonReportId   String?
   amazonDocumentId String?
-  status          String   @default("requested") // requested | processing | downloading | done | error
-  error           String?
-  completedAt     DateTime?
+  status           String    @default("requested") // requested | processing | downloading | done | error
+  error            String?
+  completedAt      DateTime?
 }
 
 // Amazon Orders (synced from SP-API)
 model AmazonOrder {
-  id                 String   @id @default(cuid())
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  amazonOrderId      String   @unique
-  storeIndex         Int
-  status             String   // Pending | Unshipped | Shipped | Canceled
-  purchaseDate       DateTime
-  lastUpdateDate     DateTime?
-  orderTotal         Float    @default(0)
-  currency           String   @default("USD")
+  amazonOrderId  String    @unique
+  storeIndex     Int
+  status         String // Pending | Unshipped | Shipped | Canceled
+  purchaseDate   DateTime
+  lastUpdateDate DateTime?
+  orderTotal     Float     @default(0)
+  currency       String    @default("USD")
 
-  buyerName          String?
-  buyerEmail         String?
+  buyerName  String?
+  buyerEmail String?
 
-  shipCity           String?
-  shipState          String?
-  shipZip            String?
-  shipCountry        String?
+  shipCity    String?
+  shipState   String?
+  shipZip     String?
+  shipCountry String?
 
   latestShipDate     DateTime?
   latestDeliveryDate DateTime?
-  numberOfItems      Int      @default(0)
+  numberOfItems      Int       @default(0)
   fulfillmentChannel String?
   salesChannel       String?
   cancellationReason String?
@@ -520,26 +585,26 @@ model AmazonOrder {
 
 // Customer Hub — Buyer Messages
 model BuyerMessage {
-  id              String   @id @default(cuid())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id         String    @id @default(cuid())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   // When Amazon actually delivered the message to us (from email Date header).
   // Used for the 24-hour Amazon response deadline — createdAt is when we
   // synced it into our DB, which can be hours/days later.
-  receivedAt      DateTime?
+  receivedAt DateTime?
 
-  gmailMessageId  String?  @unique
-  gmailThreadId   String?
+  gmailMessageId String? @unique
+  gmailThreadId  String?
 
-  channel         String   @default("Amazon") // Amazon | Walmart
-  source          String   @default("gmail")  // gmail | screenshot
-  storeIndex      Int
-  storeName       String
-  storeEmail      String?
+  channel    String  @default("Amazon") // Amazon | Walmart
+  source     String  @default("gmail") // gmail | screenshot
+  storeIndex Int
+  storeName  String
+  storeEmail String?
 
-  customerName    String?
-  customerEmail   String?
-  language        String   @default("English")
+  customerName  String?
+  customerEmail String?
+  language      String  @default("English")
 
   amazonOrderId   String?
   // Walmart-specific identifiers — populated when channel='Walmart' and
@@ -549,26 +614,26 @@ model BuyerMessage {
   orderDate       String?
   orderTotal      Float?
 
-  product         String?
-  asin            String?
-  productType     String?
-  quantity        Int?
+  product     String?
+  asin        String?
+  productType String?
+  quantity    Int?
 
-  carrier         String?
-  service         String?
-  trackingNumber  String?
-  shipDate        String?
-  promisedEdd     String?
-  actualDelivery  String?
-  trackingStatus  String?
-  daysInTransit   Int?
-  daysLate        Int?
+  carrier                  String?
+  service                  String?
+  trackingNumber           String?
+  shipDate                 String?
+  promisedEdd              String?
+  actualDelivery           String?
+  trackingStatus           String?
+  daysInTransit            Int?
+  daysLate                 Int?
   // Shipping service tracking — detects mismatches between what the
   // customer paid for (Amazon order's ShipmentServiceLevelCategory) and
   // what we actually shipped via Veeqo. Drives T21 classification.
   requestedShippingService String?
   actualShippingService    String?
-  shippingMismatch         Boolean @default(false)
+  shippingMismatch         Boolean  @default(false)
   carrierEstimatedDelivery String?
   // JSON array of carrier tracking events from the carrier's direct API
   // (currently UPS; FedEx/USPS to follow). Shape:
@@ -576,12 +641,12 @@ model BuyerMessage {
   // Fed into the analyzer prompt so the model sees the full carrier
   // history instead of just the latest summary field.
   trackingEvents           String?
-  boughtThroughVeeqo Boolean @default(false)
-  claimsProtected Boolean @default(false)
-  shippedOnTime   Boolean?
+  boughtThroughVeeqo       Boolean  @default(false)
+  claimsProtected          Boolean  @default(false)
+  shippedOnTime            Boolean?
 
-  direction       String   @default("incoming")
-  customerMessage String?
+  direction           String  @default("incoming")
+  customerMessage     String?
   // Russian translation cache. customerMessageRu is populated when the
   // message is first synced; suggestedResponseRu + editedResponseRu are
   // populated whenever their EN counterparts change. Used by the bilingual
@@ -600,7 +665,7 @@ model BuyerMessage {
   secondaryAction String?
   whoShouldPay    String?
   internalAction  String?
-  foodSafetyRisk  Boolean  @default(false)
+  foodSafetyRisk  Boolean @default(false)
   atozRisk        String?
 
   suggestedResponse String?
@@ -615,24 +680,24 @@ model BuyerMessage {
   // replacement label run. Phase 2 will auto-clone via Veeqo API.
   supplierReorderNote String?
 
-  status          String   @default("NEW")
-  resolution      String?
+  status     String  @default("NEW")
+  resolution String?
 
   frozenIncidentId String?
-  vladimirNotes   String?
-  imageData       String?
+  vladimirNotes    String?
+  imageData        String?
 
   // JSON blob of the last FactCheckResult from message-analyzer.ts. Stored
   // so the UI can render warnings + confidence without recomputing on every
   // render. Shape: { passed, confidence, mismatches: [{field, inResponse,
   // actual, severity}] }
-  factCheckJson   String?
+  factCheckJson String?
 
   // AI reasoning + audit trail. Holds the internal "why this decision"
   // explanation from the analyzer, plus any [AUTO-FIXED: …] markers
   // appended by the validator. Used by the UI to surface the auto-fix
   // banner and (eventually) for debugging.
-  reasoning       String?
+  reasoning String?
 
   @@index([amazonOrderId])
   @@index([storeIndex, status])
@@ -640,14 +705,14 @@ model BuyerMessage {
 
 // Sync log
 model SyncLog {
-  id          String   @id @default(cuid())
-  startedAt   DateTime @default(now())
+  id          String    @id @default(cuid())
+  startedAt   DateTime  @default(now())
   completedAt DateTime?
 
-  jobName     String   // orders | finances | feedback | health | claims
+  jobName     String // orders | finances | feedback | health | claims
   storeIndex  Int?
-  status      String   @default("running") // running | done | error
-  itemsSynced Int      @default(0)
+  status      String  @default("running") // running | done | error
+  itemsSynced Int     @default(0)
   error       String?
 }
 
@@ -658,35 +723,35 @@ model SyncLog {
 // manually from the Save-to-KB button in MessageDetail or automatically
 // from high-confidence resolved cases.
 model KnowledgeBaseEntry {
-  id          String   @id @default(cuid())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Кейс
-  problemType   String   // T1-T21
-  scenario      String   // краткое описание ситуации
-  customerSaid  String   // что написал клиент (ключевые фразы)
+  problemType  String // T1-T21
+  scenario     String // краткое описание ситуации
+  customerSaid String // что написал клиент (ключевые фразы)
 
   // Контекст
-  trackingStatus     String?
-  shippingMismatch   Boolean @default(false)
-  productType        String?  // Frozen | Dry
+  trackingStatus   String?
+  shippingMismatch Boolean @default(false)
+  productType      String? // Frozen | Dry
 
   // Решение
-  correctAction      String   // replacement | partial_refund | full_refund | redirect_amazon | etc.
-  correctResponse    String   // текст правильного ответа
-  reasoning          String   // почему это решение правильное
-  whoShouldPay       String?  // us | amazon | carrier
+  correctAction   String // replacement | partial_refund | full_refund | redirect_amazon | etc.
+  correctResponse String // текст правильного ответа
+  reasoning       String // почему это решение правильное
+  whoShouldPay    String? // us | amazon | carrier
 
   // Результат
-  outcome            String?  // positive | negative | neutral
-  customerSatisfied  Boolean?
-  atozFiled          Boolean  @default(false)
+  outcome           String? // positive | negative | neutral
+  customerSatisfied Boolean?
+  atozFiled         Boolean  @default(false)
 
   // Метаданные
-  source             String   @default("manual") // manual | auto_from_resolved_case
-  tags               String?  // comma-separated tags
-  channel            String   @default("Amazon") // Amazon | Walmart — different rulebooks
+  source  String  @default("manual") // manual | auto_from_resolved_case
+  tags    String? // comma-separated tags
+  channel String  @default("Amazon") // Amazon | Walmart — different rulebooks
 
   @@index([problemType])
 }
@@ -697,34 +762,34 @@ model KnowledgeBaseEntry {
 
 // Walmart orders synced from /v3/orders. Mirrors the AmazonOrder pattern.
 model WalmartOrder {
-  id                    String   @id @default(cuid())
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  purchaseOrderId       String   @unique  // Walmart PO ID — primary key in their API
-  customerOrderId       String              // human-friendly order number
-  customerEmailId       String?
-  storeIndex            Int      @default(1)
+  purchaseOrderId String  @unique // Walmart PO ID — primary key in their API
+  customerOrderId String // human-friendly order number
+  customerEmailId String?
+  storeIndex      Int     @default(1)
 
-  status                String              // Created | Acknowledged | Shipped | Delivered | Cancelled
-  shipNodeType          String?             // SellerFulfilled | WFSFulfilled | 3PLFulfilled
+  status                String // Created | Acknowledged | Shipped | Delivered | Cancelled
+  shipNodeType          String? // SellerFulfilled | WFSFulfilled | 3PLFulfilled
   orderType             String?
   orderDate             DateTime
   estimatedShipDate     DateTime?
   estimatedDeliveryDate DateTime?
 
-  orderTotal            Float    @default(0)
-  currency              String   @default("USD")
+  orderTotal Float  @default(0)
+  currency   String @default("USD")
 
-  shipCity              String?
-  shipState             String?
-  shipZip               String?
-  shipCountry           String?
+  shipCity    String?
+  shipState   String?
+  shipZip     String?
+  shipCountry String?
 
-  numberOfItems         Int      @default(0)
+  numberOfItems Int    @default(0)
   // JSON dump of the full order payload — preserves every field we don't
   // model explicitly so reanalysis / debugging never has to re-fetch.
-  rawData               String
+  rawData       String
 
   @@index([storeIndex, status])
   @@index([orderDate])
@@ -733,24 +798,24 @@ model WalmartOrder {
 
 // Per-row reconciliation report transactions. Each row is one money event.
 model WalmartReconTransaction {
-  id                         String   @id @default(cuid())
-  createdAt                  DateTime @default(now())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
   storeIndex                 Int      @default(1)
-  reportDate                 DateTime           // settlement date the row came from
+  reportDate                 DateTime // settlement date the row came from
   transactionPostedTimestamp DateTime
-  transactionType            String              // Sales | Refunds | Adjustments | Fees
+  transactionType            String // Sales | Refunds | Adjustments | Fees
   transactionDescription     String?
 
-  purchaseOrderId            String?
-  customerOrderId            String?
-  sku                        String?
-  productName                String?
-  quantity                   Int?
-  amount                     Float
-  feeType                    String?
+  purchaseOrderId String?
+  customerOrderId String?
+  sku             String?
+  productName     String?
+  quantity        Int?
+  amount          Float
+  feeType         String?
 
-  rawData                    String
+  rawData String
 
   // Dedup compound key: same posted-timestamp + PO + type + amount = same row.
   @@unique([transactionPostedTimestamp, purchaseOrderId, transactionType, amount], name: "walmart_recon_dedup")
@@ -760,21 +825,96 @@ model WalmartReconTransaction {
 }
 
 // Snapshot of a Walmart Seller Performance metric at a point in time.
-// We keep history so trends can be plotted over weeks/months.
+// We keep history so trends can be plotted over weeks/months. NOTE: this
+// model is per-metric (one row per metric per sync) — the Account Health v2
+// UI reads the latest row of each metric and aggregates at query time, so
+// nothing here is denormalized.
 model WalmartPerformanceSnapshot {
-  id          String   @id @default(cuid())
-  capturedAt  DateTime @default(now())
+  id         String   @id @default(cuid())
+  capturedAt DateTime @default(now())
 
-  storeIndex  Int      @default(1)
-  windowDays  Int                              // 14 | 30 | 60 | 90
-  metric      String                           // onTimeDelivery | validTrackingRate | ...
-  value       Float                            // percent or ratio
-  threshold   Float?                           // Walmart's healthy threshold for this metric
-  isHealthy   Boolean
+  storeIndex Int     @default(1)
+  windowDays Int // 14 | 30 | 60 | 90
+  metric     String // onTimeDelivery | validTrackingRate | ...
+  value      Float // percent or ratio
+  threshold  Float? // Walmart's healthy threshold for this metric
+  isHealthy  Boolean
 
-  rawData     String
+  // Status bucket for the UI (GOOD | MONITOR | URGENT). Added in v2 so the
+  // sync layer doesn't have to re-derive it from value+threshold on every
+  // read, and so the alerts engine can filter cheaply.
+  status String?
+
+  rawData String
 
   @@index([storeIndex, metric, capturedAt])
+}
+
+// ─── Account Health v2: Walmart Item Compliance ────────────────────────────
+// Per-item compliance issue. Pulled from the Walmart Items API filtered by
+// lifecycleStatus (TROUBLED / BLOCKED / PUBLISHED_WITH_ERRORS / etc).
+model WalmartItemCompliance {
+  id         String   @id @default(cuid())
+  storeIndex Int      @default(1)
+  capturedAt DateTime @default(now())
+
+  itemId       String
+  sku          String?
+  title        String?
+  issueType    String // TROUBLED_LISTING | BLOCKED | PUBLISHED_WITH_ERRORS | STAGE | SYSTEM_PROBLEM
+  issueDetails String?
+  severity     String // URGENT | MONITOR | INFO
+  status       String    @default("OPEN") // OPEN | RESOLVED
+  reportedAt   DateTime
+  resolvedAt   DateTime?
+
+  // Dedup by (item + issueType) so a re-sync updates the existing row
+  // instead of duplicating.
+  @@unique([itemId, issueType], name: "walmart_item_compliance_dedup")
+  @@index([storeIndex])
+  @@index([status])
+}
+
+// ─── Account Health v2: Critical Alerts ────────────────────────────────────
+// Generated by src/lib/account-health/critical-alert-evaluator.ts whenever
+// a fresh snapshot breaches a threshold defined in alert-rules.ts. Each row
+// is one detected breach — UI lists them as a bell-icon feed, and Telegram
+// delivery is tracked here too.
+model CriticalAlert {
+  id      String @id @default(cuid())
+  storeId String
+
+  channel   String // Amazon | Walmart
+  alertType String // metric name from alert-rules.ts
+  severity  String // CRITICAL | HIGH | WARNING
+
+  metricName      String
+  metricValue     String
+  metricThreshold String
+
+  title     String
+  message   String
+  actionUrl String?
+
+  detectedAt DateTime @default(now())
+
+  // Telegram delivery
+  telegramSent      Boolean   @default(false)
+  telegramSentAt    DateTime?
+  telegramMessageId String?
+
+  // UI acknowledgment
+  acknowledged   Boolean   @default(false)
+  acknowledgedAt DateTime?
+  acknowledgedBy String?
+
+  // Resolution
+  resolvedAt DateTime?
+
+  @@index([storeId])
+  @@index([acknowledged])
+  @@index([detectedAt])
+  @@index([severity])
 }
 
 // Procurement: where to buy each SKU (store priority).
