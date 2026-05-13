@@ -1,15 +1,27 @@
 /**
  * GET /api/cron/account-health-amazon
  *
- * Vercel cron triggers this every 4 hours (0 *\/4 * * *). Walks every
- * SP-API-configured Amazon store and runs syncStoreHealth, which now
- * also pulls AHR + Policy Compliance and fires the Critical Alerts
- * evaluator. CRON_SECRET gates outside callers.
+ * Daily Vercel cron (07:00 UTC). Runs the full Reports API flow:
+ *
+ *   1. Request a fresh report for every configured Amazon store.
+ *   2. Poll the queued jobs a few times within this single function
+ *      invocation. Most reports are DONE within ~30s, but if any
+ *      lingers past 8 seconds we leave it for the next poll cycle —
+ *      either the UI (when Vladimir refreshes the page) or tomorrow's
+ *      cron run will pick it up.
+ *
+ * CRON_SECRET via Bearer guards external callers.
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { syncStoreHealth } from "@/lib/amazon-sp-api/account-health-sync";
-import { getStoreCredentials } from "@/lib/amazon-sp-api/auth";
+import {
+  requestReportsForAllStores,
+  pollOpenJobs,
+} from "@/lib/account-health/report-orchestrator";
+
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
 
 export async function GET(request: NextRequest) {
   const auth = request.headers.get("authorization");
@@ -20,27 +32,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const results: Array<{
-    storeIndex: number;
-    success: boolean;
-    status?: string;
-    alertsCreated?: number;
-    error?: string;
-  }> = [];
+  const phase1 = await requestReportsForAllStores();
 
-  for (let i = 1; i <= 5; i++) {
-    if (!getStoreCredentials(i)) continue;
-    try {
-      const r = await syncStoreHealth(i);
-      results.push(r);
-    } catch (err) {
-      results.push({
-        storeIndex: i,
-        success: false,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
-  }
+  // Best-effort: poll a couple of times in this same invocation. Vercel
+  // Hobby gives us 10s; one poll + a 3s nap + another poll keeps us
+  // safely under the limit and often catches the fast reports.
+  const pollResults: Awaited<ReturnType<typeof pollOpenJobs>>[] = [];
+  pollResults.push(await pollOpenJobs());
+  await sleep(3000);
+  pollResults.push(await pollOpenJobs());
 
-  return NextResponse.json({ ok: true, results });
+  return NextResponse.json({
+    ok: true,
+    phase1,
+    pollPasses: pollResults,
+  });
 }
