@@ -10,7 +10,7 @@
 ← [Shipping Labels](shipping-labels.md), [Customer Hub](customer-hub.md), [Account Health](account-health.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md), [Shipment Monitor](shipment-monitor.md)
 
 ### [Shipping Labels](shipping-labels.md)
-← [Veeqo API](veeqo-api.md), [SKU Database](google-sheets-sku-db.md), [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md), [Procurement](procurement-module.md) (ждёт тега `Placed` на заказе перед покупкой этикетки)
+← [Veeqo API](veeqo-api.md), [SKU Database](sku-database-migration.md), [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md), [Procurement](procurement-module.md) (ждёт тега `Placed` на заказе перед покупкой этикетки)
 → [Dashboard](dashboard.md), [n8n Автоматизация](n8n-automation.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md), [Shipment Monitor](shipment-monitor.md)
 ⊂ [Выбор ставки](shipping-rate-selection.md), [Бюджет](budget-check-algorithm.md), [Weekend распределение](weekend-distribution.md), [Carrier rules](carrier-selection-rules.md), [Label filename](label-filename-format.md)
 
@@ -35,7 +35,7 @@
 ⇔ [Customer Hub](customer-hub.md) (frozen жалобы), [Frozen/Dry классификация](frozen-dry-classification.md), [Frozen shipping rules](frozen-shipping-rules.md)
 
 ### [Adjustments Monitor](adjustments-monitor.md)
-← [Amazon SP-API](amazon-sp-api.md), [SKU Database](google-sheets-sku-db.md)
+← [Amazon SP-API](amazon-sp-api.md), [SKU Database](sku-database-migration.md)
 → [Dashboard](dashboard.md)
 ⇔ [Shipping Labels](shipping-labels.md) (label cost/carrier)
 
@@ -81,7 +81,7 @@
 
 ### [Veeqo API](veeqo-api.md)
 → [Shipping Labels](shipping-labels.md), [Frozen Analytics](frozen-analytics.md), [Customer Hub](customer-hub.md), [n8n Автоматизация](n8n-automation.md), [Shipment Monitor](shipment-monitor.md)
-⇔ [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md), [SKU Database](google-sheets-sku-db.md)
+⇔ [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md), [SKU Database](sku-database-migration.md)
 
 ### [Amazon SP-API](amazon-sp-api.md)
 → [Customer Hub](customer-hub.md), [Account Health](account-health.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md), [Adjustments Monitor](adjustments-monitor.md)
@@ -101,9 +101,11 @@
 → [Customer Hub](customer-hub.md), [Account Health](account-health.md), [Shipping Labels](shipping-labels.md), [Adjustments Monitor](adjustments-monitor.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md)
 ⇔ [Dashboard](dashboard.md) (счётчики), [Decision Engine](customer-hub-decision-engine.md), [n8n Автоматизация](n8n-automation.md)
 
-### [SKU Database](google-sheets-sku-db.md)
+### [SKU Database](sku-database-migration.md)
 → [Shipping Labels](shipping-labels.md), [n8n Автоматизация](n8n-automation.md)
 ⇔ [Adjustments Monitor](adjustments-monitor.md), [Veeqo API](veeqo-api.md)
+← [Database Schema](database-schema.md) (таблица `SkuShippingData`)
+Мигрировано из Google Sheets 2026-05-12. Архив: [google-sheets-sku-db.md](google-sheets-sku-db.md) (DEPRECATED).
 
 ### [Claude AI](claude-ai.md)
 → [Customer Hub](customer-hub.md), [Decision Engine](customer-hub-decision-engine.md), [Feedback Manager](feedback-manager.md), [A-to-Z & Chargeback](atoz-chargeback.md)
@@ -119,7 +121,7 @@
 
 ### [n8n Автоматизация](n8n-automation.md)
 Реализует [Shipping Labels](shipping-labels.md)
-← [Veeqo API](veeqo-api.md), [SKU Database](google-sheets-sku-db.md), [Telegram](telegram-notifications.md)
+← [Veeqo API](veeqo-api.md), [SKU Database](sku-database-migration.md), [Telegram](telegram-notifications.md)
 ⊂ [Выбор ставки](shipping-rate-selection.md), [Бюджет](budget-check-algorithm.md), [Weekend распределение](weekend-distribution.md), [Frozen/Dry классификация](frozen-dry-classification.md)
 
 ---
@@ -132,7 +134,7 @@
 
 ### [Carrier Selection Rules](carrier-selection-rules.md)
 ⊂ [Выбор ставки](shipping-rate-selection.md)
-⇔ [A-to-Z & Chargeback](atoz-chargeback.md) (Claims Protected), [SKU Database](google-sheets-sku-db.md)
+⇔ [A-to-Z & Chargeback](atoz-chargeback.md) (Claims Protected), [SKU Database](sku-database-migration.md)
 
 ### [Walmart ограничения](walmart-restrictions.md)
 → [Shipping Labels](shipping-labels.md), [Frozen/Dry классификация](frozen-dry-classification.md), [Бюджет](budget-check-algorithm.md)
@@ -162,7 +164,7 @@
 - `design/customer_hub_salutem_v2.html` ⇔ [Customer Hub](customer-hub.md), [Decision Engine](customer-hub-decision-engine.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md)
 - `design/frozen_analytics_salutem.html` ⇔ [Frozen Analytics](frozen-analytics.md)
 - `design/adjustments_salutem.html` ⇔ [Adjustments Monitor](adjustments-monitor.md)
-- `design/settings_salutem.html` ⇔ [External API Auth](external-api-auth.md), [Amazon SP-API](amazon-sp-api.md), [Veeqo API](veeqo-api.md), [Gmail API](gmail-api.md), [Claude AI](claude-ai.md), [Telegram](telegram-notifications.md), [SKU Database](google-sheets-sku-db.md), [Walmart API](walmart-api.md)
+- `design/settings_salutem.html` ⇔ [External API Auth](external-api-auth.md), [Amazon SP-API](amazon-sp-api.md), [Veeqo API](veeqo-api.md), [Gmail API](gmail-api.md), [Claude AI](claude-ai.md), [Telegram](telegram-notifications.md), [SKU Database](sku-database-migration.md), [Walmart API](walmart-api.md)
 
 **Deprecated:**
 - `design/customer_hub_v1_DEPRECATED.html` — архив v1, до алгоритма v2.1
@@ -242,4 +244,4 @@ Phase 2 planned → sales-analytics-module (полноценная страни�
 - `⇔` двусторонняя связь
 
 ---
-Последнее обновление: 2026-05-12 (+ Account Health v2 + Critical Alerts)
+Последнее обновление: 2026-05-12 (+ SKU Database migration: Google Sheets → Internal DB)

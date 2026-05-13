@@ -1,3 +1,12 @@
+// ⚠️  DEPRECATED — migrated to src/lib/sku-database.ts (2026-05-12).
+//
+// All SKU data now lives in the internal Prisma `SkuShippingData` table.
+// This file is kept as an archive: scripts/migrate-sku-from-sheets.ts uses
+// it once to bootstrap, and we retain it for emergency re-import. Do NOT
+// import from application code — `grep "@/lib/google-sheets" src/` should
+// stay empty. See docs/wiki/sku-database-migration.md.
+
+// (Original notes preserved below.)
 // Fetches SKU data from existing Google Sheets "SKU Shipping Database v2"
 // Sheet must be shared as "Anyone with the link can view"
 

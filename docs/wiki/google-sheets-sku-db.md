@@ -1,5 +1,9 @@
 # 📊 SKU Shipping Database v2 — Google Sheets
 
+> ⚠️ **DEPRECATED 2026-05-12** — данные мигрированы в БД проекта.
+> См. [sku-database-migration.md](sku-database-migration.md).
+> Эта страница оставлена как историческая справка о структуре исходной Google-таблицы.
+
 ## Суть
 Единственный источник весов и размеров для покупки shipping labels. Google Sheets таблица, lookup по SKU.
 

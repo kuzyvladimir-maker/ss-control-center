@@ -34,21 +34,13 @@ export async function GET() {
     detail: process.env.SELLBRITE_ACCOUNT_TOKEN ? "Credentials configured" : "Add credentials to .env",
   });
 
-  // Google Sheets
+  // SKU Database — internal Prisma table since the 2026-05-12 Google Sheets
+  // migration. Always "connected" as long as the app's DB is reachable;
+  // dedicated /api/sku endpoint covers actual data reads.
   integrations.push({
-    name: "Google Sheets",
-    // Google Sheets read access requires BOTH the sheet ID and an API key —
-    // the lib/google-sheets.ts loader throws without GOOGLE_SHEETS_API_KEY.
-    status:
-      process.env.GOOGLE_SHEETS_ID && process.env.GOOGLE_SHEETS_API_KEY
-        ? "connected"
-        : "not_configured",
-    detail:
-      process.env.GOOGLE_SHEETS_ID && process.env.GOOGLE_SHEETS_API_KEY
-        ? "SKU Database connected"
-        : !process.env.GOOGLE_SHEETS_ID
-          ? "Add GOOGLE_SHEETS_ID to .env"
-          : "Add GOOGLE_SHEETS_API_KEY to .env (sheet ID set, key missing)",
+    name: "SKU Database",
+    status: "connected",
+    detail: "Internal DB (migrated from Google Sheets 2026-05-12)",
   });
 
   // Google Drive

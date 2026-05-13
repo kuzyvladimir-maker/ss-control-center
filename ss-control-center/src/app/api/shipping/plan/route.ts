@@ -7,7 +7,7 @@ import {
   veeqoDateToLocal,
   getTodayNY,
 } from "@/lib/veeqo";
-import { fetchSkuDatabase, type SkuRow } from "@/lib/google-sheets";
+import { fetchSkuDatabase, type SkuRow } from "@/lib/sku-database";
 
 // ── Veeqo rate shape (actual API fields) ──
 interface VeeqoRate {
@@ -188,9 +188,10 @@ export async function GET() {
     const isAfterNoon = nowNY.getHours() >= 12;
 
     let skuDatabase: SkuRow[] = [];
-    // Surface a clear warning when the SKU DB fails to load due to env config
-    // (vs genuinely empty data) — otherwise every order falls out for "no SKU"
-    // and the failure looks like missing product entries.
+    // SKU data lives in the internal DB (SkuShippingData) since the
+    // 2026-05-12 Google Sheets migration. A non-empty skuLoadError almost
+    // always means a DB connectivity issue; previously it could also mean
+    // missing GOOGLE_SHEETS_* env vars (now irrelevant).
     let skuLoadError: string | null = null;
     try {
       skuDatabase = await fetchSkuDatabase();
@@ -198,13 +199,7 @@ export async function GET() {
       skuLoadError = e instanceof Error ? e.message : String(e);
       console.error("Failed to fetch SKU database:", e);
     }
-    const skuConfigStatus = !process.env.GOOGLE_SHEETS_ID
-      ? "missing-id"
-      : !process.env.GOOGLE_SHEETS_API_KEY
-        ? "missing-api-key"
-        : skuLoadError
-          ? "load-failed"
-          : "ok";
+    const skuConfigStatus = skuLoadError ? "load-failed" : "ok";
 
     const orders = await fetchAllOrders();
 

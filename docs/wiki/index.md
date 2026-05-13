@@ -48,7 +48,7 @@
 - [Gmail API](gmail-api.md) — buyer messages, chargeback notifications
 - [Carrier Tracking APIs](carrier-tracking-apis.md) — UPS Tracking (FedEx/USPS в планах), реальный carrier ETA + события
 - [Amazon Notifications Map](amazon-notifications-map.md) — маппинг ~30 типов email-уведомлений → модули + Gmail queries
-- [SKU Database (Google Sheets)](google-sheets-sku-db.md) — веса и размеры
+- [SKU Database (Internal DB)](sku-database-migration.md) — веса и размеры, мигрировано из Google Sheets 2026-05-12
 - [Claude AI](claude-ai.md) — Decision Engine, генерация ответов
 - [Telegram](telegram-notifications.md) — уведомления Владимиру
 - [Weather & Geocoding](weather-geocoding.md) — температура для frozen analytics

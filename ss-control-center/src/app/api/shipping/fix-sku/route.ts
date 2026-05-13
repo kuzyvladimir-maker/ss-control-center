@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { appendSkuRow } from "@/lib/google-sheets";
+import { appendSkuRow } from "@/lib/sku-database";
 
 export async function POST(request: NextRequest) {
   try {

@@ -954,3 +954,28 @@ model ProcurementNotificationLog {
 
   @@index([notifiedAt])
 }
+
+// SKU Shipping Database — replaces the Google Sheets "SKU Shipping Database
+// v2" that the Shipping Labels module used to read. Migrated 2026-05-12.
+// Source of truth for: weight, dimensions, category (Frozen/Dry), and the
+// special FedEx One Rate weight (which is intentionally separate from the
+// regular weight because One Rate billable weight ≈ H × 1.25).
+// See docs/wiki/sku-database-migration.md for the migration story.
+model SkuShippingData {
+  id           String   @id @default(cuid())
+  sku          String   @unique
+  productTitle String?
+  marketplace  String? // Amazon | Walmart | Both | Other
+  category     String? // Frozen | Dry
+  length       Float? // inches
+  width        Float? // inches
+  height       Float? // inches
+  weight       Float? // lbs — UPS / USPS / FedEx standard
+  weightFedex  Float? // lbs — FedEx One Rate only
+  sampleCount  Int      @default(0)
+  notes        String?
+  // Provenance: google_sheets_migration | manual | veeqo_history
+  source       String   @default("manual")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

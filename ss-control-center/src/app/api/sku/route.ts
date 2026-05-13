@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchSkuDatabase } from "@/lib/google-sheets";
+import { fetchSkuDatabase } from "@/lib/sku-database";
 
 export async function GET(request: NextRequest) {
   try {
