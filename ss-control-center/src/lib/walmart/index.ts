@@ -18,4 +18,7 @@ export type { ReconReportPage } from "./reports";
 export { WalmartSellerPerformanceApi } from "./seller-performance";
 export type { PerformanceMetric, PerformanceWindow } from "./seller-performance";
 
+export { WalmartItemsApi } from "./items";
+export type { WalmartItemIssue, WalmartItemSeverity } from "./items";
+
 export * from "./types";
