@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
   fetchAllOrders,
@@ -8,6 +8,10 @@ import {
   getTodayNY,
 } from "@/lib/veeqo";
 import { fetchSkuDatabase, type SkuRow } from "@/lib/sku-database";
+import {
+  buildPackingSignature,
+  requiresPackingProfile,
+} from "@/lib/shipping/packing-signature";
 
 // ── Veeqo rate shape (actual API fields) ──
 interface VeeqoRate {
@@ -177,8 +181,19 @@ function selectBestRate(
 }
 
 // ── Main handler ──
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Optional CSV filter — `?orderIds=…` re-runs plan formation only for
+    // the listed Veeqo order ids. Used by the rebuilt Shipping Labels UI
+    // when an individual card needs to be refreshed after the operator
+    // resolves its classification / packing profile.
+    const orderIdsParam = request.nextUrl?.searchParams.get("orderIds");
+    const orderIdFilter = orderIdsParam
+      ? new Set(
+          orderIdsParam.split(",").map((s) => s.trim()).filter(Boolean)
+        )
+      : null;
+
     const today = getTodayNY();
     const dayInfo = getDayInfo(today);
     const { isWeekend: weekend, actualShipDay, dispatchTarget } = dayInfo;
@@ -263,6 +278,10 @@ export async function GET() {
     }> = [];
 
     for (const order of orders) {
+      // When the caller passed an explicit orderIds filter, only process
+      // those rows (lets the UI cheap-refresh a single card).
+      if (orderIdFilter && !orderIdFilter.has(String(order.id))) continue;
+
       const hasPlaced = order.tags?.some(
         (t: { name: string }) => t.name === "Placed"
       );
@@ -270,7 +289,10 @@ export async function GET() {
       debug.filters.afterPlacedTag++;
 
       const shipBy = veeqoDateToLocal(order.dispatch_date);
-      if (shipBy !== dispatchTarget) continue;
+      // The orderIds filter overrides the "today only" gate so refreshes
+      // work for orders that aren't on today's dispatch date (e.g. a card
+      // the operator just changed packing for).
+      if (!orderIdFilter && shipBy !== dispatchTarget) continue;
       debug.filters.afterDispatchDate++;
 
       const channel = order.channel?.name || "";
@@ -332,24 +354,50 @@ export async function GET() {
         }
       }
 
-      // ── SKU lookup ──
+      // ── SKU lookup OR PackingProfile lookup for multi-item orders ──
+      //
+      // Single-line + qty=1 → use SkuShippingData (per-SKU box+weight).
+      // Multi-line OR qty>1  → use PackingProfile keyed by composition
+      //                        signature. Profile is set up once by the
+      //                        operator via /api/shipping/packing-profile.
+      const orderLines: Array<{ sku: string; quantity: number }> = (
+        order.line_items ?? []
+      )
+        .map((li: { sellable?: { sku_code?: string; sku?: string }; quantity?: number }) => ({
+          sku: String(li?.sellable?.sku_code ?? li?.sellable?.sku ?? ""),
+          quantity: Number(li?.quantity ?? 1),
+        }))
+        .filter((i: { sku: string; quantity: number }) => i.sku);
+
       const firstSku =
         order.line_items?.[0]?.sellable?.sku_code ||
         order.line_items?.[0]?.sellable?.sku ||
         "";
-      const skuData =
-        skuDatabase.find((r) => r.sku === firstSku) || null;
       let skuWeight: number | null = null;
       let skuBoxSize: string | null = null;
 
-      if (!stopReason && !skuData) {
-        stopReason = `SKU ${firstSku} not in SKU Database v2`;
-      } else if (!stopReason && skuData && !skuData.hasCompleteData) {
-        stopReason = `SKU ${firstSku}: missing weight/dimensions`;
-      } else if (skuData) {
-        skuWeight = skuData.weight;
-        if (skuData.length && skuData.width && skuData.height) {
-          skuBoxSize = `${skuData.length}x${skuData.width}x${skuData.height}`;
+      if (requiresPackingProfile(orderLines)) {
+        const signature = buildPackingSignature(orderLines);
+        const profile = await prisma.packingProfile.findUnique({
+          where: { signature },
+        });
+        if (!profile) {
+          stopReason = `Multi-item order — no PackingProfile for "${signature}"`;
+        } else {
+          skuWeight = profile.weight;
+          skuBoxSize = profile.boxSize;
+        }
+      } else {
+        const skuData = skuDatabase.find((r) => r.sku === firstSku) || null;
+        if (!stopReason && !skuData) {
+          stopReason = `SKU ${firstSku} not in SKU Database`;
+        } else if (!stopReason && skuData && !skuData.hasCompleteData) {
+          stopReason = `SKU ${firstSku}: missing weight/dimensions`;
+        } else if (skuData) {
+          skuWeight = skuData.weight;
+          if (skuData.length && skuData.width && skuData.height) {
+            skuBoxSize = `${skuData.length}x${skuData.width}x${skuData.height}`;
+          }
         }
       }
 

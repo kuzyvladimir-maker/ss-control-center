@@ -1,0 +1,168 @@
+# 📦 Shipping Labels Page v1.0 — Spec
+
+## Суть
+Полноценная страница `/shipping` в SS Control Center: live dashboard по всем магазинам, AI-классификация Frozen/Dry, ручной override, packing profiles для multi-item заказов, пакетная покупка этикеток.
+
+**Дата:** 2026-05-12
+**Промпт реализации:** `docs/CLAUDE_CODE_PROMPT_SHIPPING_LABELS_PAGE_V1.md`
+**Базовый алгоритм покупки:** `docs/MASTER_PROMPT_v3.1.md` (не изменяется)
+
+---
+
+## Структура страницы
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ TOP: Заголовок + дата + кнопка Refresh                  │
+├─────────────────────────────────────────────────────────┤
+│ STORE BREAKDOWN: горизонтальный ряд карточек            │
+│ Per-store: всего ордеров / готовы к покупке / ⚠         │
+├─────────────────────────────────────────────────────────┤
+│ TIME BUCKETS chips: Просрочено / Сегодня /              │
+│ Завтра / Послезавтра / Позже (как в Procurement)        │
+├─────────────────────────────────────────────────────────┤
+│ ACTION BAR: ☐ Select all / Buy Selected / Export        │
+├─────────────────────────────────────────────────────────┤
+│ ORDER LIST: карточки заказов с разными состояниями      │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Состояния заказов (state machine)
+
+| State | Описание | Действие |
+|-------|----------|----------|
+| `ready_to_buy` | Всё определено, можно покупать | Чекбокс + Buy Selected |
+| `need_attention` `no_type` | Нет тега Frozen/Dry | Кнопки: AI Classify / Set Manually |
+| `need_attention` `no_packing` | Multi-item/qty без профиля | Кнопка Set Packing Profile |
+| `need_attention` `mixed_order` | Frozen+Dry в одном | Серая карточка с причиной |
+| `need_attention` `frozen_walmart` | Frozen на Walmart запрещён | Серая карточка |
+| `need_attention` `no_sku` | Нет данных в SKU Database | Серая карточка |
+| `need_attention` `budget` | Превышен бюджет | Серая карточка |
+| `need_attention` `no_service` | Нет carrier service в бюджет/дедлайн | Серая карточка |
+| `waiting_placed` | Нет тега `Placed` (товар ещё не закуплен) | Мутная карточка |
+| `bought` | Уже куплено | Зелёная карточка |
+
+---
+
+## Новые модели БД
+
+### `ProductTypeOverride` (расширение)
+Связывает Veeqo `productId` с типом (Frozen/Dry). Источник: manual (Vladimir выбрал в UI) или AI (Claude с vision).
+
+Поля: `productId`, `type`, `source`, `aiConfidence`, `aiReasoning`, `syncedToVeeqo`, `veeqoSyncError`.
+
+Синхронизация в Veeqo (тег на продукте) — async после записи в БД, с retry при failure.
+
+### `PackingProfile` (новая)
+Для заказов с qty > 1 или multi-item.
+
+Ключ — детерминированная сигнатура: `SKU1:QTY1|SKU2:QTY2|...` (отсортировано по SKU).
+
+Поля: `signature`, `description`, `boxSize`, `weight`, `weightFedex`, `itemCount`, `totalQty`, `usedCount`, `lastUsedAt`, `productEmbedding` (Phase 2 hook), `source`.
+
+Self-learning: Vladimir вводит профиль первый раз вручную → последующие заказы с такой же сигнатурой используют его автоматически.
+
+---
+
+## API endpoints
+
+| Endpoint | Метод | Назначение |
+|----------|-------|-----------|
+| `/api/shipping/dashboard` | GET | Live данные при заходе. Per-store breakdown + time buckets + список заказов |
+| `/api/shipping/plan` | GET | Расширен: фильтр по `orderIds`, lookup через `ProductTypeOverride` и `PackingProfile` |
+| `/api/shipping/classify-ai` | POST | AI classification preview (НЕ сохраняет) |
+| `/api/shipping/product-type` | POST | Сохранить type + async sync в Veeqo |
+| `/api/shipping/product-type/retry-sync` | POST | Retry для не-засинхренных |
+| `/api/shipping/packing-profile` | POST/GET | CRUD профиля по сигнатуре |
+| `/api/shipping/buy` | POST | (без изменений) — покупает этикетки и выгружает PDF |
+
+---
+
+## AI Classification flow
+
+1. Юзер жмёт `Classify with AI` на карточке заказа без типа.
+2. POST `/api/shipping/classify-ai` с `productId`.
+3. Backend: `getProduct(productId)` → title + description + main_image → Claude vision.
+4. Claude возвращает JSON: `{ type, confidence, reasoning }`.
+5. UI показывает preview в модалке с тремя кнопками: Cancel / Override / Confirm.
+6. Confirm → POST `/api/shipping/product-type` с `source: "ai"`.
+7. Backend: upsert в `ProductTypeOverride` → async sync в Veeqo через `setProductTag`.
+
+Подсказки для AI: title и description (полное, через Veeqo product endpoint), плюс главное изображение (на frozen-товарах часто пенопластовый кулер).
+
+Пока что preview + confirm. После того как алгоритм покажет стабильность — переключить на auto-apply при `confidence >= 0.85` (изменение одной настройки в коде).
+
+---
+
+## Packing Profile flow
+
+1. Order приходит с qty > 1 или multi-item.
+2. Backend в `/api/shipping/plan`: формирует сигнатуру через `buildPackingSignature(items)`.
+3. Lookup `PackingProfile.findUnique({ signature })`.
+   - **Найден** → используем `boxSize`, `weight`, `weightFedex`. `usedCount++` при покупке.
+   - **Не найден** → заказ → `need_attention` / `no_packing`.
+4. В UI: кнопка `Set Packing Profile` → модалка с полями box+weight.
+5. Save → POST `/api/shipping/packing-profile` → re-fetch.
+
+---
+
+## Time Buckets (как в Procurement)
+
+| Bucket | Условие | Цвет |
+|--------|---------|------|
+| `overdue` | Ship By < сегодня | danger |
+| `today` | Ship By = сегодня | warn-strong |
+| `tomorrow` | Ship By = завтра | info |
+| `dayafter` | Ship By = +2 дня | green |
+| `later` | Ship By > +2 дня | neutral |
+
+Реализация — копируем `shipByBucket()` и `SHIP_BY_OPTIONS` из `src/app/procurement/page.tsx`.
+
+---
+
+## Future Phase 2: Self-Learning Enhancements
+
+- **Semantic similarity для PackingProfile.** Если точная сигнатура не найдена — semantic search по `productEmbedding` (заложено в схему) + предложение похожих профилей с confidence. Пример: для `Croissant Sandwich × 2` предложить профиль `Biscuit Sandwich × 2` если он есть.
+- **Auto-apply AI classification** при `confidence ≥ 0.85` без preview.
+- **Bulk operations** на `need_attention` заказы.
+- **Notifications** в Telegram когда появляются заказы требующие внимания.
+
+---
+
+## 🔗 Связи
+
+- **Реализует:** [MASTER_PROMPT_v3.1.md](shipping-labels.md) (базовая логика покупки)
+- **Зависит от:**
+  - [Veeqo API](veeqo-api.md) — orders, products, tags, rates, buy labels
+  - [SKU Database (Internal DB)](sku-database-migration.md) — для single-item lookup
+  - [Claude AI](claude-ai.md) — для AI classification (vision-enabled)
+  - [Procurement Module](procurement-module.md) — паттерн time buckets
+- **Связи в БД:** `ProductTypeOverride`, `PackingProfile` (новые), `SkuShippingData`
+- **Алгоритмы:** [Frozen/Dry классификация](frozen-dry-classification.md), [Carrier Selection](carrier-selection-rules.md), [Budget Check](budget-check-algorithm.md), [Weekend Distribution](weekend-distribution.md)
+
+---
+
+## История
+- 2026-05-12: v1.0 спецификация. Полная переделка страницы Shipping Labels.
+- 2026-05-13: v1.0 реализовано и задеплоено на main.
+
+## Implementation status (2026-05-13)
+
+| Компонент | Статус | Файл |
+|---|---|---|
+| Prisma: `ProductTypeOverride` расширен (source / aiConfidence / aiReasoning / syncedToVeeqo / veeqoSyncError) | ✅ | `prisma/schema.prisma` |
+| Prisma: `PackingProfile` модель | ✅ | `prisma/schema.prisma` |
+| Turso migration script | ✅ применён | `scripts/turso-migrate-shipping-page-v1.mjs` |
+| Packing signature utility | ✅ | `src/lib/shipping/packing-signature.ts` |
+| `GET /api/shipping/dashboard` | ✅ | `src/app/api/shipping/dashboard/route.ts` |
+| `GET /api/shipping/plan?orderIds=…` + PackingProfile lookup | ✅ | `src/app/api/shipping/plan/route.ts` |
+| `POST /api/shipping/classify-ai` (Claude vision) | ✅ | `src/app/api/shipping/classify-ai/route.ts` |
+| `POST /api/shipping/product-type` + async Veeqo sync | ✅ | `src/app/api/shipping/product-type/route.ts` |
+| `POST /api/shipping/product-type/retry-sync` | ✅ | `src/app/api/shipping/product-type/retry-sync/route.ts` |
+| `GET/POST /api/shipping/packing-profile` | ✅ | `src/app/api/shipping/packing-profile/route.ts` |
+| UI rebuild — store cards, time buckets, classify/manual/packing modals | ✅ | `src/app/shipping/page.tsx` |
+| Phase 2 hook: `productEmbedding` field on `PackingProfile` | ✅ зарезервировано, не используется | — |
+
+`MASTER_PROMPT_v3.1.md`, `/api/shipping/buy/route.ts`, и алгоритм выбора rate (`selectBestRate`) — не трогали, как и оговорено.

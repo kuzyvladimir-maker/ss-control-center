@@ -141,10 +141,21 @@ model Setting {
 }
 
 model ProductTypeOverride {
-  id        String   @id @default(cuid())
-  productId Int      @unique // Veeqo product ID
-  type      String // "Frozen" or "Dry"
-  createdAt DateTime @default(now())
+  id             String   @id @default(cuid())
+  productId      Int      @unique // Veeqo product ID
+  type           String // "Frozen" | "Dry"
+  // Who/what set the type — manual classification by the operator or AI
+  // (Claude) suggestion that was confirmed in the Shipping Labels UI.
+  source         String   @default("manual") // "manual" | "ai"
+  aiConfidence   Float?
+  aiReasoning    String?
+  // Veeqo round-trip: the canonical tag lives on the Veeqo product too so
+  // legacy paths keep working. syncedToVeeqo is true after a successful
+  // setProductTag; veeqoSyncError records the last failure for retry.
+  syncedToVeeqo  Boolean  @default(false)
+  veeqoSyncError String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 // Frozen Delivery Analytics
@@ -953,6 +964,42 @@ model ProcurementNotificationLog {
   notifiedAt DateTime @default(now())
 
   @@index([notifiedAt])
+}
+
+// Packing profile for multi-item / multi-qty orders. The default Shipping
+// Labels algorithm looks up box+weight in SkuShippingData by SKU, which only
+// works for single-line, single-quantity orders. When an order contains
+// multiple lines (or qty > 1) we need an explicit profile. This table is
+// populated by the operator the first time such an order appears; subsequent
+// orders with the same composition (same SKUs + quantities) reuse it
+// automatically.
+model PackingProfile {
+  id          String   @id @default(cuid())
+
+  // Deterministic signature of the composition:
+  // "SKU1:QTY1|SKU2:QTY2|..." sorted lexicographically by SKU.
+  // Example: "T4-Y0G0-ZHII:2|XM-A131-UXNC:1".
+  signature   String   @unique
+  description String?
+
+  boxSize     String
+  weight      Float // lbs, UPS/USPS/FedEx standard
+  weightFedex Float?  // lbs, FedEx One Rate (falls back to weight × 1.25 when null)
+
+  itemCount   Int      @default(1)
+  totalQty    Int      @default(1)
+  usedCount   Int      @default(0)
+  lastUsedAt  DateTime?
+
+  // Phase 2 hook: semantic-similarity matching across "looks like" orders.
+  // Stored as JSON-encoded float array. Not consumed today.
+  productEmbedding String?
+
+  source      String   @default("manual") // "manual" | "ai_suggested"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([signature])
 }
 
 // SKU Shipping Database — replaces the Google Sheets "SKU Shipping Database

@@ -1,26 +1,25 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   RefreshCw,
-  ShoppingCart,
-  Download,
-  Loader2,
   AlertTriangle,
   CheckCircle,
   Snowflake,
   Package,
+  Loader2,
+  ShoppingCart,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Btn,
-  CarrierBadge,
+  FilterTabs,
   KpiCard,
   PageHead,
   Panel,
-  Sep,
-  StatusChip,
-  statusVariantFor,
+  PanelHeader,
+  PanelBody,
   StoreAvatar,
   storeKeyFor,
   TypeTag,
@@ -35,944 +34,926 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
-interface PlanItem {
-  id: string;
-  orderNumber: string;
-  orderId: string;
-  channel: string;
-  product: string;
+// ─────────────────────────────────────────────────────────────────────────
+// Types — mirror what /api/shipping/dashboard returns.
+// ─────────────────────────────────────────────────────────────────────────
+
+type State = "ready_to_buy" | "need_attention" | "waiting_placed" | "bought";
+type ShipByBucket = "overdue" | "today" | "tomorrow" | "dayafter" | "later";
+type AttentionReason =
+  | "no_type"
+  | "mixed_order"
+  | "frozen_walmart"
+  | "no_packing"
+  | "no_sku"
+  | "budget"
+  | "no_service"
+  | null;
+
+interface DashboardItem {
   sku: string;
-  qty: number;
-  productType: string;
-  weight: number | null;
-  budgetMax: number | null;
-  carrier: string | null;
-  service: string | null;
-  price: number | null;
-  edd: string | null;
-  deliveryBy: string | null;
-  actualShipDay: string | null;
-  notes: string | null;
-  status: string;
-  trackingNumber: string | null;
-  _productId?: number | null;
+  productId: number | null;
+  productTitle: string;
+  quantity: number;
+  knownType: "Frozen" | "Dry" | null;
 }
 
-interface PlanData {
-  planId: string;
-  date: string;
-  dispatchDate: string;
-  dispatchDateFormatted: string;
-  isWeekend: boolean;
-  dayName: string;
-  orders: PlanItem[];
-  total: number;
-  readyCount: number;
-  stopCount: number;
+interface DashboardOrder {
+  orderId: string;
+  orderNumber: string;
+  storeId: string;
+  storeName: string;
+  channel: string | null;
+  shipBy: string | null;
+  timeBucket: ShipByBucket | null;
+  deliverBy: string | null;
+  state: State;
+  needAttentionReason: AttentionReason;
+  items: DashboardItem[];
+  packingSignature: string | null;
+  packingProfileFound: boolean | null;
 }
 
-interface BuyResult {
-  bought: { orderNumber: string; tracking: string; itemId: string }[];
-  errors: { orderNumber: string; error: string; itemId: string }[];
-  total: number;
+interface StoreTotals {
+  storeId: string;
+  storeName: string;
+  channel: string;
+  all: number;
+  readyToBuy: number;
+  needAttention: number;
+  waitingPlaced: number;
+  boughtToday: number;
 }
 
-const statusLabels: Record<string, string> = {
-  pending: "Ready",
-  bought: "Bought",
-  error: "Error",
-  stop: "Needs Review",
+interface DashboardResponse {
+  refreshedAt: string;
+  storeBreakdown: StoreTotals[];
+  timeBuckets: Record<ShipByBucket, number>;
+  orders: DashboardOrder[];
+}
+
+const ATTENTION_LABELS: Record<NonNullable<AttentionReason>, string> = {
+  no_type: "Product type unknown",
+  mixed_order: "Mixed Frozen + Dry items",
+  frozen_walmart: "Frozen on Walmart (not allowed)",
+  no_packing: "Packing profile missing",
+  no_sku: "SKU not in database",
+  budget: "Over budget for any service",
+  no_service: "No carrier service available",
 };
 
-export default function ShippingPage() {
-  const [mounted, setMounted] = useState(false);
-  const [plan, setPlan] = useState<PlanData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [buying, setBuying] = useState(false);
-  const [buyProgress, setBuyProgress] = useState("");
-  const [buyResult, setBuyResult] = useState<BuyResult | null>(null);
+const BUCKET_TABS: { id: ShipByBucket; label: string; activeCls: string }[] = [
+  { id: "overdue",  label: "Overdue",  activeCls: "border-danger bg-danger-tint text-danger" },
+  { id: "today",    label: "Today",    activeCls: "border-warn-strong bg-warn-tint text-warn-strong" },
+  { id: "tomorrow", label: "Tomorrow", activeCls: "border-info bg-info-tint text-info" },
+  { id: "dayafter", label: "Day after", activeCls: "border-green bg-green-soft text-green-ink" },
+  { id: "later",    label: "Later",    activeCls: "border-rule bg-bg-elev text-ink-2" },
+];
+
+// ─────────────────────────────────────────────────────────────────────────
+// Page component
+// ─────────────────────────────────────────────────────────────────────────
+
+export default function ShippingLabelsPage() {
+  const [data, setData] = useState<DashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [today, setToday] = useState("");
+
+  const [bucketFilter, setBucketFilter] = useState<ShipByBucket | null>(null);
+  const [storeFilter, setStoreFilter] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    setMounted(true);
-    setToday(
-      new Date().toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        timeZone: "America/New_York",
-      })
-    );
+  const [buying, setBuying] = useState(false);
+  const [buyMsg, setBuyMsg] = useState<string | null>(null);
+
+  // Modal state
+  const [classifyModal, setClassifyModal] = useState<DashboardOrder | null>(
+    null
+  );
+  const [manualModal, setManualModal] = useState<DashboardOrder | null>(null);
+  const [packingModal, setPackingModal] = useState<DashboardOrder | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const r = await fetch("/api/shipping/dashboard");
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = (await r.json()) as DashboardResponse;
+      setData(j);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Selectable items = pending only
-  const selectableIds = useMemo(() => {
-    if (!plan) return new Set<string>();
-    return new Set(
-      plan.orders.filter((o) => o.status === "pending").map((o) => o.id)
-    );
-  }, [plan]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
-  const allSelected =
-    selectableIds.size > 0 &&
-    [...selectableIds].every((id) => selected.has(id));
-
-  const selectedCount = [...selected].filter((id) =>
-    selectableIds.has(id)
-  ).length;
-
-  const toggleSelect = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+  // ── Derived view ────────────────────────────────────────────────────
+  const orders = useMemo(() => data?.orders ?? [], [data]);
+  const filteredOrders = useMemo(() => {
+    return orders.filter((o) => {
+      if (bucketFilter && o.timeBucket !== bucketFilter) return false;
+      if (storeFilter && o.storeId !== storeFilter) return false;
+      return true;
     });
-  };
+  }, [orders, bucketFilter, storeFilter]);
 
-  const toggleSelectAll = () => {
-    if (allSelected) {
+  const selectableIds = useMemo(
+    () =>
+      new Set(
+        filteredOrders
+          .filter((o) => o.state === "ready_to_buy")
+          .map((o) => o.orderId)
+      ),
+    [filteredOrders]
+  );
+
+  const totals = useMemo(() => {
+    const all = orders.length;
+    const ready = orders.filter((o) => o.state === "ready_to_buy").length;
+    const attention = orders.filter((o) => o.state === "need_attention").length;
+    const waiting = orders.filter((o) => o.state === "waiting_placed").length;
+    return { all, ready, attention, waiting };
+  }, [orders]);
+
+  // ── Actions ─────────────────────────────────────────────────────────
+  function toggleAll() {
+    if (selected.size === selectableIds.size) {
       setSelected(new Set());
     } else {
       setSelected(new Set(selectableIds));
     }
-  };
+  }
 
-  const selectByType = (type: "Frozen" | "Dry") => {
-    if (!plan) return;
-    const ids = new Set<string>(
-      plan.orders
-        .filter((o) => o.status === "pending" && o.productType === type)
-        .map((o) => o.id)
-    );
-    setSelected(ids);
-  };
+  function toggleOne(orderId: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderId)) next.delete(orderId);
+      else next.add(orderId);
+      return next;
+    });
+  }
 
-  const deselectAll = () => setSelected(new Set());
-
-  // ── Fix modals ──
-  const [tagModal, setTagModal] = useState<PlanItem | null>(null);
-  const [skuModal, setSkuModal] = useState<PlanItem | null>(null);
-  const [fixLoading, setFixLoading] = useState(false);
-  const [skuForm, setSkuForm] = useState({
-    weight: "",
-    length: "",
-    width: "",
-    height: "",
-    weightFedex: "",
-  });
-
-  const handleErrorClick = (item: PlanItem) => {
-    const notes = item.notes || "";
-    if (notes.includes("Missing Frozen/Dry tag")) {
-      setTagModal(item);
-    } else if (notes.includes("not in SKU Database")) {
-      setSkuForm({ weight: "", length: "", width: "", height: "", weightFedex: "" });
-      setSkuModal(item);
-    }
-  };
-
-  const fixTag = async (tag: "Frozen" | "Dry") => {
-    if (!tagModal?._productId || !plan) return;
-    setFixLoading(true);
-    try {
-      const res = await fetch("/api/shipping/fix-tag", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: tagModal._productId, tag }),
-      });
-      if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.error || "Failed");
-      }
-      setTagModal(null);
-      await generatePlan();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to set tag");
-    } finally {
-      setFixLoading(false);
-    }
-  };
-
-  const fixSku = async () => {
-    if (!skuModal || !plan) return;
-    setFixLoading(true);
-    try {
-      const res = await fetch("/api/shipping/fix-sku", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sku: skuModal.sku,
-          productTitle: skuModal.product,
-          marketplace: skuModal.channel,
-          category: skuModal.productType !== "Unknown" ? skuModal.productType : "Dry",
-          ...skuForm,
-        }),
-      });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.error || "Failed");
-      setSkuModal(null);
-      if (d.message) setError(d.message); // manual entry warning
-      await generatePlan();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save SKU");
-    } finally {
-      setFixLoading(false);
-    }
-  };
-
-  const isClickableError = (notes: string | null) => {
-    if (!notes) return false;
-    return notes.includes("Missing Frozen/Dry tag") || notes.includes("not in SKU Database");
-  };
-
-  const generatePlan = async () => {
-    setLoading(true);
-    setError(null);
-    setBuyResult(null);
-    try {
-      const res = await fetch("/api/shipping/plan");
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to generate plan");
-      setPlan(data);
-      // Auto-select all pending
-      const pendingIds = new Set<string>(
-        data.orders
-          .filter((o: PlanItem) => o.status === "pending")
-          .map((o: PlanItem) => o.id)
-      );
-      setSelected(pendingIds);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to generate plan");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const buySelectedLabels = async () => {
-    if (!plan || selectedCount === 0) return;
+  async function buySelected() {
+    if (selected.size === 0) return;
     setBuying(true);
-    setError(null);
-    setBuyResult(null);
-    setBuyProgress(`Buying 0/${selectedCount}...`);
-
+    setBuyMsg(`Generating plan for ${selected.size} order(s)…`);
     try {
-      const itemIds = [...selected].filter((id) => selectableIds.has(id));
-
-      const res = await fetch("/api/shipping/buy", {
+      // Build a plan filtered to just the selected orders, then buy.
+      const ids = [...selected].join(",");
+      const planRes = await fetch(`/api/shipping/plan?orderIds=${ids}`);
+      const planJson = await planRes.json();
+      if (!planRes.ok)
+        throw new Error(planJson?.error || "Failed to plan labels");
+      const planId: string = planJson.planId;
+      const itemIds: string[] = (planJson.orders ?? [])
+        .filter((o: { status: string }) => o.status === "pending")
+        .map((o: { id: string }) => o.id);
+      if (itemIds.length === 0) {
+        setBuyMsg("Nothing buyable in the selection.");
+        return;
+      }
+      setBuyMsg(`Buying ${itemIds.length} label(s)…`);
+      const buyRes = await fetch("/api/shipping/buy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId: plan.planId, itemIds }),
+        body: JSON.stringify({ planId, itemIds }),
       });
-      const data: BuyResult = await res.json();
-      if (!res.ok)
-        throw new Error(
-          (data as unknown as { error: string }).error ||
-            "Failed to buy labels"
-        );
-
-      setBuyResult(data);
-      setBuyProgress("");
-
-      // Update plan items locally
-      setPlan((prev) => {
-        if (!prev) return prev;
-        const updated = prev.orders.map((o) => {
-          const bought = data.bought.find((b) => b.itemId === o.id);
-          if (bought)
-            return {
-              ...o,
-              status: "bought",
-              trackingNumber: bought.tracking,
-            };
-          const errored = data.errors.find((e) => e.itemId === o.id);
-          if (errored)
-            return { ...o, status: "error", notes: errored.error };
-          return o;
-        });
-        const readyCount = updated.filter(
-          (o) => o.status === "pending"
-        ).length;
-        const stopCount = updated.filter(
-          (o) => o.status === "stop" || o.status === "error"
-        ).length;
-        return { ...prev, orders: updated, readyCount, stopCount };
-      });
-
-      // Clear selection for bought/errored
-      setSelected((prev) => {
-        const next = new Set(prev);
-        for (const b of data.bought) next.delete(b.itemId);
-        for (const e of data.errors) next.delete(e.itemId);
-        return next;
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to buy labels");
+      const buyJson = await buyRes.json();
+      if (!buyRes.ok)
+        throw new Error(buyJson?.error || "Failed to buy labels");
+      const ok = (buyJson.bought ?? []).length;
+      const fail = (buyJson.errors ?? []).length;
+      setBuyMsg(`Bought ${ok} · ${fail} failed`);
+      setSelected(new Set());
+      await load();
+    } catch (e) {
+      setBuyMsg(e instanceof Error ? e.message : String(e));
     } finally {
       setBuying(false);
-      setBuyProgress("");
     }
-  };
-
-  if (!mounted) return null;
+  }
 
   return (
     <div className="space-y-5">
-      {/* Page head */}
       <PageHead
         title="Shipping labels"
         subtitle={
-          plan ? (
-            <>
-              <span>{plan.dispatchDateFormatted}</span>
-              {plan.isWeekend && (
-                <>
-                  <Sep />
-                  <span className="text-warn">weekend → next biz day</span>
-                </>
-              )}
-              <Sep />
-              <span className="tabular">
-                {plan.total} orders · {plan.readyCount} ready · {plan.stopCount} need attention
-              </span>
-            </>
-          ) : (
-            <span>Today: {today} (ET)</span>
-          )
+          data?.refreshedAt
+            ? `Last refresh: ${new Date(data.refreshedAt).toLocaleString()}`
+            : "Loading…"
         }
         actions={
-          <>
-            <Btn
-              icon={<RefreshCw size={13} />}
-              onClick={generatePlan}
-              disabled={loading || buying}
-              loading={loading}
-            >
-              {loading ? "Generating…" : "Generate plan"}
-            </Btn>
-            <Btn
-              variant="primary"
-              icon={<ShoppingCart size={13} />}
-              onClick={buySelectedLabels}
-              disabled={buying || selectedCount === 0}
-              loading={buying}
-            >
-              {buying ? buyProgress : `Buy selected (${selectedCount})`}
-            </Btn>
-            <Btn variant="ghost" icon={<Download size={13} />} disabled={!plan}>
-              Export
-            </Btn>
-          </>
+          <Btn
+            icon={<RefreshCw size={13} />}
+            onClick={load}
+            loading={loading}
+          >
+            {loading ? "Refreshing…" : "Refresh"}
+          </Btn>
         }
       />
 
-      {/* KPI row */}
-      {plan && (
-        <div className="grid gap-3 sm:grid-cols-4">
-          <KpiCard label="In plan" value={plan.total} icon={<Package size={14} />} />
-          <KpiCard
-            label="Ready to buy"
-            value={plan.readyCount}
-            icon={<ShoppingCart size={14} />}
-            iconVariant={plan.readyCount > 0 ? "default" : "warn"}
-          />
-          <KpiCard
-            label="Need attention"
-            value={plan.stopCount}
-            icon={<AlertTriangle size={14} />}
-            iconVariant={plan.stopCount > 0 ? "warn" : "default"}
-          />
-          <KpiCard
-            label="Selected"
-            value={selectedCount}
-            icon={<CheckCircle size={14} />}
-          />
-        </div>
-      )}
-
-      {/* Buy result summary */}
-      {buyResult && (
-        <div
-          className={`rounded-lg border p-3 text-[13px] ${buyResult.errors.length > 0 ? "border-warn/30 bg-warn-tint text-warn-strong" : "border-green/20 bg-green-soft text-green-ink"}`}
-        >
-          <p className="font-medium">
-            {buyResult.bought.length > 0 && (
-              <span>
-                ✅ {buyResult.bought.length} bought
-              </span>
-            )}
-            {buyResult.errors.length > 0 && (
-              <span className="ml-2">
-                ❌ {buyResult.errors.length} errors
-              </span>
-            )}
-          </p>
-          {buyResult.errors.length > 0 && (
-            <ul className="mt-1 text-xs">
-              {buyResult.errors.map((e) => (
-                <li key={e.itemId}>
-                  {e.orderNumber}: {e.error}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
       {error && (
-        <div className="rounded-md bg-danger-tint p-3 text-sm text-danger">
+        <div className="rounded-md border border-danger/30 bg-danger-tint px-4 py-3 text-[12px] text-danger">
           {error}
         </div>
       )}
 
-      {/* Plan table */}
-      {plan && plan.orders.length > 0 ? (
-        <>
-          <Panel>
-            <div className="flex flex-wrap items-center gap-2 border-b border-rule px-4 py-2.5">
-              <input
-                type="checkbox"
-                checked={allSelected}
-                onChange={toggleSelectAll}
-                disabled={buying || selectableIds.size === 0}
-                className="h-3.5 w-3.5 rounded border-silver-line accent-[var(--green)]"
-              />
-              <Btn
-                size="sm"
-                variant={allSelected ? "primary" : "default"}
-                onClick={toggleSelectAll}
-                disabled={buying || selectableIds.size === 0}
-              >
-                Select all
-              </Btn>
-              <Btn
-                size="sm"
-                variant="default"
-                icon={<Snowflake size={12} />}
-                onClick={() => selectByType("Frozen")}
-                disabled={buying}
-              >
-                Frozen
-              </Btn>
-              <Btn
-                size="sm"
-                variant="default"
-                icon={<Package size={12} />}
-                onClick={() => selectByType("Dry")}
-                disabled={buying}
-              >
-                Dry
-              </Btn>
-              <Btn
-                size="sm"
-                variant="ghost"
-                onClick={deselectAll}
-                disabled={buying || selectedCount === 0}
-              >
-                Deselect
-              </Btn>
-              <div className="flex-1" />
-              <span className="text-[11px] font-mono uppercase tracking-wider text-ink-3 tabular">
-                {plan.total} orders · {plan.readyCount} ready · {plan.stopCount} attention
-              </span>
-            </div>
+      {/* Totals row */}
+      <div className="grid gap-3 sm:grid-cols-4">
+        <KpiCard
+          label="Awaiting fulfillment"
+          value={totals.all}
+          icon={<Package size={14} />}
+        />
+        <KpiCard
+          label="Ready to buy"
+          value={totals.ready}
+          icon={<CheckCircle size={14} />}
+          iconVariant={totals.ready > 0 ? "default" : "default"}
+        />
+        <KpiCard
+          label="Need attention"
+          value={totals.attention}
+          icon={<AlertTriangle size={14} />}
+          iconVariant={totals.attention > 0 ? "warn" : "default"}
+        />
+        <KpiCard
+          label="Waiting for procurement"
+          value={totals.waiting}
+          icon={<Loader2 size={14} />}
+        />
+      </div>
 
-            {/* DESKTOP grid (≥ md) — matches design/shipping_labels_salutem.html */}
-            <div className="hidden md:block">
-            <div className="grid grid-cols-[36px_minmax(160px,1.3fr)_minmax(180px,1.8fr)_90px_90px_140px_minmax(120px,1fr)_120px] border-b border-rule bg-surface-tint px-4 py-2 text-[10px] font-mono uppercase tracking-[0.1em] text-ink-3">
-              <div />
-              <div>Order / Store</div>
-              <div>Product</div>
-              <div>Type</div>
-              <div>Weight</div>
-              <div>Ship to / by</div>
-              <div>Service</div>
-              <div className="text-right">Status</div>
-            </div>
-
-            <div>
-              {plan.orders.map((item) => {
-                const isSelectable = item.status === "pending";
-                const isChecked = selected.has(item.id);
-                const isBought = item.status === "bought";
-                const needsAttention =
-                  item.status === "stop" || item.status === "error";
-                const channelIsWalmart = /walmart/i.test(item.channel);
-
-                return (
-                  <div
-                    key={item.id}
-                    className={cn(
-                      "grid grid-cols-[36px_minmax(160px,1.3fr)_minmax(180px,1.8fr)_90px_90px_140px_minmax(120px,1fr)_120px] items-start gap-2 border-b border-rule px-4 py-3 text-[12.5px] last:border-0",
-                      isBought && "opacity-70",
-                      needsAttention && "bg-warn-tint/30",
-                      isChecked && !needsAttention && "bg-green-soft/40"
-                    )}
-                  >
-                    <div className="pt-0.5">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleSelect(item.id)}
-                        disabled={!isSelectable || buying}
-                        className="h-3.5 w-3.5 rounded border-silver-line accent-[var(--green)] disabled:opacity-30"
-                      />
-                    </div>
-
-                    {/* Order / Store */}
-                    <div className="min-w-0">
-                      <div className="font-mono text-[12px] text-ink">
-                        {item.orderNumber}
-                      </div>
-                      <div className="mt-1 flex items-center gap-1.5">
-                        <StoreAvatar
-                          store={
-                            channelIsWalmart
-                              ? "walmart"
-                              : storeKeyFor({ storeName: item.channel })
-                          }
-                          size="sm"
-                        />
-                        <span className="truncate text-[11.5px] text-ink-2">
-                          {item.channel}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Product */}
-                    <div className="min-w-0">
-                      <div className="truncate text-ink">{item.product}</div>
-                      <div className="mt-0.5 font-mono text-[10.5px] uppercase tracking-wider text-ink-3">
-                        {item.sku}
-                      </div>
-                    </div>
-
-                    {/* Type */}
+      {/* Store breakdown */}
+      {data && data.storeBreakdown.length > 0 && (
+        <Panel>
+          <PanelHeader title="By store" />
+          <PanelBody>
+            <div className="flex flex-wrap gap-2">
+              {data.storeBreakdown.map((s) => (
+                <button
+                  key={s.storeId}
+                  type="button"
+                  onClick={() =>
+                    setStoreFilter(storeFilter === s.storeId ? null : s.storeId)
+                  }
+                  className={cn(
+                    "rounded-md border px-3 py-2 text-left text-[12px] min-w-[160px]",
+                    storeFilter === s.storeId
+                      ? "border-green bg-green-soft text-green-ink"
+                      : "border-rule bg-surface hover:border-silver-line"
+                  )}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <StoreAvatar
+                      store={storeKeyFor({
+                        marketplace: s.channel,
+                        storeName: s.storeName,
+                      })}
+                      size="sm"
+                    />
+                    <span className="font-medium truncate">{s.storeName}</span>
+                  </div>
+                  <div className="mt-1 grid grid-cols-3 gap-1 text-[11px]">
                     <div>
-                      <TypeTag type={item.productType} />
+                      <div className="text-ink-3">all</div>
+                      <div className="font-semibold tabular">{s.all}</div>
                     </div>
-
-                    {/* Weight */}
-                    <div className="tabular text-[12px] text-ink-2">
-                      {item.weight != null ? (
-                        <>
-                          {item.weight}
-                          <span className="ml-0.5 text-[10.5px] text-ink-3">lb</span>
-                        </>
-                      ) : (
-                        "—"
-                      )}
+                    <div>
+                      <div className="text-ink-3">ready</div>
+                      <div className="font-semibold tabular">{s.readyToBuy}</div>
                     </div>
-
-                    {/* Dest / by */}
-                    <div className="min-w-0">
-                      <div className="truncate text-[11.5px] text-ink-2">
-                        {item.notes?.match(/to \w+/)?.[0] ?? "—"}
+                    <div>
+                      <div className="text-ink-3">⚠</div>
+                      <div className="font-semibold tabular text-warn-strong">
+                        {s.needAttention}
                       </div>
-                      <div className="mt-0.5 text-[11px] tabular text-ink-3">
-                        {item.deliveryBy ? (
-                          <>
-                            by{" "}
-                            <span className="text-ink">{item.deliveryBy}</span>
-                          </>
-                        ) : item.edd ? (
-                          `EDD ${item.edd}`
-                        ) : (
-                          "—"
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Service */}
-                    <div className="min-w-0">
-                      {item.carrier ? (
-                        <div className="flex items-center gap-1.5">
-                          <CarrierBadge carrier={item.carrier} />
-                          <span className="truncate text-[11.5px] text-ink-2">
-                            {item.service ?? ""}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-[11.5px] text-ink-3">—</span>
-                      )}
-                      {item.price != null && (
-                        <div className="mt-0.5 text-[12px] font-semibold tabular text-ink">
-                          ${item.price.toFixed(2)}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Status */}
-                    <div className="flex flex-col items-end gap-1">
-                      <StatusChip variant={statusVariantFor(item.status)}>
-                        {statusLabels[item.status] || item.status}
-                      </StatusChip>
-                      {item.status === "bought" && item.trackingNumber &&
-                        typeof item.trackingNumber === "string" &&
-                        !item.trackingNumber.startsWith("[") && (
-                          <div className="font-mono text-[10px] text-ink-3">
-                            {item.trackingNumber}
-                          </div>
-                        )}
-                      {item.notes && (
-                        <div
-                          className={cn(
-                            "text-right text-[10.5px] leading-tight",
-                            needsAttention ? "text-warn-strong" : "text-ink-3",
-                            isClickableError(item.notes) &&
-                              "cursor-pointer underline hover:text-danger"
-                          )}
-                          onClick={() =>
-                            isClickableError(item.notes) && handleErrorClick(item)
-                          }
-                        >
-                          {item.notes}
-                        </div>
-                      )}
                     </div>
                   </div>
-                );
-              })}
+                </button>
+              ))}
             </div>
-            </div>
-
-            {/* MOBILE cards (< md) */}
-            <div className="md:hidden divide-y divide-rule">
-              {plan.orders.map((item) => {
-                const isSelectable = item.status === "pending";
-                const isChecked = selected.has(item.id);
-                const isBought = item.status === "bought";
-                const needsAttention =
-                  item.status === "stop" || item.status === "error";
-                const channelIsWalmart = /walmart/i.test(item.channel);
-
-                return (
-                  <div
-                    key={item.id}
-                    className={cn(
-                      "px-4 py-3 transition-colors",
-                      isBought && "opacity-70",
-                      needsAttention && "bg-warn-tint/30",
-                      isChecked && !needsAttention && "bg-green-soft/40"
-                    )}
-                  >
-                    {/* HEAD: checkbox + order# + status */}
-                    <div className="flex items-start gap-2 mb-2">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleSelect(item.id)}
-                        disabled={!isSelectable || buying}
-                        className="h-5 w-5 mt-0.5 shrink-0 rounded border-silver-line accent-[var(--green)] disabled:opacity-30"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="font-mono text-[13px] text-ink">
-                          {item.orderNumber}
-                        </div>
-                        <div className="mt-0.5 flex items-center gap-1.5">
-                          <StoreAvatar
-                            store={
-                              channelIsWalmart
-                                ? "walmart"
-                                : storeKeyFor({ storeName: item.channel })
-                            }
-                            size="sm"
-                          />
-                          <span className="truncate text-[11.5px] text-ink-2">
-                            {item.channel}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="shrink-0">
-                        <StatusChip variant={statusVariantFor(item.status)}>
-                          {statusLabels[item.status] || item.status}
-                        </StatusChip>
-                      </div>
-                    </div>
-
-                    {/* BODY: product + sku */}
-                    <div className="mb-2">
-                      <div className="text-[12.5px] text-ink truncate">
-                        {item.product}
-                      </div>
-                      <div className="mt-0.5 font-mono text-[10.5px] uppercase tracking-wider text-ink-3">
-                        {item.sku}
-                      </div>
-                    </div>
-
-                    {/* META row: type + weight + ship-to */}
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] mb-2">
-                      <TypeTag type={item.productType} />
-                      {item.weight != null && (
-                        <span className="tabular text-ink-2">
-                          {item.weight}
-                          <span className="text-[10px] text-ink-3 ml-0.5">
-                            lb
-                          </span>
-                        </span>
-                      )}
-                      {item.notes?.match(/to \w+/)?.[0] && (
-                        <span className="text-ink-2">
-                          {item.notes.match(/to \w+/)![0]}
-                        </span>
-                      )}
-                      {item.deliveryBy ? (
-                        <span className="tabular text-ink-3">
-                          by{" "}
-                          <span className="text-ink">{item.deliveryBy}</span>
-                        </span>
-                      ) : item.edd ? (
-                        <span className="tabular text-ink-3">
-                          EDD {item.edd}
-                        </span>
-                      ) : null}
-                    </div>
-
-                    {/* SERVICE row: carrier + price */}
-                    {item.carrier && (
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <CarrierBadge carrier={item.carrier} />
-                          <span className="truncate text-[11.5px] text-ink-2">
-                            {item.service ?? ""}
-                          </span>
-                        </div>
-                        {item.price != null && (
-                          <div className="text-[13px] font-semibold tabular text-ink shrink-0">
-                            ${item.price.toFixed(2)}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* TRACKING (if bought) */}
-                    {item.status === "bought" &&
-                      item.trackingNumber &&
-                      typeof item.trackingNumber === "string" &&
-                      !item.trackingNumber.startsWith("[") && (
-                        <div className="font-mono text-[10.5px] text-ink-3 mt-1">
-                          {item.trackingNumber}
-                        </div>
-                      )}
-
-                    {/* NOTES */}
-                    {item.notes && (
-                      <div
-                        className={cn(
-                          "text-[10.5px] leading-tight mt-1",
-                          needsAttention ? "text-warn-strong" : "text-ink-3",
-                          isClickableError(item.notes) &&
-                            "cursor-pointer underline hover:text-danger"
-                        )}
-                        onClick={() =>
-                          isClickableError(item.notes) &&
-                          handleErrorClick(item)
-                        }
-                      >
-                        {item.notes}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </Panel>
-
-          {/* Sticky action bar — appears when something is selected */}
-          {selectedCount > 0 && (
-            <div className="sticky bottom-0 z-10 -mx-4 flex items-center gap-3 border-t border-rule bg-surface/95 px-4 py-3 backdrop-blur-md">
-              <div className="leading-tight">
-                <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-ink-3">
-                  Selected to buy
-                </div>
-                <div className="text-[14px] font-semibold text-ink">
-                  <span className="kpi-number" style={{ fontSize: 20 }}>
-                    {selectedCount}
-                  </span>
-                  <span className="ml-1 text-ink-3 font-normal tabular">
-                    of {plan.readyCount} ready labels
-                  </span>
-                </div>
-              </div>
-              <div className="flex-1" />
-              <Btn
-                variant="ghost"
-                onClick={deselectAll}
-                disabled={buying}
-              >
-                Clear selection
-              </Btn>
-              <Btn
-                variant="primary"
-                icon={<ShoppingCart size={13} />}
-                onClick={buySelectedLabels}
-                disabled={buying}
-                loading={buying}
-              >
-                {buying ? buyProgress : "Buy selected"}
-              </Btn>
-              <div className="hidden items-center gap-1.5 text-[11px] text-ink-3 sm:flex">
-                <span className="kbd">B</span>
-                <span>to buy</span>
-              </div>
-            </div>
-          )}
-        </>
-      ) : plan ? (
-        <Panel>
-          <div className="py-8 text-center text-[13px] text-ink-3">
-            No orders found for today
-          </div>
-        </Panel>
-      ) : (
-        <Panel>
-          <div className="py-8 text-center text-[13px] text-ink-3">
-            Click <strong className="text-ink">Generate plan</strong> to fetch today&apos;s orders
-          </div>
+          </PanelBody>
         </Panel>
       )}
 
-      {/* ── Tag Fix Modal ── */}
-      <Dialog open={!!tagModal} onOpenChange={(open) => !open && setTagModal(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Set Product Type</DialogTitle>
-            <DialogDescription>
-              This product has no Frozen/Dry tag in Veeqo. Select the correct type.
-            </DialogDescription>
-          </DialogHeader>
-          {tagModal && (
-            <div className="space-y-3 text-sm">
-              <div>
-                <Label className="text-ink-3">Product</Label>
-                <p className="font-medium">{tagModal.product}</p>
-              </div>
-              <div>
-                <Label className="text-ink-3">SKU</Label>
-                <p className="font-mono text-xs">{tagModal.sku}</p>
-              </div>
-              <div>
-                <Label className="text-ink-3">Order</Label>
-                <p className="font-mono text-xs">{tagModal.orderNumber}</p>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button
-              onClick={() => fixTag("Frozen")}
-              disabled={fixLoading}
-              className="bg-green hover:bg-green-deep text-green-cream"
-            >
-              {fixLoading ? <Loader2 className="mr-1 animate-spin" size={14} /> : <Snowflake size={14} className="mr-1" />}
-              Set Frozen
-            </Button>
-            <Button
-              onClick={() => fixTag("Dry")}
-              disabled={fixLoading}
-              variant="outline"
-            >
-              {fixLoading ? <Loader2 className="mr-1 animate-spin" size={14} /> : <Package size={14} className="mr-1" />}
-              Set Dry
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Bucket filter */}
+      {data && (
+        <FilterTabs
+          tabs={[
+            { id: "all" as const, label: "All", count: orders.length },
+            ...BUCKET_TABS.map((b) => ({
+              id: b.id,
+              label: b.label,
+              count: data.timeBuckets[b.id] ?? 0,
+            })),
+          ]}
+          active={bucketFilter ?? ("all" as const)}
+          onChange={(id) =>
+            setBucketFilter(id === "all" ? null : (id as ShipByBucket))
+          }
+        />
+      )}
 
-      {/* ── SKU Fix Modal ── */}
-      <Dialog open={!!skuModal} onOpenChange={(open) => !open && setSkuModal(null)}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Add SKU to Database</DialogTitle>
-            <DialogDescription>
-              This SKU is missing from SKU Database v2. Enter weight and dimensions.
-            </DialogDescription>
-          </DialogHeader>
-          {skuModal && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <Label className="text-ink-3">SKU</Label>
-                  <Input value={skuModal.sku} disabled className="font-mono" />
-                </div>
-                <div>
-                  <Label className="text-ink-3">Product</Label>
-                  <Input value={skuModal.product} disabled className="text-xs" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div>
-                  <Label>Weight (lbs)</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    placeholder="0.0"
-                    value={skuForm.weight}
-                    onChange={(e) => setSkuForm((f) => ({ ...f, weight: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label>Length (in)</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    placeholder="0"
-                    value={skuForm.length}
-                    onChange={(e) => setSkuForm((f) => ({ ...f, length: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label>Width (in)</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    placeholder="0"
-                    value={skuForm.width}
-                    onChange={(e) => setSkuForm((f) => ({ ...f, width: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label>Height (in)</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    placeholder="0"
-                    value={skuForm.height}
-                    onChange={(e) => setSkuForm((f) => ({ ...f, height: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="w-full sm:w-1/2">
-                <Label>FedEx One Rate Weight (lbs)</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  placeholder="auto: weight x 1.25"
-                  value={skuForm.weightFedex}
-                  onChange={(e) => setSkuForm((f) => ({ ...f, weightFedex: e.target.value }))}
-                />
-                <p className="text-[10px] text-ink-4 mt-0.5">
-                  Leave empty to auto-calculate (weight x 1.25)
-                </p>
-              </div>
+      {/* Action bar */}
+      <div className="flex items-center justify-between rounded-md border border-rule bg-surface px-3 py-2">
+        <label className="flex items-center gap-2 text-[12.5px] text-ink-2">
+          <input
+            type="checkbox"
+            checked={
+              selectableIds.size > 0 && selected.size === selectableIds.size
+            }
+            onChange={toggleAll}
+          />
+          Select all ready ({selected.size}/{selectableIds.size})
+        </label>
+        <div className="flex items-center gap-2">
+          {buyMsg && (
+            <span className="text-[11px] text-ink-3">{buyMsg}</span>
+          )}
+          <Btn
+            variant="primary"
+            icon={<ShoppingCart size={13} />}
+            onClick={buySelected}
+            loading={buying}
+            disabled={selected.size === 0}
+          >
+            {buying ? "Buying…" : `Buy selected (${selected.size})`}
+          </Btn>
+        </div>
+      </div>
+
+      {/* Order list */}
+      <div className="space-y-2">
+        {loading && !data ? (
+          <div className="rounded-md border border-rule bg-surface px-4 py-10 text-center text-[12px] text-ink-3">
+            Fetching orders from Veeqo…
+          </div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="rounded-md border border-rule bg-surface px-4 py-10 text-center text-[12px] text-ink-3">
+            No orders match the current filter.
+          </div>
+        ) : (
+          filteredOrders.map((o) => (
+            <OrderRow
+              key={o.orderId}
+              order={o}
+              selected={selected.has(o.orderId)}
+              onToggleSelected={() => toggleOne(o.orderId)}
+              onClassify={() => setClassifyModal(o)}
+              onManual={() => setManualModal(o)}
+              onPacking={() => setPackingModal(o)}
+            />
+          ))
+        )}
+      </div>
+
+      {classifyModal && (
+        <ClassifyAiDialog
+          order={classifyModal}
+          onClose={(refresh) => {
+            setClassifyModal(null);
+            if (refresh) load();
+          }}
+        />
+      )}
+      {manualModal && (
+        <ManualTypeDialog
+          order={manualModal}
+          onClose={(refresh) => {
+            setManualModal(null);
+            if (refresh) load();
+          }}
+        />
+      )}
+      {packingModal && (
+        <PackingProfileDialog
+          order={packingModal}
+          onClose={(refresh) => {
+            setPackingModal(null);
+            if (refresh) load();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Order row
+// ─────────────────────────────────────────────────────────────────────────
+
+function OrderRow({
+  order,
+  selected,
+  onToggleSelected,
+  onClassify,
+  onManual,
+  onPacking,
+}: {
+  order: DashboardOrder;
+  selected: boolean;
+  onToggleSelected: () => void;
+  onClassify: () => void;
+  onManual: () => void;
+  onPacking: () => void;
+}) {
+  const isReady = order.state === "ready_to_buy";
+  const isAttn = order.state === "need_attention";
+  const isWaiting = order.state === "waiting_placed";
+  const isBought = order.state === "bought";
+
+  const itemLine = order.items
+    .map(
+      (i) =>
+        `${i.productTitle} × ${i.quantity}${
+          i.knownType ? "" : " (unknown type)"
+        }`
+    )
+    .join(" + ");
+
+  return (
+    <div
+      className={cn(
+        "rounded-md border bg-surface p-3 text-[12.5px]",
+        isAttn
+          ? "border-warn-strong/40 bg-warn-tint/30"
+          : isWaiting
+            ? "border-rule opacity-70"
+            : isBought
+              ? "border-green/40 bg-green-soft/30"
+              : "border-rule"
+      )}
+    >
+      <div className="flex items-start gap-3">
+        {isReady ? (
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={onToggleSelected}
+            className="mt-1"
+          />
+        ) : (
+          <div className="mt-1 h-3.5 w-3.5">
+            {isAttn ? (
+              <AlertTriangle size={14} className="text-warn-strong" />
+            ) : isBought ? (
+              <CheckCircle size={14} className="text-green" />
+            ) : (
+              <Loader2 size={14} className="text-ink-3" />
+            )}
+          </div>
+        )}
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2">
+            <span className="font-mono text-[12px] text-ink">
+              {order.orderNumber}
+            </span>
+            <span className="text-[11px] text-ink-3">
+              · {order.storeName}
+            </span>
+            {order.shipBy && (
+              <span className="text-[11px] text-ink-3">
+                · Ship by {order.shipBy}
+              </span>
+            )}
+          </div>
+          <div className="mt-0.5 truncate text-[12px] text-ink-2">
+            {itemLine}
+          </div>
+
+          {/* Action area per state */}
+          {isAttn && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[11px] font-medium text-warn-strong">
+                {order.needAttentionReason
+                  ? ATTENTION_LABELS[order.needAttentionReason]
+                  : "Needs review"}
+              </span>
+              {order.needAttentionReason === "no_type" && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-[11.5px]"
+                    onClick={onClassify}
+                  >
+                    <Sparkles size={12} className="mr-1" /> Classify with AI
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-[11.5px]"
+                    onClick={onManual}
+                  >
+                    Set manually
+                  </Button>
+                </>
+              )}
+              {order.needAttentionReason === "no_packing" && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-[11.5px]"
+                  onClick={onPacking}
+                >
+                  <Package size={12} className="mr-1" /> Set packing profile
+                </Button>
+              )}
             </div>
           )}
-          <DialogFooter>
-            <Button
-              onClick={fixSku}
-              disabled={fixLoading || !skuForm.weight || !skuForm.length || !skuForm.width || !skuForm.height}
-              className="bg-green hover:bg-green-deep text-green-cream"
-            >
-              {fixLoading && <Loader2 className="mr-1 animate-spin" size={14} />}
-              Save to SKU Database
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          {isWaiting && (
+            <div className="mt-1 text-[11px] text-ink-3">
+              Waiting for procurement (no <code>Placed</code> tag yet).
+            </div>
+          )}
+          {isBought && (
+            <div className="mt-1 text-[11px] text-green-ink">
+              Label already purchased.
+            </div>
+          )}
+        </div>
+
+        <div className="shrink-0">
+          {order.items[0]?.knownType && (
+            <TypeTag type={order.items[0].knownType} />
+          )}
+        </div>
+      </div>
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Modals
+// ─────────────────────────────────────────────────────────────────────────
+
+function ClassifyAiDialog({
+  order,
+  onClose,
+}: {
+  order: DashboardOrder;
+  onClose: (refresh: boolean) => void;
+}) {
+  const item = order.items[0];
+  const productId = item?.productId ?? null;
+  const [loading, setLoading] = useState(true);
+  const [result, setResult] = useState<{
+    type: "Frozen" | "Dry";
+    confidence: number;
+    reasoning: string;
+    productImage: string | null;
+    productTitle: string;
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!productId) {
+      setError("Order has no productId");
+      setLoading(false);
+      return;
+    }
+    (async () => {
+      try {
+        const r = await fetch("/api/shipping/classify-ai", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId }),
+        });
+        const j = await r.json();
+        if (!cancelled) {
+          if (!r.ok) setError(j?.error || `HTTP ${r.status}`);
+          else setResult(j);
+          setLoading(false);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : String(e));
+          setLoading(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [productId]);
+
+  async function confirm(type: "Frozen" | "Dry", source: "ai" | "manual") {
+    if (!productId || !result) return;
+    setSaving(true);
+    try {
+      await fetch("/api/shipping/product-type", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId,
+          type,
+          source,
+          aiConfidence: source === "ai" ? result.confidence : undefined,
+          aiReasoning: source === "ai" ? result.reasoning : undefined,
+        }),
+      });
+      onClose(true);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={() => onClose(false)}>
+      <DialogContent className="sm:max-w-[480px]">
+        <DialogHeader>
+          <DialogTitle>AI Classification</DialogTitle>
+          <DialogDescription>
+            {item?.productTitle || "Product"}
+          </DialogDescription>
+        </DialogHeader>
+        {loading && (
+          <div className="flex items-center gap-2 py-4 text-[12.5px] text-ink-3">
+            <Loader2 size={14} className="animate-spin" />
+            AI is analyzing the product…
+          </div>
+        )}
+        {error && (
+          <div className="rounded border border-danger/30 bg-danger-tint p-3 text-[12px] text-danger">
+            {error}
+          </div>
+        )}
+        {result && (
+          <div className="space-y-3">
+            {result.productImage && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={result.productImage}
+                alt={result.productTitle}
+                className="max-h-[180px] w-full rounded-md object-contain border border-rule bg-bg-elev"
+              />
+            )}
+            <div className="rounded-md border border-rule bg-surface-tint p-3">
+              <div className="flex items-center gap-2">
+                {result.type === "Frozen" ? (
+                  <Snowflake size={14} className="text-info" />
+                ) : (
+                  <Package size={14} className="text-ink-2" />
+                )}
+                <span className="font-semibold text-ink">
+                  Result: {result.type}
+                </span>
+                <span className="ml-auto text-[11px] text-ink-3">
+                  confidence {(result.confidence * 100).toFixed(0)}%
+                </span>
+              </div>
+              <div className="mt-1 text-[12px] text-ink-2">
+                {result.reasoning}
+              </div>
+            </div>
+          </div>
+        )}
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onClose(false)}
+            disabled={saving}
+          >
+            Cancel
+          </Button>
+          {result && (
+            <>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  confirm(result.type === "Frozen" ? "Dry" : "Frozen", "manual")
+                }
+                disabled={saving}
+              >
+                Override to {result.type === "Frozen" ? "Dry" : "Frozen"}
+              </Button>
+              <Button
+                onClick={() => confirm(result.type, "ai")}
+                disabled={saving}
+              >
+                {saving ? "Saving…" : "Confirm"}
+              </Button>
+            </>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ManualTypeDialog({
+  order,
+  onClose,
+}: {
+  order: DashboardOrder;
+  onClose: (refresh: boolean) => void;
+}) {
+  const item = order.items[0];
+  const productId = item?.productId ?? null;
+  const [saving, setSaving] = useState(false);
+
+  async function save(type: "Frozen" | "Dry") {
+    if (!productId) return;
+    setSaving(true);
+    try {
+      await fetch("/api/shipping/product-type", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId, type, source: "manual" }),
+      });
+      onClose(true);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={() => onClose(false)}>
+      <DialogContent className="sm:max-w-[420px]">
+        <DialogHeader>
+          <DialogTitle>Set product type manually</DialogTitle>
+          <DialogDescription>{item?.productTitle}</DialogDescription>
+        </DialogHeader>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            className="h-20"
+            onClick={() => save("Frozen")}
+            disabled={saving}
+          >
+            <Snowflake size={20} className="mr-2 text-info" /> Frozen
+          </Button>
+          <Button
+            variant="outline"
+            className="h-20"
+            onClick={() => save("Dry")}
+            disabled={saving}
+          >
+            <Package size={20} className="mr-2 text-ink-2" /> Dry
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function PackingProfileDialog({
+  order,
+  onClose,
+}: {
+  order: DashboardOrder;
+  onClose: (refresh: boolean) => void;
+}) {
+  const [boxSize, setBoxSize] = useState("M");
+  const [weight, setWeight] = useState("");
+  const [weightFedex, setWeightFedex] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const description = order.items
+    .map((i) => `${i.productTitle} × ${i.quantity}`)
+    .join(" + ");
+  const totalQty = order.items.reduce((sum, i) => sum + i.quantity, 0);
+
+  async function save() {
+    if (!order.packingSignature) {
+      setErr("Order has no packing signature");
+      return;
+    }
+    const w = Number(weight);
+    if (!Number.isFinite(w) || w <= 0) {
+      setErr("Weight must be a positive number");
+      return;
+    }
+    setSaving(true);
+    try {
+      const r = await fetch("/api/shipping/packing-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          signature: order.packingSignature,
+          description,
+          boxSize,
+          weight: w,
+          weightFedex: weightFedex
+            ? Number(weightFedex)
+            : undefined,
+          itemCount: order.items.length,
+          totalQty,
+        }),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        throw new Error(j?.error || `HTTP ${r.status}`);
+      }
+      onClose(true);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={() => onClose(false)}>
+      <DialogContent className="sm:max-w-[480px]">
+        <DialogHeader>
+          <DialogTitle>Packing profile</DialogTitle>
+          <DialogDescription>
+            Order #{order.orderNumber}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 text-[12.5px]">
+          <div>
+            <div className="font-medium text-ink mb-1">Composition</div>
+            <ul className="rounded border border-rule bg-surface-tint p-2 text-ink-2 space-y-0.5">
+              {order.items.map((i) => (
+                <li key={i.sku}>
+                  • {i.productTitle} × {i.quantity} ({i.sku})
+                </li>
+              ))}
+            </ul>
+            <div className="mt-1 text-[11px] text-ink-3">
+              Signature:{" "}
+              <code className="font-mono">{order.packingSignature}</code>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11.5px] font-medium text-ink mb-1">
+              Box size
+            </label>
+            <select
+              value={boxSize}
+              onChange={(e) => setBoxSize(e.target.value)}
+              className="w-full rounded border border-rule bg-surface px-2 py-1.5 text-[12.5px]"
+            >
+              <option>XS</option>
+              <option>S</option>
+              <option>M</option>
+              <option>L</option>
+              <option>XL</option>
+              <option>XXS</option>
+              <option>12x12x8</option>
+              <option>12x12x6</option>
+              <option>7x7x6</option>
+              <option>7x5x14</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                Weight (lbs)
+              </label>
+              <Input
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                placeholder="2.5"
+              />
+            </div>
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                FedEx One Rate (lbs)
+              </label>
+              <Input
+                value={weightFedex}
+                onChange={(e) => setWeightFedex(e.target.value)}
+                placeholder="auto = weight × 1.25"
+              />
+            </div>
+          </div>
+
+          {err && (
+            <div className="rounded border border-danger/30 bg-danger-tint p-2 text-[11.5px] text-danger">
+              {err}
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onClose(false)}
+            disabled={saving}
+          >
+            Cancel
+          </Button>
+          <Button onClick={save} disabled={saving}>
+            {saving ? "Saving…" : "Save"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
