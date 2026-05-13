@@ -9,27 +9,44 @@
  *   npx tsx scripts/backfill-orders.ts --days=90
  *   npx tsx scripts/backfill-orders.ts --days=30 --channel=walmart
  *   npx tsx scripts/backfill-orders.ts --days=45 --channel=amazon --store=2
+ *   npx tsx scripts/backfill-orders.ts --days=45 --via=veeqo --store=4
+ *
+ * Modes:
+ *   default        — pulls via direct marketplace APIs (SP-API / Walmart MP API)
+ *   --via=veeqo    — pulls via Veeqo as a temporary fallback for Amazon stores
+ *                    whose direct SP-API credentials aren't issued yet. Uses
+ *                    the channel→storeIndex map below. Writes rows into the
+ *                    same AmazonOrder table (Veeqo gives us the canonical
+ *                    Amazon order number in `order.number`, so there is no id
+ *                    collision with later direct-SP-API pulls).
  *
  * Env required (depending on channel):
  *   AMAZON_SP_CLIENT_ID / AMAZON_SP_CLIENT_SECRET / AMAZON_SP_REFRESH_TOKEN_STORE{1..5}
- *   WALMART_CLIENT_ID / WALMART_CLIENT_SECRET
+ *   WALMART_CLIENT_ID_STORE{n} / WALMART_CLIENT_SECRET_STORE{n}
+ *   VEEQO_API_KEY (only for --via=veeqo)
  *   TURSO_DATABASE_URL + TURSO_AUTH_TOKEN  (or DATABASE_URL)
- *
- * Notes:
- * - Amazon SP-API throttles aggressively. The existing getOrders pagination
- *   helper already sleeps between pages; this script just calls it per store.
- * - Walmart Marketplace Orders API supports up to 1000 results / cursor walk.
- *   We page until no nextCursor.
  */
 
 import { prisma } from "../src/lib/prisma";
 import { getOrders as getAmazonOrders } from "../src/lib/amazon-sp-api/orders";
 import { WalmartClient, WalmartOrdersApi } from "../src/lib/walmart";
+import { veeqoFetch } from "../src/lib/veeqo/client";
+
+// Veeqo channel IDs → AmazonOrder.storeIndex. Used by --via=veeqo mode for
+// stores whose direct SP-API access isn't issued yet. Each storeIndex can
+// list one or more Veeqo channels (e.g. the regular Amazon channel + the
+// matching Amazon FBA channel).
+const VEEQO_STORE_CHANNELS: Record<number, number[]> = {
+  // 4 = Sirius International — direct SP-API token pending. SIRIUS TRADING
+  // INTERNATIONAL (Amazon MFN) + its FBA twin.
+  4: [705029, 705030],
+};
 
 interface Args {
   days: number;
   channel: "amazon" | "walmart" | "both";
   storeIndex: number | null;
+  via: "direct" | "veeqo";
 }
 
 function parseArgs(): Args {
@@ -44,7 +61,9 @@ function parseArgs(): Args {
     channelRaw === "amazon" || channelRaw === "walmart" ? channelRaw : "both";
   const storeArg = get("store");
   const storeIndex = storeArg ? parseInt(storeArg, 10) : null;
-  return { days, channel, storeIndex };
+  const viaRaw = (get("via") || "direct").toLowerCase();
+  const via = viaRaw === "veeqo" ? "veeqo" : "direct";
+  return { days, channel, storeIndex, via };
 }
 
 async function backfillAmazon(args: Args) {
@@ -242,19 +261,149 @@ async function backfillWalmart(args: Args) {
   }
 }
 
+/**
+ * Veeqo → AmazonOrder fallback. Used for Amazon stores that don't yet have
+ * direct SP-API credentials. Pulls orders for the channel IDs configured in
+ * VEEQO_STORE_CHANNELS and upserts into AmazonOrder using the canonical
+ * Amazon order number (`order.number`, e.g. "114-XXXXXXX-XXXXXXX") so a
+ * future direct-SP-API backfill won't duplicate the row.
+ */
+async function backfillViaVeeqo(args: Args) {
+  const targetIndexes =
+    args.storeIndex != null
+      ? [args.storeIndex]
+      : Object.keys(VEEQO_STORE_CHANNELS).map((n) => parseInt(n, 10));
+
+  for (const storeIndex of targetIndexes) {
+    const channelIds = VEEQO_STORE_CHANNELS[storeIndex];
+    if (!channelIds || channelIds.length === 0) {
+      console.log(
+        `\n→ Veeqo: store${storeIndex} — no channel mapping in VEEQO_STORE_CHANNELS, skipping`
+      );
+      continue;
+    }
+    const store = await prisma.store.findFirst({
+      where: { storeIndex, channel: "Amazon", active: true },
+    });
+    const storeLabel = store?.name ?? `store${storeIndex}`;
+    const since = new Date(Date.now() - args.days * 86400000);
+    const sinceIso = since.toISOString();
+
+    console.log(
+      `\n→ Veeqo: ${storeLabel} (storeIndex=${storeIndex}) — channels ${channelIds.join(",")} since ${sinceIso}`
+    );
+
+    let inserted = 0;
+    let updated = 0;
+    let seen = 0;
+
+    try {
+      for (const channelId of channelIds) {
+        let page = 1;
+        // Walk Veeqo's page-based pagination until an empty page comes back.
+        // Veeqo's `created_at_min` filter accepts an ISO timestamp.
+        while (true) {
+          const path = `/orders?channel_id=${channelId}&created_at_min=${encodeURIComponent(sinceIso)}&page_size=100&page=${page}`;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const rows: any[] = await veeqoFetch(path);
+          if (!Array.isArray(rows) || rows.length === 0) break;
+          for (const o of rows) {
+            seen++;
+            const amazonOrderId: string | undefined = o.number;
+            if (!amazonOrderId) continue;
+
+            const status = normalizeVeeqoStatus(o.status);
+            const purchaseDate = o.created_at
+              ? new Date(o.created_at)
+              : new Date();
+            const lastUpdateDate = o.updated_at
+              ? new Date(o.updated_at)
+              : null;
+            const orderTotal = Number(o.total_price ?? 0);
+            const currency = String(o.currency_code ?? "USD");
+            const numberOfItems = Array.isArray(o.line_items)
+              ? o.line_items.length
+              : 0;
+            const fulfillmentChannel = o.fulfilled_by_amazon ? "AFN" : "MFN";
+
+            const existing = await prisma.amazonOrder.findUnique({
+              where: { amazonOrderId },
+              select: { id: true },
+            });
+            await prisma.amazonOrder.upsert({
+              where: { amazonOrderId },
+              create: {
+                amazonOrderId,
+                storeIndex,
+                status,
+                purchaseDate,
+                lastUpdateDate,
+                orderTotal,
+                currency,
+                numberOfItems,
+                fulfillmentChannel,
+                salesChannel: "Amazon.com (via Veeqo)",
+              },
+              update: {
+                status,
+                lastUpdateDate,
+                orderTotal,
+              },
+            });
+            if (existing) updated++;
+            else inserted++;
+          }
+          if (seen % 200 === 0) {
+            console.log(
+              `  …${seen} processed (${inserted} new, ${updated} updated)`
+            );
+          }
+          if (rows.length < 100) break; // last page
+          page++;
+        }
+      }
+      console.log(
+        `  ✓ ${storeLabel}: ${inserted} new, ${updated} updated (${seen} total) via Veeqo`
+      );
+    } catch (err) {
+      console.error(`  ✗ ${storeLabel} (Veeqo) failed:`, err);
+    }
+  }
+}
+
+/**
+ * Veeqo status → AmazonOrder.status. Veeqo uses lowercase / snake_case;
+ * AmazonOrder uses Amazon's Title Case so the existing sales endpoint (which
+ * filters `notIn: ["Canceled","Cancelled"]`) continues to work.
+ */
+function normalizeVeeqoStatus(s: string | undefined | null): string {
+  if (!s) return "Unknown";
+  const k = String(s).toLowerCase();
+  if (k.includes("shipped")) return "Shipped";
+  if (k.includes("cancel")) return "Canceled";
+  if (k === "awaiting_fulfillment" || k === "pending") return "Unshipped";
+  return s;
+}
+
 async function main() {
   const args = parseArgs();
   console.log(
     `🔄 Backfill orders — ${args.days} day(s), channel=${args.channel}${
       args.storeIndex != null ? `, store=${args.storeIndex}` : ""
-    }`
+    }${args.via !== "direct" ? `, via=${args.via}` : ""}`
   );
 
-  if (args.channel === "amazon" || args.channel === "both") {
-    await backfillAmazon(args);
-  }
-  if (args.channel === "walmart" || args.channel === "both") {
-    await backfillWalmart(args);
+  if (args.via === "veeqo") {
+    // Veeqo-fallback path replaces both Amazon and Walmart direct pulls — it
+    // only knows about specific Amazon stores via VEEQO_STORE_CHANNELS.
+    await backfillViaVeeqo(args);
+  } else {
+    if (args.channel === "amazon" || args.channel === "both") {
+      await backfillAmazon(args);
+    }
+    if (args.channel === "walmart" || args.channel === "both") {
+      await backfillWalmart(args);
+    }
   }
 
   // Report what the DB now covers so the next operator can sanity-check.
