@@ -105,6 +105,30 @@ export async function setProductTag(
   });
 }
 
+/**
+ * Update an order's dispatch_date in Veeqo (the field that drives the
+ * Ship Date the carrier-rate API uses). Returns the updated order so the
+ * caller can read back the saved value if needed.
+ *
+ * Used by the Frozen "Ship Date Trick" — temporarily shifting an order's
+ * dispatch_date to next Monday lets us pull a different rate set from
+ * Veeqo, compare it against today's rates, and restore the original date
+ * if Monday didn't win.
+ */
+export async function updateOrderDispatchDate(
+  orderId: number | string,
+  isoDate: string
+) {
+  return veeqoFetch(`/orders/${orderId}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      order: {
+        dispatch_date: isoDate,
+      },
+    }),
+  });
+}
+
 // Add employee note to order
 export async function addEmployeeNote(orderId: number, text: string) {
   return veeqoFetch(`/orders/${orderId}`, {

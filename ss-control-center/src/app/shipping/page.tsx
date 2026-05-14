@@ -128,6 +128,31 @@ const ATTENTION_LABELS: Record<NonNullable<AttentionReason>, string> = {
   no_service: "No carrier service available",
 };
 
+// /api/shipping/buy response shape — mirrored from buy/route.ts so the
+// post-buy modal can render an itemised report.
+interface BuyReportSuccess {
+  orderNumber: string;
+  tracking: string;
+  itemId: string;
+  labelPath: string | null;
+  pdfSaved: boolean;
+  carrier: string | null;
+  service: string | null;
+  price: number | null;
+}
+interface BuyReportError {
+  orderNumber: string;
+  error: string;
+  itemId: string;
+}
+interface BuyReport {
+  // What the user just tried to do — shapes the title.
+  scope: "single" | "bulk";
+  total: number;
+  bought: BuyReportSuccess[];
+  errors: BuyReportError[];
+}
+
 const BUCKET_TABS: { id: ShipByBucket; label: string; activeCls: string }[] = [
   { id: "overdue",  label: "Overdue",  activeCls: "border-danger bg-danger-tint text-danger" },
   { id: "today",    label: "Today",    activeCls: "border-warn-strong bg-warn-tint text-warn-strong" },
@@ -176,6 +201,15 @@ export default function ShippingLabelsPage() {
   const [buying, setBuying] = useState(false);
   const [buyMsg, setBuyMsg] = useState<string | null>(null);
   const [buyingRow, setBuyingRow] = useState<string | null>(null);
+  // Per-order buy errors keyed by orderId — surfaced on the card itself.
+  // The page-level buyMsg is small and easy to miss; without inline errors
+  // the operator sees "spinner → spinner gone" and assumes success even
+  // when the buy endpoint returned errors in its 200-OK payload.
+  const [buyErrors, setBuyErrors] = useState<Record<string, string>>({});
+  // Post-buy modal — forces the operator to confirm every purchase outcome
+  // so labels can't silently fail to print. The dialog is the primary
+  // record-of-truth; logs/shipping-buy.jsonl is the audit fallback.
+  const [buyReport, setBuyReport] = useState<BuyReport | null>(null);
 
   // Modal state
   const [classifyModal, setClassifyModal] = useState<DashboardOrder | null>(
@@ -348,6 +382,12 @@ export default function ShippingLabelsPage() {
       const ok = (buyJson.bought ?? []).length;
       const fail = (buyJson.errors ?? []).length;
       setBuyMsg(`Bought ${ok} · ${fail} failed`);
+      setBuyReport({
+        scope: "bulk",
+        total: itemIds.length,
+        bought: buyJson.bought ?? [],
+        errors: buyJson.errors ?? [],
+      });
       setSelected(new Set());
       await load();
     } catch (e) {
@@ -363,6 +403,13 @@ export default function ShippingLabelsPage() {
   async function buyOne(o: DashboardOrder) {
     setBuyingRow(o.orderId);
     setBuyMsg(`Buying label for ${o.orderNumber}…`);
+    // Clear any previous error for this row so the spinner replaces it.
+    setBuyErrors((prev) => {
+      if (!(o.orderId in prev)) return prev;
+      const next = { ...prev };
+      delete next[o.orderId];
+      return next;
+    });
     try {
       let planId = plan?.planId ?? null;
       let planItemId =
@@ -390,10 +437,30 @@ export default function ShippingLabelsPage() {
       });
       const buyJson = await buyRes.json();
       if (!buyRes.ok) throw new Error(buyJson?.error || "Failed to buy");
+      // The buy endpoint returns 200 even when the individual purchase
+      // failed — the failure lands in buyJson.errors. Without this check
+      // the UI silently flips back to "ready" and the operator thinks
+      // the label was bought.
+      const errs: BuyReportError[] = buyJson.errors ?? [];
+      const bought: BuyReportSuccess[] = buyJson.bought ?? [];
+      // Always surface the per-purchase report — even a single-order buy
+      // can have a PDF-save mismatch (label bought, file not written)
+      // that the operator must see.
+      setBuyReport({
+        scope: "single",
+        total: 1,
+        bought,
+        errors: errs,
+      });
+      if (bought.length === 0 && errs.length > 0) {
+        throw new Error(errs[0]?.error || "Veeqo rejected the purchase");
+      }
       setBuyMsg(`Bought ${o.orderNumber}`);
       await load();
     } catch (e) {
-      setBuyMsg(e instanceof Error ? e.message : String(e));
+      const msg = e instanceof Error ? e.message : String(e);
+      setBuyMsg(msg);
+      setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
     } finally {
       setBuyingRow(null);
     }
@@ -569,6 +636,7 @@ export default function ShippingLabelsPage() {
               planLoading={planLoading}
               selected={selected.has(o.orderId)}
               buying={buyingRow === o.orderId}
+              buyError={buyErrors[o.orderId] ?? null}
               onToggleSelected={() => toggleOne(o.orderId)}
               onClassify={() => setClassifyModal(o)}
               onManual={() => setManualModal(o)}
@@ -616,6 +684,12 @@ export default function ShippingLabelsPage() {
           }}
         />
       )}
+      {buyReport && (
+        <BuyReportDialog
+          report={buyReport}
+          onClose={() => setBuyReport(null)}
+        />
+      )}
     </div>
   );
 }
@@ -630,6 +704,7 @@ function OrderRow({
   planLoading,
   selected,
   buying,
+  buyError,
   onToggleSelected,
   onClassify,
   onManual,
@@ -642,6 +717,7 @@ function OrderRow({
   planLoading: boolean;
   selected: boolean;
   buying: boolean;
+  buyError: string | null;
   onToggleSelected: () => void;
   onClassify: () => void;
   onManual: () => void;
@@ -816,27 +892,21 @@ function OrderRow({
         {(isReady || isBought) && (
           <Cell
             label="Carrier"
+            // The Veeqo rate `title` (= plan.service, e.g. "UPS® Ground"
+            // or "FedEx Ground Economy") already includes the carrier
+            // name, so prefixing plan.carrier produced redundant strings
+            // like "USPS USPS Ground Advantage". Drop the prefix unless
+            // the service title is missing it for some reason.
             value={
-              plan?.carrier && plan.service
-                ? `${plan.carrier} ${plan.service}`
-                : planLoading
-                  ? "loading…"
-                  : "—"
+              plan?.service
+                ? plan.service
+                : plan?.carrier
+                  ? plan.carrier
+                  : planLoading
+                    ? "loading…"
+                    : "—"
             }
             sub={plan?.edd ? `EDD ${fmtDate(plan.edd)}` : undefined}
-          />
-        )}
-        {(isReady || isBought) && (
-          <Cell
-            label="Package"
-            value={
-              plan?.weight != null
-                ? `${plan.weight} lbs`
-                : planLoading
-                  ? "loading…"
-                  : "—"
-            }
-            sub={plan?.boxSize ?? undefined}
           />
         )}
       </div>
@@ -930,6 +1000,12 @@ function OrderRow({
           {planStop ? (
             <span className="rounded bg-danger-tint px-1.5 py-0.5 text-[11px] font-medium text-danger">
               {plan?.notes}
+            </span>
+          ) : buyError ? (
+            // Show the last buy failure inline so the operator doesn't
+            // think the spinner-then-active-button cycle meant success.
+            <span className="rounded bg-danger-tint px-1.5 py-0.5 text-[11px] font-medium text-danger">
+              Buy failed — {buyError}
             </span>
           ) : (
             <span className="text-[11px] text-ink-3">
@@ -1681,3 +1757,154 @@ function SkuDataDialog({
   );
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────
+// Buy report dialog
+//
+// Forced acknowledgement after every buy attempt. Lists exactly which
+// labels printed, which PDFs landed on disk, and which orders failed —
+// so a missed label can't slip through unnoticed (the cost of one
+// unshipped order is hours of CS work plus marketplace penalty).
+// ─────────────────────────────────────────────────────────────────────────
+function BuyReportDialog({
+  report,
+  onClose,
+}: {
+  report: BuyReport;
+  onClose: () => void;
+}) {
+  const okCount = report.bought.length;
+  const failCount = report.errors.length;
+  const pdfMissing = report.bought.filter((b) => !b.pdfSaved).length;
+  const allOk = failCount === 0 && pdfMissing === 0;
+  const title =
+    report.scope === "single"
+      ? "Label purchase result"
+      : `Bulk purchase — ${report.total} order(s)`;
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[560px]">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            {allOk
+              ? "All labels purchased and PDFs saved."
+              : "Review the items below — at least one needs attention."}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3 text-[12.5px]">
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="rounded border border-rule bg-surface-tint p-2">
+              <div className="text-[11px] text-ink-3">Bought</div>
+              <div className="text-base font-semibold text-green-ink">
+                {okCount}
+              </div>
+            </div>
+            <div className="rounded border border-rule bg-surface-tint p-2">
+              <div className="text-[11px] text-ink-3">PDF saved</div>
+              <div
+                className={cn(
+                  "text-base font-semibold",
+                  pdfMissing === 0 ? "text-green-ink" : "text-warn-strong"
+                )}
+              >
+                {okCount - pdfMissing}/{okCount}
+              </div>
+            </div>
+            <div className="rounded border border-rule bg-surface-tint p-2">
+              <div className="text-[11px] text-ink-3">Failed</div>
+              <div
+                className={cn(
+                  "text-base font-semibold",
+                  failCount === 0 ? "text-ink" : "text-danger"
+                )}
+              >
+                {failCount}
+              </div>
+            </div>
+          </div>
+
+          {report.bought.length > 0 && (
+            <div>
+              <div className="font-medium text-ink mb-1">Purchased</div>
+              <ul className="rounded border border-rule bg-surface-tint p-2 space-y-1 max-h-[180px] overflow-y-auto">
+                {report.bought.map((b) => (
+                  <li key={b.itemId} className="flex items-start gap-2">
+                    <CheckCircle
+                      size={13}
+                      className="mt-0.5 shrink-0 text-green-ink"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-mono text-[12px]">
+                        {b.orderNumber}
+                      </div>
+                      <div className="text-[11px] text-ink-2">
+                        {b.service ?? b.carrier ?? ""}
+                        {b.price != null && (
+                          <span className="text-ink-3">
+                            {" · $"}
+                            {b.price.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-ink-3">
+                        Tracking:{" "}
+                        <span className="font-mono text-ink-2">
+                          {b.tracking}
+                        </span>
+                      </div>
+                      {b.pdfSaved && b.labelPath ? (
+                        <a
+                          href={b.labelPath}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[11px] text-info underline"
+                        >
+                          Open PDF
+                        </a>
+                      ) : (
+                        <div className="text-[11px] text-warn-strong">
+                          ⚠ PDF not saved locally — re-download from Veeqo
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {report.errors.length > 0 && (
+            <div>
+              <div className="font-medium text-ink mb-1">Failed</div>
+              <ul className="rounded border border-danger bg-danger-tint p-2 space-y-1 max-h-[180px] overflow-y-auto">
+                {report.errors.map((e) => (
+                  <li key={e.itemId} className="flex items-start gap-2">
+                    <AlertTriangle
+                      size={13}
+                      className="mt-0.5 shrink-0 text-danger"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-mono text-[12px]">
+                        {e.orderNumber}
+                      </div>
+                      <div className="text-[11px] text-danger break-words">
+                        {e.error}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button onClick={onClose}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

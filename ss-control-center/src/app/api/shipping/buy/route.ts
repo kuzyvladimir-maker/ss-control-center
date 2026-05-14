@@ -1,9 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { buyShippingLabel, addEmployeeNote } from "@/lib/veeqo";
+import {
+  buyShippingLabel,
+  addEmployeeNote,
+  updateOrderDispatchDate,
+} from "@/lib/veeqo";
 import { sendTelegramMessage } from "@/lib/telegram";
-import { writeFileSync, mkdirSync, existsSync } from "fs";
+import { writeFileSync, mkdirSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
+
+// Append a single JSON line per /api/shipping/buy call. The file lives
+// outside `public/` so it's never served to the browser. Used as a
+// last-resort audit trail in case the post-buy modal is dismissed
+// before the operator screenshots it. Non-fatal on write error — the
+// API response and Telegram message are still authoritative.
+function appendBuyLog(entry: Record<string, unknown>) {
+  try {
+    const dir = join(process.cwd(), "logs");
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    const line = JSON.stringify({ ts: new Date().toISOString(), ...entry });
+    appendFileSync(join(dir, "shipping-buy.jsonl"), line + "\n");
+  } catch (e) {
+    console.error("[buy] audit log write failed:", e);
+  }
+}
 
 // Format date as "Mmm DD" (e.g. "Apr 07")
 function fmtDate(dateStr: string | null): string {
@@ -69,7 +89,18 @@ export async function POST(request: NextRequest) {
     }
 
     const results = {
-      bought: [] as { orderNumber: string; tracking: string; itemId: string; labelPath: string | null }[],
+      bought: [] as {
+        orderNumber: string;
+        tracking: string;
+        itemId: string;
+        labelPath: string | null;
+        // Explicit so the post-buy modal can flag "label bought but PDF
+        // not saved locally" — Veeqo has the label, our disk doesn't.
+        pdfSaved: boolean;
+        carrier: string | null;
+        service: string | null;
+        price: number | null;
+      }[],
       errors: [] as { orderNumber: string; error: string; itemId: string }[],
       total: itemsToBuy.length,
     };
@@ -83,6 +114,29 @@ export async function POST(request: NextRequest) {
         ) {
           results.errors.push({ orderNumber: item.orderNumber, error: "Missing shipping data", itemId: item.id });
           continue;
+        }
+
+        // Ship Date Trick — if the plan picked a future ship day (e.g. the
+        // Frozen Monday-shift won at plan time), push the order's
+        // dispatch_date in Veeqo before buying so the carrier label prints
+        // with the correct ship date and the warehouse worker files it in
+        // the Monday folder via buildFolderPath() below.
+        const todayIso = new Date().toISOString().split("T")[0];
+        if (item.actualShipDay && item.actualShipDay > todayIso) {
+          try {
+            await updateOrderDispatchDate(
+              item.orderId,
+              `${item.actualShipDay}T06:59:59.000Z`
+            );
+          } catch (shiftErr) {
+            // Non-fatal: log + carry on. Veeqo may still buy a usable label
+            // with the original dispatch_date — the warehouse will read the
+            // employee note (added below) for the actual ship instruction.
+            console.warn(
+              `[buy] Could not push dispatch_date for order ${item.orderId} to ${item.actualShipDay}:`,
+              shiftErr instanceof Error ? shiftErr.message : shiftErr
+            );
+          }
         }
 
         // Buy the label
@@ -132,10 +186,16 @@ export async function POST(request: NextRequest) {
           console.error("PDF save error:", pdfErr);
         }
 
-        // Add employee note
+        // Add employee note. Include a SHIP-DAY badge when the plan
+        // shifted the dispatch date forward (e.g. Frozen Monday-trick),
+        // so the warehouse worker knows not to drop the label off today.
+        const shipDayNote =
+          item.actualShipDay && item.actualShipDay > todayIso
+            ? ` | 📅 SHIP ON ${item.actualShipDay}`
+            : "";
         await addEmployeeNote(
           parseInt(item.orderId),
-          `✅ Label Purchased: ${item.carrier} ${item.service} $${item.price} | Tracking: ${tracking} | ${new Date().toISOString().split("T")[0]}`
+          `✅ Label Purchased: ${item.carrier} ${item.service} $${item.price} | Tracking: ${tracking} | ${todayIso}${shipDayNote}`
         );
 
         // Update DB
@@ -148,7 +208,16 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        results.bought.push({ orderNumber: item.orderNumber, tracking, itemId: item.id, labelPath });
+        results.bought.push({
+          orderNumber: item.orderNumber,
+          tracking,
+          itemId: item.id,
+          labelPath,
+          pdfSaved: labelPath != null,
+          carrier: item.carrier,
+          service: item.service,
+          price: item.price,
+        });
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);
         console.error(`Buy error for ${item.orderNumber}:`, error);
@@ -185,6 +254,25 @@ export async function POST(request: NextRequest) {
         : null,
     ].filter(Boolean).join("\n");
     await sendTelegramMessage(summary);
+
+    appendBuyLog({
+      planId,
+      planDate: plan.date,
+      requested: itemsToBuy.length,
+      bought: results.bought.map((b) => ({
+        orderNumber: b.orderNumber,
+        tracking: b.tracking,
+        pdfSaved: b.pdfSaved,
+        labelPath: b.labelPath,
+        carrier: b.carrier,
+        service: b.service,
+        price: b.price,
+      })),
+      errors: results.errors.map((e) => ({
+        orderNumber: e.orderNumber,
+        error: e.error,
+      })),
+    });
 
     return NextResponse.json(results);
   } catch (error) {

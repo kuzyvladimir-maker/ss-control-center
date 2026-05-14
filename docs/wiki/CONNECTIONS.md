@@ -10,9 +10,9 @@
 ← [Shipping Labels](shipping-labels.md), [Customer Hub](customer-hub.md), [Account Health](account-health.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md), [Shipment Monitor](shipment-monitor.md)
 
 ### [Shipping Labels](shipping-labels.md)
-← [Veeqo API](veeqo-api.md), [SKU Database](sku-database-migration.md), [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md), [Procurement](procurement-module.md) (ждёт тега `Placed` на заказе перед покупкой этикетки)
+← [Veeqo API](veeqo-api.md), [SKU Database](sku-database-migration.md), [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md), [Procurement](procurement-module.md) (ждёт тега `Placed` на заказе перед покупкой этикетки), [Claude AI](claude-ai.md) (AI classification в [Shipping Labels Page v1](shipping-labels-page-v1.md))
 → [Dashboard](dashboard.md), [n8n Автоматизация](n8n-automation.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md), [Shipment Monitor](shipment-monitor.md)
-⊂ [Выбор ставки](shipping-rate-selection.md), [Бюджет](budget-check-algorithm.md), [Weekend распределение](weekend-distribution.md), [Carrier rules](carrier-selection-rules.md), [Label filename](label-filename-format.md)
+⊂ [Выбор ставки](shipping-rate-selection.md), [Бюджет](budget-check-algorithm.md), [Weekend распределение](weekend-distribution.md), [Carrier rules](carrier-selection-rules.md), [Label filename](label-filename-format.md), [Shipping Labels Page v1](shipping-labels-page-v1.md) (UI и dashboard)
 
 ### [Procurement](procurement-module.md)
 ← [Veeqo API](veeqo-api.md) (orders + products + tags + internal notes)
@@ -244,4 +244,4 @@ Phase 2 planned → sales-analytics-module (полноценная страни�
 - `⇔` двусторонняя связь
 
 ---
-Последнее обновление: 2026-05-12 (+ SKU Database migration: Google Sheets → Internal DB)
+Последнее обновление: 2026-05-12 (+ Shipping Labels Page v1.0 spec + SKU DB migration)

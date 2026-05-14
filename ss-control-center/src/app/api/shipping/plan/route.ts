@@ -6,6 +6,7 @@ import {
   getShippingRates,
   veeqoDateToLocal,
   getTodayNY,
+  updateOrderDispatchDate,
 } from "@/lib/veeqo";
 import { fetchSkuDatabase, type SkuRow } from "@/lib/sku-database";
 import {
@@ -410,17 +411,110 @@ export async function GET(request: NextRequest) {
             isAfterNoon
           );
 
-          // Ship Date Trick for Thu/Fri Frozen with no rates
-          if (
-            !selectedRate &&
+          // ── Ship Date Trick (Frozen only) ───────────────────────────────
+          //
+          // For Frozen orders the 3-day in-transit cap often makes Saturday-
+          // surcharge rates the only feasible option on certain weekdays.
+          // Shifting the actual dispatch_date to next Monday can unlock a
+          // cheaper plain weekday rate that still meets both the 3-day rule
+          // (now measured from Monday) and the marketplace deadline.
+          //
+          // Implementation: PUT dispatch_date = nextMonday in Veeqo,
+          // re-fetch rates, compare with today's pick, restore on the way
+          // out. If Monday wins we mark `actualShipDay = nextMonday` and
+          // /api/shipping/buy will re-apply the date before purchasing.
+          // The restore in the finally block guarantees Veeqo state is
+          // unchanged when the trick doesn't win.
+          const nextMonday = getNextMonday(today);
+          const monDeadlineDays = nextMonday
+            ? Math.round(
+                (new Date(deliveryBy + "T00:00:00").getTime() -
+                  new Date(nextMonday + "T00:00:00").getTime()) /
+                  86_400_000
+              )
+            : -1;
+
+          // Skip Monday-shift attempts that can't possibly win:
+          //   * non-Frozen orders (no 3-day constraint to relieve)
+          //   * Monday is past the marketplace deadline already
+          //   * today already IS Monday — getNextMonday() would return
+          //     Mon+7, a full week out. Too aggressive for routine use;
+          //     a Monday order with no rate is a real exception that
+          //     should surface as a stop and be handled manually.
+          const tryMonday =
             productType === "Frozen" &&
-            (dayInfo.dayName === "Thu" || dayInfo.dayName === "Fri")
-          ) {
-            shipDateNote = `Ship Date Trick: actual shipment Monday`;
-            // NOTE: The actual Ship Date trick (PUT dispatch_date → Mon,
-            // fetch rates, PUT back) would be done here in production.
-            // For now we mark it for manual handling.
-            stopReason = `No Frozen rate ≤3 days — needs Ship Date trick (${dayInfo.dayName}→Mon). Handle manually.`;
+            monDeadlineDays >= 3 &&
+            dayInfo.dayName !== "Mon" &&
+            (
+              // No rate found today → trick is our only chance
+              !selectedRate ||
+              // Today's pick involves Saturday surcharge → Monday may be
+              // cheaper (Saturday variants are typically $15-25 over the
+              // plain version).
+              /saturday/i.test(selectedRate.title || "")
+            );
+
+          if (tryMonday) {
+            const originalDispatch: string | undefined = order.dispatch_date;
+            try {
+              await updateOrderDispatchDate(
+                order.id,
+                `${nextMonday}T06:59:59.000Z`
+              );
+              // Brief pause — Veeqo recomputes the allocation's rate cache
+              // asynchronously after the order update.
+              await new Promise((r) => setTimeout(r, 800));
+              const mondayRatesResp = await getShippingRates(
+                String(allocationId)
+              );
+              const mondayRates: VeeqoRate[] =
+                mondayRatesResp?.available || [];
+              const mondayPick = selectBestRate(
+                mondayRates,
+                productType,
+                deliveryBy,
+                nextMonday,
+                "Mon",
+                false
+              );
+
+              const todayPrice = selectedRate
+                ? parseFloat(selectedRate.total_net_charge)
+                : Infinity;
+              const mondayPrice = mondayPick
+                ? parseFloat(mondayPick.total_net_charge)
+                : Infinity;
+
+              if (mondayPick && mondayPrice < todayPrice) {
+                selectedRate = mondayPick;
+                shipDateNote = `Shifted to Mon ${nextMonday}: saved $${(
+                  todayPrice === Infinity ? 0 : todayPrice - mondayPrice
+                ).toFixed(2)} vs today's pick`;
+              }
+            } catch (e) {
+              // Trick failed — fall back to today's pick. Don't leak the
+              // failure as a hard stop; we still have selectedRate from
+              // the initial getShippingRates call.
+              console.warn(
+                "Ship Date Trick failed for order",
+                order.id,
+                e instanceof Error ? e.message : e
+              );
+            } finally {
+              // Always restore the original dispatch_date. The actual
+              // Monday push happens at purchase time in /api/shipping/buy,
+              // not here.
+              if (originalDispatch) {
+                try {
+                  await updateOrderDispatchDate(order.id, originalDispatch);
+                } catch (e) {
+                  console.error(
+                    `CRITICAL: failed to restore dispatch_date on order ${order.id} — left as Monday. Original: ${originalDispatch}`,
+                    e
+                  );
+                }
+              }
+            }
           }
 
           if (!selectedRate && !stopReason) {

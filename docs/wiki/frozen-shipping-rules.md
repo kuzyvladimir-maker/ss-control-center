@@ -7,7 +7,7 @@
 - **Max calendar days: 3** (от отгрузки до доставки)
 - **Среда:** Ground запрещён (5 кал. дней)
 - **Пятница:** FedEx Express запрещён
-- **Чт/Пт без ставок:** Ship Date Trick (см. [Weekend распределение](weekend-distribution.md))
+- **Нет ставок / Saturday surcharge:** автоматический [Ship Date Trick](ship-date-trick.md) — сдвиг на следующий понедельник
 - **XS cooler** для items ≤3 lbs
 
 ## Правила CS (Customer Service)

@@ -22,7 +22,7 @@
 - [Store Filter System](store-filter-system.md) — глобальный мульти-селект магазинов (Phase 1: Dashboard) — 2026-05-12
 - [Sales Cards on Dashboard](sales-cards-dashboard.md) — 5-period gross revenue + linear forecast (Dashboard) — 2026-05-12
 - [Procurement Module](./procurement-module.md) — мобильный закуп товара в магазинах (Publix, Walmart, BJ's). Выборка из Veeqo по тегам, фильтрация workflow-меток, разметка через `Placed` / `Need More`. Будущая основа агента-автозакупщика.
-- [Shipping Labels](shipping-labels.md) — план + покупка labels через Veeqo
+- [Shipping Labels](shipping-labels.md) — план + покупка labels через Veeqo. Полная спец v1.0: [shipping-labels-page-v1.md](shipping-labels-page-v1.md) — dashboard + AI classify + packing profiles (2026-05-12)
 - [Shipment Monitor](shipment-monitor.md) — мониторинг доставок, детекция проблем, подготовка claims (спроектирован, после Phase 1)
 - [Customer Hub](customer-hub.md) — Messages, A-to-Z, Chargebacks, Feedback (в разработке)
 - [Account Health v2.0](account-health-v2.md) — мониторинг Amazon (AHR + Policy Compliance × 10 категорий + ODR/LSR/VTR) + Walmart (8 metrics + Item Compliance), 2 таба, drill-down по нарушениям — 2026-05-12
@@ -34,7 +34,8 @@
 - [Feedback Manager](feedback-manager.md) — отзывы, классификация удаляемости
 
 ## 🧮 Алгоритмы
-- [Выбор ставки (Rate Selection)](shipping-rate-selection.md) — Dry vs Frozen логика
+- [Выбор ставки (Rate Selection)](shipping-rate-selection.md) — Dry vs Frozen логика (Dry-правила упрощены 2026-05-14)
+- [Ship Date Trick](ship-date-trick.md) — автоматический сдвиг Frozen на понедельник для дешёвой ставки — 2026-05-14
 - [Budget Check](budget-check-algorithm.md) — формулы бюджета по каналу/типу
 - [Decision Engine](customer-hub-decision-engine.md) — 5 слоёв AI-анализа
 - [Frozen/Dry классификация](frozen-dry-classification.md) — по тегам Veeqo
@@ -71,4 +72,4 @@
 - [Veeqo API Quirks](veeqo-api-quirks.md) — order tags нельзя ставить через `PUT /orders/{id}` (silently no-op); работает только `POST /bulk_tagging`. Найдено 2026-05-04.
 
 ---
-Последнее обновление: 2026-05-12 (+ Account Health v2 + Critical Alerts engine)
+Последнее обновление: 2026-05-14 (+ Ship Date Trick реализован + Dry rate rules упрощены)
