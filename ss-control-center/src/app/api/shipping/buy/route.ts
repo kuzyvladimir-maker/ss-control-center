@@ -148,6 +148,11 @@ export async function POST(request: NextRequest) {
         // reliable source is GetRates at purchase time, not what was
         // stored on the plan when rates were originally pulled.
         let liveVas: Record<string, string> = {};
+        // Captured here so we can splice it into the error message when
+        // Veeqo rejects the purchase — Vercel logs aren't visible to the
+        // operator, but the modal is, so we surface the diagnostic
+        // straight through the UI for one-shot debugging.
+        let rateDiagnostic = "";
         try {
           const liveResp = await getShippingRates(item.allocationId);
           const liveRates: Record<string, unknown>[] =
@@ -160,53 +165,58 @@ export async function POST(request: NextRequest) {
             liveRates.find((r) => String(r.name) === item.serviceType);
           if (match) {
             liveVas = extractVasFromRate(match);
-            // Verbose diagnostic dump — kept until we're confident the
-            // VAS extraction handles every Veeqo carrier shape. Strip
-            // once the buy flow is stable for a week.
-            console.log(
-              `[buy] rate match for ${item.orderNumber}: keys=${Object.keys(match).join(",")}`
-            );
-            console.log(
-              `[buy] rate VAS-related fields:`,
-              JSON.stringify(
-                Object.fromEntries(
-                  Object.entries(match).filter(
-                    ([k]) =>
-                      k.startsWith("value_added_service") ||
-                      k === "value_added_services"
-                  )
-                )
+            const vasFields = Object.fromEntries(
+              Object.entries(match).filter(
+                ([k]) =>
+                  k.startsWith("value_added_service") ||
+                  k === "value_added_services"
               )
             );
-            console.log(`[buy] extracted VAS:`, JSON.stringify(liveVas));
+            rateDiagnostic =
+              `rateKeys=[${Object.keys(match).join(",")}] · ` +
+              `rateVasFields=${JSON.stringify(vasFields)} · ` +
+              `extracted=${JSON.stringify(liveVas)}`;
+            console.log(`[buy] ${item.orderNumber} · ${rateDiagnostic}`);
           } else {
+            rateDiagnostic =
+              `no rate match for remote_shipment_id=${item.remoteShipmentId}, ` +
+              `service=${item.serviceType}, ` +
+              `liveRatesCount=${liveRates.length}`;
             console.warn(
-              `[buy] no live rate match for ${item.orderNumber} ` +
-                `(remote_shipment_id=${item.remoteShipmentId}, ` +
-                `service=${item.serviceType}). Buying without VAS.`
+              `[buy] no live rate match for ${item.orderNumber} (${rateDiagnostic})`
             );
           }
         } catch (rateErr) {
-          // Non-fatal: fall back to empty VAS. Veeqo will reject with a
-          // clean INVALID_VALUE_ADDED_SERVICES if that's wrong, and the
-          // post-buy modal will surface it.
+          rateDiagnostic = `rate re-fetch failed: ${
+            rateErr instanceof Error ? rateErr.message : String(rateErr)
+          }`;
           console.warn(
             `[buy] live rate re-fetch failed for ${item.orderNumber}:`,
             rateErr instanceof Error ? rateErr.message : rateErr
           );
         }
 
-        const shipment = await buyShippingLabel({
-          allocationId: item.allocationId,
-          carrierId: item.carrierId,
-          remoteShipmentId: item.remoteShipmentId,
-          serviceType: item.serviceType,
-          subCarrierId: item.subCarrierId,
-          serviceCarrier: item.serviceCarrier,
-          totalNetCharge: item.totalNetCharge,
-          baseRate: item.baseRate,
-          vas: liveVas,
-        });
+        let shipment;
+        try {
+          shipment = await buyShippingLabel({
+            allocationId: item.allocationId,
+            carrierId: item.carrierId,
+            remoteShipmentId: item.remoteShipmentId,
+            serviceType: item.serviceType,
+            subCarrierId: item.subCarrierId,
+            serviceCarrier: item.serviceCarrier,
+            totalNetCharge: item.totalNetCharge,
+            baseRate: item.baseRate,
+            vas: liveVas,
+          });
+        } catch (buyErr) {
+          // Splice the rate diagnostic into the error so the operator
+          // sees both Veeqo's complaint AND what we read from the rate
+          // — enough to debug a VAS mismatch from the modal alone.
+          const baseMsg =
+            buyErr instanceof Error ? buyErr.message : String(buyErr);
+          throw new Error(`${baseMsg} || DIAG: ${rateDiagnostic}`);
+        }
 
         // Extract tracking — Veeqo returns snake_case
         const tracking = String(
