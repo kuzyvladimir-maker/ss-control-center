@@ -27,6 +27,33 @@ function appendBuyLog(entry: Record<string, unknown>) {
   }
 }
 
+// Walk a Veeqo shipment response looking for the tracking string.
+// Handles every shape seen so far: top-level `tracking_number`, nested
+// `shipment.tracking_number`, camelCase fallback, and the object form
+// `{value: "1Z...", carrier: "UPS"}` returned by some carriers.
+function pickTrackingString(shipment: unknown): string | null {
+  if (!shipment || typeof shipment !== "object") return null;
+  const s = shipment as Record<string, unknown>;
+  const candidates: unknown[] = [
+    s.tracking_number,
+    s.trackingNumber,
+    (s.shipment as Record<string, unknown> | undefined)?.tracking_number,
+    (s.shipment as Record<string, unknown> | undefined)?.trackingNumber,
+  ];
+  for (const c of candidates) {
+    if (typeof c === "string" && c.trim()) return c;
+    if (c && typeof c === "object") {
+      const obj = c as Record<string, unknown>;
+      const inner =
+        (typeof obj.value === "string" && obj.value) ||
+        (typeof obj.number === "string" && obj.number) ||
+        (typeof obj.tracking_number === "string" && obj.tracking_number);
+      if (inner) return inner;
+    }
+  }
+  return null;
+}
+
 // Format date as "Mmm DD" (e.g. "Apr 07")
 function fmtDate(dateStr: string | null): string {
   if (!dateStr) return "N-A";
@@ -165,16 +192,26 @@ export async function POST(request: NextRequest) {
             liveRates.find((r) => String(r.name) === item.serviceType);
           if (match) {
             liveVas = extractVasFromRate(match);
-            const vasFields = Object.fromEntries(
-              Object.entries(match).filter(
-                ([k]) =>
-                  k.startsWith("value_added_service") ||
-                  k === "value_added_services"
-              )
+            // Capture every field whose name might hint at VAS or rate
+            // requirements — the extractor uses `value_added_service*`
+            // by convention, but Veeqo may have moved/renamed it.
+            const suspiciousFields = Object.fromEntries(
+              Object.entries(match).filter(([k]) => {
+                const lk = k.toLowerCase();
+                return (
+                  lk.includes("value_added") ||
+                  lk.includes("vas") ||
+                  lk.includes("addon") ||
+                  lk.includes("service") ||
+                  lk.includes("requirement") ||
+                  lk.includes("mandatory") ||
+                  lk.includes("option")
+                );
+              })
             );
             rateDiagnostic =
               `rateKeys=[${Object.keys(match).join(",")}] · ` +
-              `rateVasFields=${JSON.stringify(vasFields)} · ` +
+              `suspiciousFields=${JSON.stringify(suspiciousFields)} · ` +
               `extracted=${JSON.stringify(liveVas)}`;
             console.log(`[buy] ${item.orderNumber} · ${rateDiagnostic}`);
           } else {
@@ -218,13 +255,12 @@ export async function POST(request: NextRequest) {
           throw new Error(`${baseMsg} || DIAG: ${rateDiagnostic}`);
         }
 
-        // Extract tracking — Veeqo returns snake_case
-        const tracking = String(
-          shipment?.tracking_number ||
-          shipment?.shipment?.tracking_number ||
-          shipment?.trackingNumber ||
-          "N/A"
-        );
+        // Extract tracking — Veeqo's shape is inconsistent across
+        // carriers. tracking_number can be a string OR an object with
+        // {value, carrier, …}; sometimes it lives on shipment.shipment.
+        // Previous String(...) coercion of an object produced
+        // "[object Object]" in the employee note and Telegram summary.
+        const tracking = pickTrackingString(shipment) ?? "N/A";
 
         // Save PDF locally
         let labelPath: string | null = null;
