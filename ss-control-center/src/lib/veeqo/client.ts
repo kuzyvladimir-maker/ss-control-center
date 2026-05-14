@@ -69,62 +69,31 @@ export async function getShippingRates(allocationId: string) {
 //     …
 //   ]
 //
-// Strategy per VAS group:
+// Master rule (from Jackie's experience, confirmed by Vladimir 2026-05-14):
+//   shipping_service_options === null  →  send NO VAS field at all.
+//     This is how FedEx Ground Economy (SmartPost) works — the carrier
+//     doesn't support VAS, so even sending `NO_CONFIRMATION` triggers
+//     INVALID_VALUE_ADDED_SERVICES. Don't include the field.
+//   shipping_service_options === array →  emit one key per offered VAS
+//     group, picking a value from each group's `values` array.
+//
+// Per-group value choice:
 //   1. If any value starts with "NO_" (NO_CONFIRMATION / NO_SIGNATURE) →
 //      pick it (least intrusive, almost always free).
 //   2. Otherwise pick the cheapest value (price 0 if available) — this
 //      is what USPS Ground Advantage requires: only DELIVERY_CONFIRMATION
 //      is offered, price 0, and it's effectively mandatory.
-// Candidate VAS sets to try when Veeqo returns
-// `shipping_service_options: null` but the underlying carrier still
-// requires a VAS value. We have no way to know which value is right
-// upfront — Veeqo doesn't tell us — so the buy endpoint tries each
-// candidate in order on INVALID_VALUE_ADDED_SERVICES, and stops at the
-// first one that succeeds. Order is best-guess: most likely value
-// first.
-//
-// History of observed failures for FEDEX_PTP_SMARTPOST (FedEx Ground
-// Economy):
-//   2026-05-14 (yesterday): no VAS sent → ✅ succeeded
-//   2026-05-14 (today):     no VAS sent → ❌ INVALID_VAS
-//   2026-05-14 (today):     DELIVERY_CONFIRMATION → ❌ INVALID_VAS
-//   Next to try: NO_CONFIRMATION, then SIGNATURE_CONFIRMATION,
-//   then ADULT_SIGNATURE_CONFIRMATION.
-//
-// Add new service_id entries here if other carriers hit the same
-// "null options but VAS required" bug.
-const SERVICE_ID_VAS_CANDIDATES: Record<
-  string,
-  Array<Record<string, string>>
-> = {
-  FEDEX_PTP_SMARTPOST: [
-    {
-      value_added_service__VAS_GROUP_ID_CONFIRMATION: "NO_CONFIRMATION",
-    },
-    {
-      value_added_service__VAS_GROUP_ID_CONFIRMATION: "SIGNATURE_CONFIRMATION",
-    },
-    {
-      value_added_service__VAS_GROUP_ID_CONFIRMATION: "ADULT_SIGNATURE_CONFIRMATION",
-    },
-  ],
-};
-
-// Public lookup — returns the candidate list for a given service_id,
-// or an empty array. Buy endpoint uses this for retry-on-VAS-error.
-export function getVasCandidatesForService(
-  serviceId: string | undefined | null
-): Array<Record<string, string>> {
-  if (!serviceId) return [];
-  return SERVICE_ID_VAS_CANDIDATES[serviceId] ?? [];
-}
-
 export function extractVasFromRate(
   rate: Record<string, unknown>
 ): Record<string, string> {
   const vas: Record<string, string> = {};
 
   const options = rate.shipping_service_options;
+  // null options → send no VAS at all. Carriers like FedEx SmartPost
+  // don't accept the field; sending it (even with a "safe" value)
+  // returns INVALID_VALUE_ADDED_SERVICES.
+  if (options === null) return vas;
+
   if (Array.isArray(options)) {
     for (const opt of options) {
       if (!opt || typeof opt !== "object") continue;
@@ -181,20 +150,6 @@ export function extractVasFromRate(
       !(key in vas)
     ) {
       vas[key] = value;
-    }
-  }
-
-  // Last-resort fallback for services where Veeqo returns null options
-  // but the carrier still requires VAS. Looked up by service_id; only
-  // applied when we couldn't extract anything from the actual rate.
-  // Returns the FIRST candidate — buy endpoint retries with subsequent
-  // candidates if Veeqo rejects this one.
-  if (Object.keys(vas).length === 0) {
-    const serviceId =
-      typeof rate.service_id === "string" ? rate.service_id : "";
-    const candidates = SERVICE_ID_VAS_CANDIDATES[serviceId];
-    if (candidates && candidates.length > 0) {
-      for (const [k, v] of Object.entries(candidates[0])) vas[k] = v;
     }
   }
 
