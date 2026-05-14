@@ -162,11 +162,15 @@ export default function ShippingLabelsPage() {
     setLoading(true);
     setError(null);
     try {
-      // Two parallel fetches: dashboard gives us state + $ fields for every
-      // awaiting order (cheap); plan computes carrier / service / price for
-      // the orders eligible to ship today (slower — calls Veeqo rates per
-      // allocation). Showing dashboard immediately lets the operator scroll
-      // while plan rates trickle in.
+      // Two-pass load:
+      //   1. /api/shipping/dashboard — state, $ fields, time buckets. Cheap.
+      //   2. /api/shipping/plan?orderIds=… — carrier / service / price for
+      //      every order in ready_to_buy state. Slow (Veeqo rates per
+      //      allocation, ~1s each), so run after dashboard renders.
+      //
+      // Passing orderIds bypasses plan's default "today's dispatch only"
+      // filter — without that, orders shipping tomorrow / day-after look
+      // ready in the dashboard but show no rates because plan ignored them.
       setPlanLoading(true);
       const dashRes = await fetch("/api/shipping/dashboard");
       if (!dashRes.ok) throw new Error(`HTTP ${dashRes.status}`);
@@ -174,10 +178,19 @@ export default function ShippingLabelsPage() {
       setData(dashJson);
       setLoading(false);
 
-      // Plan runs against today's dispatch target — same logic that powers
-      // the legacy /shipping page Generate Plan button.
+      const readyOrderIds = dashJson.orders
+        .filter((o) => o.state === "ready_to_buy")
+        .map((o) => o.orderId);
+
+      if (readyOrderIds.length === 0) {
+        setPlan(null);
+        return;
+      }
+
       try {
-        const planRes = await fetch("/api/shipping/plan");
+        const planRes = await fetch(
+          `/api/shipping/plan?orderIds=${readyOrderIds.join(",")}`
+        );
         if (planRes.ok) {
           const planJson = (await planRes.json()) as PlanResponse;
           setPlan(planJson);
