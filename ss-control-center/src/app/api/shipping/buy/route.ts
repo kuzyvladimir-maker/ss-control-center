@@ -6,6 +6,7 @@ import {
   updateOrderDispatchDate,
   getShippingRates,
   extractVasFromRate,
+  getVasCandidatesForService,
 } from "@/lib/veeqo";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { uploadLabelPdf } from "@/lib/google-drive";
@@ -181,6 +182,10 @@ export async function POST(request: NextRequest) {
         // operator, but the modal is, so we surface the diagnostic
         // straight through the UI for one-shot debugging.
         let rateDiagnostic = "";
+        // service_id from the rate object — used to look up retry
+        // candidates if the first VAS attempt fails with
+        // INVALID_VALUE_ADDED_SERVICES.
+        let rateServiceId = "";
         try {
           const liveResp = await getShippingRates(item.allocationId);
           const liveRates: Record<string, unknown>[] =
@@ -193,6 +198,8 @@ export async function POST(request: NextRequest) {
             liveRates.find((r) => String(r.name) === item.serviceType);
           if (match) {
             liveVas = extractVasFromRate(match);
+            rateServiceId =
+              typeof match.service_id === "string" ? match.service_id : "";
             // Capture every field whose name might hint at VAS or rate
             // requirements — the extractor uses `value_added_service*`
             // by convention, but Veeqo may have moved/renamed it.
@@ -234,26 +241,80 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        let shipment;
-        try {
-          shipment = await buyShippingLabel({
-            allocationId: item.allocationId,
-            carrierId: item.carrierId,
-            remoteShipmentId: item.remoteShipmentId,
-            serviceType: item.serviceType,
-            subCarrierId: item.subCarrierId,
-            serviceCarrier: item.serviceCarrier,
-            totalNetCharge: item.totalNetCharge,
-            baseRate: item.baseRate,
-            vas: liveVas,
-          });
-        } catch (buyErr) {
-          // Splice the rate diagnostic into the error so the operator
-          // sees both Veeqo's complaint AND what we read from the rate
-          // — enough to debug a VAS mismatch from the modal alone.
+        // VAS retry loop. The first attempt uses what extractVasFromRate
+        // produced; on INVALID_VALUE_ADDED_SERVICES we cycle through
+        // the fallback candidates for the rate's service_id (used for
+        // services like FedEx Ground Economy/SmartPost where Veeqo
+        // returns shipping_service_options:null and we have to guess).
+        // Failed purchase attempts cost nothing — Veeqo only charges on
+        // success — so trying a handful is safe.
+        const vasAttempts: Array<{
+          vas: Record<string, string>;
+          error: string | null;
+        }> = [];
+        // Build attempt list: start with extracted VAS, then add any
+        // service_id candidates not already attempted.
+        const candidatesToTry: Array<Record<string, string>> = [liveVas];
+        const knownCandidates = getVasCandidatesForService(rateServiceId);
+        for (const candidate of knownCandidates) {
+          const candidateJson = JSON.stringify(candidate);
+          if (
+            !candidatesToTry.some(
+              (existing) => JSON.stringify(existing) === candidateJson
+            )
+          ) {
+            candidatesToTry.push(candidate);
+          }
+        }
+
+        let shipment: Awaited<ReturnType<typeof buyShippingLabel>> | null =
+          null;
+        let lastBuyErr: unknown = null;
+        for (const vas of candidatesToTry) {
+          try {
+            shipment = await buyShippingLabel({
+              allocationId: item.allocationId,
+              carrierId: item.carrierId,
+              remoteShipmentId: item.remoteShipmentId,
+              serviceType: item.serviceType,
+              subCarrierId: item.subCarrierId,
+              serviceCarrier: item.serviceCarrier,
+              totalNetCharge: item.totalNetCharge,
+              baseRate: item.baseRate,
+              vas,
+            });
+            vasAttempts.push({ vas, error: null });
+            lastBuyErr = null;
+            break;
+          } catch (buyErr) {
+            const msg =
+              buyErr instanceof Error ? buyErr.message : String(buyErr);
+            vasAttempts.push({ vas, error: msg });
+            lastBuyErr = buyErr;
+            // Retry only on INVALID_VALUE_ADDED_SERVICES — every other
+            // error (billing, account, allocation expired, …) means
+            // retrying with a different VAS won't help. Surface
+            // immediately.
+            if (!/INVALID_VALUE_ADDED_SERVICES/.test(msg)) break;
+          }
+        }
+
+        if (!shipment) {
           const baseMsg =
-            buyErr instanceof Error ? buyErr.message : String(buyErr);
-          throw new Error(`${baseMsg} || DIAG: ${rateDiagnostic}`);
+            lastBuyErr instanceof Error
+              ? lastBuyErr.message
+              : String(lastBuyErr);
+          const attemptsSummary = vasAttempts
+            .map(
+              (a, i) =>
+                `[${i}] vas=${JSON.stringify(a.vas)} → ${
+                  a.error ? "FAIL" : "OK"
+                }`
+            )
+            .join(" ; ");
+          throw new Error(
+            `${baseMsg} || DIAG: ${rateDiagnostic} · vasAttempts=${attemptsSummary}`
+          );
         }
 
         // Extract tracking — Veeqo's shape is inconsistent across

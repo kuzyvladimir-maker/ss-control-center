@@ -75,30 +75,49 @@ export async function getShippingRates(allocationId: string) {
 //   2. Otherwise pick the cheapest value (price 0 if available) — this
 //      is what USPS Ground Advantage requires: only DELIVERY_CONFIRMATION
 //      is offered, price 0, and it's effectively mandatory.
-// Service IDs where Veeqo returns `shipping_service_options: null`
-// but the underlying carrier still requires a VAS value. Discovered
-// empirically — pattern was deduced from inspecting working rates on
-// the same allocation:
-//   FEDEX_PTP_SMARTPOST = FedEx Ground Economy (FedEx → USPS hand-off
-//   for last-mile delivery). Other FedEx services (Home Delivery,
-//   Express Saver, 2Day) offer NO_CONFIRMATION. USPS-handled services
-//   (USPS_PTP_GAH, USPS_PTP_PRI) only offer DELIVERY_CONFIRMATION.
-//   Since SmartPost's last mile IS USPS, USPS rules apply → must send
-//   DELIVERY_CONFIRMATION even though Veeqo doesn't list it as an
-//   option. Add more entries here if other carriers hit the same
-//   "null options but VAS required" bug.
-const SERVICE_ID_VAS_FALLBACK: Record<string, Record<string, string>> = {
-  // 2026-05-14: Veeqo returns shipping_service_options: null for
-  // FedEx Ground Economy, but rejects both empty VAS AND
-  // DELIVERY_CONFIRMATION with INVALID_VALUE_ADDED_SERVICES. The same
-  // order succeeded with NO VAS yesterday — Veeqo likely changed
-  // behaviour. Try NO_CONFIRMATION (FedEx default). additional_content
-  // on the rate explicitly references FedEx Ground Economy T&C, so
-  // FedEx-side VAS keys make more sense than USPS-style ones.
-  FEDEX_PTP_SMARTPOST: {
-    value_added_service__VAS_GROUP_ID_CONFIRMATION: "NO_CONFIRMATION",
-  },
+// Candidate VAS sets to try when Veeqo returns
+// `shipping_service_options: null` but the underlying carrier still
+// requires a VAS value. We have no way to know which value is right
+// upfront — Veeqo doesn't tell us — so the buy endpoint tries each
+// candidate in order on INVALID_VALUE_ADDED_SERVICES, and stops at the
+// first one that succeeds. Order is best-guess: most likely value
+// first.
+//
+// History of observed failures for FEDEX_PTP_SMARTPOST (FedEx Ground
+// Economy):
+//   2026-05-14 (yesterday): no VAS sent → ✅ succeeded
+//   2026-05-14 (today):     no VAS sent → ❌ INVALID_VAS
+//   2026-05-14 (today):     DELIVERY_CONFIRMATION → ❌ INVALID_VAS
+//   Next to try: NO_CONFIRMATION, then SIGNATURE_CONFIRMATION,
+//   then ADULT_SIGNATURE_CONFIRMATION.
+//
+// Add new service_id entries here if other carriers hit the same
+// "null options but VAS required" bug.
+const SERVICE_ID_VAS_CANDIDATES: Record<
+  string,
+  Array<Record<string, string>>
+> = {
+  FEDEX_PTP_SMARTPOST: [
+    {
+      value_added_service__VAS_GROUP_ID_CONFIRMATION: "NO_CONFIRMATION",
+    },
+    {
+      value_added_service__VAS_GROUP_ID_CONFIRMATION: "SIGNATURE_CONFIRMATION",
+    },
+    {
+      value_added_service__VAS_GROUP_ID_CONFIRMATION: "ADULT_SIGNATURE_CONFIRMATION",
+    },
+  ],
 };
+
+// Public lookup — returns the candidate list for a given service_id,
+// or an empty array. Buy endpoint uses this for retry-on-VAS-error.
+export function getVasCandidatesForService(
+  serviceId: string | undefined | null
+): Array<Record<string, string>> {
+  if (!serviceId) return [];
+  return SERVICE_ID_VAS_CANDIDATES[serviceId] ?? [];
+}
 
 export function extractVasFromRate(
   rate: Record<string, unknown>
@@ -168,12 +187,14 @@ export function extractVasFromRate(
   // Last-resort fallback for services where Veeqo returns null options
   // but the carrier still requires VAS. Looked up by service_id; only
   // applied when we couldn't extract anything from the actual rate.
+  // Returns the FIRST candidate — buy endpoint retries with subsequent
+  // candidates if Veeqo rejects this one.
   if (Object.keys(vas).length === 0) {
     const serviceId =
       typeof rate.service_id === "string" ? rate.service_id : "";
-    const fallback = SERVICE_ID_VAS_FALLBACK[serviceId];
-    if (fallback) {
-      for (const [k, v] of Object.entries(fallback)) vas[k] = v;
+    const candidates = SERVICE_ID_VAS_CANDIDATES[serviceId];
+    if (candidates && candidates.length > 0) {
+      for (const [k, v] of Object.entries(candidates[0])) vas[k] = v;
     }
   }
 

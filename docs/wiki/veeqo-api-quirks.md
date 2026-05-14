@@ -182,6 +182,29 @@ const SERVICE_ID_VAS_FALLBACK = {
 
 **Как обнаружили:** буквально на следующий день после фикса USPS Ground Advantage — попытка купить FedEx Ground Economy для другого заказа выдала ту же ошибку, но DIAG показал `shipping_service_options: null`. Сравнили все 11 рейтов в одной allocation, и SmartPost оказался единственным с null'ом. Hardcoded values для остальных carriers получаются из самого рейта — fallback нужен только для SmartPost.
 
+### 7.2 Auto-retry с кандидатами при INVALID_VALUE_ADDED_SERVICES
+
+Поскольку Veeqo не раскрывает что именно нужно для SmartPost, **угадывать deploy-test-deploy циклами — дорого по времени**. Решение: `SERVICE_ID_VAS_CANDIDATES` — массив кандидатов, и buy endpoint автоматически пробует следующий при INVALID_VAS-ошибке.
+
+```typescript
+const SERVICE_ID_VAS_CANDIDATES = {
+  FEDEX_PTP_SMARTPOST: [
+    { value_added_service__VAS_GROUP_ID_CONFIRMATION: "NO_CONFIRMATION" },
+    { value_added_service__VAS_GROUP_ID_CONFIRMATION: "SIGNATURE_CONFIRMATION" },
+    { value_added_service__VAS_GROUP_ID_CONFIRMATION: "ADULT_SIGNATURE_CONFIRMATION" },
+  ],
+};
+```
+
+В [api/shipping/buy/route.ts](../../ss-control-center/src/app/api/shipping/buy/route.ts) после неудачи `buyShippingLabel`:
+- Если ошибка содержит `INVALID_VALUE_ADDED_SERVICES` → пробуем следующего кандидата
+- Любая другая ошибка (billing, account, allocation expired) → выходим сразу (retry не поможет)
+- Все попытки логируются в DIAG (`vasAttempts=[0] vas={...} → FAIL ; [1] vas={...} → OK`)
+
+**Безопасность retry:** Veeqo взимает плату только при УСПЕШНОЙ покупке. Failed attempts = бесплатно. Поэтому пробовать 3-4 кандидата подряд — безопасно.
+
+**Как добавить новый service_id:** если другой carrier попадёт под тот же баг — добавить в `SERVICE_ID_VAS_CANDIDATES` массив возможных значений (от most-likely к least-likely), retry сам найдёт правильное.
+
 ---
 
 ## 8. `tracking_number` может быть объектом, не строкой (2026-05-14)
