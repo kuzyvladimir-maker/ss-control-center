@@ -75,6 +75,24 @@ export async function getShippingRates(allocationId: string) {
 //   2. Otherwise pick the cheapest value (price 0 if available) — this
 //      is what USPS Ground Advantage requires: only DELIVERY_CONFIRMATION
 //      is offered, price 0, and it's effectively mandatory.
+// Service IDs where Veeqo returns `shipping_service_options: null`
+// but the underlying carrier still requires a VAS value. Discovered
+// empirically — pattern was deduced from inspecting working rates on
+// the same allocation:
+//   FEDEX_PTP_SMARTPOST = FedEx Ground Economy (FedEx → USPS hand-off
+//   for last-mile delivery). Other FedEx services (Home Delivery,
+//   Express Saver, 2Day) offer NO_CONFIRMATION. USPS-handled services
+//   (USPS_PTP_GAH, USPS_PTP_PRI) only offer DELIVERY_CONFIRMATION.
+//   Since SmartPost's last mile IS USPS, USPS rules apply → must send
+//   DELIVERY_CONFIRMATION even though Veeqo doesn't list it as an
+//   option. Add more entries here if other carriers hit the same
+//   "null options but VAS required" bug.
+const SERVICE_ID_VAS_FALLBACK: Record<string, Record<string, string>> = {
+  FEDEX_PTP_SMARTPOST: {
+    value_added_service__VAS_GROUP_ID_CONFIRMATION: "DELIVERY_CONFIRMATION",
+  },
+};
+
 export function extractVasFromRate(
   rate: Record<string, unknown>
 ): Record<string, string> {
@@ -137,6 +155,18 @@ export function extractVasFromRate(
       !(key in vas)
     ) {
       vas[key] = value;
+    }
+  }
+
+  // Last-resort fallback for services where Veeqo returns null options
+  // but the carrier still requires VAS. Looked up by service_id; only
+  // applied when we couldn't extract anything from the actual rate.
+  if (Object.keys(vas).length === 0) {
+    const serviceId =
+      typeof rate.service_id === "string" ? rate.service_id : "";
+    const fallback = SERVICE_ID_VAS_FALLBACK[serviceId];
+    if (fallback) {
+      for (const [k, v] of Object.entries(fallback)) vas[k] = v;
     }
   }
 
