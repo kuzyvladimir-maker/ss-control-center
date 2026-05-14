@@ -317,9 +317,14 @@ export async function GET() {
         const frozenWalmart = itemsWithType.some((i) =>
           isFrozenWalmart(channelName, i.knownType)
         );
-        const missingSku = items.some((i) => !skuByCode.has(i.sku));
+        // Per-SKU SkuShippingData is only consulted when the order is
+        // single-line single-qty (no PackingProfile required). For
+        // multi-item orders the PackingProfile covers box+weight, so a
+        // missing per-SKU row is fine — don't flag no_sku in that case.
         const needsProfileMissing =
           reqsProfile && !profileBySig.has(sig);
+        const missingSku =
+          !reqsProfile && items.some((i) => !skuByCode.has(i.sku));
 
         if (frozenWalmart) {
           state = "need_attention";
