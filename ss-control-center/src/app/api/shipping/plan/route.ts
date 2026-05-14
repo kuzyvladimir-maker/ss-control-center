@@ -151,33 +151,21 @@ function selectBestRate(
   }
 
   // ── DRY ──
-  let pool = [...enriched];
-
-  // After 12:00 ET: avoid USPS if alternatives exist
-  if (isAfterNoon) {
-    const nonUsps = pool.filter((r) => r.carrierUp !== "USPS");
-    if (nonUsps.length > 0) pool = nonUsps;
-  }
-
-  if (pool.length === 0) return null;
-
-  pool.sort((a, b) => a.price - b.price);
-  const cheapest = pool[0];
-
-  // ≤10% diff → prefer UPS
-  for (const rate of pool) {
-    const diff = (rate.price - cheapest.price) / cheapest.price;
-    if (diff <= 0.1 && rate.carrierUp === "UPS") return rate;
-  }
-
-  // ≤$0.50 → earlier EDD
-  const within50 = pool.filter((r) => r.price - cheapest.price <= 0.5);
-  if (within50.length > 1) {
-    within50.sort((a, b) => a.eddDate.getTime() - b.eddDate.getTime());
-    return within50[0];
-  }
-
-  return cheapest;
+  //
+  // Strict cheapest-that-meets-deadline. Previous version applied two
+  // adjustments inherited from MASTER_PROMPT v3.1:
+  //   - drop USPS after 12:00 ET (drop-off cut-off concern)
+  //   - prefer UPS within 10% of cheapest (tracking reliability)
+  // Both were removed by Vladimir's explicit decision on 2026-05-14: the
+  // operator now picks the cheapest carrier regardless of who it is, and
+  // does the cut-off / reliability judgement themselves looking at the
+  // alt-rates list.
+  // (isAfterNoon kept in the signature so call sites don't churn if the
+  //  time-of-day rule comes back.)
+  void isAfterNoon;
+  if (enriched.length === 0) return null;
+  const pool = [...enriched].sort((a, b) => a.price - b.price);
+  return pool[0];
 }
 
 // ── Main handler ──

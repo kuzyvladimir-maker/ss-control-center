@@ -678,12 +678,7 @@ function OrderRow({
             </span>
             {order.shipBy && (
               <span className="text-[11px] text-ink-3">
-                · Ship by {order.shipBy}
-              </span>
-            )}
-            {order.deliverBy && (
-              <span className="text-[11px] text-ink-3">
-                · Deliver by {order.deliverBy}
+                · Ship by {fmtDate(order.shipBy)}
               </span>
             )}
           </div>
@@ -712,12 +707,26 @@ function OrderRow({
       {/* Money + carrier grid. Order total + customer-paid shipping are known
           for every Veeqo order regardless of state, so they always show.
           Label cost / carrier / EDD only appear when /api/shipping/plan has
-          a rate for the order (ready_to_buy and just-bought rows). */}
-      <div className="mt-2.5 ml-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 text-[11.5px]">
+          a rate for the order (ready_to_buy and just-bought rows). The
+          marketplace deadline (Amazon / Walmart deliver-by) sits in its own
+          cell so the operator can eyeball whether the carrier's EDD beats it. */}
+      <div className="mt-2.5 ml-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-5 text-[11.5px]">
         <Cell label="Order total" value={fmt$(order.orderTotal)} />
         <Cell
           label="Customer paid shipping"
           value={fmt$(order.customerPaidShipping)}
+        />
+        <Cell
+          label="Marketplace deadline"
+          value={order.deliverBy ? fmtDate(order.deliverBy) : "—"}
+          sub={
+            plan?.edd
+              ? deadlineRiskNote(order.deliverBy, plan.edd)
+              : undefined
+          }
+          valueClass={
+            deadlineRiskClass(order.deliverBy, plan?.edd) ?? "text-ink"
+          }
         />
         {(isReady || isBought) && (
           <Cell
@@ -753,7 +762,7 @@ function OrderRow({
                   ? "loading…"
                   : "—"
             }
-            sub={plan?.edd ? `EDD ${plan.edd}` : undefined}
+            sub={plan?.edd ? `EDD ${fmtDate(plan.edd)}` : undefined}
           />
         )}
       </div>
@@ -847,6 +856,51 @@ function OrderRow({
       )}
     </div>
   );
+}
+
+/** Compact "5/14" date for dense grid cells. Falls back to the raw value
+ *  if parsing fails, so we never blank out useful info. */
+function fmtDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-US", { month: "numeric", day: "numeric" });
+}
+
+/** Days between marketplace deadline and carrier EDD. Negative → carrier
+ *  arrives before deadline (good). Positive → late. */
+function daysLate(
+  deliverBy: string | null | undefined,
+  edd: string | null | undefined
+): number | null {
+  if (!deliverBy || !edd) return null;
+  const a = new Date(edd);
+  const b = new Date(deliverBy);
+  if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) return null;
+  const ms = a.getTime() - b.getTime();
+  return Math.round(ms / 86400000);
+}
+
+function deadlineRiskNote(
+  deliverBy: string | null | undefined,
+  edd: string | null | undefined
+): string | undefined {
+  const d = daysLate(deliverBy, edd);
+  if (d == null) return undefined;
+  if (d <= -2) return `+${-d} days buffer`;
+  if (d <= 0) return "on time";
+  return `late by ${d} day${d === 1 ? "" : "s"}`;
+}
+
+function deadlineRiskClass(
+  deliverBy: string | null | undefined,
+  edd: string | null | undefined
+): string | null {
+  const d = daysLate(deliverBy, edd);
+  if (d == null) return null;
+  if (d > 0) return "text-danger";
+  if (d === 0) return "text-warn-strong";
+  return "text-green";
 }
 
 function Cell({
