@@ -211,6 +211,50 @@ const candidates = [
 
 ---
 
+---
+
+## 11. `shipment.label_url` без `format=pdf` возвращает counter JSON, не PDF (2026-05-14)
+
+**Проблема:** В ответе на покупку Veeqo даёт `shipment.label_url = "/shipping/labels?shipment_ids[]=1194231799"` (относительный путь). Наш код в `/api/shipping/buy` делал по нему `fetch(...)` и сохранял ответ как `.pdf`. На самом деле этот endpoint без параметра `format=pdf` возвращает:
+
+```http
+HTTP 200
+Content-Type: application/json
+{"labels_count": 1}
+```
+
+— то есть **счётчик**, не PDF. Это объясняет почему PDF-файлы никогда не сохранялись корректно даже когда disk-write/Drive были настроены: писали 18 байт JSON-а с расширением .pdf.
+
+**Правильный endpoint:**
+
+```http
+GET /shipping/labels?shipment_ids[]=1194231799&format=pdf
+Headers:
+  x-api-key: <ключ>
+  Accept: application/pdf
+```
+
+Возвращает реальный PDF (~60KB на одну этикетку). Также работает алиас `/shipping/labels.pdf?shipment_ids[]=X`.
+
+**Ещё нюансы:**
+- URL из `shipment.label_url` — **относительный**, надо prepend'ить `VEEQO_BASE_URL`.
+- Endpoint **требует** `x-api-key` header. Линковать прямо из браузера нельзя.
+- В нашем коде есть `/api/shipping/label-pdf?shipmentId=X` — серверный proxy. Запрашивает PDF у Veeqo с auth и стримит обратно браузеру. Это URL который сохраняется в `ShippingPlanItem.labelPdfUrl` как final fallback (когда Drive не настроен или upload провалился).
+
+**Файлы:**
+- [src/app/api/shipping/buy/route.ts](../../ss-control-center/src/app/api/shipping/buy/route.ts) — теперь делает `fetch` к `<base>/shipping/labels?...&format=pdf` с auth header
+- [src/app/api/shipping/label-pdf/route.ts](../../ss-control-center/src/app/api/shipping/label-pdf/route.ts) — proxy для retrieval из браузера
+
+**Как ловится в будущем:** если PDF получается <1KB или не начинается с `%PDF-` — это не PDF. Proxy endpoint валидирует это явно и отдаёт 502 вместо ложного PDF.
+
+---
+
 ## История правок страницы
 - 2026-05-04: §1-6 — оригинал (tags, notes, pagination, rate limit, id types)
-- 2026-05-14: §7-10 добавлены после массовой отладки покупки этикеток. MASTER_PROMPT_v3.1 §12 (VAS) помечен как устаревший — реальная форма данных задокументирована здесь.
+- 2026-05-14: §7-11 добавлены после массовой отладки покупки этикеток.
+  - §7 VAS из `shipping_service_options`
+  - §8 `tracking_number` объект
+  - §9 `/buy` 200 с errors[]
+  - §10 Vercel ephemeral disk
+  - §11 `label_url` нужен `format=pdf` + auth header
+  - MASTER_PROMPT_v3.1 §12 помечен как устаревший.

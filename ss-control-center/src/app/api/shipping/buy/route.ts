@@ -274,15 +274,43 @@ export async function POST(request: NextRequest) {
         //      so the operator can always click "Open PDF" in the modal
         //      even if Drive and disk both failed).
         let labelPath: string | null = null;
-        const veeqoLabelUrl: string | null =
+        const rawLabelUrl: string | null =
           shipment?.label_url ||
           shipment?.shipment?.label_url ||
           shipment?.label?.url ||
           null;
 
+        // Veeqo's shipment.label_url is a RELATIVE path like
+        //   "/shipping/labels?shipment_ids[]=1194231799"
+        // and that endpoint, hit naively, returns JSON
+        //   {"labels_count": 1}
+        // (a *count*, not the PDF). To actually get the PDF we must:
+        //   * prepend the API base URL,
+        //   * send the x-api-key auth header (relative URL doesn't carry it),
+        //   * append `format=pdf`.
+        // Discovered 2026-05-14 by /tmp/probe.mjs against shipment 1194231799.
+        let veeqoLabelUrl: string | null = null;
+        let veeqoLabelFetchOpts: RequestInit | undefined;
+        if (rawLabelUrl) {
+          const base = process.env.VEEQO_BASE_URL || "https://api.veeqo.com";
+          const absolute = rawLabelUrl.startsWith("http")
+            ? rawLabelUrl
+            : `${base}${rawLabelUrl}`;
+          const withFormat = absolute.includes("format=")
+            ? absolute
+            : absolute + (absolute.includes("?") ? "&" : "?") + "format=pdf";
+          veeqoLabelUrl = withFormat;
+          veeqoLabelFetchOpts = {
+            headers: {
+              "x-api-key": process.env.VEEQO_API_KEY || "",
+              Accept: "application/pdf",
+            },
+          };
+        }
+
         if (veeqoLabelUrl) {
           try {
-            const pdfRes = await fetch(veeqoLabelUrl);
+            const pdfRes = await fetch(veeqoLabelUrl, veeqoLabelFetchOpts);
             if (!pdfRes.ok) {
               console.error(
                 `[buy] PDF download from Veeqo failed: HTTP ${pdfRes.status}`
@@ -330,12 +358,16 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Always fall back to Veeqo's URL — never let the operator end
-        // up with a "bought, but no link" row. Veeqo hosts the PDF
-        // permanently on their side; this URL works as long as the
-        // shipment exists in Veeqo.
-        if (!labelPath && veeqoLabelUrl) {
-          labelPath = veeqoLabelUrl;
+        // Always fall back to OUR proxy endpoint. We can't link the
+        // operator directly to Veeqo's URL because it needs the
+        // x-api-key header — `/api/shipping/label-pdf?shipmentId=X`
+        // fetches the PDF on the server (with auth) and streams it
+        // back. Same-origin, no auth issues, always works as long as
+        // the shipment exists in Veeqo.
+        const shipmentId =
+          shipment?.id ?? shipment?.shipment?.id ?? null;
+        if (!labelPath && shipmentId) {
+          labelPath = `/api/shipping/label-pdf?shipmentId=${shipmentId}`;
         }
 
         // Add employee note. Include a SHIP-DAY badge when the plan
