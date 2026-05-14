@@ -87,6 +87,12 @@ interface PlanItem {
   edd: string | null;
   status: string;
   notes: string | null;
+  // What the agent fed into the carrier rate lookup. Surface on the row so
+  // Vladimir can sanity-check (weight off by 5 lb completely changes which
+  // service the algorithm picks).
+  weight: number | null;
+  boxSize: string | null;
+  productType: string | null;
 }
 
 interface PlanResponse {
@@ -131,23 +137,23 @@ const BUCKET_TABS: { id: ShipByBucket; label: string; activeCls: string }[] = [
 ];
 
 /**
- * Quick-pick box dimensions for the Add-SKU dialog. The labels match the
- * vocabulary used elsewhere (Packing Profile dialog uses XS/S/M/L/XL plus
- * explicit "12x12x8" style entries). The dimensions are conservative
- * defaults — Vladimir can edit the inputs after picking if a specific SKU
- * needs different numbers.
+ * Quick-pick box dimensions for the Add-SKU dialog. Numbers below are the
+ * actual Salutem template inventory (confirmed by Vladimir 2026-05-14).
+ * If a SKU needs something off-template, operator can still type values
+ * manually.
  */
 const BOX_PRESETS: { label: string; l: number; w: number; h: number }[] = [
-  { label: "XXS", l: 4,  w: 4,  h: 4 },
-  { label: "XS",  l: 7,  w: 5,  h: 3 },
-  { label: "S",   l: 8,  w: 6,  h: 4 },
-  { label: "M",   l: 12, w: 9,  h: 6 },
-  { label: "L",   l: 14, w: 10, h: 8 },
-  { label: "XL",  l: 18, w: 14, h: 10 },
+  { label: "XS",     l: 11, w: 6,  h: 8 },
+  { label: "S",      l: 12, w: 12, h: 10 },
+  { label: "M",      l: 13, w: 13, h: 15 },
+  { label: "L",      l: 18, w: 13, h: 14 },
+  { label: "XL",     l: 24, w: 13, h: 16 },
+  { label: "5×5×5",  l: 5,  w: 5,  h: 5 },
+  { label: "6×6×6",  l: 6,  w: 6,  h: 6 },
+  { label: "7×7×6",  l: 7,  w: 7,  h: 6 },
+  { label: "10×8×6", l: 10, w: 8,  h: 6 },
   { label: "12×12×6", l: 12, w: 12, h: 6 },
   { label: "12×12×8", l: 12, w: 12, h: 8 },
-  { label: "7×7×6",   l: 7,  w: 7,  h: 6 },
-  { label: "7×5×14",  l: 7,  w: 5,  h: 14 },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -743,7 +749,7 @@ function OrderRow({
           a rate for the order (ready_to_buy and just-bought rows). The
           marketplace deadline (Amazon / Walmart deliver-by) sits in its own
           cell so the operator can eyeball whether the carrier's EDD beats it. */}
-      <div className="mt-2.5 ml-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-5 text-[11.5px]">
+      <div className="mt-2.5 ml-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-6 text-[11.5px]">
         <Cell label="Order total" value={fmt$(order.orderTotal)} />
         <Cell
           label="Customer paid shipping"
@@ -767,6 +773,22 @@ function OrderRow({
               : urgencyClass(order.deliverBy)) ?? "text-ink"
           }
         />
+        {(isReady || isBought) && (
+          <Cell
+            // Package weight + box that the agent fed into the rate lookup.
+            // Surfaced so the operator can spot wrong/missing SKU data:
+            // a 5lb item that comes back as 32 lbs explains an inflated rate.
+            label="Package"
+            value={
+              plan?.weight != null
+                ? `${plan.weight} lbs`
+                : planLoading
+                  ? "loading…"
+                  : "—"
+            }
+            sub={plan?.boxSize ?? undefined}
+          />
+        )}
         {(isReady || isBought) && (
           <Cell
             label={isBought ? "Label cost (bought)" : "Label cost"}
@@ -804,7 +826,34 @@ function OrderRow({
             sub={plan?.edd ? `EDD ${fmtDate(plan.edd)}` : undefined}
           />
         )}
+        {(isReady || isBought) && (
+          <Cell
+            label="Package"
+            value={
+              plan?.weight != null
+                ? `${plan.weight} lbs`
+                : planLoading
+                  ? "loading…"
+                  : "—"
+            }
+            sub={plan?.boxSize ?? undefined}
+          />
+        )}
       </div>
+
+      {/* Frozen rate-selection rationale — explain why the agent didn't
+          pick the absolute cheapest rate when the order is Frozen. The
+          ≤3-calendar-days rule comes from food-safety constraints
+          (MASTER_PROMPT v3.1); without this note the operator sees
+          "Vika showed UPS Ground at $39.93" and assumes the agent is
+          wrong. */}
+      {isReady && plan?.productType === "Frozen" && (
+        <div className="mt-2 ml-6 rounded bg-info-tint px-2 py-1.5 text-[11px] text-info">
+          Frozen — agent only considers rates that deliver within 3
+          calendar days (food safety). Cheaper Ground / Saver options
+          are filtered out even if they meet the marketplace deadline.
+        </div>
+      )}
 
       {/* Action area per state */}
       {isAttn && (
