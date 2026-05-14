@@ -88,8 +88,15 @@ export async function getShippingRates(allocationId: string) {
 //   option. Add more entries here if other carriers hit the same
 //   "null options but VAS required" bug.
 const SERVICE_ID_VAS_FALLBACK: Record<string, Record<string, string>> = {
+  // 2026-05-14: Veeqo returns shipping_service_options: null for
+  // FedEx Ground Economy, but rejects both empty VAS AND
+  // DELIVERY_CONFIRMATION with INVALID_VALUE_ADDED_SERVICES. The same
+  // order succeeded with NO VAS yesterday — Veeqo likely changed
+  // behaviour. Try NO_CONFIRMATION (FedEx default). additional_content
+  // on the rate explicitly references FedEx Ground Economy T&C, so
+  // FedEx-side VAS keys make more sense than USPS-style ones.
   FEDEX_PTP_SMARTPOST: {
-    value_added_service__VAS_GROUP_ID_CONFIRMATION: "DELIVERY_CONFIRMATION",
+    value_added_service__VAS_GROUP_ID_CONFIRMATION: "NO_CONFIRMATION",
   },
 };
 
