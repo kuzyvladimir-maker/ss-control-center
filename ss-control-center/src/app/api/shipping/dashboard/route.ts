@@ -358,7 +358,15 @@ export async function GET() {
         channel: channelName || null,
         shipBy,
         timeBucket: bucket,
-        deliverBy: o.deliver_no_later_than ?? o.expected_delivery_date ?? null,
+        // The Amazon/Walmart deliver-by deadline lives on Veeqo's `due_date`
+        // (same field /api/shipping/plan reads). The other candidate names
+        // we tried before (`deliver_no_later_than`, `expected_delivery_date`)
+        // aren't populated, so the row showed "—" for every order.
+        deliverBy:
+          o.due_date ??
+          o.deliver_no_later_than ??
+          o.expected_delivery_date ??
+          null,
         state,
         needAttentionReason,
         items: itemsWithType,
