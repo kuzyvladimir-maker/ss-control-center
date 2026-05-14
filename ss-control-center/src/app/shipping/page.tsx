@@ -130,6 +130,26 @@ const BUCKET_TABS: { id: ShipByBucket; label: string; activeCls: string }[] = [
   { id: "later",    label: "Later",    activeCls: "border-rule bg-bg-elev text-ink-2" },
 ];
 
+/**
+ * Quick-pick box dimensions for the Add-SKU dialog. The labels match the
+ * vocabulary used elsewhere (Packing Profile dialog uses XS/S/M/L/XL plus
+ * explicit "12x12x8" style entries). The dimensions are conservative
+ * defaults — Vladimir can edit the inputs after picking if a specific SKU
+ * needs different numbers.
+ */
+const BOX_PRESETS: { label: string; l: number; w: number; h: number }[] = [
+  { label: "XXS", l: 4,  w: 4,  h: 4 },
+  { label: "XS",  l: 7,  w: 5,  h: 3 },
+  { label: "S",   l: 8,  w: 6,  h: 4 },
+  { label: "M",   l: 12, w: 9,  h: 6 },
+  { label: "L",   l: 14, w: 10, h: 8 },
+  { label: "XL",  l: 18, w: 14, h: 10 },
+  { label: "12×12×6", l: 12, w: 12, h: 6 },
+  { label: "12×12×8", l: 12, w: 12, h: 8 },
+  { label: "7×7×6",   l: 7,  w: 7,  h: 6 },
+  { label: "7×5×14",  l: 7,  w: 5,  h: 14 },
+];
+
 // ─────────────────────────────────────────────────────────────────────────
 // Page component
 // ─────────────────────────────────────────────────────────────────────────
@@ -1508,6 +1528,37 @@ function SkuDataDialog({
               </select>
             </div>
           </div>
+          {/* Box presets — click one to populate L/W/H. The list matches the
+              box-size vocabulary used elsewhere in the project (Packing
+              Profile dialog, SkuShippingData rows), plus the exact-dimension
+              boxes Vladimir uses most. Operator can still override values
+              manually after picking a preset. */}
+          <div>
+            <label className="block text-[11.5px] font-medium text-ink mb-1">
+              Box preset
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {BOX_PRESETS.map((p) => (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => {
+                    setLength(String(p.l));
+                    setWidth(String(p.w));
+                    setHeight(String(p.h));
+                  }}
+                  className="rounded border border-rule bg-surface-tint px-2 py-1 text-[11.5px] text-ink hover:border-silver-line hover:bg-bg-elev"
+                  title={`${p.l} × ${p.w} × ${p.h} in`}
+                >
+                  <span className="font-medium">{p.label}</span>
+                  <span className="ml-1 text-[10.5px] text-ink-3 tabular">
+                    {p.l}×{p.w}×{p.h}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-3 gap-2">
             <div>
               <label className="block text-[11.5px] font-medium text-ink mb-1">
