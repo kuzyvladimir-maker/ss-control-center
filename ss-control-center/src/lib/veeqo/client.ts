@@ -53,7 +53,75 @@ export async function getShippingRates(allocationId: string) {
   );
 }
 
-// Buy a shipping label
+// Extract Value-Added-Service flags from a Veeqo rate object so the
+// matching `/shipping/shipments` POST can echo them back. Veeqo's
+// Amazon Shipping V2 errors with INVALID_VALUE_ADDED_SERVICES when the
+// request VAS set doesn't match what the chosen rate offered — so we
+// MUST read VAS from the live rate, not hardcode per-carrier.
+//
+// Veeqo's rate object can present VAS two ways depending on carrier /
+// API version, both handled below:
+//   1. Pre-flattened keys: `value_added_service__VAS_GROUP_ID_FOO: "BAR"`
+//      → mirror the key/value directly.
+//   2. Nested array: `value_added_services: [{ group_id, available_values }]`
+//      → pick a no-op default per group (NO_CONFIRMATION / NO_SIGNATURE…)
+//      and emit `value_added_service__<group_id>: <value>`.
+export function extractVasFromRate(
+  rate: Record<string, unknown>
+): Record<string, string> {
+  const vas: Record<string, string> = {};
+
+  // Pattern 1: keys already flattened on the rate.
+  for (const [key, value] of Object.entries(rate)) {
+    if (key.startsWith("value_added_service__") && typeof value === "string") {
+      vas[key] = value;
+    }
+  }
+
+  // Pattern 2: nested array with available_values per group.
+  const arr = rate.value_added_services;
+  if (Array.isArray(arr)) {
+    for (const raw of arr) {
+      if (!raw || typeof raw !== "object") continue;
+      const group = raw as Record<string, unknown>;
+      const groupId = String(group.group_id ?? group.id ?? "");
+      if (!groupId) continue;
+      const key = `value_added_service__${groupId}`;
+      if (key in vas) continue;
+
+      const values =
+        (Array.isArray(group.available_values) && group.available_values) ||
+        (Array.isArray(group.values) && group.values) ||
+        null;
+      if (!values || values.length === 0) continue;
+
+      // Prefer a NO_* option (least intrusive — no signature required,
+      // no return receipt, …); fall back to the first listed value.
+      const pickValue = (v: unknown): string | null => {
+        if (typeof v === "string") return v;
+        if (v && typeof v === "object") {
+          const obj = v as Record<string, unknown>;
+          if (typeof obj.value === "string") return obj.value;
+          if (typeof obj.id === "string") return obj.id;
+        }
+        return null;
+      };
+      const noOpt = values.find((v: unknown) => {
+        const s = pickValue(v);
+        return s != null && s.toUpperCase().startsWith("NO_");
+      });
+      const chosen = pickValue(noOpt ?? values[0]);
+      if (chosen) vas[key] = chosen;
+    }
+  }
+
+  return vas;
+}
+
+// Buy a shipping label. `vas` is passed in from the buy endpoint after
+// it re-fetches the live rate and runs `extractVasFromRate` — we don't
+// hardcode per-carrier here so the function works for any carrier
+// without code edits when Veeqo changes its VAS contract.
 export async function buyShippingLabel(payload: {
   allocationId: string;
   carrierId: string;
@@ -63,6 +131,7 @@ export async function buyShippingLabel(payload: {
   serviceCarrier: string;
   totalNetCharge: string;
   baseRate: string;
+  vas?: Record<string, string>;
 }) {
   const shipment: Record<string, unknown> = {
     allocation_id: payload.allocationId,
@@ -75,21 +144,8 @@ export async function buyShippingLabel(payload: {
     payment_method_id: null,
     total_net_charge: payload.totalNetCharge,
     base_rate: payload.baseRate,
+    ...(payload.vas ?? {}),
   };
-
-  // VAS GROUP_ID_CONFIRMATION is only valid for UPS rates.
-  //
-  // History: previously sent for "UPS/USPS, not FedEx". USPS Ground
-  // Advantage now rejects it with INVALID_VALUE_ADDED_SERVICES (2026-05-14,
-  // Veeqo API error 400 in production). FedEx has always rejected it.
-  // UPS is the only carrier confirmed to require/accept this VAS group
-  // through Amazon Shipping V2, so we now scope the field accordingly.
-  // If another USPS service ever requires a different VAS, the error
-  // surfaces in the post-buy modal — handle case-by-case.
-  const carrier = payload.subCarrierId.toUpperCase();
-  if (carrier === "UPS") {
-    shipment.value_added_service__VAS_GROUP_ID_CONFIRMATION = "NO_CONFIRMATION";
-  }
 
   return veeqoFetch("/shipping/shipments", {
     method: "POST",

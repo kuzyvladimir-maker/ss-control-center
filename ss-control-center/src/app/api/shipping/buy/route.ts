@@ -4,6 +4,8 @@ import {
   buyShippingLabel,
   addEmployeeNote,
   updateOrderDispatchDate,
+  getShippingRates,
+  extractVasFromRate,
 } from "@/lib/veeqo";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { writeFileSync, mkdirSync, existsSync, appendFileSync } from "fs";
@@ -139,7 +141,61 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Buy the label
+        // Re-fetch live rates so we can read the actual Value-Added-
+        // Service requirements from the matching rate. Veeqo's Amazon
+        // Shipping V2 errors with INVALID_VALUE_ADDED_SERVICES if the
+        // request VAS doesn't match what the rate offers — the only
+        // reliable source is GetRates at purchase time, not what was
+        // stored on the plan when rates were originally pulled.
+        let liveVas: Record<string, string> = {};
+        try {
+          const liveResp = await getShippingRates(item.allocationId);
+          const liveRates: Record<string, unknown>[] =
+            (liveResp?.available as Record<string, unknown>[]) || [];
+          const match =
+            liveRates.find(
+              (r) =>
+                String(r.remote_shipment_id) === item.remoteShipmentId
+            ) ??
+            liveRates.find((r) => String(r.name) === item.serviceType);
+          if (match) {
+            liveVas = extractVasFromRate(match);
+            // Verbose diagnostic dump — kept until we're confident the
+            // VAS extraction handles every Veeqo carrier shape. Strip
+            // once the buy flow is stable for a week.
+            console.log(
+              `[buy] rate match for ${item.orderNumber}: keys=${Object.keys(match).join(",")}`
+            );
+            console.log(
+              `[buy] rate VAS-related fields:`,
+              JSON.stringify(
+                Object.fromEntries(
+                  Object.entries(match).filter(
+                    ([k]) =>
+                      k.startsWith("value_added_service") ||
+                      k === "value_added_services"
+                  )
+                )
+              )
+            );
+            console.log(`[buy] extracted VAS:`, JSON.stringify(liveVas));
+          } else {
+            console.warn(
+              `[buy] no live rate match for ${item.orderNumber} ` +
+                `(remote_shipment_id=${item.remoteShipmentId}, ` +
+                `service=${item.serviceType}). Buying without VAS.`
+            );
+          }
+        } catch (rateErr) {
+          // Non-fatal: fall back to empty VAS. Veeqo will reject with a
+          // clean INVALID_VALUE_ADDED_SERVICES if that's wrong, and the
+          // post-buy modal will surface it.
+          console.warn(
+            `[buy] live rate re-fetch failed for ${item.orderNumber}:`,
+            rateErr instanceof Error ? rateErr.message : rateErr
+          );
+        }
+
         const shipment = await buyShippingLabel({
           allocationId: item.allocationId,
           carrierId: item.carrierId,
@@ -149,6 +205,7 @@ export async function POST(request: NextRequest) {
           serviceCarrier: item.serviceCarrier,
           totalNetCharge: item.totalNetCharge,
           baseRate: item.baseRate,
+          vas: liveVas,
         });
 
         // Extract tracking — Veeqo returns snake_case
