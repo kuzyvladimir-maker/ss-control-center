@@ -8,6 +8,7 @@ import {
   extractVasFromRate,
 } from "@/lib/veeqo";
 import { sendTelegramMessage } from "@/lib/telegram";
+import { uploadLabelPdf } from "@/lib/google-drive";
 import { writeFileSync, mkdirSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
 
@@ -262,31 +263,79 @@ export async function POST(request: NextRequest) {
         // "[object Object]" in the employee note and Telegram summary.
         const tracking = pickTrackingString(shipment) ?? "N/A";
 
-        // Save PDF locally
+        // Persist the PDF, with three escalating layers so a single
+        // failure never loses the label:
+        //   1. Google Drive (real persistent storage; matches the
+        //      operator's expected folder structure on shared Drive).
+        //   2. Local disk in public/labels/… (only useful for dev/
+        //      self-hosted; on Vercel the file system is ephemeral).
+        //   3. Veeqo's own hosted label_url (always available because
+        //      we just got it back in the buy response; saved verbatim
+        //      so the operator can always click "Open PDF" in the modal
+        //      even if Drive and disk both failed).
         let labelPath: string | null = null;
-        try {
-          const labelUrl =
-            shipment?.label_url ||
-            shipment?.shipment?.label_url ||
-            shipment?.label?.url ||
-            null;
+        const veeqoLabelUrl: string | null =
+          shipment?.label_url ||
+          shipment?.shipment?.label_url ||
+          shipment?.label?.url ||
+          null;
 
-          if (labelUrl) {
-            const folderRel = `labels/${buildFolderPath(item)}`;
-            const folderAbs = join(process.cwd(), "public", folderRel);
-            if (!existsSync(folderAbs)) mkdirSync(folderAbs, { recursive: true });
+        if (veeqoLabelUrl) {
+          try {
+            const pdfRes = await fetch(veeqoLabelUrl);
+            if (!pdfRes.ok) {
+              console.error(
+                `[buy] PDF download from Veeqo failed: HTTP ${pdfRes.status}`
+              );
+            } else {
+              const pdfBuf = Buffer.from(await pdfRes.arrayBuffer());
+              const filename = buildPdfFilename(item);
+              const folderPath = buildFolderPath(item);
 
-            const filename = buildPdfFilename(item);
-            const filePath = join(folderAbs, filename);
-            const pdfRes = await fetch(labelUrl);
-            if (pdfRes.ok) {
-              const buf = Buffer.from(await pdfRes.arrayBuffer());
-              writeFileSync(filePath, buf);
-              labelPath = `/${folderRel}/${encodeURIComponent(filename)}`;
+              // ── Drive upload (preferred) ────────────────────────────
+              const drive = await uploadLabelPdf({
+                folderSegments: folderPath.split("/"),
+                filename,
+                pdf: pdfBuf,
+              });
+              if (drive) {
+                labelPath = drive.webViewLink;
+              }
+
+              // ── Local disk (dev only — on Vercel this writes to an
+              //    ephemeral /tmp-style mount that's gone after the
+              //    response). Skip if Drive succeeded so we don't waste
+              //    invocation time on a write that won't outlive the
+              //    request. ─────────────────────────────────────────
+              if (!drive) {
+                try {
+                  const folderRel = `labels/${folderPath}`;
+                  const folderAbs = join(process.cwd(), "public", folderRel);
+                  if (!existsSync(folderAbs)) {
+                    mkdirSync(folderAbs, { recursive: true });
+                  }
+                  const filePath = join(folderAbs, filename);
+                  writeFileSync(filePath, pdfBuf);
+                  labelPath = `/${folderRel}/${encodeURIComponent(filename)}`;
+                } catch (diskErr) {
+                  console.warn(
+                    "[buy] local disk save failed (expected on Vercel):",
+                    diskErr instanceof Error ? diskErr.message : diskErr
+                  );
+                }
+              }
             }
+          } catch (pdfErr) {
+            console.error("[buy] PDF persistence error:", pdfErr);
           }
-        } catch (pdfErr) {
-          console.error("PDF save error:", pdfErr);
+        }
+
+        // Always fall back to Veeqo's URL — never let the operator end
+        // up with a "bought, but no link" row. Veeqo hosts the PDF
+        // permanently on their side; this URL works as long as the
+        // shipment exists in Veeqo.
+        if (!labelPath && veeqoLabelUrl) {
+          labelPath = veeqoLabelUrl;
         }
 
         // Add employee note. Include a SHIP-DAY badge when the plan
