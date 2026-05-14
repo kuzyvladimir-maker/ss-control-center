@@ -200,11 +200,36 @@ export default function ShippingLabelsPage() {
   // ── Derived view ────────────────────────────────────────────────────
   const orders = useMemo(() => data?.orders ?? [], [data]);
   const filteredOrders = useMemo(() => {
-    return orders.filter((o) => {
-      if (bucketFilter && o.timeBucket !== bucketFilter) return false;
-      if (storeFilter && o.storeId !== storeFilter) return false;
-      return true;
-    });
+    // Sort by actionability: ready_to_buy → need_attention → waiting_placed
+    // → bought. Inside each state, sort by time bucket (overdue first) so the
+    // most urgent rows always sit at the top of the list.
+    const stateRank: Record<State, number> = {
+      ready_to_buy: 0,
+      need_attention: 1,
+      waiting_placed: 2,
+      bought: 3,
+    };
+    const bucketRank: Record<ShipByBucket, number> = {
+      overdue: 0,
+      today: 1,
+      tomorrow: 2,
+      dayafter: 3,
+      later: 4,
+    };
+    return orders
+      .filter((o) => {
+        if (bucketFilter && o.timeBucket !== bucketFilter) return false;
+        if (storeFilter && o.storeId !== storeFilter) return false;
+        return true;
+      })
+      .slice()
+      .sort((a, b) => {
+        const ds = stateRank[a.state] - stateRank[b.state];
+        if (ds !== 0) return ds;
+        const ab = a.timeBucket ? bucketRank[a.timeBucket] : 99;
+        const bb = b.timeBucket ? bucketRank[b.timeBucket] : 99;
+        return ab - bb;
+      });
   }, [orders, bucketFilter, storeFilter]);
 
   const selectableIds = useMemo(
@@ -671,61 +696,54 @@ function OrderRow({
         </div>
       </div>
 
-      {/* Money + carrier grid — visible on every state where it makes sense. */}
-      {!isWaiting && (
-        <div className="mt-2.5 ml-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 text-[11.5px]">
-          <Cell label="Order total" value={fmt$(order.orderTotal)} />
+      {/* Money + carrier grid. Order total + customer-paid shipping are known
+          for every Veeqo order regardless of state, so they always show.
+          Label cost / carrier / EDD only appear when /api/shipping/plan has
+          a rate for the order (ready_to_buy and just-bought rows). */}
+      <div className="mt-2.5 ml-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 text-[11.5px]">
+        <Cell label="Order total" value={fmt$(order.orderTotal)} />
+        <Cell
+          label="Customer paid shipping"
+          value={fmt$(order.customerPaidShipping)}
+        />
+        {(isReady || isBought) && (
           <Cell
-            label="Customer paid shipping"
-            value={fmt$(order.customerPaidShipping)}
-          />
-          {isReady && (
-            <Cell
-              label="Label cost"
-              value={
-                planLoading && !plan
-                  ? "loading…"
-                  : plan?.price != null
-                    ? fmt$(plan.price)
-                    : planStop
-                      ? "stopped"
-                      : "—"
-              }
-              valueClass={
-                shippingMargin != null && shippingMargin < 0
-                  ? "text-danger"
-                  : "text-ink"
-              }
-              sub={
-                shippingMargin != null
-                  ? `margin ${shippingMargin >= 0 ? "+" : ""}${fmt$(shippingMargin)}`
-                  : undefined
-              }
-            />
-          )}
-          {isReady && (
-            <Cell
-              label="Carrier"
-              value={
-                plan?.carrier && plan.service
-                  ? `${plan.carrier} ${plan.service}`
-                  : planLoading
-                    ? "loading…"
+            label={isBought ? "Label cost (bought)" : "Label cost"}
+            value={
+              planLoading && !plan
+                ? "loading…"
+                : plan?.price != null
+                  ? fmt$(plan.price)
+                  : planStop
+                    ? "stopped"
                     : "—"
-              }
-              sub={plan?.edd ? `EDD ${plan.edd}` : undefined}
-            />
-          )}
-          {isBought && (
-            <Cell
-              label="Label cost (bought)"
-              value={
-                plan?.price != null ? fmt$(plan.price) : "—"
-              }
-            />
-          )}
-        </div>
-      )}
+            }
+            valueClass={
+              shippingMargin != null && shippingMargin < 0
+                ? "text-danger"
+                : "text-ink"
+            }
+            sub={
+              shippingMargin != null
+                ? `margin ${shippingMargin >= 0 ? "+" : ""}${fmt$(shippingMargin)}`
+                : undefined
+            }
+          />
+        )}
+        {(isReady || isBought) && (
+          <Cell
+            label="Carrier"
+            value={
+              plan?.carrier && plan.service
+                ? `${plan.carrier} ${plan.service}`
+                : planLoading
+                  ? "loading…"
+                  : "—"
+            }
+            sub={plan?.edd ? `EDD ${plan.edd}` : undefined}
+          />
+        )}
+      </div>
 
       {/* Action area per state */}
       {isAttn && (
