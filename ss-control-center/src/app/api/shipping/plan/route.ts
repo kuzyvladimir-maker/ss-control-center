@@ -294,9 +294,16 @@ export async function GET(request: NextRequest) {
       if (isWalmart && weekend) continue;
       debug.filters.afterWalmartWeekend++;
 
-      const alreadyPurchased =
-        order.employee_notes?.includes("Label Purchased");
-      if (alreadyPurchased) continue;
+      // Duplicate-purchase guard: trust Veeqo's order.status, NOT the
+      // "Label Purchased" employee note. The note is append-only in
+      // Veeqo (see veeqo-api-quirks §3), so a cancelled-and-refunded
+      // label still leaves the note in place — using the note made
+      // cancelled orders permanently invisible to /plan. Veeqo's status
+      // is set to "shipped" on label purchase and reverts to
+      // "awaiting_fulfillment" when the label is cancelled — exactly
+      // the signal we want.
+      const orderStatus = String(order.status ?? "").toLowerCase();
+      if (orderStatus === "shipped") continue;
       debug.filters.afterDuplicateCheck++;
 
       // ── Product type ──

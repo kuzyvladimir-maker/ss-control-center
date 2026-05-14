@@ -23,7 +23,6 @@ import {
 } from "@/lib/shipping/packing-signature";
 
 const PLACED_TAG = "Placed";
-const LABEL_PURCHASED_TOKEN = "Label Purchased";
 
 type ShipByBucket = "overdue" | "today" | "tomorrow" | "dayafter" | "later";
 
@@ -52,11 +51,18 @@ function isPlaced(o: any): boolean {
   );
 }
 
+// Authoritative signal: Veeqo's `order.status`. When a label is bought
+// Veeqo flips it to "shipped"; when the operator cancels the label in
+// Veeqo it flips back to "awaiting_fulfillment" — exactly the signal we
+// need so cancelled orders reappear in the dashboard.
+//
+// Previous implementation checked `employee_notes` for the literal
+// "Label Purchased" token. That token is append-only (Veeqo notes are
+// never deleted, see [veeqo-api-quirks §3](docs/wiki/veeqo-api-quirks.md))
+// so a cancelled-and-refunded label still leaves the order tagged as
+// "bought" forever from our app's perspective. Switched 2026-05-14.
 function isBought(o: any): boolean {
-  const notes = o.employee_notes ?? [];
-  return notes.some((n: any) =>
-    String(n?.text ?? n ?? "").includes(LABEL_PURCHASED_TOKEN)
-  );
+  return String(o?.status ?? "").toLowerCase() === "shipped";
 }
 
 function isFrozenWalmart(channelName: string | undefined, type: string | null) {

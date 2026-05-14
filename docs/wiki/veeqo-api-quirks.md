@@ -249,12 +249,45 @@ Headers:
 
 ---
 
+## 12. Отмена этикетки: order.status — единственный надёжный сигнал состояния заказа (2026-05-14)
+
+**Проблема:** Оператор bulk-buy'ил два заказа, один прошёл (FedEx), один упал (USPS). Затем зашёл в Veeqo UI и **отменил** успешную этикетку. В Veeqo заказ снова показывается как `awaiting_fulfillment`/`Ready to ship`. Но в нашей панели Shipping Labels он **не появляется** — навсегда исчез.
+
+**Корень:** Мы определяли "уже куплено" по employee note с текстом `"Label Purchased"`. Но Veeqo notes — **append-only** ([см. §3](#3-employee-notes-можно-добавлять-через-tags_attributes-brother--employee_notes_attributes)). Когда оператор отменяет этикетку в Veeqo:
+- `order.status` → возвращается к `awaiting_fulfillment` ✓
+- Employee note `✅ Label Purchased: ...` → **остаётся** ✗
+
+Дашборд видел ноту, ставил `state = "bought"`, и заказ выпадал из списка `ready_to_buy`. Плановый эндпоинт делал `continue` и тоже игнорировал такой заказ.
+
+**Правильный сигнал:**
+
+```typescript
+// ✅ Veeqo's authoritative status
+const isBought = order.status?.toLowerCase() === "shipped";
+
+// ❌ DON'T — note is append-only, never cleared on cancellation
+const isBought = order.employee_notes.some(n => n.text.includes("Label Purchased"));
+```
+
+`order.status` flip'ается атомарно с операцией Veeqo (buy → shipped, cancel → awaiting_fulfillment), и это единственный сигнал который синхронизирован с реальностью.
+
+**Где исправлено:**
+- [src/app/api/shipping/dashboard/route.ts](../../ss-control-center/src/app/api/shipping/dashboard/route.ts) — функция `isBought()` теперь читает `o.status === "shipped"`
+- [src/app/api/shipping/plan/route.ts](../../ss-control-center/src/app/api/shipping/plan/route.ts) — guard от duplicate-purchase тоже использует status
+
+Поскольку `fetchAllOrders("awaiting_fulfillment")` уже фильтрует upstream, фактически после фикса в обоих эндпоинтах путь `state = "bought"` / `continue` достижим только если статус апдейтнется во время выполнения запроса. Это OK — заказы появляются и исчезают атомарно по Veeqo-стороне.
+
+**Что НЕ переписывать обратно:** напрасное соблазн использовать employee notes для логики filter'ов. Notes хороши для **истории** (что произошло, когда), но не для **состояния** (что прямо сейчас актуально). Состояние — только `order.status`, всегда.
+
+---
+
 ## История правок страницы
 - 2026-05-04: §1-6 — оригинал (tags, notes, pagination, rate limit, id types)
-- 2026-05-14: §7-11 добавлены после массовой отладки покупки этикеток.
+- 2026-05-14: §7-12 добавлены после массовой отладки покупки этикеток.
   - §7 VAS из `shipping_service_options`
   - §8 `tracking_number` объект
   - §9 `/buy` 200 с errors[]
   - §10 Vercel ephemeral disk
   - §11 `label_url` нужен `format=pdf` + auth header
+  - §12 employee note "Label Purchased" — не сигнал состояния, использовать `order.status`
   - MASTER_PROMPT_v3.1 §12 помечен как устаревший.
