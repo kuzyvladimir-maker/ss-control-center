@@ -43,7 +43,8 @@
 
 ## 🔌 Интеграции
 - [Veeqo API](veeqo-api.md) — заказы, ставки, покупка labels
-- [Veeqo API Quirks](veeqo-api-quirks.md) — подводные камни, что не работает несмотря на 200 OK (order tags → /bulk_tagging, не PUT)
+- [Veeqo API Quirks](veeqo-api-quirks.md) — подводные камни (10 пунктов): VAS из `shipping_service_options`, tracking_number бывает объектом, order tags → /bulk_tagging, /buy 200 + errors[], Vercel ephemeral disk
+- [Google Drive (PDF этикеток)](google-drive-setup.md) — service-account setup для постоянного хранения этикеток — 2026-05-14
 - [Amazon SP-API](amazon-sp-api.md) — orders, messaging, reports, health, finances
 - [Walmart Marketplace API](walmart-api.md) — orders, returns, recon reports, seller performance (2026-04-18)
 - [Gmail API](gmail-api.md) — buyer messages, chargeback notifications
@@ -70,6 +71,12 @@
 
 ## Известные проблемы и грабли
 - [Veeqo API Quirks](veeqo-api-quirks.md) — order tags нельзя ставить через `PUT /orders/{id}` (silently no-op); работает только `POST /bulk_tagging`. Найдено 2026-05-04.
+- [Veeqo API Quirks §7](veeqo-api-quirks.md) — VAS поле динамическое, читать из `rate.shipping_service_options[]` (USPS Ground Advantage требует `DELIVERY_CONFIRMATION`, не `NO_CONFIRMATION`). Master Prompt §12 устарел. 2026-05-14.
+- [Veeqo API Quirks §8](veeqo-api-quirks.md) — `tracking_number` может быть объектом, не строкой. 2026-05-14.
+- [Veeqo API Quirks §10](veeqo-api-quirks.md) — Vercel serverless ↔ `writeFileSync('public/labels')` не работает; нужен Google Drive или fallback на Veeqo URL. 2026-05-14.
 
 ---
-Последнее обновление: 2026-05-14 (+ Ship Date Trick реализован + Dry rate rules упрощены)
+Последнее обновление: 2026-05-14
+- Sprint shipping labels в продакшене: VAS из live rate, tracking object-shape, post-buy modal + audit log, Google Drive upload (раньше работал только n8n).
+- Ship Date Trick реализован (был "Handle manually").
+- Dry rate rules упрощены.

@@ -415,6 +415,15 @@ PUT /orders/{id}
 
 ## 12. 🔌 VEEQO API — КЛЮЧЕВЫЕ ЭНДПОИНТЫ
 
+> ⚠️ **2026-05-14:** Раздел про VAS (`value_added_service__VAS_GROUP_ID_CONFIRMATION`)
+> ниже **устарел**. Veeqo обновил API: USPS Ground Advantage теперь требует
+> `DELIVERY_CONFIRMATION`, а не `NO_CONFIRMATION`. Хардкод значения per-carrier
+> приведёт к `400 INVALID_VALUE_ADDED_SERVICES`. Реальный подход —
+> читать `rate.shipping_service_options[]` из ответа `GET /shipping/rates`
+> и эхом возвращать в `POST /shipping/shipments`. Полная схема и пример рейта:
+> [docs/wiki/veeqo-api-quirks.md §7](wiki/veeqo-api-quirks.md).
+
+
 **Auth:** `x-api-key: Vqt/5554f1df2e6b934f5e6e90d2f3dde79e`
 **Base URL:** `https://api.veeqo.com`
 
