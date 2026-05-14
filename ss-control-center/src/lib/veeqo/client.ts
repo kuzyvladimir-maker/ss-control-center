@@ -56,62 +56,87 @@ export async function getShippingRates(allocationId: string) {
 // Extract Value-Added-Service flags from a Veeqo rate object so the
 // matching `/shipping/shipments` POST can echo them back. Veeqo's
 // Amazon Shipping V2 errors with INVALID_VALUE_ADDED_SERVICES when the
-// request VAS set doesn't match what the chosen rate offered — so we
-// MUST read VAS from the live rate, not hardcode per-carrier.
+// request VAS set doesn't match what the chosen rate offered.
 //
-// Veeqo's rate object can present VAS two ways depending on carrier /
-// API version, both handled below:
-//   1. Pre-flattened keys: `value_added_service__VAS_GROUP_ID_FOO: "BAR"`
-//      → mirror the key/value directly.
-//   2. Nested array: `value_added_services: [{ group_id, available_values }]`
-//      → pick a no-op default per group (NO_CONFIRMATION / NO_SIGNATURE…)
-//      and emit `value_added_service__<group_id>: <value>`.
+// Confirmed Veeqo shape (verified from production diagnostic 2026-05-14):
+//   rate.shipping_service_options = [
+//     { key: "value_added_service__VAS_GROUP_ID_CONFIRMATION",
+//       type: "select",
+//       values: [{ value: "DELIVERY_CONFIRMATION", label, price, currency }, …] },
+//     { key: "liability_amount",  // non-VAS option — skipped
+//       type: "number",
+//       validation: {min,max}, default: null },
+//     …
+//   ]
+//
+// Strategy per VAS group:
+//   1. If any value starts with "NO_" (NO_CONFIRMATION / NO_SIGNATURE) →
+//      pick it (least intrusive, almost always free).
+//   2. Otherwise pick the cheapest value (price 0 if available) — this
+//      is what USPS Ground Advantage requires: only DELIVERY_CONFIRMATION
+//      is offered, price 0, and it's effectively mandatory.
 export function extractVasFromRate(
   rate: Record<string, unknown>
 ): Record<string, string> {
   const vas: Record<string, string> = {};
 
-  // Pattern 1: keys already flattened on the rate.
-  for (const [key, value] of Object.entries(rate)) {
-    if (key.startsWith("value_added_service__") && typeof value === "string") {
-      vas[key] = value;
+  const options = rate.shipping_service_options;
+  if (Array.isArray(options)) {
+    for (const opt of options) {
+      if (!opt || typeof opt !== "object") continue;
+      const obj = opt as Record<string, unknown>;
+      const key = typeof obj.key === "string" ? obj.key : "";
+      if (!key.startsWith("value_added_service__")) continue;
+
+      const rawValues = obj.values;
+      if (!Array.isArray(rawValues) || rawValues.length === 0) continue;
+
+      // Normalise each value entry into { value, price }.
+      type Norm = { value: string; price: number };
+      const parsed: Norm[] = [];
+      for (const v of rawValues) {
+        if (typeof v === "string" && v) {
+          parsed.push({ value: v, price: 0 });
+          continue;
+        }
+        if (v && typeof v === "object") {
+          const vo = v as Record<string, unknown>;
+          const val =
+            typeof vo.value === "string"
+              ? vo.value
+              : typeof vo.id === "string"
+                ? vo.id
+                : null;
+          if (!val) continue;
+          const price =
+            typeof vo.price === "number"
+              ? vo.price
+              : typeof vo.price === "string"
+                ? parseFloat(vo.price) || 0
+                : 0;
+          parsed.push({ value: val, price });
+        }
+      }
+      if (parsed.length === 0) continue;
+
+      const noOpt = parsed.find((p) =>
+        p.value.toUpperCase().startsWith("NO_")
+      );
+      const chosen =
+        noOpt ?? parsed.reduce((a, b) => (a.price <= b.price ? a : b));
+      vas[key] = chosen.value;
     }
   }
 
-  // Pattern 2: nested array with available_values per group.
-  const arr = rate.value_added_services;
-  if (Array.isArray(arr)) {
-    for (const raw of arr) {
-      if (!raw || typeof raw !== "object") continue;
-      const group = raw as Record<string, unknown>;
-      const groupId = String(group.group_id ?? group.id ?? "");
-      if (!groupId) continue;
-      const key = `value_added_service__${groupId}`;
-      if (key in vas) continue;
-
-      const values =
-        (Array.isArray(group.available_values) && group.available_values) ||
-        (Array.isArray(group.values) && group.values) ||
-        null;
-      if (!values || values.length === 0) continue;
-
-      // Prefer a NO_* option (least intrusive — no signature required,
-      // no return receipt, …); fall back to the first listed value.
-      const pickValue = (v: unknown): string | null => {
-        if (typeof v === "string") return v;
-        if (v && typeof v === "object") {
-          const obj = v as Record<string, unknown>;
-          if (typeof obj.value === "string") return obj.value;
-          if (typeof obj.id === "string") return obj.id;
-        }
-        return null;
-      };
-      const noOpt = values.find((v: unknown) => {
-        const s = pickValue(v);
-        return s != null && s.toUpperCase().startsWith("NO_");
-      });
-      const chosen = pickValue(noOpt ?? values[0]);
-      if (chosen) vas[key] = chosen;
+  // Legacy fallback: pre-flattened keys directly on the rate object.
+  // Kept in case any carrier uses the older shape.
+  for (const [key, value] of Object.entries(rate)) {
+    if (
+      key.startsWith("value_added_service__") &&
+      typeof value === "string" &&
+      !(key in vas)
+    ) {
+      vas[key] = value;
     }
   }
 
