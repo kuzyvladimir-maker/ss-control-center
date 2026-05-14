@@ -77,9 +77,17 @@ export async function buyShippingLabel(payload: {
     base_rate: payload.baseRate,
   };
 
-  // VAS field required for UPS/USPS only — FedEx rejects it
+  // VAS GROUP_ID_CONFIRMATION is only valid for UPS rates.
+  //
+  // History: previously sent for "UPS/USPS, not FedEx". USPS Ground
+  // Advantage now rejects it with INVALID_VALUE_ADDED_SERVICES (2026-05-14,
+  // Veeqo API error 400 in production). FedEx has always rejected it.
+  // UPS is the only carrier confirmed to require/accept this VAS group
+  // through Amazon Shipping V2, so we now scope the field accordingly.
+  // If another USPS service ever requires a different VAS, the error
+  // surfaces in the post-buy modal — handle case-by-case.
   const carrier = payload.subCarrierId.toUpperCase();
-  if (carrier !== "FEDEX") {
+  if (carrier === "UPS") {
     shipment.value_added_service__VAS_GROUP_ID_CONFIRMATION = "NO_CONFIRMATION";
   }
 
