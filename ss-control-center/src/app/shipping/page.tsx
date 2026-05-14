@@ -157,6 +157,7 @@ export default function ShippingLabelsPage() {
   );
   const [manualModal, setManualModal] = useState<DashboardOrder | null>(null);
   const [packingModal, setPackingModal] = useState<DashboardOrder | null>(null);
+  const [skuModal, setSkuModal] = useState<DashboardOrder | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -546,6 +547,7 @@ export default function ShippingLabelsPage() {
               onClassify={() => setClassifyModal(o)}
               onManual={() => setManualModal(o)}
               onPacking={() => setPackingModal(o)}
+              onSku={() => setSkuModal(o)}
               onBuy={() => buyOne(o)}
             />
           ))
@@ -579,6 +581,15 @@ export default function ShippingLabelsPage() {
           }}
         />
       )}
+      {skuModal && (
+        <SkuDataDialog
+          order={skuModal}
+          onClose={(refresh) => {
+            setSkuModal(null);
+            if (refresh) load();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -597,6 +608,7 @@ function OrderRow({
   onClassify,
   onManual,
   onPacking,
+  onSku,
   onBuy,
 }: {
   order: DashboardOrder;
@@ -608,6 +620,7 @@ function OrderRow({
   onClassify: () => void;
   onManual: () => void;
   onPacking: () => void;
+  onSku: () => void;
   onBuy: () => void;
 }) {
   const isReady = order.state === "ready_to_buy";
@@ -719,13 +732,19 @@ function OrderRow({
         <Cell
           label="Marketplace deadline"
           value={order.deliverBy ? fmtDate(order.deliverBy) : "—"}
+          // When a carrier EDD is known we compare against it ("on time" /
+          // "late by N days"). Otherwise we fall back to plain urgency
+          // (days until deadline) so the operator can still tell at a glance
+          // which orders need fixing first.
           sub={
             plan?.edd
               ? deadlineRiskNote(order.deliverBy, plan.edd)
-              : undefined
+              : urgencyNote(order.deliverBy)
           }
           valueClass={
-            deadlineRiskClass(order.deliverBy, plan?.edd) ?? "text-ink"
+            (plan?.edd
+              ? deadlineRiskClass(order.deliverBy, plan.edd)
+              : urgencyClass(order.deliverBy)) ?? "text-ink"
           }
         />
         {(isReady || isBought) && (
@@ -804,6 +823,34 @@ function OrderRow({
             >
               <Package size={12} className="mr-1" /> Set packing profile
             </Button>
+          )}
+          {order.needAttentionReason === "no_sku" && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-[11.5px]"
+              onClick={onSku}
+            >
+              <Package size={12} className="mr-1" /> Add SKU data
+            </Button>
+          )}
+          {order.needAttentionReason === "mixed_order" && (
+            <span className="text-[11px] text-ink-3">
+              Split the order in Veeqo (Frozen + Dry on one label isn&apos;t
+              supported).
+            </span>
+          )}
+          {order.needAttentionReason === "frozen_walmart" && (
+            <span className="text-[11px] text-ink-3">
+              Frozen items can&apos;t ship via Walmart — cancel or switch
+              channel.
+            </span>
+          )}
+          {(order.needAttentionReason === "budget" ||
+            order.needAttentionReason === "no_service") && (
+            <span className="text-[11px] text-ink-3">
+              No carrier rate fits — review manually in Veeqo.
+            </span>
           )}
         </div>
       )}
@@ -900,6 +947,41 @@ function deadlineRiskClass(
   if (d == null) return null;
   if (d > 0) return "text-danger";
   if (d === 0) return "text-warn-strong";
+  return "text-green";
+}
+
+/** Days from today to the deadline, in calendar days. Negative = past. */
+function daysUntilDeadline(deliverBy: string | null | undefined): number | null {
+  if (!deliverBy) return null;
+  const d = new Date(deliverBy);
+  if (Number.isNaN(d.getTime())) return null;
+  const today = new Date();
+  return Math.round(
+    (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) -
+      Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) /
+      86400000
+  );
+}
+
+function urgencyNote(
+  deliverBy: string | null | undefined
+): string | undefined {
+  const d = daysUntilDeadline(deliverBy);
+  if (d == null) return undefined;
+  if (d < 0) return `${-d}d past deadline`;
+  if (d === 0) return "due today";
+  if (d === 1) return "1 day left";
+  return `${d} days left`;
+}
+
+function urgencyClass(
+  deliverBy: string | null | undefined
+): string | null {
+  const d = daysUntilDeadline(deliverBy);
+  if (d == null) return null;
+  if (d < 0) return "text-danger";
+  if (d <= 1) return "text-danger";
+  if (d <= 3) return "text-warn-strong";
   return "text-green";
 }
 
@@ -1263,6 +1345,207 @@ function PackingProfileDialog({
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
                 placeholder="2.5"
+              />
+            </div>
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                FedEx One Rate (lbs)
+              </label>
+              <Input
+                value={weightFedex}
+                onChange={(e) => setWeightFedex(e.target.value)}
+                placeholder="auto = weight × 1.25"
+              />
+            </div>
+          </div>
+
+          {err && (
+            <div className="rounded border border-danger/30 bg-danger-tint p-2 text-[11.5px] text-danger">
+              {err}
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onClose(false)}
+            disabled={saving}
+          >
+            Cancel
+          </Button>
+          <Button onClick={save} disabled={saving}>
+            {saving ? "Saving…" : "Save"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
+ * Add SKU to the internal SkuShippingData table (the same data layer the
+ * plan route reads). Used when the dashboard flagged an order as no_sku.
+ *
+ * Saving one row at a time per visible SKU keeps it simple — when an order
+ * has multiple unknown SKUs the operator gets called back here for each.
+ */
+function SkuDataDialog({
+  order,
+  onClose,
+}: {
+  order: DashboardOrder;
+  onClose: (refresh: boolean) => void;
+}) {
+  // Pick the first SKU as the one we're filling in. The rare case of
+  // multiple unknown SKUs in one order will re-open the dialog on the
+  // next render after dashboard refresh.
+  const item = order.items[0];
+  const [productTitle, setProductTitle] = useState(item?.productTitle ?? "");
+  const [category, setCategory] = useState<"Frozen" | "Dry">(
+    item?.knownType ?? "Dry"
+  );
+  const [marketplace, setMarketplace] = useState(
+    order.channel?.toLowerCase().includes("walmart") ? "Walmart" : "Amazon"
+  );
+  const [length, setLength] = useState("");
+  const [width, setWidth] = useState("");
+  const [height, setHeight] = useState("");
+  const [weight, setWeight] = useState("");
+  const [weightFedex, setWeightFedex] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function save() {
+    setErr(null);
+    if (!item) return;
+    const L = Number(length);
+    const W = Number(width);
+    const H = Number(height);
+    const wt = Number(weight);
+    if (
+      ![L, W, H, wt].every((n) => Number.isFinite(n) && n > 0)
+    ) {
+      setErr("Length, width, height, weight must all be positive numbers");
+      return;
+    }
+    setSaving(true);
+    try {
+      const r = await fetch("/api/shipping/fix-sku", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sku: item.sku,
+          productTitle,
+          marketplace,
+          category,
+          length: L,
+          width: W,
+          height: H,
+          weight: wt,
+          weightFedex: weightFedex ? Number(weightFedex) : wt * 1.25,
+        }),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        throw new Error(j?.error || `HTTP ${r.status}`);
+      }
+      onClose(true);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={() => onClose(false)}>
+      <DialogContent className="sm:max-w-[520px]">
+        <DialogHeader>
+          <DialogTitle>Add SKU to database</DialogTitle>
+          <DialogDescription>
+            Order #{order.orderNumber} · SKU{" "}
+            <code className="font-mono">{item?.sku}</code>
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 text-[12.5px]">
+          <div>
+            <label className="block text-[11.5px] font-medium text-ink mb-1">
+              Product title
+            </label>
+            <Input
+              value={productTitle}
+              onChange={(e) => setProductTitle(e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                Marketplace
+              </label>
+              <select
+                value={marketplace}
+                onChange={(e) => setMarketplace(e.target.value)}
+                className="w-full rounded border border-rule bg-surface px-2 py-1.5 text-[12.5px]"
+              >
+                <option>Amazon</option>
+                <option>Walmart</option>
+                <option>Both</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                Category
+              </label>
+              <select
+                value={category}
+                onChange={(e) =>
+                  setCategory(e.target.value as "Frozen" | "Dry")
+                }
+                className="w-full rounded border border-rule bg-surface px-2 py-1.5 text-[12.5px]"
+              >
+                <option>Dry</option>
+                <option>Frozen</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                Length (in)
+              </label>
+              <Input
+                value={length}
+                onChange={(e) => setLength(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                Width (in)
+              </label>
+              <Input
+                value={width}
+                onChange={(e) => setWidth(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                Height (in)
+              </label>
+              <Input
+                value={height}
+                onChange={(e) => setHeight(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                Weight (lbs)
+              </label>
+              <Input
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                placeholder="standard"
               />
             </div>
             <div>
