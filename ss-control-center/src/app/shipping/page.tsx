@@ -1577,35 +1577,33 @@ function SkuDataDialog({
               </select>
             </div>
           </div>
-          {/* Box presets — click one to populate L/W/H. The list matches the
-              box-size vocabulary used elsewhere in the project (Packing
-              Profile dialog, SkuShippingData rows), plus the exact-dimension
-              boxes Vladimir uses most. Operator can still override values
-              manually after picking a preset. */}
+          {/* Box preset — single dropdown over the L/W/H inputs. Picking
+              a preset fills the three fields; the operator can still
+              hand-tune after. */}
           <div>
             <label className="block text-[11.5px] font-medium text-ink mb-1">
               Box preset
             </label>
-            <div className="flex flex-wrap gap-1.5">
+            <select
+              defaultValue=""
+              onChange={(e) => {
+                const preset = BOX_PRESETS.find(
+                  (p) => p.label === e.target.value
+                );
+                if (!preset) return;
+                setLength(String(preset.l));
+                setWidth(String(preset.w));
+                setHeight(String(preset.h));
+              }}
+              className="w-full rounded border border-rule bg-surface px-2 py-1.5 text-[12.5px]"
+            >
+              <option value="">Select template…</option>
               {BOX_PRESETS.map((p) => (
-                <button
-                  key={p.label}
-                  type="button"
-                  onClick={() => {
-                    setLength(String(p.l));
-                    setWidth(String(p.w));
-                    setHeight(String(p.h));
-                  }}
-                  className="rounded border border-rule bg-surface-tint px-2 py-1 text-[11.5px] text-ink hover:border-silver-line hover:bg-bg-elev"
-                  title={`${p.l} × ${p.w} × ${p.h} in`}
-                >
-                  <span className="font-medium">{p.label}</span>
-                  <span className="ml-1 text-[10.5px] text-ink-3 tabular">
-                    {p.l}×{p.w}×{p.h}
-                  </span>
-                </button>
+                <option key={p.label} value={p.label}>
+                  {p.label} ({p.l}×{p.w}×{p.h} in)
+                </option>
               ))}
-            </div>
+            </select>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
