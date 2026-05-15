@@ -93,10 +93,17 @@ interface PlanItem {
   weight: number | null;
   boxSize: string | null;
   productType: string | null;
+  // The day the package is physically expected to leave the warehouse —
+  // == plan generation date for normal orders, but pushed forward to
+  // next Monday when the Frozen Ship Date Trick fires. Surfaced on the
+  // card so Vladimir can see at a glance when the warehouse needs to
+  // hand it to the carrier.
+  actualShipDay: string | null;
 }
 
 interface PlanResponse {
   planId: string;
+  date: string;
   orders: PlanItem[];
 }
 
@@ -798,6 +805,32 @@ function OrderRow({
                 · Ship by {fmtDate(order.shipBy)}
               </span>
             )}
+            {plan?.actualShipDay && (() => {
+              // Compare against today in America/New_York — the same TZ
+              // /api/shipping/plan uses to pick `actualShipDay`. If they
+              // differ, the Frozen Ship Date Trick fired and the
+              // warehouse worker MUST hold the package until that date.
+              const todayNY = new Intl.DateTimeFormat("en-CA", {
+                timeZone: "America/New_York",
+              }).format(new Date());
+              const isShifted = plan.actualShipDay !== todayNY;
+              return (
+                <span
+                  className={
+                    isShifted
+                      ? "rounded bg-warn-tint px-1.5 py-px text-[11px] font-medium text-warn-strong"
+                      : "text-[11px] text-ink-3"
+                  }
+                  title={
+                    isShifted
+                      ? "Physical ship date pushed by Frozen Ship Date Trick — hand to carrier on this date, not today"
+                      : "Physical ship date"
+                  }
+                >
+                  · 📦 Ship {fmtDate(plan.actualShipDay)}
+                </span>
+              );
+            })()}
           </div>
 
           {/* Items list — each on its own line so multi-item orders read clearly. */}
