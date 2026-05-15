@@ -24,19 +24,21 @@
 - **Alerts band** — SP-API Notifications + Gmail listing-compliance алерты
 
 ### Walmart tab
-- **Hero row:** Walmart Overall · Urgent issues · Item Compliance summary
-- **Performance Standards grid** — 8 метрик:
-  - On-time delivery (30d, ≥90%)
-  - Cancellations (30d, ≤2%)
-  - Valid tracking (30d, ≥99%)
-  - Seller response (30d, ≥95%)
-  - Negative feedback (60d, ≤2%)
-  - Returns (60d, ≤6%)
-  - Item not received (60d, ≤2%)
-  - Late shipment (30d, ≤5%) — NEW upcoming standard
-- **Upcoming Standards section** — Late shipment с подсветкой
-- **Other Metrics row** — Carriers / Regions / Ratings & reviews
-- **Item Compliance table** — drill-down по проблемным листингам
+- **Hero row:** Walmart Overall · Listings needing review · Performance metrics state (live / no-data-yet)
+- **Performance — 30-day window** — 5 карточек:
+  - On-time delivery (≥ 90%)
+  - Cancellations (≤ 2%)
+  - Valid tracking (≥ 99%)
+  - Seller response (≥ 95%)
+  - Late shipment (≤ 1%) — derived as `100 − onTimeShipment.overallRate` (Walmart API returns on-time; UI shows the inverse)
+- **Performance — 60-day window** — 3 карточки:
+  - Negative feedback (≤ 2%)
+  - Returns (≤ 6%)
+  - Item not received (≤ 2%)
+- Каждая карточка: значение + trend-стрелка (Walmart `GREEN_UP/DOWN`, `RED_UP/DOWN`, `NEUTRAL`; для late shipment цвет инвертирован), Walmart-овая риск-метка (`Good/Monitor/Urgent`), updated-timestamp relative
+- **NO_DATA state** — 204 от Walmart → карточка "No data yet" с пояснением "Walmart hasn't accumulated enough orders for this window"
+- **ERROR state** — 4xx/5xx → красная карточка с HTTP-кодом + Walmart error body
+- **Item Compliance table** — drill-down по проблемным листингам (отдельный endpoint, `/v3/items`)
 
 ---
 
@@ -51,11 +53,10 @@
 | ODR / LSR / VTR / OTDR | Account Health API | Selling Partner Insights ✅ |
 
 ### Walmart
-| Что | Walmart endpoint |
-|---|---|
-| 8 performance метрик | `GET /v3/insights/performance` (30d + 60d) |
-| Item Compliance | `GET /v3/items?lifecycleStatus=TROUBLED` / `PUBLISHED_WITH_ERRORS` |
-| Carriers/Regions performance | `GET /v3/insights/performance/carriers` / `regions` |
+| Что | Walmart endpoint | Статус |
+|---|---|---|
+| 10 performance метрик (показываем 8) | `GET /v3/insights/performance/{metric}/summary?reportDuration={N}` — paths: `otd`, `cancellations`, `vtr`, `srr`, `ots`, `negativeFeedback`, `returns`, `inr`, `sfla`, `cma` | ✅ Live (v2 — 2026-05-15) |
+| Item Compliance | `GET /v3/items?lifecycleStatus=TROUBLED` / `PUBLISHED_WITH_ERRORS` | ✅ Live |
 
 ---
 
@@ -94,6 +95,7 @@ Backend и UI собраны и в проде. Текущее состояние
 | Critical Alerts engine + Telegram client | ✅ Live (fallback на `TELEGRAM_CHAT_ID` пока нет `TELEGRAM_ALERT_CHAT_ID`) |
 | Cron: `/api/cron/account-health-amazon` (4h), `/api/cron/account-health-walmart` (24h) | ✅ Зарегистрированы в `vercel.json` |
 | Walmart Items API + per-metric snapshot + alerts | ✅ Live |
+| Walmart Seller Performance v2 (Insights API, 10 endpoints) | ✅ Live (2026-05-15) — `/v3/insights/performance/{metric}/summary`. Late shipment derived in UI from on-time-shipment. См. [walmart-api.md](walmart-api.md) §Seller Performance |
 | Amazon AHR (real-time endpoint) | ⏳ Stub — возвращает `null` пока не одобрена роль SP-API "Selling Partner Insights" |
 | Amazon Policy Compliance (real categories с count > 0 и drill-down details) | ⏳ Stub — 10 категорий рендерятся с count = 0, реальный путь готов (`fetchPolicyComplianceLive`), включается флагом `USE_LIVE` |
 | Существующий ODR / LSR / VTR / OTDR sync | ✅ Live (не трогали — расширили существующий `account-health-sync.ts`) |
@@ -102,4 +104,4 @@ Backend и UI собраны и в проде. Текущее состояние
 
 ---
 
-Последнее обновление: 2026-05-12
+Последнее обновление: 2026-05-15 — Walmart Seller Performance переехал на v2 Insights API (10 endpoints, support для 204 = "No data yet", late shipment вычисляется в UI). Промпт — `docs/CLAUDE_CODE_PROMPT_WALMART_PERFORMANCE_FIX.md`.

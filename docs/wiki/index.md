@@ -25,7 +25,7 @@
 - [Shipping Labels](shipping-labels.md) — план + покупка labels через Veeqo. Полная спец v1.0: [shipping-labels-page-v1.md](shipping-labels-page-v1.md) — dashboard + AI classify + packing profiles (2026-05-12)
 - [Shipment Monitor](shipment-monitor.md) — мониторинг доставок, детекция проблем, подготовка claims (спроектирован, после Phase 1)
 - [Customer Hub](customer-hub.md) — Messages, A-to-Z, Chargebacks, Feedback (в разработке)
-- [Account Health v2.0](account-health-v2.md) — мониторинг Amazon (AHR + Policy Compliance × 10 категорий + ODR/LSR/VTR) + Walmart (8 metrics + Item Compliance), 2 таба, drill-down по нарушениям — 2026-05-12
+- [Account Health v2.0](account-health-v2.md) — мониторинг Amazon (AHR + Policy Compliance × 10 категорий + ODR/LSR/VTR) + Walmart (8 metrics live через Insights API + Item Compliance), 2 таба, drill-down по нарушениям — 2026-05-12, Walmart Performance v2 — 2026-05-15
 - [Critical Alerts Engine](critical-alerts.md) — Telegram + UI push при пересечении критических порогов Amazon/Walmart — 2026-05-12
 - [Account Health (исходный)](account-health.md) — предыдущая версия, оставлена как reference
 - [Frozen Analytics](frozen-analytics.md) — инциденты с frozen, SKU risk profiles
@@ -46,7 +46,7 @@
 - [Veeqo API Quirks](veeqo-api-quirks.md) — подводные камни (10 пунктов): VAS из `shipping_service_options`, tracking_number бывает объектом, order tags → /bulk_tagging, /buy 200 + errors[], Vercel ephemeral disk
 - [Google Drive (PDF этикеток)](google-drive-setup.md) — service-account setup для постоянного хранения этикеток — 2026-05-14
 - [Amazon SP-API](amazon-sp-api.md) — orders, messaging, reports, health, finances
-- [Walmart Marketplace API](walmart-api.md) — orders, returns, recon reports, seller performance (2026-04-18)
+- [Walmart Marketplace API](walmart-api.md) — orders, returns, recon reports, Seller Performance v2 через Insights API (10 per-metric endpoints, 2026-05-15)
 - [Gmail API](gmail-api.md) — buyer messages, chargeback notifications
 - [Carrier Tracking APIs](carrier-tracking-apis.md) — UPS Tracking (FedEx/USPS в планах), реальный carrier ETA + события
 - [Amazon Notifications Map](amazon-notifications-map.md) — маппинг ~30 типов email-уведомлений → модули + Gmail queries

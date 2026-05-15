@@ -217,7 +217,7 @@ Phase 2 planned → sales-analytics-module (полноценная страни�
 
 ### [Account Health v2.0](account-health-v2.md)
 ← [Amazon SP-API](amazon-sp-api.md) — Selling Partner Insights role (AHR + Policy Compliance), Account Health API, Listings Issues API
-← [Walmart API](walmart-api.md) — Seller Performance API + Items API (lifecycleStatus для compliance)
+← [Walmart API](walmart-api.md) — Seller Performance v2 (Insights API: `/v3/insights/performance/{metric}/summary` × 10 metrics) + Items API (lifecycleStatus для compliance)
 ← [Telegram Notifications](telegram-notifications.md) — канал доставки Critical Alerts
 ⇔ [Critical Alerts](critical-alerts.md)
 → [Dashboard](dashboard.md) — счётчик unacknowledged алертов в Health Issues card

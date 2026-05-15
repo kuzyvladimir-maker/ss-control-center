@@ -30,7 +30,7 @@ Status: Active. Full seller access (без Solution Provider delegation).
 | Orders | `/v3/orders`, `/v3/orders/released`, `/v3/orders/{id}` | Заказы, cancel, refund, acknowledge |
 | Returns | `/v3/returns`, `/v3/returns/{id}/refund` | Возвраты и refund по ним |
 | Reports | `/v3/report/reconreport/*` | Reconciliation reports → Adjustments |
-| Seller Performance | `/v3/sellerPerformance/summary` | Метрики → Account Health |
+| Seller Performance | `/v3/insights/performance/{metric}/summary` | Метрики → Account Health (см. ниже) |
 
 ## Используется модулями SS Control Center
 - **Customer Hub** — orders + returns sync (заменяет screenshot-only схему)
@@ -90,5 +90,60 @@ WALMART_API_VERSION=v3
 - **Обновляет:** [Walmart ограничения](walmart-restrictions.md) — убирает "API ключ отсутствует"
 - **См. также:** [Database Schema](database-schema.md) (`WalmartOrder`, `WalmartReconTransaction`, `WalmartPerformanceSnapshot`), [Amazon SP-API](amazon-sp-api.md) (паттерны reused)
 
+## Seller Performance API (Insights category)
+
+**Status:** ✅ Working as of 2026-05-15 (v2)
+**Base URL:** `https://marketplace.walmartapis.com/v3/insights/performance/{metric}/summary`
+**Parameters:** `reportDuration={14|30|60|90}`, optional `shippingMethod={ALL_METHODS|TwoDay|OneDay}` (only on shipping-flavoured metrics)
+**Previous shape:** `/v3/sellerPerformance/summary?windowDays=...` — gone, returns 404. Don't re-introduce.
+
+### Metric paths
+
+| Metric                       | URL segment        | Default window | shippingMethod | Rate field         |
+|------------------------------|--------------------|----------------|----------------|--------------------|
+| On-time delivery             | `otd`              | 30             | yes            | `overallRate`      |
+| Cancellations                | `cancellations`    | 30             | no             | `cumulativeRate`   |
+| Valid tracking               | `vtr`              | 30             | yes            | `cumulativeRate`   |
+| Seller response              | `srr`              | 30             | no             | `overallRate`      |
+| On-time shipment             | `ots`              | 30             | yes            | `overallRate`      |
+| Negative feedback            | `negativeFeedback` | 60             | no             | `cumulativeRate`   |
+| Returns                      | `returns`          | 60             | no             | `cumulativeRate`   |
+| Item not received            | `inr`              | 60             | no             | `cumulativeRate`   |
+| Ship-from accuracy           | `sfla`             | 30             | no             | `overallRate`      |
+| Carrier method accuracy      | `cma`              | 30             | no             | `overallRate`      |
+| ~~Refunds~~                  | ~~`refunds`~~      | —              | —              | DEPRECATED — skip  |
+
+The response splits into two shapes — "overall-style" carries
+`overallRate` + `overallTrend`; "cumulative-style" carries
+`cumulativeRate` + `cumulativeRateTrend`. The mapping above tells the
+parser which key to read per metric. See `src/lib/walmart/seller-performance.ts`.
+
+### HTTP statuses
+
+| Status | Meaning | Action |
+|---|---|---|
+| 200 | Data returned | Parse, write WalmartPerformanceSnapshot |
+| 204 | No data yet (new account / insufficient orders) | Surface as "No data yet" in UI, NOT an error |
+| 400 | Bad parameter | Check `reportDuration` |
+| 401 | Auth | Client refreshes token + retries once |
+| 403 | Scope missing | Hit `/v3/token/detail` to inspect scopes |
+| 404 | Wrong URL | Should not happen with paths above |
+| 429 | Rate limit | Exponential backoff w/ jitter |
+
+### Code path
+- `fetchAllPerformanceMetrics(client)` — fans out the 10 endpoints via `Promise.allSettled`. Per-metric failures don't kill the rest.
+- `persistPerformanceSnapshots(prisma, storeIndex, data)` — writes one `WalmartPerformanceSnapshot` row per metric, computes `isHealthy` against the published Walmart thresholds, buckets `status` (GOOD/MONITOR/URGENT/NO_DATA/ERROR), emits the flat `{onTimeDelivery30d: 91.2, ...}` map for the critical alerts evaluator.
+- Owned by `/api/cron/account-health-walmart` (daily 03:00 UTC). Walmart refreshes datasets ~24h on their side, so daily is the right cadence.
+- Diagnostics: admin-only `POST /api/settings/walmart-diagnose` probes `/v3/token/detail` + the legacy paths to confirm scopes when something breaks.
+
+### Headers (every call)
+```
+WM_SEC.ACCESS_TOKEN: <access_token>
+WM_QOS.CORRELATION_ID: <UUID — unique PER request, otherwise Walmart silently dedupes>
+WM_SVC.NAME: Walmart Marketplace
+Accept: application/json
+```
+
 ## История
 - 2026-04-18: Wiki-статья создана. API ключ получен, начата интеграция. Промпт для Claude Code — `docs/CLAUDE_CODE_PROMPT_WALMART_API_INTEGRATION.md`
+- 2026-05-15: Seller Performance v2 — переход с `/v3/sellerPerformance/*` на `/v3/insights/performance/{metric}/summary`. 10 параллельных endpoints, поддержка 204 = "No data yet", late-shipment = 100 − on-time-shipment в UI слое. Промпт — `docs/CLAUDE_CODE_PROMPT_WALMART_PERFORMANCE_FIX.md`.
