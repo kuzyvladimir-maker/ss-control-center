@@ -95,7 +95,18 @@ function formatTime(date: string | null | undefined): string {
   if (!date) return "—";
   const d = new Date(date);
   if (isNaN(d.getTime())) return "—";
-  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  // Veeqo's `due_date` is a date with a default UTC time (06:59:00Z) — so
+  // rendering only the time made every row read "2:59 AM" in ET regardless
+  // of which day was actually due. Show the date instead: "Fri, May 16".
+  // Format keeps room for the year only if it isn't the current year.
+  const now = new Date();
+  const sameYear = d.getFullYear() === now.getFullYear();
+  return d.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    ...(sameYear ? {} : { year: "numeric" }),
+  });
 }
 
 function timeAgo(iso: string): string {
@@ -208,11 +219,19 @@ export default function DashboardPage() {
           o.channel?.name?.toLowerCase().includes("walmart")
             ? "Walmart"
             : "Amazon";
+        // Veeqo doesn't expose a nested `store` object on order payloads —
+        // the seller account name lives in `channel.name` (e.g. "Salutem
+        // Solutions", "Vladimir Personal"). Falling back to it stops the
+        // Store column rendering "—" on every row.
         return {
           id: String(o.number ?? o.id ?? ""),
           amazonOrderId: o.number ?? null,
           storeIndex: null,
-          storeName: o.store?.name ?? o.store_name ?? null,
+          storeName:
+            o.store?.name ??
+            o.store_name ??
+            o.channel?.name ??
+            null,
           marketplace: channel,
           productName,
           productType: isFrozen ? "Frozen" : isDry ? "Dry" : null,

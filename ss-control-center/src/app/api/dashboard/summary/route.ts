@@ -157,11 +157,24 @@ export async function GET(request: NextRequest) {
         _sum: { adjustmentAmount: true },
         where: { createdAt: { gte: thirtyDaysAgo } },
       }),
+      // S1 / S2 counts MUST share the same purchaseDate window as the
+      // total Orders 30d card. Previously these omitted the date filter
+      // and reported all-time counts, which broke the math on the card
+      // (S1=1132 > total=746). Match the window so S1 + S2 + others
+      // adds up to the headline number.
       prisma.amazonOrder.count({
-        where: { storeIndex: 1, ...amazonStoreFilter },
+        where: {
+          storeIndex: 1,
+          purchaseDate: { gte: thirtyDaysAgo },
+          ...amazonStoreFilter,
+        },
       }),
       prisma.amazonOrder.count({
-        where: { storeIndex: 2, ...amazonStoreFilter },
+        where: {
+          storeIndex: 2,
+          purchaseDate: { gte: thirtyDaysAgo },
+          ...amazonStoreFilter,
+        },
       }),
       walmartSelected
         ? prisma.walmartOrder.count({
