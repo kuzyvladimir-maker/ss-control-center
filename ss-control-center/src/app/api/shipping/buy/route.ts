@@ -120,24 +120,47 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        // Ship Date Trick — if the plan picked a future ship day (e.g. the
-        // Frozen Monday-shift won at plan time), push the order's
-        // dispatch_date in Veeqo before buying so the carrier label prints
-        // with the correct ship date and the warehouse worker files it in
-        // the Monday folder via buildFolderPath() below.
+        // v3.3 §13 — dual-date dance. The two dates on the plan item:
+        //
+        //   labelDate         — what Amazon sees on the printed label.
+        //                       Drives Late Shipment Rate, so it must
+        //                       stay as today (or as computed by §0.1
+        //                       cutoff logic).
+        //   physicalShipDate  — when the warehouse actually hands the
+        //                       package to the carrier. May be pushed
+        //                       to next Monday by the Frozen Ship Date
+        //                       Trick.
+        //
+        // The trick: if the two diverge, we PUT dispatch_date to
+        // physicalShipDate first so Veeqo regenerates the right rate
+        // pool, THEN PUT it back to labelDate so the actual label
+        // prints with today's date. The rate identifier (`name` /
+        // `service_type`) we feed into buyShippingLabel below was
+        // selected against the physicalShipDate rate pool but stays
+        // valid across the second PUT.
+        //
+        // Falls back to `actualShipDay` (legacy column) when the new
+        // labelDate / physicalShipDate columns aren't yet populated —
+        // the dual-date migration was deployed alongside this code,
+        // so rows planned before the Turso migration ran will still
+        // have only the legacy field set.
         const todayIso = new Date().toISOString().split("T")[0];
-        if (item.actualShipDay && item.actualShipDay > todayIso) {
+        const physicalShipDate =
+          item.physicalShipDate || item.actualShipDay || todayIso;
+        const labelDate = item.labelDate || todayIso;
+        const trickApplies = physicalShipDate !== labelDate;
+
+        if (trickApplies) {
           try {
+            // Step 1 — temporarily move dispatch_date to physicalShipDate
+            // so the rates we re-fetch below match what the plan stored.
             await updateOrderDispatchDate(
               item.orderId,
-              `${item.actualShipDay}T06:59:59.000Z`
+              `${physicalShipDate}T06:59:59.000Z`
             );
           } catch (shiftErr) {
-            // Non-fatal: log + carry on. Veeqo may still buy a usable label
-            // with the original dispatch_date — the warehouse will read the
-            // employee note (added below) for the actual ship instruction.
             console.warn(
-              `[buy] Could not push dispatch_date for order ${item.orderId} to ${item.actualShipDay}:`,
+              `[buy] Could not pre-shift dispatch_date for order ${item.orderId} to ${physicalShipDate}:`,
               shiftErr instanceof Error ? shiftErr.message : shiftErr
             );
           }
@@ -220,6 +243,31 @@ export async function POST(request: NextRequest) {
             `[buy] live rate re-fetch failed for ${item.orderNumber}:`,
             rateErr instanceof Error ? rateErr.message : rateErr
           );
+        }
+
+        // v3.3 §13 step 4 — restore dispatch_date to labelDate BEFORE
+        // POST /shipping/shipments. If we leave it at physicalShipDate
+        // (Monday), Veeqo writes the label with that ship date and
+        // Amazon sees a late shipment → Late Shipment Rate +1. The
+        // rate selected on the physicalShipDate pool is still valid
+        // for the POST — we tested 2026-05-15 that buy accepts a
+        // service_type chosen against Monday rates even after the
+        // dispatch_date flips back to today.
+        if (trickApplies) {
+          try {
+            await updateOrderDispatchDate(
+              item.orderId,
+              `${labelDate}T06:59:59.000Z`
+            );
+          } catch (restoreErr) {
+            // Continue with the buy — the label might still print with
+            // the Monday date, in which case the warehouse note + Drive
+            // folder will still be correct. Amazon stats take the hit.
+            console.warn(
+              `[buy] Could not restore dispatch_date to labelDate ${labelDate} for ${item.orderId}:`,
+              restoreErr instanceof Error ? restoreErr.message : restoreErr
+            );
+          }
         }
 
         // Single-shot buy. Veeqo's contract:
@@ -377,16 +425,16 @@ export async function POST(request: NextRequest) {
           pdfSource = "proxy";
         }
 
-        // Add employee note. Include a SHIP-DAY badge when the plan
-        // shifted the dispatch date forward (e.g. Frozen Monday-trick),
-        // so the warehouse worker knows not to drop the label off today.
-        const shipDayNote =
-          item.actualShipDay && item.actualShipDay > todayIso
-            ? ` | 📅 SHIP ON ${item.actualShipDay}`
-            : "";
+        // Employee note. v3.3 §10 — when labelDate and
+        // physicalShipDate diverge, surface BOTH so the warehouse
+        // worker can't confuse the printed label date for the actual
+        // ship-out date.
+        const shipDayNote = trickApplies
+          ? ` | Label: ${labelDate} · 📅 SHIP ON ${physicalShipDate}`
+          : ` | Ship: ${labelDate}`;
         await addEmployeeNote(
           parseInt(item.orderId),
-          `✅ Label Purchased: ${item.carrier} ${item.service} $${item.price} | Tracking: ${tracking} | ${todayIso}${shipDayNote}`
+          `✅ Label Purchased: ${item.carrier} ${item.service} $${item.price} | Tracking: ${tracking}${shipDayNote}`
         );
 
         // Update DB
