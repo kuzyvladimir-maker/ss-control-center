@@ -93,11 +93,19 @@ interface PlanItem {
   weight: number | null;
   boxSize: string | null;
   productType: string | null;
-  // The day the package is physically expected to leave the warehouse —
-  // == plan generation date for normal orders, but pushed forward to
-  // next Monday when the Frozen Ship Date Trick fires. Surfaced on the
-  // card so Vladimir can see at a glance when the warehouse needs to
-  // hand it to the carrier.
+  // v3.3 dual-date model — surface both on the card so Vladimir can
+  // see at a glance what Amazon will see (labelDate) and when the
+  // warehouse hands the package off (physicalShipDate). They differ
+  // when the Frozen Ship Date Trick has fired.
+  //   shipDateTrickApplied = !datesMatch
+  // We carry both flags so the UI can pick whichever reads better.
+  labelDate: string | null;
+  physicalShipDate: string | null;
+  shipDateTrickApplied: boolean;
+  datesMatch: boolean;
+  // Legacy column — same value as physicalShipDate for new plans.
+  // Kept on the type so older bought rows (planned before the
+  // dual-date migration) still render their ship day.
   actualShipDay: string | null;
 }
 
@@ -805,30 +813,56 @@ function OrderRow({
                 · Ship by {fmtDate(order.shipBy)}
               </span>
             )}
-            {plan?.actualShipDay && (() => {
-              // Compare against today in America/New_York — the same TZ
-              // /api/shipping/plan uses to pick `actualShipDay`. If they
-              // differ, the Frozen Ship Date Trick fired and the
-              // warehouse worker MUST hold the package until that date.
-              const todayNY = new Intl.DateTimeFormat("en-CA", {
-                timeZone: "America/New_York",
-              }).format(new Date());
-              const isShifted = plan.actualShipDay !== todayNY;
+            {plan && (() => {
+              // v3.3 §0.1 dual-date display.
+              //
+              //   Same dates  → single neutral "Ship X" chip.
+              //   Different   → "Label X · 📦 Physical Y" with the
+              //                 Physical half highlighted because the
+              //                 warehouse MUST hold the package until
+              //                 that date, even though the printed
+              //                 label says X.
+              //
+              // Falls back to actualShipDay for rows planned before
+              // the dual-date migration ran (labelDate / physicalShipDate
+              // null but actualShipDay populated).
+              const labelDate = plan.labelDate ?? plan.actualShipDay;
+              const physicalShipDate =
+                plan.physicalShipDate ?? plan.actualShipDay;
+              if (!labelDate && !physicalShipDate) return null;
+
+              const trickApplied =
+                plan.shipDateTrickApplied ||
+                (!!labelDate &&
+                  !!physicalShipDate &&
+                  labelDate !== physicalShipDate);
+
+              if (!trickApplied) {
+                return (
+                  <span
+                    className="text-[11px] text-ink-3"
+                    title="Label date and physical ship date are the same"
+                  >
+                    · 📦 Ship {fmtDate(physicalShipDate ?? labelDate ?? "")}
+                  </span>
+                );
+              }
+
               return (
-                <span
-                  className={
-                    isShifted
-                      ? "rounded bg-warn-tint px-1.5 py-px text-[11px] font-medium text-warn-strong"
-                      : "text-[11px] text-ink-3"
-                  }
-                  title={
-                    isShifted
-                      ? "Physical ship date pushed by Frozen Ship Date Trick — hand to carrier on this date, not today"
-                      : "Physical ship date"
-                  }
-                >
-                  · 📦 Ship {fmtDate(plan.actualShipDay)}
-                </span>
+                <>
+                  <span
+                    className="text-[11px] text-ink-3"
+                    title="Date Amazon sees on the label (drives Late Shipment Rate)"
+                  >
+                    · Label {fmtDate(labelDate ?? "")}
+                  </span>
+                  <span
+                    className="rounded bg-warn-tint px-1.5 py-px text-[11px] font-medium text-warn-strong"
+                    title="Physical ship date pushed by Frozen Ship Date Trick — hand to carrier on this date, not today"
+                  >
+                    · 📦 Physical {fmtDate(physicalShipDate ?? "")}
+                  </span>
+                </>
               );
             })()}
           </div>
