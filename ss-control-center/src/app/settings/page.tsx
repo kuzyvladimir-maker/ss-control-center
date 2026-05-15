@@ -1320,6 +1320,203 @@ function AiProvidersPanel() {
   );
 }
 
+interface TelegramDiscoverResp {
+  current: {
+    defaultChatId: string | null;
+    alertChatId: string | null;
+    alertThreadId: string | null;
+    procurementChatId: string | null;
+  };
+  discovered: Array<{
+    chatId: number;
+    chatTitle: string;
+    chatType: string;
+    hasTopics: boolean;
+    threadId: number | null;
+    topicName: string | null;
+    lastMessageAt: string;
+    lastMessageText: string;
+    lastMessageFrom: string;
+  }>;
+  instructions: string;
+  error?: string;
+}
+
+function TelegramRoutingPanel() {
+  const [data, setData] = useState<TelegramDiscoverResp | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function discover() {
+    setLoading(true);
+    setError(null);
+    try {
+      const r = await fetch("/api/settings/telegram-discover");
+      const j = await r.json();
+      if (!r.ok) {
+        setError(j.error || `HTTP ${r.status}`);
+        setData(null);
+      } else {
+        setData(j as TelegramDiscoverResp);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Fetch the current routing config once on mount so the operator can see
+  // it without having to press Discover.
+  useEffect(() => {
+    void discover();
+  }, []);
+
+  const c = data?.current;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Telegram notifications</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3 text-sm">
+          <ConfigRow
+            label="Default chat (TELEGRAM_CHAT_ID)"
+            value={c?.defaultChatId}
+            hint="legacy DM target — used as fallback only"
+          />
+          <ConfigRow
+            label="Critical alerts chat (TELEGRAM_ALERT_CHAT_ID)"
+            value={c?.alertChatId}
+            hint="set this to a group id like -100123… to route Account Health alerts to the group"
+            highlight={!c?.alertChatId}
+          />
+          <ConfigRow
+            label="Critical alerts topic (TELEGRAM_ALERT_THREAD_ID)"
+            value={c?.alertThreadId}
+            hint="optional — only when the alerts chat is a group with topics enabled"
+          />
+          <ConfigRow
+            label="Procurement chat (TELEGRAM_PROCUREMENT_CHAT_ID)"
+            value={c?.procurementChatId}
+            hint="optional — separate destination for procurement priority pings"
+          />
+
+          <Separator />
+
+          <div className="text-xs text-ink-2 space-y-1">
+            <div className="font-medium text-ink">
+              How to route alerts to a group topic
+            </div>
+            <ol className="list-decimal pl-5 space-y-0.5">
+              <li>Add the bot to the group as an admin (so it can read messages).</li>
+              <li>Enable Topics in the group settings, then open the topic you want alerts to land in.</li>
+              <li>Send any message in that topic (a plain &quot;hi&quot; is enough).</li>
+              <li>Press <em>Discover</em> below — Telegram will surface the chat / topic id pair.</li>
+              <li>Copy the values into Vercel env vars <code>TELEGRAM_ALERT_CHAT_ID</code> + <code>TELEGRAM_ALERT_THREAD_ID</code> and redeploy.</li>
+            </ol>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={discover} disabled={loading}>
+              {loading ? (
+                <Loader2 size={12} className="animate-spin mr-1" />
+              ) : (
+                <RefreshCw size={12} className="mr-1" />
+              )}
+              Discover Telegram IDs
+            </Button>
+            {error && (
+              <span className="text-xs text-danger">{error}</span>
+            )}
+          </div>
+
+          {data && data.discovered.length > 0 && (
+            <div className="rounded-md border border-rule overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead className="bg-surface-tint text-ink-3">
+                  <tr>
+                    <th className="px-2 py-1.5 text-left font-medium">Chat title</th>
+                    <th className="px-2 py-1.5 text-left font-medium">Chat ID</th>
+                    <th className="px-2 py-1.5 text-left font-medium">Topic</th>
+                    <th className="px-2 py-1.5 text-left font-medium">Thread ID</th>
+                    <th className="px-2 py-1.5 text-left font-medium">Last message</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.discovered.map((e, i) => (
+                    <tr
+                      key={i}
+                      className="border-t border-rule"
+                    >
+                      <td className="px-2 py-1.5 text-ink">
+                        {e.chatTitle}
+                        <span className="ml-1 text-[10px] text-ink-3">
+                          ({e.chatType})
+                        </span>
+                      </td>
+                      <td className="px-2 py-1.5 font-mono">{e.chatId}</td>
+                      <td className="px-2 py-1.5 text-ink">
+                        {e.topicName ?? (e.threadId ? "(unnamed topic)" : "—")}
+                      </td>
+                      <td className="px-2 py-1.5 font-mono">
+                        {e.threadId ?? "—"}
+                      </td>
+                      <td className="px-2 py-1.5 text-ink-3">
+                        {e.lastMessageFrom}: {e.lastMessageText || "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {data && data.discovered.length === 0 && !error && (
+            <div className="text-xs text-ink-3">{data.instructions}</div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ConfigRow({
+  label,
+  value,
+  hint,
+  highlight,
+}: {
+  label: string;
+  value: string | null | undefined;
+  hint?: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-ink-2">{label}</span>
+        {value ? (
+          <code className="rounded bg-bg-elev px-2 py-0.5 text-xs">
+            {value}
+          </code>
+        ) : (
+          <Badge
+            className={
+              highlight
+                ? "bg-warn-tint text-warn-strong"
+                : "bg-bg-elev text-ink-3"
+            }
+          >
+            not set
+          </Badge>
+        )}
+      </div>
+      {hint && <div className="mt-0.5 text-[11px] text-ink-3">{hint}</div>}
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const [connections, setConnections] = useState<ConnectionStatus[]>([
     { name: "Veeqo", status: "checking" },
@@ -1554,28 +1751,7 @@ export default function SettingsPage() {
 
         <LossSettingsPanel />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Notifications</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-ink-2">Telegram Chat ID</span>
-                <code className="rounded bg-bg-elev px-2 py-1 text-xs">
-                  486456466
-                </code>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-ink-2">
-                  Notifications enabled
-                </span>
-                <Badge className="bg-green-soft2 text-green-ink">Active</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <TelegramRoutingPanel />
 
         <Card>
           <CardHeader>
