@@ -103,38 +103,22 @@ export async function GET(request: NextRequest) {
     (sum, r) => sum + r.policyCategories.reduce((s, p) => s + p.count, 0),
     0
   );
-  // A store is "at risk" by Amazon's deactivation criteria, NOT "at risk"
-  // in the broad sense. The line is:
-  //   - AHR < 200  (deactivation threshold per Amazon docs / Seller Central)
-  //   - OR a hard shipping/ODR threshold is breached (ODR ≥ 1%, LSR ≥ 4%,
-  //     Cancel ≥ 2.5%, VTR ≤ 95%, OTDR ≤ 90%)
-  //   - OR any policy category has an open violation
-  // AHR in the 200–399 "warned" band is NOT at-risk here — it's a warning
-  // but Amazon doesn't deactivate over it.
+  // "At Risk" mirrors Amazon's actual deactivation rule: AHR < 200 and
+  // nothing else. Open policy violations, ODR/LSR/VTR/OTDR breaches and
+  // cancel-rate spikes all feed into Amazon's AHR algorithm — if any of
+  // them are bad enough to put the account at risk, the AHR will drop
+  // below 200 and the store will be counted here. Counting those
+  // metrics again on top of AHR double-counts and produces the "3 of 4
+  // need action" alarm even when every store is above the 200 line.
+  // Vladimir confirmed this is the wrong framing 2026-05-15.
   const breaches = result.filter((r) => {
     const snap = r.snapshot as
-      | {
-          lateShipmentRate30d?: number;
-          validTrackingRate?: number;
-          onTimeDeliveryRate?: number;
-          orderDefectRate?: number;
-          preFulfillmentCancelRate?: number;
-          accountHealthRating?: number | null;
-        }
+      | { accountHealthRating?: number | null }
       | null;
     if (!snap) return false;
-    const ahrCritical =
-      typeof snap.accountHealthRating === "number" &&
-      snap.accountHealthRating < 200;
-    const policyHot = r.policyCategories.some((p) => p.count > 0);
     return (
-      ahrCritical ||
-      policyHot ||
-      (snap.orderDefectRate ?? 0) >= 1 ||
-      (snap.lateShipmentRate30d ?? 0) >= 4 ||
-      (snap.preFulfillmentCancelRate ?? 0) >= 2.5 ||
-      (snap.validTrackingRate ?? 100) <= 95 ||
-      (snap.onTimeDeliveryRate ?? 100) <= 90
+      typeof snap.accountHealthRating === "number" &&
+      snap.accountHealthRating < 200
     );
   }).length;
 
