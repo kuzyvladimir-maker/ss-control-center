@@ -17,7 +17,7 @@
 // the build, this endpoint is the bridge — POST it once after each
 // schema change ships and you're good.
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_RULES } from "@/lib/frozen-analytics/default-rules";
 
@@ -139,31 +139,45 @@ function isSkippable(err: unknown): boolean {
   return SKIPPABLE_ERROR_FRAGMENTS.some((f) => msg.includes(f));
 }
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  // Two modes:
+  //   default       — run schema migration (idempotent) and seed any missing
+  //                   rules. Existing rules untouched.
+  //   ?mode=reset-rules — overwrite all FrozenRule rows with current
+  //                   DEFAULT_RULES. Used when we ship new thresholds and
+  //                   want Vladimir to refresh the seeded values without
+  //                   touching the schema.
+  const mode = request.nextUrl.searchParams.get("mode") ?? "default";
+  const isResetRules = mode === "reset-rules";
+
   const applied: string[] = [];
   const idempotentSkips: string[] = [];
   const failures: Array<{ label: string; error: string }> = [];
 
-  for (const stmt of MIGRATION_STATEMENTS) {
-    try {
-      await prisma.$executeRawUnsafe(stmt.sql);
-      applied.push(stmt.label);
-    } catch (err) {
-      if (isSkippable(err)) {
-        idempotentSkips.push(stmt.label);
-      } else {
-        failures.push({
-          label: stmt.label,
-          error: err instanceof Error ? err.message : String(err),
-        });
+  if (!isResetRules) {
+    for (const stmt of MIGRATION_STATEMENTS) {
+      try {
+        await prisma.$executeRawUnsafe(stmt.sql);
+        applied.push(stmt.label);
+      } catch (err) {
+        if (isSkippable(err)) {
+          idempotentSkips.push(stmt.label);
+        } else {
+          failures.push({
+            label: stmt.label,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
       }
     }
   }
 
-  // If the FrozenRule table itself exists (either freshly created or pre-
-  // existing), run the seed. We use upsert so re-runs don't clobber any
-  // tuning Vladimir has already applied.
+  // Rule seed.
+  // - default mode: create-if-missing (preserves any tuning).
+  // - reset-rules mode: upsert with current default values (overwrites
+  //   thresholds, recommendation text, priority — preserves rule id).
   let rulesCreated = 0;
+  let rulesUpdated = 0;
   let rulesSkipped = 0;
   let seedError: string | null = null;
   try {
@@ -172,7 +186,24 @@ export async function POST() {
         where: { ruleCode: r.ruleCode },
       });
       if (existing) {
-        rulesSkipped++;
+        if (isResetRules) {
+          await prisma.frozenRule.update({
+            where: { ruleCode: r.ruleCode },
+            data: {
+              description: r.description,
+              conditions: JSON.stringify(r.conditions),
+              riskLevel: r.riskLevel ?? null,
+              modifier: r.modifier ?? null,
+              recommendation: r.recommendation,
+              priority: r.priority,
+              ruleType: r.ruleType,
+              enabled: true,
+            },
+          });
+          rulesUpdated++;
+        } else {
+          rulesSkipped++;
+        }
         continue;
       }
       await prisma.frozenRule.create({
@@ -196,13 +227,17 @@ export async function POST() {
   return NextResponse.json(
     {
       ok: failures.length === 0 && !seedError,
-      schema: {
-        applied,
-        idempotentSkips,
-        failures,
-      },
+      mode,
+      schema: isResetRules
+        ? null
+        : {
+            applied,
+            idempotentSkips,
+            failures,
+          },
       rules: {
         created: rulesCreated,
+        updated: rulesUpdated,
         skippedExisting: rulesSkipped,
         error: seedError,
       },

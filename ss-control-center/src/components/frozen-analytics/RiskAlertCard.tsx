@@ -4,9 +4,11 @@
 // Visual: tinted left rail, weather strip, recommendations list, footer
 // actions. Wording is dense and operator-style (no marketing tone).
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Check, X, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { Btn } from "@/components/kit";
+import { formatTemp, formatAnomaly } from "@/lib/units";
+import { regenerateRecommendations } from "@/lib/frozen-analytics/format-recommendations";
 
 export interface RiskAlert {
   id: string;
@@ -71,11 +73,6 @@ const RAIL: Record<string, { bg: string; rail: string; text: string }> = {
   },
 };
 
-function formatTemp(t: number | null | undefined): string {
-  if (t == null || Number.isNaN(t)) return "—";
-  return `${Math.round(t)}°F`;
-}
-
 export default function RiskAlertCard({
   alert,
   onUpdate,
@@ -88,6 +85,15 @@ export default function RiskAlertCard({
   const [notes, setNotes] = useState(alert.userNotes ?? "");
 
   const palette = RAIL[alert.riskLevel] ?? RAIL.medium;
+
+  // Recommendations are rebuilt client-side so they always reflect the
+  // current display unit (°C by default). The server-stored
+  // alert.recommendations field is kept as a historical snapshot but not
+  // shown directly to avoid stale unit text.
+  const recommendations = useMemo(
+    () => regenerateRecommendations(alert),
+    [alert],
+  );
 
   async function patchStatus(
     status: "applied" | "ignored",
@@ -183,8 +189,7 @@ export default function RiskAlertCard({
                           : "var(--ink-3)",
                     }}
                   >
-                    {alert.originAnomalyF >= 0 ? "+" : ""}
-                    {Math.round(alert.originAnomalyF)}°
+                    {formatAnomaly(alert.originAnomalyF)}
                   </span>
                 )}
               </div>
@@ -210,8 +215,7 @@ export default function RiskAlertCard({
                           : "var(--ink-3)",
                     }}
                   >
-                    {alert.destAnomalyF >= 0 ? "+" : ""}
-                    {Math.round(alert.destAnomalyF)}°
+                    {formatAnomaly(alert.destAnomalyF)}
                   </span>
                 )}
               </div>
@@ -248,11 +252,12 @@ export default function RiskAlertCard({
         </div>
       </div>
 
-      {/* Recommendations */}
-      {alert.recommendations.length > 0 && (
+      {/* Recommendations — regenerated client-side so units always match the
+          current display preference (°C by default). */}
+      {recommendations.length > 0 && (
         <div className="px-3.5 pb-3">
           <ul className="space-y-1 text-[12.5px] text-ink-2">
-            {alert.recommendations.map((r, i) => (
+            {recommendations.map((r, i) => (
               <li key={i} className="flex gap-2">
                 <span
                   className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full"

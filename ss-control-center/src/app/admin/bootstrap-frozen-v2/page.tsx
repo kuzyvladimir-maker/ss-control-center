@@ -10,29 +10,35 @@ import { Check, AlertTriangle } from "lucide-react";
 
 interface BootstrapResult {
   ok: boolean;
+  mode?: string;
   schema?: {
     applied: string[];
     idempotentSkips: string[];
     failures: Array<{ label: string; error: string }>;
-  };
+  } | null;
   rules?: {
     created: number;
+    updated?: number;
     skippedExisting: number;
     error: string | null;
   };
 }
 
+type Mode = "default" | "reset-rules";
+
 export default function BootstrapFrozenV2Page() {
-  const [running, setRunning] = useState(false);
+  const [running, setRunning] = useState<Mode | null>(null);
   const [result, setResult] = useState<BootstrapResult | null>(null);
 
-  async function run() {
-    setRunning(true);
+  async function run(mode: Mode) {
+    setRunning(mode);
     setResult(null);
     try {
-      const res = await fetch("/api/admin/bootstrap-frozen-v2", {
-        method: "POST",
-      });
+      const url =
+        mode === "reset-rules"
+          ? "/api/admin/bootstrap-frozen-v2?mode=reset-rules"
+          : "/api/admin/bootstrap-frozen-v2";
+      const res = await fetch(url, { method: "POST" });
       const data = (await res.json()) as BootstrapResult;
       setResult(data);
     } catch (err) {
@@ -50,7 +56,7 @@ export default function BootstrapFrozenV2Page() {
         },
       });
     } finally {
-      setRunning(false);
+      setRunning(null);
     }
   }
 
@@ -93,11 +99,44 @@ export default function BootstrapFrozenV2Page() {
           <div className="mt-4">
             <Btn
               variant="primary"
-              onClick={run}
-              loading={running}
-              icon={!running ? <Check size={14} /> : undefined}
+              onClick={() => run("default")}
+              loading={running === "default"}
+              disabled={running !== null}
+              icon={running !== "default" ? <Check size={14} /> : undefined}
             >
-              {running ? "Running…" : "Run bootstrap"}
+              {running === "default" ? "Running…" : "Run bootstrap"}
+            </Btn>
+          </div>
+        </PanelBody>
+      </Panel>
+
+      <Panel>
+        <PanelHeader title="Reset rules to v2 defaults" />
+        <PanelBody>
+          <p className="text-[13px] text-ink-2">
+            Overwrites the 10 rules in <code className="font-mono">FrozenRule</code>{" "}
+            with the current default thresholds shipped with the code. Use this
+            after a code update that changes thresholds (e.g. switching to
+            Vladimir&rsquo;s empirical 30°C / 32°C / 35°C boundaries). The
+            schema is NOT touched — only the rule rows.
+          </p>
+          <p className="mt-2 text-[12px] text-ink-3">
+            After reset, open{" "}
+            <a className="underline" href="/frozen-analytics">
+              /frozen-analytics
+            </a>{" "}
+            and press <b>Run analysis</b> so existing alerts get re-scored
+            against the new thresholds.
+          </p>
+          <div className="mt-4">
+            <Btn
+              variant="danger"
+              onClick={() => run("reset-rules")}
+              loading={running === "reset-rules"}
+              disabled={running !== null}
+              icon={running !== "reset-rules" ? <AlertTriangle size={14} /> : undefined}
+            >
+              {running === "reset-rules" ? "Resetting…" : "Reset rules"}
             </Btn>
           </div>
         </PanelBody>
@@ -206,7 +245,14 @@ export default function BootstrapFrozenV2Page() {
                   Rules
                 </div>
                 <div className="text-ink-2">
-                  Created <b className="text-ink">{result.rules.created}</b> · already present{" "}
+                  Created <b className="text-ink">{result.rules.created}</b>
+                  {result.rules.updated != null && (
+                    <>
+                      {" "}· overwritten{" "}
+                      <b className="text-ink">{result.rules.updated}</b>
+                    </>
+                  )}
+                  {" "}· already present{" "}
                   <b className="text-ink">{result.rules.skippedExisting}</b>
                 </div>
                 {result.rules.error && (
