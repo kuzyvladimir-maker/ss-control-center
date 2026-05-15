@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import {
   Loader2,
   DollarSign,
@@ -8,6 +10,7 @@ import {
   TrendingUp,
   Package,
   RefreshCw,
+  X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +27,13 @@ interface SalesData {
   };
   dailyRevenue: { date: string; revenue: number; orders: number }[];
   byStatus: { status: string; count: number }[];
+  period?: {
+    days: number;
+    label: string;
+    kind: "today" | "yesterday" | "mtd" | "lastMonth" | "forecast" | "days";
+    from?: string;
+    to?: string;
+  };
 }
 
 interface StoreInfo {
@@ -43,6 +53,13 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AnalyticsPage() {
+  const searchParams = useSearchParams();
+  // Dashboard Sales cards link here with `?period=today|yesterday|mtd|
+  // lastMonth|forecast`. When that's present we scope the API call to
+  // the named window and hide the rolling-days selector. Otherwise the
+  // page behaves as before (Last 30 days etc).
+  const period = searchParams.get("period");
+
   const [mounted, setMounted] = useState(false);
   const [stores, setStores] = useState<StoreInfo[]>([]);
   const [activeStore, setActiveStore] = useState(0); // 0 = all stores
@@ -68,7 +85,12 @@ export default function AnalyticsPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ days: String(days) });
+      const params = new URLSearchParams();
+      if (period) {
+        params.set("period", period);
+      } else {
+        params.set("days", String(days));
+      }
       if (activeStore > 0) params.set("store", String(activeStore));
       const res = await fetch(`/api/analytics/sales?${params}`);
       setData(await res.json());
@@ -77,7 +99,7 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  }, [activeStore, days]);
+  }, [activeStore, days, period]);
 
   useEffect(() => {
     if (mounted) fetchData();
@@ -92,21 +114,36 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-ink">
-          Sales Analytics
-        </h1>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg font-semibold text-ink">Sales Analytics</h1>
+          {period && data?.period && (
+            // Show what window we're scoped to + a "clear" link back to
+            // the default rolling-days view. Lets the operator know the
+            // page is filtered (they got here from a dashboard tile).
+            <Link
+              href="/analytics"
+              className="inline-flex items-center gap-1 rounded-md bg-green-soft px-2 py-0.5 text-[11px] font-medium text-green-ink hover:bg-green-soft2"
+              title="Clear filter — switch back to rolling window"
+            >
+              {data.period.label}
+              <X size={11} />
+            </Link>
+          )}
+        </div>
         <div className="flex items-center gap-2">
-          <select
-            value={days}
-            onChange={(e) => setDays(parseInt(e.target.value))}
-            className="rounded-md border border-rule bg-white px-3 py-1.5 text-xs"
-          >
-            <option value={7}>Last 7 days</option>
-            <option value={14}>Last 14 days</option>
-            <option value={30}>Last 30 days</option>
-            <option value={60}>Last 60 days</option>
-          </select>
+          {!period && (
+            <select
+              value={days}
+              onChange={(e) => setDays(parseInt(e.target.value))}
+              className="rounded-md border border-rule bg-white px-3 py-1.5 text-xs"
+            >
+              <option value={7}>Last 7 days</option>
+              <option value={14}>Last 14 days</option>
+              <option value={30}>Last 30 days</option>
+              <option value={60}>Last 60 days</option>
+            </select>
+          )}
           <Button
             variant="outline"
             size="sm"

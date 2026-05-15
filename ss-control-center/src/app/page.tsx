@@ -10,6 +10,7 @@ import {
   MessageSquare,
   HeartPulse,
   Receipt,
+  Thermometer,
   RefreshCw,
   ArrowRight,
   AlertTriangle,
@@ -42,6 +43,7 @@ interface DashboardData {
   claims: { active: number };
   health: { issues: number };
   procurement: { ordersToBuy: number };
+  frozen: { incidents30d: number };
   adjustments: { monthlyTotal: number };
   walmart?: {
     ordersTotal30d: number;
@@ -359,11 +361,10 @@ export default function DashboardPage() {
 
       {/* Operations KPI row — one tile per module, every tile clickable
           → opens the corresponding section so the operator can drill in
-          from any number. 5 columns at lg covering Shipping, Procurement,
-          Customer hub, Account Health, Adjustments. The Adjustments tile
-          shows the 30d cost-recovery total since that's the one number
-          the operator wants to see at a glance from this surface. */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          from any number. Six columns at lg: Shipping, Procurement,
+          Customer hub, Account Health, Frozen, Adjustments. Two rows on
+          smaller screens (sm:grid-cols-2 / md:grid-cols-3). */}
+      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <KpiCard
           href="/shipping"
           label="Awaiting ship"
@@ -407,6 +408,20 @@ export default function DashboardPage() {
             (data?.health.issues ?? 0) + (data?.walmart?.healthIssues ?? 0) > 0
               ? "danger"
               : "default"
+          }
+        />
+        <KpiCard
+          href="/frozen-analytics"
+          label="Frozen 30d"
+          value={data?.frozen.incidents30d ?? 0}
+          icon={<Thermometer size={14} />}
+          iconVariant={
+            (data?.frozen.incidents30d ?? 0) > 0 ? "warn" : "default"
+          }
+          trend={
+            (data?.frozen.incidents30d ?? 0) > 0
+              ? { value: "incidents", positive: false }
+              : undefined
           }
         />
         <KpiCard

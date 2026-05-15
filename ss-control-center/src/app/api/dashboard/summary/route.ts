@@ -115,6 +115,7 @@ export async function GET(request: NextRequest) {
       adjustmentsSum,
       ordersStore1,
       ordersStore2,
+      frozenIncidents30d,
       // Walmart
       walmartOrdersTotal30d,
       walmartOrdersToday,
@@ -174,6 +175,16 @@ export async function GET(request: NextRequest) {
           storeIndex: 2,
           purchaseDate: { gte: thirtyDaysAgo },
           ...amazonStoreFilter,
+        },
+      }),
+      // Frozen incidents in the last 30 days — drives the Dashboard Frozen
+      // tile. Excludes `outcome: ok` because those are non-incidents (we
+      // log them for the regression model but the operator doesn't need
+      // an alert for an order that arrived frozen as intended).
+      prisma.frozenIncident.count({
+        where: {
+          createdAt: { gte: thirtyDaysAgo },
+          outcome: { not: "ok" },
         },
       }),
       walmartSelected
@@ -293,6 +304,7 @@ export async function GET(request: NextRequest) {
       claims: { active: activeClaims },
       health: { issues: healthIssues },
       procurement: { ordersToBuy: procurementOrdersToBuy },
+      frozen: { incidents30d: frozenIncidents30d },
       adjustments: {
         monthlyTotal: adjustmentsSum._sum.adjustmentAmount || 0,
       },
@@ -321,6 +333,7 @@ function emptyResponse() {
     claims: { active: 0 },
     health: { issues: 0 },
     procurement: { ordersToBuy: 0 },
+    frozen: { incidents30d: 0 },
     adjustments: { monthlyTotal: 0 },
     walmart: null,
     syncedAt: new Date().toISOString(),
