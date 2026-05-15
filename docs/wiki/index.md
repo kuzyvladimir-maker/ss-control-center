@@ -58,6 +58,7 @@
 
 ## 📋 Бизнес-правила
 - [Timezone правила](timezone-rules.md) — UTC-7, America/New_York
+- [Cutoff Time Rule (3 PM ET)](cutoff-time-rule.md) — effective ship date → next business day после 15:00 ET; skip weekends/US federal holidays. §0.1 MASTER_PROMPT v3.2 — 2026-05-14
 - [Carrier Selection Rules](carrier-selection-rules.md) — UPS preference, USPS after noon
 - [Walmart ограничения](walmart-restrictions.md) — no Frozen, no weekend, 10% budget
 - [Frozen Shipping Rules](frozen-shipping-rules.md) — ≤3 дня, food safety CS
@@ -77,6 +78,7 @@
 
 ---
 Последнее обновление: 2026-05-14
+- **MASTER_PROMPT v3.2 + Cutoff Time Rule** — effective ship date вместо «today» после 15:00 ET, учёт weekends и US federal holidays. §0.1 нового MASTER_PROMPT.
 - Sprint shipping labels в продакшене: VAS из live rate, tracking object-shape, post-buy modal + audit log, Google Drive upload (раньше работал только n8n).
 - Ship Date Trick реализован (был "Handle manually").
 - Dry rate rules упрощены.

@@ -324,6 +324,43 @@ const isBought = order.employee_notes.some(n => n.text.includes("Label Purchased
 
 ---
 
+## 13. `remote_shipment_id` — allocation-level, не rate-level (2026-05-15)
+
+**Проблема:** Заказ `114-8515802-0978666` — план выбрал UPS Ground Saver $18.23 EDD 5/19, но при покупке падал с `INVALID_VALUE_ADDED_SERVICES`. DIAG показывал в matched-rate `service_id: FEDEX_PTP_SMARTPOST` (не UPS!) и `shipping_service_options: null` (соответствует SmartPost, не UPS). Buy endpoint выбирал не тот rate чем тот что в плане был.
+
+**Что выяснилось при прямом hit'е API:** все 16 рейтов в одной allocation возвращают **одинаковый** `remote_shipment_id`:
+
+```
+FEDEX_PTP_SMARTPOST       | rsi=prb1fd6e1be | name=amazon_shipping_v2-336c2402-...
+UPS_PTP_GROUNDSAVER       | rsi=prb1fd6e1be | name=amazon_shipping_v2-390bbcc6-...
+USPS_PTP_GAH              | rsi=prb1fd6e1be | name=amazon_shipping_v2-359545c6-...
+... (ещё 13 рейтов, все с тем же prb1fd6e1be)
+```
+
+Значит **`remote_shipment_id` это идентификатор аллокации/посылки** (что отправляется), а не отдельного рейта. **`name`** (UUID после `amazon_shipping_v2-`) — единственное per-rate уникальное поле, и оно стабильно между fetch'ами.
+
+**Корень бага:**
+
+```typescript
+// ❌ Wrong — все 16 рейтов имеют один rsi, find() возвращает первый = SmartPost
+const match = liveRates.find(r => r.remote_shipment_id === item.remoteShipmentId);
+
+// ✅ Right — name — уникальный UUID per service
+const match = liveRates.find(r => r.name === item.serviceType);
+```
+
+Каскад последствий старого бага:
+1. Match всегда возвращал SmartPost (он первый в массиве)
+2. `extractVasFromRate(SmartPost)` видит `shipping_service_options: null` → возвращает `{}`
+3. Покупка идёт с UPS-данными (plan стор UPS GUID в serviceType, subCarrierId="UPS") + пустой VAS
+4. Veeqo видит UPS request без `value_added_service__VAS_GROUP_ID_CONFIRMATION` (которое UPS требует) → INVALID_VAS
+
+**Исправлено в** [src/app/api/shipping/buy/route.ts](../../ss-control-center/src/app/api/shipping/buy/route.ts) — match по `name` GUID, fallback по `sub_carrier_id + title` (на случай если Veeqo вдруг начнёт перегенерировать GUIDs).
+
+**Правило на будущее:** для идентификации конкретного рейта в Veeqo Amazon Shipping V2 — **только `name`** (UUID). `remote_shipment_id` не уникален, `service_id` не передаётся в нашей старой схеме plan, `title` человеко-читаемый и может collid'нуть между сервисами.
+
+---
+
 ## История правок страницы
 - 2026-05-04: §1-6 — оригинал (tags, notes, pagination, rate limit, id types)
 - 2026-05-14: §7-12 добавлены после массовой отладки покупки этикеток.
@@ -334,3 +371,5 @@ const isBought = order.employee_notes.some(n => n.text.includes("Label Purchased
   - §11 `label_url` нужен `format=pdf` + auth header
   - §12 employee note "Label Purchased" — не сигнал состояния, использовать `order.status`
   - MASTER_PROMPT_v3.1 §12 помечен как устаревший.
+- 2026-05-15: §13 добавлен.
+  - §13 `remote_shipment_id` — allocation-level, не rate-level. Match рейта по `name` (UUID).

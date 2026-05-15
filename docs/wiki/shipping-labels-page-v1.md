@@ -3,9 +3,10 @@
 ## Суть
 Полноценная страница `/shipping` в SS Control Center: live dashboard по всем магазинам, AI-классификация Frozen/Dry, ручной override, packing profiles для multi-item заказов, пакетная покупка этикеток.
 
-**Дата:** 2026-05-12
+**Дата:** 2026-05-12 (дополнено 2026-05-14: cutoff time §0.1)
 **Промпт реализации:** `docs/CLAUDE_CODE_PROMPT_SHIPPING_LABELS_PAGE_V1.md`
-**Базовый алгоритм покупки:** `docs/MASTER_PROMPT_v3.1.md` (не изменяется)
+**Базовый алгоритм покупки:** [`docs/MASTER_PROMPT_v3.2.md`](../MASTER_PROMPT_v3.2.md) (включает cutoff правило)
+**Cutoff:** [cutoff-time-rule.md](cutoff-time-rule.md) — детали
 
 ---
 
@@ -139,6 +140,8 @@ Self-learning: Vladimir вводит профиль первый раз вруч
   - [SKU Database (Internal DB)](sku-database-migration.md) — для single-item lookup
   - [Claude AI](claude-ai.md) — для AI classification (vision-enabled)
   - [Procurement Module](procurement-module.md) — паттерн time buckets
+  - [Cutoff Time Rule](cutoff-time-rule.md) — §0.1 MASTER_PROMPT v3.2
+  - [MASTER_PROMPT v3.2](../MASTER_PROMPT_v3.2.md) — базовый алгоритм
 - **Связи в БД:** `ProductTypeOverride`, `PackingProfile` (новые), `SkuShippingData`
 - **Алгоритмы:** [Frozen/Dry классификация](frozen-dry-classification.md), [Carrier Selection](carrier-selection-rules.md), [Budget Check](budget-check-algorithm.md), [Weekend Distribution](weekend-distribution.md)
 
