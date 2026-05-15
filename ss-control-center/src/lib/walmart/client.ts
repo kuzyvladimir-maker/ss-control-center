@@ -345,6 +345,164 @@ export class WalmartClient {
       new Error(`Walmart request failed after ${MAX_RETRIES} retries: ${method} ${url}`)
     );
   }
+
+  /**
+   * Like `request`, but never throws on 2xx-but-empty (HTTP 204) or
+   * application-level 4xx — instead returns `{ status, body, ok }` so the
+   * caller can react to "no data yet" (204) and to per-metric errors (400/
+   * 403/404) without bringing down the whole fan-out.
+   *
+   * Retries on 5xx / 429 / network glitches with the same backoff +
+   * rate-limit gate as `request`. 401 still gets one fresh-token retry,
+   * same as `request`.
+   *
+   * Used by the Seller Performance API where each metric is a separate
+   * call and we want partial-success semantics (Promise.allSettled style).
+   */
+  async requestRaw(
+    method: string,
+    path: string,
+    options: RequestOptions = {}
+  ): Promise<{ status: number; ok: boolean; body: unknown; correlationId: string }> {
+    const tokenInfo = await this.getAccessToken();
+
+    if (this.rateLimitWaitUntil) {
+      const waitMs = this.rateLimitWaitUntil.getTime() - Date.now();
+      if (waitMs > 0) {
+        console.warn(
+          `[WALMART][STORE${this.storeIndex}] rate-limit wait ${waitMs}ms before ${method} ${path}`
+        );
+        await sleep(waitMs);
+      }
+      this.rateLimitWaitUntil = null;
+    }
+
+    const queryString = buildQueryString(options.params);
+    const fullPath = `/${API_VERSION}${path.startsWith("/") ? path : `/${path}`}${queryString}`;
+    const url = `${DEFAULT_BASE_URL}${fullPath}`;
+
+    let lastError: unknown = null;
+    let lastCorrelation = "";
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      // Each parallel call must get its own UUID — Walmart will dedupe
+      // requests that share a correlation id, which silently breaks
+      // parallel sync. randomUUID() per attempt is the contract.
+      const correlationId = randomUUID();
+      lastCorrelation = correlationId;
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${tokenInfo.accessToken}`,
+        "WM_SEC.ACCESS_TOKEN": tokenInfo.accessToken,
+        "WM_QOS.CORRELATION_ID": correlationId,
+        "WM_SVC.NAME": SVC_NAME,
+        Accept: options.accept || "application/json",
+        ...options.headers,
+      };
+
+      let body: BodyInit | undefined;
+      if (options.body !== undefined) {
+        if (typeof options.body === "string") {
+          body = options.body;
+        } else {
+          body = JSON.stringify(options.body);
+          headers["Content-Type"] = "application/json";
+        }
+      }
+
+      const startedAt = Date.now();
+      let res: Response;
+      try {
+        res = await fetch(url, { method, headers, body });
+      } catch (err) {
+        lastError = err;
+        if (attempt < MAX_RETRIES) {
+          const delay = Math.min(
+            BACKOFF_BASE_MS * 2 ** attempt + Math.random() * 250,
+            BACKOFF_MAX_MS
+          );
+          console.warn(
+            `[WALMART][STORE${this.storeIndex}] network error on ${method} ${fullPath}, retry ${attempt + 1}/${MAX_RETRIES} in ${delay}ms`
+          );
+          await sleep(delay);
+          continue;
+        }
+        throw err;
+      }
+
+      const elapsed = Date.now() - startedAt;
+      const tokensLeft = res.headers.get("x-current-token-count");
+      const replenishAt = res.headers.get("x-next-replenish-time");
+
+      console.log(
+        `[WALMART][STORE${this.storeIndex}] ${method} ${fullPath} → ${res.status} ` +
+          `(tokens: ${tokensLeft ?? "?"}, ${elapsed}ms, cid=${correlationId})`
+      );
+
+      if (tokensLeft !== null && replenishAt) {
+        const remaining = parseInt(tokensLeft, 10);
+        if (Number.isFinite(remaining) && remaining < MIN_TOKENS_BEFORE_SLEEP) {
+          const replenishMs = parseInt(replenishAt, 10);
+          if (Number.isFinite(replenishMs) && replenishMs > Date.now()) {
+            this.rateLimitWaitUntil = new Date(replenishMs);
+          }
+        }
+      }
+
+      // 401 — token might have died early; clear cache and retry once.
+      if (res.status === 401 && attempt === 0) {
+        this.token = null;
+        const fresh = await this.getAccessToken();
+        tokenInfo.accessToken = fresh.accessToken;
+        continue;
+      }
+
+      // Retry on 429 / 5xx only — 4xx (other than 401 first attempt) are
+      // application errors, return them straight to the caller.
+      if ((res.status === 429 || res.status >= 500) && attempt < MAX_RETRIES) {
+        let delay = Math.min(
+          BACKOFF_BASE_MS * 2 ** attempt + Math.random() * 250,
+          BACKOFF_MAX_MS
+        );
+        const retryAfter = res.headers.get("retry-after");
+        if (retryAfter) {
+          const ra = parseInt(retryAfter, 10);
+          if (Number.isFinite(ra)) delay = Math.max(delay, ra * 1000);
+        }
+        console.warn(
+          `[WALMART][STORE${this.storeIndex}] ${res.status} on ${fullPath}, retry ${attempt + 1}/${MAX_RETRIES} in ${delay}ms`
+        );
+        await sleep(delay);
+        continue;
+      }
+
+      // Decode body — text first, then JSON when it parses.
+      let parsedBody: unknown = null;
+      if (res.status !== 204) {
+        const text = await res.text();
+        if (text) {
+          try {
+            parsedBody = JSON.parse(text);
+          } catch {
+            parsedBody = text;
+          }
+        }
+      }
+
+      return {
+        status: res.status,
+        ok: res.ok,
+        body: parsedBody,
+        correlationId,
+      };
+    }
+
+    throw (
+      lastError ||
+      new Error(
+        `Walmart requestRaw failed after ${MAX_RETRIES} retries: ${method} ${url} (cid=${lastCorrelation})`
+      )
+    );
+  }
 }
 
 let cachedDefaultClient: WalmartClient | null = null;
