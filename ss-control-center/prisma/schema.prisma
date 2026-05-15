@@ -99,7 +99,22 @@ model ShippingPlanItem {
   price            Float?
   edd              String? // EDD date
   deliveryBy       String? // Delivery By date
-  actualShipDay    String? // Actual ship day
+  // Per-order dual-date model (MASTER_PROMPT v3.3 §0.1).
+  //   labelDate         — what Amazon sees on the label; drives Late
+  //                       Shipment Rate. Defaults to today; only
+  //                       pushed to next business day when shipBy >
+  //                       today AND past 3 PM ET cutoff.
+  //   physicalShipDate  — when warehouse hands the package to the
+  //                       carrier. Same as labelDate for normal flow;
+  //                       pushed to next Monday when Frozen Ship Date
+  //                       Trick fires.
+  // `actualShipDay` is kept as an alias for physicalShipDate during
+  // the migration so existing rows don't lose data. New writes set
+  // both to the same value; legacy column drops once every reader
+  // uses physicalShipDate.
+  labelDate        String? // Date Amazon sees on the label
+  physicalShipDate String? // When warehouse hands package to carrier
+  actualShipDay    String? // Legacy alias for physicalShipDate
   notes            String?
   status           String       @default("pending") // pending | approved | bought | error | stop
   trackingNumber   String?

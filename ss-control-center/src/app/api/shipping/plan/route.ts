@@ -13,6 +13,7 @@ import {
   buildPackingSignature,
   requiresPackingProfile,
 } from "@/lib/shipping/packing-signature";
+import { computeLabelDate, nextMondayFrom } from "@/lib/shipping/dates";
 
 // ── Veeqo rate shape (actual API fields) ──
 interface VeeqoRate {
@@ -273,7 +274,20 @@ export async function GET(request: NextRequest) {
       sku: string; qty: number; productType: string; _productId: number | null;
       weight: number | null; boxSize: string | null; budgetMax: number | null;
       carrier: string | null; service: string | null; price: number | null;
-      edd: string | null; deliveryBy: string; actualShipDay: string;
+      edd: string | null; deliveryBy: string;
+      // v3.3 dual-date model (§0.1):
+      //   labelDate         = date Amazon sees on the printed label
+      //   physicalShipDate  = day warehouse hands package to carrier
+      //   shipDateTrickApplied = true when these two diverge (Frozen
+      //     Monday-shift) — used by UI to flag the card and by buy
+      //     flow to know the dispatch_date dance is needed.
+      // `actualShipDay` is kept around for backward-compat with the
+      // existing DB column + readers; new code should prefer
+      // `physicalShipDate`.
+      labelDate: string;
+      physicalShipDate: string;
+      shipDateTrickApplied: boolean;
+      actualShipDay: string;
       notes: string | null; status: string;
       allocationId: string | null; carrierId: string | null;
       remoteShipmentId: string | null; serviceType: string | null;
@@ -671,6 +685,20 @@ export async function GET(request: NextRequest) {
           0
         ) || 1;
 
+      // v3.3 §0.1 — derive labelDate per-order from shipBy + cutoff.
+      // For now we keep the legacy actualShipDay calculation in
+      // parallel for the storage column; physicalShipDate is the
+      // truth for new readers. shipDateTrickApplied tells the UI to
+      // flag the card and the buy flow to do the dispatch-date dance.
+      const labelDate = computeLabelDate(shipBy);
+      const trickFired = Boolean(shipDateNote);
+      const physicalShipDate = trickFired
+        ? nextMondayFrom(labelDate)
+        : labelDate;
+      const legacyActualShipDay = trickFired
+        ? getNextMonday(today)
+        : actualShipDay;
+
       planItems.push({
         orderNumber: order.number,
         orderId: String(order.id),
@@ -693,9 +721,10 @@ export async function GET(request: NextRequest) {
           ? veeqoDateToLocal(selectedRate.delivery_promise_date)
           : null,
         deliveryBy,
-        actualShipDay: shipDateNote
-          ? getNextMonday(today)
-          : actualShipDay,
+        labelDate,
+        physicalShipDate,
+        shipDateTrickApplied: trickFired,
+        actualShipDay: legacyActualShipDay,
         notes: stopReason || shipDateNote,
         status: stopReason ? "stop" : "pending",
         // Purchase payload fields (actual Veeqo field names)
@@ -732,6 +761,8 @@ export async function GET(request: NextRequest) {
             price: item.price,
             edd: item.edd,
             deliveryBy: item.deliveryBy,
+            labelDate: item.labelDate,
+            physicalShipDate: item.physicalShipDate,
             actualShipDay: item.actualShipDay,
             notes: item.notes,
             status: item.status,
@@ -756,12 +787,27 @@ export async function GET(request: NextRequest) {
       (i) => i.status === "stop"
     ).length;
 
-    // Enrich DB items with productId (not stored in DB)
+    // Enrich DB items with fields not persisted to DB:
+    //   _productId          — used by UI for Frozen/Dry classify flow
+    //   shipDateTrickApplied — derived (labelDate != physicalShipDate)
+    //                          but we surface it explicitly so the
+    //                          client doesn't have to recompute it
+    //   datesMatch          — convenience inverse for cards that only
+    //                         care about the "trick applied" badge
     const enrichedItems = plan.items.map((dbItem) => {
       const src = planItems.find(
         (p) => p.orderNumber === dbItem.orderNumber
       );
-      return { ...dbItem, _productId: src?._productId || null };
+      const datesMatch =
+        !!dbItem.labelDate &&
+        !!dbItem.physicalShipDate &&
+        dbItem.labelDate === dbItem.physicalShipDate;
+      return {
+        ...dbItem,
+        _productId: src?._productId || null,
+        shipDateTrickApplied: src?.shipDateTrickApplied ?? !datesMatch,
+        datesMatch,
+      };
     });
 
     return NextResponse.json({
