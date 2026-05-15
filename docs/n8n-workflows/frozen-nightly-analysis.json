@@ -1,0 +1,124 @@
+{
+  "name": "Frozen — Nightly Risk Analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 3 * * *"
+            }
+          ]
+        },
+        "timezone": "America/New_York"
+      },
+      "name": "Cron 03:00 ET",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [240, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.NEXTJS_BASE_URL}}/api/frozen/run-analysis",
+        "authentication": "predefinedCredentialType",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.CRON_SECRET}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "name": "POST /api/frozen/run-analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [480, 320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "errors-gt-0",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "leftValue": "={{$json.errors}}",
+              "rightValue": 0
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "name": "Has errors?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [720, 320]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$env.TELEGRAM_ALERT_CHAT_ID}}",
+        "text": "=🚨 *Frozen analysis failed*\n\n{{ ($json.errorDetails || []).slice(0, 5).join('\\n') }}\n\nerrors={{$json.errors}} · alertsCreated={{$json.alertsCreated}} · alertsUpdated={{$json.alertsUpdated}}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "name": "Telegram alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [960, 240]
+    }
+  ],
+  "connections": {
+    "Cron 03:00 ET": {
+      "main": [
+        [
+          {
+            "node": "POST /api/frozen/run-analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /api/frozen/run-analysis": {
+      "main": [
+        [
+          {
+            "node": "Has errors?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has errors?": {
+      "main": [
+        [
+          {
+            "node": "Telegram alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

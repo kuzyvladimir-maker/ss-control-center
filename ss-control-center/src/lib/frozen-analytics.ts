@@ -105,6 +105,41 @@ export async function collectFrozenIncidentData(
     // Update SKU risk profile
     await updateSkuRiskProfile(opts?.sku || "UNKNOWN", opts?.productName || "");
 
+    // Frozen Analytics v2.0 learning loop — if there was a predictive alert
+    // for the same order, link them so the Patterns dashboard can compute
+    // true-positive detection rate. We match by orderId (any shipDate) and
+    // take the most recent pending/applied alert — an "ignored" alert that
+    // turned into a real incident is still valuable for tuning rules.
+    if (orderId) {
+      try {
+        const alert = await prisma.frozenRiskAlert.findFirst({
+          where: {
+            orderId,
+            status: { in: ["pending", "applied", "ignored"] },
+          },
+          orderBy: { createdAt: "desc" },
+        });
+        if (alert) {
+          await prisma.frozenRiskAlert.update({
+            where: { id: alert.id },
+            data: {
+              resultedInComplaint: true,
+              linkedIncidentId: incident.id,
+              status: "resolved",
+            },
+          });
+          await prisma.frozenIncident.update({
+            where: { id: incident.id },
+            data: { linkedAlertId: alert.id },
+          });
+        }
+      } catch (err) {
+        // Learning-loop linkage failures must NOT break incident creation —
+        // the FrozenIncident row is the source of truth for v1.0 analytics.
+        console.warn("[frozen-v2] learning-loop link failed:", err);
+      }
+    }
+
     return incident;
   } catch (err) {
     console.error("Failed to collect frozen incident data:", err);

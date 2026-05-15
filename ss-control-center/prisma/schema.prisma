@@ -227,6 +227,14 @@ model FrozenIncident {
   customerComplained Boolean @default(true)
   resolution         String? // a2z_guarantee / replacement / refund
   notes              String?
+
+  // Frozen Analytics v2.0 — back-link from incident to the proactive risk
+  // alert (if any) that predicted this incident. Set by the learning loop in
+  // collectFrozenIncidentData() so the Patterns dashboard can compute
+  // detection rate (true positives = incidents that had a linked alert).
+  linkedAlertId String?
+
+  @@index([linkedAlertId])
 }
 
 model SkuRiskProfile {
@@ -1040,4 +1048,106 @@ model SkuShippingData {
   source       String   @default("manual")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+// ─── Frozen Analytics v2.0 — Proactive Risk Prediction ─────────────────────
+// Nightly pipeline fetches Veeqo orders that will ship in the next 1-3 days,
+// pulls Open-Meteo forecast for Tampa (origin) and the destination ZIP, runs
+// the rule engine, and writes one row per (orderId, shipDate) pair. Status
+// transitions: pending → applied | ignored | resolved. The learning loop
+// fills resultedInComplaint / linkedIncidentId after the order delivers and
+// CS either logs a thaw incident or doesn't.
+model FrozenRiskAlert {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Order identification
+  orderId      String // Veeqo order number (e.g. "113-4567890")
+  veeqoOrderId String? // Internal Veeqo ID
+  storeIndex   Int? // 1-5 for Amazon stores when resolvable
+  storeName    String? // "Salutem Solutions" etc.
+  channel      String  @default("Amazon") // Amazon | Walmart
+
+  // Product
+  sku         String
+  productName String?
+  asin        String?
+
+  // Shipping plan (at time of alert generation)
+  shipDate       String // YYYY-MM-DD
+  edd            String? // YYYY-MM-DD expected delivery date
+  transitDays    Int?
+  plannedCarrier String? // ups | fedex | usps
+  plannedService String? // "Ground" | "2nd Day Air" etc.
+
+  // Destination
+  destZip   String
+  destCity  String?
+  destState String?
+  destLat   Float?
+  destLon   Float?
+
+  // Weather — Tampa (origin) on ship_date
+  originTempF       Float? // forecast mean (we store the daily max here for risk eval)
+  originFeelsLikeF  Float?
+  originTempMaxF    Float?
+  originNormalF     Float? // 30-year average
+  originAnomalyF    Float? // origin - normal
+  originWeatherDesc String?
+
+  // Weather — Destination on EDD
+  destTempF       Float?
+  destFeelsLikeF  Float?
+  destTempMaxF    Float?
+  destNormalF     Float?
+  destAnomalyF    Float?
+  destWeatherDesc String?
+
+  // Risk assessment
+  riskLevel       String // ok | low | medium | high | critical
+  riskScore       Int // 0-100
+  triggeredRules  String // JSON array: ["R3", "M1"]
+  recommendations String // JSON array of strings
+
+  // User action
+  status                 String    @default("pending") // pending | applied | ignored | resolved
+  appliedAt              DateTime?
+  appliedBy              String?
+  userNotes              String?
+  shippingChoiceFollowed Boolean? // Did user follow recommended carrier/service?
+
+  // Learning loop (filled after delivery)
+  resultedInComplaint Boolean? // Set when linked incident is found, or to false after lookback window passes
+  linkedIncidentId    String? // FrozenIncident.id if complaint came
+
+  @@unique([orderId, shipDate])
+  @@index([riskLevel, status])
+  @@index([shipDate])
+  @@index([sku])
+  @@index([storeIndex])
+}
+
+// Conditions and outcomes are stored as JSON strings so a future Phase-4 UI
+// rule editor can mutate them without schema changes. See
+// src/lib/frozen-analytics/rules-engine.ts for the runtime shape.
+model FrozenRule {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ruleCode    String @unique // "R1", "R2", ..., "M1", "M2", ...
+  ruleType    String // "base" | "modifier"
+  description String
+
+  // Conditions (JSON for flexibility)
+  conditions String // {"originMin":85,"originMax":90,"destMin":null,...}
+
+  // Outcome
+  riskLevel      String? // ok|low|medium|high|critical (for base rules)
+  modifier       Int? // +1, +2 (for modifier rules)
+  recommendation String? // text template
+
+  enabled  Boolean @default(true)
+  priority Int     @default(100) // lower = applied first
 }

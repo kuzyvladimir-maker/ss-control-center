@@ -22,12 +22,16 @@ import IncidentsTable from "@/components/frozen-analytics/IncidentsTable";
 import SkuRiskTable from "@/components/frozen-analytics/SkuRiskTable";
 import PatternsDashboard from "@/components/frozen-analytics/PatternsDashboard";
 import WalmartBaselineCard from "@/components/frozen-analytics/WalmartBaselineCard";
+import TodaysRiskTab from "@/components/frozen-analytics/TodaysRiskTab";
 
-type TabKey = "incidents" | "sku-risk" | "patterns";
+type TabKey = "today" | "incidents" | "sku-risk" | "patterns";
 
 export default function FrozenAnalyticsPage() {
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabKey>("incidents");
+  // Default tab is "today" (proactive view, v2.0). The reactive history tabs
+  // are still there for the learning loop and pattern analysis.
+  const [activeTab, setActiveTab] = useState<TabKey>("today");
+  const [todayRiskCount, setTodayRiskCount] = useState(0);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [incidents, setIncidents] = useState<any[]>([]);
@@ -99,6 +103,13 @@ export default function FrozenAnalyticsPage() {
       fetchIncidents();
       fetchSkuProfiles();
       fetchPatterns();
+      // Lightweight: just count pending alerts to drive the tab badge.
+      fetch("/api/frozen/alerts?status=pending&min_level=low&limit=200")
+        .then((r) => r.json())
+        .then((d: { alerts?: unknown[] }) =>
+          setTodayRiskCount(d.alerts?.length ?? 0),
+        )
+        .catch(() => {});
     }
   }, [mounted, fetchIncidents, fetchSkuProfiles, fetchPatterns]);
 
@@ -187,6 +198,7 @@ export default function FrozenAnalyticsPage() {
       {/* Tabs */}
       <FilterTabs
         tabs={[
+          { id: "today", label: "Today's risk", count: todayRiskCount },
           { id: "incidents", label: "Incidents log", count: incidentsTotal },
           { id: "sku-risk", label: "SKU risk", count: skuProfiles.length },
           {
@@ -200,6 +212,8 @@ export default function FrozenAnalyticsPage() {
       />
 
       {/* Active panel */}
+      {activeTab === "today" && <TodaysRiskTab />}
+
       {activeTab === "incidents" && (
         <Panel>
           <PanelHeader

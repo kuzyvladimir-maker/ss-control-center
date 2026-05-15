@@ -1,0 +1,119 @@
+{
+  "name": "Frozen — Morning Summary",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * *"
+            }
+          ]
+        },
+        "timezone": "America/New_York"
+      },
+      "name": "Cron 07:00 ET",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [240, 320]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.NEXTJS_BASE_URL}}/api/frozen/morning-summary",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.CRON_SECRET}}"
+            }
+          ]
+        }
+      },
+      "name": "GET /api/frozen/morning-summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [480, 320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "total-gt-0",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "leftValue": "={{$json.total}}",
+              "rightValue": 0
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "name": "Has alerts?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [720, 320]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$env.TELEGRAM_CHAT_ID}}",
+        "text": "={{$json.telegramMessage}}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Send summary",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [960, 240]
+    }
+  ],
+  "connections": {
+    "Cron 07:00 ET": {
+      "main": [
+        [
+          {
+            "node": "GET /api/frozen/morning-summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /api/frozen/morning-summary": {
+      "main": [
+        [
+          {
+            "node": "Has alerts?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has alerts?": {
+      "main": [
+        [
+          {
+            "node": "Send summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

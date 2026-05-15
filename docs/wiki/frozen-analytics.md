@@ -6,7 +6,7 @@
 **Бизнес-цель:** свести к минимуму жалобы на растаявшие товары через предотвращение, а не реакцию. Критично летом (июнь–сентябрь).
 
 ## Путь в приложении
-`/frozen-analytics` — **в разработке (v2.0 spec готов)**
+`/frozen-analytics` — **Phase 1+2 v2.0 реализованы 2026-05-15.** Активен таб "Today's Risk" с проактивными алертами. Остальные три таба (Incidents log / SKU risk / Patterns) сохранены из v1.0. n8n workflow JSON для ночного cron и утреннего summary лежат в `docs/n8n-workflows/`.
 
 ## Архитектура v2.0
 
@@ -88,7 +88,8 @@
 
 ## История
 - 2026-04-10: Wiki-статья создана при полной индексации проекта (v1.0 — только реактивная аналитика)
-- 2026-05-15: **v2.0** — переориентация на проактивный прогноз с Open-Meteo, ночной cron, rules engine, цикл обучения, интеграция с Shipping Labels
+- 2026-05-15: **v2.0 spec написан** — переориентация на проактивный прогноз с Open-Meteo, ночной cron, rules engine, цикл обучения, интеграция с Shipping Labels
+- 2026-05-15: **v2.0 Phase 1+2 реализованы** — модели `FrozenRiskAlert`/`FrozenRule` + миграция; pipeline на Open-Meteo (forecast + climate normals); rules engine с конфигурируемыми правилами в БД; UI таб "Today's Risk" с карточками; learning loop из `collectFrozenIncidentData`; n8n workflow для cron 03:00 ET + summary 07:00 ET
 
 
 ---
