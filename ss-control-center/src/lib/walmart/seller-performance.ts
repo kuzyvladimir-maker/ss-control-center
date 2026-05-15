@@ -158,7 +158,15 @@ export const PERFORMANCE_METRICS = {
 
 export type MetricKey = keyof typeof PERFORMANCE_METRICS;
 
-export type MetricStatus = "OK" | "NO_DATA" | "ERROR";
+export type MetricStatus =
+  | "OK"
+  | "NO_DATA"
+  | "ERROR"
+  /** Every path candidate returned 404 — Walmart isn't exposing this
+   *  endpoint to our seller credentials at all. Distinct from ERROR
+   *  (which signals a transient or schema problem we should investigate)
+   *  so the UI can render a calmer "view in Seller Center" message. */
+  | "NOT_AVAILABLE";
 
 export type TrendValue =
   | "GREEN_UP"
@@ -306,13 +314,14 @@ async function fetchSingleMetric(
     }
   }
 
-  // All candidates 404'd — surface the last response so the diagnostic
-  // panel + per-card error message shows which paths we tried.
+  // All candidates 404'd → treat as "endpoint isn't exposed for this
+  // account". Distinct from a hard ERROR so the card can render the
+  // calmer "View in Seller Center" message Vladimir asked for.
   return {
     metric: key,
-    status: "ERROR",
+    status: "NOT_AVAILABLE",
     httpStatus: lastErrorResponse?.status ?? 404,
-    errorMessage: `All ${candidates.length} path candidates 404'd (last body: ${stringifyBody(lastErrorResponse?.body)})`,
+    errorMessage: `Tried ${candidates.length} URL path candidates, all 404. Walmart isn't exposing this endpoint to our seller credentials.`,
   };
 }
 
@@ -403,20 +412,21 @@ function pickDisplayRate(
   const primary = numOrUndef(p[config.rateKey]);
   const accountable = numOrUndef(p.sellerAccountableRate);
 
-  if (config.rateKey === "overallRate") {
-    // overall-style — prefer accountable when present (matches Seller Center)
-    if (accountable !== undefined) return accountable;
-    return primary;
+  // Both branches now prefer the first NON-ZERO rate-like field. Walmart
+  // sometimes returns 0 in the primary rate while the real value lives
+  // in a sibling (Vladimir's Seller Response 0% bug: overallRate=0 but
+  // Seller Center showed 97.3%). Scanning *Rate fields catches these.
+  const candidates: Array<number | undefined> =
+    config.rateKey === "overallRate"
+      ? [accountable, primary]
+      : [primary, accountable, numOrUndef(p.overallRate)];
+
+  for (const c of candidates) {
+    if (c !== undefined && c !== 0) return c;
   }
 
-  // cumulative-style — `cumulativeRate` is what Walmart displays.
-  if (primary !== undefined && primary !== 0) return primary;
-  // Fallback chain if `cumulativeRate` is missing/zero. Some shapes use
-  // `overallRate` even on cumulative metrics. Last resort: scan for any
-  // *Rate-named numeric field that isn't a Trend.
-  if (accountable !== undefined && accountable !== 0) return accountable;
-  const overall = numOrUndef(p.overallRate);
-  if (overall !== undefined && overall !== 0) return overall;
+  // Sibling-field sweep: any numeric field whose name ends in "Rate"
+  // (excluding *Trend variants) with a non-zero value.
   for (const [k, v] of Object.entries(p)) {
     if (
       typeof v === "number" &&
@@ -428,6 +438,10 @@ function pickDisplayRate(
       return v;
     }
   }
+
+  // Last resort: whatever the configured key said, even if 0/undefined.
+  // Better to show "0%" than silently drop the metric — Walmart genuinely
+  // does return 0 for some quiet windows.
   return primary;
 }
 

@@ -23,7 +23,7 @@ interface Metric {
   isHealthy: boolean;
   status: string;
   capturedAt: string;
-  resultStatus: "OK" | "NO_DATA" | "ERROR" | null;
+  resultStatus: "OK" | "NO_DATA" | "ERROR" | "NOT_AVAILABLE" | null;
   trend: string | null;
   performanceRiskLevel: string | null;
   updatedTimestamp: string | null;
@@ -546,27 +546,56 @@ function MetricCardV2({
     );
   }
 
+  // Every fallback path 404'd — Walmart doesn't expose this metric to our
+  // seller credentials. Calmer state than ERROR; link out to Seller Center.
+  if (metric.resultStatus === "NOT_AVAILABLE") {
+    return (
+      <CardShell
+        label={spec.label}
+        threshold={spec.threshold}
+        tone="default"
+        body={
+          <span className="text-ink-2 text-[14px]">Not exposed via API</span>
+        }
+        footer={
+          <div className="space-y-1">
+            <div className="text-[10.5px] text-ink-3 line-clamp-2">
+              Walmart shows this metric on Seller Center but doesn&apos;t
+              return it on our API credentials.
+            </div>
+            <a
+              href="https://seller.walmart.com/performance"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] text-green hover:text-green-deep underline"
+            >
+              View in Seller Center →
+            </a>
+          </div>
+        }
+      />
+    );
+  }
+
   // Normal "OK" path.
   const displayed = spec.invert ? 100 - metric.value : metric.value;
   const bad =
     spec.direction === "gte"
       ? displayed < spec.thresholdValue
       : displayed > spec.thresholdValue;
-  // "Approaching threshold" warn band — within 10% of the threshold value
-  // for gte metrics (e.g. OTD 90% → warn when 90-99% but above 90), and
-  // mirror for lte. Walmart's own MONITOR label still wins when set.
-  const margin = spec.thresholdValue * 0.1;
-  const approaching =
-    !bad &&
-    (spec.direction === "gte"
-      ? displayed < spec.thresholdValue + margin
-      : displayed > spec.thresholdValue - margin);
-  const tone: "good" | "warn" | "danger" =
-    metric.status === "URGENT" || bad
-      ? "danger"
-      : metric.status === "MONITOR" || approaching
-        ? "warn"
-        : "good";
+  // Tone priority — Walmart's own performanceRiskLevel wins. Their
+  // algorithm sees drivers we can't replicate (carrier blame, weather
+  // exclusions, etc.), so when they say "Good" we tint green even if our
+  // local threshold check would have flagged it (e.g. VTR 98.5% is below
+  // the 99% line but Walmart still labels it Monitor, not Urgent).
+  // Only when Walmart didn't bucket the row do we fall back to the local
+  // threshold check.
+  const wmStatus = metric.status; // GOOD | MONITOR | URGENT (from persist)
+  let tone: "good" | "warn" | "danger";
+  if (wmStatus === "URGENT") tone = "danger";
+  else if (wmStatus === "MONITOR") tone = "warn";
+  else if (wmStatus === "GOOD") tone = "good";
+  else tone = bad ? "danger" : "good";
 
   return (
     <CardShell

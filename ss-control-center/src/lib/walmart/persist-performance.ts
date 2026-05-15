@@ -57,9 +57,10 @@ function isHealthy(metric: MetricKey, rate: number | undefined): boolean {
 
 function statusBucket(
   result: PerformanceMetricResult
-): "GOOD" | "MONITOR" | "URGENT" | "NO_DATA" | "ERROR" {
+): "GOOD" | "MONITOR" | "URGENT" | "NO_DATA" | "ERROR" | "NOT_AVAILABLE" {
   if (result.status === "NO_DATA") return "NO_DATA";
   if (result.status === "ERROR") return "ERROR";
+  if (result.status === "NOT_AVAILABLE") return "NOT_AVAILABLE";
   // Walmart's own bucket wins when it labels the row Monitor / Urgent —
   // their algorithm includes drivers we can't replicate. Otherwise fall
   // back to threshold check.
@@ -118,8 +119,9 @@ export async function persistPerformanceSnapshots(
   for (const [keyStr, result] of Object.entries(data.metrics)) {
     const key = keyStr as MetricKey;
     if (result.status === "NO_DATA") noDataCount++;
-    else if (result.status === "ERROR") errorCount++;
-    else okCount++;
+    else if (result.status === "ERROR" || result.status === "NOT_AVAILABLE") {
+      errorCount++;
+    } else okCount++;
 
     const reportDuration =
       result.reportDuration ?? defaultWindowFor(key);
