@@ -1,1 +1,17 @@
 .DS_Store
+
+# Secrets — never commit credentials.
+# Google Cloud service account keys are usually named like
+# `<project>-<key-id>.json` or `*-service-account*.json`.
+*service-account*.json
+*service_account*.json
+neon-reporter-*.json
+*.gcp-key.json
+gcloud-key*.json
+
+# Local env files (already covered in ss-control-center/.gitignore
+# for the Next.js app, but adding here as belt-and-suspenders for
+# anyone editing at the repo root).
+.env
+.env.local
+.env.*.local
