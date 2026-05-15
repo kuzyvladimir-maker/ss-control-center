@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { toZonedTime } from "date-fns-tz";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
 import {
   startOfDay,
   endOfDay,
@@ -12,6 +12,29 @@ import {
 } from "date-fns";
 
 const TZ = "America/New_York";
+
+/**
+ * date-fns-tz's `toZonedTime` returns a Date whose `getTime()` is shifted
+ * by the timezone offset so that the wall-clock readers (`getHours()`,
+ * `startOfDay`, etc) report values in the target TZ. That's only useful
+ * for *formatting* — its UTC representation is fictional and will yield
+ * wrong answers when compared against real UTC timestamps in the DB.
+ *
+ * Every window boundary we feed into the Prisma query has to be a real
+ * UTC instant. We compute boundaries by:
+ *   1. converting `now` into the zoned (wall-clock) Date,
+ *   2. applying date-fns calendar arithmetic on the zoned Date,
+ *   3. converting back to a real UTC instant with `fromZonedTime`.
+ *
+ * The bug this fixes: Sales today permanently read $0 in the live
+ * dashboard because the upper bound on the `purchaseDate` filter was the
+ * zoned `nowEt` (epoch shifted -4h during EDT). Orders that landed in
+ * the last 4 hours of real time had `purchaseDate > nowEt` and got
+ * excluded.
+ */
+function asUtc(zoned: Date): Date {
+  return fromZonedTime(zoned, TZ);
+}
 
 // Status values that mean "doesn't count toward gross revenue". Amazon spells
 // it "Canceled" (US), Walmart "Cancelled" (UK) — keep both.
@@ -68,24 +91,32 @@ export async function GET(request: NextRequest) {
     // store in selection turns the Walmart query on. If/when a second Walmart
     // account is added, swap this for a storeIndex filter analogous to Amazon.
 
-    // Periods (all in ET).
-    const nowEt = toZonedTime(new Date(), TZ);
-    const todayStart = startOfDay(nowEt);
-    const yesterdayStart = startOfDay(subDays(nowEt, 1));
-    const yesterdayEnd = endOfDay(subDays(nowEt, 1));
-    const sameDayLastWeekStart = startOfDay(subDays(nowEt, 7));
-    const sameDayLastWeekEnd = endOfDay(subDays(nowEt, 7));
-    const monthStart = startOfMonth(nowEt);
-    const lastMonthStart = startOfMonth(subMonths(nowEt, 1));
-    const lastMonthEnd = endOfMonth(subMonths(nowEt, 1));
+    // Periods — compute wall-clock ET boundaries, then convert each back
+    // to a real UTC instant for the DB query. See `asUtc` above for the
+    // bug this avoids. Forecast math needs the wall-clock `nowEt` (so
+    // `dayOfMonth` reflects ET, not UTC); the SQL bounds use the
+    // converted UTC values.
+    const realNow = new Date();
+    const nowEt = toZonedTime(realNow, TZ);
+    const todayStart = asUtc(startOfDay(nowEt));
+    const yesterdayStart = asUtc(startOfDay(subDays(nowEt, 1)));
+    const yesterdayEnd = asUtc(endOfDay(subDays(nowEt, 1)));
+    const sameDayLastWeekStart = asUtc(startOfDay(subDays(nowEt, 7)));
+    const sameDayLastWeekEnd = asUtc(endOfDay(subDays(nowEt, 7)));
+    const monthStart = asUtc(startOfMonth(nowEt));
+    const lastMonthStartZoned = startOfMonth(subMonths(nowEt, 1));
+    const lastMonthStart = asUtc(lastMonthStartZoned);
+    const lastMonthEnd = asUtc(endOfMonth(subMonths(nowEt, 1)));
     // MTD comparison: last month from the 1st up to the *same day-of-month*
     // we're at today. Capped to lastMonthEnd so the 31st of a 30-day month
     // doesn't overflow.
-    const lastMonthSamePeriodEndRaw = new Date(lastMonthStart);
-    lastMonthSamePeriodEndRaw.setDate(
-      Math.min(nowEt.getDate(), getDaysInMonth(lastMonthStart))
+    const lastMonthSamePeriodEndZoned = new Date(lastMonthStartZoned);
+    lastMonthSamePeriodEndZoned.setDate(
+      Math.min(nowEt.getDate(), getDaysInMonth(lastMonthStartZoned))
     );
-    const lastMonthSamePeriodEnd = endOfDay(lastMonthSamePeriodEndRaw);
+    const lastMonthSamePeriodEnd = asUtc(
+      endOfDay(lastMonthSamePeriodEndZoned)
+    );
 
     // Single sweep covers the widest needed window (start of last month).
     const earliestDate = lastMonthStart;
@@ -95,7 +126,7 @@ export async function GET(request: NextRequest) {
         ? prisma.amazonOrder.findMany({
             where: {
               storeIndex: { in: amazonStoreIndexes },
-              purchaseDate: { gte: earliestDate, lte: nowEt },
+              purchaseDate: { gte: earliestDate, lte: realNow },
               status: { notIn: CANCELLED_AMAZON },
             },
             select: { purchaseDate: true, orderTotal: true },
@@ -104,7 +135,7 @@ export async function GET(request: NextRequest) {
       walmartSelected
         ? prisma.walmartOrder.findMany({
             where: {
-              orderDate: { gte: earliestDate, lte: nowEt },
+              orderDate: { gte: earliestDate, lte: realNow },
               status: { notIn: CANCELLED_WALMART },
             },
             select: { orderDate: true, orderTotal: true },
@@ -122,8 +153,9 @@ export async function GET(request: NextRequest) {
     }));
     const allSeed = [...amzSeed, ...wmtSeed];
 
-    const periods = buildPeriods(allSeed, {
+    const windows = {
       todayStart,
+      realNow,
       nowEt,
       yesterdayStart,
       yesterdayEnd,
@@ -133,36 +165,14 @@ export async function GET(request: NextRequest) {
       lastMonthStart,
       lastMonthEnd,
       lastMonthSamePeriodEnd,
-    });
+    };
 
+    const periods = buildPeriods(allSeed, windows);
     const amazonBreakdown = amzSeed.length
-      ? buildPeriods(amzSeed, {
-          todayStart,
-          nowEt,
-          yesterdayStart,
-          yesterdayEnd,
-          sameDayLastWeekStart,
-          sameDayLastWeekEnd,
-          monthStart,
-          lastMonthStart,
-          lastMonthEnd,
-          lastMonthSamePeriodEnd,
-        })
+      ? buildPeriods(amzSeed, windows)
       : null;
-
     const walmartBreakdown = wmtSeed.length
-      ? buildPeriods(wmtSeed, {
-          todayStart,
-          nowEt,
-          yesterdayStart,
-          yesterdayEnd,
-          sameDayLastWeekStart,
-          sameDayLastWeekEnd,
-          monthStart,
-          lastMonthStart,
-          lastMonthEnd,
-          lastMonthSamePeriodEnd,
-        })
+      ? buildPeriods(wmtSeed, windows)
       : null;
 
     return NextResponse.json({
@@ -190,6 +200,12 @@ function buildPeriods(
   seed: PeriodSeed[],
   windows: {
     todayStart: Date;
+    /** Real UTC `now` — used as the upper bound for any open-ended
+     *  period (today, MTD). Must be the actual current instant, not
+     *  the zoned wall-clock version. */
+    realNow: Date;
+    /** Wall-clock ET version of `now`. Used only for forecast math
+     *  where we need the ET date components (day-of-month, hour-of-day). */
     nowEt: Date;
     yesterdayStart: Date;
     yesterdayEnd: Date;
@@ -212,13 +228,13 @@ function buildPeriods(
       .filter((o) => o.date >= from && o.date <= to)
       .reduce((sum, o) => sum + (o.total || 0), 0);
 
-  const today = sumInRange(windows.todayStart, windows.nowEt);
+  const today = sumInRange(windows.todayStart, windows.realNow);
   const yesterday = sumInRange(windows.yesterdayStart, windows.yesterdayEnd);
   const sameDayLastWeek = sumInRange(
     windows.sameDayLastWeekStart,
     windows.sameDayLastWeekEnd
   );
-  const mtd = sumInRange(windows.monthStart, windows.nowEt);
+  const mtd = sumInRange(windows.monthStart, windows.realNow);
   const lastMonth = sumInRange(windows.lastMonthStart, windows.lastMonthEnd);
   const lastMonthSamePeriod = sumInRange(
     windows.lastMonthStart,
