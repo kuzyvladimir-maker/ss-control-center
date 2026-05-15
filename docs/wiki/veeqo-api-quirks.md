@@ -290,6 +290,23 @@ Headers:
 
 **Как ловится в будущем:** если PDF получается <1KB или не начинается с `%PDF-` — это не PDF. Proxy endpoint валидирует это явно и отдаёт 502 вместо ложного PDF.
 
+### 11.1 `shipment.label_url` может вообще отсутствовать в ответе на покупку (2026-05-15)
+
+**Проблема:** Заказ 114-8515802-0978666 успешно купился (UPS Ground Saver через Ship Date Trick на пн 5/18), но PDF не попал в Drive. В Drive-папке `Shipping Labels / 05 May / …` появилась только обычная папка `14`, папки `18` не было. BuyReport модалка показывала «Open PDF», но линк вёл на наш proxy `/api/shipping/label-pdf?shipmentId=…`, а не на Drive.
+
+**Cause:** Veeqo иногда **не возвращает** `label_url` в ответе `POST /shipping/shipments`. Старый код проверял `if (rawLabelUrl) { … }` и при отсутствии поля пропускал весь блок PDF-fetch + Drive-upload + disk-save, сразу падая на proxy fallback. Папка `18` не создавалась, в Drive ничего не клалось.
+
+**Fix:** строить PDF URL прямо из `shipment.id`, не доверяя `shipment.label_url`. Endpoint `/shipping/labels?shipment_ids[]=X&format=pdf` идентичен тому что было бы в `label_url`, а `shipment.id` всегда есть в ответе.
+
+```ts
+const shipmentId = shipment?.id ?? shipment?.shipment?.id ?? null;
+if (shipmentId) {
+  veeqoLabelUrl = `${base}/shipping/labels?shipment_ids%5B%5D=${shipmentId}&format=pdf`;
+}
+```
+
+Commit: `00fc89f` (2026-05-15).
+
 ---
 
 ## 12. Отмена этикетки: order.status — единственный надёжный сигнал состояния заказа (2026-05-14)
