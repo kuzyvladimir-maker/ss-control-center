@@ -291,32 +291,25 @@ export async function POST(request: NextRequest) {
         //      so the operator can always click "Open PDF" in the modal
         //      even if Drive and disk both failed).
         let labelPath: string | null = null;
-        const rawLabelUrl: string | null =
-          shipment?.label_url ||
-          shipment?.shipment?.label_url ||
-          shipment?.label?.url ||
-          null;
+        const shipmentId =
+          shipment?.id ?? shipment?.shipment?.id ?? null;
 
-        // Veeqo's shipment.label_url is a RELATIVE path like
-        //   "/shipping/labels?shipment_ids[]=1194231799"
-        // and that endpoint, hit naively, returns JSON
-        //   {"labels_count": 1}
-        // (a *count*, not the PDF). To actually get the PDF we must:
-        //   * prepend the API base URL,
-        //   * send the x-api-key auth header (relative URL doesn't carry it),
-        //   * append `format=pdf`.
-        // Discovered 2026-05-14 by /tmp/probe.mjs against shipment 1194231799.
+        // Build the Veeqo PDF URL from `shipment.id` directly rather
+        // than trusting `shipment.label_url`. Empirically, Veeqo
+        // sometimes omits `label_url` from the `POST /shipping/shipments`
+        // response (observed 2026-05-14 on order 114-8515802-0978666 —
+        // buy succeeded, but `label_url` was absent → Drive upload was
+        // skipped entirely and the PDF never made it to Drive). The
+        // `/shipping/labels?shipment_ids[]=X&format=pdf` endpoint is
+        // identical to what `label_url` would point to, so deriving it
+        // from `shipment.id` is more reliable and matches what the
+        // `/api/shipping/label-pdf` proxy does anyway.
         let veeqoLabelUrl: string | null = null;
         let veeqoLabelFetchOpts: RequestInit | undefined;
-        if (rawLabelUrl) {
+        if (shipmentId) {
           const base = process.env.VEEQO_BASE_URL || "https://api.veeqo.com";
-          const absolute = rawLabelUrl.startsWith("http")
-            ? rawLabelUrl
-            : `${base}${rawLabelUrl}`;
-          const withFormat = absolute.includes("format=")
-            ? absolute
-            : absolute + (absolute.includes("?") ? "&" : "?") + "format=pdf";
-          veeqoLabelUrl = withFormat;
+          veeqoLabelUrl =
+            `${base}/shipping/labels?shipment_ids%5B%5D=${shipmentId}&format=pdf`;
           veeqoLabelFetchOpts = {
             headers: {
               "x-api-key": process.env.VEEQO_API_KEY || "",
@@ -334,6 +327,20 @@ export async function POST(request: NextRequest) {
               );
             } else {
               const pdfBuf = Buffer.from(await pdfRes.arrayBuffer());
+              // Magic-byte guard. Same endpoint without format=pdf
+              // returns the JSON counter `{"labels_count": 1}` (~18
+              // bytes). If we somehow got that back, skip persistence
+              // rather than pollute Drive with junk masquerading as PDF.
+              const isPdf =
+                pdfBuf.length >= 1000 &&
+                pdfBuf.slice(0, 5).toString("ascii") === "%PDF-";
+              if (!isPdf) {
+                console.error(
+                  `[buy] Veeqo returned non-PDF (${pdfBuf.length} bytes): ${pdfBuf
+                    .slice(0, 80)
+                    .toString("utf-8")}`
+                );
+              } else {
               const filename = buildPdfFilename(item);
               const folderPath = buildFolderPath(item);
 
@@ -369,6 +376,7 @@ export async function POST(request: NextRequest) {
                   );
                 }
               }
+              }
             }
           } catch (pdfErr) {
             console.error("[buy] PDF persistence error:", pdfErr);
@@ -381,8 +389,6 @@ export async function POST(request: NextRequest) {
         // fetches the PDF on the server (with auth) and streams it
         // back. Same-origin, no auth issues, always works as long as
         // the shipment exists in Veeqo.
-        const shipmentId =
-          shipment?.id ?? shipment?.shipment?.id ?? null;
         if (!labelPath && shipmentId) {
           labelPath = `/api/shipping/label-pdf?shipmentId=${shipmentId}`;
         }
