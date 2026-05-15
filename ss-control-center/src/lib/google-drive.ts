@@ -4,24 +4,34 @@
 // the folder `Shipping Labels`:
 //   MM Month / DD / Channel / <filename>.pdf
 //
-// Authentication uses a Google service account. The service account
-// JSON key must be available as the `GOOGLE_SERVICE_ACCOUNT_JSON` env
-// var (single-line JSON or base64-encoded JSON — both handled). The
-// target folder (env `GOOGLE_DRIVE_ROOT_FOLDER`) must be shared with
-// the service account's email, with at least Editor access.
+// Authentication uses OAuth2 on behalf of a real Google user.
+// We tried a service account first but personal-Gmail Drive doesn't
+// allow service accounts to actually write — they don't have any
+// storage quota of their own and you'd need Workspace Shared Drives
+// for that to work, which kuzy.vladimir@gmail.com (the folder owner)
+// doesn't have. So we fell back to the same approach Jackie's n8n
+// flow uses: OAuth refresh token on behalf of that same user.
 //
-// Behaviour: if either env var is missing or auth fails, every function
-// in this module returns `null` and the caller falls back to whatever
-// URL is available (typically Veeqo's hosted label URL). The buy flow
-// is never blocked by Drive being unavailable.
+// Required env vars:
+//   GOOGLE_OAUTH_CLIENT_ID
+//   GOOGLE_OAUTH_CLIENT_SECRET
+//   GOOGLE_OAUTH_REFRESH_TOKEN  (with scope auth/drive or auth/drive.file)
+//   GOOGLE_DRIVE_ROOT_FOLDER    (or GOOGLE_DRIVE_SHIPPING_LABELS_FOLDER_ID)
+//
+// Behaviour: if anything is missing or auth fails, uploadLabelPdf
+// returns `{ ok: false, reason }` with a human-readable explanation,
+// and the buy flow falls back to the `/api/shipping/label-pdf` proxy
+// (label still purchasable, just not archived to Drive).
 
 import { google, type drive_v3 } from "googleapis";
 import { Readable } from "stream";
 
 // Lazy-initialised Drive client. Re-used across requests for the
-// lifetime of the serverless function instance.
+// lifetime of the serverless function instance. We never cache the
+// failure case any more — env vars or token state can change between
+// invocations and a permanent sticky failure mode is worse than
+// retrying.
 let driveClient: drive_v3.Drive | null = null;
-let driveClientError: string | null = null;
 
 function getDriveRootFolderId(): string | null {
   return (
@@ -31,54 +41,42 @@ function getDriveRootFolderId(): string | null {
   );
 }
 
-function getDriveClient(): drive_v3.Drive | null {
-  if (driveClient) return driveClient;
-  if (driveClientError) return null;
+type DriveClientOutcome =
+  | { ok: true; drive: drive_v3.Drive }
+  | { ok: false; reason: string };
 
-  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
-  if (!raw) {
-    driveClientError = "GOOGLE_SERVICE_ACCOUNT_JSON not set";
-    return null;
+function getDriveClient(): DriveClientOutcome {
+  if (driveClient) return { ok: true, drive: driveClient };
+
+  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_OAUTH_REFRESH_TOKEN;
+
+  const missing: string[] = [];
+  if (!clientId) missing.push("GOOGLE_OAUTH_CLIENT_ID");
+  if (!clientSecret) missing.push("GOOGLE_OAUTH_CLIENT_SECRET");
+  if (!refreshToken) missing.push("GOOGLE_OAUTH_REFRESH_TOKEN");
+  if (missing.length) {
+    return { ok: false, reason: `${missing.join(", ")} not set` };
   }
 
   try {
-    // Accept either raw JSON or base64-encoded JSON. Vercel sometimes
-    // mangles multi-line env vars; base64 sidesteps that.
-    let parsed: Record<string, unknown>;
-    const trimmed = raw.trim();
-    if (trimmed.startsWith("{")) {
-      parsed = JSON.parse(trimmed);
-    } else {
-      const decoded = Buffer.from(trimmed, "base64").toString("utf-8");
-      parsed = JSON.parse(decoded);
-    }
-
-    // Cast to satisfy GoogleAuth's credentials type without dragging
-    // in the deep typing — the runtime accepts any object shaped like
-    // a service account key (private_key, client_email, etc.).
-    const auth = new google.auth.GoogleAuth({
-      credentials: parsed as {
-        client_email?: string;
-        private_key?: string;
-        [k: string]: unknown;
-      },
-      scopes: ["https://www.googleapis.com/auth/drive"],
-    });
+    const auth = new google.auth.OAuth2(clientId, clientSecret);
+    auth.setCredentials({ refresh_token: refreshToken });
     driveClient = google.drive({ version: "v3", auth });
-    return driveClient;
+    return { ok: true, drive: driveClient };
   } catch (e) {
-    driveClientError = `service account parse/auth failed: ${
-      e instanceof Error ? e.message : String(e)
-    }`;
-    console.error("[drive]", driveClientError);
-    return null;
+    return {
+      ok: false,
+      reason: `OAuth client init failed: ${
+        e instanceof Error ? e.message : String(e)
+      }`,
+    };
   }
 }
 
 // Returns the existing folder's id if one named `name` lives directly
-// under `parentId`, otherwise creates it and returns the new id. We
-// always pass `supportsAllDrives: true` so this works against shared
-// drives and "Shared with me" folders both.
+// under `parentId`, otherwise creates it and returns the new id.
 async function getOrCreateFolder(
   drive: drive_v3.Drive,
   parentId: string,
@@ -154,10 +152,9 @@ export async function uploadLabelPdf(params: {
   filename: string;
   pdf: Buffer;
 }): Promise<DriveUploadOutcome> {
-  const drive = getDriveClient();
-  if (!drive) {
-    return { ok: false, reason: driveClientError ?? "Drive client unavailable" };
-  }
+  const driveOutcome = getDriveClient();
+  if (!driveOutcome.ok) return { ok: false, reason: driveOutcome.reason };
+  const drive = driveOutcome.drive;
 
   const rootId = getDriveRootFolderId();
   if (!rootId) {
@@ -212,15 +209,21 @@ export async function uploadLabelPdf(params: {
   }
 }
 
-// Diagnostic — returns the reason Drive is unconfigured, if any. Useful
-// for surfacing "not set up" warnings in the UI without leaking the
-// service account JSON itself.
+// Diagnostic — returns the reason Drive is unconfigured, if any. Used
+// by /api/integrations so the operator can see configuration health
+// without spelunking server logs.
 export function getDriveStatus(): {
   configured: boolean;
   reason: string | null;
 } {
-  if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-    return { configured: false, reason: "GOOGLE_SERVICE_ACCOUNT_JSON not set" };
+  const missing: string[] = [];
+  if (!process.env.GOOGLE_OAUTH_CLIENT_ID) missing.push("GOOGLE_OAUTH_CLIENT_ID");
+  if (!process.env.GOOGLE_OAUTH_CLIENT_SECRET)
+    missing.push("GOOGLE_OAUTH_CLIENT_SECRET");
+  if (!process.env.GOOGLE_OAUTH_REFRESH_TOKEN)
+    missing.push("GOOGLE_OAUTH_REFRESH_TOKEN");
+  if (missing.length) {
+    return { configured: false, reason: `${missing.join(", ")} not set` };
   }
   if (!getDriveRootFolderId()) {
     return {
@@ -228,9 +231,6 @@ export function getDriveStatus(): {
       reason:
         "GOOGLE_DRIVE_ROOT_FOLDER not set (or GOOGLE_DRIVE_SHIPPING_LABELS_FOLDER_ID)",
     };
-  }
-  if (driveClientError) {
-    return { configured: false, reason: driveClientError };
   }
   return { configured: true, reason: null };
 }
