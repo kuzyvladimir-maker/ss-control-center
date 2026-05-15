@@ -28,7 +28,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "=Bearer {{$env.CRON_SECRET}}"
+              "value": "=Bearer {{$env.SSCC_API_TOKEN}}"
             }
           ]
         },

@@ -6,17 +6,12 @@
 // (or never — the rules engine just returns "ok" when the table is empty,
 // which is degraded but not broken).
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_RULES } from "@/lib/frozen-analytics/default-rules";
 
-export async function POST(request: NextRequest) {
-  const auth = request.headers.get("authorization");
-  const secret = process.env.CRON_SECRET;
-  if (secret && auth && auth !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+// Auth: handled by /api/* middleware (session cookie OR SSCC_API_TOKEN).
+export async function POST() {
   let created = 0;
   for (const r of DEFAULT_RULES) {
     const existing = await prisma.frozenRule.findUnique({

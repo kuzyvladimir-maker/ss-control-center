@@ -1,27 +1,19 @@
 // POST /api/frozen/run-analysis
 //
-// Trigger the Frozen Analytics v2 pipeline. Two auth paths:
-//   1. n8n cron — `Authorization: Bearer ${CRON_SECRET}` (production).
-//   2. Logged-in operator hitting the "Run analysis now" button — no Bearer,
-//      but the browser already carries the session cookie. We only enforce
-//      CRON_SECRET when the env var is set, so local dev without CRON_SECRET
-//      still works.
+// Trigger the Frozen Analytics v2 pipeline. Auth is enforced by the
+// project-wide /api/* middleware in src/proxy.ts — accepts either a logged-
+// in session cookie (operator clicking "Run analysis") OR `Authorization:
+// Bearer ${SSCC_API_TOKEN}` (n8n / external automation).
 //
 // Returns the PipelineResult summary so n8n can decide whether to fire a
 // Telegram error alert (errors > 0).
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { runFrozenAnalysisPipeline } from "@/lib/frozen-analytics/pipeline";
 
 export const maxDuration = 300; // Vercel: allow up to 5 min
 
-export async function POST(request: NextRequest) {
-  const auth = request.headers.get("authorization");
-  const secret = process.env.CRON_SECRET;
-  if (secret && auth && auth !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export async function POST() {
   try {
     const result = await runFrozenAnalysisPipeline();
     return NextResponse.json(result);

@@ -25,7 +25,8 @@ Set these in n8n under **Settings → Environment Variables** (or in the
 `.env` file on the VPS if you're using docker-compose):
 
 - `NEXTJS_BASE_URL` — e.g. `https://salutemsolutions.info`
-- `CRON_SECRET` — same value as in Vercel project env
+- `SSCC_API_TOKEN` — same value as in Vercel project env (`/api/*`
+  middleware accepts this as a Bearer token for admin-equivalent access)
 - `TELEGRAM_CHAT_ID` — default chat for the morning summary (Vladimir's DM)
 - `TELEGRAM_ALERT_CHAT_ID` — group/channel for error alerts
 
