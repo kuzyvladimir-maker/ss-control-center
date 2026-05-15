@@ -456,6 +456,24 @@ export async function GET(request: NextRequest) {
               )
             : -1;
 
+          // Compute cal-days-in-transit for the rate just picked, so the
+          // Monday-shift guard below can recognise borderline-Frozen
+          // picks. We re-derive instead of asking selectBestRate to
+          // return it, because that function's signature is shared with
+          // the Monday selection too and we want one source of truth
+          // for the math (`veeqoDateToLocal` + date diff).
+          let selectedCalDays: number = -1;
+          if (selectedRate) {
+            const eddLocal = veeqoDateToLocal(
+              selectedRate.delivery_promise_date
+            );
+            const eddDate = new Date(eddLocal + "T00:00:00");
+            const shipDate = new Date(actualShipDay + "T00:00:00");
+            selectedCalDays = Math.round(
+              (eddDate.getTime() - shipDate.getTime()) / 86_400_000
+            );
+          }
+
           // Skip Monday-shift attempts that can't possibly win:
           //   * non-Frozen orders (no 3-day constraint to relieve)
           //   * Monday is past the marketplace deadline already
@@ -473,6 +491,14 @@ export async function GET(request: NextRequest) {
           // ≤3-day Frozen rule and deadline). The `selectBestRate`
           // call inside the trick will return null if Monday doesn't
           // work, so loosening the guard is safe.
+          //
+          // 2026-05-15: also fire when today's pick is at the edge
+          // (calDays >= 3). The 3-day cap is the absolute maximum for
+          // frozen food safety — Vladimir flagged order
+          // 112-2707311-2069835 where today's UPS Ground Saver was 3
+          // days exactly and Monday could have given a tighter 1-2 day
+          // EDD. Triggering only on `no rate` / `Saturday surcharge`
+          // missed this case.
           const tryMonday =
             productType === "Frozen" &&
             monDeadlineDays >= 1 &&
@@ -483,7 +509,11 @@ export async function GET(request: NextRequest) {
               // Today's pick involves Saturday surcharge → Monday may be
               // cheaper (Saturday variants are typically $15-25 over the
               // plain version).
-              /saturday/i.test(selectedRate.title || "")
+              /saturday/i.test(selectedRate.title || "") ||
+              // Today's pick is at or above the 3-cal-day Frozen limit.
+              // Monday almost always tightens transit time because the
+              // package skips the weekend purgatory.
+              selectedCalDays >= 3
             );
 
           if (tryMonday) {
@@ -517,11 +547,54 @@ export async function GET(request: NextRequest) {
                 ? parseFloat(mondayPick.total_net_charge)
                 : Infinity;
 
-              if (mondayPick && mondayPrice < todayPrice) {
+              // Cal-days from Monday for the candidate rate — same math
+              // as for `selectedCalDays` above, just anchored at
+              // nextMonday instead of actualShipDay.
+              let mondayCalDays = -1;
+              if (mondayPick) {
+                const eddLocal = veeqoDateToLocal(
+                  mondayPick.delivery_promise_date
+                );
+                const eddDate = new Date(eddLocal + "T00:00:00");
+                const monShipDate = new Date(nextMonday + "T00:00:00");
+                mondayCalDays = Math.round(
+                  (eddDate.getTime() - monShipDate.getTime()) / 86_400_000
+                );
+              }
+
+              // Pick Monday when EITHER it's cheaper OR it gives a
+              // strictly tighter EDD-in-cal-days (food safety wins
+              // over $0.50 of savings). We keep a `selectedRate == null`
+              // branch — when there's no today pick at all, *any* Monday
+              // rate is an improvement.
+              const mondayIsCheaper =
+                mondayPick != null && mondayPrice < todayPrice;
+              const mondayIsSafer =
+                mondayPick != null &&
+                selectedCalDays > 0 &&
+                mondayCalDays > 0 &&
+                mondayCalDays < selectedCalDays;
+              const mondayIsOnlyOption = mondayPick != null && !selectedRate;
+
+              if (mondayIsCheaper || mondayIsSafer || mondayIsOnlyOption) {
                 selectedRate = mondayPick;
-                shipDateNote = `Shifted to Mon ${nextMonday}: saved $${(
-                  todayPrice === Infinity ? 0 : todayPrice - mondayPrice
-                ).toFixed(2)} vs today's pick`;
+                const reasonBits: string[] = [];
+                if (mondayIsCheaper && todayPrice !== Infinity) {
+                  reasonBits.push(
+                    `saved $${(todayPrice - mondayPrice).toFixed(2)}`
+                  );
+                }
+                if (mondayIsSafer) {
+                  reasonBits.push(
+                    `${selectedCalDays}→${mondayCalDays} cal days (frozen rule)`
+                  );
+                }
+                if (mondayIsOnlyOption && reasonBits.length === 0) {
+                  reasonBits.push("no rate from today");
+                }
+                shipDateNote = `Shifted to Mon ${nextMonday}: ${reasonBits.join(
+                  " · "
+                )}`;
               }
             } catch (e) {
               // Trick failed — fall back to today's pick. Don't leak the
