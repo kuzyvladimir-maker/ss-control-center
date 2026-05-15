@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useStoreFilter } from "@/lib/store-filter/StoreFilterContext";
 import { cn } from "@/lib/utils";
@@ -104,33 +105,42 @@ export function SalesCardsRow() {
     );
   }
 
+  // Each sales card is a Link to /analytics scoped to that period. The
+  // analytics page reads `?period=` to scope its tables and charts to
+  // the same window the dashboard card summarised — letting the operator
+  // drill from a headline number into the underlying orders.
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       <SalesCard
         title="Sales today"
+        href="/analytics?period=today"
         value={data.today.value}
         comparison={data.today.comparison}
         comparisonLabel="vs yesterday"
       />
       <SalesCard
         title="Sales yesterday"
+        href="/analytics?period=yesterday"
         value={data.yesterday.value}
         comparison={data.yesterday.comparison}
         comparisonLabel="vs last week"
       />
       <SalesCard
         title="Month to date"
+        href="/analytics?period=mtd"
         value={data.mtd.value}
         comparison={data.mtd.comparison}
         comparisonLabel="vs last mo. same period"
       />
       <SalesCard
         title="Last month"
+        href="/analytics?period=lastMonth"
         value={data.lastMonth.value}
         comparison={null}
       />
       <SalesCard
         title="Forecast"
+        href="/analytics?period=forecast"
         value={data.forecast.value}
         comparison={data.forecast.comparison}
         comparisonLabel="vs last month"
@@ -148,6 +158,7 @@ function SalesCard({
   comparisonLabel,
   forecastReason,
   isForecast,
+  href,
 }: {
   title: string;
   value: number | null;
@@ -155,6 +166,9 @@ function SalesCard({
   comparisonLabel?: string;
   forecastReason?: string;
   isForecast?: boolean;
+  /** Drilldown destination — clicking the card navigates here. Without
+   *  it the card renders as a plain div. */
+  href?: string;
 }) {
   const formatted = value === null ? "—" : formatMoney(value);
   const percent = comparison?.percent ?? null;
@@ -169,11 +183,17 @@ function SalesCard({
         ? TrendingDown
         : Minus;
 
+  const Wrapper = href ? Link : "div";
+  const wrapperProps: Record<string, unknown> = href ? { href } : {};
+
   return (
-    <div
+    <Wrapper
+      {...(wrapperProps as { href: string })}
       className={cn(
-        "rounded-lg border border-rule bg-surface p-4",
-        isForecast && "bg-surface-tint"
+        "block rounded-lg border border-rule bg-surface p-4 transition-colors",
+        isForecast && "bg-surface-tint",
+        href &&
+          "cursor-pointer hover:border-green-mid/40 hover:bg-bg-elev/40"
       )}
     >
       <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-ink-3">
@@ -215,7 +235,7 @@ function SalesCard({
       {!comparison && forecastReason && (
         <div className="mt-2 text-[11.5px] text-ink-3">{forecastReason}</div>
       )}
-    </div>
+    </Wrapper>
   );
 }
 

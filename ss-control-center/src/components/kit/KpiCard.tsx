@@ -1,8 +1,13 @@
 /**
  * KPI card — used on Dashboard / Shipping Labels / Adjustments / etc.
  * Supports a sparkline, trend, sub-text, chips, or progress bar in foot.
+ *
+ * Passing `href` turns the whole card into a navigation surface (Link)
+ * with a hover affordance, so the operator can drill from a tile to the
+ * detailed section without hunting for a button.
  */
 
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface KpiCardProps {
@@ -17,6 +22,8 @@ interface KpiCardProps {
   sparkline?: number[];
   accent?: boolean;
   className?: string;
+  /** When set, the entire card becomes a Link to this destination. */
+  href?: string;
 }
 
 const CHIP_PALETTE: Record<NonNullable<KpiCardProps["chips"]>[number]["variant"] & string, { bg: string; color: string }> = {
@@ -84,13 +91,23 @@ export function KpiCard({
   sparkline,
   accent,
   className,
+  href,
 }: KpiCardProps) {
   const iconPalette = ICON_BG[iconVariant];
+  const Wrapper = href ? Link : "div";
+  // Type assertion below keeps Wrapper polymorphic without spreading
+  // both href and non-href shapes everywhere.
+  const wrapperProps: Record<string, unknown> = href
+    ? { href }
+    : {};
   return (
-    <div
+    <Wrapper
+      {...(wrapperProps as { href: string })}
       className={cn(
-        "rounded-lg border border-rule p-4",
+        "block rounded-lg border border-rule p-4 transition-colors",
         accent ? "bg-green-soft" : "bg-surface",
+        href &&
+          "cursor-pointer hover:border-green-mid/40 hover:bg-bg-elev/40",
         className
       )}
     >
@@ -172,6 +189,6 @@ export function KpiCard({
           })}
         </div>
       )}
-    </div>
+    </Wrapper>
   );
 }

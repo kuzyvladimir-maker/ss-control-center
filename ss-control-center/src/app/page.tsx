@@ -41,6 +41,7 @@ interface DashboardData {
   customerService: { openCases: number };
   claims: { active: number };
   health: { issues: number };
+  procurement: { ordersToBuy: number };
   adjustments: { monthlyTotal: number };
   walmart?: {
     ordersTotal30d: number;
@@ -356,15 +357,15 @@ export default function DashboardPage() {
           see docs/SALES_CARDS_DASHBOARD_SPEC_v1_0.md */}
       <SalesCardsRow />
 
-      {/* KPI row */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Operations KPI row — one tile per module, every tile clickable
+          → opens the corresponding section so the operator can drill in
+          from any number. 5 columns at lg covering Shipping, Procurement,
+          Customer hub, Account Health, Adjustments. The Adjustments tile
+          shows the 30d cost-recovery total since that's the one number
+          the operator wants to see at a glance from this surface. */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <KpiCard
-          label="Orders 30d"
-          value={data?.orders.total30d ?? "—"}
-          icon={<ShoppingCart size={14} />}
-          trend={{ value: `S1 ${data?.orders.store1 ?? 0} · S2 ${data?.orders.store2 ?? 0}`, subText: "by store" }}
-        />
-        <KpiCard
+          href="/shipping"
           label="Awaiting ship"
           value={totalToShip}
           icon={<Truck size={14} />}
@@ -373,6 +374,20 @@ export default function DashboardPage() {
           ]}
         />
         <KpiCard
+          href="/procurement"
+          label="To buy"
+          value={data?.procurement.ordersToBuy ?? 0}
+          icon={<ShoppingCart size={14} />}
+          iconVariant={
+            (data?.procurement.ordersToBuy ?? 0) > 0 ? "warn" : "default"
+          }
+          trend={{
+            value: `${data?.orders.total30d ?? 0} orders 30d`,
+            subText: `S1 ${data?.orders.store1 ?? 0} · S2 ${data?.orders.store2 ?? 0}`,
+          }}
+        />
+        <KpiCard
+          href="/customer-hub"
           label="Cases open"
           value={data?.customerService.openCases ?? 0}
           icon={<MessageSquare size={14} />}
@@ -384,6 +399,7 @@ export default function DashboardPage() {
           }
         />
         <KpiCard
+          href="/account-health"
           label="Health issues"
           value={(data?.health.issues ?? 0) + (data?.walmart?.healthIssues ?? 0)}
           icon={<HeartPulse size={14} />}
@@ -392,12 +408,25 @@ export default function DashboardPage() {
               ? "danger"
               : "default"
           }
+        />
+        <KpiCard
+          href="/adjustments"
+          label="Adjustments 30d"
+          value={
+            data?.adjustments.monthlyTotal
+              ? `$${Math.abs(data.adjustments.monthlyTotal).toFixed(0)}`
+              : "$0"
+          }
+          icon={<Receipt size={14} />}
+          iconVariant={
+            (data?.adjustments.monthlyTotal ?? 0) < 0 ? "warn" : "default"
+          }
           trend={
             data?.adjustments.monthlyTotal && data.adjustments.monthlyTotal < 0
               ? {
-                  value: `$${Math.abs(data.adjustments.monthlyTotal).toFixed(2)}`,
+                  value: "loss",
                   positive: false,
-                  subText: "adj 30d",
+                  subText: "recover via Adjustments",
                 }
               : undefined
           }
@@ -410,23 +439,27 @@ export default function DashboardPage() {
       {data?.walmart && hasWalmart && (
         <div className="grid gap-3 sm:grid-cols-4">
           <KpiCard
+            href="/shipping"
             label="Walmart 30d"
             value={data.walmart.ordersTotal30d}
             icon={<StoreAvatar store="walmart" size="sm" />}
             trend={{ value: `${data.walmart.ordersToday} today` }}
           />
           <KpiCard
+            href="/customer-hub"
             label="Walmart returns"
             value={data.walmart.returnsPending}
             icon={<Receipt size={14} />}
             iconVariant={data.walmart.returnsPending > 0 ? "warn" : "default"}
           />
           <KpiCard
+            href="/adjustments"
             label="Walmart refunds 7d"
             value={`$${data.walmart.refundsLast7d.toFixed(0)}`}
             icon={<Receipt size={14} />}
           />
           <KpiCard
+            href="/account-health"
             label="Walmart health"
             value={
               data.walmart.healthStatus === "no-data"
