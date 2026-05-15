@@ -185,12 +185,26 @@ export async function POST(request: NextRequest) {
           const liveResp = await getShippingRates(item.allocationId);
           const liveRates: Record<string, unknown>[] =
             (liveResp?.available as Record<string, unknown>[]) || [];
+          // CRITICAL: match by `name` (= the per-service UUID), NOT by
+          // `remote_shipment_id`. The latter is the same value for ALL
+          // rates within one allocation (Veeqo verified 2026-05-15:
+          // 16 different rates on one allocation, all rsi=prb1fd6e1be),
+          // so find() by rsi returns whichever rate is FIRST in the
+          // array — almost always FedEx Ground Economy (SmartPost) —
+          // regardless of which carrier we actually picked. This caused
+          // every buy to send the SmartPost VAS contract (or lack
+          // thereof) to Veeqo, hitting INVALID_VALUE_ADDED_SERVICES on
+          // every UPS Ground Saver, FedEx Home Delivery, etc.
           const match =
+            liveRates.find((r) => String(r.name) === item.serviceType) ??
+            // Fallback: match by sub_carrier_id + service title. Useful
+            // if Veeqo regenerates `name` UUIDs between fetches (not
+            // observed yet, but cheap to be defensive).
             liveRates.find(
               (r) =>
-                String(r.remote_shipment_id) === item.remoteShipmentId
-            ) ??
-            liveRates.find((r) => String(r.name) === item.serviceType);
+                String(r.sub_carrier_id) === item.subCarrierId &&
+                String(r.title) === item.service
+            );
           if (match) {
             liveVas = extractVasFromRate(match);
             // Capture every field whose name might hint at VAS or rate
