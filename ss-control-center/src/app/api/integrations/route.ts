@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStoreCredentials } from "@/lib/amazon-sp-api/auth";
 import { getWalmartStoreStatus } from "@/lib/walmart";
+import { getDriveStatus } from "@/lib/google-drive";
 
 export async function GET() {
   const integrations = [];
@@ -44,10 +45,13 @@ export async function GET() {
   });
 
   // Google Drive
+  const drive = getDriveStatus();
   integrations.push({
     name: "Google Drive",
-    status: process.env.GOOGLE_DRIVE_ROOT_FOLDER ? "connected" : "not_configured",
-    detail: process.env.GOOGLE_DRIVE_ROOT_FOLDER ? "Labels folder configured" : "Add GOOGLE_DRIVE_ROOT_FOLDER to .env",
+    status: drive.configured ? "connected" : "not_configured",
+    detail: drive.configured
+      ? "Labels folder and service account configured"
+      : drive.reason ?? "Add Google Drive env vars",
   });
 
   // Telegram

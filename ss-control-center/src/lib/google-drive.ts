@@ -23,6 +23,14 @@ import { Readable } from "stream";
 let driveClient: drive_v3.Drive | null = null;
 let driveClientError: string | null = null;
 
+function getDriveRootFolderId(): string | null {
+  return (
+    process.env.GOOGLE_DRIVE_ROOT_FOLDER ||
+    process.env.GOOGLE_DRIVE_SHIPPING_LABELS_FOLDER_ID ||
+    null
+  );
+}
+
 function getDriveClient(): drive_v3.Drive | null {
   if (driveClient) return driveClient;
   if (driveClientError) return null;
@@ -151,9 +159,13 @@ export async function uploadLabelPdf(params: {
     return { ok: false, reason: driveClientError ?? "Drive client unavailable" };
   }
 
-  const rootId = process.env.GOOGLE_DRIVE_ROOT_FOLDER;
+  const rootId = getDriveRootFolderId();
   if (!rootId) {
-    return { ok: false, reason: "GOOGLE_DRIVE_ROOT_FOLDER not set" };
+    return {
+      ok: false,
+      reason:
+        "GOOGLE_DRIVE_ROOT_FOLDER not set (or GOOGLE_DRIVE_SHIPPING_LABELS_FOLDER_ID)",
+    };
   }
 
   try {
@@ -210,8 +222,12 @@ export function getDriveStatus(): {
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
     return { configured: false, reason: "GOOGLE_SERVICE_ACCOUNT_JSON not set" };
   }
-  if (!process.env.GOOGLE_DRIVE_ROOT_FOLDER) {
-    return { configured: false, reason: "GOOGLE_DRIVE_ROOT_FOLDER not set" };
+  if (!getDriveRootFolderId()) {
+    return {
+      configured: false,
+      reason:
+        "GOOGLE_DRIVE_ROOT_FOLDER not set (or GOOGLE_DRIVE_SHIPPING_LABELS_FOLDER_ID)",
+    };
   }
   if (driveClientError) {
     return { configured: false, reason: driveClientError };
