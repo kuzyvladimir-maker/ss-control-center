@@ -1123,15 +1123,22 @@ function OrderRow({
  *  if parsing fails, so we never blank out useful info. */
 function fmtDate(iso: string | null | undefined): string {
   if (!iso) return "—";
-  // Bare "YYYY-MM-DD" must be anchored to local noon — otherwise
-  // `new Date("2026-05-18")` is parsed as UTC midnight, which renders
-  // as the *previous* day in any TZ west of UTC (e.g. America/New_York
-  // shows 5/17 for a stored 5/18). Anchoring to T12:00:00 keeps the
-  // date stable across all real-world timezones.
-  const looksLikeBareDate = /^\d{4}-\d{2}-\d{2}$/.test(iso);
-  const d = new Date(looksLikeBareDate ? `${iso}T12:00:00` : iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", { month: "numeric", day: "numeric" });
+  // Pull date parts straight from the string head so we never round-
+  // trip through `new Date()` — that's where TZ-related off-by-one
+  // bugs happen. Previously, `new Date("2026-05-18T12:00:00")`
+  // anchored to local noon worked in most browsers, but for inputs
+  // like "2026-05-18T00:00:00.000Z" (which Prisma/Next sometimes
+  // produce for date-typed columns) it rendered as 5/17 in NY TZ.
+  // Stored values are operationally "ship-day calendar dates" —
+  // they have no TZ semantics, just a Y/M/D — so string extraction
+  // is the right model.
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    const month = parseInt(m[2], 10);
+    const day = parseInt(m[3], 10);
+    return `${month}/${day}`;
+  }
+  return iso;
 }
 
 /** Days between marketplace deadline and carrier EDD. Negative → carrier
