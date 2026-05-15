@@ -444,13 +444,23 @@ export async function GET(request: NextRequest) {
           // Skip Monday-shift attempts that can't possibly win:
           //   * non-Frozen orders (no 3-day constraint to relieve)
           //   * Monday is past the marketplace deadline already
+          //     (monDeadlineDays < 1 — Monday IS the deadline or later,
+          //     no carrier delivers same-day for Frozen)
           //   * today already IS Monday — getNextMonday() would return
           //     Mon+7, a full week out. Too aggressive for routine use;
           //     a Monday order with no rate is a real exception that
           //     should surface as a stop and be handled manually.
+          //
+          // 2026-05-14: was `>= 3` which was too strict — for orders
+          // where Monday is just 1-2 days before deadline the trick can
+          // still find a fast Frozen-eligible rate (e.g. UPS Ground
+          // Saver from Monday → 2 cal day EDD that meets both
+          // ≤3-day Frozen rule and deadline). The `selectBestRate`
+          // call inside the trick will return null if Monday doesn't
+          // work, so loosening the guard is safe.
           const tryMonday =
             productType === "Frozen" &&
-            monDeadlineDays >= 3 &&
+            monDeadlineDays >= 1 &&
             dayInfo.dayName !== "Mon" &&
             (
               // No rate found today → trick is our only chance
@@ -525,7 +535,25 @@ export async function GET(request: NextRequest) {
           }
 
           if (!selectedRate && !stopReason) {
-            stopReason = `No rate where EDD ≤ Delivery By (${deliveryBy}). ${rates.length} rates checked.`;
+            // Two distinct "no rate" reasons — surface the right one so
+            // the operator can act (Frozen needs different action than
+            // Dry — typically manual Veeqo purchase with a deadline
+            // override, vs no carrier serves at all).
+            if (productType === "Frozen") {
+              // Count rates that DO meet deadline so we can tell apart
+              // "no rate at all" from "no rate within 3 cal days".
+              const meetingDeadline = rates.filter((r) => {
+                const eddLocal = veeqoDateToLocal(r.delivery_promise_date);
+                const eddDate = new Date(eddLocal + "T00:00:00");
+                return eddDate <= new Date(deliveryBy + "T23:59:59");
+              }).length;
+              stopReason =
+                meetingDeadline > 0
+                  ? `Frozen — none of ${meetingDeadline}/${rates.length} on-time rates deliver within 3 calendar days (food safety). Monday-shift trick also didn't help.`
+                  : `No rate where EDD ≤ Delivery By (${deliveryBy}). ${rates.length} rates checked.`;
+            } else {
+              stopReason = `No rate where EDD ≤ Delivery By (${deliveryBy}). ${rates.length} rates checked.`;
+            }
           }
         } catch (e) {
           stopReason = `Rates error: ${e instanceof Error ? e.message : String(e)}`;
