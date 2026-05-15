@@ -16,6 +16,11 @@ export interface ProcurementOrderCard extends ProcurementCardData {
   storeName: string;
   customerName: string | null;
   shipBy: string | null;
+  /** Gross total Veeqo recorded for this order (shipping included). Each
+   *  line carries the same value because the order header is rendered
+   *  from the first line via the grouping in this component. */
+  orderTotal: number | null;
+  currency: string | null;
 }
 
 interface ProcurementListProps {
@@ -60,6 +65,21 @@ function shipByUrgency(iso: string | null): "today" | "soon" | "later" | null {
   return "later";
 }
 
+function formatMoney(value: number | null, currency: string | null): string | null {
+  if (value == null || !Number.isFinite(value)) return null;
+  const code = (currency ?? "USD").toUpperCase();
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: code,
+      maximumFractionDigits: 2,
+    }).format(value);
+  } catch {
+    // Bad currency code — fall back to the plain number with the code suffix.
+    return `${value.toFixed(2)} ${code}`;
+  }
+}
+
 function channelDot(channel: string): string {
   const c = channel.toLowerCase();
   if (c.includes("amazon")) return "bg-warn-tint text-warn-strong";
@@ -96,6 +116,7 @@ export function ProcurementList({
         const head = items[0]!;
         const ship = formatShipBy(head.shipBy);
         const urgency = shipByUrgency(head.shipBy);
+        const totalMoney = formatMoney(head.orderTotal, head.currency);
         return (
           <div
             key={orderId}
@@ -156,6 +177,17 @@ export function ProcurementList({
                   <span className="text-ink-4">·</span>
                   <span className="font-medium text-ink-2">
                     {items.length} товаров в заказе
+                  </span>
+                </>
+              )}
+              {totalMoney && (
+                <>
+                  <span className="text-ink-4">·</span>
+                  <span
+                    className="font-medium text-ink"
+                    title="Gross order total (includes shipping) — Veeqo total_price"
+                  >
+                    {totalMoney}
                   </span>
                 </>
               )}

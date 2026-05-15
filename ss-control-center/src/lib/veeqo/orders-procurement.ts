@@ -37,6 +37,14 @@ export interface ProcurementCard {
   // Priority hints
   isPremium: boolean;
   shippingMethod: string | null;
+
+  // Total amount the customer paid INCLUDING shipping — Veeqo's
+  // `total_price` is the gross total, not the subtotal. Falls back to
+  // `subtotal_price` if `total_price` is missing. Repeated on every line
+  // belonging to the same order so the grouping layer (which uses the
+  // first line's fields as the order header) picks it up automatically.
+  orderTotal: number | null;
+  currency: string | null;
 }
 
 // Loose shape of an order returned from the Veeqo API. We use unknown-tolerant
@@ -62,6 +70,10 @@ type VeeqoOrder = Record<string, unknown> & {
   priority?: string;
   customer?: { full_name?: string; first_name?: string; last_name?: string };
   line_items?: VeeqoLineItem[];
+  total_price?: number | string;
+  subtotal_price?: number | string;
+  currency_code?: string;
+  currency?: string;
 };
 
 type VeeqoLineItem = {
@@ -117,6 +129,23 @@ function pickImageUrl(li: VeeqoLineItem): string | null {
     if (typeof c === "string" && c.trim()) return c;
   }
   return null;
+}
+
+/**
+ * Veeqo's `total_price` already includes shipping (it's the gross total the
+ * customer paid). `subtotal_price` is the line-item subtotal pre-shipping
+ * — used as fallback only if total_price is missing/zero.
+ */
+function pickOrderTotal(order: VeeqoOrder): number | null {
+  const total = Number(order.total_price ?? 0);
+  if (Number.isFinite(total) && total > 0) return total;
+  const subtotal = Number(order.subtotal_price ?? 0);
+  if (Number.isFinite(subtotal) && subtotal > 0) return subtotal;
+  return null;
+}
+
+function pickCurrency(order: VeeqoOrder): string | null {
+  return order.currency_code ?? order.currency ?? null;
 }
 
 function pickCustomerName(order: VeeqoOrder): string | null {
@@ -205,6 +234,8 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
         expectedDispatchDate: order.expected_dispatch_date ?? null,
         isPremium: Boolean(order.is_premium ?? order.priority === "premium"),
         shippingMethod: order.delivery_method?.name ?? null,
+        orderTotal: pickOrderTotal(order),
+        currency: pickCurrency(order),
       });
     }
   }

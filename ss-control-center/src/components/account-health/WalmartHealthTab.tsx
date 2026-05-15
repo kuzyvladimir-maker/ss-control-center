@@ -577,6 +577,30 @@ function MetricCardV2({
     );
   }
 
+  // Guard: when an inverted metric (Late shipment is computed as
+  // 100 − onTimeShipment.rate) sees rate === 0, the math becomes
+  // "100% late shipment" which is almost always wrong — it just means
+  // the underlying on-time endpoint returned 0 instead of "no data".
+  // Render NO_DATA in that case rather than alarming Vladimir with a
+  // bogus 100%.
+  if (spec.invert && metric.value === 0 && metric.resultStatus === "OK") {
+    return (
+      <CardShell
+        label={spec.label}
+        window={spec.window}
+        threshold={spec.threshold}
+        tone="default"
+        body={<span className="text-ink-3">No data yet</span>}
+        footer={
+          <span className="text-[10.5px] text-ink-3">
+            Walmart returned 0% on-time shipment for this window — not
+            enough orders to derive a late-shipment rate.
+          </span>
+        }
+      />
+    );
+  }
+
   // Normal "OK" path.
   const displayed = spec.invert ? 100 - metric.value : metric.value;
   const bad =
