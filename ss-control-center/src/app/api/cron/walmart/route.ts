@@ -21,8 +21,6 @@ import { WalmartClient } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { WalmartReturnsApi } from "@/lib/walmart/returns";
 import { WalmartReportsApi } from "@/lib/walmart/reports";
-import { fetchAllPerformanceMetrics } from "@/lib/walmart/seller-performance";
-import { persistPerformanceSnapshots } from "@/lib/walmart/persist-performance";
 import type {
   WalmartOrder,
   WalmartReturn,
@@ -145,30 +143,9 @@ async function syncAdjustments(client: WalmartClient, storeIndex: number) {
   }
 }
 
-async function syncPerformance(client: WalmartClient, storeIndex: number) {
-  try {
-    // Walmart Insights API — one HTTP call per metric, parallel via
-    // Promise.allSettled inside fetchAllPerformanceMetrics. The shared
-    // persist helper writes a WalmartPerformanceSnapshot row per metric
-    // and labels each with GOOD/MONITOR/URGENT/NO_DATA/ERROR.
-    const data = await fetchAllPerformanceMetrics(client);
-    const persisted = await persistPerformanceSnapshots(
-      prisma,
-      storeIndex,
-      data
-    );
-    return {
-      name: "performance",
-      ok: true,
-      snapshots: persisted.snapshotsWritten,
-      okCount: persisted.okCount,
-      noDataCount: persisted.noDataCount,
-      errorCount: persisted.errorCount,
-    };
-  } catch (err) {
-    return { name: "performance", ok: false, error: (err as Error).message };
-  }
-}
+// syncPerformance moved to /api/cron/account-health-walmart so performance
+// snapshots have a single writer; keeping it here would duplicate history
+// rows and let the two crons race on alert evaluation.
 
 // --- DB helpers shared with per-endpoint routes ---
 
@@ -348,12 +325,15 @@ export async function GET(request: NextRequest) {
   }
 
   const startedAt = Date.now();
+  // Performance snapshots intentionally NOT included here — they're owned
+  // by /api/cron/account-health-walmart (03:00 UTC) which also drives the
+  // critical alerts evaluator. Keeping both crons writing snapshots was
+  // doubling history rows and conflicting alert evaluations.
   const results = await Promise.all([
     syncOrders(client, 1, client.credentials.storeName),
     syncReturns(client, 1, client.credentials.storeName),
     syncShipmentMonitor(client, 1),
     syncAdjustments(client, 1),
-    syncPerformance(client, 1),
   ]);
 
   return NextResponse.json({
