@@ -243,12 +243,10 @@ export function AmazonHealthTab({ refreshNonce }: { refreshNonce: number }) {
         </PanelBody>
       </Panel>
 
-      {/* Per-store Performance */}
-      <div className="grid gap-3 lg:grid-cols-2">
-        {data.stores.map((s) => (
-          <PerformanceCard key={s.storeId} row={s} />
-        ))}
-      </div>
+      {/* Performance metrics — single matrix (rows = metrics × cols = stores)
+          replaces the old per-store cards. Much denser on a wide screen and
+          stays usable on mobile via horizontal scroll, same as Policy table. */}
+      <PerformanceMatrix stores={data.stores} />
 
       <Sheet open={!!drill} onOpenChange={(open) => !open && setDrill(null)}>
         <SheetContent side="right" className="w-full sm:max-w-[600px]">
@@ -267,30 +265,28 @@ export function AmazonHealthTab({ refreshNonce }: { refreshNonce: number }) {
   );
 }
 
-// AHR zones — driven by Amazon's actual deactivation policy:
-//   <160  Critical: imminent deactivation risk → red
-//   160-199 At Risk of Deactivation → red (same tier, slightly milder)
-//   200-399 Warned by Amazon → amber/warn
-//   ≥400  Good → green
+// AHR zones — Amazon's actual policy has a single deactivation threshold
+// at 200. Anything ≥ 200 is "Healthy"; Amazon does not warn or downgrade
+// accounts within the 200-1000 band. Below 200 is "At Risk of Deactivation"
+// (the literal label Amazon uses); below 100 we surface as "Critical" so
+// the imminent-risk case stands out visually.
 function zoneLabel(ahr: number) {
-  if (ahr < 160) return "Critical";
+  if (ahr < 100) return "Critical";
   if (ahr < 200) return "At Risk of Deactivation";
-  if (ahr < 400) return "Warned";
-  return "Good";
+  return "Healthy";
 }
 
 function ahrBarClass(ahr: number | null): string {
   if (ahr == null) return "bg-bg-elev";
-  if (ahr < 160) return "bg-danger";
-  if (ahr < 200) return "bg-danger/80";
-  if (ahr < 400) return "bg-warn-strong";
+  if (ahr < 100) return "bg-danger";
+  if (ahr < 200) return "bg-warn-strong";
   return "bg-green";
 }
 
 function ahrTextClass(ahr: number | null): string {
   if (ahr == null) return "text-ink-3";
-  if (ahr < 200) return "text-danger";
-  if (ahr < 400) return "text-warn-strong";
+  if (ahr < 100) return "text-danger";
+  if (ahr < 200) return "text-warn-strong";
   return "text-green";
 }
 
@@ -340,159 +336,201 @@ function AhrRow({ row }: { row: StoreRow }) {
   );
 }
 
-function PerformanceCard({ row }: { row: StoreRow }) {
-  const s = row.snapshot;
-  const lateOver10 = (s?.lateShipmentRate10d ?? 0) >= 4;
-  const lateOver30 = (s?.lateShipmentRate30d ?? 0) >= 4;
-  const cancelOver = (s?.preFulfillmentCancelRate ?? 0) >= 2.5;
-  const vtrUnder = (s?.validTrackingRate ?? 100) <= 95;
-  const otdrUnder =
-    s?.onTimeDeliveryRate != null && s.onTimeDeliveryRate <= 90;
+// Single metric × store matrix. Replaces five per-store cards: rows are the
+// Account Health metrics, columns are stores. Customer Service and Shipping
+// Performance are separated by section bands. Breaches turn red. Each cell
+// also shows the (numerator/denominator) underneath where Amazon supplies it.
+type MetricKey =
+  | "orderDefectRate"
+  | "negativeFeedbackRate"
+  | "atozClaimsRate"
+  | "chargebackRate"
+  | "lateShipmentRate10d"
+  | "lateShipmentRate30d"
+  | "preFulfillmentCancelRate"
+  | "validTrackingRate"
+  | "onTimeDeliveryRate";
 
+interface MetricDef {
+  key: MetricKey;
+  label: string;
+  target: string;
+  /** Returns true if Amazon's threshold is breached. */
+  isBad: (v: number | null | undefined) => boolean;
+  /** Reads the (X of Y) pair from a snapshot, if Amazon supplied it. */
+  fraction: (s: SnapshotLike) => string | null;
+}
+
+type SnapshotLike = StoreRow["snapshot"];
+
+function frac(num: number | null | undefined, den: number | null | undefined): string | null {
+  if (num == null || den == null) return null;
+  return `${num}/${den}`;
+}
+
+const METRICS_CUSTOMER: MetricDef[] = [
+  {
+    key: "orderDefectRate",
+    label: "Order defect rate",
+    target: "< 1%",
+    isBad: (v) => (v ?? 0) >= 1,
+    fraction: () => null,
+  },
+  {
+    key: "negativeFeedbackRate",
+    label: "Negative feedback",
+    target: "",
+    isBad: () => false,
+    fraction: () => null,
+  },
+  {
+    key: "atozClaimsRate",
+    label: "A-to-Z claims",
+    target: "",
+    isBad: () => false,
+    fraction: () => null,
+  },
+  {
+    key: "chargebackRate",
+    label: "Chargebacks",
+    target: "",
+    isBad: () => false,
+    fraction: () => null,
+  },
+];
+
+const METRICS_SHIPPING: MetricDef[] = [
+  {
+    key: "lateShipmentRate10d",
+    label: "Late shipment (10d)",
+    target: "< 4%",
+    isBad: (v) => (v ?? 0) >= 4,
+    fraction: (s) => frac(s?.lsr10dLate, s?.lsr10dTotal),
+  },
+  {
+    key: "lateShipmentRate30d",
+    label: "Late shipment (30d)",
+    target: "< 4%",
+    isBad: (v) => (v ?? 0) >= 4,
+    fraction: (s) => frac(s?.lsr30dLate, s?.lsr30dTotal),
+  },
+  {
+    key: "preFulfillmentCancelRate",
+    label: "Cancel rate (7d)",
+    target: "< 2.5%",
+    isBad: (v) => (v ?? 0) >= 2.5,
+    fraction: (s) => frac(s?.cancelCancelled, s?.cancelTotal),
+  },
+  {
+    key: "validTrackingRate",
+    label: "Valid tracking (30d)",
+    target: "> 95%",
+    isBad: (v) => (v ?? 100) <= 95,
+    fraction: (s) => frac(s?.vtrTracked, s?.vtrTotal),
+  },
+  {
+    key: "onTimeDeliveryRate",
+    label: "On-time delivery (14d)",
+    target: "> 90%",
+    isBad: (v) => v != null && v <= 90,
+    fraction: (s) => frac(s?.otdrOnTime, s?.otdrTotal),
+  },
+];
+
+function PerformanceMatrix({ stores }: { stores: StoreRow[] }) {
   return (
     <Panel>
-      <PanelHeader
-        title={row.storeName}
-        right={
-          <span className="text-[11px] text-ink-3">
-            {s?.syncedAt
-              ? `Synced ${new Date(s.syncedAt).toLocaleString()}`
-              : "Never synced"}
-          </span>
-        }
-      />
-      <PanelBody className="space-y-3 text-[12.5px]">
-        <Section title="CUSTOMER SERVICE (60d)">
-          <Row
-            label="Order defect rate"
-            target="< 1%"
-            value={fmtPct(s?.orderDefectRate)}
-            bad={(s?.orderDefectRate ?? 0) >= 1}
-          />
-          <Row label="Negative feedback" value={fmtPct(s?.negativeFeedbackRate)} />
-          <Row label="A-to-Z claims" value={fmtPct(s?.atozClaimsRate)} />
-          <Row label="Chargebacks" value={fmtPct(s?.chargebackRate)} />
-        </Section>
-        <Section title="SHIPPING PERFORMANCE">
-          <Row
-            label="Late shipment (10d)"
-            target="< 4%"
-            value={fmtPct(s?.lateShipmentRate10d)}
-            bad={lateOver10}
-            sub={
-              s?.lsr10dLate != null && s?.lsr10dTotal != null
-                ? `(${s.lsr10dLate}/${s.lsr10dTotal})`
-                : undefined
-            }
-          />
-          <Row
-            label="Late shipment (30d)"
-            target="< 4%"
-            value={fmtPct(s?.lateShipmentRate30d)}
-            bad={lateOver30}
-            sub={
-              s?.lsr30dLate != null && s?.lsr30dTotal != null
-                ? `(${s.lsr30dLate}/${s.lsr30dTotal})`
-                : undefined
-            }
-          />
-          <Row
-            label="Cancel rate (7d)"
-            target="< 2.5%"
-            value={fmtPct(s?.preFulfillmentCancelRate)}
-            bad={cancelOver}
-            sub={
-              s?.cancelCancelled != null && s?.cancelTotal != null
-                ? `(${s.cancelCancelled}/${s.cancelTotal})`
-                : undefined
-            }
-          />
-          <Row
-            label="Valid tracking (30d)"
-            target="> 95%"
-            value={fmtPct(s?.validTrackingRate)}
-            bad={vtrUnder}
-            sub={
-              s?.vtrTracked != null && s?.vtrTotal != null
-                ? `(${s.vtrTracked}/${s.vtrTotal})`
-                : undefined
-            }
-          />
-          <Row
-            label="On-time delivery (14d)"
-            target="> 90%"
-            value={fmtPct(s?.onTimeDeliveryRate)}
-            bad={otdrUnder}
-            sub={
-              s?.otdrOnTime != null && s?.otdrTotal != null
-                ? `(${s.otdrOnTime}/${s.otdrTotal})`
-                : undefined
-            }
-          />
-        </Section>
+      <PanelHeader title="Performance metrics" />
+      <PanelBody className="p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full text-[12.5px]">
+            <thead className="border-b border-rule">
+              <tr className="text-[10.5px] font-mono uppercase tracking-[0.1em] text-ink-3">
+                <th className="px-4 py-2.5 text-left font-medium">Metric</th>
+                <th className="px-3 py-2.5 text-left font-medium">Target</th>
+                {stores.map((s) => (
+                  <th
+                    key={s.storeId}
+                    className="px-3 py-2.5 text-center font-medium"
+                  >
+                    <div className="text-[11px] normal-case tracking-normal text-ink">
+                      {s.storeName}
+                    </div>
+                    <div className="mt-0.5 text-[9.5px] font-normal normal-case tracking-normal text-ink-3">
+                      {s.snapshot?.syncedAt
+                        ? new Date(s.snapshot.syncedAt).toLocaleDateString()
+                        : "never synced"}
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <SectionBand label="Customer service (60d)" colSpan={stores.length + 2} />
+              {METRICS_CUSTOMER.map((m) => (
+                <MetricRow key={m.key} metric={m} stores={stores} />
+              ))}
+              <SectionBand label="Shipping performance" colSpan={stores.length + 2} />
+              {METRICS_SHIPPING.map((m) => (
+                <MetricRow key={m.key} metric={m} stores={stores} />
+              ))}
+            </tbody>
+          </table>
+        </div>
       </PanelBody>
     </Panel>
   );
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function SectionBand({ label, colSpan }: { label: string; colSpan: number }) {
   return (
-    <div>
-      <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-ink-3">
-        {title}
-      </div>
-      <div className="mt-1 space-y-1">{children}</div>
-    </div>
-  );
-}
-
-function Row({
-  label,
-  value,
-  bad,
-  sub,
-  target,
-}: {
-  label: string;
-  value: string;
-  bad?: boolean;
-  sub?: string;
-  /** Amazon-defined acceptable threshold for this metric, e.g. "< 4%".
-   *  Shown next to the label so the operator doesn't have to remember it. */
-  target?: string;
-}) {
-  return (
-    <div className="flex items-baseline justify-between">
-      <span className="text-ink-2">
-        {label}
-        {target && (
-          <span className="ml-1.5 text-[10.5px] font-mono uppercase text-ink-3">
-            target {target}
-          </span>
-        )}
-      </span>
-      <span
-        className={cn(
-          "tabular font-medium",
-          bad ? "text-danger" : "text-ink"
-        )}
+    <tr className="bg-bg-elev">
+      <td
+        colSpan={colSpan}
+        className="px-4 py-1.5 text-[10px] font-mono uppercase tracking-[0.14em] text-ink-3"
       >
-        {value}
-        {sub && <span className="ml-1.5 text-[11px] text-ink-3">{sub}</span>}
-      </span>
-    </div>
+        {label}
+      </td>
+    </tr>
   );
 }
 
-function fmtPct(v: number | null | undefined): string {
-  if (v == null) return "—";
-  return `${v.toFixed(2)}%`;
+function MetricRow({
+  metric,
+  stores,
+}: {
+  metric: MetricDef;
+  stores: StoreRow[];
+}) {
+  return (
+    <tr className="border-b border-rule last:border-0">
+      <td className="px-4 py-2 text-ink">{metric.label}</td>
+      <td className="px-3 py-2 font-mono text-[10.5px] uppercase tracking-wider text-ink-3">
+        {metric.target || "—"}
+      </td>
+      {stores.map((s) => {
+        const v = s.snapshot?.[metric.key] as number | null | undefined;
+        const f = s.snapshot ? metric.fraction(s.snapshot) : null;
+        const bad = metric.isBad(v);
+        return (
+          <td
+            key={s.storeId}
+            className={cn(
+              "px-3 py-2 text-center tabular font-medium",
+              bad ? "text-danger" : "text-ink"
+            )}
+          >
+            {v != null ? `${v.toFixed(2)}%` : <span className="text-ink-3">—</span>}
+            {f && (
+              <span className="ml-1.5 text-[10.5px] font-normal text-ink-3">
+                ({f})
+              </span>
+            )}
+          </td>
+        );
+      })}
+    </tr>
+  );
 }
 
 function DrillDown({
