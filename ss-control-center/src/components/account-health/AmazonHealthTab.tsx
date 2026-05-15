@@ -280,11 +280,12 @@ function ahrBarClass(ahr: number | null): string {
   if (ahr == null) return "bg-bg-elev";
   if (ahr < 100) return "bg-danger";
   if (ahr < 200) return "bg-warn-strong";
-  // `--green` (the brand colour) reads almost black at progress-bar scale —
-  // Vladimir flagged it as too dark. `--green-mid` is the lighter teal-green
-  // from the same palette and gives the bar a healthier, fresher feel
-  // without leaving the Salutem token set.
-  return "bg-green-mid";
+  // `--green-light` (#6FAA8E) — fresh sage between `--green-mid` and
+  // `--green-soft2`, added 2026-05-15 specifically for this bar. The
+  // brand `--green` and `--green-mid` both read as near-black when
+  // stretched into a 2px progress bar; this token reads as healthy
+  // without losing the Salutem family.
+  return "bg-green-light";
 }
 
 function ahrTextClass(ahr: number | null): string {

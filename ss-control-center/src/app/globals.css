@@ -29,6 +29,10 @@
   --green:        #1F4D3F;
   --green-deep:   #14352B;
   --green-mid:    #3A6B5D;
+  /* Fresh sage between `green-mid` and `green-soft2`. Used on the AHR
+     healthy-zone progress bar where the deeper greens read as black at
+     thin-bar scale. Vladimir's request 2026-05-15. */
+  --green-light:  #6FAA8E;
   --green-soft:   #E6EEE9;
   --green-soft2:  #CDDDD5;
   --green-ink:    #12362C;
@@ -156,6 +160,7 @@
   --color-green:         var(--green);
   --color-green-deep:    var(--green-deep);
   --color-green-mid:     var(--green-mid);
+  --color-green-light:   var(--green-light);
   --color-green-soft:    var(--green-soft);
   --color-green-soft2:   var(--green-soft2);
   --color-green-ink:     var(--green-ink);
