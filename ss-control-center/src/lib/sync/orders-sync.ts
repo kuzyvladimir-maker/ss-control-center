@@ -5,10 +5,22 @@ function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-export async function syncOrders(storeIndex: number): Promise<number> {
+/**
+ * Pull Amazon orders for a single store and upsert them to `amazonOrder`.
+ *
+ * `sinceDays` controls the lookback window. The default of 30 matches what
+ * `/api/sync` (Dashboard Refresh, Settings Sync-all) needs to recompute
+ * the 30-day KPIs. The cron path (`/api/cron/orders-amazon`) uses a tight
+ * 3-day window so it fits inside Vercel's 10s function budget while still
+ * keeping "today's sales" and recent status changes fresh.
+ */
+export async function syncOrders(
+  storeIndex: number,
+  sinceDays = 30
+): Promise<number> {
   const storeId = `store${storeIndex}`;
-  const thirtyDaysAgo = new Date(
-    Date.now() - 30 * 24 * 60 * 60 * 1000
+  const createdAfter = new Date(
+    Date.now() - sinceDays * 24 * 60 * 60 * 1000
   ).toISOString();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,7 +30,7 @@ export async function syncOrders(storeIndex: number): Promise<number> {
   do {
     const params: Record<string, string> = {
       MarketplaceIds: process.env.AMAZON_SP_MARKETPLACE_ID || "ATVPDKIKX0DER",
-      CreatedAfter: thirtyDaysAgo,
+      CreatedAfter: createdAfter,
       MaxResultsPerPage: "100",
     };
     if (nextToken) params.NextToken = nextToken;
