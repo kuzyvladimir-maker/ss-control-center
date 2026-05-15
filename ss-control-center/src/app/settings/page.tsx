@@ -1517,6 +1517,219 @@ function ConfigRow({
   );
 }
 
+interface WalmartDiagFindings {
+  ranAt: string;
+  storeName: string;
+  sellerId: string | null;
+  tokenIssued: boolean;
+  tokenError?: string;
+  tokenScopes: unknown;
+  otdProbes: Array<{
+    url: string;
+    status: number | "error";
+    ok: boolean;
+    notes: string;
+  }>;
+  reportProbes: Array<{
+    reportType: string;
+    status: number | "error";
+    ok: boolean;
+    requestId?: string;
+  }>;
+  winner: { approach: string; note: string };
+}
+
+function WalmartDiagnosePanel() {
+  const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [findings, setFindings] = useState<WalmartDiagFindings | null>(null);
+  const [markdown, setMarkdown] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  async function run() {
+    setRunning(true);
+    setError(null);
+    setCopied(false);
+    try {
+      const r = await fetch("/api/settings/walmart-diagnose", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storeIndex: 1 }),
+      });
+      const j = await r.json();
+      if (!r.ok) {
+        setError(j.error || `HTTP ${r.status}`);
+      } else {
+        setFindings(j.findings);
+        setMarkdown(j.markdown);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  async function copyMarkdown() {
+    if (!markdown) return;
+    await navigator.clipboard.writeText(markdown);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Walmart Performance API — diagnostic</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3 text-sm">
+          <p className="text-ink-2">
+            Walmart restructured Seller Performance API. The probe below
+            tries every plausible URL shape (8 variants) and 12 On-Request
+            Reports types, then reports which path actually works for our
+            account. Output goes straight into
+            <code className="mx-1">docs/WALMART_API_DIAGNOSTIC_RESULTS.md</code>.
+            Up to ~20 API calls — safe to run, but not idle-polling.
+          </p>
+
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={run} disabled={running}>
+              {running ? (
+                <Loader2 size={12} className="animate-spin mr-1" />
+              ) : (
+                <RefreshCw size={12} className="mr-1" />
+              )}
+              Run diagnostic
+            </Button>
+            {markdown && (
+              <Button size="sm" variant="outline" onClick={copyMarkdown}>
+                {copied ? "Copied ✓" : "Copy markdown"}
+              </Button>
+            )}
+            {error && (
+              <span className="text-xs text-danger">{error}</span>
+            )}
+          </div>
+
+          {findings && (
+            <>
+              <Separator />
+              <div className="space-y-2 text-xs">
+                <div>
+                  <span className="text-ink-3">Token:</span>{" "}
+                  <span
+                    className={
+                      findings.tokenIssued
+                        ? "text-green font-medium"
+                        : "text-danger font-medium"
+                    }
+                  >
+                    {findings.tokenIssued
+                      ? `issued for ${findings.storeName} (sellerId ${findings.sellerId ?? "—"})`
+                      : findings.tokenError ?? "failed"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-ink-3">Winner:</span>{" "}
+                  <span
+                    className={cn(
+                      "font-medium",
+                      findings.winner.approach === "none"
+                        ? "text-danger"
+                        : "text-green"
+                    )}
+                  >
+                    {findings.winner.approach}
+                  </span>{" "}
+                  <span className="text-ink-2">— {findings.winner.note}</span>
+                </div>
+              </div>
+
+              <div className="rounded-md border border-rule overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-surface-tint text-ink-3">
+                    <tr>
+                      <th className="px-2 py-1.5 text-left font-medium">
+                        OTD URL variant
+                      </th>
+                      <th className="px-2 py-1.5 text-left font-medium">
+                        Status
+                      </th>
+                      <th className="px-2 py-1.5 text-left font-medium">Note</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {findings.otdProbes.map((p, i) => (
+                      <tr key={i} className="border-t border-rule">
+                        <td className="px-2 py-1 font-mono text-[11px]">
+                          {p.url.replace(
+                            /^https:\/\/marketplace\.walmartapis\.com/,
+                            ""
+                          )}
+                        </td>
+                        <td
+                          className={cn(
+                            "px-2 py-1 font-mono",
+                            p.ok ? "text-green" : "text-ink-2"
+                          )}
+                        >
+                          {String(p.status)}
+                          {p.ok && " ✓"}
+                        </td>
+                        <td className="px-2 py-1 text-ink-2">{p.notes}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="rounded-md border border-rule overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-surface-tint text-ink-3">
+                    <tr>
+                      <th className="px-2 py-1.5 text-left font-medium">
+                        reportType
+                      </th>
+                      <th className="px-2 py-1.5 text-left font-medium">
+                        Status
+                      </th>
+                      <th className="px-2 py-1.5 text-left font-medium">
+                        requestID
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {findings.reportProbes.map((p, i) => (
+                      <tr key={i} className="border-t border-rule">
+                        <td className="px-2 py-1 font-mono text-[11px]">
+                          {p.reportType}
+                        </td>
+                        <td
+                          className={cn(
+                            "px-2 py-1 font-mono",
+                            p.ok ? "text-green" : "text-ink-2"
+                          )}
+                        >
+                          {String(p.status)}
+                          {p.ok && " ✓"}
+                        </td>
+                        <td className="px-2 py-1 font-mono text-ink-2">
+                          {p.requestId ?? "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function SettingsPage() {
   const [connections, setConnections] = useState<ConnectionStatus[]>([
     { name: "Veeqo", status: "checking" },
@@ -1752,6 +1965,8 @@ export default function SettingsPage() {
         <LossSettingsPanel />
 
         <TelegramRoutingPanel />
+
+        <WalmartDiagnosePanel />
 
         <Card>
           <CardHeader>
