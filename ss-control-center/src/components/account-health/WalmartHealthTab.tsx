@@ -3,9 +3,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { useStoreFilter } from "@/lib/store-filter/StoreFilterContext";
 import { KpiCard, Panel, PanelHeader, PanelBody } from "@/components/kit";
-import { HeartPulse, AlertTriangle, Package } from "lucide-react";
+import {
+  HeartPulse,
+  AlertTriangle,
+  Package,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// One row from /api/account-health/walmart, enriched with the v2 fields the
+// route now pulls out of `rawData`.
 interface Metric {
   metric: string;
   windowDays: number;
@@ -13,23 +22,36 @@ interface Metric {
   threshold: number | null;
   isHealthy: boolean;
   status: string;
+  capturedAt: string;
+  resultStatus: "OK" | "NO_DATA" | "ERROR" | null;
+  trend: string | null;
+  performanceRiskLevel: string | null;
+  updatedTimestamp: string | null;
+  standard: string | null;
+  ordersImpacted: number | null;
+  impactedCustomerCount: number | null;
+  gmvLoss: number | null;
+  httpStatus: number | null;
+  errorMessage: string | null;
+}
+
+interface ItemComplianceItem {
+  id: string;
+  itemId: string;
+  sku: string | null;
+  title: string | null;
+  issueType: string;
+  issueDetails: string | null;
+  severity: string;
+  status: string;
+  reportedAt: string;
 }
 
 interface ItemCompliance {
   totalIssues: number;
   urgent: number;
   monitor: number;
-  items: Array<{
-    id: string;
-    itemId: string;
-    sku: string | null;
-    title: string | null;
-    issueType: string;
-    issueDetails: string | null;
-    severity: string;
-    status: string;
-    reportedAt: string;
-  }>;
+  items: ItemComplianceItem[];
 }
 
 interface StoreRow {
@@ -46,21 +68,118 @@ interface Response {
   stores: StoreRow[];
 }
 
-// Display metadata for each metric (label + thresh direction). Mirrors what
-// the alert-rules use under the hood but in UI-friendly form.
-const METRIC_LABELS: Record<
-  string,
-  { label: string; threshold: string; dir: "lte" | "gte" }
-> = {
-  onTimeDelivery:     { label: "On-time delivery",      threshold: "≥ 90%",  dir: "lte" },
-  cancellationRate:   { label: "Cancellations",         threshold: "≤ 2%",   dir: "gte" },
-  validTrackingRate:  { label: "Valid tracking",        threshold: "≥ 99%",  dir: "lte" },
-  responseRate:       { label: "Seller response",       threshold: "≥ 95%",  dir: "lte" },
-  refundRate:         { label: "Refund rate",           threshold: "≤ 6%",   dir: "gte" },
-  onTimeShipment:     { label: "Late shipment",         threshold: "≤ 5%",   dir: "gte" },
-  carrierMethodAccuracy: { label: "Carrier accuracy",   threshold: "—",      dir: "lte" },
-  shipFromLocationAccuracy: { label: "Ship-from accuracy", threshold: "—",   dir: "lte" },
-};
+/**
+ * The 8 metrics Vladimir wants visible. shipFromAccuracy + carrierAccuracy
+ * still get synced but aren't displayed — they're not in the Seller Center
+ * scorecard either.
+ */
+type CardKey =
+  | "onTimeDelivery"
+  | "cancellations"
+  | "validTracking"
+  | "sellerResponse"
+  | "lateShipment" // derived: 100 - onTimeShipment.rate
+  | "negativeFeedback"
+  | "returns"
+  | "itemNotReceived";
+
+interface CardSpec {
+  key: CardKey;
+  label: string;
+  /** Window we read from the snapshot table. */
+  window: 30 | 60;
+  /** Walmart-published standard, rendered next to the value. */
+  threshold: string;
+  /** Direction used to decide bad/ok when Walmart didn't label the row. */
+  direction: "gte" | "lte";
+  /** Threshold numeric value matching direction. */
+  thresholdValue: number;
+  /**
+   * Source metric in the DB. For lateShipment we read onTimeShipment and
+   * invert (100 - rate) in the renderer.
+   */
+  sourceMetric: string;
+  invert?: boolean;
+}
+
+const CARDS_30D: CardSpec[] = [
+  {
+    key: "onTimeDelivery",
+    label: "On-time delivery",
+    window: 30,
+    threshold: "≥ 90%",
+    direction: "gte",
+    thresholdValue: 90,
+    sourceMetric: "onTimeDelivery",
+  },
+  {
+    key: "cancellations",
+    label: "Cancellations",
+    window: 30,
+    threshold: "≤ 2%",
+    direction: "lte",
+    thresholdValue: 2,
+    sourceMetric: "cancellations",
+  },
+  {
+    key: "validTracking",
+    label: "Valid tracking",
+    window: 30,
+    threshold: "≥ 99%",
+    direction: "gte",
+    thresholdValue: 99,
+    sourceMetric: "validTracking",
+  },
+  {
+    key: "sellerResponse",
+    label: "Seller response",
+    window: 30,
+    threshold: "≥ 95%",
+    direction: "gte",
+    thresholdValue: 95,
+    sourceMetric: "sellerResponse",
+  },
+  {
+    key: "lateShipment",
+    label: "Late shipment",
+    window: 30,
+    threshold: "≤ 1%",
+    direction: "lte",
+    thresholdValue: 1,
+    sourceMetric: "onTimeShipment",
+    invert: true,
+  },
+];
+
+const CARDS_60D: CardSpec[] = [
+  {
+    key: "negativeFeedback",
+    label: "Negative feedback",
+    window: 60,
+    threshold: "≤ 2%",
+    direction: "lte",
+    thresholdValue: 2,
+    sourceMetric: "negativeFeedback",
+  },
+  {
+    key: "returns",
+    label: "Returns",
+    window: 60,
+    threshold: "≤ 6%",
+    direction: "lte",
+    thresholdValue: 6,
+    sourceMetric: "returns",
+  },
+  {
+    key: "itemNotReceived",
+    label: "Item not received",
+    window: 60,
+    threshold: "≤ 2%",
+    direction: "lte",
+    thresholdValue: 2,
+    sourceMetric: "itemNotReceived",
+  },
+];
 
 export function WalmartHealthTab({ refreshNonce }: { refreshNonce: number }) {
   const { selectedStoreIds, isAllSelected, hasWalmart } = useStoreFilter();
@@ -97,15 +216,16 @@ export function WalmartHealthTab({ refreshNonce }: { refreshNonce: number }) {
     );
   }
 
-  // Walmart is one account per project today — render the first store's
-  // payload prominently. When a second account lands, we'll iterate.
+  // Walmart is one account today — render the first store.
   const store = data.stores[0];
 
-  // Walmart's Seller Performance API is only available to sellers enrolled
-  // in their (gated) Insights program. Our account returns 404 on every
-  // performance / scorecard endpoint, so we show a clear placeholder
-  // instead of an empty grid that looks broken.
-  const performanceAvailable = store.metrics.length > 0;
+  // Build the metric lookup once. The DB returns one row per (metric, window).
+  const metricByKey: Map<string, Metric> = new Map(
+    store.metrics.map((m) => [`${m.metric}|${m.windowDays}`, m])
+  );
+
+  // Aggregate overall status for the hero card.
+  const overall = aggregateOverall(store);
 
   return (
     <div className="space-y-5">
@@ -113,21 +233,9 @@ export function WalmartHealthTab({ refreshNonce }: { refreshNonce: number }) {
       <div className="grid gap-3 sm:grid-cols-3">
         <KpiCard
           label="Walmart overall"
-          value={
-            store.itemCompliance.urgent > 0
-              ? `${store.itemCompliance.urgent} urgent`
-              : store.itemCompliance.monitor > 0
-                ? "Monitor"
-                : "Healthy"
-          }
+          value={overall.label}
           icon={<HeartPulse size={14} />}
-          iconVariant={
-            store.itemCompliance.urgent > 0
-              ? "danger"
-              : store.itemCompliance.monitor > 0
-                ? "warn"
-                : "default"
-          }
+          iconVariant={overall.tone}
           trend={{ value: store.storeName }}
         />
         <KpiCard
@@ -147,76 +255,62 @@ export function WalmartHealthTab({ refreshNonce }: { refreshNonce: number }) {
         />
         <KpiCard
           label="Performance metrics"
-          value={performanceAvailable ? "Live" : "Not available"}
+          value={overall.dataState}
           icon={<Package size={14} />}
           iconVariant="default"
           trend={{
-            value: performanceAvailable
-              ? "via Marketplace API"
-              : "Walmart Seller Center only",
+            value: overall.lastSyncCaption,
           }}
         />
       </div>
 
-      {/* Performance standards block — only when API actually returned data.
-          Most sellers (us included) hit 404 on /sellerPerformance/*, so the
-          panel below renders only when at least one metric was captured. */}
-      {performanceAvailable ? (
-        <Panel>
-          <PanelHeader
-            title="Performance standards"
-            right={
-              <span className="text-[11px] text-ink-3">30-day window</span>
-            }
-          />
-          <PanelBody>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {Object.entries(METRIC_LABELS).map(([key, meta]) => {
-                const m = store.metrics.find(
-                  (x) => x.metric === key && x.windowDays === 30
-                );
-                return (
-                  <MetricCard
-                    key={key}
-                    label={meta.label}
-                    value={m?.value ?? null}
-                    threshold={meta.threshold}
-                    healthy={m?.isHealthy ?? null}
-                  />
-                );
-              })}
-            </div>
-          </PanelBody>
-        </Panel>
-      ) : (
-        <Panel>
-          <PanelHeader title="Performance metrics" />
-          <PanelBody>
-            <div className="rounded-md bg-surface-tint p-4 text-[12.5px] text-ink-2">
-              <div className="mb-1 font-medium text-ink">
-                Not available via API for this account
-              </div>
-              Walmart&apos;s Seller Performance / Scorecard endpoints
-              (<code>/v3/sellerPerformance/*</code>, <code>/v3/insights/*</code>) return{" "}
-              <code>404 CONTENT_NOT_FOUND</code> for our seller account.
-              These metrics are accessible only via{" "}
-              <a
-                href="https://seller.walmart.com/account/performance"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-green hover:text-green-deep underline"
-              >
-                Walmart Seller Center
-              </a>
-              . Item-compliance issues (below) are pulled successfully via
-              the public <code>/v3/items</code> endpoint.
-            </div>
-          </PanelBody>
-        </Panel>
-      )}
+      {/* 30-day performance group */}
+      <Panel>
+        <PanelHeader
+          title="Performance — 30-day window"
+          right={
+            <span className="text-[11px] text-ink-3">
+              source: Walmart Insights API
+            </span>
+          }
+        />
+        <PanelBody>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {CARDS_30D.map((spec) => (
+              <MetricCardV2
+                key={spec.key}
+                spec={spec}
+                metric={metricByKey.get(`${spec.sourceMetric}|${spec.window}`)}
+              />
+            ))}
+          </div>
+        </PanelBody>
+      </Panel>
 
-      {/* Item Compliance — what Walmart's /v3/items API flagged. Each row is
-          one product in our catalog Walmart considers problematic. */}
+      {/* 60-day performance group */}
+      <Panel>
+        <PanelHeader
+          title="Performance — 60-day window"
+          right={
+            <span className="text-[11px] text-ink-3">
+              long-term trend monitoring
+            </span>
+          }
+        />
+        <PanelBody>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {CARDS_60D.map((spec) => (
+              <MetricCardV2
+                key={spec.key}
+                spec={spec}
+                metric={metricByKey.get(`${spec.sourceMetric}|${spec.window}`)}
+              />
+            ))}
+          </div>
+        </PanelBody>
+      </Panel>
+
+      {/* Item Compliance — unchanged from the previous version. */}
       <Panel>
         <PanelHeader
           title="Item compliance"
@@ -228,8 +322,6 @@ export function WalmartHealthTab({ refreshNonce }: { refreshNonce: number }) {
           }
         />
         <PanelBody>
-          {/* Severity legend — explains what URGENT vs MONITOR means so the
-              operator doesn't have to guess. */}
           <div className="mb-3 rounded-md bg-surface-tint p-3 text-[11.5px] text-ink-2">
             <div className="font-medium text-ink mb-1">What this means</div>
             <div className="space-y-0.5">
@@ -309,36 +401,232 @@ export function WalmartHealthTab({ refreshNonce }: { refreshNonce: number }) {
   );
 }
 
-function MetricCard({
+function aggregateOverall(store: StoreRow): {
+  label: string;
+  tone: "danger" | "warn" | "default";
+  dataState: string;
+  lastSyncCaption: string;
+} {
+  const allMetrics = store.metrics;
+  const okCount = allMetrics.filter((m) => m.resultStatus === "OK").length;
+  const noDataCount = allMetrics.filter(
+    (m) => m.resultStatus === "NO_DATA"
+  ).length;
+  const errorCount = allMetrics.filter(
+    (m) => m.resultStatus === "ERROR"
+  ).length;
+
+  const anyUrgent = allMetrics.some((m) => m.status === "URGENT");
+  const anyMonitor = allMetrics.some((m) => m.status === "MONITOR");
+
+  let label = "Healthy";
+  let tone: "danger" | "warn" | "default" = "default";
+  if (anyUrgent) {
+    label = "At Risk";
+    tone = "danger";
+  } else if (anyMonitor) {
+    label = "Monitor";
+    tone = "warn";
+  }
+
+  const dataState =
+    okCount === 0 && noDataCount > 0 && errorCount === 0
+      ? "No data yet"
+      : errorCount > 0 && okCount === 0
+        ? "Error"
+        : `${okCount} live`;
+
+  const lastSync = store.lastSyncedAt
+    ? `Synced ${formatRelative(new Date(store.lastSyncedAt))}`
+    : "never synced";
+
+  return { label, tone, dataState, lastSyncCaption: lastSync };
+}
+
+function MetricCardV2({
+  spec,
+  metric,
+}: {
+  spec: CardSpec;
+  metric: Metric | undefined;
+}) {
+  // No row yet — sync hasn't run.
+  if (!metric) {
+    return (
+      <CardShell
+        label={spec.label}
+        threshold={spec.threshold}
+        body={<span className="text-ink-3">— never synced</span>}
+        footer={null}
+      />
+    );
+  }
+
+  // 204 / no orders accumulated yet for the window.
+  if (metric.resultStatus === "NO_DATA") {
+    return (
+      <CardShell
+        label={spec.label}
+        threshold={spec.threshold}
+        body={<span className="text-ink-3">No data yet</span>}
+        footer={
+          <span className="text-[10.5px] text-ink-3">
+            Walmart hasn&apos;t accumulated enough orders for this window
+            (usually ≥14 days of active sales).
+          </span>
+        }
+      />
+    );
+  }
+
+  // 4xx/5xx — endpoint reachable but Walmart rejected.
+  if (metric.resultStatus === "ERROR") {
+    return (
+      <CardShell
+        label={spec.label}
+        threshold={spec.threshold}
+        tone="danger"
+        body={
+          <span className="text-danger text-[14px]">
+            Error{metric.httpStatus ? ` ${metric.httpStatus}` : ""}
+          </span>
+        }
+        footer={
+          metric.errorMessage ? (
+            <span className="text-[10.5px] text-ink-2 line-clamp-2">
+              {metric.errorMessage}
+            </span>
+          ) : null
+        }
+      />
+    );
+  }
+
+  // Normal "OK" path.
+  const displayed = spec.invert ? 100 - metric.value : metric.value;
+  const bad =
+    spec.direction === "gte"
+      ? displayed < spec.thresholdValue
+      : displayed > spec.thresholdValue;
+  const tone: "default" | "warn" | "danger" =
+    metric.status === "URGENT"
+      ? "danger"
+      : metric.status === "MONITOR" || bad
+        ? "warn"
+        : "default";
+
+  return (
+    <CardShell
+      label={spec.label}
+      threshold={spec.threshold}
+      tone={tone}
+      body={
+        <div className="flex items-baseline gap-1.5">
+          <span
+            className={cn(
+              "text-[22px] font-semibold leading-none tabular",
+              tone === "danger"
+                ? "text-danger"
+                : tone === "warn"
+                  ? "text-warn-strong"
+                  : "text-ink"
+            )}
+          >
+            {displayed.toFixed(2)}%
+          </span>
+          <TrendIndicator trend={metric.trend} invert={spec.invert} />
+        </div>
+      }
+      footer={
+        <div className="space-y-0.5 text-[10.5px] text-ink-3">
+          {metric.performanceRiskLevel && (
+            <div>
+              Walmart:{" "}
+              <span className="text-ink-2">{metric.performanceRiskLevel}</span>
+            </div>
+          )}
+          {metric.updatedTimestamp && (
+            <div>
+              Updated{" "}
+              {formatRelative(new Date(metric.updatedTimestamp))}
+            </div>
+          )}
+        </div>
+      }
+    />
+  );
+}
+
+function CardShell({
   label,
-  value,
   threshold,
-  healthy,
+  body,
+  footer,
+  tone = "default",
 }: {
   label: string;
-  value: number | null;
   threshold: string;
-  healthy: boolean | null;
+  body: React.ReactNode;
+  footer: React.ReactNode;
+  tone?: "default" | "warn" | "danger";
 }) {
   return (
     <div
       className={cn(
-        "rounded-lg border border-rule bg-surface p-4",
-        healthy === false && "border-danger/30 bg-danger-tint/30"
+        "rounded-lg border bg-surface p-4 space-y-2",
+        tone === "danger" && "border-danger/30 bg-danger-tint/30",
+        tone === "warn" && "border-warn/30 bg-warn-tint/40",
+        tone === "default" && "border-rule"
       )}
     >
-      <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-ink-3">
-        {label}
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-ink-3">
+          {label}
+        </div>
+        <div className="text-[10.5px] font-mono text-ink-3">{threshold}</div>
       </div>
-      <div
-        className={cn(
-          "mt-2 text-[22px] font-semibold leading-none tabular",
-          healthy === false ? "text-danger" : "text-ink"
-        )}
-      >
-        {value == null ? "—" : `${value.toFixed(2)}%`}
-      </div>
-      <div className="mt-1.5 text-[11px] text-ink-3">{threshold}</div>
+      <div>{body}</div>
+      {footer}
     </div>
   );
+}
+
+function TrendIndicator({
+  trend,
+  invert,
+}: {
+  trend: string | null;
+  invert?: boolean;
+}) {
+  if (!trend || trend === "NEUTRAL") {
+    return <Minus size={12} className="text-ink-3" />;
+  }
+  // For inverted metrics (lateShipment) the colour semantics flip: a
+  // GREEN_DOWN on on-time-shipment means LATE went up — bad.
+  const raw = trend;
+  const effective = invert ? flipTrend(raw) : raw;
+  const isGood = effective.startsWith("GREEN");
+  const isUp = effective.endsWith("UP");
+  const colour = isGood ? "text-green" : "text-danger";
+  const Icon = isUp ? ArrowUp : ArrowDown;
+  return <Icon size={12} className={colour} aria-label={trend} />;
+}
+
+function flipTrend(t: string): string {
+  if (t === "GREEN_UP") return "RED_UP";
+  if (t === "GREEN_DOWN") return "RED_DOWN";
+  if (t === "RED_UP") return "GREEN_UP";
+  if (t === "RED_DOWN") return "GREEN_DOWN";
+  return t;
+}
+
+function formatRelative(d: Date): string {
+  const diffMs = Date.now() - d.getTime();
+  const minutes = Math.round(diffMs / 60000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} hr ago`;
+  const days = Math.round(hours / 24);
+  return `${days} d ago`;
 }

@@ -37,15 +37,52 @@ export async function GET(request: NextRequest) {
       const k = `${r.windowDays}|${r.metric}`;
       if (!latest.has(k)) latest.set(k, r);
     }
-    const metrics = Array.from(latest.values()).map((r) => ({
-      metric: r.metric,
-      windowDays: r.windowDays,
-      value: r.value,
-      threshold: r.threshold,
-      isHealthy: r.isHealthy,
-      status: r.status ?? (r.isHealthy ? "GOOD" : "URGENT"),
-      capturedAt: r.capturedAt,
-    }));
+    const metrics = Array.from(latest.values()).map((r) => {
+      // rawData holds the PerformanceMetricResult JSON the v2 sync wrote.
+      // Pull trend, risk, updatedTimestamp through so the UI doesn't have
+      // to call a second endpoint to enrich each card.
+      let raw: {
+        status?: string;
+        trend?: string;
+        performanceRiskLevel?: string;
+        riskLevel?: string;
+        updatedTimestamp?: string;
+        standard?: string;
+        ordersImpacted?: number;
+        impactedCustomerCount?: number;
+        gmvLoss?: number;
+        recommendations?: Array<{ recommendation: string; moreInfoLink: string }>;
+        httpStatus?: number;
+        errorMessage?: string;
+      } = {};
+      try {
+        raw = r.rawData ? JSON.parse(r.rawData) : {};
+      } catch {
+        // malformed snapshot — fall through with raw={}
+      }
+      return {
+        metric: r.metric,
+        windowDays: r.windowDays,
+        value: r.value,
+        threshold: r.threshold,
+        isHealthy: r.isHealthy,
+        status: r.status ?? (r.isHealthy ? "GOOD" : "URGENT"),
+        capturedAt: r.capturedAt,
+        // v2 enrichments
+        resultStatus: raw.status ?? null,
+        trend: raw.trend ?? null,
+        performanceRiskLevel:
+          raw.performanceRiskLevel ?? raw.riskLevel ?? null,
+        updatedTimestamp: raw.updatedTimestamp ?? null,
+        standard: raw.standard ?? null,
+        ordersImpacted: raw.ordersImpacted ?? null,
+        impactedCustomerCount: raw.impactedCustomerCount ?? null,
+        gmvLoss: raw.gmvLoss ?? null,
+        recommendations: raw.recommendations ?? null,
+        httpStatus: raw.httpStatus ?? null,
+        errorMessage: raw.errorMessage ?? null,
+      };
+    });
 
     const itemCompliance = await prisma.walmartItemCompliance.findMany({
       where: { storeIndex: idx, status: "OPEN" },
