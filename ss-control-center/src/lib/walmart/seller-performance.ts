@@ -148,8 +148,14 @@ export type TrendValue =
 export interface PerformanceMetricResult {
   metric: MetricKey;
   status: MetricStatus;
-  /** Percent 0-100. Undefined when status is NO_DATA or ERROR. */
+  /** Percent 0-100. Undefined when status is NO_DATA or ERROR. The value
+   *  the UI should display — usually `sellerAccountableRate` for overall-
+   *  style metrics (matches what Walmart Seller Center shows) and
+   *  `cumulativeRate` for cumulative-style metrics. */
   rate?: number;
+  /** The raw overallRate from the payload, kept around for debugging.
+   *  Often differs significantly from `rate` for accountable metrics. */
+  overallRate?: number;
   trend?: TrendValue;
   sellerAccountableRate?: number;
   impactedCustomerCount?: number;
@@ -170,6 +176,10 @@ export interface PerformanceMetricResult {
   recommendations?: Array<{ recommendation: string; moreInfoLink: string }>;
   errorMessage?: string;
   httpStatus?: number;
+  /** Original Walmart payload, kept for diagnosis when the displayed value
+   *  doesn't match Seller Center. Stripped before sending to the UI unless
+   *  `?debug=1` is requested. */
+  rawPayload?: unknown;
 }
 
 export interface WalmartPerformanceData {
@@ -303,17 +313,27 @@ function parseSuccessfulPayload(
     ? (wrapper.payload as Record<string, unknown>)
     : (body as Record<string, unknown>));
 
-  const rawRate = p[config.rateKey];
-  const rate = typeof rawRate === "number" ? rawRate : undefined;
+  // Pick the value Walmart Seller Center actually displays. For overall-
+  // style metrics that's `sellerAccountableRate` (excludes events the
+  // seller couldn't have prevented like carrier weather delays).
+  // Walmart's published thresholds also apply to this number — Vladimir's
+  // screenshot shows OTD 93.7% above 90% standard, which is the
+  // accountable rate, not overallRate. For cumulative-style metrics
+  // Walmart returns one rate field (`cumulativeRate`) and there's no
+  // accountable/overall split, so the configured key is what we use.
+  const rate = pickDisplayRate(p, config);
+
   const trend =
     (p.overallTrend as TrendValue | undefined) ??
-    (p.cumulativeRateTrend as TrendValue | undefined);
+    (p.cumulativeRateTrend as TrendValue | undefined) ??
+    (p.sellerAccountableTrend as TrendValue | undefined);
 
   return {
     metric: key,
     status: "OK",
     httpStatus: status,
     rate,
+    overallRate: numOrUndef(p.overallRate),
     trend,
     sellerAccountableRate: numOrUndef(p.sellerAccountableRate),
     impactedCustomerCount: numOrUndef(p.impactedCustomerCount),
@@ -334,7 +354,59 @@ function parseSuccessfulPayload(
           moreInfoLink: string;
         }>)
       : undefined,
+    rawPayload: p,
   };
+}
+
+/**
+ * Pick the rate Walmart Seller Center actually displays.
+ *
+ * Walmart's responses carry up to three rate fields per payload:
+ *   - `overallRate`             (all events)
+ *   - `sellerAccountableRate`   (subset Walmart deactivates over)
+ *   - `cumulativeRate`          (60-day style)
+ *
+ * Empirically, Seller Center shows `sellerAccountableRate` for overall-
+ * style metrics (it's what their published threshold actually applies
+ * to). When the payload's primary rate is 0 but a positive accountable
+ * rate is present, the primary is almost certainly "no events recorded
+ * but here's the accountable baseline" — we still prefer the non-zero
+ * accountable rate so the UI doesn't lie with a 0% headline (Vladimir's
+ * Seller response 0% bug had exactly this shape).
+ */
+function pickDisplayRate(
+  p: Record<string, unknown>,
+  config: MetricConfig
+): number | undefined {
+  const primary = numOrUndef(p[config.rateKey]);
+  const accountable = numOrUndef(p.sellerAccountableRate);
+
+  if (config.rateKey === "overallRate") {
+    // overall-style — prefer accountable when present (matches Seller Center)
+    if (accountable !== undefined) return accountable;
+    return primary;
+  }
+
+  // cumulative-style — `cumulativeRate` is what Walmart displays.
+  if (primary !== undefined && primary !== 0) return primary;
+  // Fallback chain if `cumulativeRate` is missing/zero. Some shapes use
+  // `overallRate` even on cumulative metrics. Last resort: scan for any
+  // *Rate-named numeric field that isn't a Trend.
+  if (accountable !== undefined && accountable !== 0) return accountable;
+  const overall = numOrUndef(p.overallRate);
+  if (overall !== undefined && overall !== 0) return overall;
+  for (const [k, v] of Object.entries(p)) {
+    if (
+      typeof v === "number" &&
+      Number.isFinite(v) &&
+      /Rate$/.test(k) &&
+      !/Trend$/.test(k) &&
+      v !== 0
+    ) {
+      return v;
+    }
+  }
+  return primary;
 }
 
 function numOrUndef(v: unknown): number | undefined {

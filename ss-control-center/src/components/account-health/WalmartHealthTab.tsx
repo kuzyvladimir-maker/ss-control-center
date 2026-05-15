@@ -31,6 +31,8 @@ interface Metric {
   ordersImpacted: number | null;
   impactedCustomerCount: number | null;
   gmvLoss: number | null;
+  overallRate: number | null;
+  sellerAccountableRate: number | null;
   httpStatus: number | null;
   errorMessage: string | null;
 }
@@ -102,7 +104,11 @@ interface CardSpec {
   invert?: boolean;
 }
 
-const CARDS_30D: CardSpec[] = [
+// Performance Standards — the seven metrics Walmart deactivates accounts
+// over. The layout mirrors Walmart's Seller Center page exactly: 30-day
+// and 60-day cards mingle in one row, each card carries its own window
+// chip so the operator can still tell them apart at a glance.
+const PERFORMANCE_CARDS: CardSpec[] = [
   {
     key: "onTimeDelivery",
     label: "On-time delivery",
@@ -140,19 +146,6 @@ const CARDS_30D: CardSpec[] = [
     sourceMetric: "sellerResponse",
   },
   {
-    key: "lateShipment",
-    label: "Late shipment",
-    window: 30,
-    threshold: "≤ 1%",
-    direction: "lte",
-    thresholdValue: 1,
-    sourceMetric: "onTimeShipment",
-    invert: true,
-  },
-];
-
-const CARDS_60D: CardSpec[] = [
-  {
     key: "negativeFeedback",
     label: "Negative feedback",
     window: 60,
@@ -178,6 +171,22 @@ const CARDS_60D: CardSpec[] = [
     direction: "lte",
     thresholdValue: 2,
     sourceMetric: "itemNotReceived",
+  },
+];
+
+// Walmart's "Upcoming Standards" — currently just Late shipment (NEW).
+// Threshold ≤ 5% per Walmart's preview page (not the ≤ 1% I had before;
+// the early-warning threshold is 5%, not the strict on-time-shipment one).
+const UPCOMING_CARDS: CardSpec[] = [
+  {
+    key: "lateShipment",
+    label: "Late shipment",
+    window: 30,
+    threshold: "≤ 5%",
+    direction: "lte",
+    thresholdValue: 5,
+    sourceMetric: "onTimeShipment",
+    invert: true,
   },
 ];
 
@@ -264,19 +273,21 @@ export function WalmartHealthTab({ refreshNonce }: { refreshNonce: number }) {
         />
       </div>
 
-      {/* 30-day performance group */}
+      {/* Performance Standards — the seven metrics Walmart deactivates over.
+          Layout mirrors Walmart Seller Center: 30d and 60d cards mingle,
+          each card shows its own window chip + threshold. */}
       <Panel>
         <PanelHeader
-          title="Performance — 30-day window"
+          title="Performance Standards"
           right={
             <span className="text-[11px] text-ink-3">
-              source: Walmart Insights API
+              Failure to adhere puts the account at risk of suspension or termination.
             </span>
           }
         />
         <PanelBody>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {CARDS_30D.map((spec) => (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {PERFORMANCE_CARDS.map((spec) => (
               <MetricCardV2
                 key={spec.key}
                 spec={spec}
@@ -287,25 +298,58 @@ export function WalmartHealthTab({ refreshNonce }: { refreshNonce: number }) {
         </PanelBody>
       </Panel>
 
-      {/* 60-day performance group */}
+      {/* Upcoming Standards — Late shipment is the only one Walmart
+          surfaces here right now. Treated as a preview / early-warning
+          threshold (≤ 5%) ahead of formal enforcement. */}
       <Panel>
         <PanelHeader
-          title="Performance — 60-day window"
+          title="Upcoming Standards"
           right={
-            <span className="text-[11px] text-ink-3">
-              long-term trend monitoring
+            <span className="inline-flex items-center rounded bg-info-tint px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider text-info-strong">
+              new
             </span>
           }
         />
         <PanelBody>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {CARDS_60D.map((spec) => (
+          <p className="mb-3 text-[12px] text-ink-2">
+            Preview new performance standards to see what&apos;s changing
+            and how the account is performing today.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {UPCOMING_CARDS.map((spec) => (
               <MetricCardV2
                 key={spec.key}
                 spec={spec}
                 metric={metricByKey.get(`${spec.sourceMetric}|${spec.window}`)}
               />
             ))}
+          </div>
+        </PanelBody>
+      </Panel>
+
+      {/* Other Metrics — the bottom row of Walmart Seller Center.
+          Carriers / Regional performance / Ratings & reviews aren't
+          surfaced via the Insights API endpoints we use, so each card
+          links out to Seller Center for now. Pull pending. */}
+      <Panel>
+        <PanelHeader title="Other metrics" />
+        <PanelBody>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <OtherMetricCard
+              label="Carriers"
+              note="below on-time delivery standard"
+              sellerCenterPath="/performance/carriers"
+            />
+            <OtherMetricCard
+              label="Regional performance"
+              note="states below on-time delivery standard"
+              sellerCenterPath="/performance/regions"
+            />
+            <OtherMetricCard
+              label="Ratings & reviews"
+              note="customer rating, all time"
+              sellerCenterPath="/performance/ratings-reviews"
+            />
           </div>
         </PanelBody>
       </Panel>
@@ -518,6 +562,7 @@ function MetricCardV2({
   return (
     <CardShell
       label={spec.label}
+      window={spec.window}
       threshold={spec.threshold}
       tone={tone}
       body={
@@ -532,7 +577,7 @@ function MetricCardV2({
                   : "text-ink"
             )}
           >
-            {displayed.toFixed(2)}%
+            {displayed.toFixed(1)}%
           </span>
           <TrendIndicator trend={metric.trend} invert={spec.invert} />
         </div>
@@ -559,12 +604,14 @@ function MetricCardV2({
 
 function CardShell({
   label,
+  window,
   threshold,
   body,
   footer,
   tone = "default",
 }: {
   label: string;
+  window?: number;
   threshold: string;
   body: React.ReactNode;
   footer: React.ReactNode;
@@ -579,14 +626,49 @@ function CardShell({
         tone === "default" && "border-rule"
       )}
     >
-      <div className="flex items-baseline justify-between gap-2">
-        <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-ink-3">
-          {label}
+      <div>
+        <div className="flex items-baseline justify-between gap-2">
+          <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-ink-3">
+            {label}
+          </div>
+          <div className="text-[10.5px] font-mono text-ink-3">{threshold}</div>
         </div>
-        <div className="text-[10.5px] font-mono text-ink-3">{threshold}</div>
+        {window && (
+          <div className="text-[10px] text-ink-3">
+            Last {window} days
+          </div>
+        )}
       </div>
       <div>{body}</div>
       {footer}
+    </div>
+  );
+}
+
+function OtherMetricCard({
+  label,
+  note,
+  sellerCenterPath,
+}: {
+  label: string;
+  note: string;
+  sellerCenterPath: string;
+}) {
+  return (
+    <div className="rounded-lg border border-rule bg-surface p-4 space-y-2">
+      <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-ink-3">
+        {label}
+      </div>
+      <div className="text-[14px] text-ink-2">Pull pending</div>
+      <div className="text-[10.5px] text-ink-3 line-clamp-2">{note}</div>
+      <a
+        href={`https://seller.walmart.com${sellerCenterPath}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[11px] text-green hover:text-green-deep underline"
+      >
+        View in Seller Center →
+      </a>
     </div>
   );
 }

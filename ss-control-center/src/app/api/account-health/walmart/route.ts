@@ -12,6 +12,10 @@ export async function GET(request: NextRequest) {
   const requestedIds = idsParam
     ? idsParam.split(",").map((s) => s.trim()).filter(Boolean)
     : null;
+  // ?debug=1 attaches the full Walmart payload for each metric so we can
+  // see exactly what fields are populated when a displayed number looks
+  // off vs Seller Center.
+  const debug = url.searchParams.get("debug") === "1";
 
   const stores = await prisma.store.findMany({
     where: {
@@ -41,25 +45,13 @@ export async function GET(request: NextRequest) {
       // rawData holds the PerformanceMetricResult JSON the v2 sync wrote.
       // Pull trend, risk, updatedTimestamp through so the UI doesn't have
       // to call a second endpoint to enrich each card.
-      let raw: {
-        status?: string;
-        trend?: string;
-        performanceRiskLevel?: string;
-        riskLevel?: string;
-        updatedTimestamp?: string;
-        standard?: string;
-        ordersImpacted?: number;
-        impactedCustomerCount?: number;
-        gmvLoss?: number;
-        recommendations?: Array<{ recommendation: string; moreInfoLink: string }>;
-        httpStatus?: number;
-        errorMessage?: string;
-      } = {};
+      let raw: Record<string, unknown> = {};
       try {
         raw = r.rawData ? JSON.parse(r.rawData) : {};
       } catch {
         // malformed snapshot — fall through with raw={}
       }
+      const rawTyped = raw;
       return {
         metric: r.metric,
         windowDays: r.windowDays,
@@ -69,18 +61,30 @@ export async function GET(request: NextRequest) {
         status: r.status ?? (r.isHealthy ? "GOOD" : "URGENT"),
         capturedAt: r.capturedAt,
         // v2 enrichments
-        resultStatus: raw.status ?? null,
-        trend: raw.trend ?? null,
+        resultStatus:
+          (rawTyped.status as string | undefined) ?? null,
+        trend: (rawTyped.trend as string | undefined) ?? null,
         performanceRiskLevel:
-          raw.performanceRiskLevel ?? raw.riskLevel ?? null,
-        updatedTimestamp: raw.updatedTimestamp ?? null,
-        standard: raw.standard ?? null,
-        ordersImpacted: raw.ordersImpacted ?? null,
-        impactedCustomerCount: raw.impactedCustomerCount ?? null,
-        gmvLoss: raw.gmvLoss ?? null,
-        recommendations: raw.recommendations ?? null,
-        httpStatus: raw.httpStatus ?? null,
-        errorMessage: raw.errorMessage ?? null,
+          (rawTyped.performanceRiskLevel as string | undefined) ??
+          (rawTyped.riskLevel as string | undefined) ??
+          null,
+        updatedTimestamp:
+          (rawTyped.updatedTimestamp as string | undefined) ?? null,
+        standard: (rawTyped.standard as string | undefined) ?? null,
+        ordersImpacted:
+          (rawTyped.ordersImpacted as number | undefined) ?? null,
+        impactedCustomerCount:
+          (rawTyped.impactedCustomerCount as number | undefined) ?? null,
+        gmvLoss: (rawTyped.gmvLoss as number | undefined) ?? null,
+        overallRate: (rawTyped.overallRate as number | undefined) ?? null,
+        sellerAccountableRate:
+          (rawTyped.sellerAccountableRate as number | undefined) ?? null,
+        recommendations:
+          (rawTyped.recommendations as unknown[] | undefined) ?? null,
+        httpStatus: (rawTyped.httpStatus as number | undefined) ?? null,
+        errorMessage:
+          (rawTyped.errorMessage as string | undefined) ?? null,
+        rawPayload: debug ? rawTyped.rawPayload ?? null : undefined,
       };
     });
 
