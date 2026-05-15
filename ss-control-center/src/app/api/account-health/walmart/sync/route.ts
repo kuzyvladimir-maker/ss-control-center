@@ -1,60 +1,38 @@
 /**
  * POST /api/account-health/walmart/sync
- * GET  /api/account-health/walmart/sync   (returns latest snapshot per metric)
+ * GET  /api/account-health/walmart/sync   (latest snapshot per metric/window)
  *
- * POST: pulls Seller Performance summaries for the requested windows
- * (default 30 + 90 days) and inserts a WalmartPerformanceSnapshot row per
- * metric. We keep history (no upserts) so trends can be plotted later.
+ * POST drives one synchronous sync pass:
+ *   1. Pull the Walmart Performance v2 fan-out (10 metric endpoints via
+ *      /v3/insights/performance/{metric}/summary) for the configured store.
+ *   2. Write one WalmartPerformanceSnapshot row per metric (history-only,
+ *      no upsert) so trend charts later have data.
+ *   3. Pull /v3/items compliance issues into WalmartItemCompliance.
+ *   4. Hand the flat metrics map to the critical alerts evaluator.
+ *
+ * The whole pass runs well under Vercel's 10s budget when the metrics fan
+ * out in parallel — typical wall time is 3-6s.
  *
  * Body (optional):
- *   { storeIndex?: number, windows?: number[] }
+ *   { storeIndex?: number }   // default 1 (Sirius Trading International)
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { WalmartClient, WalmartApiError } from "@/lib/walmart/client";
-import {
-  WalmartSellerPerformanceApi,
-  type PerformanceWindow,
-} from "@/lib/walmart/seller-performance";
+import { fetchAllPerformanceMetrics } from "@/lib/walmart/seller-performance";
+import { persistPerformanceSnapshots } from "@/lib/walmart/persist-performance";
 import { WalmartItemsApi } from "@/lib/walmart/items";
 import { evaluateCriticalAlerts } from "@/lib/account-health/critical-alert-evaluator";
 
-const DEFAULT_WINDOWS: PerformanceWindow[] = [30, 60, 90];
-
-// Maps Walmart's canonical metric names + window to the flat keys used by
-// alert-rules.ts (e.g. "onTimeDelivery" + 30 → "onTimeDelivery30d").
-function toFlatMetricKey(metric: string, days: number): string | null {
-  const W = days === 60 ? "60d" : "30d";
-  switch (metric) {
-    case "onTimeDelivery":
-      return `onTimeDelivery${W}`;
-    case "cancellationRate":
-      return `cancellations${W}`;
-    case "validTrackingRate":
-      return `validTracking${W}`;
-    case "responseRate":
-      return `sellerResponse${W}`;
-    case "onTimeShipment":
-      return `lateShipment${W}`;
-    case "refundRate":
-      return `returns${W}`;
-    default:
-      return null;
-  }
-}
-
 export async function POST(request: NextRequest) {
-  let body: { storeIndex?: number; windows?: number[] } = {};
+  let body: { storeIndex?: number } = {};
   try {
     body = await request.json();
   } catch {
     // empty body fine
   }
   const storeIndex = body.storeIndex ?? 1;
-  const windows: PerformanceWindow[] = (body.windows?.length
-    ? body.windows
-    : DEFAULT_WINDOWS) as PerformanceWindow[];
 
   let client: WalmartClient;
   try {
@@ -66,53 +44,26 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const api = new WalmartSellerPerformanceApi(client);
-  const itemsApi = new WalmartItemsApi(client);
-
-  const results: Array<{
-    windowDays: number;
-    metricsCaptured: number;
-    error?: string;
-  }> = [];
-
-  // Flat key→value map for the alert evaluator. Populated as we walk the
-  // performance summaries below.
-  const metricsMap: Record<string, number | null> = {};
-
-  for (const w of windows) {
-    try {
-      const summary = await api.getSummary(w);
-      let captured = 0;
-      for (const m of summary.metrics) {
-        await prisma.walmartPerformanceSnapshot.create({
-          data: {
-            storeIndex,
-            windowDays: m.windowDays,
-            metric: m.metric,
-            value: m.value,
-            threshold: m.threshold,
-            isHealthy: m.isHealthy,
-            status: m.isHealthy ? "GOOD" : "URGENT",
-            rawData: JSON.stringify(m.raw ?? null),
-          },
-        });
-        captured++;
-        const key = toFlatMetricKey(m.metric, m.windowDays);
-        if (key) metricsMap[key] = m.value;
-      }
-      results.push({ windowDays: w, metricsCaptured: captured });
-    } catch (err) {
-      const msg =
-        err instanceof WalmartApiError
-          ? `${err.status}: ${err.message}`
-          : (err as Error).message;
-      results.push({ windowDays: w, metricsCaptured: 0, error: msg.slice(0, 200) });
-    }
+  // 1. + 2. Performance metrics — parallel fan-out + DB writes.
+  let perfPersist;
+  let perfError: string | undefined;
+  try {
+    const data = await fetchAllPerformanceMetrics(client);
+    perfPersist = await persistPerformanceSnapshots(prisma, storeIndex, data);
+  } catch (err) {
+    perfError =
+      err instanceof WalmartApiError
+        ? `${err.status}: ${err.message}`
+        : err instanceof Error
+          ? err.message
+          : String(err);
   }
 
-  // ── Item compliance pull (Account Health v2) ─────────────────────────
+  // 3. Item Compliance pull (separate endpoint, lives in /v3/items).
   let itemsTouched = 0;
+  let itemsError: string | undefined;
   try {
+    const itemsApi = new WalmartItemsApi(client);
     const issues = await itemsApi.getCompliance();
     for (const issue of issues) {
       await prisma.walmartItemCompliance.upsert({
@@ -143,15 +94,13 @@ export async function POST(request: NextRequest) {
       });
       itemsTouched++;
     }
-    metricsMap.newItemCompliance = issues.length;
   } catch (err) {
-    console.warn(
-      `[Walmart sync] store${storeIndex} items failed:`,
-      err instanceof Error ? err.message : err
-    );
+    itemsError =
+      err instanceof Error ? err.message : String(err);
+    console.warn(`[walmart sync] items failed:`, itemsError);
   }
 
-  // ── Run alert evaluator ──────────────────────────────────────────────
+  // 4. Critical alerts evaluator — same metricsMap the cron uses.
   let alertsCreated = 0;
   try {
     const store = await prisma.store.findFirst({
@@ -159,6 +108,10 @@ export async function POST(request: NextRequest) {
       select: { id: true, name: true },
     });
     if (store) {
+      const metricsMap: Record<string, number | null> = {
+        ...(perfPersist?.metricsMap ?? {}),
+        newItemCompliance: itemsTouched,
+      };
       const created = await evaluateCriticalAlerts({
         storeId: store.id,
         storeName: store.name,
@@ -168,23 +121,35 @@ export async function POST(request: NextRequest) {
       alertsCreated = created.length;
     }
   } catch (err) {
-    console.error("[Walmart sync] alert evaluation failed:", err);
+    console.error("[walmart sync] alert evaluation failed:", err);
   }
 
   return NextResponse.json({
     ok: true,
     storeIndex,
-    results,
-    itemsTouched,
+    performance: perfPersist
+      ? {
+          snapshotsWritten: perfPersist.snapshotsWritten,
+          ok: perfPersist.okCount,
+          noData: perfPersist.noDataCount,
+          errors: perfPersist.errorCount,
+        }
+      : { error: perfError ?? "no result" },
+    items: itemsError
+      ? { error: itemsError }
+      : { touched: itemsTouched },
     alertsCreated,
   });
 }
 
+/**
+ * GET — return the most recent snapshot for each (storeIndex, windowDays,
+ * metric) combination. Same shape the WalmartHealthTab UI consumes.
+ */
 export async function GET() {
-  // Latest snapshot per (storeIndex, metric, windowDays)
   const snapshots = await prisma.walmartPerformanceSnapshot.findMany({
     orderBy: { capturedAt: "desc" },
-    take: 200,
+    take: 400,
   });
 
   const latest = new Map<string, (typeof snapshots)[number]>();
@@ -200,6 +165,7 @@ export async function GET() {
     value: s.value,
     threshold: s.threshold,
     isHealthy: s.isHealthy,
+    status: s.status,
     capturedAt: s.capturedAt,
   }));
 

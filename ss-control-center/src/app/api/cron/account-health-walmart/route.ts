@@ -1,40 +1,26 @@
 /**
  * GET /api/cron/account-health-walmart
  *
- * Vercel cron triggers this daily at 03:00 UTC. Delegates to the same
- * /api/account-health/walmart/sync handler the UI calls (Performance
- * summaries + Items API + Critical Alerts evaluator).
+ * Vercel cron triggers this daily at 03:00 UTC. Drives the Walmart side of
+ * Account Health v2:
+ *   - performance fan-out across the 10 Insights API metric endpoints
+ *     (via fetchAllPerformanceMetrics → persistPerformanceSnapshots)
+ *   - item compliance pull from /v3/items
+ *   - critical alerts evaluation (Telegram + UI rows)
  *
- * Note: /api/cron/walmart already runs the per-metric performance
- * snapshots nightly. This separate cron exists so the Account Health v2
- * additions (item compliance + alerts) ride a dedicated schedule and
- * can be tuned without touching the existing orders/returns flow.
+ * Walmart refreshes its performance datasets ~once per 24h server-side, so
+ * one cron pass per day is the right cadence.
  *
  * Auth: CRON_SECRET via Bearer header.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import {
-  WalmartClient,
-  WalmartItemsApi,
-  WalmartSellerPerformanceApi,
-  getWalmartStoreStatus,
-} from "@/lib/walmart";
+import { WalmartClient, getWalmartStoreStatus } from "@/lib/walmart/client";
+import { fetchAllPerformanceMetrics } from "@/lib/walmart/seller-performance";
+import { persistPerformanceSnapshots } from "@/lib/walmart/persist-performance";
+import { WalmartItemsApi } from "@/lib/walmart/items";
 import { evaluateCriticalAlerts } from "@/lib/account-health/critical-alert-evaluator";
-
-function toFlatMetricKey(metric: string, days: number): string | null {
-  const W = days === 60 ? "60d" : "30d";
-  switch (metric) {
-    case "onTimeDelivery":     return `onTimeDelivery${W}`;
-    case "cancellationRate":   return `cancellations${W}`;
-    case "validTrackingRate":  return `validTracking${W}`;
-    case "responseRate":       return `sellerResponse${W}`;
-    case "onTimeShipment":     return `lateShipment${W}`;
-    case "refundRate":         return `returns${W}`;
-    default:                   return null;
-  }
-}
 
 export async function GET(request: NextRequest) {
   const auth = request.headers.get("authorization");
@@ -45,7 +31,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const results = [];
+  const results: Array<{
+    storeIndex: number;
+    success: boolean;
+    captured?: number;
+    noData?: number;
+    errors?: number;
+    itemsTouched?: number;
+    alertsCreated?: number;
+    error?: string;
+  }> = [];
+
   for (let storeIndex = 1; storeIndex <= 5; storeIndex++) {
     const status = getWalmartStoreStatus(storeIndex);
     if (!status.configured) continue;
@@ -62,41 +58,29 @@ export async function GET(request: NextRequest) {
       continue;
     }
 
-    const perfApi = new WalmartSellerPerformanceApi(client);
-    const itemsApi = new WalmartItemsApi(client);
-    const metricsMap: Record<string, number | null> = {};
+    // Performance fan-out — parallel via Promise.allSettled inside.
+    let metricsMap: Record<string, number | null> = {};
     let captured = 0;
-    let itemsTouched = 0;
-
-    for (const days of [30, 60] as const) {
-      try {
-        const summary = await perfApi.getSummary(days);
-        for (const m of summary.metrics) {
-          await prisma.walmartPerformanceSnapshot.create({
-            data: {
-              storeIndex,
-              windowDays: m.windowDays,
-              metric: m.metric,
-              value: m.value,
-              threshold: m.threshold,
-              isHealthy: m.isHealthy,
-              status: m.isHealthy ? "GOOD" : "URGENT",
-              rawData: JSON.stringify(m.raw ?? null),
-            },
-          });
-          captured++;
-          const key = toFlatMetricKey(m.metric, m.windowDays);
-          if (key) metricsMap[key] = m.value;
-        }
-      } catch (err) {
-        console.warn(
-          `[cron AH-walmart] perf w=${days} failed:`,
-          err instanceof Error ? err.message : err
-        );
-      }
+    let noData = 0;
+    let errors = 0;
+    try {
+      const data = await fetchAllPerformanceMetrics(client);
+      const p = await persistPerformanceSnapshots(prisma, storeIndex, data);
+      captured = p.okCount;
+      noData = p.noDataCount;
+      errors = p.errorCount;
+      metricsMap = { ...p.metricsMap };
+    } catch (err) {
+      console.warn(
+        `[cron AH-walmart] perf store${storeIndex} failed:`,
+        err instanceof Error ? err.message : err
+      );
     }
 
+    // Item compliance — separate API surface (/v3/items).
+    let itemsTouched = 0;
     try {
+      const itemsApi = new WalmartItemsApi(client);
       const issues = await itemsApi.getCompliance();
       for (const issue of issues) {
         await prisma.walmartItemCompliance.upsert({
@@ -130,7 +114,7 @@ export async function GET(request: NextRequest) {
       metricsMap.newItemCompliance = issues.length;
     } catch (err) {
       console.warn(
-        `[cron AH-walmart] items failed:`,
+        `[cron AH-walmart] items store${storeIndex} failed:`,
         err instanceof Error ? err.message : err
       );
     }
@@ -158,6 +142,8 @@ export async function GET(request: NextRequest) {
       storeIndex,
       success: true,
       captured,
+      noData,
+      errors,
       itemsTouched,
       alertsCreated,
     });

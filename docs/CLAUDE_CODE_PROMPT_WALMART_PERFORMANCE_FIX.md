@@ -1,441 +1,599 @@
-# CLAUDE CODE PROMPT — Walmart Performance API Fix
+# CLAUDE CODE PROMPT — Walmart Performance API Fix (v2 — точные endpoints)
 
 > **Target repo:** `kuzyvladimir-maker/ss-control-center`
 > **Date:** 2026-05-15
 > **Prepared by:** Vladimir (via Claude chat)
 > **Branch:** `fix/walmart-performance-api`
-> **Execution mode:** строго поэтапно, коммит после каждого этапа
+> **Execution mode:** поэтапно, коммит после каждого этапа
 > **Связано с:** `CLAUDE_CODE_PROMPT_ACCOUNT_HEALTH_V2.md` (Этап 3)
+>
+> **⚠️ Эта версия промпта (v2) полностью заменяет предыдущую версию.** В v1 был диагностический скрипт-перебор URL — он больше не нужен. Точные пути endpoints получены из официальной документации Walmart (developer.walmart.com → Insights → Seller Performance API). Все 3 проверенных endpoints используют одинаковый паттерн.
 
 ---
 
 ## 🎯 КОНТЕКСТ И ЦЕЛЬ
 
-На странице `/account-health` → таб **Walmart** секция Performance metrics показывает «Not available via API for this account». Item compliance таблица при этом работает корректно (158 listings подтягиваются).
+На странице `/account-health` → таб **Walmart** секция Performance metrics показывает «Not available via API for this account». Item compliance таблица при этом работает корректно (158 listings).
 
-**Текущая ошибка:** наш код вызывает `/v3/sellerPerformance/*` и `/v3/insights/*` — получает `404 CONTENT_NOT_FOUND`.
+**Текущая ошибка:** код вызывает `/v3/sellerPerformance/*` с параметром `windowDays` → получает `404 CONTENT_NOT_FOUND`.
 
-**Главное открытие из research:** Walmart реструктурировал Seller Performance API. Старая схема с одним общим `summary` endpoint больше не существует. **Теперь каждая метрика имеет свой отдельный endpoint.**
+**Причина:** Walmart реструктурировал Seller Performance API. Старая схема `/v3/sellerPerformance/summary` больше не существует. Endpoint полностью переехал в категорию **Insights**, и каждая метрика теперь — отдельный URL.
 
-### Что точно известно
+**Цель:** заменить вызовы на правильные endpoints, чтобы все 8 метрик из Walmart Seller Center (скриншот Vladimir) отображались в нашем UI.
 
-1. **API существует** — Walmart официально документирует Seller Performance API в категории `Insights`: https://developer.walmart.com/us-marketplace/docs/seller-performance-api-overview
-2. **Endpoints раздельные** — 11 штук (по reference IDs из документации):
-   - `getotd` — On-time delivery summary
-   - `getvtr` — Valid tracking rate summary
-   - `getsrr` — Seller response rate summary
-   - `getrefunds` — Refunds summary
-   - `getcancel` — Cancellations summary
-   - `getnegativefeedback` — Negative feedback summary
-   - `getreturns-1` — Returns summary
-   - `getinr` — Item not received summary
-   - `getsfla` — Ship-from location accuracy summary
-   - `getots` — On-time shipment summary
-   - `getcma` — Carrier method accuracy summary
-3. **Headers стандартные** — `WM_SEC.ACCESS_TOKEN`, `WM_QOS.CORRELATION_ID` (UUID per request), `WM_SVC.NAME: Walmart Marketplace`, `Accept: application/json`
-4. **Параметры**: `windowDays` (14/30/60/90), опционально `orderTypes`
-5. **Альтернатива через On-Request Reports API**:
-   - `POST /v3/reports/reportRequests?reportType=*&reportVersion=v1` → возвращает `requestID`
-   - Опросить `/v3/reports/reportRequests?requestID=X` пока статус не `RESULTED`
-   - Скачать через `/v3/reports/downloadReport?requestID=X`
-6. **404 у Walmart часто означает «нет данных» или «не тот путь»**, не «endpoint не существует»
-7. **Scopes можно проверить через `GET /v3/token/detail`** — возвращает текущие OAuth scopes и их access levels
+---
 
-### Что НЕ известно (Claude Code должен выяснить сам)
+## ✅ ПОДТВЕРЖДЁННАЯ СТРУКТУРА
 
-Точные URL пути новых endpoints — Walmart developer portal защищён JavaScript и не отдаёт curl-примеры из документации без авторизации. Возможные варианты (нужно эмпирически проверить):
+Базовый паттерн (verified на 3 endpoints — OTD, Cancellations, VTR):
 
 ```
-Вариант A: /v3/sellerPerformance/onTimeDelivery/summary?windowDays=30
-Вариант B: /v3/insights/sellerPerformance/onTimeDelivery?windowDays=30
-Вариант C: /v3/insights/onTimeDelivery/summary?windowDays=30
-Вариант D: /v3/getOtd?windowDays=30  (по reference ID напрямую)
-Вариант E: /v3/sellerPerformance/getOtd?windowDays=30
-Вариант F: /v3/sellerPerformanceStandards/onTimeDelivery?windowDays=30
+GET https://marketplace.walmartapis.com/v3/insights/performance/{metric}/summary
+    ?reportDuration={14|30|60|90}
+    [&shippingMethod=ALL_METHODS|TwoDay|OneDay]
 ```
 
-Также может использоваться camelCase / kebab-case / snake_case в URL — нужно попробовать все.
+### Critical fixes от текущей реализации
+
+| Было (не работало) | Стало (правильно) |
+|---|---|
+| `/v3/sellerPerformance/...` | `/v3/insights/performance/{metric}/summary` |
+| Параметр `windowDays` | Параметр `reportDuration` |
+| Один общий endpoint за всё | 11 отдельных endpoints — по одному на метрику |
+| 404 = "недоступно" | 404 = неправильный URL. **Нет данных = HTTP 204**, не 404 |
+
+### Точная таблица 11 endpoints
+
+| Metric | Path segment | Verification | Standard threshold | Maps to UI label |
+|---|---|---|---|---|
+| On-time delivery | `otd` | ✅ verified | ≥ 90% | "On-time delivery" |
+| Order cancellations | `cancellations` | ✅ verified | ≤ 2% | "Cancellations" |
+| Valid tracking rate | `vtr` | ✅ verified | ≥ 99% | "Valid tracking" |
+| Seller response rate | `srr` | inferred from reference ID `getsrr` | ≥ 95% | "Seller response" |
+| Negative feedback | `negativeFeedback` | inferred from reference ID `getnegativefeedback` | watch trend | "Negative feedback" |
+| Returns | `returns` | inferred from reference ID `getreturns` | watch trend | "Returns" |
+| Item not received | `inr` | inferred from reference ID `getinr` | watch trend | "Item not received" |
+| Ship-from location accuracy | `sfla` | inferred from reference ID `getsfla` | trend monitoring | "Ship-from accuracy" |
+| On-time shipment | `ots` | inferred from reference ID `getots` | ≥ 99% | "On-time shipment" / "Late shipment" |
+| Carrier method accuracy | `cma` | inferred from reference ID `getcma` | trend monitoring | "Carrier method" |
+| Order refunds **(DEPRECATED)** | `refunds` | inferred | — | **не использовать** |
+
+Reference URLs для проверки (на developer.walmart.com):
+- https://developer.walmart.com/us-marketplace/docs/retrieve-on-time-delivery-summary
+- https://developer.walmart.com/us-marketplace/docs/retrieve-order-cancellations-summary
+- https://developer.walmart.com/us-marketplace/docs/valid-tracking-rate-summaries
+- https://developer.walmart.com/us-marketplace/docs/retrieve-seller-response-rate-summary
+- https://developer.walmart.com/us-marketplace/docs/retrieve-negative-feedback-performance-summary
+- https://developer.walmart.com/us-marketplace/docs/retrieve-returns-performance-summary
+- https://developer.walmart.com/us-marketplace/docs/retrieve-item-not-received-performance-summary
+- https://developer.walmart.com/us-marketplace/docs/retrieve-ship-from-location-accuracy-summary
+- https://developer.walmart.com/us-marketplace/docs/retrieve-on-time-shipment-summary
+- https://developer.walmart.com/us-marketplace/docs/retrieve-carrier-method-accuracy-summary
+
+### Headers (обязательны на каждом запросе)
+
+```
+WM_SEC.ACCESS_TOKEN: <ACCESS_TOKEN>
+WM_QOS.CORRELATION_ID: <UUID, уникальный per request>
+WM_SVC.NAME: Walmart Marketplace
+Accept: application/json
+```
+
+`Authorization: Basic <BASE64(clientId:clientSecret)>` нужен только для refresh token, не для самих API вызовов (если у нас уже есть валидный access_token).
+
+### HTTP статус коды
+
+| Status | Meaning | Action |
+|---|---|---|
+| **200 OK** | Данные есть | Парсим `payload`, сохраняем |
+| **204 No Content** | Нет данных за период (новый аккаунт, нет orders) | Показать "No data yet" в UI, не пытаться парсить тело |
+| **400 Bad Request** | Параметры неверные | Залогировать тело ошибки, проверить `reportDuration` |
+| **401 Unauthorized** | Токен невалиден | Refresh token и retry |
+| **403 Forbidden** | Нет scope для insights | Проверить `/v3/token/detail` (см. ниже) |
+| **404 Not Found** | Неправильный URL | Не должно случаться при использовании путей из таблицы. Если случается — открыть тикет |
+| **429 Too Many Requests** | Rate limit | Exponential backoff с jitter |
+
+### Response structure
+
+Два варианта структуры в `payload` (зависит от метрики):
+
+**Вариант A — overall-style (OTD, OTS, sfla, cma, srr):**
+```json
+{
+  "payload": {
+    "reportDuration": 30,
+    "updatedTimestamp": "2025-02-02T19:49:56Z",
+    "shippingMethod": "ALL_METHODS",
+    "overallRate": 89,
+    "overallTrend": "RED_DOWN",
+    "sellerAccountableRate": 96,
+    "sellerAccountableTrend": "GREEN_UP",
+    "impactedCustomerCount": 4,
+    "impactedCustomerTrend": "GREEN_UP",
+    "standard": "above 90%",
+    "performanceStandard": "90% or above",
+    "riskLevel": "Monitor",
+    "performanceRiskLevel": "Monitor",
+    "sellerAccountableDrivers": { ... },
+    "nonAccountableDrivers": { ... },
+    "recommendations": [ { "recommendation": "...", "moreInfoLink": "..." } ]
+  },
+  "status": "OK"
+}
+```
+
+**Вариант B — cumulative-style (cancellations, vtr, returns, inr, negativeFeedback):**
+```json
+{
+  "payload": {
+    "reportDuration": 30,
+    "updatedTimestamp": "...",
+    "cumulativeRate": 2,
+    "cumulativeRateTrend": "GREEN_UP",
+    "gmvLoss": 822.51,
+    "ordersImpacted": 4,
+    "ordersImpactedTrend": "GREEN_UP",
+    "standard": "below 2%",
+    "performanceStandard": "2% or below",
+    "riskLevel": "MEETS STANDARD",
+    "performanceRiskLevel": "Good",
+    "sellerAccountableDrivers": { ... },
+    "nonAccountableDrivers": { ... },
+    "recommendations": [ ... ]
+  },
+  "status": "OK"
+}
+```
+
+Унифицированный парсер должен брать **`overallRate` или `cumulativeRate`** в зависимости от того что есть.
+
+### Trend values (общие для всех endpoints)
+
+- `GREEN_UP` / `GREEN_DOWN` — улучшение
+- `NEUTRAL` — без изменений
+- `RED_UP` / `RED_DOWN` — ухудшение
+
+### Окна `reportDuration`
+
+| Metric | Supported windows |
+|---|---|
+| OTD, OTS, cancellations, srr, sfla, cma | 14, 30, 60, 90 |
+| VTR | 14, 30, 90 (НЕ 60) |
+| Returns, INR, Negative feedback | обычно 30, 60, 90 |
+
+Стратегия: запросить **30 дней по умолчанию**, при ошибке fall back на 90.
 
 ---
 
 ## ⚠️ Принципы
 
-- **Не угадывать** — пробовать эмпирически. Каждый вариант URL логировать, фиксировать точный response.
-- **Логирование на максимум** — статус, headers, тело ответа, какой именно URL пробовали.
-- **Fallback цепочкой** — если live summary endpoints не работают, переходим на On-Request Reports. Если и это не работает — показываем в UI конкретную причину с диагностикой.
-- **Никаких mock data** — лучше честно показать ошибку, чем фейковые числа.
-- **Не трогать Veeqo delegated key** — только наш собственный `WALMART_CLIENT_ID_STORE1` ключ.
-- **Все запросы — через существующий `walmartFetch` / `WalmartClient`** в `src/lib/walmart/client.ts` (если нет — создать/расширить с rate-limit aware fetch).
-- **Salutem Design System v1.0** в UI обновлениях (никакого чёрного текста, `tabular-nums` на числах).
+- **Параллельность через `Promise.allSettled`** — одна неудачная метрика не должна обрушить весь sync.
+- **Унификация парсинга** — общая функция `parseMetricResponse(metricKey, data)` которая знает что у одних метрик `overallRate`, у других `cumulativeRate`.
+- **204 ≠ ошибка** — это валидное "no data yet", показать соответственно в UI.
+- **Никаких mock data** — лучше "no data yet" чем фейк.
+- **Не трогать Veeqo delegated key** — только `WALMART_CLIENT_ID_STORE1`.
+- **Логирование на максимум** на первом sync — точный URL, status, response body для каждого вызова. После того как всё заработает — снизить verbosity.
+- **Salutem Design System v1.0** в UI (никакого чёрного текста, `tabular-nums` на числах).
 
 ---
 
 ## ЭТАП 1: Изучить текущий код
 
-Перед любыми изменениями прочитать:
-- `src/lib/walmart/client.ts` — как сейчас построен fetch
+Прочитать (без изменений):
+- `src/lib/walmart/client.ts` — текущий fetch и auth
 - `src/lib/walmart/seller-performance.ts` — что именно вызывается сейчас
-- `src/app/api/account-health/walmart/sync/route.ts` — как sync обрабатывает ошибки
-- `src/components/account-health/WalmartHealthTab.tsx` — где показывается «Not available»
+- `src/app/api/account-health/walmart/sync/route.ts` — sync handler
+- `src/components/account-health/WalmartHealthTab.tsx` — UI компонент
 - `prisma/schema.prisma` — модель `WalmartPerformanceSnapshot`
 
 Зафиксировать в комментарии PR:
-- Какие точно URL вызываются сейчас
-- Какие headers отправляются
-- Куда пишется error message в UI
+- Какой именно URL вызывался (для документации в commit message)
+- Какой был параметр и что мы меняем
 
-**Этот этап заканчивается без коммита** — только понимание текущей системы.
-
----
-
-## ЭТАП 2: Диагностический скрипт
-
-### 2.1. Создать `scripts/walmart-diagnose-api.ts`
-
-Standalone TypeScript скрипт, запускаемый через `npx tsx scripts/walmart-diagnose-api.ts`. Использует `WALMART_CLIENT_ID_STORE1` и `WALMART_CLIENT_SECRET_STORE1` из `.env`.
-
-Скрипт делает следующее по порядку:
-
-**Step 1.** Получить access token: `POST https://marketplace.walmartapis.com/v3/token` с Basic Auth и body `grant_type=client_credentials`. Залогировать `access_token`, `expires_in`, любые scopes которые могут вернуться.
-
-**Step 2.** Вызвать `GET https://marketplace.walmartapis.com/v3/token/detail`. Залогировать ВЕСЬ ответ — `scopes` object с access levels по категориям (`reports`, `insights`, `orders`, `item`, etc.). Это покажет, есть ли у нас доступ к `insights` / `reports` / `seller-performance`.
-
-**Step 3.** Попробовать 6 вариантов URL для **On-Time Delivery summary** (через try/catch каждый, не падать на ошибке):
-
-```typescript
-const URL_VARIANTS_OTD = [
-  '/v3/sellerPerformance/onTimeDelivery/summary?windowDays=30',
-  '/v3/insights/sellerPerformance/onTimeDelivery?windowDays=30',
-  '/v3/insights/onTimeDelivery/summary?windowDays=30',
-  '/v3/getOtd?windowDays=30',
-  '/v3/sellerPerformance/getOtd?windowDays=30',
-  '/v3/sellerPerformanceStandards/onTimeDelivery?windowDays=30',
-];
-```
-
-Для каждого варианта залогировать:
-- URL
-- HTTP status
-- Response body (первые 500 символов если большой)
-- Headers (особенно `x-current-token-count`, `x-next-replenish-time`, `x-correlation-id`)
-
-Если какой-то вариант вернёт **200 OK** — это победитель. Сохранить в результаты.
-
-Если все вернут 404 — этого endpoint типа не существует под этими путями.
-
-**Step 4.** Попробовать On-Request Reports подход. Список `reportType` значений для попыток (Walmart использует SCREAMING_SNAKE_CASE):
-
-```typescript
-const REPORT_TYPES = [
-  'CANCELLATION',
-  'DELIVERY_DEFECT',
-  'ITEM_PERFORMANCE',
-  'SELLER_PERFORMANCE',
-  'SELLER_PERFORMANCE_SUMMARY',
-  'ON_TIME_DELIVERY',
-  'VALID_TRACKING',
-  'NEGATIVE_FEEDBACK',
-  'RETURNS',
-  'ITEM_NOT_RECEIVED',
-];
-```
-
-Для каждого:
-- `POST /v3/reports/reportRequests?reportType={TYPE}&reportVersion=v1`
-- Залогировать ответ. Если 200 OK + `requestID` — этот тип отчёта поддерживается, сохранить ID.
-- НЕ ждать готовности отчёта на этом этапе — просто фиксируем, какие типы принимаются.
-
-**Step 5.** Записать все findings в файл `docs/WALMART_API_DIAGNOSTIC_RESULTS.md` со структурой:
-
-```markdown
-# Walmart API Diagnostic Results
-Date: YYYY-MM-DD HH:MM
-
-## Token scopes
-{json with all scopes}
-
-## On-Time Delivery endpoint variants
-| URL | Status | Notes |
-|---|---|---|
-| ... | 404 | CONTENT_NOT_FOUND |
-| ... | 200 | ✅ WORKS |
-
-## On-Request Reports types
-| reportType | Status | requestID? |
-|---|---|---|
-| CANCELLATION | 200 | abc-123 |
-| ... | 404 | not supported |
-
-## Winning approach
-{вывод: какой метод использовать как primary}
-```
-
-### 2.2. Запустить скрипт
-
-```bash
-npx tsx scripts/walmart-diagnose-api.ts
-```
-
-Если выпадает на отсутствии `dotenv` или `tsx` — добавить в `package.json` devDependencies, не игнорировать.
-
-**Коммит:** `chore(walmart): add API diagnostic script + results`
+**Без коммита.**
 
 ---
 
-## ЭТАП 3: Обновить `seller-performance.ts` на основе findings
+## ЭТАП 2: Опциональная диагностика scopes (можно пропустить, если время дорого)
 
-После ЭТАПА 2 у нас есть данные. Действуем по сценариям:
+Создать `scripts/walmart-check-scopes.ts`:
 
-### Сценарий A: Live summary endpoints работают (один из URL_VARIANTS вернул 200)
+```typescript
+// Получить токен через client_credentials
+// Вызвать GET /v3/token/detail
+// Залогировать scopes object
+// Особенно проверить наличие "insights" и/или "reports"
+// Записать ответ в docs/WALMART_API_SCOPES.md для записи
+```
 
-Переписать `src/lib/walmart/seller-performance.ts` так, чтобы он делал **11 отдельных запросов** — по одному на каждую метрику (на тот URL pattern который сработал).
+Запустить: `npx tsx scripts/walmart-check-scopes.ts`
 
-Структура клиента:
+Direct seller credentials (наш случай — `WALMART_CLIENT_ID_STORE1` с My API Key page) **должны** иметь full access по умолчанию. Если в ответе видим `insights: no_access` или `reports: no_access` — это уже сигнал что нужно идти в Developer Portal и активировать.
+
+**Коммит:** `chore(walmart): add scopes diagnostic script` (если делали)
+
+---
+
+## ЭТАП 3: Переписать `seller-performance.ts`
+
+Это главный этап. Полностью заменить файл `src/lib/walmart/seller-performance.ts` на новую реализацию:
 
 ```typescript
 // src/lib/walmart/seller-performance.ts
 
-const METRIC_ENDPOINTS = {
-  onTimeDelivery:    'WORKING_URL_PATTERN/onTimeDelivery',
-  validTracking:     'WORKING_URL_PATTERN/validTrackingRate',
-  sellerResponse:    'WORKING_URL_PATTERN/responseRate',
-  refunds:           'WORKING_URL_PATTERN/refundRate',
-  cancellations:     'WORKING_URL_PATTERN/cancellationRate',
-  negativeFeedback:  'WORKING_URL_PATTERN/negativeFeedback',
-  returns:           'WORKING_URL_PATTERN/returns',
-  itemNotReceived:   'WORKING_URL_PATTERN/itemNotReceived',
-  shipFromAccuracy:  'WORKING_URL_PATTERN/shipFromLocationAccuracy',
-  onTimeShipment:    'WORKING_URL_PATTERN/onTimeShipment',
-  carrierAccuracy:   'WORKING_URL_PATTERN/carrierMethodAccuracy',
-};
+import { walmartFetch } from './client';
 
-export async function fetchWalmartPerformance(windowDays: 14 | 30 | 60 | 90 = 30): Promise<WalmartPerformanceData> {
-  // Параллельно (Promise.allSettled), не последовательно
+export type PerformanceWindow = 14 | 30 | 60 | 90;
+export type ShippingMethod = 'ALL_METHODS' | 'TwoDay' | 'OneDay';
+
+/**
+ * 11 endpoints из Walmart Insights API → Seller Performance.
+ * Все vereified либо напрямую через docs, либо inferred from reference IDs.
+ * Base URL: https://marketplace.walmartapis.com/v3/insights/performance/{path}/summary
+ */
+export const PERFORMANCE_METRICS = {
+  onTimeDelivery:    { path: 'otd',              window: 30, hasShippingMethod: true,  rateKey: 'overallRate' },
+  cancellations:     { path: 'cancellations',    window: 30, hasShippingMethod: false, rateKey: 'cumulativeRate' },
+  validTracking:     { path: 'vtr',              window: 30, hasShippingMethod: true,  rateKey: 'cumulativeRate' },
+  sellerResponse:    { path: 'srr',              window: 30, hasShippingMethod: false, rateKey: 'overallRate' },
+  negativeFeedback:  { path: 'negativeFeedback', window: 60, hasShippingMethod: false, rateKey: 'cumulativeRate' },
+  returns:           { path: 'returns',          window: 60, hasShippingMethod: false, rateKey: 'cumulativeRate' },
+  itemNotReceived:   { path: 'inr',              window: 60, hasShippingMethod: false, rateKey: 'cumulativeRate' },
+  shipFromAccuracy:  { path: 'sfla',             window: 30, hasShippingMethod: false, rateKey: 'overallRate' },
+  onTimeShipment:    { path: 'ots',              window: 30, hasShippingMethod: true,  rateKey: 'overallRate' },
+  carrierAccuracy:   { path: 'cma',              window: 30, hasShippingMethod: false, rateKey: 'overallRate' },
+  // refunds — DEPRECATED, не использовать
+} as const;
+
+export type MetricKey = keyof typeof PERFORMANCE_METRICS;
+
+export interface PerformanceMetricResult {
+  metric: MetricKey;
+  status: 'OK' | 'NO_DATA' | 'ERROR';
+  rate?: number;          // 0-100, проценты
+  trend?: 'GREEN_UP' | 'GREEN_DOWN' | 'NEUTRAL' | 'RED_UP' | 'RED_DOWN';
+  sellerAccountableRate?: number;
+  impactedCustomerCount?: number;
+  ordersImpacted?: number;
+  gmvLoss?: number;
+  riskLevel?: string;
+  performanceRiskLevel?: string;
+  standard?: string;
+  reportDuration?: number;
+  updatedTimestamp?: string;
+  drivers?: any;
+  recommendations?: Array<{ recommendation: string; moreInfoLink: string }>;
+  errorMessage?: string;  // только если status=ERROR
+  httpStatus?: number;    // для debugging
+}
+
+export interface WalmartPerformanceData {
+  syncedAt: string;
+  metrics: Record<MetricKey, PerformanceMetricResult>;
+}
+
+/**
+ * Главный метод — синхронизирует все 10 метрик параллельно.
+ */
+export async function fetchAllPerformanceMetrics(): Promise<WalmartPerformanceData> {
+  const entries = Object.entries(PERFORMANCE_METRICS) as Array<[MetricKey, typeof PERFORMANCE_METRICS[MetricKey]]>;
+  
   const results = await Promise.allSettled(
-    Object.entries(METRIC_ENDPOINTS).map(async ([key, url]) => {
-      const response = await walmartFetch(`${url}?windowDays=${windowDays}`);
-      return { key, data: response };
-    })
+    entries.map(([key, config]) => fetchSingleMetric(key, config))
   );
   
-  // Собрать все успешные. Залогировать failed.
-  const performance: any = {};
-  for (const result of results) {
+  const metrics: Record<string, PerformanceMetricResult> = {};
+  for (let i = 0; i < entries.length; i++) {
+    const [key] = entries[i];
+    const result = results[i];
     if (result.status === 'fulfilled') {
-      performance[result.value.key] = result.value.data;
+      metrics[key] = result.value;
     } else {
-      console.error(`Failed to fetch metric: ${result.reason}`);
+      metrics[key] = {
+        metric: key,
+        status: 'ERROR',
+        errorMessage: result.reason?.message || 'Unknown error',
+      };
     }
   }
   
-  return performance;
+  return {
+    syncedAt: new Date().toISOString(),
+    metrics: metrics as Record<MetricKey, PerformanceMetricResult>,
+  };
 }
-```
 
-**Важно про окна:** на скрине у Vladimir 5 метрик за 30 дней (On-time delivery, Cancellations, Valid tracking, Seller response, Late shipment) + 3 за 60 дней (Negative feedback, Returns, Item not received). Делать 2 параллельных запроса — один с `windowDays=30`, второй с `windowDays=60` — и брать соответствующие метрики из каждого.
-
-### Сценарий B: Live endpoints не работают, но On-Request Reports работают
-
-Использовать **двухшаговый flow**:
-
-```typescript
-// src/lib/walmart/seller-performance.ts
-
-export async function fetchWalmartPerformanceViaReports(): Promise<WalmartPerformanceData> {
-  // Step 1: Запросить отчёты для всех нужных reportType
-  const reportTypes = ['ON_TIME_DELIVERY', 'CANCELLATION', /* etc, тех что работают */];
-  const requestIds: Record<string, string> = {};
-  
-  for (const reportType of reportTypes) {
-    const resp = await walmartFetch(
-      `/v3/reports/reportRequests?reportType=${reportType}&reportVersion=v1`,
-      { method: 'POST' }
-    );
-    requestIds[reportType] = resp.requestId;
+async function fetchSingleMetric(
+  key: MetricKey,
+  config: typeof PERFORMANCE_METRICS[MetricKey]
+): Promise<PerformanceMetricResult> {
+  const params = new URLSearchParams({ reportDuration: String(config.window) });
+  if (config.hasShippingMethod) {
+    params.set('shippingMethod', 'ALL_METHODS');
   }
   
-  // Step 2: Polling — каждые 30 секунд проверять статус, max 30 минут
-  const downloadUrls: Record<string, string> = {};
-  const start = Date.now();
-  while (Object.keys(downloadUrls).length < reportTypes.length && Date.now() - start < 30 * 60 * 1000) {
-    for (const [reportType, requestId] of Object.entries(requestIds)) {
-      if (downloadUrls[reportType]) continue; // уже готов
-      const statusResp = await walmartFetch(`/v3/reports/reportRequests?requestID=${requestId}`);
-      if (statusResp.requestStatus === 'RESULTED') {
-        const dlResp = await walmartFetch(`/v3/reports/downloadReport?requestID=${requestId}`);
-        downloadUrls[reportType] = dlResp.downloadUrl;
-      }
+  const path = `/v3/insights/performance/${config.path}/summary?${params.toString()}`;
+  
+  try {
+    const { status, body, headers } = await walmartFetch(path, { method: 'GET' });
+    
+    // Подробное логирование на старте — потом можно убрать
+    console.log(`[walmart-perf] ${key} → ${path} → HTTP ${status}`);
+    
+    if (status === 204) {
+      return { metric: key, status: 'NO_DATA', httpStatus: 204 };
     }
-    await sleep(30_000);
+    
+    if (status !== 200) {
+      console.error(`[walmart-perf] ${key} failed: HTTP ${status}`, body);
+      return {
+        metric: key,
+        status: 'ERROR',
+        httpStatus: status,
+        errorMessage: typeof body === 'string' ? body.slice(0, 500) : JSON.stringify(body).slice(0, 500),
+      };
+    }
+    
+    const payload = body.payload ?? body;
+    const rate = payload[config.rateKey];
+    
+    return {
+      metric: key,
+      status: 'OK',
+      rate: typeof rate === 'number' ? rate : undefined,
+      trend: payload.overallTrend ?? payload.cumulativeRateTrend,
+      sellerAccountableRate: payload.sellerAccountableRate,
+      impactedCustomerCount: payload.impactedCustomerCount,
+      ordersImpacted: payload.ordersImpacted,
+      gmvLoss: payload.gmvLoss,
+      riskLevel: payload.riskLevel,
+      performanceRiskLevel: payload.performanceRiskLevel,
+      standard: payload.standard,
+      reportDuration: payload.reportDuration,
+      updatedTimestamp: payload.updatedTimestamp,
+      drivers: {
+        accountable: payload.sellerAccountableDrivers,
+        nonAccountable: payload.nonAccountableDrivers,
+      },
+      recommendations: payload.recommendations,
+      httpStatus: 200,
+    };
+  } catch (err: any) {
+    console.error(`[walmart-perf] ${key} exception:`, err);
+    return {
+      metric: key,
+      status: 'ERROR',
+      errorMessage: err.message || String(err),
+    };
   }
-  
-  // Step 3: Скачать XLSX/JSON, распарсить, агрегировать в WalmartPerformanceData
-  // ...
 }
 ```
 
-> ⚠️ Reports generation занимает 15-45 минут. Это значит **синхронный sync через UI button не подойдёт**. Нужно сделать асинхронный flow: создать отдельный `WalmartReportJob` table со статусами `REQUESTED` / `RESULTED` / `DOWNLOADED` / `FAILED`. Cron каждый час проверяет готовые отчёты и обновляет `WalmartPerformanceSnapshot`. UI показывает «Last synced X ago» и кнопку «Request fresh data».
+### Заметки реализации
 
-### Сценарий C: Ничего не работает
+1. **`walmartFetch` уже существует** в `src/lib/walmart/client.ts` — он добавляет нужные headers (WM_SEC.ACCESS_TOKEN, WM_QOS.CORRELATION_ID, WM_SVC.NAME). Если signature не совпадает (ожидает другие аргументы или возвращает `body` напрямую без `status`) — адаптировать под текущий контракт, но НЕ создавать новый клиент.
 
-Если **ни live endpoints, ни On-Request Reports не дают результата**:
+2. **`WM_QOS.CORRELATION_ID` должен быть уникальным per request** — это критично для Walmart, если использовать один и тот же UUID для всех 10 параллельных запросов, можем получить дедупликацию. Использовать `crypto.randomUUID()` внутри `walmartFetch` для каждого вызова.
 
-1. В UI обновить текст ошибки — заменить «Not available via API for this account» на честную диагностику:
-   ```
-   Walmart Performance metrics — диагностика:
-   • Token scopes: {список scopes из /v3/token/detail}
-   • Tried 6 URL variants, all returned 404 (см. docs/WALMART_API_DIAGNOSTIC_RESULTS.md)
-   • Tried 10 reportType values, none accepted (см. docs/WALMART_API_DIAGNOSTIC_RESULTS.md)
-   
-   Возможные причины:
-   1. У токена недостаточный scope для `insights` или `reports`
-   2. Endpoint требует Pro Seller статус или другую активацию
-   3. Account doesn't have enough order history for performance data yet
-   
-   Действие: открыть тикет в Walmart Seller Support, приложить результаты диагностики
-   ```
-2. Создать заготовку тикета в `docs/WALMART_SUPPORT_TICKET_DRAFT.md` с текстом для копирования в Walmart Support (см. ЭТАП 5).
+3. **`onTimeShipment` (ots)** в Walmart Seller Center показывается как "Late shipment rate" — это инвертированная метрика. В response придёт `overallRate` = on-time %, чтобы получить "late %" вычислить `100 - overallRate`. Делать это в UI слое, не в data слое.
 
-**Коммит:** `feat(walmart): rewrite seller-performance with correct endpoints` (Сценарий A) или `feat(walmart): add On-Request Reports fallback for performance` (Сценарий B) или `feat(walmart): improve performance API error diagnostics` (Сценарий C).
+4. **Окна разные для разных метрик** — например VTR не поддерживает 60 дней. Конфиг в `PERFORMANCE_METRICS` отражает это: на скриншоте Vladimir одни метрики за 30, другие за 60 дней. Можно потом сделать параметризацию.
 
 ---
 
-## ЭТАП 4: UI улучшения
+## ЭТАП 4: Обновить sync route
+
+Файл `src/app/api/account-health/walmart/sync/route.ts`:
+
+```typescript
+import { fetchAllPerformanceMetrics } from '@/lib/walmart/seller-performance';
+import { prisma } from '@/lib/prisma';
+
+export async function POST() {
+  try {
+    const data = await fetchAllPerformanceMetrics();
+    
+    // Сохранить snapshot в WalmartPerformanceSnapshot
+    await prisma.walmartPerformanceSnapshot.create({
+      data: {
+        storeId: 1, // Sirius Trading International
+        syncedAt: new Date(data.syncedAt),
+        rawData: JSON.stringify(data.metrics),
+        
+        // Денормализованные поля для быстрого querying:
+        onTimeDeliveryRate: data.metrics.onTimeDelivery.rate,
+        cancellationRate:   data.metrics.cancellations.rate,
+        validTrackingRate:  data.metrics.validTracking.rate,
+        sellerResponseRate: data.metrics.sellerResponse.rate,
+        onTimeShipmentRate: data.metrics.onTimeShipment.rate,
+        negativeFeedbackRate: data.metrics.negativeFeedback.rate,
+        returnsRate:        data.metrics.returns.rate,
+        itemNotReceivedRate: data.metrics.itemNotReceived.rate,
+      },
+    });
+    
+    // Evaluate Critical Alerts (см. ALERT_RULES из v1 промпта)
+    await evaluateWalmartAlerts(data.metrics);
+    
+    return Response.json({ ok: true, data });
+  } catch (err: any) {
+    console.error('[walmart-sync] failed:', err);
+    return Response.json({ ok: false, error: err.message }, { status: 500 });
+  }
+}
+```
+
+Если в `prisma/schema.prisma` уже есть `WalmartPerformanceSnapshot` модель — использовать её. Если каких-то полей нет (например `validTrackingRate`) — добавить migration.
+
+---
+
+## ЭТАП 5: Обновить UI компонент
 
 В `src/components/account-health/WalmartHealthTab.tsx`:
 
-### 4.1. Заменить плейсхолдер «Not available»
+### 5.1. Заменить placeholder «Not available» на нормальные метрики
 
-Если **данные есть** — показать обычные карточки (Сценарий A или B после первого успешного sync).
+8 карточек по образцу скриншота Vladimir:
 
-Если **данных ещё нет, но запрос в процессе** (Сценарий B):
-```
-┌────────────────────────────────────────┐
-│ ⏳ Performance metrics                  │
-│                                         │
-│ Walmart готовит отчёт (15-45 минут).    │
-│ Status: REPORT REQUESTED                │
-│ Запрошено: 14:23 · обновится автоматич. │
-│                                         │
-│ [Refresh status] · [View diagnostic]    │
-└────────────────────────────────────────┘
-```
-
-Если **данных нет и не получается** (Сценарий C):
-```
-┌────────────────────────────────────────┐
-│ ⚠️ Performance metrics недоступны        │
-│                                         │
-│ Walmart API возвращает 404 на все       │
-│ варианты endpoints. Это означает что    │
-│ либо scope недостаточен, либо account   │
-│ требует активации.                      │
-│                                         │
-│ Что мы попробовали:                     │
-│ • 6 URL вариантов для summary endpoints │
-│ • 10 типов On-Request Reports           │
-│ • Token scopes: {из диагностики}        │
-│                                         │
-│ Действие: открыть тикет в Walmart Sup-  │
-│ port (черновик в docs/WALMART_SUPPORT_  │
-│ TICKET_DRAFT.md)                        │
-│                                         │
-│ [View full diagnostic]                  │
-└────────────────────────────────────────┘
+```tsx
+<MetricCard
+  label="On-time delivery"
+  value={data.metrics.onTimeDelivery.rate}
+  unit="%"
+  window="30d"
+  threshold="≥ 90%"
+  status={data.metrics.onTimeDelivery.performanceRiskLevel}
+  trend={data.metrics.onTimeDelivery.trend}
+/>
 ```
 
-### 4.2. Добавить кнопку "View diagnostic"
+Группы:
+- **Group 1 (30 days):** On-time delivery, Cancellations, Valid tracking, Seller response, Late shipment (= 100 - onTimeShipmentRate)
+- **Group 2 (60 days):** Negative feedback, Returns, Item not received
 
-Открывает Sheet/Dialog с содержимым `docs/WALMART_API_DIAGNOSTIC_RESULTS.md` (читать через API endpoint, не хардкодить).
+### 5.2. Обработка статусов
 
-**Коммит:** `feat(ui): improve Walmart performance error messaging with diagnostic`
+Per-metric отображение:
+- `status === 'OK'` → показать карточку с числом и trend
+- `status === 'NO_DATA'` (HTTP 204) → карточка с "No data yet" вместо числа. Объяснить: "Walmart не накопил достаточно данных за этот период — обычно нужно 14+ дней активных продаж"
+- `status === 'ERROR'` → красная карточка с error message и `httpStatus`. Кнопка "View details" открывает Sheet с raw response
+
+### 5.3. Глобальный статус (карточка вверху)
+
+Заменить "Monitor / Not available" на агрегированную оценку:
+- Если все метрики `Good` → "Healthy" (зелёный)
+- Если хотя бы одна `Monitor` → "Monitor" (жёлтый)
+- Если хотя бы одна `Urgent` или `URGENT REVIEW` → "At Risk" (красный)
+
+### 5.4. Trend индикаторы
+
+Иконка стрелки + цвет в зависимости от `trend`:
+- `GREEN_UP` / `GREEN_DOWN` → ↑/↓ зелёные
+- `NEUTRAL` → — серая
+- `RED_UP` / `RED_DOWN` → ↑/↓ красные
+
+### 5.5. Под каждой карточкой
+
+Маленьким текстом: `Updated: {updatedTimestamp}` (relative format, типа "3 hours ago"). Это покажет насколько свежие данные.
 
 ---
 
-## ЭТАП 5: Заготовка тикета в Walmart Support (только если Сценарий C)
+## ЭТАП 6: Critical Alerts integration
 
-Создать `docs/WALMART_SUPPORT_TICKET_DRAFT.md`:
+В `src/lib/account-health/alert-evaluator.ts` (или где у нас сейчас ALERT_RULES) — обновить Walmart правила на использование новых rate fields:
+
+```typescript
+// Из v1 промпта ALERT_RULES — теперь все маппятся к новой структуре
+const WALMART_RULES = [
+  {
+    id: 'wm-otd-low',
+    metric: 'onTimeDelivery',
+    threshold: 90,
+    operator: 'below',
+    severity: 'HIGH',
+    title: 'Walmart On-time delivery dropped below 90%',
+    notify: ['telegram', 'ui'],
+  },
+  {
+    id: 'wm-cancel-high',
+    metric: 'cancellations',
+    threshold: 2,
+    operator: 'above',
+    severity: 'CRITICAL',
+    title: 'Walmart cancellation rate exceeded 2%',
+    notify: ['telegram', 'ui'],
+  },
+  {
+    id: 'wm-vtr-low',
+    metric: 'validTracking',
+    threshold: 99,
+    operator: 'below',
+    severity: 'HIGH',
+    title: 'Walmart valid tracking rate dropped below 99%',
+    notify: ['telegram', 'ui'],
+  },
+  {
+    id: 'wm-srr-low',
+    metric: 'sellerResponse',
+    threshold: 95,
+    operator: 'below',
+    severity: 'MEDIUM',
+    title: 'Walmart seller response rate dropped below 95%',
+    notify: ['ui'],
+  },
+  {
+    id: 'wm-late-ship-high',
+    metric: 'onTimeShipment',
+    threshold: 99,
+    operator: 'below',  // если on-time < 99%, late > 1%
+    severity: 'HIGH',
+    title: 'Walmart on-time shipment dropped below 99%',
+    notify: ['telegram', 'ui'],
+  },
+];
+```
+
+Anti-spam: тот же alert не отправлять чаще раз в 24 часа (из v1).
+
+---
+
+## ЭТАП 7: Cron schedule
+
+В `src/app/api/cron/account-health/route.ts` (или где у нас vercel cron / n8n schedule):
+
+Walmart performance sync — **раз в 24 часа** (Walmart обновляет datasets раз в сутки, чаще нет смысла).
+
+Если у нас n8n schedule — описать в `docs/wiki/account-health-v2.md` cron expression: `0 6 * * *` (6:00 UTC = 2:00 EST).
+
+---
+
+## ЭТАП 8: Wiki обновления
+
+### 8.1. Обновить `docs/wiki/walmart-api.md`
+
+Полностью заменить секцию "Seller Performance API" на:
 
 ```markdown
-# Walmart Marketplace Support Ticket
+## Seller Performance API (Insights category)
 
-**Subject:** Seller Performance API endpoints returning 404 — clarify correct paths
+**Status:** ✅ Working as of 2026-05-15
+**Base URL:** `https://marketplace.walmartapis.com/v3/insights/performance/{metric}/summary`
+**Parameters:** `reportDuration={14|30|60|90}`, optional `shippingMethod={ALL_METHODS|TwoDay|OneDay}`
 
-**Account:** Sirius Trading International LLC
-**Seller ID:** 10001624309
-**Client ID:** 0595b090-82f9-4f56-9216-5aa68a5d3cc5 (direct seller key, not Veeqo)
+### Metric paths
+| Metric | URL segment | Window | Has shippingMethod |
+|---|---|---|---|
+| On-time delivery | `otd` | 30 | yes |
+| Cancellations | `cancellations` | 30 | no |
+| Valid tracking | `vtr` | 30 | yes |
+| Seller response | `srr` | 30 | no |
+| Negative feedback | `negativeFeedback` | 60 | no |
+| Returns | `returns` | 60 | no |
+| Item not received | `inr` | 60 | no |
+| Ship-from accuracy | `sfla` | 30 | no |
+| On-time shipment | `ots` | 30 | yes |
+| Carrier method | `cma` | 30 | no |
 
----
+### HTTP statuses
+- 200 = data returned
+- 204 = no data yet (new account, insufficient orders)
+- 404 = wrong URL (should not happen with paths above)
+- 429 = rate limit
 
-Hello Walmart Seller Support team,
-
-We are integrating Walmart Marketplace API into our internal operations dashboard. Orders API, Items API, and Returns API all work correctly. However, Seller Performance API endpoints return `404 CONTENT_NOT_FOUND` consistently.
-
-We've tried multiple URL patterns based on documentation at https://developer.walmart.com/us-marketplace/docs/seller-performance-api-overview:
-
-1. `GET /v3/sellerPerformance/onTimeDelivery/summary?windowDays=30` → 404
-2. `GET /v3/insights/sellerPerformance/onTimeDelivery?windowDays=30` → 404
-3. `GET /v3/insights/onTimeDelivery/summary?windowDays=30` → 404
-4. `GET /v3/getOtd?windowDays=30` → 404
-5. `GET /v3/sellerPerformance/getOtd?windowDays=30` → 404
-6. `GET /v3/sellerPerformanceStandards/onTimeDelivery?windowDays=30` → 404
-
-We also tried On-Request Reports API with these reportType values: CANCELLATION, DELIVERY_DEFECT, ITEM_PERFORMANCE, SELLER_PERFORMANCE, ON_TIME_DELIVERY, VALID_TRACKING, NEGATIVE_FEEDBACK, RETURNS, ITEM_NOT_RECEIVED — all return 404.
-
-Our token has the following scopes (from `/v3/token/detail`):
-{вставить ответ из ЭТАПА 2}
-
-**Questions:**
-1. What are the exact production URLs for the 11 Seller Performance summary endpoints listed in your documentation (getotd, getvtr, getsrr, getrefunds, getcancel, getnegativefeedback, getreturns, getinr, getsfla, getots, getcma)?
-2. Is our account eligible for Seller Performance API access, or does it require Pro Seller status / additional activation?
-3. Same data displays correctly in Seller Center → Performance page, so the data exists. How do we access it via API?
-
-Our use case: real-time monitoring dashboard for 5 Amazon accounts + 1 Walmart account (Sirius Trading) with automated alerts when metrics breach thresholds. We need this data to operate effectively.
-
-Thank you,
-Vladimir Kuznetsov
-Sirius Trading International LLC
+### Reference
+- Sample request: `GET /v3/insights/performance/otd/summary?reportDuration=30&shippingMethod=ALL_METHODS`
+- Headers: `WM_SEC.ACCESS_TOKEN`, `WM_QOS.CORRELATION_ID` (unique UUID per request), `WM_SVC.NAME: Walmart Marketplace`, `Accept: application/json`
+- Datasets refresh every 24h on Walmart side
+- Code: `src/lib/walmart/seller-performance.ts`
 ```
 
-Vladimir сможет открыть тикет через Seller Center → Help → Contact Support и скопировать этот текст.
+### 8.2. Обновить `docs/wiki/account-health-v2.md`
 
-**Коммит:** `docs(walmart): add support ticket draft for performance API` (только Сценарий C)
+В секции Walmart пометить Performance metrics: **✅ Working — v3/insights/performance**.
 
----
+### 8.3. Обновить `docs/wiki/index.md` и `docs/wiki/CONNECTIONS.md`
 
-## ЭТАП 6: Wiki + документация
-
-### 6.1. Обновить `docs/wiki/walmart-api.md`
-
-Добавить секцию:
-
-```markdown
-## Seller Performance API — текущий статус
-
-Last diagnosed: YYYY-MM-DD
-
-**Working approach:** {выбранный сценарий A/B/C}
-
-**Working endpoints:**
-- ...
-
-**Known issues:**
-- ...
-
-**Polling schedule:** {частота sync}
-
-**See also:** `docs/WALMART_API_DIAGNOSTIC_RESULTS.md`
-```
-
-### 6.2. Обновить `docs/wiki/account-health-v2.md`
-
-В секции "Walmart" пометить статус Performance metrics: ✅ Working / ⏳ Reports-based / ❌ Pending support ticket.
-
-### 6.3. Обновить `docs/wiki/index.md` и `docs/wiki/CONNECTIONS.md`
-
-Добавить ссылку на `WALMART_API_DIAGNOSTIC_RESULTS.md` и (если есть) `WALMART_SUPPORT_TICKET_DRAFT.md`.
-
-**Коммит:** `docs(wiki): document Walmart performance API findings`
+Добавить cross-references.
 
 ---
 
@@ -444,46 +602,42 @@ Last diagnosed: YYYY-MM-DD
 После всех этапов:
 
 1. `npm run build` без ошибок
-2. `npx tsx scripts/walmart-diagnose-api.ts` — отрабатывает, создаёт `docs/WALMART_API_DIAGNOSTIC_RESULTS.md`
+2. POST `/api/account-health/walmart/sync` — отрабатывает за < 30 секунд, в логах виден HTTP 200 для всех 10 метрик (или 204 для тех где нет данных)
 3. `/account-health` → Walmart tab:
-   - Если данные подтянулись (Сценарий A/B) — все 8 метрик отображаются с правильными %
-   - Если данных нет (Сценарий C) — показывается понятная диагностика, НЕ generic «Not available»
-4. POST `/api/account-health/walmart/sync` — отрабатывает, в логах виден точный URL и status каждого вызванного endpoint
-5. В Telegram приходят alerts если порог превышен (например Late Shipment > 5%)
+   - 8 карточек с реальными процентами
+   - Если у Walmart нет данных по метрике — карточка "No data yet" (HTTP 204), не ошибка
+   - Trend стрелки работают
+   - Updated timestamp у каждой карточки
+4. В Telegram приходит alert если порог превышен (например cancellation > 2% или OTD < 90%)
+5. `WalmartPerformanceSnapshot` в БД накапливает историю — можно потом строить график
 
 ---
 
-## 📁 Файлы для чтения перед началом
-
-- `src/lib/walmart/client.ts`
-- `src/lib/walmart/seller-performance.ts`
-- `src/lib/walmart/items.ts`
-- `src/app/api/account-health/walmart/sync/route.ts`
-- `src/components/account-health/WalmartHealthTab.tsx`
-- `docs/CLAUDE_CODE_PROMPT_WALMART_API_INTEGRATION.md` — Этап 5 (старая версия Seller Performance API)
-- `docs/CLAUDE_CODE_PROMPT_ACCOUNT_HEALTH_V2.md` — Этап 3
-- `prisma/schema.prisma` — модель `WalmartPerformanceSnapshot`
-
 ## ⛔ Что НЕ делать
 
-- НЕ заполнять данные mock-значениями для "красоты". Лучше честная ошибка чем фейк.
-- НЕ удалять диагностический скрипт после первого запуска — он понадобится повторно.
-- НЕ трогать Veeqo delegated key (`c479b706-...`). Только наш собственный `WALMART_CLIENT_ID_STORE1`.
-- НЕ менять Amazon-часть Account Health — это отдельный модуль.
-- НЕ хардкодить рабочий URL в коде сразу. Сначала диагностический скрипт показывает что работает, потом записываем в код с комментарием "verified working on YYYY-MM-DD".
-- НЕ забывать `Promise.allSettled` (не `Promise.all`) при параллельных запросах — иначе одна неудачная метрика обрушит весь sync.
-- НЕ ставить throttle ниже 1 req/sec до диагностики rate limits.
+- НЕ возвращаться к старым путям `/v3/sellerPerformance/*` или `/v3/insights/*` (общие) — они не существуют
+- НЕ использовать параметр `windowDays` (правильное имя — `reportDuration`)
+- НЕ использовать `refunds` endpoint — он deprecated
+- НЕ заполнять данные mock-значениями. Лучше "no data" чем фейк.
+- НЕ трогать Veeqo delegated key
+- НЕ использовать один `WM_QOS.CORRELATION_ID` для всех параллельных запросов — каждый должен иметь свой UUID
+- НЕ забыть `Promise.allSettled` — одна неудача не должна валить весь sync
+- НЕ конвертировать 204 в ошибку — это валидный "no data yet"
 
 ---
 
 ## 🎯 Финальный результат
 
-Один из трёх исходов:
+UI на `/account-health` → Walmart tab показывает реальные значения 8 метрик из Walmart Seller Center:
+- On-time delivery rate
+- Late shipment rate (= 100 - on-time shipment)
+- Cancellations
+- Valid tracking
+- Seller response
+- Negative feedback (60d)
+- Returns (60d)
+- Item not received (60d)
 
-**A (best case):** Performance metrics работают через прямые API вызовы → 8 метрик отображаются в UI → Telegram alerts при breach. Время на реализацию: ~2 часа.
+С trend стрелками, статусом риска (Good/Monitor/Urgent), и Telegram alerts при breach.
 
-**B (good):** Performance metrics работают через On-Request Reports (асинхронно) → данные обновляются раз в час через cron → UI показывает «Last synced 23 min ago». Время на реализацию: ~4 часа.
-
-**C (need support ticket):** Diagnostic показывает что endpoints недоступны для нашего scope → в UI понятная диагностика → готов draft тикета для Walmart Support → Vladimir отправляет тикет → ждём ответа от Walmart. Время на реализацию: ~3 часа на код + ожидание Walmart support (обычно 2-5 рабочих дней).
-
-В любом из исходов Item Compliance (тот блок что уже работает с 158 listings) НЕ должен пострадать.
+Item Compliance (158 listings что уже работают) **НЕ должен пострадать** — это отдельный endpoint в той же UI.
