@@ -127,6 +127,16 @@ export async function POST(request: NextRequest) {
         // Explicit so the post-buy modal can flag "label bought but PDF
         // not saved locally" — Veeqo has the label, our disk doesn't.
         pdfSaved: boolean;
+        // Which persistence path actually placed the file. "drive"
+        // means the operator can find it on the shared Drive; "proxy"
+        // means it's only retrievable via our `/api/shipping/label-pdf`
+        // pass-through (nothing was persisted on our side or on Drive).
+        // Surfaced in the post-buy modal so silent Drive failures stop
+        // looking like successes.
+        pdfSource: "drive" | "disk" | "proxy" | "none";
+        // Reason Drive upload didn't happen, if it didn't. Useful for
+        // diagnosing without spelunking Vercel logs.
+        driveError: string | null;
         carrier: string | null;
         service: string | null;
         price: number | null;
@@ -291,6 +301,8 @@ export async function POST(request: NextRequest) {
         //      so the operator can always click "Open PDF" in the modal
         //      even if Drive and disk both failed).
         let labelPath: string | null = null;
+        let pdfSource: "drive" | "disk" | "proxy" | "none" = "none";
+        let driveError: string | null = null;
         const shipmentId =
           shipment?.id ?? shipment?.shipment?.id ?? null;
 
@@ -350,8 +362,14 @@ export async function POST(request: NextRequest) {
                 filename,
                 pdf: pdfBuf,
               });
-              if (drive) {
-                labelPath = drive.webViewLink;
+              if (drive.ok) {
+                labelPath = drive.result.webViewLink;
+                pdfSource = "drive";
+              } else {
+                driveError = drive.reason;
+                console.warn(
+                  `[buy] Drive upload failed for ${item.orderNumber}: ${drive.reason}`
+                );
               }
 
               // ── Local disk (dev only — on Vercel this writes to an
@@ -359,7 +377,7 @@ export async function POST(request: NextRequest) {
               //    response). Skip if Drive succeeded so we don't waste
               //    invocation time on a write that won't outlive the
               //    request. ─────────────────────────────────────────
-              if (!drive) {
+              if (!drive.ok) {
                 try {
                   const folderRel = `labels/${folderPath}`;
                   const folderAbs = join(process.cwd(), "public", folderRel);
@@ -369,6 +387,7 @@ export async function POST(request: NextRequest) {
                   const filePath = join(folderAbs, filename);
                   writeFileSync(filePath, pdfBuf);
                   labelPath = `/${folderRel}/${encodeURIComponent(filename)}`;
+                  pdfSource = "disk";
                 } catch (diskErr) {
                   console.warn(
                     "[buy] local disk save failed (expected on Vercel):",
@@ -391,6 +410,7 @@ export async function POST(request: NextRequest) {
         // the shipment exists in Veeqo.
         if (!labelPath && shipmentId) {
           labelPath = `/api/shipping/label-pdf?shipmentId=${shipmentId}`;
+          pdfSource = "proxy";
         }
 
         // Add employee note. Include a SHIP-DAY badge when the plan
@@ -421,6 +441,8 @@ export async function POST(request: NextRequest) {
           itemId: item.id,
           labelPath,
           pdfSaved: labelPath != null,
+          pdfSource,
+          driveError,
           carrier: item.carrier,
           service: item.service,
           price: item.price,

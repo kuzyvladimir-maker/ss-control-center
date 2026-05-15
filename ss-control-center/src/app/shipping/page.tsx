@@ -136,6 +136,8 @@ interface BuyReportSuccess {
   itemId: string;
   labelPath: string | null;
   pdfSaved: boolean;
+  pdfSource: "drive" | "disk" | "proxy" | "none";
+  driveError: string | null;
   carrier: string | null;
   service: string | null;
   price: number | null;
@@ -1869,6 +1871,26 @@ function BuyReportDialog({
                           ⚠ PDF not saved locally — re-download from Veeqo
                         </div>
                       )}
+                      <div className="text-[10px] text-ink-3">
+                        PDF source:{" "}
+                        <span
+                          className={
+                            b.pdfSource === "drive"
+                              ? "text-success"
+                              : b.pdfSource === "proxy"
+                                ? "text-warn-strong"
+                                : "text-ink-2"
+                          }
+                        >
+                          {b.pdfSource}
+                        </span>
+                        {b.driveError && (
+                          <span className="text-warn-strong">
+                            {" · Drive: "}
+                            {b.driveError}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </li>
                 ))}

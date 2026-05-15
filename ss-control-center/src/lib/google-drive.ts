@@ -132,21 +132,28 @@ export interface DriveUploadResult {
   webViewLink: string;
 }
 
+export type DriveUploadOutcome =
+  | { ok: true; result: DriveUploadResult }
+  | { ok: false; reason: string };
+
 // Upload a PDF buffer to Drive under <root>/<...folderSegments>/<filename>.
-// Returns the file's webViewLink (a shareable link) on success, or null
-// on any failure (including Drive being unconfigured).
+// Returns a discriminated outcome — on failure, `reason` carries a short
+// human-readable explanation that callers can surface to the operator
+// (UI modal, audit log) so silent failures don't disappear into Vercel
+// logs they can't see.
 export async function uploadLabelPdf(params: {
   folderSegments: string[]; // e.g. ["04 April", "07", "Amazon"]
   filename: string;
   pdf: Buffer;
-}): Promise<DriveUploadResult | null> {
+}): Promise<DriveUploadOutcome> {
   const drive = getDriveClient();
-  if (!drive) return null;
+  if (!drive) {
+    return { ok: false, reason: driveClientError ?? "Drive client unavailable" };
+  }
 
   const rootId = process.env.GOOGLE_DRIVE_ROOT_FOLDER;
   if (!rootId) {
-    console.warn("[drive] GOOGLE_DRIVE_ROOT_FOLDER not set");
-    return null;
+    return { ok: false, reason: "GOOGLE_DRIVE_ROOT_FOLDER not set" };
   }
 
   try {
@@ -155,7 +162,12 @@ export async function uploadLabelPdf(params: {
       rootId,
       params.folderSegments
     );
-    if (!folderId) return null;
+    if (!folderId) {
+      return {
+        ok: false,
+        reason: `Could not resolve folder path: ${params.folderSegments.join("/")}`,
+      };
+    }
 
     const res = await drive.files.create({
       requestBody: {
@@ -174,14 +186,17 @@ export async function uploadLabelPdf(params: {
 
     const fileId = res.data.id;
     const webViewLink = res.data.webViewLink;
-    if (!fileId || !webViewLink) return null;
-    return { fileId, webViewLink };
+    if (!fileId || !webViewLink) {
+      return {
+        ok: false,
+        reason: "Drive create returned without id or webViewLink",
+      };
+    }
+    return { ok: true, result: { fileId, webViewLink } };
   } catch (e) {
-    console.error(
-      "[drive] uploadLabelPdf failed:",
-      e instanceof Error ? e.message : e
-    );
-    return null;
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[drive] uploadLabelPdf failed:", msg);
+    return { ok: false, reason: msg };
   }
 }
 
