@@ -203,9 +203,16 @@ const CATALOG: RouteGroup[] = [
         description: "Per-store Amazon SP-API health detail",
       },
       {
-        path: "/api/amazon/account-health/sync",
+        path: "/api/account-health/amazon/sync",
         methods: ["POST"],
-        description: "Sync from Amazon SP-API",
+        description:
+          "Amazon Account Health — Phase 1: request a fresh Seller Performance report for every configured store",
+      },
+      {
+        path: "/api/account-health/amazon/poll",
+        methods: ["POST"],
+        description:
+          "Amazon Account Health — Phase 2: download + parse any reports that finished, write snapshots",
       },
       {
         path: "/api/account-health/walmart/sync",

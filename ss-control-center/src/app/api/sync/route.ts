@@ -2,8 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { syncOrders } from "@/lib/sync/orders-sync";
 import { syncFinancialEvents } from "@/lib/sync/finances-sync";
-import { syncAllStores as syncAccountHealth } from "@/lib/amazon-sp-api/account-health-sync";
 import { getStoreCredentials } from "@/lib/amazon-sp-api/auth";
+
+// Account Health is intentionally NOT synced from this endpoint anymore.
+// The hand-rolled metrics in account-health-sync.ts diverge from Amazon's
+// official numbers (FBA filtering / proprietary shipment events we can't see),
+// so it would overwrite the good Reports-API snapshot with wrong data every
+// time the Dashboard Refresh button or Settings "Sync all" is pressed.
+// Account Health flows through its own pipeline now:
+//   - daily cron        /api/cron/account-health-amazon  (uses Reports API)
+//   - manual refresh    /account-health "Refresh all" button
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -62,16 +70,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (job === "all" || job === "health") {
-      try {
-        const healthResults = await syncAccountHealth();
-        results.health = { success: true, stores: healthResults };
-      } catch (e) {
-        results.health = {
-          success: false,
-          error: e instanceof Error ? e.message : String(e),
-        };
-      }
+    if (job === "health") {
+      // Defensive: anything still calling /api/sync?job=health gets pointed
+      // at the right place rather than silently running the legacy path.
+      results.health = {
+        success: false,
+        error:
+          "Account Health is no longer synced via /api/sync. Use the daily cron or the Refresh button on /account-health.",
+      };
     }
 
     await prisma.syncLog.update({

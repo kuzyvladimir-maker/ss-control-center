@@ -1,26 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
-import {
-  syncAllStores,
-  syncStoreHealth,
-} from "@/lib/amazon-sp-api/account-health-sync";
+import { NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json().catch(() => ({}));
-    const storeIndex = body.storeIndex;
-
-    if (storeIndex) {
-      const result = await syncStoreHealth(storeIndex);
-      return NextResponse.json(result);
-    }
-
-    const results = await syncAllStores();
-    return NextResponse.json({ results });
-  } catch (error) {
-    console.error("Sync error:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Sync failed" },
-      { status: 500 }
-    );
-  }
+// This endpoint used to drive a hand-rolled metrics calculation that diverged
+// from Amazon's official numbers (FBA filtering / proprietary shipment events
+// we can't see). It now returns 410 Gone so nothing accidentally pulls stale
+// math back into the snapshot.
+//
+// Real sync flow:
+//   - daily cron       /api/cron/account-health-amazon  (Reports API)
+//   - manual refresh   POST /api/account-health/amazon/sync  (Phase 1)
+//                      POST /api/account-health/amazon/poll  (Phase 2)
+export async function POST() {
+  return NextResponse.json(
+    {
+      error:
+        "Deprecated. Use /api/account-health/amazon/sync + /api/account-health/amazon/poll, or wait for the daily cron.",
+    },
+    { status: 410 }
+  );
 }
