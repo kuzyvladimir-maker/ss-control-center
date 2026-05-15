@@ -552,12 +552,21 @@ function MetricCardV2({
     spec.direction === "gte"
       ? displayed < spec.thresholdValue
       : displayed > spec.thresholdValue;
-  const tone: "default" | "warn" | "danger" =
-    metric.status === "URGENT"
+  // "Approaching threshold" warn band — within 10% of the threshold value
+  // for gte metrics (e.g. OTD 90% → warn when 90-99% but above 90), and
+  // mirror for lte. Walmart's own MONITOR label still wins when set.
+  const margin = spec.thresholdValue * 0.1;
+  const approaching =
+    !bad &&
+    (spec.direction === "gte"
+      ? displayed < spec.thresholdValue + margin
+      : displayed > spec.thresholdValue - margin);
+  const tone: "good" | "warn" | "danger" =
+    metric.status === "URGENT" || bad
       ? "danger"
-      : metric.status === "MONITOR" || bad
+      : metric.status === "MONITOR" || approaching
         ? "warn"
-        : "default";
+        : "good";
 
   return (
     <CardShell
@@ -615,7 +624,11 @@ function CardShell({
   threshold: string;
   body: React.ReactNode;
   footer: React.ReactNode;
-  tone?: "default" | "warn" | "danger";
+  /** "good" tints the whole card light-green so healthy metrics read at
+   *  a glance; "warn" / "danger" use the existing yellow / red tints.
+   *  "default" stays untinted — used for NO_DATA / never-synced cards
+   *  where there's no signal to colour. */
+  tone?: "default" | "good" | "warn" | "danger";
 }) {
   return (
     <div
@@ -623,6 +636,7 @@ function CardShell({
         "rounded-lg border bg-surface p-4 space-y-2",
         tone === "danger" && "border-danger/30 bg-danger-tint/30",
         tone === "warn" && "border-warn/30 bg-warn-tint/40",
+        tone === "good" && "border-green-light/40 bg-green-soft/60",
         tone === "default" && "border-rule"
       )}
     >

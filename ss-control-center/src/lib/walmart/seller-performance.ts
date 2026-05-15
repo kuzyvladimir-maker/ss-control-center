@@ -82,7 +82,16 @@ export const PERFORMANCE_METRICS = {
     rateKey: "cumulativeRate",
   },
   sellerResponse: {
+    // `srr` returns 200 + overallRate=0 for our account, even though
+    // Seller Center shows ~97%. Could be a stub endpoint that exists
+    // but doesn't carry data — try named variants in case the real
+    // data lives under a slightly different path.
     path: "srr",
+    fallbackPaths: [
+      "sellerResponse",
+      "sellerResponseRate",
+      "responseRate",
+    ],
     window: 30,
     hasShippingMethod: false,
     rateKey: "overallRate",
@@ -100,13 +109,17 @@ export const PERFORMANCE_METRICS = {
     rateKey: "cumulativeRate",
   },
   itemNotReceived: {
-    // Acronym `inr` 404s on our account (CONTENT_NOT_FOUND.GMP_GATEWAY_API,
-    // "No static resource v3/insights/performance/inr/summary"). Walmart's
-    // long-named metrics seem to use camelCase (negativeFeedback works),
-    // so prefer the spelled-out form and keep the acronym as a fallback
-    // in case some accounts/regions expose the short alias.
+    // Acronym `inr` 404s. Try every plausible casing — Walmart's API
+    // surface mixes acronyms (otd/vtr/srr) with camelCase (negativeFeedback)
+    // and we don't have definitive docs for INR.
     path: "itemNotReceived",
-    fallbackPaths: ["inr", "itemnotreceived"],
+    fallbackPaths: [
+      "inr",
+      "itemnotreceived",
+      "item-not-received",
+      "itemNotReceivedRate",
+      "itemnotreceivedrate",
+    ],
     window: 60,
     hasShippingMethod: false,
     rateKey: "cumulativeRate",
@@ -118,9 +131,18 @@ export const PERFORMANCE_METRICS = {
     rateKey: "overallRate",
   },
   onTimeShipment: {
-    // Same story as itemNotReceived: `ots` 404s. Try camelCase first.
+    // `ots` and `onTimeShipment` both 404. Walmart Seller Center labels
+    // this metric "Late shipment" in the Upcoming Standards section, so
+    // the path may follow the user-facing name. Walk the alternatives.
     path: "onTimeShipment",
-    fallbackPaths: ["ots", "ontimeshipment"],
+    fallbackPaths: [
+      "ots",
+      "ontimeshipment",
+      "lateShipment",
+      "lateshipment",
+      "late-shipment",
+      "lateShipmentRate",
+    ],
     window: 30,
     hasShippingMethod: true,
     rateKey: "overallRate",

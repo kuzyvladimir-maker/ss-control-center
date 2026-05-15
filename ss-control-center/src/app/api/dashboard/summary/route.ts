@@ -223,8 +223,14 @@ export async function GET(request: NextRequest) {
     for (const snap of healthSnapshots) {
       if (!latestByStore.has(snap.storeId)) latestByStore.set(snap.storeId, snap);
     }
+    // Match the Account Health hero "At Risk" card: AHR < 200 only.
+    // The legacy "status critical/warning" buckets also lit up on a single
+    // policy violation, which inflated the sidebar badge with stores that
+    // weren't actually at risk of deactivation per Amazon's rule.
     const healthIssues = Array.from(latestByStore.values()).filter(
-      (s) => s.status === "critical" || s.status === "warning"
+      (s) =>
+        typeof s.accountHealthRating === "number" &&
+        s.accountHealthRating < 200
     ).length;
 
     const latestPerf = new Map<string, (typeof walmartPerfLatest)[number]>();
@@ -232,8 +238,13 @@ export async function GET(request: NextRequest) {
       const key = `${s.windowDays}|${s.metric}`;
       if (!latestPerf.has(key)) latestPerf.set(key, s);
     }
+    // Same alignment for Walmart: only count metrics Walmart itself
+    // labels URGENT (status field comes from persist-performance.ts which
+    // honours performanceRiskLevel). `!isHealthy` includes "Monitor"
+    // rows that Walmart doesn't escalate yet — those don't belong in the
+    // top-line badge either.
     const walmartHealthIssues = Array.from(latestPerf.values()).filter(
-      (s) => !s.isHealthy
+      (s) => s.status === "URGENT"
     ).length;
 
     const walmartPayload = walmartSelected

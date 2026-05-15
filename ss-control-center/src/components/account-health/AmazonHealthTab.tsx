@@ -362,6 +362,10 @@ interface MetricDef {
   target: string;
   /** Returns true if Amazon's threshold is breached. */
   isBad: (v: number | null | undefined) => boolean;
+  /** Returns true if the value is "approaching" the threshold but hasn't
+   *  crossed it yet — drives the yellow tint on healthy-but-close cells.
+   *  Optional; metrics without a published target leave this off. */
+  isWarn?: (v: number | null | undefined) => boolean;
   /** Reads the (X of Y) pair from a snapshot, if Amazon supplied it. */
   fraction: (s: SnapshotLike) => string | null;
 }
@@ -373,12 +377,15 @@ function frac(num: number | null | undefined, den: number | null | undefined): s
   return `${num}/${den}`;
 }
 
+// Warn margins are ~10% of the threshold value — close enough that the
+// operator should pay attention before Amazon raises the alarm.
 const METRICS_CUSTOMER: MetricDef[] = [
   {
     key: "orderDefectRate",
     label: "Order defect rate",
     target: "< 1%",
     isBad: (v) => (v ?? 0) >= 1,
+    isWarn: (v) => (v ?? 0) >= 0.75 && (v ?? 0) < 1,
     fraction: () => null,
   },
   {
@@ -410,6 +417,7 @@ const METRICS_SHIPPING: MetricDef[] = [
     label: "Late shipment (10d)",
     target: "< 4%",
     isBad: (v) => (v ?? 0) >= 4,
+    isWarn: (v) => (v ?? 0) >= 3 && (v ?? 0) < 4,
     fraction: (s) => frac(s?.lsr10dLate, s?.lsr10dTotal),
   },
   {
@@ -417,6 +425,7 @@ const METRICS_SHIPPING: MetricDef[] = [
     label: "Late shipment (30d)",
     target: "< 4%",
     isBad: (v) => (v ?? 0) >= 4,
+    isWarn: (v) => (v ?? 0) >= 3 && (v ?? 0) < 4,
     fraction: (s) => frac(s?.lsr30dLate, s?.lsr30dTotal),
   },
   {
@@ -424,6 +433,7 @@ const METRICS_SHIPPING: MetricDef[] = [
     label: "Cancel rate (7d)",
     target: "< 2.5%",
     isBad: (v) => (v ?? 0) >= 2.5,
+    isWarn: (v) => (v ?? 0) >= 2 && (v ?? 0) < 2.5,
     fraction: (s) => frac(s?.cancelCancelled, s?.cancelTotal),
   },
   {
@@ -431,6 +441,7 @@ const METRICS_SHIPPING: MetricDef[] = [
     label: "Valid tracking (30d)",
     target: "> 95%",
     isBad: (v) => (v ?? 100) <= 95,
+    isWarn: (v) => (v ?? 100) <= 97 && (v ?? 100) > 95,
     fraction: (s) => frac(s?.vtrTracked, s?.vtrTotal),
   },
   {
@@ -438,6 +449,7 @@ const METRICS_SHIPPING: MetricDef[] = [
     label: "On-time delivery (14d)",
     target: "> 90%",
     isBad: (v) => v != null && v <= 90,
+    isWarn: (v) => v != null && v <= 92 && v > 90,
     fraction: (s) => frac(s?.otdrOnTime, s?.otdrTotal),
   },
 ];
@@ -517,12 +529,29 @@ function MetricRow({
         const v = s.snapshot?.[metric.key] as number | null | undefined;
         const f = s.snapshot ? metric.fraction(s.snapshot) : null;
         const bad = metric.isBad(v);
+        const warn = !bad && metric.isWarn?.(v);
+        // Tint the whole cell so the operator can scan the matrix and
+        // see hot spots at a glance. Metrics without a published target
+        // (negative feedback / a-to-z / chargebacks) stay untinted —
+        // Amazon doesn't publish a hard line and any tint would be noise.
+        const hasTarget = !!metric.target;
+        const tone: "good" | "warn" | "danger" | "none" =
+          !hasTarget || v == null
+            ? "none"
+            : bad
+              ? "danger"
+              : warn
+                ? "warn"
+                : "good";
         return (
           <td
             key={s.storeId}
             className={cn(
               "px-3 py-2 text-center tabular font-medium",
-              bad ? "text-danger" : "text-ink"
+              tone === "danger" && "bg-danger-tint/40 text-danger",
+              tone === "warn" && "bg-warn-tint/40 text-warn-strong",
+              tone === "good" && "bg-green-soft/60 text-green-ink",
+              tone === "none" && "text-ink"
             )}
           >
             {v != null ? `${v.toFixed(2)}%` : <span className="text-ink-3">—</span>}
