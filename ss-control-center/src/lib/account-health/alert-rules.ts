@@ -106,14 +106,19 @@ export const ALERT_RULES: AlertRule[] = [
   },
 
   // ─── WALMART ────────────────────────────────────────────────────────────
+  // Metric keys here MUST match what persist-performance.ts emits via
+  // toFlatAlertKey() — `{metric}{window}d`. Walmart Insights v2 returns
+  // `onTimeShipment` (the on-time %), not its inverse — alerting against
+  // "on-time below 99%" is equivalent to "late above 1%" and avoids the
+  // double-inversion this codebase suffered through in v1.
   {
-    metric: "lateShipment30d",
+    metric: "onTimeShipment30d",
     channel: "Walmart",
-    threshold: { value: 5.0, direction: "gte" },
+    threshold: { value: 99.0, direction: "lte" },
     severity: "CRITICAL",
-    title: (v) => `Walmart Late Shipment breached: ${v.toFixed(1)}%`,
+    title: (v) => `Walmart On-Time Shipment dropped: ${v.toFixed(2)}%`,
     message: (v, store) =>
-      `Walmart Late Shipment Rate = ${v.toFixed(1)}% превысил порог 5% (Urgent) на ${store}.`,
+      `Walmart On-Time Shipment = ${v.toFixed(2)}% упал ниже 99% (значит Late Shipment > 1%) на ${store}.`,
   },
   {
     metric: "cancellations30d",
@@ -146,7 +151,7 @@ export const ALERT_RULES: AlertRule[] = [
     metric: "sellerResponse30d",
     channel: "Walmart",
     threshold: { value: 95.0, direction: "lte" },
-    severity: "CRITICAL",
+    severity: "HIGH",
     title: (v) => `Walmart Seller Response dropped: ${v.toFixed(2)}%`,
     message: (v, store) =>
       `Walmart Seller Response = ${v.toFixed(2)}% упал ниже 95% на ${store}.`,
