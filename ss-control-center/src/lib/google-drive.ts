@@ -77,11 +77,15 @@ function getDriveClient(): DriveClientOutcome {
 
 // Returns the existing folder's id if one named `name` lives directly
 // under `parentId`, otherwise creates it and returns the new id.
+type FolderOutcome =
+  | { ok: true; id: string }
+  | { ok: false; reason: string };
+
 async function getOrCreateFolder(
   drive: drive_v3.Drive,
   parentId: string,
   name: string
-): Promise<string | null> {
+): Promise<FolderOutcome> {
   try {
     // Escape single-quotes in the folder name for the search query so
     // names like "FedEx One Rate" don't break the query syntax.
@@ -96,7 +100,7 @@ async function getOrCreateFolder(
       includeItemsFromAllDrives: true,
     });
     const existing = list.data.files?.[0]?.id;
-    if (existing) return existing;
+    if (existing) return { ok: true, id: existing };
 
     const created = await drive.files.create({
       requestBody: {
@@ -107,30 +111,38 @@ async function getOrCreateFolder(
       fields: "id",
       supportsAllDrives: true,
     });
-    return created.data.id ?? null;
+    const newId = created.data.id;
+    if (!newId) {
+      return {
+        ok: false,
+        reason: `create returned no id for "${name}"`,
+      };
+    }
+    return { ok: true, id: newId };
   } catch (e) {
-    console.error(
-      `[drive] getOrCreateFolder(${name}) failed:`,
-      e instanceof Error ? e.message : e
-    );
-    return null;
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error(`[drive] getOrCreateFolder(${name}) failed:`, msg);
+    return { ok: false, reason: `"${name}": ${msg}` };
   }
 }
 
-// Walk a path like "04 April/07/Amazon", creating folders as needed,
-// and return the leaf folder id (or null on failure).
+// Walk a path like "04 April/07/Amazon", creating folders as needed.
+// Returns leaf id on success or a reason string with the *specific*
+// segment that failed — silent nulls made it impossible for the
+// operator to tell whether the failure was scope/auth, an existing-
+// folder ownership issue, or quota.
 async function resolveFolderPath(
   drive: drive_v3.Drive,
   rootId: string,
   segments: string[]
-): Promise<string | null> {
+): Promise<FolderOutcome> {
   let current = rootId;
   for (const seg of segments) {
     const next = await getOrCreateFolder(drive, current, seg);
-    if (!next) return null;
-    current = next;
+    if (!next.ok) return next;
+    current = next.id;
   }
-  return current;
+  return { ok: true, id: current };
 }
 
 export interface DriveUploadResult {
@@ -166,17 +178,18 @@ export async function uploadLabelPdf(params: {
   }
 
   try {
-    const folderId = await resolveFolderPath(
+    const folderOutcome = await resolveFolderPath(
       drive,
       rootId,
       params.folderSegments
     );
-    if (!folderId) {
+    if (!folderOutcome.ok) {
       return {
         ok: false,
-        reason: `Could not resolve folder path: ${params.folderSegments.join("/")}`,
+        reason: `Could not resolve ${params.folderSegments.join("/")} — ${folderOutcome.reason}`,
       };
     }
+    const folderId = folderOutcome.id;
 
     const res = await drive.files.create({
       requestBody: {

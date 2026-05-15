@@ -1123,7 +1123,13 @@ function OrderRow({
  *  if parsing fails, so we never blank out useful info. */
 function fmtDate(iso: string | null | undefined): string {
   if (!iso) return "—";
-  const d = new Date(iso);
+  // Bare "YYYY-MM-DD" must be anchored to local noon — otherwise
+  // `new Date("2026-05-18")` is parsed as UTC midnight, which renders
+  // as the *previous* day in any TZ west of UTC (e.g. America/New_York
+  // shows 5/17 for a stored 5/18). Anchoring to T12:00:00 keeps the
+  // date stable across all real-world timezones.
+  const looksLikeBareDate = /^\d{4}-\d{2}-\d{2}$/.test(iso);
+  const d = new Date(looksLikeBareDate ? `${iso}T12:00:00` : iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleDateString("en-US", { month: "numeric", day: "numeric" });
 }
