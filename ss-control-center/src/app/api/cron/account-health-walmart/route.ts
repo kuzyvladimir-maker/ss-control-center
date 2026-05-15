@@ -1,7 +1,9 @@
 /**
  * GET /api/cron/account-health-walmart
  *
- * Vercel cron triggers this daily at 03:00 UTC. Drives the Walmart side of
+ * Vercel cron triggers this daily at 11:00 UTC, which is 7 AM EDT
+ * (Vladimir's local time during DST; in winter EST it becomes 6 AM).
+ * Schedule lives in vercel.json. Drives the Walmart side of
  * Account Health v2:
  *   - performance fan-out across the 10 Insights API metric endpoints
  *     (via fetchAllPerformanceMetrics → persistPerformanceSnapshots)

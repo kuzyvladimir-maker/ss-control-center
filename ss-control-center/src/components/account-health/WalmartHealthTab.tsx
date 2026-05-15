@@ -545,12 +545,12 @@ function MetricCardV2({
               <span className="text-ink-2">{metric.performanceRiskLevel}</span>
             </div>
           )}
-          {metric.updatedTimestamp && (
-            <div>
-              Updated{" "}
-              {formatRelative(new Date(metric.updatedTimestamp))}
-            </div>
-          )}
+          {metric.updatedTimestamp &&
+            Number.isFinite(new Date(metric.updatedTimestamp).getTime()) && (
+              <div>
+                Updated {formatRelative(new Date(metric.updatedTimestamp))}
+              </div>
+            )}
         </div>
       }
     />
@@ -621,7 +621,12 @@ function flipTrend(t: string): string {
 }
 
 function formatRelative(d: Date): string {
-  const diffMs = Date.now() - d.getTime();
+  // Walmart sometimes omits updatedTimestamp on cumulative-style payloads
+  // (returns / inr / negative feedback). new Date(undefined) → Invalid
+  // Date → NaN downstream. Guard so the UI shows "—" instead of "NaN d ago".
+  const t = d.getTime();
+  if (!Number.isFinite(t)) return "—";
+  const diffMs = Date.now() - t;
   const minutes = Math.round(diffMs / 60000);
   if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes} min ago`;

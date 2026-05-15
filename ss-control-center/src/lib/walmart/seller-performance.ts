@@ -42,8 +42,14 @@ export type PerformanceWindow = 14 | 30 | 60 | 90;
 export type ShippingMethod = "ALL_METHODS" | "TwoDay" | "OneDay";
 
 export interface MetricConfig {
-  /** URL path segment Walmart uses for this metric. */
+  /** Primary URL path segment Walmart uses for this metric. */
   path: string;
+  /** Optional fallback path segments — tried in order on 404. Walmart's
+   *  naming convention isn't fully consistent: most endpoints use short
+   *  acronyms (`otd`, `vtr`, `srr`) but a few use camelCase
+   *  (`negativeFeedback`). For metrics where the live shape didn't match
+   *  the acronym, list alternatives here. */
+  fallbackPaths?: string[];
   /** Default reportDuration. Some metrics (returns, INR, neg feedback)
    *  are surfaced over 60 days because that matches Walmart's published
    *  performance standards window. */
@@ -94,7 +100,13 @@ export const PERFORMANCE_METRICS = {
     rateKey: "cumulativeRate",
   },
   itemNotReceived: {
-    path: "inr",
+    // Acronym `inr` 404s on our account (CONTENT_NOT_FOUND.GMP_GATEWAY_API,
+    // "No static resource v3/insights/performance/inr/summary"). Walmart's
+    // long-named metrics seem to use camelCase (negativeFeedback works),
+    // so prefer the spelled-out form and keep the acronym as a fallback
+    // in case some accounts/regions expose the short alias.
+    path: "itemNotReceived",
+    fallbackPaths: ["inr", "itemnotreceived"],
     window: 60,
     hasShippingMethod: false,
     rateKey: "cumulativeRate",
@@ -106,7 +118,9 @@ export const PERFORMANCE_METRICS = {
     rateKey: "overallRate",
   },
   onTimeShipment: {
-    path: "ots",
+    // Same story as itemNotReceived: `ots` 404s. Try camelCase first.
+    path: "onTimeShipment",
+    fallbackPaths: ["ots", "ontimeshipment"],
     window: 30,
     hasShippingMethod: true,
     rateKey: "overallRate",
@@ -216,33 +230,58 @@ async function fetchSingleMetric(
 
   // Path passes through WalmartClient.requestRaw which prepends /v3/ and
   // adds the full standard header set + correlation id per request.
-  const path = `/insights/performance/${config.path}/summary`;
+  //
+  // Some metrics (`ots`, `inr`) 404 on their acronym path for our account
+  // but resolve under a longer name. Iterate primary + fallback paths and
+  // stop on the first non-404 response. A 204 / 2xx / non-404 4xx is a
+  // valid answer from Walmart's perspective — only 404 means "wrong URL,
+  // try another shape".
+  const candidates = [config.path, ...(config.fallbackPaths ?? [])];
+  let lastErrorResponse: {
+    status: number;
+    body: unknown;
+  } | null = null;
 
-  try {
-    const { status, body, ok } = await client.requestRaw("GET", path, {
-      params,
-    });
+  for (const candidate of candidates) {
+    const path = `/insights/performance/${candidate}/summary`;
+    try {
+      const { status, body, ok } = await client.requestRaw("GET", path, {
+        params,
+      });
 
-    if (status === 204) {
-      return { metric: key, status: "NO_DATA", httpStatus: 204 };
-    }
-    if (!ok) {
-      return {
-        metric: key,
-        status: "ERROR",
-        httpStatus: status,
-        errorMessage: stringifyBody(body),
+      if (status === 204) {
+        return { metric: key, status: "NO_DATA", httpStatus: 204 };
+      }
+      if (status === 404) {
+        // Wrong path — record the body for diagnostics and try the next.
+        lastErrorResponse = { status, body };
+        continue;
+      }
+      if (!ok) {
+        return {
+          metric: key,
+          status: "ERROR",
+          httpStatus: status,
+          errorMessage: stringifyBody(body),
+        };
+      }
+      return parseSuccessfulPayload(key, config, body, status);
+    } catch (err) {
+      lastErrorResponse = {
+        status: 0,
+        body: err instanceof Error ? err.message : String(err),
       };
     }
-
-    return parseSuccessfulPayload(key, config, body, status);
-  } catch (err) {
-    return {
-      metric: key,
-      status: "ERROR",
-      errorMessage: err instanceof Error ? err.message : String(err),
-    };
   }
+
+  // All candidates 404'd — surface the last response so the diagnostic
+  // panel + per-card error message shows which paths we tried.
+  return {
+    metric: key,
+    status: "ERROR",
+    httpStatus: lastErrorResponse?.status ?? 404,
+    errorMessage: `All ${candidates.length} path candidates 404'd (last body: ${stringifyBody(lastErrorResponse?.body)})`,
+  };
 }
 
 function parseSuccessfulPayload(
