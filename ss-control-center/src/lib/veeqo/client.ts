@@ -231,6 +231,52 @@ export async function updateOrderDispatchDate(
   });
 }
 
+/**
+ * Push parcel dimensions + weight to an allocation's "allocation_package"
+ * so the next `/shipping/rates/{allocationId}?from_allocation_package=true`
+ * call quotes against the new packaging.
+ *
+ * Veeqo also persists this as a parcel preset for future shipments with
+ * the same composition when `save_for_similar_shipments` is true — this
+ * is the behaviour the user noticed in Veeqo's UI ("it remembers last
+ * dimensions for this SKU/qty").
+ *
+ * Units: weight in `oz`, dimensions in `in` (we receive lbs+inches from
+ * the UI and convert here so callers don't have to think about it).
+ */
+export async function updateAllocationPackage(
+  allocationId: number | string,
+  packageDims: {
+    weightLbs: number;
+    lengthIn: number;
+    widthIn: number;
+    heightIn: number;
+    saveForSimilar?: boolean;
+  },
+) {
+  const body = {
+    allocation_package: {
+      // lbs → oz (Veeqo's accepted units per /api/operations/update-allocation-package)
+      weight: Math.round(packageDims.weightLbs * 16 * 100) / 100,
+      weight_unit: "oz",
+      // Veeqo uses width / height / depth; map our L/W/H so the longest
+      // dimension becomes `depth` (Veeqo's convention for shipping label
+      // length).
+      depth: packageDims.lengthIn,
+      width: packageDims.widthIn,
+      height: packageDims.heightIn,
+      dimensions_unit: "in",
+      package_provider: "CUSTOM",
+      package_selection_source: "ONE_OFF",
+      save_for_similar_shipments: packageDims.saveForSimilar ?? true,
+    },
+  };
+  return veeqoFetch(`/allocations/${allocationId}/allocation_package`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
 // Add employee note to order
 export async function addEmployeeNote(orderId: number, text: string) {
   return veeqoFetch(`/orders/${orderId}`, {

@@ -26,6 +26,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { updateAllocationPackage } from "@/lib/veeqo/client";
 
 interface Body {
   sku?: string;
@@ -39,6 +40,12 @@ interface Body {
   weight?: number;
   weightFedex?: number;
   boxSize?: string;
+  // When present, also push the new package dims+weight to Veeqo so the
+  // next `/shipping/rates/{allocationId}?from_allocation_package=true`
+  // quote uses the updated packaging — without this, Veeqo keeps
+  // returning rates against its own cached package and our PackingProfile
+  // edits look like they had no effect.
+  allocationId?: string | number;
 }
 
 export async function POST(request: NextRequest) {
@@ -98,7 +105,19 @@ export async function POST(request: NextRequest) {
         totalQty: body.totalQty ?? undefined,
       },
     });
-    return NextResponse.json({ kind: "packingProfile", id: profile.id });
+
+    const veeqo = await pushPackageToVeeqo({
+      allocationId: body.allocationId,
+      L,
+      W,
+      H,
+      weightLbs: weight,
+    });
+    return NextResponse.json({
+      kind: "packingProfile",
+      id: profile.id,
+      veeqo,
+    });
   }
 
   // ── Single-item path ──────────────────────────────────────────────────
@@ -124,7 +143,18 @@ export async function POST(request: NextRequest) {
         height: body.height ?? existing.height,
       },
     });
-    return NextResponse.json({ kind: "skuShippingData", id: next.id });
+    const veeqo = await pushPackageToVeeqo({
+      allocationId: body.allocationId,
+      L: body.length ?? existing.length,
+      W: body.width ?? existing.width,
+      H: body.height ?? existing.height,
+      weightLbs: weight,
+    });
+    return NextResponse.json({
+      kind: "skuShippingData",
+      id: next.id,
+      veeqo,
+    });
   }
   // Row doesn't exist yet — create a minimal one. Operator can fill in
   // marketplace/category later from Settings → SKU database.
@@ -155,5 +185,62 @@ export async function POST(request: NextRequest) {
       source: "manual",
     },
   });
-  return NextResponse.json({ kind: "skuShippingData", id: created.id });
+  const veeqo = await pushPackageToVeeqo({
+    allocationId: body.allocationId,
+    L: body.length,
+    W: body.width,
+    H: body.height,
+    weightLbs: weight,
+  });
+  return NextResponse.json({ kind: "skuShippingData", id: created.id, veeqo });
+}
+
+// Best-effort PUT to Veeqo's allocation_package endpoint. We treat this
+// as additive: the operator's edit is already saved to our DB before
+// this runs, so if Veeqo rejects the call (auth issue, allocation in a
+// non-editable state, etc) we still surface the success of the local
+// save and report Veeqo's outcome alongside so the UI can warn that
+// rate quotes will still come back against the old packaging.
+async function pushPackageToVeeqo(args: {
+  allocationId: unknown;
+  L: number | null | undefined;
+  W: number | null | undefined;
+  H: number | null | undefined;
+  weightLbs: number;
+}): Promise<{ ok: boolean; reason?: string }> {
+  const { allocationId, L, W, H, weightLbs } = args;
+  const numericAllocId =
+    typeof allocationId === "string" || typeof allocationId === "number"
+      ? Number(allocationId)
+      : NaN;
+  if (!Number.isFinite(numericAllocId) || numericAllocId <= 0) {
+    return { ok: false, reason: "no allocationId provided" };
+  }
+  if (
+    L == null ||
+    W == null ||
+    H == null ||
+    !Number.isFinite(Number(L)) ||
+    !Number.isFinite(Number(W)) ||
+    !Number.isFinite(Number(H))
+  ) {
+    return { ok: false, reason: "missing dimensions" };
+  }
+  try {
+    await updateAllocationPackage(numericAllocId, {
+      weightLbs,
+      lengthIn: Number(L),
+      widthIn: Number(W),
+      heightIn: Number(H),
+      saveForSimilar: true,
+    });
+    return { ok: true };
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    console.warn(
+      `[edit-package] Veeqo allocation_package push failed for allocation ${numericAllocId}:`,
+      reason,
+    );
+    return { ok: false, reason };
+  }
 }

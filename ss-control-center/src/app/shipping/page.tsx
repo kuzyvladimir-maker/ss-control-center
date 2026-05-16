@@ -117,6 +117,10 @@ interface PlanItem {
   // Kept on the type so older bought rows (planned before the
   // dual-date migration) still render their ship day.
   actualShipDay: string | null;
+  // Veeqo allocation id — passed through to /api/shipping/edit-package
+  // so the API can also push package dims to Veeqo's allocation_package
+  // endpoint, so subsequent rate quotes use the new packaging.
+  allocationId: string | null;
 }
 
 interface PlanResponse {
@@ -2513,6 +2517,12 @@ function EditPackageDialog({
       const boxSizeStr =
         boxLabel && boxLabel !== "custom" ? boxLabel : `${L}x${W}x${H}`;
 
+      // Allocation id (when known) lets the API also push the new
+      // packaging to Veeqo's /allocations/{id}/allocation_package so
+      // the next rate quote uses the updated size — otherwise Veeqo
+      // would keep returning rates against its own cached packaging.
+      const allocationId = plan?.allocationId ?? undefined;
+
       let body: Record<string, unknown>;
       if (isMulti) {
         if (!order.packingSignature) {
@@ -2531,6 +2541,7 @@ function EditPackageDialog({
           height: H,
           weight: w,
           weightFedex: weightFedex ? Number(weightFedex) : undefined,
+          allocationId,
         };
       } else {
         if (!sku) {
@@ -2543,6 +2554,7 @@ function EditPackageDialog({
           height: H,
           weight: w,
           weightFedex: weightFedex ? Number(weightFedex) : undefined,
+          allocationId,
         };
       }
       const r = await fetch("/api/shipping/edit-package", {
