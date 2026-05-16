@@ -34,6 +34,9 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import FrozenRiskBadge, {
+  type ShippingFrozenAlert,
+} from "@/components/shipping/FrozenRiskBadge";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Types — mirror what /api/shipping/dashboard returns.
@@ -228,6 +231,12 @@ export default function ShippingLabelsPage() {
   // record-of-truth; logs/shipping-buy.jsonl is the audit fallback.
   const [buyReport, setBuyReport] = useState<BuyReport | null>(null);
 
+  // Frozen Analytics v2 alerts (Phase 3 integration). We pull all currently
+  // pending alerts at low+ severity and index by orderNumber so each row can
+  // surface the predicted risk + recommendations next to its Buy button.
+  // Cheap query — typically dozens of rows at most.
+  const [frozenAlerts, setFrozenAlerts] = useState<ShippingFrozenAlert[]>([]);
+
   // Modal state
   const [classifyModal, setClassifyModal] = useState<DashboardOrder | null>(
     null
@@ -287,6 +296,38 @@ export default function ShippingLabelsPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Pull the active frozen-risk alerts so each shipping row can show the
+  // recommendation badge inline. Runs once on mount and again whenever the
+  // dashboard reload finishes (so a fresh "Run analysis" pass on
+  // /frozen-analytics is reflected here too).
+  const loadFrozenAlerts = useCallback(async () => {
+    try {
+      const res = await fetch(
+        "/api/frozen/alerts?status=pending&min_level=low&limit=500",
+      );
+      if (!res.ok) return;
+      const json = (await res.json()) as { alerts: ShippingFrozenAlert[] };
+      setFrozenAlerts(json.alerts ?? []);
+    } catch {
+      /* non-fatal — shipping page works without the badge */
+    }
+  }, []);
+  useEffect(() => {
+    loadFrozenAlerts();
+  }, [loadFrozenAlerts]);
+
+  // Index alerts by orderNumber for O(1) row lookup. Multiple ship dates for
+  // the same order are exceedingly rare in this flow; if it happens, pick
+  // the one closest to today (lowest shipDate).
+  const frozenAlertByOrder = useMemo(() => {
+    const m = new Map<string, ShippingFrozenAlert>();
+    for (const a of frozenAlerts) {
+      const existing = m.get(a.orderId);
+      if (!existing || a.shipDate < existing.shipDate) m.set(a.orderId, a);
+    }
+    return m;
+  }, [frozenAlerts]);
 
   // ── Derived view ────────────────────────────────────────────────────
   const orders = useMemo(() => data?.orders ?? [], [data]);
@@ -654,6 +695,7 @@ export default function ShippingLabelsPage() {
               selected={selected.has(o.orderId)}
               buying={buyingRow === o.orderId}
               buyError={buyErrors[o.orderId] ?? null}
+              frozenAlert={frozenAlertByOrder.get(o.orderNumber) ?? null}
               onToggleSelected={() => toggleOne(o.orderId)}
               onClassify={() => setClassifyModal(o)}
               onManual={() => setManualModal(o)}
@@ -722,6 +764,7 @@ function OrderRow({
   selected,
   buying,
   buyError,
+  frozenAlert,
   onToggleSelected,
   onClassify,
   onManual,
@@ -735,6 +778,7 @@ function OrderRow({
   selected: boolean;
   buying: boolean;
   buyError: string | null;
+  frozenAlert: ShippingFrozenAlert | null;
   onToggleSelected: () => void;
   onClassify: () => void;
   onManual: () => void;
@@ -887,6 +931,16 @@ function OrderRow({
           )}
         </div>
       </div>
+
+      {/* Frozen Analytics v2 risk badge — only when a pending alert exists
+          for this order. Clicking expands the destination weather +
+          recommendations. Agree marks the alert applied; Disagree marks it
+          ignored. Both feed the learning loop in the Patterns dashboard. */}
+      {frozenAlert && (
+        <div className="mt-2 ml-6">
+          <FrozenRiskBadge alert={frozenAlert} />
+        </div>
+      )}
 
       {/* Money + carrier grid. Order total + customer-paid shipping are known
           for every Veeqo order regardless of state, so they always show.
