@@ -30,7 +30,12 @@ export const LEVEL_ORDER = ["ok", "low", "medium", "high", "critical"] as const;
 type LevelStr = (typeof LEVEL_ORDER)[number];
 
 interface BaseCond {
-  applyTo?: string;
+  // "dest" = check ctx.destTempF only (Vladimir's request 2026-05-15: package
+  // sits in the freezer in Tampa until pickup so origin temp is mostly a
+  // non-factor; destination is what determines thaw).
+  // "any"  = max(origin, dest) — legacy behaviour, kept for back-compat if
+  //         someone seeds an old rule.
+  applyTo?: "dest" | "any";
   tempMin?: number;
   tempMax?: number;
   originMin?: number;
@@ -43,6 +48,11 @@ interface BaseCond {
 interface ModifierCond {
   originAnomalyMin?: number;
   destAnomalyMin?: number;
+  // Absolute Tampa temperature threshold. Covers the 12-18h window where
+  // the package leaves the freezer and rides on a truck out of Florida.
+  // Anomaly catches "unusual" heat, this catches "always-extreme" days
+  // even if they're seasonally normal.
+  originAbsMin?: number;
   skuRiskMin?: string;
   carrier?: string;
   service?: string;
@@ -71,7 +81,16 @@ function levelToScore(level: string): number {
 }
 
 function matchesBaseRule(cond: BaseCond, ctx: RuleContext): boolean {
-  // applyTo: "any" means apply tempMin/tempMax to max(origin, dest)
+  // applyTo: "dest" — check destination temperature only (default behaviour
+  // for v2 rules; what actually predicts thaw on delivery).
+  if (cond.applyTo === "dest") {
+    const t = ctx.destTempF;
+    if (t == null) return false;
+    if (cond.tempMin != null && t < cond.tempMin) return false;
+    if (cond.tempMax != null && t >= cond.tempMax) return false;
+    return true;
+  }
+  // applyTo: "any" — legacy max(origin, dest) for back-compat with old seeds.
   if (cond.applyTo === "any") {
     const maxTemp = Math.max(ctx.originTempF ?? -999, ctx.destTempF ?? -999);
     if (maxTemp === -999) return false; // no weather data
@@ -119,6 +138,9 @@ function matchesModifierRule(cond: ModifierCond, ctx: RuleContext): boolean {
   }
   if (cond.destAnomalyMin != null) {
     return (ctx.destAnomalyF ?? -999) >= cond.destAnomalyMin;
+  }
+  if (cond.originAbsMin != null) {
+    return (ctx.originTempF ?? -999) >= cond.originAbsMin;
   }
   if (cond.skuRiskMin != null) {
     if (!ctx.skuRiskLevel) return false;
