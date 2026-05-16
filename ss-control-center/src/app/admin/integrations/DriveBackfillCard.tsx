@@ -4,9 +4,9 @@
 // 15-minute n8n cron, but operator-driven from /admin/integrations.
 // Useful for catching old purchases that pre-date the OAuth fix.
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CloudUpload, RefreshCw, AlertTriangle } from "lucide-react";
+import { CloudUpload, RefreshCw, AlertTriangle, Trash2 } from "lucide-react";
 
 interface BackfillResult {
   found: number;
@@ -21,6 +21,65 @@ export default function DriveBackfillCard() {
   const [result, setResult] = useState<BackfillResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lookback, setLookback] = useState(30);
+  const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
+  const [deletedNote, setDeletedNote] = useState<string | null>(null);
+
+  // Group repeating errors by orderNumber so the operator sees one entry
+  // per stuck order with the count instead of N near-identical rows.
+  const errorsByOrder = useMemo(() => {
+    if (!result) return [] as Array<{ orderNumber: string; count: number; reason: string }>;
+    const m = new Map<string, { count: number; reason: string }>();
+    for (const e of result.errors) {
+      const prev = m.get(e.orderNumber);
+      if (prev) prev.count++;
+      else m.set(e.orderNumber, { count: 1, reason: e.reason });
+    }
+    return Array.from(m.entries()).map(([orderNumber, v]) => ({
+      orderNumber,
+      ...v,
+    }));
+  }, [result]);
+
+  async function deleteOrphans(orderNumber: string) {
+    if (
+      !confirm(
+        `Permanently remove the orphan ShippingPlanItem rows for ${orderNumber}?\n\nOnly rows whose PDFs aren't on Drive will be deleted. Drive-backed rows stay.`,
+      )
+    )
+      return;
+    setDeletingOrder(orderNumber);
+    setDeletedNote(null);
+    try {
+      const res = await fetch(
+        "/api/integrations/drive-backfill/delete-orphans",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderNumber }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setDeletedNote(`Error: ${data.error || `HTTP ${res.status}`}`);
+        return;
+      }
+      setDeletedNote(`Removed ${data.deleted} row(s) for ${orderNumber}.`);
+      // Strip these errors from the visible result so the operator sees
+      // only what's left to fix.
+      if (result) {
+        setResult({
+          ...result,
+          errors: result.errors.filter((e) => e.orderNumber !== orderNumber),
+        });
+      }
+    } catch (e) {
+      setDeletedNote(
+        `Error: ${e instanceof Error ? e.message : String(e)}`,
+      );
+    } finally {
+      setDeletingOrder(null);
+    }
+  }
 
   async function runBackfill() {
     setRunning(true);
@@ -103,19 +162,50 @@ export default function DriveBackfillCard() {
                 ` and ${result.uploaded.length - 5} more`}
             </div>
           )}
-          {result.errors.length > 0 && (
-            <div className="text-danger">
-              ✗ Errors {result.errors.length}:{" "}
-              {result.errors
-                .slice(0, 3)
-                .map(
-                  (e) =>
-                    `${e.orderNumber} (${e.reason.slice(0, 40)}${
-                      e.reason.length > 40 ? "…" : ""
-                    })`,
-                )
-                .join("; ")}
-              {result.errors.length > 3 && `… +${result.errors.length - 3}`}
+          {errorsByOrder.length > 0 && (
+            <div className="space-y-1">
+              <div className="text-danger">
+                ✗ Errors on {errorsByOrder.length} order
+                {errorsByOrder.length === 1 ? "" : "s"} ({result.errors.length}
+                {" "}row{result.errors.length === 1 ? "" : "s"} total):
+              </div>
+              <ul className="space-y-1">
+                {errorsByOrder.map((e) => (
+                  <li
+                    key={e.orderNumber}
+                    className="flex items-start justify-between gap-2 rounded border border-danger/20 bg-danger-tint/30 px-2 py-1"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="font-mono text-[11.5px] font-medium text-danger">
+                        {e.orderNumber}
+                        {e.count > 1 && (
+                          <span className="ml-1 font-normal text-ink-3">
+                            × {e.count}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-ink-3 break-words">
+                        {e.reason.slice(0, 120)}
+                        {e.reason.length > 120 && "…"}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => deleteOrphans(e.orderNumber)}
+                      disabled={deletingOrder === e.orderNumber}
+                      className="shrink-0 inline-flex items-center gap-1 rounded border border-rule bg-surface px-1.5 py-0.5 text-[11px] text-ink-2 hover:bg-bg-elev hover:text-danger disabled:opacity-50"
+                      title="Delete orphan rows for this order (only those not on Drive)"
+                    >
+                      {deletingOrder === e.orderNumber ? (
+                        <RefreshCw size={11} className="animate-spin" />
+                      ) : (
+                        <Trash2 size={11} />
+                      )}
+                      Delete
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
           {result.skipped.length > 0 && (
@@ -123,6 +213,12 @@ export default function DriveBackfillCard() {
               ↷ Skipped {result.skipped.length}
             </div>
           )}
+        </div>
+      )}
+
+      {deletedNote && (
+        <div className="rounded border border-rule bg-surface-tint p-2 text-[11.5px] text-ink-2">
+          {deletedNote}
         </div>
       )}
     </div>
