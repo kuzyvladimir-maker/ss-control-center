@@ -10,6 +10,7 @@ import {
   Loader2,
   ShoppingCart,
   Sparkles,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -259,6 +260,13 @@ export default function ShippingLabelsPage() {
   const [manualModal, setManualModal] = useState<DashboardOrder | null>(null);
   const [packingModal, setPackingModal] = useState<DashboardOrder | null>(null);
   const [skuModal, setSkuModal] = useState<DashboardOrder | null>(null);
+  // Inline package editor — separate from the no_sku / no_packing
+  // attention dialogs because it pre-fills with the CURRENT plan values
+  // and writes through SkuShippingData (or PackingProfile for multi-item)
+  // without forcing the operator to re-enter dimensions.
+  const [editPackageModal, setEditPackageModal] = useState<DashboardOrder | null>(
+    null,
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -779,6 +787,7 @@ export default function ShippingLabelsPage() {
               onManual={() => setManualModal(o)}
               onPacking={() => setPackingModal(o)}
               onSku={() => setSkuModal(o)}
+              onEditPackage={() => setEditPackageModal(o)}
               onBuy={() => buyOne(o)}
             />
           ))
@@ -827,6 +836,16 @@ export default function ShippingLabelsPage() {
           onClose={() => setBuyReport(null)}
         />
       )}
+      {editPackageModal && (
+        <EditPackageDialog
+          order={editPackageModal}
+          plan={planByOrderNumber.get(editPackageModal.orderNumber) ?? null}
+          onClose={(refresh) => {
+            setEditPackageModal(null);
+            if (refresh) load();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -848,6 +867,7 @@ function OrderRow({
   onManual,
   onPacking,
   onSku,
+  onEditPackage,
   onBuy,
 }: {
   order: DashboardOrder;
@@ -862,6 +882,7 @@ function OrderRow({
   onManual: () => void;
   onPacking: () => void;
   onSku: () => void;
+  onEditPackage: () => void;
   onBuy: () => void;
 }) {
   const isReady = order.state === "ready_to_buy";
@@ -1074,20 +1095,29 @@ function OrderRow({
           }
         />
         {(isReady || isBought) && (
-          <Cell
-            // Package weight + box that the agent fed into the rate lookup.
-            // Surfaced so the operator can spot wrong/missing SKU data:
-            // a 5lb item that comes back as 32 lbs explains an inflated rate.
-            label="Package"
-            value={
-              plan?.weight != null
+          <button
+            type="button"
+            onClick={onEditPackage}
+            title="Edit weight and box size — saves to SKU database and recomputes rate"
+            className="rounded bg-surface-tint px-2 py-1.5 text-left hover:bg-bg-elev hover:ring-1 hover:ring-rule transition-colors"
+          >
+            <div className="flex items-center justify-between gap-1 text-[10px] font-mono uppercase tracking-wider text-ink-3">
+              <span>Package</span>
+              <Pencil size={9} className="text-ink-3" />
+            </div>
+            <div className="mt-0.5 truncate font-semibold tabular text-ink">
+              {plan?.weight != null
                 ? `${plan.weight} lbs`
                 : planLoading
                   ? "loading…"
-                  : "—"
-            }
-            sub={plan?.boxSize ?? undefined}
-          />
+                  : "—"}
+            </div>
+            {plan?.boxSize && (
+              <div className="truncate text-[10.5px] text-ink-3">
+                {plan.boxSize}
+              </div>
+            )}
+          </button>
         )}
         {(isReady || isBought) && (
           <Cell
@@ -2220,6 +2250,271 @@ function BuyReportDialog({
 
         <DialogFooter>
           <Button onClick={onClose}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// EditPackageDialog
+//
+// Inline edit for a row's weight + box. Click on the PACKAGE cell opens
+// this. It writes through to the same data layer the plan algorithm
+// reads — SkuShippingData for single-item orders, PackingProfile for
+// multi-item — and after save calls load() on the page to recompute the
+// rate against the new packaging.
+// ─────────────────────────────────────────────────────────────────────────
+function EditPackageDialog({
+  order,
+  plan,
+  onClose,
+}: {
+  order: DashboardOrder;
+  plan: PlanItem | null;
+  onClose: (refresh: boolean) => void;
+}) {
+  const isMulti =
+    order.items.length > 1 ||
+    order.items.some((i) => i.quantity > 1);
+  const sku = order.items[0]?.sku ?? "";
+  const firstQty = order.items.reduce((s, i) => s + i.quantity, 0);
+
+  // Pre-fill with the current plan values when present, otherwise blank.
+  // Box size on the plan comes back as e.g. "13x13x15" or as a preset
+  // label ("M"). For multi-item we use the preset dropdown; for single-
+  // item we parse the dims so the operator sees the actual numbers.
+  const parseBox = (s: string | null | undefined) => {
+    if (!s) return { l: "", w: "", h: "" };
+    const m = s.match(/^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)$/i);
+    if (m) return { l: m[1], w: m[2], h: m[3] };
+    const preset = BOX_PRESETS.find((p) => p.label === s);
+    if (preset)
+      return { l: String(preset.l), w: String(preset.w), h: String(preset.h) };
+    return { l: "", w: "", h: "" };
+  };
+
+  const initialBox = parseBox(plan?.boxSize);
+  const [boxLabel, setBoxLabel] = useState<string>(plan?.boxSize ?? "");
+  const [length, setLength] = useState(initialBox.l);
+  const [width, setWidth] = useState(initialBox.w);
+  const [height, setHeight] = useState(initialBox.h);
+  const [weight, setWeight] = useState(
+    plan?.weight != null ? String(plan.weight) : "",
+  );
+  const [weightFedex, setWeightFedex] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const applyPreset = (label: string) => {
+    setBoxLabel(label);
+    const preset = BOX_PRESETS.find((p) => p.label === label);
+    if (preset) {
+      setLength(String(preset.l));
+      setWidth(String(preset.w));
+      setHeight(String(preset.h));
+    }
+  };
+
+  async function save() {
+    setErr(null);
+    const w = Number(weight);
+    if (!Number.isFinite(w) || w <= 0) {
+      setErr("Weight must be a positive number");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      let body: Record<string, unknown>;
+      if (isMulti) {
+        if (!order.packingSignature) {
+          throw new Error("Order missing packing signature");
+        }
+        if (!boxLabel) {
+          throw new Error("Pick a box size");
+        }
+        body = {
+          signature: order.packingSignature,
+          description: order.items
+            .map((i) => `${i.productTitle} × ${i.quantity}`)
+            .join(" + "),
+          itemCount: order.items.length,
+          totalQty: firstQty,
+          boxSize: boxLabel,
+          weight: w,
+          weightFedex: weightFedex ? Number(weightFedex) : undefined,
+        };
+      } else {
+        if (!sku) {
+          throw new Error("Order has no SKU");
+        }
+        const L = Number(length);
+        const W = Number(width);
+        const H = Number(height);
+        if (![L, W, H].every((n) => Number.isFinite(n) && n > 0)) {
+          throw new Error("Length, width, height must all be positive numbers");
+        }
+        body = {
+          sku,
+          length: L,
+          width: W,
+          height: H,
+          weight: w,
+          weightFedex: weightFedex ? Number(weightFedex) : undefined,
+        };
+      }
+      const r = await fetch("/api/shipping/edit-package", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        throw new Error(j?.error || `HTTP ${r.status}`);
+      }
+      onClose(true);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={() => onClose(false)}>
+      <DialogContent className="sm:max-w-[520px]">
+        <DialogHeader>
+          <DialogTitle>
+            {isMulti ? "Edit packing profile" : "Edit package"}
+          </DialogTitle>
+          <DialogDescription>
+            Order #{order.orderNumber} ·{" "}
+            {isMulti ? (
+              <code className="font-mono">{order.packingSignature}</code>
+            ) : (
+              <code className="font-mono">{sku}</code>
+            )}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3 text-[12.5px]">
+          {/* Box presets — always available. For single-item these drive
+              the L/W/H fields; for multi-item they're stored as the
+              boxSize label on PackingProfile. */}
+          <div>
+            <label className="block text-[11.5px] font-medium text-ink mb-1">
+              Box preset
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {BOX_PRESETS.map((p) => (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => applyPreset(p.label)}
+                  className={cn(
+                    "rounded border px-2 py-1 text-[11.5px] font-mono",
+                    boxLabel === p.label
+                      ? "border-green bg-green-soft text-green-ink"
+                      : "border-rule bg-surface text-ink-2 hover:border-silver-line",
+                  )}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Single-item gets explicit L/W/H so the operator can fine-tune
+              past the presets. Multi-item just uses the preset label. */}
+          {!isMulti && (
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="block text-[11.5px] font-medium text-ink mb-1">
+                  L (in)
+                </label>
+                <Input
+                  value={length}
+                  onChange={(e) => setLength(e.target.value)}
+                  placeholder="13"
+                />
+              </div>
+              <div>
+                <label className="block text-[11.5px] font-medium text-ink mb-1">
+                  W (in)
+                </label>
+                <Input
+                  value={width}
+                  onChange={(e) => setWidth(e.target.value)}
+                  placeholder="13"
+                />
+              </div>
+              <div>
+                <label className="block text-[11.5px] font-medium text-ink mb-1">
+                  H (in)
+                </label>
+                <Input
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
+                  placeholder="15"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                Weight (lbs)
+              </label>
+              <Input
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                placeholder="2.5"
+              />
+            </div>
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                FedEx One Rate (lbs)
+              </label>
+              <Input
+                value={weightFedex}
+                onChange={(e) => setWeightFedex(e.target.value)}
+                placeholder="auto = weight × 1.25"
+              />
+            </div>
+          </div>
+
+          <div className="rounded border border-rule bg-surface-tint p-2 text-[11px] text-ink-3">
+            Saves to{" "}
+            {isMulti ? (
+              <code className="font-mono">PackingProfile</code>
+            ) : (
+              <code className="font-mono">SkuShippingData</code>
+            )}
+            . Future plans for this {isMulti ? "composition" : "SKU"} will use
+            the new values. After save the row reloads and re-quotes the rate
+            against the new packaging.
+          </div>
+
+          {err && (
+            <div className="rounded border border-danger/30 bg-danger-tint p-2 text-[11.5px] text-danger">
+              {err}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onClose(false)}
+            disabled={saving}
+          >
+            Cancel
+          </Button>
+          <Button onClick={save} disabled={saving}>
+            {saving ? "Saving…" : "Save"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
