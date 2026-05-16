@@ -59,6 +59,10 @@ interface DashboardItem {
   productId: number | null;
   productTitle: string;
   quantity: number;
+  // Thumbnail URL from Veeqo (sellable / product image, whichever path
+  // returns the first non-empty value — see dashboard/route.ts:pickImage).
+  // Null when Veeqo has no image attached to the listing.
+  imageUrl: string | null;
   knownType: "Frozen" | "Dry" | null;
 }
 
@@ -216,6 +220,17 @@ export default function ShippingLabelsPage() {
 
   const [bucketFilter, setBucketFilter] = useState<ShipByBucket | null>(null);
   const [storeFilter, setStoreFilter] = useState<string | null>(null);
+  // Frozen / Dry product-type filter. "all" shows everything; "Frozen" or
+  // "Dry" keeps orders whose first item matches (mixed orders only match
+  // when every item is the same type).
+  const [typeFilter, setTypeFilter] = useState<"all" | "Frozen" | "Dry">(
+    "all",
+  );
+  // KPI card filter. Maps to the same `state` field on each order so a
+  // click on "Need attention" or "Ready to buy" filters the list.
+  const [stateFilter, setStateFilter] = useState<
+    "all" | "ready_to_buy" | "need_attention" | "waiting_placed"
+  >("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const [buying, setBuying] = useState(false);
@@ -352,6 +367,15 @@ export default function ShippingLabelsPage() {
       .filter((o) => {
         if (bucketFilter && o.timeBucket !== bucketFilter) return false;
         if (storeFilter && o.storeId !== storeFilter) return false;
+        if (stateFilter !== "all" && o.state !== stateFilter) return false;
+        if (typeFilter !== "all") {
+          // Match when every classified item in the order is of the chosen
+          // type. Unclassified items don't match either filter — those
+          // orders are best surfaced via "Need attention" anyway.
+          const types = o.items.map((i) => i.knownType);
+          if (types.length === 0) return false;
+          if (!types.every((t) => t === typeFilter)) return false;
+        }
         return true;
       })
       .slice()
@@ -362,7 +386,7 @@ export default function ShippingLabelsPage() {
         const bb = b.timeBucket ? bucketRank[b.timeBucket] : 99;
         return ab - bb;
       });
-  }, [orders, bucketFilter, storeFilter]);
+  }, [orders, bucketFilter, storeFilter, stateFilter, typeFilter]);
 
   const selectableIds = useMemo(
     () =>
@@ -550,29 +574,52 @@ export default function ShippingLabelsPage() {
         </div>
       )}
 
-      {/* Totals row */}
+      {/* Totals row — each card toggles the state filter. Clicking the same
+          card twice (or "Awaiting fulfillment") returns to the unfiltered
+          view. The visual active state mirrors the existing store-filter
+          chips below so the filter relationship reads consistently. */}
       <div className="grid gap-3 sm:grid-cols-4">
         <KpiCard
           label="Awaiting fulfillment"
           value={totals.all}
           icon={<Package size={14} />}
+          onClick={() => setStateFilter("all")}
+          active={stateFilter === "all"}
         />
         <KpiCard
           label="Ready to buy"
           value={totals.ready}
           icon={<CheckCircle size={14} />}
-          iconVariant={totals.ready > 0 ? "default" : "default"}
+          iconVariant="default"
+          onClick={() =>
+            setStateFilter(
+              stateFilter === "ready_to_buy" ? "all" : "ready_to_buy",
+            )
+          }
+          active={stateFilter === "ready_to_buy"}
         />
         <KpiCard
           label="Need attention"
           value={totals.attention}
           icon={<AlertTriangle size={14} />}
           iconVariant={totals.attention > 0 ? "warn" : "default"}
+          onClick={() =>
+            setStateFilter(
+              stateFilter === "need_attention" ? "all" : "need_attention",
+            )
+          }
+          active={stateFilter === "need_attention"}
         />
         <KpiCard
           label="Waiting for procurement"
           value={totals.waiting}
           icon={<Loader2 size={14} />}
+          onClick={() =>
+            setStateFilter(
+              stateFilter === "waiting_placed" ? "all" : "waiting_placed",
+            )
+          }
+          active={stateFilter === "waiting_placed"}
         />
       </div>
 
@@ -644,6 +691,37 @@ export default function ShippingLabelsPage() {
           onChange={(id) =>
             setBucketFilter(id === "all" ? null : (id as ShipByBucket))
           }
+        />
+      )}
+
+      {/* Product type filter — Frozen / Dry. Operates on the items array
+          (every item must match the chosen type). Counts are derived
+          locally from the already-loaded orders so no extra API call. */}
+      {data && (
+        <FilterTabs
+          tabs={[
+            { id: "all" as const, label: "All types", count: orders.length },
+            {
+              id: "Frozen" as const,
+              label: "Frozen",
+              count: orders.filter(
+                (o) =>
+                  o.items.length > 0 &&
+                  o.items.every((i) => i.knownType === "Frozen"),
+              ).length,
+            },
+            {
+              id: "Dry" as const,
+              label: "Dry",
+              count: orders.filter(
+                (o) =>
+                  o.items.length > 0 &&
+                  o.items.every((i) => i.knownType === "Dry"),
+              ).length,
+            },
+          ]}
+          active={typeFilter}
+          onChange={(id) => setTypeFilter(id)}
         />
       )}
 
@@ -813,7 +891,7 @@ function OrderRow({
   return (
     <div
       className={cn(
-        "rounded-md border bg-surface p-3 text-[12.5px]",
+        "rounded-md border bg-surface p-3 text-[13px]",
         isAttn
           ? "border-warn-strong/40 bg-warn-tint/30"
           : isWaiting
@@ -846,14 +924,14 @@ function OrderRow({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className="font-mono text-[12px] text-ink">
+            <span className="font-mono text-[13px] text-ink">
               {order.orderNumber}
             </span>
-            <span className="text-[11px] text-ink-3">
+            <span className="text-[12px] text-ink-3">
               · {order.storeName}
             </span>
             {order.shipBy && (
-              <span className="text-[11px] text-ink-3">
+              <span className="text-[12px] text-ink-3">
                 · Ship by {fmtDate(order.shipBy)}
               </span>
             )}
@@ -884,7 +962,7 @@ function OrderRow({
               if (!trickApplied) {
                 return (
                   <span
-                    className="text-[11px] text-ink-3"
+                    className="text-[12px] text-ink-3"
                     title="Label date and physical ship date are the same"
                   >
                     · 📦 Ship {fmtDate(physicalShipDate ?? labelDate ?? "")}
@@ -895,13 +973,13 @@ function OrderRow({
               return (
                 <>
                   <span
-                    className="text-[11px] text-ink-3"
+                    className="text-[12px] text-ink-3"
                     title="Date Amazon sees on the label (drives Late Shipment Rate)"
                   >
                     · Label {fmtDate(labelDate ?? "")}
                   </span>
                   <span
-                    className="rounded bg-warn-tint px-1.5 py-px text-[11px] font-medium text-warn-strong"
+                    className="rounded bg-warn-tint px-1.5 py-px text-[12px] font-medium text-warn-strong"
                     title="Physical ship date pushed by Frozen Ship Date Trick — hand to carrier on this date, not today"
                   >
                     · 📦 Physical {fmtDate(physicalShipDate ?? "")}
@@ -911,15 +989,38 @@ function OrderRow({
             })()}
           </div>
 
-          {/* Items list — each on its own line so multi-item orders read clearly. */}
-          <ul className="mt-1 space-y-0.5">
+          {/* Items list — each on its own line so multi-item orders read
+              clearly. Thumbnail (~40px) on the left helps the operator
+              recognise the product without reading the title. */}
+          <ul className="mt-1 space-y-1.5">
             {order.items.map((i) => (
-              <li key={i.sku} className="truncate text-[12px] text-ink-2">
-                <span className="font-medium text-ink">{i.productTitle}</span>{" "}
-                <span className="text-ink-3">× {i.quantity}</span>{" "}
-                <span className="font-mono text-[10.5px] text-ink-3">
-                  ({i.sku})
-                </span>
+              <li
+                key={i.sku}
+                className="flex items-start gap-2 text-[13px] text-ink-2"
+              >
+                {i.imageUrl ? (
+                  // Plain <img> — Veeqo CDN URLs aren't on next.config's
+                  // allowed list and these are small thumbnails not worth
+                  // running through next/image optimisation.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={i.imageUrl}
+                    alt=""
+                    className="h-10 w-10 shrink-0 rounded border border-rule bg-surface object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="h-10 w-10 shrink-0 rounded border border-rule bg-bg-elev" />
+                )}
+                <div className="min-w-0 flex-1 truncate">
+                  <span className="font-medium text-ink">
+                    {i.productTitle}
+                  </span>{" "}
+                  <span className="text-ink-3">× {i.quantity}</span>{" "}
+                  <span className="font-mono text-[11px] text-ink-3">
+                    ({i.sku})
+                  </span>
+                </div>
               </li>
             ))}
           </ul>
@@ -948,7 +1049,7 @@ function OrderRow({
           a rate for the order (ready_to_buy and just-bought rows). The
           marketplace deadline (Amazon / Walmart deliver-by) sits in its own
           cell so the operator can eyeball whether the carrier's EDD beats it. */}
-      <div className="mt-2.5 ml-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-6 text-[11.5px]">
+      <div className="mt-2.5 ml-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-6 text-[12.5px]">
         <Cell label="Order total" value={fmt$(order.orderTotal)} />
         <Cell
           label="Customer paid shipping"

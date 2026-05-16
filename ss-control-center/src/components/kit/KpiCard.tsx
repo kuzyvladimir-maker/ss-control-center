@@ -24,6 +24,12 @@ interface KpiCardProps {
   className?: string;
   /** When set, the entire card becomes a Link to this destination. */
   href?: string;
+  /** Alternative to href: card becomes an in-page button (e.g. acting as a
+   *  filter). Ignored when href is set. */
+  onClick?: () => void;
+  /** When the card is acting as a toggleable filter, this controls the
+   *  selected visual state. */
+  active?: boolean;
 }
 
 const CHIP_PALETTE: Record<NonNullable<KpiCardProps["chips"]>[number]["variant"] & string, { bg: string; color: string }> = {
@@ -92,22 +98,30 @@ export function KpiCard({
   accent,
   className,
   href,
+  onClick,
+  active,
 }: KpiCardProps) {
   const iconPalette = ICON_BG[iconVariant];
-  const Wrapper = href ? Link : "div";
-  // Type assertion below keeps Wrapper polymorphic without spreading
-  // both href and non-href shapes everywhere.
+  // Polymorphic root: <Link> if href, <button> if onClick, <div> otherwise.
+  // Mutually exclusive — href wins if both are set.
+  const Wrapper: React.ElementType = href ? Link : onClick ? "button" : "div";
   const wrapperProps: Record<string, unknown> = href
     ? { href }
-    : {};
+    : onClick
+      ? { onClick, type: "button" }
+      : {};
+  const interactive = Boolean(href || onClick);
   return (
     <Wrapper
-      {...(wrapperProps as { href: string })}
+      {...wrapperProps}
       className={cn(
-        "block rounded-lg border border-rule p-4 transition-colors",
+        "block w-full rounded-lg border border-rule p-4 text-left transition-colors",
         accent ? "bg-green-soft" : "bg-surface",
-        href &&
+        interactive &&
           "cursor-pointer hover:border-green-mid/40 hover:bg-bg-elev/40",
+        // Active filter state — same accent treatment as the Procurement
+        // store chips and FilterTabs use.
+        active && "border-green bg-green-soft",
         className
       )}
     >

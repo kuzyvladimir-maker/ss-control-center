@@ -164,6 +164,30 @@ export async function GET() {
       productId: number | null;
       productTitle: string;
       quantity: number;
+      imageUrl: string | null;
+    };
+    // Veeqo's image URL lives in a different field per channel. Same multi-
+    // path lookup as src/lib/veeqo/orders-procurement.ts:pickImageUrl. First
+    // non-empty string wins.
+    const pickImage = (li: any): string | null => {
+      const s = li?.sellable ?? {};
+      const p = s.product ?? {};
+      const candidates: Array<unknown> = [
+        s.image_url,
+        s.main_image?.src,
+        s.main_image?.url,
+        p.main_image_src,
+        p.main_image_url,
+        p.image_url,
+        p.images?.[0]?.src,
+        p.images?.[0]?.url,
+        p.images?.[0]?.image_url,
+        p.images?.[0]?.src_thumbnail,
+      ];
+      for (const c of candidates) {
+        if (typeof c === "string" && c.trim()) return c;
+      }
+      return null;
     };
     const orderItems = new Map<number | string, LiteItem[]>();
     const signatures = new Set<string>();
@@ -187,6 +211,7 @@ export async function GET() {
               sellable?.product_title ?? sellable?.product?.title ?? sku
             ),
             quantity: Number(li?.quantity ?? 1),
+            imageUrl: pickImage(li),
           };
         })
         .filter((i: LiteItem) => i.sku);
@@ -283,6 +308,7 @@ export async function GET() {
         productId: i.productId,
         productTitle: i.productTitle,
         quantity: i.quantity,
+        imageUrl: i.imageUrl,
         knownType: productType(i.productId ?? undefined),
       }));
 
