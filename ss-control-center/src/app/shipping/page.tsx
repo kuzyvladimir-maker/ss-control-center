@@ -2012,8 +2012,16 @@ function BuyReportDialog({
 }) {
   const okCount = report.bought.length;
   const failCount = report.errors.length;
-  const pdfMissing = report.bought.filter((b) => !b.pdfSaved).length;
-  const allOk = failCount === 0 && pdfMissing === 0;
+  // Drive success — counted off pdfSource (the real signal), not labelPath
+  // (which is set even for the proxy fallback). The old counter showed a
+  // green "5/5 saved" when Drive was misconfigured and every PDF actually
+  // lived only on Veeqo's CDN — masking the integration outage.
+  const driveCount = report.bought.filter((b) => b.pdfSource === "drive").length;
+  const proxyOrDiskCount = report.bought.filter(
+    (b) => b.pdfSource === "proxy" || b.pdfSource === "disk",
+  ).length;
+  const allOnDrive = okCount > 0 && driveCount === okCount;
+  const allOk = failCount === 0 && allOnDrive;
   const title =
     report.scope === "single"
       ? "Label purchase result"
@@ -2040,14 +2048,18 @@ function BuyReportDialog({
               </div>
             </div>
             <div className="rounded border border-rule bg-surface-tint p-2">
-              <div className="text-[11px] text-ink-3">PDF saved</div>
+              <div className="text-[11px] text-ink-3">On Drive</div>
               <div
                 className={cn(
                   "text-base font-semibold",
-                  pdfMissing === 0 ? "text-green-ink" : "text-warn-strong"
+                  driveCount === okCount
+                    ? "text-green-ink"
+                    : driveCount > 0
+                      ? "text-warn-strong"
+                      : "text-danger"
                 )}
               >
-                {okCount - pdfMissing}/{okCount}
+                {driveCount}/{okCount}
               </div>
             </div>
             <div className="rounded border border-rule bg-surface-tint p-2">
@@ -2062,6 +2074,46 @@ function BuyReportDialog({
               </div>
             </div>
           </div>
+
+          {proxyOrDiskCount > 0 && (
+            <div className="rounded border border-warn-strong bg-warn-tint p-2 text-[12px]">
+              <div className="flex items-start gap-2">
+                <AlertTriangle
+                  size={14}
+                  className="mt-0.5 shrink-0 text-warn-strong"
+                />
+                <div>
+                  <div className="font-medium text-warn-strong">
+                    {proxyOrDiskCount} of {okCount} labels NOT saved to Drive
+                  </div>
+                  <div className="text-[11px] text-ink-2 mt-0.5">
+                    These PDFs are accessible via fallback URLs but aren&apos;t
+                    archived in <code>Shipping Labels</code> folder. Most common
+                    cause: <code>GOOGLE_OAUTH_*</code> env vars missing on
+                    Vercel. See{" "}
+                    <a
+                      href="/admin/integrations"
+                      className="text-info underline ml-1"
+                    >
+                      Integrations
+                    </a>{" "}
+                    or wiki/google-drive-setup.md.
+                  </div>
+                  {(() => {
+                    const firstErr = report.bought.find(
+                      (b) => b.driveError,
+                    )?.driveError;
+                    if (!firstErr) return null;
+                    return (
+                      <div className="text-[11px] text-ink-3 mt-1 font-mono">
+                        {firstErr}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          )}
 
           {report.bought.length > 0 && (
             <div>
@@ -2106,23 +2158,31 @@ function BuyReportDialog({
                           ⚠ PDF not saved locally — re-download from Veeqo
                         </div>
                       )}
-                      <div className="text-[10px] text-ink-3">
-                        PDF source:{" "}
+                      <div className="text-[11px] mt-0.5">
+                        PDF:{" "}
                         <span
-                          className={
+                          className={cn(
+                            "font-medium",
                             b.pdfSource === "drive"
-                              ? "text-success"
+                              ? "text-green-ink"
                               : b.pdfSource === "proxy"
                                 ? "text-warn-strong"
-                                : "text-ink-2"
-                          }
+                                : b.pdfSource === "disk"
+                                  ? "text-info"
+                                  : "text-danger",
+                          )}
                         >
-                          {b.pdfSource}
+                          {b.pdfSource === "drive"
+                            ? "✓ on Drive"
+                            : b.pdfSource === "proxy"
+                              ? "via Veeqo proxy (not on Drive)"
+                              : b.pdfSource === "disk"
+                                ? "local disk only"
+                                : "missing"}
                         </span>
                         {b.driveError && (
-                          <span className="text-warn-strong">
-                            {" · Drive: "}
-                            {b.driveError}
+                          <span className="ml-1 text-[10.5px] text-ink-3 font-mono">
+                            · {b.driveError}
                           </span>
                         )}
                       </div>

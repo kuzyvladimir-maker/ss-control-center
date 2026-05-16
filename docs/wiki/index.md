@@ -44,7 +44,8 @@
 ## 🔌 Интеграции
 - [Veeqo API](veeqo-api.md) — заказы, ставки, покупка labels
 - [Veeqo API Quirks](veeqo-api-quirks.md) — подводные камни (10 пунктов): VAS из `shipping_service_options`, tracking_number бывает объектом, order tags → /bulk_tagging, /buy 200 + errors[], Vercel ephemeral disk
-- [Google Drive (PDF этикеток)](google-drive-setup.md) — service-account setup для постоянного хранения этикеток — 2026-05-14
+- [Google Drive (PDF этикеток)](google-drive-setup.md) — OAuth refresh-token setup (service account на personal Gmail Drive не работает) — переписано 2026-05-15
+- [Drive Backfill (Layer 2)](drive-backfill.md) — async safety net поверх синхронной Drive загрузки; n8n cron каждые 15 мин + admin retry на `/admin/integrations` — 2026-05-15
 - [Amazon SP-API](amazon-sp-api.md) — orders, messaging, reports, health, finances
 - [Walmart Marketplace API](walmart-api.md) — orders, returns, recon reports, Seller Performance v2 через Insights API (10 per-metric endpoints, 2026-05-15)
 - [Gmail API](gmail-api.md) — buyer messages, chargeback notifications

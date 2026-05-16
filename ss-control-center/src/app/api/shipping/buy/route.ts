@@ -542,6 +542,11 @@ export async function POST(request: NextRequest) {
         carrier: b.carrier,
         service: b.service,
         price: b.price,
+        // Diagnostic — distinguishes Drive success from the silent proxy
+        // fallback that made the 2026-05-15 outage look like success in
+        // the UI. Audit trail needed for post-incident reviews.
+        pdfSource: b.pdfSource,
+        driveError: b.driveError,
       })),
       errors: results.errors.map((e) => ({
         orderNumber: e.orderNumber,

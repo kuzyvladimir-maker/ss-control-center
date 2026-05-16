@@ -10,6 +10,7 @@ on Vercel; the route requires `Authorization: Bearer ${CRON_SECRET}`.
 |---|---|---|
 | `frozen-nightly-analysis.json` | 03:00 daily | `POST /api/frozen/run-analysis` |
 | `frozen-morning-summary.json` | 07:00 daily | `GET /api/frozen/morning-summary` |
+| `drive-backfill.json` | every 15 min | `GET /api/cron/drive-backfill` |
 
 ## How to import into n8n
 
@@ -44,11 +45,20 @@ In n8n, open a workflow → click **Execute Workflow** in the top-right.
 
 ## Why n8n, not Vercel cron
 
-Vercel's Hobby plan only allows daily cron schedules. The frozen pipeline
-itself runs daily (03:00 ET fits), so that part *could* run as a Vercel
-cron. We keep it in n8n because:
-1. Symmetry with the morning summary, which is a second daily ping (and
-   Vercel only allows so many before billing kicks in).
-2. n8n gives us free retry + error alerting without code changes.
-3. If we ever need sub-daily polling (priority alerts in summer heat
-   waves), only the n8n schedule has to change.
+Vercel's Hobby plan only allows daily cron schedules. Sub-daily expressions
+in `vercel.json` (e.g. `*/15 * * * *`, `0 */6 * * *`) cause the entire
+deploy to fail at the build step — and silently break the Git→Vercel
+auto-deploy for every subsequent commit until the schedule is fixed.
+This bit us on 2026-05-03 (procurement-priority) and again on 2026-05-15
+(orders-amazon).
+
+Two consequences:
+1. **Sub-daily jobs MUST run in n8n.** `drive-backfill.json` is the
+   canonical example — runs every 15 minutes, hits the Next.js API.
+2. **Daily jobs run in n8n for symmetry.** Frozen workflows could live in
+   `vercel.json` (they're daily) but we keep them in n8n so retry + error
+   alerting are centralised in one place.
+
+If we ever upgrade to Vercel Pro and want to retire some n8n workflows,
+move the daily ones into `vercel.json` first. Leave the 15-minute
+`drive-backfill` in n8n unless Pro's pricing for >1/day crons works out.

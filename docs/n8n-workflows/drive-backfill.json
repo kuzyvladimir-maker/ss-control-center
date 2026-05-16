@@ -1,0 +1,97 @@
+{
+  "name": "Drive — Backfill (15 min)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/15 * * * *"
+            }
+          ]
+        },
+        "timezone": "America/New_York"
+      },
+      "name": "Cron */15 min",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [240, 320]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.NEXTJS_BASE_URL}}/api/cron/drive-backfill",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.CRON_SECRET}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "GET /api/cron/drive-backfill",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [480, 320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "errors-gt-0",
+              "operator": { "type": "number", "operation": "gt" },
+              "leftValue": "={{ ($json.errors || []).length }}",
+              "rightValue": 0
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "name": "Has errors?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [720, 320]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$env.TELEGRAM_ALERT_CHAT_ID}}",
+        "text": "=⚠️ Drive backfill errors\n\nuploaded={{ ($json.uploaded || []).length }} · errors={{ ($json.errors || []).length }} · skipped={{ ($json.skipped || []).length }}\n\nFirst error: {{ ($json.errors || [])[0]?.orderNumber }} — {{ ($json.errors || [])[0]?.reason }}",
+        "additionalFields": {}
+      },
+      "name": "Telegram alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [960, 240]
+    }
+  ],
+  "connections": {
+    "Cron */15 min": {
+      "main": [
+        [
+          { "node": "GET /api/cron/drive-backfill", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "GET /api/cron/drive-backfill": {
+      "main": [[{ "node": "Has errors?", "type": "main", "index": 0 }]]
+    },
+    "Has errors?": {
+      "main": [
+        [{ "node": "Telegram alert", "type": "main", "index": 0 }],
+        []
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" }
+}
