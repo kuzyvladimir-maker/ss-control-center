@@ -123,6 +123,23 @@ interface PlanResponse {
   orders: PlanItem[];
 }
 
+// Operator's manual rate override — fields that get sent to /api/shipping/buy
+// to override the plan's algorithmic pick at purchase time. Stored in client
+// state keyed by Veeqo order id; lost on page refresh.
+interface RateOverride {
+  carrier: string | null; // sub_carrier_id e.g. "UPS"
+  service: string | null; // title e.g. "UPS® Ground"
+  serviceType: string | null; // name (full Veeqo service identifier)
+  subCarrierId: string | null;
+  serviceCarrier: string | null;
+  carrierId: string | null;
+  remoteShipmentId: string | null;
+  totalNetCharge: string | null;
+  baseRate: string | null;
+  edd: string | null; // YYYY-MM-DD
+  price: number | null;
+}
+
 interface StoreTotals {
   storeId: string;
   storeName: string;
@@ -267,6 +284,17 @@ export default function ShippingLabelsPage() {
   const [editPackageModal, setEditPackageModal] = useState<DashboardOrder | null>(
     null,
   );
+  // Manual rate override — pops a dialog listing every available rate from
+  // Veeqo so the operator can pick anything outside the algorithm's choice.
+  // Lives in React state only (no DB persistence); selected override is
+  // sent to /api/shipping/buy as `overrides[itemId]` when the operator
+  // clicks Buy. Lost on page refresh — operator just picks again.
+  const [pickRateModal, setPickRateModal] = useState<DashboardOrder | null>(
+    null,
+  );
+  const [rateOverrides, setRateOverrides] = useState<
+    Record<string, RateOverride>
+  >({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -461,10 +489,21 @@ export default function ShippingLabelsPage() {
         return;
       }
       setBuyMsg(`Buying ${itemIds.length} label(s)…`);
+      // For each selected order with an active override, map it from
+      // orderId → itemId so the buy endpoint can apply it row-by-row.
+      const overridesByItemId: Record<string, RateOverride> = {};
+      for (const planOrder of planJson.orders ?? []) {
+        const ov = rateOverrides[planOrder.orderId];
+        if (ov) overridesByItemId[planOrder.id] = ov;
+      }
       const buyRes = await fetch("/api/shipping/buy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId, itemIds }),
+        body: JSON.stringify({
+          planId,
+          itemIds,
+          overrides: overridesByItemId,
+        }),
       });
       const buyJson = await buyRes.json();
       if (!buyRes.ok)
@@ -479,6 +518,15 @@ export default function ShippingLabelsPage() {
         errors: buyJson.errors ?? [],
       });
       setSelected(new Set());
+      // Clear overrides for orders we just bought — they don't apply to
+      // a future purchase if we ever buy this same orderId again.
+      setRateOverrides((prev) => {
+        const next = { ...prev };
+        for (const [id] of [...selected].map((id) => [id])) {
+          delete next[id as string];
+        }
+        return next;
+      });
       await load();
     } catch (e) {
       setBuyMsg(e instanceof Error ? e.message : String(e));
@@ -520,10 +568,15 @@ export default function ShippingLabelsPage() {
         if (!item) throw new Error("No buyable rate found for this order");
         planItemId = item.id;
       }
+      const ov = rateOverrides[o.orderId];
       const buyRes = await fetch("/api/shipping/buy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId, itemIds: [planItemId] }),
+        body: JSON.stringify({
+          planId,
+          itemIds: [planItemId],
+          overrides: ov && planItemId ? { [planItemId]: ov } : undefined,
+        }),
       });
       const buyJson = await buyRes.json();
       if (!buyRes.ok) throw new Error(buyJson?.error || "Failed to buy");
@@ -546,6 +599,11 @@ export default function ShippingLabelsPage() {
         throw new Error(errs[0]?.error || "Veeqo rejected the purchase");
       }
       setBuyMsg(`Bought ${o.orderNumber}`);
+      setRateOverrides((prev) => {
+        const next = { ...prev };
+        delete next[o.orderId];
+        return next;
+      });
       await load();
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -788,6 +846,15 @@ export default function ShippingLabelsPage() {
               onPacking={() => setPackingModal(o)}
               onSku={() => setSkuModal(o)}
               onEditPackage={() => setEditPackageModal(o)}
+              onPickRate={() => setPickRateModal(o)}
+              rateOverride={rateOverrides[o.orderId] ?? null}
+              onClearOverride={() => {
+                setRateOverrides((prev) => {
+                  const next = { ...prev };
+                  delete next[o.orderId];
+                  return next;
+                });
+              }}
               onBuy={() => buyOne(o)}
             />
           ))
@@ -846,6 +913,20 @@ export default function ShippingLabelsPage() {
           }}
         />
       )}
+      {pickRateModal && (
+        <PickRateDialog
+          order={pickRateModal}
+          plan={planByOrderNumber.get(pickRateModal.orderNumber) ?? null}
+          onClose={() => setPickRateModal(null)}
+          onPick={(override) => {
+            setRateOverrides((prev) => ({
+              ...prev,
+              [pickRateModal.orderId]: override,
+            }));
+            setPickRateModal(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -862,12 +943,15 @@ function OrderRow({
   buying,
   buyError,
   frozenAlert,
+  rateOverride,
   onToggleSelected,
   onClassify,
   onManual,
   onPacking,
   onSku,
   onEditPackage,
+  onPickRate,
+  onClearOverride,
   onBuy,
 }: {
   order: DashboardOrder;
@@ -877,12 +961,15 @@ function OrderRow({
   buying: boolean;
   buyError: string | null;
   frozenAlert: ShippingFrozenAlert | null;
+  rateOverride: RateOverride | null;
   onToggleSelected: () => void;
   onClassify: () => void;
   onManual: () => void;
   onPacking: () => void;
   onSku: () => void;
   onEditPackage: () => void;
+  onPickRate: () => void;
+  onClearOverride: () => void;
   onBuy: () => void;
 }) {
   const isReady = order.state === "ready_to_buy";
@@ -1144,24 +1231,75 @@ function OrderRow({
           />
         )}
         {(isReady || isBought) && (
-          <Cell
-            label="Carrier"
-            // The Veeqo rate `title` (= plan.service, e.g. "UPS® Ground"
-            // or "FedEx Ground Economy") already includes the carrier
-            // name, so prefixing plan.carrier produced redundant strings
-            // like "USPS USPS Ground Advantage". Drop the prefix unless
-            // the service title is missing it for some reason.
-            value={
-              plan?.service
-                ? plan.service
-                : plan?.carrier
-                  ? plan.carrier
-                  : planLoading
-                    ? "loading…"
-                    : "—"
-            }
-            sub={plan?.edd ? `EDD ${fmtDate(plan.edd)}` : undefined}
-          />
+          // Carrier/service: when an operator override is active we show
+          // their chosen rate in green with a "(manual)" tag, plus a Clear
+          // button to revert to the algorithmic pick. Pre-purchase only —
+          // bought rows still display the captured carrier as before.
+          <button
+            type="button"
+            onClick={isReady ? onPickRate : undefined}
+            disabled={!isReady}
+            title={isReady ? "Click to change carrier/service manually" : ""}
+            className={cn(
+              "rounded px-2 py-1.5 text-left transition-colors",
+              rateOverride
+                ? "bg-green-soft hover:bg-green-soft2 ring-1 ring-green-mid/30"
+                : "bg-surface-tint",
+              isReady && "hover:bg-bg-elev cursor-pointer",
+              !isReady && "cursor-default",
+            )}
+          >
+            <div className="flex items-center justify-between gap-1 text-[10px] font-mono uppercase tracking-wider text-ink-3">
+              <span>Carrier</span>
+              {isReady && (
+                <Pencil
+                  size={9}
+                  className={rateOverride ? "text-green-ink" : "text-ink-3"}
+                />
+              )}
+            </div>
+            <div
+              className={cn(
+                "mt-0.5 truncate font-semibold tabular",
+                rateOverride ? "text-green-ink" : "text-ink",
+              )}
+            >
+              {rateOverride
+                ? rateOverride.service ?? rateOverride.carrier ?? "—"
+                : plan?.service
+                  ? plan.service
+                  : plan?.carrier
+                    ? plan.carrier
+                    : planLoading
+                      ? "loading…"
+                      : "—"}
+            </div>
+            <div className="flex items-center justify-between gap-1 text-[10.5px] text-ink-3">
+              <span>
+                {rateOverride
+                  ? rateOverride.edd
+                    ? `EDD ${fmtDate(rateOverride.edd)} · manual override`
+                    : "manual override"
+                  : plan?.edd
+                    ? `EDD ${fmtDate(plan.edd)}`
+                    : ""}
+              </span>
+              {rateOverride && isReady && (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClearOverride();
+                  }}
+                  className="text-[10px] text-ink-3 hover:text-danger underline"
+                  title="Clear override and revert to the algorithm's pick"
+                >
+                  clear
+                </span>
+              )}
+            </div>
+          </button>
         )}
       </div>
 
@@ -2520,3 +2658,183 @@ function EditPackageDialog({
     </Dialog>
   );
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// PickRateDialog
+//
+// Lists every rate Veeqo offers for this order so the operator can override
+// the algorithm's pick. Selecting a row stages a RateOverride in page-level
+// state — actual purchase still happens through the regular Buy flow, which
+// passes the override to /api/shipping/buy.
+// ─────────────────────────────────────────────────────────────────────────
+interface VeeqoRateLite {
+  name?: string;
+  title?: string;
+  short_title?: string;
+  sub_carrier_id?: string;
+  service_carrier?: string;
+  service_id?: string;
+  carrier?: string;
+  remote_shipment_id?: string;
+  total_net_charge?: string;
+  base_rate?: string;
+  delivery_promise_date?: string;
+}
+
+function PickRateDialog({
+  order,
+  plan,
+  onClose,
+  onPick,
+}: {
+  order: DashboardOrder;
+  plan: PlanItem | null;
+  onClose: () => void;
+  onPick: (override: RateOverride) => void;
+}) {
+  const [rates, setRates] = useState<VeeqoRateLite[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(
+          `/api/shipping/rates?orderId=${encodeURIComponent(order.orderId)}`,
+        );
+        const j = await r.json();
+        if (cancelled) return;
+        if (!r.ok) {
+          setErr(j?.error || `HTTP ${r.status}`);
+        } else {
+          setRates(j.rates ?? []);
+        }
+      } catch (e) {
+        if (!cancelled) setErr(e instanceof Error ? e.message : String(e));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [order.orderId]);
+
+  // Sort rates cheapest-first so the typical pick is at the top.
+  const sortedRates = useMemo(() => {
+    return [...rates].sort((a, b) => {
+      const ap = parseFloat(a.total_net_charge ?? "0") || 0;
+      const bp = parseFloat(b.total_net_charge ?? "0") || 0;
+      return ap - bp;
+    });
+  }, [rates]);
+
+  const currentPickName = plan?.service ?? null;
+
+  function pickRate(rate: VeeqoRateLite) {
+    const price = parseFloat(rate.total_net_charge ?? "0") || null;
+    const edd = rate.delivery_promise_date
+      ? new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" })
+          .format(new Date(rate.delivery_promise_date))
+      : null;
+    onPick({
+      carrier: rate.sub_carrier_id ?? null,
+      service: rate.title ?? null,
+      serviceType: rate.name ?? null,
+      subCarrierId: rate.sub_carrier_id ?? null,
+      serviceCarrier: rate.service_carrier ?? null,
+      carrierId: rate.carrier ?? null,
+      remoteShipmentId: rate.remote_shipment_id ?? null,
+      totalNetCharge: rate.total_net_charge ?? null,
+      baseRate: rate.base_rate ?? null,
+      edd,
+      price,
+    });
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[640px]">
+        <DialogHeader>
+          <DialogTitle>Pick rate manually</DialogTitle>
+          <DialogDescription>
+            Order #{order.orderNumber} — choose any rate from Veeqo. The
+            algorithm&apos;s current pick is highlighted.
+          </DialogDescription>
+        </DialogHeader>
+
+        {loading && (
+          <div className="flex items-center justify-center py-10 text-[12px] text-ink-3">
+            <Loader2 size={16} className="mr-2 animate-spin" /> Fetching rates…
+          </div>
+        )}
+
+        {err && (
+          <div className="rounded border border-danger/30 bg-danger-tint p-2 text-[11.5px] text-danger">
+            {err}
+          </div>
+        )}
+
+        {!loading && !err && sortedRates.length === 0 && (
+          <div className="py-6 text-center text-[12px] text-ink-3">
+            Veeqo returned no rates for this order.
+          </div>
+        )}
+
+        {!loading && !err && sortedRates.length > 0 && (
+          <ul className="space-y-1 max-h-[420px] overflow-y-auto pr-1">
+            {sortedRates.map((rate, i) => {
+              const isCurrent =
+                currentPickName != null && rate.title === currentPickName;
+              const edd = rate.delivery_promise_date
+                ? new Intl.DateTimeFormat("en-CA", {
+                    timeZone: "America/New_York",
+                  }).format(new Date(rate.delivery_promise_date))
+                : "";
+              return (
+                <li key={`${rate.name}-${i}`}>
+                  <button
+                    type="button"
+                    onClick={() => pickRate(rate)}
+                    className={cn(
+                      "w-full rounded border px-3 py-2 text-left transition-colors",
+                      isCurrent
+                        ? "border-green bg-green-soft hover:bg-green-soft2"
+                        : "border-rule bg-surface hover:bg-bg-elev",
+                    )}
+                  >
+                    <div className="flex items-baseline justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-medium text-ink text-[13px]">
+                          {rate.title || rate.short_title || rate.name}
+                        </div>
+                        <div className="mt-0.5 text-[11px] text-ink-3 font-mono">
+                          {(rate.sub_carrier_id ?? "").toUpperCase()}
+                          {edd ? ` · EDD ${fmtDate(edd)}` : ""}
+                          {isCurrent ? " · current pick" : ""}
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <div className="font-semibold text-ink tabular text-[13px]">
+                          ${parseFloat(rate.total_net_charge ?? "0").toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+

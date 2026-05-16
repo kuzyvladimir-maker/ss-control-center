@@ -56,10 +56,27 @@ function pickTrackingString(shipment: unknown): string | null {
   return null;
 }
 
+// Per-itemId override: operator picked a different carrier/service through
+// /shipping's PickRateDialog. When present we substitute these fields into
+// the item before the buy call hits Veeqo, instead of using the
+// algorithmically-picked rate.
+interface BuyOverride {
+  carrierId?: string | null;
+  remoteShipmentId?: string | null;
+  serviceType?: string | null;
+  subCarrierId?: string | null;
+  serviceCarrier?: string | null;
+  totalNetCharge?: string | null;
+  baseRate?: string | null;
+  carrier?: string | null;
+  service?: string | null;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { planId, itemIds } = body;
+    const overrides: Record<string, BuyOverride> = body.overrides ?? {};
 
     if (!planId) {
       return NextResponse.json(
@@ -142,7 +159,27 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    for (const item of itemsToBuy) {
+    for (const rawItem of itemsToBuy) {
+      // Apply per-item override BEFORE the required-fields check so an
+      // override carrying every needed identifier can rescue an item the
+      // algorithm picked nothing for. Override fields take precedence; the
+      // rest fall back to whatever the plan stored.
+      const ov = overrides[rawItem.id];
+      const item = ov
+        ? {
+            ...rawItem,
+            carrierId: ov.carrierId ?? rawItem.carrierId,
+            remoteShipmentId:
+              ov.remoteShipmentId ?? rawItem.remoteShipmentId,
+            serviceType: ov.serviceType ?? rawItem.serviceType,
+            subCarrierId: ov.subCarrierId ?? rawItem.subCarrierId,
+            serviceCarrier: ov.serviceCarrier ?? rawItem.serviceCarrier,
+            totalNetCharge: ov.totalNetCharge ?? rawItem.totalNetCharge,
+            baseRate: ov.baseRate ?? rawItem.baseRate,
+            carrier: ov.carrier ?? rawItem.carrier,
+            service: ov.service ?? rawItem.service,
+          }
+        : rawItem;
       try {
         if (
           !item.allocationId || !item.carrierId || !item.remoteShipmentId ||
