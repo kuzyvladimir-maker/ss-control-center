@@ -1853,6 +1853,54 @@ export default function SettingsPage() {
       </section>
 
       {/* ================================================================= */}
+      {/* SECTION 0.5 — Admin tools                                         */}
+      {/* ================================================================= */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-ink">Admin tools</h2>
+          <p className="mt-1 text-[12.5px] text-ink-3">
+            One-click maintenance pages that aren&apos;t in the sidebar.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <a
+            href="/admin/integrations"
+            className="group block rounded-lg border border-rule bg-surface p-4 transition-colors hover:border-green-mid/40 hover:bg-bg-elev/40"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[13px] font-semibold text-ink">
+                Integrations
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-ink-3 group-hover:text-green-ink">
+                /admin/integrations →
+              </span>
+            </div>
+            <div className="mt-1 text-[12px] text-ink-3">
+              Google Drive status, manual back-fill of label PDFs that
+              didn&apos;t reach Drive on purchase.
+            </div>
+          </a>
+          <a
+            href="/admin/bootstrap-frozen-v2"
+            className="group block rounded-lg border border-rule bg-surface p-4 transition-colors hover:border-green-mid/40 hover:bg-bg-elev/40"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[13px] font-semibold text-ink">
+                Frozen Analytics — bootstrap
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-ink-3 group-hover:text-green-ink">
+                /admin/bootstrap-frozen-v2 →
+              </span>
+            </div>
+            <div className="mt-1 text-[12px] text-ink-3">
+              One-shot schema migration + default rule seed (idempotent). Reset
+              rules button picks up new code-side defaults.
+            </div>
+          </a>
+        </div>
+      </section>
+
+      {/* ================================================================= */}
       {/* SECTION 1 — Connected Accounts (per-store credentials)            */}
       {/* ================================================================= */}
       <section className="space-y-4">

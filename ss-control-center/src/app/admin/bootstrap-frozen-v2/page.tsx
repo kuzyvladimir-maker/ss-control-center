@@ -4,9 +4,10 @@
 // migration to the live DB and seeds the default rule set. Idempotent;
 // re-running is safe.
 
+import Link from "next/link";
 import { useState } from "react";
 import { Btn, PageHead, Panel, PanelBody, PanelHeader } from "@/components/kit";
-import { Check, AlertTriangle } from "lucide-react";
+import { Check, AlertTriangle, ChevronLeft } from "lucide-react";
 
 interface BootstrapResult {
   ok: boolean;
@@ -62,6 +63,12 @@ export default function BootstrapFrozenV2Page() {
 
   return (
     <div className="space-y-5">
+      <Link
+        href="/settings"
+        className="inline-flex items-center gap-1 text-[12px] text-ink-3 hover:text-ink"
+      >
+        <ChevronLeft size={13} /> Back to Settings
+      </Link>
       <PageHead
         title="Bootstrap — Frozen Analytics v2"
         subtitle={
