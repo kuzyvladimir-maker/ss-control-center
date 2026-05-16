@@ -11,6 +11,8 @@ import {
   ShoppingCart,
   Sparkles,
   Pencil,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -1035,6 +1037,7 @@ function OrderRow({
             <span className="font-mono text-[13px] text-ink">
               {order.orderNumber}
             </span>
+            <CopyOrderNumber value={order.orderNumber} />
             <span className="text-[12px] text-ink-3">
               · {order.storeName}
             </span>
@@ -1439,6 +1442,29 @@ function OrderRow({
         </div>
       )}
     </div>
+  );
+}
+
+// One-click copy button for an Amazon order number. Lives next to the
+// order number in OrderRow; the warehouse pastes it into Amazon Seller
+// Central / Veeqo search far more often than they retype it.
+function CopyOrderNumber({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(value).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        });
+      }}
+      title={copied ? "Copied!" : `Copy ${value}`}
+      className="inline-flex h-4 w-4 items-center justify-center rounded text-ink-3 hover:text-ink hover:bg-bg-2 transition-colors"
+    >
+      {copied ? <Check size={12} className="text-green" /> : <Copy size={12} />}
+    </button>
   );
 }
 
