@@ -147,24 +147,29 @@ function selectBestRate(
 
     if (pool.length === 0) return null;
 
+    // Frozen rate selection policy (per Vladimir 2026-05-15):
+    //   "If shipping cost is ±5% or under $1 difference, always prefer the
+    //    faster delivery. Food safety wins over small savings."
+    //
+    // Implementation: tolerance band = max($1.00, 5% of cheapest). Every
+    // rate inside the band is a candidate; within candidates we pick the
+    // FEWEST calendar days first, then the earliest EDD, then the cheapest.
+    // This is the rule that should fire for the FedEx One Rate pair where
+    // Express Saver (3-day) and 2Day always share the same price — the
+    // 2Day should win every time.
     pool.sort((a, b) => a.price - b.price);
     const cheapest = pool[0];
-
-    // ~10% more but 1-2 days faster → prefer faster
-    for (const rate of pool) {
-      const priceDiff = (rate.price - cheapest.price) / cheapest.price;
-      const daysSaved = cheapest.calDays - rate.calDays;
-      if (priceDiff <= 0.1 && priceDiff > 0 && daysSaved >= 1) return rate;
-    }
-
-    // ≤$0.50 → earlier EDD
-    const close = pool.filter((r) => r.price - cheapest.price <= 0.5);
-    if (close.length > 1) {
-      close.sort((a, b) => a.eddDate.getTime() - b.eddDate.getTime());
-      return close[0];
-    }
-
-    return cheapest;
+    const tolerance = Math.max(1.0, cheapest.price * 0.05);
+    const candidates = pool.filter(
+      (r) => r.price - cheapest.price <= tolerance,
+    );
+    candidates.sort((a, b) => {
+      if (a.calDays !== b.calDays) return a.calDays - b.calDays;
+      const dt = a.eddDate.getTime() - b.eddDate.getTime();
+      if (dt !== 0) return dt;
+      return a.price - b.price;
+    });
+    return candidates[0];
   }
 
   // ── DRY ──
