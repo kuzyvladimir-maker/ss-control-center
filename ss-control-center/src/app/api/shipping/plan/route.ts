@@ -135,6 +135,21 @@ function selectBestRate(
   if (productType === "Frozen") {
     let pool = enriched.filter((r) => r.calDays <= 3);
 
+    // Policy (Vladimir 2026-05-15): never buy faster than 2-Day for Frozen
+    // unless the customer themselves paid for Overnight / Next Day. We use
+    // the marketplace deliver-by date as a proxy — if it's within 1 day of
+    // ship-day, the customer's service tier was already fast (Next Day or
+    // tighter) and we must match it; otherwise cap at 2-day to avoid
+    // burning $60+ per label on Overnight when customer paid Standard.
+    const shipDt = new Date(actualShipDay + "T00:00:00");
+    const deadlineDt = new Date(deliveryBy + "T00:00:00");
+    const daysToDeadline = Math.round(
+      (deadlineDt.getTime() - shipDt.getTime()) / 86_400_000,
+    );
+    if (daysToDeadline >= 2) {
+      pool = pool.filter((r) => r.calDays >= 2);
+    }
+
     // Wednesday: ground doesn't work (3 business = 5 calendar)
     if (dayName === "Wed") {
       const noGround = pool.filter(
