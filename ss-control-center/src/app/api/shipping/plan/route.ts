@@ -90,6 +90,12 @@ function eddNYDate(utcDate: string): string {
   }).format(new Date(utcDate));
 }
 
+// Module-level diagnostic — written by selectBestRate on each Frozen
+// invocation. The route handler reads this immediately after the call to
+// attach a short trace to the planItem's notes, so the operator can see
+// "why this rate was picked" in the UI without digging into Vercel logs.
+let lastFrozenRateDiagnostic: string | null = null;
+
 function selectBestRate(
   rates: VeeqoRate[],
   productType: string,
@@ -169,6 +175,27 @@ function selectBestRate(
       if (dt !== 0) return dt;
       return a.price - b.price;
     });
+    // Temporary diagnostic — log + stash a short trace so the route
+    // handler can attach it to planItem.notes (visible in UI). Remove
+    // once the FedEx One Rate pair behaves.
+    try {
+      const cand = candidates
+        .slice(0, 4)
+        .map((r) => `${r.title}/$${r.price.toFixed(2)}/${r.calDays}d/${r.eddLocal}`);
+      const skipped = pool
+        .filter((r) => r.price - cheapest.price > tolerance)
+        .slice(0, 4)
+        .map((r) => `${r.title}/$${r.price.toFixed(2)}/${r.calDays}d`);
+      const summary =
+        `[frozen-rate] day=${dayName} ship=${actualShipDay} ` +
+        `cheapest=$${cheapest.price.toFixed(2)} tol=$${tolerance.toFixed(2)} ` +
+        `cand=[${cand.join(" | ")}] outside=[${skipped.join(" | ")}] ` +
+        `picked=${candidates[0]?.title}/${candidates[0]?.eddLocal}`;
+      console.log(summary);
+      lastFrozenRateDiagnostic = summary;
+    } catch {
+      /* logging must never break the buy flow */
+    }
     return candidates[0];
   }
 
@@ -437,12 +464,14 @@ export async function GET(request: NextRequest) {
       // ── Get rates & select best ──
       let selectedRate: VeeqoRate | null = null;
       let shipDateNote: string | null = null;
+      let frozenRateDebug: string | null = null;
 
       if (!stopReason && allocationId) {
         try {
           const ratesResponse = await getShippingRates(String(allocationId));
           const rates: VeeqoRate[] = ratesResponse?.available || [];
 
+          lastFrozenRateDiagnostic = null;
           selectedRate = selectBestRate(
             rates,
             productType,
@@ -451,6 +480,9 @@ export async function GET(request: NextRequest) {
             dayInfo.dayName,
             isAfterNoon
           );
+          if (productType === "Frozen" && lastFrozenRateDiagnostic) {
+            frozenRateDebug = `today: ${lastFrozenRateDiagnostic}`;
+          }
 
           // ── Ship Date Trick (Frozen only) ───────────────────────────────
           //
@@ -550,6 +582,7 @@ export async function GET(request: NextRequest) {
               );
               const mondayRates: VeeqoRate[] =
                 mondayRatesResp?.available || [];
+              lastFrozenRateDiagnostic = null;
               const mondayPick = selectBestRate(
                 mondayRates,
                 productType,
@@ -558,6 +591,7 @@ export async function GET(request: NextRequest) {
                 "Mon",
                 false
               );
+              const mondayDebug = lastFrozenRateDiagnostic;
 
               const todayPrice = selectedRate
                 ? parseFloat(selectedRate.total_net_charge)
@@ -597,6 +631,10 @@ export async function GET(request: NextRequest) {
 
               if (mondayIsCheaper || mondayIsSafer || mondayIsOnlyOption) {
                 selectedRate = mondayPick;
+                // Swap the diagnostic over to the Monday trace so the
+                // operator sees what the Monday refetch saw — that's the
+                // call that produced the rate they're looking at.
+                if (mondayDebug) frozenRateDebug = `mon: ${mondayDebug}`;
                 const reasonBits: string[] = [];
                 if (mondayIsCheaper && todayPrice !== Infinity) {
                   reasonBits.push(
@@ -730,7 +768,10 @@ export async function GET(request: NextRequest) {
         physicalShipDate,
         shipDateTrickApplied: trickFired,
         actualShipDay: legacyActualShipDay,
-        notes: stopReason || shipDateNote,
+        notes:
+          stopReason ||
+          [shipDateNote, frozenRateDebug].filter(Boolean).join(" | ") ||
+          null,
         status: stopReason ? "stop" : "pending",
         // Purchase payload fields (actual Veeqo field names)
         allocationId: allocationId ? String(allocationId) : null,
