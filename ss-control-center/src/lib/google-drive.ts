@@ -214,6 +214,20 @@ export async function uploadLabelPdf(params: {
         reason: "Drive create returned without id or webViewLink",
       };
     }
+
+    // Ensure a sibling "Printed" subfolder exists inside the same
+    // channel folder. The warehouse manually moves printed PDFs there
+    // after they come off the label printer, so we just need it to be
+    // available — `getOrCreateFolder` is idempotent, so if Printed
+    // already exists with files inside, we keep it intact.
+    const printedOutcome = await getOrCreateFolder(drive, folderId, "Printed");
+    if (!printedOutcome.ok) {
+      // Non-fatal: file is already uploaded, log and continue.
+      console.warn(
+        `[drive] Could not ensure Printed subfolder: ${printedOutcome.reason}`,
+      );
+    }
+
     return { ok: true, result: { fileId, webViewLink } };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

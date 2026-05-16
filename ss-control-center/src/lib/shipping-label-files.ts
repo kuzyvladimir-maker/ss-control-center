@@ -53,10 +53,36 @@ export function buildPdfFilename(
   return base;
 }
 
+// Normalise a Veeqo channel type_code (or channel name fallback) into
+// the marketplace bucket we use as the Drive folder name. We want every
+// Amazon store ("Salutem", "Retailer", "AMZ Commerce", …) to land in a
+// single "Amazon" folder rather than one folder per store account —
+// the warehouse only cares which marketplace the label is for.
+export function normalizeChannelKind(
+  typeCode: string | null | undefined,
+): string {
+  if (!typeCode) return "Amazon";
+  const lower = typeCode.toLowerCase();
+  const special: Record<string, string> = {
+    amazon: "Amazon",
+    walmart: "Walmart",
+    ebay: "eBay",
+    tiktok: "TikTok",
+    shopify: "Shopify",
+    etsy: "Etsy",
+  };
+  if (special[lower]) return special[lower];
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
 // Build folder path per MASTER_PROMPT section 8.
+// Prefers `channelKind` (normalised: Amazon / Walmart / eBay / …) when
+// present; falls back to the raw `channel` (store name) for legacy
+// rows written before channelKind existed.
 export function buildFolderPath(item: {
   actualShipDay: string | null;
   channel: string;
+  channelKind?: string | null;
 }): string {
   const shipDay = item.actualShipDay || new Date().toISOString().split("T")[0];
   const d = new Date(shipDay + "T12:00:00");
@@ -77,7 +103,7 @@ export function buildFolderPath(item: {
   ];
   const monthName = monthNames[d.getMonth()];
   const day = String(d.getDate()).padStart(2, "0");
-  const channelName = item.channel || "Amazon";
+  const channelName = item.channelKind || item.channel || "Amazon";
   // Shipping Labels / 04 April / 07 / Amazon /
   return `${monthNum} ${monthName}/${day}/${channelName}`;
 }

@@ -14,6 +14,7 @@ import {
   requiresPackingProfile,
 } from "@/lib/shipping/packing-signature";
 import { computeLabelDate, nextMondayFrom } from "@/lib/shipping/dates";
+import { normalizeChannelKind } from "@/lib/shipping-label-files";
 
 // ── Veeqo rate shape (actual API fields) ──
 interface VeeqoRate {
@@ -317,7 +318,8 @@ export async function GET(request: NextRequest) {
     };
 
     const planItems: Array<{
-      orderNumber: string; orderId: string; channel: string; product: string;
+      orderNumber: string; orderId: string; channel: string;
+      channelKind: string; product: string;
       sku: string; qty: number; productType: string; _productId: number | null;
       weight: number | null; boxSize: string | null; budgetMax: number | null;
       carrier: string | null; service: string | null; price: number | null;
@@ -761,6 +763,7 @@ export async function GET(request: NextRequest) {
         orderNumber: order.number,
         orderId: String(order.id),
         channel,
+        channelKind: normalizeChannelKind(channelType),
         product,
         sku,
         qty,
@@ -810,6 +813,7 @@ export async function GET(request: NextRequest) {
             orderNumber: item.orderNumber,
             orderId: item.orderId,
             channel: item.channel,
+            channelKind: item.channelKind,
             product: item.product,
             sku: item.sku,
             qty: item.qty,

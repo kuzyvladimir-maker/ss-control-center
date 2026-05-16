@@ -87,6 +87,10 @@ model ShippingPlanItem {
   orderNumber      String
   orderId          String // Veeqo order ID
   channel          String
+  // Normalised marketplace bucket — "Amazon", "Walmart", "eBay", etc.
+  // Drives the Drive folder path. Falls back to `channel` for legacy
+  // rows created before this column existed.
+  channelKind      String?
   product          String
   sku              String?
   qty              Int          @default(1)
