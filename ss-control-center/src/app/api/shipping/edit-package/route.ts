@@ -54,6 +54,23 @@ export async function POST(request: NextRequest) {
 
   // ── Multi-item path ───────────────────────────────────────────────────
   if (body.signature && typeof body.signature === "string") {
+    // Custom dimensions (L/W/H) are required for multi-item too — the
+    // dialog now always sends them. boxSize echoes either a preset
+    // label ("M", "12x12x6") or the synthesised "LxWxH" string for
+    // free-entry sizes; either way it's stored verbatim so the
+    // warehouse sees the friendly label in plan exports.
+    const L = Number(body.length);
+    const W = Number(body.width);
+    const H = Number(body.height);
+    if (![L, W, H].every((n) => Number.isFinite(n) && n > 0)) {
+      return NextResponse.json(
+        {
+          error:
+            "length, width, height (positive numbers) are required for packing profile",
+        },
+        { status: 400 },
+      );
+    }
     if (!body.boxSize || typeof body.boxSize !== "string") {
       return NextResponse.json(
         { error: "boxSize is required for multi-item packing profile" },

@@ -2459,7 +2459,14 @@ function EditPackageDialog({
   };
 
   const initialBox = parseBox(plan?.boxSize);
-  const [boxLabel, setBoxLabel] = useState<string>(plan?.boxSize ?? "");
+  // boxLabel: preset name from the dropdown ("M", "12x12x6") OR "custom"
+  // when the operator wants to enter any dimensions by hand. We seed it
+  // from the saved label when it matches a preset, otherwise default to
+  // "custom" so the L/W/H fields stay free-edit.
+  const initialIsPreset = BOX_PRESETS.some((p) => p.label === plan?.boxSize);
+  const [boxLabel, setBoxLabel] = useState<string>(
+    initialIsPreset ? (plan?.boxSize as string) : "custom",
+  );
   const [length, setLength] = useState(initialBox.l);
   const [width, setWidth] = useState(initialBox.w);
   const [height, setHeight] = useState(initialBox.h);
@@ -2470,8 +2477,9 @@ function EditPackageDialog({
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const applyPreset = (label: string) => {
+  const handlePresetChange = (label: string) => {
     setBoxLabel(label);
+    if (label === "custom") return; // leave L/W/H as-is for free editing
     const preset = BOX_PRESETS.find((p) => p.label === label);
     if (preset) {
       setLength(String(preset.l));
@@ -2490,13 +2498,25 @@ function EditPackageDialog({
 
     setSaving(true);
     try {
+      // Both paths now require explicit L/W/H — even for multi-item.
+      // Pencakers used to be able to save just a preset label, but that
+      // left the rate engine guessing at custom-cooler dimensions.
+      const L = Number(length);
+      const W = Number(width);
+      const H = Number(height);
+      if (![L, W, H].every((n) => Number.isFinite(n) && n > 0)) {
+        throw new Error("Length, width, height must all be positive numbers");
+      }
+      // boxSize string is "LxWxH" for custom, or the preset label
+      // ("M", "12x12x6") so the warehouse can still see the friendly
+      // name in plan exports.
+      const boxSizeStr =
+        boxLabel && boxLabel !== "custom" ? boxLabel : `${L}x${W}x${H}`;
+
       let body: Record<string, unknown>;
       if (isMulti) {
         if (!order.packingSignature) {
           throw new Error("Order missing packing signature");
-        }
-        if (!boxLabel) {
-          throw new Error("Pick a box size");
         }
         body = {
           signature: order.packingSignature,
@@ -2505,19 +2525,16 @@ function EditPackageDialog({
             .join(" + "),
           itemCount: order.items.length,
           totalQty: firstQty,
-          boxSize: boxLabel,
+          boxSize: boxSizeStr,
+          length: L,
+          width: W,
+          height: H,
           weight: w,
           weightFedex: weightFedex ? Number(weightFedex) : undefined,
         };
       } else {
         if (!sku) {
           throw new Error("Order has no SKU");
-        }
-        const L = Number(length);
-        const W = Number(width);
-        const H = Number(height);
-        if (![L, W, H].every((n) => Number.isFinite(n) && n > 0)) {
-          throw new Error("Length, width, height must all be positive numbers");
         }
         body = {
           sku,
@@ -2563,68 +2580,71 @@ function EditPackageDialog({
         </DialogHeader>
 
         <div className="space-y-3 text-[12.5px]">
-          {/* Box presets — always available. For single-item these drive
-              the L/W/H fields; for multi-item they're stored as the
-              boxSize label on PackingProfile. */}
+          {/* Box preset dropdown — quick-fills the L/W/H fields below.
+              "Custom…" leaves L/W/H untouched so the operator can punch
+              in any dimensions (e.g. 24×18×18 for a 4-pack styrofoam
+              cooler that doesn't match any standard preset). */}
           <div>
             <label className="block text-[11.5px] font-medium text-ink mb-1">
               Box preset
             </label>
-            <div className="flex flex-wrap gap-1.5">
+            <select
+              value={boxLabel}
+              onChange={(e) => handlePresetChange(e.target.value)}
+              className="w-full rounded border border-rule bg-surface px-2 py-1.5 text-[12.5px] text-ink focus:border-green focus:outline-none"
+            >
+              <option value="custom">Custom… (enter dimensions below)</option>
               {BOX_PRESETS.map((p) => (
-                <button
-                  key={p.label}
-                  type="button"
-                  onClick={() => applyPreset(p.label)}
-                  className={cn(
-                    "rounded border px-2 py-1 text-[11.5px] font-mono",
-                    boxLabel === p.label
-                      ? "border-green bg-green-soft text-green-ink"
-                      : "border-rule bg-surface text-ink-2 hover:border-silver-line",
-                  )}
-                >
-                  {p.label}
-                </button>
+                <option key={p.label} value={p.label}>
+                  {p.label} — {p.l}×{p.w}×{p.h} in
+                </option>
               ))}
-            </div>
+            </select>
           </div>
 
-          {/* Single-item gets explicit L/W/H so the operator can fine-tune
-              past the presets. Multi-item just uses the preset label. */}
-          {!isMulti && (
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <label className="block text-[11.5px] font-medium text-ink mb-1">
-                  L (in)
-                </label>
-                <Input
-                  value={length}
-                  onChange={(e) => setLength(e.target.value)}
-                  placeholder="13"
-                />
-              </div>
-              <div>
-                <label className="block text-[11.5px] font-medium text-ink mb-1">
-                  W (in)
-                </label>
-                <Input
-                  value={width}
-                  onChange={(e) => setWidth(e.target.value)}
-                  placeholder="13"
-                />
-              </div>
-              <div>
-                <label className="block text-[11.5px] font-medium text-ink mb-1">
-                  H (in)
-                </label>
-                <Input
-                  value={height}
-                  onChange={(e) => setHeight(e.target.value)}
-                  placeholder="15"
-                />
-              </div>
+          {/* L/W/H always editable. Preset selection prefills these;
+              Custom leaves them as-is. */}
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                L (in)
+              </label>
+              <Input
+                value={length}
+                onChange={(e) => {
+                  setLength(e.target.value);
+                  setBoxLabel("custom");
+                }}
+                placeholder="13"
+              />
             </div>
-          )}
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                W (in)
+              </label>
+              <Input
+                value={width}
+                onChange={(e) => {
+                  setWidth(e.target.value);
+                  setBoxLabel("custom");
+                }}
+                placeholder="13"
+              />
+            </div>
+            <div>
+              <label className="block text-[11.5px] font-medium text-ink mb-1">
+                H (in)
+              </label>
+              <Input
+                value={height}
+                onChange={(e) => {
+                  setHeight(e.target.value);
+                  setBoxLabel("custom");
+                }}
+                placeholder="15"
+              />
+            </div>
+          </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div>
