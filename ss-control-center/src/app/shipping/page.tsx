@@ -276,6 +276,29 @@ export default function ShippingLabelsPage() {
   // Cheap query — typically dozens of rows at most.
   const [frozenAlerts, setFrozenAlerts] = useState<ShippingFrozenAlert[]>([]);
 
+  // Merge Orders banner — groups of awaiting orders that share a delivery
+  // signature (same channel/store + recipient + address). Veeqo's public
+  // API has no merge endpoint, so the actual merge happens in Veeqo UI
+  // via the deep-link in the banner; the banner just makes them visible.
+  // See docs/wiki/merge-orders-design.md.
+  const [mergeable, setMergeable] = useState<{
+    groupCount: number;
+    orderCount: number;
+    veeqoUrl: string;
+    groups: Array<{
+      signature: string;
+      channelKind: string;
+      storeName: string | null;
+      recipient: string;
+      address: string;
+      city: string;
+      state: string;
+      zip: string;
+      orders: Array<{ id: string; orderNumber: string; storeName: string | null }>;
+    }>;
+  } | null>(null);
+  const [mergeableExpanded, setMergeableExpanded] = useState(false);
+
   // Modal state
   const [classifyModal, setClassifyModal] = useState<DashboardOrder | null>(
     null
@@ -373,6 +396,22 @@ export default function ShippingLabelsPage() {
   useEffect(() => {
     loadFrozenAlerts();
   }, [loadFrozenAlerts]);
+
+  // Mergeable groups scan — non-blocking, runs in parallel with the
+  // main dashboard load. Failure is silent (banner just doesn't show).
+  const loadMergeable = useCallback(async () => {
+    try {
+      const res = await fetch("/api/shipping/mergeable");
+      if (!res.ok) return;
+      const json = await res.json();
+      setMergeable(json);
+    } catch {
+      /* non-fatal — page works fine without the banner */
+    }
+  }, []);
+  useEffect(() => {
+    loadMergeable();
+  }, [loadMergeable]);
 
   // Index alerts by orderNumber for O(1) row lookup. Multiple ship dates for
   // the same order are exceedingly rare in this flow; if it happens, pick
@@ -644,6 +683,14 @@ export default function ShippingLabelsPage() {
         <div className="rounded-md border border-danger/30 bg-danger-tint px-4 py-3 text-[12px] text-danger">
           {error}
         </div>
+      )}
+
+      {mergeable && mergeable.groupCount > 0 && (
+        <MergeableBanner
+          mergeable={mergeable}
+          expanded={mergeableExpanded}
+          onToggle={() => setMergeableExpanded((v) => !v)}
+        />
       )}
 
       {/* Totals row — each card toggles the state filter. Clicking the same
@@ -1443,6 +1490,101 @@ function OrderRow({
       {isBought && (
         <div className="mt-1 ml-6 text-[11px] text-green-ink">
           Label already purchased.
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Banner that surfaces mergeable awaiting orders so the operator can
+// combine them in Veeqo before buying labels (Veeqo's public API has no
+// merge endpoint — see docs/wiki/merge-orders-design.md). Collapsed,
+// it's a single warn-tint strip with the counts; expanded, it lists
+// every group with recipient + address + order numbers for cross-
+// reference against Veeqo's own Mergeable view.
+function MergeableBanner({
+  mergeable,
+  expanded,
+  onToggle,
+}: {
+  mergeable: {
+    groupCount: number;
+    orderCount: number;
+    veeqoUrl: string;
+    groups: Array<{
+      signature: string;
+      channelKind: string;
+      storeName: string | null;
+      recipient: string;
+      address: string;
+      city: string;
+      state: string;
+      zip: string;
+      orders: Array<{
+        id: string;
+        orderNumber: string;
+        storeName: string | null;
+      }>;
+    }>;
+  };
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const pairWord = mergeable.groupCount === 1 ? "group" : "groups";
+  return (
+    <div className="rounded-md border border-warn/40 bg-warn-tint">
+      <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex items-center gap-2 text-left text-[12.5px] text-ink hover:text-ink-strong"
+        >
+          <Package size={14} className="text-warn-strong" />
+          <span className="font-medium">
+            {mergeable.groupCount} mergeable {pairWord}
+          </span>
+          <span className="text-ink-3">
+            ({mergeable.orderCount} orders) — same address across multiple
+            orders, combine in Veeqo to buy one label
+          </span>
+          <span className="text-ink-3">{expanded ? "▴" : "▾"}</span>
+        </button>
+        <a
+          href={mergeable.veeqoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 rounded border border-rule bg-surface px-2.5 py-1 text-[11.5px] font-medium text-ink hover:border-silver-line"
+        >
+          Open Veeqo Mergeable ↗
+        </a>
+      </div>
+      {expanded && (
+        <div className="border-t border-warn/30 px-4 py-3">
+          <ul className="space-y-2.5 text-[12px]">
+            {mergeable.groups.map((g) => (
+              <li key={g.signature} className="flex flex-col gap-0.5">
+                <div className="flex flex-wrap items-baseline gap-x-2">
+                  <span className="font-medium capitalize text-ink">
+                    {g.recipient || "—"}
+                  </span>
+                  <span className="text-ink-3">·</span>
+                  <span className="text-ink-2">
+                    {g.address}, {g.city}, {g.state} {g.zip}
+                  </span>
+                  <span className="text-ink-3">·</span>
+                  <span className="text-ink-3">
+                    {g.channelKind}
+                    {g.storeName ? ` / ${g.storeName}` : ""}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-x-2 gap-y-0.5 font-mono text-[11.5px] text-ink-2">
+                  {g.orders.map((o) => (
+                    <span key={o.id}>{o.orderNumber}</span>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
