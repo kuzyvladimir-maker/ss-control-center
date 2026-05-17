@@ -7,6 +7,10 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
+    // Bundle Factory Phase 1 — orchestrates StoreRegistry,
+    // BrandAccount, UPCPool import, MarketplaceRule, and GTINExemption
+    // tracking. See prisma/seed.ts.
+    seed: "npx tsx prisma/seed.ts",
   },
   datasource: {
     url: process.env["DATABASE_URL"],
