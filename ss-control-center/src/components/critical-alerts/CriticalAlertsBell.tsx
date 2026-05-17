@@ -34,6 +34,7 @@ export function CriticalAlertsBell() {
   const [data, setData] = useState<AlertsPayload | null>(null);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +79,21 @@ export function CriticalAlertsBell() {
     }
   }
 
+  async function acknowledgeAll() {
+    if (!data || data.alerts.length === 0) return;
+    setBulkBusy(true);
+    try {
+      await fetch("/api/alerts/acknowledge-all", { method: "POST" });
+      // Optimistic: clear everything locally. The 30s poll will reconcile
+      // if more alerts arrived while we were clicking.
+      setData((d) =>
+        d ? { ...d, alerts: [], counts: { critical: 0, high: 0, total: 0 } } : d,
+      );
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
@@ -101,9 +117,21 @@ export function CriticalAlertsBell() {
         sideOffset={6}
         className="w-[360px] gap-0 p-0 border border-rule rounded-md bg-surface"
       >
-        <div className="border-b border-rule px-3 py-2 text-[11px] font-mono uppercase tracking-[0.1em] text-ink-3">
-          Critical alerts
-          <span className="ml-2 tabular text-ink-2">{total}</span>
+        <div className="flex items-center justify-between gap-2 border-b border-rule px-3 py-2">
+          <div className="text-[11px] font-mono uppercase tracking-[0.1em] text-ink-3">
+            Critical alerts
+            <span className="ml-2 tabular text-ink-2">{total}</span>
+          </div>
+          {total > 0 && (
+            <button
+              type="button"
+              onClick={acknowledgeAll}
+              disabled={bulkBusy}
+              className="rounded border border-rule bg-surface px-2 py-0.5 text-[10.5px] font-medium text-ink-2 hover:border-silver-line hover:text-ink disabled:opacity-50"
+            >
+              {bulkBusy ? "Acknowledging…" : "Acknowledge all"}
+            </button>
+          )}
         </div>
         <div className="max-h-[420px] overflow-y-auto">
           {!data || data.alerts.length === 0 ? (
@@ -139,8 +167,8 @@ export function CriticalAlertsBell() {
                 <div className="mt-0.5 text-[11.5px] text-ink-2 leading-snug">
                   {a.message}
                 </div>
-                <div className="mt-1.5 flex gap-2 text-[11px]">
-                  {a.actionUrl && (
+                <div className="mt-2 flex items-center justify-between gap-2 text-[11px]">
+                  {a.actionUrl ? (
                     <Link
                       href={a.actionUrl}
                       onClick={() => setOpen(false)}
@@ -148,14 +176,16 @@ export function CriticalAlertsBell() {
                     >
                       View →
                     </Link>
+                  ) : (
+                    <span />
                   )}
                   <button
                     type="button"
                     onClick={() => acknowledge(a.id)}
                     disabled={busy === a.id}
-                    className="text-ink-3 hover:text-ink disabled:opacity-50"
+                    className="rounded border border-rule bg-surface px-2 py-0.5 font-medium text-ink-2 hover:border-silver-line hover:bg-bg-elev hover:text-ink disabled:opacity-50"
                   >
-                    {busy === a.id ? "…" : "Acknowledge"}
+                    {busy === a.id ? "Acknowledging…" : "Acknowledge"}
                   </button>
                 </div>
               </div>
