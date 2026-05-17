@@ -21,6 +21,10 @@ import {
   GTIN_EXEMPTION_SEED_COUNT,
 } from "./seed/gtin-exemption-init";
 import { seedUpcPool } from "./seed/upc-pool-import";
+import {
+  seedBrandConflicts,
+  PERMANENT_BLOCKLIST,
+} from "./seed/brand-conflicts";
 
 function clean(v: string | undefined): string | undefined {
   if (!v) return v;
@@ -71,37 +75,45 @@ function makePrisma(): PrismaClient {
 async function main() {
   const prisma = makePrisma();
   const t0 = Date.now();
-  console.log("\n🌱 Bundle Factory Phase 1 — seeding\n");
+  console.log("\n🌱 Bundle Factory Phase 1 + 2.0a — seeding\n");
 
-  console.log("[1/5] StoreRegistry");
+  console.log("[1/6] StoreRegistry");
   const stores = await seedStoreRegistry(prisma);
   console.log(`  · ${stores} stores upserted`);
 
-  console.log("\n[2/5] BrandAccount");
+  console.log("\n[2/6] BrandAccount");
   const accounts = await seedBrandAccounts(prisma);
   console.log(`  · ${accounts} brand accounts upserted`);
 
-  console.log("\n[3/5] UPCPool (Active Listings Report import)");
+  console.log("\n[3/6] UPCPool (Active Listings Report import)");
   const upcs = await seedUpcPool(prisma);
   // upcs may be 0 if the report isn't present — handled gracefully inside
   // seedUpcPool with a TODO log message.
 
-  console.log("\n[4/5] MarketplaceRule");
+  console.log("\n[4/6] MarketplaceRule");
   const rules = await seedMarketplaceRules(prisma);
   console.log(
     `  · ${rules}/${MARKETPLACE_RULE_SEED_COUNT} marketplace rules upserted`
   );
 
-  console.log("\n[5/5] GTINExemption");
+  console.log("\n[5/6] GTINExemption");
   const exemptions = await seedGtinExemptions(prisma);
   console.log(
     `  · ${exemptions}/${GTIN_EXEMPTION_SEED_COUNT} exemption tracker rows upserted`
   );
 
+  console.log("\n[6/6] BrandConflict (Phase 2.0a permanent blocklist)");
+  const conflicts = await seedBrandConflicts(prisma);
+  console.log(
+    `  · ${conflicts} new brand conflicts inserted ` +
+      `(${PERMANENT_BLOCKLIST.length} total in blocklist)`
+  );
+
   const ms = Date.now() - t0;
   console.log(`\n✓ Seed complete in ${ms}ms`);
   console.log(
-    `  stores=${stores}  accounts=${accounts}  upcs=${upcs}  rules=${rules}  exemptions=${exemptions}\n`
+    `  stores=${stores}  accounts=${accounts}  upcs=${upcs}  rules=${rules}  ` +
+      `exemptions=${exemptions}  conflicts=${conflicts}\n`
   );
   await prisma.$disconnect();
 }
