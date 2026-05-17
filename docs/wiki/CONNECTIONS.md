@@ -21,11 +21,12 @@
 ⇔ SKUStorePriority (новая таблица в БД)
 
 ### [Bundle Factory](bundle-factory.md)
-← Perplexity API (research стадия), OpenAI API (image gen + content backup), [Claude AI](claude-ai.md) (primary text generation), Higgsfield (image + video alternative), Cloudflare R2 (CDN storage для bundle images), GS1 GEPIR (UPC validation), [Amazon SP-API](amazon-sp-api.md) (Listings Items API + Brand Registry для Salutem Vita), [Walmart Marketplace API](walmart-api.md) (item listings)
+← Perplexity API (research стадия), OpenAI API (image gen + content backup), [Claude AI](claude-ai.md) (primary text generation), Higgsfield (image + video alternative), Cloudflare R2 (CDN storage для bundle images), GS1 GEPIR (UPC validation), [Amazon SP-API](amazon-sp-api.md) (Listings Items API + Brand Registry для Salutem Vita), [Walmart Marketplace API](walmart-api.md) (item listings), **Vladimir's Walmart Business account** (authoritative для Walmart store registry)
 → [Procurement](procurement-module.md) (новый bundle создаёт дефолтный SKUStorePriority с порядком магазинов), [Dashboard](dashboard.md) (Bundle Factory analytics card в Phase 2)
-⊂ Marketplace Rules KB (`docs/marketplace-rules/` — Amazon Gift Set Policy, Walmart Multipack, eBay, TikTok), Salutem Vita + Starfit Brand Registry, SS Control Center (auth, design system, Turso БД)
+⊂ **Marketplace Rules KB** (`docs/marketplace-rules/` — 25 файлов: Amazon Gift Set Policy, browse-nodes-grocery, gtin-exemption-process, category-files, Walmart Multipack, eBay, TikTok), Salutem Vita + Starfit Brand Registry, SS Control Center (auth, design system, Turso БД)
 ⇔ [Customer Hub](customer-hub.md) (Order ID coupling после first order на новом ASIN), [Frozen Analytics](frozen-analytics.md) (новый Frozen bundle → risk profiling), [SKU Database](sku-database-migration.md) (новый bundle → запись с cost & shipping data)
-Phase 2 модуль, заменяет placeholder "Product Listings". Concept: `BUNDLE_FACTORY_CONCEPT_v1_0.md`. Финализирован 2026-05-17.
+**Phase 0 завершён 2026-05-17:** Концепт (`BUNDLE_FACTORY_CONCEPT_v1_0.md`), Sourcing Map v1.1 (**37 магазинов, 14 Walmart**), Data Model (14 Prisma моделей в `BUNDLE_FACTORY_DATA_MODEL.md`), Marketplace Rules KB (25 файлов), Phase 1 промпт для Claude Code.
+**Phase 1 завершён 2026-05-17** (ветка `feat/bundle-factory-phase-1`): 14 Prisma моделей в `prisma/schema.prisma` + миграция (sqlite + idempotent Turso script `scripts/turso-migrate-bundle-factory-phase-1.mjs`) + 5 seed-скриптов (37 stores, 9 brand accounts, 30 marketplace rules, 63 GTIN trackers, UPC pool с graceful skip когда Active Listings Report отсутствует) + 10 API endpoints `/api/bundle-factory/{stores,upc-pool,master-bundles,channel-skus,briefs,drafts,research,marketplace-rules,generation-jobs,lifecycle-logs}` + 7 UI pages `/bundle-factory/{,briefs,drafts,master-bundles,live,stores,settings}` (Salutem Design System v1.0) + sidebar entry. Ready for Phase 2.
 
 ### [Customer Hub](customer-hub.md)
 ← [Gmail API](gmail-api.md), [Amazon SP-API](amazon-sp-api.md), [Claude AI](claude-ai.md), [Veeqo API](veeqo-api.md)
