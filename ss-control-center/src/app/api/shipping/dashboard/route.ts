@@ -15,11 +15,7 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import {
-  fetchAllOrders,
-  getProduct,
-  veeqoDateToLocal,
-} from "@/lib/veeqo/client";
+import { fetchAllOrders, getProduct } from "@/lib/veeqo/client";
 import {
   buildPackingSignature,
   requiresPackingProfile,
