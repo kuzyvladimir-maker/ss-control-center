@@ -1155,3 +1155,778 @@ model FrozenRule {
   enabled  Boolean @default(true)
   priority Int     @default(100) // lower = applied first
 }
+
+// ────────────────────────────────────────────────────────────────────
+// BUNDLE FACTORY (Phase 1) — see docs/BUNDLE_FACTORY_DATA_MODEL.md
+// ────────────────────────────────────────────────────────────────────
+//
+// All "enum-like" fields are stored as String because SQLite + Prisma do
+// not support native enum types. Allowed values are documented inline and
+// also exported as TypeScript const-unions from
+// `src/lib/bundle-factory/enums.ts` so application code stays type-safe.
+//
+// Enum reference:
+//   LifecycleState       = DRAFT | RESEARCHED | VARIATION_SELECTED | GENERATED |
+//                          APPROVED | QUEUED | SUBMITTED | PROCESSING | LIVE |
+//                          ERROR | SUSPENDED | SUNSET_REQUESTED | ARCHIVED
+//   ProductCategory      = FROZEN_GROCERY | REFRIGERATED | SHELF_STABLE |
+//                          PET_FOOD | HEALTH_BEAUTY | BABY | OTHER
+//   SalesChannel         = AMAZON_PERSONAL | AMAZON_SALUTEM | AMAZON_AMZCOM |
+//                          AMAZON_SIRIUS | AMAZON_RETAILER | WALMART | EBAY |
+//                          TIKTOK_1 | TIKTOK_2
+//   CompositionType      = SINGLE_FLAVOR | MIXED_FLAVOR | USE_CASE |
+//                          HOLIDAY_THEMED | CROSS_BRAND
+//   PipelineStage        = BRIEF | RESEARCH | VARIATION_MATRIX |
+//                          CONTENT_GENERATION | IMAGE_GENERATION |
+//                          VALIDATION | DISTRIBUTION
+//   StageStatus          = PENDING | IN_PROGRESS | COMPLETED | FAILED | SKIPPED
+//   ErrorCategory        = MISSING_REQUIRED_ATTRIBUTE | TITLE_LENGTH_EXCEEDED |
+//                          BANNED_WORD | IMAGE_URL_INACCESSIBLE | DUPLICATE_GTIN |
+//                          INVALID_BROWSE_NODE | POLICY_VIOLATION_BRAND |
+//                          POLICY_VIOLATION_BUNDLE | COMPLIANCE_GROCERY |
+//                          COMPLIANCE_FROZEN | UNKNOWN
+//   UPCStatus            = AVAILABLE | RESERVED | ASSIGNED | RETIRED | INVALID
+//   StoreType            = SUPERCENTER | NEIGHBORHOOD_MARKET | WAREHOUSE_CLUB |
+//                          STANDARD_GROCERY | DEPARTMENT_STORE | DISCOUNT_GROCERY |
+//                          PREMIUM_GROCERY | SPECIALTY
+//   StoreTier            = TIER_1 | TIER_2 | TIER_3 | TIER_4 | TIER_5
+//   GTINExemptionStatus  = NOT_REQUESTED | PENDING_APPLICATION | UNDER_REVIEW |
+//                          APPROVED | DENIED
+
+// MasterBundle — the canonical "recipe" for a gift set. One MasterBundle
+// fans out to many ChannelSKUs (one per marketplace/account combination).
+model MasterBundle {
+  id String @id @default(cuid())
+
+  // Identity
+  name          String
+  internal_slug String          @unique
+  brand         String // "Salutem Vita" | "Starfit"
+  category      String // ProductCategory
+
+  // Composition
+  composition_type String // CompositionType
+  pack_count       Int
+  total_weight_oz  Float?
+  total_weight_lb  Float?
+
+  // Pricing (in cents). cost_breakdown holds the un-summed breakdown:
+  //   { goods_cents, packaging_cents, sourcing_overhead_cents }
+  cost_breakdown        String // JSON
+  estimated_cost_cents  Int
+  suggested_price_cents Int
+
+  // Packaging spec — { cooler_size, gel_packs_qty, outer_box, ... }
+  packaging_spec String // JSON
+
+  // Master images (default across all channels)
+  main_image_url        String
+  secondary_images      String // JSON array of URLs
+  image_generation_meta String? // JSON
+
+  // Lifecycle
+  lifecycle_status String @default("DRAFT") // LifecycleState
+
+  // Relations
+  components            BundleComponent[]
+  channel_skus          ChannelSKU[]
+  lifecycle_logs        ListingLifecycleLog[]
+  generation_job_id     String?               @unique
+  generation_job        GenerationJob?        @relation(fields: [generation_job_id], references: [id])
+  research_pool_seed_id String?
+  research_pool_seed    ResearchPool?         @relation(fields: [research_pool_seed_id], references: [id])
+
+  // Audit
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  created_by_user_id String?
+
+  @@index([brand])
+  @@index([category])
+  @@index([lifecycle_status])
+  @@index([created_at])
+}
+
+// BundleComponent — one input product inside a MasterBundle (e.g. "Jimmy
+// Dean Sausage, Egg & Cheese × 12"). A MasterBundle typically has 1–5.
+model BundleComponent {
+  id               String       @id @default(cuid())
+  master_bundle_id String
+  master_bundle    MasterBundle @relation(fields: [master_bundle_id], references: [id], onDelete: Cascade)
+
+  // Product identity
+  product_name       String
+  manufacturer_brand String
+  manufacturer_upc   String?
+  flavor             String?
+  variant            String?
+
+  // Quantity & weight
+  qty             Int
+  unit_weight_oz  Float?
+  unit_weight_lb  Float?
+
+  // Cost & sourcing
+  unit_price_cents Int
+  source_store_id  String?
+  source_store     StoreRegistry? @relation(fields: [source_store_id], references: [id])
+  source_url       String?
+
+  // Compliance metadata
+  ingredients     String?
+  allergens       String? // JSON array
+  storage_temp    String? // "Frozen" | "Refrigerated" | "Shelf-stable"
+  expiration_days Int?
+
+  // Donor image pool (used in Stage 5 image gen)
+  donor_image_urls String // JSON array
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([master_bundle_id])
+  @@index([manufacturer_brand])
+}
+
+// ChannelSKU — one listing on one marketplace under one brand account.
+// A MasterBundle typically has 5–9 ChannelSKUs (one per active channel).
+model ChannelSKU {
+  id               String       @id @default(cuid())
+  master_bundle_id String
+  master_bundle    MasterBundle @relation(fields: [master_bundle_id], references: [id], onDelete: Cascade)
+
+  // Channel binding
+  channel          String // SalesChannel
+  brand_account_id String?
+  brand_account    BrandAccount? @relation(fields: [brand_account_id], references: [id])
+
+  // Identity
+  sku          String   @unique // XX-XXXX-XXXX
+  upc          String   @unique
+  upc_pool_id  String?  @unique
+  upc_pool     UPCPool? @relation(fields: [upc_pool_id], references: [id])
+
+  // Marketplace IDs (populated after publication)
+  asin              String?
+  walmart_item_id   String?
+  ebay_item_id      String?
+  tiktok_product_id String?
+
+  // Content (adapted per channel)
+  title         String
+  bullets       String // JSON array of 5 strings
+  description   String
+  search_terms  String?
+  attributes    String // JSON object
+
+  // Category placement
+  channel_category    String?
+  channel_browse_node String?
+
+  // Pricing
+  price_cents          Int
+  business_price_cents Int?
+
+  // Lifecycle
+  lifecycle_status String @default("DRAFT") // LifecycleState
+
+  // Publication tracking
+  submitted_at  DateTime?
+  processing_at DateTime?
+  live_at       DateTime?
+  live_url      String?
+  last_error_at DateTime?
+  errors        String? // JSON array
+
+  // Sales tracking
+  units_sold_30d    Int? @default(0)
+  revenue_30d_cents Int? @default(0)
+
+  // Relations
+  lifecycle_logs ListingLifecycleLog[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([master_bundle_id])
+  @@index([channel])
+  @@index([lifecycle_status])
+  @@index([asin])
+  @@index([walmart_item_id])
+}
+
+// ResearchPool — products discovered by Stage 2 (Research). One row per
+// scraped product; used as a candidate pool when drafting a bundle.
+model ResearchPool {
+  id String @id @default(cuid())
+
+  // Search context
+  research_query    String
+  generation_job_id String?
+  generation_job    GenerationJob? @relation(fields: [generation_job_id], references: [id])
+
+  // Product data
+  product_name String
+  brand        String
+  manufacturer String?
+  upc          String?
+
+  // Variations
+  flavors    String? // JSON array
+  pack_sizes String? // JSON array
+  weight_oz  Float?
+  weight_lb  Float?
+
+  // Composition
+  ingredients     String?
+  allergens       String? // JSON array
+  nutrition       String? // JSON
+  storage_temp    String?
+  expiration_days Int?
+
+  // Reference images
+  reference_image_urls String // JSON array
+
+  // Pricing & sourcing
+  avg_price_cents    Int?
+  source_store_id    String?
+  source_store       StoreRegistry? @relation(fields: [source_store_id], references: [id])
+  source_url         String?
+  last_seen_in_stock DateTime?
+
+  // Quality scoring
+  freshness_score Float?
+
+  // Back-relation: bundles seeded from this product
+  master_bundles MasterBundle[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([brand])
+  @@index([generation_job_id])
+  @@index([last_seen_in_stock])
+}
+
+// BundleDraft — work-in-progress bundle (Stages 3–6 of pipeline). After
+// approval it converts to a MasterBundle + ChannelSKU set.
+model BundleDraft {
+  id                String        @id @default(cuid())
+  generation_job_id String
+  generation_job    GenerationJob @relation(fields: [generation_job_id], references: [id], onDelete: Cascade)
+
+  // Draft state
+  draft_name       String
+  brand            String
+  category         String // ProductCategory
+  composition_type String // CompositionType
+  pack_count       Int
+
+  // Composition snapshot (selected components from ResearchPool)
+  draft_components String // JSON array
+
+  // Generated content (Stage 4)
+  draft_title        String?
+  draft_bullets      String? // JSON array
+  draft_description  String?
+  draft_search_terms String?
+
+  // Generated images (Stage 5)
+  draft_main_image_url   String?
+  draft_secondary_images String? // JSON array
+
+  // Cost estimate
+  draft_cost_cents            Int?
+  draft_suggested_price_cents Int?
+
+  // Status
+  status          String  @default("VARIATION_SELECTED") // LifecycleState
+  approval_notes  String?
+
+  // Selected channels for distribution
+  target_channels String // JSON array
+
+  // After approval — link to created MasterBundle
+  master_bundle_id String? @unique
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([generation_job_id])
+  @@index([status])
+}
+
+// StoreRegistry — pre-seeded registry of 37 sourcing stores (Walmart, BJ's,
+// Target, Publix, Sam's, Costco, ALDI, Whole Foods, Trader Joe's, Fresh
+// Market, Winn-Dixie). See docs/BUNDLE_FACTORY_SOURCING_MAP.md.
+model StoreRegistry {
+  id         String @id // e.g. "walmart_sc_us19"
+  name       String
+  chain      String
+  store_type String // StoreType
+  tier       String // StoreTier
+
+  // Location
+  address          String
+  latitude         Float
+  longitude        Float
+  distance_mi      Float // from 1162 Kapp Dr
+  google_place_id  String?
+  google_maps_url  String?
+
+  // Operational
+  phone       String?
+  hours_text  String?
+  hours_json  String? // JSON
+  website_url String?
+
+  // Delivery
+  delivery_program    String?
+  delivery_cost_cents Int     @default(0)
+  delivery_notes      String?
+
+  // Status
+  is_active              Boolean   @default(true)
+  is_membership_required Boolean   @default(false)
+  membership_active      Boolean   @default(false)
+  membership_renewal     DateTime?
+
+  // Default priority used as seed when wiring SKUStorePriority elsewhere
+  default_priority Int
+
+  // Operational metadata
+  last_validated_at DateTime?
+  notes             String?
+
+  // Relations
+  components_sourced BundleComponent[]
+  research_pool      ResearchPool[]
+  fallback_from      ProductSourceFallback[] @relation("PrimarySource")
+  fallback_to        ProductSourceFallback[] @relation("FallbackSource")
+  stock_checks       StockCheckLog[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([chain])
+  @@index([tier])
+  @@index([is_active])
+  @@index([distance_mi])
+}
+
+// ProductSourceFallback — substitute graph: when primary store is OOS for
+// a manufacturer UPC, try these fallbacks in priority order.
+model ProductSourceFallback {
+  id String @id @default(cuid())
+
+  manufacturer_upc String
+  product_name     String
+
+  primary_store_id String
+  primary_store    StoreRegistry @relation("PrimarySource", fields: [primary_store_id], references: [id])
+
+  fallback_store_id String
+  fallback_store    StoreRegistry @relation("FallbackSource", fields: [fallback_store_id], references: [id])
+
+  fallback_priority Int
+
+  // Stats — populated by the sourcing pipeline as it runs
+  primary_oos_count     Int @default(0)
+  fallback_used_count   Int @default(0)
+  fallback_failed_count Int @default(0)
+
+  notes String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([manufacturer_upc, primary_store_id, fallback_store_id])
+  @@index([manufacturer_upc])
+}
+
+// StockCheckLog — audit of stock-availability checks (pre-publication
+// re-check, quarterly sourcing validation, OOS pattern analytics).
+model StockCheckLog {
+  id String @id @default(cuid())
+
+  store_id String
+  store    StoreRegistry @relation(fields: [store_id], references: [id])
+
+  manufacturer_upc String?
+  product_name     String?
+
+  in_stock     Boolean
+  price_cents  Int?
+  source_url   String?
+  raw_response String? // JSON
+
+  checked_at   DateTime @default(now())
+  check_method String // "scraper" | "manual" | "api"
+
+  @@index([store_id])
+  @@index([manufacturer_upc])
+  @@index([checked_at])
+}
+
+// UPCPool — pool of UPC codes Vladimir owns (prefixes 742259/789232/617261).
+// Pre-seeded from the Active Listings Report; replenished manually later.
+model UPCPool {
+  id            String  @id @default(cuid())
+  upc           String  @unique
+  upc_prefix    String
+  gs1_validated Boolean @default(false)
+  gs1_owner     String?
+
+  status String @default("AVAILABLE") // UPCStatus
+
+  // If ASSIGNED — which ChannelSKU owns this UPC (1:1)
+  assigned_to_id String?     @unique
+  assigned_to    ChannelSKU?
+
+  // If RESERVED — which BundleDraft holds it (with TTL)
+  reserved_for_id String?
+  reserved_at     DateTime?
+  reserved_until  DateTime?
+
+  acquired_from String?
+  acquired_at   DateTime?
+  notes         String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([status])
+  @@index([upc_prefix])
+  @@index([gs1_validated])
+}
+
+// GTINExemption — per-brand × channel × category exemption status.
+// Vladimir submits applications for Salutem Vita / Starfit; this tracks them.
+model GTINExemption {
+  id       String @id @default(cuid())
+  brand    String // "Salutem Vita" | "Starfit"
+  channel  String // SalesChannel
+  category String // ProductCategory
+
+  status String @default("NOT_REQUESTED") // GTINExemptionStatus
+
+  application_date    DateTime?
+  approval_date       DateTime?
+  denial_reason       String?
+  application_pdf_url String?
+  reference_id        String? // Amazon case ID
+
+  notes String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([brand, channel, category])
+  @@index([status])
+}
+
+// BrandAccount — mapping of brand × channel × account (brand owner vs
+// authorized seller). E.g. Salutem Vita on AMAZON_SALUTEM is the brand
+// owner; the same brand on AMAZON_PERSONAL is authorized seller.
+model BrandAccount {
+  id                   String  @id @default(cuid())
+  brand                String
+  channel              String // SalesChannel
+  is_brand_owner       Boolean
+  is_authorized_seller Boolean
+  selling_partner_id   String? // SP-API merchant ID / Walmart seller ID
+
+  is_active Boolean @default(true)
+  notes     String?
+
+  channel_skus ChannelSKU[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([brand, channel])
+  @@index([brand])
+  @@index([channel])
+}
+
+// GenerationJob — one execution of the pipeline (brief → drafts → bundles).
+model GenerationJob {
+  id String @id @default(cuid())
+
+  // Brief input (Stage 1) — full form from the user
+  brief String // JSON
+
+  // Status
+  current_stage String @default("BRIEF") // PipelineStage
+  status        String @default("PENDING") // StageStatus
+
+  // Stats
+  bundles_target    Int
+  bundles_generated Int @default(0)
+  bundles_approved  Int @default(0)
+  bundles_published Int @default(0)
+  bundles_error     Int @default(0)
+
+  // Resource consumption
+  openai_tokens_used Int @default(0)
+  perplexity_queries Int @default(0)
+  images_generated   Int @default(0)
+  cost_cents         Int @default(0)
+
+  user_id String?
+  notes   String?
+
+  // Relations
+  stages         GenerationStage[]
+  research_pool  ResearchPool[]
+  bundle_drafts  BundleDraft[]
+  master_bundles MasterBundle[]
+
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  completed_at DateTime?
+
+  @@index([status])
+  @@index([current_stage])
+}
+
+// GenerationStage — per-stage execution log for a GenerationJob.
+model GenerationStage {
+  id                String        @id @default(cuid())
+  generation_job_id String
+  generation_job    GenerationJob @relation(fields: [generation_job_id], references: [id], onDelete: Cascade)
+
+  stage  String // PipelineStage
+  status String @default("PENDING") // StageStatus
+
+  started_at   DateTime?
+  completed_at DateTime?
+  duration_ms  Int?
+
+  input_snapshot  String? // JSON
+  output_snapshot String? // JSON
+  error           String?
+
+  @@index([generation_job_id])
+  @@index([stage])
+}
+
+// MarketplaceRule — DB cache of the Marketplace Rules KB. The Markdown
+// files in docs/marketplace-rules/ remain the source of truth; this table
+// is for hot lookup at validation/generation time.
+model MarketplaceRule {
+  id String @id @default(cuid())
+
+  channel    String // SalesChannel
+  category   String? // ProductCategory (null = global to channel)
+  rule_key   String
+  rule_value String // JSON (scalar or object)
+
+  // Provenance
+  source_doc_path String
+  source_url      String?
+  scraped_at      DateTime?
+  validated_at    DateTime?
+  is_current      Boolean   @default(true)
+
+  notes String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([channel, category, rule_key])
+  @@index([channel])
+  @@index([rule_key])
+  @@index([is_current])
+}
+
+// ErrorPattern — accumulator of marketplace errors and their fix strategies
+// (Stage 6 learning loop).
+model ErrorPattern {
+  id String @id @default(cuid())
+
+  channel               String // SalesChannel
+  error_category        String // ErrorCategory
+  error_code            String
+  error_message_pattern String
+
+  // Fix strategy
+  fix_strategy     String // "AUTO_FIX_TITLE_TRUNCATE" | "AUTO_FIX_ADD_ATTRIBUTE" | "ESCALATE"
+  fix_handler_name String?
+
+  // Stats
+  occurrences       Int       @default(0)
+  auto_fix_success  Int       @default(0)
+  auto_fix_failure  Int       @default(0)
+  last_seen         DateTime?
+
+  // Documentation
+  description    String?
+  example_input  String? // JSON
+  example_output String? // JSON
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([channel])
+  @@index([error_category])
+  @@index([error_code])
+}
+
+// ListingLifecycleLog — audit trail for MasterBundle and ChannelSKU
+// lifecycle_status transitions.
+model ListingLifecycleLog {
+  id String @id @default(cuid())
+
+  // What changed
+  entity_type String // "MasterBundle" | "ChannelSKU"
+  entity_id   String
+
+  master_bundle_id String?
+  master_bundle    MasterBundle? @relation(fields: [master_bundle_id], references: [id], onDelete: Cascade)
+
+  channel_sku_id String?
+  channel_sku    ChannelSKU? @relation(fields: [channel_sku_id], references: [id], onDelete: Cascade)
+
+  // Transition
+  from_status String? // LifecycleState
+  to_status   String // LifecycleState
+
+  // Context
+  trigger String // "user_approve" | "auto_publish" | "marketplace_error" | "sourcing_oos" | ...
+  details String? // JSON
+  user_id String?
+
+  created_at DateTime @default(now())
+
+  @@index([entity_type, entity_id])
+  @@index([master_bundle_id])
+  @@index([channel_sku_id])
+  @@index([created_at])
+}
+
+// ============================================================================
+// PHASE 2.0a — Listing Audit Tool
+// Scans existing active listings across 5 Amazon accounts, scores risk of
+// foreign-brand violations (like the 2026-05-17 Retailer Distributor block),
+// and tracks remediation through Bundle Factory's content/image pipelines.
+// ============================================================================
+
+model ListingAuditScan {
+  id           String @id @default(cuid())
+  initiated_by String // 'vladimir' | 'system_cron'
+
+  status String @default("pending") // 'pending' | 'running' | 'completed' | 'failed'
+
+  started_at   DateTime  @default(now())
+  completed_at DateTime?
+
+  accounts_scanned String // JSON array of account keys
+
+  total_listings  Int @default(0)
+  blocked_count   Int @default(0)
+  warning_count   Int @default(0)
+  low_risk_count  Int @default(0)
+  compliant_count Int @default(0)
+
+  error_message String?
+
+  audit_results ListingAuditResult[]
+
+  @@index([initiated_by, started_at])
+  @@index([status])
+}
+
+model ListingAuditResult {
+  id      String @id @default(cuid())
+  scan_id String
+
+  asin    String
+  sku     String?
+  account String // 'SALUTEM' | 'PERSONAL' | 'AMZCOM' | 'SIRIUS' | 'RETAILER'
+
+  title                String
+  brand                String
+  browse_node          String?
+  main_image_url       String?
+  original_bullets     String // JSON array
+  original_description String @default("")
+
+  risk_score    Int    @default(0)
+  risk_category String @default("COMPLIANT") // 'BLOCKED' | 'WARNING' | 'LOW_RISK' | 'COMPLIANT'
+  risk_reasons  String @default("[]") // JSON array
+
+  detected_brands   String? // JSON array
+  detected_logos    String? // JSON array (from Vision check)
+  vision_cost_cents Int     @default(0)
+
+  remediation_status String @default("PENDING") // 'PENDING' | 'REGENERATING' | 'UPDATED' | 'SKIPPED' | 'FAILED' | 'MANUAL_REVIEW'
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  scan ListingAuditScan @relation(fields: [scan_id], references: [id], onDelete: Cascade)
+  // 1:1 back-reference — actual FK column (audit_result_id) lives on
+  // ListingRemediation. We query by audit_result_id from there.
+  remediation ListingRemediation?
+
+  @@index([scan_id, risk_category])
+  @@index([asin])
+  @@index([account, risk_category])
+  @@index([remediation_status])
+}
+
+model ListingRemediation {
+  id              String @id @default(cuid())
+  audit_result_id String @unique
+
+  status String @default("pending") // 'pending' | 'generating' | 'validated' | 'updating' | 'completed' | 'failed' | 'manual_review'
+
+  original_title       String
+  new_title            String?
+  original_bullets     String // JSON array
+  new_bullets          String? // JSON array
+  original_description String
+  new_description      String?
+  original_image_url   String?
+  new_image_url        String?
+
+  ai_cost_cents Int @default(0)
+
+  sp_api_response String? // JSON
+  sp_api_error    String?
+
+  started_at   DateTime  @default(now())
+  completed_at DateTime?
+
+  audit_result ListingAuditResult @relation(fields: [audit_result_id], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+// Permanent blocklist seeded from the 2026-05-17 incident (5 ASINs blocked
+// by Amazon for Trademark Logo Misuse under Salutem Vita). New incidents
+// can be appended here so risk-scoring picks them up automatically.
+model BrandConflict {
+  id      String  @id @default(cuid())
+  asin    String?
+  account String?
+
+  foreign_brand    String
+  product_keywords String // JSON array
+
+  incident_date DateTime
+  incident_type String // 'trademark_logo_misuse' | 'ip_complaint'
+  amazon_action String? // 'asin_block' | 'account_suspension'
+
+  notes String?
+
+  status      String    @default("active")
+  resolved_at DateTime?
+
+  created_at DateTime @default(now())
+
+  @@index([foreign_brand])
+  @@index([asin])
+  @@index([status])
+}

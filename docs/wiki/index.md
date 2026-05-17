@@ -23,6 +23,7 @@
 - [Sales Cards on Dashboard](sales-cards-dashboard.md) — 5-period gross revenue + linear forecast (Dashboard) — 2026-05-12
 - [Procurement Module](./procurement-module.md) — мобильный закуп товара в магазинах (Publix, Walmart, BJ's). Выборка из Veeqo по тегам, фильтрация workflow-меток, разметка через `Placed` / `Need More`. Будущая основа агента-автозакупщика.
 - [Bundle Factory](bundle-factory.md) — фабрика по массовому созданию gift sets под Salutem Vita / Starfit brand для 9 каналов (5 Amazon + Walmart + eBay + 2 TikTok). AI-pipeline: research → variation matrix → content/images → API push + flat file. **Phase 0 завершён 2026-05-17**: Концепт, Sourcing Map (37 магазинов в radius 10mi, **14 Walmart**), Data Model (14 Prisma моделей), Marketplace Rules KB (25 файлов Amazon/Walmart/eBay/TikTok), Phase 1 промпт для Claude Code — готово к implementation.
+- [Listing Audit Tool](listing-audit-tool.md) — Bundle Factory Phase 2.0a. Сканирует 5 Amazon аккаунтов на foreign-brand риски (по образцу 2026-05-17 incident), 5-rule risk score, batch remediation. Shipped 2026-05-17.
 - [Shipping Labels](shipping-labels.md) — план + покупка labels через Veeqo. Полная спец v1.0: [shipping-labels-page-v1.md](shipping-labels-page-v1.md) — dashboard + AI classify + packing profiles (2026-05-12)
 - [Shipment Monitor](shipment-monitor.md) — мониторинг доставок, детекция проблем, подготовка claims (спроектирован, после Phase 1)
 - [Customer Hub](customer-hub.md) — Messages, A-to-Z, Chargebacks, Feedback (в разработке)
