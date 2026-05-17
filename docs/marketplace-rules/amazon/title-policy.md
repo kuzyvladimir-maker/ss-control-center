@@ -2,14 +2,17 @@
 
 > **Source:** https://sellercentral.amazon.com/help/hub/reference/external/G50R34A8WJ58JAYK (Title Style Guide)
 > **Last verified:** 2026-05-17
+> **Last updated:** 2026-05-17 (HARD BLOCK rule after Retailer Distributor account suspension)
 > **Applies to:** All Amazon listings
-> **Priority:** P0 (нарушение = suppression / SEO penalty)
+> **Priority:** P0 (нарушение = suppression / SEO penalty / account suspension)
 
 ---
 
 ## TL;DR
 
 Title — главное место для keyword visibility и compliance. Max **200 chars** (включая пробелы) для большинства категорий, **80-150** для Pet Food и некоторых others. Должен включать brand + product type + key descriptors + size/count. Не должен включать promotional text, emoji, special chars (кроме `-` `&` `,` `()` `:`).
+
+🚨 **HARD RULE (added 2026-05-17):** Если brand field = Salutem Vita или Starfit — **НИКАКИХ** чужих брендов в title. Этот pattern привёл к блокировке 5 ASINs.
 
 ---
 
@@ -39,7 +42,7 @@ Bundle Factory check: `title.length <= 200`. Если экспорт показ�
 
 **Pattern Vladimir для gift sets:**
 ```
-Salutem Vita – {Product Description}, {Size/Weight}, Gift Set – Pack of {N}
+Salutem Vita – {Generic Product Description}, {Size/Weight}, Gift Set – Pack of {N}
 ```
 
 Примеры из его existing каталога:
@@ -49,6 +52,7 @@ Salutem Vita – {Product Description}, {Size/Weight}, Gift Set – Pack of {N}
 
 ### 3. Запрещённые элементы
 
+- ❌ **Foreign brand names** под own brand (Salutem Vita / Starfit) → HARD BLOCK (см. секцию ниже)
 - ❌ **Emoji** — Amazon strict on emojis in titles. Хотя Vladimir использует эмодзи в bullets (это OK), в title — категорически нет.
 - ❌ **CAPS LOCK** — кроме acronyms ("USB", "BBQ", "FDA")
 - ❌ **Promotional phrases:** "Best Seller", "Buy Now", "100% Authentic", "Sale", "On Sale", "Free Shipping", "Limited Time"
@@ -71,6 +75,35 @@ Bundle title обязан включать:
 - **Total weight** или **per-unit weight** (e.g. "4.3 oz", "3.6 pounds")
 
 Без этого Amazon classifier не сможет правильно categorize.
+
+### 6. 🚨 NO FOREIGN BRANDS RULE (HARD BLOCK)
+
+**Добавлено 2026-05-17 после блокировки Retailer Distributor аккаунта.**
+
+Если **brand field** = Salutem Vita или Starfit (т.е. это листинг под нашим брендом), то title **НЕ ДОЛЖЕН** содержать **ЛЮБОЙ** из этих foreign brand names:
+
+**5 brands из блокированных ASINs (permanent blocklist):**
+- Goya
+- Kraft
+- Ore-Ida (and "Ore Ida")
+- El Monterey
+- Oh Snap! (and "Oh Snap")
+
+**High-risk consumable brands (typical sourcing pool):**
+- Lunchables, Uncrustables, Jimmy Dean, Smucker's, Eggland's
+- Hormel, Tyson, Stouffer, Healthy Choice, Marie Callender
+- Hot Pockets, Lean Cuisine, Eggo, Bagel Bites, TGI Friday
+- Pillsbury, Quaker, Kellogg, Cheerios, Pop-Tarts, Frito-Lay
+- Doritos, Lay's, Pringles, Cheez-It, Goldfish, Cheetos
+
+**Common gift basket components:**
+- Ghirardelli, Hershey, Hershey's, Lindt, Godiva, Ferrero
+- Coca-Cola, Coke, Pepsi, Sprite, Dr Pepper, Mountain Dew
+- Starbucks, Folgers, Maxwell House, Nescafe, Keurig
+
+Если bundle factory детектирует ЛЮБОЙ из этих brand names в title под Salutem Vita / Starfit — **листинг блокируется**. Не warning, не review queue, а hard block. AI должен переписать title без brand reference.
+
+См. также: `prohibited-keywords.md` — полный consolidated list.
 
 ---
 
@@ -105,13 +138,14 @@ Salutem Vita – Pizza with Pepperoni Lunch Kit, 4.3 oz, Gift Set – Pack of 12
 Анализ:
 - 79 chars (well под limit)
 - Brand первым словом ✓
-- Product description clear ✓
+- Product description clear (generic terms, no foreign brand) ✓
 - Size (4.3 oz) указан ✓
 - "Gift Set" присутствует ✓
 - Pack count (12) указан ✓
 - Нет emojis / caps / promotional language ✓
+- Нет foreign brand names ✓
 
-### ❌ Incorrect — несколько ошибок
+### ❌ Incorrect — multiple violations
 
 ```
 🎁 BEST Salutem Vita Lunchables Pizza Gift Set!! - Pack of 12 *FREE SHIPPING*
@@ -120,27 +154,36 @@ Salutem Vita – Pizza with Pepperoni Lunch Kit, 4.3 oz, Gift Set – Pack of 12
 Ошибки:
 - Emoji 🎁 в title (forbidden)
 - CAPS "BEST" (subjective claim в caps)
-- "Lunchables" (chужой brand IP)
+- "Lunchables" (foreign brand → HARD BLOCK)
 - Восклицательные знаки `!!`
 - "FREE SHIPPING" promotional phrase
 - `*` special character
 
-### ⚠️ Edge case
+### 🚨 BLOCKED — каузальный паттерн от 2026-05-17 блокировки
 
 ```
-Salutem Vita Jimmy Dean Breakfast Gift Set, Pack of 12
+Salutem Vita – Kraft Spongebob Mac & Cheese Microwavable Cups, 4ct Gift Set – Pack of 6
+Salutem Vita – Goya Baked Ripe Plantains, Sweet and Ready-to-Eat, Gift Set, 11 oz – Pack of 5
+Salutem Vita – El Monterey Burritos Variety Pack, 32 oz, 8 count, Gift Set – Pack of 3
+Salutem Vita – Ore-Ida Gluten-Free Extra Crispy Tater Tots, 28 oz – Pack of 6
+Salutem Vita – Oh Snap! Dill Pickle Snacking Cuts, 3.25 oz Gift Set – Pack of 3
 ```
 
-Это **на грани**. Amazon может classify это как:
-- ✅ Allowed (если Jimmy Dean указано как content description, не brand)
-- ❌ Violation (если interpret как using "Jimmy Dean" в brand position)
+Эти 5 листингов были HARD BLOCKED Amazon-ом 2026-05-17 за **Trademark Logo Misuse**.
+Каузальный паттерн: `[Own Brand] – [Foreign Brand] [Product]` — implies co-branding/endorsement
+без trademark authorization. Compliance gate **никогда** не позволит создать листинг с этим паттерном.
 
-**Safer rewrite:**
+**Safe rewrites (Bundle Factory будет автоматически предлагать):**
 ```
-Salutem Vita – Breakfast Sandwich Gift Set, 4.9 oz, Pack of 12
+Salutem Vita – Microwavable Mac & Cheese Cups Gift Set, 4 oz, Pack of 6
+Salutem Vita – Ripe Plantains Snack Gift Set, Sweet & Ready-to-Eat, 11 oz – Pack of 5
+Salutem Vita – Frozen Burrito Variety Gift Pack, Classic Mexican Flavors, 32 oz – Pack of 3
+Salutem Vita – Extra Crispy Tater Tots Family Gift Set, Gluten-Free, 28 oz – Pack of 6
+Salutem Vita – Dill Pickle Snacking Gift Set, Spicy & Sweet Pickle Bites, 3.25 oz – Pack of 3
 ```
 
-Or include Jimmy Dean в description / bullets, not title.
+Generic product description вместо brand name. Bundle Factory pipeline создаёт title через AI
+с этим constraint built-in (см. compliance-gate module).
 
 ---
 
@@ -149,6 +192,7 @@ Or include Jimmy Dean в description / bullets, not title.
 ```typescript
 function validateTitle(title: string, brand: string, channel: SalesChannel): ComplianceResult {
   const issues: string[] = [];
+  let blocked = false;
 
   // Length
   if (title.length > 200) issues.push('Title > 200 chars');
@@ -165,21 +209,51 @@ function validateTitle(title: string, brand: string, channel: SalesChannel): Com
   const forbidden = title.match(/[<>™®©*?!]/g);
   if (forbidden) issues.push(`Special chars: ${forbidden.join(', ')}`);
 
-  // Foreign brand в позиции brand
-  const FOREIGN_BRANDS = ['Lunchables', 'Uncrustables', 'Jimmy Dean', 'Smucker\'s', 'Eggland\'s', 'Hormel'];
-  for (const fb of FOREIGN_BRANDS) {
-    const idx = title.indexOf(fb);
-    if (idx > 0 && idx < 30) {
-      // Foreign brand в первых 30 chars = подозрительно
-      issues.push(`[warning] Foreign brand "${fb}" в начале title — может быть policy violation`);
+  // HARD BLOCK: foreign brand anywhere в title под нашим брендом
+  // ОБНОВЛЕНО 2026-05-17 после блокировки Retailer Distributor аккаунта.
+  // 5 ASINs были заблокированы за паттерн "Salutem Vita – [Foreign Brand] Product":
+  //   B0FRG1Y6SN (Goya), B0FLWN3KZ9 (El Monterey), B0FNKR2P3Y (Ore-Ida),
+  //   B0FJQK4S45 (Oh Snap!), B0FBML98G3 (Kraft).
+  // Policy: НИКАКИХ чужих брендов в title если brand field = Salutem Vita / Starfit.
+
+  const OWN_BRANDS = ['Salutem Vita', 'Starfit'];
+  const isOwnBrand = OWN_BRANDS.some(b => brand.toLowerCase().includes(b.toLowerCase()));
+
+  const FORBIDDEN_FOREIGN_BRANDS_IN_TITLE = [
+    // Brands which led to 2026-05-17 blocking (HARD BLOCK — permanent blocklist)
+    'Goya', 'Kraft', 'Ore-Ida', 'Ore Ida', 'El Monterey', 'Oh Snap', 'Oh Snap!',
+    // High-risk consumable brands (Vladimir's typical sourcing pool)
+    'Lunchables', 'Uncrustables', 'Jimmy Dean', "Smucker's", "Eggland's",
+    'Hormel', 'Tyson', 'Stouffer', 'Healthy Choice', 'Marie Callender',
+    'Hot Pockets', 'Lean Cuisine', 'Eggo', 'Bagel Bites', 'TGI Friday',
+    'Pillsbury', 'Quaker', 'Kellogg', 'Cheerios', 'Pop-Tarts', 'Frito-Lay',
+    'Doritos', "Lay's", 'Pringles', 'Cheez-It', 'Goldfish', 'Cheetos',
+    // Common gift basket components
+    'Ghirardelli', 'Hershey', "Hershey's", 'Lindt', 'Godiva', 'Ferrero',
+    'Coca-Cola', 'Coke', 'Pepsi', 'Sprite', 'Dr Pepper', 'Mountain Dew',
+    'Starbucks', 'Folgers', 'Maxwell House', 'Nescafe', 'Keurig',
+  ];
+
+  if (isOwnBrand) {
+    for (const fb of FORBIDDEN_FOREIGN_BRANDS_IN_TITLE) {
+      // Escape special regex characters from brand name
+      const escaped = fb.replace(/[.*+?^${}()|[\]\\]/g, c => `\\${c}`);
+      const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+      if (regex.test(title)) {
+        issues.push(
+          `[BLOCKED] Foreign brand "${fb}" detected in title under own brand "${brand}". ` +
+          `Pattern caused 5 ASIN blocks on 2026-05-17. Reword title to remove brand reference.`
+        );
+        blocked = true;
+      }
     }
   }
 
   // Pack info
-  if (!/Pack of \d+|\d+ Count|Pack of \d+/i.test(title))
+  if (!/Pack of \d+|\d+ Count/i.test(title))
     issues.push('[warning] Pack size/count не указан в title');
 
-  return { passed: issues.length === 0, issues };
+  return { passed: !blocked && issues.length === 0, blocked, issues };
 }
 ```
 
@@ -189,7 +263,8 @@ function validateTitle(title: string, brand: string, channel: SalesChannel): Com
 
 - **Style guide:** https://sellercentral.amazon.com/help/hub/reference/external/G50R34A8WJ58JAYK
 - **Title length per category:** https://sellercentral.amazon.com/help/hub/reference/external/GYTR6SYGFA5E3EQC
-- **Internal:** [`gift-set-policy.md`](gift-set-policy.md), [`bundle-policy.md`](bundle-policy.md)
+- **Trademark policy:** https://sellercentral.amazon.com/help/hub/reference/external/GZUQ6GBBXQVHQKF2
+- **Internal:** [`gift-set-policy.md`](gift-set-policy.md), [`bundle-policy.md`](bundle-policy.md), [`prohibited-keywords.md`](prohibited-keywords.md)
 
 ---
 

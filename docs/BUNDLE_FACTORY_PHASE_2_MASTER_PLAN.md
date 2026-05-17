@@ -1,15 +1,24 @@
 # Bundle Factory — Phase 2 Master Plan (Revised)
 
 > **Created:** 2026-05-17
-> **Last updated:** 2026-05-17 (revised scope: Amazon + Walmart only, no TikTok)
-> **Status:** Phase 1 ✅ complete; Phase 2.1 next
-> **Total est. work:** ~25-35 hours of Claude Code autonomous execution, split across 5 sub-phases
+> **Last updated:** 2026-05-17 (added Phase 2.0 + Phase 2.0a Compliance Gate after Retailer Distributor account block)
+> **Status:** Phase 1 ✅ complete; Phase 2.0a Audit Tool next → Phase 2.0 Compliance Gate → Phase 2.1+ pipeline
+> **Total est. work:** ~40-50 hours of Claude Code autonomous execution, split across 7 sub-phases
 
 ---
 
-## 🎯 Phase 2 Overview (revised)
+## 🎯 Phase 2 Overview (revised 2026-05-17 после incident)
 
-Phase 2 = **actual AI generation pipeline для Amazon + Walmart**. Turns Bundle Factory from "scaffolded shell с empty tables" (Phase 1 result) в working concept-to-listing engine: Vladimir вводит idea → AI выдаёт published listings на Amazon × 5 + Walmart.
+Phase 2 = **actual AI generation pipeline + compliance gate** для Amazon + Walmart.
+
+### 🚨 Incident-driven priority changes (2026-05-17)
+
+Amazon заблокировал Retailer Distributor account за Trademark Logo Misuse на 5 ASINs. **Phase 2.0 (Compliance Gate) + Phase 2.0a (Audit Tool) добавлены перед Phase 2.1.** Это критическое prerequisite — без них Bundle Factory будет автоматизировать тот же паттерн во всех 5 аккаунтах.
+
+See:
+- `BUNDLE_FACTORY_COMPLIANCE_GATE_v1_0.md` — master compliance architecture
+- `BUNDLE_FACTORY_LISTING_AUDIT_TOOL_v1_0.md` — Audit Tool spec
+- `CLAUDE_CODE_PROMPT_BUNDLE_FACTORY_PHASE_2_0a_AUDIT.md` — implementation prompt
 
 ### Scope clarifications (revised 2026-05-17)
 
@@ -36,6 +45,55 @@ Vladimir focuses на **highest-volume channels first** для proof of concept:
 ---
 
 ## 📋 Sub-phase breakdown
+
+### 🚨 Phase 2.0a — Listing Audit Tool (НОВЫЙ, FIRST)
+
+**Status:** 🟢 Ready to execute (prompt at `CLAUDE_CODE_PROMPT_BUNDLE_FACTORY_PHASE_2_0a_AUDIT.md`)
+**Estimated time:** 8-10 hours
+**Priority:** P0 — critically urgent (превентивная чистка существующих 1028+ listings)
+
+**Что Vladimir получает:**
+- `/bundle-factory/audit` — dashboard для scanning all active listings × 5 Amazon accounts
+- One-click "Run Full Audit" → SP-API listings scan + risk scoring + AI Vision check → ~5-10 min
+- Ranked list: BLOCKED / WARNING / LOW_RISK / COMPLIANT
+- Identification рискованных patterns (foreign brand in title, missing disclaimer, wrong category, foreign logos in image)
+- Permanent blocklist seeded с 5 заблокированными ASINs
+- (v1) Manual review trigger; (v2) Bulk SP-API patch remediation
+
+**Dependencies:**
+- Phase 1 foundation ✅
+- Amazon SP-API credentials × 5 accounts (existing)
+- Anthropic API key (existing) — для Vision check
+
+**Why first:** Existing listings могут содержать рискованные patterns. Amazon может найти и заблокировать другие accounts в любую минуту. Превентивная чистка важнее новых листингов.
+
+---
+
+### 🚨 Phase 2.0 — Compliance Gate (НОВЫЙ, за Phase 2.0a)
+
+**Status:** ⚪ Waiting for Phase 2.0a
+**Estimated time:** 6-8 hours
+**Priority:** P0 — prerequisite для Phase 2.1
+
+**Что делает:**
+- Защитный механизм между AI generation и публикацией в Amazon
+- 8 hard rules (см. `BUNDLE_FACTORY_COMPLIANCE_GATE_v1_0.md`):
+  1. Title — zero foreign brands
+  2. Brand field accuracy
+  3. Mandatory disclaimer in bullets (auto-inject)
+  4. Mandatory disclaimer in description (auto-inject)
+  5. Browse node — only Gift Basket Exception for multi-brand
+  6. Main image — no foreign logos (Claude Vision check)
+  7. Permanent ASIN/brand blocklist
+  8. No promotional/subjective language
+- 2-level decision: CAN_PUBLISH / BLOCKED
+- Audit log per decision (legal trail)
+- Integration во все стадии Bundle Factory pipeline (КОНЕЧНО Stage 4, Stage 5, Stage 7)
+
+**Dependencies:**
+- Phase 2.0a (разделяют много компонентов: vision-check.ts, forbidden-brands.ts, BrandConflict model)
+
+---
 
 ### Phase 2.1 — Brief + Research + Image Mirror (Stages 1, 2, 2.5)
 
@@ -175,24 +233,28 @@ After Phase 2.5: **complete end-to-end automation для Amazon + Walmart**. Vla
 
 ---
 
-## ⏰ Realistic timeline
+## ⏰ Realistic timeline (revised после incident)
 
 Если Vladimir работает с темпом "1 sub-phase per day":
 
 | Day | Activity |
 |---|---|
-| Day 1 (today) | Phase 2.1 implementation (Claude Code 6-8h) |
-| Day 2 | Phase 2.1 review + production deploy + Perplexity API key setup |
-| Day 3 | Phase 2.2 implementation (Claude Code 8-10h) |
-| Day 4 | Phase 2.2 review + test full content generation |
-| Day 5 | Cloudflare R2 setup (Vladimir 10 min) + Phase 2.3 implementation (Claude Code 4-6h) |
-| Day 6 | Phase 2.4 implementation (validators) |
-| Day 7 | Phase 2.5 implementation (Amazon + Walmart APIs) |
-| Day 8 | End-to-end testing + first live published bundle |
+| Day 1 (сегодня) | **Phase 2.0a Audit Tool** implementation (Claude Code 8-10h) |
+| Day 2 | Phase 2.0a review + run first audit + manually triage results |
+| Day 3 | **Phase 2.0 Compliance Gate** implementation (Claude Code 6-8h) |
+| Day 4 | Phase 2.0 review + integration testing |
+| Day 5 | Phase 2.1 implementation (Claude Code 6-8h) с compliance gate integrated |
+| Day 6 | Phase 2.1 review + Perplexity API key setup |
+| Day 7 | Phase 2.2 implementation (Claude Code 8-10h) |
+| Day 8 | Phase 2.2 review + content quality validation |
+| Day 9 | Cloudflare R2 setup + Phase 2.3 implementation (Claude Code 4-6h) |
+| Day 10 | Phase 2.4 implementation (Claude Code 4-6h) |
+| Day 11 | Phase 2.5 implementation (Claude Code 6-8h) |
+| Day 12 | End-to-end testing + first compliant published bundle |
 
-**~1 week real-world time от Phase 1 done до first auto-published bundle.**
+**~1.5-2 weeks real-world time от Phase 1 done до first auto-published bundle.**
 
-Если хочешь spread out — easily 2-3 weeks comfortable pace.
+Дополнительная неделя vs original plan — вся в compliance дополнительных phases. **Необходимые trade-off для защиты 5 аккаунтов.**
 
 ---
 
