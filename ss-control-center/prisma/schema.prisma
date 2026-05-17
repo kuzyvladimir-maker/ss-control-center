@@ -1804,3 +1804,129 @@ model ListingLifecycleLog {
   @@index([channel_sku_id])
   @@index([created_at])
 }
+
+// ============================================================================
+// PHASE 2.0a — Listing Audit Tool
+// Scans existing active listings across 5 Amazon accounts, scores risk of
+// foreign-brand violations (like the 2026-05-17 Retailer Distributor block),
+// and tracks remediation through Bundle Factory's content/image pipelines.
+// ============================================================================
+
+model ListingAuditScan {
+  id           String @id @default(cuid())
+  initiated_by String // 'vladimir' | 'system_cron'
+
+  status String @default("pending") // 'pending' | 'running' | 'completed' | 'failed'
+
+  started_at   DateTime  @default(now())
+  completed_at DateTime?
+
+  accounts_scanned String // JSON array of account keys
+
+  total_listings  Int @default(0)
+  blocked_count   Int @default(0)
+  warning_count   Int @default(0)
+  low_risk_count  Int @default(0)
+  compliant_count Int @default(0)
+
+  error_message String?
+
+  audit_results ListingAuditResult[]
+
+  @@index([initiated_by, started_at])
+  @@index([status])
+}
+
+model ListingAuditResult {
+  id      String @id @default(cuid())
+  scan_id String
+
+  asin    String
+  sku     String?
+  account String // 'SALUTEM' | 'PERSONAL' | 'AMZCOM' | 'SIRIUS' | 'RETAILER'
+
+  title                String
+  brand                String
+  browse_node          String?
+  main_image_url       String?
+  original_bullets     String // JSON array
+  original_description String @default("")
+
+  risk_score    Int    @default(0)
+  risk_category String @default("COMPLIANT") // 'BLOCKED' | 'WARNING' | 'LOW_RISK' | 'COMPLIANT'
+  risk_reasons  String @default("[]") // JSON array
+
+  detected_brands   String? // JSON array
+  detected_logos    String? // JSON array (from Vision check)
+  vision_cost_cents Int     @default(0)
+
+  remediation_status String @default("PENDING") // 'PENDING' | 'REGENERATING' | 'UPDATED' | 'SKIPPED' | 'FAILED' | 'MANUAL_REVIEW'
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  scan ListingAuditScan @relation(fields: [scan_id], references: [id], onDelete: Cascade)
+  // 1:1 back-reference — actual FK column (audit_result_id) lives on
+  // ListingRemediation. We query by audit_result_id from there.
+  remediation ListingRemediation?
+
+  @@index([scan_id, risk_category])
+  @@index([asin])
+  @@index([account, risk_category])
+  @@index([remediation_status])
+}
+
+model ListingRemediation {
+  id              String @id @default(cuid())
+  audit_result_id String @unique
+
+  status String @default("pending") // 'pending' | 'generating' | 'validated' | 'updating' | 'completed' | 'failed' | 'manual_review'
+
+  original_title       String
+  new_title            String?
+  original_bullets     String // JSON array
+  new_bullets          String? // JSON array
+  original_description String
+  new_description      String?
+  original_image_url   String?
+  new_image_url        String?
+
+  ai_cost_cents Int @default(0)
+
+  sp_api_response String? // JSON
+  sp_api_error    String?
+
+  started_at   DateTime  @default(now())
+  completed_at DateTime?
+
+  audit_result ListingAuditResult @relation(fields: [audit_result_id], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+// Permanent blocklist seeded from the 2026-05-17 incident (5 ASINs blocked
+// by Amazon for Trademark Logo Misuse under Salutem Vita). New incidents
+// can be appended here so risk-scoring picks them up automatically.
+model BrandConflict {
+  id      String  @id @default(cuid())
+  asin    String?
+  account String?
+
+  foreign_brand    String
+  product_keywords String // JSON array
+
+  incident_date DateTime
+  incident_type String // 'trademark_logo_misuse' | 'ip_complaint'
+  amazon_action String? // 'asin_block' | 'account_suspension'
+
+  notes String?
+
+  status      String    @default("active")
+  resolved_at DateTime?
+
+  created_at DateTime @default(now())
+
+  @@index([foreign_brand])
+  @@index([asin])
+  @@index([status])
+}
