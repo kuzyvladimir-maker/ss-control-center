@@ -163,13 +163,48 @@ export default function SidebarContent({
 
   useEffect(() => {
     let cancelled = false;
-    const load = () =>
-      fetch("/api/dashboard/summary")
-        .then((r) => (r.ok ? r.json() : null))
-        .then((j) => {
-          if (j && !cancelled) setSummary(j);
-        })
-        .catch(() => undefined);
+    // Two parallel fetches:
+    //   1. /api/dashboard/summary — fast, reads counts from our DB.
+    //      Used for Procurement / Customer hub / Account Health /
+    //      Adjustments (their own pages also read from DB, so the
+    //      sidebar count matches the page count).
+    //   2. /api/shipping/dashboard — slow, live-fetches Veeqo. Used
+    //      ONLY to override the shipping-labels count so the sidebar
+    //      shows the same number the Shipping Labels page shows
+    //      ("Awaiting fulfillment"). The DB version drifts because
+    //      orders-amazon cron only syncs once per day and Walmart isn't
+    //      counted at all in summary.
+    const load = async () => {
+      try {
+        const [summaryRes, shippingRes] = await Promise.all([
+          fetch("/api/dashboard/summary"),
+          fetch("/api/shipping/dashboard"),
+        ]);
+        if (cancelled) return;
+        const summaryJson: DashboardSummary | null = summaryRes.ok
+          ? await summaryRes.json()
+          : null;
+        const shippingJson: { orders?: unknown[] } | null = shippingRes.ok
+          ? await shippingRes.json()
+          : null;
+        if (cancelled) return;
+        const liveShippingCount = Array.isArray(shippingJson?.orders)
+          ? shippingJson.orders.length
+          : undefined;
+        setSummary({
+          ...(summaryJson ?? {}),
+          orders: {
+            ...(summaryJson?.orders ?? {}),
+            // Prefer the live count when available; otherwise keep the
+            // DB number so the badge isn't blank if Veeqo is down.
+            awaitingShipment:
+              liveShippingCount ?? summaryJson?.orders?.awaitingShipment,
+          },
+        });
+      } catch {
+        /* sidebar refresh is best-effort */
+      }
+    };
     load();
     const id = setInterval(load, 60_000);
     return () => {
