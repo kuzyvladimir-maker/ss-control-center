@@ -31,9 +31,10 @@ Bundle Factory — фабрика по массовому созданию gift 
 ## 📦 Sourcing Foundation
 
 - **Warehouse:** 1162 Kapp Dr, Clearwater, FL 33765 (27.9775°N, -82.7512°W)
-- **Sourcing radius:** 10 миль → 28 магазинов
-- **Priority order:** Walmart (5: 3 Supercenter + 2 Neighborhood Market) → BJ's (1) → Target (3) → Publix (9) → Sam's Club (1) → Costco (1) → ALDI (2) → specialty (Whole Foods, Trader Joe's, Fresh Market, Winn-Dixie)
-- В радиусе **2 миль** от склада: Walmart Supercenter US-19 (1.2 mi), два Walmart NM, два ALDI, Sam's Club, Costco, Target, Publix — все основные source’ы в одном кластере
+- **Sourcing radius:** 10 миль → **37 магазинов**
+- **Walmart breakdown (из Vladimir's Walmart Business account, authoritative):** **14 stores** — 6 Supercenter + 8 Neighborhood Market. Ближайший: Clearwater US-19 N Supercenter — **0.8 миль**
+- **Priority order:** Walmart (14) → BJ's (1) → Target (3) → Publix (9) → Sam's Club (1) → Costco (1) → ALDI (2) → specialty (Whole Foods, Trader Joe's, Fresh Market) → Winn-Dixie (3)
+- В радиусе **2 миль** от склада: Walmart Supercenter US-19 (0.8 mi), два Walmart NM, два ALDI, Sam's Club, Costco, Target, Publix — все основные source’ы в одном кластере
 - **Sticky Products** thesis: топовые brand-products в стоке месяцами → one-shot research + pre-publication re-check
 - **JIT inventory** — не держим склад; order → 2 days handling → sourcing → packing → shipping
 
@@ -70,13 +71,33 @@ Total OpEx: ~$215/мес → ~$0.22 per bundle на 1000/мес.
 
 ## 🚧 Фазирование
 
-- **Phase 0** — Marketplace Rules KB (research через Claude Code, 30-50 markdown файлов)
-- **Phase 1** — Data model + Prisma migrations + UI скелет
+- **Phase 0** — Marketplace Rules KB (research через Claude Code, 30-50 markdown файлов) ✅
+- **Phase 1** — Data model + Prisma migrations + UI скелет ✅ **(2026-05-17 — feat/bundle-factory-phase-1)**
 - **Phase 2-7** — реализация 7 стадий pipeline по одной
 - **Phase 8-11** — distribution channels + error feedback loop
 - **Phase 12+** — eBay, TikTok, video generation
 
 MVP boundary = Phase 0-7: рабочий builder с flat file export.
+
+## ✅ Phase 1 deliverables (2026-05-17)
+
+Реализовано в ветке `feat/bundle-factory-phase-1`:
+
+- **14 Prisma моделей** добавлены в `ss-control-center/prisma/schema.prisma` (хвостом, не трогая existing 30+ моделей Customer Hub / Shipping / Account Health).
+- **Миграция** `prisma/migrations/20260517000000_bundle_factory_phase_1_initial/migration.sql`.
+- **Turso скрипт** `ss-control-center/scripts/turso-migrate-bundle-factory-phase-1.mjs` (idempotent, Vladimir запускает вручную после merge).
+- **Enum-константы** в `src/lib/bundle-factory/enums.ts` (SQLite + Prisma 7 не поддерживают native enum — храним как TEXT с runtime валидацией).
+- **5 seed-скриптов** в `prisma/seed/`:
+  - `store-registry.ts` — 37 stores (Walmart 14 + Publix 9 + Target 3 + Winn-Dixie 3 + ALDI 2 + BJ's 1 + Sam's 1 + Costco 1 + Whole Foods 1 + Trader Joe's 1 + Fresh Market 1)
+  - `brand-account.ts` — 9 mappings (Salutem Vita × 5 channels + Starfit × 4 channels)
+  - `upc-pool-import.ts` — парсинг `data/imports/Active_Listings_Report_*.txt`; gracefully skip с TODO-сообщением если файла нет (Vladimir дропнет позже)
+  - `marketplace-rules-seed.ts` — 30 hot-path rules
+  - `gtin-exemption-init.ts` — 63 (brand × channel × category) rows со статусом NOT_REQUESTED
+- **10 API endpoints** под `/api/bundle-factory/` (stores, upc-pool, master-bundles, channel-skus, briefs, drafts, research, marketplace-rules, generation-jobs, lifecycle-logs).
+- **7 UI страниц** под `/bundle-factory/` (overview, briefs, drafts, master-bundles, live, stores, settings) — строго по Salutem Design System v1.0.
+- **Sidebar integration** — пункт "Bundle Factory" в секции Phase 2 с иконкой Package2.
+
+**Не входит в Phase 1 (Phase 2+):** AI pipeline executor (Research, Variation Matrix, Content Generation, Image Generation), SP-API/Walmart API push, GTIN application workflow UI, UPC pool batch-import UI.
 
 ## 🔗 Связи
 
@@ -90,10 +111,12 @@ MVP boundary = Phase 0-7: рабочий builder с flat file export.
 ## 📚 Связанные документы
 
 - [`BUNDLE_FACTORY_CONCEPT_v1_0.md`](../BUNDLE_FACTORY_CONCEPT_v1_0.md) — полный концепт (source of truth)
-- [`BUNDLE_FACTORY_SOURCING_MAP.md`](../BUNDLE_FACTORY_SOURCING_MAP.md) — карта 32 магазинов с distances/часами/координатами (28 в radius 10 миль) — 2026-05-17
+- [`BUNDLE_FACTORY_SOURCING_MAP.md`](../BUNDLE_FACTORY_SOURCING_MAP.md) v1.1 — карта **37 магазинов** (включая **14 Walmart**) с distances/часами/координатами — 2026-05-17
 - [`BUNDLE_FACTORY_DATA_MODEL.md`](../BUNDLE_FACTORY_DATA_MODEL.md) — Prisma schema, 14 моделей, pre-seed data — 2026-05-17
-- `CLAUDE_CODE_PROMPT_BUNDLE_FACTORY_KB_PHASE_0.md` — промпт для сборки KB (TBD)
-- `CLAUDE_CODE_PROMPT_BUNDLE_FACTORY_PHASE_1.md` — первый executable промпт (TBD)
+- [`marketplace-rules/`](../marketplace-rules/) — **25 KB файлов** по Amazon/Walmart/eBay/TikTok Shop — 2026-05-17
+- [`CLAUDE_CODE_PROMPT_BUNDLE_FACTORY_PHASE_1.md`](../CLAUDE_CODE_PROMPT_BUNDLE_FACTORY_PHASE_1.md) — executable промпт для Phase 1 implementation (Prisma migration + UI skeleton) — 2026-05-17
+- [`CLAUDE_CODE_PROMPT_BUNDLE_FACTORY_KB_PHASE_0.md`](../CLAUDE_CODE_PROMPT_BUNDLE_FACTORY_KB_PHASE_0.md) — research-агент для дополнения KB — 2026-05-17
+- [`BUNDLE_FACTORY_PHASE_0_COMPLETION_REPORT.md`](../BUNDLE_FACTORY_PHASE_0_COMPLETION_REPORT.md) — финальный отчёт о Phase 0 со всеми deliverables и next steps — 2026-05-17
 
 ---
-**Последнее обновление:** 2026-05-17 — концепт финализирован + Sourcing Map (28 магазинов) + Data Model (14 Prisma моделей).
+**Последнее обновление:** 2026-05-17 — **Phase 1 завершён в ветке `feat/bundle-factory-phase-1`**: 14 Prisma моделей + миграция (SQLite + Turso script) + 5 seed-скриптов (37 stores, 9 brand accounts, 30 marketplace rules, 63 GTIN exemption trackers, UPC pool с graceful fallback) + 10 REST endpoints + 7 UI pages + sidebar integration. Ready for Phase 2 (Research pipeline implementation).

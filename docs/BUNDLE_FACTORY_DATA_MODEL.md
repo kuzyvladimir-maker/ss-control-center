@@ -919,9 +919,24 @@ model ListingLifecycleLog {
 
 При первой миграции в БД должны быть seed-ом загружены:
 
-### 1. `StoreRegistry` — 32 магазина
+### 1. `StoreRegistry` — 37 магазинов
 
-Pre-seed файл: `prisma/seed/store-registry.ts`. Полные данные из `BUNDLE_FACTORY_SOURCING_MAP.md`.
+Pre-seed файл: `prisma/seed/store-registry.ts`. Полные данные из `BUNDLE_FACTORY_SOURCING_MAP.md` v1.1.
+
+**Разбивка по сетям:**
+- Walmart: **14** (6 Supercenter + 8 Neighborhood Market) — authoritative из Vladimir's Walmart Business account
+- BJ's: 1
+- Target: 3
+- Publix: 9
+- Sam's Club: 1
+- Costco: 1
+- ALDI: 2
+- Whole Foods: 1
+- Trader Joe's: 1
+- Fresh Market: 1
+- Winn-Dixie: 3
+
+Полный seed (37 records с координатами, телефонами, часами) — в [`BUNDLE_FACTORY_SOURCING_MAP.md`](BUNDLE_FACTORY_SOURCING_MAP.md) в разделе "STORE REGISTRY (machine-readable seed)".
 
 ```typescript
 // Сокращённый пример первых 5 записей
@@ -1043,7 +1058,7 @@ npx prisma db seed
 ### Phase 1 Scope (что входит)
 
 - ✅ Создать все 14 таблиц
-- ✅ Pre-seed `StoreRegistry` (32 stores)
+- ✅ Pre-seed `StoreRegistry` (37 stores: 14 Walmart + 1 BJ's + 3 Target + 9 Publix + 1 Sam's + 1 Costco + 2 ALDI + 1 Whole Foods + 1 Trader Joe's + 1 Fresh Market + 3 Winn-Dixie)
 - ✅ Pre-seed `BrandAccount` (9 mappings)
 - ✅ Import `UPCPool` из существующих листингов
 - ✅ Базовый CRUD-skeleton для всех 14 моделей через Prisma Studio
