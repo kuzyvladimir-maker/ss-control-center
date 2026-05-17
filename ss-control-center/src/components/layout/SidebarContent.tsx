@@ -12,6 +12,7 @@ import {
   Tags,
   TrendingUp,
   Package,
+  Package2,
   Settings,
   ShoppingCart,
 } from "lucide-react";
@@ -79,6 +80,9 @@ const operationsItems = (s: DashboardSummary): NavItem[] => [
 ];
 
 const phase2Items: NavItem[] = [
+  // Bundle Factory — Phase 1 foundation is live. AI generation pipeline
+  // lands in Phase 5+ but the data model, seeds, and UI skeleton ship now.
+  { title: "Bundle Factory", href: "/bundle-factory", icon: Package2 },
   { title: "Product listings", href: "/listings", icon: Tags, disabled: true },
   // /analytics is a real 314-line page — keep nav consistent with reality.
   // Product listings + Suppliers remain stubs and stay disabled.
@@ -219,7 +223,12 @@ export default function SidebarContent({
       <NavSection label="Phase 2" />
       <nav className="space-y-0.5 px-2">
         {phase2Items.map((item) => (
-          <NavLink key={item.href} item={item} active={false} />
+          <NavLink
+            key={item.href}
+            item={item}
+            active={isActive(item.href)}
+            onNavigate={onNavigate}
+          />
         ))}
       </nav>
 
