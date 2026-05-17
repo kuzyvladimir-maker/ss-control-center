@@ -15,7 +15,11 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { fetchAllOrders, getProduct } from "@/lib/veeqo/client";
+import {
+  fetchAllOrders,
+  getProduct,
+  veeqoDateToLocal,
+} from "@/lib/veeqo/client";
 import {
   buildPackingSignature,
   requiresPackingProfile,
@@ -30,11 +34,22 @@ function shipByBucket(iso: string | null): ShipByBucket | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  const now = new Date();
-  const diffDays = Math.floor(
-    (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) -
-      Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) /
-      86_400_000
+  // Anchor both dates in America/Los_Angeles — the same TZ Veeqo's UI
+  // renders. The previous implementation used `d.getFullYear/Month/Date`
+  // which honour the host TZ; on Vercel's UTC runtime any dispatch_date
+  // around the day boundary (e.g. "2026-05-18T07:00:00Z" = May 17 23:00
+  // Pacific) landed in the wrong UTC day, pushing every "Tomorrow"
+  // shipment into "Day after" and leaving the Tomorrow bucket empty
+  // while Veeqo's own view showed 70+ orders.
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Los_Angeles",
+  });
+  const dStr = fmt.format(d);
+  const nowStr = fmt.format(new Date());
+  const diffDays = Math.round(
+    (new Date(dStr + "T00:00:00Z").getTime() -
+      new Date(nowStr + "T00:00:00Z").getTime()) /
+      86_400_000,
   );
   if (diffDays < 0) return "overdue";
   if (diffDays === 0) return "today";
