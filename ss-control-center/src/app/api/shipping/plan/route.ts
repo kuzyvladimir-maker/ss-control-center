@@ -76,20 +76,12 @@ function getNextMonday(from: string): string {
 //   title = "UPS® Ground", "FedEx 2Day" etc.
 //   total_net_charge = price string
 //   delivery_promise_date = ISO date
-// Convert a Veeqo UTC timestamp to a YYYY-MM-DD string in the
-// operator's reference TZ (America/New_York). The shared
-// `veeqoDateToLocal` from veeqo/client.ts uses naive setHours
-// arithmetic that silently skews dates back by a day in UTC runtimes
-// (any timestamp before 07:00 UTC ends up rendering as the previous
-// day), which made a UPS Ground Saver EDD of 5/18 read as 5/17 inside
-// the Frozen ≤3-cal-day filter. Fixing the shared helper would touch
-// every caller in the codebase, so the safer move is a local helper
-// here that gets the EDD right for rate selection.
-function eddNYDate(utcDate: string): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/New_York",
-  }).format(new Date(utcDate));
-}
+// All date conversion goes through `veeqoDateToLocal` from
+// veeqo/client.ts, which renders YYYY-MM-DD in America/Los_Angeles —
+// the same TZ Veeqo's own UI uses for ship-by and EDD. A previous
+// workaround helper (`eddNYDate`) used America/New_York, which made
+// our EDD column read one day later than Veeqo's and pushed cheaper
+// rates like UPS Ground Saver out of the deadline filter.
 
 // Module-level diagnostic — written by selectBestRate on each Frozen
 // invocation. The route handler reads this immediately after the call to
@@ -110,7 +102,7 @@ function selectBestRate(
 
   const enriched = rates
     .map((rate) => {
-      const eddLocal = eddNYDate(rate.delivery_promise_date);
+      const eddLocal = veeqoDateToLocal(rate.delivery_promise_date);
       const eddDate = new Date(eddLocal + "T00:00:00");
       const calDays = Math.round(
         (eddDate.getTime() - shipDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -705,7 +697,7 @@ export async function GET(request: NextRequest) {
               // Count rates that DO meet deadline so we can tell apart
               // "no rate at all" from "no rate within 3 cal days".
               const meetingDeadline = rates.filter((r) => {
-                const eddLocal = eddNYDate(r.delivery_promise_date);
+                const eddLocal = veeqoDateToLocal(r.delivery_promise_date);
                 const eddDate = new Date(eddLocal + "T00:00:00");
                 return eddDate <= new Date(deliveryBy + "T23:59:59");
               }).length;

@@ -289,11 +289,22 @@ export async function addEmployeeNote(orderId: number, text: string) {
   });
 }
 
-// Convert UTC date to UTC-7 (Pacific) as Veeqo uses
+// Convert a Veeqo UTC timestamp to the YYYY-MM-DD string Veeqo's own UI
+// would render — i.e. America/Los_Angeles (Pacific). The previous
+// implementation used `setHours(getHours() - 7)`, which:
+//   1. broke on Vercel's UTC runtime: timestamps before 07:00 UTC ended
+//      up rendering as the previous day everywhere, including EDDs,
+//      pushing labels like UPS Ground Saver out of the deadline window
+//      they should have met.
+//   2. ignored DST: Pacific is UTC-7 in summer but UTC-8 in winter, so
+//      every label between Nov and Mar was already a day off.
+// Using Intl.DateTimeFormat with timeZone:"America/Los_Angeles" fixes
+// both — it's the same conversion Veeqo's UI does, so EDDs and ship-
+// by dates now match Veeqo down to the day.
 export function veeqoDateToLocal(utcDate: string): string {
-  const d = new Date(utcDate);
-  d.setHours(d.getHours() - 7);
-  return d.toISOString().split("T")[0];
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Los_Angeles",
+  }).format(new Date(utcDate));
 }
 
 // Get "today" in America/New_York timezone
