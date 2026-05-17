@@ -15,3 +15,5 @@ gcloud-key*.json
 .env
 .env.local
 .env.*.local
+.vercel
+.env*.local
