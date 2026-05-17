@@ -292,6 +292,19 @@ export async function GET(request: NextRequest) {
         }
       : null;
 
+    // syncedAt should reflect when the DB last received fresh data from
+    // marketplaces — not when the operator's browser last hit this
+    // endpoint. We grab the most recent successful SyncLog entry; the
+    // header chip then shows e.g. "Synced 18m ago" so stale dashboards
+    // are obvious instead of always reading "Synced just now".
+    const lastSync = await prisma.syncLog.findFirst({
+      where: { status: "done" },
+      orderBy: { completedAt: "desc" },
+      select: { completedAt: true },
+    });
+    const syncedAt =
+      lastSync?.completedAt?.toISOString() ?? new Date().toISOString();
+
     return NextResponse.json({
       orders: {
         total30d: totalOrders,
@@ -309,7 +322,7 @@ export async function GET(request: NextRequest) {
         monthlyTotal: adjustmentsSum._sum.adjustmentAmount || 0,
       },
       walmart: walmartPayload,
-      syncedAt: new Date().toISOString(),
+      syncedAt,
     });
   } catch (error) {
     console.error("[dashboard/summary] GET failed:", error);

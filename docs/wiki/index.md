@@ -22,6 +22,7 @@
 - [Store Filter System](store-filter-system.md) — глобальный мульти-селект магазинов (Phase 1: Dashboard) — 2026-05-12
 - [Sales Cards on Dashboard](sales-cards-dashboard.md) — 5-period gross revenue + linear forecast (Dashboard) — 2026-05-12
 - [Procurement Module](./procurement-module.md) — мобильный закуп товара в магазинах (Publix, Walmart, BJ's). Выборка из Veeqo по тегам, фильтрация workflow-меток, разметка через `Placed` / `Need More`. Будущая основа агента-автозакупщика.
+- [Bundle Factory](bundle-factory.md) — фабрика по массовому созданию gift sets под Salutem Vita / Starfit brand для 9 каналов (5 Amazon + Walmart + eBay + 2 TikTok). AI-pipeline: research → variation matrix → content/images → API push + flat file. Phase 2 модуль, заменяет placeholder "Product Listings". Финализирован 2026-05-17.
 - [Shipping Labels](shipping-labels.md) — план + покупка labels через Veeqo. Полная спец v1.0: [shipping-labels-page-v1.md](shipping-labels-page-v1.md) — dashboard + AI classify + packing profiles (2026-05-12)
 - [Shipment Monitor](shipment-monitor.md) — мониторинг доставок, детекция проблем, подготовка claims (спроектирован, после Phase 1)
 - [Customer Hub](customer-hub.md) — Messages, A-to-Z, Chargebacks, Feedback (в разработке)
@@ -78,7 +79,11 @@
 - [Veeqo API Quirks §10](veeqo-api-quirks.md) — Vercel serverless ↔ `writeFileSync('public/labels')` не работает; нужен Google Drive или fallback на Veeqo URL. 2026-05-14.
 
 ---
-Последнее обновление: 2026-05-14
+Последнее обновление: 2026-05-17
+- **Bundle Factory концепт v1.0** — фабрика массового создания gift sets под Salutem Vita / Starfit brand. AI-pipeline в 7 стадий + Marketplace Rules KB + Sourcing Module. Заменяет Phase 2 placeholder "Product Listings". Сопряжён с Amazon Gift Basket Exception (Oct 14, 2024 policy).
+
+---
+Предыдущее обновление: 2026-05-14
 - **MASTER_PROMPT v3.2 + Cutoff Time Rule** — effective ship date вместо «today» после 15:00 ET, учёт weekends и US federal holidays. §0.1 нового MASTER_PROMPT.
 - Sprint shipping labels в продакшене: VAS из live rate, tracking object-shape, post-buy modal + audit log, Google Drive upload (раньше работал только n8n).
 - Ship Date Trick реализован (был "Handle manually").

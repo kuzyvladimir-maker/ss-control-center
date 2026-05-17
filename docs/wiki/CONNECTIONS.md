@@ -20,6 +20,13 @@
 ⊂ SS Control Center (auth, design system, Turso БД)
 ⇔ SKUStorePriority (новая таблица в БД)
 
+### [Bundle Factory](bundle-factory.md)
+← Perplexity API (research стадия), OpenAI API (image gen + content backup), [Claude AI](claude-ai.md) (primary text generation), Higgsfield (image + video alternative), Cloudflare R2 (CDN storage для bundle images), GS1 GEPIR (UPC validation), [Amazon SP-API](amazon-sp-api.md) (Listings Items API + Brand Registry для Salutem Vita), [Walmart Marketplace API](walmart-api.md) (item listings)
+→ [Procurement](procurement-module.md) (новый bundle создаёт дефолтный SKUStorePriority с порядком магазинов), [Dashboard](dashboard.md) (Bundle Factory analytics card в Phase 2)
+⊂ Marketplace Rules KB (`docs/marketplace-rules/` — Amazon Gift Set Policy, Walmart Multipack, eBay, TikTok), Salutem Vita + Starfit Brand Registry, SS Control Center (auth, design system, Turso БД)
+⇔ [Customer Hub](customer-hub.md) (Order ID coupling после first order на новом ASIN), [Frozen Analytics](frozen-analytics.md) (новый Frozen bundle → risk profiling), [SKU Database](sku-database-migration.md) (новый bundle → запись с cost & shipping data)
+Phase 2 модуль, заменяет placeholder "Product Listings". Concept: `BUNDLE_FACTORY_CONCEPT_v1_0.md`. Финализирован 2026-05-17.
+
 ### [Customer Hub](customer-hub.md)
 ← [Gmail API](gmail-api.md), [Amazon SP-API](amazon-sp-api.md), [Claude AI](claude-ai.md), [Veeqo API](veeqo-api.md)
 → [Dashboard](dashboard.md)
