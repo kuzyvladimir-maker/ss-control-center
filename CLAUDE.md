@@ -31,6 +31,17 @@ Auth:      Пока нет
 | 4 | Sirius International | TBD | store4 | TBD (no SP-API app yet) | ❌ | ❌ |
 | 5 | Retailer Distributor | TBD | store5 | `A1LCOF57VUVMI4` | ⚠️ US suspended 2026-05-17 | ❌ |
 
+**US sellerIds (different from Brazilian/Mexican/etc).** Each marketplace has its own
+sellerId per account — the values above are specifically for the US Amazon.com
+marketplace (`ATVPDKIKX0DER`). Auto-discovered from the "Invoicing Shadow Marketplace"
+entry returned by `/sellers/v1/marketplaceParticipations` — see
+`scripts/diag-sellers-api.ts` for the probe and `src/lib/amazon-sp-api/sellers.ts`
+(`getMerchantToken` + `NoUSMarketplaceError`) for the runtime resolution. Earlier
+env values (`AAULAB33TILT6` for STORE1, `AHJ7LR056ZFXI` for STORE3) were sellerIds
+for OTHER marketplaces these accounts also participate in (e.g. Brazilian); using
+them with `marketplaceIds=ATVPDKIKX0DER` made every Listings API call return
+400/404, which is why the first audit run produced zero results.
+
 Walmart — 1 аккаунт (API ключ пока отсутствует).
 
 ## 📚 СПРАВОЧНЫЕ ДОКУМЕНТЫ
