@@ -29,6 +29,10 @@ import {
   DISCLAIMER_DESCRIPTION,
   hasDisclaimerText,
 } from "@/lib/bundle-factory/remediation/disclaimer-text";
+import {
+  scrubBulletArray,
+  scrubDescription,
+} from "@/lib/bundle-factory/remediation/content-scrub";
 
 const REPORT_PATH = join(
   process.cwd(),
@@ -36,6 +40,27 @@ const REPORT_PATH = join(
   "docs",
   "PHASE_2_6_1_PLAN_REPORT.md",
 );
+
+/**
+ * Scrub scope decided by docs/PHASE_2_6_1_FAILED_CONTENT_ANALYSIS.md
+ * Section B verdict (2026-05-19): SALUTEM samples carry the same
+ * emoji + manual-bullet + promo + HTML template as the AMZCOM
+ * failed-content sample → universal scrub on every plan row.
+ *
+ *   'A' — universal: every row scrubbed before disclaimer append
+ *   'B' — AMZCOM only: SALUTEM proceeds with disclaimer-only
+ *   'C' — bespoke: skip; manual review of SALUTEM pattern needed
+ *
+ * Re-run the discovery script to refresh:
+ *   npx tsx scripts/inspect-salutem-samples.ts
+ */
+export const SCRUB_VERDICT: "A" | "B" | "C" = "A";
+
+function shouldScrub(account: string): boolean {
+  if (SCRUB_VERDICT === "A") return true;
+  if (SCRUB_VERDICT === "B") return account === "AMZCOM";
+  return false; // C — caller should handle bespoke
+}
 
 function parseJson<T>(s: string | null, fallback: T): T {
   if (!s) return fallback;
@@ -100,7 +125,9 @@ async function main() {
     originalBullets: string[];
     newBullets: string[];
     newDescription: string;
+    scrubApplied: boolean;
   }> = [];
+  let scrubAppliedCount = 0;
 
   for (const r of rows) {
     // Re-verify reason substring (LIKE is greedy on JSON-escaped strings,
@@ -126,18 +153,45 @@ async function main() {
       alreadyCompliant++;
       continue;
     }
-    const newBullets = [...originalBullets, DISCLAIMER_BULLET];
-    const trimmedDesc = originalDescription.trim();
+    // Smart Scrub — strip emojis, manual bullet markers, promo
+    // adjectives, and HTML from the existing content before appending
+    // our disclaimer. Without this, SP-API VALIDATION_PREVIEW rejects
+    // the full PATCH body under Amazon PDP policy code 99300.
+    const willScrub = shouldScrub(r.account);
+    const cleanedBullets = willScrub
+      ? scrubBulletArray(originalBullets)
+      : originalBullets;
+    const cleanedDescription = willScrub
+      ? scrubDescription(originalDescription)
+      : originalDescription;
+    if (willScrub) scrubAppliedCount++;
+    // Amazon bullet_point cap is 10 per listing (code 99016 fires when
+    // exceeded). Scrub-split frequently expands one stored bullet into
+    // two micro-bullets, so a 5-bullet input can land at 10 after scrub
+    // and then +1 disclaimer = 11 (rejected). Reserve the last slot
+    // for the disclaimer and truncate the cleaned set to 9 from the
+    // front (= keep the first 9 substantive bullets).
+    const MAX_BULLETS_AMAZON = 10;
+    const cappedBullets = cleanedBullets.slice(0, MAX_BULLETS_AMAZON - 1);
+    const newBullets = [...cappedBullets, DISCLAIMER_BULLET];
+    const trimmedDesc = cleanedDescription.trim();
     const newDescription = trimmedDesc
       ? trimmedDesc + "\n\n" + DISCLAIMER_DESCRIPTION
       : DISCLAIMER_DESCRIPTION;
-    planned.push({ audit: r, originalBullets, newBullets, newDescription });
+    planned.push({
+      audit: r,
+      originalBullets,
+      newBullets,
+      newDescription,
+      scrubApplied: willScrub,
+    });
   }
 
   console.log(`Already compliant (disclaimer present): ${alreadyCompliant}`);
   console.log(`Skipped (empty bullets):                ${skippedEmpty}`);
   console.log(`Skipped (remediation_status not PENDING): ${skippedNonPending}`);
   console.log(`Planned for remediation:                ${planned.length}`);
+  console.log(`Smart scrub applied (verdict ${SCRUB_VERDICT}):    ${scrubAppliedCount}`);
 
   // Write plan rows sequentially (no transaction wrapper — at this scale
   // the interactive-transaction 5s ceiling is exceeded by Turso latency
@@ -145,6 +199,11 @@ async function main() {
   // audit_result_id, so partial completion is safe to resume from.
   let written = 0;
   for (const p of planned) {
+    const scrubMeta = JSON.stringify({
+      scrub_applied: p.scrubApplied,
+      scrub_verdict: SCRUB_VERDICT,
+      planned_at: new Date().toISOString(),
+    });
     await prisma.listingRemediation.upsert({
       where: { audit_result_id: p.audit.id },
       create: {
@@ -159,13 +218,15 @@ async function main() {
         original_image_url: p.audit.main_image_url,
         new_image_url: null,
         ai_cost_cents: 0,
+        sp_api_response: scrubMeta,
       },
       update: {
         status: "plan",
         new_bullets: JSON.stringify(p.newBullets),
         new_description: p.newDescription,
-        // Clear any prior failure state — re-planning is a reset.
-        sp_api_response: null,
+        // Replace any prior plan/failure state with current scrub
+        // metadata — sp_api_response is the closest available column.
+        sp_api_response: scrubMeta,
         sp_api_error: null,
         completed_at: null,
       },
@@ -208,6 +269,7 @@ async function main() {
   lines.push(`| Empty bullets (skipped) | ${skippedEmpty} |`);
   lines.push(`| Non-PENDING status (skipped) | ${skippedNonPending} |`);
   lines.push(`| **Planned for remediation** | **${planned.length}** |`);
+  lines.push(`| Smart scrub applied | ${scrubAppliedCount} (verdict ${SCRUB_VERDICT}) |`);
   lines.push("");
   lines.push("### By account");
   lines.push("| Account | Planned |");
@@ -217,27 +279,35 @@ async function main() {
   }
   lines.push("");
 
-  lines.push("## Sample listings (first 3 of plan)");
+  lines.push("## Sample listings (first 3 of plan, showing scrub diff)");
   lines.push("");
   samples.forEach((p, i) => {
-    lines.push(`### ${i + 1}. \`${p.audit.asin}\` · ${p.audit.account}`);
+    lines.push(`### ${i + 1}. \`${p.audit.asin}\` · ${p.audit.account} · scrub=${p.scrubApplied ? "yes" : "no"}`);
     lines.push(`**Title:** ${trunc(p.audit.title, 80)}`);
     lines.push("");
-    lines.push(
-      `**Existing bullets (first 200 chars of joined):** \`${trunc(
-        p.originalBullets.join(" · "),
-        200,
-      ).replace(/`/g, "\\`")}\``,
-    );
-    lines.push("");
     if (p.originalBullets.length > 0) {
-      lines.push(`**Original last bullet:** ${trunc(p.originalBullets[p.originalBullets.length - 1], 200)}`);
+      lines.push(`**ORIGINAL last bullet:**`);
+      lines.push("```");
+      lines.push(p.originalBullets[p.originalBullets.length - 1]);
+      lines.push("```");
     }
-    lines.push(`**New last bullet (disclaimer):** ${DISCLAIMER_BULLET}`);
+    // Last cleaned bullet (the one just before disclaimer in new array)
+    if (p.newBullets.length >= 2) {
+      lines.push(`**SCRUBBED last bullet (before disclaimer):**`);
+      lines.push("```");
+      lines.push(p.newBullets[p.newBullets.length - 2]);
+      lines.push("```");
+    }
+    lines.push(`**Disclaimer bullet appended:** ${DISCLAIMER_BULLET}`);
     lines.push("");
     lines.push(
-      `**Existing description (first 200 chars):** ${trunc(p.audit.original_description ?? "", 200)}`,
+      `**ORIGINAL description (first 200 chars):** ${trunc(p.audit.original_description ?? "", 200)}`,
     );
+    lines.push("");
+    lines.push(`**SCRUBBED description (first 200 chars):**`);
+    lines.push("```");
+    lines.push(trunc(p.newDescription.replace(/\n\nAbout this gift basket[\s\S]*$/, ""), 200));
+    lines.push("```");
     lines.push("");
     lines.push(
       `**After patch — appended paragraph (last 250 chars of new description):**`,
