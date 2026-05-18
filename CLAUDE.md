@@ -60,6 +60,28 @@ Walmart — 1 аккаунт (API ключ пока отсутствует).
 3. Старые версии НЕ удалять
 4. Документы сохраняются в /docs/ проекта И на iMac через filesystem MCP
 
+## ✍️ СТИЛЬ КОНТЕНТА (BRAND VOICE — STRICT)
+
+Это правило установлено владельцем 2026-05-19 и применяется ко **ВСЕМУ** контенту листингов на всех каналах (Amazon, Walmart), а также к любому AI-generated content в рамках проекта (Phase 2.x Bundle Factory, Customer Hub responses, marketing copy, и т.д.).
+
+**ЗАПРЕЩЕНО в product listings (titles, bullets, descriptions, A+ content):**
+
+- **Emojis** — никаких ✅ 🍽 🎁 💚 🧊 ⭐ 🔥 ⚡ и пр. Vladimir не фанат emoji, считает их непрофессиональными и не приносящими value. Они также триггерят Amazon PDP code 99300 ("false/promotional claims").
+- **Promotional adjectives** — `ultimate`, `perfect`, `delightful`, `delicious`, `ideal`, `amazing`, `incredible`, `premium`, `exclusive`, `must-have`, `best`, `finest`, `exceptional`, `outstanding`, `magnificent`, `wonderful`, `fantastic`, `superior`, `top-quality`, `world-class`, `awesome`. Amazon explicitly forbids subjective claims, и Vladimir-овский brand voice — factual, не маркетинговый.
+- **Manual bullet characters** (`•`, `●`, `►`, `▪`, `○`) — Amazon рендерит bullets автоматически, ручные маркеры избыточны.
+- **HTML в product_description** для grocery/food — Amazon strict валидирует HTML для этих категорий. Plain text с paragraph breaks (`\n\n`) предпочтительнее.
+- **Health/medical claims** без FDA approval — `cure`, `treat`, `prevent`, `boost`, `weight loss`, `detox`, `heal`. Все Salutem Vita / Starfit gift sets — это food bundles, не supplements.
+
+**ОБЯЗАТЕЛЬНО в product listings:**
+
+- Curator/assembler disclaimer в bullets + description (Option C defensive — см. `docs/CLAUDE_CODE_PROMPT_PHASE_2_6_1_DISCLAIMER_INJECTION.md`). Это explicit non-affiliation statement, требуется для Amazon Gift Basket Exception positioning.
+- Plain factual text. Что внутри, сколько штук, какие размеры, как хранить, для чего использовать.
+- Brand names mentioned только factually (e.g. "Includes 8 Oscar Mayer Bun Length Franks") — никогда в title под Salutem Vita / Starfit (см. `docs/marketplace-rules/amazon/title-policy.md`).
+
+**ИСТОРИЯ:** Предыдущие AI tools (Dima + ChatGPT) генерировали emoji-heavy promotional content. Это причина 99300 violations на AMZCOM cohort. Phase 2.6.1 Smart Scrub удаляет этот legacy pattern programmatically. Phase 2.6.2 Claude rewrite (будущая) генерирует **новый** content уже в правильном стиле.
+
+---
+
 ## ❌ ЧЕГО НИКОГДА НЕ ДЕЛАТЬ
 
 - Не хардкодить API ключи
@@ -68,3 +90,5 @@ Walmart — 1 аккаунт (API ключ пока отсутствует).
 - Не спорить о безопасности еды с клиентом
 - Не просить вернуть frozen товары (food safety)
 - Не предлагать cancel для shipped orders
+- **Не использовать emojis в product listings** (см. секцию выше)
+- **Не использовать promo-adjectives в product listings** (см. секцию выше)
