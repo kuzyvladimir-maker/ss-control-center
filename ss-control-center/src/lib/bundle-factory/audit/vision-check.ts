@@ -14,8 +14,79 @@
 // silently down-rank a risky listing — that's a separate signal handled
 // by the scanner (it logs the failure to scan.error_message and the
 // listing keeps whatever score came out of the text-only rules).
+//
+// False-positive filtering: Claude Vision occasionally tags our own
+// brand ("Salutem Solutions" / "Salutem Vita" / "Starfit") as a foreign
+// logo, and sometimes confuses generic deli-meat product-type names
+// ("Olive Loaf", "Bologna", …) for brand names. Both groups are
+// filtered out via `filterRealLogos` before the result is returned, so
+// the risk-scorer never sees them as foreign-brand violations.
 
 import Anthropic from "@anthropic-ai/sdk";
+
+/**
+ * Names that may appear in Vision detections but are NOT foreign
+ * brands — they're our own. Compared case-insensitively. Add new
+ * Salutem-owned brands here when they launch.
+ */
+export const OWN_BRANDS_WHITELIST = [
+  "Salutem Vita",
+  "Salutem Solutions",
+  "Starfit",
+  "Salutem",
+] as const;
+
+/**
+ * Generic product-type names that GPT-style models sometimes report as
+ * "brand logos" because packaging puts them in logo-like badges. These
+ * are categories, not brands — filtering them out removes a large chunk
+ * of WARNING false-positives on deli, snack, and gift-set listings.
+ * Compared case-insensitively.
+ */
+export const GENERIC_DELI_TERMS_IGNORELIST = [
+  "Olive Loaf",
+  "Bologna",
+  "Pastrami",
+  "Salami",
+  "Mortadella",
+  "Hot Dogs",
+  "Bacon",
+  "Ham",
+  "Turkey",
+  "Chicken",
+  "Beef",
+  "Pork",
+  "Lunch Meat",
+  "Deli Meat",
+  "Cold Cuts",
+  "Snack Mix",
+  "Gift Set",
+  "Pack",
+  "Lunch Snacks",
+  "Original",
+  "Classic",
+] as const;
+
+/**
+ * Apply both filters to a raw Vision detected_logos array and return
+ * only the "real foreign logos" — neither our own brand nor a generic
+ * product-type. Used by `detectForeignLogosInImage` (live path) AND
+ * by `scripts/rescore-audit-scan.ts` (offline re-evaluation of stored
+ * detections without re-running the Vision API).
+ */
+export function filterRealLogos(logos: string[]): string[] {
+  const whitelist = OWN_BRANDS_WHITELIST.map((s) => s.toLowerCase());
+  const ignorelist = GENERIC_DELI_TERMS_IGNORELIST.map((s) =>
+    s.toLowerCase(),
+  );
+  return logos.filter((raw) => {
+    const lower = (raw ?? "").trim().toLowerCase();
+    if (!lower) return false;
+    if (whitelist.includes(lower)) return false;
+    if (ignorelist.includes(lower)) return false;
+    return true;
+  });
+}
 
 export interface VisionCheckResult {
   has_foreign_logos: boolean;
@@ -114,11 +185,17 @@ export async function detectForeignLogosInImage(
       output_tokens: response.usage.output_tokens,
     });
 
+    // Raw Vision output may include own-brand mentions or generic
+    // deli/snack terms — strip both before they reach the risk-scorer
+    // so we don't fire +35 risk on a Salutem-branded box.
+    const rawLogos: string[] = Array.isArray(parsed.detected_logos)
+      ? parsed.detected_logos.filter((s: unknown) => typeof s === "string")
+      : [];
+    const realLogos = filterRealLogos(rawLogos);
+
     return {
-      has_foreign_logos: parsed.has_foreign_logos === true,
-      detected_logos: Array.isArray(parsed.detected_logos)
-        ? parsed.detected_logos.filter((s: unknown) => typeof s === "string")
-        : [],
+      has_foreign_logos: realLogos.length > 0,
+      detected_logos: realLogos,
       cost_cents,
     };
   } catch (e) {
