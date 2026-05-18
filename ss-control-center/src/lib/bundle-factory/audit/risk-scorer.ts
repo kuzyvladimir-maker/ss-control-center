@@ -77,13 +77,27 @@ function hasDisclaimer(bullets: string[], description: string): boolean {
   );
 }
 
+export interface ScoreOptions {
+  /** When provided, skip the live Vision API call and use these logos
+   *  as Rule 5's input. Used by scripts/rescore-audit-scan.ts to
+   *  re-evaluate stored detections through new filters without paying
+   *  for Vision again. `vision_cost_cents` stays at 0 in that path. */
+  precomputedLogos?: {
+    has_foreign_logos: boolean;
+    detected_logos: string[];
+  };
+}
+
 /**
  * Run all 5 rules against a stored ListingAuditResult and persist the
  * computed score + category back to the row. Returns the RiskResult so
  * callers (e.g. the scan orchestrator) can aggregate counters without
  * re-querying.
  */
-export async function scoreAuditResult(resultId: string): Promise<RiskResult> {
+export async function scoreAuditResult(
+  resultId: string,
+  opts: ScoreOptions = {},
+): Promise<RiskResult> {
   const result = await prisma.listingAuditResult.findUniqueOrThrow({
     where: { id: resultId },
   });
@@ -177,13 +191,22 @@ export async function scoreAuditResult(resultId: string): Promise<RiskResult> {
   // ── Rule 5: Image vision check ──
   // Skip when we already crossed BLOCKED to save API spend. Failure of
   // the vision call doesn't down-rank the listing — error captured for
-  // the scan run record.
+  // the scan run record. When `opts.precomputedLogos` is passed, we
+  // use that instead of calling Vision (offline re-scoring path).
   let visionResult: VisionCheckResult | null = null;
-  if (score < 80 && result.main_image_url) {
-    visionResult = await detectForeignLogosInImage(
-      result.main_image_url,
-      result.brand,
-    );
+  if (score < 80 && (result.main_image_url || opts.precomputedLogos)) {
+    if (opts.precomputedLogos) {
+      visionResult = {
+        has_foreign_logos: opts.precomputedLogos.has_foreign_logos,
+        detected_logos: opts.precomputedLogos.detected_logos,
+        cost_cents: 0,
+      };
+    } else {
+      visionResult = await detectForeignLogosInImage(
+        result.main_image_url!,
+        result.brand,
+      );
+    }
     vision_cost_cents = visionResult.cost_cents;
     if (visionResult.error) vision_error = visionResult.error;
     if (visionResult.has_foreign_logos) {
@@ -200,6 +223,14 @@ export async function scoreAuditResult(resultId: string): Promise<RiskResult> {
   score = Math.min(score, 100);
   const category = categorise(score);
 
+  // Preserve the historical vision_cost_cents value when re-scoring with
+  // precomputedLogos — the spend really happened during the original
+  // scan; we just don't pay for it again. Live (non-precomputed) path
+  // writes the freshly-observed cost as before.
+  const persistedVisionCost = opts.precomputedLogos
+    ? result.vision_cost_cents
+    : vision_cost_cents;
+
   await prisma.listingAuditResult.update({
     where: { id: resultId },
     data: {
@@ -212,7 +243,7 @@ export async function scoreAuditResult(resultId: string): Promise<RiskResult> {
       detected_logos: detected_logos.length
         ? JSON.stringify(detected_logos)
         : null,
-      vision_cost_cents,
+      vision_cost_cents: persistedVisionCost,
     },
   });
 
