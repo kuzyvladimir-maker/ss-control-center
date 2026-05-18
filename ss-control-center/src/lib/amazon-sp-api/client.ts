@@ -45,6 +45,15 @@ export async function spApiPost(
   return spApiRequest("POST", path, { ...options, body });
 }
 
+export async function spApiPatch(
+  path: string,
+  body: object,
+  options: SpApiOptions = {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> {
+  return spApiRequest("PATCH", path, { ...options, body });
+}
+
 async function spApiRequest(
   method: string,
   path: string,

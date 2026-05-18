@@ -1,16 +1,16 @@
-// Listings Items API (2021-08-01) — read helpers used by the Bundle
-// Factory listing audit. We only implement the bits the audit needs:
+// Listings Items API (2021-08-01) — helpers used by the Bundle Factory
+// audit (read) and the Phase 2.6.1 disclaimer-injection pipeline (read
+// + patch):
 //
-//   listSkus(storeIndex, sellerId, opts?) — paginated SKU enumeration
-//   getListing(storeIndex, sellerId, sku) — full listing detail
-//
-// Patch / write operations live in remediation.ts later; the audit
-// scanner is strictly read-only.
+//   listSkus(storeIndex, sellerId, opts?)  — paginated SKU enumeration
+//   getListing(storeIndex, sellerId, sku)  — full listing detail
+//   patchListing(storeIndex, sellerId, sku, productType, patches, opts?)
+//                                          — JSON-Patch update
 //
 // Rate limit per official Selling Partner docs: 5 req/sec, burst 10.
 // Higher-level callers should add ~200 ms between requests.
 
-import { spApiGet, MARKETPLACE_ID } from "./client";
+import { spApiGet, spApiPatch, MARKETPLACE_ID } from "./client";
 
 export interface ListingSummary {
   marketplaceId: string;
@@ -97,6 +97,53 @@ export async function getListing(
   );
   // Single-item endpoint returns the listing directly (no items array).
   return { sku, ...(resp as Partial<ListingItem>) } as ListingItem;
+}
+
+export interface ListingPatch {
+  op: "add" | "replace" | "delete" | "merge";
+  path: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value?: any;
+}
+
+export interface PatchListingOptions {
+  /** When `true`, hits Amazon's VALIDATION_PREVIEW mode — no mutation,
+   *  just confirmation the patch would be accepted. Used as a safety
+   *  gate before the real PATCH in disclaimer-injection-execute. */
+  validationPreview?: boolean;
+  /** Marketplace IDs the patch applies to. Defaults to US Amazon.com. */
+  marketplaceIds?: string;
+}
+
+/**
+ * PATCH a listing's attributes via JSON-Patch operations. `productType`
+ * must match what Amazon already has on the listing (fetch it via
+ * `getListing` first or pass it through from a known source).
+ *
+ * Response shape (from Amazon):
+ *   { sku, status: "ACCEPTED"|"INVALID"|..., submissionId, issues?: [...] }
+ */
+export async function patchListing(
+  storeIndex: number,
+  sellerId: string,
+  sku: string,
+  productType: string,
+  patches: ListingPatch[],
+  opts: PatchListingOptions = {},
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> {
+  const params: Record<string, string> = {
+    marketplaceIds: opts.marketplaceIds ?? MARKETPLACE_ID,
+  };
+  if (opts.validationPreview) {
+    params.mode = "VALIDATION_PREVIEW";
+  }
+  const body = { productType, patches };
+  return spApiPatch(
+    `/listings/2021-08-01/items/${encodeURIComponent(sellerId)}/${encodeURIComponent(sku)}`,
+    body,
+    { storeId: `store${storeIndex}`, params },
+  );
 }
 
 /** Extract the audit-relevant fields from a marketplace-specific listing

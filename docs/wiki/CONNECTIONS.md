@@ -28,6 +28,12 @@
 **Phase 0 завершён 2026-05-17:** Концепт (`BUNDLE_FACTORY_CONCEPT_v1_0.md`), Sourcing Map v1.1 (**37 магазинов, 14 Walmart**), Data Model (14 Prisma моделей в `BUNDLE_FACTORY_DATA_MODEL.md`), Marketplace Rules KB (25 файлов), Phase 1 промпт для Claude Code.
 **Phase 1 завершён 2026-05-17** (ветка `feat/bundle-factory-phase-1`): 14 Prisma моделей в `prisma/schema.prisma` + миграция (sqlite + idempotent Turso script `scripts/turso-migrate-bundle-factory-phase-1.mjs`) + 5 seed-скриптов (37 stores, 9 brand accounts, 30 marketplace rules, 63 GTIN trackers, UPC pool с graceful skip когда Active Listings Report отсутствует) + 10 API endpoints `/api/bundle-factory/{stores,upc-pool,master-bundles,channel-skus,briefs,drafts,research,marketplace-rules,generation-jobs,lifecycle-logs}` + 7 UI pages `/bundle-factory/{,briefs,drafts,master-bundles,live,stores,settings}` (Salutem Design System v1.0) + sidebar entry. Ready for Phase 2.
 
+### [Phase 2.6.1 — Disclaimer Injection](phase-2-6-1-disclaimer-injection.md)
+← [Listing Audit Tool](listing-audit-tool.md) (consumes `risk_reasons` containing "Missing curator/assembler disclaimer" from `ListingAuditResult`), [Amazon SP-API](amazon-sp-api.md) (Listings 2021-08-01 PATCH endpoint), `src/lib/bundle-factory/remediation/disclaimer-text.ts` (Option C Defensive text constants)
+→ [Listing Audit Tool](listing-audit-tool.md) (writes back `ListingRemediation` rows + flips `ListingAuditResult.remediation_status` to PLANNED → DONE / FAILED / verification_failed / rolled_back)
+⊂ Phase 2.6 Remediation pipeline скелета из Phase 2.0a (`src/lib/bundle-factory/audit/remediation.ts`); paired phases 2.6.2 (Title Rewrite, Claude ~$0.01/listing), 2.6.3 (Image Regen, gpt-image-1 ~$0.04/listing), 2.6.4 (Manual Review)
+⇔ Plan→Execute→Verify→Rollback shape — reused as template by 2.6.2 and 2.6.3.
+
 ### [Customer Hub](customer-hub.md)
 ← [Gmail API](gmail-api.md), [Amazon SP-API](amazon-sp-api.md), [Claude AI](claude-ai.md), [Veeqo API](veeqo-api.md)
 → [Dashboard](dashboard.md)
