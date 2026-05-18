@@ -23,13 +23,13 @@ Auth:      Пока нет
 
 ## 🏪 АККАУНТЫ AMAZON (5 штук)
 
-| # | Аккаунт | Email | Store Index | SP-API | Gmail API |
-|---|---------|-------|-------------|--------|-----------|
-| 1 | Salutem Solutions | amazon@salutem.solutions | store1 | ✅ | ❌ (нужен OAuth) |
-| 2 | Vladimir Personal | kuzy.vladimir@gmail.com | store2 | ✅ | ✅ |
-| 3 | AMZ Commerce | TBD | store3 | ✅ | ❌ |
-| 4 | Sirius International | TBD | store4 | ✅ | ❌ |
-| 5 | Retailer Distributor | TBD | store5 | ✅ | ❌ |
+| # | Аккаунт | Email | Store Index | US Merchant Token | SP-API | Gmail API |
+|---|---------|-------|-------------|-------------------|--------|-----------|
+| 1 | Salutem Solutions | amazon@salutem.solutions | store1 | `A3A7A0RDFUSGBS` | ✅ | ❌ (нужен OAuth) |
+| 2 | Vladimir Personal | kuzy.vladimir@gmail.com | store2 | TBD (no SP-API SELLER_ID yet) | ✅ | ✅ |
+| 3 | AMZ Commerce | TBD | store3 | `A2ON382ZMCWPCT` | ✅ | ❌ |
+| 4 | Sirius International | TBD | store4 | TBD (no SP-API app yet) | ❌ | ❌ |
+| 5 | Retailer Distributor | TBD | store5 | `A1LCOF57VUVMI4` | ⚠️ US suspended 2026-05-17 | ❌ |
 
 Walmart — 1 аккаунт (API ключ пока отсутствует).
 
