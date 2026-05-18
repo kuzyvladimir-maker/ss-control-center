@@ -129,9 +129,30 @@ export const POST = withErrorHandler("audit/scan", async (request: Request) => {
     },
   });
 
-  // Fire-and-forget. We intentionally do not await — the route returns
-  // immediately so the UI can render a "scanning…" spinner and poll.
-  void runScanBackground(scan.id, accounts);
+  // IMPORTANT: serverless functions on Vercel terminate as soon as the
+  // response is sent — `void runScanBackground(...)` followed by an
+  // immediate return guarantees the scanner is killed within
+  // milliseconds and never writes any results. So we AWAIT the scan
+  // inside the request lifecycle, bounded by `maxDuration` above.
+  //
+  // On Pro this gives the scanner up to 300 s — enough for partial
+  // scans (single account, small inventory). For full 5-account scans
+  // of large catalogs that need 5–15 minutes, use the CLI runner
+  // (`npx tsx scripts/run-audit-cli.ts`) instead — it sidesteps the
+  // function timeout entirely. The CLI writes to the same Turso DB,
+  // so results show up under the same `/bundle-factory/audit/<scanId>`
+  // URL regardless of which path kicked the scan off.
+  await runScanBackground(scan.id, accounts);
 
-  return NextResponse.json({ scan_id: scan.id, status: "pending" });
+  // Re-read the scan so the UI gets the final status (completed/failed)
+  // and counts in the same response — no need to poll once UI hit.
+  const final = await prisma.listingAuditScan.findUnique({
+    where: { id: scan.id },
+  });
+  return NextResponse.json({
+    scan_id: scan.id,
+    status: final?.status ?? "unknown",
+    total_listings: final?.total_listings ?? 0,
+    error_message: final?.error_message ?? null,
+  });
 });
