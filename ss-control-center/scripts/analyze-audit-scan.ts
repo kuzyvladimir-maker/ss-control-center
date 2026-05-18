@@ -258,10 +258,9 @@ async function buildReport(): Promise<{ md: string; summary: SnapshotCounts }> {
     COMPLIANT: 0,
   };
   for (const r of results) {
-    if (r.risk_category === "COMPLIANT") {
-      strategyCounts.COMPLIANT++;
-      continue;
-    }
+    // Classify by reasons (not by category) — a "disclaimer only" row
+    // has score=15 and lands in COMPLIANT, but the disclaimer is still
+    // worth injecting; it's the Phase 2.6.1 target.
     const reasons = parseJson<string[]>(r.risk_reasons, []);
     const hasDisclaimer = reasons.some((x) =>
       x.includes("Missing curator/assembler disclaimer"),
@@ -273,17 +272,18 @@ async function buildReport(): Promise<{ md: string; summary: SnapshotCounts }> {
       x.startsWith("Foreign logos detected"),
     );
     const issues = [hasDisclaimer, hasTitleBrand, hasImage].filter(Boolean).length;
-    // BRAND_MISMATCH heuristic — listing's brand attr is "Salutem Vita"
-    // but title carries a different brand entirely (the title-brand rule
-    // would have fired, so reuse that signal but mark as MISMATCH when
-    // detected_brands has stuff but disclaimer is absent and image OK).
-    const brandMismatch = hasTitleBrand && !hasDisclaimer && !hasImage;
+    if (issues === 0) {
+      strategyCounts.COMPLIANT++;
+      continue;
+    }
     if (issues >= 2) strategyCounts.MULTI++;
-    else if (brandMismatch) strategyCounts.BRAND_MISMATCH++;
-    else if (hasDisclaimer && issues === 1) strategyCounts.DISCLAIMER_ONLY++;
-    else if (hasTitleBrand && issues === 1) strategyCounts.TITLE_ONLY++;
-    else if (hasImage && issues === 1) strategyCounts.IMAGE_ONLY++;
-    else strategyCounts.COMPLIANT++; // edge cases — e.g. wrong-category only
+    else if (hasDisclaimer) strategyCounts.DISCLAIMER_ONLY++;
+    else if (hasTitleBrand) strategyCounts.TITLE_ONLY++;
+    else if (hasImage) strategyCounts.IMAGE_ONLY++;
+    // BRAND_MISMATCH (brand attribute differs from title brand) requires
+    // text comparison at remediation time, not detectable from reasons
+    // alone — left at 0 here; the bulk-remediation script will mark
+    // those rows when it processes them.
   }
   const totalCostCents = Object.entries(strategyCounts).reduce(
     (sum, [s, n]) => sum + (REMEDIATION_COST_CENTS[s] ?? 0) * n,

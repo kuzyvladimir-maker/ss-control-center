@@ -254,12 +254,12 @@ Remediation strategy assigned per listing based on which rules fired. Costs esti
 
 | Strategy | Count | Unit cost | Subtotal |
 |---|---:|---:|---:|
-| DISCLAIMER_ONLY | 0 | $0.00 | $0.00 |
+| DISCLAIMER_ONLY | 805 | $0.00 | $0.00 |
 | TITLE_ONLY | 0 | $0.01 | $0.00 |
 | IMAGE_ONLY | 214 | $0.04 | $8.56 |
 | MULTI | 233 | $0.05 | $11.65 |
 | BRAND_MISMATCH | 0 | $0.00 | $0.00 |
-| COMPLIANT | 1138 | $0.00 | $0.00 |
+| COMPLIANT | 333 | $0.00 | $0.00 |
 | **Total** | 1585 | | **$20.21** |
 
 _Total estimated remediation budget: **$20.21**._
