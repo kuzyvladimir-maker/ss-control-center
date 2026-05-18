@@ -139,43 +139,48 @@ async function main() {
   console.log(`Skipped (remediation_status not PENDING): ${skippedNonPending}`);
   console.log(`Planned for remediation:                ${planned.length}`);
 
-  // Write plan rows in a single transaction. We upsert by audit_result_id
-  // (1:1 relation) so re-running the plan after a code tweak doesn't
-  // duplicate rows — it overwrites the prior plan content.
-  await prisma.$transaction(async (tx) => {
-    for (const p of planned) {
-      await tx.listingRemediation.upsert({
-        where: { audit_result_id: p.audit.id },
-        create: {
-          audit_result_id: p.audit.id,
-          status: "plan",
-          original_title: p.audit.title,
-          new_title: null,
-          original_bullets: JSON.stringify(p.originalBullets),
-          new_bullets: JSON.stringify(p.newBullets),
-          original_description: p.audit.original_description ?? "",
-          new_description: p.newDescription,
-          original_image_url: p.audit.main_image_url,
-          new_image_url: null,
-          ai_cost_cents: 0,
-        },
-        update: {
-          status: "plan",
-          new_bullets: JSON.stringify(p.newBullets),
-          new_description: p.newDescription,
-          // Clear any prior failure state — re-planning is a reset.
-          sp_api_response: null,
-          sp_api_error: null,
-          completed_at: null,
-        },
-      });
-      await tx.listingAuditResult.update({
-        where: { id: p.audit.id },
-        data: { remediation_status: "PLANNED" },
-      });
+  // Write plan rows sequentially (no transaction wrapper — at this scale
+  // the interactive-transaction 5s ceiling is exceeded by Turso latency
+  // long before 1000+ upserts finish). Upserts are idempotent on
+  // audit_result_id, so partial completion is safe to resume from.
+  let written = 0;
+  for (const p of planned) {
+    await prisma.listingRemediation.upsert({
+      where: { audit_result_id: p.audit.id },
+      create: {
+        audit_result_id: p.audit.id,
+        status: "plan",
+        original_title: p.audit.title,
+        new_title: null,
+        original_bullets: JSON.stringify(p.originalBullets),
+        new_bullets: JSON.stringify(p.newBullets),
+        original_description: p.audit.original_description ?? "",
+        new_description: p.newDescription,
+        original_image_url: p.audit.main_image_url,
+        new_image_url: null,
+        ai_cost_cents: 0,
+      },
+      update: {
+        status: "plan",
+        new_bullets: JSON.stringify(p.newBullets),
+        new_description: p.newDescription,
+        // Clear any prior failure state — re-planning is a reset.
+        sp_api_response: null,
+        sp_api_error: null,
+        completed_at: null,
+      },
+    });
+    await prisma.listingAuditResult.update({
+      where: { id: p.audit.id },
+      data: { remediation_status: "PLANNED" },
+    });
+    written++;
+    if (written % 100 === 0) {
+      process.stderr.write(`  wrote ${written}/${planned.length}\r`);
     }
-  });
-  console.log(`Wrote ${planned.length} ListingRemediation rows (status=plan).`);
+  }
+  if (planned.length >= 100) process.stderr.write("\n");
+  console.log(`Wrote ${written} ListingRemediation rows (status=plan).`);
 
   // ── Per-account breakdown ───────────────────────────────────────────
   const byAccount: Record<string, number> = {};
