@@ -81,14 +81,19 @@ async function main() {
   // ── 2. Scan listings ─────────────────────────────────────────────────
   console.log(`[2/3] Scanning ${accounts.length} account(s)…`);
   const t0 = Date.now();
-  const { totalInserted, byAccount, errors } = await scanAllAccounts(
+  const { totalInserted, byAccount, errors, skipped } = await scanAllAccounts(
     scan.id,
     accounts,
   );
   const scanMs = Date.now() - t0;
   console.log(`      → ${totalInserted} listings inserted in ${(scanMs / 1000).toFixed(1)}s`);
   for (const acct of accounts) {
-    console.log(`        ${acct.padEnd(10)} ${byAccount[acct] ?? 0}`);
+    const skipMark = skipped.some((s) => s.account === acct) ? " (skipped)" : "";
+    console.log(`        ${acct.padEnd(10)} ${byAccount[acct] ?? 0}${skipMark}`);
+  }
+  if (skipped.length > 0) {
+    console.warn(`      ↪ ${skipped.length} account(s) skipped:`);
+    for (const s of skipped) console.warn(`        · ${s.account}: ${s.reason}`);
   }
   if (errors.length > 0) {
     console.warn(`      ⚠ ${errors.length} scan error(s):`);
@@ -126,7 +131,10 @@ async function main() {
   const scoreMs = Date.now() - t1;
   console.log(`      → done in ${(scoreMs / 1000).toFixed(1)}s`);
 
-  const allErrors = [...errors, ...scoringErrors.slice(0, 10)];
+  // Skipped accounts surface as "SKIPPED: ..." lines so the UI can render
+  // them yellow (warning) rather than red (error). They come first.
+  const skipNotes = skipped.map((s) => `SKIPPED: ${s.account} — ${s.reason}`);
+  const allErrors = [...skipNotes, ...errors, ...scoringErrors.slice(0, 10)];
   await prisma.listingAuditScan.update({
     where: { id: scan.id },
     data: {

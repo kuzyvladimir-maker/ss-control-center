@@ -48,7 +48,7 @@ async function runScanBackground(
   accounts: readonly AccountKey[],
 ) {
   try {
-    const { totalInserted, byAccount, errors } = await scanAllAccounts(
+    const { totalInserted, byAccount, errors, skipped } = await scanAllAccounts(
       scanId,
       accounts,
     );
@@ -71,7 +71,17 @@ async function runScanBackground(
       }
     }
 
-    const allErrors = [...errors, ...scoringErrors.slice(0, 10)];
+    // Skipped accounts surface as "SKIPPED: ..." prefixed lines so the UI
+    // can render them in yellow (warning) instead of red (error). They
+    // appear first so they're visible above any real failures.
+    const skipNotes = skipped.map(
+      (s) => `SKIPPED: ${s.account} — ${s.reason}`,
+    );
+    const allErrors = [
+      ...skipNotes,
+      ...errors,
+      ...scoringErrors.slice(0, 10),
+    ];
 
     await prisma.listingAuditScan.update({
       where: { id: scanId },
@@ -91,7 +101,8 @@ async function runScanBackground(
 
     console.log(
       `[audit/scan] ${scanId} complete · total=${totalInserted} · ` +
-        `byAccount=${JSON.stringify(byAccount)} · counts=${JSON.stringify(counts)}`,
+        `byAccount=${JSON.stringify(byAccount)} · counts=${JSON.stringify(counts)} · ` +
+        `skipped=${skipped.map((s) => s.account).join(",") || "—"}`,
     );
   } catch (e) {
     await prisma.listingAuditScan.update({

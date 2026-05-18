@@ -15,7 +15,10 @@
 // the whole run.
 
 import { prisma } from "@/lib/prisma";
-import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
+import {
+  getMerchantToken,
+  NoUSMarketplaceError,
+} from "@/lib/amazon-sp-api/sellers";
 import {
   listSkus,
   getListing,
@@ -43,6 +46,10 @@ interface AccountScanReport {
   account: AccountKey;
   listingsInserted: number;
   errors: string[];
+  /** Set when the account is intentionally skipped (e.g. Amazon suspended
+   *  US membership). Skipped accounts do NOT appear in `errors[]` — UI
+   *  renders them as a warning, not a failure. */
+  skipped?: { reason: string };
 }
 
 async function scanOneAccount(
@@ -57,6 +64,18 @@ async function scanOneAccount(
   try {
     sellerId = await getMerchantToken(storeIndex);
   } catch (e) {
+    // No US Amazon.com participation → skip (not error). The audit can't
+    // do anything productive against an account that's not in the US
+    // marketplace; surfacing this as a hard error would just clutter
+    // the operator's view of real problems.
+    if (e instanceof NoUSMarketplaceError) {
+      return {
+        account,
+        listingsInserted: 0,
+        errors: [],
+        skipped: { reason: e.message },
+      };
+    }
     return {
       account,
       listingsInserted: 0,
@@ -140,6 +159,7 @@ export async function scanAllAccounts(
   totalInserted: number;
   byAccount: Record<string, number>;
   errors: string[];
+  skipped: Array<{ account: AccountKey; reason: string }>;
 }> {
   await prisma.listingAuditScan.update({
     where: { id: scanId },
@@ -152,11 +172,16 @@ export async function scanAllAccounts(
 
   const byAccount: Record<string, number> = {};
   const errors: string[] = [];
+  const skipped: Array<{ account: AccountKey; reason: string }> = [];
   let totalInserted = 0;
 
   for (const r of reports) {
     byAccount[r.account] = r.listingsInserted;
     totalInserted += r.listingsInserted;
+    if (r.skipped) {
+      skipped.push({ account: r.account, reason: r.skipped.reason });
+      continue;
+    }
     if (r.errors.length > 0) {
       const truncated = r.errors.slice(0, 5);
       errors.push(
@@ -169,7 +194,7 @@ export async function scanAllAccounts(
     }
   }
 
-  return { totalInserted, byAccount, errors };
+  return { totalInserted, byAccount, errors, skipped };
 }
 
 // Re-export so route handlers can import everything from one module.
