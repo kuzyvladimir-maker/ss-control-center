@@ -39,11 +39,16 @@ async function main() {
     );
     process.exit(1);
   }
-  // Capture pass-through flags (mode + limit) to forward to plan script.
+  // Capture pass-through flags (mode + limit + account) to forward to
+  // the plan script. Useful for cohort-scoped safety tests:
+  //   replan --confirm --mode=claude --account=AMZCOM --limit=5
   const passthroughFlags = process.argv
     .slice(3)
     .filter(
-      (a) => a.startsWith("--mode=") || a.startsWith("--limit="),
+      (a) =>
+        a.startsWith("--mode=") ||
+        a.startsWith("--limit=") ||
+        a.startsWith("--account="),
     );
 
   const scan = await prisma.listingAuditScan.findUniqueOrThrow({

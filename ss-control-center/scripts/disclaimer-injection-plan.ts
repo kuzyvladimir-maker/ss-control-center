@@ -54,19 +54,21 @@ interface CliArgs {
   scanId: string;
   mode: Mode;
   limit: number | null;
+  account: string | null;
 }
 
 function parseArgs(): CliArgs {
   const argv = process.argv.slice(2);
   if (argv.length === 0 || argv[0].startsWith("--")) {
     console.error(
-      "Usage: npx tsx scripts/disclaimer-injection-plan.ts <scan_id> [--mode=claude|scrub] [--limit=N]",
+      "Usage: npx tsx scripts/disclaimer-injection-plan.ts <scan_id> [--mode=claude|scrub] [--limit=N] [--account=NAME]",
     );
     process.exit(1);
   }
   const scanId = argv[0];
   let mode: Mode = "claude";
   let limit: number | null = null;
+  let account: string | null = null;
   for (const a of argv.slice(1)) {
     if (a.startsWith("--mode=")) {
       const v = a.split("=")[1];
@@ -77,12 +79,14 @@ function parseArgs(): CliArgs {
       mode = v;
     } else if (a.startsWith("--limit=")) {
       limit = Number(a.split("=")[1]);
+    } else if (a.startsWith("--account=")) {
+      account = a.split("=")[1].toUpperCase();
     } else {
       console.error(`Unknown flag: ${a}`);
       process.exit(1);
     }
   }
-  return { scanId, mode, limit };
+  return { scanId, mode, limit, account };
 }
 
 const REPORT_PATH_BY_MODE: Record<Mode, string> = {
@@ -160,7 +164,7 @@ interface PlannedRow {
 
 async function main() {
   const args = parseArgs();
-  const { scanId, mode, limit } = args;
+  const { scanId, mode, limit, account } = args;
 
   const scan = await prisma.listingAuditScan.findUniqueOrThrow({
     where: { id: scanId },
@@ -172,6 +176,7 @@ async function main() {
   }
   console.log(
     `Scan ${scan.id} — ${scan.total_listings} listings · mode=${mode}` +
+      (account ? ` · account=${account}` : "") +
       (limit ? ` · limit=${limit}` : ""),
   );
 
@@ -179,6 +184,7 @@ async function main() {
     where: {
       scan_id: scan.id,
       risk_reasons: { contains: "Missing curator/assembler disclaimer" },
+      ...(account ? { account } : {}),
     },
     select: {
       id: true,
