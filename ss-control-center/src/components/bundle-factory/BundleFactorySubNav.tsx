@@ -26,6 +26,7 @@ const ITEMS: SubNavItem[] = [
   { href: "/bundle-factory/master-bundles", label: "Master Bundles" },
   { href: "/bundle-factory/live", label: "Live SKUs" },
   { href: "/bundle-factory/audit", label: "Audit" },
+  { href: "/bundle-factory/compliance", label: "Compliance" },
   { href: "/bundle-factory/stores", label: "Stores" },
   { href: "/bundle-factory/settings", label: "Settings" },
 ];
