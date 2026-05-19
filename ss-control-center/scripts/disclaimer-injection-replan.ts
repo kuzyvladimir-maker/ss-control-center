@@ -15,6 +15,12 @@
  * Usage:
  *   set -a; source .env.local; set +a
  *   npx tsx scripts/disclaimer-injection-replan.ts <scan_id> --confirm
+ *   npx tsx scripts/disclaimer-injection-replan.ts <scan_id> --confirm --mode=claude
+ *   npx tsx scripts/disclaimer-injection-replan.ts <scan_id> --confirm --mode=scrub --limit=20
+ *
+ * Pass-through flags (forwarded verbatim to plan script):
+ *   --mode=claude|scrub   (default: plan-script default, currently 'claude')
+ *   --limit=N             (cap planned rows for safety tests)
  */
 
 import "dotenv/config";
@@ -29,10 +35,16 @@ async function main() {
   const confirm = process.argv.includes("--confirm");
   if (!scanId) {
     console.error(
-      "Usage: npx tsx scripts/disclaimer-injection-replan.ts <scan_id> --confirm",
+      "Usage: npx tsx scripts/disclaimer-injection-replan.ts <scan_id> --confirm [--mode=claude|scrub] [--limit=N]",
     );
     process.exit(1);
   }
+  // Capture pass-through flags (mode + limit) to forward to plan script.
+  const passthroughFlags = process.argv
+    .slice(3)
+    .filter(
+      (a) => a.startsWith("--mode=") || a.startsWith("--limit="),
+    );
 
   const scan = await prisma.listingAuditScan.findUniqueOrThrow({
     where: { id: scanId },
@@ -108,11 +120,18 @@ async function main() {
   // (top-level await chain). Subprocess is the cleanest way to reuse
   // every plan-side guardrail (scrub verdict, idempotent upserts, the
   // markdown report writer).
-  console.log("\nRe-running plan script with Smart Scrub …\n");
+  console.log(
+    `\nRe-running plan script${passthroughFlags.length > 0 ? ` with ${passthroughFlags.join(" ")}` : ""} …\n`,
+  );
   await new Promise<void>((resolve, reject) => {
     const child = spawn(
       "npx",
-      ["tsx", join(SCRIPTS_DIR, "disclaimer-injection-plan.ts"), scanId],
+      [
+        "tsx",
+        join(SCRIPTS_DIR, "disclaimer-injection-plan.ts"),
+        scanId,
+        ...passthroughFlags,
+      ],
       {
         stdio: "inherit",
         env: process.env,
