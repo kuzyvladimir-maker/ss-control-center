@@ -1,8 +1,8 @@
 # 🤖 Phase 2.6.2 — Claude Content Rewrite
 
 > **Started:** 2026-05-19
-> **Status:** Implementation COMPLETE · safety test **FAILED** (0/5 AMZCOM, 0/1 SALUTEM probe). **Root cause = disclaimer text, NOT Claude rewrite.** Awaiting Vladimir's strategy decision (5 options below).
-> **Cost so far:** ~$0.18 (cohort-scoped safety test + isolation probe; the full $8.50 replan was correctly deferred)
+> **Status:** Implementation COMPLETE · safety re-test **PASSED 10/10** (5/5 AMZCOM + 5/5 SALUTEM) after disclaimer swap to Variant A. **Full execute of remaining ~1028 plan rows is gated behind Vladimir's explicit approval per spec.**
+> **Cost so far:** ~$0.35 (~$0.18 first round + ~$0.17 re-test). Full replan still pending — projected ~$8.50 for the remaining 1028 listings at current avg of ~1.7¢/row.
 > **Full spec:** `docs/CLAUDE_CODE_PROMPT_PHASE_2_6_2_CLAUDE_REWRITE.md`
 > **Canonical safety analysis:** `docs/PHASE_2_6_2_SAFETY_TEST_REPORT.md`
 
@@ -12,7 +12,7 @@
 
 Generate fresh compliant bullets+description from audit metadata using Claude Sonnet 4.5, then append the curator disclaimer — replacing the in-plan content-generation step of [Phase 2.6.1](phase-2-6-1-disclaimer-injection.md) which only passed 1/5 AMZCOM safety listings (regex scrub can't keep up with Amazon's ML-based PDP classifier on subjective language).
 
-Claude's content is genuinely clean (no emojis, no `perfect`/`ultimate`, no HTML, factual brand-as-inventory phrasing) and the 4-variant isolation probe (`_diag-disclaimer-isolate.ts`) PROVED Claude's bullets+description pass Amazon's classifier on their own. What Amazon's PDP code 99300 is actually rejecting is the **Option C Defensive disclaimer text** — specifically the affiliation/endorsement negation and trademark-property statements. Disclaimer text needs revision (or removal) before any further execute.
+Claude's content is genuinely clean (no emojis, no `perfect`/`ultimate`, no HTML, factual brand-as-inventory phrasing) and the 4-variant isolation probe (`_diag-disclaimer-isolate.ts`) PROVED Claude's bullets+description pass Amazon's classifier on their own. The original 0/6 failure was caused by the **Option C Defensive disclaimer text** — specifically the affiliation/endorsement negation and trademark-property statements. After swapping to the minimal Variant A wording (`870a246`), 10/10 safety listings passed across both cohorts on real PATCH (not just VALIDATION_PREVIEW). Phase 2.6.2 strategy is now end-to-end proven.
 
 ## What's in place
 

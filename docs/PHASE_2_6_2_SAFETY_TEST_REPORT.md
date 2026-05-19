@@ -2,8 +2,26 @@
 
 **Generated:** 2026-05-19
 **Branch:** `feat/phase-2-6-2-claude-rewrite`
-**Threshold:** 4/5 (80%) per cohort. **Outcome:** 0/5 AMZCOM, 0/1 SALUTEM probe → **BELOW THRESHOLD**
-**Decision needed from Vladimir before any further execute.**
+**Final outcome:** **10/10 PASS** after disclaimer swap to Variant A (5/5 AMZCOM + 5/5 SALUTEM, real PATCHes against live Amazon SP-API). Original test with Option C Defensive disclaimer: 0/5 AMZCOM, 0/1 SALUTEM probe. Investigation below explains the gap.
+
+## Re-test result with Variant A disclaimer
+
+After [`870a246`](../../commit/870a246) swapped the disclaimer constants to the minimal "Variant A" wording, the cohort-scoped safety tests were re-run end-to-end (replan with new constants → execute with --apply).
+
+| Cohort | Planned (Claude) | Validation | Real PATCH | Result |
+|---|---:|---:|---:|---|
+| AMZCOM | 5/5 (avg 1.60¢) | 5/5 VALID | 5/5 success | **PASS** ✅ |
+| SALUTEM | 5/5 (avg 1.80¢) | 5/5 VALID | 5/5 success | **PASS** ✅ |
+
+Total Claude spend across both re-tests: $0.17. Real listings now carry the new Claude-rewritten bullets+description + Variant A disclaimer in production.
+
+Both cohorts cleared the 4/5 (80%) per-cohort threshold per spec. Full execute of the remaining ~1028 plan rows is unblocked **pending Vladimir's explicit approval** (per spec safety gate — no autonomous full execute).
+
+---
+
+## Investigation that unblocked the strategy
+
+(Original safety run with the Option C Defensive disclaimer failed 0/6. Section below documents how the disclaimer was identified as the sole blocker and how Variant A was chosen.)
 
 ## TL;DR
 
