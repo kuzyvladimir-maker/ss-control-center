@@ -1478,6 +1478,8 @@ model BundleDraft {
 
   // Relations
   compliance_checks ComplianceCheck[]
+  variation_matrix  VariationMatrix?
+  generated_content GeneratedContent[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -2010,4 +2012,96 @@ model ComplianceAuditLog {
 
   @@index([bundle_draft_id, created_at])
   @@index([event_type])
+}
+
+// ============================================================================
+// Bundle Factory — Phase 2.2 Variation Matrix + Content Generation
+//
+// VariationMatrix     — Stage 3 output: 5–10 composition variants generated
+//                       deterministically from the curated ResearchPool. The
+//                       user picks one, and `selected_variant_idx` indexes
+//                       into `variants_json`.
+// GeneratedContent    — Stage 4 output: one row per (BundleDraft, channel)
+//                       holding Claude-generated title + bullets + description
+//                       plus its post-compliance-gate status. When all rows
+//                       for a draft are CAN_PUBLISH, the draft flips to
+//                       status=GENERATED.
+// ============================================================================
+
+model VariationMatrix {
+  id              String      @id @default(cuid())
+  bundle_draft_id String      @unique
+  bundle_draft    BundleDraft @relation(fields: [bundle_draft_id], references: [id], onDelete: Cascade)
+
+  /// JSON array of variant objects:
+  /// {
+  ///   idx: number,
+  ///   name: string,                  // e.g. "Variant B — 6×Lunchables + 6×Capri Sun"
+  ///   composition: [{ research_pool_id: string, qty: number }],
+  ///   cost_cents: number,
+  ///   suggested_price_cents: number,
+  ///   margin_cents: number,
+  ///   margin_pct: number,
+  ///   feasibility_score: number,     // 0–100, based on component freshness
+  ///   notes: string,
+  /// }
+  variants_json        String
+  selected_variant_idx Int?
+
+  generation_cost_cents Int @default(0) // 0 — deterministic, no AI call
+
+  generated_at DateTime  @default(now())
+  selected_at  DateTime?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([bundle_draft_id])
+}
+
+model GeneratedContent {
+  id              String      @id @default(cuid())
+  bundle_draft_id String
+  bundle_draft    BundleDraft @relation(fields: [bundle_draft_id], references: [id], onDelete: Cascade)
+
+  /// SalesChannel value (e.g. 'AMAZON_SALUTEM', 'WALMART'). The same draft
+  /// has one row per target channel; siblings sharing a channel template
+  /// (5 Amazon accounts) carry identical content but exist as distinct rows
+  /// so per-account compliance + override stays per-row.
+  channel String
+
+  /// Channel template the content was generated under — 'amazon' | 'walmart'.
+  /// Multiple channels can share one Claude call (5 Amazon accounts share
+  /// the 'amazon' template), so this column is the dedupe key for the
+  /// generator and tells the cost-roll-up which row actually paid Claude.
+  template String
+
+  title        String
+  bullets_json String // JSON array of strings
+  description  String
+
+  /// Compliance gate result on this exact content. Set to BLOCKED while
+  /// the manual-review queue handles the row.
+  compliance_status      String  @default("PENDING") // 'PENDING' | 'CAN_PUBLISH' | 'BLOCKED'
+  compliance_check_id    String?
+  compliance_attempts    Int     @default(0)
+  manual_review_required Boolean @default(false)
+  failed_rule_ids        String? // JSON array of rule IDs (last failure)
+
+  /// Anthropic billing accounting. Charged tokens are owned by the template
+  /// row; sibling rows that re-use the same generated text carry 0 cost.
+  generation_cost_cents Int     @default(0)
+  claude_response_id    String?
+  claude_input_tokens   Int     @default(0)
+  claude_output_tokens  Int     @default(0)
+  cache_read_tokens     Int     @default(0)
+  cache_write_tokens    Int     @default(0)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([bundle_draft_id, channel])
+  @@index([bundle_draft_id])
+  @@index([compliance_status])
+  @@index([manual_review_required])
 }
