@@ -1,10 +1,10 @@
 # 🤖 Phase 2.6.2 — Claude Content Rewrite
 
 > **Started:** 2026-05-19
-> **Status:** Implementation COMPLETE · safety test **FAILED** (0/5 AMZCOM), awaiting Vladimir's strategy decision before next iteration.
-> **Cost so far:** $0.06 (cohort-scoped safety test caught failure before the full $8.50 replan ran)
+> **Status:** Implementation COMPLETE · safety test **FAILED** (0/5 AMZCOM, 0/1 SALUTEM probe). **Root cause = disclaimer text, NOT Claude rewrite.** Awaiting Vladimir's strategy decision (5 options below).
+> **Cost so far:** ~$0.18 (cohort-scoped safety test + isolation probe; the full $8.50 replan was correctly deferred)
 > **Full spec:** `docs/CLAUDE_CODE_PROMPT_PHASE_2_6_2_CLAUDE_REWRITE.md`
-> **Failure analysis:** `docs/PHASE_2_6_2_SAFETY_TEST_FAILURE.md`
+> **Canonical safety analysis:** `docs/PHASE_2_6_2_SAFETY_TEST_REPORT.md`
 
 ---
 
@@ -12,7 +12,7 @@
 
 Generate fresh compliant bullets+description from audit metadata using Claude Sonnet 4.5, then append the curator disclaimer — replacing the in-plan content-generation step of [Phase 2.6.1](phase-2-6-1-disclaimer-injection.md) which only passed 1/5 AMZCOM safety listings (regex scrub can't keep up with Amazon's ML-based PDP classifier on subjective language).
 
-Claude's output is qualitatively cleaner than the legacy template (no emojis, no `perfect`/`ultimate`, no HTML), but Amazon's classifier still flagged **5/5** safety listings on different patterns the system prompt didn't cover (benefit claims, manufacturer process descriptions, suitability statements). Strategy needs a tighter prompt or a different approach before continuing.
+Claude's content is genuinely clean (no emojis, no `perfect`/`ultimate`, no HTML, factual brand-as-inventory phrasing) and the 4-variant isolation probe (`_diag-disclaimer-isolate.ts`) PROVED Claude's bullets+description pass Amazon's classifier on their own. What Amazon's PDP code 99300 is actually rejecting is the **Option C Defensive disclaimer text** — specifically the affiliation/endorsement negation and trademark-property statements. Disclaimer text needs revision (or removal) before any further execute.
 
 ## What's in place
 
@@ -39,8 +39,9 @@ append disclaimer bullet + paragraph → persist as ListingRemediation row
 ## Safety test verdict (2026-05-19)
 
 - AMZCOM 5/5 rejected by Amazon PDP code 99300 at VALIDATION_PREVIEW. Zero live listings modified (guard worked).
-- SALUTEM cohort not run per the 4/5 safety gate.
-- See `docs/PHASE_2_6_2_SAFETY_TEST_FAILURE.md` for full sample rejections + 4 strategy options for Vladimir.
+- SALUTEM full cohort not run per the 4/5 safety gate; 1-listing cross-account probe also rejected.
+- Disclaimer-isolation probe (4 variants on same ASIN) revealed: Claude content alone → VALID; Claude + disclaimer → INVALID on whichever attribute carries the disclaimer.
+- See `docs/PHASE_2_6_2_SAFETY_TEST_REPORT.md` for the full probe table + 5 strategy options for Vladimir.
 
 ## Cohort-scoped safety lesson
 
@@ -51,5 +52,5 @@ The spec's literal "full replan first, then safety test" path would have cost $8
 - [Listing Audit Tool](listing-audit-tool.md) — где формируются `risk_reasons`
 - [Phase 2.6.1 Disclaimer Injection](phase-2-6-1-disclaimer-injection.md) — родительский pipeline, scrub-mode fallback
 - [Bundle Factory](bundle-factory.md) — родительский модуль
-- `docs/PHASE_2_6_2_SAFETY_TEST_FAILURE.md` — что Amazon отверг, какие 4 опции на выбор
+- `docs/PHASE_2_6_2_SAFETY_TEST_REPORT.md` — изоляционная проба (4 варианта), root cause = disclaimer, 5 опций на выбор
 - `docs/CLAUDE_CODE_PROMPT_PHASE_2_6_2_CLAUDE_REWRITE.md` — оригинальный спек (для истории)

@@ -25,6 +25,33 @@ Probed `B0F74NGS3B` (POULTRY productType, Oscar Mayer Rotisserie Chicken gift se
 
 Conclusion: Amazon's classifier rejects whichever attribute carries the disclaimer, independently. Variant A — Claude content alone — passes cleanly.
 
+## Disclaimer-wording probe — 3 minimal variants all PASS
+
+Follow-up probe via [`scripts/_diag-disclaimer-variants.ts`](../ss-control-center/scripts/_diag-disclaimer-variants.ts) tested 3 stripped-down disclaimer wordings against the same Claude content. Same ASIN (B0F74NGS3B), same VALIDATION_PREVIEW path. **All three variants pass in all three attachment patterns** (bullet only / description only / both).
+
+| Variant | Bullet text | Paragraph text | Result (all 3 patterns) |
+|---|---|---|---|
+| A — minimal | "Curated and assembled by Salutem Solutions LLC as a gift basket." | "This gift basket is curated and assembled by Salutem Solutions LLC. The included items are packaged by their original manufacturers." | **VALID** ✅ |
+| B — shorter | "Assembled by Salutem Solutions LLC as a gift basket." | "Assembled by Salutem Solutions LLC. Each item is packaged by its original manufacturer." | **VALID** ✅ |
+| C — no LLC | "Gift basket curated by Salutem Solutions." | "This is a curated gift basket. Each included item is packaged by its original manufacturer." | **VALID** ✅ |
+
+What's REMOVED relative to Option C Defensive (the rejecting version):
+
+- Affiliation/endorsement negation ("not affiliated with, sponsored by, or endorsed by any of the brands…")
+- Trademark-property statement ("All trademarks, brand names, logos, and packaging visible in the product images are the property of their respective owners…")
+- Modification-status statement ("This product is intended as a gift basket; included items are not modified, repackaged into branded materials, or altered in any way…")
+- Sourcing-authority claim ("individual items are sourced from authorized retailers")
+
+What's KEPT in all three variants:
+
+- Salutem identity as curator/assembler
+- Gift-basket framing
+- Acknowledgement that items are packaged by their original manufacturer
+
+**Recommendation:** swap [DISCLAIMER_BULLET](../ss-control-center/src/lib/bundle-factory/remediation/disclaimer-text.ts) and [DISCLAIMER_DESCRIPTION](../ss-control-center/src/lib/bundle-factory/remediation/disclaimer-text.ts) to Variant A (most informative of the three; explicitly mentions LLC entity), re-run safety test of 5 AMZCOM, and if ≥4/5 proceed to 5 SALUTEM per original gate. Expected outcome: all 5 pass (probe ran VALID on 9/9 disclaimer-bearing patches, the safety test will be the first multi-listing confirmation).
+
+⚠ **Legal/compliance check before swap:** Option C Defensive was added after the 2026-05-17 Retailer Distributor ban specifically to strengthen the Gift Basket Exception positioning under Amazon's policy (see [BUNDLE_FACTORY_COMPLIANCE_GATE_v1_0.md](BUNDLE_FACTORY_COMPLIANCE_GATE_v1_0.md) if it exists). The minimal variants drop the explicit "not affiliated/endorsed" language. Vladimir should confirm whether the simpler wording still meets the compliance objective. If not, alternative path is to keep the legalese text in `hasDisclaimerText`-detectable form but inject it OUTSIDE bullets/description (e.g., via product attribute fields not subject to PDP classifier, or via the Brand Story / A+ Content path).
+
 ## The disclaimer text Amazon is rejecting
 
 Both blocks live in [src/lib/bundle-factory/remediation/disclaimer-text.ts](../ss-control-center/src/lib/bundle-factory/remediation/disclaimer-text.ts):
