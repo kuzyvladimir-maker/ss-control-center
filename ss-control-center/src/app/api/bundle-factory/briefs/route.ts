@@ -52,7 +52,8 @@ export const GET = withErrorHandler("briefs", async (request: Request) => {
 });
 
 type CreatePayload = {
-  generation_job_id: string;
+  /** Optional; auto-created if missing. */
+  generation_job_id?: string;
   draft_name: string;
   brand: string;
   category: string;
@@ -68,7 +69,6 @@ export const POST = withErrorHandler(
     const body = await readJson<CreatePayload>(request);
     if (!body) return badRequest("Body must be JSON");
     const required = [
-      "generation_job_id",
       "draft_name",
       "brand",
       "category",
@@ -95,10 +95,37 @@ export const POST = withErrorHandler(
         return badRequest(`Invalid target_channels entry: ${ch}`);
       }
     }
+    if (typeof body.pack_count !== "number" || body.pack_count < 2 || body.pack_count > 50) {
+      return badRequest("pack_count must be a number between 2 and 50");
+    }
+
+    // Auto-create the GenerationJob when the caller didn't supply one.
+    // Keeping the field optional avoids breaking the Phase 1 contract.
+    let generationJobId = body.generation_job_id;
+    if (!generationJobId) {
+      const job = await prisma.generationJob.create({
+        data: {
+          brief: JSON.stringify({
+            draft_name: body.draft_name,
+            brand: body.brand,
+            category: body.category,
+            composition_type: body.composition_type,
+            pack_count: body.pack_count,
+            target_channels: body.target_channels,
+          }),
+          current_stage: "BRIEF",
+          status: "PENDING",
+          bundles_target: 1,
+          user_id: "user",
+        },
+        select: { id: true },
+      });
+      generationJobId = job.id;
+    }
 
     const created = await prisma.bundleDraft.create({
       data: {
-        generation_job_id: body.generation_job_id,
+        generation_job_id: generationJobId,
         draft_name: body.draft_name,
         brand: body.brand,
         category: body.category,

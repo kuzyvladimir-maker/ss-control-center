@@ -10,7 +10,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PageHead } from "@/components/kit";
-import { Package2, Layers, FileBox, Globe2 } from "lucide-react";
+import { Package2, Layers, FileBox, Globe2, FlaskConical } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +26,9 @@ export default async function BundleFactoryOverviewPage() {
     upcAssigned,
     storeCount,
     jobsActive,
+    briefsDraft,
+    briefsResearching,
+    briefsResearched,
   ] = await Promise.all([
     prisma.masterBundle.count(),
     prisma.masterBundle.count({ where: { lifecycle_status: "LIVE" } }),
@@ -38,6 +41,11 @@ export default async function BundleFactoryOverviewPage() {
     prisma.generationJob.count({
       where: { status: { in: ["PENDING", "IN_PROGRESS"] } },
     }),
+    prisma.bundleDraft.count({ where: { status: "DRAFT" } }),
+    prisma.generationStage.count({
+      where: { stage: "RESEARCH", status: "IN_PROGRESS" },
+    }),
+    prisma.bundleDraft.count({ where: { status: "RESEARCHED" } }),
   ]);
 
   return (
@@ -83,6 +91,34 @@ export default async function BundleFactoryOverviewPage() {
           sub={`${upcAssigned} assigned · ${storeCount} stores`}
           icon={<Package2 size={20} strokeWidth={1.6} className="text-warn-strong" />}
         />
+      </div>
+
+      <div className="rounded-[14px] border border-rule bg-surface p-4">
+        <div className="flex items-center gap-2">
+          <FlaskConical size={16} strokeWidth={1.6} className="text-green-mid" />
+          <h2 className="text-[13px] font-semibold text-ink">
+            Research pipeline (Phase 2.1)
+          </h2>
+        </div>
+        <div className="mt-3 grid grid-cols-3 gap-3">
+          <MiniKpi
+            label="Awaiting research"
+            value={briefsDraft}
+            href="/bundle-factory/briefs"
+            hint="Briefs in DRAFT — click to kick off Stage 2"
+          />
+          <MiniKpi
+            label="Researching now"
+            value={briefsResearching}
+            hint="Stage 2 currently calling Perplexity"
+          />
+          <MiniKpi
+            label="Pending variation"
+            value={briefsResearched}
+            href="/bundle-factory/briefs"
+            hint="Researched, awaiting Variation Matrix"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -135,6 +171,39 @@ function KpiCard({
         <div className="mt-2 text-[11.5px] tabular-nums text-ink-3">{sub}</div>
       )}
     </div>
+  );
+}
+
+function MiniKpi({
+  label,
+  value,
+  hint,
+  href,
+}: {
+  label: string;
+  value: number;
+  hint?: string;
+  href?: string;
+}) {
+  const body = (
+    <div className="rounded-lg border border-rule bg-bg-elev/40 px-3 py-2 transition-colors hover:bg-bg-elev">
+      <div className="text-[10.5px] font-medium uppercase tracking-wider text-ink-3">
+        {label}
+      </div>
+      <div className="mt-1 font-mono text-[20px] font-semibold leading-none tabular-nums text-ink">
+        {value.toLocaleString("en-US")}
+      </div>
+      {hint && (
+        <div className="mt-1.5 text-[11px] leading-tight text-ink-3">{hint}</div>
+      )}
+    </div>
+  );
+  return href ? (
+    <Link href={href} className="block">
+      {body}
+    </Link>
+  ) : (
+    body
   );
 }
 

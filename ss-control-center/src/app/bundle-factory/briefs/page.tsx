@@ -1,22 +1,35 @@
 /**
- * Bundle Factory — Briefs.
+ * Bundle Factory — Briefs list.
  *
- * Shows BundleDrafts in DRAFT state — the inbox of pipeline jobs the user
- * has started but not yet run. Phase 1 surface is a read-only list; the
- * actual "kick off pipeline" button lands in Phase 5+.
+ * Shows BundleDrafts grouped by status (DRAFT, RESEARCHED, others
+ * collapsed). Phase 2.1 adds a "+ New Brief" action linking to
+ * `/bundle-factory/briefs/new` and makes every row clickable into the
+ * detail page.
  */
 
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PageHead, Sep } from "@/components/kit";
 
 export const dynamic = "force-dynamic";
 
+const VISIBLE_STATUSES = [
+  "DRAFT",
+  "RESEARCHED",
+  "VARIATION_SELECTED",
+  "GENERATED",
+  "APPROVED",
+] as const;
+
 export default async function BriefsPage() {
   const briefs = await prisma.bundleDraft.findMany({
-    where: { status: "DRAFT" },
+    where: { status: { in: [...VISIBLE_STATUSES] } },
     orderBy: { created_at: "desc" },
-    take: 100,
+    take: 200,
   });
+
+  const draftCount = briefs.filter((b) => b.status === "DRAFT").length;
+  const researchedCount = briefs.filter((b) => b.status === "RESEARCHED").length;
 
   return (
     <>
@@ -24,29 +37,39 @@ export default async function BriefsPage() {
         title="Briefs"
         subtitle={
           <>
-            <span className="font-medium text-ink-2">{briefs.length} briefs</span>
+            <span className="font-medium text-ink-2">
+              {briefs.length} active
+            </span>
             <Sep />
-            <span>BundleDrafts queued in DRAFT status, awaiting pipeline kickoff.</span>
+            <span className="text-ink-3">
+              {draftCount} draft · {researchedCount} researched
+            </span>
           </>
+        }
+        actions={
+          <Link
+            href="/bundle-factory/briefs/new"
+            className="inline-flex h-7 select-none items-center justify-center rounded-md border border-green bg-green px-2.5 text-[12px] font-medium text-cream hover:bg-green-deep"
+          >
+            + New Brief
+          </Link>
         }
       />
 
       {briefs.length === 0 ? (
-        <EmptyState
-          title="No briefs yet"
-          body="Create one via POST /api/bundle-factory/briefs (the in-app form lands in Phase 5)."
-        />
+        <EmptyState />
       ) : (
         <div className="overflow-x-auto rounded-[14px] border border-rule bg-surface">
           <table className="min-w-full text-[12.5px] text-ink">
             <thead className="bg-surface-tint text-[11px] uppercase tracking-wider text-ink-3">
               <tr>
-                <Th>Draft name</Th>
+                <Th>Draft</Th>
                 <Th>Brand</Th>
+                <Th>Status</Th>
                 <Th>Category</Th>
                 <Th>Type</Th>
                 <Th className="text-right">Pack</Th>
-                <Th>Target channels</Th>
+                <Th>Channels</Th>
                 <Th className="text-right">Created</Th>
               </tr>
             </thead>
@@ -54,14 +77,25 @@ export default async function BriefsPage() {
               {briefs.map((b) => {
                 const channels = safeParse<string[]>(b.target_channels) ?? [];
                 return (
-                  <tr key={b.id} className="border-t border-rule align-top">
+                  <tr
+                    key={b.id}
+                    className="border-t border-rule align-top hover:bg-bg-elev/40"
+                  >
                     <Td>
-                      <div className="font-medium text-ink">{b.draft_name}</div>
+                      <Link
+                        href={`/bundle-factory/briefs/${b.id}`}
+                        className="font-medium text-ink hover:text-green-ink"
+                      >
+                        {b.draft_name}
+                      </Link>
                       <div className="mt-0.5 font-mono text-[10.5px] text-ink-3">
                         {b.id}
                       </div>
                     </Td>
                     <Td>{b.brand}</Td>
+                    <Td>
+                      <StatusPill status={b.status} />
+                    </Td>
                     <Td className="font-mono text-[11.5px] text-ink-2">
                       {b.category.toLowerCase()}
                     </Td>
@@ -72,7 +106,7 @@ export default async function BriefsPage() {
                       ×{b.pack_count}
                     </Td>
                     <Td className="text-ink-2">
-                      {channels.length === 0 ? "—" : channels.join(", ")}
+                      {channels.length === 0 ? "—" : channels.length}
                     </Td>
                     <Td className="text-right font-mono tabular-nums text-ink-3">
                       {fmtDate(b.created_at)}
@@ -126,13 +160,40 @@ function Td({
   return <td className={`px-3 py-2.5 ${className}`}>{children}</td>;
 }
 
-function EmptyState({ title, body }: { title: string; body: string }) {
+function StatusPill({ status }: { status: string }) {
+  const style =
+    status === "DRAFT"
+      ? "bg-bg-elev text-ink-3"
+      : status === "RESEARCHED"
+        ? "bg-green-soft text-green-ink"
+        : status === "VARIATION_SELECTED" || status === "GENERATED"
+          ? "bg-green-soft2 text-green-ink"
+          : "bg-warn-tint text-warn-strong";
+  return (
+    <span
+      className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10.5px] font-medium uppercase tracking-wider ${style}`}
+    >
+      {status}
+    </span>
+  );
+}
+
+function EmptyState() {
   return (
     <div className="rounded-[14px] border border-rule bg-surface px-6 py-12 text-center">
-      <div className="text-[14px] font-semibold text-ink">{title}</div>
+      <div className="text-[14px] font-semibold text-ink">No briefs yet</div>
       <p className="mx-auto mt-1 max-w-md text-[12.5px] leading-relaxed text-ink-3">
-        {body}
+        Start a brief to describe a bundle idea — research will then find
+        retail candidates near Clearwater.
       </p>
+      <div className="mt-4">
+        <Link
+          href="/bundle-factory/briefs/new"
+          className="inline-flex h-9 select-none items-center justify-center rounded-md border border-green bg-green px-4 text-[13px] font-medium text-cream hover:bg-green-deep"
+        >
+          + New Brief
+        </Link>
+      </div>
     </div>
   );
 }
