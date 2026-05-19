@@ -14,6 +14,7 @@ import {
   Package,
   Settings,
   ShoppingCart,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -75,6 +76,11 @@ const operationsItems = (s: DashboardSummary): NavItem[] => [
     icon: Receipt,
     pillCount: s.claims?.active || undefined,
     pillVariant: "warn",
+  },
+  {
+    title: "Bundle Factory",
+    href: "/bundle-factory",
+    icon: Layers,
   },
 ];
 
