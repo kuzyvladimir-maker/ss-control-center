@@ -1,11 +1,22 @@
 /**
- * Phase 2.6.1 — Disclaimer text constants for bulk injection.
+ * Phase 2.6.2 — Disclaimer text constants for bulk injection.
  *
- * Option C (Defensive) selected by Vladimir on 2026-05-19 after the
- * 2026-05-17 Retailer Distributor ban for Trademark Logo Misuse.
- * Aligns with Amazon Gift Basket Exception (node 12011207011) positioning
- * and the NO-LOA compliance strategy in
- * BUNDLE_FACTORY_COMPLIANCE_GATE_v1_0.md.
+ * History:
+ *   - 2026-05-19 — Option C "Defensive" approved by Vladimir after the
+ *     2026-05-17 Retailer Distributor ban for Trademark Logo Misuse.
+ *     Used affiliation-negation + trademark-property statements.
+ *   - 2026-05-19 — Phase 2.6.2 safety test (5 AMZCOM + 1 SALUTEM probe)
+ *     blocked 100% by Amazon PDP code 99300 ("false/promotional claims
+ *     or external links"). Isolation probe (`_diag-disclaimer-isolate.ts`)
+ *     confirmed Claude content alone PASSED — the disclaimer text was
+ *     the trigger.
+ *   - 2026-05-19 — Replaced with minimal "Variant A" wording. Probed
+ *     (`_diag-disclaimer-variants.ts`) on B0F74NGS3B in three forms:
+ *     bullet-only, paragraph-only, and combined — all returned
+ *     status=VALID. Keeps the Gift Basket Exception positioning
+ *     (Salutem as curator/assembler, items packaged by their original
+ *     manufacturers) without the affiliation-negation, trademark-property,
+ *     or "authorized retailers" supply-chain claim that tripped 99300.
  *
  * Used by:
  *   scripts/disclaimer-injection-plan.ts     (write into ListingRemediation.new_*)
@@ -15,34 +26,38 @@
  */
 
 export const DISCLAIMER_BULLET =
-  "Curated and packaged by Salutem Solutions LLC as a gift basket assembly. " +
-  "This is not a manufacturer's product; individual items are sourced from " +
-  "authorized retailers and assembled for buyer convenience.";
+  "Curated and assembled by Salutem Solutions LLC as a gift basket.";
 
 export const DISCLAIMER_DESCRIPTION =
-  "About this gift basket: This product is a curated assembly created by " +
-  "Salutem Solutions LLC, a third-party curator. Salutem Solutions LLC is " +
-  "not affiliated with, sponsored by, or endorsed by any of the brands " +
-  "included in this collection. Each item is independently sourced from " +
-  "authorized retailers and assembled into this gift basket for buyer " +
-  "convenience. All trademarks, brand names, logos, and packaging visible " +
-  "in the product images are the property of their respective owners. " +
-  "This product is intended as a gift basket; included items are not " +
-  "modified, repackaged into branded materials, or altered in any way.";
+  "This gift basket is curated and assembled by Salutem Solutions LLC. " +
+  "The included items are packaged by their original manufacturers.";
 
 /**
- * Used by plan + verify scripts to detect whether a listing already has
- * the disclaimer. Robust substring check on the first ~60 chars of the
- * bullet, case-insensitive.
+ * Detection substrings used by plan + verify scripts to recognise that
+ * a listing already carries the disclaimer (so re-runs are idempotent).
+ * Includes the Phase 2.6.1 legacy wording so the 1 listing that landed
+ * under the old text is still recognised as compliant.
+ *
+ * Substrings are matched case-insensitively against bullet text and
+ * description body.
  */
-export const DISCLAIMER_DETECTION_SUBSTRING =
-  "curated and packaged by salutem solutions";
+export const DISCLAIMER_DETECTION_SUBSTRINGS = [
+  "curated and assembled by salutem solutions", // Phase 2.6.2 wording
+  "curated and packaged by salutem solutions",  // Phase 2.6.1 legacy
+] as const;
 
-/** True if any of the given strings contains the disclaimer marker. */
+/** Back-compat alias — the legacy single-string export. New code should
+ *  use the array above. */
+export const DISCLAIMER_DETECTION_SUBSTRING = DISCLAIMER_DETECTION_SUBSTRINGS[0];
+
+/** True if any of the given strings contains a known disclaimer marker. */
 export function hasDisclaimerText(...candidates: Array<string | null | undefined>): boolean {
   for (const c of candidates) {
     if (typeof c !== "string") continue;
-    if (c.toLowerCase().includes(DISCLAIMER_DETECTION_SUBSTRING)) return true;
+    const lower = c.toLowerCase();
+    for (const needle of DISCLAIMER_DETECTION_SUBSTRINGS) {
+      if (lower.includes(needle)) return true;
+    }
   }
   return false;
 }
