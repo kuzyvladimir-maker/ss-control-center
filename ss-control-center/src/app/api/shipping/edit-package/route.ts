@@ -26,7 +26,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { updateAllocationPackage } from "@/lib/veeqo/client";
+import { updateAllocationPackage, getAllocation } from "@/lib/veeqo/client";
 
 interface Body {
   sku?: string;
@@ -195,19 +195,32 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ kind: "skuShippingData", id: created.id, veeqo });
 }
 
-// Best-effort PUT to Veeqo's allocation_package endpoint. We treat this
-// as additive: the operator's edit is already saved to our DB before
-// this runs, so if Veeqo rejects the call (auth issue, allocation in a
-// non-editable state, etc) we still surface the success of the local
-// save and report Veeqo's outcome alongside so the UI can warn that
-// rate quotes will still come back against the old packaging.
+// PUT to Veeqo's allocation_package endpoint, then GET the allocation
+// back to confirm the new package actually persisted. Veeqo has been
+// observed to return 200 on the PUT without persisting the change (the
+// legacy `save_for_similar_shipments: true` payload triggered this on
+// some allocations) — without a readback the operator sees a green
+// "saved" in the UI, but the next rate quote comes back against the
+// old packaging and the buy fails / over-charges. The readback closes
+// that hole.
+//
+// Tolerance: Veeqo stores weight in oz internally; we PUT in oz too
+// and compare with a 0.5 oz tolerance for rounding. Dimensions are
+// inches both sides — we allow 0.05 in slop for float jitter.
 async function pushPackageToVeeqo(args: {
   allocationId: unknown;
   L: number | null | undefined;
   W: number | null | undefined;
   H: number | null | undefined;
   weightLbs: number;
-}): Promise<{ ok: boolean; reason?: string }> {
+}): Promise<{
+  ok: boolean;
+  reason?: string;
+  // When verification reads back values that don't match what we wrote,
+  // we surface BOTH sides so the operator can diagnose from the toast.
+  actual?: { weightOz?: number; depth?: number; width?: number; height?: number };
+  expected?: { weightOz: number; depth: number; width: number; height: number };
+}> {
   const { allocationId, L, W, H, weightLbs } = args;
   const numericAllocId =
     typeof allocationId === "string" || typeof allocationId === "number"
@@ -226,21 +239,110 @@ async function pushPackageToVeeqo(args: {
   ) {
     return { ok: false, reason: "missing dimensions" };
   }
+  const expected = {
+    weightOz: Math.round(weightLbs * 16 * 100) / 100,
+    depth: Number(L),
+    width: Number(W),
+    height: Number(H),
+  };
   try {
     await updateAllocationPackage(numericAllocId, {
       weightLbs,
-      lengthIn: Number(L),
-      widthIn: Number(W),
-      heightIn: Number(H),
-      saveForSimilar: true,
+      lengthIn: expected.depth,
+      widthIn: expected.width,
+      heightIn: expected.height,
+      saveForSimilar: false,
     });
-    return { ok: true };
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
     console.warn(
-      `[edit-package] Veeqo allocation_package push failed for allocation ${numericAllocId}:`,
+      `[edit-package] Veeqo allocation_package PUT failed for allocation ${numericAllocId}:`,
       reason,
     );
-    return { ok: false, reason };
+    return { ok: false, reason, expected };
+  }
+
+  // Verify: re-read the allocation and confirm Veeqo actually persisted
+  // what we sent. Without this, a silent PUT-200-no-persist would let
+  // the dialog close cleanly and the next rate quote come back against
+  // the old packaging.
+  try {
+    const alloc = (await getAllocation(numericAllocId)) as {
+      allocation_package?: {
+        weight?: number;
+        weight_unit?: string;
+        depth?: number;
+        width?: number;
+        height?: number;
+        dimensions_unit?: string;
+      } | null;
+    } | null;
+    const pkg = alloc?.allocation_package ?? null;
+    if (!pkg) {
+      return {
+        ok: false,
+        reason: "Veeqo accepted the PUT but readback shows no allocation_package",
+        expected,
+      };
+    }
+    // Normalise units in case Veeqo echoes back in a different unit
+    // than we sent. We sent oz / in; if Veeqo returned grams / cm we
+    // convert before comparing so a unit-swap doesn't look like a
+    // persistence failure.
+    const readWeightOz =
+      pkg.weight_unit === "g" && typeof pkg.weight === "number"
+        ? pkg.weight / 28.3495
+        : (pkg.weight ?? NaN);
+    const toIn = (v: number | undefined) =>
+      pkg.dimensions_unit === "cm" && typeof v === "number" ? v / 2.54 : v;
+    const actual = {
+      weightOz:
+        typeof readWeightOz === "number" && Number.isFinite(readWeightOz)
+          ? Math.round(readWeightOz * 100) / 100
+          : undefined,
+      depth: toIn(pkg.depth),
+      width: toIn(pkg.width),
+      height: toIn(pkg.height),
+    };
+    const close = (a: number | undefined, b: number, tol: number) =>
+      typeof a === "number" && Number.isFinite(a) && Math.abs(a - b) <= tol;
+    const weightOk = close(actual.weightOz, expected.weightOz, 0.5);
+    const depthOk = close(actual.depth, expected.depth, 0.05);
+    const widthOk = close(actual.width, expected.width, 0.05);
+    const heightOk = close(actual.height, expected.height, 0.05);
+    if (weightOk && depthOk && widthOk && heightOk) {
+      return { ok: true, actual, expected };
+    }
+    const drift: string[] = [];
+    if (!weightOk)
+      drift.push(`weight: sent ${expected.weightOz}oz, Veeqo has ${actual.weightOz ?? "?"}oz`);
+    if (!depthOk)
+      drift.push(`depth: sent ${expected.depth}in, Veeqo has ${actual.depth ?? "?"}in`);
+    if (!widthOk)
+      drift.push(`width: sent ${expected.width}in, Veeqo has ${actual.width ?? "?"}in`);
+    if (!heightOk)
+      drift.push(`height: sent ${expected.height}in, Veeqo has ${actual.height ?? "?"}in`);
+    console.warn(
+      `[edit-package] Veeqo PUT did not persist for allocation ${numericAllocId}: ${drift.join("; ")}`,
+    );
+    return {
+      ok: false,
+      reason: `Veeqo PUT returned OK but did not persist — ${drift.join("; ")}`,
+      actual,
+      expected,
+    };
+  } catch (e) {
+    // Readback failure: write may still have succeeded — surface the
+    // soft state so the UI can warn but not block.
+    const reason = e instanceof Error ? e.message : String(e);
+    console.warn(
+      `[edit-package] Veeqo PUT succeeded but verification readback failed for allocation ${numericAllocId}:`,
+      reason,
+    );
+    return {
+      ok: false,
+      reason: `Veeqo accepted the PUT but verification readback failed: ${reason}`,
+      expected,
+    };
   }
 }

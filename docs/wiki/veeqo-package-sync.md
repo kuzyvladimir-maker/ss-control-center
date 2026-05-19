@@ -22,12 +22,19 @@ PUT /allocations/{allocationId}/allocation_package
     "dimensions_unit": "in",
     "package_provider": "CUSTOM",
     "package_selection_source": "ONE_OFF",
-    "save_for_similar_shipments": true
+    "save_for_similar_shipments": false
   }
 }
 ```
 
-UI passes `allocationId` (from `plan.allocationId`) through to the API. Veeqo push is **best-effort**: if it fails (auth issue, allocation in non-editable state), the local DB save still succeeds and the API response includes a `veeqo: { ok: false, reason }` field so the UI can surface a warning if needed.
+UI passes `allocationId` (from `plan.allocationId`) through to the API.
+
+**Two-step write+verify (added 2026-05-19 after Vladimir caught a silent persistence failure on order `113-6751472-0567441`):**
+
+1. **PUT** the package as above.
+2. **GET** `/allocations/{allocationId}` and compare the returned `allocation_package` against what we sent. Tolerance: 0.5oz on weight, 0.05in on each dimension. If readback doesn't match, the API returns `veeqo: { ok: false, reason }` and the dialog stays open with a red banner explaining what drifted — so the operator doesn't see a green "Saved" while Veeqo keeps quoting against the old packaging.
+
+The previous version sent `save_for_similar_shipments: true` (thinking that's what made Veeqo remember dims for the next order with the same SKU+qty), but Veeqo's own docs say "Should be `false`" when setting dimensions via the API, and `true` triggered the silent no-persist behavior described above. Our DB already remembers per-SKU dims via SkuShippingData / PackingProfile, so Veeqo doesn't need to.
 
 ## Units
 

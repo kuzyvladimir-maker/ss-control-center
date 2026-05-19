@@ -236,13 +236,18 @@ export async function updateOrderDispatchDate(
  * so the next `/shipping/rates/{allocationId}?from_allocation_package=true`
  * call quotes against the new packaging.
  *
- * Veeqo also persists this as a parcel preset for future shipments with
- * the same composition when `save_for_similar_shipments` is true — this
- * is the behaviour the user noticed in Veeqo's UI ("it remembers last
- * dimensions for this SKU/qty").
- *
  * Units: weight in `oz`, dimensions in `in` (we receive lbs+inches from
  * the UI and convert here so callers don't have to think about it).
+ *
+ * `save_for_similar_shipments` default is `false` — Veeqo's
+ * /api/operations/update-allocation-package docs explicitly say
+ * "Should be false" when dimensions are set via the API. Earlier we
+ * sent `true` (thinking it was what made Veeqo remember the dims for
+ * the next order with the same SKU/qty), but that triggered silent
+ * 422 / non-persistence on at least some allocations — the PUT
+ * appeared to succeed but Veeqo's own UI / rate quotes kept showing
+ * the original packaging. Our DB already remembers per-SKU dims via
+ * SkuShippingData / PackingProfile, so we don't need Veeqo to.
  */
 export async function updateAllocationPackage(
   allocationId: number | string,
@@ -268,13 +273,29 @@ export async function updateAllocationPackage(
       dimensions_unit: "in",
       package_provider: "CUSTOM",
       package_selection_source: "ONE_OFF",
-      save_for_similar_shipments: packageDims.saveForSimilar ?? true,
+      save_for_similar_shipments: packageDims.saveForSimilar ?? false,
     },
   };
   return veeqoFetch(`/allocations/${allocationId}/allocation_package`, {
     method: "PUT",
     body: JSON.stringify(body),
   });
+}
+
+/**
+ * Read an allocation back so the caller can verify a just-written
+ * package actually persisted. Returns the allocation object (with
+ * `weight`, `depth`, `width`, `height`, `weight_unit`, `dimensions_unit`
+ * fields on `allocation_package` when set) or whatever Veeqo gives us.
+ *
+ * Veeqo's PUT to /allocation_package can return 200 without persisting
+ * (observed when the legacy `save_for_similar_shipments: true` payload
+ * was sent — write looked successful, subsequent rate quotes still used
+ * the old package). Reading the allocation back is the only reliable
+ * post-write check.
+ */
+export async function getAllocation(allocationId: number | string) {
+  return veeqoFetch(`/allocations/${allocationId}`);
 }
 
 // Add employee note to order

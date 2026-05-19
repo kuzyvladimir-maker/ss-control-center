@@ -2708,6 +2708,22 @@ function EditPackageDialog({
         const j = await r.json().catch(() => ({}));
         throw new Error(j?.error || `HTTP ${r.status}`);
       }
+      // Local DB save succeeded. Check whether the Veeqo allocation_package
+      // push also succeeded — without it, the next rate quote still comes
+      // back against the OLD packaging and the operator buys (or gets
+      // shown) a rate that won't match what Veeqo will actually charge.
+      // Keep the dialog open on Veeqo failure so the operator sees it
+      // and can decide whether to retry or fix the packaging in Veeqo
+      // directly.
+      const j = (await r.json().catch(() => ({}))) as {
+        veeqo?: { ok: boolean; reason?: string };
+      };
+      if (j.veeqo && j.veeqo.ok === false) {
+        const reason = j.veeqo.reason || "unknown reason";
+        throw new Error(
+          `Saved to our DB, but Veeqo did NOT update its packaging — rates will still be quoted against the old size/weight.\n\nVeeqo said: ${reason}\n\nFix the packaging in Veeqo directly, then click Refresh on the shipping page.`,
+        );
+      }
       onClose(true);
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
@@ -2836,7 +2852,7 @@ function EditPackageDialog({
           </div>
 
           {err && (
-            <div className="rounded border border-danger/30 bg-danger-tint p-2 text-[11.5px] text-danger">
+            <div className="whitespace-pre-line rounded border border-danger/30 bg-danger-tint p-2 text-[11.5px] text-danger">
               {err}
             </div>
           )}
