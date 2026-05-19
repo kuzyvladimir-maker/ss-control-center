@@ -502,6 +502,19 @@ model AccountHealthSnapshot {
   accountHealthRating       Int?
   accountHealthRatingStatus String? // AT_RISK_OF_DEACTIVATION | AT_RISK | GOOD
 
+  // Operational state of the account on Amazon.com (independent of AHR).
+  // An account can be deactivated (selling privileges removed by Amazon)
+  // even while its AHR score is healthy — Retailer Distributor on
+  // 2026-05-17 is the canonical case: AHR=220 Healthy, but a "Your account
+  // has been deactivated" banner appears on Seller Central.
+  //   ACTIVE                   — selling normally
+  //   AT_RISK_OF_DEACTIVATION  — AHR < 200 (Amazon's own label)
+  //   DEACTIVATED              — Sellers API reports isParticipating=false
+  //                              on US Amazon.com (ATVPDKIKX0DER)
+  // Derived in report-orchestrator after each report parse — see
+  // resolveAccountState() in src/lib/amazon-sp-api/account-state.ts.
+  accountState String? // ACTIVE | AT_RISK_OF_DEACTIVATION | DEACTIVATED
+
   // ODR breakdown by fulfillment channel
   odrSellerFulfilled         Float?
   odrSellerFulfilledOrders   Int?

@@ -33,6 +33,7 @@ import {
   type ParsedReport,
 } from "@/lib/amazon-sp-api/seller-performance-report";
 import { evaluateCriticalAlerts } from "@/lib/account-health/critical-alert-evaluator";
+import { resolveAccountState } from "@/lib/amazon-sp-api/account-state";
 
 const REPORT_TYPE = "GET_V2_SELLER_PERFORMANCE_REPORT";
 // Jobs older than this without completing get marked as failed so the
@@ -251,6 +252,13 @@ async function persistSnapshot(
           ? "critical"
           : "healthy";
 
+  // Resolve operational state (DEACTIVATED / AT_RISK / ACTIVE) via
+  // Sellers API. Independent of AHR — see account-state.ts for why.
+  const accountState = await resolveAccountState(
+    storeIndex,
+    p.accountHealthRatingStatus ?? null,
+  );
+
   const snapshot = await prisma.accountHealthSnapshot.create({
     data: {
       storeId,
@@ -261,6 +269,7 @@ async function persistSnapshot(
 
       accountHealthRating: p.accountHealthRating ?? null,
       accountHealthRatingStatus: p.accountHealthRatingStatus ?? null,
+      accountState: accountState,
 
       orderDefectRate: p.orderDefectRate ?? null,
       odrOrders60d: p.odrOrders60d ?? null,

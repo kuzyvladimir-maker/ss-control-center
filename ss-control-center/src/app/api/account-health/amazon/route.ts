@@ -126,6 +126,18 @@ export async function GET(request: NextRequest) {
   // Stores without snapshots (no SP-API creds yet) shouldn't pollute the
   // "X of Y" count in the hero card.
   const configured = result.filter((r) => r.snapshot !== null).length;
+
+  // Count operationally-deactivated stores. Surfaced separately from
+  // AHR breaches because a deactivation is a hard stop (no selling
+  // privileges) regardless of the AHR number — Retailer Distributor on
+  // 2026-05-17 had AHR=220 (Healthy) but was deactivated.
+  const deactivatedStores = result
+    .filter((r) => {
+      const snap = r.snapshot as { accountState?: string | null } | null;
+      return snap?.accountState === "DEACTIVATED";
+    })
+    .map((r) => r.storeName);
+
   return NextResponse.json({
     stores: result,
     summary: {
@@ -136,6 +148,8 @@ export async function GET(request: NextRequest) {
       worstAhr: worstAhrRow,
       worstOdr,
       openPolicyViolations,
+      deactivatedCount: deactivatedStores.length,
+      deactivatedStores,
     },
   });
 }

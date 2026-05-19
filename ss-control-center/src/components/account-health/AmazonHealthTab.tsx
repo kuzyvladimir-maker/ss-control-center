@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useStoreFilter } from "@/lib/store-filter/StoreFilterContext";
 import { KpiCard, Panel, PanelHeader, PanelBody } from "@/components/kit";
-import { HeartPulse, AlertTriangle, ShieldCheck } from "lucide-react";
+import { HeartPulse, AlertTriangle, ShieldCheck, Ban } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -26,6 +26,7 @@ interface Snapshot {
   onTimeDeliveryRate: number | null;
   accountHealthRating: number | null;
   accountHealthRatingStatus: string | null;
+  accountState: string | null; // ACTIVE | AT_RISK_OF_DEACTIVATION | DEACTIVATED
   lsr10dLate: number | null;
   lsr10dTotal: number | null;
   lsr30dLate: number | null;
@@ -66,6 +67,8 @@ interface Response {
     worstAhr: { store: string; value: number } | null;
     worstOdr: { store: string; value: number } | null;
     openPolicyViolations: number;
+    deactivatedCount: number;
+    deactivatedStores: string[];
   };
 }
 
@@ -106,24 +109,62 @@ export function AmazonHealthTab({ refreshNonce }: { refreshNonce: number }) {
   if (loading && !data) return <div className="text-[12px] text-ink-3">Loading…</div>;
   if (!data) return null;
 
+  const deactivatedCount = data.summary.deactivatedCount ?? 0;
+  const deactivatedStores = data.summary.deactivatedStores ?? [];
+
   return (
     <div className="space-y-5">
+      {/* Deactivation banner — mirrors the red bar Amazon Seller Central
+          shows when an account has lost selling privileges. Independent
+          of AHR; only renders when at least one store is operationally
+          deactivated. */}
+      {deactivatedCount > 0 && (
+        <div className="flex items-start gap-3 rounded-lg border border-danger/40 bg-danger-tint px-4 py-3">
+          <Ban size={16} className="mt-0.5 shrink-0 text-danger" />
+          <div className="text-[12.5px]">
+            <div className="font-semibold text-danger">
+              {deactivatedCount === 1
+                ? "1 account deactivated"
+                : `${deactivatedCount} accounts deactivated`}
+            </div>
+            <div className="mt-0.5 text-[11.5px] text-ink-2">
+              {deactivatedStores.join(", ")} — selling privileges removed
+              by Amazon. Status: submission required to reactivate.
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero row */}
       <div className="grid gap-3 sm:grid-cols-3">
         <KpiCard
-          label="At risk"
+          label={deactivatedCount > 0 ? "Deactivated" : "At risk"}
           value={
-            data.summary.configured > 0
-              ? `${data.summary.breaches} of ${data.summary.configured}`
-              : "No data"
+            deactivatedCount > 0
+              ? `${deactivatedCount} of ${data.summary.configured}`
+              : data.summary.configured > 0
+                ? `${data.summary.breaches} of ${data.summary.configured}`
+                : "No data"
           }
-          icon={<HeartPulse size={14} />}
-          iconVariant={data.summary.breaches > 0 ? "danger" : "default"}
+          icon={
+            deactivatedCount > 0 ? (
+              <Ban size={14} />
+            ) : (
+              <HeartPulse size={14} />
+            )
+          }
+          iconVariant={
+            deactivatedCount > 0 || data.summary.breaches > 0
+              ? "danger"
+              : "default"
+          }
           trend={{
             value:
-              data.summary.breaches > 0
-                ? "stores need action"
-                : "all stores OK",
+              deactivatedCount > 0
+                ? "selling privileges removed"
+                : data.summary.breaches > 0
+                  ? "stores need action"
+                  : "all stores OK",
           }}
         />
         <KpiCard
@@ -295,6 +336,27 @@ function ahrTextClass(ahr: number | null): string {
   return "text-green";
 }
 
+function AccountStateBadge({ state }: { state: string | null }) {
+  if (!state || state === "ACTIVE") return null;
+  if (state === "DEACTIVATED") {
+    return (
+      <span className="ml-2 inline-flex items-center gap-1 rounded bg-danger-tint px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider text-danger">
+        <Ban size={10} />
+        Deactivated
+      </span>
+    );
+  }
+  if (state === "AT_RISK_OF_DEACTIVATION") {
+    return (
+      <span className="ml-2 inline-flex items-center gap-1 rounded bg-warn-tint px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider text-warn-strong">
+        <AlertTriangle size={10} />
+        At Risk
+      </span>
+    );
+  }
+  return null;
+}
+
 function AhrRow({ row }: { row: StoreRow }) {
   const ahr = row.snapshot?.accountHealthRating ?? null;
   const pct =
@@ -306,7 +368,10 @@ function AhrRow({ row }: { row: StoreRow }) {
   return (
     <div>
       <div className="flex items-baseline justify-between text-[12.5px]">
-        <span className="font-medium text-ink">{row.storeName}</span>
+        <span className="font-medium text-ink">
+          {row.storeName}
+          <AccountStateBadge state={row.snapshot?.accountState ?? null} />
+        </span>
         <span className="tabular">
           <span className={cn("font-semibold", numCls)}>
             {ahr != null ? ahr : "—"}
