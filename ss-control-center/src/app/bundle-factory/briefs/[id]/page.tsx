@@ -12,6 +12,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PageHead, Sep } from "@/components/kit";
 import { BriefDetailClient } from "./BriefDetailClient";
+import { VariationMatrixSection } from "./VariationMatrixSection";
 import { PIPELINE_STAGES } from "@/lib/bundle-factory/enums";
 
 export const dynamic = "force-dynamic";
@@ -99,6 +100,12 @@ export default async function BriefDetailPage({ params }: PageProps) {
           status: s.status,
         }))}
       />
+
+      {(brief.status === "VARIATION_SELECTED" ||
+        brief.status === "GENERATED" ||
+        brief.status === "APPROVED") && (
+        <VariationMatrixSection briefId={brief.id} />
+      )}
 
       <BriefDetailClient
         briefId={brief.id}
