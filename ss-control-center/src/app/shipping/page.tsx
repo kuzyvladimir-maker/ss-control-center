@@ -1190,7 +1190,21 @@ function OrderRow({
 
         <div className="shrink-0">
           {order.items[0]?.knownType && (
-            <TypeTag type={order.items[0].knownType} />
+            // Clickable so operators can flip a misclassified Frozen/Dry
+            // type without waiting for the order to land in "Need
+            // attention". Vladimir caught a real case (Jimmy Dean
+            // croissants tagged Dry but actually Frozen) where the
+            // existing classify flow only fires on `needAttentionReason
+            // === "no_type"` — already-classified rows had no
+            // affordance to fix the type.
+            <button
+              type="button"
+              onClick={onManual}
+              title="Click to change Frozen/Dry"
+              className="cursor-pointer rounded transition hover:ring-1 hover:ring-ink-3/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink-2"
+            >
+              <TypeTag type={order.items[0].knownType} />
+            </button>
           )}
         </div>
       </div>
@@ -1907,6 +1921,7 @@ function ManualTypeDialog({
 }) {
   const item = order.items[0];
   const productId = item?.productId ?? null;
+  const currentType = item?.knownType ?? null;
   const [saving, setSaving] = useState(false);
 
   async function save(type: "Frozen" | "Dry") {
@@ -1928,12 +1943,21 @@ function ManualTypeDialog({
     <Dialog open onOpenChange={() => onClose(false)}>
       <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle>Set product type manually</DialogTitle>
+          <DialogTitle>
+            {currentType ? "Change product type" : "Set product type manually"}
+          </DialogTitle>
           <DialogDescription>{item?.productTitle}</DialogDescription>
         </DialogHeader>
+        {currentType && (
+          <div className="flex items-center gap-2 text-[12px] text-ink-3">
+            Current:
+            <TypeTag type={currentType} />
+            <span className="text-[11px]">— pick the new value below.</span>
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-2">
           <Button
-            variant="outline"
+            variant={currentType === "Frozen" ? "default" : "outline"}
             className="h-20"
             onClick={() => save("Frozen")}
             disabled={saving}
@@ -1941,7 +1965,7 @@ function ManualTypeDialog({
             <Snowflake size={20} className="mr-2 text-info" /> Frozen
           </Button>
           <Button
-            variant="outline"
+            variant={currentType === "Dry" ? "default" : "outline"}
             className="h-20"
             onClick={() => save("Dry")}
             disabled={saving}
