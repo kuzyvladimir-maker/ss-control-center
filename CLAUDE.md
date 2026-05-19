@@ -74,7 +74,12 @@ Walmart — 1 аккаунт (API ключ пока отсутствует).
 
 **ОБЯЗАТЕЛЬНО в product listings:**
 
-- Curator/assembler disclaimer в bullets + description (Option C defensive — см. `docs/CLAUDE_CODE_PROMPT_PHASE_2_6_1_DISCLAIMER_INJECTION.md`). Это explicit non-affiliation statement, требуется для Amazon Gift Basket Exception positioning.
+- Curator/assembler disclaimer в bullets + description. **Final wording (verified 2026-05-19 against Amazon PDP code 99300):**
+  - Bullet: `Curated and assembled by Salutem Solutions LLC as a gift basket.`
+  - Description paragraph: `This gift basket is curated and assembled by Salutem Solutions LLC. The included items are packaged by their original manufacturers.`
+  - **Что НЕ работает (triggers 99300):** affiliation-negation ("not affiliated with", "not endorsed by"), trademark-property statements ("trademarks belong to respective owners"), supply-chain claims ("sourced from authorized retailers"), длинные defensive параграфы. Amazon's classifier reads multi-clause defensive language как promotional/claims even when content is purely legal disclaimer.
+  - **Что работает:** короткое factual statement о роли curator-а + 1 предложение про оригинальную упаковку. Удерживает Gift Basket Exception positioning без поднятия PDP flags.
+  - Constants module: `src/lib/bundle-factory/remediation/disclaimer-text.ts`.
 - Plain factual text. Что внутри, сколько штук, какие размеры, как хранить, для чего использовать.
 - Brand names mentioned только factually (e.g. "Includes 8 Oscar Mayer Bun Length Franks") — никогда в title под Salutem Vita / Starfit (см. `docs/marketplace-rules/amazon/title-policy.md`).
 
