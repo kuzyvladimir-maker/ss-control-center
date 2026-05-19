@@ -1001,30 +1001,30 @@ model ProcurementNotificationLog {
 // orders with the same composition (same SKUs + quantities) reuse it
 // automatically.
 model PackingProfile {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Deterministic signature of the composition:
   // "SKU1:QTY1|SKU2:QTY2|..." sorted lexicographically by SKU.
   // Example: "T4-Y0G0-ZHII:2|XM-A131-UXNC:1".
-  signature   String   @unique
+  signature   String  @unique
   description String?
 
   boxSize     String
   weight      Float // lbs, UPS/USPS/FedEx standard
-  weightFedex Float?  // lbs, FedEx One Rate (falls back to weight × 1.25 when null)
+  weightFedex Float? // lbs, FedEx One Rate (falls back to weight × 1.25 when null)
 
-  itemCount   Int      @default(1)
-  totalQty    Int      @default(1)
-  usedCount   Int      @default(0)
-  lastUsedAt  DateTime?
+  itemCount  Int       @default(1)
+  totalQty   Int       @default(1)
+  usedCount  Int       @default(0)
+  lastUsedAt DateTime?
 
   // Phase 2 hook: semantic-similarity matching across "looks like" orders.
   // Stored as JSON-encoded float array. Not consumed today.
   productEmbedding String?
 
-  source      String   @default("manual") // "manual" | "ai_suggested"
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  source    String   @default("manual") // "manual" | "ai_suggested"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([signature])
 }
@@ -1200,7 +1200,7 @@ model MasterBundle {
 
   // Identity
   name          String
-  internal_slug String          @unique
+  internal_slug String @unique
   brand         String // "Salutem Vita" | "Starfit"
   category      String // ProductCategory
 
@@ -1262,9 +1262,9 @@ model BundleComponent {
   variant            String?
 
   // Quantity & weight
-  qty             Int
-  unit_weight_oz  Float?
-  unit_weight_lb  Float?
+  qty            Int
+  unit_weight_oz Float?
+  unit_weight_lb Float?
 
   // Cost & sourcing
   unit_price_cents Int
@@ -1301,10 +1301,10 @@ model ChannelSKU {
   brand_account    BrandAccount? @relation(fields: [brand_account_id], references: [id])
 
   // Identity
-  sku          String   @unique // XX-XXXX-XXXX
-  upc          String   @unique
-  upc_pool_id  String?  @unique
-  upc_pool     UPCPool? @relation(fields: [upc_pool_id], references: [id])
+  sku         String   @unique // XX-XXXX-XXXX
+  upc         String   @unique
+  upc_pool_id String?  @unique
+  upc_pool    UPCPool? @relation(fields: [upc_pool_id], references: [id])
 
   // Marketplace IDs (populated after publication)
   asin              String?
@@ -1313,11 +1313,11 @@ model ChannelSKU {
   tiktok_product_id String?
 
   // Content (adapted per channel)
-  title         String
-  bullets       String // JSON array of 5 strings
-  description   String
-  search_terms  String?
-  attributes    String // JSON object
+  title        String
+  bullets      String // JSON array of 5 strings
+  description  String
+  search_terms String?
+  attributes   String // JSON object
 
   // Category placement
   channel_category    String?
@@ -1342,8 +1342,15 @@ model ChannelSKU {
   units_sold_30d    Int? @default(0)
   revenue_30d_cents Int? @default(0)
 
+  // Phase 2.0 Compliance Gate — protective gate for new listings before publish.
+  compliance_status          String    @default("PENDING") // 'PENDING' | 'CAN_PUBLISH' | 'BLOCKED'
+  compliance_check_id        String?
+  compliance_blocked_at      DateTime?
+  compliance_blocked_reasons String? // JSON array of failed rule IDs
+
   // Relations
-  lifecycle_logs ListingLifecycleLog[]
+  lifecycle_logs    ListingLifecycleLog[]
+  compliance_checks ComplianceCheck[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -1353,6 +1360,7 @@ model ChannelSKU {
   @@index([lifecycle_status])
   @@index([asin])
   @@index([walmart_item_id])
+  @@index([compliance_status])
 }
 
 // ResearchPool — products discovered by Stage 2 (Research). One row per
@@ -1440,8 +1448,8 @@ model BundleDraft {
   draft_suggested_price_cents Int?
 
   // Status
-  status          String  @default("VARIATION_SELECTED") // LifecycleState
-  approval_notes  String?
+  status         String  @default("VARIATION_SELECTED") // LifecycleState
+  approval_notes String?
 
   // Selected channels for distribution
   target_channels String // JSON array
@@ -1449,11 +1457,21 @@ model BundleDraft {
   // After approval — link to created MasterBundle
   master_bundle_id String? @unique
 
+  // Phase 2.0 Compliance Gate — protective gate for new listings before publish.
+  compliance_status          String    @default("PENDING") // 'PENDING' | 'CAN_PUBLISH' | 'BLOCKED'
+  compliance_check_id        String?
+  compliance_blocked_at      DateTime?
+  compliance_blocked_reasons String? // JSON array of failed rule IDs
+
+  // Relations
+  compliance_checks ComplianceCheck[]
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   @@index([generation_job_id])
   @@index([status])
+  @@index([compliance_status])
 }
 
 // StoreRegistry — pre-seeded registry of 37 sourcing stores (Walmart, BJ's,
@@ -1467,12 +1485,12 @@ model StoreRegistry {
   tier       String // StoreTier
 
   // Location
-  address          String
-  latitude         Float
-  longitude        Float
-  distance_mi      Float // from 1162 Kapp Dr
-  google_place_id  String?
-  google_maps_url  String?
+  address         String
+  latitude        Float
+  longitude       Float
+  distance_mi     Float // from 1162 Kapp Dr
+  google_place_id String?
+  google_maps_url String?
 
   // Operational
   phone       String?
@@ -1755,10 +1773,10 @@ model ErrorPattern {
   fix_handler_name String?
 
   // Stats
-  occurrences       Int       @default(0)
-  auto_fix_success  Int       @default(0)
-  auto_fix_failure  Int       @default(0)
-  last_seen         DateTime?
+  occurrences      Int       @default(0)
+  auto_fix_success Int       @default(0)
+  auto_fix_failure Int       @default(0)
+  last_seen        DateTime?
 
   // Documentation
   description    String?
@@ -1850,7 +1868,7 @@ model ListingAuditResult {
   browse_node          String?
   main_image_url       String?
   original_bullets     String // JSON array
-  original_description String @default("")
+  original_description String  @default("")
 
   risk_score    Int    @default(0)
   risk_category String @default("COMPLIANT") // 'BLOCKED' | 'WARNING' | 'LOW_RISK' | 'COMPLIANT'
@@ -1865,7 +1883,7 @@ model ListingAuditResult {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  scan ListingAuditScan @relation(fields: [scan_id], references: [id], onDelete: Cascade)
+  scan        ListingAuditScan    @relation(fields: [scan_id], references: [id], onDelete: Cascade)
   // 1:1 back-reference — actual FK column (audit_result_id) lives on
   // ListingRemediation. We query by audit_result_id from there.
   remediation ListingRemediation?
@@ -1929,4 +1947,54 @@ model BrandConflict {
   @@index([foreign_brand])
   @@index([asin])
   @@index([status])
+}
+
+// ============================================================================
+// Bundle Factory — Phase 2.0 Compliance Gate
+//
+// Protective gate run between Stage 4 (content gen) and Stage 7 (Distribution).
+// Each invocation evaluates 8 hard rules; a failed rule blocks the draft until
+// auto-fix or AI re-generation produces a passing version.
+// See docs/BUNDLE_FACTORY_COMPLIANCE_GATE_v1_0.md.
+// ============================================================================
+
+model ComplianceCheck {
+  id              String  @id @default(cuid())
+  bundle_draft_id String
+  channel_sku_id  String?
+
+  decision          String // 'CAN_PUBLISH' | 'BLOCKED'
+  hard_rules_passed String // JSON array of rule IDs that passed
+  hard_rules_failed String // JSON array of { rule_id, reason }
+
+  detected_brands String? // JSON array — foreign brands detected (title/text)
+  detected_logos  String? // JSON array — logos detected on image
+
+  ai_vision_response String? // raw Claude Vision response (debug)
+  cost_cents         Int     @default(0)
+
+  created_at DateTime @default(now())
+
+  bundle_draft BundleDraft @relation(fields: [bundle_draft_id], references: [id], onDelete: Cascade)
+  channel_sku  ChannelSKU? @relation(fields: [channel_sku_id], references: [id], onDelete: Cascade)
+
+  @@index([bundle_draft_id, created_at])
+  @@index([decision])
+}
+
+model ComplianceAuditLog {
+  id              String  @id @default(cuid())
+  bundle_draft_id String
+  channel_sku_id  String?
+
+  event_type    String // 'gate_check' | 'manual_override' | 'pattern_detected' | 'auto_fix'
+  event_details String // JSON
+
+  actor    String // 'system' | 'vladimir' | 'claude_code'
+  decision String? // 'CAN_PUBLISH' | 'BLOCKED' — present when event resulted in a decision
+
+  created_at DateTime @default(now())
+
+  @@index([bundle_draft_id, created_at])
+  @@index([event_type])
 }
