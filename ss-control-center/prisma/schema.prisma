@@ -1361,6 +1361,34 @@ model ChannelSKU {
   compliance_blocked_at      DateTime?
   compliance_blocked_reasons String? // JSON array of failed rule IDs
 
+  // Phase 2.3 Stage 5 — main image generated for this SKU's channel-level
+  // listing. Distinct from MasterBundle.main_image_url (the default)
+  // because some channels may need a re-rolled image variant.
+  main_image_url String?
+
+  // Phase 2.4 Stage 6 — Validation Pipeline. Per-channel pre-publish gate
+  // running 15 validators (universal + image + marketplace + identifier +
+  // operational). Status drives the can-publish-to-Stage-7 decision.
+  //   PENDING       — never validated
+  //   PASSED        — every validator passed (or warnings only)
+  //   NEEDS_REVIEW  — at least one warning, no hard errors
+  //   FAILED        — at least one error-severity violation
+  validation_status         String    @default("PENDING")
+  validation_errors         String? // JSON array of { validator_id, severity, message }
+  validated_at              DateTime?
+  validation_check_id       String?
+  validation_attempt_count  Int       @default(0)
+
+  // Phase 2.4 Stage 6 — operational fields validators check for presence.
+  // Filled by promote-draft (or manually by operator). Defaults so existing
+  // ChannelSKU rows don't need a backfill before the migration.
+  package_length_in   Float?
+  package_width_in    Float?
+  package_height_in   Float?
+  package_weight_oz   Float?
+  country_of_origin   String?  @default("US")
+  item_type           String? // Walmart taxonomy or Amazon item_type
+
   // Relations
   lifecycle_logs    ListingLifecycleLog[]
   compliance_checks ComplianceCheck[]
@@ -1374,6 +1402,7 @@ model ChannelSKU {
   @@index([asin])
   @@index([walmart_item_id])
   @@index([compliance_status])
+  @@index([validation_status])
 }
 
 // ResearchPool — products discovered by Stage 2 (Research). One row per
