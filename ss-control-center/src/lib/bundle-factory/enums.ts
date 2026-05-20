@@ -26,6 +26,12 @@ export const LIFECYCLE_STATES = [
   // ChannelSKU cleared all 15 validators and is queue-ready.
   "VALIDATING",
   "VALIDATED",
+  // Phase 2.5 Stage 7 — Distribution. PUBLISHING is transient while the
+  // pipeline is submitting to marketplaces; PUBLISHED means every PASSED
+  // ChannelSKU is LIVE (or definitively FAILED / PENDING_REVIEW after
+  // the operator has acknowledged).
+  "PUBLISHING",
+  "PUBLISHED",
   "APPROVED",
   "QUEUED",
   "SUBMITTED",

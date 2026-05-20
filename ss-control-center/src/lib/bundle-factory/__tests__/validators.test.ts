@@ -80,6 +80,13 @@ function mkSku(overrides: Partial<ChannelSKU> = {}): ChannelSKU {
     package_weight_oz: 32,
     country_of_origin: "US",
     item_type: null,
+    // Phase 2.5 distribution fields (default PENDING — fixture-friendly)
+    listing_status: "PENDING",
+    submission_id: null,
+    published_at: null,
+    distribution_errors: null,
+    distribution_attempt_count: 0,
+    last_status_check_at: null,
     created_at: now,
     updated_at: now,
     ...overrides,
