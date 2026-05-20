@@ -54,6 +54,19 @@ export async function spApiPatch(
   return spApiRequest("PATCH", path, { ...options, body });
 }
 
+// PUT for the Listings Items 2021-08-01 "create-or-replace" endpoint
+// (Phase 2.5 Distribution). PUT is idempotent per Amazon docs: identical
+// payloads to the same SKU produce the same submission_id on the second
+// call, so re-running publish on an already-LIVE SKU is a safe no-op.
+export async function spApiPut(
+  path: string,
+  body: object,
+  options: SpApiOptions = {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> {
+  return spApiRequest("PUT", path, { ...options, body });
+}
+
 async function spApiRequest(
   method: string,
   path: string,

@@ -38,6 +38,13 @@ interface GeneratedContentRow {
   validation_status: string; // PENDING | PASSED | NEEDS_REVIEW | FAILED
   validation_errors_json: string | null;
   validation_attempt_count: number;
+  // Phase 2.5 Stage 7 — distribution state.
+  listing_status: string; // PENDING | SUBMITTED | LIVE | FAILED | PENDING_REVIEW
+  submission_id: string | null;
+  distribution_errors_json: string | null;
+  distribution_attempt_count: number;
+  asin: string | null;
+  live_url: string | null;
 }
 
 interface ValidationErrorEntry {
@@ -45,6 +52,12 @@ interface ValidationErrorEntry {
   severity: "error" | "warning";
   message: string;
   details?: unknown;
+}
+
+interface DistributionErrorEntry {
+  code?: string;
+  message?: string;
+  severity?: string;
 }
 
 interface Props {
@@ -314,6 +327,142 @@ export function DraftDetailClient(props: Props) {
     }
   }
 
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [publishConfirmChecked, setPublishConfirmChecked] = useState(false);
+
+  async function refreshSkusFromServer() {
+    const fresh = await fetch(`/api/bundle-factory/drafts/${props.draftId}`);
+    const freshData = await fresh.json();
+    const statusRes = await fetch(
+      `/api/bundle-factory/drafts/${props.draftId}/validation-status`,
+    );
+    const statusData = await statusRes.json();
+    const distRes = await fetch(
+      `/api/bundle-factory/drafts/${props.draftId}/distribution-status`,
+    );
+    const distData = await distRes.json();
+    const valByChannel: Record<string, {
+      sku_id: string;
+      sku: string;
+      validation_status: string;
+      validation_errors: string | null;
+      validation_attempt_count: number;
+    }> = {};
+    for (const cs of statusData?.per_sku ?? []) valByChannel[cs.channel] = cs;
+    const distByChannel: Record<string, {
+      id: string;
+      sku: string;
+      listing_status: string;
+      submission_id: string | null;
+      distribution_errors: string | null;
+      distribution_attempt_count: number;
+      asin: string | null;
+      live_url: string | null;
+    }> = {};
+    for (const cs of distData?.per_sku ?? []) distByChannel[cs.channel] = cs;
+    const merged = (freshData.draft.generated_content as GeneratedContentRow[])
+      .map((g) => {
+        const cs = valByChannel[g.channel];
+        const ds = distByChannel[g.channel];
+        return {
+          ...g,
+          channel_sku_id: cs?.sku_id ?? g.channel_sku_id,
+          sku_code: cs?.sku ?? g.sku_code,
+          validation_status: cs?.validation_status ?? g.validation_status,
+          validation_errors_json: cs?.validation_errors ?? g.validation_errors_json,
+          validation_attempt_count:
+            cs?.validation_attempt_count ?? g.validation_attempt_count,
+          listing_status: ds?.listing_status ?? g.listing_status,
+          submission_id: ds?.submission_id ?? g.submission_id,
+          distribution_errors_json:
+            ds?.distribution_errors ?? g.distribution_errors_json,
+          distribution_attempt_count:
+            ds?.distribution_attempt_count ?? g.distribution_attempt_count,
+          asin: ds?.asin ?? g.asin,
+          live_url: ds?.live_url ?? g.live_url,
+        };
+      });
+    setRows(merged);
+  }
+
+  async function publishDraft(apply: boolean) {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await fetch(
+        `/api/bundle-factory/drafts/${props.draftId}/publish?dryRun=${apply ? "false" : "true"}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        },
+      );
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      setLastSummary({
+        total_cost_cents: 0,
+        duration_ms: data.duration_ms ?? 0,
+        outcomes: (data.per_sku ?? []).map(
+          (s: { channel: string; status: string }) => ({
+            channel: s.channel,
+            compliance_status: s.status,
+            attempts: 1,
+          }),
+        ),
+      });
+      await refreshSkusFromServer();
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+      setPublishModalOpen(false);
+      setPublishConfirmChecked(false);
+    }
+  }
+
+  async function republishSku(skuId: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await fetch(
+        `/api/bundle-factory/skus/${skuId}/publish?dryRun=false`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({}),
+        },
+      );
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      await refreshSkusFromServer();
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function pollSku(skuId: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await fetch(
+        `/api/bundle-factory/skus/${skuId}/poll-status`,
+        { method: "POST" },
+      );
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      await refreshSkusFromServer();
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const blockedCount = rows.filter(
     (r) => r.compliance_status === "BLOCKED",
   ).length;
@@ -336,6 +485,17 @@ export function DraftDetailClient(props: Props) {
     (props.draftStatus === "IMAGE_GENERATED" ||
       props.draftStatus === "VALIDATING" ||
       props.draftStatus === "VALIDATED" ||
+      props.draftStatus === "ERROR");
+  const publishPendingCount = rows.filter(
+    (r) =>
+      r.validation_status === "PASSED" &&
+      (r.listing_status === "PENDING" || r.listing_status === "FAILED"),
+  ).length;
+  const showPublishAllBtn =
+    publishPendingCount > 0 &&
+    (props.draftStatus === "VALIDATED" ||
+      props.draftStatus === "PUBLISHING" ||
+      props.draftStatus === "PUBLISHED" ||
       props.draftStatus === "ERROR");
 
   return (
@@ -396,6 +556,26 @@ export function DraftDetailClient(props: Props) {
                     Validate {validationPendingCount}
                   </Btn>
                 )}
+                {showPublishAllBtn && (
+                  <>
+                    <Btn
+                      variant="ghost"
+                      disabled={busy}
+                      loading={busy}
+                      onClick={() => publishDraft(false)}
+                    >
+                      Dry-run {publishPendingCount}
+                    </Btn>
+                    <Btn
+                      variant="primary"
+                      disabled={busy}
+                      loading={busy}
+                      onClick={() => setPublishModalOpen(true)}
+                    >
+                      Publish {publishPendingCount}
+                    </Btn>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -443,6 +623,7 @@ export function DraftDetailClient(props: Props) {
           {" "}above to call Claude Sonnet 4.5 across all channels.
         </div>
       ) : (
+        <>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {rows.map((r) => (
             <ChannelCard
@@ -456,9 +637,40 @@ export function DraftDetailClient(props: Props) {
                   ? () => validateSku(r.channel_sku_id!, r.channel)
                   : null
               }
+              onRepublishSku={
+                r.channel_sku_id
+                  ? () => republishSku(r.channel_sku_id!)
+                  : null
+              }
+              onPollSku={
+                r.channel_sku_id ? () => pollSku(r.channel_sku_id!) : null
+              }
             />
           ))}
         </div>
+
+        {publishModalOpen && (
+          <PublishConfirmModal
+            pendingCount={publishPendingCount}
+            channels={rows
+              .filter(
+                (r) =>
+                  r.validation_status === "PASSED" &&
+                  (r.listing_status === "PENDING" ||
+                    r.listing_status === "FAILED"),
+              )
+              .map((r) => r.channel)}
+            checked={publishConfirmChecked}
+            onCheckedChange={setPublishConfirmChecked}
+            onCancel={() => {
+              setPublishModalOpen(false);
+              setPublishConfirmChecked(false);
+            }}
+            onConfirm={() => publishDraft(true)}
+            busy={busy}
+          />
+        )}
+        </>
       )}
     </section>
   );
@@ -470,17 +682,23 @@ function ChannelCard({
   onGenerateImage,
   onRegenerateImage,
   onValidateSku,
+  onRepublishSku,
+  onPollSku,
 }: {
   row: GeneratedContentRow;
   busy: boolean;
   onGenerateImage: () => void;
   onRegenerateImage: () => void;
   onValidateSku: (() => void) | null;
+  onRepublishSku: (() => void) | null;
+  onPollSku: (() => void) | null;
 }) {
   const bullets = safeParse<string[]>(row.bullets_json) ?? [];
   const failed = safeParse<string[]>(row.failed_rule_ids) ?? [];
   const validationErrors =
     safeParse<ValidationErrorEntry[]>(row.validation_errors_json) ?? [];
+  const distributionErrors =
+    safeParse<DistributionErrorEntry[]>(row.distribution_errors_json) ?? [];
   const canStartImage =
     row.compliance_status === "CAN_PUBLISH" && !row.main_image_url;
 
@@ -507,6 +725,13 @@ function ChannelCard({
           <ValidationBadge
             status={row.validation_status}
             attempts={row.validation_attempt_count}
+          />
+          <ListingBadge
+            status={row.listing_status}
+            attempts={row.distribution_attempt_count}
+            asin={row.asin}
+            liveUrl={row.live_url}
+            submissionId={row.submission_id}
           />
         </div>
       </div>
@@ -639,11 +864,47 @@ function ChannelCard({
         </div>
       )}
 
-      {onValidateSku && row.main_image_url && (
-        <div className="mt-3 flex items-center justify-end">
-          <Btn variant="ghost" disabled={busy} loading={busy} onClick={onValidateSku}>
-            Re-validate
-          </Btn>
+      {row.listing_status === "FAILED" && distributionErrors.length > 0 && (
+        <details className="mt-3 rounded-md border border-danger/30 bg-danger-tint/40 p-2 text-[11px]">
+          <summary className="cursor-pointer font-medium text-danger">
+            {distributionErrors.length} marketplace error
+            {distributionErrors.length === 1 ? "" : "s"}
+          </summary>
+          <ul className="mt-2 space-y-1 text-ink-2">
+            {distributionErrors.map((e, i) => (
+              <li key={i}>
+                {e.code && (
+                  <span className="font-mono text-[10.5px] text-ink-3">{e.code}</span>
+                )}
+                {e.code ? " — " : ""}
+                <span className={e.severity === "WARNING" ? "text-warn" : "text-danger"}>
+                  {e.message ?? "(no message)"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+
+      {(onValidateSku || onRepublishSku || onPollSku) && row.main_image_url && (
+        <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+          {onValidateSku && (
+            <Btn variant="ghost" disabled={busy} loading={busy} onClick={onValidateSku}>
+              Re-validate
+            </Btn>
+          )}
+          {onPollSku && row.listing_status === "SUBMITTED" && (
+            <Btn variant="ghost" disabled={busy} loading={busy} onClick={onPollSku}>
+              Poll status
+            </Btn>
+          )}
+          {onRepublishSku &&
+            row.validation_status === "PASSED" &&
+            (row.listing_status === "FAILED" || row.listing_status === "PENDING") && (
+              <Btn variant="primary" disabled={busy} loading={busy} onClick={onRepublishSku}>
+                {row.listing_status === "FAILED" ? "Re-publish" : "Publish"}
+              </Btn>
+            )}
         </div>
       )}
     </div>
@@ -723,6 +984,119 @@ function CharCounter({ value }: { value: string }) {
   return (
     <div className="mt-1 text-[10.5px] tabular-nums text-ink-3">
       {value.length} chars
+    </div>
+  );
+}
+
+function ListingBadge({
+  status,
+  attempts,
+  asin,
+  liveUrl,
+  submissionId,
+}: {
+  status: string;
+  attempts: number;
+  asin: string | null;
+  liveUrl: string | null;
+  submissionId: string | null;
+}) {
+  if (status === "PENDING") return null;
+  const style =
+    status === "LIVE"
+      ? "bg-green-soft text-green-ink"
+      : status === "FAILED"
+        ? "bg-danger-tint text-danger"
+        : status === "SUBMITTED"
+          ? "bg-bg-elev text-ink-2"
+          : status === "PENDING_REVIEW"
+            ? "bg-warn-tint text-warn"
+            : "bg-bg-elev text-ink-3";
+  return (
+    <div className="flex flex-col items-end gap-0.5">
+      <span
+        className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${style}`}
+      >
+        listing: {status}
+      </span>
+      {status === "LIVE" && liveUrl && (
+        <a
+          href={liveUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="text-[10px] text-green-ink hover:underline"
+        >
+          {asin ? `ASIN ${asin}` : "view"} ↗
+        </a>
+      )}
+      {submissionId && status !== "LIVE" && (
+        <span className="font-mono text-[9.5px] text-ink-3">{submissionId.slice(0, 14)}</span>
+      )}
+      {attempts > 1 && (
+        <span className="text-[10px] text-ink-3">{attempts} attempts</span>
+      )}
+    </div>
+  );
+}
+
+function PublishConfirmModal({
+  pendingCount,
+  channels,
+  checked,
+  onCheckedChange,
+  onCancel,
+  onConfirm,
+  busy,
+}: {
+  pendingCount: number;
+  channels: string[];
+  checked: boolean;
+  onCheckedChange: (b: boolean) => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+  busy: boolean;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-md rounded-[14px] border border-rule bg-surface p-5 shadow-2xl">
+        <h3 className="text-[14px] font-semibold text-ink">
+          Publish {pendingCount} live listing{pendingCount === 1 ? "" : "s"}?
+        </h3>
+        <p className="mt-2 text-[12px] text-ink-2">
+          The following channels will receive a real PUT to Amazon / POST to
+          Walmart. This is not a dry run — the listings will appear on the
+          marketplace as soon as the platform finishes processing.
+        </p>
+        <ul className="mt-3 list-disc pl-5 text-[12px] text-ink-2">
+          {channels.map((c) => (
+            <li key={c} className="font-mono">{c}</li>
+          ))}
+        </ul>
+        <label className="mt-4 flex items-start gap-2 text-[12px] text-ink">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={(e) => onCheckedChange(e.target.checked)}
+            className="mt-0.5"
+          />
+          <span>
+            I understand this will create live listings on Amazon / Walmart.
+          </span>
+        </label>
+        <div className="mt-4 flex items-center justify-end gap-2">
+          <Btn variant="ghost" disabled={busy} onClick={onCancel}>
+            Cancel
+          </Btn>
+          <Btn
+            variant="primary"
+            disabled={!checked || busy}
+            loading={busy}
+            onClick={onConfirm}
+          >
+            Publish now
+          </Btn>
+        </div>
+      </div>
     </div>
   );
 }

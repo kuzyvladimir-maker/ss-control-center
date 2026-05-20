@@ -46,6 +46,15 @@ export default async function DraftDetailPage({ params }: PageProps) {
           validation_errors: true,
           validated_at: true,
           validation_attempt_count: true,
+          // Phase 2.5 distribution fields
+          listing_status: true,
+          submission_id: true,
+          published_at: true,
+          distribution_errors: true,
+          distribution_attempt_count: true,
+          last_status_check_at: true,
+          asin: true,
+          live_url: true,
         },
       })
     : [];
@@ -58,6 +67,13 @@ export default async function DraftDetailPage({ params }: PageProps) {
       validation_errors: string | null;
       validated_at: Date | null;
       validation_attempt_count: number;
+      listing_status: string;
+      submission_id: string | null;
+      published_at: Date | null;
+      distribution_errors: string | null;
+      distribution_attempt_count: number;
+      asin: string | null;
+      live_url: string | null;
     }
   > = {};
   for (const cs of channelSkus) {
@@ -68,6 +84,13 @@ export default async function DraftDetailPage({ params }: PageProps) {
       validation_errors: cs.validation_errors,
       validated_at: cs.validated_at,
       validation_attempt_count: cs.validation_attempt_count,
+      listing_status: cs.listing_status,
+      submission_id: cs.submission_id,
+      published_at: cs.published_at,
+      distribution_errors: cs.distribution_errors,
+      distribution_attempt_count: cs.distribution_attempt_count,
+      asin: cs.asin,
+      live_url: cs.live_url,
     };
   }
 
@@ -176,6 +199,13 @@ export default async function DraftDetailPage({ params }: PageProps) {
             validation_status: cs?.validation_status ?? "PENDING",
             validation_errors_json: cs?.validation_errors ?? null,
             validation_attempt_count: cs?.validation_attempt_count ?? 0,
+            // Phase 2.5
+            listing_status: cs?.listing_status ?? "PENDING",
+            submission_id: cs?.submission_id ?? null,
+            distribution_errors_json: cs?.distribution_errors ?? null,
+            distribution_attempt_count: cs?.distribution_attempt_count ?? 0,
+            asin: cs?.asin ?? null,
+            live_url: cs?.live_url ?? null,
           };
         })}
       />

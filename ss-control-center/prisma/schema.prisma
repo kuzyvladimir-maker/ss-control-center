@@ -1389,6 +1389,21 @@ model ChannelSKU {
   country_of_origin   String?  @default("US")
   item_type           String? // Walmart taxonomy or Amazon item_type
 
+  // Phase 2.5 Stage 7 — Distribution. Tracks the per-SKU submission to
+  // its marketplace (Amazon Listings Items PUT or Walmart MP_ITEM feed).
+  //   PENDING         — never published; validation must be PASSED first
+  //   SUBMITTED       — Amazon / Walmart accepted the payload; polling
+  //                     for terminal state
+  //   LIVE            — marketplace confirmed the listing is published
+  //   FAILED          — submission rejected (issues in distribution_errors)
+  //   PENDING_REVIEW  — marketplace requires manual seller-side action
+  listing_status              String    @default("PENDING")
+  submission_id               String? // Amazon submissionId or Walmart feedId
+  published_at                DateTime?
+  distribution_errors         String? // JSON array of {code, message, severity}
+  distribution_attempt_count  Int       @default(0)
+  last_status_check_at        DateTime?
+
   // Relations
   lifecycle_logs    ListingLifecycleLog[]
   compliance_checks ComplianceCheck[]
@@ -1403,6 +1418,7 @@ model ChannelSKU {
   @@index([walmart_item_id])
   @@index([compliance_status])
   @@index([validation_status])
+  @@index([listing_status])
 }
 
 // ResearchPool — products discovered by Stage 2 (Research). One row per
