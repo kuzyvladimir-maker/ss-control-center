@@ -33,6 +33,44 @@ export default async function DraftDetailPage({ params }: PageProps) {
   });
   if (!draft) return notFound();
 
+  // Phase 2.4 — pull ChannelSKU validation state, keyed by channel so
+  // the client can merge into per-channel cards.
+  const channelSkus = draft.master_bundle_id
+    ? await prisma.channelSKU.findMany({
+        where: { master_bundle_id: draft.master_bundle_id },
+        select: {
+          id: true,
+          channel: true,
+          sku: true,
+          validation_status: true,
+          validation_errors: true,
+          validated_at: true,
+          validation_attempt_count: true,
+        },
+      })
+    : [];
+  const channelSkuByChannel: Record<
+    string,
+    {
+      sku_id: string;
+      sku: string;
+      validation_status: string;
+      validation_errors: string | null;
+      validated_at: Date | null;
+      validation_attempt_count: number;
+    }
+  > = {};
+  for (const cs of channelSkus) {
+    channelSkuByChannel[cs.channel] = {
+      sku_id: cs.id,
+      sku: cs.sku,
+      validation_status: cs.validation_status,
+      validation_errors: cs.validation_errors,
+      validated_at: cs.validated_at,
+      validation_attempt_count: cs.validation_attempt_count,
+    };
+  }
+
   const channels = safeParse<string[]>(draft.target_channels) ?? [];
   const variants = draft.variation_matrix
     ? safeParse<Variant[]>(draft.variation_matrix.variants_json) ?? []
@@ -113,24 +151,33 @@ export default async function DraftDetailPage({ params }: PageProps) {
         canGenerate={Boolean(selectedVariant)}
         targetChannels={channels}
         draftStatus={draft.status}
-        initialContent={draft.generated_content.map((g) => ({
-          id: g.id,
-          channel: g.channel,
-          template: g.template,
-          title: g.title,
-          bullets_json: g.bullets_json,
-          description: g.description,
-          compliance_status: g.compliance_status,
-          compliance_attempts: g.compliance_attempts,
-          manual_review_required: g.manual_review_required,
-          failed_rule_ids: g.failed_rule_ids,
-          generation_cost_cents: g.generation_cost_cents,
-          cache_read_tokens: g.cache_read_tokens,
-          cache_write_tokens: g.cache_write_tokens,
-          main_image_url: g.main_image_url,
-          image_generation_cost_cents: g.image_generation_cost_cents,
-          image_retry_count: g.image_retry_count,
-        }))}
+        initialContent={draft.generated_content.map((g) => {
+          const cs = channelSkuByChannel[g.channel];
+          return {
+            id: g.id,
+            channel: g.channel,
+            template: g.template,
+            title: g.title,
+            bullets_json: g.bullets_json,
+            description: g.description,
+            compliance_status: g.compliance_status,
+            compliance_attempts: g.compliance_attempts,
+            manual_review_required: g.manual_review_required,
+            failed_rule_ids: g.failed_rule_ids,
+            generation_cost_cents: g.generation_cost_cents,
+            cache_read_tokens: g.cache_read_tokens,
+            cache_write_tokens: g.cache_write_tokens,
+            main_image_url: g.main_image_url,
+            image_generation_cost_cents: g.image_generation_cost_cents,
+            image_retry_count: g.image_retry_count,
+            // Phase 2.4
+            channel_sku_id: cs?.sku_id ?? null,
+            sku_code: cs?.sku ?? null,
+            validation_status: cs?.validation_status ?? "PENDING",
+            validation_errors_json: cs?.validation_errors ?? null,
+            validation_attempt_count: cs?.validation_attempt_count ?? 0,
+          };
+        })}
       />
     </>
   );
