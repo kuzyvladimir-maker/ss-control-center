@@ -1456,6 +1456,11 @@ model BundleDraft {
   draft_main_image_url   String?
   draft_secondary_images String? // JSON array
 
+  // Phase 2.3 Stage 5 — set when the orchestrator finishes the per-channel
+  // image generation pass (every CAN_PUBLISH channel either got an image
+  // or hit the manual_review queue). Null until then.
+  image_generated_at DateTime?
+
   // Cost estimate
   draft_cost_cents            Int?
   draft_suggested_price_cents Int?
@@ -2096,6 +2101,15 @@ model GeneratedContent {
   claude_output_tokens  Int     @default(0)
   cache_read_tokens     Int     @default(0)
   cache_write_tokens    Int     @default(0)
+
+  /// Phase 2.3 Stage 5 — main image generated via OpenAI gpt-image-1.
+  /// One image per row (no template-sibling sharing here — each channel
+  /// pays its own image cost since main image is the per-channel ASIN-
+  /// visible asset). Set to the R2 public URL on success.
+  main_image_url               String?
+  image_generation_cost_cents  Int       @default(0)
+  image_retry_count            Int       @default(0)
+  image_generated_at           DateTime?
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt

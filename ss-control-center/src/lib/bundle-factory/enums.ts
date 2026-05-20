@@ -16,6 +16,11 @@ export const LIFECYCLE_STATES = [
   "RESEARCHED",
   "VARIATION_SELECTED",
   "GENERATED",
+  // Phase 2.3 Stage 5 — transient while OpenAI image pipeline is in flight,
+  // and the terminal Stage 5 status once every CAN_PUBLISH channel has either
+  // a compliant image or has been routed to the manual_review queue.
+  "IMAGE_GENERATING",
+  "IMAGE_GENERATED",
   "APPROVED",
   "QUEUED",
   "SUBMITTED",
