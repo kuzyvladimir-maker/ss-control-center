@@ -21,6 +21,11 @@ export const LIFECYCLE_STATES = [
   // a compliant image or has been routed to the manual_review queue.
   "IMAGE_GENERATING",
   "IMAGE_GENERATED",
+  // Phase 2.4 Stage 6 — Validation Pipeline runs after images are in
+  // place; VALIDATING is transient, VALIDATED means every CAN_PUBLISH
+  // ChannelSKU cleared all 15 validators and is queue-ready.
+  "VALIDATING",
+  "VALIDATED",
   "APPROVED",
   "QUEUED",
   "SUBMITTED",
