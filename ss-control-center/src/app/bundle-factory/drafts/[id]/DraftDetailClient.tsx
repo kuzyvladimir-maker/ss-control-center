@@ -28,6 +28,10 @@ interface GeneratedContentRow {
   generation_cost_cents: number;
   cache_read_tokens: number;
   cache_write_tokens: number;
+  // Phase 2.3 Stage 5
+  main_image_url: string | null;
+  image_generation_cost_cents: number;
+  image_retry_count: number;
 }
 
 interface Props {
@@ -35,6 +39,9 @@ interface Props {
   canGenerate: boolean;
   targetChannels: string[];
   initialContent: GeneratedContentRow[];
+  /** BundleDraft.status — used to gate the Generate All Images header
+   *  button (only shown when status==='GENERATED' or beyond). */
+  draftStatus: string;
 }
 
 export function DraftDetailClient(props: Props) {
@@ -113,9 +120,77 @@ export function DraftDetailClient(props: Props) {
     }
   }
 
+  async function generateImages(channels?: string[]) {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await fetch(
+        `/api/bundle-factory/drafts/${props.draftId}/generate-images`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(channels ? { channels } : {}),
+        },
+      );
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      setLastSummary({
+        total_cost_cents: data.total_cost_cents,
+        duration_ms: data.duration_ms,
+        outcomes: data.outcomes,
+      });
+      const fresh = await fetch(`/api/bundle-factory/drafts/${props.draftId}`);
+      const freshData = await fresh.json();
+      setRows(freshData.draft.generated_content);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function regenerateImage(channel: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await fetch(
+        `/api/bundle-factory/drafts/${props.draftId}/regenerate-image`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ channel }),
+        },
+      );
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      setLastSummary({
+        total_cost_cents: data.total_cost_cents,
+        duration_ms: data.duration_ms,
+        outcomes: data.outcomes,
+      });
+      const fresh = await fetch(`/api/bundle-factory/drafts/${props.draftId}`);
+      const freshData = await fresh.json();
+      setRows(freshData.draft.generated_content);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const blockedCount = rows.filter(
     (r) => r.compliance_status === "BLOCKED",
   ).length;
+  const imagePendingCount = rows.filter(
+    (r) => r.compliance_status === "CAN_PUBLISH" && !r.main_image_url,
+  ).length;
+  const showGenerateAllImagesBtn =
+    imagePendingCount > 0 &&
+    (props.draftStatus === "GENERATED" ||
+      props.draftStatus === "IMAGE_GENERATING" ||
+      props.draftStatus === "IMAGE_GENERATED");
 
   return (
     <section className="space-y-4">
@@ -152,6 +227,17 @@ export function DraftDetailClient(props: Props) {
                     onClick={() => regenerateBlocked()}
                   >
                     Re-try {blockedCount} BLOCKED
+                  </Btn>
+                )}
+                {showGenerateAllImagesBtn && (
+                  <Btn
+                    variant="primary"
+                    disabled={busy}
+                    loading={busy}
+                    onClick={() => generateImages()}
+                  >
+                    Generate {imagePendingCount} image
+                    {imagePendingCount === 1 ? "" : "s"}
                   </Btn>
                 )}
               </>
@@ -203,7 +289,13 @@ export function DraftDetailClient(props: Props) {
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {rows.map((r) => (
-            <ChannelCard key={r.id} row={r} />
+            <ChannelCard
+              key={r.id}
+              row={r}
+              busy={busy}
+              onGenerateImage={() => generateImages([r.channel])}
+              onRegenerateImage={() => regenerateImage(r.channel)}
+            />
           ))}
         </div>
       )}
@@ -211,9 +303,21 @@ export function DraftDetailClient(props: Props) {
   );
 }
 
-function ChannelCard({ row }: { row: GeneratedContentRow }) {
+function ChannelCard({
+  row,
+  busy,
+  onGenerateImage,
+  onRegenerateImage,
+}: {
+  row: GeneratedContentRow;
+  busy: boolean;
+  onGenerateImage: () => void;
+  onRegenerateImage: () => void;
+}) {
   const bullets = safeParse<string[]>(row.bullets_json) ?? [];
   const failed = safeParse<string[]>(row.failed_rule_ids) ?? [];
+  const canStartImage =
+    row.compliance_status === "CAN_PUBLISH" && !row.main_image_url;
 
   return (
     <div className="rounded-[14px] border border-rule bg-surface p-4">
@@ -269,9 +373,55 @@ function ChannelCard({ row }: { row: GeneratedContentRow }) {
         </div>
       </div>
 
+      <div className="mt-3 border-t border-rule/40 pt-3">
+        <Label>Main image</Label>
+        {row.main_image_url ? (
+          <div className="mt-2 space-y-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={row.main_image_url}
+              alt={`${row.channel} main`}
+              className="aspect-square w-full max-w-[260px] rounded-md border border-rule object-cover"
+            />
+            <div className="flex items-center justify-between gap-2 text-[10.5px] tabular-nums text-ink-3">
+              <span>
+                attempts: {row.image_retry_count} · $
+                {(row.image_generation_cost_cents / 100).toFixed(2)}
+              </span>
+              <Btn
+                variant="ghost"
+                disabled={busy}
+                loading={busy}
+                onClick={onRegenerateImage}
+              >
+                Re-roll
+              </Btn>
+            </div>
+          </div>
+        ) : canStartImage ? (
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <span className="text-[11.5px] text-ink-3">
+              Text passed compliance — generate the main image to ship.
+            </span>
+            <Btn
+              variant="primary"
+              disabled={busy}
+              loading={busy}
+              onClick={onGenerateImage}
+            >
+              Generate image
+            </Btn>
+          </div>
+        ) : (
+          <p className="mt-2 text-[11.5px] text-ink-3">
+            Image generation gated on text-compliance — pass Stage 4 first.
+          </p>
+        )}
+      </div>
+
       {row.generation_cost_cents > 0 && (
         <div className="mt-3 border-t border-rule/40 pt-2 text-[10.5px] tabular-nums text-ink-3">
-          ${(row.generation_cost_cents / 100).toFixed(3)} · cache R/W{" "}
+          text: ${(row.generation_cost_cents / 100).toFixed(3)} · cache R/W{" "}
           {row.cache_read_tokens}/{row.cache_write_tokens}
         </div>
       )}

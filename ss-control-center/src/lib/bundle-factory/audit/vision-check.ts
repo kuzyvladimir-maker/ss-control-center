@@ -127,10 +127,27 @@ function estimateCostCents(usage: {
   return Math.max(1, Math.ceil(dollars * 100));
 }
 
+/**
+ * Test seam — when set, `detectForeignLogosInImage` skips the real
+ * Anthropic call and delegates here. Used by smoke scripts so an end-to-
+ * end run of the image pipeline can exercise Rule 6 without paying for
+ * Vision. Matches the stub pattern in content-generation.ts and
+ * image-generation.ts.
+ */
+type VisionStub = (imageUrl: string, ownBrand: string) => Promise<VisionCheckResult>;
+
+function getVisionStub(): VisionStub | null {
+  const stub = (globalThis as { __BUNDLE_FACTORY_VISION_STUB__?: VisionStub })
+    .__BUNDLE_FACTORY_VISION_STUB__;
+  return typeof stub === "function" ? stub : null;
+}
+
 export async function detectForeignLogosInImage(
   imageUrl: string,
   ownBrand: string,
 ): Promise<VisionCheckResult> {
+  const stub = getVisionStub();
+  if (stub) return stub(imageUrl, ownBrand);
   if (!imageUrl) return SAFE_EMPTY;
   const client = getClient();
   if (!client) {

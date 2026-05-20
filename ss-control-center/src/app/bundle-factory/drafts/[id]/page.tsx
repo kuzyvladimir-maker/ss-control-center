@@ -112,6 +112,7 @@ export default async function DraftDetailPage({ params }: PageProps) {
         draftId={draft.id}
         canGenerate={Boolean(selectedVariant)}
         targetChannels={channels}
+        draftStatus={draft.status}
         initialContent={draft.generated_content.map((g) => ({
           id: g.id,
           channel: g.channel,
@@ -126,6 +127,9 @@ export default async function DraftDetailPage({ params }: PageProps) {
           generation_cost_cents: g.generation_cost_cents,
           cache_read_tokens: g.cache_read_tokens,
           cache_write_tokens: g.cache_write_tokens,
+          main_image_url: g.main_image_url,
+          image_generation_cost_cents: g.image_generation_cost_cents,
+          image_retry_count: g.image_retry_count,
         }))}
       />
     </>
