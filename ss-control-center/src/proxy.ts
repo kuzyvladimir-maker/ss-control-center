@@ -11,11 +11,15 @@ export function proxy(request: NextRequest) {
   // src/lib/auth-server.ts synthesises a system admin identity for
   // role-gated routes.
   if (pathname.startsWith("/api/")) {
-    const expectedToken = process.env.SSCC_API_TOKEN;
+    const sscToken = process.env.SSCC_API_TOKEN;
+    const jackieToken = process.env.JACKIE_API_TOKEN;
     const bearer = request.headers
       .get("Authorization")
       ?.replace("Bearer ", "");
-    if (expectedToken && bearer === expectedToken) {
+    if (bearer && (
+      (sscToken && bearer === sscToken) ||
+      (jackieToken && bearer === jackieToken)
+    )) {
       return NextResponse.next();
     }
   }
