@@ -5,9 +5,18 @@
  */
 
 import { NextResponse } from "next/server";
+import { NotFoundError, PreconditionError } from "./errors";
 
 /** Wrap a route handler so unexpected exceptions return JSON 500 instead
- *  of leaking stack traces. Returns the original response on success. */
+ *  of leaking stack traces. Returns the original response on success.
+ *
+ *  Typed errors from ./errors are mapped to specific status codes so
+ *  callers can distinguish "draft not in the right state" from "server
+ *  blew up":
+ *    - PreconditionError → 409 Conflict
+ *    - NotFoundError     → 404 Not Found
+ *    - anything else     → 500 Internal Server Error
+ */
 export function withErrorHandler<T extends unknown[]>(
   routeName: string,
   fn: (...args: T) => Promise<Response>
@@ -17,6 +26,12 @@ export function withErrorHandler<T extends unknown[]>(
       return await fn(...args);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
+      if (err instanceof PreconditionError) {
+        return NextResponse.json({ error: message }, { status: 409 });
+      }
+      if (err instanceof NotFoundError) {
+        return NextResponse.json({ error: message }, { status: 404 });
+      }
       console.error(`[bundle-factory/${routeName}] error:`, err);
       return NextResponse.json(
         { error: "Internal server error", detail: message },

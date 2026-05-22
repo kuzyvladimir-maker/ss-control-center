@@ -43,6 +43,7 @@ import type {
 } from "./compliance/types";
 import { logLifecycle } from "./lifecycle-log";
 import type { Variant } from "./variation-matrix";
+import { NotFoundError, PreconditionError } from "./errors";
 
 const MAX_RETRIES = 3;
 
@@ -91,14 +92,16 @@ export async function runContentGeneration(
     where: { id: input.bundle_draft_id },
     include: { variation_matrix: true },
   });
-  if (!draft) throw new Error(`BundleDraft ${input.bundle_draft_id} not found`);
+  if (!draft) {
+    throw new NotFoundError(`BundleDraft ${input.bundle_draft_id} not found`);
+  }
   if (!draft.variation_matrix) {
-    throw new Error(
+    throw new PreconditionError(
       `BundleDraft ${draft.id} has no VariationMatrix — generate variations first`,
     );
   }
   if (draft.variation_matrix.selected_variant_idx == null) {
-    throw new Error(
+    throw new PreconditionError(
       `BundleDraft ${draft.id} has no selected variant — call select-variation first`,
     );
   }

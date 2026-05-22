@@ -41,6 +41,7 @@ import { runComplianceGate } from "./compliance/gate";
 import type { BundleComponentInput } from "./compliance/types";
 import type { Variant } from "./variation-matrix";
 import { logLifecycle } from "./lifecycle-log";
+import { NotFoundError, PreconditionError } from "./errors";
 
 // Per spec: 2 retries on top of the initial attempt = 3 total tries.
 const MAX_IMAGE_RETRIES = 3;
@@ -159,16 +160,16 @@ export async function runImageGeneration(
     },
   });
   if (!draft) {
-    throw new Error(`BundleDraft ${input.bundle_draft_id} not found`);
+    throw new NotFoundError(`BundleDraft ${input.bundle_draft_id} not found`);
   }
   if (!draft.variation_matrix) {
-    throw new Error(
+    throw new PreconditionError(
       `BundleDraft ${draft.id} has no VariationMatrix — content/variant must be set first`,
     );
   }
   const matrix = draft.variation_matrix;
   if (matrix.selected_variant_idx == null) {
-    throw new Error(`BundleDraft ${draft.id} has no selected variant`);
+    throw new PreconditionError(`BundleDraft ${draft.id} has no selected variant`);
   }
 
   let variants: Variant[];
