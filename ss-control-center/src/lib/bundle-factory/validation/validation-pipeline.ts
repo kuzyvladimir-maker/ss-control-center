@@ -129,11 +129,18 @@ export async function runValidation(
     try {
       results.push(await v.fn(input));
     } catch (e) {
+      // A validator that throws (Veeqo timeout, R2 fetch error, image
+      // probe failure) gets recorded as severity='warning' instead of
+      // 'error' so an infrastructure blip on one check can't poison
+      // the whole SKU. The error still bubbles up through validation_
+      // errors + the NEEDS_REVIEW status for the operator to inspect.
+      const message = e instanceof Error ? e.message : String(e);
+      console.error(`[validation-pipeline] ${v.id} threw: ${message}`);
       results.push({
         validator_id: v.id,
         passed: false,
-        severity: "error",
-        message: `Validator threw: ${e instanceof Error ? e.message : String(e)}`,
+        severity: "warning",
+        message: `Validator threw: ${message}`,
       });
     }
   }
@@ -231,6 +238,10 @@ export interface RunForDraftResult {
     failed: string[];
     warnings: string[];
     duration_ms: number;
+    /** Full per-validator output. Lets clients (smoke tests, the UI,
+     *  Jackie) inspect what each of the 15 validators reported without
+     *  re-querying the SKU and JSON-parsing validation_errors. */
+    results: ValidatorResult[];
   }>;
   draft_status: string;
   duration_ms: number;
@@ -313,6 +324,7 @@ export async function runValidationForDraft(
       failed: outcome.failed,
       warnings: outcome.warnings,
       duration_ms: outcome.duration_ms,
+      results: outcome.results,
     });
   }
 
