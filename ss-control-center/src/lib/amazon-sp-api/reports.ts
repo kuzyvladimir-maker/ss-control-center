@@ -102,11 +102,18 @@ export async function getReportDocumentUrl(
   return data.url;
 }
 
-/** Download report content */
+/** Download report content. Transparently decompresses gzip — SP-API
+ *  often returns large reports (e.g. GET_MERCHANT_LISTINGS_ALL_DATA)
+ *  compressed regardless of the `Accept-Encoding` we send. */
 export async function downloadReport(url: string): Promise<string> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Download failed: ${res.status}`);
-  return res.text();
+  const buf = Buffer.from(await res.arrayBuffer());
+  if (buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b) {
+    const { gunzipSync } = await import("node:zlib");
+    return gunzipSync(buf).toString("utf-8");
+  }
+  return buf.toString("utf-8");
 }
 
 /** Full flow: create → poll → download. Returns CSV text. */
