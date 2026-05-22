@@ -44,6 +44,10 @@ import type {
 import { logLifecycle } from "./lifecycle-log";
 import type { Variant } from "./variation-matrix";
 import { NotFoundError, PreconditionError } from "./errors";
+import {
+  countDistinctBrands,
+  resolveAmazonBrowseNode,
+} from "./browse-node-resolver";
 
 const MAX_RETRIES = 3;
 
@@ -175,12 +179,31 @@ export async function runContentGeneration(
   let totalCost = 0;
   let topLevelError: string | undefined;
 
+  // The browse_node we feed into the compliance gate is the same for
+  // every Amazon channel that shares the "amazon" template — it's
+  // derived from the bundle composition, not the channel. Multi-brand
+  // bundles get the Gift Basket Exception primary node (required by
+  // compliance Rule 5); single-brand still defaults there for now (see
+  // browse-node-resolver for the future per-category swap).
+  const distinctBrands = countDistinctBrands(bundleComponents);
+  // Pick any AMAZON_ channel that the template covers — the resolver
+  // only cares about the prefix, so any one works. For "walmart" we
+  // pass a synthetic WALMART channel so the resolver returns null.
+  const templateChannelHint = (template: KbChannelTemplate): string =>
+    template === "amazon"
+      ? (channels.find((c) => c.startsWith("AMAZON_")) ?? "AMAZON_AMZCOM")
+      : "WALMART";
+
   for (const template of templates) {
+    const browseNode = resolveAmazonBrowseNode({
+      channel: templateChannelHint(template),
+      distinct_brands: distinctBrands,
+    });
     const r = await generateAndComply({
       input: { ...generationInputBase, template } as ContentGenerationInput,
       draft_id: draft.id,
       bundle_components: bundleComponents,
-      browse_node: null, // populated when channel-specific browse nodes ship
+      browse_node: browseNode,
     });
     templateResults.set(template, r);
     totalCost += r.content.cost_cents;

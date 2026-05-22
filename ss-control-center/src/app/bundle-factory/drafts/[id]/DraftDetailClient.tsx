@@ -35,6 +35,11 @@ interface GeneratedContentRow {
   // Phase 2.4 Stage 6 — joined from ChannelSKU when promotion has happened.
   channel_sku_id: string | null;
   sku_code: string | null;
+  /** Amazon browse node ChannelSKU will publish under. Auto-set by
+   *  promote-draft based on the bundle's distinct-brand count: Gift
+   *  Basket Exception node for multi-brand. Null on non-Amazon channels
+   *  and on rows that haven't been promoted to ChannelSKU yet. */
+  channel_browse_node: string | null;
   validation_status: string; // PENDING | PASSED | NEEDS_REVIEW | FAILED
   validation_errors_json: string | null;
   validation_attempt_count: number;
@@ -713,6 +718,17 @@ function ChannelCard({
               <>
                 {" · "}
                 <span className="font-mono normal-case tracking-normal">{row.sku_code}</span>
+              </>
+            )}
+            {row.channel_browse_node && (
+              <>
+                {" · "}
+                <span
+                  className="font-mono normal-case tracking-normal"
+                  title="Amazon browse node (set automatically by promote-draft)"
+                >
+                  node {row.channel_browse_node}
+                </span>
               </>
             )}
           </div>

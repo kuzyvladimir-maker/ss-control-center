@@ -42,6 +42,7 @@ export default async function DraftDetailPage({ params }: PageProps) {
           id: true,
           channel: true,
           sku: true,
+          channel_browse_node: true,
           validation_status: true,
           validation_errors: true,
           validated_at: true,
@@ -63,6 +64,7 @@ export default async function DraftDetailPage({ params }: PageProps) {
     {
       sku_id: string;
       sku: string;
+      channel_browse_node: string | null;
       validation_status: string;
       validation_errors: string | null;
       validated_at: Date | null;
@@ -80,6 +82,7 @@ export default async function DraftDetailPage({ params }: PageProps) {
     channelSkuByChannel[cs.channel] = {
       sku_id: cs.id,
       sku: cs.sku,
+      channel_browse_node: cs.channel_browse_node,
       validation_status: cs.validation_status,
       validation_errors: cs.validation_errors,
       validated_at: cs.validated_at,
@@ -196,6 +199,7 @@ export default async function DraftDetailPage({ params }: PageProps) {
             // Phase 2.4
             channel_sku_id: cs?.sku_id ?? null,
             sku_code: cs?.sku ?? null,
+            channel_browse_node: cs?.channel_browse_node ?? null,
             validation_status: cs?.validation_status ?? "PENDING",
             validation_errors_json: cs?.validation_errors ?? null,
             validation_attempt_count: cs?.validation_attempt_count ?? 0,

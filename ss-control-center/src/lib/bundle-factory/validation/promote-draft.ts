@@ -19,6 +19,10 @@
 
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
+import {
+  countDistinctBrands,
+  resolveAmazonBrowseNode,
+} from "../browse-node-resolver";
 
 export interface PromoteOutcome {
   master_bundle_id: string | null;
@@ -197,6 +201,17 @@ export async function promoteDraftToChannelSkus(
     select: { brand: true },
   });
 
+  // Browse node depends on the bundle's brand mix, not the channel.
+  // Pull the MasterBundle's BundleComponents once and compute the
+  // distinct-brand count so resolveAmazonBrowseNode can decide.
+  const components = await prisma.bundleComponent.findMany({
+    where: { master_bundle_id: masterBundleId },
+    select: { manufacturer_brand: true },
+  });
+  const distinctBrands = countDistinctBrands(
+    components.map((c) => ({ brand: c.manufacturer_brand })),
+  );
+
   for (const row of candidates) {
     // Already a ChannelSKU for this MasterBundle × channel?
     const existingSku = await prisma.channelSKU.findFirst({
@@ -228,7 +243,10 @@ export async function promoteDraftToChannelSkus(
           bullets: row.bullets_json,
           description: row.description,
           attributes: JSON.stringify({}),
-          channel_browse_node: null,
+          channel_browse_node: resolveAmazonBrowseNode({
+            channel: row.channel,
+            distinct_brands: distinctBrands,
+          }),
           price_cents: 0, // operator fills before publish
           main_image_url: row.main_image_url,
           compliance_status: "CAN_PUBLISH",

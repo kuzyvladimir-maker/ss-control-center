@@ -149,6 +149,15 @@ export async function detectForeignLogosInImage(
   const stub = getVisionStub();
   if (stub) return stub(imageUrl, ownBrand);
   if (!imageUrl) return SAFE_EMPTY;
+  // Env-based skip survives the HTTP boundary — unlike
+  // __BUNDLE_FACTORY_VISION_STUB__, which is globalThis-only and never
+  // reaches a long-running dev/Vercel process from a separate smoke
+  // runner. Set BUNDLE_FACTORY_VISION_SKIP=1 when launching the dev
+  // server during smoke runs to make every Rule 6 invocation return
+  // SAFE_EMPTY (no logos, no API call, no cost). Never set this in prod.
+  if (process.env.BUNDLE_FACTORY_VISION_SKIP === "1") {
+    return SAFE_EMPTY;
+  }
   const client = getClient();
   if (!client) {
     return { ...SAFE_EMPTY, error: "ANTHROPIC_API_KEY not set" };
