@@ -29,12 +29,25 @@ PUT /allocations/{allocationId}/allocation_package
 
 UI passes `allocationId` (from `plan.allocationId`) through to the API.
 
-**Two-step write+verify (added 2026-05-19 after Vladimir caught a silent persistence failure on order `113-6751472-0567441`):**
+**Write+verify (added 2026-05-19, rewritten 2026-05-23):**
 
 1. **PUT** the package as above.
-2. **GET** `/allocations/{allocationId}` and compare the returned `allocation_package` against what we sent. Tolerance: 0.5oz on weight, 0.05in on each dimension. If readback doesn't match, the API returns `veeqo: { ok: false, reason }` and the dialog stays open with a red banner explaining what drifted — so the operator doesn't see a green "Saved" while Veeqo keeps quoting against the old packaging.
+2. Verify by reading `data.attributes` from the **PUT response body itself**. Tolerance: 0.5 oz on weight, 0.05 in on each dimension. If the saved values disagree with what we sent, the API returns `veeqo: { ok: false, reason }` and the dialog stays open with a red banner explaining what drifted.
 
-The previous version sent `save_for_similar_shipments: true` (thinking that's what made Veeqo remember dims for the next order with the same SKU+qty), but Veeqo's own docs say "Should be `false`" when setting dimensions via the API, and `true` triggered the silent no-persist behavior described above. Our DB already remembers per-SKU dims via SkuShippingData / PackingProfile, so Veeqo doesn't need to.
+The previous implementation did a separate `GET /allocations/{allocationId}` to read back the saved package. That endpoint **does not include `allocation_package`** in its response — it returns `{}` for most allocations (no `GET /allocations/{id}/allocation_package` either; that's a 404) — so the readback always reported "no allocation_package" and the operator saw `Veeqo did NOT update its packaging` on every Save, even though Veeqo had actually accepted the PUT and persisted the new values. The Edit Package modal was effectively broken from when the readback was added (2026-05-19) until 2026-05-23 when Vladimir surfaced the issue.
+
+The PUT response is now treated as the canonical post-update state — Veeqo returns the saved fields directly in `data.attributes`, no GET needed:
+
+```json
+{ "data": { "type": "allocation_package",
+            "attributes": { "depth": 11, "width": 8, "height": 6,
+                            "dimensions_unit": "inches",
+                            "weight": 80, "weight_unit": "oz",
+                            "package_selection_source": "ONE_OFF",
+                            "allocation_id": <id>, ... } } }
+```
+
+The previous version also sent `save_for_similar_shipments: true` (thinking that's what made Veeqo remember dims for the next order with the same SKU+qty), but Veeqo's own docs say "Should be `false`" when setting dimensions via the API, and `true` triggered a different silent no-persist behavior. Our DB already remembers per-SKU dims via SkuShippingData / PackingProfile, so Veeqo doesn't need to.
 
 ## Units
 

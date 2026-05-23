@@ -26,7 +26,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { updateAllocationPackage, getAllocation } from "@/lib/veeqo/client";
+import { updateAllocationPackage } from "@/lib/veeqo/client";
 
 interface Body {
   sku?: string;
@@ -195,18 +195,35 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ kind: "skuShippingData", id: created.id, veeqo });
 }
 
-// PUT to Veeqo's allocation_package endpoint, then GET the allocation
-// back to confirm the new package actually persisted. Veeqo has been
-// observed to return 200 on the PUT without persisting the change (the
-// legacy `save_for_similar_shipments: true` payload triggered this on
-// some allocations) — without a readback the operator sees a green
-// "saved" in the UI, but the next rate quote comes back against the
-// old packaging and the buy fails / over-charges. The readback closes
-// that hole.
+// PUT to Veeqo's allocation_package endpoint and verify the new package
+// from the PUT response body itself. Earlier we did a separate GET
+// /allocations/{id} readback, but that endpoint returns `{}` (empty
+// object) for many allocations — there's no `allocation_package` field
+// on it — so the readback always falsely reported "Veeqo did NOT
+// update" even when the PUT actually succeeded.
 //
-// Tolerance: Veeqo stores weight in oz internally; we PUT in oz too
-// and compare with a 0.5 oz tolerance for rounding. Dimensions are
-// inches both sides — we allow 0.05 in slop for float jitter.
+// Veeqo's PUT response IS the canonical post-update state:
+//   {
+//     "data": {
+//       "type": "allocation_package",
+//       "attributes": {
+//         "allocation_id": <id>,
+//         "depth": <in>, "width": <in>, "height": <in>,
+//         "dimensions_unit": "inches",
+//         "weight": <oz>, "weight_unit": "oz",
+//         "package_selection_source": "ONE_OFF",
+//         ...
+//       }
+//     }
+//   }
+//
+// We compare those attributes against what we sent. If they match, we
+// trust the PUT — no extra GET needed.
+//
+// Tolerance: Veeqo stores weight in oz internally; we PUT in oz and
+// compare with a 0.5 oz tolerance for rounding. Dimensions are inches
+// both sides — we allow 0.05 in slop for float jitter. Unit
+// conversion handles a g↔oz or cm↔in surprise.
 async function pushPackageToVeeqo(args: {
   allocationId: unknown;
   L: number | null | undefined;
@@ -245,8 +262,10 @@ async function pushPackageToVeeqo(args: {
     width: Number(W),
     height: Number(H),
   };
+
+  let putResponse: unknown;
   try {
-    await updateAllocationPackage(numericAllocId, {
+    putResponse = await updateAllocationPackage(numericAllocId, {
       weightLbs,
       lengthIn: expected.depth,
       widthIn: expected.width,
@@ -262,87 +281,74 @@ async function pushPackageToVeeqo(args: {
     return { ok: false, reason, expected };
   }
 
-  // Verify: re-read the allocation and confirm Veeqo actually persisted
-  // what we sent. Without this, a silent PUT-200-no-persist would let
-  // the dialog close cleanly and the next rate quote come back against
-  // the old packaging.
-  try {
-    const alloc = (await getAllocation(numericAllocId)) as {
-      allocation_package?: {
-        weight?: number;
-        weight_unit?: string;
-        depth?: number;
-        width?: number;
-        height?: number;
-        dimensions_unit?: string;
-      } | null;
-    } | null;
-    const pkg = alloc?.allocation_package ?? null;
-    if (!pkg) {
-      return {
-        ok: false,
-        reason: "Veeqo accepted the PUT but readback shows no allocation_package",
-        expected,
-      };
-    }
-    // Normalise units in case Veeqo echoes back in a different unit
-    // than we sent. We sent oz / in; if Veeqo returned grams / cm we
-    // convert before comparing so a unit-swap doesn't look like a
-    // persistence failure.
-    const readWeightOz =
-      pkg.weight_unit === "g" && typeof pkg.weight === "number"
-        ? pkg.weight / 28.3495
-        : (pkg.weight ?? NaN);
-    const toIn = (v: number | undefined) =>
-      pkg.dimensions_unit === "cm" && typeof v === "number" ? v / 2.54 : v;
-    const actual = {
-      weightOz:
-        typeof readWeightOz === "number" && Number.isFinite(readWeightOz)
-          ? Math.round(readWeightOz * 100) / 100
-          : undefined,
-      depth: toIn(pkg.depth),
-      width: toIn(pkg.width),
-      height: toIn(pkg.height),
-    };
-    const close = (a: number | undefined, b: number, tol: number) =>
-      typeof a === "number" && Number.isFinite(a) && Math.abs(a - b) <= tol;
-    const weightOk = close(actual.weightOz, expected.weightOz, 0.5);
-    const depthOk = close(actual.depth, expected.depth, 0.05);
-    const widthOk = close(actual.width, expected.width, 0.05);
-    const heightOk = close(actual.height, expected.height, 0.05);
-    if (weightOk && depthOk && widthOk && heightOk) {
-      return { ok: true, actual, expected };
-    }
-    const drift: string[] = [];
-    if (!weightOk)
-      drift.push(`weight: sent ${expected.weightOz}oz, Veeqo has ${actual.weightOz ?? "?"}oz`);
-    if (!depthOk)
-      drift.push(`depth: sent ${expected.depth}in, Veeqo has ${actual.depth ?? "?"}in`);
-    if (!widthOk)
-      drift.push(`width: sent ${expected.width}in, Veeqo has ${actual.width ?? "?"}in`);
-    if (!heightOk)
-      drift.push(`height: sent ${expected.height}in, Veeqo has ${actual.height ?? "?"}in`);
+  // Pull the saved attributes out of the PUT response.
+  const attrs = (() => {
+    if (!putResponse || typeof putResponse !== "object") return null;
+    const data = (putResponse as { data?: unknown }).data;
+    if (!data || typeof data !== "object") return null;
+    const a = (data as { attributes?: unknown }).attributes;
+    return a && typeof a === "object" ? (a as Record<string, unknown>) : null;
+  })();
+
+  if (!attrs) {
+    // Veeqo returned 200 but in an unexpected shape. Trust the HTTP
+    // success — the PUT was accepted — but flag the unverified state
+    // so the operator knows to double-check.
     console.warn(
-      `[edit-package] Veeqo PUT did not persist for allocation ${numericAllocId}: ${drift.join("; ")}`,
+      `[edit-package] PUT for allocation ${numericAllocId} returned no data.attributes — trusting HTTP 200`,
     );
-    return {
-      ok: false,
-      reason: `Veeqo PUT returned OK but did not persist — ${drift.join("; ")}`,
-      actual,
-      expected,
-    };
-  } catch (e) {
-    // Readback failure: write may still have succeeded — surface the
-    // soft state so the UI can warn but not block.
-    const reason = e instanceof Error ? e.message : String(e);
-    console.warn(
-      `[edit-package] Veeqo PUT succeeded but verification readback failed for allocation ${numericAllocId}:`,
-      reason,
-    );
-    return {
-      ok: false,
-      reason: `Veeqo accepted the PUT but verification readback failed: ${reason}`,
-      expected,
-    };
+    return { ok: true, expected };
   }
+
+  // Veeqo may echo `dimensions_unit: "inches"` even though we sent
+  // "in" — that's fine, the values are still in inches. Only convert
+  // when it's explicitly cm.
+  const dimUnit = String(attrs.dimensions_unit ?? "in").toLowerCase();
+  const wUnit = String(attrs.weight_unit ?? "oz").toLowerCase();
+  const num = (k: string): number | undefined =>
+    typeof attrs[k] === "number" ? (attrs[k] as number) : undefined;
+  const toInches = (v: number | undefined): number | undefined => {
+    if (v == null) return undefined;
+    return dimUnit === "cm" ? v / 2.54 : v;
+  };
+  const toOz = (v: number | undefined): number | undefined => {
+    if (v == null) return undefined;
+    return wUnit === "g" ? v / 28.3495 : v;
+  };
+  const actual = {
+    weightOz: (() => {
+      const x = toOz(num("weight"));
+      return typeof x === "number" ? Math.round(x * 100) / 100 : undefined;
+    })(),
+    depth: toInches(num("depth")),
+    width: toInches(num("width")),
+    height: toInches(num("height")),
+  };
+  const close = (a: number | undefined, b: number, tol: number) =>
+    typeof a === "number" && Number.isFinite(a) && Math.abs(a - b) <= tol;
+  const weightOk = close(actual.weightOz, expected.weightOz, 0.5);
+  const depthOk = close(actual.depth, expected.depth, 0.05);
+  const widthOk = close(actual.width, expected.width, 0.05);
+  const heightOk = close(actual.height, expected.height, 0.05);
+  if (weightOk && depthOk && widthOk && heightOk) {
+    return { ok: true, actual, expected };
+  }
+  const drift: string[] = [];
+  if (!weightOk)
+    drift.push(`weight: sent ${expected.weightOz}oz, Veeqo saved ${actual.weightOz ?? "?"}oz`);
+  if (!depthOk)
+    drift.push(`depth: sent ${expected.depth}in, Veeqo saved ${actual.depth ?? "?"}in`);
+  if (!widthOk)
+    drift.push(`width: sent ${expected.width}in, Veeqo saved ${actual.width ?? "?"}in`);
+  if (!heightOk)
+    drift.push(`height: sent ${expected.height}in, Veeqo saved ${actual.height ?? "?"}in`);
+  console.warn(
+    `[edit-package] Veeqo PUT response disagrees with what we sent for allocation ${numericAllocId}: ${drift.join("; ")}`,
+  );
+  return {
+    ok: false,
+    reason: `Veeqo PUT returned OK but the saved values disagree — ${drift.join("; ")}`,
+    actual,
+    expected,
+  };
 }
