@@ -30,9 +30,35 @@
 
 ### [Phase 2.2 — Variation Matrix + Content Generation](phase-2-2-content-generation.md)
 ← [Phase 2.1 Research + Image Mirror](phase-2-1-research.md) (consumes curated ResearchPool + BundleDraft at status=VARIATION_SELECTED), [Phase 2.0 Compliance Gate](phase-2-0-compliance-gate.md) (Stage 4 wires `runComplianceGate({ autoFix: true })` after every Claude generation; rules 3 + 4 inject disclaimer), [Phase 2.6.2 Claude Rewrite](phase-2-6-2-claude-rewrite.md) (`disclaimer-text.ts` Variant A reused; banned-words list + style rules mirror PHASE_2_6_2 findings), Anthropic Claude Sonnet 4.5 (per-template generation with prompt caching), `docs/marketplace-rules/{amazon,walmart}/` (baked into `kb-content/` for runtime use)
-→ Phase 2.3 Image Generation (consumes `BundleDraft.status=GENERATED` with all GeneratedContent rows CAN_PUBLISH), [Bundle Factory](bundle-factory.md) (GeneratedContent rows become source for ChannelSKU in Phase 2.5)
+→ [Phase 2.3 Image Generation](phase-2-3-image-generation.md) (consumes `BundleDraft.status=GENERATED` with all GeneratedContent rows CAN_PUBLISH), [Bundle Factory](bundle-factory.md) (GeneratedContent rows become source for ChannelSKU in Phase 2.4 promote-draft)
 ⊂ Bundle Factory Phase 2; orchestrator dedups 5 Amazon channels into one Claude call (template owner pays cost; sibling rows carry 0¢); retry budget = 3 attempts per template before manual-review escalation.
 ⇔ KB content must be synced via `scripts/sync-kb-content.sh` whenever `docs/marketplace-rules/` changes — runtime reads from `kb-content/`, not from the canonical docs tree (Vercel build container can't see siblings above `ss-control-center/`).
+⇔ [Bundle Factory Fixes 2026-05-21](bundle-factory-fixes-2026-05-21.md) (`browse-node-resolver` called in `content-pipeline.ts:198` to thread the resolved Amazon node into compliance Rule 5).
+
+### [Phase 2.3 — Image Generation](phase-2-3-image-generation.md)
+← [Phase 2.2 Content Generation](phase-2-2-content-generation.md) (consumes `BundleDraft.status=GENERATED` with all CAN_PUBLISH GeneratedContent rows), [Phase 2.0 Compliance Gate](phase-2-0-compliance-gate.md) (Rule 6 vision check activated here — `skip_image_check: false`; `detected_logos` from BLOCKED verdict feeds the next-attempt negative prompt), [Phase 2.1 Research + Image Mirror](phase-2-1-research.md) (reuses R2 setup; main image lives at `prod/<slug>/main<attemptSuffix>.png`), `src/lib/bundle-factory/audit/vision-check.ts` (Rule 6 implementation), OpenAI gpt-image-1 ($0.04 / 1024×1024)
+→ [Phase 2.4 Validation](phase-2-4-validation.md) (provides `main_image_url` for `validator-image-dimensions` + `validator-image-format` + `validator-compliance-rerun` with image), [Bundle Factory](bundle-factory.md) (`BundleDraft.main_image_url` populated)
+⊂ Bundle Factory Phase 2; `MAX_IMAGE_RETRIES=3`, manual_review_required=true on exhaustion. Status machine GENERATED → IMAGE_GENERATING → IMAGE_GENERATED.
+⇔ Cloudflare R2 (storage); Anthropic Vision (Rule 6 runs against the R2 URL).
+
+### [Phase 2.4 — Validation](phase-2-4-validation.md)
+← [Phase 2.3 Image Generation](phase-2-3-image-generation.md) (consumes IMAGE_GENERATED draft with R2 image_url; image inspection validators fetch R2), [Phase 2.0 Compliance Gate](phase-2-0-compliance-gate.md) (`validator-compliance-rerun` re-runs full gate with image — fail-CLOSED, vs the rest of validators which degrade-to-warning on throw), [Bundle Factory Fixes 2026-05-21](bundle-factory-fixes-2026-05-21.md) (`browse-node-resolver` written here onto ChannelSKU; per-validator try/catch isolation added; UPCPool seeded so `validator-upc-format` + `reserveUpc` work), [Veeqo API](veeqo-api.md) (`validator-inventory` — fail-soft on Veeqo 5xx)
+→ [Phase 2.5 Distribution](phase-2-5-distribution.md) (only `validation_status='PASSED'` ChannelSKU rows are eligible for publish; promote-draft creates the rows with `listing_status='PENDING'`), [Bundle Factory](bundle-factory.md) (ChannelSKU rows materialised here; UPCs reserved from UPCPool)
+⊂ Bundle Factory Phase 2; outcomes PASSED → promote / NEEDS_REVIEW → operator / FAILED → no promote. 15 registered validators in `validation-pipeline.ts:63-79`.
+⇔ UPCPool (`reserveUpc()` atomic AVAILABLE → ASSIGNED), Brand Registry TODO (per-category Amazon browse-node for single-brand bundles — currently falls back to Gift Basket Exception).
+
+### [Phase 2.5 — Distribution](phase-2-5-distribution.md)
+← [Phase 2.4 Validation](phase-2-4-validation.md) (gated by `ChannelSKU.validation_status='PASSED'`), [Amazon SP-API](amazon-sp-api.md) (`PUT /listings/2021-08-01/items/{sellerId}/{sku}`, optional `?mode=VALIDATION_PREVIEW`), [Walmart Marketplace API](walmart-api.md) (Items API `feedType=MP_ITEM_4.7`), [Telegram Notifications](telegram-notifications.md) (`sendSuccessAlert` / `sendFailureAlert` on publish events), [Critical Alerts](critical-alerts.md) (shares Telegram channel)
+→ Live marketplace listings on Amazon (`ATVPDKIKX0DER`) + Walmart (US); `ChannelSKU.listing_status` walks PENDING → SUBMITTED → LIVE / FAILED via background `poll-pending` cron.
+⊂ Bundle Factory Phase 2 (final stage); DRY RUN by default — `?dryRun=false` required for real writes; auto-abort on error_rate > 10% in batch.
+⇔ [Account Map](phase-2-5-distribution.md) (`account-map.ts`) explicitly excludes STORE5 RETAILER (US suspended 2026-05-17, refresh_token revoked) + STORE4 SIRIUS (no SP-API app); n8n cron pings `/api/bundle-factory/distribution/poll-pending` to walk SUBMITTED rows.
+
+### [Bundle Factory Fixes 2026-05-21](bundle-factory-fixes-2026-05-21.md)
+⊂ Bundle Factory Phase 2 (post-ship cleanup driven by E2E smoke findings)
+← [Phase 2.0 Compliance Gate](phase-2-0-compliance-gate.md) (`BUNDLE_FACTORY_VISION_SKIP` env honoured in `audit/vision-check.ts`; only for smoke / CI, never prod), [Amazon SP-API](amazon-sp-api.md) (Stage A UPCPool seed via `GET_MERCHANT_LISTINGS_ALL_DATA` report)
+→ [Phase 2.2 Content Generation](phase-2-2-content-generation.md) (`browse-node-resolver` wired at `content-pipeline.ts:198` for compliance Rule 5), [Phase 2.4 Validation](phase-2-4-validation.md) (`browse-node-resolver` wired in `promote-draft.ts`; per-validator try/catch added to `validation-pipeline.ts`; UPCPool populated so `reserveUpc` works), [Bundle Factory](bundle-factory.md) (3934 UPCPool rows seeded — 934 ASSIGNED from SP-API + 3000 AVAILABLE from `seed-upc-pool-available.ts`)
+⇔ `browse-node-resolver` cooperative with compliance Rule 5 (multi-brand bundle → Gift Basket Exception node `12011207011`); single-brand currently uses same node (TODO: per-category Brand Registry mapping).
+⇔ E2E smoke `scripts/smoke-bundle-factory-e2e.ts` — parameterised SINGLE_FLAVOR + MIXED_FLAVOR, 14/14 PASS both. Canonical happy-path regression check.
 
 ### [Phase 2.1 — Research + Image Mirror](phase-2-1-research.md)
 ← Perplexity sonar-pro API (Stage 2 grounded retail research, ~$0.01/call), Cloudflare R2 (Stage 2.5 mirror of returned reference images so we don't depend on rotating retailer URLs), [Sourcing Map](bundle-factory.md) (Tier 1 + Tier 2 chains feed the Perplexity system prompt), [Cloudflare R2 setup](cloudflare-r2-setup.md), [Bundle Factory](bundle-factory.md) (BundleDraft / GenerationJob / GenerationStage / ResearchPool tables from Phase 1)
@@ -276,4 +302,4 @@ Phase 2 planned → sales-analytics-module (полноценная страни�
 - `⇔` двусторонняя связь
 
 ---
-Последнее обновление: 2026-05-14 (+ Sprint shipping labels prod: VAS live-read, post-buy modal, Drive upload, ship-date-trick)
+Последнее обновление: 2026-05-21 (+ Bundle Factory Phase 2.3 Image Gen, Phase 2.4 Validation, Phase 2.5 Distribution, post-ship Fixes 2026-05-21)
