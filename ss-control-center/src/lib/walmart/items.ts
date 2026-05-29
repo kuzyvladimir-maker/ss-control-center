@@ -250,6 +250,41 @@ export async function searchWalmartItems(
   return { matches, itemsScanned: scanned, truncated, totalItemsAvailable, shortcutUsed: "scan" };
 }
 
+/**
+ * Async-iterate the ENTIRE Walmart item catalog for an account — all
+ * publishedStatuses, page size 200, offset+limit. This is the slow full
+ * sweep (~20 sequential requests for ~5 000 items); it's meant for the
+ * nightly catalog-cache sync, NOT live search. Live search reads the cached
+ * WalmartCatalogItem table — see lib/walmart/catalog-cache.ts.
+ */
+export async function* iterateWalmartCatalog(
+  client: WalmartClient,
+  opts: { maxItemsScanned?: number } = {},
+): AsyncGenerator<WalmartItemSummary> {
+  const PAGE_SIZE = 200; // Walmart caps /v3/items at 200/page
+  const cap = opts.maxItemsScanned ?? 20000; // safety backstop
+  let offset = 0;
+  let scanned = 0;
+  let total = 0;
+
+  while (true) {
+    const data = await client.request<any>("GET", "/items", {
+      params: { limit: PAGE_SIZE, offset },
+    });
+    total = Number(data?.totalItems ?? total);
+    const rows = unwrapItems(data);
+    if (rows.length === 0) break;
+
+    for (const raw of rows) {
+      scanned++;
+      yield mapSummary(raw);
+    }
+
+    offset += rows.length;
+    if ((total && offset >= total) || scanned >= cap) break;
+  }
+}
+
 function mapSummary(raw: any): WalmartItemSummary {
   return {
     itemId: String(raw?.mart?.itemId ?? raw?.itemId ?? raw?.wpid ?? raw?.Wpid ?? ""),

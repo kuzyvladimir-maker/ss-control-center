@@ -23,6 +23,12 @@ import {
   WalmartApiError,
 } from "@/lib/walmart/client";
 import { searchWalmartItems } from "@/lib/walmart/items";
+import {
+  searchWalmartCatalogCache,
+  catalogCacheSize,
+  syncWalmartCatalog,
+} from "@/lib/walmart/catalog-cache";
+import { prisma } from "@/lib/prisma";
 import { optionalNumber, optionalString, requireString } from "../channels";
 import type { JackieTool } from "../registry";
 
@@ -31,7 +37,7 @@ const STORE_INDEX = 1;
 const walmartItemsSearch: JackieTool = {
   name: "walmart_items_search",
   description:
-    "Find every Walmart SKU whose title or SKU contains the query. Use this BEFORE walmart_inventory_update when the operator says a product name — multi-packs, bundles, and variants of the same product live under different SKUs. By default scans only PUBLISHED items (the ~4000 listings customers can actually buy); pass include_unpublished=true to also scan UNPUBLISHED. A query that has no whitespace is tried as an exact SKU first (1 request, instant).",
+    "Find every Walmart SKU whose title or SKU contains the query. Use this BEFORE walmart_inventory_update when the operator says a product name — multi-packs, bundles, and variants of the same product live under different SKUs. Reads from a nightly-refreshed local mirror of the catalog, so it answers in well under a second (NOT the old 40-60s live scan). By default returns only PUBLISHED items (the listings customers can actually buy); pass include_unpublished=true to also include UNPUBLISHED.",
   write: false,
   input_schema: {
     type: "object",
@@ -60,38 +66,84 @@ const walmartItemsSearch: JackieTool = {
     const query = requireString(args, "query");
     const limit = optionalNumber(args, "limit") ?? 50;
     const includeUnpublished = args.include_unpublished === true;
-    const client = getWalmartClient(STORE_INDEX);
-    try {
-      const r = await searchWalmartItems(client, query, {
-        limit,
-        includeUnpublished,
-      });
-      return {
-        query,
-        count: r.matches.length,
-        items_scanned: r.itemsScanned,
-        total_items_in_catalog: r.totalItemsAvailable,
-        truncated_scan: r.truncated,
-        shortcut_used: r.shortcutUsed,
-        matches: r.matches,
-        note:
-          r.matches.length === 0
-            ? r.truncated
-              ? `No matches found in ${r.itemsScanned} scanned items, but catalog has ${r.totalItemsAvailable}. Try include_unpublished=true or ask the operator for the exact SKU.`
-              : "No matches. Check spelling, try a shorter fragment, or ask the operator for the exact SKU."
-            : undefined,
-      };
-    } catch (err) {
-      if (err instanceof WalmartApiError) {
+
+    // The catalog cache (WalmartCatalogItem) is refreshed nightly by
+    // /api/cron/walmart. If it's never been populated (size 0), fall back
+    // to the old live scan so the tool still works on a fresh deploy /
+    // before the first cron run.
+    const cacheSize = await catalogCacheSize(prisma, STORE_INDEX);
+    if (cacheSize === 0) {
+      const client = getWalmartClient(STORE_INDEX);
+      try {
+        const r = await searchWalmartItems(client, query, {
+          limit,
+          includeUnpublished,
+        });
         return {
-          ok: false,
-          error: `Walmart API ${err.status}`,
-          walmart_correlation_id: err.correlationId,
-          walmart_response: err.errorBody,
+          query,
+          source: "live_scan_fallback",
+          count: r.matches.length,
+          items_scanned: r.itemsScanned,
+          total_items_in_catalog: r.totalItemsAvailable,
+          truncated_scan: r.truncated,
+          matches: r.matches,
+          note:
+            "Catalog cache is empty — ran a slow live scan instead. Trigger /api/cron/walmart (or wait for the nightly run) to populate the cache; after that this tool answers instantly.",
         };
+      } catch (err) {
+        if (err instanceof WalmartApiError) {
+          return {
+            ok: false,
+            error: `Walmart API ${err.status}`,
+            walmart_correlation_id: err.correlationId,
+            walmart_response: err.errorBody,
+          };
+        }
+        throw err;
       }
-      throw err;
     }
+
+    // Fast path: query the local mirror.
+    const r = await searchWalmartCatalogCache(prisma, STORE_INDEX, query, {
+      limit,
+      includeUnpublished,
+    });
+
+    // Safety net: a brand-new SKU created since the last sync won't be in
+    // the mirror yet. If the cache found nothing and the query looks like an
+    // exact SKU (no whitespace), do a single live exact-SKU lookup.
+    if (r.matches.length === 0 && !/\s/.test(query.trim())) {
+      const client = getWalmartClient(STORE_INDEX);
+      try {
+        const live = await searchWalmartItems(client, query, { limit: 1 });
+        if (live.matches.length > 0 && live.shortcutUsed === "exact_sku") {
+          return {
+            query,
+            source: "live_exact_sku",
+            count: live.matches.length,
+            matches: live.matches,
+            cache_last_synced_at: r.lastSyncedAt,
+            note:
+              "Not in the local mirror (likely created since the last nightly sync) — confirmed via a live exact-SKU lookup.",
+          };
+        }
+      } catch {
+        // Ignore — fall through to the empty cache result below.
+      }
+    }
+
+    return {
+      query,
+      source: "cache",
+      count: r.matches.length,
+      total_items_in_cache: r.totalInCache,
+      cache_last_synced_at: r.lastSyncedAt,
+      matches: r.matches,
+      note:
+        r.matches.length === 0
+          ? "No matches in the catalog mirror. Check spelling, try a shorter fragment, set include_unpublished=true, or ask the operator for the exact SKU."
+          : undefined,
+    };
   },
 };
 
@@ -203,4 +255,42 @@ const walmartInventoryUpdate: JackieTool = {
   },
 };
 
-export const tools: JackieTool[] = [walmartItemsSearch, walmartInventoryUpdate];
+const walmartCatalogRefresh: JackieTool = {
+  name: "walmart_catalog_refresh",
+  description:
+    "Refresh the local Walmart catalog mirror that walmart_items_search reads from. Pages the full catalog from Walmart (~5000 items, takes 40-60s) and updates the local copy. Normally runs automatically every night — only call this manually if walmart_items_search reports the cache is empty, or right after the operator has added/renamed listings and wants search to see them immediately.",
+  write: true,
+  input_schema: {
+    type: "object",
+    properties: {},
+    additionalProperties: false,
+  },
+  handler: async () => {
+    const client = getWalmartClient(STORE_INDEX);
+    try {
+      const r = await syncWalmartCatalog(prisma, client, STORE_INDEX);
+      return {
+        ok: true,
+        items_in_cache: r.written,
+        previous_rows_replaced: r.replaced,
+        note: `Catalog mirror refreshed: ${r.written} items cached (replaced ${r.replaced} previous rows). walmart_items_search is now up to date.`,
+      };
+    } catch (err) {
+      if (err instanceof WalmartApiError) {
+        return {
+          ok: false,
+          error: `Walmart API ${err.status}`,
+          walmart_correlation_id: err.correlationId,
+          walmart_response: err.errorBody,
+        };
+      }
+      throw err;
+    }
+  },
+};
+
+export const tools: JackieTool[] = [
+  walmartItemsSearch,
+  walmartInventoryUpdate,
+  walmartCatalogRefresh,
+];

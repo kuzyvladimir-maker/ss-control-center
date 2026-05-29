@@ -21,11 +21,17 @@ import { WalmartClient } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { WalmartReturnsApi } from "@/lib/walmart/returns";
 import { WalmartReportsApi } from "@/lib/walmart/reports";
+import { syncWalmartCatalog } from "@/lib/walmart/catalog-cache";
 import type {
   WalmartOrder,
   WalmartReturn,
   WalmartReconTransaction,
 } from "@/lib/walmart/types";
+
+// Catalog sync pages the full ~5000-item Walmart catalog (~40-50s of
+// sequential API calls) on top of the other sub-jobs; raise the function
+// ceiling so the nightly run isn't cut off. (Vercel max for our plan.)
+export const maxDuration = 300;
 
 const STORE_NAME_PREFIX = "Walmart";
 
@@ -140,6 +146,20 @@ async function syncAdjustments(client: WalmartClient, storeIndex: number) {
     return { name: "adjustments", ok: true, inserted, skipped };
   } catch (err) {
     return { name: "adjustments", ok: false, error: (err as Error).message };
+  }
+}
+
+async function syncCatalog(client: WalmartClient, storeIndex: number) {
+  try {
+    const r = await syncWalmartCatalog(prisma, client, storeIndex);
+    return {
+      name: "catalog",
+      ok: true,
+      written: r.written,
+      replaced: r.replaced,
+    };
+  } catch (err) {
+    return { name: "catalog", ok: false, error: (err as Error).message };
   }
 }
 
@@ -334,6 +354,7 @@ export async function GET(request: NextRequest) {
     syncReturns(client, 1, client.credentials.storeName),
     syncShipmentMonitor(client, 1),
     syncAdjustments(client, 1),
+    syncCatalog(client, 1),
   ]);
 
   return NextResponse.json({

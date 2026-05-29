@@ -46,6 +46,7 @@ Status: Active. Full seller access (без Solution Provider delegation).
 - Items API (Phase 2 — Product Listings)
 
 ## ⚠️ Отличия от Amazon SP-API
+- **Нет текстового поиска по товарам** — `/v3/items` отдаёт только весь список (постранично) или один товар по точному SKU. Поиск по названию решён локальным зеркалом каталога — см. [Walmart Catalog Cache](walmart-catalog-cache.md).
 - **Нет Messaging API** — нет отдельного buyer-seller chat; коммуникация через cancel/refund/return workflows + Walmart Contact Us form
 - **Нет отдельного Chargebacks API** — chargebacks попадают в recon report как adjustments
 - **Нет отдельного Feedback API** — частично доступно через Seller Performance
