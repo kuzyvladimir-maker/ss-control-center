@@ -270,17 +270,23 @@ model ShippingAdjustment {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  externalId String @unique // from Amazon/Walmart API (dedup)
+  externalId String @unique // stable ID for dedup: amazon:<store>:<type>:<postedDate>:<amountCents> or walmart:<recon>:<line>
   channel    String // Amazon | Walmart
+  storeId    String? // store1..5 (Amazon) or walmart-store1 — null for legacy / manual rows
+  currency   String? // ISO 4217 — defaults to USD
 
-  orderId        String
+  // orderId is optional because Amazon's PostageBilling_PostageAdjustment
+  // events (the real "carrier reweigh recharge") have no per-order
+  // attribution. Order/SKU linkage comes from Settlement Reports in Phase B.
+  orderId        String?
   amazonOrderId  String?
   walmartOrderId String?
 
   adjustmentDate   String // YYYY-MM-DD
-  adjustmentType   String // WeightAdjustment | DIMadjustment | CarrierAdjustment
-  adjustmentAmount Float // negative USD
+  adjustmentType   String // WeightAdjustment | WeightAdjustmentRefund | ReturnShipping | Other
+  adjustmentAmount Float // negative USD when charged, positive when refunded
   adjustmentReason String?
+  rawType          String? // Original Amazon AdjustmentType (e.g. PostageBilling_PostageAdjustment) — for traceability
 
   sku               String?
   productName       String?
@@ -300,6 +306,10 @@ model ShippingAdjustment {
   reviewed     Boolean @default(false)
   skuDataFixed Boolean @default(false)
   notes        String?
+
+  @@index([channel, createdAt])
+  @@index([adjustmentDate])
+  @@index([sku])
 }
 
 model SkuAdjustmentProfile {

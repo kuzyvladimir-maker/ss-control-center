@@ -1,12 +1,77 @@
 /**
- * Amazon Finances API
- * Role required: Finance and Accounting
- * Used for: Adjustments Monitor, A-to-Z Claims tracking
+ * Amazon Finances API.
+ *
+ * Role required: Finance and Accounting (Seller Central → Develop apps → Edit App → Data access).
+ *
+ * Used by: Adjustments Monitor, A-to-Z Claims tracking.
+ *
+ * ── Why parseAdjustments looks the way it does ───────────────────────────
+ * The original parser filtered on AdjustmentType values that don't exist in
+ * the real /finances/v0 response (ShippingChargeback / CarrierAdjustment /
+ * WeightAdjustment). The actual API returns ~150 events/week per active
+ * store with names like PostageBilling_PostageAdjustment. The 2026-05-22
+ * audit (docs/ADJUSTMENTS_DIAGNOSIS_REPORT_2026-05-22.md §5.2) catalogued
+ * every observed type. The mapping below is the result.
+ *
+ * Note on order/SKU linkage: PostageBilling_* events carry NO orderId /
+ * SellerSKU — Amazon doesn't expose per-shipment attribution on this
+ * endpoint. The Settlement Report (Phase B) is the source of truth for
+ * SKU-level analytics. Phase A just gets the dollar totals flowing.
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { spApiGet } from "./client";
 
-/** Get financial events (adjustments, charges, refunds) */
+export interface ParsedAdjustment {
+  /** Our display category — what the UI / SKU profile aggregates on. */
+  type:
+    | "WeightAdjustment"        // PostageBilling_PostageAdjustment (carrier reweigh recharge)
+    | "WeightAdjustmentRefund"  // PostageRefund_PostageAdjustment (Amazon refunded an over-charge)
+    | "ReturnShipping"          // ReturnPostageBilling_* (carrier-billed return label)
+    | "Other";
+  /** Original Amazon string, kept verbatim for traceability. */
+  rawType: string;
+  /** ISO timestamp from AdjustmentEvent.PostedDate. */
+  postedDate: string;
+  /** USD amount. Negative = charged to us, positive = refunded. */
+  amount: number;
+  /** ISO 4217 — Amazon always returns USD in the US marketplace. */
+  currency: string;
+  /** Optional — Amazon's per-event AdjustmentId when present. */
+  adjustmentId?: string;
+  /** Optional — only present for legacy ShippingChargeback-style events that carry AdjustmentItemList. */
+  orderId?: string;
+  /** Optional — same caveat as orderId. */
+  sku?: string;
+  /** Optional — short reason string when Amazon supplies one. */
+  reason?: string;
+}
+
+/**
+ * Maps Amazon's raw AdjustmentType strings to our display categories.
+ * Anything not in this map is dropped (e.g. PostageBilling_Postage is the
+ * routine label charge — not an adjustment in the Vladimir sense).
+ */
+const ADJUSTMENT_TYPE_MAP: Record<string, ParsedAdjustment["type"]> = {
+  PostageBilling_PostageAdjustment: "WeightAdjustment",
+  PostageRefund_PostageAdjustment: "WeightAdjustmentRefund",
+  // Return-label charges from the carrier. Distinct from the buyer's refund
+  // — these are what UPS/USPS bill us back for processing the return.
+  ReturnPostageBilling_Postage: "ReturnShipping",
+  ReturnPostageBilling_FuelSurcharge: "ReturnShipping",
+  ReturnPostageBilling_OversizeSurcharge: "ReturnShipping",
+  ReturnPostageBilling_DeliveryAreaSurcharge: "ReturnShipping",
+  ReturnPostageBilling_Insurance: "ReturnShipping",
+  ReturnPostageBilling_Tracking: "ReturnShipping",
+  ReturnPostageBilling_SignatureConfirmation: "ReturnShipping",
+  ReturnPostageBilling_TransactionFee: "ReturnShipping",
+  // Pre-2024 spec names. Kept for safety in case Amazon ever sends them.
+  ShippingChargeback: "WeightAdjustment",
+  CarrierAdjustment: "WeightAdjustment",
+  WeightAdjustment: "WeightAdjustment",
+};
+
+/** Get financial events (adjustments, charges, refunds). */
 export async function getFinancialEvents(options: {
   storeId?: string;
   postedAfter: string; // ISO 8601 date
@@ -26,7 +91,6 @@ export async function getFinancialEvents(options: {
   };
   if (postedBefore) params.PostedBefore = postedBefore;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allEvents: any[] = [];
   let nextToken: string | undefined;
 
@@ -44,7 +108,7 @@ export async function getFinancialEvents(options: {
   return allEvents;
 }
 
-/** Get financial events for a specific order */
+/** Get financial events for a specific order. */
 export async function getOrderFinancialEvents(
   amazonOrderId: string,
   storeId = "store1"
@@ -57,37 +121,93 @@ export async function getOrderFinancialEvents(
 }
 
 /**
- * Parse adjustment events from financial events response
- * Returns only ShipmentEvents with adjustments (carrier corrections)
+ * Parse adjustment events from getFinancialEvents() output.
+ *
+ * Walks every AdjustmentEventList page, classifies each event via
+ * ADJUSTMENT_TYPE_MAP, expands the (rare) AdjustmentItemList entries into
+ * per-order rows. Drops anything not in the map — including the routine
+ * PostageBilling_Postage and PostageBilling_Insurance line-items.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function parseAdjustments(financialEvents: any[]) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const adjustments: any[] = [];
+export function parseAdjustments(financialEvents: any[]): ParsedAdjustment[] {
+  const out: ParsedAdjustment[] = [];
 
   for (const events of financialEvents) {
-    const adjEvents = events.AdjustmentEventList || [];
+    const adjEvents: any[] = events?.AdjustmentEventList || [];
     for (const adj of adjEvents) {
-      if (
-        [
-          "ShippingChargeback",
-          "CarrierAdjustment",
-          "WeightAdjustment",
-        ].includes(adj.AdjustmentType)
-      ) {
-        for (const item of adj.AdjustmentItemList || []) {
-          adjustments.push({
-            type: adj.AdjustmentType,
-            date: adj.PostedDate,
-            orderId: item.OrderId,
-            sku: item.SellerSKU,
-            amount: parseFloat(item.TotalAmount?.CurrencyAmount || "0"),
-            reason: item.Title || adj.AdjustmentType,
+      const rawType = String(adj?.AdjustmentType ?? "");
+      const mapped = ADJUSTMENT_TYPE_MAP[rawType];
+      if (!mapped) continue;
+
+      const postedDate = String(adj?.PostedDate ?? "");
+      const currency = String(
+        adj?.AdjustmentAmount?.CurrencyCode ??
+          adj?.AdjustmentItemList?.[0]?.TotalAmount?.CurrencyCode ??
+          "USD"
+      );
+      const adjustmentId = adj?.AdjustmentId
+        ? String(adj.AdjustmentId)
+        : undefined;
+
+      const items: any[] = adj?.AdjustmentItemList || [];
+      if (items.length === 0) {
+        // The common case for PostageBilling_*: one event, one amount, no
+        // per-item breakdown. Emit a single row keyed by date+type+amount.
+        const amount = parseFloat(
+          adj?.AdjustmentAmount?.CurrencyAmount ?? "0"
+        );
+        out.push({
+          type: mapped,
+          rawType,
+          postedDate,
+          amount,
+          currency,
+          adjustmentId,
+          reason: rawType,
+        });
+      } else {
+        // Legacy / chargeback-style event: expand each line.
+        for (const item of items) {
+          const amount = parseFloat(item?.TotalAmount?.CurrencyAmount ?? "0");
+          out.push({
+            type: mapped,
+            rawType,
+            postedDate,
+            amount,
+            currency,
+            adjustmentId,
+            orderId: item?.OrderId ? String(item.OrderId) : undefined,
+            sku: item?.SellerSKU ? String(item.SellerSKU) : undefined,
+            reason: item?.Title || rawType,
           });
         }
       }
     }
   }
 
-  return adjustments;
+  return out;
+}
+
+/**
+ * Build the stable externalId used for dedup across re-runs of the scanner.
+ *
+ * Two shapes:
+ *   * If the event has both orderId AND sku (legacy ShippingChargeback):
+ *       amazon:<store>:<rawType>:<orderId>:<sku>:<postedDate>
+ *   * Otherwise (the common PostageBilling case):
+ *       amazon:<store>:<rawType>:<postedDate>:<amountCents>:<adjustmentId?>
+ *
+ * The amount-in-cents term is what disambiguates two PostageBilling events
+ * posted in the same second — Amazon allows this for separate shipments
+ * batched into one settlement window.
+ */
+export function buildAdjustmentExternalId(
+  adj: ParsedAdjustment,
+  storeId: string
+): string {
+  if (adj.orderId && adj.sku) {
+    return `amazon:${storeId}:${adj.rawType}:${adj.orderId}:${adj.sku}:${adj.postedDate}`;
+  }
+  const amountCents = Math.round(adj.amount * 100);
+  const idTerm = adj.adjustmentId ? `:${adj.adjustmentId}` : "";
+  return `amazon:${storeId}:${adj.rawType}:${adj.postedDate}:${amountCents}${idTerm}`;
 }

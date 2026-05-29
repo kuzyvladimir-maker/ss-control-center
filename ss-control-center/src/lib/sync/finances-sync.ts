@@ -1,7 +1,14 @@
+/**
+ * Per-store financial events sync — used by the dashboard fan-out.
+ *
+ * Uses the same parser + externalId scheme as /api/adjustments/scan.
+ */
+
 import { prisma } from "@/lib/prisma";
 import {
   getFinancialEvents,
   parseAdjustments,
+  buildAdjustmentExternalId,
 } from "@/lib/amazon-sp-api/finances";
 
 export async function syncFinancialEvents(
@@ -17,13 +24,11 @@ export async function syncFinancialEvents(
     postedAfter: fourteenDaysAgo,
   });
 
-  const adjustments = parseAdjustments(events);
+  const parsed = parseAdjustments(events);
   let synced = 0;
 
-  for (const adj of adjustments) {
-    if (!adj.orderId) continue;
-    const externalId = `${adj.orderId}-${adj.date}-${adj.type}-${adj.amount}`;
-
+  for (const adj of parsed) {
+    const externalId = buildAdjustmentExternalId(adj, storeId);
     try {
       const exists = await prisma.shippingAdjustment.findUnique({
         where: { externalId },
@@ -33,19 +38,24 @@ export async function syncFinancialEvents(
           data: {
             externalId,
             channel: "Amazon",
-            orderId: adj.orderId,
-            amazonOrderId: adj.orderId,
-            adjustmentDate: adj.date?.split("T")[0] || "",
+            storeId,
+            currency: adj.currency,
+            orderId: adj.orderId ?? null,
+            amazonOrderId: adj.orderId ?? null,
+            adjustmentDate: adj.postedDate.split("T")[0] || "",
             adjustmentType: adj.type,
+            rawType: adj.rawType,
             adjustmentAmount: adj.amount,
             adjustmentReason: adj.reason,
-            sku: adj.sku,
+            sku: adj.sku ?? null,
           },
         });
         synced++;
       }
     } catch {
-      // skip duplicates
+      // Race-condition dedup: another worker may have inserted between
+      // findUnique and create. externalId is @unique so the second insert
+      // throws — fine.
     }
   }
 
