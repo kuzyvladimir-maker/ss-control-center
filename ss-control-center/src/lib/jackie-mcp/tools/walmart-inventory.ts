@@ -22,10 +22,64 @@ import {
   getWalmartClient,
   WalmartApiError,
 } from "@/lib/walmart/client";
-import { optionalString, requireString } from "../channels";
+import { searchWalmartItems } from "@/lib/walmart/items";
+import { optionalNumber, optionalString, requireString } from "../channels";
 import type { JackieTool } from "../registry";
 
 const STORE_INDEX = 1;
+
+const walmartItemsSearch: JackieTool = {
+  name: "walmart_items_search",
+  description:
+    "Find every Walmart SKU whose title or SKU code contains the query. Use this BEFORE walmart_inventory_update when the operator says a product name instead of a SKU — multi-packs, bundles, and variants of the same product live under different SKUs and all of them must be visited.",
+  write: false,
+  input_schema: {
+    type: "object",
+    properties: {
+      query: {
+        type: "string",
+        description:
+          "Product name fragment, case-insensitive. e.g. \"Oscar Mayer Bun-Length\" — matches every SKU whose title contains those words.",
+      },
+      limit: {
+        type: "number",
+        default: 50,
+        description: "Max matches to return. Default 50 (cap of the operator-confirm UI).",
+      },
+    },
+    required: ["query"],
+    additionalProperties: false,
+  },
+  handler: async (args) => {
+    const query = requireString(args, "query");
+    const limit = optionalNumber(args, "limit") ?? 50;
+    const client = getWalmartClient(STORE_INDEX);
+    try {
+      const r = await searchWalmartItems(client, query, { limit });
+      return {
+        query,
+        count: r.matches.length,
+        items_scanned: r.itemsScanned,
+        truncated_scan: r.truncated,
+        matches: r.matches,
+        note:
+          r.matches.length === 0
+            ? "No matches. Check spelling, try a shorter fragment, or ask the operator for the exact SKU."
+            : undefined,
+      };
+    } catch (err) {
+      if (err instanceof WalmartApiError) {
+        return {
+          ok: false,
+          error: `Walmart API ${err.status}`,
+          walmart_correlation_id: err.correlationId,
+          walmart_response: err.errorBody,
+        };
+      }
+      throw err;
+    }
+  },
+};
 
 const walmartInventoryUpdate: JackieTool = {
   name: "walmart_inventory_update",
@@ -135,4 +189,4 @@ const walmartInventoryUpdate: JackieTool = {
   },
 };
 
-export const tools: JackieTool[] = [walmartInventoryUpdate];
+export const tools: JackieTool[] = [walmartItemsSearch, walmartInventoryUpdate];

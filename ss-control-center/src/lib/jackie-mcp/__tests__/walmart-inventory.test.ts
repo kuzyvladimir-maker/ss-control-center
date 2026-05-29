@@ -7,7 +7,22 @@ import assert from "node:assert/strict";
 
 import { tools } from "../tools/walmart-inventory";
 
-const tool = tools[0];
+const search = tools.find((t) => t.name === "walmart_items_search")!;
+const tool = tools.find((t) => t.name === "walmart_inventory_update")!;
+
+test("walmart_items_search — tool shape (name, write=false, required query)", () => {
+  assert.equal(search.name, "walmart_items_search");
+  assert.equal(search.write, false);
+  assert.deepEqual(search.input_schema.required, ["query"]);
+  assert.equal(search.input_schema.additionalProperties, false);
+});
+
+test("walmart_items_search — missing query rejected", async () => {
+  await assert.rejects(
+    () => search.handler({}, { actor: "test" }),
+    /query.*required/i,
+  );
+});
 
 test("walmart_inventory_update — tool shape (name, write, required args)", () => {
   assert.equal(tool.name, "walmart_inventory_update");

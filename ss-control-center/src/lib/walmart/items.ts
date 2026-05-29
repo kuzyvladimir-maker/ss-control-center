@@ -121,6 +121,86 @@ function unwrapItems(data: any): any[] {
   return [];
 }
 
+/**
+ * Lightweight item record for search/inventory workflows — captures the
+ * fields Jackie + the operator need to confirm which SKUs are about to
+ * be changed, without the compliance-status decoration.
+ */
+export interface WalmartItemSummary {
+  itemId: string;
+  sku: string;
+  title: string;
+  lifecycleStatus: string;
+  publishedStatus: string;
+}
+
+/**
+ * Walk every Walmart item the account exposes and return those whose
+ * title OR sku matches `query` (case-insensitive substring). Designed
+ * for the "Vladimir says product name, Jackie needs every SKU it lives
+ * in (single unit + 2-pack + bundle + variants)" workflow.
+ *
+ * No server-side title search is available on /v3/items, so this walks
+ * pages locally — Vladimir's Walmart catalog is small enough (≤ a few
+ * hundred items) that one full sweep finishes in 1-2 seconds.
+ */
+export async function searchWalmartItems(
+  client: WalmartClient,
+  query: string,
+  opts: { limit?: number; maxItemsScanned?: number } = {},
+): Promise<{ matches: WalmartItemSummary[]; itemsScanned: number; truncated: boolean }> {
+  const q = query.trim().toLowerCase();
+  if (!q) return { matches: [], itemsScanned: 0, truncated: false };
+  const limit = opts.limit ?? 50;
+  const cap = opts.maxItemsScanned ?? 2000;
+
+  const matches: WalmartItemSummary[] = [];
+  let cursor: string | undefined;
+  let first = true;
+  let scanned = 0;
+  let truncated = false;
+
+  while (true) {
+    const params: Record<string, string | number> = first
+      ? { limit: 50 }
+      : { nextCursor: cursor as string };
+    first = false;
+
+    const data = await client.request<any>("GET", "/items", { params });
+    const rows = unwrapItems(data);
+
+    for (const raw of rows) {
+      scanned++;
+      const sku = String(raw?.sku ?? raw?.Sku ?? "");
+      const title = String(raw?.productName ?? raw?.title ?? "");
+      if (!sku && !title) continue;
+      if (sku.toLowerCase().includes(q) || title.toLowerCase().includes(q)) {
+        matches.push({
+          itemId: String(raw?.mart?.itemId ?? raw?.itemId ?? raw?.wpid ?? raw?.Wpid ?? ""),
+          sku,
+          title,
+          lifecycleStatus: String(raw?.lifecycleStatus ?? ""),
+          publishedStatus: String(raw?.publishedStatus ?? ""),
+        });
+        if (matches.length >= limit) {
+          // Operator-facing cap — stop accumulating but keep counting so
+          // Jackie can tell the user how many they didn't see.
+        }
+      }
+    }
+
+    cursor =
+      data?.ItemResponse?.nextCursor ||
+      data?.itemResponse?.nextCursor ||
+      data?.nextCursor ||
+      undefined;
+    if (!cursor) break;
+    if (scanned >= cap) { truncated = true; break; }
+  }
+
+  return { matches: matches.slice(0, limit), itemsScanned: scanned, truncated };
+}
+
 function mapItem(raw: any): WalmartItemIssue | null {
   const itemId =
     raw?.mart?.itemId ??
