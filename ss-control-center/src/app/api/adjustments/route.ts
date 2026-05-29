@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
   const channel = sp.get("channel");
+  const carrier = sp.get("carrier"); // __none__ → carrier IS NULL
   const sku = sp.get("sku");
   const reviewed = sp.get("reviewed");
   const days = parseInt(sp.get("days") || "30");
@@ -13,6 +14,8 @@ export async function GET(request: NextRequest) {
   const where: Record<string, unknown> = {};
   if (channel) where.channel = channel;
   if (sku) where.sku = sku;
+  if (carrier === "__none__") where.carrier = null;
+  else if (carrier) where.carrier = carrier;
   if (reviewed === "true") where.reviewed = true;
   if (reviewed === "false") where.reviewed = false;
 

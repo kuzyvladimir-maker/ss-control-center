@@ -20,6 +20,7 @@ import { prisma } from "@/lib/prisma";
 import { fetchSettlementAdjustments } from "@/lib/amazon-sp-api/settlement-reports";
 import { getConfiguredStores } from "@/lib/amazon-sp-api/auth";
 import { rebuildSkuProfilesFor } from "@/lib/adjustments/sku-profiles";
+import { enrichAdjustmentsFromShippingPlan } from "@/lib/adjustments/enrich";
 
 const SKIPPED_STORES = new Set<string>(["store2"]);
 
@@ -113,10 +114,15 @@ export async function POST(request: NextRequest) {
   const totalEnriched = results.reduce((s, r) => s + r.enriched, 0);
   const anyError = results.some((r) => !r.ok);
 
+  // Enrich rows with carrier + productName from ShippingPlanItem (Veeqo
+  // outgoing-label records). Coverage is partial — only orders shipped
+  // via the Veeqo pipeline match — but it's what powers the carrier
+  // filter on the /adjustments page.
+  const enrich = await enrichAdjustmentsFromShippingPlan();
+
   // Rebuild SKU profiles for every SKU touched by this sync — drives the
   // SKU Issues panel + "needs SKU-DB update" flag.
   const { profilesUpdated } = await rebuildSkuProfilesFor(touchedSkus);
-  void profilesUpdated; // surfaced in response below
 
   await prisma.syncLog.update({
     where: { id: syncLog.id },
@@ -141,6 +147,7 @@ export async function POST(request: NextRequest) {
     totalInserted,
     totalEnriched,
     profilesUpdated,
+    enrichment: enrich,
     perStore: results,
   });
 }

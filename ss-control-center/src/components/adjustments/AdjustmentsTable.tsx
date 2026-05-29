@@ -44,11 +44,18 @@ const typeLabels: Record<string, string> = {
   CarrierAdjustment: "Carrier",
 };
 
+interface AdjustmentFilters {
+  channel: string;
+  days: string;
+  sku: string;
+  carrier?: string;
+}
+
 interface AdjustmentsTableProps {
   adjustments: Adjustment[];
   total: number;
-  filters: { channel: string; days: string; sku: string };
-  onFiltersChange: (f: { channel: string; days: string; sku: string }) => void;
+  filters: AdjustmentFilters;
+  onFiltersChange: (f: AdjustmentFilters) => void;
 }
 
 export default function AdjustmentsTable({
@@ -131,12 +138,8 @@ export default function AdjustmentsTable({
                       {adj.adjustmentDate}
                     </TableCell>
                     <TableCell className="text-xs">{adj.channel}</TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {adj.orderId
-                        ? adj.orderId.length > 15
-                          ? `${adj.orderId.slice(0, 15)}...`
-                          : adj.orderId
-                        : "—"}
+                    <TableCell className="font-mono text-xs whitespace-nowrap">
+                      {adj.orderId ?? "—"}
                     </TableCell>
                     <TableCell className="font-mono text-xs">
                       {adj.sku || "—"}

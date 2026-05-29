@@ -31,6 +31,8 @@ interface Stats {
   amazonTotal: number;
   walmartTotal: number;
   problematicSkus: number;
+  carriers?: Array<{ carrier: string; count: number; total: number }>;
+  filtersApplied?: { channel: string; carrier: string; days: number };
 }
 
 interface SyncLogEntry {
@@ -58,6 +60,7 @@ export default function AdjustmentsPage() {
     channel: "",
     days: "30",
     sku: "",
+    carrier: "",
   });
 
   // SKU profiles
@@ -76,18 +79,23 @@ export default function AdjustmentsPage() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch("/api/adjustments/stats");
+      const params = new URLSearchParams();
+      if (filters.channel) params.set("channel", filters.channel);
+      if (filters.carrier) params.set("carrier", filters.carrier);
+      params.set("days", filters.days);
+      const res = await fetch(`/api/adjustments/stats?${params.toString()}`);
       setStats(await res.json());
     } catch {
       // ignore
     }
-  }, []);
+  }, [filters]);
 
   const fetchAdjustments = useCallback(async () => {
     setAdjLoading(true);
     try {
       const params = new URLSearchParams();
       if (filters.channel) params.set("channel", filters.channel);
+      if (filters.carrier) params.set("carrier", filters.carrier);
       params.set("days", filters.days);
       if (filters.sku) params.set("sku", filters.sku);
       const res = await fetch(`/api/adjustments?${params.toString()}`);
@@ -307,32 +315,116 @@ export default function AdjustmentsPage() {
         </div>
       </div>
 
-      {/* KPI row */}
+      {/* KPI row — all cards are clickable filters */}
       {stats && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiCard
-            label="This month"
-            value={`$${Math.abs(stats.thisMonth).toFixed(2)}`}
-            icon={<TrendingDown size={14} />}
-            iconVariant="warn"
-            trend={{ value: `${stats.thisMonthCount} adj`, positive: false }}
-          />
-          <KpiCard
-            label="Last 30 days"
-            value={`$${Math.abs(stats.last30Days).toFixed(2)}`}
-            icon={<DollarSign size={14} />}
-            trend={{ value: `${stats.last30Count} adj`, positive: false }}
-          />
-          <KpiCard
-            label="Amazon"
-            value={`$${Math.abs(stats.amazonTotal).toFixed(2)}`}
-            icon={<StoreAvatar store="salutem" size="sm" />}
-          />
-          <KpiCard
-            label="Walmart"
-            value={`$${Math.abs(stats.walmartTotal).toFixed(2)}`}
-            icon={<StoreAvatar store="walmart" size="sm" />}
-          />
+          <button
+            type="button"
+            onClick={() => setFilters({ ...filters, channel: "", carrier: "" })}
+            className="text-left transition-transform hover:scale-[1.01]"
+          >
+            <KpiCard
+              label="This month"
+              value={`$${Math.abs(stats.thisMonth).toFixed(2)}`}
+              icon={<TrendingDown size={14} />}
+              iconVariant="warn"
+              trend={{ value: `${stats.thisMonthCount} adj`, positive: false }}
+            />
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilters({ ...filters, channel: "", carrier: "" })}
+            className="text-left transition-transform hover:scale-[1.01]"
+          >
+            <KpiCard
+              label="Last 30 days"
+              value={`$${Math.abs(stats.last30Days).toFixed(2)}`}
+              icon={<DollarSign size={14} />}
+              trend={{ value: `${stats.last30Count} adj`, positive: false }}
+            />
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setFilters({
+                ...filters,
+                channel: filters.channel === "Amazon" ? "" : "Amazon",
+              })
+            }
+            className={`text-left transition-transform hover:scale-[1.01] ${
+              filters.channel === "Amazon" ? "ring-2 ring-warn rounded-lg" : ""
+            }`}
+          >
+            <KpiCard
+              label={filters.channel === "Amazon" ? "Amazon (active)" : "Amazon"}
+              value={`$${Math.abs(stats.amazonTotal).toFixed(2)}`}
+              icon={<StoreAvatar store="salutem" size="sm" />}
+            />
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setFilters({
+                ...filters,
+                channel: filters.channel === "Walmart" ? "" : "Walmart",
+              })
+            }
+            className={`text-left transition-transform hover:scale-[1.01] ${
+              filters.channel === "Walmart" ? "ring-2 ring-warn rounded-lg" : ""
+            }`}
+          >
+            <KpiCard
+              label={filters.channel === "Walmart" ? "Walmart (active)" : "Walmart"}
+              value={`$${Math.abs(stats.walmartTotal).toFixed(2)}`}
+              icon={<StoreAvatar store="walmart" size="sm" />}
+            />
+          </button>
+        </div>
+      )}
+
+      {/* Carrier filter chips — clickable, drive both table + KPIs */}
+      {stats?.carriers && stats.carriers.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-ink-3">
+            Carrier:
+          </span>
+          <button
+            type="button"
+            onClick={() => setFilters({ ...filters, carrier: "" })}
+            className={`rounded-full border px-3 py-1 text-[11.5px] transition-colors ${
+              !filters.carrier
+                ? "border-ink bg-ink text-bg"
+                : "border-rule bg-surface text-ink-2 hover:bg-surface-tint"
+            }`}
+          >
+            All
+          </button>
+          {stats.carriers.map((c) => {
+            const label = c.carrier === "__none__" ? "Unknown" : c.carrier;
+            const active = filters.carrier === c.carrier;
+            return (
+              <button
+                key={c.carrier}
+                type="button"
+                onClick={() =>
+                  setFilters({
+                    ...filters,
+                    carrier: active ? "" : c.carrier,
+                  })
+                }
+                className={`rounded-full border px-3 py-1 text-[11.5px] transition-colors ${
+                  active
+                    ? "border-ink bg-ink text-bg"
+                    : "border-rule bg-surface text-ink-2 hover:bg-surface-tint"
+                }`}
+              >
+                <span className="font-medium">{label}</span>
+                <span className="ml-1.5 opacity-70 tabular">
+                  {c.count} · ${Math.abs(c.total).toFixed(2)}
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -374,7 +466,14 @@ export default function AdjustmentsPage() {
             adjustments={adjustments}
             total={adjTotal}
             filters={filters}
-            onFiltersChange={setFilters}
+            onFiltersChange={(f) =>
+              setFilters({
+                channel: f.channel,
+                days: f.days,
+                sku: f.sku,
+                carrier: f.carrier ?? "",
+              })
+            }
           />
         </PanelBody>
       </Panel>
