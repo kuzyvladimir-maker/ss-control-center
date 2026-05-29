@@ -12,6 +12,7 @@ import { tools as accountHealth } from "./account-health";
 import { tools as alerts } from "./alerts";
 import { tools as bundleFactory } from "./bundle-factory";
 import { tools as walmartReturns } from "./walmart-returns";
+import { tools as walmartInventory } from "./walmart-inventory";
 
 const ALL_TOOLS = [
   ...listings,
@@ -21,6 +22,7 @@ const ALL_TOOLS = [
   ...alerts,
   ...bundleFactory,
   ...walmartReturns,
+  ...walmartInventory,
 ];
 
 let registered = false;
