@@ -189,25 +189,25 @@ export function parseAdjustments(financialEvents: any[]): ParsedAdjustment[] {
 
 /**
  * Build the stable externalId used for dedup across re-runs of the scanner.
+ * The same formula is reused by the Settlement Reports parser in
+ * settlement-reports.ts so settlement-sourced rows match Phase A rows and
+ * end up enriching them (order-id, SKU, etc.) via upsert instead of
+ * creating duplicates.
  *
- * Two shapes:
- *   * If the event has both orderId AND sku (legacy ShippingChargeback):
- *       amazon:<store>:<rawType>:<orderId>:<sku>:<postedDate>
- *   * Otherwise (the common PostageBilling case):
- *       amazon:<store>:<rawType>:<postedDate>:<amountCents>:<adjustmentId?>
+ * Formula: `amazon:<storeId>:<rawType>:<isoPostedDate>:<amountCents>`
  *
- * The amount-in-cents term is what disambiguates two PostageBilling events
- * posted in the same second — Amazon allows this for separate shipments
- * batched into one settlement window.
+ * - amount-in-cents disambiguates two events posted in the same second
+ *   (Amazon batches separate shipments into one settlement window).
+ * - rawType keeps WeightAdjustment vs WeightAdjustmentRefund vs
+ *   ReturnShipping separate even when amounts/timestamps collide.
+ *
+ * AdjustmentId is deliberately NOT included even when present — Settlement
+ * Reports don't expose it, and we need the IDs to match across both sources.
  */
 export function buildAdjustmentExternalId(
-  adj: ParsedAdjustment,
+  adj: { rawType: string; postedDate: string; amount: number },
   storeId: string
 ): string {
-  if (adj.orderId && adj.sku) {
-    return `amazon:${storeId}:${adj.rawType}:${adj.orderId}:${adj.sku}:${adj.postedDate}`;
-  }
   const amountCents = Math.round(adj.amount * 100);
-  const idTerm = adj.adjustmentId ? `:${adj.adjustmentId}` : "";
-  return `amazon:${storeId}:${adj.rawType}:${adj.postedDate}:${amountCents}${idTerm}`;
+  return `amazon:${storeId}:${adj.rawType}:${adj.postedDate}:${amountCents}`;
 }
