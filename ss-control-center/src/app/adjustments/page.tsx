@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, DollarSign, AlertTriangle, TrendingDown } from "lucide-react";
+import {
+  Loader2,
+  DollarSign,
+  AlertTriangle,
+  TrendingDown,
+  Download,
+} from "lucide-react";
 import {
   Btn,
   FilterTabs,
@@ -48,6 +54,11 @@ export default function AdjustmentsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [skuProfiles, setSkuProfiles] = useState<any[]>([]);
 
+  // Sync state
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -87,6 +98,56 @@ export default function AdjustmentsPage() {
       // ignore
     }
   }, []);
+
+  const refreshAll = useCallback(() => {
+    fetchStats();
+    fetchAdjustments();
+    fetchSkuProfiles();
+  }, [fetchStats, fetchAdjustments, fetchSkuProfiles]);
+
+  /**
+   * Two-step sync: real-time Financial Events first (fast, ~5-10s),
+   * then Settlement Reports (slower, fetches multi-week TSVs but
+   * gives us order-id + SKU linkage). The settlement run is what
+   * populates the SKU column for older adjustments.
+   */
+  const handleSync = useCallback(async () => {
+    setSyncing(true);
+    setSyncMessage(null);
+    setSyncError(null);
+    try {
+      setSyncMessage("Step 1/2 — fetching Financial Events…");
+      const scanRes = await fetch("/api/adjustments/scan", { method: "POST" });
+      const scanJson = await scanRes.json();
+      if (!scanRes.ok) {
+        throw new Error(scanJson.error || `Scan failed (${scanRes.status})`);
+      }
+
+      setSyncMessage(
+        `Step 2/2 — downloading Settlement Reports… (Financial Events added ${scanJson.totalNewSaved} new rows)`,
+      );
+      const settleRes = await fetch("/api/adjustments/settlement-sync", {
+        method: "POST",
+      });
+      const settleJson = await settleRes.json();
+      if (!settleRes.ok) {
+        throw new Error(
+          settleJson.error || `Settlement sync failed (${settleRes.status})`,
+        );
+      }
+
+      setSyncMessage(
+        `Done. Financial Events: +${scanJson.totalNewSaved} new. ` +
+          `Settlement: +${settleJson.totalInserted} new, ` +
+          `${settleJson.totalEnriched} enriched (SKU/order added).`,
+      );
+      refreshAll();
+    } catch (err) {
+      setSyncError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSyncing(false);
+    }
+  }, [refreshAll]);
 
   useEffect(() => {
     if (mounted) {
@@ -142,18 +203,53 @@ export default function AdjustmentsPage() {
           )
         }
         actions={
-          <Btn
-            icon={<RefreshCw size={13} />}
-            onClick={() => {
-              fetchStats();
-              fetchAdjustments();
-              fetchSkuProfiles();
-            }}
-          >
-            Refresh
-          </Btn>
+          <div className="flex items-center gap-2">
+            <Btn
+              icon={
+                syncing ? (
+                  <Loader2 size={13} className="animate-spin" />
+                ) : (
+                  <Download size={13} />
+                )
+              }
+              onClick={handleSync}
+              disabled={syncing}
+            >
+              {syncing ? "Syncing…" : "Sync now"}
+            </Btn>
+            <Btn
+              icon={<RefreshCw size={13} />}
+              onClick={refreshAll}
+              disabled={syncing}
+            >
+              Refresh
+            </Btn>
+          </div>
         }
       />
+
+      {/* Sync status banner */}
+      {(syncMessage || syncError) && (
+        <div
+          className={`flex items-start gap-2 rounded-lg border px-4 py-2.5 text-[12.5px] ${
+            syncError
+              ? "border-danger/20 bg-danger-tint text-danger-strong"
+              : "border-rule bg-surface-tint text-ink-2"
+          }`}
+        >
+          {syncError ? (
+            <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+          ) : (
+            <Info size={14} className="mt-0.5 shrink-0 text-ink-3" />
+          )}
+          <div>
+            <strong className="text-ink">
+              {syncError ? "Sync failed." : "Sync"}
+            </strong>{" "}
+            {syncError || syncMessage}
+          </div>
+        </div>
+      )}
 
       {/* Sync notice — SP-API has ~48h settlement delay */}
       <div className="flex items-start gap-2 rounded-lg border border-rule bg-surface-tint px-4 py-2.5 text-[12.5px] text-ink-2">

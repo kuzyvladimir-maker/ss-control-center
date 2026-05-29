@@ -36,6 +36,7 @@ interface DashboardSummary {
   health?: { issues?: number };
   walmart?: { healthIssues?: number };
   procurement?: { ordersToBuy?: number };
+  adjustments?: { monthlyTotal?: number; unreviewed?: number };
 }
 
 const operationsItems = (s: DashboardSummary): NavItem[] => [
@@ -74,7 +75,10 @@ const operationsItems = (s: DashboardSummary): NavItem[] => [
     title: "Adjustments",
     href: "/adjustments",
     icon: Receipt,
-    pillCount: s.claims?.active || undefined,
+    // Unreviewed shipping adjustments (30d). The badge used to show
+    // s.claims.active by mistake — that's the A-to-Z claim queue, not
+    // adjustments.
+    pillCount: s.adjustments?.unreviewed || undefined,
     pillVariant: "warn",
   },
   {

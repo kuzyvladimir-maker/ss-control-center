@@ -113,6 +113,7 @@ export async function GET(request: NextRequest) {
       activeClaims,
       healthSnapshots,
       adjustmentsSum,
+      adjustmentsUnreviewed,
       ordersStore1,
       ordersStore2,
       frozenIncidents30d,
@@ -157,6 +158,15 @@ export async function GET(request: NextRequest) {
       prisma.shippingAdjustment.aggregate({
         _sum: { adjustmentAmount: true },
         where: { createdAt: { gte: thirtyDaysAgo } },
+      }),
+      // Unreviewed adjustments in the last 30d — drives the sidebar pill
+      // badge. The badge was previously bound to A-to-Z claim count by
+      // mistake (see SidebarContent.tsx pre-2026-05-29).
+      prisma.shippingAdjustment.count({
+        where: {
+          createdAt: { gte: thirtyDaysAgo },
+          reviewed: false,
+        },
       }),
       // S1 / S2 counts MUST share the same purchaseDate window as the
       // total Orders 30d card. Previously these omitted the date filter
@@ -320,6 +330,7 @@ export async function GET(request: NextRequest) {
       frozen: { incidents30d: frozenIncidents30d },
       adjustments: {
         monthlyTotal: adjustmentsSum._sum.adjustmentAmount || 0,
+        unreviewed: adjustmentsUnreviewed,
       },
       walmart: walmartPayload,
       syncedAt,
@@ -347,7 +358,7 @@ function emptyResponse() {
     health: { issues: 0 },
     procurement: { ordersToBuy: 0 },
     frozen: { incidents30d: 0 },
-    adjustments: { monthlyTotal: 0 },
+    adjustments: { monthlyTotal: 0, unreviewed: 0 },
     walmart: null,
     syncedAt: new Date().toISOString(),
   };
