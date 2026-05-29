@@ -36,6 +36,7 @@
 - [Shipping Labels](shipping-labels.md) — план + покупка labels через Veeqo. Полная спец v1.0: [shipping-labels-page-v1.md](shipping-labels-page-v1.md) — dashboard + AI classify + packing profiles (2026-05-12)
 - [Shipment Monitor](shipment-monitor.md) — мониторинг доставок, детекция проблем, подготовка claims (спроектирован, после Phase 1)
 - [Customer Hub](customer-hub.md) — Messages, A-to-Z, Chargebacks, Feedback (в разработке)
+- [Call Center AI Agent](call-center-ai-agent.md) — Sarah, голосовой AI-агент для CS call-центра. 21 секция, 20 категорий звонков (C1-C20), скрипты EN+ES, deescalation (HEARD), anti-fraud, escalation к Vladimir, refund tiers (<$30 auto / $30-50 logged / >$100 escalate). Master Prompt: `CALL_CENTER_AI_AGENT_v1_0.md`. 2026-05-23.
 - [Account Health v2.0](account-health-v2.md) — мониторинг Amazon (AHR + Policy Compliance × 10 категорий + ODR/LSR/VTR) + Walmart (8 metrics live через Insights API + Item Compliance), 2 таба, drill-down по нарушениям — 2026-05-12, Walmart Performance v2 — 2026-05-15
 - [Critical Alerts Engine](critical-alerts.md) — Telegram + UI push при пересечении критических порогов Amazon/Walmart — 2026-05-12
 - [Account Health (исходный)](account-health.md) — предыдущая версия, оставлена как reference
@@ -89,10 +90,13 @@
 - [Veeqo API Quirks §10](veeqo-api-quirks.md) — Vercel serverless ↔ `writeFileSync('public/labels')` не работает; нужен Google Drive или fallback на Veeqo URL. 2026-05-14.
 
 ---
-Последнее обновление: 2026-05-21
+Последнее обновление: 2026-05-23
+- **Call Center AI Agent v1.0** — Master Prompt для голосового AI-агента CS call-центра. Sarah как идентичность, 20 категорий звонков (C1-C20, расширены от текстовых C1-C10), скрипты EN+ES, deescalation (HEARD), anti-fraud patterns, escalation tree, refund tiers по сумме, Voice platform recommendations (Vapi/Retell/ElevenLabs + Twilio + Deepgram + Claude Sonnet 4.x). `docs/CALL_CENTER_AI_AGENT_v1_0.md` + wiki article + CONNECTIONS обновлён.
+
+Предыдущее обновление: 2026-05-21
 - **Bundle Factory Phase 2.3 / 2.4 / 2.5 + Fixes** — wiki gap fix. Image Generation (gpt-image-1 + R2 + Rule 6 vision retry), Validation (15 validators + promote-draft → ChannelSKU + UPCPool reserve), Distribution (Amazon PUT + Walmart MP_ITEM_4.7, DRY-RUN by default, Telegram alerts, n8n poll-pending cron). Plus 2026-05-21 cleanup: mock fixture 6 items, UPCPool 3934 entries, PreconditionError 409, browse-node-resolver, validator isolation, E2E smoke 14/14.
 
-Предыдущее обновление: 2026-05-17
+Ранее: 2026-05-17
 - **Bundle Factory концепт v1.0** — фабрика массового создания gift sets под Salutem Vita / Starfit brand. AI-pipeline в 7 стадий + Marketplace Rules KB + Sourcing Module. Заменяет Phase 2 placeholder "Product Listings". Сопряжён с Amazon Gift Basket Exception (Oct 14, 2024 policy).
 
 ---

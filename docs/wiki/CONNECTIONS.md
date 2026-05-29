@@ -80,8 +80,14 @@
 
 ### [Customer Hub](customer-hub.md)
 ← [Gmail API](gmail-api.md), [Amazon SP-API](amazon-sp-api.md), [Claude AI](claude-ai.md), [Veeqo API](veeqo-api.md)
-→ [Dashboard](dashboard.md)
+→ [Dashboard](dashboard.md), [Call Center AI Agent](call-center-ai-agent.md) (voice channel reuses customer history + Decision Engine context)
 ⊂ [Decision Engine](customer-hub-decision-engine.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md)
+
+### [Call Center AI Agent](call-center-ai-agent.md)
+← [Customer Hub](customer-hub.md) (история контактов + контекст), [Amazon SP-API](amazon-sp-api.md) (order lookup), [Walmart API](walmart-api.md) (order lookup), [Veeqo API](veeqo-api.md) (tracking events), [Claude AI](claude-ai.md) (LLM brain голосового агента), [Telegram](telegram-notifications.md) (эскалация Vladimir), Twilio (phone number, TTS, SMS), ElevenLabs (voice synthesis), Deepgram (STT), [Frozen Analytics](frozen-analytics.md) (риск-контекст по order при звонке)
+→ [Account Health](account-health.md) (A-to-Z prevention rate, Buy Shipping Protection retention), [Feedback Manager](feedback-manager.md) (negative review prevention через qualité решения по телефону), [A-to-Z & Chargeback](atoz-chargeback.md) (routing carrier-delay звонков на A-to-Z, не direct refund), [Dashboard](dashboard.md) (call metrics card в будущем)
+⊂ Customer Service модуль (voice extension of текстового CS); 20 категорий C1-C20; thresholds для авторизации refund'ов
+⇔ [Frozen Analytics](frozen-analytics.md) (proactive risk → reactive voice support при звонке); voice agent НЕ принимает платежи (PCI), НЕ создаёт заказы (только маркетплейсы), НЕ раскрывает данные других клиентов
 
 ### [Account Health](account-health.md)
 ← [Amazon SP-API](amazon-sp-api.md)
@@ -90,7 +96,7 @@
 
 ### [Frozen Analytics](frozen-analytics.md)
 ← [Veeqo API](veeqo-api.md), [Weather/Geocoding](weather-geocoding.md), [Shipping Labels](shipping-labels.md), [Shipment Monitor](shipment-monitor.md)
-⇔ [Customer Hub](customer-hub.md) (frozen жалобы), [Frozen/Dry классификация](frozen-dry-classification.md), [Frozen shipping rules](frozen-shipping-rules.md)
+⇔ [Customer Hub](customer-hub.md) (frozen жалобы), [Frozen/Dry классификация](frozen-dry-classification.md), [Frozen shipping rules](frozen-shipping-rules.md), [Call Center AI Agent](call-center-ai-agent.md) (риск-контекст при звонке)
 
 ### [Adjustments Monitor](adjustments-monitor.md)
 ← [Amazon SP-API](amazon-sp-api.md), [SKU Database](sku-database-migration.md)
@@ -120,7 +126,7 @@
 ### [Decision Engine](customer-hub-decision-engine.md)
 ⊂ [Customer Hub](customer-hub.md)
 ← [Claude AI](claude-ai.md), [Amazon SP-API](amazon-sp-api.md)
-→ [A-to-Z & Chargeback](atoz-chargeback.md)
+→ [A-to-Z & Chargeback](atoz-chargeback.md), [Call Center AI Agent](call-center-ai-agent.md) (voice agent reuses категорийную классификацию + решения)
 ⇔ [Frozen shipping rules](frozen-shipping-rules.md)
 
 ### [Frozen/Dry классификация](frozen-dry-classification.md)
@@ -138,15 +144,15 @@
 ## Интеграции
 
 ### [Veeqo API](veeqo-api.md)
-→ [Shipping Labels](shipping-labels.md), [Frozen Analytics](frozen-analytics.md), [Customer Hub](customer-hub.md), [n8n Автоматизация](n8n-automation.md), [Shipment Monitor](shipment-monitor.md)
+→ [Shipping Labels](shipping-labels.md), [Frozen Analytics](frozen-analytics.md), [Customer Hub](customer-hub.md), [n8n Автоматизация](n8n-automation.md), [Shipment Monitor](shipment-monitor.md), [Call Center AI Agent](call-center-ai-agent.md) (order lookup + tracking при звонке)
 ⇔ [Timezone правила](timezone-rules.md), [Frozen/Dry классификация](frozen-dry-classification.md), [SKU Database](sku-database-migration.md)
 
 ### [Amazon SP-API](amazon-sp-api.md)
-→ [Customer Hub](customer-hub.md), [Account Health](account-health.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md), [Adjustments Monitor](adjustments-monitor.md)
+→ [Customer Hub](customer-hub.md), [Account Health](account-health.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md), [Adjustments Monitor](adjustments-monitor.md), [Call Center AI Agent](call-center-ai-agent.md) (order lookup + refund processing)
 ⇔ [Gmail API](gmail-api.md), [External API Auth](external-api-auth.md)
 
 ### [Walmart Marketplace API](walmart-api.md)
-→ [Customer Hub](customer-hub.md) (orders + returns sync, заменяет screenshot schema), [Adjustments Monitor](adjustments-monitor.md) (recon reports), [Account Health](account-health.md) (Seller Performance), [Shipment Monitor](shipment-monitor.md) (Level 1.5 tracking), [Shipping Labels](shipping-labels.md) (verification endpoint), [Dashboard](dashboard.md)
+→ [Customer Hub](customer-hub.md) (orders + returns sync, заменяет screenshot schema), [Adjustments Monitor](adjustments-monitor.md) (recon reports), [Account Health](account-health.md) (Seller Performance), [Shipment Monitor](shipment-monitor.md) (Level 1.5 tracking), [Shipping Labels](shipping-labels.md) (verification endpoint), [Dashboard](dashboard.md), [Call Center AI Agent](call-center-ai-agent.md) (Walmart order lookup при звонке)
 ⇔ [Veeqo API](veeqo-api.md) (Veeqo использует delegated Walmart key), [External API Auth](external-api-auth.md)
 ← [Walmart ограничения](walmart-restrictions.md)
 
@@ -166,10 +172,10 @@
 Мигрировано из Google Sheets 2026-05-12. Архив: [google-sheets-sku-db.md](google-sheets-sku-db.md) (DEPRECATED).
 
 ### [Claude AI](claude-ai.md)
-→ [Customer Hub](customer-hub.md), [Decision Engine](customer-hub-decision-engine.md), [Feedback Manager](feedback-manager.md), [A-to-Z & Chargeback](atoz-chargeback.md)
+→ [Customer Hub](customer-hub.md), [Decision Engine](customer-hub-decision-engine.md), [Feedback Manager](feedback-manager.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Call Center AI Agent](call-center-ai-agent.md) (LLM brain голосового агента — Sonnet 4.x рекомендован)
 
 ### [Telegram](telegram-notifications.md)
-→ [Shipping Labels](shipping-labels.md), [n8n Автоматизация](n8n-automation.md), [Account Health](account-health.md), [Shipment Monitor](shipment-monitor.md)
+→ [Shipping Labels](shipping-labels.md), [n8n Автоматизация](n8n-automation.md), [Account Health](account-health.md), [Shipment Monitor](shipment-monitor.md), [Call Center AI Agent](call-center-ai-agent.md) (escalation channel: C6, C7, C12, C19, C20 → Vladimir)
 
 ### [Weather/Geocoding](weather-geocoding.md)
 → [Frozen Analytics](frozen-analytics.md)
@@ -302,4 +308,4 @@ Phase 2 planned → sales-analytics-module (полноценная страни�
 - `⇔` двусторонняя связь
 
 ---
-Последнее обновление: 2026-05-21 (+ Bundle Factory Phase 2.3 Image Gen, Phase 2.4 Validation, Phase 2.5 Distribution, post-ship Fixes 2026-05-21)
+Последнее обновление: 2026-05-23 (+ Call Center AI Agent v1.0 — voice CS extension, 21 раздел, 20 категорий C1-C20, обработка возражений, деэскалация, антифрод, escalation, KPI; integrates с Customer Hub, Decision Engine, Frozen Analytics, Amazon/Walmart/Veeqo API, Telegram)
