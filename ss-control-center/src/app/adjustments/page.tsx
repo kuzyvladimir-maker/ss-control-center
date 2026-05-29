@@ -106,17 +106,19 @@ export default function AdjustmentsPage() {
   }, [fetchStats, fetchAdjustments, fetchSkuProfiles]);
 
   /**
-   * Two-step sync: real-time Financial Events first (fast, ~5-10s),
-   * then Settlement Reports (slower, fetches multi-week TSVs but
-   * gives us order-id + SKU linkage). The settlement run is what
-   * populates the SKU column for older adjustments.
+   * Three-step sync:
+   *   1/3 Amazon Financial Events (real-time, ~5-10s, dollar totals only)
+   *   2/3 Amazon Settlement Reports (~30-60s, adds order-id + SKU linkage)
+   *   3/3 Walmart Recon Reports (~10-30s per available date,
+   *       mirrors adjustment rows into ShippingAdjustment with
+   *       channel='Walmart')
    */
   const handleSync = useCallback(async () => {
     setSyncing(true);
     setSyncMessage(null);
     setSyncError(null);
     try {
-      setSyncMessage("Step 1/2 — fetching Financial Events…");
+      setSyncMessage("Step 1/3 — Amazon Financial Events…");
       const scanRes = await fetch("/api/adjustments/scan", { method: "POST" });
       const scanJson = await scanRes.json();
       if (!scanRes.ok) {
@@ -124,7 +126,7 @@ export default function AdjustmentsPage() {
       }
 
       setSyncMessage(
-        `Step 2/2 — downloading Settlement Reports… (Financial Events added ${scanJson.totalNewSaved} new rows)`,
+        `Step 2/3 — Amazon Settlement Reports… (FE added ${scanJson.totalNewSaved} new)`,
       );
       const settleRes = await fetch("/api/adjustments/settlement-sync", {
         method: "POST",
@@ -137,9 +139,30 @@ export default function AdjustmentsPage() {
       }
 
       setSyncMessage(
-        `Done. Financial Events: +${scanJson.totalNewSaved} new. ` +
-          `Settlement: +${settleJson.totalInserted} new, ` +
-          `${settleJson.totalEnriched} enriched (SKU/order added).`,
+        `Step 3/3 — Walmart Recon Reports… (Settlement +${settleJson.totalInserted}, ${settleJson.totalEnriched} enriched)`,
+      );
+      const walmartRes = await fetch("/api/adjustments/walmart/sync", {
+        method: "POST",
+        // Cap to last 8 settlement dates to keep the live sync snappy;
+        // the daily cron walks the full history.
+        body: JSON.stringify({ maxDates: 8 }),
+        headers: { "Content-Type": "application/json" },
+      });
+      const walmartJson = await walmartRes.json();
+      if (!walmartRes.ok) {
+        // Don't fail the whole sync on Walmart-only errors — the
+        // Walmart credentials may not be set for every environment.
+        console.warn("Walmart sync failed:", walmartJson);
+      }
+
+      const walmartSummary = walmartRes.ok
+        ? ` Walmart: +${walmartJson.totalAdjustmentsInserted ?? 0} adj inserted, ${walmartJson.totalAdjustmentsEnriched ?? 0} enriched.`
+        : " Walmart sync skipped (check WALMART_* env).";
+
+      setSyncMessage(
+        `Done. Amazon FE: +${scanJson.totalNewSaved}. ` +
+          `Settlement: +${settleJson.totalInserted}, ${settleJson.totalEnriched} enriched.` +
+          walmartSummary,
       );
       refreshAll();
     } catch (err) {

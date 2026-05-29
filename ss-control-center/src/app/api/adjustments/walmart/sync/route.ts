@@ -19,14 +19,70 @@ import { WalmartClient, WalmartApiError } from "@/lib/walmart/client";
 import { WalmartReportsApi } from "@/lib/walmart/reports";
 import type { WalmartReconTransaction } from "@/lib/walmart/types";
 
+/**
+ * Decide whether a Walmart recon row represents a shipping adjustment
+ * worth mirroring into ShippingAdjustment (the unified table the
+ * /adjustments page reads from).
+ *
+ * Walmart's `transaction_type` values include Sales / Refunds /
+ * Adjustments / Fees. The "Adjustments" bucket is what we want;
+ * additionally we keep any fee row whose description names shipping
+ * (e.g. "Shipping cost adjustment", "Label cost reconciliation").
+ */
+function isShippingAdjustment(tx: WalmartReconTransaction): boolean {
+  const type = (tx.transactionType || "").toLowerCase();
+  const desc = (tx.transactionDescription || "").toLowerCase();
+  const fee = (tx.feeType || "").toLowerCase();
+  if (type.includes("adjust")) return true;
+  if (
+    /ship|postage|carrier|weight|dimens/.test(desc) &&
+    /adjust|chargeback|reweigh|reconcil/.test(desc)
+  )
+    return true;
+  if (/ship|postage/.test(fee) && /adjust/.test(fee)) return true;
+  return false;
+}
+
+/** Map a Walmart recon row into ShippingAdjustment create-data. */
+function toShippingAdjustment(
+  tx: WalmartReconTransaction,
+  storeIndex: number
+) {
+  const ts = tx.transactionPostedTimestamp.toISOString();
+  const amountCents = Math.round(tx.amount * 100);
+  const externalId = `walmart:store${storeIndex}:${tx.transactionType}:${tx.purchaseOrderId ?? "none"}:${ts}:${amountCents}`;
+  return {
+    externalId,
+    channel: "Walmart" as const,
+    storeId: `walmart-store${storeIndex}`,
+    currency: "USD",
+    orderId: tx.purchaseOrderId ?? null,
+    walmartOrderId: tx.purchaseOrderId ?? null,
+    adjustmentDate: ts.slice(0, 10),
+    adjustmentType: "WeightAdjustment", // best-effort; Walmart doesn't sub-classify
+    rawType: tx.transactionDescription ?? tx.transactionType,
+    adjustmentAmount: tx.amount,
+    adjustmentReason: tx.transactionDescription ?? tx.transactionType,
+    sku: tx.sku ?? null,
+    productName: tx.productName ?? null,
+  };
+}
+
 async function persistTransactions(
   reportDate: string,
   txs: WalmartReconTransaction[],
   storeIndex: number
-): Promise<{ inserted: number; skipped: number }> {
+): Promise<{
+  inserted: number;
+  skipped: number;
+  adjustmentsInserted: number;
+  adjustmentsEnriched: number;
+}> {
   const reportDt = new Date(reportDate);
   let inserted = 0;
   let skipped = 0;
+  let adjustmentsInserted = 0;
+  let adjustmentsEnriched = 0;
 
   for (const tx of txs) {
     try {
@@ -57,9 +113,29 @@ async function persistTransactions(
         throw err;
       }
     }
+
+    // Mirror shipping-adjustment rows into the unified table so the
+    // /adjustments page picks them up alongside Amazon adjustments.
+    if (isShippingAdjustment(tx)) {
+      const data = toShippingAdjustment(tx, storeIndex);
+      const result = await prisma.shippingAdjustment.upsert({
+        where: { externalId: data.externalId },
+        create: data,
+        update: {
+          sku: data.sku,
+          productName: data.productName,
+          adjustmentReason: data.adjustmentReason,
+        },
+      });
+      if (Date.now() - result.createdAt.getTime() < 1500) {
+        adjustmentsInserted++;
+      } else {
+        adjustmentsEnriched++;
+      }
+    }
   }
 
-  return { inserted, skipped };
+  return { inserted, skipped, adjustmentsInserted, adjustmentsEnriched };
 }
 
 export async function POST(request: NextRequest) {
@@ -101,18 +177,28 @@ export async function POST(request: NextRequest) {
     transactions: number;
     inserted: number;
     skipped: number;
+    adjustmentsInserted: number;
+    adjustmentsEnriched: number;
     error?: string;
   }> = [];
 
   for (const date of dates) {
     try {
       const txs = await reports.getFullReconReport(date);
-      const { inserted, skipped } = await persistTransactions(
+      const {
+        inserted,
+        skipped,
+        adjustmentsInserted,
+        adjustmentsEnriched,
+      } = await persistTransactions(date, txs, storeIndex);
+      summary.push({
         date,
-        txs,
-        storeIndex
-      );
-      summary.push({ date, transactions: txs.length, inserted, skipped });
+        transactions: txs.length,
+        inserted,
+        skipped,
+        adjustmentsInserted,
+        adjustmentsEnriched,
+      });
     } catch (err) {
       const msg =
         err instanceof WalmartApiError
@@ -123,6 +209,8 @@ export async function POST(request: NextRequest) {
         transactions: 0,
         inserted: 0,
         skipped: 0,
+        adjustmentsInserted: 0,
+        adjustmentsEnriched: 0,
         error: msg.slice(0, 200),
       });
     }
@@ -130,6 +218,14 @@ export async function POST(request: NextRequest) {
 
   const totalInserted = summary.reduce((s, r) => s + r.inserted, 0);
   const totalSkipped = summary.reduce((s, r) => s + r.skipped, 0);
+  const totalAdjustmentsInserted = summary.reduce(
+    (s, r) => s + r.adjustmentsInserted,
+    0,
+  );
+  const totalAdjustmentsEnriched = summary.reduce(
+    (s, r) => s + r.adjustmentsEnriched,
+    0,
+  );
 
   return NextResponse.json({
     ok: true,
@@ -137,6 +233,8 @@ export async function POST(request: NextRequest) {
     datesProcessed: summary.length,
     totalInserted,
     totalSkipped,
+    totalAdjustmentsInserted,
+    totalAdjustmentsEnriched,
     summary,
   });
 }
