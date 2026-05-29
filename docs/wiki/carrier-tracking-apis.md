@@ -237,11 +237,22 @@ OAuth 2.0 `client_credentials`, как у FedEx (credentials в body):
 - [src/lib/customer-hub/message-analyzer.ts](../../ss-control-center/src/lib/customer-hub/message-analyzer.ts) — buildContextMessage
 - [prisma/schema.prisma](../../ss-control-center/prisma/schema.prisma) — `BuyerMessage.trackingEvents`
 
+## 🤖 Доступ для Jackie (MCP)
+
+С 2026-05-29 трекинг доступен агенту Jackie через MCP-инструмент **`carrier_track`** (`src/lib/jackie-mcp/tools/carrier.ts`, read-only):
+
+- Вход: `{ tracking_number, carrier: "UPS"|"USPS"|"FEDEX"|"auto" }`.
+- При `carrier="auto"` определяет перевозчика по формату номера (1Z… → UPS; 12/15 цифр → FedEx; 9[1-6]…/S10-формат `XX#########XX` → USPS) и возвращает **упорядоченный список кандидатов** — если первый не дал данных, пробует следующих (форматы USPS IMpb и FedEx пересекаются, одной догадке доверять нельзя).
+- Выход (плоский): `{ carrier, status, last_event, location, in_transit, delivered, estimated_delivery }`. Переиспользует существующие `getUpsTracking`/`getUspsTracking`/`getFedexTracking` — новых ключей не добавляли.
+
+Связанный **write**-инструмент **`walmart_order_ship`** (`src/lib/jackie-mcp/tools/walmart-orders.ts`) помечает строки заказа Walmart как Shipped с трекингом (`POST /v3/orders/{id}/shipping`): количество по каждой строке берётся из самого заказа (`getOrderById`), сборка payload — через `WalmartOrdersApi.shipOrderLines`, есть `dry_run`. Типичный сценарий Jackie: отгрузить заказ → затем `carrier_track` для контроля доставки.
+
 ## 🔗 Связи
 
 - **Часть:** [Customer Hub Decision Engine](customer-hub-decision-engine.md)
 - **Зависит от:** UPS / FedEx / USPS developer portals
 - **Влияет на:** точность `carrierEstimatedDelivery` → точность T21/T1/T3 ответов
+- **Используется:** Jackie MCP (`carrier_track`, `walmart_order_ship`)
 
 ## История
 - 2026-04-11: Статья создана. UPS Tracking API подключен — OAuth
@@ -261,3 +272,9 @@ OAuth 2.0 `client_credentials`, как у FedEx (credentials в body):
   по `carrier` строке. `FedexTrackingInfo`/`FedexTrackingEvent` =
   алиасы `UpsTrackingInfo`/`UpsTrackingEvent` чтобы enricher работал
   единообразно.
+- 2026-05-29: трекинг проброшен в Jackie MCP — инструменты `carrier_track`
+  (read-only, auto-детект перевозчика по формату) и `walmart_order_ship`
+  (write, `POST /v3/orders/{id}/shipping`, кол-во из заказа, dry_run).
+  Tools/list: 30 → 32. Проверено на проде: FedEx-трек `521194943326`
+  (PO 129115019914735) → "On the way", ETA 2026-06-01; dry_run отгрузки
+  корректно подтянул orderedQty из заказа.

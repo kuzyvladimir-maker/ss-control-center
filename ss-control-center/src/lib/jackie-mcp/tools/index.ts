@@ -13,6 +13,8 @@ import { tools as alerts } from "./alerts";
 import { tools as bundleFactory } from "./bundle-factory";
 import { tools as walmartReturns } from "./walmart-returns";
 import { tools as walmartInventory } from "./walmart-inventory";
+import { tools as walmartOrders } from "./walmart-orders";
+import { tools as carrier } from "./carrier";
 
 const ALL_TOOLS = [
   ...listings,
@@ -23,6 +25,8 @@ const ALL_TOOLS = [
   ...bundleFactory,
   ...walmartReturns,
   ...walmartInventory,
+  ...walmartOrders,
+  ...carrier,
 ];
 
 let registered = false;
