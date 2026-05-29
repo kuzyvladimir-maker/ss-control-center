@@ -15,7 +15,11 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 interface Adjustment {
   id: string;
   channel: string;
-  orderId: string;
+  // Nullable: Amazon PostageBilling_PostageAdjustment events (the common
+  // carrier reweigh recharge) have no per-order attribution — see the
+  // ShippingAdjustment model in prisma/schema.prisma. Must be guarded
+  // before calling string methods, or the table crashes the whole page.
+  orderId: string | null;
   adjustmentDate: string;
   adjustmentType: string;
   adjustmentAmount: number;
@@ -128,9 +132,11 @@ export default function AdjustmentsTable({
                     </TableCell>
                     <TableCell className="text-xs">{adj.channel}</TableCell>
                     <TableCell className="font-mono text-xs">
-                      {adj.orderId.length > 15
-                        ? `${adj.orderId.slice(0, 15)}...`
-                        : adj.orderId}
+                      {adj.orderId
+                        ? adj.orderId.length > 15
+                          ? `${adj.orderId.slice(0, 15)}...`
+                          : adj.orderId
+                        : "—"}
                     </TableCell>
                     <TableCell className="font-mono text-xs">
                       {adj.sku || "—"}
@@ -258,7 +264,7 @@ export default function AdjustmentsTable({
                   {/* HEAD: order id + amount */}
                   <div className="flex items-start justify-between gap-2 mb-1.5">
                     <span className="font-mono text-[13px] text-ink truncate">
-                      {adj.orderId}
+                      {adj.orderId || "—"}
                     </span>
                     <span className="shrink-0 text-[13px] font-semibold tabular text-danger">
                       ${Math.abs(adj.adjustmentAmount).toFixed(2)}
