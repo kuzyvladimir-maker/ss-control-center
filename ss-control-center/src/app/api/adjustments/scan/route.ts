@@ -42,6 +42,11 @@ export async function POST(request: NextRequest) {
   const stores = allStores.filter((s) => !SKIPPED_STORES.has(s));
   const skipped = allStores.filter((s) => SKIPPED_STORES.has(s));
 
+  // SyncLog entry — surfaced on /adjustments scan-history panel.
+  const syncLog = await prisma.syncLog.create({
+    data: { jobName: "adjustments-amazon-scan", status: "running" },
+  });
+
   const results: StoreResult[] = [];
 
   for (const storeId of stores) {
@@ -105,14 +110,31 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const summary = {
+  const totalScanned = results.reduce((s, r) => s + r.scanned, 0);
+  const totalNewSaved = results.reduce((s, r) => s + r.newSaved, 0);
+  const anyError = results.some((r) => !r.ok);
+
+  await prisma.syncLog.update({
+    where: { id: syncLog.id },
+    data: {
+      status: anyError ? "error" : "done",
+      completedAt: new Date(),
+      itemsSynced: totalNewSaved,
+      error: anyError
+        ? results
+            .filter((r) => !r.ok)
+            .map((r) => `${r.store}: ${r.error}`)
+            .join("; ")
+        : null,
+    },
+  });
+
+  return NextResponse.json({
     days,
     storesScanned: results.length,
     storesSkipped: skipped,
-    totalScanned: results.reduce((s, r) => s + r.scanned, 0),
-    totalNewSaved: results.reduce((s, r) => s + r.newSaved, 0),
+    totalScanned,
+    totalNewSaved,
     perStore: results,
-  };
-
-  return NextResponse.json(summary);
+  });
 }

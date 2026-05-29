@@ -158,6 +158,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const syncLog = await prisma.syncLog.create({
+    data: {
+      jobName: "adjustments-walmart",
+      storeIndex,
+      status: "running",
+    },
+  });
+
   const reports = new WalmartReportsApi(client);
 
   let dates: string[];
@@ -226,6 +234,22 @@ export async function POST(request: NextRequest) {
     (s, r) => s + r.adjustmentsEnriched,
     0,
   );
+
+  const anyError = summary.some((s) => s.error);
+  await prisma.syncLog.update({
+    where: { id: syncLog.id },
+    data: {
+      status: anyError ? "error" : "done",
+      completedAt: new Date(),
+      itemsSynced: totalAdjustmentsInserted + totalAdjustmentsEnriched,
+      error: anyError
+        ? summary
+            .filter((s) => s.error)
+            .map((s) => `${s.date}: ${s.error}`)
+            .join("; ")
+        : null,
+    },
+  });
 
   return NextResponse.json({
     ok: true,

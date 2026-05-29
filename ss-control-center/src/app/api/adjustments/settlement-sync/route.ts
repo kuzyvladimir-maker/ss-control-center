@@ -41,6 +41,10 @@ export async function POST(request: NextRequest) {
     SKIPPED_STORES.has(s)
   );
 
+  const syncLog = await prisma.syncLog.create({
+    data: { jobName: "adjustments-amazon-settlement", status: "running" },
+  });
+
   const results: StoreResult[] = [];
 
   for (const storeId of stores) {
@@ -101,13 +105,33 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  const totalAdjustments = results.reduce((s, r) => s + r.adjustmentsFound, 0);
+  const totalInserted = results.reduce((s, r) => s + r.inserted, 0);
+  const totalEnriched = results.reduce((s, r) => s + r.enriched, 0);
+  const anyError = results.some((r) => !r.ok);
+
+  await prisma.syncLog.update({
+    where: { id: syncLog.id },
+    data: {
+      status: anyError ? "error" : "done",
+      completedAt: new Date(),
+      itemsSynced: totalInserted + totalEnriched,
+      error: anyError
+        ? results
+            .filter((r) => !r.ok)
+            .map((r) => `${r.store}: ${r.error}`)
+            .join("; ")
+        : null,
+    },
+  });
+
   return NextResponse.json({
     days,
     storesScanned: results.length,
     storesSkipped: skipped,
-    totalAdjustments: results.reduce((s, r) => s + r.adjustmentsFound, 0),
-    totalInserted: results.reduce((s, r) => s + r.inserted, 0),
-    totalEnriched: results.reduce((s, r) => s + r.enriched, 0),
+    totalAdjustments,
+    totalInserted,
+    totalEnriched,
     perStore: results,
   });
 }

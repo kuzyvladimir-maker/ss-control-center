@@ -33,6 +33,16 @@ interface Stats {
   problematicSkus: number;
 }
 
+interface SyncLogEntry {
+  id: string;
+  jobName: string;
+  status: string;
+  startedAt: string;
+  completedAt: string | null;
+  itemsSynced: number;
+  error: string | null;
+}
+
 export default function AdjustmentsPage() {
   const [mounted, setMounted] = useState(false);
 
@@ -58,6 +68,7 @@ export default function AdjustmentsPage() {
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncLog, setSyncLog] = useState<SyncLogEntry[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -99,11 +110,22 @@ export default function AdjustmentsPage() {
     }
   }, []);
 
+  const fetchSyncLog = useCallback(async () => {
+    try {
+      const res = await fetch("/api/adjustments/sync-log");
+      const data = await res.json();
+      setSyncLog(data.entries || []);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const refreshAll = useCallback(() => {
     fetchStats();
     fetchAdjustments();
     fetchSkuProfiles();
-  }, [fetchStats, fetchAdjustments, fetchSkuProfiles]);
+    fetchSyncLog();
+  }, [fetchStats, fetchAdjustments, fetchSkuProfiles, fetchSyncLog]);
 
   /**
    * Three-step sync:
@@ -177,8 +199,9 @@ export default function AdjustmentsPage() {
       fetchStats();
       fetchAdjustments();
       fetchSkuProfiles();
+      fetchSyncLog();
     }
-  }, [mounted, fetchStats, fetchAdjustments, fetchSkuProfiles]);
+  }, [mounted, fetchStats, fetchAdjustments, fetchSkuProfiles, fetchSyncLog]);
 
   if (!mounted) return null;
 
@@ -361,6 +384,68 @@ export default function AdjustmentsPage() {
         <PanelHeader title="SKU issues — need SKU Database v2 update" />
         <PanelBody>
           <SkuIssuesPanel profiles={skuProfiles} />
+        </PanelBody>
+      </Panel>
+
+      {/* Scan history */}
+      <Panel>
+        <PanelHeader title="Sync history" />
+        <PanelBody>
+          {syncLog.length === 0 ? (
+            <p className="text-[12.5px] text-ink-3">
+              No syncs yet. Click <strong>Sync now</strong> above, or wait
+              for the nightly cron at 08:30 UTC.
+            </p>
+          ) : (
+            <table className="w-full text-[12.5px] tabular">
+              <thead>
+                <tr className="border-b border-rule text-left text-ink-3">
+                  <th className="py-2 font-medium">Started</th>
+                  <th className="font-medium">Job</th>
+                  <th className="font-medium">Status</th>
+                  <th className="font-medium tabular text-right">Items</th>
+                  <th className="font-medium">Duration</th>
+                </tr>
+              </thead>
+              <tbody>
+                {syncLog.map((e) => {
+                  const dur =
+                    e.completedAt && e.startedAt
+                      ? Math.round(
+                          (new Date(e.completedAt).getTime() -
+                            new Date(e.startedAt).getTime()) /
+                            1000,
+                        )
+                      : null;
+                  return (
+                    <tr key={e.id} className="border-b border-rule/40">
+                      <td className="py-2 text-ink-2">
+                        {new Date(e.startedAt).toLocaleString()}
+                      </td>
+                      <td className="text-ink">{e.jobName}</td>
+                      <td>
+                        <span
+                          className={
+                            e.status === "done"
+                              ? "text-success"
+                              : e.status === "error"
+                                ? "text-danger"
+                                : "text-ink-3"
+                          }
+                        >
+                          {e.status}
+                        </span>
+                      </td>
+                      <td className="text-right text-ink">{e.itemsSynced}</td>
+                      <td className="text-ink-3">
+                        {dur != null ? `${dur}s` : "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </PanelBody>
       </Panel>
     </div>
