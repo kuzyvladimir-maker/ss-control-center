@@ -135,39 +135,96 @@ export interface WalmartItemSummary {
 }
 
 /**
- * Walk every Walmart item the account exposes and return those whose
- * title OR sku matches `query` (case-insensitive substring). Designed
- * for the "Vladimir says product name, Jackie needs every SKU it lives
- * in (single unit + 2-pack + bundle + variants)" workflow.
+ * Find every Walmart item whose title OR SKU matches `query` (case-
+ * insensitive substring). Built for "Vladimir says product name, Jackie
+ * needs every SKU it lives in" — multi-packs, bundles, variants of the
+ * same product live under different SKUs and all of them must show up.
  *
- * No server-side title search is available on /v3/items, so this walks
- * pages locally — Vladimir's Walmart catalog is small enough (≤ a few
- * hundred items) that one full sweep finishes in 1-2 seconds.
+ * Three optimisations because Walmart's `/v3/items` does NOT support
+ * server-side text search:
+ *
+ *   1. If the query looks like an exact SKU (alphanumerics + dashes, no
+ *      spaces) we hit `?sku=<query>` first — 1 request, instant.
+ *      Returns immediately on hit; on miss falls through to scan.
+ *   2. The scan defaults to `publishedStatus=PUBLISHED` (≈4 000 items
+ *      in Vladimir's account vs ≈5 300 total) — these are the items
+ *      customers can actually buy, so zeroing them out is what
+ *      affects shoppers. Override with `includeUnpublished:true` for
+ *      a full sweep.
+ *   3. Page size 200 (Walmart's max), offset+limit pagination — early
+ *      exit when we've collected `limit` matches OR scanned
+ *      `maxItemsScanned` rows. The default cap keeps a typical search
+ *      under 20 s.
+ *
+ * Walmart pagination quirk: `/v3/items` does NOT return a `nextCursor`
+ * field — it uses traditional offset+limit. The old cursor-based code
+ * silently stopped after page 1 (50 of 5 278 items) because the cursor
+ * was always missing.
  */
 export async function searchWalmartItems(
   client: WalmartClient,
   query: string,
-  opts: { limit?: number; maxItemsScanned?: number } = {},
-): Promise<{ matches: WalmartItemSummary[]; itemsScanned: number; truncated: boolean }> {
+  opts: {
+    limit?: number;
+    maxItemsScanned?: number;
+    includeUnpublished?: boolean;
+  } = {},
+): Promise<{
+  matches: WalmartItemSummary[];
+  itemsScanned: number;
+  truncated: boolean;
+  totalItemsAvailable: number;
+  shortcutUsed: "exact_sku" | "scan";
+}> {
   const q = query.trim().toLowerCase();
-  if (!q) return { matches: [], itemsScanned: 0, truncated: false };
+  if (!q) {
+    return { matches: [], itemsScanned: 0, truncated: false, totalItemsAvailable: 0, shortcutUsed: "scan" };
+  }
   const limit = opts.limit ?? 50;
-  const cap = opts.maxItemsScanned ?? 2000;
+  const cap = opts.maxItemsScanned ?? 4500;
+  const PAGE_SIZE = 200; // Walmart caps /v3/items at 200/page
 
+  // Shortcut: query has no whitespace → looks like a SKU, try exact
+  // lookup first (1 request, instant). On miss fall through to scan.
+  const trimmed = query.trim();
+  if (!/\s/.test(trimmed)) {
+    try {
+      const data = await client.request<any>("GET", "/items", {
+        params: { sku: trimmed },
+      });
+      const rows = unwrapItems(data);
+      if (rows.length > 0) {
+        return {
+          matches: rows.map((raw) => mapSummary(raw)),
+          itemsScanned: rows.length,
+          truncated: false,
+          totalItemsAvailable: Number(data?.totalItems ?? rows.length),
+          shortcutUsed: "exact_sku",
+        };
+      }
+    } catch {
+      // Walmart 400/404 on bad SKU lookup — fall through to scan.
+    }
+  }
+
+  // Full scan with offset+limit + status filter.
   const matches: WalmartItemSummary[] = [];
-  let cursor: string | undefined;
-  let first = true;
+  let offset = 0;
   let scanned = 0;
   let truncated = false;
+  let totalItemsAvailable = 0;
 
   while (true) {
-    const params: Record<string, string | number> = first
-      ? { limit: 50 }
-      : { nextCursor: cursor as string };
-    first = false;
+    const params: Record<string, string | number> = {
+      limit: PAGE_SIZE,
+      offset,
+    };
+    if (!opts.includeUnpublished) params.publishedStatus = "PUBLISHED";
 
     const data = await client.request<any>("GET", "/items", { params });
+    totalItemsAvailable = Number(data?.totalItems ?? totalItemsAvailable);
     const rows = unwrapItems(data);
+    if (rows.length === 0) break;
 
     for (const raw of rows) {
       scanned++;
@@ -175,30 +232,32 @@ export async function searchWalmartItems(
       const title = String(raw?.productName ?? raw?.title ?? "");
       if (!sku && !title) continue;
       if (sku.toLowerCase().includes(q) || title.toLowerCase().includes(q)) {
-        matches.push({
-          itemId: String(raw?.mart?.itemId ?? raw?.itemId ?? raw?.wpid ?? raw?.Wpid ?? ""),
-          sku,
-          title,
-          lifecycleStatus: String(raw?.lifecycleStatus ?? ""),
-          publishedStatus: String(raw?.publishedStatus ?? ""),
-        });
+        matches.push(mapSummary(raw));
         if (matches.length >= limit) {
-          // Operator-facing cap — stop accumulating but keep counting so
-          // Jackie can tell the user how many they didn't see.
+          truncated = scanned < totalItemsAvailable;
+          return { matches, itemsScanned: scanned, truncated, totalItemsAvailable, shortcutUsed: "scan" };
         }
       }
     }
 
-    cursor =
-      data?.ItemResponse?.nextCursor ||
-      data?.itemResponse?.nextCursor ||
-      data?.nextCursor ||
-      undefined;
-    if (!cursor) break;
-    if (scanned >= cap) { truncated = true; break; }
+    offset += rows.length;
+    if (offset >= totalItemsAvailable || scanned >= cap) {
+      truncated = scanned < totalItemsAvailable;
+      break;
+    }
   }
 
-  return { matches: matches.slice(0, limit), itemsScanned: scanned, truncated };
+  return { matches, itemsScanned: scanned, truncated, totalItemsAvailable, shortcutUsed: "scan" };
+}
+
+function mapSummary(raw: any): WalmartItemSummary {
+  return {
+    itemId: String(raw?.mart?.itemId ?? raw?.itemId ?? raw?.wpid ?? raw?.Wpid ?? ""),
+    sku: String(raw?.sku ?? raw?.Sku ?? ""),
+    title: String(raw?.productName ?? raw?.title ?? ""),
+    lifecycleStatus: String(raw?.lifecycleStatus ?? ""),
+    publishedStatus: String(raw?.publishedStatus ?? ""),
+  };
 }
 
 function mapItem(raw: any): WalmartItemIssue | null {

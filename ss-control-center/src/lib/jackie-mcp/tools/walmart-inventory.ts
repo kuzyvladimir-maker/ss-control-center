@@ -31,7 +31,7 @@ const STORE_INDEX = 1;
 const walmartItemsSearch: JackieTool = {
   name: "walmart_items_search",
   description:
-    "Find every Walmart SKU whose title or SKU code contains the query. Use this BEFORE walmart_inventory_update when the operator says a product name instead of a SKU — multi-packs, bundles, and variants of the same product live under different SKUs and all of them must be visited.",
+    "Find every Walmart SKU whose title or SKU contains the query. Use this BEFORE walmart_inventory_update when the operator says a product name — multi-packs, bundles, and variants of the same product live under different SKUs. By default scans only PUBLISHED items (the ~4000 listings customers can actually buy); pass include_unpublished=true to also scan UNPUBLISHED. A query that has no whitespace is tried as an exact SKU first (1 request, instant).",
   write: false,
   input_schema: {
     type: "object",
@@ -39,12 +39,18 @@ const walmartItemsSearch: JackieTool = {
       query: {
         type: "string",
         description:
-          "Product name fragment, case-insensitive. e.g. \"Oscar Mayer Bun-Length\" — matches every SKU whose title contains those words.",
+          'Product name fragment OR exact SKU, case-insensitive. e.g. "Arnold Potato Buns" matches every SKU whose title contains those words; "CAPSL-KIT-PACK4" matches that exact SKU.',
       },
       limit: {
         type: "number",
         default: 50,
-        description: "Max matches to return. Default 50 (cap of the operator-confirm UI).",
+        description: "Max matches to return. Default 50.",
+      },
+      include_unpublished: {
+        type: "boolean",
+        default: false,
+        description:
+          "Set true to also scan items with publishedStatus=UNPUBLISHED (slower; pulls ~5300 items vs ~4000 by default). Use only when the operator says they're searching for an inactive listing.",
       },
     },
     required: ["query"],
@@ -53,18 +59,26 @@ const walmartItemsSearch: JackieTool = {
   handler: async (args) => {
     const query = requireString(args, "query");
     const limit = optionalNumber(args, "limit") ?? 50;
+    const includeUnpublished = args.include_unpublished === true;
     const client = getWalmartClient(STORE_INDEX);
     try {
-      const r = await searchWalmartItems(client, query, { limit });
+      const r = await searchWalmartItems(client, query, {
+        limit,
+        includeUnpublished,
+      });
       return {
         query,
         count: r.matches.length,
         items_scanned: r.itemsScanned,
+        total_items_in_catalog: r.totalItemsAvailable,
         truncated_scan: r.truncated,
+        shortcut_used: r.shortcutUsed,
         matches: r.matches,
         note:
           r.matches.length === 0
-            ? "No matches. Check spelling, try a shorter fragment, or ask the operator for the exact SKU."
+            ? r.truncated
+              ? `No matches found in ${r.itemsScanned} scanned items, but catalog has ${r.totalItemsAvailable}. Try include_unpublished=true or ask the operator for the exact SKU.`
+              : "No matches. Check spelling, try a shorter fragment, or ask the operator for the exact SKU."
             : undefined,
       };
     } catch (err) {
