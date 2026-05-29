@@ -19,6 +19,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchSettlementAdjustments } from "@/lib/amazon-sp-api/settlement-reports";
 import { getConfiguredStores } from "@/lib/amazon-sp-api/auth";
+import { rebuildSkuProfilesFor } from "@/lib/adjustments/sku-profiles";
 
 const SKIPPED_STORES = new Set<string>(["store2"]);
 
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
   });
 
   const results: StoreResult[] = [];
+  const touchedSkus: Array<string | null> = [];
 
   for (const storeId of stores) {
     try {
@@ -60,6 +62,7 @@ export async function POST(request: NextRequest) {
       // Upsert each adjustment. Settlement is authoritative — its
       // orderId / sku always wins when the underlying row already exists.
       for (const rec of adjustments) {
+        if (rec.sku) touchedSkus.push(rec.sku);
         const result = await prisma.shippingAdjustment.upsert({
           where: { externalId: rec.externalId },
           create: rec,
@@ -110,6 +113,11 @@ export async function POST(request: NextRequest) {
   const totalEnriched = results.reduce((s, r) => s + r.enriched, 0);
   const anyError = results.some((r) => !r.ok);
 
+  // Rebuild SKU profiles for every SKU touched by this sync — drives the
+  // SKU Issues panel + "needs SKU-DB update" flag.
+  const { profilesUpdated } = await rebuildSkuProfilesFor(touchedSkus);
+  void profilesUpdated; // surfaced in response below
+
   await prisma.syncLog.update({
     where: { id: syncLog.id },
     data: {
@@ -132,6 +140,7 @@ export async function POST(request: NextRequest) {
     totalAdjustments,
     totalInserted,
     totalEnriched,
+    profilesUpdated,
     perStore: results,
   });
 }

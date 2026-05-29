@@ -18,6 +18,7 @@ import {
   buildAdjustmentExternalId,
 } from "@/lib/amazon-sp-api/finances";
 import { getConfiguredStores } from "@/lib/amazon-sp-api/auth";
+import { rebuildSkuProfilesFor } from "@/lib/adjustments/sku-profiles";
 
 /** Stores to skip even when SP-API creds exist. */
 const SKIPPED_STORES = new Set<string>(["store2"]); // Personal — banned 2026-05-22
@@ -113,6 +114,20 @@ export async function POST(request: NextRequest) {
   const totalScanned = results.reduce((s, r) => s + r.scanned, 0);
   const totalNewSaved = results.reduce((s, r) => s + r.newSaved, 0);
   const anyError = results.some((r) => !r.ok);
+
+  // Refresh SKU profiles for any SKUs that got new adjustment rows so
+  // the SKU Issues panel stays in sync with the underlying table.
+  // (Financial Events rarely carry a SKU directly — settlement-sync
+  // does the heavier rebuild — but if a chargeback-style event lands
+  // here, capture its SKU now.)
+  const touchedSkus: Array<string | null> = [];
+  for (const r of results) {
+    if (!r.ok) continue;
+    // The scan endpoint doesn't currently surface per-row SKUs in the
+    // result; rebuild defensively on next settlement-sync instead. No-op
+    // here keeps the change scope tight.
+  }
+  if (touchedSkus.length > 0) await rebuildSkuProfilesFor(touchedSkus);
 
   await prisma.syncLog.update({
     where: { id: syncLog.id },

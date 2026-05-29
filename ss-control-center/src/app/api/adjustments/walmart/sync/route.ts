@@ -18,6 +18,7 @@ import { prisma } from "@/lib/prisma";
 import { WalmartClient, WalmartApiError } from "@/lib/walmart/client";
 import { WalmartReportsApi } from "@/lib/walmart/reports";
 import type { WalmartReconTransaction } from "@/lib/walmart/types";
+import { rebuildSkuProfilesFor } from "@/lib/adjustments/sku-profiles";
 
 /**
  * Decide whether a Walmart recon row represents a shipping adjustment
@@ -234,6 +235,17 @@ export async function POST(request: NextRequest) {
     (s, r) => s + r.adjustmentsEnriched,
     0,
   );
+
+  // Rebuild SKU profiles for every Walmart-channel SKU that gained a
+  // new adjustment row — keeps SKU Issues panel current.
+  const touchedWalmartSkus = (
+    await prisma.shippingAdjustment.findMany({
+      where: { channel: "Walmart", sku: { not: null } },
+      select: { sku: true },
+      distinct: ["sku"],
+    })
+  ).map((r) => r.sku);
+  await rebuildSkuProfilesFor(touchedWalmartSkus);
 
   const anyError = summary.some((s) => s.error);
   await prisma.syncLog.update({
