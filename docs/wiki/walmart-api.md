@@ -72,6 +72,7 @@ Status: Active. Full seller access (без Solution Provider delegation).
 | `POST /v3/shipping/labels/shipping-estimates` | rate shopping (бесплатно) |
 | `POST /v3/shipping/labels` | покупка этикетки → `trackingNo` |
 | `GET /v3/shipping/labels/carriers/{shortName}/trackings/{tn}` | скачать PDF этикетки (Accept: application/pdf) |
+| `DELETE /v3/shipping/labels/carriers/{shortName}/trackings/{tn}` | **discard** (отменить/удалить) этикетку — пока заказ не отгружен. Берёт перевозчика + трек (НЕ labelId) |
 
 **Тело estimate** (`EstimateShipmentRequestDTO`): обязательны `packageType, shipByDate, deliverByDate, fromAddress, toAddress, boxDimensions`. Адреса = `{ addressLines[], city, state, postalCode, countryCode }`. **Даты строго `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'`** (= `Date.toISOString()`; иначе `LS-4002`). `boxDimensions` = `{ boxLength, boxWidth, boxHeight, boxWeight, boxDimensionUnit (IN/FT/CM), boxWeightUnit (LB/KG/OZ) }`. Ответ: `data.estimates[]` с `name` (= carrierServiceType), `carrierName`, `displayName`, `estimatedRate.amount`, `deliveryDate`.
 
@@ -80,6 +81,8 @@ Status: Active. Full seller access (без Solution Provider delegation).
 **Ship-from (STORE1):** единственный ship node — Warehouse 1162, 1162 Kapp Dr, Clearwater FL 33765 (нужен только для estimate; createLabel берёт из PO).
 
 **Код:** `src/lib/walmart/shipping.ts` (`estimateShippingRates`, `buyShippingLabel`, `getSwwCarriers`, `downloadLabelPdf`). Jackie-инструменты: `walmart_label_rates` (read), `walmart_buy_label` (write, dry_run). Покупка **не** ставит Shipped → подхватывает ship-confirm cron.
+
+**✅ Боевой выкуп подтверждён 2026-05-30:** реально куплена этикетка на PO `129114917403021` (USPS Ground Advantage, $10.53, трек `9234690363072200844569`). После покупки заказ остался **Acknowledged** (Shipped НЕ проставился) — ключевое преимущество над Veeqo. Этикетка сразу видна через `walmart_label_tracking`; PDF скачивается (≈187 КБ). discard доступен.
 
 ## ⚠️ Отличия от Amazon SP-API
 - **Нет текстового поиска по товарам** — `/v3/items` отдаёт только весь список (постранично) или один товар по точному SKU. Поиск по названию решён локальным зеркалом каталога — см. [Walmart Catalog Cache](walmart-catalog-cache.md).
