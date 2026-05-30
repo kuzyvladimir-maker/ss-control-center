@@ -14,6 +14,7 @@ import { tools as bundleFactory } from "./bundle-factory";
 import { tools as walmartReturns } from "./walmart-returns";
 import { tools as walmartInventory } from "./walmart-inventory";
 import { tools as walmartOrders } from "./walmart-orders";
+import { tools as walmartLabels } from "./walmart-labels";
 import { tools as carrier } from "./carrier";
 
 const ALL_TOOLS = [
@@ -26,6 +27,7 @@ const ALL_TOOLS = [
   ...walmartReturns,
   ...walmartInventory,
   ...walmartOrders,
+  ...walmartLabels,
   ...carrier,
 ];
 

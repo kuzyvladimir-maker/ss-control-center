@@ -28,6 +28,14 @@
     {
       "path": "/api/cron/adjustments-amazon",
       "schedule": "30 8 * * *"
+    },
+    {
+      "path": "/api/cron/walmart-ship-confirm?dryRun=true",
+      "schedule": "0 23 * * *"
+    },
+    {
+      "path": "/api/cron/walmart-ship-confirm?dryRun=true",
+      "schedule": "0 0 * * *"
     }
   ]
 }

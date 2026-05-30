@@ -198,3 +198,17 @@ export interface WalmartRefundLineInput {
   tax?: number;
   shipping?: number;
 }
+
+// One box of a "Ship with Walmart" (Buy Shipping) label, as returned by
+// GET /v3/shipping/labels/purchase-orders/{po}. This is the label resource —
+// separate from the order resource, and populated as soon as the label is
+// bought (in Seller Center or via API), BEFORE the order is marked shipped.
+export interface WalmartLabelInfo {
+  purchaseOrderId: string;
+  trackingNumber: string; // API field is `trackingNo`
+  carrierName: string; // e.g. "FedEx" | "UPS" | "USPS"
+  carrierFullName?: string;
+  carrierServiceType?: string; // e.g. "FedEx Ground Economy"
+  trackingUrl?: string;
+  boxItems: Array<{ sku?: string; quantity: number; lineNumber: string }>;
+}

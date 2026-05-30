@@ -45,6 +45,15 @@ Status: Active. Full seller access (без Solution Provider delegation).
 - Price API (Phase 2 — Buy Box)
 - Items API (Phase 2 — Product Listings)
 
+## 📦 Ship with Walmart (Buy Shipping) — чтение трекинга лейбла
+
+Когда лейбл покупается в Seller Center через «Buy Shipping» (FedEx/UPS на carrier-аккаунтах Walmart), трекинг **не** появляется в ресурсе заказа: `GET /v3/orders/{po}` показывает `trackingInfo.* = null`, пока заказ не отмечен Shipped (это заполняется только write-вызовом отгрузки). Трекинг живёт в **отдельном** ресурсе лейбла:
+
+- **`GET /v3/shipping/labels/purchase-orders/{purchaseOrderId}`** — все лейблы заказа. Возвращает `data[].trackingNo`, `carrierName` («FedEx»/«UPS»/«USPS»), `carrierServiceType`, `trackingUrl`, `boxItems[]` (sku, quantity, lineNumber). **Доступно уже в статусе Acknowledged**, до отметки об отгрузке. (Live-verified 2026-05-29.)
+- Это часть **Ship with Walmart (SWW)** API — то же, что кнопка Buy Shipping в UI; отличается от WFS Fulfillment (`/v3/fulfillment/...`).
+- В коде: `WalmartOrdersApi.getLabelsByPurchaseOrder(po)` ([orders.ts](../../ss-control-center/src/lib/walmart/orders.ts)), тип `WalmartLabelInfo`. Для Jackie — MCP-инструмент `walmart_label_tracking`.
+- **Авто-подтверждение отгрузки:** ночной крон `/api/cron/walmart-ship-confirm` (19:00 ET, по умолчанию **dry-run**): Acknowledged → `getLabelsByPurchaseOrder` → трекинг → если посылка реально едет (не origin-only скан) → `shipOrderLines`. См. также [carrier-tracking-apis.md](carrier-tracking-apis.md).
+
 ## ⚠️ Отличия от Amazon SP-API
 - **Нет текстового поиска по товарам** — `/v3/items` отдаёт только весь список (постранично) или один товар по точному SKU. Поиск по названию решён локальным зеркалом каталога — см. [Walmart Catalog Cache](walmart-catalog-cache.md).
 - **Нет Messaging API** — нет отдельного buyer-seller chat; коммуникация через cancel/refund/return workflows + Walmart Contact Us form

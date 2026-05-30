@@ -12,6 +12,7 @@ import type { WalmartClient } from "./client";
 import { mapOrder, unwrapList } from "./mappers";
 import type {
   WalmartCancelLineInput,
+  WalmartLabelInfo,
   WalmartOrder,
   WalmartOrderStatus,
   WalmartRefundLineInput,
@@ -194,6 +195,46 @@ export class WalmartOrdersApi {
       { body }
     );
     return mapOrder(data?.order ?? data);
+  }
+
+  /**
+   * Fetch the "Ship with Walmart" (Buy Shipping) labels bought for a PO.
+   * GET /v3/shipping/labels/purchase-orders/{po}.
+   *
+   * This reads the LABEL resource, which is separate from the order resource:
+   * the tracking number is present here as soon as the label is purchased
+   * (in Seller Center or via API), BEFORE the order is marked shipped — which
+   * is why GET /orders/{po} shows trackingInfo.* null for an Acknowledged
+   * order while this returns the real tracking. Returns one entry per box
+   * ([] when no label has been bought yet, or the carrier isn't SWW).
+   */
+  async getLabelsByPurchaseOrder(
+    purchaseOrderId: string
+  ): Promise<WalmartLabelInfo[]> {
+    const data = await this.client.request<any>(
+      "GET",
+      `/shipping/labels/purchase-orders/${encodeURIComponent(purchaseOrderId)}`
+    );
+    const labels = Array.isArray(data?.data)
+      ? data.data
+      : Array.isArray(data)
+        ? data
+        : [];
+    return labels.map((l: any) => ({
+      purchaseOrderId: String(l?.purchaseOrderId ?? purchaseOrderId),
+      trackingNumber: String(l?.trackingNo ?? l?.trackingNumber ?? ""),
+      carrierName: String(l?.carrierName ?? ""),
+      carrierFullName: l?.carrierFullName ?? undefined,
+      carrierServiceType: l?.carrierServiceType ?? undefined,
+      trackingUrl: l?.trackingUrl ?? undefined,
+      boxItems: Array.isArray(l?.boxItems)
+        ? l.boxItems.map((b: any) => ({
+            sku: b?.sku ?? undefined,
+            quantity: Number(b?.quantity ?? 1),
+            lineNumber: String(b?.lineNumber ?? ""),
+          }))
+        : [],
+    }));
   }
 
   async refundOrderLines(
