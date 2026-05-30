@@ -60,6 +60,39 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Order has no usable shipping address" }, { status: 422 });
   }
 
+  // If a label was already bought (or the order is already Shipped), skip the
+  // rate quote and tell the UI — so the row shows "bought / not yet shipped"
+  // (or "shipped") instead of offering to buy again.
+  const orderStatus = order.status;
+  let existingLabel: {
+    trackingNumber: string;
+    carrierName: string;
+    trackingUrl?: string;
+  } | null = null;
+  try {
+    const labels = await api.getLabelsByPurchaseOrder(purchaseOrderId);
+    if (labels.length > 0 && labels[0].trackingNumber) {
+      existingLabel = {
+        trackingNumber: labels[0].trackingNumber,
+        carrierName: labels[0].carrierName,
+        trackingUrl: labels[0].trackingUrl,
+      };
+    }
+  } catch {
+    /* label lookup failed — fall through to normal rate quote */
+  }
+  if (existingLabel || orderStatus === "Shipped") {
+    return NextResponse.json({
+      ok: true,
+      purchaseOrderId,
+      orderStatus,
+      alreadyBought: !!existingLabel,
+      existingLabel,
+      rates: [],
+      selected: null,
+    });
+  }
+
   // Resolve package dims/weight using the SAME rule as the Veeqo plan, so
   // dims are remembered per SKU+QUANTITY:
   //   - explicit body override wins;
@@ -134,9 +167,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Ship date: operator can override (the editable ship-date control) to
+  // re-quote against a different dispatch day; otherwise the order's
+  // estimated ship date (or tomorrow). Walmart estimates differ by ship date.
   const now = Date.now();
-  const shipByDate = order.shippingInfo?.estimatedShipDate ?? new Date(now + 24 * 3600 * 1000);
-  const deliverByDate = order.shippingInfo?.estimatedDeliveryDate ?? new Date(now + 5 * 24 * 3600 * 1000);
+  const shipByDate: string | Date =
+    typeof body.shipByDate === "string" && body.shipByDate
+      ? body.shipByDate
+      : order.shippingInfo?.estimatedShipDate ?? new Date(now + 24 * 3600 * 1000);
+  const deliverByDate: string | Date =
+    typeof body.deliverByDate === "string" && body.deliverByDate
+      ? body.deliverByDate
+      : order.shippingInfo?.estimatedDeliveryDate ?? new Date(now + 5 * 24 * 3600 * 1000);
 
   try {
     const rates = await estimateShippingRates(client, {
@@ -156,8 +198,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       purchaseOrderId,
+      orderStatus,
+      alreadyBought: false,
+      existingLabel: null,
       box,
       dimsSource,
+      shipByDate: new Date(shipByDate).toISOString().slice(0, 10),
       rates,
       selected: selection.chosen,
       selectionReason: selection.reason,

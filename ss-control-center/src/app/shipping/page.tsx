@@ -263,6 +263,21 @@ export default function ShippingLabelsPage() {
       }
     >
   >({});
+  // Walmart purchase/ship status keyed by orderNumber — drives the
+  // "label bought / not yet shipped" + Mark-as-Shipped row state. Populated
+  // from /api/shipping/walmart/rates (which reports an existing label / Shipped
+  // status instead of a quote).
+  const [walmartStatus, setWalmartStatus] = useState<
+    Record<
+      string,
+      {
+        alreadyBought: boolean;
+        orderStatus: string | null;
+        existingLabel: { trackingNumber: string; carrierName: string; trackingUrl?: string } | null;
+      }
+    >
+  >({});
+  const [markingShipped, setMarkingShipped] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -380,10 +395,12 @@ export default function ShippingLabelsPage() {
         if (readyWalmart.length === 0) {
           setWalmartRates({});
           setWalmartBuyInfo({});
+          setWalmartStatus({});
           return;
         }
         const ratesMap: Record<string, PlanItem> = {};
         const buyMap: typeof walmartBuyInfo = {};
+        const statusMap: typeof walmartStatus = {};
         await Promise.all(
           readyWalmart.map(async (o) => {
             try {
@@ -393,7 +410,16 @@ export default function ShippingLabelsPage() {
                 body: JSON.stringify({ purchaseOrderId: o.walmartPurchaseOrderId }),
               });
               const j = await res.json();
-              if (!j?.ok || !j.selected || !j.box) return;
+              if (!j?.ok) return;
+              statusMap[o.orderNumber] = {
+                alreadyBought: !!j.alreadyBought,
+                orderStatus: j.orderStatus ?? null,
+                existingLabel: j.existingLabel ?? null,
+              };
+              // Already has a label / already shipped → no buyable rate; the
+              // row shows "bought / not yet shipped" (or "shipped") instead.
+              if (j.alreadyBought || j.orderStatus === "Shipped") return;
+              if (!j.selected || !j.box) return;
               const s = j.selected;
               const b = j.box;
               ratesMap[o.orderNumber] = {
@@ -432,6 +458,7 @@ export default function ShippingLabelsPage() {
         );
         setWalmartRates(ratesMap);
         setWalmartBuyInfo(buyMap);
+        setWalmartStatus(statusMap);
       })();
 
       const readyOrderIds = dashJson.orders
@@ -675,6 +702,40 @@ export default function ShippingLabelsPage() {
   // Per-row Buy — uses the planId fetched at page load. If the order is
   // missing from that plan (rare: just-resolved attention), we fall back
   // to re-running plan with ?orderIds=ID first.
+  // Manually mark a Walmart order Shipped using its purchased label's
+  // tracking (POST /api/shipping/walmart/mark-shipped). The 10pm cron does
+  // this automatically once the package moves; this is the manual override.
+  async function markShipped(o: DashboardOrder) {
+    if (!o.walmartPurchaseOrderId) return;
+    setMarkingShipped(o.orderId);
+    setBuyMsg(`Marking ${o.orderNumber} shipped…`);
+    setBuyErrors((prev) => {
+      if (!(o.orderId in prev)) return prev;
+      const next = { ...prev };
+      delete next[o.orderId];
+      return next;
+    });
+    try {
+      const r = await fetch("/api/shipping/walmart/mark-shipped", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ purchaseOrderId: o.walmartPurchaseOrderId }),
+      });
+      const j = await r.json();
+      if (!r.ok || j?.ok === false) {
+        throw new Error(j?.error || "Failed to mark shipped");
+      }
+      setBuyMsg(`${o.orderNumber} marked Shipped`);
+      await load();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setBuyMsg(msg);
+      setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
+    } finally {
+      setMarkingShipped(null);
+    }
+  }
+
   async function buyOne(o: DashboardOrder) {
     setBuyingRow(o.orderId);
     setBuyMsg(`Buying label for ${o.orderNumber}…`);
@@ -1046,6 +1107,9 @@ export default function ShippingLabelsPage() {
               selected={selected.has(o.orderId)}
               buying={buyingRow === o.orderId}
               buyError={buyErrors[o.orderId] ?? null}
+              walmartStatus={walmartStatus[o.orderNumber] ?? null}
+              markingShipped={markingShipped === o.orderId}
+              onMarkShipped={() => markShipped(o)}
               frozenAlert={frozenAlertByOrder.get(o.orderNumber) ?? null}
               onToggleSelected={() => toggleOne(o.orderId)}
               onClassify={() => setClassifyModal(o)}
@@ -1120,7 +1184,48 @@ export default function ShippingLabelsPage() {
           }}
         />
       )}
-      {pickRateModal && (
+      {pickRateModal && pickRateModal.isWalmart && (
+        <WalmartPickRateDialog
+          order={pickRateModal}
+          currentServiceType={
+            walmartBuyInfo[pickRateModal.orderNumber]?.serviceType ?? null
+          }
+          onClose={() => setPickRateModal(null)}
+          onPick={(rate) => {
+            const num = pickRateModal.orderNumber;
+            // Update what the row shows AND what Buy will purchase.
+            setWalmartRates((prev) => {
+              const base = prev[num];
+              if (!base) return prev;
+              return {
+                ...prev,
+                [num]: {
+                  ...base,
+                  carrier: rate.carrierName,
+                  service: rate.displayName,
+                  price: rate.amount,
+                  edd: rate.deliveryDate,
+                },
+              };
+            });
+            setWalmartBuyInfo((prev) => {
+              const base = prev[num];
+              if (!base) return prev;
+              return {
+                ...prev,
+                [num]: {
+                  ...base,
+                  carrierName: rate.carrierName,
+                  serviceType: rate.serviceType,
+                  edd: rate.deliveryDate,
+                },
+              };
+            });
+            setPickRateModal(null);
+          }}
+        />
+      )}
+      {pickRateModal && !pickRateModal.isWalmart && (
         <PickRateDialog
           order={pickRateModal}
           plan={planByOrderNumber.get(pickRateModal.orderNumber) ?? null}
@@ -1160,6 +1265,9 @@ function OrderRow({
   onPickRate,
   onClearOverride,
   onBuy,
+  walmartStatus,
+  markingShipped,
+  onMarkShipped,
 }: {
   order: DashboardOrder;
   plan: PlanItem | null;
@@ -1178,6 +1286,13 @@ function OrderRow({
   onPickRate: () => void;
   onClearOverride: () => void;
   onBuy: () => void;
+  walmartStatus: {
+    alreadyBought: boolean;
+    orderStatus: string | null;
+    existingLabel: { trackingNumber: string; carrierName: string; trackingUrl?: string } | null;
+  } | null;
+  markingShipped: boolean;
+  onMarkShipped: () => void;
 }) {
   const isReady = order.state === "ready_to_buy";
   const isAttn = order.state === "need_attention";
@@ -1202,6 +1317,14 @@ function OrderRow({
     plan?.price != null
       ? order.customerPaidShipping - plan.price
       : null;
+
+  // Walmart purchase/ship state (Veeqo still says "ready" because buying via
+  // Walmart doesn't flip Veeqo): a label exists but the order isn't shipped
+  // yet → show "bought / not shipped" + Mark-as-Shipped; or already Shipped.
+  const wmShipped =
+    !!order.isWalmart && walmartStatus?.orderStatus === "Shipped";
+  const wmBought =
+    !!order.isWalmart && !!walmartStatus?.existingLabel && !wmShipped;
 
   return (
     <div
@@ -1609,7 +1732,46 @@ function OrderRow({
       )}
 
       {/* Ready row: per-row Buy + (when plan stopped) the reason. */}
-      {isReady && (
+      {/* Walmart: label bought but not yet marked shipped — show tracking +
+          a manual Mark-as-Shipped button (the 10pm cron also does this auto
+          once the package moves). */}
+      {wmBought && (
+        <div className="mt-2 ml-6 flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[11px] text-green-ink">
+            Label bought — {walmartStatus?.existingLabel?.carrierName}{" "}
+            <span className="font-mono">
+              {walmartStatus?.existingLabel?.trackingNumber}
+            </span>
+            {" · not yet marked shipped"}
+            {buyError ? (
+              <span className="ml-2 text-danger">— {buyError}</span>
+            ) : null}
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onMarkShipped}
+            disabled={markingShipped}
+            className="h-7 text-[11.5px]"
+          >
+            {markingShipped ? (
+              <>
+                <Loader2 size={12} className="mr-1 animate-spin" />
+                Marking…
+              </>
+            ) : (
+              "Mark as Shipped"
+            )}
+          </Button>
+        </div>
+      )}
+      {wmShipped && (
+        <div className="mt-1 ml-6 text-[11px] text-green-ink">
+          Shipped ✓ (confirmed to Walmart).
+        </div>
+      )}
+
+      {isReady && !wmBought && !wmShipped && (
         <div className="mt-2 ml-6 flex flex-wrap items-center justify-between gap-2">
           {planStop ? (
             <span className="rounded bg-danger-tint px-1.5 py-0.5 text-[11px] font-medium text-danger">
@@ -3215,6 +3377,159 @@ function PickRateDialog({
                         <div className="font-semibold text-ink tabular text-[13px]">
                           ${parseFloat(rate.total_net_charge ?? "0").toFixed(2)}
                         </div>
+                      </div>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Walmart-order rate picker. Unlike PickRateDialog (Veeqo), this fetches rates
+// from Walmart's own Ship-with-Walmart API and lets the operator change the
+// ship date to re-quote (Walmart rates differ by dispatch day). Picking a rate
+// updates both the row display and what the Buy button will purchase.
+interface WalmartRateLite {
+  carrierName: string;
+  serviceType: string;
+  displayName: string;
+  amount: number | null;
+  deliveryDate: string | null;
+  deliveryPromiseFulfilled?: boolean;
+}
+
+function WalmartPickRateDialog({
+  order,
+  currentServiceType,
+  onClose,
+  onPick,
+}: {
+  order: DashboardOrder;
+  currentServiceType: string | null;
+  onClose: () => void;
+  onPick: (rate: WalmartRateLite) => void;
+}) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [shipDate, setShipDate] = useState<string>(
+    (order.shipBy && order.shipBy.slice(0, 10)) || today,
+  );
+  const [rates, setRates] = useState<WalmartRateLite[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+
+  const fetchRates = useCallback(
+    async (date: string) => {
+      setLoading(true);
+      setErr(null);
+      try {
+        const r = await fetch("/api/shipping/walmart/rates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            purchaseOrderId: order.walmartPurchaseOrderId,
+            shipByDate: date,
+          }),
+        });
+        const j = await r.json();
+        if (!r.ok || j?.ok === false) {
+          setErr(j?.error || `HTTP ${r.status}`);
+          setRates([]);
+        } else {
+          setRates(j.rates ?? []);
+        }
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : String(e));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [order.walmartPurchaseOrderId],
+  );
+
+  useEffect(() => {
+    fetchRates(shipDate);
+  }, [fetchRates, shipDate]);
+
+  const sorted = useMemo(
+    () => [...rates].sort((a, b) => (a.amount ?? Infinity) - (b.amount ?? Infinity)),
+    [rates],
+  );
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[640px]">
+        <DialogHeader>
+          <DialogTitle>Pick rate manually — Walmart</DialogTitle>
+          <DialogDescription>
+            Order #{order.orderNumber} — rates from Walmart (Ship with Walmart).
+            Change the ship date to re-quote.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex items-center gap-2 text-[12px]">
+          <label className="font-medium text-ink">Ship date</label>
+          <input
+            type="date"
+            value={shipDate}
+            onChange={(e) => setShipDate(e.target.value)}
+            className="rounded border border-rule bg-surface px-2 py-1 text-[12.5px]"
+          />
+          {loading && <Loader2 size={14} className="animate-spin text-ink-3" />}
+        </div>
+
+        {err && (
+          <div className="rounded border border-danger/30 bg-danger-tint p-2 text-[11.5px] text-danger">
+            {err}
+          </div>
+        )}
+
+        {!loading && !err && sorted.length === 0 && (
+          <div className="py-6 text-center text-[12px] text-ink-3">
+            Walmart returned no rates for this ship date.
+          </div>
+        )}
+
+        {!err && sorted.length > 0 && (
+          <ul className="space-y-1 max-h-[420px] overflow-y-auto pr-1">
+            {sorted.map((rate, i) => {
+              const isCurrent =
+                currentServiceType != null && rate.serviceType === currentServiceType;
+              return (
+                <li key={`${rate.serviceType}-${i}`}>
+                  <button
+                    type="button"
+                    onClick={() => onPick(rate)}
+                    className={cn(
+                      "w-full rounded border px-3 py-2 text-left transition-colors",
+                      isCurrent
+                        ? "border-green bg-green-soft hover:bg-green-soft2"
+                        : "border-rule bg-surface hover:bg-bg-elev",
+                    )}
+                  >
+                    <div className="flex items-baseline justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-medium text-ink text-[13px]">
+                          {rate.displayName}
+                        </div>
+                        <div className="mt-0.5 text-[11px] text-ink-3 font-mono">
+                          {(rate.carrierName ?? "").toUpperCase()}
+                          {rate.deliveryDate ? ` · EDD ${fmtDate(rate.deliveryDate)}` : ""}
+                          {isCurrent ? " · current pick" : ""}
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right font-semibold text-ink tabular text-[13px]">
+                        {rate.amount != null ? `$${rate.amount.toFixed(2)}` : "—"}
                       </div>
                     </div>
                   </button>
