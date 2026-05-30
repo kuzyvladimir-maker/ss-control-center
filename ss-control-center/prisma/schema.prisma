@@ -1059,9 +1059,11 @@ model WalmartCatalogItem {
   // catalog). A mid-sync failure therefore prunes nothing — no data loss.
   syncedAt DateTime @default(now())
 
-  // Walmart Marketplace API doesn't expose product images, so we scrape the
-  // `og:image` meta tag from the public product page (walmart.com/ip/{itemId})
-  // lazily on first use and cache here. Refreshed when older than 7 days.
+  // Walmart Marketplace API doesn't expose product images and scraping the
+  // public product page from datacenter IPs hits Walmart's bot-wall captcha.
+  // So we pull images from Veeqo (which already mirrors our full catalog and
+  // serves thumbnails via its own CDN). Looked up lazily on first use via
+  // /products?query={sku} and cached here. Refreshed when older than 7 days.
   mainImageUrl        String?
   mainImageFetchedAt  DateTime?
 

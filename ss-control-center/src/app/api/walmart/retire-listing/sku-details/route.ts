@@ -20,11 +20,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getWalmartClient, WalmartApiError } from "@/lib/walmart/client";
-import { scrapeWalmartProductImage } from "@/lib/walmart/scrape-product-image";
+import { fetchVeeqoImageBySku } from "@/lib/veeqo/product-image";
 
 const STORE_INDEX = 1;
 const INVENTORY_CONCURRENCY = 8;
-const SCRAPE_CONCURRENCY = 4;
+const VEEQO_LOOKUP_CONCURRENCY = 6;
 const IMAGE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 interface InputItem {
@@ -109,16 +109,16 @@ export async function POST(request: NextRequest) {
   });
   const cacheBySku = new Map(cached.map((r) => [r.sku, r]));
 
-  // 2. Decide which items need a fresh scrape (no cache OR older than TTL).
+  // 2. Decide which items need a fresh image lookup (no cache OR stale).
+  //    Veeqo is the source — see fetchVeeqoImageBySku for why we don't
+  //    use Walmart's own product page (datacenter IP captcha wall).
   const now = Date.now();
-  const toScrape: Array<{ sku: string; itemId: string }> = [];
+  const toLookup: string[] = [];
   for (const it of inputs) {
     const c = cacheBySku.get(it.sku);
-    const itemId = c?.itemId || it.itemId;
-    if (!itemId) continue;
     const fetchedAt = c?.mainImageFetchedAt?.getTime() ?? 0;
     if (!c?.mainImageUrl || now - fetchedAt > IMAGE_TTL_MS) {
-      toScrape.push({ sku: it.sku, itemId });
+      toLookup.push(it.sku);
     }
   }
 
@@ -149,42 +149,42 @@ export async function POST(request: NextRequest) {
     }
   });
 
-  const scrapeWork = runPool(toScrape, SCRAPE_CONCURRENCY, async (it) => {
-    const url = await scrapeWalmartProductImage(it.itemId);
+  const imageLookupWork = runPool(toLookup, VEEQO_LOOKUP_CONCURRENCY, async (sku) => {
+    const url = await fetchVeeqoImageBySku(sku);
     if (url) {
       try {
-        // Update the catalog row in place — keeps everything in one table.
+        // Cache on the catalog row so the next modal open is instant.
         await prisma.walmartCatalogItem.updateMany({
-          where: { storeIndex: STORE_INDEX, sku: it.sku },
+          where: { storeIndex: STORE_INDEX, sku },
           data: { mainImageUrl: url, mainImageFetchedAt: new Date() },
         });
       } catch (err) {
         console.warn(
-          `[sku-details] cache image update(${it.sku}) failed:`,
+          `[sku-details] cache image update(${sku}) failed:`,
           err instanceof Error ? err.message : err,
         );
       }
     }
-    return { sku: it.sku, imageUrl: url };
+    return { sku, imageUrl: url };
   });
 
-  const [inventoryResults, scrapeResults] = await Promise.all([
+  const [inventoryResults, imageResults] = await Promise.all([
     inventoryWork,
-    scrapeWork,
+    imageLookupWork,
   ]);
 
   const invBySku = new Map(inventoryResults.map((r) => [r.sku, r.currentQty]));
-  const scrapeBySku = new Map(scrapeResults.map((r) => [r.sku, r.imageUrl]));
+  const lookupBySku = new Map(imageResults.map((r) => [r.sku, r.imageUrl]));
 
   const details: DetailRow[] = inputs.map((it) => {
     const c = cacheBySku.get(it.sku);
-    const scraped = scrapeBySku.get(it.sku);
-    const imageUrl = scraped ?? c?.mainImageUrl ?? null;
+    const fresh = lookupBySku.get(it.sku);
+    const imageUrl = fresh ?? c?.mainImageUrl ?? null;
     return {
       sku: it.sku,
       currentQty: invBySku.get(it.sku) ?? null,
       imageUrl,
-      fromCache: !scrapeBySku.has(it.sku) && !!c?.mainImageUrl,
+      fromCache: !lookupBySku.has(it.sku) && !!c?.mainImageUrl,
     };
   });
 
