@@ -243,6 +243,26 @@ export default function ShippingLabelsPage() {
   // Per-order plan results when "Refresh rates" runs on a subset (e.g. after
   // an attention reason is fixed, we re-fetch rates only for that one order).
   const [planLoading, setPlanLoading] = useState(false);
+  // Walmart orders don't get Veeqo rates — we rate-shop them through Walmart's
+  // own API and synthesize PlanItem-shaped entries so the row renders exactly
+  // like an Amazon row. `walmartBuyInfo` carries what /api/shipping/walmart/buy
+  // needs (PO + chosen carrier/service + dims) keyed by orderNumber.
+  const [walmartRates, setWalmartRates] = useState<Record<string, PlanItem>>({});
+  const [walmartBuyInfo, setWalmartBuyInfo] = useState<
+    Record<
+      string,
+      {
+        purchaseOrderId: string;
+        carrierName: string;
+        serviceType: string;
+        length: number;
+        width: number;
+        height: number;
+        weight: number;
+        edd: string | null;
+      }
+    >
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -348,6 +368,71 @@ export default function ShippingLabelsPage() {
       const dashJson = (await dashRes.json()) as DashboardResponse;
       setData(dashJson);
       setLoading(false);
+
+      // ── Walmart-direct rate pass ──────────────────────────────────────
+      // Walmart orders (store "SIRIUS …", not "Walmart") get no Veeqo rate.
+      // Rate-shop them through Walmart's own API and synthesize plan items.
+      // Runs independently of the Veeqo plan below (which may early-return).
+      void (async () => {
+        const readyWalmart = dashJson.orders.filter(
+          (o) => o.state === "ready_to_buy" && o.isWalmart && o.walmartPurchaseOrderId,
+        );
+        if (readyWalmart.length === 0) {
+          setWalmartRates({});
+          setWalmartBuyInfo({});
+          return;
+        }
+        const ratesMap: Record<string, PlanItem> = {};
+        const buyMap: typeof walmartBuyInfo = {};
+        await Promise.all(
+          readyWalmart.map(async (o) => {
+            try {
+              const res = await fetch("/api/shipping/walmart/rates", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ purchaseOrderId: o.walmartPurchaseOrderId }),
+              });
+              const j = await res.json();
+              if (!j?.ok || !j.selected || !j.box) return;
+              const s = j.selected;
+              const b = j.box;
+              ratesMap[o.orderNumber] = {
+                id: `wm-${o.orderNumber}`,
+                orderNumber: o.orderNumber,
+                carrier: s.carrierName ?? null,
+                service: s.displayName ?? s.serviceType ?? null,
+                price: typeof s.amount === "number" ? s.amount : null,
+                edd: s.deliveryDate ?? null,
+                status: "pending",
+                notes: j.selectionReason ?? null,
+                weight: typeof b.weight === "number" ? b.weight : null,
+                boxSize: `${b.length}x${b.width}x${b.height}`,
+                productType: null,
+                labelDate: null,
+                physicalShipDate: null,
+                shipDateTrickApplied: false,
+                datesMatch: true,
+                actualShipDay: null,
+                allocationId: null,
+              };
+              buyMap[o.orderNumber] = {
+                purchaseOrderId: o.walmartPurchaseOrderId!,
+                carrierName: s.carrierName,
+                serviceType: s.serviceType,
+                length: b.length,
+                width: b.width,
+                height: b.height,
+                weight: b.weight,
+                edd: s.deliveryDate ?? null,
+              };
+            } catch {
+              /* skip — row shows "—" until dims set / retry */
+            }
+          }),
+        );
+        setWalmartRates(ratesMap);
+        setWalmartBuyInfo(buyMap);
+      })();
 
       const readyOrderIds = dashJson.orders
         .filter((o) => o.state === "ready_to_buy")
@@ -497,8 +582,11 @@ export default function ShippingLabelsPage() {
   const planByOrderNumber = useMemo(() => {
     const m = new Map<string, PlanItem>();
     if (plan) for (const p of plan.orders) m.set(p.orderNumber, p);
+    // Walmart rate entries overlay/extend the Veeqo plan so Walmart rows show
+    // carrier / cost / EDD / package through the same rendering path.
+    for (const [num, p] of Object.entries(walmartRates)) m.set(num, p);
     return m;
-  }, [plan]);
+  }, [plan, walmartRates]);
 
   // ── Actions ─────────────────────────────────────────────────────────
   function toggleAll() {
@@ -597,6 +685,68 @@ export default function ShippingLabelsPage() {
       delete next[o.orderId];
       return next;
     });
+
+    // ── Walmart-direct buy ────────────────────────────────────────────────
+    // Buy via Walmart's own API (not Veeqo). Does NOT mark the order Shipped
+    // — it stays Acknowledged; the ship-confirm cron (or manual action) marks
+    // it shipped once the package moves. PDF is saved to Drive server-side.
+    if (o.isWalmart) {
+      try {
+        const info = walmartBuyInfo[o.orderNumber];
+        if (!info) {
+          throw new Error(
+            "No Walmart rate yet — set the package size/weight, then Refresh.",
+          );
+        }
+        const buyRes = await fetch("/api/shipping/walmart/buy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            purchaseOrderId: info.purchaseOrderId,
+            carrierName: info.carrierName,
+            serviceType: info.serviceType,
+            length: info.length,
+            width: info.width,
+            height: info.height,
+            weight: info.weight,
+            edd: info.edd,
+          }),
+        });
+        const j = await buyRes.json();
+        if (!buyRes.ok || j?.ok === false) {
+          throw new Error(j?.error || "Walmart label purchase failed");
+        }
+        setBuyReport({
+          scope: "single",
+          total: 1,
+          bought: [
+            {
+              orderNumber: o.orderNumber,
+              tracking: j.trackingNumber ?? "",
+              itemId: o.orderId,
+              labelPath: j.labelPath ?? null,
+              pdfSaved: !!j.pdfSaved,
+              pdfSource: j.pdfSaved ? "drive" : "none",
+              driveError: j.driveError ?? null,
+              carrier: j.carrierName ?? info.carrierName,
+              service: j.serviceType ?? info.serviceType,
+              price: null,
+            },
+          ],
+          errors: [],
+        });
+        setBuyMsg(`Bought ${o.orderNumber} (Walmart) — not yet marked shipped`);
+        await load();
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        setBuyMsg(msg);
+        setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
+      } finally {
+        setBuyingRow(null);
+      }
+      return;
+    }
+
     try {
       let planId = plan?.planId ?? null;
       let planItemId =

@@ -90,6 +90,27 @@ export async function POST(request: NextRequest) {
   if (order.status === "Cancelled") {
     return NextResponse.json({ error: "Order is Cancelled — refusing to buy a label." }, { status: 409 });
   }
+
+  // Double-buy guard: if a label already exists for this PO, refuse. The
+  // order stays Acknowledged after a buy (Veeqo/Walmart don't flip it), so the
+  // UI can't always tell — this server-side check prevents a second paid
+  // label. Discard the existing one first to re-buy.
+  try {
+    const existing = await api.getLabelsByPurchaseOrder(purchaseOrderId);
+    if (existing.length > 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: `A label was already purchased for this order (tracking ${existing[0].trackingNumber}, ${existing[0].carrierName}). Discard it before buying again.`,
+          alreadyBought: true,
+          trackingNumber: existing[0].trackingNumber,
+        },
+        { status: 409 },
+      );
+    }
+  } catch {
+    /* label lookup failed — proceed; createLabel itself will error if dup */
+  }
   const boxItems = order.orderLines
     .filter((l) => l.orderedQty > 0)
     .map((l) => ({ sku: l.sku, quantity: l.orderedQty, lineNumber: String(l.lineNumber) }));
