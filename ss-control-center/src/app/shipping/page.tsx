@@ -243,6 +243,15 @@ function todayInET(): string {
   }).format(new Date());
 }
 
+// Add N calendar days to a YYYY-MM-DD string (UTC math, returns YYYY-MM-DD).
+// Used by the Ship Date preset buttons (Today / +1 / +2).
+function addDaysISO(iso: string, days: number): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + days);
+  return dt.toISOString().slice(0, 10);
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 // Page component
 // ─────────────────────────────────────────────────────────────────────────
@@ -292,6 +301,24 @@ export default function ShippingLabelsPage() {
   // Orders currently being re-quoted (after a ship-date change) — drives a
   // small spinner on the row so the operator knows the rate is refreshing.
   const [requoting, setRequoting] = useState<Record<string, boolean>>({});
+  // Amazon ship-date PREVIEW (view-only). When the operator changes an Amazon
+  // row's ship date we re-quote Veeqo at that date (PUT→fetch→restore) and
+  // overlay the resulting rate fields onto the row's plan line — WITHOUT
+  // touching what Buy purchases (Amazon still buys on its ship-by date).
+  // Keyed by orderNumber; only the rate fields are stored and merged over the
+  // real plan entry so package/weight from the plan are preserved.
+  const [veeqoPreview, setVeeqoPreview] = useState<
+    Record<
+      string,
+      {
+        carrier: string | null;
+        service: string | null;
+        price: number | null;
+        edd: string | null;
+        note: string;
+      }
+    >
+  >({});
   // load() must not depend on the ship-date state (it's a []-dep useCallback
   // wired to a mount effect — re-creating it would re-pull the whole
   // dashboard on every date tweak). It reads the current global date through
@@ -339,6 +366,12 @@ export default function ShippingLabelsPage() {
   const [stateFilter, setStateFilter] = useState<
     "all" | "ready_to_buy" | "need_attention" | "waiting_placed"
   >("all");
+  // List sort. "urgency" = the default actionability order (state → time
+  // bucket); the others sort by label cost / carrier EDD / marketplace
+  // deadline so the operator can re-order like Veeqo's sortable columns.
+  const [sortBy, setSortBy] = useState<
+    "urgency" | "cost" | "edd" | "deadline"
+  >("urgency");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const [buying, setBuying] = useState(false);
@@ -510,6 +543,87 @@ export default function ShippingLabelsPage() {
     [],
   );
 
+  // Preview an AMAZON order's rate at a different ship date (view-only). Calls
+  // /api/shipping/veeqo-rates which temporarily re-dates the order in Veeqo,
+  // re-quotes, and restores the original date — so this never changes what
+  // gets bought. We pick the algorithm's rate (cheapest that meets the
+  // deadline; Frozen also capped at 3 calendar days) and stash the rate fields
+  // in veeqoPreview, which the plan map merges over the real plan line.
+  const quoteVeeqoOrder = useCallback(
+    async (o: DashboardOrder, shipDate: string) => {
+      if (o.isWalmart || !/^\d+$/.test(o.orderId)) return;
+      setRequoting((p) => ({ ...p, [o.orderNumber]: true }));
+      try {
+        const res = await fetch("/api/shipping/veeqo-rates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: o.orderId, shipDate }),
+        });
+        const j = await res.json();
+        if (!j?.ok || !Array.isArray(j.rates)) return;
+        const toLocal = (ts: string | null) =>
+          ts
+            ? new Intl.DateTimeFormat("en-CA", {
+                timeZone: "America/New_York",
+              }).format(new Date(ts))
+            : null;
+        const isFrozen =
+          o.items.length > 0 && o.items.every((i) => i.knownType === "Frozen");
+        type R = {
+          sub_carrier_id?: string;
+          title?: string;
+          name?: string;
+          total_net_charge?: string;
+          delivery_promise_date?: string;
+        };
+        const enriched = (j.rates as R[])
+          .map((r) => {
+            const price = parseFloat(r.total_net_charge ?? "0") || 0;
+            const edd = toLocal(r.delivery_promise_date ?? null);
+            const meets = o.deliverBy && edd ? edd <= o.deliverBy : true;
+            const calDays =
+              edd && shipDate
+                ? Math.round(
+                    (new Date(edd).getTime() - new Date(shipDate).getTime()) /
+                      86_400_000,
+                  )
+                : null;
+            return { r, price, edd, meets, calDays };
+          })
+          .filter((e) => e.price > 0);
+        // Eligible = meets deadline (Frozen also ≤3 cal days). Fall back to
+        // cheapest that meets the deadline, then cheapest overall.
+        const eligible = enriched.filter(
+          (e) => e.meets && (!isFrozen || (e.calDays ?? 99) <= 3),
+        );
+        const pool =
+          eligible.length > 0
+            ? eligible
+            : enriched.filter((e) => e.meets).length > 0
+              ? enriched.filter((e) => e.meets)
+              : enriched;
+        pool.sort((a, b) => a.price - b.price);
+        const pick = pool[0];
+        if (!pick) return;
+        setVeeqoPreview((p) => ({
+          ...p,
+          [o.orderNumber]: {
+            carrier: pick.r.sub_carrier_id ?? null,
+            service: pick.r.title ?? pick.r.name ?? null,
+            price: pick.price,
+            edd: pick.edd,
+            note: `Preview @ ${shipDate}${j.restored === false ? " (⚠ date not restored in Veeqo)" : ""}`,
+          },
+        }));
+      } catch {
+        /* leave the row's real plan rate in place on error */
+      } finally {
+        setRequoting((p) => ({ ...p, [o.orderNumber]: false }));
+      }
+    },
+    [],
+  );
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -542,6 +656,7 @@ export default function ShippingLabelsPage() {
         // ship-date overrides and re-quote everything at the page-level date
         // (read via the ref so this []-dep callback need not depend on it).
         setShipDateByOrder({});
+        setVeeqoPreview({});
         setWalmartRates({});
         setWalmartBuyInfo({});
         setWalmartStatus({});
@@ -656,18 +771,26 @@ export default function ShippingLabelsPage() {
 
   // Change the page-level ship date: it becomes the new baseline for everyone,
   // so drop per-order overrides and re-quote every ready Walmart order at it.
+  // Amazon rows are NOT mass-re-quoted (that would be a Veeqo write per order);
+  // they just reset to the plan rate + show the new default date. Clear any
+  // stale Amazon previews so the rows don't show an old date's price.
   function changeGlobalShipDate(date: string) {
     if (!date) return;
     setShipDateGlobal(date);
     setShipDateByOrder({});
+    setVeeqoPreview({});
     for (const o of readyWalmartOrders) quoteWalmartOrder(o, date);
   }
 
   // Change one order's ship date (overrides the global for that order only).
+  // Walmart re-quotes through Walmart's API (drives display AND buy); Amazon
+  // re-quotes through Veeqo view-only (drives display only — Amazon still buys
+  // on its ship-by date).
   function changeOrderShipDate(o: DashboardOrder, date: string) {
     if (!date) return;
     setShipDateByOrder((p) => ({ ...p, [o.orderNumber]: date }));
-    quoteWalmartOrder(o, date);
+    if (o.isWalmart) quoteWalmartOrder(o, date);
+    else quoteVeeqoOrder(o, date);
   }
 
   // Orders narrowed to the selected channel. Every count and the list below
@@ -777,8 +900,68 @@ export default function ShippingLabelsPage() {
     // Walmart rate entries overlay/extend the Veeqo plan so Walmart rows show
     // carrier / cost / EDD / package through the same rendering path.
     for (const [num, p] of Object.entries(walmartRates)) m.set(num, p);
+    // Amazon ship-date previews overlay ONLY the rate fields onto the real
+    // plan line (keeping package/weight) — display-only, never affects Buy.
+    for (const [num, pv] of Object.entries(veeqoPreview)) {
+      const base = m.get(num);
+      if (base) {
+        m.set(num, {
+          ...base,
+          carrier: pv.carrier,
+          service: pv.service,
+          price: pv.price,
+          edd: pv.edd,
+          notes: pv.note,
+        });
+      }
+    }
     return m;
-  }, [plan, walmartRates]);
+  }, [plan, walmartRates, veeqoPreview]);
+
+  // Final display order. "urgency" keeps filteredOrders' actionability sort;
+  // the others re-sort by data that lives in the plan map (cost / EDD) or on
+  // the order (deadline). Missing values sort last so populated rows lead.
+  const displayedOrders = useMemo(() => {
+    if (sortBy === "urgency") return filteredOrders;
+    const rows = [...filteredOrders];
+    const num = (v: number | null | undefined) =>
+      typeof v === "number" ? v : Number.POSITIVE_INFINITY;
+    const time = (d: string | null | undefined) => {
+      if (!d) return Number.POSITIVE_INFINITY;
+      const t = new Date(d).getTime();
+      return Number.isNaN(t) ? Number.POSITIVE_INFINITY : t;
+    };
+    rows.sort((a, b) => {
+      if (sortBy === "cost") {
+        return (
+          num(planByOrderNumber.get(a.orderNumber)?.price) -
+          num(planByOrderNumber.get(b.orderNumber)?.price)
+        );
+      }
+      if (sortBy === "edd") {
+        return (
+          time(planByOrderNumber.get(a.orderNumber)?.edd) -
+          time(planByOrderNumber.get(b.orderNumber)?.edd)
+        );
+      }
+      // deadline
+      return time(a.deliverBy) - time(b.deliverBy);
+    });
+    return rows;
+  }, [filteredOrders, sortBy, planByOrderNumber]);
+
+  // Sum of the label cost across selected orders (Veeqo plan price + Walmart
+  // quote price both live in planByOrderNumber). Shown in the Buy-selected
+  // button — "Buy selected (N): $XX.XX" — like Veeqo's bulk-buy button.
+  const selectedTotal = useMemo(() => {
+    let sum = 0;
+    for (const o of filteredOrders) {
+      if (!selected.has(o.orderId)) continue;
+      const price = planByOrderNumber.get(o.orderNumber)?.price;
+      if (typeof price === "number") sum += price;
+    }
+    return sum;
+  }, [filteredOrders, selected, planByOrderNumber]);
 
   // ── Actions ─────────────────────────────────────────────────────────
   function toggleAll() {
@@ -1125,15 +1308,28 @@ export default function ShippingLabelsPage() {
             title="The day you plan to ship. All Walmart rates re-quote from this date; Buy uses it too."
             className="rounded-md border border-rule bg-surface px-2 py-1 text-[12.5px] text-ink focus:border-[#0071dc] focus:outline-none"
           />
-          {shipDateGlobal !== todayInET() && (
-            <button
-              type="button"
-              onClick={() => changeGlobalShipDate(todayInET())}
-              className="text-[11px] text-ink-3 underline-offset-2 hover:text-ink-1 hover:underline"
-            >
-              today
-            </button>
-          )}
+          {/* Quick presets — Today / +1 / +2 days from today (ET). */}
+          <div className="flex items-center gap-1">
+            {[
+              { label: "Today", date: todayInET() },
+              { label: "+1", date: addDaysISO(todayInET(), 1) },
+              { label: "+2", date: addDaysISO(todayInET(), 2) },
+            ].map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => changeGlobalShipDate(p.date)}
+                className={cn(
+                  "rounded border px-1.5 py-0.5 text-[11px] leading-none transition",
+                  shipDateGlobal === p.date
+                    ? "border-[#0071dc] bg-[#0071dc]/10 font-medium text-[#0071dc]"
+                    : "border-rule bg-surface text-ink-3 hover:border-silver-line hover:text-ink-1",
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1312,6 +1508,24 @@ export default function ShippingLabelsPage() {
           Select all ready ({selected.size}/{selectableIds.size})
         </label>
         <div className="flex items-center gap-2">
+          {/* Sort — like Veeqo's sortable columns. */}
+          <label className="flex items-center gap-1 text-[11px] text-ink-3">
+            Sort
+            <select
+              value={sortBy}
+              onChange={(e) =>
+                setSortBy(
+                  e.target.value as "urgency" | "cost" | "edd" | "deadline",
+                )
+              }
+              className="rounded border border-rule bg-surface px-1.5 py-1 text-[11.5px] text-ink focus:border-[#0071dc] focus:outline-none"
+            >
+              <option value="urgency">Urgency</option>
+              <option value="cost">Label cost</option>
+              <option value="edd">Delivery (EDD)</option>
+              <option value="deadline">Deadline</option>
+            </select>
+          </label>
           {buyMsg && (
             <span className="text-[11px] text-ink-3">{buyMsg}</span>
           )}
@@ -1322,7 +1536,11 @@ export default function ShippingLabelsPage() {
             loading={buying}
             disabled={selected.size === 0}
           >
-            {buying ? "Buying…" : `Buy selected (${selected.size})`}
+            {buying
+              ? "Buying…"
+              : `Buy selected (${selected.size})${
+                  selectedTotal > 0 ? `: $${selectedTotal.toFixed(2)}` : ""
+                }`}
           </Btn>
         </div>
       </div>
@@ -1333,12 +1551,12 @@ export default function ShippingLabelsPage() {
           <div className="rounded-md border border-rule bg-surface px-4 py-10 text-center text-[12px] text-ink-3">
             Fetching orders from Veeqo…
           </div>
-        ) : filteredOrders.length === 0 ? (
+        ) : displayedOrders.length === 0 ? (
           <div className="rounded-md border border-rule bg-surface px-4 py-10 text-center text-[12px] text-ink-3">
             No orders match the current filter.
           </div>
         ) : (
-          filteredOrders.map((o) => (
+          displayedOrders.map((o) => (
             <OrderRow
               key={o.orderId}
               order={o}
@@ -1702,30 +1920,45 @@ function OrderRow({
                 · Ship by {fmtDate(order.shipBy)}
               </span>
             )}
-            {/* Editable ship date (Walmart, ready-to-buy only) — the day the
-                operator plans to hand this package to the carrier. Changing
-                it re-quotes this order's Walmart rates from that day. Defaults
-                to the page-level date; a per-order pick highlights in blue. */}
-            {order.isWalmart && isReady && !wmBought && !wmShipped && (
-              <span className="inline-flex items-center gap-1 text-[12px] text-ink-3">
-                · Ship
-                <input
-                  type="date"
-                  value={shipDate}
-                  onChange={(e) => onShipDateChange(e.target.value)}
-                  title="Ship date for this order — re-quotes Walmart rates from this day. Defaults to the page-level Ship date."
-                  className={cn(
-                    "rounded border bg-surface px-1.5 py-0.5 text-[12px] leading-none focus:border-[#0071dc] focus:outline-none",
-                    shipDateOverridden
-                      ? "border-[#0071dc] font-medium text-[#0071dc]"
-                      : "border-rule text-ink",
+            {/* Editable ship date (ready-to-buy rows) — the day the operator
+                plans to hand the package to the carrier. Changing it re-quotes
+                that order's rates from that day. Walmart re-quote drives both
+                display AND Buy; Amazon re-quote is VIEW-ONLY (a preview — the
+                buy still happens on Amazon's ship-by date). A per-order date
+                highlights in blue. */}
+            {isReady &&
+              (order.isWalmart ? !wmBought && !wmShipped : true) && (
+                <span className="inline-flex items-center gap-1 text-[12px] text-ink-3">
+                  · Ship
+                  <input
+                    type="date"
+                    value={shipDate}
+                    onChange={(e) => onShipDateChange(e.target.value)}
+                    title={
+                      order.isWalmart
+                        ? "Ship date for this order — re-quotes Walmart rates from this day. Defaults to the page-level Ship date."
+                        : "Preview the rate at this ship date (Amazon still buys on its ship-by date). Defaults to the page-level Ship date."
+                    }
+                    className={cn(
+                      "rounded border bg-surface px-1.5 py-0.5 text-[12px] leading-none focus:border-[#0071dc] focus:outline-none",
+                      shipDateOverridden
+                        ? "border-[#0071dc] font-medium text-[#0071dc]"
+                        : "border-rule text-ink",
+                    )}
+                  />
+                  {requoting && (
+                    <Loader2 size={12} className="animate-spin text-ink-3" />
                   )}
-                />
-                {requoting && (
-                  <Loader2 size={12} className="animate-spin text-ink-3" />
-                )}
-              </span>
-            )}
+                  {!order.isWalmart && shipDateOverridden && !requoting && (
+                    <span
+                      className="rounded bg-info-tint px-1.5 py-px text-[10px] font-medium text-info"
+                      title="Rate preview at this date — does not change what Buy purchases"
+                    >
+                      preview
+                    </span>
+                  )}
+                </span>
+              )}
             {plan && (() => {
               // v3.3 §0.1 dual-date display.
               //
@@ -1973,13 +2206,29 @@ function OrderRow({
             </div>
             <div className="flex items-center justify-between gap-1 text-[10.5px] text-ink-3">
               <span>
-                {rateOverride
-                  ? rateOverride.edd
-                    ? `EDD ${fmtDate(rateOverride.edd)} · manual override`
-                    : "manual override"
-                  : plan?.edd
-                    ? `EDD ${fmtDate(plan.edd)}`
-                    : ""}
+                {(() => {
+                  const edd = rateOverride?.edd ?? plan?.edd ?? null;
+                  // Transit time in calendar days from the (effective) ship
+                  // date to the carrier EDD — the "2 days" Veeqo shows.
+                  const days =
+                    edd && shipDate
+                      ? Math.round(
+                          (new Date(edd).getTime() -
+                            new Date(shipDate).getTime()) /
+                            86_400_000,
+                        )
+                      : null;
+                  const daysStr =
+                    days != null && days >= 0
+                      ? ` · ${days} day${days === 1 ? "" : "s"}`
+                      : "";
+                  if (rateOverride) {
+                    return rateOverride.edd
+                      ? `EDD ${fmtDate(rateOverride.edd)}${daysStr} · manual override`
+                      : "manual override";
+                  }
+                  return plan?.edd ? `EDD ${fmtDate(plan.edd)}${daysStr}` : "";
+                })()}
               </span>
               {rateOverride && isReady && (
                 <span

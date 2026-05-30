@@ -52,7 +52,20 @@
 
 **Подсветка дедлайна в выборе тарифа** (и Walmart, и Veeqo-пикеры): каждый тариф помечается **«on time»** (зелёный) или **«misses deadline»** (красный, плюс красный фон строки и EDD) — сравнивается EDD тарифа с marketplace deliver-by (для Walmart сначала берётся флаг `deliveryPromiseFulfilled` от самого Walmart, иначе сравнение дат). Хелперы `daysLate`/`deadlineRiskNote`/`deadlineRiskClass`.
 
-**Важно — почему только Walmart:** Amazon-заказы остаются на Veeqo как есть (правило владельца). Veeqo котирует тарифы от dispatch-date своей allocation и **не принимает произвольную дату отгрузки** через `getShippingRates` — поэтому глобальная дата не пере-котирует Amazon-строки; для них добавлена только подсветка дедлайна в пикере. Реальная пере-котировка Amazon от выбранной даты потребует пуш dispatch-date в Veeqo allocation (отдельная задача). Реализация: `quoteWalmartOrder` (переиспользуемый ре-квот), `effectiveShipDate`, `shipDateGlobal`/`shipDateGlobalRef` (чтобы `load()` не зависел от даты), `WalmartPickRateDialog`. SWW `createLabel` поля даты не принимает — лейбл датируется моментом покупки; дата отгрузки используется для папки Drive и выбора тарифа.
+### Amazon — плавающая дата как ПРЕВЬЮ (2026-05-30, поправка)
+
+Раньше тут было написано, что «Veeqo не умеет котировать на будущую дату» — **это неверно.** Veeqo умеет: наш Frozen Ship Date Trick (`plan/route.ts`) уже делает это — `updateOrderDispatchDate` (**PUT даты отгрузки**) → пауза ~0.8с → `getShippingRates` → **возврат даты обратно**. Тот же приём вынесен в эндпоинт **`POST /api/shipping/veeqo-rates`** (`{ orderId, shipDate }`): временно пере-датирует заказ в Veeqo, забирает тарифы, возвращает дату — **view-only**, покупку не трогает.
+
+На Amazon-строках дата теперь тоже редактируемая. Смена → `quoteVeeqoOrder` → выбирает рейт по алгоритму (cheapest-meets-deadline; Frozen ≤3 кал. дня) → накладывает **только поля тарифа** поверх plan-строки (`veeqoPreview`, мерджится в `planByOrderNumber`, package/вес сохраняются) + бейдж **preview**. **Покупка Amazon остаётся на ship-by** (правило владельца) — buyOne для Amazon берёт `plan`+`rateOverrides`, не превью. Глобальная дата Amazon-строки массово НЕ пере-котирует (это был бы Veeqo-write на каждый заказ) — только сбрасывает превью и показывает новую дату по умолчанию.
+
+Для Walmart остаётся как было: пере-котировка через свой API (drives и показ, и покупку). Реализация: `quoteWalmartOrder`/`quoteVeeqoOrder`, `effectiveShipDate`, `shipDateGlobal`/`shipDateGlobalRef`. SWW `createLabel` поля даты не принимает — лейбл датируется моментом покупки; дата используется для папки Drive и выбора тарифа.
+
+### Плюшки из интерфейса Veeqo (2026-05-30)
+- **Пресеты даты** в глобальном поле Ship date: Today / +1 / +2 (хелпер `addDaysISO`).
+- **Сумма в кнопке** «Buy selected (N): $XX.XX» (`selectedTotal` = сумма plan.price по выбранным).
+- **Время доставки** «· N days» рядом с EDD в строке (кал. дни от даты отгрузки до EDD).
+- **Сортировка списка** (`sortBy` + `displayedOrders`): Urgency (по умолч.) / Label cost / Delivery (EDD) / Deadline.
+- **Отложено на след. итерацию:** bulk-действия над выделенными (массово задать дату/коробку/сервис) — как «Edit ship date / Edit packages / Edit services» в Veeqo.
 
 ---
 
