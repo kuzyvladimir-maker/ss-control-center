@@ -60,8 +60,26 @@ Status: Active. Full seller access (без Solution Provider delegation).
 
 - **`POST /v3/shipping/labels`** — покупка этикетки (Ship with Walmart). Live-verified 2026-05-30: пустое тело → **400** `"request body is either missing or required fields are not passed"` (а не 404) ⇒ эндпоинт существует и **включён для нашего аккаунта** (STORE1), просто ждёт корректное тело. Внутренний роутинг сервиса — `/sww-label/v1/...`.
 - **Покупка ≠ отгрузка.** Как и кнопка Buy Shipping в UI, покупка через этот эндпоинт **не** ставит заказу статус Shipped — он остаётся Acknowledged. Это и есть преимущество над Veeqo, который шлёт fulfillment в Walmart сразу при покупке (его `notify_customer:false` — про письмо покупателю, не про статус канала).
-- ⚠️ Точная схема тела `POST /v3/shipping/labels` (адреса, габариты/вес, выбор тарифа) + корректные пути для тарифов/перевозчиков ещё выверяются: угаданные `GET /v3/shipping/carriers` и `/v3/shipping/estimates` отдали 404 (под-пути неверные). Capability подтверждён, схема — в работе.
 - Зачем: покупать этикетки в SSCC напрямую через Walmart, остаться в статусе Acknowledged, а Shipped ставить ночным cron'ом по факту реального движения. Позволяет уйти от Veeqo для Walmart-этикеток.
+
+#### Полная схема SWW (выверена вживую 2026-05-30)
+
+Все пути вложены под `/shipping/labels` (НЕ `/shipping`):
+| Эндпоинт | Назначение |
+|---|---|
+| `GET /v3/shipping/labels/carriers` | перевозчики: Walmart Shipping Services (1004), USPS (1001), FedEx (1000) |
+| `GET /v3/shipping/labels/carriers/{shortName}/package-types` | `packageTypeShortName` (напр. `CUSTOM_PACKAGE`) |
+| `POST /v3/shipping/labels/shipping-estimates` | rate shopping (бесплатно) |
+| `POST /v3/shipping/labels` | покупка этикетки → `trackingNo` |
+| `GET /v3/shipping/labels/carriers/{shortName}/trackings/{tn}` | скачать PDF этикетки (Accept: application/pdf) |
+
+**Тело estimate** (`EstimateShipmentRequestDTO`): обязательны `packageType, shipByDate, deliverByDate, fromAddress, toAddress, boxDimensions`. Адреса = `{ addressLines[], city, state, postalCode, countryCode }`. **Даты строго `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'`** (= `Date.toISOString()`; иначе `LS-4002`). `boxDimensions` = `{ boxLength, boxWidth, boxHeight, boxWeight, boxDimensionUnit (IN/FT/CM), boxWeightUnit (LB/KG/OZ) }`. Ответ: `data.estimates[]` с `name` (= carrierServiceType), `carrierName`, `displayName`, `estimatedRate.amount`, `deliveryDate`.
+
+**Тело createLabel** (`LabelGenerationRequest`): обязательны `packageType, boxDimensions, boxItems, carrierName, carrierServiceType, purchaseOrderId`. Адреса НЕ нужны (берутся из PO/ship node). `boxItems` = `[{ sku, quantity, lineNumber }]`. Ответ: `trackingNo` + `boxItems`. PDF — отдельным GET по carrier+tracking.
+
+**Ship-from (STORE1):** единственный ship node — Warehouse 1162, 1162 Kapp Dr, Clearwater FL 33765 (нужен только для estimate; createLabel берёт из PO).
+
+**Код:** `src/lib/walmart/shipping.ts` (`estimateShippingRates`, `buyShippingLabel`, `getSwwCarriers`, `downloadLabelPdf`). Jackie-инструменты: `walmart_label_rates` (read), `walmart_buy_label` (write, dry_run). Покупка **не** ставит Shipped → подхватывает ship-confirm cron.
 
 ## ⚠️ Отличия от Amazon SP-API
 - **Нет текстового поиска по товарам** — `/v3/items` отдаёт только весь список (постранично) или один товар по точному SKU. Поиск по названию решён локальным зеркалом каталога — см. [Walmart Catalog Cache](walmart-catalog-cache.md).
