@@ -21,13 +21,25 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
+    // Setting disputeCaseId implicitly stamps disputedAt (now) unless the
+    // caller explicitly cleared it. Marking reviewed is also implied when
+    // a dispute is filed — the operator clearly looked at the row.
+    const data: Record<string, unknown> = {};
+    if (body.reviewed !== undefined) data.reviewed = body.reviewed;
+    if (body.skuDataFixed !== undefined) data.skuDataFixed = body.skuDataFixed;
+    if (body.notes !== undefined) data.notes = body.notes;
+    if (body.disputeCaseId !== undefined) {
+      const cleaned = body.disputeCaseId
+        ? String(body.disputeCaseId).trim() || null
+        : null;
+      data.disputeCaseId = cleaned;
+      data.disputedAt = cleaned ? new Date() : null;
+      if (cleaned) data.reviewed = true;
+    }
+
     const adj = await prisma.shippingAdjustment.update({
       where: { id },
-      data: {
-        ...(body.reviewed !== undefined && { reviewed: body.reviewed }),
-        ...(body.skuDataFixed !== undefined && { skuDataFixed: body.skuDataFixed }),
-        ...(body.notes !== undefined && { notes: body.notes }),
-      },
+      data,
     });
 
     return NextResponse.json(adj);

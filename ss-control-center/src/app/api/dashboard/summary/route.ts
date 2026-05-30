@@ -159,13 +159,15 @@ export async function GET(request: NextRequest) {
         _sum: { adjustmentAmount: true },
         where: { createdAt: { gte: thirtyDaysAgo } },
       }),
-      // Unreviewed adjustments in the last 30d — drives the sidebar pill
-      // badge. The badge was previously bound to A-to-Z claim count by
-      // mistake (see SidebarContent.tsx pre-2026-05-29).
+      // Actionable adjustments in the last 30d — drives the sidebar pill
+      // badge. "Actionable" = unreviewed AND not yet disputed (filed
+      // disputes are off Vladimir's queue). The badge was previously
+      // bound to A-to-Z claim count by mistake (pre-2026-05-29).
       prisma.shippingAdjustment.count({
         where: {
           createdAt: { gte: thirtyDaysAgo },
           reviewed: false,
+          disputeCaseId: null,
         },
       }),
       // S1 / S2 counts MUST share the same purchaseDate window as the

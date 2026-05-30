@@ -44,6 +44,13 @@ interface Adjustment {
   originalLabelCost: number | null;
   reviewed: boolean;
   notes: string | null;
+  disputeCaseId: string | null;
+  disputedAt: string | null;
+}
+
+/** Deep link to a specific Amazon support case dashboard. */
+function caseDashboardUrl(caseId: string): string {
+  return `https://sellercentral.amazon.com/cu/case-dashboard/view-case?caseID=${caseId}`;
 }
 
 const typeLabels: Record<string, string> = {
@@ -151,13 +158,29 @@ interface AdjustmentsTableProps {
 }
 
 export default function AdjustmentsTable({
-  adjustments,
+  adjustments: adjustmentsProp,
   total,
   filters,
   onFiltersChange,
 }: AdjustmentsTableProps) {
+  // Local copy so "Mark as disputed" updates render immediately without
+  // waiting for a parent re-fetch.
+  const [adjustments, setAdjustments] = useState(adjustmentsProp);
+  if (adjustments !== adjustmentsProp && adjustments.length === 0) {
+    setAdjustments(adjustmentsProp);
+  }
+  // Sync when parent's array reference changes (filter / refresh).
+  if (
+    adjustmentsProp.length !== adjustments.length ||
+    (adjustmentsProp[0]?.id !== adjustments[0]?.id)
+  ) {
+    setAdjustments(adjustmentsProp);
+  }
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [disputeInputFor, setDisputeInputFor] = useState<string | null>(null);
+  const [disputeCaseInput, setDisputeCaseInput] = useState("");
+  const [savingDispute, setSavingDispute] = useState(false);
 
   async function copyDispute(adj: Adjustment) {
     const text = buildDisputeText(adj);
@@ -171,6 +194,52 @@ export default function AdjustmentsTable({
       console.error("Clipboard write failed:", err);
       // Fallback — open a textarea so user can copy manually
       window.prompt("Copy dispute text:", text);
+    }
+  }
+
+  async function saveDispute(adj: Adjustment) {
+    const caseId = disputeCaseInput.trim();
+    if (!caseId) return;
+    setSavingDispute(true);
+    try {
+      const res = await fetch(`/api/adjustments/${adj.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ disputeCaseId: caseId }),
+      });
+      if (!res.ok) throw new Error(`PATCH failed (${res.status})`);
+      const updated = await res.json();
+      setAdjustments((rows) =>
+        rows.map((r) => (r.id === adj.id ? { ...r, ...updated } : r)),
+      );
+      setDisputeInputFor(null);
+      setDisputeCaseInput("");
+    } catch (err) {
+      console.error("Save dispute failed:", err);
+      alert("Failed to save dispute Case ID. Try again or refresh.");
+    } finally {
+      setSavingDispute(false);
+    }
+  }
+
+  async function clearDispute(adj: Adjustment) {
+    if (!confirm("Remove the dispute Case ID from this row?")) return;
+    setSavingDispute(true);
+    try {
+      const res = await fetch(`/api/adjustments/${adj.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ disputeCaseId: null }),
+      });
+      if (!res.ok) throw new Error(`PATCH failed (${res.status})`);
+      const updated = await res.json();
+      setAdjustments((rows) =>
+        rows.map((r) => (r.id === adj.id ? { ...r, ...updated } : r)),
+      );
+    } catch (err) {
+      console.error("Clear dispute failed:", err);
+    } finally {
+      setSavingDispute(false);
     }
   }
 
@@ -266,15 +335,21 @@ export default function AdjustmentsTable({
                       {Math.abs(adj.adjustmentAmount).toFixed(2)}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        className={
-                          adj.reviewed
-                            ? "bg-green-soft2 text-green-ink"
-                            : "bg-bg-elev text-ink-3"
-                        }
-                      >
-                        {adj.reviewed ? "Reviewed" : "New"}
-                      </Badge>
+                      {adj.disputeCaseId ? (
+                        <Badge className="bg-blue-soft2 text-blue-ink">
+                          Disputed #{adj.disputeCaseId}
+                        </Badge>
+                      ) : (
+                        <Badge
+                          className={
+                            adj.reviewed
+                              ? "bg-green-soft2 text-green-ink"
+                              : "bg-bg-elev text-ink-3"
+                          }
+                        >
+                          {adj.reviewed ? "Reviewed" : "New"}
+                        </Badge>
+                      )}
                     </TableCell>
                   </TableRow>
                   {expanded && (
@@ -409,41 +484,148 @@ export default function AdjustmentsTable({
 
                           {/* Dispute helpers — only for charges, not refunds */}
                           {!isRefund(adj) && adj.orderId && (
-                            <div className="flex flex-wrap items-center gap-2 pt-1">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  copyDispute(adj);
-                                }}
-                                className="inline-flex items-center gap-1.5 rounded-md border border-rule bg-surface px-2.5 py-1 text-[11.5px] font-medium text-ink hover:bg-surface-tint"
-                              >
-                                {copiedId === adj.id ? (
-                                  <>
-                                    <Check size={12} className="text-success" />
-                                    Copied
-                                  </>
-                                ) : (
-                                  <>
-                                    <Copy size={12} />
-                                    Copy dispute text
-                                  </>
-                                )}
-                              </button>
-                              <a
-                                href={BUY_SHIPPING_SUPPORT_URL}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center gap-1.5 rounded-md border border-rule bg-surface px-2.5 py-1 text-[11.5px] font-medium text-ink hover:bg-surface-tint"
-                              >
-                                <ExternalLink size={12} />
-                                Open Amazon Buy Shipping support
-                              </a>
-                              <span className="text-[10.5px] text-ink-3">
-                                Dispute window: 90 days from{" "}
-                                {adj.adjustmentDate}
-                              </span>
+                            <div className="space-y-2 pt-1">
+                              {adj.disputeCaseId ? (
+                                // Already disputed — show case link + clear option
+                                <div className="flex flex-wrap items-center gap-2 rounded-md border border-blue-soft bg-blue-tint px-3 py-2">
+                                  <Check size={13} className="text-blue-ink" />
+                                  <span className="text-[12px] text-blue-ink">
+                                    Disputed{" "}
+                                    {adj.disputedAt && (
+                                      <span className="opacity-70">
+                                        on{" "}
+                                        {new Date(adj.disputedAt).toLocaleDateString()}
+                                      </span>
+                                    )}{" "}
+                                    — Case{" "}
+                                  </span>
+                                  <a
+                                    href={caseDashboardUrl(adj.disputeCaseId)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="font-mono text-[12px] text-blue-ink underline"
+                                  >
+                                    #{adj.disputeCaseId}
+                                  </a>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      clearDispute(adj);
+                                    }}
+                                    disabled={savingDispute}
+                                    className="ml-auto text-[10.5px] text-ink-3 hover:text-danger"
+                                  >
+                                    Clear
+                                  </button>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        copyDispute(adj);
+                                      }}
+                                      className="inline-flex items-center gap-1.5 rounded-md border border-rule bg-surface px-2.5 py-1 text-[11.5px] font-medium text-ink hover:bg-surface-tint"
+                                    >
+                                      {copiedId === adj.id ? (
+                                        <>
+                                          <Check
+                                            size={12}
+                                            className="text-success"
+                                          />
+                                          Copied
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Copy size={12} />
+                                          Copy dispute text
+                                        </>
+                                      )}
+                                    </button>
+                                    <a
+                                      href={BUY_SHIPPING_SUPPORT_URL}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="inline-flex items-center gap-1.5 rounded-md border border-rule bg-surface px-2.5 py-1 text-[11.5px] font-medium text-ink hover:bg-surface-tint"
+                                    >
+                                      <ExternalLink size={12} />
+                                      Open Amazon Buy Shipping support
+                                    </a>
+                                    {disputeInputFor === adj.id ? null : (
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setDisputeInputFor(adj.id);
+                                          setDisputeCaseInput("");
+                                        }}
+                                        className="inline-flex items-center gap-1.5 rounded-md border border-rule bg-surface px-2.5 py-1 text-[11.5px] font-medium text-ink hover:bg-surface-tint"
+                                      >
+                                        <Check size={12} />
+                                        Mark as disputed
+                                      </button>
+                                    )}
+                                    <span className="text-[10.5px] text-ink-3">
+                                      Dispute window: 90 days from{" "}
+                                      {adj.adjustmentDate}
+                                    </span>
+                                  </div>
+
+                                  {disputeInputFor === adj.id && (
+                                    <div
+                                      className="flex flex-wrap items-center gap-2 rounded-md border border-rule bg-surface p-2"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <label className="text-[11.5px] text-ink-2">
+                                        Amazon Case ID:
+                                      </label>
+                                      <input
+                                        type="text"
+                                        autoFocus
+                                        value={disputeCaseInput}
+                                        onChange={(e) =>
+                                          setDisputeCaseInput(e.target.value)
+                                        }
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter") saveDispute(adj);
+                                          if (e.key === "Escape") {
+                                            setDisputeInputFor(null);
+                                            setDisputeCaseInput("");
+                                          }
+                                        }}
+                                        placeholder="e.g. 20424098481"
+                                        className="font-mono text-[12px] rounded border border-rule bg-bg px-2 py-1 w-40"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => saveDispute(adj)}
+                                        disabled={
+                                          savingDispute ||
+                                          !disputeCaseInput.trim()
+                                        }
+                                        className="inline-flex items-center gap-1 rounded-md bg-ink px-2.5 py-1 text-[11.5px] font-medium text-bg disabled:opacity-50"
+                                      >
+                                        Save
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setDisputeInputFor(null);
+                                          setDisputeCaseInput("");
+                                        }}
+                                        className="text-[11.5px] text-ink-3 hover:text-ink"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  )}
+                                </>
+                              )}
                             </div>
                           )}
 

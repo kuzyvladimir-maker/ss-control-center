@@ -309,6 +309,13 @@ model ShippingAdjustment {
   skuDataFixed Boolean @default(false)
   notes        String?
 
+  // Dispute tracking. Once filed via Amazon Seller Central Buy
+  // Shipping support, the operator pastes the Case ID here so the
+  // page can show "Disputed · #XXXXX" instead of "New" and the
+  // sidebar pillCount drops the row from the actionable queue.
+  disputeCaseId String?
+  disputedAt    DateTime?
+
   @@index([channel, createdAt])
   @@index([adjustmentDate])
   @@index([sku])
