@@ -7,21 +7,26 @@
  * "Снять с продажи" modal we scrape the `og:image` meta tag from the
  * public product page (walmart.com/ip/{itemId}).
  *
- * Anti-bot guardrails:
- *   * Browser-y User-Agent (Walmart 403s/captchas obvious bots)
- *   * 10s timeout (some pages are slow to render)
- *   * Caller is expected to throttle concurrency (we recommend ≤4 in
- *     parallel — Walmart aggressively rate-limits scraping)
+ * Anti-bot: Walmart 403s data-center IPs by default. We pass a full Chrome
+ * header set (UA + sec-fetch-* + accept-language) which is enough to get
+ * 200s from most consumer-facing CDN edges. If we still see 403s in
+ * production, the only reliable fix is a residential-proxy service —
+ * scraping is best-effort and the modal degrades to a placeholder
+ * gracefully when imageUrl is null.
  *
- * Returns null on any failure (404, 403, timeout, no og:image found) so
- * the caller can gracefully fall back to "no thumbnail".
+ * Returns null on any failure (4xx/5xx, timeout, no og:image found).
+ * Errors are logged with the status so we can diagnose from Vercel logs.
  */
+
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
-const TIMEOUT_MS = 10_000;
+const TIMEOUT_MS = 12_000;
 
 const OG_IMAGE_RE = /property=["']og:image["']\s+content=["']([^"']+)["']/i;
+// Fallback: Walmart sometimes encodes og:image inside the JSON __NEXT_DATA__
+// blob instead of meta tags on certain page variants.
+const NEXT_DATA_IMAGE_RE = /"thumbnailUrl"\s*:\s*"([^"]+\.(?:jpe?g|png|webp)[^"]*)"/i;
 
 export async function scrapeWalmartProductImage(
   itemId: string,
@@ -35,22 +40,49 @@ export async function scrapeWalmartProductImage(
       headers: {
         "User-Agent": UA,
         Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        "Sec-Ch-Ua":
+          '"Chromium";v="120", "Not(A:Brand";v="24", "Google Chrome";v="120"',
+        "Sec-Ch-Ua-Mobile": "?0",
+        "Sec-Ch-Ua-Platform": '"macOS"',
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Upgrade-Insecure-Requests": "1",
       },
       signal: controller.signal,
       redirect: "follow",
     });
     if (!res.ok) {
-      // 404 = product unpublished; 403 = bot wall — both → no image.
+      console.warn(
+        `[scrapeWalmartImage] ${itemId} → HTTP ${res.status} (${res.statusText}). ` +
+          `Likely Walmart anti-bot block on this IP. URL: ${url}`,
+      );
       return null;
     }
     const html = await res.text();
-    const m = html.match(OG_IMAGE_RE);
-    if (!m?.[1]) return null;
-    // Walmart serves CDN URLs; strip query params for cleaner storage.
+    const m =
+      html.match(OG_IMAGE_RE) ??
+      html.match(NEXT_DATA_IMAGE_RE);
+    if (!m?.[1]) {
+      // 200 OK but no og:image — likely captcha/blocked-content page.
+      console.warn(
+        `[scrapeWalmartImage] ${itemId} → 200 OK but no og:image found ` +
+          `(html length ${html.length}; likely captcha page).`,
+      );
+      return null;
+    }
     return m[1].split("?")[0] || null;
-  } catch {
+  } catch (err) {
+    console.warn(
+      `[scrapeWalmartImage] ${itemId} → exception:`,
+      err instanceof Error ? err.message : err,
+    );
     return null;
   } finally {
     clearTimeout(timer);
