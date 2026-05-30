@@ -183,6 +183,23 @@ export async function getSwwCarriers(
 }
 
 /**
+ * Discard (cancel) a Ship-with-Walmart label. Only possible while the order
+ * is NOT yet marked Shipped. Keyed by carrier short name + tracking number
+ * (Walmart's discard endpoint takes those, not a labelId).
+ * DELETE /v3/shipping/labels/carriers/{carrierShortName}/trackings/{trackingNo}
+ */
+export async function discardShippingLabel(
+  client: WalmartClient,
+  carrierShortName: string,
+  trackingNumber: string,
+): Promise<unknown> {
+  return client.request<unknown>(
+    "DELETE",
+    `/shipping/labels/carriers/${encodeURIComponent(carrierShortName)}/trackings/${encodeURIComponent(trackingNumber)}`,
+  );
+}
+
+/**
  * Download the label PDF for a carrier + tracking number (returned by
  * buyShippingLabel). Returns the raw Response so the caller can stream the
  * bytes (e.g. up to Google Drive). carrierShortName is the SWW short name
