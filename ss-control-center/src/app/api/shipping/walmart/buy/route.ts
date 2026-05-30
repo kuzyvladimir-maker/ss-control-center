@@ -23,9 +23,9 @@ import { getWalmartClient, WalmartApiError } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { buyShippingLabel, downloadLabelPdf, type BoxInput } from "@/lib/walmart/shipping";
 import { uploadLabelPdf } from "@/lib/google-drive";
+import { buildPdfFilename, buildFolderPath } from "@/lib/shipping-label-files";
 
 const STORE_INDEX = 1;
-const MONTHS = ["01 January","02 February","03 March","04 April","05 May","06 June","07 July","08 August","09 September","10 October","11 November","12 December"];
 
 function num(v: unknown): number | null {
   return typeof v === "number" && Number.isFinite(v) ? v : null;
@@ -127,10 +127,16 @@ export async function POST(request: NextRequest) {
       const res = await downloadLabelPdf(client, carrierName, result.trackingNumber);
       const pdf = await extractPdf(res as Response);
       if (pdf) {
-        const now = new Date();
+        // Match the existing Veeqo flow's Drive layout + filename (full
+        // product title, EDD/DL prefix, "MM Month/DD/Walmart" folder).
+        const product = order.orderLines.map((l) => l.productName).filter(Boolean).join(" + ") || purchaseOrderId;
+        const qty = order.orderLines.reduce((s, l) => s + (l.orderedQty || 0), 0);
+        const deliveryBy = order.shippingInfo?.estimatedDeliveryDate?.toISOString().slice(0, 10) ?? null;
+        const edd = typeof body?.edd === "string" ? body.edd.slice(0, 10) : deliveryBy;
+        const today = new Date().toISOString().slice(0, 10);
         const drive = await uploadLabelPdf({
-          folderSegments: [MONTHS[now.getUTCMonth()], String(now.getUTCDate()).padStart(2, "0"), "Walmart"],
-          filename: `${purchaseOrderId}_${carrierName}_${result.trackingNumber}.pdf`,
+          folderSegments: buildFolderPath({ actualShipDay: today, channel: "Walmart", channelKind: "Walmart" }).split("/"),
+          filename: buildPdfFilename({ edd, deliveryBy, product, qty }),
           pdf,
         });
         if (drive.ok) { pdfSaved = true; labelPath = drive.result.webViewLink; }
