@@ -29,6 +29,7 @@ export interface EnrichResult {
   updated: number;
   withCarrier: number;
   withProductName: number;
+  withLabelCost: number;
   carrierFromReport: number;
   carrierFromTracking: number;
   carrierFromShippingPlan: number;
@@ -40,13 +41,18 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
     where: {
       channel: "Amazon",
       amazonOrderId: { not: null },
-      OR: [{ carrier: null }, { productName: null }],
+      OR: [
+        { carrier: null },
+        { productName: null },
+        { originalLabelCost: null },
+      ],
     },
     select: {
       id: true,
       amazonOrderId: true,
       carrier: true,
       productName: true,
+      originalLabelCost: true,
     },
   });
 
@@ -56,6 +62,7 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
       updated: 0,
       withCarrier: 0,
       withProductName: 0,
+      withLabelCost: 0,
       carrierFromReport: 0,
       carrierFromTracking: 0,
       carrierFromShippingPlan: 0,
@@ -66,7 +73,7 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
     ...new Set(candidates.map((c) => c.amazonOrderId!).filter(Boolean)),
   ];
 
-  // Source 1+2: AmazonOrderShipment (Orders Report) — carrier, service, tracking.
+  // Source 1+2: AmazonOrderShipment (Veeqo-sourced) — carrier, service, tracking, label cost.
   const shipments = await prisma.amazonOrderShipment.findMany({
     where: { amazonOrderId: { in: orderIds } },
     select: {
@@ -75,6 +82,7 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
       carrierInferred: true,
       trackingNumber: true,
       shipServiceLevel: true,
+      outboundLabelCost: true,
     },
   });
   // Multiple shipment rows per order possible (multi-item) — first non-null wins.
@@ -85,6 +93,7 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
       service: string | null;
       tracking: string | null;
       inferred: string | null;
+      labelCost: number | null;
     }
   >();
   for (const s of shipments) {
@@ -93,11 +102,13 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
       service: null,
       tracking: null,
       inferred: null,
+      labelCost: null,
     };
     cur.carrier ??= s.carrier ?? null;
     cur.service ??= s.shipServiceLevel ?? null;
     cur.tracking ??= s.trackingNumber ?? null;
     cur.inferred ??= s.carrierInferred ?? null;
+    cur.labelCost ??= s.outboundLabelCost ?? null;
     shipByOrder.set(s.amazonOrderId, cur);
   }
 
@@ -132,6 +143,7 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
   let updated = 0;
   let withCarrier = 0;
   let withProductName = 0;
+  let withLabelCost = 0;
   let carrierFromReport = 0;
   let carrierFromTracking = 0;
   let carrierFromShippingPlan = 0;
@@ -164,11 +176,15 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
     service = ship?.service ?? plan?.service ?? null;
 
     const productName = plan?.product ?? null;
+    const labelCost = ship?.labelCost ?? null;
 
-    const patch: Record<string, string | null> = {};
+    const patch: Record<string, string | number | null> = {};
     if (!adj.carrier && carrier) patch.carrier = carrier;
     if (!adj.carrier && service) patch.service = service;
     if (!adj.productName && productName) patch.productName = productName;
+    if (!adj.originalLabelCost && labelCost != null) {
+      patch.originalLabelCost = labelCost;
+    }
     if (Object.keys(patch).length === 0) continue;
 
     await prisma.shippingAdjustment.update({
@@ -183,6 +199,7 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
       else if (carrierSource === "plan") carrierFromShippingPlan++;
     }
     if (patch.productName) withProductName++;
+    if (patch.originalLabelCost) withLabelCost++;
   }
 
   return {
@@ -190,6 +207,7 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
     updated,
     withCarrier,
     withProductName,
+    withLabelCost,
     carrierFromReport,
     carrierFromTracking,
     carrierFromShippingPlan,

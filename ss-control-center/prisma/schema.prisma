@@ -665,15 +665,23 @@ model AmazonOrderShipment {
 
   storeIndex       Int?
 
-  // From Orders Report TSV
-  carrier          String?  // e.g. "UPS", "FEDEX", "USPS"
-  trackingNumber   String?
-  shipServiceLevel String?  // e.g. "Standard", "Expedited"
-  shipDate         String?  // YYYY-MM-DD
-  promiseDate      String?
+  // From Veeqo shipment record (was: from Orders Report — but Amazon
+  // doesn't expose carrier/tracking for MFN orders, so Veeqo is the
+  // source of truth now).
+  carrier            String?  // e.g. "UPS", "FEDEX", "USPS"
+  trackingNumber     String?
+  shipServiceLevel   String?  // e.g. "Standard", "Expedited"
+  shipDate           String?  // YYYY-MM-DD
+  promiseDate        String?
+
+  // What Vladimir originally paid for the outbound label (Veeqo's
+  // outbound_label_charges.value). Copied onto ShippingAdjustment.
+  // originalLabelCost during enrichment so the page can show
+  // "Original: $X → +adjustment: $Y → effective: $X+Y".
+  outboundLabelCost  Float?
 
   // Inferred from trackingNumber regex when carrier is "Other" or null.
-  carrierInferred  String?
+  carrierInferred    String?
 
   @@unique([amazonOrderId, sku], name: "amazon_order_shipment_dedup")
   @@index([amazonOrderId])

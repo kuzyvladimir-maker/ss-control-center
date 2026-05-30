@@ -53,11 +53,17 @@ export async function syncShipmentsForAdjustments(opts: {
 } = {}): Promise<ShipmentSyncResult> {
   const limit = opts.limit ?? 500;
 
-  // Find adjustment orderIds we haven't synced yet.
+  // Find adjustment orderIds we haven't fully synced yet. "Fully" means
+  // the row has BOTH carrier and outboundLabelCost — if either is
+  // missing we re-pull (covers new fields added after first sync).
   const have = new Set(
     (
       await prisma.amazonOrderShipment.findMany({
         select: { amazonOrderId: true },
+        where: {
+          carrier: { not: null },
+          outboundLabelCost: { not: null },
+        },
         distinct: ["amazonOrderId"],
       })
     ).map((r) => r.amazonOrderId),
@@ -179,7 +185,6 @@ interface UpsertArgs {
 }
 
 async function upsertOne(a: UpsertArgs) {
-  void a.labelCost; // reserved for a follow-up that surfaces it on the page
   await prisma.amazonOrderShipment.upsert({
     where: {
       amazon_order_shipment_dedup: {
@@ -195,12 +200,14 @@ async function upsertOne(a: UpsertArgs) {
       trackingNumber: a.tracking,
       shipServiceLevel: a.service,
       carrierInferred: a.inferred,
+      outboundLabelCost: a.labelCost,
     },
     update: {
       carrier: a.carrier ?? undefined,
       trackingNumber: a.tracking ?? undefined,
       shipServiceLevel: a.service ?? undefined,
       carrierInferred: a.inferred ?? undefined,
+      outboundLabelCost: a.labelCost ?? undefined,
     },
   });
 }
