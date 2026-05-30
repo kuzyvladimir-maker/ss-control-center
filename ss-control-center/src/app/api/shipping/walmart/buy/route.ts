@@ -154,9 +154,15 @@ export async function POST(request: NextRequest) {
         const qty = order.orderLines.reduce((s, l) => s + (l.orderedQty || 0), 0);
         const deliveryBy = order.shippingInfo?.estimatedDeliveryDate?.toISOString().slice(0, 10) ?? null;
         const edd = typeof body?.edd === "string" ? body.edd.slice(0, 10) : deliveryBy;
-        const today = new Date().toISOString().slice(0, 10);
+        // File the label under the operator's chosen ship date (the day the
+        // package actually ships), not the moment of purchase. Falls back to
+        // today if the UI didn't pass one.
+        const shipDay =
+          typeof body?.shipByDate === "string" && body.shipByDate
+            ? body.shipByDate.slice(0, 10)
+            : new Date().toISOString().slice(0, 10);
         const drive = await uploadLabelPdf({
-          folderSegments: buildFolderPath({ actualShipDay: today, channel: "Walmart", channelKind: "Walmart" }).split("/"),
+          folderSegments: buildFolderPath({ actualShipDay: shipDay, channel: "Walmart", channelKind: "Walmart" }).split("/"),
           filename: buildPdfFilename({ edd, deliveryBy, product, qty }),
           pdf,
         });

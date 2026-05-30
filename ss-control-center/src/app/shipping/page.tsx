@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   RefreshCw,
   AlertTriangle,
@@ -233,6 +233,16 @@ const BOX_PRESETS: { label: string; l: number; w: number; h: number }[] = [
   { label: "12×12×8", l: 12, w: 12, h: 8 },
 ];
 
+// Today's date in America/New_York (the warehouse clock), as YYYY-MM-DD.
+// en-CA formats as ISO date, so we get a string that drops straight into a
+// <input type="date"> and into the Walmart rate quote. Used as the default
+// ship date for the page-level picker.
+function todayInET(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+  }).format(new Date());
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 // Page component
 // ─────────────────────────────────────────────────────────────────────────
@@ -260,9 +270,36 @@ export default function ShippingLabelsPage() {
         height: number;
         weight: number;
         edd: string | null;
+        // The ship date this rate was quoted at — passed back to /buy so the
+        // label is filed under the day it actually ships, and the buy uses
+        // the same dispatch day the operator saw.
+        shipByDate: string | null;
       }
     >
   >({});
+  // ── Ship-date control ───────────────────────────────────────────────
+  // Page-level ship date — "the day I plan to hand packages to the carrier".
+  // Defaults to today (ET). Drives every Walmart rate quote (which service /
+  // price / EDD comes back depends on the dispatch day) and what the Buy
+  // button purchases. Per-order overrides live in shipDateByOrder; the global
+  // value applies to any order without its own override.
+  const [shipDateGlobal, setShipDateGlobal] = useState<string>(() =>
+    todayInET(),
+  );
+  const [shipDateByOrder, setShipDateByOrder] = useState<
+    Record<string, string>
+  >({});
+  // Orders currently being re-quoted (after a ship-date change) — drives a
+  // small spinner on the row so the operator knows the rate is refreshing.
+  const [requoting, setRequoting] = useState<Record<string, boolean>>({});
+  // load() must not depend on the ship-date state (it's a []-dep useCallback
+  // wired to a mount effect — re-creating it would re-pull the whole
+  // dashboard on every date tweak). It reads the current global date through
+  // this ref instead.
+  const shipDateGlobalRef = useRef(shipDateGlobal);
+  useEffect(() => {
+    shipDateGlobalRef.current = shipDateGlobal;
+  }, [shipDateGlobal]);
   // Walmart purchase/ship status keyed by orderNumber — drives the
   // "label bought / not yet shipped" + Mark-as-Shipped row state. Populated
   // from /api/shipping/walmart/rates (which reports an existing label / Shipped
@@ -372,6 +409,107 @@ export default function ShippingLabelsPage() {
     Record<string, RateOverride>
   >({});
 
+  // Rate-shop ONE Walmart order through Walmart's API at a given ship date and
+  // fold the result into the walmartRates / walmartBuyInfo / walmartStatus
+  // maps. Stable ([]-deps, functional setState) so load() and the ship-date
+  // change handlers can all reuse it without re-creating load. Mirrors the
+  // PlanItem shape the bulk pass used to build so the row renders identically.
+  const quoteWalmartOrder = useCallback(
+    async (o: DashboardOrder, shipByDate: string) => {
+      if (!o.walmartPurchaseOrderId) return;
+      setRequoting((p) => ({ ...p, [o.orderNumber]: true }));
+      const dropMaps = () => {
+        setWalmartRates((p) => {
+          const n = { ...p };
+          delete n[o.orderNumber];
+          return n;
+        });
+        setWalmartBuyInfo((p) => {
+          const n = { ...p };
+          delete n[o.orderNumber];
+          return n;
+        });
+      };
+      try {
+        const res = await fetch("/api/shipping/walmart/rates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            purchaseOrderId: o.walmartPurchaseOrderId,
+            shipByDate,
+          }),
+        });
+        const j = await res.json();
+        if (!j?.ok) {
+          dropMaps();
+          return;
+        }
+        setWalmartStatus((p) => ({
+          ...p,
+          [o.orderNumber]: {
+            alreadyBought: !!j.alreadyBought,
+            orderStatus: j.orderStatus ?? null,
+            existingLabel: j.existingLabel ?? null,
+          },
+        }));
+        // Already bought / shipped, or no buyable rate at this date → clear
+        // the rate so the row shows the right state instead of a stale price.
+        if (j.alreadyBought || j.orderStatus === "Shipped" || !j.selected || !j.box) {
+          dropMaps();
+          return;
+        }
+        const s = j.selected;
+        const b = j.box;
+        const usedShipDate = j.shipByDate ?? shipByDate;
+        setWalmartRates((p) => ({
+          ...p,
+          [o.orderNumber]: {
+            id: `wm-${o.orderNumber}`,
+            orderNumber: o.orderNumber,
+            carrier: s.carrierName ?? null,
+            service: s.displayName ?? s.serviceType ?? null,
+            price: typeof s.amount === "number" ? s.amount : null,
+            edd: s.deliveryDate ?? null,
+            status: "pending",
+            notes: j.selectionReason ?? null,
+            weight: typeof b.weight === "number" ? b.weight : null,
+            boxSize: `${b.length}x${b.width}x${b.height}`,
+            productType: null,
+            // Ship date is shown by the row's own editable input, so leave the
+            // dual-date chip fields null (otherwise the row gets a redundant
+            // "Ship X" chip next to the date picker).
+            labelDate: null,
+            physicalShipDate: null,
+            shipDateTrickApplied: false,
+            datesMatch: true,
+            actualShipDay: null,
+            allocationId: null,
+          },
+        }));
+        setWalmartBuyInfo((p) => ({
+          ...p,
+          [o.orderNumber]: {
+            purchaseOrderId: o.walmartPurchaseOrderId!,
+            carrierName: s.carrierName,
+            serviceType: s.serviceType,
+            length: b.length,
+            width: b.width,
+            height: b.height,
+            weight: b.weight,
+            edd: s.deliveryDate ?? null,
+            shipByDate: usedShipDate,
+          },
+        }));
+      } catch {
+        /* leave existing rate in place — a transient fetch error shouldn't
+           blank the row the operator was looking at */
+      } finally {
+        setRequoting((p) => ({ ...p, [o.orderNumber]: false }));
+      }
+    },
+    [],
+  );
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -400,73 +538,19 @@ export default function ShippingLabelsPage() {
         const readyWalmart = dashJson.orders.filter(
           (o) => o.state === "ready_to_buy" && o.isWalmart && o.walmartPurchaseOrderId,
         );
-        if (readyWalmart.length === 0) {
-          setWalmartRates({});
-          setWalmartBuyInfo({});
-          setWalmartStatus({});
-          return;
-        }
-        const ratesMap: Record<string, PlanItem> = {};
-        const buyMap: typeof walmartBuyInfo = {};
-        const statusMap: typeof walmartStatus = {};
+        // A fresh dashboard load is a clean slate — clear stale per-order
+        // ship-date overrides and re-quote everything at the page-level date
+        // (read via the ref so this []-dep callback need not depend on it).
+        setShipDateByOrder({});
+        setWalmartRates({});
+        setWalmartBuyInfo({});
+        setWalmartStatus({});
+        if (readyWalmart.length === 0) return;
         await Promise.all(
-          readyWalmart.map(async (o) => {
-            try {
-              const res = await fetch("/api/shipping/walmart/rates", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ purchaseOrderId: o.walmartPurchaseOrderId }),
-              });
-              const j = await res.json();
-              if (!j?.ok) return;
-              statusMap[o.orderNumber] = {
-                alreadyBought: !!j.alreadyBought,
-                orderStatus: j.orderStatus ?? null,
-                existingLabel: j.existingLabel ?? null,
-              };
-              // Already has a label / already shipped → no buyable rate; the
-              // row shows "bought / not yet shipped" (or "shipped") instead.
-              if (j.alreadyBought || j.orderStatus === "Shipped") return;
-              if (!j.selected || !j.box) return;
-              const s = j.selected;
-              const b = j.box;
-              ratesMap[o.orderNumber] = {
-                id: `wm-${o.orderNumber}`,
-                orderNumber: o.orderNumber,
-                carrier: s.carrierName ?? null,
-                service: s.displayName ?? s.serviceType ?? null,
-                price: typeof s.amount === "number" ? s.amount : null,
-                edd: s.deliveryDate ?? null,
-                status: "pending",
-                notes: j.selectionReason ?? null,
-                weight: typeof b.weight === "number" ? b.weight : null,
-                boxSize: `${b.length}x${b.width}x${b.height}`,
-                productType: null,
-                labelDate: null,
-                physicalShipDate: null,
-                shipDateTrickApplied: false,
-                datesMatch: true,
-                actualShipDay: null,
-                allocationId: null,
-              };
-              buyMap[o.orderNumber] = {
-                purchaseOrderId: o.walmartPurchaseOrderId!,
-                carrierName: s.carrierName,
-                serviceType: s.serviceType,
-                length: b.length,
-                width: b.width,
-                height: b.height,
-                weight: b.weight,
-                edd: s.deliveryDate ?? null,
-              };
-            } catch {
-              /* skip — row shows "—" until dims set / retry */
-            }
-          }),
+          readyWalmart.map((o) =>
+            quoteWalmartOrder(o, shipDateGlobalRef.current),
+          ),
         );
-        setWalmartRates(ratesMap);
-        setWalmartBuyInfo(buyMap);
-        setWalmartStatus(statusMap);
       })();
 
       const readyOrderIds = dashJson.orders
@@ -495,7 +579,7 @@ export default function ShippingLabelsPage() {
     } finally {
       setPlanLoading(false);
     }
-  }, []);
+  }, [quoteWalmartOrder]);
 
   useEffect(() => {
     load();
@@ -551,6 +635,40 @@ export default function ShippingLabelsPage() {
 
   // ── Derived view ────────────────────────────────────────────────────
   const orders = useMemo(() => data?.orders ?? [], [data]);
+
+  // Ready Walmart orders (the ones a ship-date change re-quotes).
+  const readyWalmartOrders = useMemo(
+    () =>
+      orders.filter(
+        (o) =>
+          o.state === "ready_to_buy" &&
+          o.isWalmart &&
+          o.walmartPurchaseOrderId,
+      ),
+    [orders],
+  );
+
+  // The ship date in effect for an order — its own override, else the global.
+  const effectiveShipDate = useCallback(
+    (orderNumber: string) => shipDateByOrder[orderNumber] ?? shipDateGlobal,
+    [shipDateByOrder, shipDateGlobal],
+  );
+
+  // Change the page-level ship date: it becomes the new baseline for everyone,
+  // so drop per-order overrides and re-quote every ready Walmart order at it.
+  function changeGlobalShipDate(date: string) {
+    if (!date) return;
+    setShipDateGlobal(date);
+    setShipDateByOrder({});
+    for (const o of readyWalmartOrders) quoteWalmartOrder(o, date);
+  }
+
+  // Change one order's ship date (overrides the global for that order only).
+  function changeOrderShipDate(o: DashboardOrder, date: string) {
+    if (!date) return;
+    setShipDateByOrder((p) => ({ ...p, [o.orderNumber]: date }));
+    quoteWalmartOrder(o, date);
+  }
 
   // Orders narrowed to the selected channel. Every count and the list below
   // derive from this, so flipping the Amazon/Walmart toggle re-computes the
@@ -818,6 +936,9 @@ export default function ShippingLabelsPage() {
             height: info.height,
             weight: info.weight,
             edd: info.edd,
+            // Ship date the rate was quoted at → label is filed under the day
+            // it actually ships (falls back to this order's effective date).
+            shipByDate: info.shipByDate ?? effectiveShipDate(o.orderNumber),
           }),
         });
         const j = await buyRes.json();
@@ -959,7 +1080,7 @@ export default function ShippingLabelsPage() {
           below (KPI cards, store breakdown, bucket/type tabs, list) to the
           chosen marketplace. Click the active button (or "show all") to
           clear back to both channels. */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="text-[10.5px] font-medium uppercase tracking-wider text-ink-3">
           Channel
         </span>
@@ -988,6 +1109,32 @@ export default function ShippingLabelsPage() {
             show all
           </button>
         )}
+
+        {/* Page-level ship date — the day you plan to hand packages to the
+            carrier. Drives every Walmart rate quote + Buy. Per-row overrides
+            still win for individual orders. (Amazon stays on Veeqo's own
+            dispatch date — see note in the UI.) */}
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-[10.5px] font-medium uppercase tracking-wider text-ink-3">
+            Ship date
+          </span>
+          <input
+            type="date"
+            value={shipDateGlobal}
+            onChange={(e) => changeGlobalShipDate(e.target.value)}
+            title="The day you plan to ship. All Walmart rates re-quote from this date; Buy uses it too."
+            className="rounded-md border border-rule bg-surface px-2 py-1 text-[12.5px] text-ink focus:border-[#0071dc] focus:outline-none"
+          />
+          {shipDateGlobal !== todayInET() && (
+            <button
+              type="button"
+              onClick={() => changeGlobalShipDate(todayInET())}
+              className="text-[11px] text-ink-3 underline-offset-2 hover:text-ink-1 hover:underline"
+            >
+              today
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Totals row — each card toggles the state filter. Clicking the same
@@ -1203,6 +1350,10 @@ export default function ShippingLabelsPage() {
               walmartStatus={walmartStatus[o.orderNumber] ?? null}
               markingShipped={markingShipped === o.orderId}
               onMarkShipped={() => markShipped(o)}
+              shipDate={effectiveShipDate(o.orderNumber)}
+              shipDateOverridden={o.orderNumber in shipDateByOrder}
+              requoting={!!requoting[o.orderNumber]}
+              onShipDateChange={(d) => changeOrderShipDate(o, d)}
               frozenAlert={frozenAlertByOrder.get(o.orderNumber) ?? null}
               onToggleSelected={() => toggleOne(o.orderId)}
               onClassify={() => setClassifyModal(o)}
@@ -1283,8 +1434,14 @@ export default function ShippingLabelsPage() {
           currentServiceType={
             walmartBuyInfo[pickRateModal.orderNumber]?.serviceType ?? null
           }
+          initialShipDate={effectiveShipDate(pickRateModal.orderNumber)}
+          deadlineBy={pickRateModal.deliverBy}
+          onShipDateChange={(d) => {
+            const num = pickRateModal.orderNumber;
+            setShipDateByOrder((p) => ({ ...p, [num]: d }));
+          }}
           onClose={() => setPickRateModal(null)}
-          onPick={(rate) => {
+          onPick={(rate, pickedShipDate) => {
             const num = pickRateModal.orderNumber;
             // Update what the row shows AND what Buy will purchase.
             setWalmartRates((prev) => {
@@ -1311,9 +1468,11 @@ export default function ShippingLabelsPage() {
                   carrierName: rate.carrierName,
                   serviceType: rate.serviceType,
                   edd: rate.deliveryDate,
+                  shipByDate: pickedShipDate,
                 },
               };
             });
+            setShipDateByOrder((p) => ({ ...p, [num]: pickedShipDate }));
             setPickRateModal(null);
           }}
         />
@@ -1427,6 +1586,10 @@ function OrderRow({
   walmartStatus,
   markingShipped,
   onMarkShipped,
+  shipDate,
+  shipDateOverridden,
+  requoting,
+  onShipDateChange,
 }: {
   order: DashboardOrder;
   plan: PlanItem | null;
@@ -1452,6 +1615,12 @@ function OrderRow({
   } | null;
   markingShipped: boolean;
   onMarkShipped: () => void;
+  // Ship-date control (Walmart only). shipDate = the effective date for this
+  // order; requoting = a re-quote is in flight; onShipDateChange re-quotes.
+  shipDate: string;
+  shipDateOverridden: boolean;
+  requoting: boolean;
+  onShipDateChange: (date: string) => void;
 }) {
   const isReady = order.state === "ready_to_buy";
   const isAttn = order.state === "need_attention";
@@ -1531,6 +1700,30 @@ function OrderRow({
             {order.shipBy && (
               <span className="text-[12px] text-ink-3">
                 · Ship by {fmtDate(order.shipBy)}
+              </span>
+            )}
+            {/* Editable ship date (Walmart, ready-to-buy only) — the day the
+                operator plans to hand this package to the carrier. Changing
+                it re-quotes this order's Walmart rates from that day. Defaults
+                to the page-level date; a per-order pick highlights in blue. */}
+            {order.isWalmart && isReady && !wmBought && !wmShipped && (
+              <span className="inline-flex items-center gap-1 text-[12px] text-ink-3">
+                · Ship
+                <input
+                  type="date"
+                  value={shipDate}
+                  onChange={(e) => onShipDateChange(e.target.value)}
+                  title="Ship date for this order — re-quotes Walmart rates from this day. Defaults to the page-level Ship date."
+                  className={cn(
+                    "rounded border bg-surface px-1.5 py-0.5 text-[12px] leading-none focus:border-[#0071dc] focus:outline-none",
+                    shipDateOverridden
+                      ? "border-[#0071dc] font-medium text-[#0071dc]"
+                      : "border-rule text-ink",
+                  )}
+                />
+                {requoting && (
+                  <Loader2 size={12} className="animate-spin text-ink-3" />
+                )}
               </span>
             )}
             {plan && (() => {
@@ -3509,6 +3702,12 @@ function PickRateDialog({
                     timeZone: "America/New_York",
                   }).format(new Date(rate.delivery_promise_date))
                 : "";
+              // On time vs late vs the marketplace deadline (deliver-by).
+              // null = unknown (no deadline or no EDD → no badge).
+              const onTime =
+                order.deliverBy && edd
+                  ? (daysLate(order.deliverBy, edd) ?? 1) <= 0
+                  : null;
               return (
                 <li key={`${rate.name}-${i}`}>
                   <button
@@ -3516,19 +3715,39 @@ function PickRateDialog({
                     onClick={() => pickRate(rate)}
                     className={cn(
                       "w-full rounded border px-3 py-2 text-left transition-colors",
-                      isCurrent
-                        ? "border-green bg-green-soft hover:bg-green-soft2"
-                        : "border-rule bg-surface hover:bg-bg-elev",
+                      onTime === false
+                        ? "border-danger/40 bg-danger-tint/40 hover:bg-danger-tint/60"
+                        : isCurrent
+                          ? "border-green bg-green-soft hover:bg-green-soft2"
+                          : "border-rule bg-surface hover:bg-bg-elev",
                     )}
                   >
                     <div className="flex items-baseline justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <div className="truncate font-medium text-ink text-[13px]">
-                          {rate.title || rate.short_title || rate.name}
+                        <div className="flex items-center gap-1.5">
+                          <span className="truncate font-medium text-ink text-[13px]">
+                            {rate.title || rate.short_title || rate.name}
+                          </span>
+                          {onTime === true && (
+                            <span className="shrink-0 rounded bg-green-soft px-1.5 py-px text-[10px] font-medium text-green-ink">
+                              on time
+                            </span>
+                          )}
+                          {onTime === false && (
+                            <span className="shrink-0 rounded bg-danger-tint px-1.5 py-px text-[10px] font-medium text-danger">
+                              misses deadline
+                            </span>
+                          )}
                         </div>
-                        <div className="mt-0.5 text-[11px] text-ink-3 font-mono">
+                        <div className="mt-0.5 text-[11px] font-mono text-ink-3">
                           {(rate.sub_carrier_id ?? "").toUpperCase()}
-                          {edd ? ` · EDD ${fmtDate(edd)}` : ""}
+                          {edd ? (
+                            <span className={onTime === false ? "text-danger" : ""}>
+                              {` · EDD ${fmtDate(edd)}`}
+                            </span>
+                          ) : (
+                            ""
+                          )}
                           {isCurrent ? " · current pick" : ""}
                         </div>
                       </div>
@@ -3571,17 +3790,27 @@ interface WalmartRateLite {
 function WalmartPickRateDialog({
   order,
   currentServiceType,
+  initialShipDate,
+  deadlineBy,
+  onShipDateChange,
   onClose,
   onPick,
 }: {
   order: DashboardOrder;
   currentServiceType: string | null;
+  // The order's current effective ship date — the dialog opens on it.
+  initialShipDate?: string;
+  // Marketplace deliver-by deadline, for the on-time / late highlight.
+  deadlineBy?: string | null;
+  // Fired whenever the operator changes the dialog's ship date, so the row +
+  // Buy stay in sync even if they close without picking a rate.
+  onShipDateChange?: (date: string) => void;
   onClose: () => void;
-  onPick: (rate: WalmartRateLite) => void;
+  onPick: (rate: WalmartRateLite, shipDate: string) => void;
 }) {
   const today = new Date().toISOString().slice(0, 10);
   const [shipDate, setShipDate] = useState<string>(
-    (order.shipBy && order.shipBy.slice(0, 10)) || today,
+    initialShipDate || (order.shipBy && order.shipBy.slice(0, 10)) || today,
   );
   const [rates, setRates] = useState<WalmartRateLite[]>([]);
   const [loading, setLoading] = useState(true);
@@ -3641,10 +3870,18 @@ function WalmartPickRateDialog({
           <input
             type="date"
             value={shipDate}
-            onChange={(e) => setShipDate(e.target.value)}
-            className="rounded border border-rule bg-surface px-2 py-1 text-[12.5px]"
+            onChange={(e) => {
+              setShipDate(e.target.value);
+              onShipDateChange?.(e.target.value);
+            }}
+            className="rounded border border-rule bg-surface px-2 py-1 text-[12.5px] focus:border-[#0071dc] focus:outline-none"
           />
           {loading && <Loader2 size={14} className="animate-spin text-ink-3" />}
+          {deadlineBy && (
+            <span className="ml-auto text-[11px] text-ink-3">
+              Deadline {fmtDate(deadlineBy)}
+            </span>
+          )}
         </div>
 
         {err && (
@@ -3664,26 +3901,57 @@ function WalmartPickRateDialog({
             {sorted.map((rate, i) => {
               const isCurrent =
                 currentServiceType != null && rate.serviceType === currentServiceType;
+              // Does this rate hit the marketplace deadline? Prefer Walmart's
+              // own promise flag; fall back to comparing the rate's EDD with
+              // the deliver-by date. null = unknown (no badge).
+              const onTime =
+                rate.deliveryPromiseFulfilled === true
+                  ? true
+                  : rate.deliveryPromiseFulfilled === false
+                    ? false
+                    : deadlineBy && rate.deliveryDate
+                      ? (daysLate(deadlineBy, rate.deliveryDate) ?? 1) <= 0
+                      : null;
               return (
                 <li key={`${rate.serviceType}-${i}`}>
                   <button
                     type="button"
-                    onClick={() => onPick(rate)}
+                    onClick={() => onPick(rate, shipDate)}
                     className={cn(
                       "w-full rounded border px-3 py-2 text-left transition-colors",
-                      isCurrent
-                        ? "border-green bg-green-soft hover:bg-green-soft2"
-                        : "border-rule bg-surface hover:bg-bg-elev",
+                      onTime === false
+                        ? "border-danger/40 bg-danger-tint/40 hover:bg-danger-tint/60"
+                        : isCurrent
+                          ? "border-green bg-green-soft hover:bg-green-soft2"
+                          : "border-rule bg-surface hover:bg-bg-elev",
                     )}
                   >
                     <div className="flex items-baseline justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <div className="truncate font-medium text-ink text-[13px]">
-                          {rate.displayName}
+                        <div className="flex items-center gap-1.5">
+                          <span className="truncate font-medium text-ink text-[13px]">
+                            {rate.displayName}
+                          </span>
+                          {onTime === true && (
+                            <span className="shrink-0 rounded bg-green-soft px-1.5 py-px text-[10px] font-medium text-green-ink">
+                              on time
+                            </span>
+                          )}
+                          {onTime === false && (
+                            <span className="shrink-0 rounded bg-danger-tint px-1.5 py-px text-[10px] font-medium text-danger">
+                              misses deadline
+                            </span>
+                          )}
                         </div>
-                        <div className="mt-0.5 text-[11px] text-ink-3 font-mono">
+                        <div className="mt-0.5 text-[11px] font-mono text-ink-3">
                           {(rate.carrierName ?? "").toUpperCase()}
-                          {rate.deliveryDate ? ` · EDD ${fmtDate(rate.deliveryDate)}` : ""}
+                          {rate.deliveryDate ? (
+                            <span className={onTime === false ? "text-danger" : ""}>
+                              {` · EDD ${fmtDate(rate.deliveryDate)}`}
+                            </span>
+                          ) : (
+                            ""
+                          )}
                           {isCurrent ? " · current pick" : ""}
                         </div>
                       </div>
