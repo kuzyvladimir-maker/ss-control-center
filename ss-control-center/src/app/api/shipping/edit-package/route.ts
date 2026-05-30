@@ -46,6 +46,11 @@ interface Body {
   // returning rates against its own cached package and our PackingProfile
   // edits look like they had no effect.
   allocationId?: string | number;
+  // Order channel ("Amazon" | "Walmart" | ...). Walmart orders are rate-
+  // shopped + bought through Walmart's own Ship-with-Walmart API, NOT Veeqo,
+  // so there's no Veeqo allocation to update — skip the push (and don't
+  // surface its absence as a scary error).
+  channel?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -58,6 +63,19 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
+
+  // Walmart orders don't live in Veeqo for shipping — rates/labels come from
+  // Walmart's own API — so there's no allocation_package to push. Skip the
+  // Veeqo update and report it as a benign skip (not a failure).
+  const skipVeeqo = String(body.channel ?? "").toLowerCase().includes("walmart");
+  const maybePushVeeqo = (args: Parameters<typeof pushPackageToVeeqo>[0]) =>
+    skipVeeqo
+      ? Promise.resolve({
+          ok: true as const,
+          skipped: true,
+          reason: "Walmart order — packaging is rate-shopped via Walmart, not Veeqo.",
+        })
+      : pushPackageToVeeqo(args);
 
   // ── Multi-item path ───────────────────────────────────────────────────
   if (body.signature && typeof body.signature === "string") {
@@ -106,7 +124,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const veeqo = await pushPackageToVeeqo({
+    const veeqo = await maybePushVeeqo({
       allocationId: body.allocationId,
       L,
       W,
@@ -143,7 +161,7 @@ export async function POST(request: NextRequest) {
         height: body.height ?? existing.height,
       },
     });
-    const veeqo = await pushPackageToVeeqo({
+    const veeqo = await maybePushVeeqo({
       allocationId: body.allocationId,
       L: body.length ?? existing.length,
       W: body.width ?? existing.width,
@@ -185,7 +203,7 @@ export async function POST(request: NextRequest) {
       source: "manual",
     },
   });
-  const veeqo = await pushPackageToVeeqo({
+  const veeqo = await maybePushVeeqo({
     allocationId: body.allocationId,
     L: body.length,
     W: body.width,

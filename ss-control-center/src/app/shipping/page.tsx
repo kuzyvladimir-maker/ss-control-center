@@ -2708,6 +2708,7 @@ function EditPackageDialog({
           weight: w,
           weightFedex: weightFedex ? Number(weightFedex) : undefined,
           allocationId,
+          channel: order.channel ?? undefined,
         };
       } else {
         if (!sku) {
@@ -2721,6 +2722,7 @@ function EditPackageDialog({
           weight: w,
           weightFedex: weightFedex ? Number(weightFedex) : undefined,
           allocationId,
+          channel: order.channel ?? undefined,
         };
       }
       const r = await fetch("/api/shipping/edit-package", {
