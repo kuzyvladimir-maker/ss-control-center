@@ -283,6 +283,14 @@ export default function ShippingLabelsPage() {
 
   const [bucketFilter, setBucketFilter] = useState<ShipByBucket | null>(null);
   const [storeFilter, setStoreFilter] = useState<string | null>(null);
+  // Channel scope — Amazon vs Walmart. "all" shows both. The brand-styled
+  // toggle buttons at the top flip EVERY count below (KPI cards, store
+  // breakdown, bucket/type tabs, the list) to the chosen marketplace. An
+  // order is Walmart when isWalmart is set (the dashboard route matches it
+  // against the WalmartOrder table); everything else counts as Amazon.
+  const [channelFilter, setChannelFilter] = useState<
+    "all" | "amazon" | "walmart"
+  >("all");
   // Frozen / Dry product-type filter. "all" shows everything; "Frozen" or
   // "Dry" keeps orders whose first item matches (mixed orders only match
   // when every item is the same type).
@@ -543,6 +551,39 @@ export default function ShippingLabelsPage() {
 
   // ── Derived view ────────────────────────────────────────────────────
   const orders = useMemo(() => data?.orders ?? [], [data]);
+
+  // Orders narrowed to the selected channel. Every count and the list below
+  // derive from this, so flipping the Amazon/Walmart toggle re-computes the
+  // whole dashboard. "all" passes everything through unchanged.
+  const channelOrders = useMemo(() => {
+    if (channelFilter === "all") return orders;
+    const wantWalmart = channelFilter === "walmart";
+    return orders.filter((o) => !!o.isWalmart === wantWalmart);
+  }, [orders, channelFilter]);
+
+  // Store ids that carry Walmart orders — used to split the "By store"
+  // breakdown by channel. Each Veeqo store maps to exactly one marketplace,
+  // but the Walmart store is named "SIRIUS TRADING INTERNATIONAL LLC", so we
+  // key off the per-order isWalmart flag rather than the store name.
+  const walmartStoreIds = useMemo(
+    () => new Set(orders.filter((o) => o.isWalmart).map((o) => o.storeId)),
+    [orders],
+  );
+
+  // Time-bucket counts recomputed locally so the tab badges track the channel
+  // filter (the server's data.timeBuckets cover both channels at once).
+  const bucketCounts = useMemo(() => {
+    const c: Record<ShipByBucket, number> = {
+      overdue: 0,
+      today: 0,
+      tomorrow: 0,
+      dayafter: 0,
+      later: 0,
+    };
+    for (const o of channelOrders) if (o.timeBucket) c[o.timeBucket] += 1;
+    return c;
+  }, [channelOrders]);
+
   const filteredOrders = useMemo(() => {
     // Sort by actionability: ready_to_buy → need_attention → waiting_placed
     // → bought. Inside each state, sort by time bucket (overdue first) so the
@@ -560,7 +601,7 @@ export default function ShippingLabelsPage() {
       dayafter: 3,
       later: 4,
     };
-    return orders
+    return channelOrders
       .filter((o) => {
         if (bucketFilter && o.timeBucket !== bucketFilter) return false;
         if (storeFilter && o.storeId !== storeFilter) return false;
@@ -583,7 +624,7 @@ export default function ShippingLabelsPage() {
         const bb = b.timeBucket ? bucketRank[b.timeBucket] : 99;
         return ab - bb;
       });
-  }, [orders, bucketFilter, storeFilter, stateFilter, typeFilter]);
+  }, [channelOrders, bucketFilter, storeFilter, stateFilter, typeFilter]);
 
   const selectableIds = useMemo(
     () =>
@@ -596,12 +637,18 @@ export default function ShippingLabelsPage() {
   );
 
   const totals = useMemo(() => {
-    const all = orders.length;
-    const ready = orders.filter((o) => o.state === "ready_to_buy").length;
-    const attention = orders.filter((o) => o.state === "need_attention").length;
-    const waiting = orders.filter((o) => o.state === "waiting_placed").length;
+    const all = channelOrders.length;
+    const ready = channelOrders.filter(
+      (o) => o.state === "ready_to_buy",
+    ).length;
+    const attention = channelOrders.filter(
+      (o) => o.state === "need_attention",
+    ).length;
+    const waiting = channelOrders.filter(
+      (o) => o.state === "waiting_placed",
+    ).length;
     return { all, ready, attention, waiting };
-  }, [orders]);
+  }, [channelOrders]);
 
   // Index plan rows by orderNumber so the OrderRow can pick up carrier /
   // price / EDD without an extra lookup at render time. Plan keys on
@@ -908,6 +955,41 @@ export default function ShippingLabelsPage() {
         />
       )}
 
+      {/* Channel scope — Amazon / Walmart brand toggles. Flips every count
+          below (KPI cards, store breakdown, bucket/type tabs, list) to the
+          chosen marketplace. Click the active button (or "show all") to
+          clear back to both channels. */}
+      <div className="flex items-center gap-2">
+        <span className="text-[10.5px] font-medium uppercase tracking-wider text-ink-3">
+          Channel
+        </span>
+        <ChannelToggle
+          channel="amazon"
+          active={channelFilter === "amazon"}
+          onClick={() => {
+            setChannelFilter((c) => (c === "amazon" ? "all" : "amazon"));
+            setStoreFilter(null);
+          }}
+        />
+        <ChannelToggle
+          channel="walmart"
+          active={channelFilter === "walmart"}
+          onClick={() => {
+            setChannelFilter((c) => (c === "walmart" ? "all" : "walmart"));
+            setStoreFilter(null);
+          }}
+        />
+        {channelFilter !== "all" && (
+          <button
+            type="button"
+            onClick={() => setChannelFilter("all")}
+            className="ml-0.5 text-[11px] text-ink-3 underline-offset-2 hover:text-ink-1 hover:underline"
+          >
+            show all
+          </button>
+        )}
+      </div>
+
       {/* Totals row — each card toggles the state filter. Clicking the same
           card twice (or "Awaiting fulfillment") returns to the unfiltered
           view. The visual active state mirrors the existing store-filter
@@ -963,7 +1045,14 @@ export default function ShippingLabelsPage() {
           <PanelHeader title="By store" />
           <PanelBody>
             <div className="flex flex-wrap gap-2">
-              {data.storeBreakdown.map((s) => (
+              {data.storeBreakdown
+                .filter((s) =>
+                  channelFilter === "all"
+                    ? true
+                    : walmartStoreIds.has(s.storeId) ===
+                      (channelFilter === "walmart"),
+                )
+                .map((s) => (
                 <button
                   key={s.storeId}
                   type="button"
@@ -1014,11 +1103,11 @@ export default function ShippingLabelsPage() {
       {data && (
         <FilterTabs
           tabs={[
-            { id: "all" as const, label: "All", count: orders.length },
+            { id: "all" as const, label: "All", count: channelOrders.length },
             ...BUCKET_TABS.map((b) => ({
               id: b.id,
               label: b.label,
-              count: data.timeBuckets[b.id] ?? 0,
+              count: bucketCounts[b.id] ?? 0,
             })),
           ]}
           active={bucketFilter ?? ("all" as const)}
@@ -1034,11 +1123,15 @@ export default function ShippingLabelsPage() {
       {data && (
         <FilterTabs
           tabs={[
-            { id: "all" as const, label: "All types", count: orders.length },
+            {
+              id: "all" as const,
+              label: "All types",
+              count: channelOrders.length,
+            },
             {
               id: "Frozen" as const,
               label: "Frozen",
-              count: orders.filter(
+              count: channelOrders.filter(
                 (o) =>
                   o.items.length > 0 &&
                   o.items.every((i) => i.knownType === "Frozen"),
@@ -1047,7 +1140,7 @@ export default function ShippingLabelsPage() {
             {
               id: "Dry" as const,
               label: "Dry",
-              count: orders.filter(
+              count: channelOrders.filter(
                 (o) =>
                   o.items.length > 0 &&
                   o.items.every((i) => i.knownType === "Dry"),
@@ -1240,6 +1333,72 @@ export default function ShippingLabelsPage() {
         />
       )}
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Channel toggle — brand-styled Amazon / Walmart filter buttons. Purely
+// presentational; the parent owns the channelFilter state. Active = filled
+// in the brand colour; inactive = quiet outline that warms to the brand
+// colour on hover. We approximate the wordmarks (Amazon's lowercase name +
+// orange smile underline; Walmart's blue name + yellow spark) rather than
+// embedding logo assets, which keeps it crisp at any zoom and themeable.
+// ─────────────────────────────────────────────────────────────────────────
+
+function ChannelToggle({
+  channel,
+  active,
+  onClick,
+}: {
+  channel: "amazon" | "walmart";
+  active: boolean;
+  onClick: () => void;
+}) {
+  if (channel === "amazon") {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-pressed={active}
+        title="Show only Amazon orders"
+        className={cn(
+          "group relative rounded-md border px-3.5 pb-2 pt-1.5 text-[13px] font-semibold leading-none transition",
+          active
+            ? "border-[#ff9900] bg-[#ff9900]/10 text-[#232f3e] shadow-sm"
+            : "border-rule bg-surface text-ink-2 hover:border-[#ff9900]/60 hover:text-ink-1",
+        )}
+      >
+        <span className="lowercase tracking-tight">amazon</span>
+        {/* Amazon smile — a rounded orange underline nodding to the logo. */}
+        <span
+          className={cn(
+            "absolute bottom-1 left-3.5 right-3.5 h-[3px] rounded-full transition",
+            active
+              ? "bg-[#ff9900]"
+              : "bg-[#ff9900]/40 group-hover:bg-[#ff9900]/70",
+          )}
+        />
+      </button>
+    );
+  }
+  // Walmart
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      title="Show only Walmart orders"
+      className={cn(
+        "flex items-center gap-1.5 rounded-md border px-3.5 py-1.5 text-[13px] font-bold leading-none tracking-tight transition",
+        active
+          ? "border-[#0071dc] bg-[#0071dc] text-white shadow-sm"
+          : "border-rule bg-surface text-[#0071dc] hover:border-[#0071dc]/60",
+      )}
+    >
+      {/* Walmart spark (the six-point yellow mark). */}
+      <span className="text-[15px] leading-none text-[#ffc220]">✲</span>
+      <span>Walmart</span>
+    </button>
   );
 }
 

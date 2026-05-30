@@ -30,6 +30,20 @@
 
 ---
 
+## Фильтр по каналу — Amazon / Walmart (2026-05-30)
+
+Над карточками KPI — две **фирменные кнопки-переключателя**: **amazon** (оранжевый smile-underline, цвет `#ff9900`) и **Walmart** (синий `#0071dc` + жёлтая искра `#ffc220`). Нажатие переключает весь дашборд на выбранный маркетплейс; повторный клик по активной кнопке (или ссылка «show all») возвращает оба канала.
+
+**Что пересчитывается под выбранный канал:**
+- 4 карточки KPI (Awaiting / Ready to buy / Need attention / Waiting for procurement);
+- разбивка **By store** (показываются только магазины этого канала);
+- табы по срокам (Overdue/Today/…) и по типу (Frozen/Dry) — счётчики локальные;
+- сам список заказов (а значит и «Select all ready» / «Buy selected»).
+
+**Как определяется канал заказа:** по флагу `isWalmart` (его проставляет `dashboard/route.ts`, сопоставляя Veeqo `order.number` с таблицей `WalmartOrder`) — **не** по имени магазина, т.к. Walmart-магазин в Veeqo называется «SIRIUS TRADING INTERNATIONAL LLC». Всё, что не Walmart, считается Amazon. Реализация: state `channelFilter` + derived `channelOrders`/`walmartStoreIds`/`bucketCounts` в `src/app/shipping/page.tsx`; кнопки — компонент `ChannelToggle`. Смена канала сбрасывает выбранный store-фильтр.
+
+---
+
 ## Состояния заказов (state machine)
 
 | State | Описание | Действие |
