@@ -22,6 +22,10 @@
       "schedule": "0 8 * * *"
     },
     {
+      "path": "/api/cron/orders-shipments-amazon",
+      "schedule": "0 8 * * *"
+    },
+    {
       "path": "/api/cron/adjustments-amazon",
       "schedule": "30 8 * * *"
     }

@@ -644,6 +644,42 @@ model AmazonOrder {
   @@index([purchaseDate])
 }
 
+/**
+ * Amazon shipment metadata per order — carrier, service, tracking.
+ * Populated by /api/cron/orders-shipments-amazon (Reports API:
+ * GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL).
+ *
+ * Exists so adjustment enrichment can join ShippingAdjustment.amazonOrderId
+ * → carrier/service WITHOUT calling SP-API per-row at render time. One
+ * row per (amazonOrderId, sku) — Amazon orders can have multiple items
+ * shipped on different labels.
+ */
+model AmazonOrderShipment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  amazonOrderId    String
+  sku              String?
+  asin             String?
+
+  storeIndex       Int?
+
+  // From Orders Report TSV
+  carrier          String?  // e.g. "UPS", "FEDEX", "USPS"
+  trackingNumber   String?
+  shipServiceLevel String?  // e.g. "Standard", "Expedited"
+  shipDate         String?  // YYYY-MM-DD
+  promiseDate      String?
+
+  // Inferred from trackingNumber regex when carrier is "Other" or null.
+  carrierInferred  String?
+
+  @@unique([amazonOrderId, sku], name: "amazon_order_shipment_dedup")
+  @@index([amazonOrderId])
+  @@index([trackingNumber])
+}
+
 // Customer Hub — Buyer Messages
 model BuyerMessage {
   id         String    @id @default(cuid())
