@@ -44,7 +44,10 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
       OR: [
         { carrier: null },
         { productName: null },
+        { productImageUrl: null },
+        { trackingNumber: null },
         { originalLabelCost: null },
+        { declaredWeightLbs: null },
       ],
     },
     select: {
@@ -52,7 +55,13 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
       amazonOrderId: true,
       carrier: true,
       productName: true,
+      productImageUrl: true,
+      trackingNumber: true,
       originalLabelCost: true,
+      declaredWeightLbs: true,
+      declaredDimL: true,
+      declaredDimW: true,
+      declaredDimH: true,
     },
   });
 
@@ -73,7 +82,7 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
     ...new Set(candidates.map((c) => c.amazonOrderId!).filter(Boolean)),
   ];
 
-  // Source 1+2: AmazonOrderShipment (Veeqo-sourced) — carrier, service, tracking, label cost.
+  // Source 1+2: AmazonOrderShipment (Veeqo-sourced) — carrier, service, tracking, label cost, product, package dims.
   const shipments = await prisma.amazonOrderShipment.findMany({
     where: { amazonOrderId: { in: orderIds } },
     select: {
@@ -83,6 +92,12 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
       trackingNumber: true,
       shipServiceLevel: true,
       outboundLabelCost: true,
+      productName: true,
+      productImageUrl: true,
+      packageWeightLbs: true,
+      packageDimL: true,
+      packageDimW: true,
+      packageDimH: true,
     },
   });
   // Multiple shipment rows per order possible (multi-item) — first non-null wins.
@@ -94,6 +109,12 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
       tracking: string | null;
       inferred: string | null;
       labelCost: number | null;
+      productName: string | null;
+      productImageUrl: string | null;
+      packageWeightLbs: number | null;
+      packageDimL: number | null;
+      packageDimW: number | null;
+      packageDimH: number | null;
     }
   >();
   for (const s of shipments) {
@@ -103,12 +124,24 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
       tracking: null,
       inferred: null,
       labelCost: null,
+      productName: null,
+      productImageUrl: null,
+      packageWeightLbs: null,
+      packageDimL: null,
+      packageDimW: null,
+      packageDimH: null,
     };
     cur.carrier ??= s.carrier ?? null;
     cur.service ??= s.shipServiceLevel ?? null;
     cur.tracking ??= s.trackingNumber ?? null;
     cur.inferred ??= s.carrierInferred ?? null;
     cur.labelCost ??= s.outboundLabelCost ?? null;
+    cur.productName ??= s.productName ?? null;
+    cur.productImageUrl ??= s.productImageUrl ?? null;
+    cur.packageWeightLbs ??= s.packageWeightLbs ?? null;
+    cur.packageDimL ??= s.packageDimL ?? null;
+    cur.packageDimW ??= s.packageDimW ?? null;
+    cur.packageDimH ??= s.packageDimH ?? null;
     shipByOrder.set(s.amazonOrderId, cur);
   }
 
@@ -175,15 +208,35 @@ export async function enrichAdjustmentsFromShippingPlan(): Promise<EnrichResult>
     }
     service = ship?.service ?? plan?.service ?? null;
 
-    const productName = plan?.product ?? null;
+    // productName: prefer Veeqo's full title (includes brand + variant),
+    // fall back to ShippingPlanItem.
+    const productName = ship?.productName ?? plan?.product ?? null;
+    const productImageUrl = ship?.productImageUrl ?? null;
+    const tracking = ship?.tracking ?? null;
     const labelCost = ship?.labelCost ?? null;
 
     const patch: Record<string, string | number | null> = {};
     if (!adj.carrier && carrier) patch.carrier = carrier;
     if (!adj.carrier && service) patch.service = service;
     if (!adj.productName && productName) patch.productName = productName;
+    if (!adj.productImageUrl && productImageUrl) {
+      patch.productImageUrl = productImageUrl;
+    }
+    if (!adj.trackingNumber && tracking) patch.trackingNumber = tracking;
     if (!adj.originalLabelCost && labelCost != null) {
       patch.originalLabelCost = labelCost;
+    }
+    if (!adj.declaredWeightLbs && ship?.packageWeightLbs != null) {
+      patch.declaredWeightLbs = ship.packageWeightLbs;
+    }
+    if (!adj.declaredDimL && ship?.packageDimL != null) {
+      patch.declaredDimL = ship.packageDimL;
+    }
+    if (!adj.declaredDimW && ship?.packageDimW != null) {
+      patch.declaredDimW = ship.packageDimW;
+    }
+    if (!adj.declaredDimH && ship?.packageDimH != null) {
+      patch.declaredDimH = ship.packageDimH;
     }
     if (Object.keys(patch).length === 0) continue;
 

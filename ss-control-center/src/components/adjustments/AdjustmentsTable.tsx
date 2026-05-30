@@ -26,8 +26,10 @@ interface Adjustment {
   adjustmentReason: string | null;
   sku: string | null;
   productName: string | null;
+  productImageUrl: string | null;
   carrier: string | null;
   service: string | null;
+  trackingNumber: string | null;
   declaredWeightLbs: number | null;
   adjustedWeightLbs: number | null;
   declaredDimL: number | null;
@@ -39,10 +41,29 @@ interface Adjustment {
 }
 
 const typeLabels: Record<string, string> = {
-  WeightAdjustment: "Weight",
+  WeightAdjustment: "Weight charge",
+  WeightAdjustmentRefund: "Refund",
+  ReturnShipping: "Return shipping",
   DIMadjustment: "DIM",
   CarrierAdjustment: "Carrier",
 };
+
+/** Refund types — display as a positive (green) inflow, not red loss. */
+function isRefund(a: { adjustmentAmount: number; adjustmentType: string }): boolean {
+  if (a.adjustmentAmount > 0) return true;
+  return /refund/i.test(a.adjustmentType);
+}
+
+/** Build a tracking URL from carrier + tracking number. */
+function trackingUrl(carrier: string | null, tracking: string | null): string | null {
+  if (!tracking) return null;
+  const c = (carrier || "").toUpperCase();
+  if (c === "UPS") return `https://www.ups.com/track?tracknum=${tracking}`;
+  if (c === "FEDEX") return `https://www.fedex.com/fedextrack/?trknbr=${tracking}`;
+  if (c === "USPS") return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${tracking}`;
+  if (c === "DHL") return `https://www.dhl.com/en/express/tracking.html?AWB=${tracking}`;
+  return null;
+}
 
 interface AdjustmentFilters {
   channel: string;
@@ -149,8 +170,13 @@ export default function AdjustmentsTable({
                         {typeLabels[adj.adjustmentType] || adj.adjustmentType}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right text-xs font-medium text-danger">
-                      ${Math.abs(adj.adjustmentAmount).toFixed(2)}
+                    <TableCell
+                      className={`text-right text-xs font-medium tabular ${
+                        isRefund(adj) ? "text-success" : "text-danger"
+                      }`}
+                    >
+                      {isRefund(adj) ? "+" : "−"}$
+                      {Math.abs(adj.adjustmentAmount).toFixed(2)}
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -168,78 +194,134 @@ export default function AdjustmentsTable({
                     <TableRow key={`${adj.id}-detail`}>
                       <TableCell colSpan={8} className="bg-surface-tint p-4">
                         <div className="space-y-3 text-xs">
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <span className="text-ink-3">Product:</span>{" "}
-                              {adj.productName || "—"}
-                            </div>
-                            <div>
-                              <span className="text-ink-3">Carrier:</span>{" "}
-                              {adj.carrier || "—"} {adj.service || ""}
+                          {/* Product row — image + name */}
+                          <div className="flex items-start gap-3">
+                            {adj.productImageUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={adj.productImageUrl}
+                                alt={adj.productName ?? "product"}
+                                className="w-14 h-14 rounded border border-rule object-cover bg-surface shrink-0"
+                              />
+                            ) : (
+                              <div className="w-14 h-14 rounded border border-rule bg-surface shrink-0 flex items-center justify-center text-ink-4 text-[10px]">
+                                no img
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <div className="text-ink font-medium leading-tight">
+                                {adj.productName || "—"}
+                              </div>
+                              <div className="text-ink-3 mt-0.5">
+                                {adj.sku && (
+                                  <span className="font-mono">
+                                    SKU: {adj.sku}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
 
-                          {/* Weight comparison */}
-                          {(adj.declaredWeightLbs || adj.adjustedWeightLbs) && (
-                            <div className="grid grid-cols-2 gap-3 rounded-lg border p-3">
-                              <div>
-                                <p className="text-ink-3 font-medium mb-1">
-                                  Declared
-                                </p>
-                                {adj.declaredWeightLbs && (
-                                  <p>Weight: {adj.declaredWeightLbs} lbs</p>
+                          {/* Carrier + tracking + service */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <span className="text-ink-3">Carrier:</span>{" "}
+                              <span className="font-medium">
+                                {adj.carrier || "—"}
+                              </span>{" "}
+                              {adj.service && (
+                                <span className="text-ink-3">
+                                  · {adj.service}
+                                </span>
+                              )}
+                            </div>
+                            <div>
+                              <span className="text-ink-3">Tracking:</span>{" "}
+                              {adj.trackingNumber ? (
+                                trackingUrl(adj.carrier, adj.trackingNumber) ? (
+                                  <a
+                                    href={
+                                      trackingUrl(
+                                        adj.carrier,
+                                        adj.trackingNumber,
+                                      )!
+                                    }
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-mono text-blue-600 hover:underline"
+                                  >
+                                    {adj.trackingNumber}
+                                  </a>
+                                ) : (
+                                  <span className="font-mono">
+                                    {adj.trackingNumber}
+                                  </span>
+                                )
+                              ) : (
+                                "—"
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Declared package — what Vladimir told the carrier */}
+                          {(adj.declaredWeightLbs || adj.declaredDimL) && (
+                            <div className="rounded-lg border border-rule p-3 bg-surface">
+                              <p className="text-ink-3 font-medium mb-1">
+                                Declared package (what we sent the carrier)
+                              </p>
+                              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                                {adj.declaredWeightLbs != null && (
+                                  <span>
+                                    <span className="text-ink-3">Weight:</span>{" "}
+                                    <strong>
+                                      {adj.declaredWeightLbs.toFixed(2)} lbs
+                                    </strong>
+                                  </span>
                                 )}
-                                {adj.declaredDimL && (
-                                  <p>
-                                    Dims: {adj.declaredDimL}x{adj.declaredDimW}x
-                                    {adj.declaredDimH}
-                                  </p>
-                                )}
-                              </div>
-                              <div>
-                                <p className="text-danger font-medium mb-1">
-                                  Adjusted by carrier
-                                </p>
-                                {adj.adjustedWeightLbs && (
-                                  <p>
-                                    Weight: {adj.adjustedWeightLbs} lbs
-                                    {adj.declaredWeightLbs && (
-                                      <span className="text-danger ml-1">
-                                        (+
-                                        {(
-                                          adj.adjustedWeightLbs -
-                                          adj.declaredWeightLbs
-                                        ).toFixed(1)}{" "}
-                                        lbs)
-                                      </span>
-                                    )}
-                                  </p>
+                                {adj.declaredDimL != null && (
+                                  <span>
+                                    <span className="text-ink-3">Dims:</span>{" "}
+                                    <strong>
+                                      {adj.declaredDimL}×{adj.declaredDimW}×
+                                      {adj.declaredDimH} in
+                                    </strong>
+                                  </span>
                                 )}
                               </div>
                             </div>
                           )}
 
-                          {adj.originalLabelCost && (
+                          {/* Label cost math */}
+                          {adj.originalLabelCost != null && (
                             <p>
                               <span className="text-ink-3">
-                                Label cost:
+                                Original label cost:
                               </span>{" "}
-                              ${adj.originalLabelCost.toFixed(2)} &rarr;{" "}
+                              ${adj.originalLabelCost.toFixed(2)}{" "}
+                              <span className="text-ink-3">→</span>{" "}
                               <span className="font-medium">
-                                Effective: $
-                                {(
-                                  adj.originalLabelCost +
-                                  Math.abs(adj.adjustmentAmount)
+                                Net cost: $
+                                {Math.max(
+                                  0,
+                                  adj.originalLabelCost -
+                                    adj.adjustmentAmount,
                                 ).toFixed(2)}
                               </span>{" "}
-                              <span className="text-danger">
-                                (+${Math.abs(adj.adjustmentAmount).toFixed(2)})
+                              <span
+                                className={
+                                  isRefund(adj)
+                                    ? "text-success"
+                                    : "text-danger"
+                                }
+                              >
+                                ({isRefund(adj) ? "−" : "+"}$
+                                {Math.abs(adj.adjustmentAmount).toFixed(2)})
                               </span>
                             </p>
                           )}
 
                           {adj.notes && (
-                            <p className="text-ink-3 bg-surface rounded p-2 border">
+                            <p className="text-ink-3 bg-surface rounded p-2 border border-rule">
                               {adj.notes}
                             </p>
                           )}
@@ -269,8 +351,13 @@ export default function AdjustmentsTable({
                     <span className="font-mono text-[13px] text-ink truncate">
                       {adj.orderId || "—"}
                     </span>
-                    <span className="shrink-0 text-[13px] font-semibold tabular text-danger">
-                      ${Math.abs(adj.adjustmentAmount).toFixed(2)}
+                    <span
+                      className={`shrink-0 text-[13px] font-semibold tabular ${
+                        isRefund(adj) ? "text-success" : "text-danger"
+                      }`}
+                    >
+                      {isRefund(adj) ? "+" : "−"}$
+                      {Math.abs(adj.adjustmentAmount).toFixed(2)}
                     </span>
                   </div>
 
@@ -315,68 +402,106 @@ export default function AdjustmentsTable({
                 </button>
 
                 {expanded && (
-                  <div className="bg-surface-tint px-4 pb-3 pt-1 grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11.5px]">
-                    <div>
-                      <div className="text-ink-3">Product</div>
-                      <div className="text-ink-2">{adj.productName ?? "—"}</div>
-                    </div>
-                    <div>
-                      <div className="text-ink-3">Carrier</div>
-                      <div className="text-ink-2">
-                        {adj.carrier ?? "—"} {adj.service ?? ""}
+                  <div className="bg-surface-tint px-4 pb-3 pt-2 space-y-3 text-[11.5px]">
+                    {/* Product row — image + name */}
+                    <div className="flex items-start gap-3">
+                      {adj.productImageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={adj.productImageUrl}
+                          alt={adj.productName ?? "product"}
+                          className="w-14 h-14 rounded border border-rule object-cover bg-surface shrink-0"
+                        />
+                      ) : null}
+                      <div className="min-w-0 flex-1">
+                        <div className="text-ink font-medium leading-tight">
+                          {adj.productName ?? "—"}
+                        </div>
                       </div>
                     </div>
-                    {(adj.declaredWeightLbs || adj.adjustedWeightLbs) && (
-                      <div className="sm:col-span-2 rounded-lg border border-rule p-3 grid grid-cols-2 gap-3 bg-surface">
-                        <div>
-                          <p className="text-ink-3 font-medium mb-1">Declared</p>
-                          {adj.declaredWeightLbs && (
-                            <p>{adj.declaredWeightLbs} lbs</p>
-                          )}
-                          {adj.declaredDimL && (
-                            <p>
-                              {adj.declaredDimL}×{adj.declaredDimW}×
-                              {adj.declaredDimH}
-                            </p>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <div className="text-ink-3">Carrier</div>
+                        <div className="text-ink-2">
+                          {adj.carrier ?? "—"}{" "}
+                          {adj.service ? `· ${adj.service}` : ""}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-ink-3">Tracking</div>
+                        <div className="text-ink-2 font-mono break-all">
+                          {adj.trackingNumber ? (
+                            trackingUrl(adj.carrier, adj.trackingNumber) ? (
+                              <a
+                                href={
+                                  trackingUrl(adj.carrier, adj.trackingNumber)!
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600"
+                              >
+                                {adj.trackingNumber}
+                              </a>
+                            ) : (
+                              adj.trackingNumber
+                            )
+                          ) : (
+                            "—"
                           )}
                         </div>
-                        <div>
-                          <p className="text-danger font-medium mb-1">
-                            Adjusted
-                          </p>
-                          {adj.adjustedWeightLbs && (
-                            <p>
-                              {adj.adjustedWeightLbs} lbs
-                              {adj.declaredWeightLbs && (
-                                <span className="text-danger ml-1">
-                                  (+
-                                  {(
-                                    adj.adjustedWeightLbs -
-                                    adj.declaredWeightLbs
-                                  ).toFixed(1)}
-                                  )
-                                </span>
-                              )}
-                            </p>
+                      </div>
+                    </div>
+
+                    {(adj.declaredWeightLbs || adj.declaredDimL) && (
+                      <div className="rounded-lg border border-rule p-3 bg-surface">
+                        <p className="text-ink-3 font-medium mb-1">
+                          Declared package
+                        </p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1">
+                          {adj.declaredWeightLbs != null && (
+                            <span>
+                              <strong>
+                                {adj.declaredWeightLbs.toFixed(2)} lbs
+                              </strong>
+                            </span>
+                          )}
+                          {adj.declaredDimL != null && (
+                            <span>
+                              <strong>
+                                {adj.declaredDimL}×{adj.declaredDimW}×
+                                {adj.declaredDimH} in
+                              </strong>
+                            </span>
                           )}
                         </div>
                       </div>
                     )}
-                    {adj.originalLabelCost && (
-                      <div className="sm:col-span-2 text-ink-2">
-                        <span className="text-ink-3">Label:</span>{" "}
-                        ${adj.originalLabelCost.toFixed(2)} →{" "}
-                        ${(
-                          adj.originalLabelCost +
-                          Math.abs(adj.adjustmentAmount)
-                        ).toFixed(2)}{" "}
-                        <span className="text-danger">
-                          (+${Math.abs(adj.adjustmentAmount).toFixed(2)})
+
+                    {adj.originalLabelCost != null && (
+                      <div className="text-ink-2">
+                        <span className="text-ink-3">Label:</span> $
+                        {adj.originalLabelCost.toFixed(2)} →{" "}
+                        <strong>
+                          ${" "}
+                          {Math.max(
+                            0,
+                            adj.originalLabelCost - adj.adjustmentAmount,
+                          ).toFixed(2)}
+                        </strong>{" "}
+                        <span
+                          className={
+                            isRefund(adj) ? "text-success" : "text-danger"
+                          }
+                        >
+                          ({isRefund(adj) ? "−" : "+"}$
+                          {Math.abs(adj.adjustmentAmount).toFixed(2)})
                         </span>
                       </div>
                     )}
+
                     {adj.notes && (
-                      <div className="sm:col-span-2 text-ink-3 bg-surface rounded p-2 border border-rule">
+                      <div className="text-ink-3 bg-surface rounded p-2 border border-rule">
                         {adj.notes}
                       </div>
                     )}

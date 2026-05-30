@@ -54,8 +54,8 @@ export async function syncShipmentsForAdjustments(opts: {
   const limit = opts.limit ?? 500;
 
   // Find adjustment orderIds we haven't fully synced yet. "Fully" means
-  // the row has BOTH carrier and outboundLabelCost — if either is
-  // missing we re-pull (covers new fields added after first sync).
+  // all the fields we extract from Veeqo are present. Missing any =
+  // re-pull (covers new fields added after the first sync).
   const have = new Set(
     (
       await prisma.amazonOrderShipment.findMany({
@@ -63,6 +63,7 @@ export async function syncShipmentsForAdjustments(opts: {
         where: {
           carrier: { not: null },
           outboundLabelCost: { not: null },
+          productName: { not: null },
         },
         distinct: ["amazonOrderId"],
       })
@@ -127,6 +128,11 @@ export async function syncShipmentsForAdjustments(opts: {
           shipment?.outbound_label_charges?.amount ??
           null;
 
+        const pkg = alloc?.allocation_package;
+        const packageWeightLbs = pkgWeightToLbs(pkg);
+        const packageDims = pkgDimsToInches(pkg);
+        const packageName = pkg?.package_name ?? null;
+
         const lineItems: any[] = alloc?.line_items ?? [];
         if (lineItems.length === 0) {
           // No items on this allocation — store a single row with empty sku.
@@ -139,6 +145,13 @@ export async function syncShipmentsForAdjustments(opts: {
             service,
             inferred,
             labelCost,
+            productName: null,
+            productImageUrl: null,
+            packageWeightLbs,
+            packageDimL: packageDims.l,
+            packageDimW: packageDims.w,
+            packageDimH: packageDims.h,
+            packageName,
           });
           if (carrier) result.withCarrier++;
           if (tracking) result.withTracking++;
@@ -146,6 +159,11 @@ export async function syncShipmentsForAdjustments(opts: {
         } else {
           for (const li of lineItems) {
             const sku = li?.sellable?.sku_code ?? "";
+            const productName =
+              li?.sellable?.product_title ??
+              li?.sellable?.full_title ??
+              null;
+            const productImageUrl = li?.sellable?.image_url ?? null;
             await upsertOne({
               amazonOrderId,
               sku,
@@ -155,6 +173,13 @@ export async function syncShipmentsForAdjustments(opts: {
               service,
               inferred,
               labelCost,
+              productName,
+              productImageUrl,
+              packageWeightLbs,
+              packageDimL: packageDims.l,
+              packageDimW: packageDims.w,
+              packageDimH: packageDims.h,
+              packageName,
             });
             if (carrier) result.withCarrier++;
             if (tracking) result.withTracking++;
@@ -182,6 +207,13 @@ interface UpsertArgs {
   service: string | null;
   inferred: string | null;
   labelCost: number | null;
+  productName: string | null;
+  productImageUrl: string | null;
+  packageWeightLbs: number | null;
+  packageDimL: number | null;
+  packageDimW: number | null;
+  packageDimH: number | null;
+  packageName: string | null;
 }
 
 async function upsertOne(a: UpsertArgs) {
@@ -201,6 +233,13 @@ async function upsertOne(a: UpsertArgs) {
       shipServiceLevel: a.service,
       carrierInferred: a.inferred,
       outboundLabelCost: a.labelCost,
+      productName: a.productName,
+      productImageUrl: a.productImageUrl,
+      packageWeightLbs: a.packageWeightLbs,
+      packageDimL: a.packageDimL,
+      packageDimW: a.packageDimW,
+      packageDimH: a.packageDimH,
+      packageName: a.packageName,
     },
     update: {
       carrier: a.carrier ?? undefined,
@@ -208,8 +247,48 @@ async function upsertOne(a: UpsertArgs) {
       shipServiceLevel: a.service ?? undefined,
       carrierInferred: a.inferred ?? undefined,
       outboundLabelCost: a.labelCost ?? undefined,
+      productName: a.productName ?? undefined,
+      productImageUrl: a.productImageUrl ?? undefined,
+      packageWeightLbs: a.packageWeightLbs ?? undefined,
+      packageDimL: a.packageDimL ?? undefined,
+      packageDimW: a.packageDimW ?? undefined,
+      packageDimH: a.packageDimH ?? undefined,
+      packageName: a.packageName ?? undefined,
     },
   });
+}
+
+/** Convert Veeqo allocation_package.weight to pounds. */
+function pkgWeightToLbs(pkg: any): number | null {
+  if (!pkg) return null;
+  const w = pkg.weight;
+  if (typeof w !== "number" || w === 0) return null;
+  const unit = (pkg.weight_unit || "").toLowerCase();
+  if (unit === "lbs" || unit === "lb" || unit === "pounds") return w;
+  if (unit === "oz" || unit === "ounces") return w / 16;
+  if (unit === "kg" || unit === "kilograms") return w * 2.20462;
+  if (unit === "g" || unit === "grams") return w * 0.00220462;
+  return w; // unknown unit — assume already lbs
+}
+
+/** Convert Veeqo allocation_package depth/width/height to inches. */
+function pkgDimsToInches(
+  pkg: any,
+): { l: number | null; w: number | null; h: number | null } {
+  if (!pkg) return { l: null, w: null, h: null };
+  const unit = (pkg.dimensions_unit || "").toLowerCase();
+  const convert = (v: number | undefined | null): number | null => {
+    if (typeof v !== "number" || v === 0) return null;
+    if (unit === "inches" || unit === "in") return v;
+    if (unit === "cm" || unit === "centimeters") return v * 0.393701;
+    if (unit === "mm" || unit === "millimeters") return v * 0.0393701;
+    return v;
+  };
+  return {
+    l: convert(pkg.depth),
+    w: convert(pkg.width),
+    h: convert(pkg.height),
+  };
 }
 
 /**

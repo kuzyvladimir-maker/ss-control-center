@@ -290,8 +290,10 @@ model ShippingAdjustment {
 
   sku               String?
   productName       String?
+  productImageUrl   String?
   carrier           String?
   service           String?
+  trackingNumber    String?
   declaredWeightLbs Float?
   declaredDimL      Float?
   declaredDimW      Float?
@@ -679,6 +681,22 @@ model AmazonOrderShipment {
   // originalLabelCost during enrichment so the page can show
   // "Original: $X → +adjustment: $Y → effective: $X+Y".
   outboundLabelCost  Float?
+
+  // Product context from Veeqo line_items[].sellable. Used to populate
+  // ShippingAdjustment.productName + render an image in the expansion.
+  productName        String?
+  productImageUrl    String?
+
+  // Declared package dimensions Vladimir set when buying the label
+  // (Veeqo allocation_package). The point of surfacing these on the
+  // /adjustments page is so Vladimir can verify whether Amazon's
+  // reweigh charge was justified — if declared 16 lbs and Amazon
+  // reweighed 16 lbs, the charge is bogus and disputable.
+  packageWeightLbs   Float?
+  packageDimL        Float?  // depth (inches)
+  packageDimW        Float?
+  packageDimH        Float?
+  packageName        String? // e.g. "S", "M", "Custom"
 
   // Inferred from trackingNumber regex when carrier is "Other" or null.
   carrierInferred    String?
