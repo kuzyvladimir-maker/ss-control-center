@@ -19,10 +19,10 @@
  * ?dryRun=false. The scheduled cron entry in vercel.json deliberately passes
  * ?dryRun=true so it reports-only until Vladimir flips it.
  *
- * SCHEDULE: 19:00 ET. Vercel cron is UTC and ignores DST, so we register two
- * UTC entries (23:00 and 00:00) and gate the handler to ET hour === 19 — that
- * lands exactly on 19:00 ET in both EDT and EST. ?force=true bypasses the
- * hour gate for manual runs.
+ * SCHEDULE: 22:00 ET (10 PM). Vercel cron is UTC and ignores DST, so we
+ * register two UTC entries (02:00 and 03:00) and gate the handler to ET hour
+ * === 22 — that lands exactly on 22:00 ET in both EDT and EST. ?force=true
+ * bypasses the hour gate for manual runs.
  *
  * Auth: CRON_SECRET via Bearer header (same as the other walmart crons).
  */
@@ -93,13 +93,13 @@ export async function GET(request: NextRequest) {
   const dryRun = url.searchParams.get("dryRun") !== "false";
   const force = url.searchParams.get("force") === "true";
 
-  // 19:00 ET gate (skip for manual ?force=true runs).
+  // 22:00 ET (10 PM) gate (skip for manual ?force=true runs).
   if (!force) {
     const h = easternHour();
-    if (h !== 19) {
+    if (h !== 22) {
       return NextResponse.json({
         ok: true,
-        skipped: `Not 19:00 ET (current ET hour ${h}). Use ?force=true to run now.`,
+        skipped: `Not 22:00 ET (current ET hour ${h}). Use ?force=true to run now.`,
       });
     }
   }
