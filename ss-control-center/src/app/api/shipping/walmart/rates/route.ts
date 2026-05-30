@@ -19,6 +19,11 @@ import { getWalmartClient, WalmartApiError } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { estimateShippingRates, type BoxInput } from "@/lib/walmart/shipping";
 import { selectBestWalmartRate } from "@/lib/shipping/walmart-rate-selection";
+import {
+  buildPackingSignature,
+  requiresPackingProfile,
+} from "@/lib/shipping/packing-signature";
+import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
 
 const STORE_INDEX = 1;
 
@@ -55,8 +60,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Order has no usable shipping address" }, { status: 422 });
   }
 
-  // Resolve package dims/weight: explicit body > stored SkuShippingData.
+  // Resolve package dims/weight using the SAME rule as the Veeqo plan, so
+  // dims are remembered per SKU+QUANTITY:
+  //   - explicit body override wins;
+  //   - multi-item OR single-SKU×qty>1 → PackingProfile keyed by the
+  //     "SKU:qty" signature (so a 7-pack ×1 and ×2 get DIFFERENT boxes);
+  //   - single SKU ×1 → SkuShippingData (per-SKU).
+  // boxSize (preset label or "LxWxH") is resolved to numeric L/W/H.
   let box: BoxInput | null = null;
+  let dimsSource = "none";
+
   if (
     typeof body.length === "number" &&
     typeof body.width === "number" &&
@@ -71,18 +84,52 @@ export async function POST(request: NextRequest) {
       dimUnit: body.dimUnit ?? "IN",
       weightUnit: body.weightUnit ?? "LB",
     };
+    dimsSource = "override";
   } else {
-    const sku = order.orderLines[0]?.sku;
-    if (sku) {
-      const d = await prisma.skuShippingData.findUnique({ where: { sku } });
-      if (d?.length && d?.width && d?.height && d?.weight) {
-        box = { length: d.length, width: d.width, height: d.height, weight: d.weight, dimUnit: "IN", weightUnit: "LB" };
+    const lines = order.orderLines
+      .filter((l) => l.sku && l.orderedQty > 0)
+      .map((l) => ({ sku: l.sku as string, quantity: l.orderedQty }));
+
+    if (requiresPackingProfile(lines)) {
+      const signature = buildPackingSignature(lines);
+      const profile = await prisma.packingProfile.findUnique({ where: { signature } });
+      const dims = profile ? resolveBoxDimensions(profile.boxSize) : null;
+      if (profile && dims) {
+        box = { ...dims, weight: profile.weight, dimUnit: "IN", weightUnit: "LB" };
+        dimsSource = `packing_profile:${signature}`;
+      }
+    } else {
+      const sku = lines[0]?.sku;
+      if (sku) {
+        const d = await prisma.skuShippingData.findUnique({ where: { sku } });
+        if (d?.length && d?.width && d?.height && d?.weight) {
+          box = {
+            length: d.length,
+            width: d.width,
+            height: d.height,
+            weight: d.weight,
+            dimUnit: "IN",
+            weightUnit: "LB",
+          };
+          dimsSource = `sku_shipping_data:${sku}`;
+        }
       }
     }
   }
+
   if (!box) {
+    const lines = order.orderLines
+      .filter((l) => l.sku && l.orderedQty > 0)
+      .map((l) => ({ sku: l.sku as string, quantity: l.orderedQty }));
+    const needsProfile = requiresPackingProfile(lines);
     return NextResponse.json(
-      { error: "No package dimensions: pass length/width/height/weight, or add them to SkuShippingData for this SKU." },
+      {
+        ok: false,
+        error: needsProfile
+          ? `No saved package for this SKU+quantity (${buildPackingSignature(lines)}). Set the box/weight and Save — it'll be remembered for this exact quantity.`
+          : "No package dimensions for this SKU yet. Set the box/weight and Save.",
+        needsDimensions: true,
+      },
       { status: 422 },
     );
   }
@@ -110,6 +157,7 @@ export async function POST(request: NextRequest) {
       ok: true,
       purchaseOrderId,
       box,
+      dimsSource,
       rates,
       selected: selection.chosen,
       selectionReason: selection.reason,
