@@ -48,6 +48,42 @@ export async function sendTelegramMessageTo(
 }
 
 /**
+ * Walmart-specific notifications channel.
+ *
+ * Routes to the "Рабочая Группа Salutem" supergroup (id -1003863976883)
+ * General topic (thread 1) by default — this is the dedicated team chat
+ * for Walmart operations. Used by:
+ *   * /api/cron/walmart-cancellation-watchdog
+ *   * future Walmart-related alerts (stock outs, returns spikes, etc.)
+ *
+ * Env vars (set both on Vercel to take effect):
+ *   TELEGRAM_WALMART_CHAT_ID    e.g. -1003863976883
+ *   TELEGRAM_WALMART_THREAD_ID  e.g. 1 (General topic). Omit if the group
+ *                               doesn't have forum topics enabled.
+ *
+ * Falls back to the default TELEGRAM_CHAT_ID (Jackie's DM) when not set,
+ * so a fresh deployment still sees alerts somewhere instead of silently
+ * dropping them.
+ */
+export async function sendWalmartTelegram(text: string) {
+  const chatId = process.env.TELEGRAM_WALMART_CHAT_ID || CHAT_ID;
+  const threadIdRaw = process.env.TELEGRAM_WALMART_THREAD_ID;
+  const threadId = threadIdRaw ? Number(threadIdRaw) : undefined;
+  if (!process.env.TELEGRAM_WALMART_CHAT_ID && CHAT_ID) {
+    console.warn(
+      "[Telegram walmart] Using TELEGRAM_CHAT_ID fallback (set TELEGRAM_WALMART_CHAT_ID to target Рабочая Группа Salutem)",
+    );
+  }
+  return sendTelegramMessageTo(
+    chatId,
+    text,
+    threadId && Number.isFinite(threadId)
+      ? { messageThreadId: threadId }
+      : undefined,
+  );
+}
+
+/**
  * Account Health Critical Alerts channel.
  *
  * Routing:

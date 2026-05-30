@@ -24,7 +24,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { getWalmartClient } from "@/lib/walmart/client";
-import { sendTelegramMessage } from "@/lib/telegram";
+import { sendWalmartTelegram } from "@/lib/telegram";
 import type { WalmartOrder, WalmartCancelLineInput } from "@/lib/walmart/types";
 
 export const maxDuration = 300;
@@ -197,7 +197,7 @@ export async function GET(request: NextRequest) {
         try {
           await api.cancelOrderLines(order.purchaseOrderId, cancelLines);
           const text = telegramSummary(order, "AUTO_CANCELLED");
-          const tg = await sendTelegramMessage(text);
+          const tg = await sendWalmartTelegram(text);
           await prisma.walmartCancellationRequest.update({
             where: { purchaseOrderId: order.purchaseOrderId },
             data: {
@@ -227,7 +227,7 @@ export async function GET(request: NextRequest) {
       } else {
         // Label bought — alert, don't auto-cancel.
         const text = telegramSummary(order, "ALERTED_LABEL_BOUGHT");
-        const tg = await sendTelegramMessage(text);
+        const tg = await sendWalmartTelegram(text);
         await prisma.walmartCancellationRequest.update({
           where: { purchaseOrderId: order.purchaseOrderId },
           data: {
