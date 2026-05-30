@@ -54,6 +54,15 @@ Status: Active. Full seller access (без Solution Provider delegation).
 - В коде: `WalmartOrdersApi.getLabelsByPurchaseOrder(po)` ([orders.ts](../../ss-control-center/src/lib/walmart/orders.ts)), тип `WalmartLabelInfo`. Для Jackie — MCP-инструмент `walmart_label_tracking`.
 - **Авто-подтверждение отгрузки:** ночной крон `/api/cron/walmart-ship-confirm` (19:00 ET, по умолчанию **dry-run**): Acknowledged → `getLabelsByPurchaseOrder` → трекинг → если посылка реально едет (не origin-only скан) → `shipOrderLines`. См. также [carrier-tracking-apis.md](carrier-tracking-apis.md).
 
+### Покупка этикетки через API — ДОСТУПНА (в отличие от Amazon)
+
+**ВАЖНО (исправляет старое допущение):** ранний гайд [CLAUDE_CODE_PROMPT_WALMART_API_INTEGRATION.md](../CLAUDE_CODE_PROMPT_WALMART_API_INTEGRATION.md) утверждал, что этикетки покупаются только через Veeqo. На самом деле Walmart **разрешает покупать label через свой SWW API** (Amazon SP-API для seller-fulfilled этого не умеет — отсюда зависимость от Veeqo).
+
+- **`POST /v3/shipping/labels`** — покупка этикетки (Ship with Walmart). Live-verified 2026-05-30: пустое тело → **400** `"request body is either missing or required fields are not passed"` (а не 404) ⇒ эндпоинт существует и **включён для нашего аккаунта** (STORE1), просто ждёт корректное тело. Внутренний роутинг сервиса — `/sww-label/v1/...`.
+- **Покупка ≠ отгрузка.** Как и кнопка Buy Shipping в UI, покупка через этот эндпоинт **не** ставит заказу статус Shipped — он остаётся Acknowledged. Это и есть преимущество над Veeqo, который шлёт fulfillment в Walmart сразу при покупке (его `notify_customer:false` — про письмо покупателю, не про статус канала).
+- ⚠️ Точная схема тела `POST /v3/shipping/labels` (адреса, габариты/вес, выбор тарифа) + корректные пути для тарифов/перевозчиков ещё выверяются: угаданные `GET /v3/shipping/carriers` и `/v3/shipping/estimates` отдали 404 (под-пути неверные). Capability подтверждён, схема — в работе.
+- Зачем: покупать этикетки в SSCC напрямую через Walmart, остаться в статусе Acknowledged, а Shipped ставить ночным cron'ом по факту реального движения. Позволяет уйти от Veeqo для Walmart-этикеток.
+
 ## ⚠️ Отличия от Amazon SP-API
 - **Нет текстового поиска по товарам** — `/v3/items` отдаёт только весь список (постранично) или один товар по точному SKU. Поиск по названию решён локальным зеркалом каталога — см. [Walmart Catalog Cache](walmart-catalog-cache.md).
 - **Нет Messaging API** — нет отдельного buyer-seller chat; коммуникация через cancel/refund/return workflows + Walmart Contact Us form
