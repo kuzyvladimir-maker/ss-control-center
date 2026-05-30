@@ -262,7 +262,12 @@ async function pushPackageToVeeqo(args: {
       ? Number(allocationId)
       : NaN;
   if (!Number.isFinite(numericAllocId) || numericAllocId <= 0) {
-    return { ok: false, reason: "no allocationId provided" };
+    // No Veeqo allocation to update — this is normal for Walmart orders
+    // (rate-shopped/bought via Walmart, not Veeqo) and for any order that
+    // isn't backed by a Veeqo allocation. The DB save already succeeded, so
+    // this is a benign skip, NOT a failure — don't trip the dialog's red
+    // "Veeqo did NOT update" warning.
+    return { ok: true, reason: "no Veeqo allocation to update (e.g. Walmart order)" };
   }
   if (
     L == null ||
