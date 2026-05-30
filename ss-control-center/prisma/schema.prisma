@@ -1007,6 +1007,37 @@ model WalmartItemCompliance {
 
 // ─── Walmart Catalog Cache ─────────────────────────────────────────────────
 // Local mirror of the full Walmart item catalog, refreshed nightly by
+/**
+ * Tracks buyer-initiated cancellation requests detected on Walmart orders
+ * (orderLineStatus.intentToCancel === "TRUE"). Populated by the
+ * /api/cron/walmart-cancellation-watchdog cron every 30 min. Used to:
+ *   * dedupe — don't process the same PO twice across cron runs
+ *   * audit — track what action we took (auto-cancel vs Telegram alert)
+ *   * SLA visibility — Walmart auto-cancels after 48h if seller doesn't act
+ */
+model WalmartCancellationRequest {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchaseOrderId String  @unique
+  storeIndex      Int     @default(1)
+  customerOrderId String?
+  productName     String?
+  orderTotal      Float?
+  shipBy          DateTime?
+
+  detectedAt DateTime  @default(now())
+  actionedAt DateTime?
+  // PENDING | AUTO_CANCELLED | ALERTED_LABEL_BOUGHT | ALERTED_SHIPPED | RESOLVED_MANUALLY | FAILED
+  action     String    @default("PENDING")
+  telegramSent Boolean @default(false)
+  notes        String?
+
+  @@index([action])
+  @@index([detectedAt])
+}
+
 // /api/cron/walmart (syncCatalog). Exists because Walmart's /v3/items API has
 // NO server-side text search — finding "every SKU whose title contains X"
 // otherwise means paginating all ~5 000 items live (~20 sequential API calls,

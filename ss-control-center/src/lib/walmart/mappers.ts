@@ -80,11 +80,19 @@ function mapTrackingInfo(raw: any): WalmartTrackingInfo | undefined {
 }
 
 function mapLineStatus(raw: any): WalmartOrderLineStatus {
+  // Walmart emits intentToCancel as the literal string "TRUE" / "FALSE"
+  // when present; field absent on most lines. Normalise to boolean.
+  const itc = raw?.intentToCancel;
+  const intentToCancel =
+    typeof itc === "string"
+      ? itc.toUpperCase() === "TRUE"
+      : itc === true || undefined;
   return {
     status: raw?.status ?? "",
     statusQuantity: Number(raw?.statusQuantity?.amount ?? 0),
     cancellationReason: raw?.cancellationReason,
     trackingInfo: mapTrackingInfo(raw?.trackingInfo),
+    intentToCancel,
   };
 }
 

@@ -37,6 +37,13 @@ export interface WalmartOrderLineStatus {
   statusQuantity: number;
   cancellationReason?: string;
   trackingInfo?: WalmartTrackingInfo;
+  /**
+   * Walmart sets this to "TRUE" (string, not boolean) when the buyer has
+   * requested cancellation via the customer-facing site. This is the
+   * source of the red exclamation mark in Seller Center. Polled by
+   * /api/cron/walmart-cancellation-watchdog.
+   */
+  intentToCancel?: boolean;
 }
 
 export interface WalmartOrderLine {
