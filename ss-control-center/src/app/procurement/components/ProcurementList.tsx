@@ -199,6 +199,8 @@ export function ProcurementList({
                 <ProcurementCard
                   key={c.lineItemId}
                   card={c}
+                  channel={c.channel}
+                  orderId={c.orderId}
                   storePriorities={prioritiesBySku?.[c.sku] ?? []}
                   selected={selected?.has(c.lineItemId) ?? false}
                   onToggleSelect={onToggleSelect}

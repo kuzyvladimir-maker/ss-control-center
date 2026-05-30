@@ -2302,3 +2302,32 @@ model GeneratedContent {
   @@index([compliance_status])
   @@index([manual_review_required])
 }
+
+// ============================================================================
+// Walmart Listing Retirement — "Снять с продажи"
+//
+// Triggered from the Procurement page when Vladimir decides a product is no
+// longer worth restocking (supplier discontinued, price too high, etc.). The
+// modal fans the procurement title across the Walmart catalog cache, lets him
+// pick which SKUs to zero, and POSTs each chosen SKU to Walmart inventory
+// PUT amount=0. Each successful zeroing writes one row here so we can:
+//   * audit "what did we kill and why"
+//   * roll back later if the supplier comes back (we keep previousQty)
+// ============================================================================
+model WalmartListingRetirement {
+  id            String    @id @default(cuid())
+  sku           String
+  storeIndex    Int       @default(1)
+  itemId        String?
+  productTitle  String?
+  previousQty   Int?
+  reason        String?
+  triggeredFrom String?   // e.g. "procurement:200014888886083"
+  searchQuery   String?
+  retiredAt     DateTime  @default(now())
+  rolledBackAt  DateTime?
+  rolledBackBy  String?
+
+  @@index([storeIndex, retiredAt])
+  @@index([sku])
+}

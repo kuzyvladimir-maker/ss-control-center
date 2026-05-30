@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Copy,
   Check,
@@ -11,12 +11,15 @@ import {
   AlertCircle,
   Store,
   Pencil,
+  MoreVertical,
+  Ban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Btn } from "@/components/kit";
 import { parsePackSize } from "@/lib/procurement/pack-size";
 import { PhotoLightbox } from "./PhotoLightbox";
 import { StorePriorityPopup } from "./StorePriorityPopup";
+import { RetireFromSaleModal } from "./RetireFromSaleModal";
 
 export interface ProcurementCardData {
   lineItemId: string;
@@ -61,6 +64,12 @@ interface ProcurementCardProps {
   /** Bubble up new store priorities so the page can refresh its cache and
    *  the chip on this card updates immediately. */
   onPrioritiesSaved?: (sku: string, storeNames: ReadonlyArray<string>) => void;
+  /** Sales channel ("Amazon" | "Walmart" | ...). Determines whether
+   *  Walmart-only actions (e.g. "Снять с продажи") appear in the kebab menu. */
+  channel?: string;
+  /** Source order id — recorded on Walmart retirement audit rows so we know
+   *  which procurement order triggered the action. */
+  orderId?: string;
 }
 
 /**
@@ -77,6 +86,8 @@ export function ProcurementCard({
   selected = false,
   onToggleSelect,
   onPrioritiesSaved,
+  channel,
+  orderId,
 }: ProcurementCardProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -84,6 +95,29 @@ export function ProcurementCard({
   const [actionError, setActionError] = useState<string | null>(null);
   const [partialMode, setPartialMode] = useState(false);
   const [storePopupOpen, setStorePopupOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [retireOpen, setRetireOpen] = useState(false);
+  const menuWrapperRef = useRef<HTMLDivElement | null>(null);
+
+  // Close kebab menu on outside click / Escape.
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onClickAway(e: MouseEvent) {
+      if (!menuWrapperRef.current?.contains(e.target as Node)) setMenuOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onClickAway);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClickAway);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
+  const isWalmart = (channel ?? "").toLowerCase() === "walmart";
+  const hasMenuActions = isWalmart; // expand later if we add cross-channel actions
 
   const status = card.status;
   const isBought = status?.kind === "bought";
@@ -212,6 +246,45 @@ export function ProcurementCard({
                 <Copy size={14} />
               )}
             </button>
+            {hasMenuActions && (
+              <div className="relative shrink-0" ref={menuWrapperRef}>
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className={cn(
+                    "inline-flex h-9 w-9 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-bg-elev hover:text-ink md:h-7 md:w-7",
+                    menuOpen && "bg-bg-elev text-ink",
+                  )}
+                  aria-label="Действия"
+                  aria-haspopup="menu"
+                  aria-expanded={menuOpen}
+                  title="Ещё действия"
+                >
+                  <MoreVertical size={14} />
+                </button>
+                {menuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-full z-20 mt-1 min-w-[200px] overflow-hidden rounded-md border border-rule bg-surface py-1 shadow-lg ring-1 ring-foreground/5"
+                  >
+                    {isWalmart && (
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setRetireOpen(true);
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12.5px] text-ink hover:bg-danger-tint hover:text-danger"
+                      >
+                        <Ban size={13} className="shrink-0" />
+                        Снять с продажи (Walmart)
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] tabular text-ink-3">
@@ -387,6 +460,14 @@ export function ProcurementCard({
           productTitle={card.productTitle}
           onClose={() => setStorePopupOpen(false)}
           onSaved={onPrioritiesSaved}
+        />
+      )}
+
+      {retireOpen && (
+        <RetireFromSaleModal
+          productTitle={card.productTitle}
+          triggeredFromOrderId={orderId ?? null}
+          onClose={() => setRetireOpen(false)}
         />
       )}
     </>
