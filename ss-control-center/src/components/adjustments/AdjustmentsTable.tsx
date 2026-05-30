@@ -10,7 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Check,
+  Copy,
+  ExternalLink,
+} from "lucide-react";
 
 interface Adjustment {
   id: string;
@@ -65,6 +71,71 @@ function trackingUrl(carrier: string | null, tracking: string | null): string | 
   return null;
 }
 
+/**
+ * Compose the text body Vladimir pastes into Amazon's Buy Shipping
+ * adjustment dispute form (Seller Central → Help → Buy Shipping →
+ * "I have a question about a Buy Shipping label charge or adjustment").
+ *
+ * Includes all the evidence Amazon support needs to evaluate the
+ * dispute: declared weight/dims (proves we measured correctly), original
+ * label cost, carrier + tracking, and the percentage overcharge so the
+ * agent can immediately see how extreme the adjustment is.
+ */
+function buildDisputeText(adj: Adjustment): string {
+  const overcharge = Math.abs(adj.adjustmentAmount);
+  const net =
+    adj.originalLabelCost != null
+      ? Math.max(0, adj.originalLabelCost - adj.adjustmentAmount)
+      : null;
+  const pctText =
+    adj.originalLabelCost && adj.originalLabelCost > 0
+      ? ` (${Math.round((overcharge / adj.originalLabelCost) * 100)}% above original)`
+      : "";
+
+  const lines: Array<string | null> = [
+    "Subject: Buy Shipping adjustment dispute",
+    "",
+    "Hello Amazon Buy Shipping team,",
+    "",
+    `We are disputing a shipping adjustment posted on ${adj.adjustmentDate} for the following order.`,
+    "",
+    `Order ID:        ${adj.orderId ?? "—"}`,
+    adj.trackingNumber
+      ? `Tracking #:      ${adj.trackingNumber}${adj.carrier ? ` (${adj.carrier})` : ""}`
+      : adj.carrier
+        ? `Carrier:         ${adj.carrier}`
+        : null,
+    adj.service ? `Service:         ${adj.service}` : null,
+    adj.productName ? `Product:         ${adj.productName}` : null,
+    adj.sku ? `SKU:             ${adj.sku}` : null,
+    "",
+    "Package declared at purchase:",
+    adj.declaredWeightLbs != null
+      ? `  Weight:        ${adj.declaredWeightLbs.toFixed(2)} lbs`
+      : "  Weight:        (not recorded on our side)",
+    adj.declaredDimL != null
+      ? `  Dimensions:    ${adj.declaredDimL} × ${adj.declaredDimW} × ${adj.declaredDimH} inches`
+      : "  Dimensions:    (not recorded on our side)",
+    "",
+    "Cost breakdown:",
+    adj.originalLabelCost != null
+      ? `  Original label cost: $${adj.originalLabelCost.toFixed(2)}`
+      : null,
+    `  Adjustment charge:   -$${overcharge.toFixed(2)}${pctText}`,
+    net != null ? `  Net we paid:         $${net.toFixed(2)}` : null,
+    "",
+    "Our package was correctly weighed and measured on a calibrated scale before purchasing the Buy Shipping label, and the declared values match what we shipped. The adjustment significantly exceeds typical carrier reweigh corrections (which are normally $0.50–$3.00 for accurate declarations).",
+    "",
+    "Please review the carrier reweigh data for this shipment and, if our declaration matches the carrier-measured values, refund the over-charge.",
+    "",
+    "Thank you.",
+  ];
+  return lines.filter((l) => l !== null).join("\n");
+}
+
+const BUY_SHIPPING_SUPPORT_URL =
+  "https://sellercentral.amazon.com/cu/contact-us";
+
 interface AdjustmentFilters {
   channel: string;
   days: string;
@@ -86,6 +157,22 @@ export default function AdjustmentsTable({
   onFiltersChange,
 }: AdjustmentsTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  async function copyDispute(adj: Adjustment) {
+    const text = buildDisputeText(adj);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(adj.id);
+      setTimeout(() => {
+        setCopiedId((c) => (c === adj.id ? null : c));
+      }, 2000);
+    } catch (err) {
+      console.error("Clipboard write failed:", err);
+      // Fallback — open a textarea so user can copy manually
+      window.prompt("Copy dispute text:", text);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -320,6 +407,46 @@ export default function AdjustmentsTable({
                             </p>
                           )}
 
+                          {/* Dispute helpers — only for charges, not refunds */}
+                          {!isRefund(adj) && adj.orderId && (
+                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  copyDispute(adj);
+                                }}
+                                className="inline-flex items-center gap-1.5 rounded-md border border-rule bg-surface px-2.5 py-1 text-[11.5px] font-medium text-ink hover:bg-surface-tint"
+                              >
+                                {copiedId === adj.id ? (
+                                  <>
+                                    <Check size={12} className="text-success" />
+                                    Copied
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy size={12} />
+                                    Copy dispute text
+                                  </>
+                                )}
+                              </button>
+                              <a
+                                href={BUY_SHIPPING_SUPPORT_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center gap-1.5 rounded-md border border-rule bg-surface px-2.5 py-1 text-[11.5px] font-medium text-ink hover:bg-surface-tint"
+                              >
+                                <ExternalLink size={12} />
+                                Open Amazon Buy Shipping support
+                              </a>
+                              <span className="text-[10.5px] text-ink-3">
+                                Dispute window: 90 days from{" "}
+                                {adj.adjustmentDate}
+                              </span>
+                            </div>
+                          )}
+
                           {adj.notes && (
                             <p className="text-ink-3 bg-surface rounded p-2 border border-rule">
                               {adj.notes}
@@ -497,6 +624,41 @@ export default function AdjustmentsTable({
                           ({isRefund(adj) ? "−" : "+"}$
                           {Math.abs(adj.adjustmentAmount).toFixed(2)})
                         </span>
+                      </div>
+                    )}
+
+                    {!isRefund(adj) && adj.orderId && (
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyDispute(adj);
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-md border border-rule bg-surface px-2.5 py-1 text-[11px] font-medium text-ink"
+                        >
+                          {copiedId === adj.id ? (
+                            <>
+                              <Check size={12} className="text-success" />
+                              Copied
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={12} />
+                              Copy dispute
+                            </>
+                          )}
+                        </button>
+                        <a
+                          href={BUY_SHIPPING_SUPPORT_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1.5 rounded-md border border-rule bg-surface px-2.5 py-1 text-[11px] font-medium text-ink"
+                        >
+                          <ExternalLink size={12} />
+                          Open support
+                        </a>
                       </div>
                     )}
 
