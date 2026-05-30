@@ -301,6 +301,21 @@ export async function GET() {
       later: 0,
     };
 
+    // Walmart orders come into Veeqo under store names like "SIRIUS TRADING
+    // INTERNATIONAL LLC" (NOT "Walmart"), and their Veeqo order `number` is
+    // the Walmart customerOrderId. Map customerOrderId → purchaseOrderId here
+    // so the UI can route Walmart rows to the Walmart-direct rate/buy flow
+    // (and skip Veeqo) — channel-name matching is unreliable.
+    const orderNumbers = veeqoOrders.map((o) => String(o.number ?? o.id));
+    const walmartPoByCustomer = new Map<string, string>();
+    if (orderNumbers.length > 0) {
+      const wmRows = await prisma.walmartOrder.findMany({
+        where: { customerOrderId: { in: orderNumbers } },
+        select: { customerOrderId: true, purchaseOrderId: true },
+      });
+      for (const r of wmRows) walmartPoByCustomer.set(r.customerOrderId, r.purchaseOrderId);
+    }
+
     const orders = [];
     for (const o of veeqoOrders) {
       const channelName: string = o.channel?.name ?? o.channel_name ?? "";
@@ -423,6 +438,10 @@ export async function GET() {
         orderTotal,
         customerPaidShipping,
         currency: o.currency_code ?? "USD",
+        // Walmart-direct flow markers (null/false for Amazon orders).
+        isWalmart: walmartPoByCustomer.has(String(o.number ?? o.id)),
+        walmartPurchaseOrderId:
+          walmartPoByCustomer.get(String(o.number ?? o.id)) ?? null,
       });
     }
 

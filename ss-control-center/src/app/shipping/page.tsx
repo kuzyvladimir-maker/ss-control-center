@@ -86,6 +86,10 @@ interface DashboardOrder {
   orderTotal: number;
   customerPaidShipping: number;
   currency: string;
+  // Walmart-direct flow: when true, this order's label is rate-shopped +
+  // bought via Walmart (not Veeqo), keyed by walmartPurchaseOrderId.
+  isWalmart?: boolean;
+  walmartPurchaseOrderId?: string | null;
 }
 
 interface PlanItem {
