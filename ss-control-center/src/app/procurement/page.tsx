@@ -537,35 +537,50 @@ export default function ProcurementPage() {
         {/* Row 2: Quick filter chips — channels + ship-by, single horizontal
             scrollable row so they all fit on a 380px iPhone. */}
         <div className="-mx-4 mt-2 flex items-center gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:-mx-6 sm:px-6 [&::-webkit-scrollbar]:hidden">
+          {/* Brand-coloured channel toggles — matches the visual language of
+              the Shipping Labels page so the same chip means the same thing
+              everywhere. Amazon: orange wordmark with the smile underline;
+              Walmart: blue wordmark with the yellow spark. */}
           <button
             type="button"
             onClick={() =>
               setChannelFilter((prev) => (prev === "amazon" ? null : "amazon"))
             }
-            className={cn(
-              "inline-flex h-7 shrink-0 items-center rounded-md border px-2.5 text-[12px] font-medium transition-colors",
-              channelFilter === "amazon"
-                ? "border-warn-strong bg-warn-tint text-warn-strong"
-                : "border-rule bg-surface text-ink-2 hover:bg-bg-elev"
-            )}
             aria-pressed={channelFilter === "amazon"}
+            title="Только Amazon заказы"
+            className={cn(
+              "group relative shrink-0 rounded-md border px-3.5 pb-2 pt-1.5 text-[13px] font-semibold leading-none transition",
+              channelFilter === "amazon"
+                ? "border-[#ff9900] bg-[#ff9900]/10 text-[#232f3e] shadow-sm"
+                : "border-rule bg-surface text-ink-2 hover:border-[#ff9900]/60 hover:text-ink-1"
+            )}
           >
-            Amazon
+            <span className="lowercase tracking-tight">amazon</span>
+            <span
+              className={cn(
+                "absolute bottom-1 left-3.5 right-3.5 h-[3px] rounded-full transition",
+                channelFilter === "amazon"
+                  ? "bg-[#ff9900]"
+                  : "bg-[#ff9900]/40 group-hover:bg-[#ff9900]/70"
+              )}
+            />
           </button>
           <button
             type="button"
             onClick={() =>
               setChannelFilter((prev) => (prev === "walmart" ? null : "walmart"))
             }
-            className={cn(
-              "inline-flex h-7 shrink-0 items-center rounded-md border px-2.5 text-[12px] font-medium transition-colors",
-              channelFilter === "walmart"
-                ? "border-info bg-info-tint text-info"
-                : "border-rule bg-surface text-ink-2 hover:bg-bg-elev"
-            )}
             aria-pressed={channelFilter === "walmart"}
+            title="Только Walmart заказы"
+            className={cn(
+              "flex shrink-0 items-center gap-1.5 rounded-md border px-3.5 py-1.5 text-[13px] font-bold leading-none tracking-tight transition",
+              channelFilter === "walmart"
+                ? "border-[#0071dc] bg-[#0071dc] text-white shadow-sm"
+                : "border-rule bg-surface text-[#0071dc] hover:border-[#0071dc]/60"
+            )}
           >
-            Walmart
+            <span className="text-[15px] leading-none text-[#ffc220]">✲</span>
+            <span>Walmart</span>
           </button>
 
           {/* Divider */}

@@ -9,6 +9,7 @@ import {
   Check,
   Ban,
   ExternalLink,
+  ImageOff,
 } from "lucide-react";
 import { Btn } from "@/components/kit";
 import { cleanProductQuery } from "@/lib/procurement/clean-product-query";
@@ -36,6 +37,12 @@ interface ExecuteResult {
   ok: boolean;
   error?: string;
   walmartStatus?: number;
+}
+
+interface SkuDetail {
+  sku: string;
+  currentQty: number | null;
+  imageUrl: string | null;
 }
 
 /**
@@ -78,6 +85,10 @@ export function RetireFromSaleModal({
   );
   const [bulkConfirm, setBulkConfirm] = useState(false);
 
+  // Per-SKU image + live inventory, loaded after search completes.
+  const [details, setDetails] = useState<Map<string, SkuDetail>>(new Map());
+  const [loadingDetails, setLoadingDetails] = useState(false);
+
   // Auto-run the initial search so the modal opens with results already in
   // place — saves Vladimir a click when the cleaned query is what he wanted.
   useEffect(() => {
@@ -97,6 +108,7 @@ export function RetireFromSaleModal({
     setCacheNote(null);
     setExecuteResults(new Map());
     setBulkConfirm(false);
+    setDetails(new Map());
     try {
       const res = await fetch("/api/walmart/retire-listing/search", {
         method: "POST",
@@ -117,7 +129,8 @@ export function RetireFromSaleModal({
         setSearchError(data.error ?? `HTTP ${res.status}`);
         return;
       }
-      setMatches(data.matches ?? []);
+      const found = data.matches ?? [];
+      setMatches(found);
       if (data.cacheLastSyncedAt) {
         const synced = new Date(data.cacheLastSyncedAt);
         const ageHours = Math.round(
@@ -127,10 +140,37 @@ export function RetireFromSaleModal({
           `Каталог обновлён ${ageHours < 1 ? "недавно" : `~${ageHours} ч. назад`} (${data.totalInCache ?? "?"} SKU всего)`,
         );
       }
+      // Fire-and-forget: enrich each row with image + live qty in the
+      // background. The list renders immediately with skeletons; thumbs
+      // and qty badges pop in as the call resolves.
+      if (found.length > 0) {
+        void fetchDetails(found);
+      }
     } catch (e) {
       setSearchError(e instanceof Error ? e.message : "Network error");
     } finally {
       setSearching(false);
+    }
+  }
+
+  async function fetchDetails(rows: SearchMatch[]) {
+    setLoadingDetails(true);
+    try {
+      const res = await fetch("/api/walmart/retire-listing/sku-details", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: rows.map((r) => ({ sku: r.sku, itemId: r.itemId })),
+        }),
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as { details?: SkuDetail[] };
+      if (!data.details) return;
+      setDetails(new Map(data.details.map((d) => [d.sku, d])));
+    } catch {
+      // Non-fatal — the modal still works without thumbnails/qty.
+    } finally {
+      setLoadingDetails(false);
     }
   }
 
@@ -320,6 +360,10 @@ export function RetireFromSaleModal({
                   const result = executeResults.get(m.sku);
                   const justDone = result?.ok === true;
                   const justFailed = result && result.ok === false;
+                  const detail = details.get(m.sku);
+                  // After successful retire, qty is 0; before the details
+                  // refresh, show the just-set value optimistically.
+                  const liveQty = justDone ? 0 : detail?.currentQty ?? null;
                   return (
                     <div
                       key={m.sku}
@@ -327,6 +371,23 @@ export function RetireFromSaleModal({
                         m.alreadyRetired && !justDone ? "opacity-55" : ""
                       } ${justDone ? "bg-green-soft/40" : ""}`}
                     >
+                      {/* Thumbnail (40×40) — placeholder until details fetch resolves */}
+                      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-rule bg-bg-elev">
+                        {detail?.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={detail.imageUrl}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : loadingDetails ? (
+                          <Loader2 size={12} className="animate-spin text-ink-4" />
+                        ) : (
+                          <ImageOff size={14} className="text-ink-4" />
+                        )}
+                      </div>
+
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 text-[12px] font-medium text-ink">
                           <span className="truncate">{m.title || "(без названия)"}</span>
@@ -351,6 +412,24 @@ export function RetireFromSaleModal({
                               <span className="text-ink-4">·</span>
                               <span>{m.lifecycleStatus}</span>
                             </>
+                          )}
+                          {/* Live inventory badge */}
+                          <span className="text-ink-4">·</span>
+                          {loadingDetails && liveQty === null ? (
+                            <span className="inline-flex items-center gap-1 text-ink-4">
+                              <Loader2 size={9} className="animate-spin" />
+                              сток…
+                            </span>
+                          ) : liveQty === null ? (
+                            <span className="text-ink-4">сток: ?</span>
+                          ) : liveQty === 0 ? (
+                            <span className="rounded bg-bg-elev px-1 font-medium text-ink-3">
+                              OOS
+                            </span>
+                          ) : (
+                            <span className="rounded bg-green-soft px-1 font-medium text-green-ink">
+                              сток: {liveQty}
+                            </span>
                           )}
                           {(m.alreadyRetired || justDone) && (
                             <>

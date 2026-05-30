@@ -1059,6 +1059,12 @@ model WalmartCatalogItem {
   // catalog). A mid-sync failure therefore prunes nothing — no data loss.
   syncedAt DateTime @default(now())
 
+  // Walmart Marketplace API doesn't expose product images, so we scrape the
+  // `og:image` meta tag from the public product page (walmart.com/ip/{itemId})
+  // lazily on first use and cache here. Refreshed when older than 7 days.
+  mainImageUrl        String?
+  mainImageFetchedAt  DateTime?
+
   // One row per (account, SKU). Re-sync upserts onto this key.
   @@unique([storeIndex, sku], name: "walmart_catalog_item_dedup")
   @@index([storeIndex, publishedStatus])
