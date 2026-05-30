@@ -39,7 +39,7 @@
     },
     {
       "path": "/api/cron/walmart-cancellation-watchdog",
-      "schedule": "*/30 * * * *"
+      "schedule": "7 13 * * *"
     }
   ]
 }
