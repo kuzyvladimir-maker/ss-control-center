@@ -324,6 +324,8 @@ export default function ShippingLabelsPage() {
     >
   >({});
   const [markingShipped, setMarkingShipped] = useState<string | null>(null);
+  // In-flight Rollback button. Stops double-clicks while we strip Placed.
+  const [rollingBack, setRollingBack] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -1030,6 +1032,43 @@ export default function ShippingLabelsPage() {
   // Manually mark a Walmart order Shipped using its purchased label's
   // tracking (POST /api/shipping/walmart/mark-shipped). The 10pm cron does
   // this automatically once the package moves; this is the manual override.
+  // Push an order back to Procurement. Strips the `Placed` tag and
+  // resets every "bought" line-item status. The shipping label (if any)
+  // is left untouched — operator wants to reuse it once they re-source
+  // the product. The order disappears from Shipping Labels on next
+  // load() because /api/shipping/dashboard filters on Placed.
+  async function rollbackProcurement(o: DashboardOrder) {
+    setRollingBack(o.orderId);
+    setBuyMsg(`Rolling ${o.orderNumber} back to Procurement…`);
+    setBuyErrors((prev) => {
+      if (!(o.orderId in prev)) return prev;
+      const next = { ...prev };
+      delete next[o.orderId];
+      return next;
+    });
+    try {
+      const r = await fetch("/api/shipping/rollback-procurement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: o.orderId }),
+      });
+      const j = await r.json();
+      if (!r.ok || j?.ok === false) {
+        throw new Error(j?.error || "Failed to rollback");
+      }
+      setBuyMsg(
+        `${o.orderNumber} returned to Procurement (label kept). Re-buy the product, then ship.`,
+      );
+      await load();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setBuyMsg(msg);
+      setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
+    } finally {
+      setRollingBack(null);
+    }
+  }
+
   async function markShipped(o: DashboardOrder) {
     if (!o.walmartPurchaseOrderId) return;
     setMarkingShipped(o.orderId);
@@ -1545,6 +1584,8 @@ export default function ShippingLabelsPage() {
               walmartStatus={walmartStatus[o.orderNumber] ?? null}
               markingShipped={markingShipped === o.orderId}
               onMarkShipped={() => markShipped(o)}
+              rollingBack={rollingBack === o.orderId}
+              onRollback={() => rollbackProcurement(o)}
               shipDate={effectiveShipDate(o.orderNumber)}
               shipDateOverridden={o.orderNumber in shipDateByOrder}
               requoting={!!requoting[o.orderNumber]}
@@ -1781,6 +1822,8 @@ function OrderRow({
   walmartStatus,
   markingShipped,
   onMarkShipped,
+  rollingBack,
+  onRollback,
   shipDate,
   shipDateOverridden,
   requoting,
@@ -1810,6 +1853,8 @@ function OrderRow({
   } | null;
   markingShipped: boolean;
   onMarkShipped: () => void;
+  rollingBack: boolean;
+  onRollback: () => void;
   // Ship-date control (Walmart only). shipDate = the effective date for this
   // order; requoting = a re-quote is in flight; onShipDateChange re-quotes.
   shipDate: string;
@@ -2317,22 +2362,41 @@ function OrderRow({
               <span className="ml-2 text-danger">— {buyError}</span>
             ) : null}
           </span>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onMarkShipped}
-            disabled={markingShipped}
-            className="h-7 text-[11.5px]"
-          >
-            {markingShipped ? (
-              <>
-                <Loader2 size={12} className="mr-1 animate-spin" />
-                Marking…
-              </>
-            ) : (
-              "Mark as Shipped"
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onRollback}
+              disabled={rollingBack || markingShipped}
+              title="Push the order back to Procurement (keeps the bought label)"
+              className="h-7 text-[11.5px]"
+            >
+              {rollingBack ? (
+                <>
+                  <Loader2 size={12} className="mr-1 animate-spin" />
+                  Rolling back…
+                </>
+              ) : (
+                "Rollback Purchase"
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onMarkShipped}
+              disabled={markingShipped || rollingBack}
+              className="h-7 text-[11.5px]"
+            >
+              {markingShipped ? (
+                <>
+                  <Loader2 size={12} className="mr-1 animate-spin" />
+                  Marking…
+                </>
+              ) : (
+                "Mark as Shipped"
+              )}
+            </Button>
+          </div>
         </div>
       )}
       {wmShipped && (
