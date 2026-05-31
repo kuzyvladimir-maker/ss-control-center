@@ -868,59 +868,152 @@ export default function ShippingLabelsPage() {
   async function buySelected() {
     if (selected.size === 0) return;
     setBuying(true);
-    setBuyMsg(`Generating plan for ${selected.size} order(s)…`);
+
+    // Partition selection into Walmart vs Amazon. Walmart labels are
+    // bought via /api/shipping/walmart/buy directly (skipping Veeqo);
+    // Amazon labels go through the /plan + /buy pipeline as before.
+    // Without this split, Walmart orders would either be filtered out
+    // by /plan (which only quotes Veeqo-handled channels properly) or
+    // end up at /api/shipping/buy which doesn't speak Walmart Shipping
+    // API at all — that's the "nothing happens on click" the operator
+    // reports when their selection is Walmart-heavy.
+    const orderById = new Map<string, DashboardOrder>();
+    for (const o of filteredOrders) orderById.set(o.orderId, o);
+    const walmartOrders: DashboardOrder[] = [];
+    const amazonIds: string[] = [];
+    for (const id of selected) {
+      const o = orderById.get(id);
+      if (!o) continue;
+      if (o.isWalmart) walmartOrders.push(o);
+      else amazonIds.push(id);
+    }
+
+    const bought: BuyReportSuccess[] = [];
+    const errors: BuyReportError[] = [];
+
     try {
-      // Build a plan filtered to just the selected orders, then buy.
-      const ids = [...selected].join(",");
-      const planRes = await fetch(`/api/shipping/plan?orderIds=${ids}`);
-      const planJson = await planRes.json();
-      if (!planRes.ok)
-        throw new Error(planJson?.error || "Failed to plan labels");
-      const planId: string = planJson.planId;
-      const itemIds: string[] = (planJson.orders ?? [])
-        .filter((o: { status: string }) => o.status === "pending")
-        .map((o: { id: string }) => o.id);
-      if (itemIds.length === 0) {
+      // ── Walmart leg ────────────────────────────────────────────────
+      if (walmartOrders.length > 0) {
+        setBuyMsg(`Buying ${walmartOrders.length} Walmart label(s)…`);
+        for (const o of walmartOrders) {
+          const info = walmartBuyInfo[o.orderNumber];
+          if (!info) {
+            errors.push({
+              orderNumber: o.orderNumber,
+              itemId: o.orderId,
+              error:
+                "No Walmart rate yet — set the package size/weight, then Refresh.",
+            });
+            continue;
+          }
+          try {
+            const r = await fetch("/api/shipping/walmart/buy", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                purchaseOrderId: info.purchaseOrderId,
+                carrierName: info.carrierName,
+                serviceType: info.serviceType,
+                length: info.length,
+                width: info.width,
+                height: info.height,
+                weight: info.weight,
+                edd: info.edd,
+                shipByDate:
+                  info.shipByDate ?? effectiveShipDate(o.orderNumber),
+              }),
+            });
+            const j = await r.json();
+            if (!r.ok || j?.ok === false) {
+              errors.push({
+                orderNumber: o.orderNumber,
+                itemId: o.orderId,
+                error: j?.error || "Walmart label purchase failed",
+              });
+              continue;
+            }
+            bought.push({
+              orderNumber: o.orderNumber,
+              tracking: j.trackingNumber ?? "",
+              itemId: o.orderId,
+              labelPath: j.labelPath ?? null,
+              pdfSaved: !!j.pdfSaved,
+              pdfSource: j.pdfSaved ? "drive" : "none",
+              driveError: j.driveError ?? null,
+              carrier: j.carrierName ?? info.carrierName,
+              service: j.serviceType ?? info.serviceType,
+              price: null,
+            });
+          } catch (e) {
+            errors.push({
+              orderNumber: o.orderNumber,
+              itemId: o.orderId,
+              error: e instanceof Error ? e.message : String(e),
+            });
+          }
+        }
+      }
+
+      // ── Amazon leg (existing plan + buy flow) ─────────────────────
+      if (amazonIds.length > 0) {
+        setBuyMsg(`Generating plan for ${amazonIds.length} Amazon order(s)…`);
+        const ids = amazonIds.join(",");
+        const planRes = await fetch(`/api/shipping/plan?orderIds=${ids}`);
+        const planJson = await planRes.json();
+        if (!planRes.ok)
+          throw new Error(planJson?.error || "Failed to plan labels");
+        const planId: string = planJson.planId;
+        const itemIds: string[] = (planJson.orders ?? [])
+          .filter((o: { status: string }) => o.status === "pending")
+          .map((o: { id: string }) => o.id);
+        if (itemIds.length > 0) {
+          setBuyMsg(`Buying ${itemIds.length} Amazon label(s)…`);
+          // Map orderId → itemId for any per-row rate overrides.
+          const overridesByItemId: Record<string, RateOverride> = {};
+          for (const planOrder of planJson.orders ?? []) {
+            const ov = rateOverrides[planOrder.orderId];
+            if (ov) overridesByItemId[planOrder.id] = ov;
+          }
+          const buyRes = await fetch("/api/shipping/buy", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              planId,
+              itemIds,
+              overrides: overridesByItemId,
+            }),
+          });
+          const buyJson = await buyRes.json();
+          if (!buyRes.ok)
+            throw new Error(buyJson?.error || "Failed to buy labels");
+          for (const b of (buyJson.bought ?? []) as BuyReportSuccess[]) {
+            bought.push(b);
+          }
+          for (const e of (buyJson.errors ?? []) as BuyReportError[]) {
+            errors.push(e);
+          }
+        }
+      }
+
+      // ── Report + cleanup ──────────────────────────────────────────
+      const totalAttempted = walmartOrders.length + amazonIds.length;
+      if (bought.length === 0 && errors.length === 0) {
         setBuyMsg("Nothing buyable in the selection.");
         return;
       }
-      setBuyMsg(`Buying ${itemIds.length} label(s)…`);
-      // For each selected order with an active override, map it from
-      // orderId → itemId so the buy endpoint can apply it row-by-row.
-      const overridesByItemId: Record<string, RateOverride> = {};
-      for (const planOrder of planJson.orders ?? []) {
-        const ov = rateOverrides[planOrder.orderId];
-        if (ov) overridesByItemId[planOrder.id] = ov;
-      }
-      const buyRes = await fetch("/api/shipping/buy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planId,
-          itemIds,
-          overrides: overridesByItemId,
-        }),
-      });
-      const buyJson = await buyRes.json();
-      if (!buyRes.ok)
-        throw new Error(buyJson?.error || "Failed to buy labels");
-      const ok = (buyJson.bought ?? []).length;
-      const fail = (buyJson.errors ?? []).length;
-      setBuyMsg(`Bought ${ok} · ${fail} failed`);
+      setBuyMsg(`Bought ${bought.length} · ${errors.length} failed`);
       setBuyReport({
         scope: "bulk",
-        total: itemIds.length,
-        bought: buyJson.bought ?? [],
-        errors: buyJson.errors ?? [],
+        total: totalAttempted,
+        bought,
+        errors,
       });
       setSelected(new Set());
-      // Clear overrides for orders we just bought — they don't apply to
-      // a future purchase if we ever buy this same orderId again.
+      // Clear overrides for orders we just attempted — they're stale for
+      // any subsequent purchase.
       setRateOverrides((prev) => {
         const next = { ...prev };
-        for (const [id] of [...selected].map((id) => [id])) {
-          delete next[id as string];
-        }
+        for (const id of selected) delete next[id];
         return next;
       });
       await load();
