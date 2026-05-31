@@ -42,7 +42,7 @@ export function buildPdfFilename(
 ): string {
   const edd = fmtDate(item.edd);
   const dl = fmtDate(item.deliveryBy);
-  const product = item.product.substring(0, 80).replace(/[/\\:*?"<>|]/g, "");
+  const product = item.product.substring(0, 100).replace(/[/\\:*?"<>|]/g, "");
   const base = `(EDD ${edd} | DL ${dl}) ${product} -- ${item.qty}.pdf`;
   if (frozenRisk && ["medium", "high", "critical"].includes(frozenRisk.level)) {
     const advice = frozenRisk.shortAdvice
