@@ -326,6 +326,8 @@ export default function ShippingLabelsPage() {
   const [markingShipped, setMarkingShipped] = useState<string | null>(null);
   // In-flight Rollback button. Stops double-clicks while we strip Placed.
   const [rollingBack, setRollingBack] = useState<string | null>(null);
+  // In-flight Discard Label button. Stops double-clicks during cancel.
+  const [discardingLabel, setDiscardingLabel] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -1069,6 +1071,44 @@ export default function ShippingLabelsPage() {
     }
   }
 
+  // Cancel a bought label (Amazon → Veeqo refund, Walmart → discard).
+  // Server picks the right path from the order's channel. After success
+  // the order stays in Shipping Labels but with no label, so the
+  // operator can re-quote / re-buy without leaving the page. Used when
+  // a customer cancels OR we cancel the order outright. Does NOT touch
+  // Procurement state — the product was already bought, that stays.
+  async function discardLabel(o: DashboardOrder) {
+    setDiscardingLabel(o.orderId);
+    setBuyMsg(`Discarding label for ${o.orderNumber}…`);
+    setBuyErrors((prev) => {
+      if (!(o.orderId in prev)) return prev;
+      const next = { ...prev };
+      delete next[o.orderId];
+      return next;
+    });
+    try {
+      const r = await fetch("/api/shipping/discard-label", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: o.orderId }),
+      });
+      const j = await r.json();
+      if (!r.ok || j?.ok === false) {
+        throw new Error(j?.error || "Failed to discard label");
+      }
+      setBuyMsg(
+        `${o.orderNumber}: label discarded (refund 24-72h). Ready to re-quote.`,
+      );
+      await load();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setBuyMsg(msg);
+      setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
+    } finally {
+      setDiscardingLabel(null);
+    }
+  }
+
   async function markShipped(o: DashboardOrder) {
     if (!o.walmartPurchaseOrderId) return;
     setMarkingShipped(o.orderId);
@@ -1586,6 +1626,8 @@ export default function ShippingLabelsPage() {
               onMarkShipped={() => markShipped(o)}
               rollingBack={rollingBack === o.orderId}
               onRollback={() => rollbackProcurement(o)}
+              discardingLabel={discardingLabel === o.orderId}
+              onDiscardLabel={() => discardLabel(o)}
               shipDate={effectiveShipDate(o.orderNumber)}
               shipDateOverridden={o.orderNumber in shipDateByOrder}
               requoting={!!requoting[o.orderNumber]}
@@ -1824,6 +1866,8 @@ function OrderRow({
   onMarkShipped,
   rollingBack,
   onRollback,
+  discardingLabel,
+  onDiscardLabel,
   shipDate,
   shipDateOverridden,
   requoting,
@@ -1855,6 +1899,8 @@ function OrderRow({
   onMarkShipped: () => void;
   rollingBack: boolean;
   onRollback: () => void;
+  discardingLabel: boolean;
+  onDiscardLabel: () => void;
   // Ship-date control (Walmart only). shipDate = the effective date for this
   // order; requoting = a re-quote is in flight; onShipDateChange re-quotes.
   shipDate: string;
@@ -2367,7 +2413,7 @@ function OrderRow({
               size="sm"
               variant="outline"
               onClick={onRollback}
-              disabled={rollingBack || markingShipped}
+              disabled={rollingBack || markingShipped || discardingLabel}
               title="Push the order back to Procurement (keeps the bought label)"
               className="h-7 text-[11.5px]"
             >
@@ -2383,8 +2429,25 @@ function OrderRow({
             <Button
               size="sm"
               variant="outline"
+              onClick={onDiscardLabel}
+              disabled={discardingLabel || markingShipped || rollingBack}
+              title="Cancel the label (FedEx/Walmart refund, ~24-72h). Order stays in Shipping Labels."
+              className="h-7 text-[11.5px]"
+            >
+              {discardingLabel ? (
+                <>
+                  <Loader2 size={12} className="mr-1 animate-spin" />
+                  Discarding…
+                </>
+              ) : (
+                "Discard Label"
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
               onClick={onMarkShipped}
-              disabled={markingShipped || rollingBack}
+              disabled={markingShipped || rollingBack || discardingLabel}
               className="h-7 text-[11.5px]"
             >
               {markingShipped ? (
