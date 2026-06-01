@@ -413,6 +413,18 @@ export async function GET() {
         Number(o.total_price ?? o.subtotal_price ?? 0) || 0;
       const customerPaidShipping = Number(o.delivery_cost ?? 0) || 0;
 
+      // Shipping address — name/city/state — pulled from deliver_to so the
+      // operator can sanity-check the destination on the row without
+      // opening Veeqo. (Address1/zip omitted to keep the chip compact;
+      // they'd dox the order without adding decision-useful info.)
+      const dt = o.deliver_to ?? {};
+      const firstName = String(dt.first_name ?? "").trim();
+      const lastName = String(dt.last_name ?? "").trim();
+      const customerName =
+        [firstName, lastName].filter(Boolean).join(" ") || null;
+      const city = String(dt.city ?? "").trim() || null;
+      const stateCode = String(dt.state ?? "").trim() || null;
+
       orders.push({
         orderId: String(o.id),
         orderNumber: String(o.number ?? o.id),
@@ -438,6 +450,9 @@ export async function GET() {
         orderTotal,
         customerPaidShipping,
         currency: o.currency_code ?? "USD",
+        customerName,
+        city,
+        shipToState: stateCode,
         // Walmart-direct flow markers (null/false for Amazon orders).
         isWalmart: walmartPoByCustomer.has(String(o.number ?? o.id)),
         walmartPurchaseOrderId:

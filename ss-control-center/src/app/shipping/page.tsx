@@ -13,6 +13,7 @@ import {
   Pencil,
   Copy,
   Check,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -90,6 +91,14 @@ interface DashboardOrder {
   // bought via Walmart (not Veeqo), keyed by walmartPurchaseOrderId.
   isWalmart?: boolean;
   walmartPurchaseOrderId?: string | null;
+  // Shipping recipient (Veeqo deliver_to) — name + city/state shown on the
+  // row so the operator can sanity-check the destination without opening
+  // Veeqo. Each can be null when Veeqo's address is missing the field.
+  // `shipToState` (not `state`) to avoid colliding with the state-machine
+  // `state: State` above.
+  customerName?: string | null;
+  city?: string | null;
+  shipToState?: string | null;
 }
 
 interface PlanItem {
@@ -2074,6 +2083,20 @@ function OrderRow({
                 · Ship by {fmtDate(order.shipBy)}
               </span>
             )}
+            {/* Shipping recipient — name + city/state — so the operator can
+                sanity-check the destination on the row without opening Veeqo.
+                Compact chip; full address still lives in Veeqo. */}
+            {(order.customerName || order.city || order.shipToState) && (
+              <span className="inline-flex items-center gap-1 rounded bg-bg-elev px-1.5 py-0.5 text-[11.5px] text-ink-2">
+                <User size={10} className="text-ink-3" />
+                {order.customerName ?? "—"}
+                {(order.city || order.shipToState) && (
+                  <span className="text-ink-3">
+                    · {[order.city, order.shipToState].filter(Boolean).join(", ")}
+                  </span>
+                )}
+              </span>
+            )}
             {/* Editable ship date (ready-to-buy rows) — the day the operator
                 plans to hand the package to the carrier. Walmart re-quotes its
                 rates from that day (drives display AND Buy). Amazon does NOT
@@ -2186,7 +2209,7 @@ function OrderRow({
                   <span className="font-medium text-ink">
                     {i.productTitle}
                   </span>{" "}
-                  <span className="text-ink-3">× {i.quantity}</span>{" "}
+                  <QtyBadge qty={i.quantity} />{" "}
                   <span className="font-mono text-[11px] text-ink-3">
                     ({i.sku})
                   </span>
@@ -2721,6 +2744,37 @@ function MergeableBanner({
 // One-click copy button for an Amazon order number. Lives next to the
 // order number in OrderRow; the warehouse pastes it into Amazon Seller
 // Central / Veeqo search far more often than they retype it.
+/**
+ * Quantity indicator next to a line item. qty=1 fades in (this is the norm);
+ * qty>=2 pops in amber, qty>=4 amber+ring, qty>=10 red — matches the visual
+ * cue Veeqo uses ("more than one of the same listing is unusual and the
+ * operator must spot it before packing"). Vladimir asked for parity with
+ * Veeqo's grey/yellow circle so the multi-qty cases jump out of the row.
+ */
+function QtyBadge({ qty }: { qty: number }) {
+  if (!Number.isFinite(qty) || qty <= 0) return null;
+  if (qty === 1) {
+    return <span className="text-[12.5px] text-ink-3">× 1</span>;
+  }
+  const isHigh = qty >= 10;
+  const isMid = qty >= 4;
+  return (
+    <span
+      title={`Заказано ${qty} штук с одного листинга — проверь`}
+      className={cn(
+        "inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11.5px] font-bold tabular leading-none",
+        isHigh
+          ? "bg-danger text-white ring-2 ring-danger/30"
+          : isMid
+            ? "bg-warn-strong text-white ring-2 ring-warn-tint"
+            : "bg-warn-tint text-warn-strong",
+      )}
+    >
+      × {qty}
+    </span>
+  );
+}
+
 function CopyOrderNumber({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -2869,6 +2923,21 @@ function Cell({
 // Modals
 // ─────────────────────────────────────────────────────────────────────────
 
+interface AiRowResult {
+  type: "Frozen" | "Dry";
+  confidence: number;
+  reasoning: string;
+}
+
+/**
+ * Per-item AI classification. For multi-item orders runs the AI call in
+ * parallel for each line with a non-null productId, then lets the operator
+ * confirm or override each row independently. Each row writes to
+ * ProductTypeOverride keyed by its OWN productId, so all 3 items of a
+ * 3-product order end up with persistent types (the prior single-item
+ * dialog only saved item[0] — leaving the dashboard permanently stuck on
+ * "no_type" for the other two).
+ */
 function ClassifyAiDialog({
   order,
   onClose,
@@ -2876,55 +2945,80 @@ function ClassifyAiDialog({
   order: DashboardOrder;
   onClose: (refresh: boolean) => void;
 }) {
-  const item = order.items[0];
-  const productId = item?.productId ?? null;
-  const [loading, setLoading] = useState(true);
-  const [result, setResult] = useState<{
-    type: "Frozen" | "Dry";
-    confidence: number;
-    reasoning: string;
-    productImage: string | null;
-    productTitle: string;
-  } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+  const classifiableItems = order.items.filter(
+    (i): i is DashboardItem & { productId: number } => i.productId !== null,
+  );
+
+  // Per-productId state: AI result, loading, error, saved-type.
+  const [results, setResults] = useState<Record<number, AiRowResult>>({});
+  const [loading, setLoading] = useState<Record<number, boolean>>(() =>
+    Object.fromEntries(classifiableItems.map((i) => [i.productId, true])),
+  );
+  const [errors, setErrors] = useState<Record<number, string>>({});
+  const [savedTypes, setSavedTypes] = useState<Record<number, "Frozen" | "Dry">>(
+    () =>
+      Object.fromEntries(
+        classifiableItems
+          .filter((i) => i.knownType)
+          .map((i) => [i.productId, i.knownType as "Frozen" | "Dry"]),
+      ),
+  );
+  const [savingPid, setSavingPid] = useState<number | null>(null);
+  const dirtyRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
-    if (!productId) {
-      setError("Order has no productId");
-      setLoading(false);
-      return;
-    }
     (async () => {
-      try {
-        const r = await fetch("/api/shipping/classify-ai", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ productId }),
-        });
-        const j = await r.json();
-        if (!cancelled) {
-          if (!r.ok) setError(j?.error || `HTTP ${r.status}`);
-          else setResult(j);
-          setLoading(false);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : String(e));
-          setLoading(false);
-        }
-      }
+      await Promise.all(
+        classifiableItems.map(async (item) => {
+          try {
+            const r = await fetch("/api/shipping/classify-ai", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ productId: item.productId }),
+            });
+            const j = await r.json();
+            if (cancelled) return;
+            if (!r.ok) {
+              setErrors((p) => ({ ...p, [item.productId]: j?.error || `HTTP ${r.status}` }));
+            } else {
+              setResults((p) => ({
+                ...p,
+                [item.productId]: {
+                  type: j.type,
+                  confidence: j.confidence,
+                  reasoning: j.reasoning,
+                },
+              }));
+            }
+          } catch (e) {
+            if (cancelled) return;
+            setErrors((p) => ({
+              ...p,
+              [item.productId]: e instanceof Error ? e.message : String(e),
+            }));
+          } finally {
+            if (!cancelled) {
+              setLoading((p) => ({ ...p, [item.productId]: false }));
+            }
+          }
+        }),
+      );
     })();
     return () => {
       cancelled = true;
     };
-  }, [productId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order.orderId]);
 
-  async function confirm(type: "Frozen" | "Dry", source: "ai" | "manual") {
-    if (!productId || !result) return;
-    setSaving(true);
+  async function save(
+    productId: number,
+    type: "Frozen" | "Dry",
+    source: "ai" | "manual",
+  ) {
+    setSavingPid(productId);
     try {
+      const aiResult = results[productId];
       await fetch("/api/shipping/product-type", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -2932,99 +3026,151 @@ function ClassifyAiDialog({
           productId,
           type,
           source,
-          aiConfidence: source === "ai" ? result.confidence : undefined,
-          aiReasoning: source === "ai" ? result.reasoning : undefined,
+          aiConfidence: source === "ai" ? aiResult?.confidence : undefined,
+          aiReasoning: source === "ai" ? aiResult?.reasoning : undefined,
         }),
       });
-      onClose(true);
+      setSavedTypes((p) => ({ ...p, [productId]: type }));
+      dirtyRef.current = true;
     } finally {
-      setSaving(false);
+      setSavingPid(null);
     }
   }
 
+  const allSaved =
+    classifiableItems.length > 0 &&
+    classifiableItems.every((i) => savedTypes[i.productId]);
+
   return (
-    <Dialog open onOpenChange={() => onClose(false)}>
-      <DialogContent className="sm:max-w-[480px]">
+    <Dialog open onOpenChange={() => onClose(dirtyRef.current)}>
+      <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>AI Classification</DialogTitle>
           <DialogDescription>
-            {item?.productTitle || "Product"}
+            {classifiableItems.length === 1
+              ? classifiableItems[0]!.productTitle
+              : `${classifiableItems.length} items — confirm each`}
           </DialogDescription>
         </DialogHeader>
-        {loading && (
-          <div className="flex items-center gap-2 py-4 text-[12.5px] text-ink-3">
-            <Loader2 size={14} className="animate-spin" />
-            AI is analyzing the product…
-          </div>
-        )}
-        {error && (
-          <div className="rounded border border-danger/30 bg-danger-tint p-3 text-[12px] text-danger">
-            {error}
-          </div>
-        )}
-        {result && (
-          <div className="space-y-3">
-            {result.productImage && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={result.productImage}
-                alt={result.productTitle}
-                className="max-h-[180px] w-full rounded-md object-contain border border-rule bg-bg-elev"
-              />
-            )}
-            <div className="rounded-md border border-rule bg-surface-tint p-3">
-              <div className="flex items-center gap-2">
-                {result.type === "Frozen" ? (
-                  <Snowflake size={14} className="text-info" />
+
+        <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
+          {classifiableItems.map((item) => {
+            const pid = item.productId;
+            const isLoading = loading[pid];
+            const result = results[pid];
+            const error = errors[pid];
+            const saved = savedTypes[pid];
+            const isBusy = savingPid === pid;
+            return (
+              <div
+                key={pid}
+                className="flex gap-3 rounded-md border border-rule bg-surface-tint p-2.5"
+              >
+                {item.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.imageUrl}
+                    alt=""
+                    className="h-14 w-14 shrink-0 rounded border border-rule bg-bg-elev object-cover"
+                  />
                 ) : (
-                  <Package size={14} className="text-ink-2" />
+                  <div className="h-14 w-14 shrink-0 rounded border border-rule bg-bg-elev" />
                 )}
-                <span className="font-semibold text-ink">
-                  Result: {result.type}
-                </span>
-                <span className="ml-auto text-[11px] text-ink-3">
-                  confidence {(result.confidence * 100).toFixed(0)}%
-                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="line-clamp-2 text-[12.5px] font-medium text-ink">
+                    {item.productTitle}
+                  </div>
+                  <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10.5px] tabular text-ink-3">
+                    <span>× {item.quantity}</span>
+                    <span className="text-ink-4">·</span>
+                    <span>SKU {item.sku}</span>
+                    {saved && (
+                      <>
+                        <span className="text-ink-4">·</span>
+                        <span className="inline-flex items-center gap-1 font-medium text-green-ink">
+                          <Check size={10} /> Saved as {saved}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  {isLoading && (
+                    <div className="mt-1.5 flex items-center gap-1.5 text-[11.5px] text-ink-3">
+                      <Loader2 size={12} className="animate-spin" /> AI analyzing…
+                    </div>
+                  )}
+                  {error && (
+                    <div className="mt-1.5 rounded border border-danger/30 bg-danger-tint px-1.5 py-1 text-[11px] text-danger">
+                      {error}
+                    </div>
+                  )}
+                  {result && (
+                    <div className="mt-1.5">
+                      <div className="flex items-center gap-1.5 text-[11.5px]">
+                        {result.type === "Frozen" ? (
+                          <Snowflake size={11} className="text-info" />
+                        ) : (
+                          <Package size={11} className="text-ink-2" />
+                        )}
+                        <span className="font-semibold text-ink">{result.type}</span>
+                        <span className="text-[10px] text-ink-3">
+                          {(result.confidence * 100).toFixed(0)}% confident
+                        </span>
+                      </div>
+                      <div className="mt-0.5 line-clamp-2 text-[10.5px] text-ink-3">
+                        {result.reasoning}
+                      </div>
+                      <div className="mt-1.5 flex gap-1.5">
+                        <Button
+                          size="sm"
+                          variant={saved === result.type ? "default" : "outline"}
+                          className="h-7 text-[11px]"
+                          disabled={isBusy}
+                          onClick={() => save(pid, result.type, "ai")}
+                        >
+                          {isBusy && savedTypes[pid] !== result.type ? (
+                            <Loader2 size={10} className="mr-1 animate-spin" />
+                          ) : null}
+                          Confirm {result.type}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={
+                            saved && saved !== result.type ? "default" : "outline"
+                          }
+                          className="h-7 text-[11px]"
+                          disabled={isBusy}
+                          onClick={() =>
+                            save(pid, result.type === "Frozen" ? "Dry" : "Frozen", "manual")
+                          }
+                        >
+                          Override to {result.type === "Frozen" ? "Dry" : "Frozen"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="mt-1 text-[12px] text-ink-2">
-                {result.reasoning}
-              </div>
-            </div>
-          </div>
-        )}
+            );
+          })}
+        </div>
+
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onClose(false)}
-            disabled={saving}
-          >
-            Cancel
+          <Button variant="outline" onClick={() => onClose(dirtyRef.current)}>
+            {allSaved ? "Done" : "Close"}
           </Button>
-          {result && (
-            <>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  confirm(result.type === "Frozen" ? "Dry" : "Frozen", "manual")
-                }
-                disabled={saving}
-              >
-                Override to {result.type === "Frozen" ? "Dry" : "Frozen"}
-              </Button>
-              <Button
-                onClick={() => confirm(result.type, "ai")}
-                disabled={saving}
-              >
-                {saving ? "Saving…" : "Confirm"}
-              </Button>
-            </>
-          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
+/**
+ * Manual product-type set, PER ITEM. The previous version only saved a type
+ * for items[0] — for a multi-item order with 3 different products, the
+ * other two stayed null and the dashboard kept flagging the order
+ * "no_type" forever. Now every line with a productId gets its own
+ * Frozen/Dry pick that writes independently to ProductTypeOverride.
+ */
 function ManualTypeDialog({
   order,
   onClose,
@@ -3032,60 +3178,127 @@ function ManualTypeDialog({
   order: DashboardOrder;
   onClose: (refresh: boolean) => void;
 }) {
-  const item = order.items[0];
-  const productId = item?.productId ?? null;
-  const currentType = item?.knownType ?? null;
-  const [saving, setSaving] = useState(false);
+  const classifiableItems = order.items.filter(
+    (i): i is DashboardItem & { productId: number } => i.productId !== null,
+  );
+  const [savedTypes, setSavedTypes] = useState<Record<number, "Frozen" | "Dry">>(
+    () =>
+      Object.fromEntries(
+        classifiableItems
+          .filter((i) => i.knownType)
+          .map((i) => [i.productId, i.knownType as "Frozen" | "Dry"]),
+      ),
+  );
+  const [savingPid, setSavingPid] = useState<number | null>(null);
+  const dirtyRef = useRef(false);
 
-  async function save(type: "Frozen" | "Dry") {
-    if (!productId) return;
-    setSaving(true);
+  async function save(productId: number, type: "Frozen" | "Dry") {
+    setSavingPid(productId);
     try {
       await fetch("/api/shipping/product-type", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId, type, source: "manual" }),
       });
-      onClose(true);
+      setSavedTypes((p) => ({ ...p, [productId]: type }));
+      dirtyRef.current = true;
     } finally {
-      setSaving(false);
+      setSavingPid(null);
     }
   }
 
+  const allSaved =
+    classifiableItems.length > 0 &&
+    classifiableItems.every((i) => savedTypes[i.productId]);
+
   return (
-    <Dialog open onOpenChange={() => onClose(false)}>
-      <DialogContent className="sm:max-w-[420px]">
+    <Dialog open onOpenChange={() => onClose(dirtyRef.current)}>
+      <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>
-            {currentType ? "Change product type" : "Set product type manually"}
+            {classifiableItems.length === 1
+              ? savedTypes[classifiableItems[0]!.productId]
+                ? "Change product type"
+                : "Set product type"
+              : `Set product type — ${classifiableItems.length} items`}
           </DialogTitle>
-          <DialogDescription>{item?.productTitle}</DialogDescription>
+          <DialogDescription>
+            {classifiableItems.length === 1
+              ? classifiableItems[0]!.productTitle
+              : "Pick Frozen or Dry for each line independently"}
+          </DialogDescription>
         </DialogHeader>
-        {currentType && (
-          <div className="flex items-center gap-2 text-[12px] text-ink-3">
-            Current:
-            <TypeTag type={currentType} />
-            <span className="text-[11px]">— pick the new value below.</span>
-          </div>
-        )}
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            variant={currentType === "Frozen" ? "default" : "outline"}
-            className="h-20"
-            onClick={() => save("Frozen")}
-            disabled={saving}
-          >
-            <Snowflake size={20} className="mr-2 text-info" /> Frozen
-          </Button>
-          <Button
-            variant={currentType === "Dry" ? "default" : "outline"}
-            className="h-20"
-            onClick={() => save("Dry")}
-            disabled={saving}
-          >
-            <Package size={20} className="mr-2 text-ink-2" /> Dry
-          </Button>
+
+        <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
+          {classifiableItems.map((item) => {
+            const pid = item.productId;
+            const saved = savedTypes[pid];
+            const isBusy = savingPid === pid;
+            return (
+              <div
+                key={pid}
+                className="flex items-center gap-3 rounded-md border border-rule bg-surface-tint p-2.5"
+              >
+                {item.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.imageUrl}
+                    alt=""
+                    className="h-12 w-12 shrink-0 rounded border border-rule bg-bg-elev object-cover"
+                  />
+                ) : (
+                  <div className="h-12 w-12 shrink-0 rounded border border-rule bg-bg-elev" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="line-clamp-2 text-[12.5px] font-medium text-ink">
+                    {item.productTitle}
+                  </div>
+                  <div className="mt-0.5 flex items-center gap-x-2 text-[10.5px] tabular text-ink-3">
+                    <span>× {item.quantity}</span>
+                    <span className="text-ink-4">·</span>
+                    <span>SKU {item.sku}</span>
+                  </div>
+                </div>
+                <div className="flex shrink-0 gap-1.5">
+                  <Button
+                    size="sm"
+                    variant={saved === "Frozen" ? "default" : "outline"}
+                    className="h-8 px-2.5 text-[11.5px]"
+                    disabled={isBusy}
+                    onClick={() => save(pid, "Frozen")}
+                  >
+                    {isBusy && saved !== "Frozen" ? (
+                      <Loader2 size={11} className="mr-1 animate-spin" />
+                    ) : (
+                      <Snowflake size={11} className="mr-1 text-info" />
+                    )}
+                    Frozen
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={saved === "Dry" ? "default" : "outline"}
+                    className="h-8 px-2.5 text-[11.5px]"
+                    disabled={isBusy}
+                    onClick={() => save(pid, "Dry")}
+                  >
+                    {isBusy && saved !== "Dry" ? (
+                      <Loader2 size={11} className="mr-1 animate-spin" />
+                    ) : (
+                      <Package size={11} className="mr-1 text-ink-2" />
+                    )}
+                    Dry
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
         </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onClose(dirtyRef.current)}>
+            {allSaved ? "Done" : "Close"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
