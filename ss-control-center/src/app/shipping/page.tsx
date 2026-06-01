@@ -267,6 +267,10 @@ export default function ShippingLabelsPage() {
   // like an Amazon row. `walmartBuyInfo` carries what /api/shipping/walmart/buy
   // needs (PO + chosen carrier/service + dims) keyed by orderNumber.
   const [walmartRates, setWalmartRates] = useState<Record<string, PlanItem>>({});
+  // Per-Walmart-order rate-shop errors (e.g. "no PackingProfile for SKU:qty",
+  // address invalid, etc.) so the row shows the actual reason instead of
+  // sitting on "Awaiting rate" forever.
+  const [walmartRateErrors, setWalmartRateErrors] = useState<Record<string, string>>({});
   const [walmartBuyInfo, setWalmartBuyInfo] = useState<
     Record<
       string,
@@ -455,6 +459,13 @@ export default function ShippingLabelsPage() {
           return n;
         });
       };
+      const clearError = () =>
+        setWalmartRateErrors((p) => {
+          if (!p[o.orderNumber]) return p;
+          const n = { ...p };
+          delete n[o.orderNumber];
+          return n;
+        });
       try {
         const res = await fetch("/api/shipping/walmart/rates", {
           method: "POST",
@@ -467,8 +478,17 @@ export default function ShippingLabelsPage() {
         const j = await res.json();
         if (!j?.ok) {
           dropMaps();
+          // Surface the actual reason on the card so it doesn't look like
+          // the rate is just slow to load — e.g. PackingProfile missing for
+          // a Walmart-split PO with qty=1 vs the qty=2 profile we have.
+          const msg =
+            typeof j?.error === "string" && j.error
+              ? j.error
+              : `Rate failed (HTTP ${res.status})`;
+          setWalmartRateErrors((p) => ({ ...p, [o.orderNumber]: msg }));
           return;
         }
+        clearError();
         setWalmartStatus((p) => ({
           ...p,
           [o.orderNumber]: {
@@ -1682,6 +1702,7 @@ export default function ShippingLabelsPage() {
               buying={buyingRow === o.orderId}
               buyError={buyErrors[o.orderId] ?? null}
               walmartStatus={walmartStatus[o.orderNumber] ?? null}
+              walmartRateError={walmartRateErrors[o.orderNumber] ?? null}
               markingShipped={markingShipped === o.orderId}
               onMarkShipped={() => markShipped(o)}
               rollingBack={rollingBack === o.orderId}
@@ -1922,6 +1943,7 @@ function OrderRow({
   onClearOverride,
   onBuy,
   walmartStatus,
+  walmartRateError,
   markingShipped,
   onMarkShipped,
   rollingBack,
@@ -1955,6 +1977,10 @@ function OrderRow({
     orderStatus: string | null;
     existingLabel: { trackingNumber: string; carrierName: string; trackingUrl?: string } | null;
   } | null;
+  /** Last error from /api/shipping/walmart/rates for this order, if any —
+   *  e.g. "No saved package for RizwanX-3579:1". Rendered in the Buy area
+   *  so the operator knows what to fix instead of seeing "Awaiting rate". */
+  walmartRateError: string | null;
   markingShipped: boolean;
   onMarkShipped: () => void;
   rollingBack: boolean;
@@ -2503,6 +2529,14 @@ function OrderRow({
             // think the spinner-then-active-button cycle meant success.
             <span className="rounded bg-danger-tint px-1.5 py-0.5 text-[11px] font-medium text-danger">
               Buy failed — {buyError}
+            </span>
+          ) : walmartRateError && !planPending ? (
+            // Walmart-direct rate call failed (e.g. missing PackingProfile
+            // for the qty-specific signature on a Walmart split). Surface
+            // the exact reason so the operator can fix it instead of
+            // staring at a perpetual "Awaiting rate".
+            <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[11px] font-medium text-warn-strong">
+              Rate error — {walmartRateError}
             </span>
           ) : (
             <span className="text-[11px] text-ink-3">

@@ -356,7 +356,13 @@ export async function GET(request: NextRequest) {
 
       const channel = order.channel?.name || "";
       const channelType = (order.channel?.type_code || "").toLowerCase();
-      const isAmazon = channelType === "amazon";
+      // Veeqo-merged orders get channel.name = "Merged Orders" and
+      // channel.type_code = "direct" — but the underlying source orders are
+      // always Amazon (Walmart orders can't be merged in Veeqo), and we buy
+      // labels for them through the same Amazon Buy Shipping path. Treat the
+      // merge bucket as Amazon for the channel-filter gate.
+      const isMergedAmazon = channel === "Merged Orders";
+      const isAmazon = channelType === "amazon" || isMergedAmazon;
       const isWalmart = channelType === "walmart";
       if (!isAmazon && !isWalmart) continue;
       debug.filters.afterChannel++;
