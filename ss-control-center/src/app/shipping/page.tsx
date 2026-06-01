@@ -332,6 +332,12 @@ export default function ShippingLabelsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [bucketFilter, setBucketFilter] = useState<ShipByBucket | null>(null);
+  // Separate scope for Walmart label-bought-but-not-shipped orders.
+  // When "awaiting", everything else is hidden; when "active", these
+  // are hidden so they don't crowd the buy-flow list.
+  const [viewScope, setViewScope] = useState<"active" | "awaiting">(
+    "active",
+  );
   const [storeFilter, setStoreFilter] = useState<string | null>(null);
   // Channel scope — Amazon vs Walmart. "all" shows both. The brand-styled
   // toggle buttons at the top flip EVERY count below (KPI cards, store
@@ -728,6 +734,24 @@ export default function ShippingLabelsPage() {
     return c;
   }, [channelOrders]);
 
+  // Walmart-only: label bought but order not yet marked Shipped. These
+  // are pulled into a dedicated "Awaiting ship-confirm" tab so they
+  // don't visually mix with rows still awaiting label purchase. Source
+  // of truth is the per-order rate-quote response (walmartStatus[...]).
+  const isAwaitingShipConfirm = useCallback(
+    (o: DashboardOrder) => {
+      if (!o.isWalmart) return false;
+      const ws = walmartStatus[o.orderNumber];
+      if (!ws) return false;
+      return ws.alreadyBought === true && ws.orderStatus !== "Shipped";
+    },
+    [walmartStatus],
+  );
+  const awaitingShipConfirmCount = useMemo(
+    () => channelOrders.filter(isAwaitingShipConfirm).length,
+    [channelOrders, isAwaitingShipConfirm],
+  );
+
   const filteredOrders = useMemo(() => {
     // Sort by actionability: ready_to_buy → need_attention → waiting_placed
     // → bought. Inside each state, sort by time bucket (overdue first) so the
@@ -747,6 +771,15 @@ export default function ShippingLabelsPage() {
     };
     return channelOrders
       .filter((o) => {
+        // Awaiting-ship-confirm scope is mutually exclusive with the
+        // normal active list. In "awaiting" we show ONLY those rows; in
+        // "active" we HIDE them so the buy-flow list stays focused.
+        const awaiting = isAwaitingShipConfirm(o);
+        if (viewScope === "awaiting") {
+          if (!awaiting) return false;
+        } else if (awaiting) {
+          return false;
+        }
         if (bucketFilter && o.timeBucket !== bucketFilter) return false;
         if (storeFilter && o.storeId !== storeFilter) return false;
         if (stateFilter !== "all" && o.state !== stateFilter) return false;
@@ -768,7 +801,15 @@ export default function ShippingLabelsPage() {
         const bb = b.timeBucket ? bucketRank[b.timeBucket] : 99;
         return ab - bb;
       });
-  }, [channelOrders, bucketFilter, storeFilter, stateFilter, typeFilter]);
+  }, [
+    channelOrders,
+    bucketFilter,
+    storeFilter,
+    stateFilter,
+    typeFilter,
+    viewScope,
+    isAwaitingShipConfirm,
+  ]);
 
   const selectableIds = useMemo(
     () =>
@@ -1502,17 +1543,36 @@ export default function ShippingLabelsPage() {
       {data && (
         <FilterTabs
           tabs={[
-            { id: "all" as const, label: "All", count: channelOrders.length },
+            {
+              id: "all" as const,
+              label: "All",
+              count: channelOrders.length - awaitingShipConfirmCount,
+            },
             ...BUCKET_TABS.map((b) => ({
               id: b.id,
               label: b.label,
               count: bucketCounts[b.id] ?? 0,
             })),
+            {
+              id: "awaiting" as const,
+              label: "Awaiting ship-confirm",
+              count: awaitingShipConfirmCount,
+            },
           ]}
-          active={bucketFilter ?? ("all" as const)}
-          onChange={(id) =>
-            setBucketFilter(id === "all" ? null : (id as ShipByBucket))
+          active={
+            viewScope === "awaiting"
+              ? ("awaiting" as const)
+              : (bucketFilter ?? ("all" as const))
           }
+          onChange={(id) => {
+            if (id === "awaiting") {
+              setViewScope("awaiting");
+              setBucketFilter(null);
+            } else {
+              setViewScope("active");
+              setBucketFilter(id === "all" ? null : (id as ShipByBucket));
+            }
+          }}
         />
       )}
 
