@@ -2339,3 +2339,28 @@ model WalmartListingRetirement {
   @@index([storeIndex, retiredAt])
   @@index([sku])
 }
+
+// ============================================================================
+// Box size presets — picker on PackingProfileDialog / SkuDataDialog.
+//
+// Replaces the previously-hardcoded <select> options on the shipping page. The
+// initial seed mirrors the labels Vladimir already used (XS/S/M/L/XL + a few
+// named numeric sizes). New custom sizes typed into the picker get auto-added
+// here, and any non-builtin row can be deleted from the dropdown by clicking
+// the × next to it. resolveBoxDimensions() still handles "12x12x8"-style
+// strings directly, so an unsaved custom size still rate-quotes correctly.
+// ============================================================================
+model BoxSizePreset {
+  id        String   @id @default(cuid())
+  // Display label: a friendly name like "M" or the canonical "12x12x8".
+  // Lowercased + ×→x normalised by the API so the unique index doesn't trip
+  // on cosmetic variants ("12X12X8" / "12×12×8" / "12x12x8" → all the same).
+  label     String   @unique
+  length    Float
+  width     Float
+  height    Float
+  // builtin=true rows can't be deleted — protects the well-known XS..XL set
+  // from accidental clicks. Custom rows added by the operator are deletable.
+  builtin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

@@ -16,6 +16,7 @@ import {
   User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BoxPresetPicker } from "./components/BoxPresetPicker";
 import {
   Btn,
   FilterTabs,
@@ -3390,22 +3391,13 @@ function PackingProfileDialog({
             <label className="block text-[11.5px] font-medium text-ink mb-1">
               Box size
             </label>
-            <select
+            <BoxPresetPicker
               value={boxSize}
-              onChange={(e) => setBoxSize(e.target.value)}
-              className="w-full rounded border border-rule bg-surface px-2 py-1.5 text-[12.5px]"
-            >
-              <option>XS</option>
-              <option>S</option>
-              <option>M</option>
-              <option>L</option>
-              <option>XL</option>
-              <option>XXS</option>
-              <option>12x12x8</option>
-              <option>12x12x6</option>
-              <option>7x7x6</option>
-              <option>7x5x14</option>
-            </select>
+              onSelect={(label) => setBoxSize(label)}
+            />
+            <div className="mt-1 text-[11px] text-ink-3">
+              Selected: <span className="font-mono font-medium text-ink-2">{boxSize}</span>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
@@ -3580,33 +3572,21 @@ function SkuDataDialog({
               </select>
             </div>
           </div>
-          {/* Box preset — single dropdown over the L/W/H inputs. Picking
-              a preset fills the three fields; the operator can still
-              hand-tune after. */}
+          {/* Box preset — picking a chip fills the three L/W/H inputs.
+              Typing a new size in the "Свой размер" mini-form auto-saves
+              it as a new preset AND fills the inputs in one step. */}
           <div>
             <label className="block text-[11.5px] font-medium text-ink mb-1">
               Box preset
             </label>
-            <select
-              defaultValue=""
-              onChange={(e) => {
-                const preset = BOX_PRESETS.find(
-                  (p) => p.label === e.target.value
-                );
-                if (!preset) return;
-                setLength(String(preset.l));
-                setWidth(String(preset.w));
-                setHeight(String(preset.h));
+            <BoxPresetPicker
+              value={`${length}x${width}x${height}`}
+              onSelect={(_label, dims) => {
+                setLength(String(dims.length));
+                setWidth(String(dims.width));
+                setHeight(String(dims.height));
               }}
-              className="w-full rounded border border-rule bg-surface px-2 py-1.5 text-[12.5px]"
-            >
-              <option value="">Select template…</option>
-              {BOX_PRESETS.map((p) => (
-                <option key={p.label} value={p.label}>
-                  {p.label} ({p.l}×{p.w}×{p.h} in)
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div className="grid grid-cols-3 gap-2">
@@ -4102,26 +4082,22 @@ function EditPackageDialog({
         </DialogHeader>
 
         <div className="space-y-3 text-[12.5px]">
-          {/* Box preset dropdown — quick-fills the L/W/H fields below.
-              "Custom…" leaves L/W/H untouched so the operator can punch
-              in any dimensions (e.g. 24×18×18 for a 4-pack styrofoam
-              cooler that doesn't match any standard preset). */}
+          {/* Box preset picker — clicking a chip fills the L/W/H fields
+              below. Typing a new size in "Свой размер" auto-saves it as
+              a new preset AND fills the inputs in one step. */}
           <div>
             <label className="block text-[11.5px] font-medium text-ink mb-1">
               Box preset
             </label>
-            <select
-              value={boxLabel}
-              onChange={(e) => handlePresetChange(e.target.value)}
-              className="w-full rounded border border-rule bg-surface px-2 py-1.5 text-[12.5px] text-ink focus:border-green focus:outline-none"
-            >
-              <option value="custom">Custom… (enter dimensions below)</option>
-              {BOX_PRESETS.map((p) => (
-                <option key={p.label} value={p.label}>
-                  {p.label} — {p.l}×{p.w}×{p.h} in
-                </option>
-              ))}
-            </select>
+            <BoxPresetPicker
+              value={boxLabel === "custom" ? `${length}x${width}x${height}` : boxLabel}
+              onSelect={(label, dims) => {
+                setBoxLabel(label);
+                setLength(String(dims.length));
+                setWidth(String(dims.width));
+                setHeight(String(dims.height));
+              }}
+            />
           </div>
 
           {/* L/W/H always editable. Preset selection prefills these;
