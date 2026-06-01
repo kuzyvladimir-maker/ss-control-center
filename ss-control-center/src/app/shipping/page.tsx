@@ -2408,58 +2408,22 @@ function OrderRow({
               <span className="ml-2 text-danger">— {buyError}</span>
             ) : null}
           </span>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onRollback}
-              disabled={rollingBack || markingShipped || discardingLabel}
-              title="Push the order back to Procurement (keeps the bought label)"
-              className="h-7 text-[11.5px]"
-            >
-              {rollingBack ? (
-                <>
-                  <Loader2 size={12} className="mr-1 animate-spin" />
-                  Rolling back…
-                </>
-              ) : (
-                "Rollback Purchase"
-              )}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onDiscardLabel}
-              disabled={discardingLabel || markingShipped || rollingBack}
-              title="Cancel the label (FedEx/Walmart refund, ~24-72h). Order stays in Shipping Labels."
-              className="h-7 text-[11.5px]"
-            >
-              {discardingLabel ? (
-                <>
-                  <Loader2 size={12} className="mr-1 animate-spin" />
-                  Discarding…
-                </>
-              ) : (
-                "Discard Label"
-              )}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onMarkShipped}
-              disabled={markingShipped || rollingBack || discardingLabel}
-              className="h-7 text-[11.5px]"
-            >
-              {markingShipped ? (
-                <>
-                  <Loader2 size={12} className="mr-1 animate-spin" />
-                  Marking…
-                </>
-              ) : (
-                "Mark as Shipped"
-              )}
-            </Button>
-          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onMarkShipped}
+            disabled={markingShipped || rollingBack || discardingLabel}
+            className="h-7 text-[11.5px]"
+          >
+            {markingShipped ? (
+              <>
+                <Loader2 size={12} className="mr-1 animate-spin" />
+                Marking…
+              </>
+            ) : (
+              "Mark as Shipped"
+            )}
+          </Button>
         </div>
       )}
       {wmShipped && (
@@ -2519,6 +2483,48 @@ function OrderRow({
           Label already purchased.
         </div>
       )}
+
+      {/* Universal action row — Rollback / Discard always available on
+          every shipping row regardless of channel or state. Rollback
+          handles "supplier didn't deliver" (keeps the label); Discard
+          handles "order cancelled" (refunds the label). Both Amazon
+          and Walmart paths are dispatched server-side. */}
+      <div className="mt-3 ml-6 flex flex-wrap items-center gap-2 border-t border-rule pt-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onRollback}
+          disabled={rollingBack || markingShipped || discardingLabel}
+          title="Push the order back to Procurement (keeps the bought label)"
+          className="h-7 text-[11.5px]"
+        >
+          {rollingBack ? (
+            <>
+              <Loader2 size={12} className="mr-1 animate-spin" />
+              Rolling back…
+            </>
+          ) : (
+            "Rollback Purchase"
+          )}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onDiscardLabel}
+          disabled={discardingLabel || markingShipped || rollingBack}
+          title="Cancel the bought label (FedEx/Walmart refund, ~24-72h). Order stays in Shipping Labels."
+          className="h-7 text-[11.5px]"
+        >
+          {discardingLabel ? (
+            <>
+              <Loader2 size={12} className="mr-1 animate-spin" />
+              Discarding…
+            </>
+          ) : (
+            "Discard Label"
+          )}
+        </Button>
+      </div>
     </div>
   );
 }

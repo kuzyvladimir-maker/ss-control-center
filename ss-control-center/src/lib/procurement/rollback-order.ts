@@ -20,11 +20,16 @@
 import { veeqoFetch } from "@/lib/veeqo/client";
 import { getInternalNotes } from "@/lib/veeqo/notes";
 import { parseProcurementBlock } from "@/lib/veeqo/procurement-notes-parser";
+import {
+  PROCUREMENT_TAGS,
+  removeTagFromOrder,
+} from "@/lib/veeqo/tags";
 import { applyProcurementAction } from "./order-state-update";
 
 export interface RollbackResult {
   orderId: string;
   undoneLineItems: string[];
+  strippedTags: string[];
 }
 
 interface MinimalOrder {
@@ -48,5 +53,23 @@ export async function rollbackOrderProcurement(
     undone.push(lineItemId);
   }
 
-  return { orderId, undoneLineItems: undone };
+  // Belt-and-braces tag cleanup. The undo loop above already strips
+  // Placed / Need More when the [PROCUREMENT] block had entries.
+  // But some orders end up with `Placed` set WITHOUT a procurement
+  // block (legacy rows, manual tagging in the Veeqo UI, partial migrations
+  // — Vladimir hit this on order 200014759829821). In that case the loop
+  // is a no-op and the tag stayed put, keeping the order stuck in
+  // Shipping Labels. Strip both tags explicitly here so rollback is
+  // idempotent regardless of how the order got tagged.
+  const strippedTags: string[] = [];
+  for (const tag of [PROCUREMENT_TAGS.PLACED, PROCUREMENT_TAGS.NEED_MORE]) {
+    try {
+      await removeTagFromOrder(orderId, tag);
+      strippedTags.push(tag);
+    } catch {
+      /* tag wasn't on the order — fine, nothing to remove */
+    }
+  }
+
+  return { orderId, undoneLineItems: undone, strippedTags };
 }
