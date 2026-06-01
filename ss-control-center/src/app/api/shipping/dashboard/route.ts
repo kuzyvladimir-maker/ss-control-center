@@ -450,6 +450,13 @@ export async function GET() {
         orderTotal,
         customerPaidShipping,
         currency: o.currency_code ?? "USD",
+        // Marketplace kind from Veeqo's channel.type_code — "amazon",
+        // "walmart", "ebay", "tiktok", "shopify", "direct" (used for
+        // Merged Orders), etc. Drives the channel-filter chips at the
+        // top of the page so new marketplaces auto-appear once their
+        // first open order shows up.
+        channelKind: ((o.channel?.type_code as string | undefined) || "")
+          .toLowerCase() || null,
         customerName,
         city,
         shipToState: stateCode,

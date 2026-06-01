@@ -92,6 +92,10 @@ interface DashboardOrder {
   // bought via Walmart (not Veeqo), keyed by walmartPurchaseOrderId.
   isWalmart?: boolean;
   walmartPurchaseOrderId?: string | null;
+  // Veeqo channel.type_code lowercased — "amazon", "walmart", "ebay",
+  // "tiktok", "shopify", "direct" (merged), etc. Drives the dynamic
+  // channel-filter chips at the top of the page.
+  channelKind?: string | null;
   // Shipping recipient (Veeqo deliver_to) — name + city/state shown on the
   // row so the operator can sanity-check the destination without opening
   // Veeqo. Each can be null when Veeqo's address is missing the field.
@@ -353,14 +357,12 @@ export default function ShippingLabelsPage() {
     "active",
   );
   const [storeFilter, setStoreFilter] = useState<string | null>(null);
-  // Channel scope — Amazon vs Walmart. "all" shows both. The brand-styled
-  // toggle buttons at the top flip EVERY count below (KPI cards, store
-  // breakdown, bucket/type tabs, the list) to the chosen marketplace. An
-  // order is Walmart when isWalmart is set (the dashboard route matches it
-  // against the WalmartOrder table); everything else counts as Amazon.
-  const [channelFilter, setChannelFilter] = useState<
-    "all" | "amazon" | "walmart"
-  >("all");
+  // Channel scope — dynamic. null shows every channel; setting it to a
+  // channel kind ("amazon" / "walmart" / "ebay" / "tiktok" / "shopify" /
+  // "direct" / etc) restricts the dashboard. The toggle chips at the top
+  // are built from the actual channels present in today's orders, so a
+  // new marketplace auto-appears once its first open order shows up.
+  const [channelFilter, setChannelFilter] = useState<string | null>(null);
   // Frozen / Dry product-type filter. "all" shows everything; "Frozen" or
   // "Dry" keeps orders whose first item matches (mixed orders only match
   // when every item is the same type).
@@ -736,10 +738,34 @@ export default function ShippingLabelsPage() {
   // derive from this, so flipping the Amazon/Walmart toggle re-computes the
   // whole dashboard. "all" passes everything through unchanged.
   const channelOrders = useMemo(() => {
-    if (channelFilter === "all") return orders;
-    const wantWalmart = channelFilter === "walmart";
-    return orders.filter((o) => !!o.isWalmart === wantWalmart);
+    if (!channelFilter) return orders;
+    // Walmart special-case: the marketplace identity lives on the
+    // isWalmart flag (Veeqo's channel.name for Walmart is the seller
+    // entity "SIRIUS TRADING INTERNATIONAL LLC", not "Walmart") so we
+    // match by that. Every other channel matches by channelKind which
+    // is Veeqo's type_code lowercased.
+    if (channelFilter === "walmart") return orders.filter((o) => !!o.isWalmart);
+    return orders.filter(
+      (o) => !o.isWalmart && (o.channelKind ?? "") === channelFilter,
+    );
   }, [orders, channelFilter]);
+
+  // Unique channel kinds present in today's orders → drives the dynamic
+  // chip row at the top. Sorted with amazon/walmart first (most common
+  // for this account) so they stay in the same spot when other channels
+  // come and go.
+  const availableChannels = useMemo(() => {
+    const set = new Set<string>();
+    for (const o of orders) {
+      if (o.isWalmart) set.add("walmart");
+      else if (o.channelKind) set.add(o.channelKind);
+    }
+    const arr = [...set];
+    const priority = (k: string) =>
+      k === "amazon" ? 0 : k === "walmart" ? 1 : 2;
+    arr.sort((a, b) => priority(a) - priority(b) || a.localeCompare(b));
+    return arr;
+  }, [orders]);
 
   // Store ids that carry Walmart orders — used to split the "By store"
   // breakdown by channel. Each Veeqo store maps to exactly one marketplace,
@@ -1386,34 +1412,31 @@ export default function ShippingLabelsPage() {
         />
       )}
 
-      {/* Channel scope — Amazon / Walmart brand toggles. Flips every count
-          below (KPI cards, store breakdown, bucket/type tabs, list) to the
-          chosen marketplace. Click the active button (or "show all") to
-          clear back to both channels. */}
+      {/* Channel scope — one chip per channel kind present in today's
+          orders. Brand-coloured for known marketplaces (amazon/walmart get
+          full wordmark styling; ebay/tiktok/shopify get their brand colour
+          on a generic chip); other channels render as neutral pills.
+          Flips every count below (KPI cards, store breakdown, bucket/type
+          tabs, list) to the chosen marketplace. */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[10.5px] font-medium uppercase tracking-wider text-ink-3">
           Channel
         </span>
-        <ChannelToggle
-          channel="amazon"
-          active={channelFilter === "amazon"}
-          onClick={() => {
-            setChannelFilter((c) => (c === "amazon" ? "all" : "amazon"));
-            setStoreFilter(null);
-          }}
-        />
-        <ChannelToggle
-          channel="walmart"
-          active={channelFilter === "walmart"}
-          onClick={() => {
-            setChannelFilter((c) => (c === "walmart" ? "all" : "walmart"));
-            setStoreFilter(null);
-          }}
-        />
-        {channelFilter !== "all" && (
+        {availableChannels.map((kind) => (
+          <ChannelToggle
+            key={kind}
+            channel={kind}
+            active={channelFilter === kind}
+            onClick={() => {
+              setChannelFilter((c) => (c === kind ? null : kind));
+              setStoreFilter(null);
+            }}
+          />
+        ))}
+        {channelFilter !== null && (
           <button
             type="button"
-            onClick={() => setChannelFilter("all")}
+            onClick={() => setChannelFilter(null)}
             className="ml-0.5 text-[11px] text-ink-3 underline-offset-2 hover:text-ink-1 hover:underline"
           >
             show all
@@ -1516,12 +1539,18 @@ export default function ShippingLabelsPage() {
           <PanelBody>
             <div className="flex flex-wrap gap-2">
               {data.storeBreakdown
-                .filter((s) =>
-                  channelFilter === "all"
-                    ? true
-                    : walmartStoreIds.has(s.storeId) ===
-                      (channelFilter === "walmart"),
-                )
+                .filter((s) => {
+                  // Walmart-only / non-Walmart split is the one we can do
+                  // store-side; other channel filters fall through to "show
+                  // all stores" because the dashboard rolls store totals
+                  // across all marketplaces.
+                  if (!channelFilter) return true;
+                  if (channelFilter === "walmart")
+                    return walmartStoreIds.has(s.storeId);
+                  // For any other channel (amazon, ebay, tiktok…) hide the
+                  // Walmart store but keep the rest.
+                  return !walmartStoreIds.has(s.storeId);
+                })
                 .map((s) => (
                 <button
                   key={s.storeId}
@@ -1873,15 +1902,68 @@ export default function ShippingLabelsPage() {
 // embedding logo assets, which keeps it crisp at any zoom and themeable.
 // ─────────────────────────────────────────────────────────────────────────
 
+/** Brand styling for the known marketplaces; everything else falls through
+ *  to a neutral chip so a new channel auto-appears with sensible visuals
+ *  before we hand-tune its colours. Add a case here when a new channel
+ *  warrants its own brand look. */
+type ChannelBrand = {
+  label: string;
+  active: string;
+  inactive: string;
+  prefix?: React.ReactNode;
+};
+const CHANNEL_BRANDS: Record<string, ChannelBrand> = {
+  amazon: {
+    label: "amazon",
+    active: "border-[#ff9900] bg-[#ff9900]/10 text-[#232f3e]",
+    inactive:
+      "border-rule bg-surface text-ink-2 hover:border-[#ff9900]/60 hover:text-ink-1",
+  },
+  walmart: {
+    label: "Walmart",
+    active: "border-[#0071dc] bg-[#0071dc] text-white",
+    inactive: "border-rule bg-surface text-[#0071dc] hover:border-[#0071dc]/60",
+    prefix: <span className="text-[15px] leading-none text-[#ffc220]">✲</span>,
+  },
+  ebay: {
+    label: "eBay",
+    active: "border-[#e53238] bg-[#e53238] text-white",
+    inactive: "border-rule bg-surface text-[#e53238] hover:border-[#e53238]/60",
+  },
+  tiktok: {
+    label: "TikTok Shop",
+    active: "border-black bg-black text-white",
+    inactive: "border-rule bg-surface text-ink hover:border-ink",
+    prefix: <span className="text-[15px] leading-none text-[#fe2c55]">●</span>,
+  },
+  shopify: {
+    label: "Shopify",
+    active: "border-[#95bf47] bg-[#95bf47] text-white",
+    inactive: "border-rule bg-surface text-[#5b8b1f] hover:border-[#95bf47]",
+  },
+  etsy: {
+    label: "Etsy",
+    active: "border-[#f1641e] bg-[#f1641e] text-white",
+    inactive: "border-rule bg-surface text-[#f1641e] hover:border-[#f1641e]/60",
+  },
+  direct: {
+    label: "Merged",
+    active: "border-ink bg-ink text-surface",
+    inactive: "border-rule bg-surface text-ink-2 hover:border-ink-3",
+  },
+};
+
 function ChannelToggle({
   channel,
   active,
   onClick,
 }: {
-  channel: "amazon" | "walmart";
+  channel: string;
   active: boolean;
   onClick: () => void;
 }) {
+  // Amazon gets a special-cased wordmark with the smile underline — too
+  // distinctive to fold into the generic chip shape.
   if (channel === "amazon") {
     return (
       <button
@@ -1897,7 +1979,6 @@ function ChannelToggle({
         )}
       >
         <span className="lowercase tracking-tight">amazon</span>
-        {/* Amazon smile — a rounded orange underline nodding to the logo. */}
         <span
           className={cn(
             "absolute bottom-1 left-3.5 right-3.5 h-[3px] rounded-full transition",
@@ -1909,23 +1990,29 @@ function ChannelToggle({
       </button>
     );
   }
-  // Walmart
+
+  // Generic brand chip — known marketplaces use their colours; unknown
+  // channels render with neutral fallback styling but still slot into
+  // the same chip shape.
+  const brand: ChannelBrand =
+    CHANNEL_BRANDS[channel] ?? {
+      label: channel.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      active: "border-ink bg-ink text-surface",
+      inactive: "border-rule bg-surface text-ink-2 hover:border-ink-3",
+    };
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      title="Show only Walmart orders"
+      title={`Show only ${brand.label} orders`}
       className={cn(
         "flex items-center gap-1.5 rounded-md border px-3.5 py-1.5 text-[13px] font-bold leading-none tracking-tight transition",
-        active
-          ? "border-[#0071dc] bg-[#0071dc] text-white shadow-sm"
-          : "border-rule bg-surface text-[#0071dc] hover:border-[#0071dc]/60",
+        active ? `${brand.active} shadow-sm` : brand.inactive,
       )}
     >
-      {/* Walmart spark (the six-point yellow mark). */}
-      <span className="text-[15px] leading-none text-[#ffc220]">✲</span>
-      <span>Walmart</span>
+      {brand.prefix}
+      <span>{brand.label}</span>
     </button>
   );
 }

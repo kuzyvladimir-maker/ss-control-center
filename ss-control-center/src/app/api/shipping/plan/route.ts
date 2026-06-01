@@ -359,12 +359,22 @@ export async function GET(request: NextRequest) {
       // Veeqo-merged orders get channel.name = "Merged Orders" and
       // channel.type_code = "direct" — but the underlying source orders are
       // always Amazon (Walmart orders can't be merged in Veeqo), and we buy
-      // labels for them through the same Amazon Buy Shipping path. Treat the
-      // merge bucket as Amazon for the channel-filter gate.
+      // labels for them through the same Amazon Buy Shipping path. Treat
+      // the merge bucket as Amazon-equivalent.
       const isMergedAmazon = channel === "Merged Orders";
       const isAmazon = channelType === "amazon" || isMergedAmazon;
       const isWalmart = channelType === "walmart";
-      if (!isAmazon && !isWalmart) continue;
+      // Everything else (eBay, TikTok, Shopify, Etsy, direct…) rate-shops
+      // through Veeqo just like Amazon — same /shipping/rates endpoint,
+      // same selectBestRate logic. We default to the Amazon-style path
+      // for them so a new marketplace works out of the box without a
+      // dedicated branch here. (Walmart still uses its own /walmart/rates
+      // flow because Buy-with-Walmart bypasses Veeqo entirely.)
+      if (!channelType && !isMergedAmazon) {
+        // No channel info at all — skip (defensive; in practice every
+        // Veeqo order has a channel).
+        continue;
+      }
       debug.filters.afterChannel++;
 
       if (isWalmart && weekend) continue;
