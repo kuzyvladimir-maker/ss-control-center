@@ -19,6 +19,7 @@ import { getWalmartClient, WalmartApiError } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { estimateShippingRates, type BoxInput } from "@/lib/walmart/shipping";
 import { selectBestWalmartRate } from "@/lib/shipping/walmart-rate-selection";
+import { effectiveBusinessDay } from "@/lib/shipping/dates";
 import {
   buildPackingSignature,
   requiresPackingProfile,
@@ -171,7 +172,7 @@ export async function POST(request: NextRequest) {
   // re-quote against a different dispatch day; otherwise the order's
   // estimated ship date (or tomorrow). Walmart estimates differ by ship date.
   const now = Date.now();
-  const shipByDate: string | Date =
+  const requestedShipByDate: string | Date =
     typeof body.shipByDate === "string" && body.shipByDate
       ? body.shipByDate
       : order.shippingInfo?.estimatedShipDate ?? new Date(now + 24 * 3600 * 1000);
@@ -179,6 +180,18 @@ export async function POST(request: NextRequest) {
     typeof body.deliverByDate === "string" && body.deliverByDate
       ? body.deliverByDate
       : order.shippingInfo?.estimatedDeliveryDate ?? new Date(now + 5 * 24 * 3600 * 1000);
+
+  // Walmart doesn't ship on Saturdays/Sundays/US federal holidays — push
+  // the quoted ship date forward to the next business day so the rate
+  // we get back reflects the day the package will really leave.
+  // (Amazon's /plan does this via computeLabelDate; the Walmart path
+  // missed it after the rate-source swap, leaving Sunday rates being
+  // quoted against today.)
+  const requestedYmd =
+    typeof requestedShipByDate === "string"
+      ? requestedShipByDate.slice(0, 10)
+      : new Date(requestedShipByDate).toISOString().slice(0, 10);
+  const shipByDate = effectiveBusinessDay(requestedYmd);
 
   try {
     const rates = await estimateShippingRates(client, {
@@ -203,7 +216,7 @@ export async function POST(request: NextRequest) {
       existingLabel: null,
       box,
       dimsSource,
-      shipByDate: new Date(shipByDate).toISOString().slice(0, 10),
+      shipByDate,
       rates,
       selected: selection.chosen,
       selectionReason: selection.reason,

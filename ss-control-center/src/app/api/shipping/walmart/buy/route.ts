@@ -22,6 +22,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getWalmartClient, WalmartApiError } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { buyShippingLabel, downloadLabelPdf, type BoxInput } from "@/lib/walmart/shipping";
+import { effectiveBusinessDay } from "@/lib/shipping/dates";
 import { uploadLabelPdf } from "@/lib/google-drive";
 import { buildPdfFilename, buildFolderPath } from "@/lib/shipping-label-files";
 
@@ -156,11 +157,14 @@ export async function POST(request: NextRequest) {
         const edd = typeof body?.edd === "string" ? body.edd.slice(0, 10) : deliveryBy;
         // File the label under the operator's chosen ship date (the day the
         // package actually ships), not the moment of purchase. Falls back to
-        // today if the UI didn't pass one.
-        const shipDay =
+        // today if the UI didn't pass one. Whatever date we get, push it
+        // forward to the next US business day — a Sunday-bought label that
+        // physically ships Monday belongs in the Monday folder.
+        const rawShipDay =
           typeof body?.shipByDate === "string" && body.shipByDate
             ? body.shipByDate.slice(0, 10)
             : new Date().toISOString().slice(0, 10);
+        const shipDay = effectiveBusinessDay(rawShipDay);
         const drive = await uploadLabelPdf({
           folderSegments: buildFolderPath({ actualShipDay: shipDay, channel: "Walmart", channelKind: "Walmart" }).split("/"),
           filename: buildPdfFilename({ edd, deliveryBy, product, qty }),

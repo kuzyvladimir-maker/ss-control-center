@@ -94,6 +94,20 @@ export function computeLabelDate(shipByYMD: string): string {
   return ymd(nextBusinessDay(todayDate));
 }
 
+// Push a YYYY-MM-DD ship date forward to the next US business day,
+// counting `ymd` itself when it's already a business day. Used by
+// Walmart rate-quote + buy paths so a Sunday/holiday request produces
+// a label dated for the day the warehouse actually ships, not for
+// today (which would inflate transit estimates and risk a Late
+// Shipment hit against Walmart's metrics).
+export function effectiveBusinessDay(ymd: string): string {
+  const d = new Date(`${ymd}T12:00:00`);
+  while (!isBusinessDay(d)) {
+    d.setDate(d.getDate() + 1);
+  }
+  return ymdFromDate(d);
+}
+
 // Next Monday strictly after `ymd` (so "given Monday" returns the
 // following Monday). Skips federal holidays — if the candidate Monday
 // is a holiday, slide forward to the next business day. Used by the
