@@ -15,6 +15,7 @@ interface Comparison {
 interface Period {
   value: number;
   comparison: Comparison | null;
+  count?: number;
 }
 
 interface ForecastPeriod extends Period {
@@ -26,12 +27,28 @@ interface ForecastPeriod extends Period {
   };
 }
 
+interface BreakdownPeriods {
+  today: Period;
+  yesterday: Period;
+  mtd: Period;
+  lastMonth: Period;
+  forecast: ForecastPeriod;
+}
+
 interface SalesResponse {
   today: Period;
   yesterday: Period;
   mtd: Period;
   lastMonth: Period;
   forecast: ForecastPeriod;
+  /** Same period shapes, computed per-source so each card can show
+   *  Amazon vs Walmart at a glance (the dashboard's "where's the
+   *  money coming from today" question). null when that source had
+   *  no orders in the lookback window. */
+  breakdown?: {
+    amazon: BreakdownPeriods | null;
+    walmart: BreakdownPeriods | null;
+  };
   meta: { tz: string; asOf: string; storeIdsApplied: string[] };
 }
 
@@ -109,12 +126,24 @@ export function SalesCardsRow() {
   // analytics page reads `?period=` to scope its tables and charts to
   // the same window the dashboard card summarised — letting the operator
   // drill from a headline number into the underlying orders.
+  const amzToday = data.breakdown?.amazon?.today ?? null;
+  const wmtToday = data.breakdown?.walmart?.today ?? null;
+  const amzYest = data.breakdown?.amazon?.yesterday ?? null;
+  const wmtYest = data.breakdown?.walmart?.yesterday ?? null;
+  const amzMtd = data.breakdown?.amazon?.mtd ?? null;
+  const wmtMtd = data.breakdown?.walmart?.mtd ?? null;
+  const amzLast = data.breakdown?.amazon?.lastMonth ?? null;
+  const wmtLast = data.breakdown?.walmart?.lastMonth ?? null;
+
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       <SalesCard
         title="Sales today"
         href="/analytics?period=today"
         value={data.today.value}
+        count={data.today.count}
+        amazon={amzToday}
+        walmart={wmtToday}
         comparison={data.today.comparison}
         comparisonLabel="vs yesterday"
       />
@@ -122,6 +151,9 @@ export function SalesCardsRow() {
         title="Sales yesterday"
         href="/analytics?period=yesterday"
         value={data.yesterday.value}
+        count={data.yesterday.count}
+        amazon={amzYest}
+        walmart={wmtYest}
         comparison={data.yesterday.comparison}
         comparisonLabel="vs last week"
       />
@@ -129,6 +161,9 @@ export function SalesCardsRow() {
         title="Month to date"
         href="/analytics?period=mtd"
         value={data.mtd.value}
+        count={data.mtd.count}
+        amazon={amzMtd}
+        walmart={wmtMtd}
         comparison={data.mtd.comparison}
         comparisonLabel="vs last mo. same period"
       />
@@ -136,6 +171,9 @@ export function SalesCardsRow() {
         title="Last month"
         href="/analytics?period=lastMonth"
         value={data.lastMonth.value}
+        count={data.lastMonth.count}
+        amazon={amzLast}
+        walmart={wmtLast}
         comparison={null}
       />
       <SalesCard
@@ -154,6 +192,9 @@ export function SalesCardsRow() {
 function SalesCard({
   title,
   value,
+  count,
+  amazon,
+  walmart,
   comparison,
   comparisonLabel,
   forecastReason,
@@ -162,6 +203,12 @@ function SalesCard({
 }: {
   title: string;
   value: number | null;
+  /** Total non-cancelled order count for this period (combined channels). */
+  count?: number;
+  /** Per-channel breakdown of value+count for this period. null when that
+   *  channel had no orders in the lookback window. */
+  amazon?: { value: number; count?: number } | null;
+  walmart?: { value: number; count?: number } | null;
   comparison: Comparison | null;
   comparisonLabel?: string;
   forecastReason?: string;
@@ -199,9 +246,38 @@ function SalesCard({
       <div className="text-[10.5px] font-mono uppercase tracking-[0.14em] text-ink-3">
         {title}
       </div>
-      <div className="mt-2 text-[24px] font-semibold leading-none text-ink tabular">
-        {formatted}
+      <div className="mt-2 flex items-baseline justify-between gap-2">
+        <div className="text-[24px] font-semibold leading-none text-ink tabular">
+          {formatted}
+        </div>
+        {typeof count === "number" && count > 0 && (
+          <div className="text-[11.5px] tabular text-ink-3">
+            <span className="font-medium text-ink-2">{count}</span> order{count === 1 ? "" : "s"}
+          </div>
+        )}
       </div>
+      {/* Per-channel split — only show when we actually have a breakdown
+          (single-channel selections skip this so the card stays tidy). */}
+      {(amazon || walmart) && (
+        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[10.5px] tabular text-ink-3">
+          {amazon && (amazon.value > 0 || (amazon.count ?? 0) > 0) && (
+            <span title="Amazon orders">
+              <span className="text-[#ff9900]">●</span> {formatMoney(amazon.value)}
+              {typeof amazon.count === "number" && amazon.count > 0 && (
+                <span className="ml-1 text-ink-4">({amazon.count})</span>
+              )}
+            </span>
+          )}
+          {walmart && (walmart.value > 0 || (walmart.count ?? 0) > 0) && (
+            <span title="Walmart orders">
+              <span className="text-[#0071dc]">●</span> {formatMoney(walmart.value)}
+              {typeof walmart.count === "number" && walmart.count > 0 && (
+                <span className="ml-1 text-ink-4">({walmart.count})</span>
+              )}
+            </span>
+          )}
+        </div>
+      )}
       {comparison && percent !== null && (
         <div className="mt-2 flex items-baseline gap-1 text-[11.5px]">
           <TrendIcon

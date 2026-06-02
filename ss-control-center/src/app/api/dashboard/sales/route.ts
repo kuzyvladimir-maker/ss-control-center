@@ -55,6 +55,10 @@ interface ComparisonResult {
 interface PeriodResult {
   value: number;
   comparison: ComparisonResult | null;
+  /** Order count in this window (non-cancelled). Surfaced on the
+   *  dashboard card so the operator sees both money + volume at a
+   *  glance — important when avg basket value swings day to day. */
+  count?: number;
 }
 
 interface ForecastResult extends PeriodResult {
@@ -223,19 +227,24 @@ function buildPeriods(
   lastMonth: PeriodResult;
   forecast: ForecastResult;
 } {
+  const inRange = (from: Date, to: Date) =>
+    seed.filter((o) => o.date >= from && o.date <= to);
   const sumInRange = (from: Date, to: Date) =>
-    seed
-      .filter((o) => o.date >= from && o.date <= to)
-      .reduce((sum, o) => sum + (o.total || 0), 0);
+    inRange(from, to).reduce((sum, o) => sum + (o.total || 0), 0);
+  const countInRange = (from: Date, to: Date) => inRange(from, to).length;
 
   const today = sumInRange(windows.todayStart, windows.realNow);
+  const todayCount = countInRange(windows.todayStart, windows.realNow);
   const yesterday = sumInRange(windows.yesterdayStart, windows.yesterdayEnd);
+  const yesterdayCount = countInRange(windows.yesterdayStart, windows.yesterdayEnd);
   const sameDayLastWeek = sumInRange(
     windows.sameDayLastWeekStart,
     windows.sameDayLastWeekEnd
   );
   const mtd = sumInRange(windows.monthStart, windows.realNow);
+  const mtdCount = countInRange(windows.monthStart, windows.realNow);
   const lastMonth = sumInRange(windows.lastMonthStart, windows.lastMonthEnd);
+  const lastMonthCount = countInRange(windows.lastMonthStart, windows.lastMonthEnd);
   const lastMonthSamePeriod = sumInRange(
     windows.lastMonthStart,
     windows.lastMonthSamePeriodEnd
@@ -281,6 +290,7 @@ function buildPeriods(
   return {
     today: {
       value: today,
+      count: todayCount,
       comparison: {
         vs: "yesterday",
         baseline: yesterday,
@@ -289,6 +299,7 @@ function buildPeriods(
     },
     yesterday: {
       value: yesterday,
+      count: yesterdayCount,
       comparison: {
         vs: "sameDayLastWeek",
         baseline: sameDayLastWeek,
@@ -297,6 +308,7 @@ function buildPeriods(
     },
     mtd: {
       value: mtd,
+      count: mtdCount,
       comparison: {
         vs: "lastMonthSamePeriod",
         baseline: lastMonthSamePeriod,
@@ -305,6 +317,7 @@ function buildPeriods(
     },
     lastMonth: {
       value: lastMonth,
+      count: lastMonthCount,
       comparison: null,
     },
     forecast,

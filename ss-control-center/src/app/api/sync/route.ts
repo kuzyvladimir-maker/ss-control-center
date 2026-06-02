@@ -161,8 +161,13 @@ async function fanOutToCronJobs(
   // request.nextUrl.origin gives us the live host (preview deploys, prod,
   // localhost) without needing a hard-coded URL.
   const origin = request.nextUrl.origin;
+  // For the manual Refresh button we call the LIGHTWEIGHT Walmart orders
+  // sync (3-day window, no catalog/returns/recon) so the Dashboard's
+  // "Sales today" card refreshes in seconds, not the 40-60s the full
+  // /api/cron/walmart pass takes. Returns / catalog / adjustments still
+  // run on their own nightly cron schedule.
   const jobs: Array<{ key: string; path: string }> = [
-    { key: "walmart", path: "/api/cron/walmart" },
+    { key: "ordersWalmart", path: "/api/cron/orders-walmart" },
     { key: "accountHealthAmazon", path: "/api/cron/account-health-amazon" },
     { key: "accountHealthWalmart", path: "/api/cron/account-health-walmart" },
     { key: "procurementPriority", path: "/api/cron/procurement-priority" },
