@@ -871,10 +871,18 @@ export default function ShippingLabelsPage() {
     () =>
       new Set(
         filteredOrders
-          .filter((o) => o.state === "ready_to_buy")
+          .filter((o) => {
+            // In the awaiting-ship-confirm tab, selectable = bought Walmart
+            // rows waiting to be flipped to Shipped (the bulk Mark-shipped
+            // target). Everywhere else, selectable = ready_to_buy (the
+            // bulk-buy target). Mutually exclusive sets so the same checkbox
+            // column does both jobs cleanly.
+            if (viewScope === "awaiting") return isAwaitingShipConfirm(o);
+            return o.state === "ready_to_buy";
+          })
           .map((o) => o.orderId)
       ),
-    [filteredOrders]
+    [filteredOrders, viewScope, isAwaitingShipConfirm]
   );
 
   const totals = useMemo(() => {
@@ -964,6 +972,57 @@ export default function ShippingLabelsPage() {
       else next.add(orderId);
       return next;
     });
+  }
+
+  /**
+   * Bulk Mark as Shipped — for the awaiting-ship-confirm tab. Loops the
+   * selected Walmart purchase orders one-by-one through
+   * /api/shipping/walmart/mark-shipped. We don't parallelise because the
+   * Walmart shipping API rate-limits per-account aggressively and one bad
+   * row shouldn't take the whole batch down.
+   */
+  async function markShippedSelected() {
+    if (selected.size === 0) return;
+    setBuying(true);
+    const orderById = new Map<string, DashboardOrder>();
+    for (const o of filteredOrders) orderById.set(o.orderId, o);
+    let ok = 0;
+    let failed = 0;
+    const errors: string[] = [];
+    for (const id of selected) {
+      const o = orderById.get(id);
+      if (!o || !o.isWalmart || !o.walmartPurchaseOrderId) continue;
+      setBuyMsg(`Marking ${o.orderNumber} shipped (${ok + failed + 1}/${selected.size})…`);
+      try {
+        const r = await fetch("/api/shipping/walmart/mark-shipped", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ purchaseOrderId: o.walmartPurchaseOrderId }),
+        });
+        const j = await r.json();
+        if (!r.ok || j?.ok === false) {
+          failed++;
+          const msg = j?.error || `HTTP ${r.status}`;
+          errors.push(`${o.orderNumber}: ${msg}`);
+          setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
+        } else {
+          ok++;
+        }
+      } catch (e) {
+        failed++;
+        const msg = e instanceof Error ? e.message : String(e);
+        errors.push(`${o.orderNumber}: ${msg}`);
+        setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
+      }
+    }
+    setBuyMsg(
+      failed === 0
+        ? `Marked ${ok} order(s) shipped`
+        : `Marked ${ok} shipped, ${failed} failed — see card errors`,
+    );
+    setBuying(false);
+    setSelected(new Set());
+    await load();
   }
 
   async function buySelected() {
@@ -1670,7 +1729,10 @@ export default function ShippingLabelsPage() {
         />
       )}
 
-      {/* Action bar */}
+      {/* Action bar — checkbox + bulk button. In the active tab the bulk
+          button is "Buy selected"; in the awaiting-ship-confirm tab it
+          flips to "Mark shipped" so the same checkbox column drives both
+          flows without a separate UI. */}
       <div className="flex items-center justify-between rounded-md border border-rule bg-surface px-3 py-2">
         <label className="flex items-center gap-2 text-[12.5px] text-ink-2">
           <input
@@ -1680,7 +1742,9 @@ export default function ShippingLabelsPage() {
             }
             onChange={toggleAll}
           />
-          Select all ready ({selected.size}/{selectableIds.size})
+          {viewScope === "awaiting"
+            ? `Select all awaiting (${selected.size}/${selectableIds.size})`
+            : `Select all ready (${selected.size}/${selectableIds.size})`}
         </label>
         <div className="flex items-center gap-2">
           {/* Sort — like Veeqo's sortable columns. */}
@@ -1704,19 +1768,33 @@ export default function ShippingLabelsPage() {
           {buyMsg && (
             <span className="text-[11px] text-ink-3">{buyMsg}</span>
           )}
-          <Btn
-            variant="primary"
-            icon={<ShoppingCart size={13} />}
-            onClick={buySelected}
-            loading={buying}
-            disabled={selected.size === 0}
-          >
-            {buying
-              ? "Buying…"
-              : `Buy selected (${selected.size})${
-                  selectedTotal > 0 ? `: $${selectedTotal.toFixed(2)}` : ""
-                }`}
-          </Btn>
+          {viewScope === "awaiting" ? (
+            <Btn
+              variant="primary"
+              icon={<CheckCircle size={13} />}
+              onClick={markShippedSelected}
+              loading={buying}
+              disabled={selected.size === 0}
+            >
+              {buying
+                ? "Marking shipped…"
+                : `Mark shipped (${selected.size})`}
+            </Btn>
+          ) : (
+            <Btn
+              variant="primary"
+              icon={<ShoppingCart size={13} />}
+              onClick={buySelected}
+              loading={buying}
+              disabled={selected.size === 0}
+            >
+              {buying
+                ? "Buying…"
+                : `Buy selected (${selected.size})${
+                    selectedTotal > 0 ? `: $${selectedTotal.toFixed(2)}` : ""
+                  }`}
+            </Btn>
+          )}
         </div>
       </div>
 

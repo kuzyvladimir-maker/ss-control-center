@@ -69,8 +69,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Label has no tracking/box items to ship." }, { status: 409 });
   }
 
+  // The operator clicked Mark as Shipped — that's an explicit "ship anyway"
+  // even if the buyer requested cancellation, so we always pass the
+  // intentToCancelOverride flag. Without it Walmart 400s with
+  // INVALID_REQUEST_CONTENT.GMP_ORDER_API on any cancellation-flagged PO.
+  // (The unattended ship-confirm cron does NOT pass this — those orders
+  //  land in the watchdog Telegram alerts instead so Vladimir decides.)
   try {
-    const updated = await api.shipOrderLines(purchaseOrderId, lines);
+    const updated = await api.shipOrderLines(purchaseOrderId, lines, {
+      intentToCancelOverride: true,
+    });
     return NextResponse.json({
       ok: true,
       purchaseOrderId,
@@ -80,8 +88,25 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     if (err instanceof WalmartApiError) {
+      // Surface Walmart's verbatim error body so the operator sees the
+      // real reason (e.g. "ship date must be today or later", "tracking
+      // number invalid", etc.) instead of a generic "Walmart API 400".
+      const detail =
+        typeof err.errorBody === "object" && err.errorBody !== null
+          ? (err.errorBody as Record<string, unknown>)
+          : null;
+      const firstErr = detail?.errors as
+        | { error?: Array<{ description?: string; field?: string }> }
+        | undefined;
+      const desc = firstErr?.error?.[0]?.description;
       return NextResponse.json(
-        { ok: false, error: `Walmart API ${err.status}`, walmart: err.errorBody },
+        {
+          ok: false,
+          error: desc
+            ? `Walmart: ${desc}`
+            : `Walmart API ${err.status}`,
+          walmart: err.errorBody,
+        },
         { status: 502 },
       );
     }

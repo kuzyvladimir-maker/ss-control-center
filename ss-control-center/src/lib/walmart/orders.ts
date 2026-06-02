@@ -158,9 +158,22 @@ export class WalmartOrdersApi {
     return mapOrder(data?.order ?? data);
   }
 
+  /**
+   * POST /v3/orders/{po}/shipping — flip an order to Shipped with tracking.
+   *
+   * Walmart blocks this call with HTTP 400 + INVALID_REQUEST_CONTENT
+   * (field: intentToCancelOverride) when the buyer has clicked
+   * "Request cancellation" on this order — even if the seller already
+   * bought a label. The override flag is the seller's explicit "ship
+   * anyway, I know about the cancel request". Manual operator clicks
+   * pass `intentToCancelOverride: true`; the unattended ship-confirm
+   * cron leaves it false so cancellation-requested orders are skipped
+   * and surface in the watchdog Telegram alerts instead.
+   */
   async shipOrderLines(
     purchaseOrderId: string,
-    lines: WalmartShipLineInput[]
+    lines: WalmartShipLineInput[],
+    opts: { intentToCancelOverride?: boolean } = {}
   ): Promise<WalmartOrder> {
     const body = {
       orderShipment: {
@@ -189,10 +202,14 @@ export class WalmartOrdersApi {
         },
       },
     };
+    const params: Record<string, string> = {};
+    if (opts.intentToCancelOverride) {
+      params.intentToCancelOverride = "true";
+    }
     const data = await this.client.request<any>(
       "POST",
       `/orders/${encodeURIComponent(purchaseOrderId)}/shipping`,
-      { body }
+      { body, params }
     );
     return mapOrder(data?.order ?? data);
   }
