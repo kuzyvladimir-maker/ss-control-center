@@ -1658,9 +1658,17 @@ export default function ShippingLabelsPage() {
           // (e.g. "shopify" → just "NAN health"), use that real name on
           // the chip — sidesteps the generic "Shopify" label for the
           // common single-account case.
+          //
+          // EXCEPT for amazon/walmart: their chips are brand-styled
+          // wordmarks and the operator thinks of them as marketplaces,
+          // not as the legal entity Veeqo stores them under (Walmart
+          // shows up as "SIRIUS TRADING INTERNATIONAL LLC" in Veeqo,
+          // but "Walmart" is what we want on the chip).
           const names = channelNamesByKind.get(kind);
           const overrideLabel =
-            names && names.size === 1 ? [...names][0] : undefined;
+            kind !== "amazon" && kind !== "walmart" && names && names.size === 1
+              ? [...names][0]
+              : undefined;
           return (
             <ChannelToggle
               key={kind}
