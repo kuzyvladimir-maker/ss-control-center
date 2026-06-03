@@ -1882,6 +1882,7 @@ export default function ShippingLabelsPage() {
               plan={planByOrderNumber.get(o.orderNumber) ?? null}
               planLoading={planLoading}
               selected={selected.has(o.orderId)}
+              selectable={selectableIds.has(o.orderId)}
               buying={buyingRow === o.orderId}
               buyError={buyErrors[o.orderId] ?? null}
               walmartStatus={walmartStatus[o.orderNumber] ?? null}
@@ -2170,6 +2171,7 @@ function OrderRow({
   plan,
   planLoading,
   selected,
+  selectable,
   buying,
   buyError,
   frozenAlert,
@@ -2200,6 +2202,11 @@ function OrderRow({
   plan: PlanItem | null;
   planLoading: boolean;
   selected: boolean;
+  /** True when this row is in the parent's `selectableIds` set — i.e. the
+   *  bulk action button would act on it. Drives checkbox visibility:
+   *  in the active tab that's `ready_to_buy` rows; in the awaiting tab
+   *  it's `isAwaitingShipConfirm` rows (manually-bought labels included). */
+  selectable: boolean;
   buying: boolean;
   buyError: string | null;
   frozenAlert: ShippingFrozenAlert | null;
@@ -2282,7 +2289,7 @@ function OrderRow({
     >
       {/* Top row: select + identity + type tag */}
       <div className="flex items-start gap-3">
-        {isReady ? (
+        {selectable ? (
           <input
             type="checkbox"
             checked={selected}
