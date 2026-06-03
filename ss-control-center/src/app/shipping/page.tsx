@@ -567,6 +567,46 @@ export default function ShippingLabelsPage() {
     [],
   );
 
+  /**
+   * Lightweight label probe for Walmart need_attention rows. We don't have
+   * SkuShippingData/PackingProfile for these so the full rate-quote path
+   * would 422 with "no saved package" — but they STILL might have a label
+   * sitting on Walmart's side (Vladimir bought it manually in Seller Center).
+   * One Walmart API call per order, no DB lookups, no rate-shopping.
+   */
+  const probeWalmartLabel = useCallback(
+    async (o: DashboardOrder) => {
+      if (!o.walmartPurchaseOrderId) return;
+      try {
+        const res = await fetch("/api/shipping/walmart/check-label", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ purchaseOrderId: o.walmartPurchaseOrderId }),
+        });
+        const j = await res.json();
+        if (!j?.ok || !j.alreadyBought || !j.existingLabel) return;
+        // Populate walmartStatus so isAwaitingShipConfirm sees the row and
+        // it flows to the Awaiting tab. orderStatus stays null — we didn't
+        // fetch the order, only the label.
+        setWalmartStatus((p) => ({
+          ...p,
+          [o.orderNumber]: {
+            alreadyBought: true,
+            orderStatus: null,
+            existingLabel: {
+              trackingNumber: j.existingLabel.trackingNumber,
+              carrierName: j.existingLabel.carrierName,
+              trackingUrl: j.existingLabel.trackingUrl ?? undefined,
+            },
+          },
+        }));
+      } catch {
+        /* probe is best-effort — silent on failure */
+      }
+    },
+    [],
+  );
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -595,6 +635,18 @@ export default function ShippingLabelsPage() {
         const readyWalmart = dashJson.orders.filter(
           (o) => o.state === "ready_to_buy" && o.isWalmart && o.walmartPurchaseOrderId,
         );
+        // need_attention Walmart rows (no SkuShippingData / no PackingProfile)
+        // never reach the full rate-quote path — but a label may already be
+        // sitting on Walmart's side if Vladimir bought it manually in Seller
+        // Center. Probe each one cheaply (single getLabelsByPurchaseOrder per
+        // PO) so manual labels show up in the Awaiting ship-confirm tab
+        // instead of being stuck at "Add SKU data".
+        const needAttnWalmart = dashJson.orders.filter(
+          (o) =>
+            o.state === "need_attention" &&
+            o.isWalmart &&
+            o.walmartPurchaseOrderId,
+        );
         // A fresh dashboard load is a clean slate — clear stale per-order
         // ship-date overrides and re-quote everything at the page-level date
         // (read via the ref so this []-dep callback need not depend on it).
@@ -602,12 +654,12 @@ export default function ShippingLabelsPage() {
         setWalmartRates({});
         setWalmartBuyInfo({});
         setWalmartStatus({});
-        if (readyWalmart.length === 0) return;
-        await Promise.all(
-          readyWalmart.map((o) =>
+        await Promise.all([
+          ...readyWalmart.map((o) =>
             quoteWalmartOrder(o, shipDateGlobalRef.current),
           ),
-        );
+          ...needAttnWalmart.map((o) => probeWalmartLabel(o)),
+        ]);
       })();
 
       const readyOrderIds = dashJson.orders
@@ -636,7 +688,7 @@ export default function ShippingLabelsPage() {
     } finally {
       setPlanLoading(false);
     }
-  }, [quoteWalmartOrder]);
+  }, [quoteWalmartOrder, probeWalmartLabel]);
 
   useEffect(() => {
     load();
