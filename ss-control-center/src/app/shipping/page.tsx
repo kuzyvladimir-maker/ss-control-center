@@ -342,6 +342,10 @@ export default function ShippingLabelsPage() {
     >
   >({});
   const [markingShipped, setMarkingShipped] = useState<string | null>(null);
+  // In-flight Mark-as-Placed button (waiting_placed rows). Same shape as
+  // markingShipped — stops double-clicks while the Placed tag write
+  // round-trips to Veeqo.
+  const [markingPlaced, setMarkingPlaced] = useState<string | null>(null);
   // In-flight Rollback button. Stops double-clicks while we strip Placed.
   const [rollingBack, setRollingBack] = useState<string | null>(null);
   // In-flight Discard Label button. Stops double-clicks during cancel.
@@ -828,6 +832,28 @@ export default function ShippingLabelsPage() {
       k === "amazon" ? 0 : k === "walmart" ? 1 : 2;
     arr.sort((a, b) => priority(a) - priority(b) || a.localeCompare(b));
     return arr;
+  }, [orders]);
+
+  // For each channel kind, collect the unique Veeqo channel.name(s) that
+  // back it. When a kind has exactly one name we show THAT name on the
+  // chip (e.g. "NAN health" instead of generic "Shopify") so the operator
+  // sees the marketplace identity the way they think about it. Walmart
+  // and Amazon stay on their brand-styled wordmarks via CHANNEL_BRANDS.
+  const channelNamesByKind = useMemo(() => {
+    const m = new Map<string, Set<string>>();
+    for (const o of orders) {
+      const kind = o.isWalmart ? "walmart" : (o.channelKind ?? "");
+      if (!kind) continue;
+      const name = o.channel?.trim();
+      if (!name) continue;
+      let s = m.get(kind);
+      if (!s) {
+        s = new Set();
+        m.set(kind, s);
+      }
+      s.add(name);
+    }
+    return m;
   }, [orders]);
 
   // Store ids that carry Walmart orders — used to split the "By store"
@@ -1403,6 +1429,45 @@ export default function ShippingLabelsPage() {
     }
   }
 
+  /**
+   * Add the Placed tag in Veeqo without going through the /procurement
+   * workflow — for cases where the Procurement step doesn't apply
+   * (Veeqo-merged orders inherit Placed from their source orders;
+   * Shopify / NAN / other channels Vladimir doesn't source from
+   * suppliers). After success the row advances from waiting_placed to
+   * ready_to_buy on the next dashboard refresh, so we await load() to
+   * surface it immediately.
+   */
+  async function markPlaced(o: DashboardOrder) {
+    setMarkingPlaced(o.orderId);
+    setBuyMsg(`Marking ${o.orderNumber} as Placed…`);
+    setBuyErrors((prev) => {
+      if (!(o.orderId in prev)) return prev;
+      const next = { ...prev };
+      delete next[o.orderId];
+      return next;
+    });
+    try {
+      const r = await fetch("/api/shipping/mark-placed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: o.orderId }),
+      });
+      const j = await r.json();
+      if (!r.ok || j?.ok === false) {
+        throw new Error(j?.error || `HTTP ${r.status}`);
+      }
+      setBuyMsg(`${o.orderNumber} marked Placed`);
+      await load();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setBuyMsg(msg);
+      setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
+    } finally {
+      setMarkingPlaced(null);
+    }
+  }
+
   async function buyOne(o: DashboardOrder) {
     setBuyingRow(o.orderId);
     setBuyMsg(`Buying label for ${o.orderNumber}…`);
@@ -1588,17 +1653,27 @@ export default function ShippingLabelsPage() {
         <span className="text-[10.5px] font-medium uppercase tracking-wider text-ink-3">
           Channel
         </span>
-        {availableChannels.map((kind) => (
-          <ChannelToggle
-            key={kind}
-            channel={kind}
-            active={channelFilter === kind}
-            onClick={() => {
-              setChannelFilter((c) => (c === kind ? null : kind));
-              setStoreFilter(null);
-            }}
-          />
-        ))}
+        {availableChannels.map((kind) => {
+          // When this kind has exactly one Veeqo channel.name behind it
+          // (e.g. "shopify" → just "NAN health"), use that real name on
+          // the chip — sidesteps the generic "Shopify" label for the
+          // common single-account case.
+          const names = channelNamesByKind.get(kind);
+          const overrideLabel =
+            names && names.size === 1 ? [...names][0] : undefined;
+          return (
+            <ChannelToggle
+              key={kind}
+              channel={kind}
+              overrideLabel={overrideLabel}
+              active={channelFilter === kind}
+              onClick={() => {
+                setChannelFilter((c) => (c === kind ? null : kind));
+                setStoreFilter(null);
+              }}
+            />
+          );
+        })}
         {channelFilter !== null && (
           <button
             type="button"
@@ -1933,6 +2008,8 @@ export default function ShippingLabelsPage() {
               walmartRateError={walmartRateErrors[o.orderNumber] ?? null}
               markingShipped={markingShipped === o.orderId}
               onMarkShipped={() => markShipped(o)}
+              markingPlaced={markingPlaced === o.orderId}
+              onMarkPlaced={() => markPlaced(o)}
               rollingBack={rollingBack === o.orderId}
               onRollback={() => rollbackProcurement(o)}
               discardingLabel={discardingLabel === o.orderId}
@@ -2144,10 +2221,15 @@ const CHANNEL_BRANDS: Record<string, ChannelBrand> = {
 
 function ChannelToggle({
   channel,
+  overrideLabel,
   active,
   onClick,
 }: {
   channel: string;
+  /** When set, replaces the brand's default label (e.g. show "NAN health"
+   *  instead of "Shopify" when there's only one channel of that kind).
+   *  Amazon and Walmart ignore this — their wordmarks are special-cased. */
+  overrideLabel?: string;
   active: boolean;
   onClick: () => void;
 }) {
@@ -2189,19 +2271,24 @@ function ChannelToggle({
       active: "border-ink bg-ink text-surface",
       inactive: "border-rule bg-surface text-ink-2 hover:border-ink-3",
     };
+  // Vladimir-side identity (channel.name from Veeqo) wins over the
+  // generic kind label when supplied — e.g. "NAN health" instead of
+  // "Shopify". Walmart keeps its wordmark + spark; we don't override
+  // the prefix glyph for known brands.
+  const label = overrideLabel ?? brand.label;
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      title={`Show only ${brand.label} orders`}
+      title={`Show only ${label} orders`}
       className={cn(
         "flex items-center gap-1.5 rounded-md border px-3.5 py-1.5 text-[13px] font-bold leading-none tracking-tight transition",
         active ? `${brand.active} shadow-sm` : brand.inactive,
       )}
     >
       {brand.prefix}
-      <span>{brand.label}</span>
+      <span>{label}</span>
     </button>
   );
 }
@@ -2233,6 +2320,8 @@ function OrderRow({
   walmartRateError,
   markingShipped,
   onMarkShipped,
+  markingPlaced,
+  onMarkPlaced,
   rollingBack,
   onRollback,
   discardingLabel,
@@ -2275,6 +2364,8 @@ function OrderRow({
   walmartRateError: string | null;
   markingShipped: boolean;
   onMarkShipped: () => void;
+  markingPlaced: boolean;
+  onMarkPlaced: () => void;
   rollingBack: boolean;
   onRollback: () => void;
   discardingLabel: boolean;
@@ -2874,8 +2965,26 @@ function OrderRow({
       )}
 
       {isWaiting && (
-        <div className="mt-1 ml-6 text-[11px] text-ink-3">
-          Waiting for procurement (no <code>Placed</code> tag yet).
+        <div className="mt-1 ml-6 flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[11px] text-ink-3">
+            Waiting for procurement (no <code>Placed</code> tag yet).
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onMarkPlaced}
+            disabled={markingPlaced}
+            title="Add the Placed tag in Veeqo so this order advances to Ready to buy without going through /procurement"
+            className="h-7 text-[11.5px]"
+          >
+            {markingPlaced ? (
+              <>
+                <Loader2 size={12} className="mr-1 animate-spin" /> Marking…
+              </>
+            ) : (
+              "Mark as Placed"
+            )}
+          </Button>
         </div>
       )}
       {isBought && (
