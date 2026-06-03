@@ -34,11 +34,11 @@
       "schedule": "30 8 * * *"
     },
     {
-      "path": "/api/cron/walmart-ship-confirm?dryRun=true",
+      "path": "/api/cron/walmart-ship-confirm?dryRun=false",
       "schedule": "0 2 * * *"
     },
     {
-      "path": "/api/cron/walmart-ship-confirm?dryRun=true",
+      "path": "/api/cron/walmart-ship-confirm?dryRun=false",
       "schedule": "0 3 * * *"
     },
     {

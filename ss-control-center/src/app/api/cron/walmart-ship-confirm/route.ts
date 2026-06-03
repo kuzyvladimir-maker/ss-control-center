@@ -28,11 +28,13 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { getWalmartClient, WalmartApiError } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { getUpsTracking } from "@/lib/carriers/ups-tracking";
 import { getUspsTracking } from "@/lib/carriers/usps-tracking";
 import { getFedexTracking } from "@/lib/carriers/fedex-tracking";
+import { sendWalmartTelegram } from "@/lib/telegram";
 import type { UpsTrackingInfo } from "@/lib/carriers/ups-tracking";
 import type { WalmartShipLineInput } from "@/lib/walmart/types";
 
@@ -121,6 +123,17 @@ export async function GET(request: NextRequest) {
   const noLabel: string[] = [];
   const errors: Array<Record<string, unknown>> = [];
 
+  // SyncLog row so every run is auditable from the DB (previously the cron
+  // had no DB trace at all — the only way to know if it ran was to grep
+  // Vercel logs within their retention window).
+  const syncLog = await prisma.syncLog.create({
+    data: {
+      jobName: `walmart-ship-confirm${dryRun ? "-dryrun" : ""}`,
+      storeIndex: STORE_INDEX,
+      status: "running",
+    },
+  });
+
   try {
     for await (const order of api.paginate({ status: "Acknowledged", limit: 100 })) {
       const po = order.purchaseOrderId;
@@ -198,6 +211,60 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     // Pagination itself failed — return what we have plus the error.
     errors.push({ stage: "list-acknowledged", error: (err as Error).message });
+  }
+
+  // Close out SyncLog with summary counts. itemsSynced = orders actually
+  // shipped (or would-ship in dry-run) so the History panel surfaces the
+  // useful number, not the total scanned count.
+  await prisma.syncLog.update({
+    where: { id: syncLog.id },
+    data: {
+      status: errors.length > 0 ? "error" : "done",
+      completedAt: new Date(),
+      itemsSynced: shipped.length,
+      error:
+        errors.length > 0
+          ? `${errors.length} error(s); skipped ${skipped.length}; no-label ${noLabel.length}`
+          : null,
+    },
+  });
+
+  // Telegram summary to the Walmart group so the operator sees the run
+  // outcome without needing to open Vercel logs. Only post when something
+  // happened (shipped > 0 OR errors > 0) — otherwise we'd ping the chat
+  // every night with a "0 shipped" no-op.
+  if (shipped.length > 0 || errors.length > 0) {
+    const lines: string[] = [];
+    lines.push(
+      dryRun
+        ? "🧪 <b>Walmart ship-confirm (dry-run)</b>"
+        : "🚚 <b>Walmart ship-confirm</b>",
+    );
+    lines.push("");
+    lines.push(`Shipped: <b>${shipped.length}</b>`);
+    if (skipped.length > 0) lines.push(`Skipped: ${skipped.length} (origin-only / no tracking yet)`);
+    if (noLabel.length > 0) lines.push(`No label: ${noLabel.length}`);
+    if (errors.length > 0) lines.push(`⚠️ Errors: ${errors.length}`);
+    if (shipped.length > 0 && !dryRun) {
+      lines.push("");
+      lines.push(
+        shipped
+          .slice(0, 5)
+          .map((s) => `• PO ${s.po}`)
+          .join("\n"),
+      );
+      if (shipped.length > 5) {
+        lines.push(`…and ${shipped.length - 5} more`);
+      }
+    }
+    try {
+      await sendWalmartTelegram(lines.join("\n"));
+    } catch (e) {
+      console.warn(
+        "[ship-confirm] telegram summary failed:",
+        e instanceof Error ? e.message : e,
+      );
+    }
   }
 
   return NextResponse.json({
