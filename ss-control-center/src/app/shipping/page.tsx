@@ -737,18 +737,29 @@ export default function ShippingLabelsPage() {
   // Orders narrowed to the selected channel. Every count and the list below
   // derive from this, so flipping the Amazon/Walmart toggle re-computes the
   // whole dashboard. "all" passes everything through unchanged.
+  //
+  // Walmart-direct shipped rows are pruned at the very top so they don't
+  // leak into ANY downstream view. Walmart bypasses Veeqo on the buy +
+  // ship flow, so the Veeqo order stays at `awaiting_fulfillment` forever
+  // even after the package goes out — without this prune they keep showing
+  // in "Ready to buy" totals + the active list.
   const channelOrders = useMemo(() => {
-    if (!channelFilter) return orders;
+    const live = orders.filter((o) => {
+      if (!o.isWalmart) return true;
+      const ws = walmartStatus[o.orderNumber];
+      return !(ws && ws.orderStatus === "Shipped");
+    });
+    if (!channelFilter) return live;
     // Walmart special-case: the marketplace identity lives on the
     // isWalmart flag (Veeqo's channel.name for Walmart is the seller
     // entity "SIRIUS TRADING INTERNATIONAL LLC", not "Walmart") so we
     // match by that. Every other channel matches by channelKind which
     // is Veeqo's type_code lowercased.
-    if (channelFilter === "walmart") return orders.filter((o) => !!o.isWalmart);
-    return orders.filter(
+    if (channelFilter === "walmart") return live.filter((o) => !!o.isWalmart);
+    return live.filter(
       (o) => !o.isWalmart && (o.channelKind ?? "") === channelFilter,
     );
-  }, [orders, channelFilter]);
+  }, [orders, channelFilter, walmartStatus]);
 
   // Unique channel kinds present in today's orders → drives the dynamic
   // chip row at the top. Sorted with amazon/walmart first (most common
@@ -803,6 +814,7 @@ export default function ShippingLabelsPage() {
     },
     [walmartStatus],
   );
+
   const awaitingShipConfirmCount = useMemo(
     () => channelOrders.filter(isAwaitingShipConfirm).length,
     [channelOrders, isAwaitingShipConfirm],
@@ -830,6 +842,8 @@ export default function ShippingLabelsPage() {
         // Awaiting-ship-confirm scope is mutually exclusive with the
         // normal active list. In "awaiting" we show ONLY those rows; in
         // "active" we HIDE them so the buy-flow list stays focused.
+        // (Walmart-direct shipped rows are already pruned upstream in
+        //  channelOrders so they never reach this code path.)
         const awaiting = isAwaitingShipConfirm(o);
         if (viewScope === "awaiting") {
           if (!awaiting) return false;
