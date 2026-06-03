@@ -586,13 +586,13 @@ export default function ShippingLabelsPage() {
         const j = await res.json();
         if (!j?.ok || !j.alreadyBought || !j.existingLabel) return;
         // Populate walmartStatus so isAwaitingShipConfirm sees the row and
-        // it flows to the Awaiting tab. orderStatus stays null — we didn't
-        // fetch the order, only the label.
+        // it flows to the Awaiting tab (or, when orderStatus === "Shipped",
+        // gets hidden entirely by the isWalmartShipped channelOrders prune).
         setWalmartStatus((p) => ({
           ...p,
           [o.orderNumber]: {
             alreadyBought: true,
-            orderStatus: null,
+            orderStatus: j.orderStatus ?? null,
             existingLabel: {
               trackingNumber: j.existingLabel.trackingNumber,
               carrierName: j.existingLabel.carrierName,
@@ -1073,6 +1073,17 @@ export default function ShippingLabelsPage() {
           setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
         } else {
           ok++;
+          // Optimistic flip to Shipped — same reasoning as the single-row
+          // markShipped handler. Without it the row keeps reappearing
+          // after refresh until the dashboard probe re-fetches the
+          // order status from Walmart.
+          setWalmartStatus((prev) => ({
+            ...prev,
+            [o.orderNumber]: {
+              ...(prev[o.orderNumber] ?? { alreadyBought: true, existingLabel: null }),
+              orderStatus: "Shipped",
+            },
+          }));
         }
       } catch (e) {
         failed++;
@@ -1351,6 +1362,18 @@ export default function ShippingLabelsPage() {
       if (!r.ok || j?.ok === false) {
         throw new Error(j?.error || "Failed to mark shipped");
       }
+      // Optimistically flip the row to Shipped in local state so it
+      // disappears from the active/awaiting lists immediately (the
+      // channelOrders filter prunes isWalmartShipped). Without this the
+      // row keeps showing until the next dashboard refresh + label probe
+      // re-fetches the order status from Walmart.
+      setWalmartStatus((prev) => ({
+        ...prev,
+        [o.orderNumber]: {
+          ...(prev[o.orderNumber] ?? { alreadyBought: true, existingLabel: null }),
+          orderStatus: "Shipped",
+        },
+      }));
       setBuyMsg(`${o.orderNumber} marked Shipped`);
       await load();
     } catch (e) {

@@ -48,13 +48,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         ok: true,
         alreadyBought: false,
+        orderStatus: null,
         existingLabel: null,
       });
+    }
+    // When a label IS on file, also fetch the order status — the frontend's
+    // shipped-order filter needs orderStatus === "Shipped" to hide
+    // already-done rows after a refresh. Without this the row keeps
+    // reappearing in Awaiting ship-confirm even though we already marked
+    // it Shipped on Walmart. Extra API call only fires when there's
+    // actually a label, so the cost only hits orders we already care about.
+    let orderStatus: string | null = null;
+    try {
+      const order = await api.getOrderById(purchaseOrderId);
+      orderStatus = order.status ?? null;
+    } catch {
+      /* status fetch is best-effort — fall through */
     }
     const l = labels[0];
     return NextResponse.json({
       ok: true,
       alreadyBought: true,
+      orderStatus,
       existingLabel: {
         trackingNumber: l.trackingNumber,
         carrierName: l.carrierName,
@@ -71,6 +86,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           ok: true,
           alreadyBought: false,
+          orderStatus: null,
           existingLabel: null,
         });
       }
