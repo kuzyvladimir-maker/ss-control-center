@@ -839,20 +839,6 @@ export default function ShippingLabelsPage() {
     [orders],
   );
 
-  // Time-bucket counts recomputed locally so the tab badges track the channel
-  // filter (the server's data.timeBuckets cover both channels at once).
-  const bucketCounts = useMemo(() => {
-    const c: Record<ShipByBucket, number> = {
-      overdue: 0,
-      today: 0,
-      tomorrow: 0,
-      dayafter: 0,
-      later: 0,
-    };
-    for (const o of channelOrders) if (o.timeBucket) c[o.timeBucket] += 1;
-    return c;
-  }, [channelOrders]);
-
   // Walmart-only: label bought but order not yet marked Shipped. These
   // are pulled into a dedicated "Awaiting ship-confirm" tab so they
   // don't visually mix with rows still awaiting label purchase. Source
@@ -871,6 +857,33 @@ export default function ShippingLabelsPage() {
     () => channelOrders.filter(isAwaitingShipConfirm).length,
     [channelOrders, isAwaitingShipConfirm],
   );
+
+  // Scoped base — the orders that COULD appear in the list once bucket /
+  // state / type filters are applied. We compute ALL the secondary counts
+  // (time buckets, product type, state) from this base so every chip count
+  // matches what actually shows up when clicked. Without this, Overdue 1
+  // could be a row that's in the awaiting-ship-confirm bucket — clicking
+  // Overdue would then return an empty list.
+  const scopedOrders = useMemo(() => {
+    if (viewScope === "awaiting")
+      return channelOrders.filter(isAwaitingShipConfirm);
+    return channelOrders.filter((o) => !isAwaitingShipConfirm(o));
+  }, [channelOrders, viewScope, isAwaitingShipConfirm]);
+
+  // Time-bucket counts derived from the SAME scoped base filteredOrders
+  // works against. Click any bucket and the result list will have the
+  // count shown.
+  const bucketCounts = useMemo(() => {
+    const c: Record<ShipByBucket, number> = {
+      overdue: 0,
+      today: 0,
+      tomorrow: 0,
+      dayafter: 0,
+      later: 0,
+    };
+    for (const o of scopedOrders) if (o.timeBucket) c[o.timeBucket] += 1;
+    return c;
+  }, [scopedOrders]);
 
   const filteredOrders = useMemo(() => {
     // Sort by actionability: ready_to_buy → need_attention → waiting_placed
@@ -951,19 +964,24 @@ export default function ShippingLabelsPage() {
     [filteredOrders, viewScope, isAwaitingShipConfirm]
   );
 
+  // KPI tiles + state-filter tabs — derived from scopedOrders so the
+  // numbers reflect what's actually clickable in the current viewScope
+  // (active scope excludes awaiting-ship-confirm rows; awaiting scope
+  // is just those rows). Otherwise switching to "Awaiting" tab and back
+  // would leave KPI tiles showing counts that don't match the list.
   const totals = useMemo(() => {
-    const all = channelOrders.length;
-    const ready = channelOrders.filter(
+    const all = scopedOrders.length;
+    const ready = scopedOrders.filter(
       (o) => o.state === "ready_to_buy",
     ).length;
-    const attention = channelOrders.filter(
+    const attention = scopedOrders.filter(
       (o) => o.state === "need_attention",
     ).length;
-    const waiting = channelOrders.filter(
+    const waiting = scopedOrders.filter(
       (o) => o.state === "waiting_placed",
     ).length;
     return { all, ready, attention, waiting };
-  }, [channelOrders]);
+  }, [scopedOrders]);
 
   // Index plan rows by orderNumber so the OrderRow can pick up carrier /
   // price / EDD without an extra lookup at render time. Plan keys on
@@ -1753,7 +1771,10 @@ export default function ShippingLabelsPage() {
             {
               id: "all" as const,
               label: "All",
-              count: channelOrders.length - awaitingShipConfirmCount,
+              // = scopedOrders.length in active scope; in awaiting scope
+              // this equals awaitingShipConfirmCount. Both are correct
+              // "no time-bucket filter applied within current scope".
+              count: scopedOrders.length,
             },
             ...BUCKET_TABS.map((b) => ({
               id: b.id,
@@ -1792,12 +1813,12 @@ export default function ShippingLabelsPage() {
             {
               id: "all" as const,
               label: "All types",
-              count: channelOrders.length,
+              count: scopedOrders.length,
             },
             {
               id: "Frozen" as const,
               label: "Frozen",
-              count: channelOrders.filter(
+              count: scopedOrders.filter(
                 (o) =>
                   o.items.length > 0 &&
                   o.items.every((i) => i.knownType === "Frozen"),
@@ -1806,7 +1827,7 @@ export default function ShippingLabelsPage() {
             {
               id: "Dry" as const,
               label: "Dry",
-              count: channelOrders.filter(
+              count: scopedOrders.filter(
                 (o) =>
                   o.items.length > 0 &&
                   o.items.every((i) => i.knownType === "Dry"),

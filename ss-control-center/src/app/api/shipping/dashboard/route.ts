@@ -306,18 +306,43 @@ export async function GET() {
     // the Walmart customerOrderId. Map customerOrderId → purchaseOrderId here
     // so the UI can route Walmart rows to the Walmart-direct rate/buy flow
     // (and skip Veeqo) — channel-name matching is unreliable.
+    //
+    // Also map customerOrderId → Walmart status. Walmart-direct buy + ship
+    // bypasses Veeqo, so the Veeqo order stays at `awaiting_fulfillment`
+    // forever even after we've already marked the PO Shipped on Walmart.
+    // We use the DB-cached status (orders-walmart-light cron refreshes
+    // every 2h) to prune Shipped rows from the dashboard at the source —
+    // otherwise the sidebar count diverges from the page count by exactly
+    // the number of Walmart-direct-Shipped rows.
     const orderNumbers = veeqoOrders.map((o) => String(o.number ?? o.id));
     const walmartPoByCustomer = new Map<string, string>();
+    const walmartShippedCustomerIds = new Set<string>();
     if (orderNumbers.length > 0) {
       const wmRows = await prisma.walmartOrder.findMany({
         where: { customerOrderId: { in: orderNumbers } },
-        select: { customerOrderId: true, purchaseOrderId: true },
+        select: {
+          customerOrderId: true,
+          purchaseOrderId: true,
+          status: true,
+        },
       });
-      for (const r of wmRows) walmartPoByCustomer.set(r.customerOrderId, r.purchaseOrderId);
+      for (const r of wmRows) {
+        walmartPoByCustomer.set(r.customerOrderId, r.purchaseOrderId);
+        if (r.status === "Shipped") walmartShippedCustomerIds.add(r.customerOrderId);
+      }
     }
 
     const orders = [];
     for (const o of veeqoOrders) {
+      // Prune Walmart-direct rows that are already Shipped on Walmart's
+      // side. Veeqo keeps them at `awaiting_fulfillment` (Walmart-direct
+      // buy/ship bypasses Veeqo), so without this prune they keep
+      // showing in the dashboard list AND inflate the sidebar count by
+      // exactly the Walmart-Shipped delta. The DB status is refreshed
+      // every 2h by orders-walmart-light.
+      const veeqoNum = String(o.number ?? o.id);
+      if (walmartShippedCustomerIds.has(veeqoNum)) continue;
+
       const channelName: string = o.channel?.name ?? o.channel_name ?? "";
       const store = channelToStore(channelName);
       const storeId = store?.id ?? "unknown";
