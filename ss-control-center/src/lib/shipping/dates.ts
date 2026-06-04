@@ -70,19 +70,40 @@ export function todayNY(): string {
   return `${p.y}-${p.m}-${p.d}`;
 }
 
-// Convert any UTC timestamp (ISO string, Date, or epoch ms) to the YYYY-MM-DD
-// the operator sees in Miami time. THIS is the canonical converter for every
-// inbound date — Veeqo (UTC), Walmart (UTC), our own Drive folder names, etc.
-//
-// Why Eastern: Vladimir runs the operation from Miami; Amazon/Walmart seller
-// portals he checks against also render in Eastern. Previously the codebase
-// rendered Veeqo dates in Los Angeles (matching Veeqo's own UI) and Walmart
-// dates with a raw `.toISOString().slice(0,10)` (UTC). Same UTC instant
-// could surface as three different calendar days across our screens.
+// Convert any UTC timestamp to the YYYY-MM-DD the OPERATOR sees in Miami
+// (Eastern). Use this for operator-local concepts: "today" in the date
+// picker, today fallback in Drive folder paths, operator-anchored
+// analytics rows.
 export function utcToEasternYMD(input: string | number | Date): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/New_York",
   }).format(new Date(input));
+}
+
+// Convert any UTC timestamp to the YYYY-MM-DD that Veeqo and the
+// marketplace seller portals use — Pacific Time. Use this for every
+// inbound marketplace deadline: dispatch_date, due_date, EDD, Walmart's
+// estimatedShipDate / estimatedDeliveryDate. The bucketing in
+// dashboard/route.ts must use this so our Today/Tomorrow buckets agree
+// with Veeqo's "Today" badge: Veeqo encodes deadlines as the END of a
+// PT calendar day (T06:59:59 next-day UTC = 23:59 PT current day), and
+// Eastern interpretation flips those into the next calendar day.
+// (Discovered 2026-06-04 via /api/diag/tz: order 113-0672835-2991454
+// had dispatch_date = "2026-06-05T06:59:59.000Z" = PT Jun 4 23:59 =
+// "Today" in Veeqo's UI but "Tomorrow" under Eastern math.)
+export function utcToPacificYMD(input: string | number | Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Los_Angeles",
+  }).format(new Date(input));
+}
+
+// YYYY-MM-DD for "now" in America/Los_Angeles — the matching pair to
+// utcToPacificYMD. Used for bucket comparisons against marketplace
+// deadlines so both sides of the diff are anchored in the same TZ.
+export function todayPacific(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Los_Angeles",
+  }).format(new Date());
 }
 
 export function isAfterCutoff(): boolean {

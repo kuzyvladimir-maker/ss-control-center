@@ -21,7 +21,7 @@ import {
   requiresPackingProfile,
   type OrderLineItem,
 } from "@/lib/shipping/packing-signature";
-import { utcToEasternYMD } from "@/lib/shipping/dates";
+import { utcToPacificYMD, todayPacific } from "@/lib/shipping/dates";
 
 const PLACED_TAG = "Placed";
 
@@ -31,14 +31,15 @@ function shipByBucket(iso: string | null): ShipByBucket | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  // Anchor in America/New_York — the timezone Vladimir runs the op from
-  // (Miami) and the one Amazon/Walmart seller portals also render in.
-  // Pre-2026-06-04 this anchored in Los_Angeles to match Veeqo's own UI;
-  // but a single instant could then surface as three different calendar
-  // days across Walmart's portal, Veeqo's portal, and our dashboard. The
-  // operator only cares about Miami time, so we converge on Eastern.
-  const dStr = utcToEasternYMD(d);
-  const nowStr = utcToEasternYMD(new Date());
+  // Anchor in America/Los_Angeles (Pacific) — same TZ Veeqo's UI uses
+  // for the "Today / Tomorrow" badge it shows next to each order. Veeqo
+  // stores dispatch_date as the END of a PT calendar day (T06:59:59
+  // UTC of next-day = 23:59 PT current-day), so Pacific is the only
+  // anchor where our bucket matches Veeqo's badge for the cluster of
+  // orders that share that encoding. Verified 2026-06-04 with the
+  // `/api/diag/tz` endpoint against Veeqo's UI.
+  const dStr = utcToPacificYMD(d);
+  const nowStr = todayPacific();
   const diffDays = Math.round(
     (new Date(dStr + "T00:00:00Z").getTime() -
       new Date(nowStr + "T00:00:00Z").getTime()) /
@@ -345,15 +346,14 @@ export async function GET() {
       const storeId = store?.id ?? "unknown";
       const storeName = store?.name ?? channelName ?? "Unknown";
 
-      // Convert dispatch_date to Eastern YYYY-MM-DD before sending to the
-      // UI. Veeqo returns dispatch_date as a UTC ISO instant; previously
-      // we passed the raw string through and the UI's fmtDate sliced the
-      // first 10 chars — giving the UTC calendar day, which can be a day
-      // ahead of NY when the instant is between 19:00 and 23:59 NY time.
-      // That's the "Walmart 6/4 vs our app 6/5" drift Vladimir reported.
+      // Convert dispatch_date to Pacific YYYY-MM-DD before sending to the
+      // UI — same TZ Veeqo's own UI displays. The raw UTC ISO sliced as
+      // YMD lands in UTC (off by hours from Pacific) and Eastern (off by
+      // a day for the late-PT-evening encoding Veeqo uses for dispatch
+      // deadlines). Pacific is the right anchor for marketplace data.
       const shipByRaw: string | null = o.dispatch_date ?? o.due_date ?? null;
       const shipBy: string | null = shipByRaw
-        ? utcToEasternYMD(shipByRaw)
+        ? utcToPacificYMD(shipByRaw)
         : null;
       const bucket = shipByBucket(shipByRaw);
       if (bucket) timeBuckets[bucket]++;

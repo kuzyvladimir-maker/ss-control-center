@@ -18,7 +18,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { fetchAllOrders } from "@/lib/veeqo/client";
-import { utcToEasternYMD, todayNY } from "@/lib/shipping/dates";
+import {
+  utcToEasternYMD,
+  utcToPacificYMD,
+  todayNY,
+  todayPacific,
+} from "@/lib/shipping/dates";
 
 type ShipByBucket =
   | "overdue"
@@ -31,8 +36,8 @@ function shipByBucket(iso: string | null): ShipByBucket | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  const dStr = utcToEasternYMD(d);
-  const nowStr = todayNY();
+  const dStr = utcToPacificYMD(d);
+  const nowStr = todayPacific();
   const diffDays = Math.round(
     (new Date(dStr + "T00:00:00Z").getTime() -
       new Date(nowStr + "T00:00:00Z").getTime()) /
@@ -50,8 +55,12 @@ function classifyChannel(name: string): string {
   if (n.includes("walmart")) return "walmart";
   if (n.includes("tiktok")) return "tiktok";
   if (n.includes("ebay")) return "ebay";
+  // Amazon channels often don't include "amazon" in the name (e.g.
+  // "Salutem Solutions", "AMZ Commerce", "SIRIUS TRADING…"). Fall
+  // through to "amazon" by default — it's the dominant channel and
+  // the only one with the late-PT-evening dispatch_date encoding.
   if (n.includes("amazon") || n.startsWith("amz")) return "amazon";
-  return "other";
+  return "amazon";
 }
 
 export async function GET(req: NextRequest) {

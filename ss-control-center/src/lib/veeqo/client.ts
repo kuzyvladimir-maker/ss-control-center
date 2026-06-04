@@ -1,4 +1,4 @@
-import { todayNY, utcToEasternYMD } from "@/lib/shipping/dates";
+import { todayNY, utcToPacificYMD } from "@/lib/shipping/dates";
 
 const VEEQO_API_KEY = process.env.VEEQO_API_KEY!;
 const VEEQO_BASE_URL = process.env.VEEQO_BASE_URL || "https://api.veeqo.com";
@@ -312,22 +312,21 @@ export async function addEmployeeNote(orderId: number, text: string) {
   });
 }
 
-// Convert a Veeqo UTC timestamp to the YYYY-MM-DD string the operator sees.
+// Convert a Veeqo UTC timestamp to the YYYY-MM-DD string Veeqo's own UI
+// displays — Pacific. Veeqo encodes dispatch deadlines as the END of a
+// PT calendar day (e.g. `2026-06-05T06:59:59.000Z` = 23:59 PT Jun 4),
+// so any other anchor would push those orders into the next calendar
+// day and Today/Tomorrow buckets wouldn't agree with Veeqo's "Today"
+// badge. Confirmed empirically 2026-06-04 via /api/diag/tz: order
+// 113-9443744-1379467 had dispatch_date encoded that way and was
+// rendering as 6/5 under Eastern while Veeqo showed 6/4.
 //
-// HISTORY: this helper used to render in Los Angeles (Pacific) because
-// Veeqo's own UI does — that kept our EDD column visually identical to
-// Veeqo's. The trade-off was that Walmart's seller portal renders in
-// Eastern, so the same UTC instant could show up as June 4 on Walmart
-// and June 5 on Veeqo (and therefore on us). Vladimir runs the op out
-// of Miami; he reads ship-by dates against Walmart and Amazon, both
-// Eastern. Switching to Eastern unifies our three screens to the one
-// timezone the operator actually thinks in (2026-06-04 decision).
-//
-// Implementation delegates to the shared `utcToEasternYMD` helper so
-// all inbound-date conversions in the app share a single source of
-// truth — see `src/lib/shipping/dates.ts` for the comment block.
+// History note: an earlier refactor (2026-06-04 same day) tried
+// Eastern to "unify on Miami time" — but Miami is the operator's
+// chair, not where the data lives. Operator-local "today" still uses
+// `todayNY` for the date picker default, etc.
 export function veeqoDateToLocal(utcDate: string): string {
-  return utcToEasternYMD(utcDate);
+  return utcToPacificYMD(utcDate);
 }
 
 // Get "today" in America/New_York timezone.

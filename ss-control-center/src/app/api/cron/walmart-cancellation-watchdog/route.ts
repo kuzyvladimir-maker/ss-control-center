@@ -26,7 +26,7 @@ import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { getWalmartClient } from "@/lib/walmart/client";
 import { sendWalmartTelegram } from "@/lib/telegram";
 import type { WalmartOrder, WalmartCancelLineInput } from "@/lib/walmart/types";
-import { utcToEasternYMD } from "@/lib/shipping/dates";
+import { utcToPacificYMD } from "@/lib/shipping/dates";
 
 export const maxDuration = 300;
 
@@ -89,7 +89,7 @@ function telegramSummary(
   const qty = order.orderLines.reduce((s, l) => s + l.orderedQty, 0);
   const total = `$${order.orderTotal.toFixed(2)}`;
   const shipBy = order.shippingInfo?.estimatedShipDate
-    ? utcToEasternYMD(order.shippingInfo.estimatedShipDate)
+    ? utcToPacificYMD(order.shippingInfo.estimatedShipDate)
     : "—";
   if (outcome === "AUTO_CANCELLED") {
     return [
