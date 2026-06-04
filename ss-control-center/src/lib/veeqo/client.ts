@@ -1,3 +1,5 @@
+import { todayNY, utcToEasternYMD } from "@/lib/shipping/dates";
+
 const VEEQO_API_KEY = process.env.VEEQO_API_KEY!;
 const VEEQO_BASE_URL = process.env.VEEQO_BASE_URL || "https://api.veeqo.com";
 
@@ -310,27 +312,28 @@ export async function addEmployeeNote(orderId: number, text: string) {
   });
 }
 
-// Convert a Veeqo UTC timestamp to the YYYY-MM-DD string Veeqo's own UI
-// would render — i.e. America/Los_Angeles (Pacific). The previous
-// implementation used `setHours(getHours() - 7)`, which:
-//   1. broke on Vercel's UTC runtime: timestamps before 07:00 UTC ended
-//      up rendering as the previous day everywhere, including EDDs,
-//      pushing labels like UPS Ground Saver out of the deadline window
-//      they should have met.
-//   2. ignored DST: Pacific is UTC-7 in summer but UTC-8 in winter, so
-//      every label between Nov and Mar was already a day off.
-// Using Intl.DateTimeFormat with timeZone:"America/Los_Angeles" fixes
-// both — it's the same conversion Veeqo's UI does, so EDDs and ship-
-// by dates now match Veeqo down to the day.
+// Convert a Veeqo UTC timestamp to the YYYY-MM-DD string the operator sees.
+//
+// HISTORY: this helper used to render in Los Angeles (Pacific) because
+// Veeqo's own UI does — that kept our EDD column visually identical to
+// Veeqo's. The trade-off was that Walmart's seller portal renders in
+// Eastern, so the same UTC instant could show up as June 4 on Walmart
+// and June 5 on Veeqo (and therefore on us). Vladimir runs the op out
+// of Miami; he reads ship-by dates against Walmart and Amazon, both
+// Eastern. Switching to Eastern unifies our three screens to the one
+// timezone the operator actually thinks in (2026-06-04 decision).
+//
+// Implementation delegates to the shared `utcToEasternYMD` helper so
+// all inbound-date conversions in the app share a single source of
+// truth — see `src/lib/shipping/dates.ts` for the comment block.
 export function veeqoDateToLocal(utcDate: string): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Los_Angeles",
-  }).format(new Date(utcDate));
+  return utcToEasternYMD(utcDate);
 }
 
-// Get "today" in America/New_York timezone
+// Get "today" in America/New_York timezone.
+// Re-exported here as an alias of `todayNY` for backward compatibility
+// with the many callers that import from veeqo/client. The body has
+// always been NY-anchored; only the import path changes.
 export function getTodayNY(): string {
-  return new Date().toLocaleDateString("en-CA", {
-    timeZone: "America/New_York",
-  });
+  return todayNY();
 }

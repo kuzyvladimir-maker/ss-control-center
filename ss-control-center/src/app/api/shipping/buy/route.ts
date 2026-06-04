@@ -10,6 +10,7 @@ import {
 import { sendTelegramMessage } from "@/lib/telegram";
 import { uploadLabelPdf } from "@/lib/google-drive";
 import { buildFolderPath, buildPdfFilename } from "@/lib/shipping-label-files";
+import { todayNY } from "@/lib/shipping/dates";
 import { writeFileSync, mkdirSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
 
@@ -220,7 +221,11 @@ export async function POST(request: NextRequest) {
         // the dual-date migration was deployed alongside this code,
         // so rows planned before the Turso migration ran will still
         // have only the legacy field set.
-        const todayIso = new Date().toISOString().split("T")[0];
+        // Anchor today in Eastern (Miami). UTC slice would land in the
+        // wrong day for late-evening NY buys and break the Ship Date Trick
+        // pre-shift (we'd PUT dispatch_date = "tomorrow + 06:59 UTC" instead
+        // of today).
+        const todayIso = todayNY();
         const physicalShipDate =
           item.physicalShipDate || item.actualShipDay || todayIso;
         const labelDate = item.labelDate || todayIso;

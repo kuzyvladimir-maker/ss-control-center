@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getHistoricalWeather } from "@/lib/weather";
 import { zipToCoords } from "@/lib/geocoding";
+import { todayNY } from "@/lib/shipping/dates";
 
 // Tampa, FL — origin location
 const ORIGIN_LAT = parseFloat(process.env.ORIGIN_LAT || "27.9506");
@@ -41,7 +42,7 @@ export async function collectFrozenIncidentData(
   }
 ) {
   try {
-    const shipDate = opts?.shipDate || new Date().toISOString().split("T")[0];
+    const shipDate = opts?.shipDate || todayNY();
     const actualDelivery = opts?.actualDelivery || null;
     const destZip = opts?.destZip || null;
 

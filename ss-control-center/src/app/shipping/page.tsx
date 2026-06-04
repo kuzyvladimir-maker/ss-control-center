@@ -5055,7 +5055,13 @@ function WalmartPickRateDialog({
   onClose: () => void;
   onPick: (rate: WalmartRateLite, shipDate: string) => void;
 }) {
-  const today = new Date().toISOString().slice(0, 10);
+  // Anchor "today" in Eastern (Miami) — same TZ Vladimir reads against
+  // Walmart's seller portal. `new Date().toISOString().slice(0,10)` would
+  // return the UTC calendar day, which after 8 PM NY is already tomorrow
+  // and would preselect a future ship date for evening operators.
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+  }).format(new Date());
   const [shipDate, setShipDate] = useState<string>(
     initialShipDate || (order.shipBy && order.shipBy.slice(0, 10)) || today,
   );

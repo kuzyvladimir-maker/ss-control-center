@@ -22,7 +22,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getWalmartClient, WalmartApiError } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { buyShippingLabel, downloadLabelPdf, type BoxInput } from "@/lib/walmart/shipping";
-import { effectiveBusinessDay } from "@/lib/shipping/dates";
+import { effectiveBusinessDay, todayNY, utcToEasternYMD } from "@/lib/shipping/dates";
 import { uploadLabelPdf } from "@/lib/google-drive";
 import { buildPdfFilename, buildFolderPath } from "@/lib/shipping-label-files";
 
@@ -189,7 +189,13 @@ export async function POST(request: NextRequest) {
         // product title, EDD/DL prefix, "MM Month/DD/Walmart" folder).
         const product = order.orderLines.map((l) => l.productName).filter(Boolean).join(" + ") || purchaseOrderId;
         const qty = order.orderLines.reduce((s, l) => s + (l.orderedQty || 0), 0);
-        const deliveryBy = order.shippingInfo?.estimatedDeliveryDate?.toISOString().slice(0, 10) ?? null;
+        // Walmart returns dates as UTC ISO instants; anchor them in Eastern
+        // (Miami) the same way our UI does — `.toISOString().slice(0,10)`
+        // would land in the UTC calendar day and could file labels into the
+        // wrong day folder. See dates.ts:utcToEasternYMD for the rationale.
+        const deliveryBy = order.shippingInfo?.estimatedDeliveryDate
+          ? utcToEasternYMD(order.shippingInfo.estimatedDeliveryDate)
+          : null;
         const edd = typeof body?.edd === "string" ? body.edd.slice(0, 10) : deliveryBy;
         // File the label under the operator's chosen ship date (the day the
         // package actually ships), not the moment of purchase. Falls back to
@@ -199,7 +205,7 @@ export async function POST(request: NextRequest) {
         const rawShipDay =
           typeof body?.shipByDate === "string" && body.shipByDate
             ? body.shipByDate.slice(0, 10)
-            : new Date().toISOString().slice(0, 10);
+            : todayNY();
         const shipDay = effectiveBusinessDay(rawShipDay);
         const drive = await uploadLabelPdf({
           folderSegments: buildFolderPath({ actualShipDay: shipDay, channel: "Walmart", channelKind: "Walmart" }).split("/"),

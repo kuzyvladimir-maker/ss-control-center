@@ -19,7 +19,7 @@ import { getWalmartClient, WalmartApiError } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { estimateShippingRates, type BoxInput } from "@/lib/walmart/shipping";
 import { selectBestWalmartRate } from "@/lib/shipping/walmart-rate-selection";
-import { effectiveBusinessDay } from "@/lib/shipping/dates";
+import { effectiveBusinessDay, utcToEasternYMD } from "@/lib/shipping/dates";
 import {
   buildPackingSignature,
   requiresPackingProfile,
@@ -221,10 +221,15 @@ export async function POST(request: NextRequest) {
   // (Amazon's /plan does this via computeLabelDate; the Walmart path
   // missed it after the rate-source swap, leaving Sunday rates being
   // quoted against today.)
+  // When the operator passes an explicit YYYY-MM-DD (already Eastern from the
+  // date picker), use it verbatim. When falling back to Walmart's UTC
+  // estimatedShipDate, convert to Eastern first — `.toISOString().slice(0,10)`
+  // would land in the UTC calendar day, which can be a day ahead of NY and
+  // push the next-business-day shift to the wrong base.
   const requestedYmd =
     typeof requestedShipByDate === "string"
       ? requestedShipByDate.slice(0, 10)
-      : new Date(requestedShipByDate).toISOString().slice(0, 10);
+      : utcToEasternYMD(requestedShipByDate);
   const shipByDate = effectiveBusinessDay(requestedYmd);
 
   try {

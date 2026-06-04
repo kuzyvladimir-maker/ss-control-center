@@ -70,6 +70,21 @@ export function todayNY(): string {
   return `${p.y}-${p.m}-${p.d}`;
 }
 
+// Convert any UTC timestamp (ISO string, Date, or epoch ms) to the YYYY-MM-DD
+// the operator sees in Miami time. THIS is the canonical converter for every
+// inbound date — Veeqo (UTC), Walmart (UTC), our own Drive folder names, etc.
+//
+// Why Eastern: Vladimir runs the operation from Miami; Amazon/Walmart seller
+// portals he checks against also render in Eastern. Previously the codebase
+// rendered Veeqo dates in Los Angeles (matching Veeqo's own UI) and Walmart
+// dates with a raw `.toISOString().slice(0,10)` (UTC). Same UTC instant
+// could surface as three different calendar days across our screens.
+export function utcToEasternYMD(input: string | number | Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+  }).format(new Date(input));
+}
+
 export function isAfterCutoff(): boolean {
   return nyParts().hour >= CUTOFF_HOUR_NY;
 }

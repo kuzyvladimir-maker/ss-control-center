@@ -21,6 +21,7 @@ import {
   requiresPackingProfile,
   type OrderLineItem,
 } from "@/lib/shipping/packing-signature";
+import { utcToEasternYMD } from "@/lib/shipping/dates";
 
 const PLACED_TAG = "Placed";
 
@@ -30,18 +31,14 @@ function shipByBucket(iso: string | null): ShipByBucket | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  // Anchor both dates in America/Los_Angeles — the same TZ Veeqo's UI
-  // renders. The previous implementation used `d.getFullYear/Month/Date`
-  // which honour the host TZ; on Vercel's UTC runtime any dispatch_date
-  // around the day boundary (e.g. "2026-05-18T07:00:00Z" = May 17 23:00
-  // Pacific) landed in the wrong UTC day, pushing every "Tomorrow"
-  // shipment into "Day after" and leaving the Tomorrow bucket empty
-  // while Veeqo's own view showed 70+ orders.
-  const fmt = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Los_Angeles",
-  });
-  const dStr = fmt.format(d);
-  const nowStr = fmt.format(new Date());
+  // Anchor in America/New_York — the timezone Vladimir runs the op from
+  // (Miami) and the one Amazon/Walmart seller portals also render in.
+  // Pre-2026-06-04 this anchored in Los_Angeles to match Veeqo's own UI;
+  // but a single instant could then surface as three different calendar
+  // days across Walmart's portal, Veeqo's portal, and our dashboard. The
+  // operator only cares about Miami time, so we converge on Eastern.
+  const dStr = utcToEasternYMD(d);
+  const nowStr = utcToEasternYMD(new Date());
   const diffDays = Math.round(
     (new Date(dStr + "T00:00:00Z").getTime() -
       new Date(nowStr + "T00:00:00Z").getTime()) /
@@ -348,9 +345,17 @@ export async function GET() {
       const storeId = store?.id ?? "unknown";
       const storeName = store?.name ?? channelName ?? "Unknown";
 
-      const shipBy: string | null =
-        o.dispatch_date ?? o.due_date ?? null;
-      const bucket = shipByBucket(shipBy);
+      // Convert dispatch_date to Eastern YYYY-MM-DD before sending to the
+      // UI. Veeqo returns dispatch_date as a UTC ISO instant; previously
+      // we passed the raw string through and the UI's fmtDate sliced the
+      // first 10 chars — giving the UTC calendar day, which can be a day
+      // ahead of NY when the instant is between 19:00 and 23:59 NY time.
+      // That's the "Walmart 6/4 vs our app 6/5" drift Vladimir reported.
+      const shipByRaw: string | null = o.dispatch_date ?? o.due_date ?? null;
+      const shipBy: string | null = shipByRaw
+        ? utcToEasternYMD(shipByRaw)
+        : null;
+      const bucket = shipByBucket(shipByRaw);
       if (bucket) timeBuckets[bucket]++;
 
       const items = orderItems.get(o.id) ?? [];

@@ -1,5 +1,7 @@
 // File naming and Drive folder layout for purchased shipping label PDFs.
 
+import { todayNY } from "@/lib/shipping/dates";
+
 // Format date as "Mmm DD" (e.g. "Apr 07").
 function fmtDate(dateStr: string | null): string {
   if (!dateStr) return "N-A";
@@ -84,7 +86,10 @@ export function buildFolderPath(item: {
   channel: string;
   channelKind?: string | null;
 }): string {
-  const shipDay = item.actualShipDay || new Date().toISOString().split("T")[0];
+  // Fallback to "today in Miami" — NOT UTC. A label bought at 9 PM NY would
+  // otherwise be filed into tomorrow's date folder because UTC has already
+  // rolled over by then.
+  const shipDay = item.actualShipDay || todayNY();
   const d = new Date(shipDay + "T12:00:00");
   const monthNum = String(d.getMonth() + 1).padStart(2, "0");
   const monthNames = [
