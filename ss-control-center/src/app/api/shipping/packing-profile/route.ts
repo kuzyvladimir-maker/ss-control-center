@@ -57,10 +57,12 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
-  const weightFedex =
-    body.weightFedex != null && Number.isFinite(Number(body.weightFedex))
-      ? Number(body.weightFedex)
-      : null;
+  // weightFedex is the K-column from the SKU Shipping Database — used ONLY
+  // when quoting FedEx One Rate (see MASTER_PROMPT_v3.1.md §H/K). It is
+  // ALWAYS derived as weight × 1.25 per the Master Prompt formula, so we
+  // compute it server-side and ignore any value the client tries to send
+  // (the manual "FedEx One Rate (lbs)" field was removed from the UI).
+  const weightFedex = weight * 1.25;
 
   const profile = await prisma.packingProfile.upsert({
     where: { signature },

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BoxPresetPicker } from "./components/BoxPresetPicker";
+import { WeightInput, toLbs, type WeightUnit } from "./components/WeightInput";
 import {
   Btn,
   FilterTabs,
@@ -3968,7 +3969,7 @@ function PackingProfileDialog({
 }) {
   const [boxSize, setBoxSize] = useState("M");
   const [weight, setWeight] = useState("");
-  const [weightFedex, setWeightFedex] = useState("");
+  const [weightUnit, setWeightUnit] = useState<WeightUnit>("lbs");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -3982,7 +3983,7 @@ function PackingProfileDialog({
       setErr("Order has no packing signature");
       return;
     }
-    const w = Number(weight);
+    const w = toLbs(weight, weightUnit);
     if (!Number.isFinite(w) || w <= 0) {
       setErr("Weight must be a positive number");
       return;
@@ -3997,9 +3998,7 @@ function PackingProfileDialog({
           description,
           boxSize,
           weight: w,
-          weightFedex: weightFedex
-            ? Number(weightFedex)
-            : undefined,
+          // weightFedex omitted — backend always derives w × 1.25
           itemCount: order.items.length,
           totalQty,
         }),
@@ -4054,27 +4053,16 @@ function PackingProfileDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-[11.5px] font-medium text-ink mb-1">
-                Weight (lbs)
-              </label>
-              <Input
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                placeholder="2.5"
-              />
-            </div>
-            <div>
-              <label className="block text-[11.5px] font-medium text-ink mb-1">
-                FedEx One Rate (lbs)
-              </label>
-              <Input
-                value={weightFedex}
-                onChange={(e) => setWeightFedex(e.target.value)}
-                placeholder="auto = weight × 1.25"
-              />
-            </div>
+          <div>
+            <label className="block text-[11.5px] font-medium text-ink mb-1">
+              Weight
+            </label>
+            <WeightInput
+              value={weight}
+              onChange={setWeight}
+              unit={weightUnit}
+              onUnitChange={setWeightUnit}
+            />
           </div>
 
           {err && (
@@ -4149,7 +4137,7 @@ function SkuDataDialog({
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
-  const [weightFedex, setWeightFedex] = useState("");
+  const [weightUnit, setWeightUnit] = useState<WeightUnit>("lbs");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -4159,7 +4147,7 @@ function SkuDataDialog({
     const L = Number(length);
     const W = Number(width);
     const H = Number(height);
-    const wt = Number(weight);
+    const wt = toLbs(weight, weightUnit);
     if (
       ![L, W, H, wt].every((n) => Number.isFinite(n) && n > 0)
     ) {
@@ -4180,7 +4168,7 @@ function SkuDataDialog({
           width: W,
           height: H,
           weight: wt,
-          weightFedex: weightFedex ? Number(weightFedex) : wt * 1.25,
+          // weightFedex omitted — backend derives wt × 1.25 (see fix-sku/route.ts)
         }),
       });
       if (!r.ok) {
@@ -4294,27 +4282,16 @@ function SkuDataDialog({
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-[11.5px] font-medium text-ink mb-1">
-                Weight (lbs)
-              </label>
-              <Input
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                placeholder="standard"
-              />
-            </div>
-            <div>
-              <label className="block text-[11.5px] font-medium text-ink mb-1">
-                FedEx One Rate (lbs)
-              </label>
-              <Input
-                value={weightFedex}
-                onChange={(e) => setWeightFedex(e.target.value)}
-                placeholder="auto = weight × 1.25"
-              />
-            </div>
+          <div>
+            <label className="block text-[11.5px] font-medium text-ink mb-1">
+              Weight
+            </label>
+            <WeightInput
+              value={weight}
+              onChange={setWeight}
+              unit={weightUnit}
+              onUnitChange={setWeightUnit}
+            />
           </div>
 
           {err && (
@@ -4625,7 +4602,10 @@ function EditPackageDialog({
   const [weight, setWeight] = useState(
     plan?.weight != null ? String(plan.weight) : "",
   );
-  const [weightFedex, setWeightFedex] = useState("");
+  // Weight unit toggle (lbs/oz). Always defaults to lbs since stored
+  // weights in PackingProfile/SkuShippingData are lbs — switching to oz
+  // changes only the label, never the displayed number (see WeightInput).
+  const [weightUnit, setWeightUnit] = useState<WeightUnit>("lbs");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -4642,7 +4622,10 @@ function EditPackageDialog({
 
   async function save() {
     setErr(null);
-    const w = Number(weight);
+    // Convert displayed value → lbs. The backend always expects lbs and
+    // derives weightFedex = lbs × 1.25 internally for FedEx One Rate
+    // (see MASTER_PROMPT_v3.1.md §K), so we don't send weightFedex.
+    const w = toLbs(weight, weightUnit);
     if (!Number.isFinite(w) || w <= 0) {
       setErr("Weight must be a positive number");
       return;
@@ -4688,7 +4671,6 @@ function EditPackageDialog({
           width: W,
           height: H,
           weight: w,
-          weightFedex: weightFedex ? Number(weightFedex) : undefined,
           allocationId,
           channel: order.channel ?? undefined,
         };
@@ -4702,7 +4684,6 @@ function EditPackageDialog({
           width: W,
           height: H,
           weight: w,
-          weightFedex: weightFedex ? Number(weightFedex) : undefined,
           allocationId,
           channel: order.channel ?? undefined,
         };
@@ -4820,27 +4801,16 @@ function EditPackageDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-[11.5px] font-medium text-ink mb-1">
-                Weight (lbs)
-              </label>
-              <Input
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                placeholder="2.5"
-              />
-            </div>
-            <div>
-              <label className="block text-[11.5px] font-medium text-ink mb-1">
-                FedEx One Rate (lbs)
-              </label>
-              <Input
-                value={weightFedex}
-                onChange={(e) => setWeightFedex(e.target.value)}
-                placeholder="auto = weight × 1.25"
-              />
-            </div>
+          <div>
+            <label className="block text-[11.5px] font-medium text-ink mb-1">
+              Weight
+            </label>
+            <WeightInput
+              value={weight}
+              onChange={setWeight}
+              unit={weightUnit}
+              onUnitChange={setWeightUnit}
+            />
           </div>
 
           <div className="rounded border border-rule bg-surface-tint p-2 text-[11px] text-ink-3">
@@ -4850,9 +4820,10 @@ function EditPackageDialog({
             ) : (
               <code className="font-mono">SkuShippingData</code>
             )}
-            . Future plans for this {isMulti ? "composition" : "SKU"} will use
-            the new values. After save the row reloads and re-quotes the rate
-            against the new packaging.
+            . FedEx One Rate weight (K-column) is derived automatically as{" "}
+            <code className="font-mono">weight × 1.25</code> and used only
+            when quoting FedEx One Rate. After save the row reloads and
+            re-quotes the rate against the new packaging.
           </div>
 
           {err && (
