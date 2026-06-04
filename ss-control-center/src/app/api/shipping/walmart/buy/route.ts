@@ -96,6 +96,12 @@ export async function POST(request: NextRequest) {
   // order stays Acknowledged after a buy (Veeqo/Walmart don't flip it), so the
   // UI can't always tell — this server-side check prevents a second paid
   // label. Discard the existing one first to re-buy.
+  //
+  // FAIL-CLOSED on lookup error. Production logs showed Walmart 429-ing
+  // /shipping/labels under busy moments; the previous behaviour silently
+  // dropped to `createLabel` and that's where double-buys came from. If we
+  // can't *prove* the order has no label, we refuse — the operator retries
+  // a few seconds later when the rate-limit clears.
   try {
     const existing = await api.getLabelsByPurchaseOrder(purchaseOrderId);
     if (existing.length > 0) {
@@ -109,8 +115,30 @@ export async function POST(request: NextRequest) {
         { status: 409 },
       );
     }
-  } catch {
-    /* label lookup failed — proceed; createLabel itself will error if dup */
+  } catch (lookupErr) {
+    if (lookupErr instanceof WalmartApiError) {
+      const isRateLimit = lookupErr.status === 429;
+      return NextResponse.json(
+        {
+          ok: false,
+          error: isRateLimit
+            ? `Walmart rate-limited the label-lookup (429). Refusing to buy without verifying — wait ~30s and try again.`
+            : `Couldn't verify whether a label was already purchased (Walmart API ${lookupErr.status}). Refusing to buy. Retry in a moment.`,
+          labelLookupFailed: true,
+          retryable: isRateLimit,
+        },
+        { status: isRateLimit ? 503 : 502 },
+      );
+    }
+    // Unknown error — safer to bail than to silently double-buy.
+    return NextResponse.json(
+      {
+        ok: false,
+        error: `Couldn't verify whether a label was already purchased (${lookupErr instanceof Error ? lookupErr.message : "unknown error"}). Refusing to buy.`,
+        labelLookupFailed: true,
+      },
+      { status: 502 },
+    );
   }
   const boxItems = order.orderLines
     .filter((l) => l.orderedQty > 0)

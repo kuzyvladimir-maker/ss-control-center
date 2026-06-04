@@ -64,12 +64,20 @@ export async function POST(request: NextRequest) {
   // If a label was already bought (or the order is already Shipped), skip the
   // rate quote and tell the UI — so the row shows "bought / not yet shipped"
   // (or "shipped") instead of offering to buy again.
+  //
+  // Carry `labelLookupFailed` forward when Walmart 429-s or otherwise refuses
+  // the lookup. The UI MUST treat a failed lookup as ambiguous and disable
+  // the Buy button — without that, a 429 would let the operator click Buy
+  // on an already-bought row and create a duplicate paid label. (This is
+  // exactly the path that produced the double-buys Vladimir hit.)
   const orderStatus = order.status;
   let existingLabel: {
     trackingNumber: string;
     carrierName: string;
     trackingUrl?: string;
   } | null = null;
+  let labelLookupFailed = false;
+  let labelLookupError: string | null = null;
   try {
     const labels = await api.getLabelsByPurchaseOrder(purchaseOrderId);
     if (labels.length > 0 && labels[0].trackingNumber) {
@@ -79,8 +87,17 @@ export async function POST(request: NextRequest) {
         trackingUrl: labels[0].trackingUrl,
       };
     }
-  } catch {
-    /* label lookup failed — fall through to normal rate quote */
+  } catch (lookupErr) {
+    labelLookupFailed = true;
+    if (lookupErr instanceof WalmartApiError) {
+      labelLookupError =
+        lookupErr.status === 429
+          ? "Walmart rate-limited the label-lookup (429)"
+          : `Walmart API ${lookupErr.status} on label-lookup`;
+    } else {
+      labelLookupError =
+        lookupErr instanceof Error ? lookupErr.message : String(lookupErr);
+    }
   }
   if (existingLabel || orderStatus === "Shipped") {
     return NextResponse.json({
@@ -89,6 +106,23 @@ export async function POST(request: NextRequest) {
       orderStatus,
       alreadyBought: !!existingLabel,
       existingLabel,
+      labelLookupFailed,
+      labelLookupError,
+      rates: [],
+      selected: null,
+    });
+  }
+  // No label found, but if the lookup *failed* don't pretend we know.
+  // Return early with the failed flag — UI will block Buy on this row.
+  if (labelLookupFailed) {
+    return NextResponse.json({
+      ok: true,
+      purchaseOrderId,
+      orderStatus,
+      alreadyBought: false,
+      existingLabel: null,
+      labelLookupFailed: true,
+      labelLookupError,
       rates: [],
       selected: null,
     });
@@ -214,6 +248,7 @@ export async function POST(request: NextRequest) {
       orderStatus,
       alreadyBought: false,
       existingLabel: null,
+      labelLookupFailed: false,
       box,
       dimsSource,
       shipByDate,

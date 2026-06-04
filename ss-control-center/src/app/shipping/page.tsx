@@ -338,6 +338,12 @@ export default function ShippingLabelsPage() {
         alreadyBought: boolean;
         orderStatus: string | null;
         existingLabel: { trackingNumber: string; carrierName: string; trackingUrl?: string } | null;
+        // Set true when Walmart 429-d (or otherwise refused) the
+        // labels-lookup. Buy must be disabled on this row until a
+        // successful re-quote — otherwise a 429 lets the operator
+        // accidentally buy a second label on an already-bought order.
+        labelLookupFailed?: boolean;
+        labelLookupError?: string | null;
       }
     >
   >({});
@@ -511,6 +517,8 @@ export default function ShippingLabelsPage() {
             alreadyBought: !!j.alreadyBought,
             orderStatus: j.orderStatus ?? null,
             existingLabel: j.existingLabel ?? null,
+            labelLookupFailed: !!j.labelLookupFailed,
+            labelLookupError: j.labelLookupError ?? null,
           },
         }));
         // Already bought / shipped, or no buyable rate at this date → clear
@@ -1184,6 +1192,20 @@ export default function ShippingLabelsPage() {
               itemId: o.orderId,
               error:
                 "No Walmart rate yet — set the package size/weight, then Refresh.",
+            });
+            continue;
+          }
+          // Hard guard: if the latest rate-quote couldn't confirm the
+          // order had no label (Walmart 429 / lookup error), skip this
+          // row in a bulk buy. Server-side /walmart/buy will also
+          // refuse, but skipping here gives the operator a clearer
+          // per-row reason in the bulk report.
+          const ws = walmartStatus[o.orderNumber];
+          if (ws?.labelLookupFailed) {
+            errors.push({
+              orderNumber: o.orderNumber,
+              itemId: o.orderId,
+              error: `Can't verify if label already bought (${ws.labelLookupError ?? "Walmart lookup failed"}). Re-quote before buying.`,
             });
             continue;
           }
@@ -2365,6 +2387,8 @@ function OrderRow({
     alreadyBought: boolean;
     orderStatus: string | null;
     existingLabel: { trackingNumber: string; carrierName: string; trackingUrl?: string } | null;
+    labelLookupFailed?: boolean;
+    labelLookupError?: string | null;
   } | null;
   /** Last error from /api/shipping/walmart/rates for this order, if any —
    *  e.g. "No saved package for RizwanX-3579:1". Rendered in the Buy area
@@ -2943,6 +2967,16 @@ function OrderRow({
             <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[11px] font-medium text-warn-strong">
               Rate error — {walmartRateError}
             </span>
+          ) : walmartStatus?.labelLookupFailed ? (
+            // Walmart 429-d (or otherwise refused) the labels-lookup. We
+            // can't prove the order doesn't already have a label, so Buy
+            // is disabled until a re-quote succeeds. Without this guard a
+            // 429 was the source of double-paid labels.
+            <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[11px] font-medium text-warn-strong">
+              Can&apos;t verify if label already bought —{" "}
+              {walmartStatus.labelLookupError ?? "Walmart lookup failed"}.
+              Re-quote (Refresh) before buying.
+            </span>
           ) : (
             <span className="text-[11px] text-ink-3">
               {planPending
@@ -2955,13 +2989,25 @@ function OrderRow({
           <Button
             size="sm"
             onClick={onBuy}
-            disabled={buying || !planPending}
+            disabled={
+              buying || !planPending || !!walmartStatus?.labelLookupFailed
+            }
+            title={
+              walmartStatus?.labelLookupFailed
+                ? `Can't verify if a label was already bought (${walmartStatus.labelLookupError ?? "Walmart lookup failed"}). Re-quote before buying to avoid a double charge.`
+                : undefined
+            }
             className="h-7 text-[11.5px]"
           >
             {buying ? (
               <>
                 <Loader2 size={12} className="mr-1 animate-spin" />
                 Buying…
+              </>
+            ) : walmartStatus?.labelLookupFailed ? (
+              <>
+                <ShoppingCart size={12} className="mr-1" /> Buy (re-quote
+                first)
               </>
             ) : (
               <>
