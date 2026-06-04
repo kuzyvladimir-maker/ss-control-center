@@ -3913,9 +3913,29 @@ function SkuDataDialog({
   const [category, setCategory] = useState<"Frozen" | "Dry">(
     item?.knownType ?? "Dry"
   );
-  const [marketplace, setMarketplace] = useState(
-    order.channel?.toLowerCase().includes("walmart") ? "Walmart" : "Amazon"
-  );
+  // Default the marketplace to the order's actual channel rather than
+  // hard-coding Amazon. channelKind is the normalised Veeqo type_code
+  // ("amazon" / "walmart" / "tiktok" / "ebay" / "shopify" / "direct").
+  // Anything we don't recognise falls back to Amazon.
+  const [marketplace, setMarketplace] = useState(() => {
+    const kind = (order.channelKind ?? "").toLowerCase();
+    switch (kind) {
+      case "walmart":
+        return "Walmart";
+      case "tiktok":
+        return "TikTok";
+      case "ebay":
+        return "eBay";
+      case "amazon":
+        return "Amazon";
+      default:
+        // Legacy fallback: check the human-readable channel name if
+        // channelKind is missing (older dashboard payloads).
+        return order.channel?.toLowerCase().includes("walmart")
+          ? "Walmart"
+          : "Amazon";
+    }
+  });
   const [length, setLength] = useState("");
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
@@ -3998,6 +4018,8 @@ function SkuDataDialog({
               >
                 <option>Amazon</option>
                 <option>Walmart</option>
+                <option>TikTok</option>
+                <option>eBay</option>
                 <option>Both</option>
               </select>
             </div>
