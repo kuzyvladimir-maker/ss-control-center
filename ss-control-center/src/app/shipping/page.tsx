@@ -2918,13 +2918,24 @@ function OrderRow({
               <span>
                 {(() => {
                   const edd = rateOverride?.edd ?? plan?.edd ?? null;
-                  // Transit time in calendar days from the (effective) ship
-                  // date to the carrier EDD — the "2 days" Veeqo shows.
+                  // Transit time in calendar days from the PHYSICAL ship
+                  // date (the day the warehouse actually hands the package
+                  // to the carrier) to the carrier EDD. When the Frozen
+                  // Monday-Shift Ship Date Trick fires, labelDate stays at
+                  // today but physicalShipDate jumps to next Monday — the
+                  // carrier measures transit from the Monday handoff, not
+                  // today, so anchoring to shipDateGlobal (= today) would
+                  // overstate transit days by the size of the shift and
+                  // make compliant ≤3-day Frozen rates look like 5+ days.
+                  const transitAnchor =
+                    plan?.physicalShipDate ??
+                    plan?.actualShipDay ??
+                    shipDate;
                   const days =
-                    edd && shipDate
+                    edd && transitAnchor
                       ? Math.round(
                           (new Date(edd).getTime() -
-                            new Date(shipDate).getTime()) /
+                            new Date(transitAnchor).getTime()) /
                             86_400_000,
                         )
                       : null;
