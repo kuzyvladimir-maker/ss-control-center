@@ -1245,6 +1245,64 @@ export default function ShippingLabelsPage() {
     [printMode],
   );
 
+  // Optimistic local mutation after a successful Buy. Replaces the
+  // `await load()` reload that used to instantly hide the just-bought
+  // row — Vladimir wants to SEE what he bought (the tracking number,
+  // the Mark-as-Shipped button) until he refreshes manually.
+  //
+  // Amazon orders: set state = "bought" so isBought renders the green
+  // "Label already purchased" line and the Buy button hides.
+  //
+  // Walmart orders: populate walmartStatus so wmBought renders the
+  // "Label bought — TRACKING · not yet marked shipped" line + the
+  // Mark-as-Shipped button (same UI the awaiting-ship-confirm tab uses).
+  const applyBoughtLocally = useCallback(
+    (boughtList: BuyReportSuccess[]) => {
+      if (boughtList.length === 0) return;
+      const boughtByNumber = new Map(
+        boughtList.map((b) => [b.orderNumber, b]),
+      );
+
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          orders: prev.orders.map((o) =>
+            boughtByNumber.has(o.orderNumber)
+              ? { ...o, state: "bought" as const }
+              : o,
+          ),
+        };
+      });
+
+      // Find which boughts are for Walmart orders (by matching against the
+      // current data) and populate walmartStatus for them. Walmart-direct
+      // buys don't flip Veeqo status, so without this the row would lose
+      // its Buy button but get nothing back (no Mark-as-Shipped button).
+      setData((prev) => {
+        if (!prev) return prev;
+        const walmartUpdates: typeof walmartStatus = {};
+        for (const o of prev.orders) {
+          const b = boughtByNumber.get(o.orderNumber);
+          if (!b || !o.isWalmart) continue;
+          walmartUpdates[o.orderNumber] = {
+            alreadyBought: true,
+            orderStatus: "Acknowledged",
+            existingLabel: {
+              trackingNumber: b.tracking,
+              carrierName: b.carrier ?? "",
+            },
+          };
+        }
+        if (Object.keys(walmartUpdates).length > 0) {
+          setWalmartStatus((wsPrev) => ({ ...wsPrev, ...walmartUpdates }));
+        }
+        return prev;
+      });
+    },
+    [],
+  );
+
   async function buySelected() {
     if (selected.size === 0) return;
     setBuying(true);
@@ -1419,7 +1477,10 @@ export default function ShippingLabelsPage() {
         for (const id of selected) delete next[id];
         return next;
       });
-      await load();
+      // Optimistic local update — bought rows stay visible with their
+      // tracking + Mark-as-Shipped (Walmart) / "Label already purchased"
+      // (Amazon) state. Operator hits Refresh when they want them gone.
+      applyBoughtLocally(bought);
     } catch (e) {
       setBuyMsg(e instanceof Error ? e.message : String(e));
     } finally {
@@ -1728,7 +1789,9 @@ export default function ShippingLabelsPage() {
         delete next[o.orderId];
         return next;
       });
-      await load();
+      // Optimistic local update — row stays visible until manual refresh
+      // so the operator can see what they just bought.
+      applyBoughtLocally(bought);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setBuyMsg(msg);
