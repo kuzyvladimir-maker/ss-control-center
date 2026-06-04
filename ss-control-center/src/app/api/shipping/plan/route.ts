@@ -424,9 +424,23 @@ export async function GET(request: NextRequest) {
                 productType = "Frozen";
               } else if (tagNames.some((t: string) => t.includes("dry"))) {
                 productType = "Dry";
+              } else if (!isAmazon) {
+                // TikTok / eBay / Shopify / direct — these channels only
+                // sell Dry goods (supplements, accessories) in this op;
+                // the Frozen/Dry classification gate exists for Amazon's
+                // food-safety 3-day rule and isn't meaningful here. Default
+                // to Dry instead of stopping the plan; the operator can
+                // still flip to Frozen manually via Set Frozen/Dry if a
+                // frozen item ever ships on these channels.
+                productType = "Dry";
               } else {
                 stopReason = `Missing Frozen/Dry tag (tags: ${tagNames.join(", ") || "none"})`;
               }
+            } else if (!isAmazon) {
+              // Non-Amazon order with no product_id resolved (Veeqo
+              // sometimes returns eBay/TikTok line_items in a different
+              // shape) — still safe to assume Dry.
+              productType = "Dry";
             } else {
               stopReason = "No product_id in line_items";
             }

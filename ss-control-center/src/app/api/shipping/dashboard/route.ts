@@ -400,7 +400,18 @@ export async function GET() {
         totals.waitingPlaced++;
       } else {
         // Has Placed — needs to pass several gates.
-        const noType = itemsWithType.some((i) => !i.knownType);
+        // `noType` is the "missing Frozen/Dry classification" gate. We
+        // only enforce it on Amazon orders — that's the channel where the
+        // 3-day food-safety rule matters. TikTok/eBay/Shopify in this op
+        // ship Dry goods only (supplements, accessories), and the plan
+        // endpoint mirrors this by defaulting their productType to Dry.
+        const channelKindForOrder = (channelName || "").toLowerCase();
+        const isAmazonOrder =
+          channelKindForOrder.includes("amazon") ||
+          channelKindForOrder.startsWith("amz") ||
+          channelKindForOrder === "merged orders";
+        const noType =
+          isAmazonOrder && itemsWithType.some((i) => !i.knownType);
         const mixed = isMixedOrder(itemsWithType);
         const frozenWalmart = itemsWithType.some((i) =>
           isFrozenWalmart(channelName, i.knownType)
