@@ -37,6 +37,10 @@ interface ExecuteResult {
   ok: boolean;
   error?: string;
   walmartStatus?: number;
+  /** Stock just before the zero — captured for the audit log. */
+  previousQty?: number | null;
+  /** Stock Walmart reports AFTER the PUT — server-side proof the 0 landed. */
+  verifiedQty?: number | null;
 }
 
 interface SkuDetail {
@@ -361,8 +365,8 @@ export function RetireFromSaleModal({
                   const justDone = result?.ok === true;
                   const justFailed = result && result.ok === false;
                   const detail = details.get(m.sku);
-                  // After successful retire, qty is 0; before the details
-                  // refresh, show the just-set value optimistically.
+                  // After a successful zero-out, show qty=0 immediately
+                  // (don't wait for the next details refresh round-trip).
                   const liveQty = justDone ? 0 : detail?.currentQty ?? null;
                   return (
                     <div
@@ -423,8 +427,11 @@ export function RetireFromSaleModal({
                           ) : liveQty === null ? (
                             <span className="text-ink-4">сток: ?</span>
                           ) : liveQty === 0 ? (
+                            // Show literal "0", not "OOS" — Vladimir wants
+                            // the actual number visible so he can confirm at
+                            // a glance whether the retire took effect.
                             <span className="rounded bg-bg-elev px-1 font-medium text-ink-3">
-                              OOS
+                              сток: 0
                             </span>
                           ) : (
                             <span className="rounded bg-green-soft px-1 font-medium text-green-ink">
