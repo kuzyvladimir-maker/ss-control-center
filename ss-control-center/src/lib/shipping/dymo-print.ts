@@ -9,14 +9,17 @@
 // machine and are unreachable from Vercel.
 //
 // Two DYMO ports exist in the wild:
-//   41951 — legacy "DYMO Label" Web Service (DLS v8). Still shipped with
-//           DYMO Connect for backwards compatibility.
-//   41952 — modern "DYMO Connect" Web Service (DCS). Same API surface as
-//           41951 for our needs.
-// We try 41952 first and fall back to 41951.
+//   41951 — legacy "DYMO Label" Web Service (DLS v8). Listens over HTTPS,
+//           with a self-signed cert the user must trust manually
+//           (https://127.0.0.1:41951/DYMO/DLS/Printing/StatusConnected
+//           returns `true` once trusted).
+//   41952 — modern "DYMO Connect" Web Service (DCS). On some installs this
+//           ends up as HTTP-only and fails our HTTPS probe with
+//           ERR_SSL_PROTOCOL_ERROR — that's why 41951 is tried first.
+// We try 41951 first (HTTPS, broadest compatibility) and fall back to 41952.
 
-const DYMO_PORTS = [41952, 41951] as const;
-const PRINTER_NAME_HINT = "5XL"; // we want the LabelWriter 5XL specifically
+const DYMO_PORTS = [41951, 41952] as const;
+const PRINTER_NAME_HINT = "5XL"; // we PREFER the LabelWriter 5XL specifically
 
 export interface DymoStatus {
   reachable: boolean;
@@ -33,6 +36,7 @@ export interface DymoStatus {
  * not trusted, etc.) come back as `reachable: false`.
  */
 export async function checkDymoStatus(): Promise<DymoStatus> {
+  let lastError: string | null = null;
   for (const port of DYMO_PORTS) {
     const url = `https://127.0.0.1:${port}/DYMO/DLS/Printing`;
     try {
@@ -41,55 +45,95 @@ export async function checkDymoStatus(): Promise<DymoStatus> {
         // 1.5s ceiling — Mac asleep should fail fast.
         signal: AbortSignal.timeout(1500),
       });
-      if (!statusRes.ok) continue;
+      if (!statusRes.ok) {
+        lastError = `StatusConnected on ${port} returned ${statusRes.status}`;
+        continue;
+      }
       const text = (await statusRes.text()).trim();
-      if (text !== "true" && text !== '"true"') continue;
+      // DLS v8 returns the literal `true`; DCS sometimes returns `"true"`
+      // (JSON-quoted). Accept either, case-insensitively.
+      const ok = /^"?true"?$/i.test(text);
+      console.debug("[dymo] StatusConnected", port, JSON.stringify(text), "→ ok=", ok);
+      if (!ok) {
+        lastError = `StatusConnected on ${port} returned ${text || "empty"}`;
+        continue;
+      }
 
-      // Enumerate printers and pick the 5XL.
+      // Enumerate printers and pick the 5XL (or any DYMO if 5XL not present).
       const printersRes = await fetch(`${url}/GetPrinters`, {
         method: "GET",
         signal: AbortSignal.timeout(2000),
       });
-      if (!printersRes.ok) continue;
-      const xml = await printersRes.text();
-      const printerName = pick5xlPrinterFromXml(xml);
+      if (!printersRes.ok) {
+        lastError = `GetPrinters on ${port} returned ${printersRes.status}`;
+        continue;
+      }
+      const body = await printersRes.text();
+      console.debug("[dymo] GetPrinters", port, "first 400 chars:", body.slice(0, 400));
+      const printerName = pickPrinterFromResponse(body);
+      console.debug("[dymo] pickPrinter result:", printerName);
       return {
         reachable: true,
         port,
         printerName,
-        error: printerName ? null : "DYMO LabelWriter 5XL not connected",
+        error: printerName ? null : "No DYMO printer connected (5XL expected)",
       };
     } catch (e) {
-      // Try next port; remember the last error so we can surface it.
-      if (port === DYMO_PORTS[DYMO_PORTS.length - 1]) {
-        return {
-          reachable: false,
-          port: null,
-          printerName: null,
-          error: e instanceof Error ? e.message : "DYMO Connect not reachable",
-        };
-      }
+      lastError = e instanceof Error ? e.message : String(e);
+      console.debug("[dymo] probe failed on port", port, "→", lastError);
     }
   }
   return {
     reachable: false,
     port: null,
     printerName: null,
-    error: "DYMO Connect not reachable",
+    error: lastError ?? "DYMO Connect not reachable",
   };
 }
 
-// Parses the (very lightweight) XML that GetPrinters returns and picks
-// the LabelWriter 5XL by name. Returns null if no 5XL is present.
-function pick5xlPrinterFromXml(xml: string): string | null {
-  // Names appear inside <Name>...</Name> tags; pick the first one that
-  // mentions "5XL" — typical name is "DYMO LabelWriter 5XL".
+// Parses the GetPrinters response and picks the best printer name.
+// Handles both XML (DLS v8 on 41951) and JSON (DCS on 41952) shapes, and
+// falls back to any DYMO printer if a 5XL-named one isn't found — the
+// operator only has one printer in practice, and "DYMO 5XL" vs
+// "DYMO LabelWriter 5XL" vs "DYMOLabelWriter5XL" all need to match.
+function pickPrinterFromResponse(body: string): string | null {
   const names: string[] = [];
-  const re = /<Name>([^<]+)<\/Name>/g;
+
+  // XML form: <Name>...</Name> or, on some installs, <n>...</n> (very rare).
+  const xmlRe = /<Name>([^<]+)<\/Name>/g;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(xml)) !== null) names.push(m[1]);
+  while ((m = xmlRe.exec(body)) !== null) names.push(m[1].trim());
+
+  // JSON form: parse and walk for any "Name" keys.
+  if (names.length === 0) {
+    try {
+      const j = JSON.parse(body);
+      const walk = (v: unknown) => {
+        if (Array.isArray(v)) v.forEach(walk);
+        else if (v && typeof v === "object") {
+          const o = v as Record<string, unknown>;
+          for (const k of Object.keys(o)) {
+            if (k.toLowerCase() === "name" && typeof o[k] === "string") {
+              names.push((o[k] as string).trim());
+            } else walk(o[k]);
+          }
+        }
+      };
+      walk(j);
+    } catch {
+      /* not JSON */
+    }
+  }
+
+  if (names.length === 0) return null;
+  // 1) prefer an exact 5XL match.
   const fiveXl = names.find((n) => n.toUpperCase().includes(PRINTER_NAME_HINT));
-  return fiveXl ?? null;
+  if (fiveXl) return fiveXl;
+  // 2) otherwise any DYMO-branded printer.
+  const anyDymo = names.find((n) => n.toUpperCase().includes("DYMO"));
+  if (anyDymo) return anyDymo;
+  // 3) last resort — first non-empty name.
+  return names[0] ?? null;
 }
 
 /**
