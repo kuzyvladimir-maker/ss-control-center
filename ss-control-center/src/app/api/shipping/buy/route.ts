@@ -121,6 +121,12 @@ export async function POST(request: NextRequest) {
         carrier: string | null;
         service: string | null;
         price: number | null;
+        // Auto-print fields (Print-mode toggle on shipping page). Client
+        // ships pdfBase64 → DYMO Connect → on success calls
+        // /api/shipping/mark-label-printed with driveFileId to move the
+        // Drive file into the Printed/ subfolder.
+        pdfBase64: string | null;
+        driveFileId: string | null;
       }[],
       errors: [] as { orderNumber: string; error: string; itemId: string }[],
       total: itemsToBuy.length,
@@ -385,6 +391,10 @@ export async function POST(request: NextRequest) {
         let labelPath: string | null = null;
         let pdfSource: "drive" | "disk" | "proxy" | "none" = "none";
         let driveError: string | null = null;
+        // Surface to the client for auto-print: pdfBase64 → DYMO Connect,
+        // driveFileId → /api/shipping/mark-label-printed after success.
+        let pdfBase64: string | null = null;
+        let driveFileId: string | null = null;
         const shipmentId =
           shipment?.id ?? shipment?.shipment?.id ?? null;
 
@@ -438,6 +448,9 @@ export async function POST(request: NextRequest) {
               const frozenHint = frozenByOrder.get(item.orderNumber) ?? null;
               const filename = buildPdfFilename(item, frozenHint);
               const folderPath = buildFolderPath(item);
+              // Hold the PDF bytes for the auto-print path. The same
+              // buffer also feeds the Drive upload below.
+              pdfBase64 = pdfBuf.toString("base64");
 
               // ── Drive upload (preferred) ────────────────────────────
               const drive = await uploadLabelPdf({
@@ -447,6 +460,7 @@ export async function POST(request: NextRequest) {
               });
               if (drive.ok) {
                 labelPath = drive.result.webViewLink;
+                driveFileId = drive.result.fileId;
                 pdfSource = "drive";
               } else {
                 driveError = drive.reason;
@@ -529,6 +543,8 @@ export async function POST(request: NextRequest) {
           carrier: item.carrier,
           service: item.service,
           price: item.price,
+          pdfBase64,
+          driveFileId,
         });
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);

@@ -39,6 +39,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  checkDymoStatus,
+  printPdfViaDymo,
+  type DymoStatus,
+} from "@/lib/shipping/dymo-print";
 import FrozenRiskBadge, {
   type ShippingFrozenAlert,
 } from "@/components/shipping/FrozenRiskBadge";
@@ -205,6 +210,14 @@ interface BuyReportSuccess {
   carrier: string | null;
   service: string | null;
   price: number | null;
+  // New for the auto-print feature: when Print mode is ON, the client
+  // takes pdfBase64 → renders to PNG → POSTs to DYMO Connect, and on a
+  // successful DYMO response calls /api/shipping/mark-label-printed
+  // with driveFileId to move the file into the sibling Printed/ folder.
+  // Both fields are optional — older buys / non-Drive-saved labels
+  // won't have them, and the toggle silently skips printing in that case.
+  pdfBase64?: string | null;
+  driveFileId?: string | null;
 }
 interface BuyReportError {
   orderNumber: string;
@@ -356,6 +369,56 @@ export default function ShippingLabelsPage() {
   const [rollingBack, setRollingBack] = useState<string | null>(null);
   // In-flight Discard Label button. Stops double-clicks during cancel.
   const [discardingLabel, setDiscardingLabel] = useState<string | null>(null);
+  // Auto-print toggle. When ON, every successful label buy ships the
+  // PDF to the operator's DYMO LabelWriter 5XL via DYMO Connect (local
+  // web service on 127.0.0.1:4195x). Persists across reloads in
+  // localStorage. dymoStatus tracks whether DYMO Connect is actually
+  // reachable + which printer name it sees — drives the badge next to
+  // the toggle so the operator knows whether prints will go through.
+  const [printMode, setPrintMode] = useState<boolean>(false);
+  const [dymoStatus, setDymoStatus] = useState<DymoStatus>({
+    reachable: false,
+    port: null,
+    printerName: null,
+    error: null,
+  });
+  // Initial localStorage hydration runs in an effect — server-rendered
+  // markup must stay deterministic so we can't read it during useState.
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("shipping.printMode");
+      if (saved === "on") setPrintMode(true);
+    } catch {
+      /* private-mode browser, no localStorage — toggle just won't persist */
+    }
+  }, []);
+  // Persist toggle on every change.
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        "shipping.printMode",
+        printMode ? "on" : "off",
+      );
+    } catch {
+      /* see above */
+    }
+  }, [printMode]);
+  // Probe DYMO Connect every 60s while the page is open (so the operator
+  // sees a green badge after they start DYMO Connect without a refresh).
+  // Also fires immediately on mount and when print mode is flipped on.
+  useEffect(() => {
+    let cancelled = false;
+    async function probe() {
+      const status = await checkDymoStatus();
+      if (!cancelled) setDymoStatus(status);
+    }
+    probe();
+    const id = window.setInterval(probe, 60_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [printMode]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -1154,6 +1217,61 @@ export default function ShippingLabelsPage() {
     await load();
   }
 
+  // Auto-print helper. Given a successful buy result (which carries
+  // pdfBase64 + driveFileId), ships the PDF to DYMO Connect and, on
+  // success, calls /api/shipping/mark-label-printed so the Drive file
+  // moves into the sibling Printed/ subfolder.
+  //
+  // No-op when print mode is off or DYMO is unreachable or the buy
+  // didn't return pdfBase64 (older flows / non-Drive-saved labels).
+  // On DYMO failure with print mode ON we open the PDF in a new tab as
+  // a fallback so the operator can Cmd+P manually.
+  const printAndMark = useCallback(
+    async (success: BuyReportSuccess): Promise<void> => {
+      if (!printMode) return;
+      if (!success.pdfBase64) return;
+      // Decode base64 → ArrayBuffer once.
+      const binary = atob(success.pdfBase64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const pdfBuffer = bytes.buffer;
+
+      if (!dymoStatus.reachable) {
+        // Fallback: open PDF in new tab so operator can Cmd+P.
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+        return;
+      }
+      const printResult = await printPdfViaDymo(pdfBuffer, dymoStatus);
+      if (!printResult.ok) {
+        // Surface in buyMsg but don't block — operator gets the new-tab
+        // fallback so the label can still go out.
+        setBuyMsg(
+          `${success.orderNumber}: DYMO print failed — ${printResult.reason}. Opening PDF in new tab.`,
+        );
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+        return;
+      }
+      // DYMO accepted the job. If we have a Drive fileId, ask the server
+      // to move it into Printed/ — best-effort, never block on it.
+      if (success.driveFileId) {
+        try {
+          await fetch("/api/shipping/mark-label-printed", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ driveFileId: success.driveFileId }),
+          });
+        } catch {
+          /* non-fatal — printing already succeeded, the move is cosmetic */
+        }
+      }
+    },
+    [printMode, dymoStatus],
+  );
+
   async function buySelected() {
     if (selected.size === 0) return;
     setBuying(true);
@@ -1235,7 +1353,7 @@ export default function ShippingLabelsPage() {
               });
               continue;
             }
-            bought.push({
+            const success: BuyReportSuccess = {
               orderNumber: o.orderNumber,
               tracking: j.trackingNumber ?? "",
               itemId: o.orderId,
@@ -1246,7 +1364,12 @@ export default function ShippingLabelsPage() {
               carrier: j.carrierName ?? info.carrierName,
               service: j.serviceType ?? info.serviceType,
               price: null,
-            });
+              pdfBase64: j.pdfBase64 ?? null,
+              driveFileId: j.driveFileId ?? null,
+            };
+            bought.push(success);
+            // Print mode: ship to DYMO + move Drive file to Printed/.
+            await printAndMark(success);
           } catch (e) {
             errors.push({
               orderNumber: o.orderNumber,
@@ -1291,6 +1414,10 @@ export default function ShippingLabelsPage() {
             throw new Error(buyJson?.error || "Failed to buy labels");
           for (const b of (buyJson.bought ?? []) as BuyReportSuccess[]) {
             bought.push(b);
+            // Print + move Drive file. Sequential per-row keeps the
+            // DYMO spooler tidy — parallel printing on one printer just
+            // produces interleaved errors.
+            await printAndMark(b);
           }
           for (const e of (buyJson.errors ?? []) as BuyReportError[]) {
             errors.push(e);
@@ -1534,26 +1661,29 @@ export default function ShippingLabelsPage() {
         if (!buyRes.ok || j?.ok === false) {
           throw new Error(j?.error || "Walmart label purchase failed");
         }
+        const success: BuyReportSuccess = {
+          orderNumber: o.orderNumber,
+          tracking: j.trackingNumber ?? "",
+          itemId: o.orderId,
+          labelPath: j.labelPath ?? null,
+          pdfSaved: !!j.pdfSaved,
+          pdfSource: j.pdfSaved ? "drive" : "none",
+          driveError: j.driveError ?? null,
+          carrier: j.carrierName ?? info.carrierName,
+          service: j.serviceType ?? info.serviceType,
+          price: null,
+          pdfBase64: j.pdfBase64 ?? null,
+          driveFileId: j.driveFileId ?? null,
+        };
         setBuyReport({
           scope: "single",
           total: 1,
-          bought: [
-            {
-              orderNumber: o.orderNumber,
-              tracking: j.trackingNumber ?? "",
-              itemId: o.orderId,
-              labelPath: j.labelPath ?? null,
-              pdfSaved: !!j.pdfSaved,
-              pdfSource: j.pdfSaved ? "drive" : "none",
-              driveError: j.driveError ?? null,
-              carrier: j.carrierName ?? info.carrierName,
-              service: j.serviceType ?? info.serviceType,
-              price: null,
-            },
-          ],
+          bought: [success],
           errors: [],
         });
         setBuyMsg(`Bought ${o.orderNumber} (Walmart) — not yet marked shipped`);
+        // Print + move Drive file if print mode is on.
+        await printAndMark(success);
         await load();
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -1616,6 +1746,10 @@ export default function ShippingLabelsPage() {
         throw new Error(errs[0]?.error || "Veeqo rejected the purchase");
       }
       setBuyMsg(`Bought ${o.orderNumber}`);
+      // Print + move Drive file if print mode is on.
+      for (const b of bought) {
+        await printAndMark(b);
+      }
       setRateOverrides((prev) => {
         const next = { ...prev };
         delete next[o.orderId];
@@ -1982,6 +2116,42 @@ export default function ShippingLabelsPage() {
           </label>
           {buyMsg && (
             <span className="text-[11px] text-ink-3">{buyMsg}</span>
+          )}
+          {/* Print mode toggle. When ON, every successful Buy ships the
+              PDF to the operator's DYMO LabelWriter 5XL via DYMO Connect
+              and moves the Drive file to the sibling Printed/ subfolder
+              after the printer confirms. Status badge shows whether
+              DYMO Connect is reachable + which printer it sees.
+              Hidden in the awaiting-ship-confirm view where buy isn't
+              the active action. */}
+          {viewScope !== "awaiting" && (
+            <label
+              className="flex items-center gap-1.5 text-[11.5px] text-ink-2"
+              title={
+                printMode
+                  ? dymoStatus.reachable && dymoStatus.printerName
+                    ? `Print: ON · ${dymoStatus.printerName} connected`
+                    : `Print: ON · printer offline — bought labels will open in new tabs as fallback`
+                  : "Print mode is OFF — bought labels are saved to Drive only"
+              }
+            >
+              <input
+                type="checkbox"
+                checked={printMode}
+                onChange={(e) => setPrintMode(e.target.checked)}
+              />
+              <span>Print</span>
+              {printMode &&
+                (dymoStatus.reachable && dymoStatus.printerName ? (
+                  <span className="rounded bg-green-soft px-1 py-0.5 text-[10px] font-medium text-green-ink">
+                    DYMO 5XL
+                  </span>
+                ) : (
+                  <span className="rounded bg-warn-tint px-1 py-0.5 text-[10px] font-medium text-warn-strong">
+                    printer offline
+                  </span>
+                ))}
+            </label>
           )}
           {viewScope === "awaiting" ? (
             <Btn

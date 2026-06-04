@@ -172,11 +172,19 @@ export async function POST(request: NextRequest) {
   let pdfSaved = false;
   let labelPath: string | null = null;
   let driveError: string | null = null;
+  // pdfBase64 + driveFileId surface to the client so the Print-mode UI
+  // can ship the label straight to DYMO Connect, then mark the file as
+  // printed (moves it into the sibling Printed/ folder).
+  let pdfBase64: string | null = null;
+  let driveFileId: string | null = null;
   if (result.trackingNumber) {
     try {
       const res = await downloadLabelPdf(client, carrierName, result.trackingNumber);
       const pdf = await extractPdf(res as Response);
       if (pdf) {
+        // Hold onto the PDF bytes for the client. ~50-200KB per label;
+        // bulk buys of ~20 are fine in a single response.
+        pdfBase64 = pdf.toString("base64");
         // Match the existing Veeqo flow's Drive layout + filename (full
         // product title, EDD/DL prefix, "MM Month/DD/Walmart" folder).
         const product = order.orderLines.map((l) => l.productName).filter(Boolean).join(" + ") || purchaseOrderId;
@@ -198,8 +206,11 @@ export async function POST(request: NextRequest) {
           filename: buildPdfFilename({ edd, deliveryBy, product, qty }),
           pdf,
         });
-        if (drive.ok) { pdfSaved = true; labelPath = drive.result.webViewLink; }
-        else driveError = drive.reason;
+        if (drive.ok) {
+          pdfSaved = true;
+          labelPath = drive.result.webViewLink;
+          driveFileId = drive.result.fileId;
+        } else driveError = drive.reason;
       } else {
         driveError = "Could not extract PDF from Walmart label response (format unconfirmed).";
       }
@@ -217,6 +228,8 @@ export async function POST(request: NextRequest) {
     pdfSaved,
     labelPath,
     driveError,
+    pdfBase64,
+    driveFileId,
     note: "Label bought. Order is still Acknowledged — not marked Shipped. Use the cron or /api/shipping/walmart/mark-shipped to confirm shipment once the package moves.",
   });
 }

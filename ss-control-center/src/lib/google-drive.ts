@@ -236,6 +236,68 @@ export async function uploadLabelPdf(params: {
   }
 }
 
+// Move a previously-uploaded label into the sibling "Printed" subfolder
+// inside the same channel/date folder. Called by /api/shipping/mark-label-
+// printed after the DYMO Connect web service confirms it accepted the
+// print job — until that confirmation arrives the file stays in the
+// regular date folder, so the Drive layout itself is the audit trail
+// for "did the warehouse actually print this".
+//
+// Uses files.update with addParents/removeParents — atomic Drive move,
+// no copy + delete dance.
+export async function moveLabelToPrinted(params: {
+  fileId: string;
+}): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const driveOutcome = getDriveClient();
+  if (!driveOutcome.ok) return { ok: false, reason: driveOutcome.reason };
+  const drive = driveOutcome.drive;
+
+  try {
+    // Find the current parent (the date+channel folder we originally
+    // uploaded into).
+    const meta = await drive.files.get({
+      fileId: params.fileId,
+      fields: "id, name, parents",
+      supportsAllDrives: true,
+    });
+    const parents = meta.data.parents ?? [];
+    if (parents.length === 0) {
+      return {
+        ok: false,
+        reason: "File has no parent folder — can't determine destination",
+      };
+    }
+    const currentParent = parents[0];
+
+    // Look up (or create) the "Printed" subfolder under that parent.
+    const printedFolder = await getOrCreateFolder(drive, currentParent, "Printed");
+    if (!printedFolder.ok) {
+      return {
+        ok: false,
+        reason: `Could not find/create Printed folder — ${printedFolder.reason}`,
+      };
+    }
+
+    // Idempotency: if the file is already inside Printed, nothing to do.
+    if (currentParent === printedFolder.id) {
+      return { ok: true };
+    }
+
+    await drive.files.update({
+      fileId: params.fileId,
+      addParents: printedFolder.id,
+      removeParents: currentParent,
+      fields: "id, parents",
+      supportsAllDrives: true,
+    });
+    return { ok: true };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[drive] moveLabelToPrinted failed:", msg);
+    return { ok: false, reason: msg };
+  }
+}
+
 // Diagnostic — returns the reason Drive is unconfigured, if any. Used
 // by /api/integrations so the operator can see configuration health
 // without spelunking server logs.
