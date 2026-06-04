@@ -141,15 +141,32 @@ export function ProcurementCard({
   // displays as the full physical total.
   const remainingPhysical = isPartial ? card.remaining : totalPhysical;
 
-  // Copy a search-friendly version of the title — brand + product + weight
-  // but without the pack-count noise ("Pack of 4", "6 Count", "8-Can", etc.).
-  // Operator pastes it into the online-store search box to find the same
-  // product cheaper / at a closer store.
+  // Copy a search-friendly version of the title — real-brand + core product
+  // + weight, with private-label brands (Salutem Vita / Starfit) stripped.
+  // Calls /api/procurement/clean-title which routes through Claude Haiku
+  // (with a server-side DB cache + brand-aware system prompt that's
+  // prompt-cached). Falls back to the local regex if the endpoint fails
+  // — the operator never sees an error here, just a slightly less-clean
+  // result.
   const handleCopy = async () => {
+    let text = cleanProductTitleForSearch(card.productTitle); // safe default
     try {
-      await navigator.clipboard.writeText(
-        cleanProductTitleForSearch(card.productTitle),
-      );
+      const r = await fetch("/api/procurement/clean-title", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: card.productTitle }),
+      });
+      if (r.ok) {
+        const j = (await r.json()) as { cleanTitle?: string };
+        if (typeof j.cleanTitle === "string" && j.cleanTitle.length > 0) {
+          text = j.cleanTitle;
+        }
+      }
+    } catch {
+      /* keep the regex fallback already in `text` */
+    }
+    try {
+      await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
     } catch {
