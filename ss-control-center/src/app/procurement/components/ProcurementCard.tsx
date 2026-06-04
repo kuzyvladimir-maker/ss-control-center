@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Btn } from "@/components/kit";
 import { parsePackSize } from "@/lib/procurement/pack-size";
+import { cleanProductTitleForSearch } from "@/lib/procurement/clean-product-query";
 import { PhotoLightbox } from "./PhotoLightbox";
 import { StorePriorityPopup } from "./StorePriorityPopup";
 import { RetireFromSaleModal } from "./RetireFromSaleModal";
@@ -140,9 +141,15 @@ export function ProcurementCard({
   // displays as the full physical total.
   const remainingPhysical = isPartial ? card.remaining : totalPhysical;
 
+  // Copy a search-friendly version of the title — brand + product + weight
+  // but without the pack-count noise ("Pack of 4", "6 Count", "8-Can", etc.).
+  // Operator pastes it into the online-store search box to find the same
+  // product cheaper / at a closer store.
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(card.productTitle);
+      await navigator.clipboard.writeText(
+        cleanProductTitleForSearch(card.productTitle),
+      );
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
     } catch {
