@@ -483,7 +483,34 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      const deliveryBy = veeqoDateToLocal(order.due_date);
+      // due_date is the Amazon-promised deliver-by deadline; on TikTok
+      // and eBay orders Veeqo doesn't get one back (the platforms don't
+      // expose a per-order delivery deadline the way Amazon does), so the
+      // field comes back null. Passing that to `veeqoDateToLocal` produces
+      // "1969-12-31" (epoch zero in PT) and the rate filter then rejects
+      // every rate because no EDD is ≤ 1969 — that's the
+      // "No rate where EDD ≤ Delivery By (1969-12-31)" stop the operator
+      // sees on TikTok rows. For non-Amazon channels, fall back to a
+      // generous deliver-by window anchored on dispatch_date — gives
+      // selectBestRate freedom to pick cheapest without a hard deadline
+      // (TikTok/eBay don't enforce marketplace deadlines like Amazon).
+      let deliveryBy: string;
+      if (order.due_date) {
+        deliveryBy = veeqoDateToLocal(order.due_date);
+      } else {
+        // dispatch_date + 10 days as a sane default. Operator can still
+        // see the EDD on the picked rate; the marketplace doesn't gate
+        // them on a deadline so we just need any future date.
+        const dispatchDay = order.dispatch_date
+          ? veeqoDateToLocal(order.dispatch_date)
+          : actualShipDay;
+        const baseDate = new Date(`${dispatchDay}T12:00:00`);
+        baseDate.setDate(baseDate.getDate() + 10);
+        const y = baseDate.getFullYear();
+        const m = String(baseDate.getMonth() + 1).padStart(2, "0");
+        const d = String(baseDate.getDate()).padStart(2, "0");
+        deliveryBy = `${y}-${m}-${d}`;
+      }
       const allocationId = order.allocations?.[0]?.id;
 
       // ── Get rates & select best ──
