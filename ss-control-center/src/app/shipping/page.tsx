@@ -948,9 +948,17 @@ export default function ShippingLabelsPage() {
     return channelOrders.filter((o) => !isAwaitingShipConfirm(o));
   }, [channelOrders, viewScope, isAwaitingShipConfirm]);
 
-  // Time-bucket counts derived from the SAME scoped base filteredOrders
-  // works against. Click any bucket and the result list will have the
-  // count shown.
+  // Time-bucket counts roll up the FULL channelOrders set (not the
+  // viewScope-filtered scopedOrders). Reason: Walmart Seller Center
+  // counts "Ship by today/yesterday" against ALL unshipped orders —
+  // including the ones we've already bought a label for but haven't
+  // yet flipped to Shipped. If we restricted the bucket counts to the
+  // active scope, an order whose label was bought late would silently
+  // vanish from "Overdue" even though Walmart is still penalising
+  // late ship-out. Vladimir flagged exactly this: Walmart SC showed
+  // 3 overdue, our app showed 1.
+  // Clicking a bucket below overrides the viewScope so the operator
+  // sees every matching order regardless of label-bought state.
   const bucketCounts = useMemo(() => {
     const c: Record<ShipByBucket, number> = {
       overdue: 0,
@@ -959,9 +967,9 @@ export default function ShippingLabelsPage() {
       dayafter: 0,
       later: 0,
     };
-    for (const o of scopedOrders) if (o.timeBucket) c[o.timeBucket] += 1;
+    for (const o of channelOrders) if (o.timeBucket) c[o.timeBucket] += 1;
     return c;
-  }, [scopedOrders]);
+  }, [channelOrders]);
 
   const filteredOrders = useMemo(() => {
     // Sort by actionability: ready_to_buy → need_attention → waiting_placed
@@ -987,11 +995,20 @@ export default function ShippingLabelsPage() {
         // "active" we HIDE them so the buy-flow list stays focused.
         // (Walmart-direct shipped rows are already pruned upstream in
         //  channelOrders so they never reach this code path.)
+        //
+        // EXCEPTION: a time-bucket filter (Overdue/Today/Tomorrow/...)
+        // overrides the viewScope. Bucket counts now roll up the full
+        // channelOrders set to match Walmart's Unshipped tally, so a
+        // click on "Overdue 3" must actually surface all 3 rows —
+        // including any awaiting-ship-confirm ones — instead of only
+        // the 1 that happens to fall inside the active scope.
         const awaiting = isAwaitingShipConfirm(o);
-        if (viewScope === "awaiting") {
-          if (!awaiting) return false;
-        } else if (awaiting) {
-          return false;
+        if (!bucketFilter) {
+          if (viewScope === "awaiting") {
+            if (!awaiting) return false;
+          } else if (awaiting) {
+            return false;
+          }
         }
         if (bucketFilter && o.timeBucket !== bucketFilter) return false;
         if (storeFilter && o.storeId !== storeFilter) return false;
@@ -1042,24 +1059,27 @@ export default function ShippingLabelsPage() {
     [filteredOrders, viewScope, isAwaitingShipConfirm]
   );
 
-  // KPI tiles + state-filter tabs — derived from scopedOrders so the
-  // numbers reflect what's actually clickable in the current viewScope
-  // (active scope excludes awaiting-ship-confirm rows; awaiting scope
-  // is just those rows). Otherwise switching to "Awaiting" tab and back
-  // would leave KPI tiles showing counts that don't match the list.
+  // KPI tiles — derived from the FULL channelOrders set so the numbers
+  // stay STABLE during page load. Previously the totals dropped from 77
+  // down to ~40 as the client-side Walmart label probes finished and
+  // reclassified rows into "awaiting ship-confirm" (which was excluded
+  // from scopedOrders). Vladimir saw that as a confusing countdown and
+  // a mismatch with the sidebar (which always shows the full count).
+  // Counting against channelOrders keeps the cards in lockstep with
+  // the sidebar and with Walmart Seller Center's Unshipped tally.
   const totals = useMemo(() => {
-    const all = scopedOrders.length;
-    const ready = scopedOrders.filter(
+    const all = channelOrders.length;
+    const ready = channelOrders.filter(
       (o) => o.state === "ready_to_buy",
     ).length;
-    const attention = scopedOrders.filter(
+    const attention = channelOrders.filter(
       (o) => o.state === "need_attention",
     ).length;
-    const waiting = scopedOrders.filter(
+    const waiting = channelOrders.filter(
       (o) => o.state === "waiting_placed",
     ).length;
     return { all, ready, attention, waiting };
-  }, [scopedOrders]);
+  }, [channelOrders]);
 
   // Index plan rows by orderNumber so the OrderRow can pick up carrier /
   // price / EDD without an extra lookup at render time. Plan keys on
