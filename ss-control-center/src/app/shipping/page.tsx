@@ -417,6 +417,34 @@ export default function ShippingLabelsPage() {
   // are built from the actual channels present in today's orders, so a
   // new marketplace auto-appears once its first open order shows up.
   const [channelFilter, setChannelFilter] = useState<string | null>(null);
+  // Walmart label source toggle. Default = "api" (Walmart's Buy-with-Walmart
+  // API direct, the only path that produces Walmart-branded labels and
+  // counts toward Walmart's seller metrics correctly). Operator can flip to
+  // "veeqo" when Walmart's API is throttled/down — Veeqo's pool of carriers
+  // (Amazon Shipping V2) still has rates for the same orders, and /api/
+  // shipping/plan generates plan items for Walmart orders just like Amazon
+  // ones. Per-session persistence keeps the choice across reloads.
+  const [walmartBuySource, setWalmartBuySource] = useState<"api" | "veeqo">(
+    "api",
+  );
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("shipping.walmartBuySource");
+      if (saved === "veeqo" || saved === "api") setWalmartBuySource(saved);
+    } catch {
+      /* private mode — toggle just won't persist */
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        "shipping.walmartBuySource",
+        walmartBuySource,
+      );
+    } catch {
+      /* see above */
+    }
+  }, [walmartBuySource]);
   // Frozen / Dry product-type filter. "all" shows everything; "Frozen" or
   // "Dry" keeps orders whose first item matches (mixed orders only match
   // when every item is the same type).
@@ -512,6 +540,12 @@ export default function ShippingLabelsPage() {
   const quoteWalmartOrder = useCallback(
     async (o: DashboardOrder, shipByDate: string) => {
       if (!o.walmartPurchaseOrderId) return;
+      // When the operator opted out of Walmart-direct, Walmart-channel
+      // orders flow through the same /plan + /buy pipeline as Amazon —
+      // their plan row already has carrier/service/price. Skipping the
+      // /walmart/rates probe here avoids spurious labelLookupFailed
+      // errors that would block the Buy button.
+      if (walmartBuySource !== "api") return;
       setRequoting((p) => ({ ...p, [o.orderNumber]: true }));
       const dropMaps = () => {
         setWalmartRates((p) => {
@@ -620,7 +654,7 @@ export default function ShippingLabelsPage() {
         setRequoting((p) => ({ ...p, [o.orderNumber]: false }));
       }
     },
-    [],
+    [walmartBuySource],
   );
 
   /**
@@ -1392,7 +1426,11 @@ export default function ShippingLabelsPage() {
     for (const id of selected) {
       const o = orderById.get(id);
       if (!o) continue;
-      if (o.isWalmart) walmartOrders.push(o);
+      // Walmart orders go through Walmart's Buy-with-Walmart API ONLY
+      // when the source toggle says so. With toggle=veeqo they fall into
+      // the same /plan + /buy pipeline as Amazon — Veeqo's rate quote
+      // already covers them.
+      if (o.isWalmart && walmartBuySource === "api") walmartOrders.push(o);
       else amazonIds.push(id);
     }
 
@@ -1749,7 +1787,11 @@ export default function ShippingLabelsPage() {
     // Buy via Walmart's own API (not Veeqo). Does NOT mark the order Shipped
     // — it stays Acknowledged; the ship-confirm cron (or manual action) marks
     // it shipped once the package moves. PDF is saved to Drive server-side.
-    if (o.isWalmart) {
+    //
+    // The walmartBuySource toggle gates this path — when the operator
+    // flipped to "veeqo", Walmart orders fall through to the regular
+    // Amazon-style /api/shipping/buy flow that uses Veeqo's rates.
+    if (o.isWalmart && walmartBuySource === "api") {
       try {
         const info = walmartBuyInfo[o.orderNumber];
         if (!info) {
@@ -1966,6 +2008,31 @@ export default function ShippingLabelsPage() {
             show all
           </button>
         )}
+
+        {/* Walmart label source toggle. Default = API (Walmart's own Buy-
+            with-Walmart). Operator can flip to Veeqo as a fallback when
+            Walmart's API is throttled. Only meaningful when there are
+            Walmart orders in the list — but always rendered so the
+            current setting is visible. */}
+        <button
+          type="button"
+          onClick={() =>
+            setWalmartBuySource((s) => (s === "api" ? "veeqo" : "api"))
+          }
+          title={
+            walmartBuySource === "api"
+              ? "Walmart labels buy through Walmart's own API (Buy-with-Walmart). Click to switch to Veeqo as a fallback."
+              : "Walmart labels currently buy through VEEQO (Amazon Shipping rates). Click to switch back to Walmart API."
+          }
+          className={cn(
+            "ml-2 rounded-md border px-2 py-0.5 text-[11px] font-medium transition",
+            walmartBuySource === "api"
+              ? "border-green-soft bg-green-soft text-green-ink hover:bg-green-tint"
+              : "border-warn-strong bg-warn-tint text-warn-strong hover:bg-warn-strong/20",
+          )}
+        >
+          Walmart: {walmartBuySource === "api" ? "API" : "Veeqo"}
+        </button>
 
         {/* Page-level ship date — the day you plan to hand packages to the
             carrier. Drives every Walmart rate quote + Buy. Per-row overrides
