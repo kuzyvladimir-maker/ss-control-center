@@ -37,6 +37,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { fetchOrdersInRange } from "@/lib/veeqo/client";
 import { toZonedTime, fromZonedTime } from "date-fns-tz";
 import {
   startOfDay,
@@ -141,7 +142,7 @@ function walmartStoreName(storeIndex: number): string {
 // uniform shape so the rest of the analytics layer is channel-agnostic.
 // ─────────────────────────────────────────────────────────────────────
 interface NormalizedOrder {
-  source: "amazon" | "walmart";
+  source: "amazon" | "walmart" | "veeqo";
   id: string;
   number: string;
   date: Date;
@@ -156,7 +157,11 @@ interface NormalizedOrder {
   itemsCount: number;
   storeIndex: number;
   storeName: string;
-  channel: "amazon" | "walmart";
+  /** Channel kind from Veeqo's `type_code` — "amazon" / "walmart" /
+   *  "ebay" / "tiktok" / "shopify" / "direct" (merged-orders bucket)
+   *  / etc. Amazon and Walmart still come from our local cache; the
+   *  rest come live from Veeqo per-request. */
+  channel: string;
 }
 
 /** Normalize cancelled/canceled and Walmart's status terms onto a single
@@ -366,6 +371,115 @@ async function loadAmazonOrders(
   }));
 }
 
+/**
+ * Pull non-cached channel orders (eBay / TikTok / Shopify / direct /
+ * Merged / Etsy / etc.) live from Veeqo for the given range. Amazon
+ * and Walmart are skipped here — they're already covered by our
+ * local AmazonOrder / WalmartOrder cache and including them would
+ * just create duplicates after the merge.
+ *
+ * Best-effort: a Veeqo failure logs a warning and returns []. The
+ * page still renders Amazon + Walmart in that case rather than
+ * blanking the whole overview.
+ */
+async function loadOtherChannelOrders(
+  from: Date,
+  to: Date,
+): Promise<NormalizedOrder[]> {
+  let raw: unknown[];
+  try {
+    raw = await fetchOrdersInRange({
+      createdAtMin: from.toISOString(),
+      createdAtMax: to.toISOString(),
+      batchSize: 5,
+    });
+  } catch (e) {
+    console.warn(
+      "[sales-overview] Veeqo fetch failed, skipping non-cached channels:",
+      e instanceof Error ? e.message : e,
+    );
+    return [];
+  }
+
+  const out: NormalizedOrder[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const o = item as Record<string, unknown>;
+    const channelInfo = o.channel as Record<string, unknown> | undefined;
+    const typeCodeRaw = channelInfo?.type_code;
+    const typeCode =
+      typeof typeCodeRaw === "string" ? typeCodeRaw.toLowerCase() : "";
+
+    // Skip Amazon + Walmart — covered by the cached loaders. We do
+    // include `direct` (the Veeqo "Merged Orders" bucket) and every
+    // marketplace whose orders aren't in our DB.
+    if (typeCode === "amazon" || typeCode === "walmart") continue;
+
+    const channelName =
+      typeof channelInfo?.name === "string"
+        ? (channelInfo.name as string)
+        : "";
+
+    // Best-effort field extraction. Veeqo returns slightly different
+    // shapes per channel, so we try each common key in order.
+    const id = String(o.id ?? "");
+    if (!id) continue;
+    const number = String(o.number ?? o.id);
+    const createdAt = String(o.created_at ?? "");
+    if (!createdAt) continue;
+    const date = new Date(createdAt);
+    const totalRaw = o.total_price ?? o.subtotal_price ?? 0;
+    const total = typeof totalRaw === "string"
+      ? parseFloat(totalRaw) || 0
+      : typeof totalRaw === "number"
+        ? totalRaw
+        : 0;
+    const currency = String(o.currency_code ?? "USD");
+    const rawStatus = String(o.status ?? "unknown");
+    const deliverTo = o.deliver_to as Record<string, unknown> | undefined;
+    const customer = (() => {
+      const fn = String(deliverTo?.first_name ?? "").trim();
+      const ln = String(deliverTo?.last_name ?? "").trim();
+      const full = [fn, ln].filter(Boolean).join(" ");
+      return full || null;
+    })();
+    const lineItems = Array.isArray(o.line_items) ? o.line_items : [];
+    const itemsCount = lineItems.reduce(
+      (s: number, li: unknown) => {
+        if (!li || typeof li !== "object") return s;
+        const q = (li as { quantity?: number }).quantity;
+        return s + (typeof q === "number" ? q : 0);
+      },
+      0,
+    );
+
+    out.push({
+      source: "veeqo",
+      id,
+      number,
+      date,
+      total,
+      currency,
+      status: normalizeStatus(rawStatus),
+      rawStatus,
+      customer,
+      city: deliverTo?.city ? String(deliverTo.city) : null,
+      state: deliverTo?.state ? String(deliverTo.state) : null,
+      zip: deliverTo?.zip ? String(deliverTo.zip) : null,
+      itemsCount: itemsCount || 1,
+      storeIndex: 0,
+      // Friendly store name: prefer Veeqo's channel.name (e.g. "AMZ
+      // eBay", "NAN health") since it's what the operator recognises.
+      // Fall back to capitalised type_code otherwise.
+      storeName:
+        channelName ||
+        (typeCode ? typeCode.charAt(0).toUpperCase() + typeCode.slice(1) : "Other"),
+      channel: typeCode || "other",
+    });
+  }
+  return out;
+}
+
 async function loadWalmartOrders(
   from: Date,
   to: Date,
@@ -411,9 +525,13 @@ export async function GET(request: NextRequest) {
     const channel = channelParam ?? "all";
     const storeIndexRaw = sp.get("storeIndex");
     const storeIndex = storeIndexRaw ? parseInt(storeIndexRaw, 10) : null;
+    // Default cap raised to 5000 — covers ~1.5 months of typical
+    // volume and is enough that the operator can browse a full
+    // month without bumping the limit. Hard ceiling at 20000 to
+    // keep the response under ~5MB.
     const limitOrders = Math.min(
-      Math.max(parseInt(sp.get("limitOrders") || "200", 10), 1),
-      1000,
+      Math.max(parseInt(sp.get("limitOrders") || "5000", 10), 1),
+      20_000,
     );
 
     const now = new Date();
@@ -439,9 +557,17 @@ export async function GET(request: NextRequest) {
 
     // Run current + prior window loads in parallel so the response time
     // is dominated by the slower of the two, not their sum.
+    // The Veeqo "other channels" call only fires when the operator
+    // hasn't narrowed to amazon or walmart specifically (those have
+    // dedicated cached loaders). For prior windows we skip the Veeqo
+    // call entirely — comparison deltas on Amazon+Walmart are good
+    // enough, and pulling 2× the data just to delta a small bucket
+    // would double the latency without proportional value.
+    const fetchOther = channel === "all";
     const [
       amzCurrent,
       wmCurrent,
+      otherCurrent,
       amzPrior,
       wmPrior,
       topSkus,
@@ -452,6 +578,9 @@ export async function GET(request: NextRequest) {
       channel === "amazon"
         ? Promise.resolve([] as NormalizedOrder[])
         : loadWalmartOrders(from, to),
+      fetchOther
+        ? loadOtherChannelOrders(from, to)
+        : Promise.resolve([] as NormalizedOrder[]),
       channel === "walmart"
         ? Promise.resolve([] as NormalizedOrder[])
         : loadAmazonOrders(priorFrom, priorTo, storeIndex),
@@ -463,7 +592,7 @@ export async function GET(request: NextRequest) {
         : buildTopSkus(from, to, storeIndex, 10),
     ]);
 
-    const all = [...amzCurrent, ...wmCurrent];
+    const all = [...amzCurrent, ...wmCurrent, ...otherCurrent];
     const prior = [...amzPrior, ...wmPrior];
 
     const dailyRevenue = buildDailyRevenue(all, from, to);

@@ -177,7 +177,16 @@ function pctDelta(curr: number, prior: number): {
 const CHANNEL_COLOR: Record<string, string> = {
   amazon: "#ff9900",
   walmart: "#0071dc",
+  ebay: "#e53238",
+  tiktok: "#fe2c55",
+  shopify: "#95bf47",
+  etsy: "#f1641e",
+  direct: "#6b7280", // Veeqo "Merged Orders" + manual direct entries
+  other: "#6b7280",
 };
+
+const channelColor = (key: string): string =>
+  CHANNEL_COLOR[key] ?? "#6b7280";
 
 const STATUS_COLOR: Record<string, string> = {
   Shipped: "bg-green-soft2 text-green-ink",
@@ -207,7 +216,10 @@ export default function SalesOverviewPage() {
   const [orderSort, setOrderSort] = useState<"date" | "total">("date");
   const [orderSortDir, setOrderSortDir] = useState<"asc" | "desc">("desc");
   const [orderStatus, setOrderStatus] = useState<string>("all");
+  const [orderChannel, setOrderChannel] = useState<string>("all");
   const [orderSearch, setOrderSearch] = useState<string>("");
+  const [ordersPage, setOrdersPage] = useState<number>(1);
+  const ORDERS_PER_PAGE = 50;
 
   // Top-of-page tile row (Today / Yesterday / MTD / This-month forecast /
   // Last month). Fetched separately so the heavier per-period detail call
@@ -271,6 +283,9 @@ export default function SalesOverviewPage() {
     if (orderStatus !== "all") {
       rows = rows.filter((o) => o.status === orderStatus);
     }
+    if (orderChannel !== "all") {
+      rows = rows.filter((o) => o.channel === orderChannel);
+    }
     if (q) {
       // Veeqo-style smart search: single field matches against order
       // number, customer name (full string from buyerName), and the
@@ -296,7 +311,31 @@ export default function SalesOverviewPage() {
       return orderSortDir === "desc" ? b.total - a.total : a.total - b.total;
     });
     return sorted;
-  }, [data, orderSearch, orderStatus, orderSort, orderSortDir]);
+  }, [data, orderSearch, orderStatus, orderChannel, orderSort, orderSortDir]);
+
+  // Reset to page 1 whenever a filter that changes the result set fires.
+  useEffect(() => {
+    setOrdersPage(1);
+  }, [orderSearch, orderStatus, orderChannel, orderSort, orderSortDir]);
+
+  const totalOrderPages = Math.max(
+    1,
+    Math.ceil(displayedOrders.length / ORDERS_PER_PAGE),
+  );
+  const pageRows = displayedOrders.slice(
+    (ordersPage - 1) * ORDERS_PER_PAGE,
+    ordersPage * ORDERS_PER_PAGE,
+  );
+
+  // Channel chips for the Orders panel — derived from whatever channels
+  // are actually present in the visible response, so eBay/TikTok/etc.
+  // pills automatically appear when those orders are in the window.
+  const orderChannels = useMemo(() => {
+    if (!data) return [] as string[];
+    const set = new Set<string>();
+    for (const o of data.orders) set.add(o.channel);
+    return [...set].sort();
+  }, [data]);
 
   const maxRevenue = useMemo(() => {
     if (!data || data.dailyRevenue.length === 0) return 1;
@@ -525,8 +564,7 @@ export default function SalesOverviewPage() {
                           className="h-full transition-all"
                           style={{
                             width: `${pct}%`,
-                            background:
-                              CHANNEL_COLOR[c.channel] ?? "var(--ink-3)",
+                            background: channelColor(c.channel),
                           }}
                         />
                       </div>
@@ -655,9 +693,10 @@ export default function SalesOverviewPage() {
               <CardTitle className="text-sm">
                 Orders{" "}
                 <span className="text-[11px] font-normal text-ink-3">
-                  ({displayedOrders.length} of {data.totalOrdersInWindow}
+                  ({displayedOrders.length.toLocaleString()} of{" "}
+                  {data.totalOrdersInWindow.toLocaleString()}
                   {data.totalOrdersInWindow > data.orders.length
-                    ? ` — showing first ${data.orders.length}, narrow date range to load more`
+                    ? ` — server cap ${data.orders.length}, narrow date range to load more`
                     : ""}
                   )
                 </span>
@@ -675,6 +714,20 @@ export default function SalesOverviewPage() {
                     className="h-8 w-[300px] pl-7 text-[12px]"
                   />
                 </div>
+                {orderChannels.length > 1 && (
+                  <select
+                    value={orderChannel}
+                    onChange={(e) => setOrderChannel(e.target.value)}
+                    className="h-8 rounded-md border border-rule bg-surface px-2 text-[12px] text-ink focus:border-green focus:outline-none"
+                  >
+                    <option value="all">All channels</option>
+                    {orderChannels.map((c) => (
+                      <option key={c} value={c}>
+                        {c.charAt(0).toUpperCase() + c.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <select
                   value={orderStatus}
                   onChange={(e) => setOrderStatus(e.target.value)}
@@ -737,7 +790,7 @@ export default function SalesOverviewPage() {
                     </td>
                   </tr>
                 )}
-                {displayedOrders.map((o) => (
+                {pageRows.map((o) => (
                   <tr
                     key={`${o.source}-${o.id}`}
                     className="border-t border-rule/60 hover:bg-bg-elev/30"
@@ -750,10 +803,10 @@ export default function SalesOverviewPage() {
                     </td>
                     <td className="px-3 py-2">
                       <span
-                        className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium"
+                        className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium capitalize"
                         style={{
-                          background: `${CHANNEL_COLOR[o.channel]}20`,
-                          color: CHANNEL_COLOR[o.channel],
+                          background: `${channelColor(o.channel)}20`,
+                          color: channelColor(o.channel),
                         }}
                       >
                         {o.channel}
@@ -786,6 +839,66 @@ export default function SalesOverviewPage() {
                 ))}
               </tbody>
             </table>
+
+            {/* Pagination — only shown when there's more than one page. */}
+            {totalOrderPages > 1 && (
+              <div className="flex items-center justify-between gap-2 border-t border-rule px-3 py-2 text-[11.5px] text-ink-3">
+                <span>
+                  Showing{" "}
+                  <span className="font-medium text-ink-2">
+                    {(ordersPage - 1) * ORDERS_PER_PAGE + 1}
+                    {"–"}
+                    {Math.min(
+                      ordersPage * ORDERS_PER_PAGE,
+                      displayedOrders.length,
+                    )}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-medium text-ink-2">
+                    {displayedOrders.length.toLocaleString()}
+                  </span>
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setOrdersPage(1)}
+                    disabled={ordersPage === 1}
+                    className="rounded border border-rule px-2 py-0.5 text-[11px] disabled:opacity-40 hover:bg-bg-elev"
+                  >
+                    «
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOrdersPage((p) => Math.max(1, p - 1))}
+                    disabled={ordersPage === 1}
+                    className="rounded border border-rule px-2 py-0.5 text-[11px] disabled:opacity-40 hover:bg-bg-elev"
+                  >
+                    ‹
+                  </button>
+                  <span className="px-1.5 tabular text-ink">
+                    {ordersPage} / {totalOrderPages}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOrdersPage((p) => Math.min(totalOrderPages, p + 1))
+                    }
+                    disabled={ordersPage === totalOrderPages}
+                    className="rounded border border-rule px-2 py-0.5 text-[11px] disabled:opacity-40 hover:bg-bg-elev"
+                  >
+                    ›
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOrdersPage(totalOrderPages)}
+                    disabled={ordersPage === totalOrderPages}
+                    className="rounded border border-rule px-2 py-0.5 text-[11px] disabled:opacity-40 hover:bg-bg-elev"
+                  >
+                    »
+                  </button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

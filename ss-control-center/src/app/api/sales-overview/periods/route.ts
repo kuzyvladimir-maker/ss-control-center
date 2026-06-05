@@ -22,6 +22,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { fetchOrdersInRange } from "@/lib/veeqo/client";
 import { toZonedTime, fromZonedTime } from "date-fns-tz";
 import {
   startOfDay,
@@ -100,6 +101,62 @@ function normalizeStatus(raw: string): string {
   return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
 }
 
+/**
+ * Pull non-cached channel orders (eBay / TikTok / Shopify / direct /
+ * Merged / Etsy / etc.) live from Veeqo for the given range. Used so
+ * the tile summaries reflect EVERY channel — not just Amazon + Walmart.
+ * Best-effort: a Veeqo failure logs a warning and returns [].
+ */
+async function loadOtherChannelOrdersFromVeeqo(
+  from: Date,
+  to: Date,
+): Promise<NormalizedOrder[]> {
+  let raw: unknown[];
+  try {
+    raw = await fetchOrdersInRange({
+      createdAtMin: from.toISOString(),
+      createdAtMax: to.toISOString(),
+      batchSize: 5,
+    });
+  } catch (e) {
+    console.warn(
+      "[sales-overview/periods] Veeqo fetch failed:",
+      e instanceof Error ? e.message : e,
+    );
+    return [];
+  }
+  const out: NormalizedOrder[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const o = item as Record<string, unknown>;
+    const ch = o.channel as Record<string, unknown> | undefined;
+    const typeCode =
+      typeof ch?.type_code === "string"
+        ? (ch.type_code as string).toLowerCase()
+        : "";
+    if (typeCode === "amazon" || typeCode === "walmart") continue;
+    const totalRaw = o.total_price ?? o.subtotal_price ?? 0;
+    const total =
+      typeof totalRaw === "string"
+        ? parseFloat(totalRaw) || 0
+        : typeof totalRaw === "number"
+          ? totalRaw
+          : 0;
+    const lineItems = Array.isArray(o.line_items) ? o.line_items : [];
+    const itemsCount = lineItems.reduce((s: number, li: unknown) => {
+      if (!li || typeof li !== "object") return s;
+      const q = (li as { quantity?: number }).quantity;
+      return s + (typeof q === "number" ? q : 0);
+    }, 0);
+    out.push({
+      total,
+      itemsCount: itemsCount || 1,
+      status: normalizeStatus(String(o.status ?? "unknown")),
+    });
+  }
+  return out;
+}
+
 async function loadOrders(
   from: Date,
   to: Date,
@@ -141,6 +198,12 @@ async function loadOrders(
           })),
         ),
     );
+  }
+  // Only pull non-cached channels when the operator hasn't narrowed to
+  // a specific cached channel — saves a Veeqo round-trip when channel
+  // filter is amazon or walmart.
+  if (channel === "all") {
+    tasks.push(loadOtherChannelOrdersFromVeeqo(from, to));
   }
   const chunks = await Promise.all(tasks);
   return chunks.flat();
