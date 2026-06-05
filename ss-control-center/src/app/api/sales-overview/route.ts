@@ -745,6 +745,11 @@ export async function GET(request: NextRequest) {
       storeIndex: o.storeIndex,
       storeName: o.storeName,
       channel: o.channel,
+      // items[] carries product image + title + sku + qty per line —
+      // the Sales Overview UI renders them inline in each row.
+      // Always include (even empty array) so the client can rely on
+      // `o.items.length` without a guard.
+      items: o.items ?? [],
     }));
 
     return NextResponse.json({

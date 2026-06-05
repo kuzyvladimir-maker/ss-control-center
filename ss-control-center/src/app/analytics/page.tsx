@@ -308,7 +308,7 @@ export default function SalesOverviewPage() {
           (o.state ?? "").toLowerCase().includes(q) ||
           (o.zip ?? "").toLowerCase().includes(q) ||
           o.storeName.toLowerCase().includes(q) ||
-          o.items.some(
+          (o.items ?? []).some(
             (it) =>
               it.sku.toLowerCase().includes(q) ||
               it.productName.toLowerCase().includes(q),
@@ -861,9 +861,9 @@ export default function SalesOverviewPage() {
                         : "—"}
                     </td>
                     <td className="px-3 py-2">
-                      {o.items.length > 0 ? (
+                      {(o.items ?? []).length > 0 ? (
                         <div className="flex flex-col gap-1">
-                          {o.items.slice(0, 3).map((it, idx) => (
+                          {(o.items ?? []).slice(0, 3).map((it, idx) => (
                             <div
                               key={`${it.sku || "noSku"}-${idx}`}
                               className="flex items-center gap-2"
@@ -890,10 +890,10 @@ export default function SalesOverviewPage() {
                               </div>
                             </div>
                           ))}
-                          {o.items.length > 3 && (
+                          {(o.items ?? []).length > 3 && (
                             <div className="text-[10px] text-ink-3">
-                              + {o.items.length - 3} more line
-                              {o.items.length - 3 === 1 ? "" : "s"}
+                              + {(o.items ?? []).length - 3} more line
+                              {(o.items ?? []).length - 3 === 1 ? "" : "s"}
                             </div>
                           )}
                         </div>
