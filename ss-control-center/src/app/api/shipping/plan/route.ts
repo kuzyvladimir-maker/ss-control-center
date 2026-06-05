@@ -486,9 +486,25 @@ export async function GET(request: NextRequest) {
         }
       } else {
         const skuData = skuDatabase.find((r) => r.sku === firstSku) || null;
-        if (!stopReason && !skuData) {
+        // For Amazon orders our local SkuShippingData is the source of
+        // truth — we push those dims to Veeqo and quote from them, so
+        // missing data here is genuinely a blocker.
+        //
+        // For eBay/TikTok/Shopify/Etsy/direct, Vladimir packs in Veeqo's
+        // own UI (the allocation_package field on the Veeqo allocation).
+        // The Veeqo screenshot for order 02-14738-90816 confirms this:
+        // package is 2 lbs / 1x1x1 in Veeqo, and a full slate of carrier
+        // rates is available — but our local SkuShippingData has no row
+        // for this SKU, so the old "SKU not in SKU Database" stop fired
+        // and the row never got a rate.
+        //
+        // Fix: skip the missing-SKU stop for non-Amazon channels. We
+        // still use skuData when it exists (to optionally re-push the
+        // allocation_package below), but never block on its absence —
+        // Veeqo's existing package is fine.
+        if (!stopReason && !skuData && isAmazon) {
           stopReason = `SKU ${firstSku} not in SKU Database`;
-        } else if (!stopReason && skuData && !skuData.hasCompleteData) {
+        } else if (!stopReason && skuData && !skuData.hasCompleteData && isAmazon) {
           stopReason = `SKU ${firstSku}: missing weight/dimensions`;
         } else if (skuData) {
           skuWeight = skuData.weight;

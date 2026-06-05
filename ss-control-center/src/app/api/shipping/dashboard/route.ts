@@ -429,10 +429,19 @@ export async function GET() {
         // single-line single-qty (no PackingProfile required). For
         // multi-item orders the PackingProfile covers box+weight, so a
         // missing per-SKU row is fine — don't flag no_sku in that case.
+        //
+        // Also Amazon-only: for eBay/TikTok/Shopify/Etsy/direct, Vladimir
+        // sets the package in Veeqo's own UI (allocation_package on the
+        // allocation) and rates come from Veeqo against THAT package —
+        // our SkuShippingData is unused for those channels. Flagging
+        // no_sku on a non-Amazon row would falsely block a row Veeqo
+        // can already quote.
         const needsProfileMissing =
           reqsProfile && !profileBySig.has(sig);
         const missingSku =
-          !reqsProfile && items.some((i) => !skuByCode.has(i.sku));
+          isAmazonOrder &&
+          !reqsProfile &&
+          items.some((i) => !skuByCode.has(i.sku));
 
         if (frozenWalmart) {
           state = "need_attention";
