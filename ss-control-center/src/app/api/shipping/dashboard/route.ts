@@ -365,6 +365,15 @@ export async function GET() {
       const bucket = shipByBucket(shipByRaw);
       if (bucket) timeBuckets[bucket]++;
 
+      // Walmart-channel orders are always treated as Dry — Vladimir's
+      // Walmart catalog has no frozen SKUs, the plan endpoint mirrors
+      // this rule when picking rates, and the dashboard should match so
+      // the Frozen/Dry/Untyped tabs don't show phantom "Untyped" rows
+      // just because no operator ever tagged the Veeqo product.
+      const walmartChannelForType =
+        ((o.channel?.type_code as string | undefined) ?? "").toLowerCase() ===
+        "walmart";
+
       const items = orderItems.get(o.id) ?? [];
       const itemsWithType = items.map((i) => ({
         sku: i.sku,
@@ -372,7 +381,9 @@ export async function GET() {
         productTitle: i.productTitle,
         quantity: i.quantity,
         imageUrl: i.imageUrl,
-        knownType: productType(i.productId ?? undefined),
+        knownType: walmartChannelForType
+          ? "Dry"
+          : productType(i.productId ?? undefined),
       }));
 
       // ── State classification ──
