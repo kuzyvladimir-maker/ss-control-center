@@ -342,10 +342,17 @@ export async function GET(request: NextRequest) {
       // those rows (lets the UI cheap-refresh a single card).
       if (orderIdFilter && !orderIdFilter.has(String(order.id))) continue;
 
+      // Shopify channels are third-party clients (NAN health and similar)
+      // whose products live in our warehouse — they skip the supplier-
+      // procurement workflow, so the Placed tag never gets set on them
+      // and the dashboard treats them as Placed implicitly. Mirror that
+      // here so /api/shipping/plan also rate-quotes them without the gate.
+      const planChannelType = (order.channel?.type_code || "").toLowerCase();
+      const planIsShopify = planChannelType === "shopify";
       const hasPlaced = order.tags?.some(
         (t: { name: string }) => t.name === "Placed"
       );
-      if (!hasPlaced) continue;
+      if (!hasPlaced && !planIsShopify) continue;
       debug.filters.afterPlacedTag++;
 
       const shipBy = veeqoDateToLocal(order.dispatch_date);

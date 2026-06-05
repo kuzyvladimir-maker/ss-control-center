@@ -417,14 +417,22 @@ export async function GET() {
       // synced into our WalmartOrder DB cache yet (the isWalmart flag
       // built above only sees DB-synced orders, while type_code is on
       // the Veeqo order directly).
+      //
+      // Shopify channels are third-party clients (NAN health and similar)
+      // whose products are already in our warehouse — they don't go
+      // through the supplier-procurement workflow at all, so the Placed
+      // gate is meaningless for them. Treat as Placed implicitly so the
+      // rate row + Buy button appear immediately without an extra click.
       const orderTypeCodeForGate = (o.channel?.type_code as string | undefined)
         ?.toLowerCase() ?? "";
       const isWalmartChannel = orderTypeCodeForGate === "walmart";
+      const isShopifyChannel = orderTypeCodeForGate === "shopify";
+      const skipPlacedGate = isWalmartChannel || isShopifyChannel;
 
       if (isBought(o)) {
         state = "bought";
         totals.boughtToday++;
-      } else if (!isPlaced(o) && !isWalmartChannel) {
+      } else if (!isPlaced(o) && !skipPlacedGate) {
         state = "waiting_placed";
         totals.waitingPlaced++;
       } else {
