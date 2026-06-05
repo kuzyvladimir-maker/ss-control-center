@@ -25,6 +25,14 @@ export const dynamic = "force-dynamic";
 
 interface Body {
   orderId?: string;
+  // Optional fallback hints from the client's local walmartStatus when
+  // Walmart's getLabelsByPurchaseOrder lookup returns empty. The UI
+  // displays a tracking the moment a Walmart label is bought (populated
+  // optimistically) — that same tracking can be used to discard directly
+  // by carrier+tracking, bypassing the lookup which Walmart sometimes
+  // takes minutes to index.
+  fallbackTracking?: string | null;
+  fallbackCarrier?: string | null;
 }
 
 interface VeeqoOrderForDiscard {
@@ -59,31 +67,96 @@ export async function POST(req: NextRequest) {
       const client = getWalmartClient(1);
       const api = new WalmartOrdersApi(client);
       const labels = await api.getLabelsByPurchaseOrder(orderNumber);
-      if (labels.length === 0) {
+
+      // Pick the (carrier, tracking) pairs we'll attempt to discard.
+      // Primary source: Walmart's lookup. Fallback: the client's
+      // optimistic walmartStatus — Walmart's lookup occasionally takes
+      // minutes to index a freshly-bought label and operators were
+      // hitting "No Walmart label found for this order" while seeing
+      // the tracking right there in the UI.
+      const targets: Array<{ carrier: string; tracking: string }> = [];
+      for (const l of labels) {
+        if (l.trackingNumber && l.carrierName) {
+          targets.push({
+            carrier: l.carrierName,
+            tracking: l.trackingNumber,
+          });
+        }
+      }
+      if (
+        targets.length === 0 &&
+        body.fallbackTracking &&
+        body.fallbackCarrier
+      ) {
+        targets.push({
+          carrier: body.fallbackCarrier,
+          tracking: body.fallbackTracking,
+        });
+      }
+      if (targets.length === 0) {
         return NextResponse.json(
-          { error: "No Walmart label found for this order" },
+          {
+            error:
+              "No Walmart label found for this order (Walmart lookup empty and no fallback tracking from UI).",
+          },
           { status: 404 },
         );
       }
-      // In our flow there's only ever one label per Walmart order,
-      // but defensively discard every label we see.
+
       const discarded: Array<{ carrier: string; tracking: string }> = [];
-      for (const l of labels) {
-        if (!l.trackingNumber || !l.carrierName) continue;
-        // Walmart returns carrierName as the short code Walmart's
-        // discard endpoint accepts (FedEx / UPS / USPS / etc.).
-        await discardShippingLabel(client, l.carrierName, l.trackingNumber);
-        discarded.push({
-          carrier: l.carrierName,
-          tracking: l.trackingNumber,
-        });
+      const discardErrors: Array<{ carrier: string; tracking: string; error: string }> = [];
+      for (const t of targets) {
+        try {
+          await discardShippingLabel(client, t.carrier, t.tracking);
+          discarded.push(t);
+        } catch (e) {
+          discardErrors.push({
+            ...t,
+            error: e instanceof Error ? e.message : String(e),
+          });
+        }
       }
+      // If every Walmart discard failed AND we used the lookup (not the
+      // fallback), don't fall through to Veeqo — Walmart is the source
+      // of truth for these labels. But if we tried the fallback target
+      // and Walmart rejected it, the label may have been bought via
+      // Veeqo for some reason (rare, but possible on legacy rows) —
+      // attempt a Veeqo refund as last resort.
+      if (discarded.length === 0) {
+        if (labels.length === 0) {
+          // Fallback path failed → try Veeqo refund.
+          try {
+            const result = await refundShipmentForOrder(orderId);
+            return NextResponse.json({
+              ok: true,
+              channel: "walmart",
+              orderId,
+              orderNumber,
+              veeqoRefund: result.shipmentId,
+              note: "Walmart had no label record; refunded via Veeqo instead.",
+            });
+          } catch (veeqoErr) {
+            return NextResponse.json(
+              {
+                error: `Could not discard via Walmart (${discardErrors[0]?.error ?? "unknown"}) nor refund via Veeqo (${veeqoErr instanceof Error ? veeqoErr.message : "unknown"}).`,
+              },
+              { status: 502 },
+            );
+          }
+        }
+        return NextResponse.json(
+          { error: discardErrors[0]?.error ?? "Discard failed" },
+          { status: 502 },
+        );
+      }
+
       return NextResponse.json({
         ok: true,
         channel: "walmart",
         orderId,
         orderNumber,
         discarded,
+        ...(discardErrors.length > 0 ? { partialErrors: discardErrors } : {}),
       });
     }
 

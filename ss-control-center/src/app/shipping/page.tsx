@@ -1617,10 +1617,23 @@ export default function ShippingLabelsPage() {
       return next;
     });
     try {
+      // Pass the optimistic walmartStatus tracking as a fallback hint —
+      // Walmart's getLabelsByPurchaseOrder occasionally takes minutes to
+      // index a freshly-bought label, and the server's lookup-based
+      // path then fails with "No Walmart label found" while the UI is
+      // already showing the tracking. With the fallback the server can
+      // discard directly by carrier+tracking.
+      const ws = walmartStatus[o.orderNumber];
+      const fallbackTracking = ws?.existingLabel?.trackingNumber ?? null;
+      const fallbackCarrier = ws?.existingLabel?.carrierName ?? null;
       const r = await fetch("/api/shipping/discard-label", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: o.orderId }),
+        body: JSON.stringify({
+          orderId: o.orderId,
+          fallbackTracking,
+          fallbackCarrier,
+        }),
       });
       const j = await r.json();
       if (!r.ok || j?.ok === false) {
