@@ -187,9 +187,16 @@ export async function buyShippingLabel(payload: {
     ...(payload.vas ?? {}),
   };
 
+  // The OUTER `carrier` field is Veeqo's "shipping integration" name (e.g.
+  // "amazon_shipping_v2"). The selected rate's `rate.carrier` IS that
+  // integration name — we already pass it through as payload.carrierId —
+  // so reuse it here instead of hardcoding amazon_shipping_v2. Hardcoding
+  // broke every non-Amazon channel buy (eBay/TikTok/Shopify): Veeqo would
+  // reject the POST because the integration name in the body didn't match
+  // the carrier_id on the shipment.
   return veeqoFetch("/shipping/shipments", {
     method: "POST",
-    body: JSON.stringify({ carrier: "amazon_shipping_v2", shipment }),
+    body: JSON.stringify({ carrier: payload.carrierId, shipment }),
   });
 }
 

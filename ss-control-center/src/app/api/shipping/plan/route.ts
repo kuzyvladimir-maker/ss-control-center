@@ -7,6 +7,7 @@ import {
   veeqoDateToLocal,
   getTodayNY,
   updateOrderDispatchDate,
+  updateAllocationPackage,
 } from "@/lib/veeqo";
 import { fetchSkuDatabase, type SkuRow } from "@/lib/sku-database";
 import {
@@ -531,6 +532,44 @@ export async function GET(request: NextRequest) {
       let selectedRate: VeeqoRate | null = null;
       let shipDateNote: string | null = null;
       let frozenRateDebug: string | null = null;
+
+      // For Amazon (and merged-from-Amazon) orders Veeqo's native Amazon
+      // integration supplies dims to the allocation automatically. For
+      // eBay/TikTok/Shopify/Etsy/direct, Veeqo has no marketplace-supplied
+      // packaging hint, so its allocation_package stays empty and the
+      // rates endpoint returns an empty list (the "Calculating best rate…"
+      // forever symptom on eBay rows). Push our SkuShippingData /
+      // PackingProfile dims into the allocation before quoting so the
+      // rate engine has something to weigh. Best-effort: a push failure
+      // doesn't stop the quote — Veeqo may still return rates against
+      // whatever default it has.
+      if (
+        !stopReason &&
+        allocationId &&
+        !isAmazon &&
+        !isWalmart &&
+        skuWeight != null &&
+        skuBoxSize
+      ) {
+        const dimMatch = skuBoxSize.match(
+          /^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)$/i,
+        );
+        if (dimMatch) {
+          try {
+            await updateAllocationPackage(allocationId, {
+              weightLbs: skuWeight,
+              lengthIn: Number(dimMatch[1]),
+              widthIn: Number(dimMatch[2]),
+              heightIn: Number(dimMatch[3]),
+            });
+          } catch (e) {
+            console.warn(
+              `[plan] allocation_package push failed for ${order.number} (${channelType}):`,
+              e instanceof Error ? e.message : e,
+            );
+          }
+        }
+      }
 
       if (!stopReason && allocationId) {
         try {

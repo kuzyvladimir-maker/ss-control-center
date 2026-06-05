@@ -405,11 +405,20 @@ export async function GET() {
         // 3-day food-safety rule matters. TikTok/eBay/Shopify in this op
         // ship Dry goods only (supplements, accessories), and the plan
         // endpoint mirrors this by defaulting their productType to Dry.
-        const channelKindForOrder = (channelName || "").toLowerCase();
+        //
+        // Anchor the "is this Amazon?" decision on Veeqo's `type_code`
+        // (which is "amazon" / "ebay" / "tiktok" / "walmart" / etc.) not
+        // on the channel NAME — channel names can be operator-set strings
+        // like "AMZ eBay" (an eBay listing under an AMZ Commerce account)
+        // which would match a `.startsWith("amz")` check and falsely flag
+        // every untagged eBay item as need_attention=no_type. Merged
+        // Orders in Veeqo get type_code="direct" but the underlying
+        // sources are Amazon, so include that bucket too.
+        const orderTypeCode = (o.channel?.type_code as string | undefined)
+          ?.toLowerCase() ?? "";
         const isAmazonOrder =
-          channelKindForOrder.includes("amazon") ||
-          channelKindForOrder.startsWith("amz") ||
-          channelKindForOrder === "merged orders";
+          orderTypeCode === "amazon" ||
+          (channelName || "").toLowerCase() === "merged orders";
         const noType =
           isAmazonOrder && itemsWithType.some((i) => !i.knownType);
         const mixed = isMixedOrder(itemsWithType);
