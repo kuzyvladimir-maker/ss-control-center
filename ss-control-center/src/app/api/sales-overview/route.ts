@@ -157,6 +157,11 @@ interface NormalizedOrder {
   number: string;
   date: Date;
   total: number;
+  /** What the customer paid for shipping (delivery_cost in Veeqo).
+   *  Distinct from `total` (= subtotal + shipping + tax).
+   *  Cached AmazonOrder/WalmartOrder don't store this — only Veeqo
+   *  loader populates it. */
+  customerPaidShipping: number | null;
   currency: string;
   status: string; // normalized: shipped / cancelled / pending / unshipped / etc
   rawStatus: string;
@@ -396,6 +401,7 @@ async function loadAmazonOrders(
     number: r.amazonOrderId,
     date: r.purchaseDate,
     total: r.orderTotal,
+    customerPaidShipping: null,
     currency: r.currency,
     status: normalizeStatus(r.status),
     rawStatus: r.status,
@@ -491,6 +497,14 @@ async function loadVeeqoOrdersInternal(
       : typeof totalRaw === "number"
         ? totalRaw
         : 0;
+    // Customer-paid shipping = Veeqo delivery_cost (string or number).
+    const dcRaw = o.delivery_cost;
+    const customerPaidShipping =
+      typeof dcRaw === "string"
+        ? parseFloat(dcRaw) || 0
+        : typeof dcRaw === "number"
+          ? dcRaw
+          : null;
     const currency = String(o.currency_code ?? "USD");
     const rawStatus = String(o.status ?? "unknown");
     const deliverTo = o.deliver_to as Record<string, unknown> | undefined;
@@ -576,6 +590,7 @@ async function loadVeeqoOrdersInternal(
       number,
       date,
       total,
+      customerPaidShipping,
       currency,
       status: normalizeStatus(rawStatus),
       rawStatus,
@@ -616,6 +631,7 @@ async function loadWalmartOrders(
     currency: r.currency,
     status: normalizeStatus(r.status),
     rawStatus: r.status,
+    customerPaidShipping: null,
     customer: null, // Walmart doesn't expose buyer name on the order resource
     city: r.shipCity,
     state: r.shipState,
@@ -734,6 +750,7 @@ export async function GET(request: NextRequest) {
       number: o.number,
       date: o.date.toISOString(),
       total: o.total,
+      customerPaidShipping: o.customerPaidShipping,
       currency: o.currency,
       status: o.status,
       rawStatus: o.rawStatus,

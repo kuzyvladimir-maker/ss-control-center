@@ -105,6 +105,7 @@ interface OverviewResponse {
     number: string;
     date: string;
     total: number;
+    customerPaidShipping: number | null;
     currency: string;
     status: string;
     rawStatus: string;
@@ -785,12 +786,12 @@ export default function SalesOverviewPage() {
             </div>
           </CardHeader>
           <CardContent className="overflow-x-auto p-0">
-            <table className="w-full min-w-[860px] text-[12px]">
+            <table className="w-full min-w-[1180px] text-[12px]">
               <thead className="border-b border-rule bg-surface-tint text-[10.5px] uppercase tracking-wider text-ink-3">
                 <tr>
-                  <th className="px-3 py-2 text-left font-medium">Order #</th>
+                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium">Order #</th>
                   <th
-                    className="px-3 py-2 text-left font-medium cursor-pointer select-none hover:text-ink-2"
+                    className="whitespace-nowrap px-3 py-2 text-left font-medium cursor-pointer select-none hover:text-ink-2"
                     onClick={() => {
                       if (orderSort === "date") {
                         setOrderSortDir(orderSortDir === "desc" ? "asc" : "desc");
@@ -802,13 +803,15 @@ export default function SalesOverviewPage() {
                   >
                     Date <ArrowUpDown size={9} className="inline" />
                   </th>
-                  <th className="px-3 py-2 text-left font-medium">Channel</th>
-                  <th className="px-3 py-2 text-left font-medium">Store</th>
-                  <th className="px-3 py-2 text-left font-medium">Customer</th>
-                  <th className="px-3 py-2 text-left font-medium">Ship-to</th>
+                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium">Channel</th>
+                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium">Store</th>
+                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium">Customer</th>
+                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium">Ship-to</th>
                   <th className="px-3 py-2 text-left font-medium">Items</th>
+                  <th className="whitespace-nowrap px-3 py-2 text-right font-medium">Units</th>
+                  <th className="whitespace-nowrap px-3 py-2 text-right font-medium">Shipping</th>
                   <th
-                    className="px-3 py-2 text-right font-medium cursor-pointer select-none hover:text-ink-2"
+                    className="whitespace-nowrap px-3 py-2 text-right font-medium cursor-pointer select-none hover:text-ink-2"
                     onClick={() => {
                       if (orderSort === "total") {
                         setOrderSortDir(orderSortDir === "desc" ? "asc" : "desc");
@@ -820,13 +823,13 @@ export default function SalesOverviewPage() {
                   >
                     Total <ArrowUpDown size={9} className="inline" />
                   </th>
-                  <th className="px-3 py-2 text-left font-medium">Status</th>
+                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {displayedOrders.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="px-3 py-8 text-center text-ink-3">
+                    <td colSpan={11} className="px-3 py-8 text-center text-ink-3">
                       No orders match the current filters.
                     </td>
                   </tr>
@@ -834,15 +837,15 @@ export default function SalesOverviewPage() {
                 {pageRows.map((o) => (
                   <tr
                     key={`${o.source}-${o.id}`}
-                    className="border-t border-rule/60 hover:bg-bg-elev/30"
+                    className="border-t border-rule/60 align-top hover:bg-bg-elev/30"
                   >
-                    <td className="px-3 py-2 font-mono text-[11px] text-ink">
+                    <td className="whitespace-nowrap px-3 py-2 font-mono text-[11px] text-ink">
                       {o.number}
                     </td>
-                    <td className="px-3 py-2 text-ink-2">
+                    <td className="whitespace-nowrap px-3 py-2 text-ink-2">
                       {fmtDateTime(o.date)}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="whitespace-nowrap px-3 py-2">
                       <span
                         className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium capitalize"
                         style={{
@@ -853,9 +856,9 @@ export default function SalesOverviewPage() {
                         {o.channel}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-ink-2">{o.storeName}</td>
-                    <td className="px-3 py-2 text-ink-2">{o.customer ?? "—"}</td>
-                    <td className="px-3 py-2 text-ink-3">
+                    <td className="whitespace-nowrap px-3 py-2 text-ink-2">{o.storeName}</td>
+                    <td className="whitespace-nowrap px-3 py-2 text-ink-2">{o.customer ?? "—"}</td>
+                    <td className="whitespace-nowrap px-3 py-2 text-ink-3">
                       {o.city || o.state || o.zip
                         ? [o.city, o.state, o.zip].filter(Boolean).join(", ")
                         : "—"}
@@ -903,10 +906,28 @@ export default function SalesOverviewPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-right tabular font-medium text-ink">
+                    {/* Units — sum of qty across the order's line items.
+                        For cached Amazon/Walmart rows without items[]
+                        we fall back to itemsCount which is the same
+                        thing (numberOfItems in the source schemas). */}
+                    <td className="whitespace-nowrap px-3 py-2 text-right tabular text-ink-2">
+                      {(o.items ?? []).length > 0
+                        ? (o.items ?? []).reduce((s, it) => s + it.quantity, 0)
+                        : o.itemsCount}
+                    </td>
+                    {/* Customer-paid shipping (Veeqo's delivery_cost).
+                        Cached AmazonOrder/WalmartOrder don't store this
+                        so they render "—" — only Veeqo-sourced rows
+                        currently have a value. */}
+                    <td className="whitespace-nowrap px-3 py-2 text-right tabular text-ink-2">
+                      {o.customerPaidShipping != null
+                        ? fmtMoneyExact(o.customerPaidShipping)
+                        : "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-right tabular font-medium text-ink">
                       {fmtMoneyExact(o.total)}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="whitespace-nowrap px-3 py-2">
                       <span
                         className={cn(
                           "inline-block rounded px-1.5 py-0.5 text-[10.5px] font-medium",
