@@ -1001,14 +1001,17 @@ export default function ShippingLabelsPage() {
     );
   }, [scopedOrders]);
 
-  // Time-bucket counts derive from `scopedOrders` (the current viewScope's
-  // pool) so they add up to the bucket-row "All" tab and match what the
-  // operator actually sees in the list. An earlier version pulled from
-  // channelOrders (to match Walmart SC's overdue tally) but that broke
-  // the on-page math — KPI said Ready 49 / bucket-All said 42 / and
-  // the buckets summed to 79 — three different numbers on one screen.
-  // The Walmart-SC overdue match can be revisited later via a combined
-  // "+N awaiting ship-confirm" badge; consistency on the page wins now.
+  // Time-bucket counts roll up the FULL channelOrders set (NOT the
+  // scope-filtered pool). Walmart Seller Center counts "Ship by today /
+  // yesterday" against every unshipped order — including those that
+  // already have a label bought but haven't been flipped to Shipped.
+  // If we restricted bucket counts to the active scope, a Walmart
+  // order whose label was bought late would silently vanish from
+  // "Overdue" even though Walmart is still penalising late ship-out.
+  // Vladimir flagged exactly this: Walmart SC showed 3 overdue, our
+  // app showed 0 because all 3 had labels bought (awaiting ship-confirm).
+  // Clicking a bucket below clears the viewScope so the operator
+  // actually sees every matching order, regardless of label state.
   const bucketCounts = useMemo(() => {
     const c: Record<ShipByBucket, number> = {
       overdue: 0,
@@ -1017,9 +1020,9 @@ export default function ShippingLabelsPage() {
       dayafter: 0,
       later: 0,
     };
-    for (const o of scopedOrders) if (o.timeBucket) c[o.timeBucket] += 1;
+    for (const o of channelOrders) if (o.timeBucket) c[o.timeBucket] += 1;
     return c;
-  }, [scopedOrders]);
+  }, [channelOrders]);
 
   const filteredOrders = useMemo(() => {
     // Sort by actionability: ready_to_buy → need_attention → waiting_placed
@@ -1045,11 +1048,20 @@ export default function ShippingLabelsPage() {
         // "active" we HIDE them so the buy-flow list stays focused.
         // Walmart-direct shipped rows are already pruned upstream in
         // channelOrders so they never reach this code path.
+        //
+        // EXCEPTION: a time-bucket filter (Overdue/Today/...) clears
+        // the viewScope partition. Bucket counts include awaiting-
+        // ship-confirm orders (so they match Walmart Seller Center's
+        // unshipped totals), so a click on "Overdue 3" has to surface
+        // all 3 — even the ones with labels already bought — instead
+        // of just the 0 active.
         const awaiting = isAwaitingShipConfirm(o);
-        if (viewScope === "awaiting") {
-          if (!awaiting) return false;
-        } else if (awaiting) {
-          return false;
+        if (!bucketFilter) {
+          if (viewScope === "awaiting") {
+            if (!awaiting) return false;
+          } else if (awaiting) {
+            return false;
+          }
         }
         if (bucketFilter && o.timeBucket !== bucketFilter) return false;
         if (storeFilter && o.storeId !== storeFilter) return false;
