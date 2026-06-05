@@ -43,10 +43,45 @@ type Preset =
 interface SummaryBlock {
   revenue: number;
   orders: number;
+  units: number;
   avgOrder: number;
   shipped: number;
   cancelled: number;
   pending: number;
+}
+
+interface PeriodTile {
+  label: string;
+  summary: {
+    revenue: number;
+    orders: number;
+    units: number;
+    avgOrder: number;
+    shipped: number;
+    cancelled: number;
+  };
+  prior: {
+    revenue: number;
+    orders: number;
+    units: number;
+    avgOrder: number;
+    shipped: number;
+    cancelled: number;
+  };
+  priorLabel: string;
+  isForecast?: boolean;
+}
+
+interface PeriodsResponse {
+  asOf: string;
+  forecast: { daysInMonth: number; elapsedDays: number; scale: number };
+  tiles: {
+    today: PeriodTile;
+    yesterday: PeriodTile;
+    mtd: PeriodTile;
+    thisMonth: PeriodTile;
+    lastMonth: PeriodTile;
+  };
 }
 
 interface OverviewResponse {
@@ -76,6 +111,7 @@ interface OverviewResponse {
     customer: string | null;
     city: string | null;
     state: string | null;
+    zip: string | null;
     itemsCount: number;
     storeIndex: number;
     storeName: string;
@@ -173,6 +209,33 @@ export default function SalesOverviewPage() {
   const [orderStatus, setOrderStatus] = useState<string>("all");
   const [orderSearch, setOrderSearch] = useState<string>("");
 
+  // Top-of-page tile row (Today / Yesterday / MTD / This-month forecast /
+  // Last month). Fetched separately so the heavier per-period detail call
+  // below doesn't block the row from rendering. The selected tile drives
+  // the `preset` filter that powers everything else on the page.
+  const [periods, setPeriods] = useState<PeriodsResponse | null>(null);
+  const [periodsLoading, setPeriodsLoading] = useState(true);
+
+  const fetchPeriods = useCallback(async () => {
+    setPeriodsLoading(true);
+    try {
+      const sp = new URLSearchParams();
+      if (channel !== "all") sp.set("channel", channel);
+      const res = await fetch(`/api/sales-overview/periods?${sp.toString()}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = (await res.json()) as PeriodsResponse;
+      setPeriods(json);
+    } catch {
+      /* tile row is best-effort; the rest of the page still works */
+    } finally {
+      setPeriodsLoading(false);
+    }
+  }, [channel]);
+
+  useEffect(() => {
+    void fetchPeriods();
+  }, [fetchPeriods]);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -209,12 +272,18 @@ export default function SalesOverviewPage() {
       rows = rows.filter((o) => o.status === orderStatus);
     }
     if (q) {
+      // Veeqo-style smart search: single field matches against order
+      // number, customer name (full string from buyerName), and the
+      // ship-to fields we cache (city, state, zip). We don't store
+      // street address in AmazonOrder/WalmartOrder — only city/state/
+      // zip — so address-1 search would need a backfill from Veeqo.
       rows = rows.filter(
         (o) =>
           o.number.toLowerCase().includes(q) ||
           (o.customer ?? "").toLowerCase().includes(q) ||
           (o.city ?? "").toLowerCase().includes(q) ||
           (o.state ?? "").toLowerCase().includes(q) ||
+          (o.zip ?? "").toLowerCase().includes(q) ||
           o.storeName.toLowerCase().includes(q),
       );
     }
@@ -260,72 +329,11 @@ export default function SalesOverviewPage() {
         </Button>
       </div>
 
-      {/* Filters row — period preset, custom date range, channel chips */}
+      {/* Channel chips + Custom-range toggle. Period selection itself
+          lives in the 5 period tiles below. */}
       <Card>
         <CardContent className="flex flex-wrap items-center gap-3 py-3">
           <div className="flex items-center gap-1">
-            {(
-              [
-                ["today", "Today"],
-                ["yesterday", "Yesterday"],
-                ["last7", "7d"],
-                ["last30", "30d"],
-                ["last90", "90d"],
-                ["mtd", "MTD"],
-                ["lastMonth", "Last month"],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setPreset(id)}
-                className={cn(
-                  "rounded-md border px-2.5 py-1 text-[11.5px] font-medium transition",
-                  preset === id
-                    ? "border-green bg-green-soft text-green-ink"
-                    : "border-rule bg-surface text-ink-2 hover:border-silver-line",
-                )}
-              >
-                {label}
-              </button>
-            ))}
-            <span className="mx-1 text-ink-4">·</span>
-            <button
-              type="button"
-              onClick={() => setPreset("custom")}
-              className={cn(
-                "rounded-md border px-2.5 py-1 text-[11.5px] font-medium transition",
-                preset === "custom"
-                  ? "border-green bg-green-soft text-green-ink"
-                  : "border-rule bg-surface text-ink-2 hover:border-silver-line",
-              )}
-            >
-              Custom
-            </button>
-          </div>
-
-          {preset === "custom" && (
-            <div className="flex items-center gap-1.5 text-[12px] text-ink-3">
-              <input
-                type="date"
-                value={customFrom}
-                max={customTo}
-                onChange={(e) => setCustomFrom(e.target.value)}
-                className="rounded-md border border-rule bg-surface px-2 py-1 text-[12px] text-ink focus:border-green focus:outline-none"
-              />
-              <span>→</span>
-              <input
-                type="date"
-                value={customTo}
-                min={customFrom}
-                max={todayET()}
-                onChange={(e) => setCustomTo(e.target.value)}
-                className="rounded-md border border-rule bg-surface px-2 py-1 text-[12px] text-ink focus:border-green focus:outline-none"
-              />
-            </div>
-          )}
-
-          <div className="ml-auto flex items-center gap-1">
             <span className="text-[10.5px] font-medium uppercase tracking-wider text-ink-3 mr-1">
               Channel
             </span>
@@ -355,6 +363,41 @@ export default function SalesOverviewPage() {
               </button>
             ))}
           </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPreset(preset === "custom" ? "mtd" : "custom")}
+              className={cn(
+                "rounded-md border px-2.5 py-1 text-[11.5px] font-medium transition",
+                preset === "custom"
+                  ? "border-green bg-green-soft text-green-ink"
+                  : "border-rule bg-surface text-ink-2 hover:border-silver-line",
+              )}
+            >
+              Custom range
+            </button>
+            {preset === "custom" && (
+              <div className="flex items-center gap-1.5 text-[12px] text-ink-3">
+                <input
+                  type="date"
+                  value={customFrom}
+                  max={customTo}
+                  onChange={(e) => setCustomFrom(e.target.value)}
+                  className="rounded-md border border-rule bg-surface px-2 py-1 text-[12px] text-ink focus:border-green focus:outline-none"
+                />
+                <span>→</span>
+                <input
+                  type="date"
+                  value={customTo}
+                  min={customFrom}
+                  max={todayET()}
+                  onChange={(e) => setCustomTo(e.target.value)}
+                  className="rounded-md border border-rule bg-surface px-2 py-1 text-[12px] text-ink focus:border-green focus:outline-none"
+                />
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -367,45 +410,36 @@ export default function SalesOverviewPage() {
         </Card>
       )}
 
-      {/* KPI tiles with prior-period comparison */}
-      {data && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiTile
-            label="Revenue"
-            value={fmtMoney(data.summary.revenue)}
-            tooltip={fmtMoneyExact(data.summary.revenue)}
-            priorValue={fmtMoney(data.summary.prior.revenue)}
-            delta={pctDelta(data.summary.revenue, data.summary.prior.revenue)}
-            icon={<DollarSign size={14} />}
-          />
-          <KpiTile
-            label="Orders"
-            value={data.summary.orders.toLocaleString()}
-            priorValue={data.summary.prior.orders.toLocaleString()}
-            delta={pctDelta(data.summary.orders, data.summary.prior.orders)}
-            icon={<ShoppingCart size={14} />}
-          />
-          <KpiTile
-            label="Avg order"
-            value={fmtMoneyExact(data.summary.avgOrder)}
-            priorValue={fmtMoneyExact(data.summary.prior.avgOrder)}
-            delta={pctDelta(data.summary.avgOrder, data.summary.prior.avgOrder)}
-            icon={<TrendingUp size={14} />}
-          />
-          <KpiTile
-            label="Shipped"
-            value={data.summary.shipped.toLocaleString()}
-            priorValue={data.summary.prior.shipped.toLocaleString()}
-            delta={pctDelta(data.summary.shipped, data.summary.prior.shipped)}
-            icon={<Package size={14} />}
-            footer={
-              data.summary.cancelled > 0
-                ? `${data.summary.cancelled} cancelled`
-                : undefined
-            }
-          />
-        </div>
-      )}
+      {/* Period tiles — Sellerboard / Veeqo Profit Analyzer style. Each
+          tile is a clickable filter that drives the chart + breakdowns +
+          orders list below. The selected tile gets accent color. */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        {(
+          [
+            { key: "today", presetId: "today" as const, accent: "blue" },
+            { key: "yesterday", presetId: "yesterday" as const, accent: "slate" },
+            { key: "mtd", presetId: "mtd" as const, accent: "teal" },
+            { key: "thisMonth", presetId: "mtd" as const, accent: "indigo" },
+            { key: "lastMonth", presetId: "lastMonth" as const, accent: "green" },
+          ] as const
+        ).map((cfg) => {
+          const tile = periods?.tiles[cfg.key];
+          const active =
+            preset !== "custom" &&
+            ((cfg.key === "thisMonth" && preset === "mtd") ||
+              (cfg.key !== "thisMonth" && preset === cfg.presetId));
+          return (
+            <PeriodTileCard
+              key={cfg.key}
+              accent={cfg.accent}
+              loading={periodsLoading && !tile}
+              active={active}
+              tile={tile}
+              onClick={() => setPreset(cfg.presetId)}
+            />
+          );
+        })}
+      </div>
 
       {/* Daily revenue chart */}
       {data && data.dailyRevenue.length > 0 && (
@@ -637,8 +671,8 @@ export default function SalesOverviewPage() {
                   <Input
                     value={orderSearch}
                     onChange={(e) => setOrderSearch(e.target.value)}
-                    placeholder="Search order / customer / state…"
-                    className="h-8 w-[260px] pl-7 text-[12px]"
+                    placeholder="Order #, customer, city, state, ZIP, store…"
+                    className="h-8 w-[300px] pl-7 text-[12px]"
                   />
                 </div>
                 <select
@@ -728,8 +762,8 @@ export default function SalesOverviewPage() {
                     <td className="px-3 py-2 text-ink-2">{o.storeName}</td>
                     <td className="px-3 py-2 text-ink-2">{o.customer ?? "—"}</td>
                     <td className="px-3 py-2 text-ink-3">
-                      {o.city || o.state
-                        ? `${o.city ?? ""}${o.city && o.state ? ", " : ""}${o.state ?? ""}`
+                      {o.city || o.state || o.zip
+                        ? [o.city, o.state, o.zip].filter(Boolean).join(", ")
                         : "—"}
                     </td>
                     <td className="px-3 py-2 text-right tabular text-ink-2">
@@ -774,67 +808,161 @@ export default function SalesOverviewPage() {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Small components
+// PeriodTileCard — Sellerboard / Veeqo Profit Analyzer style.
+// Each tile is clickable: clicking it sets the page's `preset` so the
+// chart, breakdowns, and orders list below all re-derive against that
+// period. The selected tile gets a coloured top stripe + accent border.
 // ─────────────────────────────────────────────────────────────────────
-function KpiTile({
-  label,
-  value,
-  priorValue,
-  delta,
-  icon,
-  tooltip,
-  footer,
+
+const ACCENT_BG: Record<string, string> = {
+  blue: "bg-info-tint",
+  slate: "bg-bg-elev",
+  teal: "bg-green-soft",
+  indigo: "bg-info-tint",
+  green: "bg-green-soft",
+};
+const ACCENT_BORDER: Record<string, string> = {
+  blue: "border-info",
+  slate: "border-ink-3",
+  teal: "border-green",
+  indigo: "border-info",
+  green: "border-green",
+};
+
+function PeriodTileCard({
+  tile,
+  accent,
+  loading,
+  active,
+  onClick,
 }: {
-  label: string;
-  value: string;
-  priorValue: string;
-  delta: { delta: number; pct: number; positive: boolean };
-  icon: React.ReactNode;
-  tooltip?: string;
-  footer?: string;
+  tile?: PeriodTile;
+  accent: string;
+  loading: boolean;
+  active: boolean;
+  onClick: () => void;
 }) {
-  const hasPrior = delta.pct !== 0 || priorValue !== "0";
   return (
-    <div className="rounded-lg border border-rule bg-surface p-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="text-[11px] font-mono uppercase tracking-[0.12em] text-ink-3">
-          {label}
-        </div>
-        <div
-          className="grid h-7 w-7 place-items-center rounded-md bg-bg-elev text-ink-2"
-          title={tooltip}
-        >
-          {icon}
-        </div>
-      </div>
-      <div className="mt-3 flex items-baseline gap-2">
-        <div className="kpi-number" title={tooltip}>
-          {value}
-        </div>
-        {hasPrior && (
-          <span
-            className={cn(
-              "inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[11px] font-semibold",
-              delta.positive
-                ? "bg-green-soft text-green-ink"
-                : "bg-danger-tint text-danger",
-            )}
-            title={`Prior period: ${priorValue}`}
-          >
-            {delta.positive ? (
-              <TrendingUp size={10} />
-            ) : (
-              <TrendingDown size={10} />
-            )}
-            {delta.positive ? "+" : ""}
-            {Math.abs(delta.pct).toFixed(1)}%
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex flex-col overflow-hidden rounded-lg border bg-surface text-left transition-all hover:border-ink-3 hover:shadow-sm",
+        active ? `${ACCENT_BORDER[accent] ?? "border-green"} shadow` : "border-rule",
+      )}
+    >
+      {/* Coloured header stripe carries the period label — matches the
+          Sellerboard tile aesthetic and gives the active state a strong
+          visual anchor. */}
+      <div
+        className={cn(
+          "border-b border-rule px-3 py-1.5 text-[11px] font-semibold text-ink-2",
+          ACCENT_BG[accent] ?? "bg-bg-elev",
+        )}
+      >
+        {tile?.label ?? "—"}
+        {tile?.isForecast && (
+          <span className="ml-1 rounded bg-surface px-1 py-px text-[9px] font-medium uppercase tracking-wider text-ink-3">
+            forecast
           </span>
         )}
       </div>
-      <div className="mt-1 text-[10.5px] text-ink-3">
-        Prior: {priorValue}
-        {footer ? ` · ${footer}` : ""}
-      </div>
-    </div>
+
+      {loading ? (
+        <div className="flex h-[140px] items-center justify-center">
+          <Loader2 size={16} className="animate-spin text-ink-3" />
+        </div>
+      ) : !tile ? (
+        <div className="flex h-[140px] items-center justify-center text-[11px] text-ink-3">
+          No data
+        </div>
+      ) : (
+        <div className="space-y-2 p-3">
+          {/* Sales — big number + delta vs prior */}
+          <div>
+            <div className="text-[10px] font-mono uppercase tracking-[0.10em] text-ink-3">
+              Sales
+              <PriorDelta
+                current={tile.summary.revenue}
+                prior={tile.prior.revenue}
+              />
+            </div>
+            <div className="mt-0.5 text-[20px] font-bold tabular text-ink">
+              {fmtMoneyExact(tile.summary.revenue)}
+            </div>
+          </div>
+
+          {/* Two-up: Orders / Units, Refunds (=cancelled here) */}
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-[0.10em] text-ink-3">
+                Orders / Units
+              </div>
+              <div className="tabular text-ink">
+                {tile.summary.orders}
+                <span className="text-ink-3"> / </span>
+                {tile.summary.units}
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-[0.10em] text-ink-3">
+                Cancelled
+              </div>
+              <div
+                className={cn(
+                  "tabular",
+                  tile.summary.cancelled > 0 ? "text-danger" : "text-ink-3",
+                )}
+              >
+                {tile.summary.cancelled}
+              </div>
+            </div>
+          </div>
+
+          {/* Two-up: Shipped, Avg order */}
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-[0.10em] text-ink-3">
+                Shipped
+              </div>
+              <div className="tabular text-ink">{tile.summary.shipped}</div>
+            </div>
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-[0.10em] text-ink-3">
+                Avg order
+              </div>
+              <div className="tabular text-ink">
+                {fmtMoneyExact(tile.summary.avgOrder)}
+              </div>
+            </div>
+          </div>
+
+          {/* Prior-period label so the operator knows what the delta
+              arrow above is comparing against. */}
+          <div className="border-t border-rule/60 pt-1.5 text-[10px] text-ink-4">
+            vs {tile.priorLabel}: {fmtMoneyExact(tile.prior.revenue)}
+          </div>
+        </div>
+      )}
+    </button>
+  );
+}
+
+function PriorDelta({ current, prior }: { current: number; prior: number }) {
+  if (prior === 0 && current === 0) return null;
+  const d = pctDelta(current, prior);
+  return (
+    <span
+      className={cn(
+        "ml-1 inline-flex items-center gap-0.5 rounded-sm px-1 py-px text-[9px] font-semibold normal-case tracking-normal",
+        d.positive
+          ? "bg-green-soft text-green-ink"
+          : "bg-danger-tint text-danger",
+      )}
+    >
+      {d.positive ? <TrendingUp size={8} /> : <TrendingDown size={8} />}
+      {d.positive ? "+" : ""}
+      {Math.abs(d.pct).toFixed(1)}%
+    </span>
   );
 }

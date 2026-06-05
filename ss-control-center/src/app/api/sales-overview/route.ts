@@ -152,6 +152,7 @@ interface NormalizedOrder {
   customer: string | null;
   city: string | null;
   state: string | null;
+  zip: string | null;
   itemsCount: number;
   storeIndex: number;
   storeName: string;
@@ -275,12 +276,14 @@ function buildStatusBreakdown(orders: NormalizedOrder[]) {
 
 function summarize(orders: NormalizedOrder[]) {
   const revenue = orders.reduce((s, o) => s + o.total, 0);
+  const units = orders.reduce((s, o) => s + (o.itemsCount || 0), 0);
   const n = orders.length;
   const status = (s: string) =>
     orders.filter((o) => o.status.toLowerCase() === s.toLowerCase()).length;
   return {
     revenue: Math.round(revenue * 100) / 100,
     orders: n,
+    units,
     avgOrder: n > 0 ? Math.round((revenue / n) * 100) / 100 : 0,
     shipped: status("Shipped"),
     cancelled: status("Cancelled"),
@@ -355,6 +358,7 @@ async function loadAmazonOrders(
     customer: r.buyerName,
     city: r.shipCity,
     state: r.shipState,
+    zip: r.shipZip,
     itemsCount: r.numberOfItems,
     storeIndex: r.storeIndex,
     storeName: amazonStoreName(r.storeIndex),
@@ -382,6 +386,7 @@ async function loadWalmartOrders(
     customer: null, // Walmart doesn't expose buyer name on the order resource
     city: r.shipCity,
     state: r.shipState,
+    zip: r.shipZip,
     itemsCount: r.numberOfItems,
     storeIndex: r.storeIndex,
     storeName: walmartStoreName(r.storeIndex),
@@ -485,6 +490,7 @@ export async function GET(request: NextRequest) {
       customer: o.customer,
       city: o.city,
       state: o.state,
+      zip: o.zip,
       itemsCount: o.itemsCount,
       storeIndex: o.storeIndex,
       storeName: o.storeName,

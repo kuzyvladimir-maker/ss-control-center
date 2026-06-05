@@ -41,6 +41,12 @@ interface DashboardSummary {
 
 const operationsItems = (s: DashboardSummary): NavItem[] => [
   { title: "Dashboard", href: "/", icon: LayoutDashboard },
+  // Sales Overview sits directly under Dashboard per Vladimir's
+  // 2026-06-05 sidebar reorg — it's a top-level view he opens many
+  // times a day to check revenue / orders / status across all stores,
+  // so it deserves the second slot rather than living in the
+  // Phase 2 catch-all section below.
+  { title: "Sales overview", href: "/analytics", icon: TrendingUp },
   {
     title: "Account Health",
     href: "/account-health",
@@ -90,9 +96,8 @@ const operationsItems = (s: DashboardSummary): NavItem[] => [
 
 const phase2Items: NavItem[] = [
   { title: "Product listings", href: "/listings", icon: Tags, disabled: true },
-  // /analytics is a real 314-line page — keep nav consistent with reality.
+  // Sales overview moved into Operations under Dashboard.
   // Product listings + Suppliers remain stubs and stay disabled.
-  { title: "Sales overview", href: "/analytics", icon: TrendingUp },
   { title: "Suppliers", href: "/suppliers", icon: Package, disabled: true },
 ];
 
