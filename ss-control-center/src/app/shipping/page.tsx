@@ -2925,10 +2925,22 @@ function OrderRow({
   // Walmart purchase/ship state (Veeqo still says "ready" because buying via
   // Walmart doesn't flip Veeqo): a label exists but the order isn't shipped
   // yet → show "bought / not shipped" + Mark-as-Shipped; or already Shipped.
+  //
+  // Both gates require an ACTIONABLE state (ready_to_buy or bought) — without
+  // that gate a Walmart order stuck in waiting_placed (procurement not done
+  // yet) but with a stale existing-label probe would render Mark-as-Shipped
+  // on the dimmed card. The button needs to live alongside a label that
+  // genuinely matches the current procurement state, not just any label
+  // Walmart's API happens to know about.
   const wmShipped =
-    !!order.isWalmart && walmartStatus?.orderStatus === "Shipped";
+    !!order.isWalmart &&
+    walmartStatus?.orderStatus === "Shipped" &&
+    (isReady || isBought);
   const wmBought =
-    !!order.isWalmart && !!walmartStatus?.existingLabel && !wmShipped;
+    !!order.isWalmart &&
+    !!walmartStatus?.existingLabel &&
+    !wmShipped &&
+    (isReady || isBought);
 
   return (
     <div

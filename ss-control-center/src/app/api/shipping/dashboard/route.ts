@@ -410,24 +410,23 @@ export async function GET() {
           )
         : "";
 
-      // Walmart-direct flow bypasses Veeqo's procurement (we buy labels
-      // via Walmart's Buy Shipping API, not Veeqo), so there's no Placed
-      // tag to wait for. Detect Walmart on Veeqo's channel.type_code so
-      // this also catches brand-new Walmart orders that haven't been
-      // synced into our WalmartOrder DB cache yet (the isWalmart flag
-      // built above only sees DB-synced orders, while type_code is on
-      // the Veeqo order directly).
-      //
       // Shopify channels are third-party clients (NAN health and similar)
       // whose products are already in our warehouse — they don't go
       // through the supplier-procurement workflow at all, so the Placed
       // gate is meaningless for them. Treat as Placed implicitly so the
       // rate row + Buy button appear immediately without an extra click.
+      //
+      // Walmart channels ALSO go through procurement (Vladimir confirmed
+      // 2026-06-05): he procures bundled food items for Walmart-channel
+      // orders the same way he does for Amazon. The earlier "Walmart
+      // bypass" — added when we thought buying via Walmart's API meant
+      // skipping procurement — let operators buy shipping labels for
+      // orders whose items were never sourced. Removed; Walmart now
+      // respects the Placed gate like every other own-brand channel.
       const orderTypeCodeForGate = (o.channel?.type_code as string | undefined)
         ?.toLowerCase() ?? "";
-      const isWalmartChannel = orderTypeCodeForGate === "walmart";
       const isShopifyChannel = orderTypeCodeForGate === "shopify";
-      const skipPlacedGate = isWalmartChannel || isShopifyChannel;
+      const skipPlacedGate = isShopifyChannel;
 
       if (isBought(o)) {
         state = "bought";
