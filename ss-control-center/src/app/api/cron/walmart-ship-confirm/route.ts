@@ -16,13 +16,20 @@
  *   4. shipOrderLines(po, lines) built from the label's boxItems.
  *
  * SAFETY: this is dry-run by default. It only ships when called with
- * ?dryRun=false. The scheduled cron entry in vercel.json deliberately passes
- * ?dryRun=true so it reports-only until Vladimir flips it.
+ * ?dryRun=false. The scheduled cron entries in vercel.json deliberately pass
+ * ?dryRun=false now that the gate is confirmed safe.
  *
- * SCHEDULE: 22:00 ET (10 PM). Vercel cron is UTC and ignores DST, so we
- * register two UTC entries (02:00 and 03:00) and gate the handler to ET hour
- * === 22 — that lands exactly on 22:00 ET in both EDT and EST. ?force=true
- * bypasses the hour gate for manual runs.
+ * SCHEDULE: three passes, all registered in vercel.json (Vercel cron is UTC
+ * year-round; the ET-clock equivalents drift by 1 hour at DST transitions,
+ * which doesn't matter for this use case):
+ *   - 02:00 UTC = 22:00 ET (summer) / 21:00 ET (winter) — initial evening pass
+ *   - 03:00 UTC = 23:00 ET (summer) / 22:00 ET (winter) — late-evening pass for
+ *     fast-scanning carriers (UPS/FedEx label-bought-and-scanned same day)
+ *   - 10:00 UTC = 06:00 ET (summer) / 05:00 ET (winter) — overnight catch-up.
+ *     USPS routinely posts induction scans to their public API hours after the
+ *     package physically moved (typical scan time 22:00–04:00 ET); without a
+ *     morning pass those orders sit "label bought, not yet shipped" until the
+ *     operator marks them manually.
  *
  * Auth: CRON_SECRET via Bearer header (same as the other walmart crons).
  */
@@ -70,17 +77,6 @@ function isMovingBeyondOrigin(info: UpsTrackingInfo): boolean {
   return MOVEMENT.test(text) || info.events.length > 1;
 }
 
-/** Current hour (0-23) in America/New_York, DST-aware. */
-function easternHour(): number {
-  const s = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    hour: "numeric",
-    hour12: false,
-  }).format(new Date());
-  // Intl can emit "24" at midnight on some runtimes — normalise.
-  return parseInt(s, 10) % 24;
-}
-
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
   if (secret) {
@@ -93,18 +89,11 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   // Dry-run UNLESS explicitly ?dryRun=false. Safe by default.
   const dryRun = url.searchParams.get("dryRun") !== "false";
-  const force = url.searchParams.get("force") === "true";
-
-  // 22:00 ET (10 PM) gate (skip for manual ?force=true runs).
-  if (!force) {
-    const h = easternHour();
-    if (h !== 22) {
-      return NextResponse.json({
-        ok: true,
-        skipped: `Not 22:00 ET (current ET hour ${h}). Use ?force=true to run now.`,
-      });
-    }
-  }
+  // `force` previously bypassed the now-removed 22:00-ET gate. Kept as a
+  // no-op flag so any saved manual-trigger URLs (Bookmarks, runbooks) keep
+  // working — the cron now respects the schedule(s) declared in vercel.json
+  // verbatim, no per-hour gating in code.
+  url.searchParams.get("force"); // intentionally read-and-discard
 
   let client;
   try {

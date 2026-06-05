@@ -42,6 +42,10 @@
       "schedule": "0 3 * * *"
     },
     {
+      "path": "/api/cron/walmart-ship-confirm?dryRun=false",
+      "schedule": "0 10 * * *"
+    },
+    {
       "path": "/api/cron/walmart-cancellation-watchdog",
       "schedule": "*/30 * * * *"
     }
