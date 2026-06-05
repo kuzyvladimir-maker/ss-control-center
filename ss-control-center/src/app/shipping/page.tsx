@@ -1002,12 +1002,12 @@ export default function ShippingLabelsPage() {
   }, [scopedOrders]);
 
   // Time-bucket counts derive from scopedOrders (current viewScope).
-  // The viewScope is now an explicit choice the operator makes via the
-  // AWAITING split tile ("Без лейбы" vs "С лейбой"), so the bucket row
-  // adapts: in the active scope it shows overdue/today/tomorrow of rows
-  // still needing a label; in the awaiting scope it shows the same for
-  // rows whose label is bought. The grand-total context (matches
-  // Walmart SC's Unshipped) lives in the AWAITING tile's top half.
+  // viewScope is set explicitly via the AWAITING split tile ("No label"
+  // vs "Label bought"), so the bucket row adapts: in the active scope
+  // it shows overdue/today/tomorrow of rows still needing a label; in
+  // the awaiting scope it shows the same for rows whose label is bought.
+  // The grand-total context (matches Walmart SC's Unshipped) lives in
+  // the AWAITING tile's top half.
   const bucketCounts = useMemo(() => {
     const c: Record<ShipByBucket, number> = {
       overdue: 0,
@@ -2131,7 +2131,7 @@ export default function ShippingLabelsPage() {
       )}
 
       {/* Bucket filter — viewScope selection moved into the AWAITING tile
-          above (Без лейбы / С лейбой segments), so this row is purely
+          above (No label / Label bought segments), so this row is purely
           time-bucket. Counts roll up the FULL channelOrders set so they
           mirror Walmart Seller Center's overdue / today tally regardless
           of label-bought state. */}
@@ -2551,7 +2551,7 @@ const CHANNEL_BRANDS: Record<string, ChannelBrand> = {
  *   │ AWAITING FULFILLMENT          [icon] │
  *   │                  31                  │
  *   ├──────────────────┬───────────────────┤
- *   │  Без лейбы 18    │  С лейбой 13      │
+ *   │  No label   18   │  Label bought 13  │
  *   └──────────────────┴───────────────────┘
  *
  * The bottom segments are hidden entirely when there are 0 with-label
@@ -2625,10 +2625,10 @@ function AwaitingSplitCard({
                 ? "bg-green-soft text-green-ink"
                 : "bg-surface text-ink-2 hover:bg-bg-elev",
             )}
-            title="Заказы без купленной лейбы — нужно купить"
+            title="Orders without a label yet — needs purchase"
           >
             <div className="text-[10px] font-mono uppercase tracking-[0.10em] text-ink-3">
-              Без лейбы
+              No label
             </div>
             <div className="mt-0.5 text-[18px] font-semibold tabular text-ink">
               {withoutLabelCount}
@@ -2643,10 +2643,10 @@ function AwaitingSplitCard({
                 ? "bg-green-soft text-green-ink"
                 : "bg-surface text-ink-2 hover:bg-bg-elev",
             )}
-            title="Лейба куплена, но Walmart ещё не помечен Shipped"
+            title="Label purchased — Walmart not yet marked Shipped"
           >
             <div className="text-[10px] font-mono uppercase tracking-[0.10em] text-ink-3">
-              С лейбой
+              Label bought
             </div>
             <div className="mt-0.5 text-[18px] font-semibold tabular text-ink">
               {withLabelCount}
