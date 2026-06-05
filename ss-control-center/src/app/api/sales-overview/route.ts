@@ -48,7 +48,9 @@ import {
   subMonths,
 } from "date-fns";
 
-export const maxDuration = 60;
+// Veeqo paginate of even a single month (~20 pages × 1.5s with retries)
+// can scrape past 60s when the upstream is throttling — give it room.
+export const maxDuration = 120;
 
 const TZ = "America/New_York";
 
@@ -444,10 +446,15 @@ async function loadVeeqoOrdersInternal(
       createdAtMin: from.toISOString(),
       createdAtMax: to.toISOString(),
       batchSize: 2,
+      // Hard cap matches the orders-list display cap — fetching more
+      // would just be JSON we'd throw away (and 5000 orders × ~10
+      // line items each pushes the response to >5MB which crashes
+      // older browsers on the parse step).
+      maxOrders: 5000,
     });
   } catch (e) {
     console.warn(
-      "[sales-overview] Veeqo fetch failed, skipping non-cached channels:",
+      "[sales-overview] Veeqo fetch failed:",
       e instanceof Error ? e.message : e,
     );
     return [];
@@ -639,13 +646,13 @@ export async function GET(request: NextRequest) {
       channel !== "all" && channel !== "amazon" && channel !== "walmart";
     const storeIndexRaw = sp.get("storeIndex");
     const storeIndex = storeIndexRaw ? parseInt(storeIndexRaw, 10) : null;
-    // Default cap raised to 5000 — covers ~1.5 months of typical
-    // volume and is enough that the operator can browse a full
-    // month without bumping the limit. Hard ceiling at 20000 to
-    // keep the response under ~5MB.
+    // Default cap 500 — keeps the response under ~1MB so the browser
+    // doesn't choke on JSON parse + render even with line items.
+    // Can be overridden via ?limitOrders= up to a hard ceiling of 5000.
+    // For larger windows the operator narrows the date range instead.
     const limitOrders = Math.min(
-      Math.max(parseInt(sp.get("limitOrders") || "5000", 10), 1),
-      20_000,
+      Math.max(parseInt(sp.get("limitOrders") || "500", 10), 1),
+      5000,
     );
 
     const now = new Date();
