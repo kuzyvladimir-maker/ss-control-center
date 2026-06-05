@@ -2384,3 +2384,27 @@ model ProductTitleCache {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+// Cache of pack-size extractions from marketplace titles — see the
+// /api/procurement/pack-size endpoint. We key off the raw title (not
+// productId) because the same product can carry slightly different titles
+// across listings/marketplaces, and the title is the actual signal.
+// Each entry stores the multiplier ("Pack of N" → N) so the Procurement
+// page can multiply by orderQuantity to show physical units to pick.
+model ProductPackSizeCache {
+  id        String   @id @default(cuid())
+  // Raw title verbatim — same convention as ProductTitleCache.
+  rawTitle  String   @unique
+  // Multiplier: how many physical items live inside one listing unit.
+  // E.g. "Pack of 6" → 6, "Bundle of 2 Cartons" with 12 per carton → 24.
+  size      Int
+  // Human-readable label we surface in the UI ("Pack of 6", "Bundle of 2",
+  // "24 Cans", "Bundle of 2 × 12 Cartons").
+  label     String
+  // Provenance — "ai" (Haiku), "regex" (sync extractor), or "manual"
+  // (operator override, when we add that UI). Lets us re-run AI on regex
+  // entries later if the regex output looks off.
+  source    String   @default("ai")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

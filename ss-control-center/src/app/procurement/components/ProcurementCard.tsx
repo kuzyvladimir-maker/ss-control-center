@@ -124,10 +124,43 @@ export function ProcurementCard({
   const isBought = status?.kind === "bought";
   const isPartial = status?.kind === "remain";
 
-  const pack = useMemo(
+  // Sync-regex pack size — instant, no API. Covers ~80% of titles.
+  const syncPack = useMemo(
     () => parsePackSize(card.productTitle),
     [card.productTitle]
   );
+  // Async refinement via /api/procurement/pack-size. Hits a DB cache first,
+  // then Claude Haiku 4.5 for compound or unrecognised titles
+  // ("12 / Carton | Bundle of 2", "10.5 Ounce Can, Quantity of 4", etc.).
+  // Only fetches when the sync result was null or ambiguous — confident
+  // sync matches go straight through without an API call.
+  const [aiPack, setAiPack] = useState<{ size: number; label: string } | null>(
+    null,
+  );
+  useEffect(() => {
+    if (syncPack && !syncPack.ambiguous) return; // confident regex — no need
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch("/api/procurement/pack-size", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: card.productTitle }),
+        });
+        if (!r.ok) return;
+        const j = (await r.json()) as { size: number; label: string };
+        if (!cancelled && j.size && j.size >= 1) {
+          setAiPack({ size: j.size, label: j.label });
+        }
+      } catch {
+        /* silent — sync regex result (or 1) stays */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [card.productTitle, syncPack]);
+  const pack = aiPack ?? syncPack;
 
   // Total physical units required for this line:
   //   listings × packSize  (or just listings when no pack pattern in title).
