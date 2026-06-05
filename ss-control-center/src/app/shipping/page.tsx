@@ -948,6 +948,56 @@ export default function ShippingLabelsPage() {
     return channelOrders.filter((o) => !isAwaitingShipConfirm(o));
   }, [channelOrders, viewScope, isAwaitingShipConfirm]);
 
+  // "By store" breakdown — recomputed CLIENT-SIDE from the same orders
+  // pool the KPI counts above use, so the per-store numbers stay in
+  // sync with the KPI tiles even after the client-side Walmart
+  // probe pass marks some orders as already-Shipped. (The server-side
+  // `data.storeBreakdown` doesn't see those probe results, so it
+  // would show e.g. SIRIUS=55 while the KPI showed 53 — Vladimir
+  // flagged that exact mismatch.)
+  const storeBreakdown = useMemo(() => {
+    const live = orders.filter((o) => {
+      if (!o.isWalmart) return true;
+      const ws = walmartStatus[o.orderNumber];
+      return !(ws && ws.orderStatus === "Shipped");
+    });
+    type Row = {
+      storeId: string;
+      storeName: string;
+      channel: string;
+      all: number;
+      readyToBuy: number;
+      needAttention: number;
+      waitingPlaced: number;
+      boughtToday: number;
+    };
+    const m = new Map<string, Row>();
+    for (const o of live) {
+      let row = m.get(o.storeId);
+      if (!row) {
+        row = {
+          storeId: o.storeId,
+          storeName: o.storeName,
+          channel: o.channel ?? "",
+          all: 0,
+          readyToBuy: 0,
+          needAttention: 0,
+          waitingPlaced: 0,
+          boughtToday: 0,
+        };
+        m.set(o.storeId, row);
+      }
+      row.all++;
+      if (o.state === "ready_to_buy") row.readyToBuy++;
+      else if (o.state === "need_attention") row.needAttention++;
+      else if (o.state === "waiting_placed") row.waitingPlaced++;
+      else if (o.state === "bought") row.boughtToday++;
+    }
+    return [...m.values()].sort((a, b) =>
+      a.storeName.localeCompare(b.storeName),
+    );
+  }, [orders, walmartStatus]);
+
   // Time-bucket counts roll up the FULL channelOrders set (not the
   // viewScope-filtered scopedOrders). Reason: Walmart Seller Center
   // counts "Ship by today/yesterday" against ALL unshipped orders —
@@ -1994,13 +2044,15 @@ export default function ShippingLabelsPage() {
         />
       </div>
 
-      {/* Store breakdown */}
-      {data && data.storeBreakdown.length > 0 && (
+      {/* Store breakdown — uses the client-side `storeBreakdown` derived
+          above (NOT `data.storeBreakdown`), so the per-store totals stay
+          in sync with the KPI tiles after Walmart probe results land. */}
+      {data && storeBreakdown.length > 0 && (
         <Panel>
           <PanelHeader title="By store" />
           <PanelBody>
             <div className="flex flex-wrap gap-2">
-              {data.storeBreakdown
+              {storeBreakdown
                 .filter((s) => {
                   // Walmart-only / non-Walmart split is the one we can do
                   // store-side; other channel filters fall through to "show
