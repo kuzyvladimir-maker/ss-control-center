@@ -223,7 +223,14 @@ export async function GET() {
             imageUrl: pickImage(li),
           };
         })
-        .filter((i: LiteItem) => i.sku);
+        // Keep the line as long as it has a recognisable identity. SKU is
+        // the cleanest key, but eBay listings often have NO SKU (Veeqo
+        // shows "SKU: -" for them) — falling back to productId / title
+        // keeps the row visible with image + name instead of dropping it
+        // out of the dashboard entirely.
+        .filter(
+          (i: LiteItem) => i.sku || i.productId != null || i.productTitle,
+        );
       orderItems.set(o.id, items);
       if (requiresPackingProfile(items)) {
         signatures.add(

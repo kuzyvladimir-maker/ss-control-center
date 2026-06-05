@@ -4675,18 +4675,37 @@ function EditPackageDialog({
           channel: order.channel ?? undefined,
         };
       } else {
+        // No SKU? Push the package dims straight to Veeqo's allocation
+        // (no local DB save — SkuShippingData is keyed by SKU). Common
+        // for eBay listings: Veeqo shows "SKU: -" so we can't write a
+        // SkuShippingData row, but we CAN update the allocation_package
+        // so Veeqo's next rate quote uses these dims. Requires the order
+        // to have an allocation we can target.
         if (!sku) {
-          throw new Error("Order has no SKU");
+          if (!allocationId) {
+            throw new Error(
+              "Order has no SKU and no Veeqo allocation — can't save packaging anywhere.",
+            );
+          }
+          body = {
+            length: L,
+            width: W,
+            height: H,
+            weight: w,
+            allocationId,
+            channel: order.channel ?? undefined,
+          };
+        } else {
+          body = {
+            sku,
+            length: L,
+            width: W,
+            height: H,
+            weight: w,
+            allocationId,
+            channel: order.channel ?? undefined,
+          };
         }
-        body = {
-          sku,
-          length: L,
-          width: W,
-          height: H,
-          weight: w,
-          allocationId,
-          channel: order.channel ?? undefined,
-        };
       }
       const r = await fetch("/api/shipping/edit-package", {
         method: "POST",

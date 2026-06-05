@@ -138,6 +138,43 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  // ── Veeqo-only path ───────────────────────────────────────────────────
+  // No sku AND no signature — happens when the operator edits the package
+  // on an order whose Veeqo line has no SKU (most often an eBay listing —
+  // Veeqo shows "SKU: -" for those). Nothing to save locally because
+  // SkuShippingData / PackingProfile are both SKU-keyed, but we can still
+  // push the new dims+weight to Veeqo's allocation_package so the next
+  // rate quote uses them.
+  if ((!body.sku || typeof body.sku !== "string") && body.allocationId) {
+    const L = body.length;
+    const W = body.width;
+    const H = body.height;
+    if (
+      L == null ||
+      W == null ||
+      H == null ||
+      !Number.isFinite(Number(L)) ||
+      !Number.isFinite(Number(W)) ||
+      !Number.isFinite(Number(H))
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "length, width, height (positive numbers) are required when the order has no SKU",
+        },
+        { status: 400 },
+      );
+    }
+    const veeqo = await maybePushVeeqo({
+      allocationId: body.allocationId,
+      L,
+      W,
+      H,
+      weightLbs: weight,
+    });
+    return NextResponse.json({ kind: "veeqoOnly", veeqo });
+  }
+
   // ── Single-item path ──────────────────────────────────────────────────
   if (!body.sku || typeof body.sku !== "string") {
     return NextResponse.json(
