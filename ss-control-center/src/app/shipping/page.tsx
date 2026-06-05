@@ -420,7 +420,7 @@ export default function ShippingLabelsPage() {
   // Frozen / Dry product-type filter. "all" shows everything; "Frozen" or
   // "Dry" keeps orders whose first item matches (mixed orders only match
   // when every item is the same type).
-  const [typeFilter, setTypeFilter] = useState<"all" | "Frozen" | "Dry">(
+  const [typeFilter, setTypeFilter] = useState<"all" | "Frozen" | "Dry" | "Untyped">(
     "all",
   );
   // KPI card filter. Maps to the same `state` field on each order so a
@@ -948,19 +948,19 @@ export default function ShippingLabelsPage() {
     return channelOrders.filter((o) => !isAwaitingShipConfirm(o));
   }, [channelOrders, viewScope, isAwaitingShipConfirm]);
 
-  // "By store" breakdown — recomputed CLIENT-SIDE from the same orders
-  // pool the KPI counts above use, so the per-store numbers stay in
-  // sync with the KPI tiles even after the client-side Walmart
-  // probe pass marks some orders as already-Shipped. (The server-side
-  // `data.storeBreakdown` doesn't see those probe results, so it
-  // would show e.g. SIRIUS=55 while the KPI showed 53 — Vladimir
-  // flagged that exact mismatch.)
+  // "By store" breakdown — recomputed CLIENT-SIDE from `channelOrders`
+  // (same pool the KPI tiles read from), so the per-store numbers stay
+  // in lockstep with the KPI tiles AND respect the active channel
+  // chip. Two bugs this fixes:
+  //   * The server-side `data.storeBreakdown` doesn't see Walmart
+  //     probe results, so it would show SIRIUS=55 while KPI showed
+  //     53 once probes reclassified some rows as already-Shipped.
+  //   * The previous client implementation read from `orders` (no
+  //     channel filter) so e.g. AMZ Commerce store showed all=2
+  //     (1 Amazon + 1 eBay) while the Amazon KPI showed only the
+  //     Amazon one — totals across stores didn't equal KPI total.
   const storeBreakdown = useMemo(() => {
-    const live = orders.filter((o) => {
-      if (!o.isWalmart) return true;
-      const ws = walmartStatus[o.orderNumber];
-      return !(ws && ws.orderStatus === "Shipped");
-    });
+    const live = channelOrders;
     type Row = {
       storeId: string;
       storeName: string;
@@ -996,7 +996,7 @@ export default function ShippingLabelsPage() {
     return [...m.values()].sort((a, b) =>
       a.storeName.localeCompare(b.storeName),
     );
-  }, [orders, walmartStatus]);
+  }, [channelOrders]);
 
   // Time-bucket counts roll up the FULL channelOrders set (not the
   // viewScope-filtered scopedOrders). Reason: Walmart Seller Center
@@ -1064,12 +1064,17 @@ export default function ShippingLabelsPage() {
         if (storeFilter && o.storeId !== storeFilter) return false;
         if (stateFilter !== "all" && o.state !== stateFilter) return false;
         if (typeFilter !== "all") {
-          // Match when every classified item in the order is of the chosen
-          // type. Unclassified items don't match either filter — those
-          // orders are best surfaced via "Need attention" anyway.
           const types = o.items.map((i) => i.knownType);
           if (types.length === 0) return false;
-          if (!types.every((t) => t === typeFilter)) return false;
+          if (typeFilter === "Untyped") {
+            // "Untyped" = at least one item without a Frozen/Dry tag.
+            // These typically end up in need_attention=no_type (Amazon)
+            // but the operator wants to be able to surface them
+            // directly from the type filter when reconciling counts.
+            if (types.every((t) => t === "Frozen" || t === "Dry")) return false;
+          } else {
+            if (!types.every((t) => t === typeFilter)) return false;
+          }
         }
         return true;
       })
@@ -2179,6 +2184,21 @@ export default function ShippingLabelsPage() {
                 (o) =>
                   o.items.length > 0 &&
                   o.items.every((i) => i.knownType === "Dry"),
+              ).length,
+            },
+            // Untyped = orders with at least one item that has no
+            // Frozen/Dry tag. Added so Frozen + Dry + Untyped sums
+            // to All types — Vladimir flagged math that didn't add
+            // up (22 = 21 + 0 was missing 1 untyped row).
+            {
+              id: "Untyped" as const,
+              label: "Untyped",
+              count: scopedOrders.filter(
+                (o) =>
+                  o.items.length > 0 &&
+                  o.items.some(
+                    (i) => i.knownType !== "Frozen" && i.knownType !== "Dry",
+                  ),
               ).length,
             },
           ]}
