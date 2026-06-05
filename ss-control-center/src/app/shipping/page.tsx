@@ -1001,17 +1001,13 @@ export default function ShippingLabelsPage() {
     );
   }, [scopedOrders]);
 
-  // Time-bucket counts roll up the FULL channelOrders set (NOT the
-  // scope-filtered pool). Walmart Seller Center counts "Ship by today /
-  // yesterday" against every unshipped order — including those that
-  // already have a label bought but haven't been flipped to Shipped.
-  // If we restricted bucket counts to the active scope, a Walmart
-  // order whose label was bought late would silently vanish from
-  // "Overdue" even though Walmart is still penalising late ship-out.
-  // Vladimir flagged exactly this: Walmart SC showed 3 overdue, our
-  // app showed 0 because all 3 had labels bought (awaiting ship-confirm).
-  // Clicking a bucket below clears the viewScope so the operator
-  // actually sees every matching order, regardless of label state.
+  // Time-bucket counts derive from scopedOrders (current viewScope).
+  // The viewScope is now an explicit choice the operator makes via the
+  // AWAITING split tile ("Без лейбы" vs "С лейбой"), so the bucket row
+  // adapts: in the active scope it shows overdue/today/tomorrow of rows
+  // still needing a label; in the awaiting scope it shows the same for
+  // rows whose label is bought. The grand-total context (matches
+  // Walmart SC's Unshipped) lives in the AWAITING tile's top half.
   const bucketCounts = useMemo(() => {
     const c: Record<ShipByBucket, number> = {
       overdue: 0,
@@ -1020,9 +1016,9 @@ export default function ShippingLabelsPage() {
       dayafter: 0,
       later: 0,
     };
-    for (const o of channelOrders) if (o.timeBucket) c[o.timeBucket] += 1;
+    for (const o of scopedOrders) if (o.timeBucket) c[o.timeBucket] += 1;
     return c;
-  }, [channelOrders]);
+  }, [scopedOrders]);
 
   const filteredOrders = useMemo(() => {
     // Sort by actionability: ready_to_buy → need_attention → waiting_placed
@@ -1043,25 +1039,15 @@ export default function ShippingLabelsPage() {
     };
     return channelOrders
       .filter((o) => {
-        // Awaiting-ship-confirm scope is mutually exclusive with the
-        // normal active list. In "awaiting" we show ONLY those rows; in
-        // "active" we HIDE them so the buy-flow list stays focused.
-        // Walmart-direct shipped rows are already pruned upstream in
-        // channelOrders so they never reach this code path.
-        //
-        // EXCEPTION: a time-bucket filter (Overdue/Today/...) clears
-        // the viewScope partition. Bucket counts include awaiting-
-        // ship-confirm orders (so they match Walmart Seller Center's
-        // unshipped totals), so a click on "Overdue 3" has to surface
-        // all 3 — even the ones with labels already bought — instead
-        // of just the 0 active.
+        // viewScope (set by the AWAITING split tile) is the source of
+        // truth for active vs awaiting-ship-confirm partitioning. Every
+        // count downstream (buckets, types, stores) now respects it,
+        // so the bucket-filter no longer needs its old escape hatch.
         const awaiting = isAwaitingShipConfirm(o);
-        if (!bucketFilter) {
-          if (viewScope === "awaiting") {
-            if (!awaiting) return false;
-          } else if (awaiting) {
-            return false;
-          }
+        if (viewScope === "awaiting") {
+          if (!awaiting) return false;
+        } else if (awaiting) {
+          return false;
         }
         if (bucketFilter && o.timeBucket !== bucketFilter) return false;
         if (storeFilter && o.storeId !== storeFilter) return false;
@@ -2008,17 +1994,36 @@ export default function ShippingLabelsPage() {
         </div>
       </div>
 
-      {/* Totals row — each card toggles the state filter. Clicking the same
-          card twice (or "Awaiting fulfillment") returns to the unfiltered
-          view. The visual active state mirrors the existing store-filter
-          chips below so the filter relationship reads consistently. */}
+      {/* Totals row — first tile is a split AWAITING FULFILLMENT card:
+            * top half shows the grand total (= channelOrders.length =
+              everything not Shipped: rows without a label AND rows
+              with a label but Acknowledged on Walmart). Matches Walmart
+              Seller Center's "Unshipped" count.
+            * bottom half splits into "Without label" / "With label" —
+              click either to switch the rest of the page into that
+              scope. Only rendered when there are awaiting-ship-confirm
+              rows in view (otherwise the bottom half adds no info).
+          The remaining 3 tiles still drive the stateFilter the way
+          they always did.
+       */}
       <div className="grid gap-3 sm:grid-cols-4">
-        <KpiCard
-          label="Awaiting fulfillment"
-          value={totals.all}
-          icon={<Package size={14} />}
-          onClick={() => setStateFilter("all")}
-          active={stateFilter === "all"}
+        <AwaitingSplitCard
+          total={channelOrders.length}
+          withoutLabelCount={channelOrders.length - awaitingShipConfirmCount}
+          withLabelCount={awaitingShipConfirmCount}
+          viewScope={viewScope}
+          stateFilter={stateFilter}
+          onSelectActive={() => {
+            setViewScope("active");
+            setBucketFilter(null);
+            setStateFilter("all");
+          }}
+          onSelectAwaiting={() => {
+            setViewScope("awaiting");
+            setBucketFilter(null);
+            setStateFilter("all");
+          }}
+          onSelectAll={() => setStateFilter("all")}
         />
         <KpiCard
           label="Ready to buy"
@@ -2125,16 +2130,17 @@ export default function ShippingLabelsPage() {
         </Panel>
       )}
 
-      {/* Bucket filter */}
+      {/* Bucket filter — viewScope selection moved into the AWAITING tile
+          above (Без лейбы / С лейбой segments), so this row is purely
+          time-bucket. Counts roll up the FULL channelOrders set so they
+          mirror Walmart Seller Center's overdue / today tally regardless
+          of label-bought state. */}
       {data && (
         <FilterTabs
           tabs={[
             {
               id: "all" as const,
               label: "All",
-              // = scopedOrders.length in active scope; in awaiting scope
-              // this equals awaitingShipConfirmCount. Both are correct
-              // "no time-bucket filter applied within current scope".
               count: scopedOrders.length,
             },
             ...BUCKET_TABS.map((b) => ({
@@ -2142,25 +2148,10 @@ export default function ShippingLabelsPage() {
               label: b.label,
               count: bucketCounts[b.id] ?? 0,
             })),
-            {
-              id: "awaiting" as const,
-              label: "Awaiting ship-confirm",
-              count: awaitingShipConfirmCount,
-            },
           ]}
-          active={
-            viewScope === "awaiting"
-              ? ("awaiting" as const)
-              : (bucketFilter ?? ("all" as const))
-          }
+          active={bucketFilter ?? ("all" as const)}
           onChange={(id) => {
-            if (id === "awaiting") {
-              setViewScope("awaiting");
-              setBucketFilter(null);
-            } else {
-              setViewScope("active");
-              setBucketFilter(id === "all" ? null : (id as ShipByBucket));
-            }
+            setBucketFilter(id === "all" ? null : (id as ShipByBucket));
           }}
         />
       )}
@@ -2547,6 +2538,125 @@ const CHANNEL_BRANDS: Record<string, ChannelBrand> = {
     inactive: "border-rule bg-surface text-ink-2 hover:border-ink-3",
   },
 };
+
+/**
+ * "Awaiting fulfillment" KPI tile with a 2-segment scope selector built
+ * into the bottom half. Replaces a flat KpiCard so the operator can see
+ * BOTH the grand total (= everything not Shipped, matches Walmart SC's
+ * Unshipped count) AND the split between rows that still need a label
+ * vs rows that already have one and are just waiting on ship-confirm.
+ *
+ * Layout (per Vladimir 2026-06-04):
+ *   ┌──────────────────────────────────────┐
+ *   │ AWAITING FULFILLMENT          [icon] │
+ *   │                  31                  │
+ *   ├──────────────────┬───────────────────┤
+ *   │  Без лейбы 18    │  С лейбой 13      │
+ *   └──────────────────┴───────────────────┘
+ *
+ * The bottom segments are hidden entirely when there are 0 with-label
+ * rows in view (other channels), so the card collapses back to a plain
+ * KPI on Amazon / eBay / etc.
+ */
+function AwaitingSplitCard({
+  total,
+  withoutLabelCount,
+  withLabelCount,
+  viewScope,
+  stateFilter,
+  onSelectActive,
+  onSelectAwaiting,
+  onSelectAll,
+}: {
+  total: number;
+  withoutLabelCount: number;
+  withLabelCount: number;
+  viewScope: "active" | "awaiting";
+  stateFilter: string;
+  onSelectActive: () => void;
+  onSelectAwaiting: () => void;
+  onSelectAll: () => void;
+}) {
+  const hasSplit = withLabelCount > 0;
+  const activeAll = stateFilter === "all" && viewScope === "active" && !hasSplit;
+  return (
+    <div
+      className={cn(
+        "flex w-full flex-col overflow-hidden rounded-lg border border-rule bg-surface text-left transition-colors",
+        activeAll && "border-green bg-green-soft",
+      )}
+    >
+      {/* Top: total. Clickable when the splits aren't relevant
+          (collapses back to a plain "show everything" toggle). */}
+      <button
+        type="button"
+        onClick={onSelectAll}
+        className={cn(
+          "flex-1 p-4 text-left",
+          "hover:bg-bg-elev/40 hover:border-green-mid/40 transition-colors",
+        )}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="text-[11px] font-mono uppercase tracking-[0.12em] text-ink-3">
+            Awaiting fulfillment
+          </div>
+          <div
+            className="grid h-7 w-7 place-items-center rounded-md"
+            style={{ background: "var(--bg-elev)", color: "var(--ink-2)" }}
+          >
+            <Package size={14} />
+          </div>
+        </div>
+        <div className="mt-3 flex items-baseline gap-1.5">
+          <div className="kpi-number">{total}</div>
+        </div>
+      </button>
+
+      {/* Bottom: scope split — only when there's actually something in
+          the "with label" bucket to switch to. */}
+      {hasSplit && (
+        <div className="grid grid-cols-2 border-t border-rule">
+          <button
+            type="button"
+            onClick={onSelectActive}
+            className={cn(
+              "px-3 py-2 text-left transition-colors",
+              viewScope === "active"
+                ? "bg-green-soft text-green-ink"
+                : "bg-surface text-ink-2 hover:bg-bg-elev",
+            )}
+            title="Заказы без купленной лейбы — нужно купить"
+          >
+            <div className="text-[10px] font-mono uppercase tracking-[0.10em] text-ink-3">
+              Без лейбы
+            </div>
+            <div className="mt-0.5 text-[18px] font-semibold tabular text-ink">
+              {withoutLabelCount}
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={onSelectAwaiting}
+            className={cn(
+              "border-l border-rule px-3 py-2 text-left transition-colors",
+              viewScope === "awaiting"
+                ? "bg-green-soft text-green-ink"
+                : "bg-surface text-ink-2 hover:bg-bg-elev",
+            )}
+            title="Лейба куплена, но Walmart ещё не помечен Shipped"
+          >
+            <div className="text-[10px] font-mono uppercase tracking-[0.10em] text-ink-3">
+              С лейбой
+            </div>
+            <div className="mt-0.5 text-[18px] font-semibold tabular text-ink">
+              {withLabelCount}
+            </div>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ChannelToggle({
   channel,
