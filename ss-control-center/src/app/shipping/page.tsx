@@ -858,12 +858,19 @@ export default function ShippingLabelsPage() {
       return !(ws && ws.orderStatus === "Shipped");
     });
     if (!channelFilter) return live;
-    // Walmart special-case: the marketplace identity lives on the
-    // isWalmart flag (Veeqo's channel.name for Walmart is the seller
-    // entity "SIRIUS TRADING INTERNATIONAL LLC", not "Walmart") so we
-    // match by that. Every other channel matches by channelKind which
-    // is Veeqo's type_code lowercased.
-    if (channelFilter === "walmart") return live.filter((o) => !!o.isWalmart);
+    // For the Walmart chip, match on Veeqo's channel kind (or the
+    // isWalmart DB flag as a fallback). The DB flag alone misses
+    // orders that haven't been synced into WalmartOrder yet — e.g.
+    // a fresh order since the last orders-walmart cron run — even
+    // though they obviously belong to the Walmart channel. Using
+    // channelKind catches every SIRIUS-store order; the DB flag is
+    // still what the buy / probe paths key off (they need the
+    // purchaseOrderId, which only exists once the row is in DB).
+    if (channelFilter === "walmart") {
+      return live.filter(
+        (o) => o.isWalmart || (o.channelKind ?? "").toLowerCase() === "walmart",
+      );
+    }
     return live.filter(
       (o) => !o.isWalmart && (o.channelKind ?? "") === channelFilter,
     );

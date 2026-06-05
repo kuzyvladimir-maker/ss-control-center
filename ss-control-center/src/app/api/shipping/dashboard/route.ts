@@ -399,10 +399,21 @@ export async function GET() {
           )
         : "";
 
+      // Walmart-direct flow bypasses Veeqo's procurement (we buy labels
+      // via Walmart's Buy Shipping API, not Veeqo), so there's no Placed
+      // tag to wait for. Detect Walmart on Veeqo's channel.type_code so
+      // this also catches brand-new Walmart orders that haven't been
+      // synced into our WalmartOrder DB cache yet (the isWalmart flag
+      // built above only sees DB-synced orders, while type_code is on
+      // the Veeqo order directly).
+      const orderTypeCodeForGate = (o.channel?.type_code as string | undefined)
+        ?.toLowerCase() ?? "";
+      const isWalmartChannel = orderTypeCodeForGate === "walmart";
+
       if (isBought(o)) {
         state = "bought";
         totals.boughtToday++;
-      } else if (!isPlaced(o)) {
+      } else if (!isPlaced(o) && !isWalmartChannel) {
         state = "waiting_placed";
         totals.waitingPlaced++;
       } else {
@@ -414,17 +425,16 @@ export async function GET() {
         // endpoint mirrors this by defaulting their productType to Dry.
         //
         // Anchor the "is this Amazon?" decision on Veeqo's `type_code`
-        // (which is "amazon" / "ebay" / "tiktok" / "walmart" / etc.) not
-        // on the channel NAME — channel names can be operator-set strings
-        // like "AMZ eBay" (an eBay listing under an AMZ Commerce account)
-        // which would match a `.startsWith("amz")` check and falsely flag
-        // every untagged eBay item as need_attention=no_type. Merged
-        // Orders in Veeqo get type_code="direct" but the underlying
-        // sources are Amazon, so include that bucket too.
-        const orderTypeCode = (o.channel?.type_code as string | undefined)
-          ?.toLowerCase() ?? "";
+        // (already captured as orderTypeCodeForGate above) rather than
+        // on the channel NAME — channel names can be operator-set
+        // strings like "AMZ eBay" (an eBay listing under an AMZ
+        // Commerce account) which would match a `.startsWith("amz")`
+        // check and falsely flag every untagged eBay item as
+        // need_attention=no_type. Merged Orders in Veeqo get
+        // type_code="direct" but the underlying sources are Amazon,
+        // so include that bucket too.
         const isAmazonOrder =
-          orderTypeCode === "amazon" ||
+          orderTypeCodeForGate === "amazon" ||
           (channelName || "").toLowerCase() === "merged orders";
         const noType =
           isAmazonOrder && itemsWithType.some((i) => !i.knownType);
