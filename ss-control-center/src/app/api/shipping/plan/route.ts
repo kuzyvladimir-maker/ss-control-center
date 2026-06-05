@@ -533,6 +533,21 @@ export async function GET(request: NextRequest) {
       let shipDateNote: string | null = null;
       let frozenRateDebug: string | null = null;
 
+      // Per-order diagnostic for non-Amazon-non-Walmart paths. We log
+      // every gate the order passes/fails so we can see in Vercel logs
+      // exactly why an eBay/TikTok/Shopify row stays at "loading…" or
+      // "Awaiting rate". The Amazon path is well-trodden and already
+      // logged via [frozen-rate].
+      const isAlt = !isAmazon && !isWalmart;
+      if (isAlt) {
+        console.log(
+          `[plan-alt] order=${order.number} channelType=${channelType} ` +
+            `allocationId=${allocationId ?? "none"} stopReason=${stopReason ?? "none"} ` +
+            `skuWeight=${skuWeight ?? "null"} skuBoxSize=${skuBoxSize ?? "null"} ` +
+            `productType=${productType}`,
+        );
+      }
+
       // For Amazon (and merged-from-Amazon) orders Veeqo's native Amazon
       // integration supplies dims to the allocation automatically. For
       // eBay/TikTok/Shopify/Etsy/direct, Veeqo has no marketplace-supplied
@@ -546,8 +561,7 @@ export async function GET(request: NextRequest) {
       if (
         !stopReason &&
         allocationId &&
-        !isAmazon &&
-        !isWalmart &&
+        isAlt &&
         skuWeight != null &&
         skuBoxSize
       ) {
@@ -562,12 +576,19 @@ export async function GET(request: NextRequest) {
               widthIn: Number(dimMatch[2]),
               heightIn: Number(dimMatch[3]),
             });
+            console.log(
+              `[plan-alt] ${order.number} allocation_package pushed: ${dimMatch[1]}x${dimMatch[2]}x${dimMatch[3]} ${skuWeight}lbs`,
+            );
           } catch (e) {
             console.warn(
-              `[plan] allocation_package push failed for ${order.number} (${channelType}):`,
+              `[plan-alt] ${order.number} allocation_package push FAILED:`,
               e instanceof Error ? e.message : e,
             );
           }
+        } else {
+          console.warn(
+            `[plan-alt] ${order.number} skuBoxSize="${skuBoxSize}" did not match LxWxH regex — skipping package push`,
+          );
         }
       }
 
@@ -575,6 +596,15 @@ export async function GET(request: NextRequest) {
         try {
           const ratesResponse = await getShippingRates(String(allocationId));
           const rates: VeeqoRate[] = ratesResponse?.available || [];
+
+          if (isAlt) {
+            console.log(
+              `[plan-alt] ${order.number} rates returned: ${rates.length}` +
+                (rates.length > 0
+                  ? ` (sample: ${rates.slice(0, 3).map((r) => `${r.sub_carrier_id}/${r.title}/$${r.total_net_charge}`).join(" | ")})`
+                  : " — EMPTY → row will stay at 'Awaiting rate'"),
+            );
+          }
 
           lastFrozenRateDiagnostic = null;
           selectedRate = selectBestRate(
@@ -587,6 +617,26 @@ export async function GET(request: NextRequest) {
           );
           if (productType === "Frozen" && lastFrozenRateDiagnostic) {
             frozenRateDebug = `today: ${lastFrozenRateDiagnostic}`;
+          }
+
+          // Surface a stopReason for non-Amazon orders whose rate quote
+          // came back empty, so the UI shows "stopped: Veeqo returned 0
+          // rates" instead of "Awaiting rate" forever. Without this the
+          // operator has no way to tell whether the row is mid-load or
+          // genuinely blocked.
+          if (isAlt && !selectedRate) {
+            if (rates.length === 0) {
+              stopReason =
+                `Veeqo returned 0 rates — most likely no allocation_package` +
+                ` configured. Check Veeqo allocation ${allocationId}.`;
+            } else {
+              stopReason =
+                `${rates.length} rate(s) available but none passed the` +
+                ` deadline/type filter (deliveryBy=${deliveryBy}, type=${productType}).`;
+            }
+            console.warn(
+              `[plan-alt] ${order.number} → ${stopReason}`,
+            );
           }
 
           // ── Ship Date Trick (Frozen only) ───────────────────────────────
