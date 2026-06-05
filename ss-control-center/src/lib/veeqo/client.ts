@@ -57,20 +57,55 @@ export async function fetchAllOrders(status = "awaiting_fulfillment") {
  * clock close to `(totalPages / batchSize) * pageLatency` instead of
  * `totalPages * pageLatency`.
  */
+async function veeqoFetchWithRetry(
+  path: string,
+  attempts = 4,
+): Promise<unknown> {
+  // Veeqo's docs don't publish a hard QPS but empirically the API
+  // throws 429 when we run 5+ parallel /orders pages in a tight loop.
+  // Exponential backoff (250ms → 500ms → 1s → 2s) recovers cleanly on
+  // every 429 we've seen so far; the 4th attempt almost always wins.
+  let lastErr: unknown = null;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await veeqoFetch(path);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (!/\b429\b/.test(msg)) throw e;
+      lastErr = e;
+      const delay = 250 * 2 ** i + Math.random() * 150;
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  throw lastErr;
+}
+
+/**
+ * Fetch Veeqo orders created within a UTC date range, with parallel
+ * pagination for speed. Used by Sales Overview to pull non-cached
+ * channels (eBay / TikTok / Shopify / direct / Merged / Etsy) —
+ * Amazon and Walmart already live in our local DB so the caller
+ * filters them out post-hoc with `channel.type_code`.
+ *
+ * Pagination strategy: page_size=200 (Veeqo max) and fire `batchSize`
+ * pages at a time. The default batchSize=2 is deliberately
+ * conservative — earlier 5-way batches were getting 429-throttled in
+ * production. Per-page retries with backoff in veeqoFetchWithRetry
+ * absorb the occasional rate-limit hit.
+ */
 export async function fetchOrdersInRange(opts: {
   /** ISO 8601 inclusive start, e.g. "2026-05-01T00:00:00Z" */
   createdAtMin: string;
   /** ISO 8601 inclusive end, e.g. "2026-06-04T23:59:59Z" */
   createdAtMax: string;
-  /** How many pages to fire in one parallel batch. Default 5 — keep
-   *  this small enough that Veeqo rate-limits don't reject us. */
+  /** Parallel pages per batch. Default 2 — Veeqo 429s anything higher. */
   batchSize?: number;
   /** Hard cap on total orders pulled — defensive guard so a bad
    *  query (e.g. multi-year range) can't run forever. Default 50_000. */
   maxOrders?: number;
 }): Promise<unknown[]> {
   const PAGE_SIZE = 200;
-  const batch = opts.batchSize ?? 5;
+  const batch = opts.batchSize ?? 2;
   const cap = opts.maxOrders ?? 50_000;
   const all: unknown[] = [];
   const baseQs =
@@ -82,18 +117,16 @@ export async function fetchOrdersInRange(opts: {
     const pages = Array.from({ length: batch }, (_, i) => page + i);
     const results = await Promise.all(
       pages.map((p) =>
-        veeqoFetch(`/orders?${baseQs}&page=${p}`).then(
+        veeqoFetchWithRetry(`/orders?${baseQs}&page=${p}`).then(
           (r) => (Array.isArray(r) ? r : []) as unknown[],
         ),
       ),
     );
-    // Append in order so the caller can rely on date-desc/asc if needed
     let anyFull = false;
     for (const chunk of results) {
       all.push(...chunk);
       if (chunk.length === PAGE_SIZE) anyFull = true;
     }
-    // If the last page in this batch wasn't full, there's nothing more.
     if (!anyFull || results[results.length - 1].length < PAGE_SIZE) break;
     page += batch;
   }

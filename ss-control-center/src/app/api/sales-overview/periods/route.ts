@@ -103,20 +103,28 @@ function normalizeStatus(raw: string): string {
 
 /**
  * Pull non-cached channel orders (eBay / TikTok / Shopify / direct /
- * Merged / Etsy / etc.) live from Veeqo for the given range. Used so
- * the tile summaries reflect EVERY channel — not just Amazon + Walmart.
+ * Merged / Etsy) live from Veeqo for the given range, with each
+ * order's createdAt attached so the caller can re-bucket the result
+ * into the 5 period windows in memory.
+ *
+ * Single Veeqo round-trip per page render — the previous version
+ * fired 5 separate calls (one per period) which 429-throttled the
+ * upstream and silently dropped most channels. We fetch once for the
+ * BROADEST needed range (start-of-last-month → now), then filter the
+ * in-memory array into each period below.
+ *
  * Best-effort: a Veeqo failure logs a warning and returns [].
  */
 async function loadOtherChannelOrdersFromVeeqo(
   from: Date,
   to: Date,
-): Promise<NormalizedOrder[]> {
+): Promise<Array<NormalizedOrder & { createdAt: Date }>> {
   let raw: unknown[];
   try {
     raw = await fetchOrdersInRange({
       createdAtMin: from.toISOString(),
       createdAtMax: to.toISOString(),
-      batchSize: 5,
+      batchSize: 2,
     });
   } catch (e) {
     console.warn(
@@ -125,7 +133,7 @@ async function loadOtherChannelOrdersFromVeeqo(
     );
     return [];
   }
-  const out: NormalizedOrder[] = [];
+  const out: Array<NormalizedOrder & { createdAt: Date }> = [];
   for (const item of raw) {
     if (!item || typeof item !== "object") continue;
     const o = item as Record<string, unknown>;
@@ -135,6 +143,10 @@ async function loadOtherChannelOrdersFromVeeqo(
         ? (ch.type_code as string).toLowerCase()
         : "";
     if (typeCode === "amazon" || typeCode === "walmart") continue;
+    const createdAtRaw = String(o.created_at ?? "");
+    if (!createdAtRaw) continue;
+    const createdAt = new Date(createdAtRaw);
+    if (Number.isNaN(createdAt.getTime())) continue;
     const totalRaw = o.total_price ?? o.subtotal_price ?? 0;
     const total =
       typeof totalRaw === "string"
@@ -152,12 +164,17 @@ async function loadOtherChannelOrdersFromVeeqo(
       total,
       itemsCount: itemsCount || 1,
       status: normalizeStatus(String(o.status ?? "unknown")),
+      createdAt,
     });
   }
   return out;
 }
 
-async function loadOrders(
+/** Cached loader — Amazon + Walmart from local DB only. The non-cached
+ *  channels (eBay/TikTok/Shopify/...) are pulled separately ONCE for
+ *  the broadest window and filtered into each period by the route
+ *  handler (see GET below) to avoid 5× Veeqo round-trips. */
+async function loadCachedOrders(
   from: Date,
   to: Date,
   channel: "all" | "amazon" | "walmart",
@@ -199,12 +216,6 @@ async function loadOrders(
         ),
     );
   }
-  // Only pull non-cached channels when the operator hasn't narrowed to
-  // a specific cached channel — saves a Veeqo round-trip when channel
-  // filter is amazon or walmart.
-  if (channel === "all") {
-    tasks.push(loadOtherChannelOrdersFromVeeqo(from, to));
-  }
   const chunks = await Promise.all(tasks);
   return chunks.flat();
 }
@@ -238,8 +249,23 @@ async function summarizeWindow(
   win: Window,
   channel: "all" | "amazon" | "walmart",
   storeIndex: number | null,
+  veeqoOthers: Array<NormalizedOrder & { createdAt: Date }>,
 ): Promise<Summary> {
-  return summarize(await loadOrders(win.from, win.to, channel, storeIndex));
+  const cached = await loadCachedOrders(
+    win.from,
+    win.to,
+    channel,
+    storeIndex,
+  );
+  // Filter the pre-fetched Veeqo "other channels" array into this
+  // window. Cheap in-memory pass — no extra API call.
+  const others =
+    channel === "all"
+      ? veeqoOthers.filter(
+          (o) => o.createdAt >= win.from && o.createdAt <= win.to,
+        )
+      : [];
+  return summarize([...cached, ...others]);
 }
 
 export async function GET(request: NextRequest) {
@@ -307,7 +333,21 @@ export async function GET(request: NextRequest) {
       },
     };
 
+    // Single Veeqo fetch covering the BROADEST range any of our 9
+    // windows touches — month-before-last through now. We then filter
+    // this array in memory for each window. Replaces what used to be
+    // 9 separate Veeqo round-trips (which 429-throttled the upstream
+    // and silently dropped every non-cached channel).
+    const broadestFrom = priorWindows.lastMonth.from; // start of month-before-last
+    const broadestTo = now;
+    const veeqoOthers =
+      channel === "all"
+        ? await loadOtherChannelOrdersFromVeeqo(broadestFrom, broadestTo)
+        : [];
+
     // Fire every window query in parallel — current + prior, all 5 periods.
+    // All summarizeWindow calls now reuse the SAME veeqoOthers array,
+    // so this loop is pure DB + in-memory filtering at this point.
     const [
       todayCur,
       todayPrior,
@@ -319,16 +359,16 @@ export async function GET(request: NextRequest) {
       lastMonthCur,
       lastMonthPrior,
     ] = await Promise.all([
-      summarizeWindow(w.today, channel, storeIndex),
-      summarizeWindow(priorWindows.today, channel, storeIndex),
-      summarizeWindow(w.yesterday, channel, storeIndex),
-      summarizeWindow(priorWindows.yesterday, channel, storeIndex),
-      summarizeWindow(w.mtd, channel, storeIndex),
-      summarizeWindow(priorWindows.mtd, channel, storeIndex),
-      // thisMonth current = mtd (they're the same set of orders); skip.
-      summarizeWindow(priorWindows.thisMonth, channel, storeIndex),
-      summarizeWindow(w.lastMonth, channel, storeIndex),
-      summarizeWindow(priorWindows.lastMonth, channel, storeIndex),
+      summarizeWindow(w.today, channel, storeIndex, veeqoOthers),
+      summarizeWindow(priorWindows.today, channel, storeIndex, veeqoOthers),
+      summarizeWindow(w.yesterday, channel, storeIndex, veeqoOthers),
+      summarizeWindow(priorWindows.yesterday, channel, storeIndex, veeqoOthers),
+      summarizeWindow(w.mtd, channel, storeIndex, veeqoOthers),
+      summarizeWindow(priorWindows.mtd, channel, storeIndex, veeqoOthers),
+      // thisMonth current = mtd (same set of orders); skip.
+      summarizeWindow(priorWindows.thisMonth, channel, storeIndex, veeqoOthers),
+      summarizeWindow(w.lastMonth, channel, storeIndex, veeqoOthers),
+      summarizeWindow(priorWindows.lastMonth, channel, storeIndex, veeqoOthers),
     ]);
 
     // Forecast extrapolates current MTD pace through the rest of the

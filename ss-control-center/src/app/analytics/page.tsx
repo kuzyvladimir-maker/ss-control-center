@@ -100,7 +100,7 @@ interface OverviewResponse {
   byStatus: Array<{ status: string; count: number }>;
   topSkus: Array<{ sku: string; productName: string | null; qty: number }>;
   orders: Array<{
-    source: "amazon" | "walmart";
+    source: "amazon" | "walmart" | "veeqo";
     id: string;
     number: string;
     date: string;
@@ -115,7 +115,14 @@ interface OverviewResponse {
     itemsCount: number;
     storeIndex: number;
     storeName: string;
-    channel: "amazon" | "walmart";
+    channel: string;
+    items: Array<{
+      sku: string;
+      productName: string;
+      imageUrl: string | null;
+      quantity: number;
+      unitPrice: number;
+    }>;
   }>;
   totalOrdersInWindow: number;
 }
@@ -208,7 +215,10 @@ export default function SalesOverviewPage() {
   const [preset, setPreset] = useState<Preset | "custom">("last30");
   const [customFrom, setCustomFrom] = useState<string>(addDays(todayET(), -29));
   const [customTo, setCustomTo] = useState<string>(todayET());
-  const [channel, setChannel] = useState<"all" | "amazon" | "walmart">("all");
+  // Channel filter — "all" / "amazon" / "walmart" stay typed strictly,
+  // but the page also accepts other Veeqo type_codes (ebay / tiktok /
+  // shopify / direct / etc.) when they're present in the data.
+  const [channel, setChannel] = useState<string>("all");
 
   // Orders-list local controls (sort + filter + search). The list is
   // capped server-side at 200 rows; we sort/filter/search on whatever
@@ -288,10 +298,8 @@ export default function SalesOverviewPage() {
     }
     if (q) {
       // Veeqo-style smart search: single field matches against order
-      // number, customer name (full string from buyerName), and the
-      // ship-to fields we cache (city, state, zip). We don't store
-      // street address in AmazonOrder/WalmartOrder — only city/state/
-      // zip — so address-1 search would need a backfill from Veeqo.
+      // number, customer name, ship-to (city/state/zip), store, AND
+      // every line item's SKU + product name.
       rows = rows.filter(
         (o) =>
           o.number.toLowerCase().includes(q) ||
@@ -299,7 +307,12 @@ export default function SalesOverviewPage() {
           (o.city ?? "").toLowerCase().includes(q) ||
           (o.state ?? "").toLowerCase().includes(q) ||
           (o.zip ?? "").toLowerCase().includes(q) ||
-          o.storeName.toLowerCase().includes(q),
+          o.storeName.toLowerCase().includes(q) ||
+          o.items.some(
+            (it) =>
+              it.sku.toLowerCase().includes(q) ||
+              it.productName.toLowerCase().includes(q),
+          ),
       );
     }
     const sorted = [...rows].sort((a, b) => {
@@ -402,6 +415,34 @@ export default function SalesOverviewPage() {
               </button>
             ))}
           </div>
+
+          {/* Extra channel chips for any non-cached channel actually
+              present in the current dataset (eBay/TikTok/Shopify/etc.) —
+              shown next to the fixed Amazon/Walmart chips so the
+              operator can narrow to just one of them. */}
+          {data &&
+            Array.from(new Set(data.orders.map((o) => o.channel)))
+              .filter((c) => c !== "amazon" && c !== "walmart")
+              .sort()
+              .map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setChannel(c as typeof channel)}
+                  className={cn(
+                    "rounded-md border px-2.5 py-1 text-[11.5px] font-medium capitalize transition",
+                    channel === c
+                      ? "border-ink bg-bg-elev text-ink"
+                      : "border-rule bg-surface text-ink-2 hover:border-silver-line",
+                  )}
+                  style={{
+                    color:
+                      channel === c ? channelColor(c) : undefined,
+                  }}
+                >
+                  {c}
+                </button>
+              ))}
 
           <div className="ml-auto flex items-center gap-2">
             <button
@@ -765,7 +806,7 @@ export default function SalesOverviewPage() {
                   <th className="px-3 py-2 text-left font-medium">Store</th>
                   <th className="px-3 py-2 text-left font-medium">Customer</th>
                   <th className="px-3 py-2 text-left font-medium">Ship-to</th>
-                  <th className="px-3 py-2 text-right font-medium">Items</th>
+                  <th className="px-3 py-2 text-left font-medium">Items</th>
                   <th
                     className="px-3 py-2 text-right font-medium cursor-pointer select-none hover:text-ink-2"
                     onClick={() => {
@@ -819,8 +860,48 @@ export default function SalesOverviewPage() {
                         ? [o.city, o.state, o.zip].filter(Boolean).join(", ")
                         : "—"}
                     </td>
-                    <td className="px-3 py-2 text-right tabular text-ink-2">
-                      {o.itemsCount}
+                    <td className="px-3 py-2">
+                      {o.items.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          {o.items.slice(0, 3).map((it, idx) => (
+                            <div
+                              key={`${it.sku || "noSku"}-${idx}`}
+                              className="flex items-center gap-2"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={it.imageUrl ?? "/img-placeholder.svg"}
+                                alt=""
+                                width={28}
+                                height={28}
+                                className="h-7 w-7 shrink-0 rounded border border-rule bg-bg-elev object-cover"
+                                loading="lazy"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).style.opacity = "0.3";
+                                }}
+                              />
+                              <div className="min-w-0 leading-tight">
+                                <div className="truncate text-[11.5px] font-medium text-ink" title={it.productName}>
+                                  {it.productName}
+                                </div>
+                                <div className="text-[10px] text-ink-3 tabular">
+                                  {it.sku ? `${it.sku} · ` : ""}× {it.quantity}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          {o.items.length > 3 && (
+                            <div className="text-[10px] text-ink-3">
+                              + {o.items.length - 3} more line
+                              {o.items.length - 3 === 1 ? "" : "s"}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-[10.5px] tabular text-ink-3">
+                          {o.itemsCount} item{o.itemsCount === 1 ? "" : "s"}
+                        </span>
+                      )}
                     </td>
                     <td className="px-3 py-2 text-right tabular font-medium text-ink">
                       {fmtMoneyExact(o.total)}
