@@ -948,19 +948,15 @@ export default function ShippingLabelsPage() {
     return channelOrders.filter((o) => !isAwaitingShipConfirm(o));
   }, [channelOrders, viewScope, isAwaitingShipConfirm]);
 
-  // "By store" breakdown — recomputed CLIENT-SIDE from `channelOrders`
-  // (same pool the KPI tiles read from), so the per-store numbers stay
-  // in lockstep with the KPI tiles AND respect the active channel
-  // chip. Two bugs this fixes:
-  //   * The server-side `data.storeBreakdown` doesn't see Walmart
-  //     probe results, so it would show SIRIUS=55 while KPI showed
-  //     53 once probes reclassified some rows as already-Shipped.
-  //   * The previous client implementation read from `orders` (no
-  //     channel filter) so e.g. AMZ Commerce store showed all=2
-  //     (1 Amazon + 1 eBay) while the Amazon KPI showed only the
-  //     Amazon one — totals across stores didn't equal KPI total.
+  // "By store" breakdown — derived from `scopedOrders` (same pool the
+  // KPI tiles + bucket "All" + type-filter "All types" use), so the
+  // sum of per-store `all` counts always equals the KPI total. Earlier
+  // versions read from `data.storeBreakdown` (server, no client-side
+  // Shipped probe) and then from `channelOrders` (full set including
+  // awaiting-ship-confirm) — both diverged from the rest of the page
+  // by an awkward 2-37 row count.
   const storeBreakdown = useMemo(() => {
-    const live = channelOrders;
+    const live = scopedOrders;
     type Row = {
       storeId: string;
       storeName: string;
@@ -996,19 +992,16 @@ export default function ShippingLabelsPage() {
     return [...m.values()].sort((a, b) =>
       a.storeName.localeCompare(b.storeName),
     );
-  }, [channelOrders]);
+  }, [scopedOrders]);
 
-  // Time-bucket counts roll up the FULL channelOrders set (not the
-  // viewScope-filtered scopedOrders). Reason: Walmart Seller Center
-  // counts "Ship by today/yesterday" against ALL unshipped orders —
-  // including the ones we've already bought a label for but haven't
-  // yet flipped to Shipped. If we restricted the bucket counts to the
-  // active scope, an order whose label was bought late would silently
-  // vanish from "Overdue" even though Walmart is still penalising
-  // late ship-out. Vladimir flagged exactly this: Walmart SC showed
-  // 3 overdue, our app showed 1.
-  // Clicking a bucket below overrides the viewScope so the operator
-  // sees every matching order regardless of label-bought state.
+  // Time-bucket counts derive from `scopedOrders` (the current viewScope's
+  // pool) so they add up to the bucket-row "All" tab and match what the
+  // operator actually sees in the list. An earlier version pulled from
+  // channelOrders (to match Walmart SC's overdue tally) but that broke
+  // the on-page math — KPI said Ready 49 / bucket-All said 42 / and
+  // the buckets summed to 79 — three different numbers on one screen.
+  // The Walmart-SC overdue match can be revisited later via a combined
+  // "+N awaiting ship-confirm" badge; consistency on the page wins now.
   const bucketCounts = useMemo(() => {
     const c: Record<ShipByBucket, number> = {
       overdue: 0,
@@ -1017,9 +1010,9 @@ export default function ShippingLabelsPage() {
       dayafter: 0,
       later: 0,
     };
-    for (const o of channelOrders) if (o.timeBucket) c[o.timeBucket] += 1;
+    for (const o of scopedOrders) if (o.timeBucket) c[o.timeBucket] += 1;
     return c;
-  }, [channelOrders]);
+  }, [scopedOrders]);
 
   const filteredOrders = useMemo(() => {
     // Sort by actionability: ready_to_buy → need_attention → waiting_placed
@@ -1043,22 +1036,13 @@ export default function ShippingLabelsPage() {
         // Awaiting-ship-confirm scope is mutually exclusive with the
         // normal active list. In "awaiting" we show ONLY those rows; in
         // "active" we HIDE them so the buy-flow list stays focused.
-        // (Walmart-direct shipped rows are already pruned upstream in
-        //  channelOrders so they never reach this code path.)
-        //
-        // EXCEPTION: a time-bucket filter (Overdue/Today/Tomorrow/...)
-        // overrides the viewScope. Bucket counts now roll up the full
-        // channelOrders set to match Walmart's Unshipped tally, so a
-        // click on "Overdue 3" must actually surface all 3 rows —
-        // including any awaiting-ship-confirm ones — instead of only
-        // the 1 that happens to fall inside the active scope.
+        // Walmart-direct shipped rows are already pruned upstream in
+        // channelOrders so they never reach this code path.
         const awaiting = isAwaitingShipConfirm(o);
-        if (!bucketFilter) {
-          if (viewScope === "awaiting") {
-            if (!awaiting) return false;
-          } else if (awaiting) {
-            return false;
-          }
+        if (viewScope === "awaiting") {
+          if (!awaiting) return false;
+        } else if (awaiting) {
+          return false;
         }
         if (bucketFilter && o.timeBucket !== bucketFilter) return false;
         if (storeFilter && o.storeId !== storeFilter) return false;
@@ -1114,27 +1098,32 @@ export default function ShippingLabelsPage() {
     [filteredOrders, viewScope, isAwaitingShipConfirm]
   );
 
-  // KPI tiles — derived from the FULL channelOrders set so the numbers
-  // stay STABLE during page load. Previously the totals dropped from 77
-  // down to ~40 as the client-side Walmart label probes finished and
-  // reclassified rows into "awaiting ship-confirm" (which was excluded
-  // from scopedOrders). Vladimir saw that as a confusing countdown and
-  // a mismatch with the sidebar (which always shows the full count).
-  // Counting against channelOrders keeps the cards in lockstep with
-  // the sidebar and with Walmart Seller Center's Unshipped tally.
+  // KPI tiles — derived from `scopedOrders` so the math on the page is
+  // self-consistent: KPI total = bucket-row All = type-row All-types,
+  // and clicking READY TO BUY actually narrows the list to the same
+  // number of rows the tile claims. The previous channelOrders-based
+  // version made the tiles "stable" during the Walmart probe pass but
+  // diverged from every other count on the page (e.g. Ready 49 while
+  // bucket-All said 42).
+  // Trade-off: the AWAITING FULFILLMENT tile may briefly tick down as
+  // the client probes complete and reclassify Walmart rows that have
+  // labels bought into the "Awaiting ship-confirm" bucket — that's
+  // expected; the 37 rows didn't disappear, they're under the dedicated
+  // tab. The sidebar shows the un-scoped total so the operator can
+  // still see "all open work" at a glance.
   const totals = useMemo(() => {
-    const all = channelOrders.length;
-    const ready = channelOrders.filter(
+    const all = scopedOrders.length;
+    const ready = scopedOrders.filter(
       (o) => o.state === "ready_to_buy",
     ).length;
-    const attention = channelOrders.filter(
+    const attention = scopedOrders.filter(
       (o) => o.state === "need_attention",
     ).length;
-    const waiting = channelOrders.filter(
+    const waiting = scopedOrders.filter(
       (o) => o.state === "waiting_placed",
     ).length;
     return { all, ready, attention, waiting };
-  }, [channelOrders]);
+  }, [scopedOrders]);
 
   // Index plan rows by orderNumber so the OrderRow can pick up carrier /
   // price / EDD without an extra lookup at render time. Plan keys on
