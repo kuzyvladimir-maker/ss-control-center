@@ -33,6 +33,7 @@ import {
   TypeTag,
 } from "@/components/kit";
 import { cn } from "@/lib/utils";
+import { utcToPacificYMD } from "@/lib/shipping/dates";
 import {
   Dialog,
   DialogContent,
@@ -5317,9 +5318,12 @@ function PickRateDialog({
 
   function pickRate(rate: VeeqoRateLite) {
     const price = parseFloat(rate.total_net_charge ?? "0") || null;
+    // Render EDD in America/Los_Angeles to match the plan card + Veeqo's
+    // own UI. Eastern adds a day for Veeqo's PT-23:59 timestamps and
+    // pushes overrides one calendar day past the real promise date — see
+    // veeqoDateToLocal comment in src/lib/veeqo/client.ts.
     const edd = rate.delivery_promise_date
-      ? new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" })
-          .format(new Date(rate.delivery_promise_date))
+      ? utcToPacificYMD(rate.delivery_promise_date)
       : null;
     onPick({
       carrier: rate.sub_carrier_id ?? null,
@@ -5370,10 +5374,11 @@ function PickRateDialog({
             {sortedRates.map((rate, i) => {
               const isCurrent =
                 currentPickName != null && rate.title === currentPickName;
+              // Pacific TZ to match the plan card + Veeqo's UI; Eastern
+              // adds a day for Veeqo's PT-23:59 timestamps (see
+              // veeqoDateToLocal in src/lib/veeqo/client.ts).
               const edd = rate.delivery_promise_date
-                ? new Intl.DateTimeFormat("en-CA", {
-                    timeZone: "America/New_York",
-                  }).format(new Date(rate.delivery_promise_date))
+                ? utcToPacificYMD(rate.delivery_promise_date)
                 : "";
               // On time vs late vs the marketplace deadline (deliver-by).
               // null = unknown (no deadline or no EDD → no badge).
