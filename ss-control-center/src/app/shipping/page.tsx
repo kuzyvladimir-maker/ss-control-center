@@ -33,7 +33,7 @@ import {
   TypeTag,
 } from "@/components/kit";
 import { cn } from "@/lib/utils";
-import { utcToPacificYMD } from "@/lib/shipping/dates";
+import { utcToPacificYMD, effectiveBusinessDay } from "@/lib/shipping/dates";
 import {
   Dialog,
   DialogContent,
@@ -276,6 +276,16 @@ function todayInET(): string {
   }).format(new Date());
 }
 
+// Same as todayInET, but advances Sat/Sun/federal-holiday to the next
+// business day. The warehouse doesn't physically ship on those days,
+// so defaulting the Ship-date picker to a non-business day misleads
+// the operator (they read "Ship 6/07" on a Sunday-load and assume
+// physical pickup is Sunday). Vladimir's call 2026-06-07: the picker
+// must show 6/08 in that scenario.
+function nextWarehouseShipDay(): string {
+  return effectiveBusinessDay(todayInET());
+}
+
 // Add N calendar days to a YYYY-MM-DD string (UTC math, returns YYYY-MM-DD).
 // Used by the Ship Date preset buttons (Today / +1 / +2).
 function addDaysISO(iso: string, days: number): string {
@@ -330,7 +340,7 @@ export default function ShippingLabelsPage() {
   // button purchases. Per-order overrides live in shipDateByOrder; the global
   // value applies to any order without its own override.
   const [shipDateGlobal, setShipDateGlobal] = useState<string>(() =>
-    todayInET(),
+    nextWarehouseShipDay(),
   );
   const [shipDateByOrder, setShipDateByOrder] = useState<
     Record<string, string>
@@ -866,9 +876,13 @@ export default function ShippingLabelsPage() {
   // (Veeqo rates don't vary by date, so there's nothing to re-quote).
   function changeGlobalShipDate(date: string) {
     if (!date) return;
-    setShipDateGlobal(date);
+    // Advance Sat/Sun/holiday to the next business day — the picker
+    // mustn't promise an impossible physical handoff. Vladimir's call
+    // 2026-06-07.
+    const safe = effectiveBusinessDay(date);
+    setShipDateGlobal(safe);
     setShipDateByOrder({});
-    for (const o of readyWalmartOrders) quoteWalmartOrder(o, date);
+    for (const o of readyWalmartOrders) quoteWalmartOrder(o, safe);
   }
 
   // Change one order's ship date (overrides the global for that order only).
@@ -879,8 +893,9 @@ export default function ShippingLabelsPage() {
   // the row (EDD − ship date). No Veeqo write, instant.
   function changeOrderShipDate(o: DashboardOrder, date: string) {
     if (!date) return;
-    setShipDateByOrder((p) => ({ ...p, [o.orderNumber]: date }));
-    if (o.isWalmart) quoteWalmartOrder(o, date);
+    const safe = effectiveBusinessDay(date);
+    setShipDateByOrder((p) => ({ ...p, [o.orderNumber]: safe }));
+    if (o.isWalmart) quoteWalmartOrder(o, safe);
   }
 
   // Orders narrowed to the selected channel. Every count and the list below
@@ -2087,12 +2102,21 @@ export default function ShippingLabelsPage() {
             title="The day you plan to ship. All Walmart rates re-quote from this date; Buy uses it too."
             className="rounded-md border border-rule bg-surface px-2 py-1 text-[12.5px] text-ink focus:border-[#0071dc] focus:outline-none"
           />
-          {/* Quick presets — Today / +1 / +2 days from today (ET). */}
+          {/* Quick presets — each advances past Sat/Sun/holiday so the
+              picker can never land on a day the warehouse isn't open.
+              "Today" on a Sunday lands on Monday; "+1" on a Friday
+              lands on Monday too (skips Sat+Sun). */}
           <div className="flex items-center gap-1">
             {[
-              { label: "Today", date: todayInET() },
-              { label: "+1", date: addDaysISO(todayInET(), 1) },
-              { label: "+2", date: addDaysISO(todayInET(), 2) },
+              { label: "Today", date: nextWarehouseShipDay() },
+              {
+                label: "+1",
+                date: effectiveBusinessDay(addDaysISO(todayInET(), 1)),
+              },
+              {
+                label: "+2",
+                date: effectiveBusinessDay(addDaysISO(todayInET(), 2)),
+              },
             ].map((p) => (
               <button
                 key={p.label}
@@ -2569,7 +2593,10 @@ export default function ShippingLabelsPage() {
           deadlineBy={pickRateModal.deliverBy}
           onShipDateChange={(d) => {
             const num = pickRateModal.orderNumber;
-            setShipDateByOrder((p) => ({ ...p, [num]: d }));
+            setShipDateByOrder((p) => ({
+              ...p,
+              [num]: effectiveBusinessDay(d),
+            }));
           }}
           onClose={() => setPickRateModal(null)}
           onPick={(rate, pickedShipDate) => {
@@ -2603,7 +2630,10 @@ export default function ShippingLabelsPage() {
                 },
               };
             });
-            setShipDateByOrder((p) => ({ ...p, [num]: pickedShipDate }));
+            setShipDateByOrder((p) => ({
+              ...p,
+              [num]: effectiveBusinessDay(pickedShipDate),
+            }));
             setPickRateModal(null);
           }}
         />
