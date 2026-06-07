@@ -17,3 +17,9 @@ gcloud-key*.json
 .env.*.local
 .vercel
 .env*.local
+
+# Confidential business-data exports (COGS / Sellerboard / ChannelMax dumps).
+# Accidentally swept into git by the auto-committer — cost/margin data must not
+# live in version control. Files stay on disk, just untracked.
+docs/*Cost_of_Goods_Sold*.csv
+docs/Summary_*.csv
