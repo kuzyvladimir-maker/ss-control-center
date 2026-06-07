@@ -3350,18 +3350,23 @@ function OrderRow({
               <span>
                 {(() => {
                   const edd = rateOverride?.edd ?? plan?.edd ?? null;
-                  // Transit time in calendar days from the PHYSICAL ship
-                  // date (the day the warehouse actually hands the package
-                  // to the carrier) to the carrier EDD. When the Frozen
-                  // Monday-Shift Ship Date Trick fires, labelDate stays at
-                  // today but physicalShipDate jumps to next Monday — the
-                  // carrier measures transit from the Monday handoff, not
-                  // today, so anchoring to shipDateGlobal (= today) would
-                  // overstate transit days by the size of the shift and
-                  // make compliant ≤3-day Frozen rates look like 5+ days.
+                  // Transit time in calendar days, anchored to the day the
+                  // rate selector actually measured transit from — i.e.
+                  // plan.actualShipDay, which is what selectBestRate used
+                  // as `actualShipDay` (Sat/Sun → next Mon, weekday →
+                  // today, trick → next Mon). Prefer it over
+                  // physicalShipDate because on a Sunday-load with no
+                  // Monday-shift trick the route still leaves
+                  // physicalShipDate = labelDate (= today = Sun) — but
+                  // the warehouse won't physically hand off on Sunday, and
+                  // selectBestRate filtered Frozen rates with calDays
+                  // measured from Mon. Anchoring on Sun would inflate the
+                  // badge to "4 days" for a compliant 3-day rate. Falls
+                  // back to physicalShipDate (when actualShipDay is
+                  // absent for older plans) and finally shipDateGlobal.
                   const transitAnchor =
-                    plan?.physicalShipDate ??
                     plan?.actualShipDay ??
+                    plan?.physicalShipDate ??
                     shipDate;
                   const days =
                     edd && transitAnchor
