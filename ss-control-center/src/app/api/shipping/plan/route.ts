@@ -90,13 +90,26 @@ function getNextMonday(from: string): string {
 // "why this rate was picked" in the UI without digging into Vercel logs.
 let lastFrozenRateDiagnostic: string | null = null;
 
+/**
+ * Frozen calendar-day cap. Master Prompt v3.4 §5 tightens the rule
+ * from "≤3 days" to "≤2 days" when the FrozenRiskAlert says the order
+ * is `critical` — extreme-heat destinations / multi-day in-transit
+ * temps that put the food itself at risk regardless of marketplace
+ * deadline math. For all other levels (ok/low/medium/high or no alert)
+ * the original ≤3-day cap applies.
+ */
+function frozenMaxCalDays(riskLevel: string | null | undefined): number {
+  return (riskLevel ?? "").toLowerCase() === "critical" ? 2 : 3;
+}
+
 function selectBestRate(
   rates: VeeqoRate[],
   productType: string,
   deliveryBy: string,
   actualShipDay: string,
   dayName: string,
-  isAfterNoon: boolean
+  isAfterNoon: boolean,
+  frozenRiskLevel: string | null = null
 ): VeeqoRate | null {
   const deliveryByDate = new Date(deliveryBy + "T23:59:59");
   const shipDate = new Date(actualShipDay + "T00:00:00");
@@ -127,7 +140,8 @@ function selectBestRate(
 
   // ── FROZEN ──
   if (productType === "Frozen") {
-    let pool = enriched.filter((r) => r.calDays <= 3);
+    const maxCalDays = frozenMaxCalDays(frozenRiskLevel);
+    let pool = enriched.filter((r) => r.calDays <= maxCalDays);
 
     // Policy (Vladimir 2026-05-15): never buy faster than 2-Day for Frozen
     // unless the customer themselves paid for Overnight / Next Day. We use
@@ -195,8 +209,13 @@ function selectBestRate(
         .filter((r) => r.price - cheapest.price > tolerance)
         .slice(0, 4)
         .map((r) => `${r.title}/$${r.price.toFixed(2)}/${r.calDays}d`);
+      const riskTag =
+        (frozenRiskLevel ?? "").toLowerCase() === "critical"
+          ? "risk=CRITICAL→max2d "
+          : "";
       const summary =
         `[frozen-rate] day=${dayName} ship=${actualShipDay} ` +
+        `${riskTag}` +
         `cheapest=$${cheapest.price.toFixed(2)} tol=$${tolerance.toFixed(2)} ` +
         `cand=[${cand.join(" | ")}] outside=[${skipped.join(" | ")}] ` +
         `picked=${candidates[0]?.title}/${candidates[0]?.eddLocal}`;
@@ -263,6 +282,46 @@ export async function GET(request: NextRequest) {
     const skuConfigStatus = skuLoadError ? "load-failed" : "ok";
 
     const orders = await fetchAllOrders();
+
+    // Pull pending FrozenRiskAlert rows for every order we're about to
+    // quote, keyed by Veeqo order number — selectBestRate uses the
+    // riskLevel to tighten the Frozen calendar-day cap from 3 to 2
+    // when an order is `critical` (Master Prompt v3.4 §5). One round
+    // trip up front beats N queries inside the loop. Multiple alerts
+    // per order can exist (different ship dates); we keep the highest
+    // riskLevel so the cap conservatively reflects the worst forecast.
+    const orderNumbersForRisk: string[] = orders
+      .map((o: { number?: string | number }) => String(o.number ?? "").trim())
+      .filter(Boolean);
+    const frozenRiskByOrderNumber = new Map<string, string>();
+    if (orderNumbersForRisk.length > 0) {
+      try {
+        const alertRows = await prisma.frozenRiskAlert.findMany({
+          where: {
+            orderId: { in: orderNumbersForRisk },
+            status: "pending",
+          },
+          select: { orderId: true, riskLevel: true },
+        });
+        // Rank order matches LEVEL_ORDER in src/lib/frozen-analytics/rules-engine.ts.
+        const RANK: Record<string, number> = {
+          ok: 0, low: 1, medium: 2, high: 3, critical: 4,
+        };
+        for (const row of alertRows) {
+          const lv = (row.riskLevel ?? "").toLowerCase();
+          const cur = frozenRiskByOrderNumber.get(row.orderId);
+          if (!cur || (RANK[lv] ?? -1) > (RANK[cur] ?? -1)) {
+            frozenRiskByOrderNumber.set(row.orderId, lv);
+          }
+        }
+      } catch (e) {
+        // Non-fatal — falls back to the standard ≤3-day cap.
+        console.warn(
+          "[plan] frozenRiskAlert lookup failed:",
+          e instanceof Error ? e.message : e,
+        );
+      }
+    }
 
     // Debug
     const debug = {
@@ -629,6 +688,10 @@ export async function GET(request: NextRequest) {
             );
           }
 
+          // Frozen risk lookup — empty string when no alert / not Frozen,
+          // so selectBestRate's existing fallback ("≤3 cal days") fires.
+          const frozenRiskLevel =
+            frozenRiskByOrderNumber.get(String(order.number)) ?? null;
           lastFrozenRateDiagnostic = null;
           selectedRate = selectBestRate(
             rates,
@@ -636,7 +699,8 @@ export async function GET(request: NextRequest) {
             deliveryBy,
             actualShipDay,
             dayInfo.dayName,
-            isAfterNoon
+            isAfterNoon,
+            frozenRiskLevel
           );
           if (productType === "Frozen" && lastFrozenRateDiagnostic) {
             frozenRateDebug = `today: ${lastFrozenRateDiagnostic}`;
@@ -767,7 +831,8 @@ export async function GET(request: NextRequest) {
                 deliveryBy,
                 nextMonday,
                 "Mon",
-                false
+                false,
+                frozenRiskLevel
               );
               const mondayDebug = lastFrozenRateDiagnostic;
 
@@ -870,9 +935,12 @@ export async function GET(request: NextRequest) {
                 const eddDate = new Date(eddLocal + "T00:00:00");
                 return eddDate <= new Date(deliveryBy + "T23:59:59");
               }).length;
+              const maxCalDays = frozenMaxCalDays(frozenRiskLevel);
+              const riskTag =
+                maxCalDays === 2 ? " — risk=CRITICAL tightens cap to 2 days" : "";
               stopReason =
                 meetingDeadline > 0
-                  ? `Frozen — none of ${meetingDeadline}/${rates.length} on-time rates deliver within 3 calendar days (food safety). Monday-shift trick also didn't help.`
+                  ? `Frozen — none of ${meetingDeadline}/${rates.length} on-time rates deliver within ${maxCalDays} calendar days (food safety)${riskTag}. Monday-shift trick also didn't help.`
                   : `No rate where EDD ≤ Delivery By (${deliveryBy}). ${rates.length} rates checked.`;
             } else {
               stopReason = `No rate where EDD ≤ Delivery By (${deliveryBy}). ${rates.length} rates checked.`;
