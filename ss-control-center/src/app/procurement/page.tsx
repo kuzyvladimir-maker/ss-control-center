@@ -21,6 +21,7 @@ import {
 import type {
   CardAction,
   ActionResult,
+  QuantityInquiryFlag,
 } from "./components/ProcurementCard";
 
 type SortKey = "shipBy" | "title";
@@ -107,6 +108,12 @@ export default function ProcurementPage() {
   // order the buyer is trying to cancel.
   const [cancellationFlags, setCancellationFlags] = useState<
     Record<string, CancellationFlag>
+  >({});
+  // Buyer quantity-inquiry state keyed by Walmart orderNumber. Loaded in
+  // parallel with /items (same as the cancellation sweep) so the card chips
+  // ("Спросили · ждём ответ" / "Ответ получен") paint moments after the list.
+  const [inquiryFlags, setInquiryFlags] = useState<
+    Record<string, QuantityInquiryFlag>
   >({});
   const [search, setSearch] = useState("");
   // Quick filter by sales channel (toggle: click = on, click again = off).
@@ -212,6 +219,30 @@ export default function ProcurementPage() {
         }
       } else {
         setCancellationFlags({});
+      }
+
+      // Buyer quantity-inquiry status sweep — same set of Walmart orders.
+      // Non-fatal: a hiccup just means the chips don't paint this round.
+      if (walmartOrderNumbers.length > 0) {
+        try {
+          const r = await fetch("/api/procurement/inquiry-status", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderNumbers: walmartOrderNumbers }),
+          });
+          if (r.ok) {
+            const j = (await r.json()) as {
+              results?: Record<string, QuantityInquiryFlag>;
+            };
+            setInquiryFlags(j.results ?? {});
+          } else {
+            setInquiryFlags({});
+          }
+        } catch {
+          setInquiryFlags({});
+        }
+      } else {
+        setInquiryFlags({});
       }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Unknown error");
@@ -331,6 +362,24 @@ export default function ProcurementPage() {
   }, [selected, cards]);
 
   const clearSelection = useCallback(() => setSelected(new Set()), []);
+
+  // Optimistically flip a card to "Спросили · ждём ответ" right after the
+  // QuantityInquiryModal reports a successful send. The poll cron later
+  // upgrades it to ANSWERED/TIMEOUT, surfaced on the next refresh.
+  const handleInquirySent = useCallback((orderNumber: string) => {
+    setInquiryFlags((prev) => ({
+      ...prev,
+      [orderNumber]: {
+        status: "SENT",
+        sentAt: new Date().toISOString(),
+        repliedAt: null,
+        replyText: null,
+        productTitle: null,
+        orderedQty: null,
+        totalUnits: null,
+      },
+    }));
+  }, []);
 
   /**
    * Apply an action optimistically, then call the server. On failure the
@@ -785,6 +834,8 @@ export default function ProcurementPage() {
           }
           cancellationFlags={cancellationFlags}
           onCancelWalmartOrder={handleCancelWalmartOrder}
+          inquiryFlags={inquiryFlags}
+          onInquirySent={handleInquirySent}
         />
       )}
 

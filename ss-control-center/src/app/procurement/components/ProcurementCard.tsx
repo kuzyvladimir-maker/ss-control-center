@@ -9,18 +9,35 @@ import {
   Loader2,
   Undo2,
   AlertCircle,
+  AlertTriangle,
   Store,
   Pencil,
   MoreVertical,
   Ban,
+  MessageSquare,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Btn } from "@/components/kit";
 import { parsePackSize } from "@/lib/procurement/pack-size";
 import { cleanProductTitleForSearch } from "@/lib/procurement/clean-product-query";
+import { isQuantityAnomaly } from "@/lib/procurement/quantity-inquiry";
 import { PhotoLightbox } from "./PhotoLightbox";
 import { StorePriorityPopup } from "./StorePriorityPopup";
 import { RetireFromSaleModal } from "./RetireFromSaleModal";
+import { QuantityInquiryModal } from "./QuantityInquiryModal";
+
+/** Buyer-quantity inquiry state for an order, surfaced on the card. Mirrors
+ *  the shape returned by /api/procurement/inquiry-status. */
+export interface QuantityInquiryFlag {
+  status: string; // SENT | ANSWERED | TIMEOUT
+  sentAt: string;
+  repliedAt: string | null;
+  replyText: string | null;
+  productTitle: string | null;
+  orderedQty: number | null;
+  totalUnits: number | null;
+}
 
 export interface ProcurementCardData {
   lineItemId: string;
@@ -71,6 +88,18 @@ interface ProcurementCardProps {
   /** Source order id — recorded on Walmart retirement audit rows so we know
    *  which procurement order triggered the action. */
   orderId?: string;
+  /** Walmart customer order number (the 2000… number) — needed to email the
+   *  buyer about quantity and to key the inquiry. */
+  orderNumber?: string;
+  /** Walmart purchaseOrderId when already known (from the live cancellation
+   *  sweep) — lets the send endpoint skip a lookup. Optional. */
+  purchaseOrderId?: string | null;
+  /** Buyer name for the email greeting + card context. */
+  customerName?: string | null;
+  /** Current quantity-inquiry state for this order, if any. */
+  inquiryFlag?: QuantityInquiryFlag;
+  /** Bubble up an optimistic "inquiry sent" so the page flips the chip. */
+  onInquirySent?: (orderNumber: string) => void;
 }
 
 /**
@@ -89,6 +118,11 @@ export function ProcurementCard({
   onPrioritiesSaved,
   channel,
   orderId,
+  orderNumber,
+  purchaseOrderId,
+  customerName,
+  inquiryFlag,
+  onInquirySent,
 }: ProcurementCardProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -98,6 +132,7 @@ export function ProcurementCard({
   const [storePopupOpen, setStorePopupOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [retireOpen, setRetireOpen] = useState(false);
+  const [inquiryOpen, setInquiryOpen] = useState(false);
   const menuWrapperRef = useRef<HTMLDivElement | null>(null);
 
   // Close kebab menu on outside click / Escape.
@@ -173,6 +208,16 @@ export function ProcurementCard({
   // listing-level qty is just 1). When there's no status yet, "remaining"
   // displays as the full physical total.
   const remainingPhysical = isPartial ? card.remaining : totalPhysical;
+
+  // Multipack mis-order signal: a multipack listing (Pack of N) ordered 2+
+  // times → likely the buyer read the quantity selector as "number of units".
+  // Only a REVIEW flag — Vladimir decides whether to email the buyer.
+  const quantityAnomaly =
+    isWalmart &&
+    !isBought &&
+    isQuantityAnomaly(card.quantityOrdered, pack?.size ?? null);
+  // The buyer-quantity inquiry needs the Walmart order number to send + key.
+  const canInquire = isWalmart && !!orderNumber;
 
   // Copy a search-friendly version of the title — real-brand + core product
   // + weight, with private-label brands (Salutem Vita / Starfit) stripped.
@@ -324,6 +369,20 @@ export function ProcurementCard({
                     role="menu"
                     className="absolute right-0 top-full z-20 mt-1 min-w-[200px] overflow-hidden rounded-md border border-rule bg-surface py-1 shadow-lg ring-1 ring-foreground/5"
                   >
+                    {canInquire && (
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setInquiryOpen(true);
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12.5px] text-ink hover:bg-info-tint hover:text-info"
+                      >
+                        <MessageSquare size={13} className="shrink-0" />
+                        Уточнить количество у клиента
+                      </button>
+                    )}
                     {isWalmart && (
                       <button
                         type="button"
@@ -419,6 +478,24 @@ export function ProcurementCard({
                   )}
                 </span>
               )}
+            </div>
+          )}
+
+          {/* Quantity-anomaly flag + buyer-inquiry status */}
+          {(quantityAnomaly || inquiryFlag) && (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              {quantityAnomaly && !inquiryFlag && (
+                <button
+                  type="button"
+                  onClick={() => setInquiryOpen(true)}
+                  className="inline-flex items-center gap-1 rounded-md bg-warn-tint px-2 py-0.5 text-[11px] font-medium text-warn-strong transition-colors hover:bg-warn-tint/80"
+                  title="Большое количество для мультипака — уточнить у клиента"
+                >
+                  <AlertTriangle size={11} className="shrink-0" />
+                  Возможно ошибочное количество — спросить
+                </button>
+              )}
+              {inquiryFlag && <InquiryStatusChip flag={inquiryFlag} />}
             </div>
           )}
 
@@ -527,7 +604,53 @@ export function ProcurementCard({
           onClose={() => setRetireOpen(false)}
         />
       )}
+
+      {inquiryOpen && orderNumber && (
+        <QuantityInquiryModal
+          orderNumber={orderNumber}
+          purchaseOrderId={purchaseOrderId ?? null}
+          sku={card.sku}
+          productTitle={card.productTitle}
+          orderedQty={card.quantityOrdered}
+          packSize={pack?.size ?? null}
+          packLabel={pack?.label ?? null}
+          customerName={customerName ?? null}
+          onClose={() => setInquiryOpen(false)}
+          onSent={(num) => onInquirySent?.(num)}
+        />
+      )}
     </>
+  );
+}
+
+/** Small status chip for the buyer-quantity inquiry shown on the card. */
+function InquiryStatusChip({ flag }: { flag: QuantityInquiryFlag }) {
+  if (flag.status === "ANSWERED") {
+    const reply = flag.replyText?.trim() || "(пустой ответ)";
+    return (
+      <span
+        className="inline-flex max-w-full items-center gap-1 rounded-md bg-green-soft px-2 py-0.5 text-[11px] font-medium text-green-ink"
+        title={reply}
+      >
+        <Check size={11} className="shrink-0" />
+        <span className="truncate">Ответ клиента: {reply}</span>
+      </span>
+    );
+  }
+  if (flag.status === "TIMEOUT") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md bg-bg-elev px-2 py-0.5 text-[11px] font-medium text-ink-3">
+        <Clock size={11} className="shrink-0" />
+        Нет ответа (48ч)
+      </span>
+    );
+  }
+  // SENT
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md bg-info-tint px-2 py-0.5 text-[11px] font-medium text-info">
+      <MessageSquare size={11} className="shrink-0" />
+      Спросили клиента · ждём ответ
+    </span>
   );
 }
 

@@ -16,6 +16,7 @@ import {
   type ProcurementCardData,
   type CardAction,
   type ActionResult,
+  type QuantityInquiryFlag,
 } from "./ProcurementCard";
 
 export interface ProcurementOrderCard extends ProcurementCardData {
@@ -70,6 +71,10 @@ interface ProcurementListProps {
   onCancelWalmartOrder?: (
     orderNumber: string,
   ) => Promise<{ ok: boolean; error?: string }>;
+  /** Buyer quantity-inquiry state keyed by Walmart orderNumber. */
+  inquiryFlags?: Readonly<Record<string, QuantityInquiryFlag>>;
+  /** Optimistically flip a card's inquiry chip after a send. */
+  onInquirySent?: (orderNumber: string) => void;
 }
 
 function formatShipBy(iso: string | null): string | null {
@@ -226,6 +231,8 @@ export function ProcurementList({
   onPrioritiesSaved,
   cancellationFlags,
   onCancelWalmartOrder,
+  inquiryFlags,
+  onInquirySent,
 }: ProcurementListProps) {
   // Group by orderId, preserving the order coming from the backend (already
   // sorted by ship-by or by title there).
@@ -357,6 +364,13 @@ export function ProcurementList({
                   card={c}
                   channel={c.channel}
                   orderId={c.orderId}
+                  orderNumber={c.orderNumber}
+                  purchaseOrderId={
+                    cancellationFlags?.[c.orderNumber]?.purchaseOrderId ?? null
+                  }
+                  customerName={c.customerName}
+                  inquiryFlag={inquiryFlags?.[c.orderNumber]}
+                  onInquirySent={onInquirySent}
                   storePriorities={prioritiesBySku?.[c.sku] ?? []}
                   selected={selected?.has(c.lineItemId) ?? false}
                   onToggleSelect={onToggleSelect}

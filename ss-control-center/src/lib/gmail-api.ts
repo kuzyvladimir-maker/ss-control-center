@@ -63,7 +63,17 @@ export function getAuthUrl(state?: string): string {
   return client.generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
-    scope: ["https://www.googleapis.com/auth/gmail.readonly"],
+    // gmail.send was added 2026-06-07 for the Walmart quantity-inquiry feature
+    // (the Sirius CS mailbox needs to send a clarification email through
+    // Walmart's relay). Adding it to the global scope set only affects NEW
+    // consents — already-stored read-only tokens keep working untouched until
+    // their slot is re-connected. gmail.send is a "sensitive" (not
+    // "restricted") scope, so it needs no extra Google security review beyond
+    // what the existing gmail.readonly grant already required.
+    scope: [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.send",
+    ],
     state: state || "",
   });
 }
@@ -123,6 +133,58 @@ export async function readThread(refreshToken: string, threadId: string) {
     metadataHeaders: ["From", "Subject", "Date"],
   });
   return res.data;
+}
+
+/**
+ * Send a plain-text email through the Gmail API as the authenticated account.
+ *
+ * Used by the Walmart quantity-inquiry feature: the Sirius CS mailbox
+ * (info.siriustrading@gmail.com) emails the buyer's per-order Walmart relay
+ * address to ask whether a large multipack quantity was intentional. Walmart's
+ * relay only accepts mail from the registered customer-service address, which
+ * is exactly the account whose refresh token we pass here.
+ *
+ * Requires the gmail.send scope (see getAuthUrl) — a token connected before
+ * 2026-06-07 will only have gmail.readonly and the send call will 403 until
+ * the slot is re-connected.
+ */
+export async function sendGmailMessage(
+  refreshToken: string,
+  opts: { to: string; subject: string; body: string; fromEmail?: string }
+): Promise<{ id: string; threadId: string }> {
+  const client = createOAuth2Client(refreshToken);
+  const gmail = google.gmail({ version: "v1", auth: client });
+
+  // RFC 2822 message. Encode the Subject as UTF-8 base64 (RFC 2047) so any
+  // non-ASCII stays intact; the body is sent as UTF-8 text/plain.
+  const encodedSubject = `=?UTF-8?B?${Buffer.from(opts.subject, "utf8").toString(
+    "base64"
+  )}?=`;
+  const headers = [
+    opts.fromEmail ? `From: ${opts.fromEmail}` : null,
+    `To: ${opts.to}`,
+    `Subject: ${encodedSubject}`,
+    "MIME-Version: 1.0",
+    'Content-Type: text/plain; charset="UTF-8"',
+    "Content-Transfer-Encoding: base64",
+  ].filter(Boolean) as string[];
+
+  const encodedBody = Buffer.from(opts.body, "utf8").toString("base64");
+  const raw = `${headers.join("\r\n")}\r\n\r\n${encodedBody}`;
+  const encodedMessage = Buffer.from(raw, "utf8")
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+  const res = await gmail.users.messages.send({
+    userId: "me",
+    requestBody: { raw: encodedMessage },
+  });
+  return {
+    id: res.data.id || "",
+    threadId: res.data.threadId || "",
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -210,6 +272,32 @@ async function readStoredAccount(
   const envToken = process.env[`GMAIL_REFRESH_TOKEN_STORE${storeIndex}`];
   if (envToken) {
     return { refreshToken: envToken, email: null };
+  }
+  return null;
+}
+
+/**
+ * Find a connected Gmail account by its email address (case-insensitive),
+ * scanning all store slots. Returns the slot's stored refresh token so the
+ * caller can send/read as that mailbox. Used by the Walmart quantity-inquiry
+ * send endpoint and poll cron to locate the Sirius CS mailbox regardless of
+ * which slot it was connected under. Returns null if no slot holds that email
+ * (e.g. the mailbox hasn't been connected yet, or only an env-fallback token
+ * without a recorded address exists).
+ */
+export async function getGmailAccountByEmail(
+  email: string
+): Promise<{ storeIndex: number; refreshToken: string; email: string } | null> {
+  const target = email.trim().toLowerCase();
+  for (let i = 1; i <= MAX_GMAIL_STORES; i++) {
+    const stored = await readStoredAccount(i);
+    if (stored?.email && stored.email.toLowerCase() === target) {
+      return {
+        storeIndex: i,
+        refreshToken: stored.refreshToken,
+        email: stored.email,
+      };
+    }
   }
   return null;
 }

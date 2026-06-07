@@ -1038,6 +1038,51 @@ model WalmartCancellationRequest {
   @@index([detectedAt])
 }
 
+// Quantity-clarification outreach to Walmart customers. When a procurement
+// card looks like a multipack mis-order (e.g. 3 × "Pack of 8" = 24 units),
+// Vladimir can send the buyer a polite "did you mean this quantity?" email
+// through Walmart's per-order relay address (customerEmailId) from the
+// registered Sirius CS mailbox (info.siriustrading@gmail.com). One row per
+// purchase order. The /api/cron/walmart-quantity-inquiry-poll cron reads the
+// Sirius inbox twice a day, flips SENT → ANSWERED when the buyer replies, or
+// SENT → TIMEOUT after 48h. See docs/wiki/walmart-quantity-inquiry.md.
+model WalmartCustomerInquiry {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchaseOrderId String  @unique
+  customerOrderId String?
+  storeIndex      Int     @default(1)
+
+  // The Walmart relay address we emailed (4C11…@relay.walmart.com) — also the
+  // From address of the buyer's reply, which is how the poll cron matches.
+  relayEmail  String
+  sentByEmail String // info.siriustrading@gmail.com (registered CS mailbox)
+  customerName String?
+
+  // Snapshot of the line we asked about (for the card chip + audit).
+  sku         String?
+  productTitle String?
+  orderedQty  Int?
+  packSize    Int?
+  totalUnits  Int?
+
+  subject  String
+  bodySent String
+
+  sentAt DateTime @default(now())
+  // SENT | ANSWERED | TIMEOUT
+  status String @default("SENT")
+
+  replyText String?
+  repliedAt DateTime?
+
+  @@index([status])
+  @@index([sentAt])
+  @@index([customerOrderId])
+}
+
 // /api/cron/walmart (syncCatalog). Exists because Walmart's /v3/items API has
 // NO server-side text search — finding "every SKU whose title contains X"
 // otherwise means paginating all ~5 000 items live (~20 sequential API calls,

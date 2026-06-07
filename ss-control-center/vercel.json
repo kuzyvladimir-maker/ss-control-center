@@ -48,6 +48,10 @@
     {
       "path": "/api/cron/walmart-cancellation-watchdog",
       "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/walmart-quantity-inquiry-poll",
+      "schedule": "0 14,22 * * *"
     }
   ]
 }
