@@ -24,6 +24,10 @@ import {
 } from "@/lib/walmart/client";
 import { searchWalmartItems } from "@/lib/walmart/items";
 import {
+  setInventoryAllNodes,
+  readInventoryAcrossNodes,
+} from "@/lib/walmart/inventory";
+import {
   searchWalmartCatalogCache,
   catalogCacheSize,
   syncWalmartCatalog,
@@ -167,7 +171,13 @@ const walmartInventoryUpdate: JackieTool = {
       ship_node: {
         type: "string",
         description:
-          "Optional fulfillment node id. Omit to update the default ship node.",
+          "Optional fulfillment node id. Omit to update the default ship node. Ignored when all_ship_nodes is true.",
+      },
+      all_ship_nodes: {
+        type: "boolean",
+        default: false,
+        description:
+          "When true, fan out the PUT to EVERY ship node the account has inventory in (auto-discovered via /v3/inventories scan + cached 1h). Use this for 'mark out of stock everywhere' / retire flows — the default ship_node-omitted PUT only touches one warehouse and leaves stock in others, which is how previous retire calls silently let listings keep selling.",
       },
       dry_run: {
         type: "boolean",
@@ -190,6 +200,7 @@ const walmartInventoryUpdate: JackieTool = {
     }
     const quantity = Math.floor(quantityRaw);
     const shipNode = optionalString(args, "ship_node");
+    const allShipNodes = args.all_ship_nodes === true;
     const dryRun = args.dry_run === true;
 
     const body = {
@@ -201,7 +212,7 @@ const walmartInventoryUpdate: JackieTool = {
     // the human-readable URL here just for the dry-run preview so the
     // operator sees exactly what would be called.
     const params: Record<string, string> = { sku };
-    if (shipNode) params.shipNode = shipNode;
+    if (shipNode && !allShipNodes) params.shipNode = shipNode;
     const endpointPreview =
       `PUT https://marketplace.walmartapis.com/v3/inventory?` +
       new URLSearchParams(params).toString();
@@ -209,13 +220,45 @@ const walmartInventoryUpdate: JackieTool = {
     if (dryRun) {
       return {
         dry_run: true,
-        endpoint: endpointPreview,
+        endpoint: allShipNodes
+          ? "PUT https://marketplace.walmartapis.com/v3/inventory?sku=... (fanned out to every known ship node)"
+          : endpointPreview,
         body,
+        all_ship_nodes: allShipNodes,
         note: "No changes made. Call again with dry_run=false to apply.",
       };
     }
 
     const client = getWalmartClient(STORE_INDEX);
+
+    if (allShipNodes) {
+      // Fan-out across every known ship node. This is the right path
+      // for "mark out of stock" / retire workflows in a multi-warehouse
+      // account — default-node-only PUTs leave stock live elsewhere.
+      const writes = await setInventoryAllNodes(client, STORE_INDEX, sku, quantity);
+      const okCount = writes.filter((w) => w.ok).length;
+      const verify = await readInventoryAcrossNodes(client, STORE_INDEX, sku);
+      const success = writes.length > 0 && okCount === writes.length && verify.totalQty === quantity * writes.length;
+      return {
+        ok: success,
+        sku,
+        quantity_set: quantity,
+        ship_nodes_attempted: writes.length,
+        ship_nodes_succeeded: okCount,
+        writes,
+        verified_total_qty: verify.totalQty,
+        verified_per_node: verify.nodes,
+        ...(success
+          ? {}
+          : {
+              error:
+                okCount < writes.length
+                  ? `${writes.length - okCount}/${writes.length} ship-node PUT(s) failed; see writes[]`
+                  : `Walmart accepted every PUT but verify total qty = ${verify.totalQty} (expected ${quantity * writes.length}); see verified_per_node[]`,
+            }),
+      };
+    }
+
     let walmartResponse: unknown;
     try {
       walmartResponse = await client.request("PUT", "/inventory", {

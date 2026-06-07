@@ -10,25 +10,31 @@
  *
  * Per-SKU pipeline (reversible — Vladimir wants to be able to put stock
  * back if the supplier returns, so we DO NOT permanently retire the
- * listing — only zero inventory):
+ * listing — only zero inventory across EVERY ship node):
  *
- *   1. GET  /v3/inventory?sku=  — capture `previousQty` for the audit row.
- *   2. PUT  /v3/inventory?sku=  amount=0 — the actual "stop selling".
- *   3. GET  /v3/inventory?sku=  AGAIN, read-back — verify Walmart actually
- *      accepted the 0 (HTTP 200 is not enough; the older code reported
- *      "Снят" any time Walmart returned 200, but Vladimir saw stock stay
- *      positive in Seller Center afterwards, meaning Walmart accepted the
- *      call without applying it — most likely for items where inventory
- *      is feed-managed, or for SKUs whose default ship-node differs).
- *      If the read-back says amount > 0, we surface a hard error instead
- *      of falsely claiming success.
+ *   1. readInventoryAcrossNodes — GET inventory for every known ship
+ *      node, sum to previousQty for the audit row.
+ *   2. setInventoryAllNodes — PUT amount=0 once per discovered ship
+ *      node (default-node-only PUT is the historical bug; with two+
+ *      warehouses the listing kept selling from the warehouse our
+ *      call never touched).
+ *   3. readInventoryAcrossNodes AGAIN — verify the sum landed at 0.
+ *      A residual amount > 0 surfaces as a hard error with the
+ *      per-node breakdown so the operator can see which warehouse
+ *      didn't accept the zero.
  *
  * Per-SKU outcomes are independent: one failure doesn't block the rest.
  * Returns { results: Array<PerSkuResult> }
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getWalmartClient, WalmartApiError } from "@/lib/walmart/client";
+import { getWalmartClient } from "@/lib/walmart/client";
+import {
+  readInventoryAcrossNodes,
+  setInventoryAllNodes,
+  type PerNodeQty,
+  type PerNodeWriteResult,
+} from "@/lib/walmart/inventory";
 
 const STORE_INDEX = 1;
 
@@ -36,10 +42,15 @@ interface PerSkuResult {
   sku: string;
   ok: boolean;
   retirementId?: string;
-  /** Stock just before we zeroed it — null if the read failed. */
+  /** Total stock across ALL ship nodes just before we zeroed it. */
   previousQty?: number | null;
-  /** Stock Walmart reports AFTER our PUT — proves whether 0 actually landed. */
+  /** Total stock across ALL ship nodes AFTER our PUT. */
   verifiedQty?: number | null;
+  /** Per-ship-node breakdown of the verified read so the operator can
+   *  see which warehouse(s) still have stock if anything went wrong. */
+  perNode?: PerNodeQty[];
+  /** Per-ship-node write outcomes (which PUTs succeeded). */
+  writes?: PerNodeWriteResult[];
   error?: string;
   walmartStatus?: number;
   walmartCorrelationId?: string | null;
@@ -107,71 +118,56 @@ export async function POST(request: NextRequest) {
   const client = getWalmartClient(STORE_INDEX);
   const results: PerSkuResult[] = [];
 
-  // Tiny helper — Walmart's GET /v3/inventory shape, defensive against
-  // missing fields. Returns null on any 4xx so the caller can treat
-  // "no inventory configured" the same as "couldn't read".
-  async function readQty(sku: string): Promise<number | null> {
-    try {
-      const r = (await client.request<{
-        quantity?: { amount?: number };
-      }>("GET", "/inventory", { params: { sku } })) as {
-        quantity?: { amount?: number };
-      };
-      const amt = r?.quantity?.amount;
-      return typeof amt === "number" ? amt : null;
-    } catch {
-      return null;
-    }
-  }
-
   for (const sku of skus) {
     const meta = catalogMap.get(sku);
-    const params: Record<string, string> = { sku };
-    const wireBody = { sku, quantity: { unit: "EACH", amount: 0 } };
 
-    // Step 1 — read previous qty for the audit row (rollback needs it).
-    const previousQty = await readQty(sku);
+    // Step 1 — read previous qty across every known ship node for the
+    // audit row. Sum gives the total inventory we're about to remove
+    // so rollback knows what to restore.
+    const before = await readInventoryAcrossNodes(client, STORE_INDEX, sku);
+    const previousQty = before.totalQty;
 
-    // Step 2 — the actual zero-out.
-    let walmartResponse: unknown = null;
-    try {
-      walmartResponse = await client.request("PUT", "/inventory", {
-        params,
-        body: wireBody,
-      });
-    } catch (err) {
-      if (err instanceof WalmartApiError) {
-        const userReason =
-          err.status === 401 || err.status === 403
-            ? "Walmart auth failed"
-            : err.status === 404
-              ? `SKU "${sku}" not found in this Walmart account`
-              : `Walmart API ${err.status}`;
-        results.push({
+    // Step 2 — fan-out PUT amount=0 to every known ship node. The old
+    // default-only PUT was the bug that let warehouses keep selling
+    // after a "retire" click.
+    const writes = await setInventoryAllNodes(client, STORE_INDEX, sku, 0);
+    const allWritesOk = writes.length > 0 && writes.every((w) => w.ok);
+
+    if (!allWritesOk) {
+      const failedNodes = writes
+        .filter((w) => !w.ok)
+        .map((w) => `${w.shipNode}: ${w.error ?? "unknown"}`)
+        .join("; ");
+      const msg = `Walmart rejected PUT on ${writes.filter((w) => !w.ok).length}/${writes.length} ship node(s): ${failedNodes}`;
+      console.error(`[retire-listing/execute] ${sku} multi-node PUT failed:`, msg);
+      // Still log a retirement row so we can audit the attempt.
+      const retirement = await prisma.walmartListingRetirement.create({
+        data: {
           sku,
-          ok: false,
+          storeIndex: STORE_INDEX,
+          itemId: meta?.itemId ?? null,
+          productTitle: meta?.title ?? null,
           previousQty,
-          error: userReason,
-          walmartStatus: err.status,
-          walmartCorrelationId: err.correlationId,
-          walmartResponse: err.errorBody,
-        });
-        continue;
-      }
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error(`[retire-listing/execute] ${sku} PUT /inventory failed:`, msg);
-      results.push({ sku, ok: false, previousQty, error: msg });
+          reason,
+          triggeredFrom,
+          searchQuery,
+        },
+      });
+      results.push({
+        sku,
+        ok: false,
+        previousQty,
+        retirementId: retirement.id,
+        writes,
+        error: msg,
+      });
       continue;
     }
 
-    // Step 3 — read-back verification. This catches the failure mode
-    // where Walmart returns 200 OK to our PUT but doesn't actually apply
-    // the 0 (silent no-op). Without this step the UI would falsely
-    // report "Снят" and the operator would see sales keep coming.
-    const verifiedQty = await readQty(sku);
+    // Step 3 — read-back verification across all nodes. Sum must be 0.
+    const after = await readInventoryAcrossNodes(client, STORE_INDEX, sku);
+    const verifiedQty = after.totalQty;
 
-    // Audit row goes in regardless of verification outcome — we want a
-    // record of every attempt, including the silent-fail ones.
     const retirement = await prisma.walmartListingRetirement.create({
       data: {
         sku,
@@ -185,20 +181,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (verifiedQty !== null && verifiedQty > 0) {
-      // Walmart accepted our PUT but didn't apply it — surface as a hard
-      // failure so the operator knows the listing is still live.
+    if (verifiedQty > 0) {
+      const stillStocked = after.nodes
+        .filter((n) => (n.qty ?? 0) > 0)
+        .map((n) => `${n.shipNode}: ${n.qty}`)
+        .join("; ");
       console.warn(
-        `[retire-listing/execute] ${sku} silent-fail: PUT returned 200 but GET still shows qty=${verifiedQty}`,
+        `[retire-listing/execute] ${sku} silent-fail across ${after.nodes.length} node(s); residual qty=${verifiedQty} in ${stillStocked}`,
       );
       results.push({
         sku,
         ok: false,
         previousQty,
         verifiedQty,
+        perNode: after.nodes,
+        writes,
         retirementId: retirement.id,
-        error: `Walmart accepted PUT amount=0 but stock is still ${verifiedQty}. Возможно SKU управляется отдельным feed-ом или другим ship-node — поставь 0 вручную в Seller Center.`,
-        walmartResponse,
+        error: `Walmart accepted PUT amount=0 on ${writes.length} ship node(s) but stock is still ${verifiedQty} (${stillStocked}). Возможно SKU управляется отдельным feed-ом — обнули вручную в Seller Center.`,
       });
       continue;
     }
@@ -208,8 +207,9 @@ export async function POST(request: NextRequest) {
       ok: true,
       previousQty,
       verifiedQty,
+      perNode: after.nodes,
+      writes,
       retirementId: retirement.id,
-      walmartResponse,
     });
   }
 

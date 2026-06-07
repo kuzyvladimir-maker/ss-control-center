@@ -19,7 +19,8 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getWalmartClient, WalmartApiError } from "@/lib/walmart/client";
+import { getWalmartClient } from "@/lib/walmart/client";
+import { readInventoryAcrossNodes } from "@/lib/walmart/inventory";
 import { fetchVeeqoImageBySku } from "@/lib/veeqo/product-image";
 
 const STORE_INDEX = 1;
@@ -126,27 +127,20 @@ export async function POST(request: NextRequest) {
   const client = getWalmartClient(STORE_INDEX);
 
   const inventoryWork = runPool(inputs, INVENTORY_CONCURRENCY, async (it) => {
-    try {
-      const r = (await client.request<{
-        sku?: string;
-        quantity?: { unit?: string; amount?: number };
-      }>("GET", "/inventory", { params: { sku: it.sku } })) as {
-        quantity?: { amount?: number };
-      };
-      const amt = r?.quantity?.amount;
-      return { sku: it.sku, currentQty: typeof amt === "number" ? amt : null };
-    } catch (err) {
-      // Walmart returns 404 for SKUs without inventory configured — that
-      // counts as "unknown", not as zero, so caller can tell them apart.
-      if (err instanceof WalmartApiError && err.status !== 404) {
-        console.warn(
-          `[sku-details] inventory(${it.sku}) failed:`,
-          err.status,
-          err.errorBody,
-        );
-      }
-      return { sku: it.sku, currentQty: null };
-    }
+    // Sum inventory across every known ship node, not just the default
+    // one. Default-only reads showed "0" for SKUs that still had 50
+    // units sitting in another warehouse — the exact illusion that
+    // told the operator a listing was retired when Walmart was still
+    // shipping from a different node.
+    const { totalQty, nodes } = await readInventoryAcrossNodes(
+      client,
+      STORE_INDEX,
+      it.sku,
+    );
+    return {
+      sku: it.sku,
+      currentQty: nodes.length === 0 ? null : totalQty,
+    };
   });
 
   const imageLookupWork = runPool(toLookup, VEEQO_LOOKUP_CONCURRENCY, async (sku) => {
