@@ -329,9 +329,12 @@ export default function ProcurementPage() {
     []
   );
 
-  // Filter by channel chip + ship-by chip, then by search query
-  // (case-insensitive substring across title / SKU / order number / customer),
-  // then sort.
+  // Filter by channel chip + ship-by chip, then by smart search query.
+  // Search is tokenised: every whitespace-separated token must hit at
+  // least one searchable field (productTitle, SKU, order#, customer,
+  // store, channel). Matches the /shipping page's search behaviour so
+  // multi-term queries like "kinder amazon" filter the way operators
+  // type them.
   const filteredCards = useMemo(() => {
     let arr = cards;
     if (channelFilter) {
@@ -340,15 +343,24 @@ export default function ProcurementPage() {
     if (shipByFilter) {
       arr = arr.filter((c) => shipByBucket(c.shipBy) === shipByFilter);
     }
-    const q = search.trim().toLowerCase();
-    if (q) {
+    const tokens = search.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if (tokens.length > 0) {
       arr = arr.filter((c) => {
-        return (
-          c.productTitle.toLowerCase().includes(q) ||
-          c.sku.toLowerCase().includes(q) ||
-          c.orderNumber.toLowerCase().includes(q) ||
-          (c.customerName?.toLowerCase().includes(q) ?? false)
-        );
+        const haystack = [
+          c.productTitle,
+          c.sku,
+          c.orderNumber,
+          c.customerName,
+          c.storeName,
+          c.channel,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        for (const t of tokens) {
+          if (!haystack.includes(t)) return false;
+        }
+        return true;
       });
     }
     return arr;
@@ -504,7 +516,7 @@ export default function ProcurementPage() {
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Поиск: товар, SKU, номер заказа, клиент…"
+              placeholder="Search by product, SKU, order #, customer, store, channel…"
               className="flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-ink-4"
             />
             {search && (
@@ -512,7 +524,7 @@ export default function ProcurementPage() {
                 type="button"
                 onClick={() => setSearch("")}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-3 hover:bg-bg-elev hover:text-ink md:h-6 md:w-6"
-                aria-label="Очистить поиск"
+                aria-label="Clear search"
               >
                 <X size={14} />
               </button>

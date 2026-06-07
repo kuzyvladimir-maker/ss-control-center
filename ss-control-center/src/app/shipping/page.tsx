@@ -14,6 +14,8 @@ import {
   Copy,
   Check,
   User,
+  Search,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BoxPresetPicker } from "./components/BoxPresetPicker";
@@ -462,6 +464,10 @@ export default function ShippingLabelsPage() {
   const [sortBy, setSortBy] = useState<
     "urgency" | "cost" | "edd" | "deadline"
   >("urgency");
+  // Smart free-text search — matched against order#, customer, ship-to,
+  // city, state, store, channel, SKU and product title. Filters the
+  // currently visible list after every other filter has been applied.
+  const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const [buying, setBuying] = useState(false);
@@ -1071,6 +1077,15 @@ export default function ShippingLabelsPage() {
       dayafter: 3,
       later: 4,
     };
+    // Tokenise the smart-search query — every whitespace-separated token
+    // must hit at least one searchable field on the row. That makes
+    // multi-term queries work the way an operator types them:
+    //   "kinder 30303" → orders for customer Kinder in ZIP 30303.
+    const tokens = searchQuery
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean);
     return channelOrders
       .filter((o) => {
         // viewScope (set by the AWAITING split tile) is the source of
@@ -1099,6 +1114,27 @@ export default function ShippingLabelsPage() {
             if (!types.every((t) => t === typeFilter)) return false;
           }
         }
+        if (tokens.length > 0) {
+          // Build a single haystack string per order so every token can be
+          // tested with one indexOf instead of an inner loop over fields.
+          const haystack = [
+            o.orderNumber,
+            o.storeName,
+            o.channel,
+            o.channelKind,
+            o.customerName,
+            o.city,
+            o.shipToState,
+            o.walmartPurchaseOrderId,
+            ...o.items.map((i) => `${i.sku} ${i.productTitle}`),
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+          for (const t of tokens) {
+            if (!haystack.includes(t)) return false;
+          }
+        }
         return true;
       })
       .slice()
@@ -1117,6 +1153,7 @@ export default function ShippingLabelsPage() {
     typeFilter,
     viewScope,
     isAwaitingShipConfirm,
+    searchQuery,
   ]);
 
   const selectableIds = useMemo(
@@ -2383,6 +2420,33 @@ export default function ShippingLabelsPage() {
         </div>
       </div>
 
+      {/* Smart search — filters the visible list by any field. Sits
+          directly above the order rows so the operator can narrow what
+          they're looking at without losing the chip/bucket context. */}
+      <div className="relative">
+        <Search
+          size={14}
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-3"
+        />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by order #, customer, ship-to, ZIP, store, SKU, product…"
+          className="w-full rounded-md border border-rule bg-surface px-9 py-2 text-[12.5px] text-ink placeholder:text-ink-3 focus:border-[#0071dc] focus:outline-none"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-ink-3 hover:bg-bg-elev hover:text-ink"
+            aria-label="Clear search"
+          >
+            <X size={13} />
+          </button>
+        )}
+      </div>
+
       {/* Order list */}
       <div className="space-y-2">
         {loading && !data ? (
@@ -2391,7 +2455,9 @@ export default function ShippingLabelsPage() {
           </div>
         ) : displayedOrders.length === 0 ? (
           <div className="rounded-md border border-rule bg-surface px-4 py-10 text-center text-[12px] text-ink-3">
-            No orders match the current filter.
+            {searchQuery
+              ? `No orders match “${searchQuery}”.`
+              : "No orders match the current filter."}
           </div>
         ) : (
           displayedOrders.map((o) => (
