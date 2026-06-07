@@ -8,11 +8,16 @@
  *   handler resolves both via the WalmartOrder cache.
  *
  * Cancels every open line on the Walmart order with reason
- * CUSTOMER_CHANGED_MIND — Vladimir's chosen reason for procurement-time
- * cancellations (he made the call: if we haven't bought the inventory
- * yet, treat the cancellation as a buyer-side change of heart rather
- * than a seller fault). Walmart accepts CUSTOMER_CHANGED_MIND as a
- * valid orderLineStatus.cancellationReason.
+ * CUSTOMER_REQUESTED_SELLER_TO_CANCEL. Walmart's Seller Center
+ * exposes a friendlier UI label ("Cancel - Customer changed mind")
+ * for the same enum — we tried sending CUSTOMER_CHANGED_MIND verbatim
+ * and Walmart 400'd with INVALID_REQUEST_CONTENT.GMP_ORDER_API on the
+ * cancellationReason field (live probe 2026-06-07,
+ * cid=e780f3d1-a86c-473c-b016-eecb9b36e23a). CUSTOMER_REQUESTED_SELLER_TO_CANCEL
+ * is the documented API code for the buyer-initiated cancel flow —
+ * same code the walmart-cancellation-watchdog cron uses for the
+ * automated no-label-bought path, so manual + automatic cancels now
+ * share one reason and one audit trail.
  *
  * Side effects:
  *   1. Walmart cancelOrderLines call (live API).
@@ -24,20 +29,47 @@
  * Errors:
  *   400 if orderNumber missing.
  *   404 if no matching Walmart order in cache.
- *   502 if Walmart cancelOrderLines fails — message bubbled up so the
- *       UI can surface "Walmart rejected: ..." inline on the card.
+ *   502 if Walmart cancelOrderLines fails. The Walmart-returned error
+ *       body (errors.error[].description) is bubbled up in `error` so
+ *       the UI banner shows what Walmart actually complained about
+ *       rather than the bare "HTTP 502".
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getWalmartClient } from "@/lib/walmart/client";
+import { getWalmartClient, WalmartApiError } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import type { WalmartCancelLineInput } from "@/lib/walmart/types";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const CANCEL_REASON = "CUSTOMER_CHANGED_MIND";
+const CANCEL_REASON = "CUSTOMER_REQUESTED_SELLER_TO_CANCEL";
+
+/** Pull a human-friendly description out of a WalmartApiError. The
+ *  /v3/orders error envelope is `{ errors: { error: [{description, ...}] } }`,
+ *  but the wrapper sometimes returns it unwrapped depending on the
+ *  endpoint — handle both shapes defensively. */
+function extractWalmartErrorMessage(err: WalmartApiError): string {
+  const body = err.errorBody as
+    | {
+        errors?: { error?: Array<{ description?: string; code?: string }> };
+        error?: Array<{ description?: string; code?: string }>;
+      }
+    | null
+    | undefined;
+  const list =
+    body?.errors?.error ?? body?.error ?? [];
+  if (Array.isArray(list) && list.length > 0) {
+    const first = list[0];
+    if (first?.description) {
+      return first.code
+        ? `${first.code}: ${first.description}`
+        : first.description;
+    }
+  }
+  return err.message;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -121,10 +153,22 @@ export async function POST(req: NextRequest) {
     try {
       await api.cancelOrderLines(row.purchaseOrderId, openLines);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
+      // For Walmart-API errors, dig out the human description from
+      // errors.error[].description so the banner shows the real
+      // complaint instead of "Walmart API 400 on /v3/...".
+      const friendly =
+        e instanceof WalmartApiError
+          ? extractWalmartErrorMessage(e)
+          : e instanceof Error
+            ? e.message
+            : String(e);
+      const fullForLog =
+        e instanceof WalmartApiError
+          ? `${e.message} | body=${JSON.stringify(e.errorBody)}`
+          : friendly;
       console.error(
         `[procurement/walmart-cancel-order] cancel failed PO ${row.purchaseOrderId}:`,
-        msg,
+        fullForLog,
       );
       await prisma.walmartCancellationRequest.upsert({
         where: { purchaseOrderId: row.purchaseOrderId },
@@ -137,18 +181,18 @@ export async function POST(req: NextRequest) {
           shipBy: order.shippingInfo?.estimatedShipDate ?? null,
           action: "FAILED",
           actionedAt: new Date(),
-          notes: `Manual cancel from /procurement failed: ${msg.slice(0, 400)}`,
+          notes: `Manual cancel from /procurement failed: ${fullForLog.slice(0, 500)}`,
         },
         update: {
           action: "FAILED",
           actionedAt: new Date(),
-          notes: `Manual cancel from /procurement failed: ${msg.slice(0, 400)}`,
+          notes: `Manual cancel from /procurement failed: ${fullForLog.slice(0, 500)}`,
         },
       });
       return NextResponse.json(
         {
           ok: false,
-          error: msg,
+          error: friendly,
           purchaseOrderId: row.purchaseOrderId,
         },
         { status: 502 },
