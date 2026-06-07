@@ -3142,19 +3142,26 @@ function OrderRow({
               //                 that date, even though the printed
               //                 label says X.
               //
-              // Falls back to actualShipDay for rows planned before
-              // the dual-date migration ran (labelDate / physicalShipDate
-              // null but actualShipDay populated).
+              // The Physical chip MUST anchor on plan.actualShipDay
+              // (== legacyActualShipDay in the route — the very day
+              // selectBestRate used as the rate anchor), not on
+              // plan.physicalShipDate. The latter is set to labelDate
+              // in the non-trick branch, which on a Sunday load means
+              // Sun even though the warehouse hands off Mon. Showing
+              // Sun here would lie about when the package physically
+              // leaves and would contradict the Ship-date picker
+              // (which now also advances Sat/Sun to next business day).
               const labelDate = plan.labelDate ?? plan.actualShipDay;
               const physicalShipDate =
-                plan.physicalShipDate ?? plan.actualShipDay;
+                plan.actualShipDay ?? plan.physicalShipDate;
               if (!labelDate && !physicalShipDate) return null;
 
-              const trickApplied =
-                plan.shipDateTrickApplied ||
-                (!!labelDate &&
-                  !!physicalShipDate &&
-                  labelDate !== physicalShipDate);
+              // Use only the explicit Ship-Date-Trick flag from the
+              // route. The old fallback (labelDate !== physicalShipDate)
+              // false-fires for every weekend load now that the chip
+              // anchors on actualShipDay (Mon) while labelDate stays
+              // Sun for the printed label.
+              const trickApplied = plan.shipDateTrickApplied === true;
 
               if (!trickApplied) {
                 return (
