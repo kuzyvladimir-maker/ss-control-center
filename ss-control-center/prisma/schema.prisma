@@ -846,6 +846,31 @@ model SyncLog {
   error       String?
 }
 
+// Featured-Offer repricer audit log.
+// One row per SKU evaluated by /api/cron/reprice-amazon. Records the
+// before/after price (or why we skipped) so Vladimir can see history and
+// roll a price back if needed. `action` explains the outcome; on a real
+// (non-dryRun) reprice `oldPrice`/`newPrice` are what we changed.
+model RepriceLog {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  storeIndex   Int
+  sku          String
+  asin         String?
+  title        String?
+  oldPrice     Float // our listing price before the run
+  newPrice     Float? // our new listing price (null when skipped)
+  shipping     Float    @default(0) // our shipping at decision time
+  targetLanded Float? // competitor featured-offer landed price we matched
+  competitors  Int      @default(0) // total offers on the listing
+  action       String // repriced | skipped_winning | skipped_raise | skipped_cap | skipped_floor | no_competition | error
+  reason       String?
+  dryRun       Boolean  @default(false)
+
+  @@index([storeIndex, createdAt])
+  @@index([sku])
+}
+
 // Customer Hub — Knowledge Base
 // Stores resolved customer-support cases so the Decision Engine can find
 // similar past situations before generating a new response. Seeded with

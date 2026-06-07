@@ -56,6 +56,10 @@
     {
       "path": "/api/cron/walmart-listing-quality",
       "schedule": "15 */2 * * *"
+    },
+    {
+      "path": "/api/cron/reprice-amazon",
+      "schedule": "45 */2 * * *"
     }
   ]
 }
