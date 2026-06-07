@@ -4,7 +4,14 @@ import { prisma } from "@/lib/prisma";
 const GMAIL_CLIENT_ID = process.env.GMAIL_CLIENT_ID;
 const GMAIL_CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET;
 
-export const MAX_GMAIL_STORES = 5;
+// Slots 1–5 are the Amazon Customer-Hub mailboxes (one per Amazon store).
+// Slot 6 was added 2026-06-07 for the Walmart quantity-inquiry feature: the
+// Sirius customer-service mailbox (info.siriustrading@gmail.com) needs send+
+// read but isn't an Amazon store. The feature resolves it by EMAIL
+// (getGmailAccountByEmail), not by slot number; the slot just gives it a place
+// to live + a Connect button in Settings. The Amazon Customer-Hub sync will
+// also scan slot 6 with Amazon-specific queries and harmlessly find nothing.
+export const MAX_GMAIL_STORES = 6;
 
 export function isGmailOauthConfigured(): boolean {
   return !!(GMAIL_CLIENT_ID && GMAIL_CLIENT_SECRET);
