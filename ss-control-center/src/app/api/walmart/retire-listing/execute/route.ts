@@ -32,9 +32,16 @@ import { getWalmartClient } from "@/lib/walmart/client";
 import {
   readInventoryAcrossNodes,
   setInventoryAllNodes,
+  verifyInventoryAllNodes,
   type PerNodeQty,
   type PerNodeWriteResult,
 } from "@/lib/walmart/inventory";
+
+// Multi-SKU retire with up-to-17s verification per SKU could blow
+// Vercel's default 10s/60s window. Most SKUs settle on attempt 2-3
+// (≈4-9s), but bound the worst case explicitly so the operator gets a
+// response instead of a generic timeout.
+export const maxDuration = 300;
 
 const STORE_INDEX = 1;
 
@@ -164,8 +171,15 @@ export async function POST(request: NextRequest) {
       continue;
     }
 
-    // Step 3 — read-back verification across all nodes. Sum must be 0.
-    const after = await readInventoryAcrossNodes(client, STORE_INDEX, sku);
+    // Step 3 — read-back verification. Walmart processes inventory
+    // PUTs asynchronously ("Updates may take up to 1 hour" per their
+    // own UI), so a single-shot read ~500ms after the PUT almost
+    // always returns the stale pre-PUT value and falsely trips the
+    // silent-fail path. Live probe 2026-06-07: FaisalX-5409..5411 read
+    // 50 immediately after PUT, then read 0 across all nodes ~2min
+    // later. We retry with exponential backoff up to ~17s; the common
+    // path settles on attempt 2-3 (≈4-9s).
+    const after = await verifyInventoryAllNodes(client, STORE_INDEX, sku, 0);
     const verifiedQty = after.totalQty;
 
     const retirement = await prisma.walmartListingRetirement.create({

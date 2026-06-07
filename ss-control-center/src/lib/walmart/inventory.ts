@@ -149,6 +149,44 @@ export interface PerNodeWriteResult {
 }
 
 /**
+ * Wait + retry readback. Walmart processes inventory PUTs
+ * asynchronously — their own Seller Center UI explicitly warns
+ * "Updates may take up to 1 hour". A read fired ~500ms after PUT
+ * almost always returns the stale pre-PUT value, which made our
+ * single-shot verification falsely report a silent-fail.
+ *
+ * This polls /v3/inventory across all known nodes a few times,
+ * exponentially backing off, until either:
+ *   - totalQty equals the expected amount (success), or
+ *   - we exhaust the retry budget (caller surfaces silent-fail).
+ *
+ * Defaults: 4 attempts at 1.5s, 3s, 5s, 7s ≈ 17s worst-case. The
+ * common path returns on attempt 2-3 (≈4-9s), which is well inside
+ * what the operator already expects from the spinner.
+ */
+export async function verifyInventoryAllNodes(
+  client: WalmartClient,
+  storeIndex: number,
+  sku: string,
+  expectedTotalQty: number,
+  opts: { delaysMs?: number[] } = {},
+): Promise<{ nodes: PerNodeQty[]; totalQty: number; attempts: number }> {
+  const delays = opts.delaysMs ?? [1500, 3000, 5000, 7000];
+  let last: { nodes: PerNodeQty[]; totalQty: number } = {
+    nodes: [],
+    totalQty: -1,
+  };
+  for (let i = 0; i < delays.length; i++) {
+    await new Promise((r) => setTimeout(r, delays[i]));
+    last = await readInventoryAcrossNodes(client, storeIndex, sku);
+    if (last.totalQty === expectedTotalQty) {
+      return { ...last, attempts: i + 1 };
+    }
+  }
+  return { ...last, attempts: delays.length };
+}
+
+/**
  * Set inventory to `amount` on every known ship node for one SKU.
  * Returns one entry per ship node attempted; the caller is expected
  * to follow up with `readInventoryAcrossNodes` for verification (so

@@ -26,6 +26,7 @@ import { searchWalmartItems } from "@/lib/walmart/items";
 import {
   setInventoryAllNodes,
   readInventoryAcrossNodes,
+  verifyInventoryAllNodes,
 } from "@/lib/walmart/inventory";
 import {
   searchWalmartCatalogCache,
@@ -237,8 +238,20 @@ const walmartInventoryUpdate: JackieTool = {
       // account — default-node-only PUTs leave stock live elsewhere.
       const writes = await setInventoryAllNodes(client, STORE_INDEX, sku, quantity);
       const okCount = writes.filter((w) => w.ok).length;
-      const verify = await readInventoryAcrossNodes(client, STORE_INDEX, sku);
-      const success = writes.length > 0 && okCount === writes.length && verify.totalQty === quantity * writes.length;
+      // Walmart applies inventory PUTs asynchronously — readback right
+      // after PUT returns stale values. verifyInventoryAllNodes polls
+      // with exponential backoff up to ~17s until totals match expected.
+      const expectedTotal = quantity * writes.length;
+      const verify = await verifyInventoryAllNodes(
+        client,
+        STORE_INDEX,
+        sku,
+        expectedTotal,
+      );
+      const success =
+        writes.length > 0 &&
+        okCount === writes.length &&
+        verify.totalQty === expectedTotal;
       return {
         ok: success,
         sku,
@@ -248,6 +261,7 @@ const walmartInventoryUpdate: JackieTool = {
         writes,
         verified_total_qty: verify.totalQty,
         verified_per_node: verify.nodes,
+        verify_attempts: verify.attempts,
         ...(success
           ? {}
           : {
