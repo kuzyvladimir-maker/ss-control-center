@@ -15,6 +15,7 @@ import {
   Settings,
   ShoppingCart,
   Layers,
+  Sprout,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -91,6 +92,11 @@ const operationsItems = (s: DashboardSummary): NavItem[] => [
     title: "Bundle Factory",
     href: "/bundle-factory",
     icon: Layers,
+  },
+  {
+    title: "Walmart Growth",
+    href: "/walmart-growth",
+    icon: Sprout,
   },
 ];
 

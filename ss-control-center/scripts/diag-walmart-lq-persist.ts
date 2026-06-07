@@ -15,10 +15,15 @@ async function main() {
   const prisma = new PrismaClient({ adapter });
 
   const client = getWalmartClient(1);
-  console.log("Running full sync into", dbPath, "...");
-  const result = await syncListingQuality(prisma, client, 1);
+  const maxPages = Number(process.env.MAX_PAGES ?? 3);
+  console.log(`Running resumable sync (maxPages=${maxPages}) into`, dbPath, "...");
+  const result = await syncListingQuality(prisma, client, 1, { maxPages });
   console.log("\n### SYNC RESULT ###");
   console.log(JSON.stringify(result, null, 2));
+
+  const state = await prisma.walmartLqSyncState.findUnique({ where: { storeIndex: 1 } });
+  console.log("### SWEEP STATE ###");
+  console.log(`cursor=${state?.cursor ? state.cursor.slice(0, 16) + "…" : "null"} sweepStartedAt=${state?.sweepStartedAt?.toISOString() ?? "null"} pagesThisSweep=${state?.pagesThisSweep} itemsThisSweep=${state?.itemsThisSweep} lastFullSweepAt=${state?.lastFullSweepAt?.toISOString() ?? "null"}`);
 
   // Read back: worklist ranked by traffic-but-low-score, and the snapshot.
   const snap = await prisma.walmartListingQualitySnapshot.findFirst({
