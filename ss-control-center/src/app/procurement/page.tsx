@@ -16,6 +16,7 @@ import { usePullToRefresh } from "@/lib/use-pull-to-refresh";
 import {
   ProcurementList,
   type ProcurementOrderCard,
+  type CancellationFlag,
 } from "./components/ProcurementList";
 import type {
   CardAction,
@@ -98,6 +99,15 @@ export default function ProcurementPage() {
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<SortKey>("shipBy");
   const [lastSync, setLastSync] = useState<Date | null>(null);
+  // Live Walmart-side cancellation flags keyed by Veeqo order number
+  // (== Walmart customerOrderId). Populated by a parallel call to
+  // /api/procurement/walmart-cancellations after each items load and
+  // each refresh — Vladimir's requirement that a cancellation check
+  // runs every time data refreshes, so he never buys inventory for an
+  // order the buyer is trying to cancel.
+  const [cancellationFlags, setCancellationFlags] = useState<
+    Record<string, CancellationFlag>
+  >({});
   const [search, setSearch] = useState("");
   // Quick filter by sales channel (toggle: click = on, click again = off).
   // null = show all channels.
@@ -169,12 +179,100 @@ export default function ProcurementPage() {
       } else {
         setPrioritiesBySku({});
       }
+
+      // Walmart-side cancellation sweep. We only need to check Walmart
+      // channel orders (other channels have their own cancellation
+      // surfaces). Non-fatal: if Walmart's API hiccups the page still
+      // renders, the operator just won't see the red banner.
+      const walmartOrderNumbers = Array.from(
+        new Set(
+          newCards
+            .filter((c) => (c.channel ?? "").toLowerCase() === "walmart")
+            .map((c) => c.orderNumber)
+            .filter(Boolean),
+        ),
+      );
+      if (walmartOrderNumbers.length > 0) {
+        try {
+          const r = await fetch("/api/procurement/walmart-cancellations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderNumbers: walmartOrderNumbers }),
+          });
+          if (r.ok) {
+            const j = (await r.json()) as {
+              results?: Record<string, CancellationFlag>;
+            };
+            setCancellationFlags(j.results ?? {});
+          } else {
+            setCancellationFlags({});
+          }
+        } catch {
+          setCancellationFlags({});
+        }
+      } else {
+        setCancellationFlags({});
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
       setLoading(false);
     }
   }
+
+  /**
+   * Click-handler for the "Cancel on Walmart" button in the
+   * CancellationBanner. Hits the cancel-order endpoint (which uses
+   * Walmart reason code CUSTOMER_CHANGED_MIND) and, on success, removes
+   * every line tied to that orderNumber from the local card list so
+   * the entire order block disappears from the procurement queue.
+   */
+  const handleCancelWalmartOrder = useCallback(
+    async (orderNumber: string): Promise<{ ok: boolean; error?: string }> => {
+      try {
+        const r = await fetch("/api/procurement/walmart-cancel-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderNumber }),
+        });
+        const body = (await r.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+        };
+        if (!r.ok || body.ok === false) {
+          return {
+            ok: false,
+            error: body.error ?? `HTTP ${r.status}`,
+          };
+        }
+        // Drop the cancelled order from the local list — Vladimir's
+        // viewing intent is "procurement work to do", and a cancelled
+        // order isn't work anymore.
+        setCards((prev) => prev.filter((c) => c.orderNumber !== orderNumber));
+        // Reflect the new state in the flag so the banner stays
+        // showing the cancelled-state badge until the row leaves.
+        setCancellationFlags((prev) => {
+          const next = { ...prev };
+          if (next[orderNumber]) {
+            next[orderNumber] = {
+              ...next[orderNumber],
+              intentToCancel: false,
+              isCancelled: true,
+              status: "Cancelled",
+            };
+          }
+          return next;
+        });
+        return { ok: true };
+      } catch (e) {
+        return {
+          ok: false,
+          error: e instanceof Error ? e.message : "Network error",
+        };
+      }
+    },
+    [],
+  );
 
   /**
    * Mark every selected line item as "bought" — sequentially, since each
@@ -685,6 +783,8 @@ export default function ProcurementPage() {
           onPrioritiesSaved={(sku, storeNames) =>
             setPrioritiesBySku((prev) => ({ ...prev, [sku]: [...storeNames] }))
           }
+          cancellationFlags={cancellationFlags}
+          onCancelWalmartOrder={handleCancelWalmartOrder}
         />
       )}
 

@@ -1,7 +1,16 @@
 "use client";
 
-import { Zap, Calendar, Store, User } from "lucide-react";
+import { useState } from "react";
+import {
+  Zap,
+  Calendar,
+  Store,
+  User,
+  AlertOctagon,
+  XCircle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Btn } from "@/components/kit";
 import {
   ProcurementCard,
   type ProcurementCardData,
@@ -23,6 +32,17 @@ export interface ProcurementOrderCard extends ProcurementCardData {
   currency: string | null;
 }
 
+/** Live Walmart-side cancellation signal for an order, keyed by Veeqo
+ *  order number (== Walmart customerOrderId). Set by the page after it
+ *  calls /api/procurement/walmart-cancellations in parallel with /items. */
+export interface CancellationFlag {
+  intentToCancel: boolean;
+  isCancelled: boolean;
+  cancellationReason: string | null;
+  purchaseOrderId: string;
+  status: string;
+}
+
 interface ProcurementListProps {
   cards: ProcurementOrderCard[];
   onAction: (
@@ -39,6 +59,17 @@ interface ProcurementListProps {
   /** Bubble up new store priorities from the popup so the page can refresh
    *  its cache and every card showing this SKU updates instantly. */
   onPrioritiesSaved?: (sku: string, storeNames: ReadonlyArray<string>) => void;
+  /** Walmart cancellation flags keyed by Veeqo orderNumber. Undefined entry
+   *  = nothing surfaced for that order (either non-Walmart or check still
+   *  pending). */
+  cancellationFlags?: Readonly<Record<string, CancellationFlag>>;
+  /** Called when the operator clicks "Cancel on Walmart" on the banner.
+   *  Hits /api/procurement/walmart-cancel-order with reason
+   *  CUSTOMER_CHANGED_MIND. Resolved value is bubbled back so the banner
+   *  can show inline success/error. */
+  onCancelWalmartOrder?: (
+    orderNumber: string,
+  ) => Promise<{ ok: boolean; error?: string }>;
 }
 
 function formatShipBy(iso: string | null): string | null {
@@ -80,6 +111,104 @@ function formatMoney(value: number | null, currency: string | null): string | nu
   }
 }
 
+interface CancellationBannerProps {
+  flag: CancellationFlag;
+  orderNumber: string;
+  onCancel?: (orderNumber: string) => Promise<{ ok: boolean; error?: string }>;
+}
+
+/**
+ * Inline banner shown above an order's line items when Walmart reports
+ * either an active buyer cancellation request (intentToCancel) or an
+ * already-cancelled state. The Cancel button hits the
+ * /api/procurement/walmart-cancel-order endpoint which uses Walmart
+ * reason code CUSTOMER_CHANGED_MIND (Vladimir's chosen reason for
+ * procurement-time cancellations).
+ */
+function CancellationBanner({
+  flag,
+  orderNumber,
+  onCancel,
+}: CancellationBannerProps) {
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  if (flag.isCancelled || done) {
+    return (
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-rule bg-bg-elev px-3 py-2 text-[12px] text-ink-3 sm:px-4">
+        <XCircle size={13} className="shrink-0 text-ink-3" />
+        <span className="font-medium text-ink-2">
+          Cancelled on Walmart
+        </span>
+        {flag.cancellationReason && (
+          <>
+            <span className="text-ink-4">·</span>
+            <span className="font-mono text-[11px] text-ink-3">
+              reason: {flag.cancellationReason}
+            </span>
+          </>
+        )}
+        <span className="text-ink-4">·</span>
+        <span className="font-mono text-[11px] text-ink-3">
+          PO {flag.purchaseOrderId}
+        </span>
+      </div>
+    );
+  }
+
+  // intentToCancel === true and not yet actioned
+  async function handleCancel() {
+    if (!onCancel) return;
+    setPending(true);
+    setError(null);
+    const r = await onCancel(orderNumber);
+    setPending(false);
+    if (r.ok) {
+      setDone(true);
+    } else {
+      setError(r.error ?? "Walmart rejected the cancel call");
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2 border-b border-danger/40 bg-danger-tint/70 px-3 py-2.5 sm:px-4">
+      <div className="flex items-start gap-2">
+        <AlertOctagon size={15} className="mt-0.5 shrink-0 text-danger" />
+        <div className="min-w-0 flex-1">
+          <div className="text-[12.5px] font-semibold text-danger">
+            Buyer requested cancellation on Walmart
+          </div>
+          <div className="mt-0.5 text-[11.5px] text-danger/90">
+            Do not buy inventory for this order. Cancel it before Walmart
+            auto-cancels (≤48h) — that protects the cancellation-rate
+            seller metric.
+          </div>
+          {flag.cancellationReason && (
+            <div className="mt-1 font-mono text-[11px] text-danger/80">
+              reason: {flag.cancellationReason}
+            </div>
+          )}
+        </div>
+        <Btn
+          variant="primary"
+          size="sm"
+          loading={pending}
+          icon={!pending ? <XCircle size={13} /> : undefined}
+          onClick={handleCancel}
+        >
+          {pending ? "Cancelling…" : "Cancel on Walmart"}
+        </Btn>
+      </div>
+      {error && (
+        <div className="rounded-md bg-surface px-2 py-1 text-[11.5px] text-danger">
+          {error}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function channelDot(channel: string): string {
   const c = channel.toLowerCase();
   if (c.includes("amazon")) return "bg-warn-tint text-warn-strong";
@@ -95,6 +224,8 @@ export function ProcurementList({
   selected,
   onToggleSelect,
   onPrioritiesSaved,
+  cancellationFlags,
+  onCancelWalmartOrder,
 }: ProcurementListProps) {
   // Group by orderId, preserving the order coming from the backend (already
   // sorted by ship-by or by title there).
@@ -117,10 +248,22 @@ export function ProcurementList({
         const ship = formatShipBy(head.shipBy);
         const urgency = shipByUrgency(head.shipBy);
         const totalMoney = formatMoney(head.orderTotal, head.currency);
+        const cancelFlag = cancellationFlags?.[head.orderNumber];
+        // Visual emphasis when something's off on Walmart's side: the
+        // operator must NOT buy inventory for an order the buyer just
+        // asked to cancel. Border + tint colour the entire order block
+        // so it's impossible to miss while scrolling.
+        const flagged = cancelFlag?.intentToCancel ?? false;
+        const cancelled = cancelFlag?.isCancelled ?? false;
         return (
           <div
             key={orderId}
-            className="overflow-hidden rounded-lg border border-rule bg-surface"
+            className={cn(
+              "overflow-hidden rounded-lg border bg-surface",
+              flagged && "border-danger ring-2 ring-danger/30",
+              cancelled && !flagged && "border-rule opacity-60",
+              !flagged && !cancelled && "border-rule",
+            )}
           >
             {/* Order header — small, dense, secondary */}
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-rule bg-surface-tint px-3 py-2 text-[11.5px] tabular text-ink-3 sm:px-4">
@@ -192,6 +335,19 @@ export function ProcurementList({
                 </>
               )}
             </div>
+
+            {/* Cancellation banner — sits between the order header and
+                the line items. Surfaces Walmart's intentToCancel flag
+                (the red exclamation in Seller Center) so the operator
+                sees it BEFORE deciding to buy inventory, and offers a
+                one-click cancel with reason CUSTOMER_CHANGED_MIND. */}
+            {cancelFlag && (cancelFlag.intentToCancel || cancelFlag.isCancelled) && (
+              <CancellationBanner
+                flag={cancelFlag}
+                orderNumber={head.orderNumber}
+                onCancel={onCancelWalmartOrder}
+              />
+            )}
 
             {/* Cards */}
             <div>
