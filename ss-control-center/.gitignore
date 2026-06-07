@@ -48,3 +48,6 @@ next-env.d.ts
 # scripts/fetch-active-listings.ts. Large + contains real Amazon
 # listing data, regenerated on demand. Do not commit.
 /data/imports/
+
+# Throwaway test SQLite DBs (e.g. tmp-lqtest.db) created by diag scripts.
+tmp-*.db
