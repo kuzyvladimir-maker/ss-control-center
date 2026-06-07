@@ -45,9 +45,12 @@ function requireCronAuth(request: NextRequest): NextResponse | null {
 
 function hasIntentToCancel(order: WalmartOrder): boolean {
   for (const line of order.orderLines) {
-    for (const s of line.statuses) {
-      if (s.intentToCancel) return true;
-    }
+    // intentToCancel is a peer of `statuses` on the orderLine, NOT a
+    // field on orderLineStatus. The old version of this function
+    // walked the statuses, found nothing, and returned false for every
+    // cancellation request the watchdog ever saw — so this cron has
+    // been silently no-op'ing since it was deployed. Fixed 2026-06-07.
+    if (line.intentToCancel) return true;
   }
   return false;
 }

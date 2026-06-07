@@ -80,20 +80,28 @@ function mapTrackingInfo(raw: any): WalmartTrackingInfo | undefined {
 }
 
 function mapLineStatus(raw: any): WalmartOrderLineStatus {
-  // Walmart emits intentToCancel as the literal string "TRUE" / "FALSE"
-  // when present; field absent on most lines. Normalise to boolean.
-  const itc = raw?.intentToCancel;
-  const intentToCancel =
-    typeof itc === "string"
-      ? itc.toUpperCase() === "TRUE"
-      : itc === true || undefined;
   return {
     status: raw?.status ?? "",
     statusQuantity: Number(raw?.statusQuantity?.amount ?? 0),
     cancellationReason: raw?.cancellationReason,
     trackingInfo: mapTrackingInfo(raw?.trackingInfo),
-    intentToCancel,
   };
+}
+
+/**
+ * Walmart emits intentToCancel as the literal string "TRUE" / "FALSE"
+ * (sometimes mixed case) on the orderLine, NOT on orderLineStatus.
+ * Normalise to boolean | undefined. See WalmartOrderLine type comment
+ * for the historical bug that motivated pinning this down.
+ */
+function parseIntentToCancel(raw: unknown): boolean | undefined {
+  if (raw === true || raw === false) return raw;
+  if (typeof raw === "string") {
+    const u = raw.toUpperCase();
+    if (u === "TRUE") return true;
+    if (u === "FALSE") return false;
+  }
+  return undefined;
 }
 
 function mapRefund(raw: any): WalmartRefund {
@@ -128,6 +136,7 @@ function mapOrderLine(raw: any): WalmartOrderLine {
     statuses,
     fulfillmentOption: raw?.fulfillment?.fulfillmentOption,
     shippingProgramType: raw?.fulfillment?.shipMethod,
+    intentToCancel: parseIntentToCancel(raw?.intentToCancel),
   };
 }
 

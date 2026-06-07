@@ -88,8 +88,11 @@ function extractFlag(order: WalmartOrder): {
   let intent = false;
   let reason: string | null = null;
   for (const line of order.orderLines) {
+    // intentToCancel lives on the orderLine itself — peer of statuses,
+    // not inside them. See WalmartOrderLine type comment for the bug
+    // this comment is paying penance for.
+    if (line.intentToCancel) intent = true;
     for (const s of line.statuses) {
-      if (s.intentToCancel) intent = true;
       if (s.cancellationReason && !reason) reason = s.cancellationReason;
     }
   }

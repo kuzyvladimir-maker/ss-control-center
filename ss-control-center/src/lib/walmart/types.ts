@@ -37,13 +37,6 @@ export interface WalmartOrderLineStatus {
   statusQuantity: number;
   cancellationReason?: string;
   trackingInfo?: WalmartTrackingInfo;
-  /**
-   * Walmart sets this to "TRUE" (string, not boolean) when the buyer has
-   * requested cancellation via the customer-facing site. This is the
-   * source of the red exclamation mark in Seller Center. Polled by
-   * /api/cron/walmart-cancellation-watchdog.
-   */
-  intentToCancel?: boolean;
 }
 
 export interface WalmartOrderLine {
@@ -57,6 +50,17 @@ export interface WalmartOrderLine {
   statuses: WalmartOrderLineStatus[];
   fulfillmentOption?: string;        // S2H | C&C | etc.
   shippingProgramType?: string;
+  /**
+   * Walmart sets this to "TRUE" (string, not boolean) when the buyer
+   * has requested cancellation via the customer-facing site. It's the
+   * source of the red exclamation mark in Seller Center. CRITICAL:
+   * the field lives on the orderLine itself (peer of orderLineStatuses,
+   * fulfillment, charges, etc.) — NOT inside orderLineStatus. Earlier
+   * versions of this codebase placed it under statuses and silently
+   * lost the signal for every cancellation request, masking the
+   * watchdog cron + the procurement banner. Fixed 2026-06-07.
+   */
+  intentToCancel?: boolean;
 }
 
 export interface WalmartShippingInfo {
