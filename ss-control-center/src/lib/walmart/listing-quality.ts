@@ -148,10 +148,52 @@ export interface LqItem {
   scoredAt: string | null;
 }
 
+export interface LqPage {
+  items: LqItem[];
+  nextCursor: string | null;
+  totalItems: number | null;
+}
+
+/**
+ * Fetch ONE page of the per-item feed. Page size 200 is Walmart's max
+ * (limit≥500 returns a 520 backend error). The endpoint's rate bucket is
+ * tiny (~1 call / 12-15s sustained), which is why the resumable cron driver
+ * paces calls and persists `nextCursor` between runs rather than looping here.
+ */
+export async function fetchListingQualityPage(
+  client: WalmartClient,
+  opts: { cursor?: string | null; pageSize?: number } = {}
+): Promise<LqPage> {
+  const params: Record<string, string | number> = { limit: opts.pageSize ?? 200 };
+  if (opts.cursor) params.nextCursor = opts.cursor;
+
+  const res = await client.requestRaw("POST", "/insights/items/listingQuality/items", {
+    params,
+    body: {},
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) {
+    const msg =
+      typeof res.body === "string" ? res.body : JSON.stringify(res.body)?.slice(0, 300);
+    const err = new Error(`Listing Quality items ${res.status}: ${msg}`);
+    (err as any).status = res.status;
+    throw err;
+  }
+  const body = res.body as any;
+  const rows: any[] = Array.isArray(body?.payload) ? body.payload : [];
+  return {
+    items: rows.map(distillItem),
+    nextCursor: body?.nextCursor || null,
+    totalItems: num(body?.totalItems),
+  };
+}
+
 /**
  * Page through the entire per-item Listing Quality feed. Yields distilled
  * LqItem records. Walmart paginates with an opaque `nextCursor`; page size
  * 200 (its max) keeps the full ~4 000-item sweep to ~20 sequential calls.
+ * NOTE: ignores the rate bucket — fine for one-off scripts, but the cron uses
+ * the resumable `fetchListingQualityPage` driver instead.
  */
 export async function* iterateListingQualityItems(
   client: WalmartClient,
