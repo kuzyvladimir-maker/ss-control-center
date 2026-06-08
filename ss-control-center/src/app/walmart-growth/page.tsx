@@ -1,5 +1,5 @@
-import { ListingQualityDashboard } from "@/components/walmart-growth/ListingQualityDashboard";
+import { WalmartGrowthTabs } from "@/components/walmart-growth/WalmartGrowthTabs";
 
 export default function WalmartGrowthPage() {
-  return <ListingQualityDashboard />;
+  return <WalmartGrowthTabs />;
 }

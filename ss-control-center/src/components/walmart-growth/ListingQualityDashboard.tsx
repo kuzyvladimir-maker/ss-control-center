@@ -13,7 +13,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { RefreshCw, ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
-import { PageHead, Btn, Panel, PanelHeader, KpiCard, RiskPill } from "@/components/kit";
+import { Btn, Panel, PanelHeader, KpiCard, RiskPill } from "@/components/kit";
 import { cn } from "@/lib/utils";
 
 // ── Types mirroring the GET route payload ──
@@ -207,30 +207,25 @@ export function ListingQualityDashboard() {
 
   return (
     <div className="space-y-5">
-      <PageHead
-        title="Walmart Growth"
-        subtitle={
-          <>
-            <span>Listing Quality · the levers that move search rank, Buy Box &amp; Pro Seller</span>
-            {sweep?.lastFullSweepAt && (
-              <span className="text-ink-4">
-                · last full sweep {new Date(sweep.lastFullSweepAt).toLocaleString()}
-              </span>
-            )}
-            {sweep?.inProgress && (
-              <span className="text-warn-strong">· sweep in progress ({sweep.itemsThisSweep} items)</span>
-            )}
-          </>
-        }
-        actions={
-          <div className="flex items-center gap-2">
-            {syncMsg && <span className="text-[11px] text-ink-3">{syncMsg}</span>}
-            <Btn icon={<RefreshCw size={13} />} onClick={syncNow} loading={syncing}>
-              {syncing ? "Syncing…" : "Sync now"}
-            </Btn>
-          </div>
-        }
-      />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-ink-3">
+          <span>The levers that move search rank, Buy Box &amp; Pro Seller</span>
+          {sweep?.lastFullSweepAt && (
+            <span className="text-ink-4">
+              · last full sweep {new Date(sweep.lastFullSweepAt).toLocaleString()}
+            </span>
+          )}
+          {sweep?.inProgress && (
+            <span className="text-warn-strong">· sweep in progress ({sweep.itemsThisSweep} items)</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {syncMsg && <span className="text-[11px] text-ink-3">{syncMsg}</span>}
+          <Btn icon={<RefreshCw size={13} />} onClick={syncNow} loading={syncing}>
+            {syncing ? "Syncing…" : "Sync now"}
+          </Btn>
+        </div>
+      </div>
 
       {!hasData && !loading ? (
         <Panel>

@@ -60,6 +60,10 @@
     {
       "path": "/api/cron/reprice-amazon",
       "schedule": "45 */2 * * *"
+    },
+    {
+      "path": "/api/cron/walmart-reports",
+      "schedule": "10,40 * * * *"
     }
   ]
 }
