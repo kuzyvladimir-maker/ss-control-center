@@ -1461,6 +1461,12 @@ model SkuShippingData {
   // it's an assigned UPCPool code with no retail equivalent (decompose instead).
   upc          String? // 12/13/14-digit identifier as a string (keep leading zeros)
   upcSource    String? // amazon_listing_report | walmart_item | manual
+  // Vision-identified product structure (scripts/cogs-identify.ts): the engine
+  // reads the listing photo+title and resolves the EXACT product + how many
+  // procurement base units are in this listing (handles packs / variety bundles).
+  productIdentity String? // JSON: {brand,size,container,units_in_listing,components,base_unit,...}
+  unitsInListing  Int? // total procurement base units in this listing
+  baseUnitDesc    String? // one shelf unit (drives the retail price lookup)
   // Provenance: google_sheets_migration | manual | veeqo_history
   source       String   @default("manual")
   createdAt    DateTime @default(now())
