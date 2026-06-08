@@ -1455,10 +1455,58 @@ model SkuShippingData {
   weightFedex  Float? // lbs — FedEx One Rate only
   sampleCount  Int      @default(0)
   notes        String?
+  // Manufacturer UPC/GTIN pulled from our OWN marketplace listing (Stage 0b of
+  // the COGS sourcing engine). For straight-resale items this IS the real retail
+  // barcode → exact match at Walmart/Target. For our own Salutem/Starfit bundles
+  // it's an assigned UPCPool code with no retail equivalent (decompose instead).
+  upc          String? // 12/13/14-digit identifier as a string (keep leading zeros)
+  upcSource    String? // amazon_listing_report | walmart_item | manual
   // Provenance: google_sheets_migration | manual | veeqo_history
   source       String   @default("manual")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+// SkuCost — dated true-cost history per SKU (COGS unit-economics engine).
+// One SKU can have MANY rows (cost periods over time, like Sellerboard's
+// CostPeriodStartDate), so there is no unique constraint on sku alone.
+// Costs are stored SEPARATELY (product / packaging / ice) so we can see where
+// to improve — Sellerboard's frozen number bundles all three, so for frozen we
+// source the bare product cost ourselves and compute packaging+ice here.
+// See docs/wiki/cogs-true-cost-agent.md + product-sourcing-engine-build-plan.md.
+model SkuCost {
+  id   String  @id @default(cuid())
+  sku  String
+  asin String? // Amazon match key when present
+
+  effectiveDate String? // ISO date the cost took effect (Sellerboard CostPeriodStartDate / sourcing date)
+
+  productCost   Float? // bare product cost (from retail / Sellerboard for dry)
+  packagingCost Float? // cooler cost (frozen only) — separate so it's visible
+  iceCost       Float? // gel-ice cost (frozen only): 0.8 × productWeightLb × $0.10
+  totalCost     Float? // productCost + packagingCost + iceCost (or Sellerboard total)
+  costPerUnit   Float? // totalCost / packSize
+  packSize      Int? // units per listing (pack of N)
+
+  // True when the source already includes packaging+ice (e.g. Sellerboard frozen)
+  // — guards against double-counting when we add our own packaging math.
+  includesPackaging Boolean @default(false)
+  currency          String  @default("USD")
+
+  // sellerboard | bluecart | unwrangle | scrapehero | decodo | manual | agent
+  source      String
+  confidence  Float? // 1.0 = exact UPC match; <1 = fuzzy/LLM match
+  needsReview Boolean @default(false)
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Idempotent upsert key for re-ingesting the same source+period.
+  @@unique([sku, source, effectiveDate], name: "sku_cost_period")
+  @@index([sku])
+  @@index([asin])
+  @@index([source])
 }
 
 // ─── Frozen Analytics v2.0 — Proactive Risk Prediction ─────────────────────
