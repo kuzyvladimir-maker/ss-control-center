@@ -19,7 +19,10 @@
    ```
    ssh server 'node -e "const b=require(\"/root/.config/sourcing-accounts/bluecart.json\"),u=require(\"/root/.config/sourcing-accounts/unwrangle.json\"),o=require(\"/root/.config/sourcing-accounts/oxylabs.json\");process.stdout.write(`BLUECART_API_KEY=${b.api_key}\nUNWRANGLE_API_KEY=${u.api_key}\nOXYLABS_API_USER=${o.api_user}\nOXYLABS_API_PASSWORD=${o.api_password}\n`)"' >> ss-control-center/.env.local
    ```
-   (Базовые creds — Turso/Amazon SP-API/Google OAuth — у тебя в `.env.local` уже есть, как на MacBook.)
+   (Базовые creds — Turso/Amazon SP-API/Google OAuth — обычно уже в твоём `.env.local`; если нет —
+   `vercel env pull` подтянет их из Vercel. **Секреты НЕ в git намеренно** — это небезопасно.)
+   ⚠️ Команда выше требует, чтобы на iMac был настроен SSH-хост `server` (root@104.219.53.204) — тот же
+   канал, через который Claude общается с Джеки. Если SSH не настроен — это единственная ручная настройка.
 
 3. **Прогнать** (всё: `cd ss-control-center && npx tsx scripts/<name>.ts`):
    - `cogs-identify-walmart.ts` — мозг (vision) опознаёт 13 SKU → `SkuShippingData.productIdentity`.
