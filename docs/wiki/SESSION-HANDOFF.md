@@ -4,7 +4,40 @@
 > SESSION-HANDOFF»*. Здесь — что мы делали, где остановились, и план. Обновляется
 > в конце каждой сессии.
 >
-> **Последнее обновление:** 2026-06-08 (день, MacBook-Claude — соединил Stage A мозг ↔ Stage B сервисы Джеки). Главная незаконченная задача — **COGS / Product Sourcing Engine.**
+> **Последнее обновление:** 2026-06-08 (день, MacBook-Claude — построил Stage B движка в нашем проекте + прогнал пилот 13 SKU + выгрузил Google-таблицу). **СТАТУС:** пилот готов (Walmart-only, 4/13), таблица отдана Владимиру (у него замечания), мульти-ритейлер упёрся в платный тариф. Главная незаконченная задача — **COGS / Product Sourcing Engine.** ⬇️ см. «ВОСПРОИЗВЕСТИ НА iMac».
+
+## 🖥️ ВОСПРОИЗВЕСТИ СЕССИЮ MacBook НА iMac (Claude на iMac — сделай ПЕРВЫМ)
+2026-06-08 на **MacBook** построили Stage B движка (в нашем проекте) и прогнали пилот на 13 SKU.
+Чтобы ты увидел ТО ЖЕ САМОЕ и Владимир продолжил у тебя:
+
+1. **`git pull`** — заберёт весь код: `src/lib/sourcing/retail-fetch.ts`, `scripts/cogs-enrich-pilot.ts`,
+   `scripts/cogs-export-sheet.ts`, `scripts/cogs-identify-walmart.ts` + снапшот результатов
+   `docs/sourcing/pilot-enriched.json` + батч мозга `docs/sourcing/brain-walmart-batch.json`.
+
+2. **Ключи платных сервисов НЕ в git** (`.env.local` gitignored). Забери их с бокса Джеки в свой
+   `ss-control-center/.env.local` (одной командой):
+   ```
+   ssh server 'node -e "const b=require(\"/root/.config/sourcing-accounts/bluecart.json\"),u=require(\"/root/.config/sourcing-accounts/unwrangle.json\"),o=require(\"/root/.config/sourcing-accounts/oxylabs.json\");process.stdout.write(`BLUECART_API_KEY=${b.api_key}\nUNWRANGLE_API_KEY=${u.api_key}\nOXYLABS_API_USER=${o.api_user}\nOXYLABS_API_PASSWORD=${o.api_password}\n`)"' >> ss-control-center/.env.local
+   ```
+   (Базовые creds — Turso/Amazon SP-API/Google OAuth — у тебя в `.env.local` уже есть, как на MacBook.)
+
+3. **Прогнать** (всё: `cd ss-control-center && npx tsx scripts/<name>.ts`):
+   - `cogs-identify-walmart.ts` — мозг (vision) опознаёт 13 SKU → `SkuShippingData.productIdentity`.
+   - `cogs-enrich-pilot.ts --no-unwrangle` — мульти-фетч (BlueCart=Walmart 1P), гейты, → `RetailPrice`
+     (мульти-оффер) + `SkuCost`. Результат: **4/13 чистых first-party цены**.
+   - `cogs-export-sheet.ts` — Google-таблица (или просто открой существующую, ссылка ниже).
+
+4. **ТА САМАЯ Google-таблица** (владелец kuzy.vladimir@gmail.com, доступ по ссылке открыт):
+   **https://docs.google.com/spreadsheets/d/15KG8OtehqbPKY2pIMwQsiPMk4IPG8T9SAH9c2ZmtNZ4**
+   3 вкладки = 3 таблицы БД (Каталог+Опознание / Цены-все-офферы с фото =IMAGE() / COGS).
+   ⚠️ **Владимир открыл её и имеет КРИТИЧЕСКИЕ + СРЕДНИЕ замечания** → продиктует на iMac; примени их.
+
+5. **Где упёрлись:** мульти-ритейлер (Target/Sam's/Publix) = платный тариф (триалы Unwrangle/Oxylabs почти
+   пусты; BlueCart покрывает только Walmart). Бесплатно дальше: (а) починить гейт — `RizwanX-3877` La Abuela
+   дал битую $0.26/unit (неверный матч проскочил); (б) дописать Oxylabs+Instacart для Publix/BJ's/ALDI.
+   Платный полный прогон 506 SKU ждёт решения Владимира по бюджету.
+
+---
 
 ## 🪟 Открытые вкладки (рабочие потоки)
 
