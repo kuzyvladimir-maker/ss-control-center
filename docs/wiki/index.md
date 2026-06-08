@@ -21,6 +21,7 @@
 - [Dashboard](dashboard.md) — главная страница, карточки, сводка
 - [Store Filter System](store-filter-system.md) — глобальный мульти-селект магазинов (Phase 1: Dashboard) — 2026-05-12
 - [Sales Cards on Dashboard](sales-cards-dashboard.md) — 5-period gross revenue + linear forecast (Dashboard) — 2026-05-12
+- [COGS / True-Cost Agent](cogs-true-cost-agent.md) — справедливая себестоимость по всем SKU (товар + упаковка + лёд для Frozen), с привязкой к дате; расширяет SKU Database, кормит репрайсер + Sales Overview net profit. **В проектировании (Phase 2)** — 2026-06-07
 - [Procurement Module](./procurement-module.md) — мобильный закуп товара в магазинах (Publix, Walmart, BJ's). Выборка из Veeqo по тегам, фильтрация workflow-меток, разметка через `Placed` / `Need More`. Будущая основа агента-автозакупщика.
 - [Bundle Factory](bundle-factory.md) — фабрика по массовому созданию gift sets под Salutem Vita / Starfit brand для 9 каналов (5 Amazon + Walmart + eBay + 2 TikTok). AI-pipeline: research → variation matrix → content/images → API push + flat file. **Phase 2 fully implemented end-to-end через Distribution** (см. ниже фазы 2.0 → 2.5). Pipeline ready for production use. Phase 0 (2026-05-17) — концепт, Sourcing Map (37 магазинов, **14 Walmart**), Data Model (14 Prisma моделей), Marketplace Rules KB (25 файлов).
 - [Listing Audit Tool](listing-audit-tool.md) — Bundle Factory Phase 2.0a. Сканирует 5 Amazon аккаунтов на foreign-brand риски (по образцу 2026-05-17 incident), 5-rule risk score, batch remediation. Shipped 2026-05-17.
