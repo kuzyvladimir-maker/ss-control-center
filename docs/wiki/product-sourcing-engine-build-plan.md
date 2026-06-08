@@ -66,8 +66,27 @@
   один префикс невозможен; настоящий Cheetos = 028400). Они резолвятся, но в НАШИ ЖЕ мультипак-листинги
   (Cheetos «Pack of 3» $20.99) → COGS завышен в 3–4× и циклический. ⇒ **Walmart матчим ПО НАЗВАНИЮ к
   базовой единице, не по UPC.** «Walmart 514/514» — заполнено, но не тем типом идентификатора.
-- **Stage 1 (Jackie)** ⛔ ждёт: Джеки НЕ видит прямого сообщения Владимира → трату с карты
-  держит. Владимиру нужно написать Джеки в КАНАЛ, который Джеки реально получает.
+- **Stage 1 (Jackie)** ✅ РАЗБЛОКИРОВАН: Владимир подтвердил ≤$60 напрямую в Telegram Джеки.
+  Джеки протестил сервисы (BlueCart/Unwrangle/Oxylabs+Instacart) на free-триалах, $0 списано.
+  Пилот 13 SKU = **9/13** — НО на **сырых тайтлах, без мозга**. 4 провала = ошибки опознания
+  товара (Country Oatmeal→Whole Grains, Creamy Mushroom→Clam Chowder, La Abuela→La Banderita,
+  Green Giant variety = набор). Канал Claude↔Jackie = файлы по SSH на боксе Jackie
+  (`CLAUDE-TO-JACKIE.md` / `JACKIE-TO-CLAUDE.md` / `results/*.json`).
+
+### 🔗 Stage A↔B — СВЯЗКА (сквозной тест), 2026-06-08 (MacBook-Claude)
+Соединяем два звена, которые до этого работали по отдельности (мозг построил iMac-Claude, сервисы тестил Jackie).
+- ✅ **`cogs-identify-walmart.ts`** — Walmart-input sibling мозга (читает title+image из нашей БД
+  `WalmartCatalogItem`/`SkuShippingData`; ту же vision-логику и промпт, что у Amazon-мозга, НЕ трогает его).
+- ✅ **Прогнан на тех же 13 SKU Джеки → 13/13 опознано.** Мозг закрыл все 4 провала: выдал чистый
+  `retail_search_query` + правильную линейку/вкус/бренд + **разложил** Green Giant variety на компоненты
+  (2×Sweet Corn / 2×Green Beans / 2×Sweet Peas / 2×Mixed Veg) + вытащил pack size (units_in_listing).
+- ✅ Identity записан в `SkuShippingData.productIdentity`; батч для Джеки → `docs/sourcing/brain-walmart-batch.json`
+  + передан на бокс Джеки + инструкция в `CLAUDE-TO-JACKIE.md`.
+- ⏳ **Ждём Джеки:** прогнать его сервисы по запросам МОЗГА (не сырым тайтлам) → вернуть **весь пул
+  инфо** (цена + description + key_features + image_urls), не только цену → `results/brain-walmart-results.json`.
+  Затем `cogs-ingest-retail.ts` → `RetailPrice`/`SkuCost`, и меряем recovery vs 9/13.
+- 📌 Картинки у 13 пусты в кэше (Walmart API их не отдаёт; тянутся лениво из Veeqo) → мозг отработал
+  **title-only**. Следующее улучшение — дотянуть Veeqo-картинки для vision-подтверждения.
 
 ### Stage 0 — Фундамент: схема + UPC из наших листингов  ·  SS-CC · бесплатно · СЕЙЧАС
 - **0a. Схема БД.** Расширяем каталог: колонка `upc/gtin`; новая дат-таблица `SkuCost`
