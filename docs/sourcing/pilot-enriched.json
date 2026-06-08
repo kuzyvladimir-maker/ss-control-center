@@ -1,0 +1,1388 @@
+[
+  {
+    "sku": "FaisalX-1241",
+    "query": "Arnold Keto Bread 20 oz loaf",
+    "category": "Dry",
+    "brand": "Arnold",
+    "product_line": "Keto Bread",
+    "flavor": "Original",
+    "size": "20 oz",
+    "units_in_listing": 2,
+    "is_bundle": true,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "MiniXpress",
+        "price": 12.76,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (MiniXpress)",
+        "url": "https://www.walmart.com/ip/Arnold-Superior-Keto-Bread-20-oz-Seeded-White-Bread-Bag/1623599625?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 20.24,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Keto-Bread-Loaf-20-oz-Pack-of-2/8374958031?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 50.77,
+        "pack": 3,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Keto-Bread-Loaf-20-oz-Pack-Of-3/9441762859?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 89.09,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Keto-Bread-Loaf-20-oz-Pack-of-6/8398265065?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 110.25,
+        "pack": 7,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Keto-Bread-Loaf-20-oz-Pack-Of-7/9444952447?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 62.33,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Keto-Bread-Loaf-20-oz-Pack-of-4/9525403156?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 78.22,
+        "pack": 5,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Keto-Bread-Loaf-20-oz-Pack-Of-5/9424308997?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 6.48,
+        "pack": 1,
+        "accepted": false,
+        "reason": "brand \"arnold\" absent",
+        "url": "https://www.walmart.com/ip/Oroweat-Superior-Keto-Bread-20-oz-Seeded-White-Bread-Bag/1870902212?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 20.24,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Country-Sourdough-Bread-Rustic-with-Rich-Deep-Flavor-24-oz-Pack-of-2/8398257285?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Express Services 727",
+        "price": 0,
+        "pack": 8,
+        "accepted": false,
+        "reason": "price suspect ($0)",
+        "url": "https://www.walmart.com/ip/Arnold-Superior-Keto-Plain-Hamburger-Buns-8-count-Pre-sliced-Hamburger-Buns-12-oz-Bag/785016890?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Express Services 727",
+        "price": 0,
+        "pack": 8,
+        "accepted": false,
+        "reason": "price suspect ($0)",
+        "url": "https://www.walmart.com/ip/Arnold-Keto-Buns-8-count-White-Hot-Dog-Buns-12-oz-Bag/566622128?classType=REGULAR"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "FaisalX-1229",
+    "query": "Arnold Whole Grains 12 Grains and Seeds Bread 24 oz loaf",
+    "category": "Dry",
+    "brand": "Arnold",
+    "product_line": "Whole Grains",
+    "flavor": "12 Grains and Seeds",
+    "size": "24 oz",
+    "units_in_listing": 2,
+    "is_bundle": true,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.98,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Arnold-12-Grains-and-Seeds-Bread-24-oz-Whole-Grain-Multigrain-Bread-Bag/10403535?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 16.19,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-12-Grains-and-Seeds-Whole-Grain-Bread-Loaf-24-oz-Pack-of-2/8394303890?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.98,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Healthy-Bread-24-oz-Multi-Grain-Multigrain-Bread-Bag/10403545?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.98,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-100-Bread-24-oz-Whole-Wheat-Wheat-Bread-Bag/10403544?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 36.44,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-12-Grains-and-Seeds-Whole-Grain-Bread-Loaf-24-oz-Pack-of-4/8419313856?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 56.69,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-12-Grains-and-Seeds-Whole-Grain-Bread-Loaf-24-oz-Pack-of-6/8599969561?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.98,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Healthy-Bread-24-oz-Multi-Grain-Multigrain-Bread-Bag/10403545?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.98,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-100-Bread-24-oz-Whole-Wheat-Wheat-Bread-Bag/10403544?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.98,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Healthy-Bread-24-oz-Multi-Grain-Multigrain-Bread-Bag/10403545?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.98,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-100-Bread-24-oz-Whole-Wheat-Wheat-Bread-Bag/10403544?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.98,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Oatnut-Bread-24-oz-Pre-sliced-Multigrain-Bread-Bag/10403541?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Brit Commerce",
+        "price": 25.99,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (Brit Commerce)",
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Healthy-Bread-24-oz-Soft-Multi-Grain-Multigrain-Bread-Bag-Pack-of-2/8394366660?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 25.7,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-100-Bread-24-oz-Soft-Whole-Wheat-Wheat-Bread-Bag-Pack-of-2/8383609541?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 20.24,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Country-Sourdough-Bread-Rustic-with-Rich-Deep-Flavor-24-oz-Pack-of-2/8398257285?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Brit Commerce",
+        "price": 24.99,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (Brit Commerce)",
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Oatnut-Bread-24-oz-Soft-Pre-sliced-Multigrain-Bread-Bag-Pack-of-2/8388171787?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 51.29,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Healthy-Bread-24-oz-Soft-Multi-Grain-Multigrain-Bread-Bag-Pack-of-4/8399455702?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 64.8,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Healthy-Bread-24-oz-Soft-Multi-Grain-Multigrain-Bread-Bag-Pack-of-6/8393619891?classType=VARIANT"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 3.98,
+      "perUnit": 3.98
+    }
+  },
+  {
+    "sku": "RizwanX-4597",
+    "query": "Green Giant FreshLock Variety Pack 8 cans vegetables",
+    "category": "Dry",
+    "brand": "Green Giant",
+    "product_line": "FreshLock",
+    "flavor": "variety",
+    "size": "8 pack",
+    "units_in_listing": 1,
+    "is_bundle": true,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-FreshLock-Variety-Pack-8-Shelf-Stable-Canned-Vegetables/16516300862?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Nature-s-Variety-Pack-8-Can-Garden-Vegetable-Selection/16554856888?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Essentials-Variety-Pack-8-Can-All-Purpose-Vegetable-Combo/16495574571?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-ReadyHarvest-8-Can-Shelf-Stable-Garden-Veggie-Variety-Pack/16532217618?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Meal-Maker-Variety-Pack-8-Can-Weeknight-Vegetable-Staples/16495923367?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Essential-Eight-Variety-Pack-8-Can-Nutrient-Rich-Veggie/16501769207?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-PrepSmart-Pack-8-Can-Variety-Pack-Shelf-Stable-Veggie-Assortment-for-Meal-Planning/16512409861?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Essentials-Variety-Pack-8-Can-Classic-Veggie-Assortment/16532217619?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-All-Season-Pantry-Variety-Pack-8-Can-Versatile-Veggies/16539404872?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Nature-s-Pantry-8-Can-Garden-Vegetable-Variety-Pack/16543068817?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Pantry-Provisions-Variety-Pack-8-Can-Everyday-Veggie-Essentials/16543118443?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Nourish-Pack-8-Can-Variety-Pack-Shelf-Stable-Mixed-Vegetables-for-Wellness-Convenience/16553764125?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Vault-Variety-Pack-8-Can-Emergency-Food-Supply/16553765475?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Daily-Greens-Variety-Pack-8-Can-Nutrient-Rich-Veggie/16507201293?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Harvest-Variety-Pack-8-Can-Shelf-Stable-Vegetable-Collection/16516300861?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Kitchen-Ready-Variety-Pack-8-Can-Meal-Prep-Veggie/16536952932?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Ready-Reserve-Variety-Pack-8-Can-Emergency-Veggie-Supply-Kit/16512259660?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Pantry-Ready-Veggie-Pack-8-Can-Shelf-Stable-Variety-for-Everyday-Meals/16507151755?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Smart-Pantry-Variety-Pack-8-Can-Long-Lasting-Vegetable/16566605927?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Homestyle-Harvest-Variety-Pack-8-Can-Garden-Veggie-Collection/16543068818?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Compact-Cuisine-Variety-Pack-8-Can-Space-Saving-Veggie/16507201297?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Veggie-Variety-8-Can-Pantry-Pack/16554856890?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Kitchen-Ready-Variety-Pack-8-Can-Prepped-Veggie-Medley/16516150951?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Simply-Veggies-Variety-Pack-8-Can-Everyday-Essentials-Vegetable/16536952370?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Chef-s-Choice-Variety-Pack-8-Can-Culinary-Grade-Veggie-Selection/16539404873?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Variety-Pack-Veggie-Stack-8-Can-Balanced-Meal-Builder/16516200926?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Vault-8-Can-Shelf-Stable-Variety-Pack-for-Reliable-Nutrition/16528703126?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Kitchen-Staples-Variety-Pack-8-Can-Mixed-Vegetable-Pantry-Pack/16507201296?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Variety-Vault-8-Can-Emergency-Everyday-Pack/16516200923?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Time-Variety-Pack-8-Can-Family-Favorites/16516150950?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Quick-Serve-Veggie-Variety-Pack-8-Can-Shelf-Stable-Assorted-Vegetables/16516150949?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Ready-Harvest-Variety-Pack-8-Can-Quick-Use-Vegetable-Medley/16512409858?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Harvest-Harmony-Variety-Pack-8-Can-Colorful-Vegetable-Collection/16516300859?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Medley-Mix-8-Can-Colorful-Garden-Variety-Pack/16495923368?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Prep-Variety-Pack-8-Can-Meal-Builder-Vegetables/16512259656?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Farmstand-Favorites-Variety-Pack-8-Can-Homestyle-Vegetable-Medley/16543118440?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Pantry-Pride-Variety-Pack-8-Can-Classic-Vegetable-Collection/16539404871?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Essentials-Variety-Pack-8-Can-Long-Life-Vegetable-Mix/16536952933?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Flex-Variety-Pack-8-Can-Flexible-Cooking-Essentials/16512309456?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Pantry-Pro-8-Can-Essential-Vegetable-Variety-Pack/16512309453?classType=REGULAR"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "RizwanX-2168",
+    "query": "Chef Woo Roasted Chicken Ramen Cup Noodles 20g Protein 2.5 oz",
+    "category": "Frozen",
+    "brand": "Chef Woo",
+    "product_line": "Ramen Cup Noodles",
+    "flavor": "Roasted Chicken",
+    "size": "2.5 oz",
+    "units_in_listing": 6,
+    "is_bundle": true,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Atmada Nutrition",
+        "price": 88.99,
+        "pack": 24,
+        "accepted": false,
+        "reason": "price suspect ($88.99)",
+        "url": "https://www.walmart.com/ip/Pack-Of-24-Chef-Woo-Ramen-Roasted-Chicken-Flavor-2-5-Oz/20321613803?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "v Fresh Finds v",
+        "price": 33.9,
+        "pack": 6,
+        "accepted": false,
+        "reason": "price suspect ($33.9)",
+        "url": "https://www.walmart.com/ip/Chef-Woo-Roasted-Chicken-Ramen-Cup-Noodles-20g-Protein-Pack-of-6/14752515526?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 42.27,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Chef-Woo-Roasted-Chicken-Ramen-Cup-Noodles-20g-Protein-Pack-of-8/14726814306?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 10.44,
+        "pack": 6,
+        "accepted": false,
+        "reason": "price suspect ($10.44)",
+        "url": "https://www.walmart.com/ip/6-pack-CHEF-WOO-Baja-Chili-Ramen-High-Protein-Noodles-20g-of-Animal-free-Bioavailable-Protein-2-5-oz-Cup/14176619185?classType=VARIANT"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "RizwanX-199",
+    "query": "Del Monte Tender Petites Very Young Small Sweet Peas No Salt Added 15.25 oz can",
+    "category": "Dry",
+    "brand": "Del Monte",
+    "product_line": "Tender Petites",
+    "flavor": "Very Young Small Sweet Peas, No Salt Added",
+    "size": "15.25 oz",
+    "units_in_listing": 4,
+    "is_bundle": true,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Mendyl Distribution",
+        "price": 34.99,
+        "pack": 4,
+        "accepted": false,
+        "reason": "price suspect ($34.99)",
+        "url": "https://www.walmart.com/ip/Del-Monte-Tender-Petites-Very-Young-Small-Sweet-Peas-No-Salt-Added-15-25-oz-Can-Pack-of-4/13464808306?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 33.9,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Del-Monte-Tender-Petites-Very-Young-Small-Sweet-Peas-No-Salt-Added-15-25-oz-Can-Pack-of-6/13480307136?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 5.68,
+        "pack": 4,
+        "accepted": false,
+        "reason": "missing tokens: tender,petites,very,young,small,peas,,salt,added",
+        "url": "https://www.walmart.com/ip/Del-Monte-Fresh-Cut-Sweet-Peas-15-Oz-4-Count-Box/41581071?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.67,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/DEL-MONTE-No-Salt-Added-Sweet-Peas-Canned-Vegetables-15-oz-Can/10318790?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 42.67,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Del-Monte-Tender-Petites-Very-Young-Small-Sweet-Peas-No-Salt-Added-15-25-oz-Can-Pack-of-8/13457902479?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Zaf International Corp",
+        "price": 0,
+        "pack": 1,
+        "accepted": false,
+        "reason": "price suspect ($0)",
+        "url": "https://www.walmart.com/ip/Del-Monte-Tender-Petites-Very-Young-Small-Sweet-Peas-No-Salt-Added-15-25-oz-Can/3269112977?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 5.68,
+        "pack": 4,
+        "accepted": false,
+        "reason": "missing tokens: tender,petites,very,young,small,peas,,salt,added",
+        "url": "https://www.walmart.com/ip/Del-Monte-Fresh-Cut-Sweet-Peas-15-Oz-4-Count-Box/41581071?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.67,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/DEL-MONTE-No-Salt-Added-Sweet-Peas-Canned-Vegetables-15-oz-Can/10318790?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Zaf International Corp",
+        "price": 0,
+        "pack": 1,
+        "accepted": false,
+        "reason": "price suspect ($0)",
+        "url": "https://www.walmart.com/ip/Del-Monte-Tender-Petites-Very-Young-Small-Sweet-Peas-No-Salt-Added-15-25-oz-Can/3269112977?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "HushCart",
+        "price": 3.5,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Del-Monte-Very-Young-Small-Sweet-Peas-15-25-oz-Can/29209934?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ViralCart",
+        "price": 29.9,
+        "pack": 4,
+        "accepted": false,
+        "reason": "price suspect ($29.9)",
+        "url": "https://www.walmart.com/ip/Del-Monte-Very-Young-Small-Sweet-Peas-15-25-oz-Can-Canned-Vegetables-4-Pack-Offer/20286571330?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Sandrin",
+        "price": 6,
+        "pack": 1,
+        "accepted": false,
+        "reason": "missing tokens: tender,petites,very,young,small,peas,",
+        "url": "https://www.walmart.com/ip/Del-Monte-No-Salt-Added-Fresh-Cut-Sweet-Peas-15-oz-pack-of-2/14550007999?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "One Click Away",
+        "price": 5.25,
+        "pack": 1,
+        "accepted": false,
+        "reason": "price suspect ($5.25)",
+        "url": "https://www.walmart.com/ip/Del-Monte-Very-Young-Small-Sweet-Peas-15-25-oz-Can-Canned-Vegetables/17920769090?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.67,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/DEL-MONTE-No-Salt-Added-Sweet-Peas-Canned-Vegetables-15-oz-Can/10318790?classType=REGULAR"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 1.67,
+      "perUnit": 1.67
+    }
+  },
+  {
+    "sku": "FaisalX-1646",
+    "query": "Sara Lee Artesano Golden Wheat Bread 20 oz",
+    "category": "Frozen",
+    "brand": "Sara Lee",
+    "product_line": "Artesano",
+    "flavor": "Golden Wheat",
+    "size": "20 oz",
+    "units_in_listing": 3,
+    "is_bundle": true,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.86,
+        "pack": 1,
+        "accepted": false,
+        "reason": "brand \"sara\" absent",
+        "url": "https://www.walmart.com/ip/ART-HAW-BRD-20OZ/19861971767?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 25.65,
+        "pack": 3,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Golden-Wheat-Bread-20-oz-Soft-Whole-Wheat-Pre-sliced-Wheat-Bread-Bag-Pack-Of-3/9426073101?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 64.79,
+        "pack": 7,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Golden-Wheat-Bread-20-oz-Soft-Whole-Wheat-Pre-sliced-Wheat-Bread-Bag-Pack-Of-7/9441762855?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 44.55,
+        "pack": 5,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Golden-Wheat-Bread-20-oz-Soft-Whole-Wheat-Pre-sliced-Wheat-Bread-Bag-Pack-Of-5/9422716062?classType=VARIANT"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "FaisalX-1215",
+    "query": "Sara Lee Artesano Brioche Bread 20 oz",
+    "category": "Dry",
+    "brand": "Sara Lee",
+    "product_line": "Artesano Brioche",
+    "flavor": "Brioche",
+    "size": "20 oz",
+    "units_in_listing": 4,
+    "is_bundle": true,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.86,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/ART-BRI-BKY-BRD-20OZ/19883411944?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ClickCart LLC",
+        "price": 20.92,
+        "pack": 2,
+        "accepted": false,
+        "reason": "price suspect ($20.92)",
+        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Brioche-Bakery-Bread-20-oz-Soft-Brioche-Bread-Bag-Pack-of-2/8412902256?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Smart Buyers Marketplace",
+        "price": 17.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (Smart Buyers Marketplace)",
+        "url": "https://www.walmart.com/ip/2x-Sara-Lee-Artesano-Brioche-Bakery-Bread-20-oz-Brioche-Bread-Bag/15158804185?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 30.23,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Brioche-Bakery-Bread-20-oz-Soft-Brioche-Bread-Bag-Pack-of-4/8399405772?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ClickCart LLC",
+        "price": 25.52,
+        "pack": 3,
+        "accepted": false,
+        "reason": "price suspect ($25.52)",
+        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Brioche-Bakery-Bread-20-oz-Brioche-Bread-Bag-Pack-of-3/17316156400?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 42.78,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Brioche-Bakery-Bread-20-oz-Soft-Brioche-Bread-Bag-Pack-of-6/8413924449?classType=VARIANT"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 3.86,
+      "perUnit": 3.86
+    }
+  },
+  {
+    "sku": "FaisalX-1121",
+    "query": "Nature's Own Life Honey Wheat 40 Calories bread 16 oz",
+    "category": "Frozen",
+    "brand": "Nature's Own",
+    "product_line": "Life",
+    "flavor": "Honey Wheat",
+    "size": "16 oz",
+    "units_in_listing": 2,
+    "is_bundle": true,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Express Services 727",
+        "price": 30.75,
+        "pack": 3,
+        "accepted": false,
+        "reason": "brand \"nature's\" absent",
+        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Honey-Wheat-40-Calories-per-Slice-Keto-Friendly-Sandwich-Bread-16-oz-Loaf-Pack-Of-3/9421819616?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 12.29,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Honey-Wheat-40-Calories-per-Slice-Keto-Friendly-Sandwich-Bread-16-oz-Pack-of-2/8406610361?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 72.24,
+        "pack": 7,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Honey-Wheat-40-Calories-per-Slice-Keto-Friendly-Sandwich-Bread-16-oz-Loaf-Pack-Of-7/9415372523?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Five Star Mart",
+        "price": 35.99,
+        "pack": 4,
+        "accepted": false,
+        "reason": "brand \"nature's\" absent",
+        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Honey-Wheat-40-Calories-per-Slice-Keto-Friendly-Sandwich-Bread-16-oz-Pack-of-4/8382622289?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Infinity Trend",
+        "price": 38,
+        "pack": 5,
+        "accepted": false,
+        "reason": "brand \"nature's\" absent",
+        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Honey-Wheat-40-Calories-per-Slice-Keto-Friendly-Sandwich-Bread-16-oz-Loaf-Pack-Of-5/9455906063?classType=VARIANT"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "FaisalX-1142",
+    "query": "Pepperidge Farm Very Thin 100% Whole Wheat Bread 16 oz",
+    "category": "Dry",
+    "brand": "Pepperidge Farm",
+    "product_line": "Very Thin",
+    "flavor": "100% Whole Wheat",
+    "size": "16 oz",
+    "units_in_listing": 2,
+    "is_bundle": true,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 35.09,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Very-Thin-100-Whole-Wheat-Bread-16-oz-Pack-of-4/8393164167?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 56.69,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Very-Thin-100-Whole-Wheat-Bread-16-oz-Pack-of-6/8394316918?classType=VARIANT"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "FaisalX-1268",
+    "query": "Arnold Country Oatmeal Bread 24 oz loaf",
+    "category": "Dry",
+    "brand": "Arnold",
+    "product_line": "Country",
+    "flavor": "Oatmeal",
+    "size": "24 oz",
+    "units_in_listing": 2,
+    "is_bundle": true,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 19.67,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Country-Oatmeal-Bread-Hearty-Texture-Flavor-24-oz-Pack-of-2/8374958100?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 55.46,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Country-Oatmeal-Bread-Hearty-Texture-Flavor-24-oz-Pack-of-6/8399505614?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 40.49,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Country-Oatmeal-Bread-Hearty-Texture-Flavor-24-oz-Pack-of-4/8394303892?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Brit Commerce",
+        "price": 24.99,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (Brit Commerce)",
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Oatnut-Bread-24-oz-Soft-Pre-sliced-Multigrain-Bread-Bag-Pack-of-2/8388171787?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Brit Commerce",
+        "price": 35.99,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (Brit Commerce)",
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Oatnut-Bread-24-oz-Soft-Pre-sliced-Multigrain-Bread-Bag-Pack-of-4/8412802873?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Brit Commerce",
+        "price": 22.99,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (Brit Commerce)",
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Small-Slice-Oatnut-Bread-Loaf-18-oz-Pack-of-2/8419313858?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 20.24,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Country-Sourdough-Bread-Rustic-with-Rich-Deep-Flavor-24-oz-Pack-of-2/8398257285?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Brit Commerce",
+        "price": 47.97,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (Brit Commerce)",
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Small-Slice-Oatnut-Bread-Loaf-18-oz-Pack-of-6/8399355764?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Brit Commerce",
+        "price": 35.97,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (Brit Commerce)",
+        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Small-Slice-Oatnut-Bread-Loaf-18-oz-Pack-of-4/8412902258?classType=VARIANT"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "FaisalX-3743",
+    "query": "Progresso Vegetable Classics Creamy Mushroom Soup 18 oz can",
+    "category": "Dry",
+    "brand": "Progresso",
+    "product_line": "Vegetable Classics",
+    "flavor": "Creamy Mushroom",
+    "size": "18 oz",
+    "units_in_listing": 6,
+    "is_bundle": true,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Value Home",
+        "price": 28.99,
+        "pack": 4,
+        "accepted": false,
+        "reason": "price suspect ($28.99)",
+        "url": "https://www.walmart.com/ip/Progresso-Vegetable-Classics-Soup-Creamy-Mushroom-18-oz-Pack-of-4/11388552673?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Value Home",
+        "price": 41.31,
+        "pack": 6,
+        "accepted": false,
+        "reason": "price suspect ($41.31)",
+        "url": "https://www.walmart.com/ip/Progresso-Vegetable-Classics-Soup-Creamy-Mushroom-18-oz-Pack-of-6/11395162682?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 44.54,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Progresso-Vegetable-Classics-Soup-Creamy-Mushroom-18-oz-Pack-of-8/11366109747?classType=VARIANT"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "FaisalX-1244",
+    "query": "Arnold Jewish Rye Bread Seedless 16 oz loaf",
+    "category": "Dry",
+    "brand": "Arnold",
+    "product_line": "Jewish Rye Bread",
+    "flavor": "Seedless",
+    "size": "16 oz",
+    "units_in_listing": 2,
+    "is_bundle": true,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 37.14,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Seedless-Jewish-Rye-Bread-16-oz-Classic-Rye-Loaf-Pack-of-4/16361613361?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 51.29,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Jewish-Rye-Bread-Seedless-16-oz-Pack-of-6/8412752877?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 13.88,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Jewish-Rye-Bread-Seedless-16-oz-Pack-of-2/8394303075?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 16.19,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Jewish-Rye-Pumpernickel-Bread-16-oz-Pack-of-2/8406510682?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Harris Online Inc.",
+        "price": 13.38,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (Harris Online Inc.)",
+        "url": "https://www.walmart.com/ip/Jewish-Rye-Seedless-Bread-16-oz-Bag/20042716496?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 18.89,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Jewish-Rye-Bread-Seeded-16-oz-Pack-of-2/8399455704?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 43.97,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Jewish-Rye-Pumpernickel-Bread-16-oz-Pack-of-4/8388171789?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 37.79,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Arnold-Jewish-Rye-Bread-Seeded-16-oz-Pack-of-4/8399405774?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 67.49,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Rye-Seedless-Bread-16-oz-Pack-of-6/8503256750?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Armrfit",
+        "price": 0,
+        "pack": 1,
+        "accepted": false,
+        "reason": "brand \"arnold\" absent",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Rye-Seedless-Bread-16-oz-Bag/10452832?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Value Home",
+        "price": 0,
+        "pack": 2,
+        "accepted": false,
+        "reason": "brand \"arnold\" absent",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Rye-Seedless-Bread-16-oz-Pack-of-2/8466901364?classType=VARIANT"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "RizwanX-3877",
+    "query": "La Abuela Ready to Cook Burrito Size Flour Tortillas 18.5 oz 12 Count",
+    "category": "Dry",
+    "brand": "La Abuela",
+    "product_line": "Ready to Cook Burrito Size Flour Tortillas",
+    "flavor": "Flour",
+    "size": "18.5 oz",
+    "units_in_listing": 2,
+    "is_bundle": true,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Value Home",
+        "price": 16.99,
+        "pack": 2,
+        "accepted": false,
+        "reason": "price suspect ($16.99)",
+        "url": "https://www.walmart.com/ip/La-Abuela-Ready-to-Cook-Burrito-Size-Flour-Tortillas-18-5-oz-12-Count-Pack-of-2/15596111558?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 38.7,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/La-Abuela-Ready-to-Cook-Burrito-Size-Flour-Tortillas-18-5-oz-12-Count-Pack-of-4/15619815008?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 53.24,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/La-Abuela-Ready-to-Cook-Burrito-Size-Flour-Tortillas-18-5-oz-12-Count-Pack-of-6/15599603539?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "KANS ENTERPRISES LLC",
+        "price": 17.91,
+        "pack": 2,
+        "accepted": false,
+        "reason": "price suspect ($17.91)",
+        "url": "https://www.walmart.com/ip/La-Abuela-Flour-Tortillas-20-Count-22-oz-Pack-of-2/15573619551?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 63.34,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/La-Abuela-Flour-Tortillas-20-Count-22-oz-Pack-of-6/15554823985?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 4.77,
+        "pack": 18,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Tortilla-Land-Ready-to-Cook-Soft-Taco-Size-Flour-Tortillas-30-oz-18-Count/22374196?classType=REGULAR&athbdg=L1600"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 4.77,
+      "perUnit": 0.26499999999999996
+    }
+  }
+]
