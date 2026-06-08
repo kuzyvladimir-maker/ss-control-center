@@ -10,6 +10,12 @@
 //   npx tsx scripts/cogs-extract-upc.ts --amazon       # Amazon report (slow)
 //   npx tsx scripts/cogs-extract-upc.ts                # both
 
+import { config as loadEnv } from "dotenv";
+// Load via dotenv (NOT shell `source`): Amazon refresh tokens start with "Atzr|"
+// and the "|" breaks naive shell sourcing. .env.local first so it wins.
+loadEnv({ path: ".env.local" });
+loadEnv({ path: ".env" });
+
 import { createClient } from "@libsql/client";
 import { WalmartClient } from "@/lib/walmart/client";
 import { getConfiguredStores } from "@/lib/amazon-sp-api/auth";
@@ -58,14 +64,12 @@ const cleanUpc = (v: any): string | null => {
 
   // ── Amazon: GET_MERCHANT_LISTINGS_ALL_DATA report per store ──
   if (doAmazon) {
-    const stores = getConfiguredStores(); // [{storeIndex,...}] with creds
-    console.log(`\n[AMAZON] configured stores: ${stores.map((s: any) => s.storeIndex ?? s).join(", ")}`);
+    const stores = getConfiguredStores(); // string[] e.g. ["store1","store2",...]
+    console.log(`\n[AMAZON] configured stores: ${stores.join(", ") || "(none)"}`);
     const skuUpc = new Map<string, string>();
-    for (const s of stores) {
-      const idx = (s.storeIndex ?? s) as number;
-      const storeId = `store${idx}`;
+    for (const storeId of stores) {
       try {
-        const tsv = await requestAndWaitForReport(storeId, "GET_MERCHANT_LISTINGS_ALL_DATA", 0, 180_000);
+        const tsv = await requestAndWaitForReport(storeId, "GET_MERCHANT_LISTINGS_ALL_DATA", 1, 8 * 60 * 1000);
         if (!tsv) { console.log(`  ${storeId}: no report`); continue; }
         const lines = String(tsv).split("\n").filter(Boolean);
         const header = lines[0].split("\t").map((h) => h.toLowerCase());
