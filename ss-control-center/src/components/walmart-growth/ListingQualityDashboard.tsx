@@ -84,7 +84,8 @@ type FilterId =
   | "outOfStock"
   | "noReviews"
   | "noFastShip"
-  | "inStockHasTraffic";
+  | "inStockHasTraffic"
+  | "content";
 type SortId = "traffic" | "score" | "priority" | "gmv";
 
 const COMPONENTS: Array<{ key: string; label: string }> = [
@@ -128,12 +129,21 @@ function pct(n: number | null | undefined): string {
   return `${(n * 100).toFixed(n < 0.1 ? 1 : 0)}%`;
 }
 
-export function ListingQualityDashboard() {
+export function ListingQualityDashboard({
+  filter: filterProp,
+  onFilterChange,
+}: {
+  /** When provided, the filter is controlled by the parent (Action Center jumps). */
+  filter?: FilterId;
+  onFilterChange?: (f: FilterId) => void;
+} = {}) {
   const [data, setData] = useState<LqResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
-  const [filter, setFilter] = useState<FilterId>("trafficNoConversion");
+  const [internalFilter, setInternalFilter] = useState<FilterId>("trafficNoConversion");
+  const filter = filterProp ?? internalFilter;
+  const setFilter = (f: FilterId) => (onFilterChange ? onFilterChange(f) : setInternalFilter(f));
   const [sort, setSort] = useState<SortId>("traffic");
   const [q, setQ] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -141,7 +151,11 @@ export function ListingQualityDashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ filter, sort, limit: "60" });
+      const params = new URLSearchParams({ sort, limit: "60" });
+      // "content" is a component lens, not a row filter — the API takes it as
+      // ?component=content (items with content-score deductions).
+      if (filter === "content") params.set("component", "content");
+      else params.set("filter", filter);
       if (q.trim()) params.set("q", q.trim());
       const res = await fetch(`/api/walmart/growth/listing-quality?${params}`);
       if (res.ok) setData(await res.json());
@@ -202,6 +216,7 @@ export function ListingQualityDashboard() {
     { id: "noReviews", label: "No reviews", count: rollup?.noReviews },
     { id: "noFastShip", label: "No fast shipping", count: rollup?.noFastShip },
     { id: "inStockHasTraffic", label: "In stock + traffic", count: rollup?.withTraffic },
+    { id: "content", label: "Content gaps" },
     { id: "all", label: "All items", count: rollup?.totalItems },
   ];
 
