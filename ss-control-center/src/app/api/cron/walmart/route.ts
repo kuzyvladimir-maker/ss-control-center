@@ -22,6 +22,7 @@ import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { WalmartReturnsApi } from "@/lib/walmart/returns";
 import { WalmartReportsApi } from "@/lib/walmart/reports";
 import { syncWalmartCatalog } from "@/lib/walmart/catalog-cache";
+import { syncFulfillmentSpeed } from "@/lib/walmart/sku-fulfillment-speed";
 import type {
   WalmartOrder,
   WalmartReturn,
@@ -160,6 +161,16 @@ async function syncCatalog(client: WalmartClient, storeIndex: number) {
     };
   } catch (err) {
     return { name: "catalog", ok: false, error: (err as Error).message };
+  }
+}
+
+// Per-SKU fulfillment speed from order history (no API calls — pure DB compute).
+async function syncFulfillment(storeIndex: number) {
+  try {
+    const r = await syncFulfillmentSpeed(prisma, storeIndex);
+    return { name: "fulfillmentSpeed", ok: true, ...r };
+  } catch (err) {
+    return { name: "fulfillmentSpeed", ok: false, error: (err as Error).message };
   }
 }
 
@@ -349,13 +360,15 @@ export async function GET(request: NextRequest) {
   // by /api/cron/account-health-walmart (03:00 UTC) which also drives the
   // critical alerts evaluator. Keeping both crons writing snapshots was
   // doubling history rows and conflicting alert evaluations.
-  const results = await Promise.all([
+  const results: Array<{ name: string; ok: boolean; error?: string }> = await Promise.all([
     syncOrders(client, 1, client.credentials.storeName),
     syncReturns(client, 1, client.credentials.storeName),
     syncShipmentMonitor(client, 1),
     syncAdjustments(client, 1),
     syncCatalog(client, 1),
   ]);
+  // Fulfillment speed reads the orders just synced above — run after the barrier.
+  results.push(await syncFulfillment(1));
 
   return NextResponse.json({
     ok: results.every((r) => r.ok),

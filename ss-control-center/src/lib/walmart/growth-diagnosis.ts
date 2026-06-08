@@ -88,6 +88,13 @@ export async function diagnoseWalmartGrowth(
     prisma.walmartBuyBoxItem.aggregate({ where: { ...base, isWinner: false, priceGap: { gt: 0 } }, _sum: { priceGap: true } }),
   ]);
 
+  // Per-SKU fulfillment speed (from our order history) — fast SKUs are
+  // candidates for a faster shipping template.
+  const [fastSkus, slowSkus] = await Promise.all([
+    prisma.walmartSkuFulfillment.count({ where: { ...base, classification: "FAST" } }),
+    prisma.walmartSkuFulfillment.count({ where: { ...base, classification: "SLOW" } }),
+  ]);
+
   // Cheap live read: shipping templates → max declared transit time.
   const shipping = await getShippingSummary(client).catch(() => null);
 
@@ -114,6 +121,20 @@ export async function diagnoseWalmartGrowth(
         label: "Review shipping strategy",
         note: "Editable via PUT /v3/settings/shipping/templates, but it's a real delivery-promise decision.",
       },
+    });
+  }
+
+  // ── Fast-SKU opportunity (we already fulfill these fast) ──
+  if (fastSkus > 0) {
+    d.push({
+      id: "fast-sku-template",
+      severity: "high",
+      title: "Fast-fulfilled SKUs ready for a faster shipping template",
+      problem: `${fastSkus.toLocaleString()} SKUs we historically ship in ≤1 business day${slowSkus > 0 ? ` (and ${slowSkus} that are slow — keep them OFF fast promises)` : ""}.`,
+      why: "Delivery speed is the #2 Buy Box factor. Putting genuinely-fast SKUs on a faster template (e.g. FL-regional 1-handling + 2-transit) earns the fast tag where we can actually deliver — without risking on-time-delivery penalties on slow SKUs.",
+      itemsAffected: fastSkus,
+      recommendation: "Assign these fast SKUs to the FL-regional / fast-SKU template (4-day transit vs 6). Computed from real order history, not guesses.",
+      action: { kind: "manual", label: "Set up fast template", note: "Shipping-template write (needs the regional config you approve)." },
     });
   }
 
