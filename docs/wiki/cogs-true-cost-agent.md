@@ -75,6 +75,17 @@ ShippingCostPerOrder; ...; Marketplace`.
     физического товара одинакова на Amazon и Walmart — **одна база кормит оба канала**.
   - Пак распознаётся эвристикой у ~53%; бандлы-вкусы — слабо (нужен Claude-проход).
 
+## 🧠 Часть общего движка (важно)
+
+Поиск себестоимости — это не отдельная задача COGS, а стадии [1] Identify + [2] Source
+общего **[Product Resolution & Retail Sourcing Engine](product-sourcing-engine.md)**,
+который кормит ещё два модуля (закуп + создание листингов). COGS-агент — его потребитель №1.
+
+**Frozen — храним стоимости РАЗДЕЛЬНО** (решение 2026-06-07): не брать слитую цифру
+Sellerboard, а `totalCost = productCost (bare из розницы) + packagingCost (кулер) + iceCost`.
+Так видно, где улучшать. Sellerboard frozen-число = только сверка. Dry → Sellerboard cost
+≈ bare, можно сидить напрямую. Детали — в [движке](product-sourcing-engine.md#❄️-frozen).
+
 ## ⚙️ Как работает рантайм (на новую продажу)
 
 ```
