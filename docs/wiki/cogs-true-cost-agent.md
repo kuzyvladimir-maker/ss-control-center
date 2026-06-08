@@ -86,6 +86,18 @@ Sellerboard, а `totalCost = productCost (bare из розницы) + packagingC
 Так видно, где улучшать. Sellerboard frozen-число = только сверка. Dry → Sellerboard cost
 ≈ bare, можно сидить напрямую. Детали — в [движке](product-sourcing-engine.md#❄️-frozen).
 
+## 📊 Step 0 — джойн каталога × Sellerboard (2026-06-07)
+
+`scripts/cogs-join-catalog.ts` → `docs/cogs-coverage.json`. Наш каталог
+`SkuShippingData` (прод Turso = **1109 SKU**: Dry 809 / Frozen 300) × полный Sellerboard:
+
+- **Совпало 580 (52.3%)**; **с себестоимостью — только 217 (19.6%)** (Dry 127 / Frozen 90);
+  363 совпали, но cost пустой; **529 (47.7%) не совпали** — нужен движок.
+- ⭐ **КРИТИЧНО: все 217 готовых — AMAZON, по Walmart НОЛЬ.** Sellerboard = только Amazon.
+  Наши Walmart-SKU (`FaisalX-`/`RizwanX-`) там отсутствуют → **Walmart COGS только через
+  розничный движок, без seed-шортката.**
+- Дат-история бедная: только 6 SKU имеют >1 cost-период.
+
 ## ⚙️ Как работает рантайм (на новую продажу)
 
 ```
