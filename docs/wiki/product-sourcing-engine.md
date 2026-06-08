@@ -36,11 +36,11 @@
 ```
 наш SKU/ASIN
   │
-  ▼  [1] IDENTIFY — Product Resolution
-     getListing (SP-API / Walmart) → image + title + description (+ UPC/GTIN)
-     → каноническая личность товара: {brand, product, size, packSize, flavor, UPC}
-     • UPC/GTIN есть → точный матч (детерминированно, дёшево)  ← лёгкий путь
-     • грязный листинг без UPC → LLM-агент (vision+text) извлекает поля
+  ▼  [1] IDENTIFY — Product Resolution (НЕТ UPC, листинг = бандл)
+     getListing (SP-API / Walmart) → image + title + description
+     → LLM-агент раскладывает бандл на КОМПОНЕНТЫ + количество:
+       [{brand, product, size, flavor, qty}, ...]   (напр. 4×Campbell's + 2×…)
+     матчинг каждого компонента — по названию/бренду/размеру (+картинка через Lens)
   │
   ▼  [2] SOURCE — Retail Price Discovery
      по каждому магазину из приоритета ищем этот товар → текущая цена
@@ -55,23 +55,51 @@
      C. List  → взять title/фото/описание → черновик нового листинга
 ```
 
-## 🔓 Самое сложное (нерешённое): КАК искать товар в магазинах
+## ⚠️ Важно: НЕТ UPC, продаём БАНДЛАМИ
 
-Владимир: «у меня ещё нет решения, как агент ищет товар в этих маркетплейсах».
-Реалистичные механизмы, по надёжности:
+Владимир (подтверждено многократно 2026-06-07): **UPC-кодов у нас нет** и на них
+ориентироваться нельзя. Мы **всегда продаём наборами / бандлами / сетами / по
+несколько штук** в одном листинге — single-юнитов почти не бывает (только если
+изначально большая коробка). Значит:
 
-1. **UPC/GTIN через API** (где есть):
-   - **Walmart.com** — Walmart Affiliate / IO API (товар по UPC/item → цена). Самый чистый путь для магазина №1.
-   - У BJ's / Publix / Target / Sam's публичных product-API по сути нет.
-2. **Агентный браузер (OpenClaw)** — у Владимира уже есть OpenClaw-сервер с браузером
-   ([reference_openclaw_mcp_tools]). Агент заходит на сайт магазина, ищет по UPC/названию,
-   читает цену с карточки. Это ровно то, что Владимир делает руками — годится для
-   BJ's / Publix / Target / Sam's, где нет API.
-3. **Сторонние агрегаторы цен по UPC** (коммерческие API) — опционально.
+- У **нашего листинга** единого UPC нет — но его **компоненты** (напр. «8 Oscar Mayer
+  Franks», «4 Campbell's × 2») — реальные розничные товары. Движок **раскладывает
+  листинг на компоненты + количество**, ищет каждый компонент в рознице **по
+  названию/бренду/размеру** (а не по штрихкоду), цена × кол-во = COGS бандла.
+- Ключ матчинга = **название/бренд/размер (+ картинка)**, НЕ UPC.
 
-**Human-in-the-loop:** низкая уверенность матча → человек подтверждает → это становится
-ground truth (самообучение БЕЗ ML). **Sellerboard COGS = «ответы для сверки»**: где есть
-и наша найденная цена, и Sellerboard — сравниваем; совпало → доверяем движку.
+## 🔓 КАК искать цену в магазинах — сервисы (ресерч Jackie + Claude, 2026-06-07)
+
+Платные managed-API/скрейп-сервисы (антибот держат сами). Полный ресерч Jackie:
+`/root/.openclaw/workspace/memory/retail-pricing-apis-research.md`.
+
+| Ритейлер | Лучший вариант | Поиск | Цена |
+|----------|----------------|-------|------|
+| **Walmart** (№1) | Traject Data **BlueCart** (managed) | name/UPC/SKU | от $15/мес |
+| **Target** | Traject Data **RedCircle** (managed) | name/UPC | от $15/мес |
+| **Sam's Club** | **Unwrangle** | name/keyword | от $10/10k запросов |
+| **Costco** | **Unwrangle** | name/keyword | (тот же) |
+| **BJ's** | ❌ нет dedicated API | — | кастом-скрейп |
+| **Publix** | ❌ нет dedicated API | — | кастом-скрейп |
+| **ALDI** | ❌ нет dedicated API | — | кастом-скрейп |
+
+- **Картинка → товар:** ни один товарный API не матчит по фото напрямую. Резолв
+  фото → название через **SerpApi Google Lens/Shopping**, дальше цену тянем товарным API.
+- **Дыра в покрытии: BJ's / Publix / ALDI** — чистого API нет. Здесь либо кастом-скрейп
+  (Bright Data ~$2.5/1k, лучший антибот ~98%; Oxylabs ~$9.4/GB), либо **агентный браузер
+  OpenClaw** ([[reference_openclaw_mcp_tools]]), либо ручной ввод. Закладываем явно.
+- Универсальный fallback на любой сайт: **Bright Data / Oxylabs / Apify** (кастом-скрейп).
+
+**Human-in-the-loop:** низкая уверенность матча → человек подтверждает → ground truth
+(самообучение БЕЗ ML). **Sellerboard COGS = «ответы для сверки»**: где есть и найденная
+нами цена, и Sellerboard — сравниваем; совпало → доверяем движку.
+
+## ⚠️ Какой Walmart API (важное уточнение)
+
+Тот Walmart API, что у нас УЖЕ есть — это **Marketplace / Seller Central API** (наши
+листинги, заказы, инвентарь — сторона ПРОДАЖИ). Он **НЕ отдаёт розничные цены
+Walmart.com** (сторона ПОКУПКИ). Для цен закупки нужен отдельный сервис — **BlueCart**
+(Traject Data), это НЕ наш текущий Walmart API.
 
 ## ❄️ Frozen: храним стоимости РАЗДЕЛЬНО (решение)
 
@@ -89,15 +117,26 @@ totalCost = productCost (bare, из розницы) + packagingCost (кулер)
 - **Sellerboard frozen-число = только сверка** (bare + упаковка ≈ Sellerboard total?), а не
   хранимая COGS. Для **dry** Sellerboard cost ≈ bare product cost → можно сидить напрямую.
 
-## 🗄️ Модель данных (расширяем каталог)
+## 🗄️ Модель данных — БОЛЬШИНСТВО УЖЕ ЕСТЬ (от Bundle Factory)
 
-- **`ProductIdentity`** — канонический товар: brand, productName, size, variant/flavor,
-  upc/gtin, category(Frozen/Dry), bareWeightLb (для расчёта льда). 1 на физ. товар.
-- **`SkuShippingData`** (есть) → линк на ProductIdentity (много SKU → один товар; pack 2/4/8).
-- **`RetailSource`** — где покупать: productId, retailer, url/retailerSku, unitPrice,
-  packSizeAtRetailer, asOfDate, priority, inStock, confidence. Много на товар.
+Не строим с нуля — переиспользуем существующие модели (`prisma/schema.prisma`):
+
+- **`StoreRegistry`** ✅ — реестр магазинов (Walmart/Target/Publix/BJ's/Sam's/Costco/ALDI,
+  с гео/приоритетом). Seed: `prisma/seed/store-registry.ts`, 37 магазинов из SOURCING_MAP.
+- **`ResearchPool`** ✅ — товар + варианты (flavors, pack_sizes, weight) + **цена/источник**
+  (avg_price_cents, source_store, source_url, last_seen_in_stock). ≈ канонический товар.
+- **`ProductSourceFallback`** ✅ — primary + fallback магазины по приоритету = «где покупать».
+- **`StockCheckLog`** ✅ — цена по магазину (price_cents, in_stock, source_url,
+  **check_method: "scraper"|"api"|"manual"**). Сюда пишет BlueCart/Unwrangle (api) и скрейп.
+- **`SKUStorePriority`** ✅ — приоритет магазинов по конкретному SKU.
+
+**Чего НЕ хватает — дозалить:**
 - **`SkuCost`** (дата) — productCost / packagingCost / iceCost / totalCost / costPerUnit,
   effectiveDate (= Sellerboard `CostPeriodStartDate`), source, includesPackaging, needsReview.
+- Линк нашего продающего SKU (`SkuShippingData`) → товар в `ResearchPool` (много SKU→1 товар).
+
+⚠️ Скрейпер/`StockCheckLog` пока **только в схеме, в коде не используется** — наполнение
+идёт лишь через Perplexity-ресерч Bundle Factory. То есть реального движка цен ещё нет.
 
 ## 🚦 С чего начать (crawl → walk → run)
 
@@ -106,10 +145,11 @@ totalCost = productCost (bare, из розницы) + packagingCost (кулер)
 2 837 SKU (особенно dry) → репрайсер и net-profit в `/analytics` получают настоящие цифры уже сейчас.
 
 **Фаза 2 — движок:**
-[1] Identify сначала по UPC (точные матчи — лёгкие победы), потом LLM для грязных.
-[2] Source сначала ОДИН магазин — **Walmart.com** (приоритет №1, есть бизнес-аккаунт,
-у нас уже есть Walmart API/инфра) → сверка против Sellerboard answer key. Потом добавляем
-BJ's / Target / Publix / Sam's через OpenClaw-браузер.
+[1] Identify — LLM раскладывает листинг-бандл на компоненты+количество (по названию,
+не по UPC).
+[2] Source сначала ОДИН магазин — **Walmart.com** (приоритет №1) через **BlueCart**
+($15/мес trial) → сверка против Sellerboard answer key. Заработало → добавляем Target
+(RedCircle), Sam's/Costco (Unwrangle); BJ's/Publix — кастом-скрейп/OpenClaw/ручной ввод.
 
 **Фаза 3 — потребители:** COGS→репрайсер, Procurement (buy/cart), Listing Creation —
 поверх общего движка.
