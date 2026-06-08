@@ -46,8 +46,8 @@ Return ONLY JSON:
   "base_unit": "",             // ONE shelf unit, e.g. "Chef Boyardee Beef Ravioli 15 oz can"
   "units_in_listing": 1,       // total base units in THIS listing. "10 count Pack of 3" = 3 boxes; multi-flavor 4x3 = 12
   "unit_basis": "",            // what one unit is: can/box/bag/loaf/etc
-  "is_bundle": false,
-  "components": [],            // for multi-flavor/variety: [{"flavor":"","size":"","qty":0}] else []
+  "is_bundle": false,          // TRUE only if the listing has MULTIPLE DIFFERENT products (variety/assorted pack). A multipack of the SAME product ("Pack of 6", "12 count") is NOT a bundle → false + units_in_listing>1.
+  "components": [],            // REQUIRED when is_bundle=true: one entry per DISTINCT product, decomposed FROM THE PHOTO: [{"product":"","flavor":"","size":"","qty":0}] (e.g. a 4-flavor canned-veg variety = 4 entries). Else [].
   "retail_search_query": "",   // best query to find ONE base unit at Walmart/Target
   "confidence": 0.0,
   "notes": ""
