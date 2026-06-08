@@ -53,6 +53,7 @@ import { Input } from "@/components/ui/input";
 import FrozenRiskBadge, {
   type ShippingFrozenAlert,
 } from "@/components/shipping/FrozenRiskBadge";
+import { PhotoLightbox } from "@/app/procurement/components/PhotoLightbox";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Types — mirror what /api/shipping/dashboard returns.
@@ -3000,6 +3001,10 @@ function OrderRow({
   const isWaiting = order.state === "waiting_placed";
   const isBought = order.state === "bought";
 
+  // Click a product thumbnail to view it fullscreen — same lightbox the
+  // Procurement module uses, so the operator can read package text/expiry.
+  const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
+
   const fmt$ = (v: number) =>
     `$${v.toLocaleString("en-US", {
       minimumFractionDigits: 2,
@@ -3052,6 +3057,13 @@ function OrderRow({
               : "border-rule"
       )}
     >
+      {lightboxImageUrl && (
+        <PhotoLightbox
+          src={lightboxImageUrl}
+          alt=""
+          onClose={() => setLightboxImageUrl(null)}
+        />
+      )}
       {/* Top row: select + identity + type tag */}
       <div className="flex items-start gap-3">
         {selectable ? (
@@ -3203,16 +3215,24 @@ function OrderRow({
                 className="flex items-start gap-2 text-[13px] text-ink-2"
               >
                 {i.imageUrl ? (
-                  // Plain <img> — Veeqo CDN URLs aren't on next.config's
-                  // allowed list and these are small thumbnails not worth
-                  // running through next/image optimisation.
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={i.imageUrl}
-                    alt=""
-                    className="h-10 w-10 shrink-0 rounded border border-rule bg-surface object-cover"
-                    loading="lazy"
-                  />
+                  // Click to enlarge fullscreen (PhotoLightbox).
+                  <button
+                    type="button"
+                    onClick={() => setLightboxImageUrl(i.imageUrl ?? null)}
+                    className="shrink-0 cursor-zoom-in"
+                    aria-label="Open photo fullscreen"
+                  >
+                    {/* Plain <img> — Veeqo CDN URLs aren't on next.config's
+                        allowed list and these are small thumbnails not worth
+                        running through next/image optimisation. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={i.imageUrl}
+                      alt=""
+                      className="h-10 w-10 rounded border border-rule bg-surface object-cover"
+                      loading="lazy"
+                    />
+                  </button>
                 ) : (
                   <div className="h-10 w-10 shrink-0 rounded border border-rule bg-bg-elev" />
                 )}
