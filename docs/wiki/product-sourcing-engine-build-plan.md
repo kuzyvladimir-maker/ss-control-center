@@ -51,6 +51,19 @@
 
 ## 🪜 ЭТАПЫ (step-by-step)
 
+### ✅ Stage 0 — ВЫПОЛНЕН 2026-06-07/08 (SS-CC, бесплатно)
+- **0a** ✅ Миграция `20260607220000_cogs_sku_cost` (dev + прод Turso): таблица `SkuCost`
+  (раздельно product/packaging/ice, идемпотентна по sku+source+effectiveDate) + колонки
+  `upc`/`upcSource` в `SkuShippingData`.
+- **0b** ✅ UPC из наших листингов (`scripts/cogs-extract-upc.ts`): **Walmart 514/514 (100%)**
+  (из `GET /items/{sku}` — отдаёт upc+gtin, список не отдаёт), **Amazon 404/594 (68%)**
+  (отчёт `GET_MERCHANT_LISTINGS_ALL_DATA`, колонка product-id; store1 1462/store3 559/store5 383;
+  store2 → 403 нет доступа). **Итого 918/1109 ≈ 83%.** Грузить env через dotenv, НЕ shell
+  (Amazon refresh-токены содержат `|`).
+- **0c** ✅ `scripts/cogs-seed-sellerboard.ts`: 217 Amazon-costs в `SkuCost` (127 dry / 90 frozen).
+- **Stage 1 (Jackie)** ⛔ ждёт: Джеки НЕ видит прямого сообщения Владимира → трату с карты
+  держит. Владимиру нужно написать Джеки в КАНАЛ, который Джеки реально получает.
+
 ### Stage 0 — Фундамент: схема + UPC из наших листингов  ·  SS-CC · бесплатно · СЕЙЧАС
 - **0a. Схема БД.** Расширяем каталог: колонка `upc/gtin`; новая дат-таблица `SkuCost`
   (`productCost / packagingCost / iceCost / totalCost / costPerUnit / effectiveDate /
