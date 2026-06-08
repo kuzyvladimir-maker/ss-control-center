@@ -21,7 +21,7 @@
  *   isSellerBuyBoxWinner (Yes/No), BuyBox Item Price, BuyBox Ship Price
  */
 
-import { gunzipSync } from "zlib";
+import { gunzipSync, inflateRawSync } from "zlib";
 import type { WalmartClient } from "./client";
 
 export type InsightsReportType = "BUYBOX" | "ITEM_PERFORMANCE";
@@ -114,9 +114,39 @@ export async function fetchReportText(downloadUrl: string): Promise<string> {
     return gunzipSync(buf).toString("utf8"); // gzip
   }
   if (buf.length >= 2 && buf[0] === 0x50 && buf[1] === 0x4b) {
-    throw new Error("Report is a ZIP archive — add an unzip step (PK magic bytes)");
+    return unzipFirstFile(buf); // ZIP archive (Buy Box reports ship as ZIP'd CSV)
   }
   return buf.toString("utf8"); // plain CSV / TSV
+}
+
+/**
+ * Extract the first file from a single-entry ZIP using only Node's built-in
+ * zlib (no dep). Reads the central directory for reliable sizes/offsets, then
+ * inflates (deflate, method 8) or returns stored (method 0) bytes. Walmart
+ * Insights report archives contain one CSV, so first-entry is enough.
+ */
+function unzipFirstFile(buf: Buffer): string {
+  // Find End Of Central Directory record (PK\x05\x06), scanning from the end.
+  let eocd = -1;
+  for (let i = buf.length - 22; i >= 0; i--) {
+    if (buf.readUInt32LE(i) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error("ZIP: no End-Of-Central-Directory record");
+  const cdOffset = buf.readUInt32LE(eocd + 16);
+  if (buf.readUInt32LE(cdOffset) !== 0x02014b50) throw new Error("ZIP: no central directory entry");
+
+  const method = buf.readUInt16LE(cdOffset + 10);
+  const compSize = buf.readUInt32LE(cdOffset + 20);
+  const localOffset = buf.readUInt32LE(cdOffset + 42);
+  if (buf.readUInt32LE(localOffset) !== 0x04034b50) throw new Error("ZIP: bad local file header");
+  const lNameLen = buf.readUInt16LE(localOffset + 26);
+  const lExtraLen = buf.readUInt16LE(localOffset + 28);
+  const dataStart = localOffset + 30 + lNameLen + lExtraLen;
+  const data = buf.subarray(dataStart, dataStart + compSize);
+
+  if (method === 0) return data.toString("utf8"); // stored
+  if (method === 8) return inflateRawSync(data).toString("utf8"); // deflate
+  throw new Error(`ZIP: unsupported compression method ${method}`);
 }
 
 // ── CSV parsing ─────────────────────────────────────────────────────────────
