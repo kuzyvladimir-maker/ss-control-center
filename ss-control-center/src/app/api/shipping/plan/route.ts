@@ -794,57 +794,36 @@ export async function GET(request: NextRequest) {
             );
           }
 
-          // Skip Monday-shift attempts that can't possibly win:
-          //   * non-Frozen orders (no 3-day constraint to relieve)
-          //   * Monday is past the marketplace deadline already
-          //     (monDeadlineDays < 1 — Monday IS the deadline or later,
-          //     no carrier delivers same-day for Frozen)
-          //   * today already IS Monday — getNextMonday() would return
-          //     Mon+7, a full week out. Too aggressive for routine use;
-          //     a Monday order with no rate is a real exception that
-          //     should surface as a stop and be handled manually.
+          // Monday-shift policy (Vladimir 2026-06-09 — canonical):
           //
-          // 2026-05-14: was `>= 3` which was too strict — for orders
-          // where Monday is just 1-2 days before deadline the trick can
-          // still find a fast Frozen-eligible rate (e.g. UPS Ground
-          // Saver from Monday → 2 cal day EDD that meets both
-          // ≤3-day Frozen rule and deadline). The `selectBestRate`
-          // call inside the trick will return null if Monday doesn't
-          // work, so loosening the guard is safe.
+          // A Frozen rate must satisfy BOTH conditions to be bought today:
+          //   1. delivers on/before the marketplace deadline, AND
+          //   2. transit ≤ the cal-day cap — 3 days normally, 2 when the
+          //      destination temperature is high/critical (frozenMaxCalDays).
+          // `selectBestRate` already enforces both, so a non-null
+          // `selectedRate` means today's ship date IS valid → buy it today.
           //
-          // 2026-05-15: also fire when today's pick is at the edge
-          // (calDays >= 3). The 3-day cap is the absolute maximum for
-          // frozen food safety — Vladimir flagged order
-          // 112-2707311-2069835 where today's UPS Ground Saver was 3
-          // days exactly and Monday could have given a tighter 1-2 day
-          // EDD. Triggering only on `no rate` / `Saturday surcharge`
-          // missed this case.
+          // The Monday-shift exists for the OPPOSITE case: shipping today
+          // can't meet the rule (e.g. ship Thu, every rate delivers Mon →
+          // > cap cal days). selectBestRate returns null. Only THEN do we
+          // move the dispatch_date to next Monday, re-quote, and take a
+          // Monday rate if it now satisfies deadline + cal-day cap.
+          //
+          // It must NOT fire when today already has a valid rate. The old
+          // `selectedCalDays >= 3` / Saturday-surcharge triggers did exactly
+          // that and delayed dispatch to chase a cheaper rate — e.g.
+          // 113-2379726-9067420: today's FedEx Express Saver was a valid
+          // 3-day rate, but the trick shoved it to a Mon UPS Ground that
+          // delivered 4 days LATER (Jun 16 vs Jun 12) just because cheaper.
+          //
+          //   * monDeadlineDays >= 1 — Monday must be before the deadline.
+          //   * dayName !== "Mon" — today being Monday would shift a full
+          //     week out; surface as a manual stop instead.
           const tryMonday =
             productType === "Frozen" &&
             monDeadlineDays >= 1 &&
             dayInfo.dayName !== "Mon" &&
-            // HARD INVARIANT (Vladimir 2026-06-09): the Monday-shift may
-            // never push dispatch past the marketplace ship-by date. The
-            // trick was built to skip a *weekend* (a 1-3 day hop), but with
-            // the `selectedCalDays >= 3` trigger it was firing on routine
-            // early-week orders too — e.g. 113-2379726-9067420 shipped Tue
-            // 6/9 (ship-by 6/9) got shoved to Mon 6/15 just because plain
-            // UPS Ground quoted 1-day from Monday. Holding frozen product 6
-            // extra days and blowing the ship-by to save a few dollars is
-            // never acceptable. nextMonday must land on or before ship-by.
-            nextMonday <= shipBy &&
-            (
-              // No rate found today → trick is our only chance
-              !selectedRate ||
-              // Today's pick involves Saturday surcharge → Monday may be
-              // cheaper (Saturday variants are typically $15-25 over the
-              // plain version).
-              /saturday/i.test(selectedRate.title || "") ||
-              // Today's pick is at or above the 3-cal-day Frozen limit.
-              // Monday almost always tightens transit time because the
-              // package skips the weekend purgatory.
-              selectedCalDays >= 3
-            );
+            !selectedRate;
 
           if (tryMonday) {
             const originalDispatch: string | undefined = order.dispatch_date;
