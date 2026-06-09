@@ -194,10 +194,21 @@ Frozen + Dry в одном заказе → STOP + note.
 
 ### Шаг 1 — Single item, qty = 1 → таблица `SkuShippingData`
 
-| Carrier / Service | Поле |
+| Carrier / Service | Вес посылки |
 |---------|---------|
-| UPS, USPS, FedEx без One Rate | `weight` |
-| FedEx ONE RATE | `weightFedex` |
+| UPS, USPS, FedEx без One Rate | `weight` (вес из каталога) |
+| FedEx ONE RATE | `weight × 1.20` (+20%) |
+
+> **FedEx One Rate коэффициент (Vladimir 2026-06-09):** для рейтов, у которых
+> в названии есть **"One Rate"**, вес, который уходит в Veeqo на этикетку,
+> = вес из каталога **× 1.20** (+20%). Это применяется **только к весу на
+> этикетке** (в момент покупки в `/api/shipping/buy`) — вес в карточке/каталоге
+> остаётся как введён (напр. карточка 10 lbs → этикетка FedEx One Rate 12 lbs).
+> Все остальные FedEx-сервисы (Ground / Home / Ground Economy) и UPS/USPS
+> используют вес из каталога без изменений. Реализация:
+> `FEDEX_ONE_RATE_WEIGHT_MULT` в `src/app/api/shipping/buy/route.ts`.
+> (Историческая колонка `weightFedex` = `weight × 1.25` в БД больше НЕ
+> используется для расчёта веса этикетки — она оставлена для совместимости.)
 
 ### Шаг 2 — Multi-item / qty > 1 → таблица `PackingProfile`
 

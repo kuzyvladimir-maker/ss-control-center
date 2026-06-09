@@ -58,6 +58,11 @@ function pickTrackingString(shipment: unknown): string | null {
   return null;
 }
 
+// FedEx One Rate declared-weight multiplier. One Rate labels carry a
+// heavier weight than the catalog figure (Vladimir 2026-06-09: +20%).
+// Applied only to the weight pushed to Veeqo for FedEx One Rate labels.
+const FEDEX_ONE_RATE_WEIGHT_MULT = 1.2;
+
 // Parse the plan item's boxSize ("LxWxH", e.g. "12x12x10") into numbers.
 // Returns null when the string is missing or malformed so the caller can
 // decide whether to push dims to Veeqo or skip.
@@ -227,11 +232,27 @@ export async function POST(request: NextRequest) {
         // If we have dims but the push fails, ABORT this label — a
         // wrong-dimension label costs real money and can't be un-bought;
         // a refused buy the operator can retry is strictly safer.
+        // FedEx One Rate weight bump (+20%, Vladimir 2026-06-09; MASTER_PROMPT
+        // §4). One Rate labels must carry a heavier declared weight than the
+        // catalog figure. The bump is applied ONLY to the weight pushed to
+        // Veeqo for the label — the catalog/card weight stays as entered
+        // (e.g. card shows 10lbs, the FedEx One Rate label prints 12lbs).
+        // Detected from the chosen service title containing "one rate"
+        // (operator confirmed Veeqo names One Rate services that way). Other
+        // FedEx services (Ground/Home/Economy) and all UPS/USPS use the
+        // catalog weight unchanged.
+        const isFedexOneRate =
+          String(item.service ?? "").toLowerCase().includes("one rate");
+        const pushWeightLbs =
+          item.weight != null && isFedexOneRate
+            ? Math.round(item.weight * FEDEX_ONE_RATE_WEIGHT_MULT * 100) / 100
+            : item.weight;
+
         const boxDims = parseBoxSize(item.boxSize);
-        if (item.weight != null && boxDims) {
+        if (pushWeightLbs != null && boxDims) {
           try {
             await updateAllocationPackage(item.allocationId, {
-              weightLbs: item.weight,
+              weightLbs: pushWeightLbs,
               lengthIn: boxDims.l,
               widthIn: boxDims.w,
               heightIn: boxDims.h,
@@ -241,7 +262,7 @@ export async function POST(request: NextRequest) {
               pkgErr instanceof Error ? pkgErr.message : String(pkgErr);
             throw new Error(
               `Could not set package size in Veeqo ` +
-                `(${item.weight}lbs ${boxDims.l}x${boxDims.w}x${boxDims.h}) — ` +
+                `(${pushWeightLbs}lbs ${boxDims.l}x${boxDims.w}x${boxDims.h}) — ` +
                 `label NOT bought to avoid wrong dimensions. ${reason}`,
             );
           }
