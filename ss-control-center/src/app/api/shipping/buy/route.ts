@@ -6,6 +6,7 @@ import {
   updateOrderDispatchDate,
   getShippingRates,
   extractVasFromRate,
+  updateAllocationPackage,
 } from "@/lib/veeqo";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { uploadLabelPdf } from "@/lib/google-drive";
@@ -55,6 +56,20 @@ function pickTrackingString(shipment: unknown): string | null {
     }
   }
   return null;
+}
+
+// Parse the plan item's boxSize ("LxWxH", e.g. "12x12x10") into numbers.
+// Returns null when the string is missing or malformed so the caller can
+// decide whether to push dims to Veeqo or skip.
+function parseBoxSize(
+  boxSize: string | null | undefined,
+): { l: number; w: number; h: number } | null {
+  if (!boxSize) return null;
+  const m = boxSize.match(
+    /^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)$/i,
+  );
+  if (!m) return null;
+  return { l: Number(m[1]), w: Number(m[2]), h: Number(m[3]) };
 }
 
 // Per-itemId override: operator picked a different carrier/service through
@@ -197,6 +212,41 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
+        // ── Set OUR package dims in Veeqo BEFORE quoting/buying ─────────
+        // The label is bought against the allocation_package currently on
+        // the Veeqo allocation — NOT against any weight/dims in the buy
+        // POST (Veeqo's /shipping/shipments ignores those). So set the
+        // package from the operator's catalog dims (stored on the plan
+        // item) here, immediately before the live re-quote below, leaving
+        // no window for Veeqo to fall back to a default/Amazon-supplied
+        // package. This is the fix for labels printing at the wrong
+        // weight/box (card said 10lbs/12×12×10, label came out 7lbs/
+        // 10×8×6). Done first, before the dispatch-date dance, so a push
+        // failure aborts cleanly without leaving dispatch_date shifted.
+        //
+        // If we have dims but the push fails, ABORT this label — a
+        // wrong-dimension label costs real money and can't be un-bought;
+        // a refused buy the operator can retry is strictly safer.
+        const boxDims = parseBoxSize(item.boxSize);
+        if (item.weight != null && boxDims) {
+          try {
+            await updateAllocationPackage(item.allocationId, {
+              weightLbs: item.weight,
+              lengthIn: boxDims.l,
+              widthIn: boxDims.w,
+              heightIn: boxDims.h,
+            });
+          } catch (pkgErr) {
+            const reason =
+              pkgErr instanceof Error ? pkgErr.message : String(pkgErr);
+            throw new Error(
+              `Could not set package size in Veeqo ` +
+                `(${item.weight}lbs ${boxDims.l}x${boxDims.w}x${boxDims.h}) — ` +
+                `label NOT bought to avoid wrong dimensions. ${reason}`,
+            );
+          }
+        }
+
         // v3.3 §13 — dual-date dance. The two dates on the plan item:
         //
         //   labelDate         — what Amazon sees on the printed label.
@@ -254,6 +304,12 @@ export async function POST(request: NextRequest) {
         // reliable source is GetRates at purchase time, not what was
         // stored on the plan when rates were originally pulled.
         let liveVas: Record<string, string> = {};
+        // The matched live rate. We buy against THIS (its remote_shipment_id
+        // / total_net_charge / base_rate / name), not the identifiers stored
+        // on the plan at plan-time, because those were quoted against an
+        // older package. Re-quoting after the package push above guarantees
+        // the purchased label matches the dims we just set.
+        let freshRate: Record<string, unknown> | null = null;
         // Captured here so we can splice it into the error message when
         // Veeqo rejects the purchase — Vercel logs aren't visible to the
         // operator, but the modal is, so we surface the diagnostic
@@ -284,6 +340,7 @@ export async function POST(request: NextRequest) {
                 String(r.title) === item.service
             );
           if (match) {
+            freshRate = match;
             liveVas = extractVasFromRate(match);
             // Capture every field whose name might hint at VAS or rate
             // requirements — the extractor uses `value_added_service*`
@@ -351,6 +408,46 @@ export async function POST(request: NextRequest) {
           }
         }
 
+        // Refuse to buy if we couldn't re-quote the chosen service against
+        // the package we just set. Buying with the plan-time identifiers
+        // here is exactly what produced wrong-dimension labels — the stored
+        // remote_shipment_id / total_net_charge were quoted against an older
+        // package. A refused buy is recoverable (operator hits Refresh and
+        // retries); a wrong label isn't.
+        if (!freshRate) {
+          throw new Error(
+            `Could not re-quote "${item.service ?? item.serviceType}" at the ` +
+              `current package size — label NOT bought to avoid wrong ` +
+              `dimensions/price. Refresh the list and try again. ` +
+              `DIAG: ${rateDiagnostic}`,
+          );
+        }
+
+        // Buy against the FRESH rate (quoted after the package push), not
+        // the plan-time identifiers. Each field falls back to the stored
+        // value only if absent on the live rate (shouldn't happen).
+        const fr = freshRate;
+        const str = (v: unknown, fallback: string): string =>
+          v != null ? String(v) : fallback;
+        const buyCarrierId = str(fr.carrier, item.carrierId);
+        const buyRemoteShipmentId = str(
+          fr.remote_shipment_id,
+          item.remoteShipmentId,
+        );
+        const buyServiceType = str(fr.name, item.serviceType);
+        const buySubCarrierId = str(fr.sub_carrier_id, item.subCarrierId);
+        const buyServiceCarrier = str(fr.service_carrier, item.serviceCarrier);
+        const buyTotalNetCharge = str(fr.total_net_charge, item.totalNetCharge);
+        const buyBaseRate = str(fr.base_rate, item.baseRate);
+        // Human-facing carrier/service/price actually purchased — persisted
+        // on the item and echoed to the UI so bought rows show what was
+        // really bought, not a later re-quote.
+        const boughtService = str(fr.title, item.service ?? "");
+        const boughtPrice =
+          fr.total_net_charge != null
+            ? parseFloat(String(fr.total_net_charge))
+            : item.price;
+
         // Single-shot buy. Veeqo's contract:
         //   • shipping_service_options=null  → don't send any VAS keys.
         //     extractVasFromRate returns {} in this case.
@@ -361,13 +458,13 @@ export async function POST(request: NextRequest) {
         try {
           shipment = await buyShippingLabel({
             allocationId: item.allocationId,
-            carrierId: item.carrierId,
-            remoteShipmentId: item.remoteShipmentId,
-            serviceType: item.serviceType,
-            subCarrierId: item.subCarrierId,
-            serviceCarrier: item.serviceCarrier,
-            totalNetCharge: item.totalNetCharge,
-            baseRate: item.baseRate,
+            carrierId: buyCarrierId,
+            remoteShipmentId: buyRemoteShipmentId,
+            serviceType: buyServiceType,
+            subCarrierId: buySubCarrierId,
+            serviceCarrier: buyServiceCarrier,
+            totalNetCharge: buyTotalNetCharge,
+            baseRate: buyBaseRate,
             vas: liveVas,
           });
         } catch (buyErr) {
@@ -524,16 +621,20 @@ export async function POST(request: NextRequest) {
           : ` | Ship: ${labelDate}`;
         await addEmployeeNote(
           parseInt(item.orderId),
-          `✅ Label Purchased: ${item.carrier} ${item.service} $${item.price} | Tracking: ${tracking}${shipDayNote}`
+          `✅ Label Purchased: ${item.carrier} ${boughtService} $${boughtPrice ?? "?"} | Tracking: ${tracking}${shipDayNote}`
         );
 
-        // Update DB
+        // Update DB. Persist the carrier/service/price ACTUALLY bought (from
+        // the fresh rate) so the row keeps showing the purchased service —
+        // bought rows that re-quote later must not drift to a different rate.
         await prisma.shippingPlanItem.update({
           where: { id: item.id },
           data: {
             status: "bought",
             trackingNumber: tracking,
             labelPdfUrl: labelPath,
+            service: boughtService,
+            price: boughtPrice,
           },
         });
 
@@ -546,8 +647,8 @@ export async function POST(request: NextRequest) {
           pdfSource,
           driveError,
           carrier: item.carrier,
-          service: item.service,
-          price: item.price,
+          service: boughtService,
+          price: boughtPrice,
           pdfBase64,
           driveFileId,
         });

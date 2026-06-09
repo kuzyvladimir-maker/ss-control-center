@@ -630,20 +630,28 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      // For Amazon (and merged-from-Amazon) orders Veeqo's native Amazon
-      // integration supplies dims to the allocation automatically. For
-      // eBay/TikTok/Shopify/Etsy/direct, Veeqo has no marketplace-supplied
-      // packaging hint, so its allocation_package stays empty and the
-      // rates endpoint returns an empty list (the "Calculating best rate…"
-      // forever symptom on eBay rows). Push our SkuShippingData /
-      // PackingProfile dims into the allocation before quoting so the
-      // rate engine has something to weigh. Best-effort: a push failure
-      // doesn't stop the quote — Veeqo may still return rates against
-      // whatever default it has.
+      // Push OUR catalog dims (SkuShippingData / PackingProfile) into the
+      // Veeqo allocation_package before quoting — for EVERY Veeqo channel,
+      // Amazon included.
+      //
+      // This used to be gated on `isAlt` (non-Amazon only), on the
+      // assumption that "Veeqo's native Amazon integration supplies dims
+      // automatically". That assumption is WRONG and was the root cause of
+      // labels printing at the wrong weight/box (e.g. card showed 10lbs /
+      // 12×12×10 but the UPS label came out 7lbs / 10×8×6 — Veeqo's empty-
+      // package default). The operator sets the package size in OUR catalog
+      // and Veeqo must be told it for ANY channel; Amazon's own declared
+      // dims are irrelevant to the label we buy. The quote below uses
+      // `from_allocation_package=true`, so the rate (and thus the bought
+      // label) only matches the card when we push first. Best-effort: a
+      // push failure doesn't stop the quote.
+      //
+      // Walmart-via-Walmart orders have no Veeqo allocationId, so the
+      // `allocationId` guard skips them automatically (they're rate-shopped
+      // + bought through Walmart's own API).
       if (
         !stopReason &&
         allocationId &&
-        isAlt &&
         skuWeight != null &&
         skuBoxSize
       ) {
@@ -659,17 +667,17 @@ export async function GET(request: NextRequest) {
               heightIn: Number(dimMatch[3]),
             });
             console.log(
-              `[plan-alt] ${order.number} allocation_package pushed: ${dimMatch[1]}x${dimMatch[2]}x${dimMatch[3]} ${skuWeight}lbs`,
+              `[plan] ${order.number} allocation_package pushed: ${dimMatch[1]}x${dimMatch[2]}x${dimMatch[3]} ${skuWeight}lbs`,
             );
           } catch (e) {
             console.warn(
-              `[plan-alt] ${order.number} allocation_package push FAILED:`,
+              `[plan] ${order.number} allocation_package push FAILED:`,
               e instanceof Error ? e.message : e,
             );
           }
         } else {
           console.warn(
-            `[plan-alt] ${order.number} skuBoxSize="${skuBoxSize}" did not match LxWxH regex — skipping package push`,
+            `[plan] ${order.number} skuBoxSize="${skuBoxSize}" did not match LxWxH regex — skipping package push`,
           );
         }
       }
@@ -1030,6 +1038,37 @@ export async function GET(request: NextRequest) {
         totalNetCharge: selectedRate?.total_net_charge || null,
         baseRate: selectedRate?.base_rate || null,
       });
+    }
+
+    // ── Already-bought rows: show what was ACTUALLY bought ──────────────
+    // Bought orders stay visible in the list (operator wants to see the
+    // tracking + what was purchased). But the loop above re-quotes them
+    // live, so the row would drift to whatever rate is cheapest NOW —
+    // showing e.g. "UPS Ground Saver" on a row whose label is actually
+    // "UPS Ground". Overlay the carrier/service/price/edd persisted on the
+    // most-recent bought plan item for each order so the row reflects the
+    // real purchase. Display-only: the purchase identifiers are untouched,
+    // and bought orders aren't selectable for buying anyway.
+    const orderNumbersForPlan = planItems
+      .map((i) => i.orderNumber)
+      .filter((n): n is string => !!n);
+    if (orderNumbersForPlan.length > 0) {
+      const boughtRecords = await prisma.shippingPlanItem.findMany({
+        where: { orderNumber: { in: orderNumbersForPlan }, status: "bought" },
+        orderBy: { updatedAt: "desc" },
+      });
+      const boughtByOrder = new Map<string, (typeof boughtRecords)[number]>();
+      for (const b of boughtRecords) {
+        if (!boughtByOrder.has(b.orderNumber)) boughtByOrder.set(b.orderNumber, b);
+      }
+      for (const item of planItems) {
+        const b = boughtByOrder.get(item.orderNumber);
+        if (!b) continue;
+        if (b.carrier != null) item.carrier = b.carrier;
+        if (b.service != null) item.service = b.service;
+        if (b.price != null) item.price = b.price;
+        if (b.edd != null) item.edd = b.edd;
+      }
     }
 
     // Save plan
