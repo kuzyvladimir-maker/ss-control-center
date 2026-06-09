@@ -53,9 +53,11 @@ export function isOwnOrReseller(seller?: string | null): boolean {
 export function extractPackSize(title?: string | null): number {
   if (!title) return 1;
   const t = title.toLowerCase();
+  // Only MULTI-PACKAGE markers divide the price. "N count"/"N ct" denote pieces
+  // INSIDE one retail package (12-count tortilla bag, 10-count Uncrustables box) —
+  // that package IS the base unit, so they must NOT divide (fixes La Abuela $0.26).
   const pats = [
-    /pack of\s*(\d+)/, /(\d+)\s*[- ]?pack\b/, /(\d+)\s*[- ]?pk\b/,
-    /(\d+)\s*count\b/, /(\d+)\s*[- ]?ct\b/, /case of\s*(\d+)/,
+    /pack of\s*(\d+)/, /(\d+)\s*[- ]?pack\b/, /(\d+)\s*[- ]?pk\b/, /case of\s*(\d+)/,
   ];
   for (const re of pats) {
     const m = t.match(re);

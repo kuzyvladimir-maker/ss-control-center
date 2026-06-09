@@ -19,6 +19,7 @@ loadEnv({ path: ".env.local" });
 loadEnv({ path: ".env" });
 import { createClient } from "@libsql/client";
 import { analyzeImagesWithFallback } from "@/lib/ai-vision";
+import { fetchVeeqoImageBySku } from "@/lib/veeqo/product-image";
 import { writeFileSync, mkdirSync } from "node:fs";
 
 // Jackie's exact 13-SKU pilot bed (so we can compare brain-resolved vs his raw-title 9/13).
@@ -83,7 +84,11 @@ async function toBase64(url: string): Promise<string | null> {
     });
     const title = (cat.rows[0]?.title as string) || (ship.rows[0]?.productTitle as string) || "";
     const itemId = (cat.rows[0]?.itemId as string) || null;
-    const imgUrl = (cat.rows[0]?.mainImageUrl as string) || null;
+    // Walmart Marketplace API doesn't expose listing images → fall back to Veeqo's
+    // product image so vision can actually SEE the product (e.g. decompose a 4-flavor
+    // variety pack by reading the cans on the photo).
+    let imgUrl = (cat.rows[0]?.mainImageUrl as string) || null;
+    if (!imgUrl) { try { imgUrl = await fetchVeeqoImageBySku(sku); } catch { /* keep null */ } }
     const category = (ship.rows[0]?.category as string) || null;
 
     if (!title) { console.log(`\n❌ ${sku}: no title in catalog or SkuShippingData`); continue; }
