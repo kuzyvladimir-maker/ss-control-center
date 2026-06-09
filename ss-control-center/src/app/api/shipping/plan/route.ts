@@ -91,15 +91,18 @@ function getNextMonday(from: string): string {
 let lastFrozenRateDiagnostic: string | null = null;
 
 /**
- * Frozen calendar-day cap. Master Prompt v3.4 §5 tightens the rule
- * from "≤3 days" to "≤2 days" when the FrozenRiskAlert says the order
- * is `critical` — extreme-heat destinations / multi-day in-transit
- * temps that put the food itself at risk regardless of marketplace
- * deadline math. For all other levels (ok/low/medium/high or no alert)
- * the original ≤3-day cap applies.
+ * Frozen calendar-day cap. Master Prompt v3.4 §5 tightens the transit
+ * cap from "≤3 days" to "≤2 days" when the FrozenRiskAlert rates the
+ * destination as `high` OR `critical` — hot destinations / multi-day
+ * high-temp routes that put the food itself at risk regardless of
+ * marketplace deadline math.
+ * (Vladimir 2026-06-09: BOTH high and critical → 2 days, not critical
+ *  only.) For all other levels (ok/low/medium or no alert) the default
+ * ≤3-day cap applies.
  */
 function frozenMaxCalDays(riskLevel: string | null | undefined): number {
-  return (riskLevel ?? "").toLowerCase() === "critical" ? 2 : 3;
+  const lvl = (riskLevel ?? "").toLowerCase();
+  return lvl === "critical" || lvl === "high" ? 2 : 3;
 }
 
 function selectBestRate(
