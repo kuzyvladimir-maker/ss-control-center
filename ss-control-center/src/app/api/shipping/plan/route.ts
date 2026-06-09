@@ -143,6 +143,25 @@ function selectBestRate(
     const maxCalDays = frozenMaxCalDays(frozenRiskLevel);
     let pool = enriched.filter((r) => r.calDays <= maxCalDays);
 
+    // Economy "tender-to-carrier" services (UPS Ground Saver / SurePost,
+    // FedEx Ground Economy / SmartPost) hand the last mile off to USPS.
+    // Amazon's quoted `delivery_promise_date` for them is unreliable — it
+    // often comes back as an optimistic ≤3-day date that lets the rate slip
+    // past the food-safety filter, then the parcel actually takes ~a week
+    // (Veeqo flags both as "Late Delivery Risk"). NEVER acceptable for
+    // Frozen regardless of the promised date.
+    // (Vladimir 2026-06-09: order 113-2379726-9067420 was auto-picked as
+    //  UPS Ground Saver @ $26.49 / EDD Jun 16 / 7-day transit instead of
+    //  the correct FedEx Express Saver @ $54.31 / EDD Jun 12 / 3-day.)
+    pool = pool.filter(
+      (r) =>
+        !r.titleLow.includes("ground saver") &&
+        !r.titleLow.includes("ground economy") &&
+        !r.titleLow.includes("surepost") &&
+        !r.titleLow.includes("smartpost") &&
+        !r.titleLow.includes("tender to"),
+    );
+
     // Policy (Vladimir 2026-05-15): never buy faster than 2-Day for Frozen
     // unless the customer themselves paid for Overnight / Next Day. We use
     // the marketplace deliver-by date as a proxy — if it's within 1 day of
