@@ -578,15 +578,19 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Telegram
-    const summary = [
-      `📦 Shipping Labels — ${plan.date}`,
-      `✅ Bought: ${results.bought.length}`,
-      results.errors.length > 0
-        ? `❌ Errors: ${results.errors.length}\n${results.errors.map((e) => `  ${e.orderNumber}: ${e.error}`).join("\n")}`
-        : null,
-    ].filter(Boolean).join("\n");
-    await sendTelegramMessage(summary);
+    // Telegram summary OFF by default (Vladimir 2026-06-08 — redundant with the
+    // Shipping UI, which already shows bought labels + errors). Flip
+    // TELEGRAM_SHIPPING_BUY_ENABLED=true on Vercel to restore the DM summary.
+    if (process.env.TELEGRAM_SHIPPING_BUY_ENABLED === "true") {
+      const summary = [
+        `📦 Shipping Labels — ${plan.date}`,
+        `✅ Bought: ${results.bought.length}`,
+        results.errors.length > 0
+          ? `❌ Errors: ${results.errors.length}\n${results.errors.map((e) => `  ${e.orderNumber}: ${e.error}`).join("\n")}`
+          : null,
+      ].filter(Boolean).join("\n");
+      await sendTelegramMessage(summary);
+    }
 
     appendBuyLog({
       planId,

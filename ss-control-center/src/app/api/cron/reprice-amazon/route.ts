@@ -102,12 +102,16 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Notify Jackie (Telegram) — only when something actionable happened, or
-  // always in dryRun so Vladimir can confirm the first run worked.
+  // Telegram summary OFF by default (Vladimir 2026-06-08 — the every-2h pings
+  // cluttered Jackie's DM and reprice results are visible in the Control
+  // Center UI). Flip TELEGRAM_REPRICE_ENABLED=true on Vercel to restore them.
+  // When enabled, notify only when something actionable happened, or always in
+  // dryRun so a first run can be confirmed.
+  const notifyEnabled = process.env.TELEGRAM_REPRICE_ENABLED === "true";
   const actionable =
     dryRun ||
     results.some((r) => r.repriced > 0 || r.skippedCap > 0 || r.errors > 0);
-  if (actionable) {
+  if (notifyEnabled && actionable) {
     try {
       await sendTelegramMessage(buildSummary(results, dryRun));
     } catch (e) {

@@ -45,6 +45,7 @@
 - [Call Center AI Agent](call-center-ai-agent.md) — Sarah, голосовой AI-агент для CS call-центра. 21 секция, 20 категорий звонков (C1-C20), скрипты EN+ES, deescalation (HEARD), anti-fraud, escalation к Vladimir, refund tiers (<$30 auto / $30-50 logged / >$100 escalate). Master Prompt: `CALL_CENTER_AI_AGENT_v1_0.md`. 2026-05-23.
 - [Account Health v2.0](account-health-v2.md) — мониторинг Amazon (AHR + Policy Compliance × 10 категорий + ODR/LSR/VTR) + Walmart (8 metrics live через Insights API + Item Compliance), 2 таба, drill-down по нарушениям — 2026-05-12, Walmart Performance v2 — 2026-05-15
 - [Critical Alerts Engine](critical-alerts.md) — Telegram + UI push при пересечении критических порогов Amazon/Walmart — 2026-05-12
+- [Telegram Notification Routing](telegram-notification-routing.md) — аудит всех Telegram-отправок: что/когда/куда; env-флаги-выключатели (reprice/health/buy/bundle OFF), Walmart → группа. Развели потоки, чтобы личка Джеки не захламлялась — 2026-06-08
 - [Account Health (исходный)](account-health.md) — предыдущая версия, оставлена как reference
 - [Frozen Analytics](frozen-analytics.md) — инциденты с frozen, SKU risk profiles
 - [Adjustments Monitor](adjustments-monitor.md) — корректировки веса/размеров

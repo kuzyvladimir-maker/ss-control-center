@@ -72,7 +72,17 @@ export async function evaluateCriticalAlerts(
     });
 
     let telegramSent = false;
-    if (rule.severity === "CRITICAL" || rule.severity === "HIGH") {
+    // Telegram for health alerts OFF by default (Vladimir 2026-06-08 — alerts
+    // stay visible in the Account Health UI; the DM pings cluttered Jackie's
+    // chat). The CriticalAlert row above is always created regardless; only the
+    // Telegram push is gated. Flip TELEGRAM_HEALTH_ALERTS_ENABLED=true on Vercel
+    // to restore the pings (routed via TELEGRAM_ALERT_CHAT_ID).
+    const telegramEnabled =
+      process.env.TELEGRAM_HEALTH_ALERTS_ENABLED === "true";
+    if (
+      telegramEnabled &&
+      (rule.severity === "CRITICAL" || rule.severity === "HIGH")
+    ) {
       try {
         const result = await sendCriticalAlert(formatTelegramAlert(alert));
         if (result.sent) {

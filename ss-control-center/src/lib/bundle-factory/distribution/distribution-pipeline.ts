@@ -139,6 +139,11 @@ async function sendSuccessAlert(
   draftId: string,
   outcome: ChannelDistributionOutcome,
 ): Promise<void> {
+  // Bundle publish pings OFF by default (Vladimir 2026-06-08 — redundant with
+  // the Bundle Factory UI). This also gates the "FIRST publish" milestone and
+  // the failure alert below; flip TELEGRAM_BUNDLE_PUBLISH_ENABLED=true on Vercel
+  // to restore them.
+  if (process.env.TELEGRAM_BUNDLE_PUBLISH_ENABLED !== "true") return;
   // First-ever success for THIS account is the historic moment Vladimir
   // wants to know about. We approximate via "this draft × this channel
   // has no prior LIVE published_at".
@@ -165,6 +170,8 @@ async function sendFailureAlert(
   draftId: string,
   outcome: ChannelDistributionOutcome,
 ): Promise<void> {
+  // Gated by the same flag as success/milestone pings (see sendSuccessAlert).
+  if (process.env.TELEGRAM_BUNDLE_PUBLISH_ENABLED !== "true") return;
   const top = outcome.issues
     .slice(0, 3)
     .map((i) => `• ${i.code ?? ""} ${i.message ?? ""}`)
