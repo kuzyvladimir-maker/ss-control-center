@@ -281,10 +281,9 @@ export function ProcurementCard({
           selected && "bg-green-soft/60 ring-2 ring-inset ring-green/40"
         )}
       >
-        {/* Bulk-select checkbox (only when not bought and not ordered via
-            Mike; bought cards stay visible until refresh and Mike orders are
-            not part of the online buy pool — neither should be re-selected). */}
-        {!isBought && !fromMike && onToggleSelect && (
+        {/* Bulk-select checkbox (only when not bought; bought cards stay
+            visible until refresh and shouldn't be re-selected). */}
+        {!isBought && onToggleSelect && (
           <button
             type="button"
             onClick={() => onToggleSelect(card.lineItemId)}
@@ -471,7 +470,13 @@ export function ProcurementCard({
                 )}
               >
                 <span>
-                  {isPartial ? "Осталось купить:" : "Купить:"}{" "}
+                  {isPartial
+                    ? fromMike
+                      ? "Осталось получить:"
+                      : "Осталось купить:"
+                    : fromMike
+                      ? "Получить:"
+                      : "Купить:"}{" "}
                   {remainingPhysical} шт
                 </span>
               </div>
@@ -546,7 +551,7 @@ export function ProcurementCard({
             ) : isBought ? (
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1 rounded-md bg-green px-2 py-1 text-[12.5px] font-semibold text-green-cream">
-                  <Check size={13} /> Куплено
+                  <Check size={13} /> {fromMike ? "Получено" : "Куплено"}
                 </span>
                 <Btn
                   variant="ghost"
@@ -558,11 +563,6 @@ export function ProcurementCard({
                   Откатить
                 </Btn>
               </div>
-            ) : fromMike ? (
-              <div className="text-[12px] leading-snug text-ink-3">
-                Ожидаем поставку от Майка. Покупать онлайн не нужно. Когда
-                товар на руках — отметь «Mark as Placed» в Shipping Labels.
-              </div>
             ) : (
               <div className="flex flex-wrap items-center gap-2">
                 <Btn
@@ -572,7 +572,7 @@ export function ProcurementCard({
                   disabled={pending !== null}
                   onClick={() => dispatch({ kind: "bought" })}
                 >
-                  Купил всё
+                  {fromMike ? "Получили всё" : "Купил всё"}
                 </Btn>
                 <Btn
                   variant="default"
@@ -583,7 +583,11 @@ export function ProcurementCard({
                     setActionError(null);
                   }}
                 >
-                  {isPartial ? "Изменить остаток" : "Купил частично"}
+                  {isPartial
+                    ? "Изменить остаток"
+                    : fromMike
+                      ? "Получили частично"
+                      : "Купил частично"}
                 </Btn>
                 {isPartial && (
                   <Btn
