@@ -1,5 +1,6 @@
 import { veeqoFetch } from "./client";
 import { shouldIncludeOrderInProcurement } from "@/lib/procurement/filter-rules";
+import { hasTag, PROCUREMENT_TAGS } from "./tags";
 import { getInternalNotes } from "./notes";
 import {
   parseProcurementBlock,
@@ -29,6 +30,12 @@ export interface ProcurementCard {
 
   // Status from [PROCUREMENT] block
   status: LineItemStatus | null;
+
+  // True when the order carries the "Заказано у Майка" Veeqo tag — i.e. Jackie
+  // SMS'd Mike (Publix) and ordered it through him instead of online. Such
+  // orders are shown for visibility but kept OUT of the buy pool (no checkbox,
+  // no "Купил всё") so Vladimir doesn't re-purchase what Mike already has.
+  fromMike: boolean;
 
   // Deadlines (ISO strings as Veeqo returns them)
   shipBy: string | null;
@@ -188,6 +195,7 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
 
     const notes = getInternalNotes(order);
     const block = parseProcurementBlock(notes);
+    const fromMike = hasTag(order as never, PROCUREMENT_TAGS.ORDERED_BY_MIKE);
 
     for (const li of order.line_items ?? []) {
       const lineItemId = String(li.id ?? "");
@@ -225,6 +233,7 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
         quantityOrdered,
         remaining,
         status,
+        fromMike,
         shipBy:
           order.dispatch_date ??
           order.expected_dispatch_date ??

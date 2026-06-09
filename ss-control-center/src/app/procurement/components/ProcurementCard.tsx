@@ -16,6 +16,7 @@ import {
   Ban,
   MessageSquare,
   Clock,
+  Truck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Btn } from "@/components/kit";
@@ -49,6 +50,9 @@ export interface ProcurementCardData {
   status: { kind: string; remaining?: number } | null;
   shippingMethod: string | null;
   isPremium: boolean;
+  /** Order carries the "Заказано у Майка" tag — ordered through Mike (Publix),
+   *  not online. Shown for tracking but excluded from the buy pool. */
+  fromMike?: boolean;
 }
 
 export type CardAction =
@@ -158,6 +162,9 @@ export function ProcurementCard({
   const status = card.status;
   const isBought = status?.kind === "bought";
   const isPartial = status?.kind === "remain";
+  // Ordered through Mike (Publix) — show for tracking, but no buy actions and
+  // no bulk-select so it can't be accidentally re-purchased online.
+  const fromMike = card.fromMike ?? false;
 
   // Sync-regex pack size — instant, no API. Covers ~80% of titles.
   const syncPack = useMemo(
@@ -274,9 +281,10 @@ export function ProcurementCard({
           selected && "bg-green-soft/60 ring-2 ring-inset ring-green/40"
         )}
       >
-        {/* Bulk-select checkbox (only when not bought; bought cards stay
-            visible until refresh and shouldn't be re-selected). */}
-        {!isBought && onToggleSelect && (
+        {/* Bulk-select checkbox (only when not bought and not ordered via
+            Mike; bought cards stay visible until refresh and Mike orders are
+            not part of the online buy pool — neither should be re-selected). */}
+        {!isBought && !fromMike && onToggleSelect && (
           <button
             type="button"
             onClick={() => onToggleSelect(card.lineItemId)}
@@ -402,6 +410,16 @@ export function ProcurementCard({
               </div>
             )}
           </div>
+
+          {/* Bright "ordered via Mike" badge — this order was placed through
+              Mike (Publix) by SMS, so it's not part of the online buy queue.
+              Loud amber so it can't be confused with a "to-buy" line. */}
+          {fromMike && (
+            <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-md border border-[#fb923c] bg-[#fb923c]/15 px-2 py-1 text-[12px] font-semibold text-[#c2410c]">
+              <Truck size={13} className="shrink-0" />
+              Заказано у Майка (Publix) — закупка идёт через него
+            </div>
+          )}
 
           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] tabular text-ink-3">
             <span>SKU: {card.sku || "—"}</span>
@@ -539,6 +557,11 @@ export function ProcurementCard({
                 >
                   Откатить
                 </Btn>
+              </div>
+            ) : fromMike ? (
+              <div className="text-[12px] leading-snug text-ink-3">
+                Ожидаем поставку от Майка. Покупать онлайн не нужно. Когда
+                товар на руках — отметь «Mark as Placed» в Shipping Labels.
               </div>
             ) : (
               <div className="flex flex-wrap items-center gap-2">

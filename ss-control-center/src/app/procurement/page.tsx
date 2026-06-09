@@ -123,6 +123,8 @@ export default function ProcurementPage() {
   );
   // Quick filter by ship-by date bucket. null = show all dates.
   const [shipByFilter, setShipByFilter] = useState<ShipByBucket | null>(null);
+  // Toggle: show ONLY orders ordered through Mike (Publix). false = show all.
+  const [mikeOnly, setMikeOnly] = useState(false);
 
   // Pull-to-refresh on mobile. Returns easedPull in px (0..120).
   // Threshold 80 → release at that distance triggers a reload.
@@ -490,6 +492,9 @@ export default function ProcurementPage() {
     if (shipByFilter) {
       arr = arr.filter((c) => shipByBucket(c.shipBy) === shipByFilter);
     }
+    if (mikeOnly) {
+      arr = arr.filter((c) => c.fromMike);
+    }
     const tokens = search.trim().toLowerCase().split(/\s+/).filter(Boolean);
     if (tokens.length > 0) {
       arr = arr.filter((c) => {
@@ -511,7 +516,14 @@ export default function ProcurementPage() {
       });
     }
     return arr;
-  }, [cards, search, channelFilter, shipByFilter]);
+  }, [cards, search, channelFilter, shipByFilter, mikeOnly]);
+
+  // Distinct orders ordered through Mike — drives the "От Майка (N)" chip.
+  const mikeOrderCount = useMemo(() => {
+    const ids = new Set<string>();
+    for (const c of cards) if (c.fromMike) ids.add(c.orderId);
+    return ids.size;
+  }, [cards]);
 
   // Sort cards: by ship-by ascending (urgent first) OR by title alphabetically.
   // Cards with no ship-by sink to the bottom in the shipBy view.
@@ -617,7 +629,7 @@ export default function ProcurementPage() {
         title="Procurement"
         subtitle={
           <>
-            {search || channelFilter || shipByFilter ? (
+            {search || channelFilter || shipByFilter || mikeOnly ? (
               <>
                 <span className="font-medium text-ink-2">
                   {filteredOrderCount} из {orderCount} заказов
@@ -741,6 +753,29 @@ export default function ProcurementPage() {
             <span className="text-[15px] leading-none text-[#ffc220]">✲</span>
             <span>Walmart</span>
           </button>
+
+          {/* "От Майка" status filter — isolates orders ordered through Mike
+              (Publix). Only rendered when at least one such order exists.
+              Bright amber to match the per-card badge. */}
+          {mikeOrderCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setMikeOnly((prev) => !prev)}
+              aria-pressed={mikeOnly}
+              title="Только заказы, оформленные через Майка"
+              className={cn(
+                "inline-flex h-7 shrink-0 items-center gap-1 rounded-md border px-2.5 text-[12px] font-semibold transition-colors",
+                mikeOnly
+                  ? "border-[#fb923c] bg-[#fb923c]/15 text-[#c2410c]"
+                  : "border-rule bg-surface text-ink-2 hover:border-[#fb923c]/60 hover:text-ink-1"
+              )}
+            >
+              От Майка
+              <span className="tabular text-[10.5px] font-semibold">
+                {mikeOrderCount}
+              </span>
+            </button>
+          )}
 
           {/* Divider */}
           <span className="mx-1 h-4 w-px shrink-0 bg-rule" aria-hidden />
