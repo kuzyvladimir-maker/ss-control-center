@@ -39,16 +39,19 @@ const imgFormula = (urls: string) => {
           FROM SkuShippingData WHERE sku IN (${ph}) ORDER BY sku`,
     args: POOL,
   });
+  // Dims (length/width/height/weightFedex) intentionally dropped from the COGS view:
+  // they're a SHIPPING concern (and our DB values are placeholders), not COGS. Weight
+  // is kept because the frozen ice-cost calc needs the product weight.
   const catHeader = [
-    "sku", "productTitle", "marketplace", "category", "length", "width", "height", "weight", "weightFedex",
+    "sku", "productTitle", "marketplace", "category", "weight",
     "upc", "upcSource", "unitsInListing", "baseUnitDesc",
     "id.brand", "id.product_line", "id.flavor", "id.size", "id.container", "id.is_bundle", "id.confidence", "id.notes",
   ];
   const catRows = [catHeader, ...ssd.rows.map((r: any) => {
     let id: any = {}; try { id = r.productIdentity ? JSON.parse(r.productIdentity) : {}; } catch { /* */ }
     return [
-      g(r.sku), g(r.productTitle), g(r.marketplace), g(r.category), g(r.length), g(r.width), g(r.height),
-      g(r.weight), g(r.weightFedex), g(r.upc), g(r.upcSource), g(r.unitsInListing), g(r.baseUnitDesc),
+      g(r.sku), g(r.productTitle), g(r.marketplace), g(r.category), g(r.weight),
+      g(r.upc), g(r.upcSource), g(r.unitsInListing), g(r.baseUnitDesc),
       g(id.brand), g(id.product_line), g(id.flavor), g(id.size), g(id.container_type), g(id.is_bundle),
       g(id.confidence), g(id.notes),
     ];
