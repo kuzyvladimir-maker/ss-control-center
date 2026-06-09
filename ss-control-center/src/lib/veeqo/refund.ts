@@ -6,8 +6,22 @@
 // Mechanism:
 //   1. GET /orders/{orderId} → walk allocations[] for the most recent
 //      shipment id.
-//   2. POST /shipping/shipments/{id}/refund — Veeqo's documented refund
-//      path. Carrier (FedEx/UPS) processes the credit within 24-72h.
+//   2. DELETE /shipments/{id} — Veeqo's documented "delete shipment" path.
+//      Verified live 2026-06-09 (buy + immediate cancel on order
+//      114-5911171-5223451): returns 200 with the order body and flips the
+//      order back to `awaiting_fulfillment` with the shipment removed. If
+//      billed through Veeqo, within 14 days, label unused → auto-triggers a
+//      carrier refund request (FedEx/UPS/Amazon Buy Shipping), ~24-72h.
+//
+//      Endpoint gotchas confirmed during that debugging session:
+//        - `POST /shipping/shipments/{id}/refund` (the old code) does NOT
+//          exist → every call 404'd ({"status":404,"error":"Not Found"}),
+//          so Discard Label never worked for Amazon orders.
+//        - `DELETE /shipping/shipments/{id}` also 404s — `/shipping/shipments`
+//          only accepts the POST that *buys* a label, not a DELETE.
+//        - `GET /shipments/{id}` returns 404 (the resource implements DELETE
+//          but not GET), which is misleading — don't probe with GET and
+//          conclude the collection is unmounted. DELETE is what's wired up.
 //
 // On success Veeqo flips the order's status back from `shipped` to
 // `awaiting_fulfillment`, which means /api/shipping/dashboard will see
@@ -56,9 +70,8 @@ export async function refundShipmentForOrder(
     throw new Error("No Veeqo shipment found on this order to refund");
   }
 
-  const veeqoResponse = await veeqoFetch(
-    `/shipping/shipments/${pick.id}/refund`,
-    { method: "POST" },
-  );
+  const veeqoResponse = await veeqoFetch(`/shipments/${pick.id}`, {
+    method: "DELETE",
+  });
   return { orderId, shipmentId: pick.id, veeqoResponse };
 }
