@@ -43,6 +43,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/toast";
 // DYMO Connect Web Service path was tried (port 41951 HTTPS / 41952 HTTP) but
 // the local DYMO Label service only enumerates older LabelWriter models
 // (e.g. 450) — it doesn't see the 5XL that's wired in via the macOS CUPS
@@ -544,6 +545,13 @@ export default function ShippingLabelsPage() {
   // sent to /api/shipping/buy as `overrides[itemId]` when the operator
   // clicks Buy. Lost on page refresh — operator just picks again.
   const [pickRateModal, setPickRateModal] = useState<DashboardOrder | null>(
+    null,
+  );
+  // Discard-label confirmation — discarding voids an already-bought label
+  // (carrier refund, irreversible), so we gate it behind an explicit
+  // confirm dialog instead of firing on the first click. Holds the order
+  // awaiting confirmation; null when the dialog is closed.
+  const [discardConfirm, setDiscardConfirm] = useState<DashboardOrder | null>(
     null,
   );
   const [rateOverrides, setRateOverrides] = useState<
@@ -1701,7 +1709,10 @@ export default function ShippingLabelsPage() {
   // Procurement state — the product was already bought, that stays.
   async function discardLabel(o: DashboardOrder) {
     setDiscardingLabel(o.orderId);
-    setBuyMsg(`Discarding label for ${o.orderNumber}…`);
+    // A loading toast we transform in place into the success/error result —
+    // unmissable feedback, unlike the old tiny grey page-level buyMsg span
+    // (which for a bought Amazon order rendered the error nowhere at all).
+    const toastId = toast.loading(`Discarding label for ${o.orderNumber}…`);
     setBuyErrors((prev) => {
       if (!(o.orderId in prev)) return prev;
       const next = { ...prev };
@@ -1731,13 +1742,15 @@ export default function ShippingLabelsPage() {
       if (!r.ok || j?.ok === false) {
         throw new Error(j?.error || "Failed to discard label");
       }
-      setBuyMsg(
+      toast.success(
         `${o.orderNumber}: label discarded (refund 24-72h). Ready to re-quote.`,
+        { id: toastId },
       );
       await load();
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      setBuyMsg(msg);
+      toast.error(`${o.orderNumber}: ${msg}`, { id: toastId });
+      // Keep the inline error too (shows on wmBought / isReady rows).
       setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
     } finally {
       setDiscardingLabel(null);
@@ -2505,7 +2518,7 @@ export default function ShippingLabelsPage() {
               rollingBack={rollingBack === o.orderId}
               onRollback={() => rollbackProcurement(o)}
               discardingLabel={discardingLabel === o.orderId}
-              onDiscardLabel={() => discardLabel(o)}
+              onDiscardLabel={() => setDiscardConfirm(o)}
               shipDate={effectiveShipDate(o.orderNumber)}
               shipDateOverridden={o.orderNumber in shipDateByOrder}
               requoting={!!requoting[o.orderNumber]}
@@ -2653,6 +2666,47 @@ export default function ShippingLabelsPage() {
           }}
         />
       )}
+
+      {/* Discard-label confirmation. Discarding voids an already-bought
+          label (carrier refund, ~24-72h, irreversible), so we require an
+          explicit confirm before firing. */}
+      <Dialog
+        open={!!discardConfirm}
+        onOpenChange={(open) => {
+          if (!open) setDiscardConfirm(null);
+        }}
+      >
+        <DialogContent showCloseButton={false} className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Discard shipping label?</DialogTitle>
+            <DialogDescription>
+              {discardConfirm
+                ? `Order ${discardConfirm.orderNumber}: the bought label will be cancelled with the carrier (refund typically 24-72h). The order stays in Shipping Labels so you can re-quote a fresh label. This can't be undone.`
+                : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDiscardConfirm(null)}
+              disabled={!!discardingLabel}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                const o = discardConfirm;
+                setDiscardConfirm(null);
+                if (o) void discardLabel(o);
+              }}
+              disabled={!!discardingLabel}
+            >
+              Discard label
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

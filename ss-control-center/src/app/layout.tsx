@@ -4,6 +4,7 @@ import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
 import { MobileNavProvider } from "@/lib/mobile-nav-context";
 import { StoreFilterProvider } from "@/lib/store-filter/StoreFilterContext";
+import { Toaster } from "@/components/ui/toast";
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
@@ -62,6 +63,7 @@ export default function RootLayout({
             <AppShell>{children}</AppShell>
           </MobileNavProvider>
         </StoreFilterProvider>
+        <Toaster />
       </body>
     </html>
   );
