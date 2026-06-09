@@ -823,6 +823,16 @@ export async function GET(request: NextRequest) {
             productType === "Frozen" &&
             monDeadlineDays >= 1 &&
             dayInfo.dayName !== "Mon" &&
+            // HARD INVARIANT (Vladimir 2026-06-09): the Monday-shift may
+            // never push dispatch past the marketplace ship-by date. The
+            // trick was built to skip a *weekend* (a 1-3 day hop), but with
+            // the `selectedCalDays >= 3` trigger it was firing on routine
+            // early-week orders too — e.g. 113-2379726-9067420 shipped Tue
+            // 6/9 (ship-by 6/9) got shoved to Mon 6/15 just because plain
+            // UPS Ground quoted 1-day from Monday. Holding frozen product 6
+            // extra days and blowing the ship-by to save a few dollars is
+            // never acceptable. nextMonday must land on or before ship-by.
+            nextMonday <= shipBy &&
             (
               // No rate found today → trick is our only chance
               !selectedRate ||
