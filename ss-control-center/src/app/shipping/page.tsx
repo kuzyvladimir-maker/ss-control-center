@@ -298,6 +298,107 @@ function addDaysISO(iso: string, days: number): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
+// Label PDF helpers (bulk print → one strip)
+// ─────────────────────────────────────────────────────────────────────────
+
+// Decode a base64 string (the label PDF bytes the buy API returns) into a
+// byte array we can wrap in a Blob.
+function base64ToBytes(b64: string): Uint8Array<ArrayBuffer> {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+// Open PDF bytes in a new browser tab. window.open after an await commonly
+// trips popup blockers; the anchor-click trick is the standard workaround
+// that Chrome treats as a user-initiated navigation, not an auto popup.
+function openPdfInTab(bytes: Uint8Array<ArrayBuffer>): void {
+  const blob = new Blob([bytes], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// Concatenate several label PDFs (base64) into a single multi-page PDF so
+// the operator prints one continuous strip on the DYMO instead of clicking
+// through N separate tabs. pdf-lib is dynamic-imported to keep it out of
+// the initial page bundle — it's only needed at buy time.
+async function mergePdfsFromBase64(
+  base64List: string[],
+): Promise<Uint8Array<ArrayBuffer>> {
+  const { PDFDocument } = await import("pdf-lib");
+  const merged = await PDFDocument.create();
+  for (const b64 of base64List) {
+    const src = await PDFDocument.load(base64ToBytes(b64));
+    const pages = await merged.copyPages(src, src.getPageIndices());
+    for (const p of pages) merged.addPage(p);
+  }
+  // Copy into a plain ArrayBuffer-backed view so it's a valid Blob part.
+  return new Uint8Array(await merged.save());
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Identical-selection detection (warn on same product / different quantity)
+// ─────────────────────────────────────────────────────────────────────────
+
+// Product identity of an order, ignoring quantity — the sorted set of SKUs
+// (falling back to the title when a SKU is missing). Two orders share this
+// key when they contain the same products, regardless of how many units.
+function orderProductKey(o: DashboardOrder): string {
+  return o.items
+    .map((it) => it.sku || it.productTitle)
+    .sort()
+    .join(" + ");
+}
+
+// Per-order signature INCLUDING quantity. Orders with the same product key
+// but different qty signatures are the dangerous case the operator asked us
+// to catch: "I thought all 5 were 1 unit, but one was actually 2."
+function orderQtySignature(o: DashboardOrder): string {
+  return o.items
+    .map((it) => `${it.sku || it.productTitle}×${it.quantity}`)
+    .sort()
+    .join(" + ");
+}
+
+// Looks for selected orders that are the SAME product but DIFFERENT
+// quantities. Returns a human-readable warning block per offending product
+// group, or [] when every shared-product group has matching quantities.
+// Different products in the selection are normal bulk-buy and never warn.
+function detectQuantityMismatch(orders: DashboardOrder[]): string[] {
+  const byProduct = new Map<string, DashboardOrder[]>();
+  for (const o of orders) {
+    const key = orderProductKey(o);
+    const group = byProduct.get(key);
+    if (group) group.push(o);
+    else byProduct.set(key, [o]);
+  }
+  const warnings: string[] = [];
+  for (const group of byProduct.values()) {
+    if (group.length < 2) continue;
+    const sigs = new Set(group.map(orderQtySignature));
+    if (sigs.size <= 1) continue; // all identical → no warning
+    const title = group[0].items[0]?.productTitle ?? orderProductKey(group[0]);
+    const lines = group
+      .map(
+        (o) =>
+          `  • ${o.orderNumber}: ${o.items
+            .map((it) => `${it.quantity}× ${it.productTitle}`)
+            .join(", ")}`,
+      )
+      .join("\n");
+    warnings.push(`"${title}"\n${lines}`);
+  }
+  return warnings;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
 // Page component
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -475,7 +576,7 @@ export default function ShippingLabelsPage() {
   // bucket); the others sort by label cost / carrier EDD / marketplace
   // deadline so the operator can re-order like Veeqo's sortable columns.
   const [sortBy, setSortBy] = useState<
-    "urgency" | "cost" | "edd" | "deadline"
+    "urgency" | "cost" | "edd" | "deadline" | "product"
   >("urgency");
   // Smart free-text search — matched against order#, customer, ship-to,
   // city, state, store, channel, SKU and product title. Filters the
@@ -1264,6 +1365,14 @@ export default function ShippingLabelsPage() {
           time(planByOrderNumber.get(b.orderNumber)?.edd)
         );
       }
+      if (sortBy === "product") {
+        // Alphabetical by the first line item's product title — groups
+        // identical products together so the operator can multi-select and
+        // bulk-buy a run of the same item in one pass.
+        const at = a.items[0]?.productTitle ?? "";
+        const bt = b.items[0]?.productTitle ?? "";
+        return at.localeCompare(bt);
+      }
       // deadline
       return time(a.deliverBy) - time(b.deliverBy);
     });
@@ -1374,41 +1483,62 @@ export default function ShippingLabelsPage() {
   // The Printed/ move is optimistic — toggling Print on is the operator's
   // signal that every bought label will be printed. If they cancel out of
   // the print dialog, the file can be moved back manually in Drive.
+  // Optimistically move a printed label's Drive file into the sibling
+  // Printed/ subfolder. Best-effort — never block on it.
+  const markLabelPrintedOnDrive = useCallback(
+    async (driveFileId: string | null | undefined): Promise<void> => {
+      if (!driveFileId) return;
+      try {
+        await fetch("/api/shipping/mark-label-printed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ driveFileId }),
+        });
+      } catch {
+        /* non-fatal — the PDF tab is already open, the move is cosmetic */
+      }
+    },
+    [],
+  );
+
   const printAndMark = useCallback(
     async (success: BuyReportSuccess): Promise<void> => {
       if (!printMode) return;
       if (!success.pdfBase64) return;
-      // Decode base64 → Blob URL.
-      const binary = atob(success.pdfBase64);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      const blob = new Blob([bytes], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      // window.open after await commonly trips popup blockers; the anchor
-      // click trick is the standard workaround that Chrome treats as a
-      // user-initiated navigation rather than an automatic popup.
-      const a = document.createElement("a");
-      a.href = url;
-      a.target = "_blank";
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      // Optimistically move the Drive file into Printed/. Best-effort —
-      // never block on it.
-      if (success.driveFileId) {
-        try {
-          await fetch("/api/shipping/mark-label-printed", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ driveFileId: success.driveFileId }),
-          });
-        } catch {
-          /* non-fatal — the PDF tab is already open, the move is cosmetic */
-        }
-      }
+      openPdfInTab(base64ToBytes(success.pdfBase64));
+      await markLabelPrintedOnDrive(success.driveFileId);
     },
-    [printMode],
+    [printMode, markLabelPrintedOnDrive],
+  );
+
+  // Print step for a bulk buy. With Print mode ON and two or more labels
+  // bought, all label PDFs are concatenated into ONE multi-page PDF that
+  // opens in a single tab — the operator prints one continuous strip on the
+  // DYMO instead of clicking through a tab per order. A single label (or a
+  // merge failure) falls back to opening labels individually. Either way,
+  // each Drive file is moved to Printed/.
+  const printBought = useCallback(
+    async (successes: BuyReportSuccess[]): Promise<void> => {
+      if (!printMode) return;
+      const withPdf = successes.filter((s) => s.pdfBase64);
+      if (withPdf.length === 0) return;
+      if (withPdf.length === 1) {
+        await printAndMark(withPdf[0]);
+        return;
+      }
+      try {
+        const merged = await mergePdfsFromBase64(
+          withPdf.map((s) => s.pdfBase64 as string),
+        );
+        openPdfInTab(merged);
+      } catch {
+        // Merge failed — still give the operator every label, one tab each.
+        for (const s of withPdf) await printAndMark(s);
+        return;
+      }
+      for (const s of withPdf) await markLabelPrintedOnDrive(s.driveFileId);
+    },
+    [printMode, printAndMark, markLabelPrintedOnDrive],
   );
 
   // Optimistic local mutation after a successful Buy. Replaces the
@@ -1471,6 +1601,27 @@ export default function ShippingLabelsPage() {
 
   async function buySelected() {
     if (selected.size === 0) return;
+
+    // Identical-selection guard. The operator multi-selects a run of the
+    // SAME product to print one strip; warn if any shared-product group has
+    // mismatched quantities (e.g. four orders of 1 unit and one of 2) so a
+    // wrong-count label isn't bought by accident. Different products in the
+    // selection are normal bulk-buy and never warn.
+    const selectedOrders = filteredOrders.filter((o) =>
+      selected.has(o.orderId),
+    );
+    const mismatches = detectQuantityMismatch(selectedOrders);
+    if (mismatches.length > 0) {
+      const proceed = window.confirm(
+        "Heads up — some selected orders are the SAME product but have " +
+          "DIFFERENT quantities:\n\n" +
+          mismatches.join("\n\n") +
+          "\n\nThat usually means one of these would get a label for the " +
+          "wrong number of units. Buy them anyway?",
+      );
+      if (!proceed) return;
+    }
+
     setBuying(true);
 
     // Partition selection into Walmart vs Amazon. Walmart labels are
@@ -1569,8 +1720,9 @@ export default function ShippingLabelsPage() {
               driveFileId: j.driveFileId ?? null,
             };
             bought.push(success);
-            // Print mode: ship to DYMO + move Drive file to Printed/.
-            await printAndMark(success);
+            // Printing is deferred to a single merge-and-open step after
+            // both legs finish (see printBought below) so identical runs
+            // come out as one strip.
           } catch (e) {
             errors.push({
               orderNumber: o.orderNumber,
@@ -1615,16 +1767,20 @@ export default function ShippingLabelsPage() {
             throw new Error(buyJson?.error || "Failed to buy labels");
           for (const b of (buyJson.bought ?? []) as BuyReportSuccess[]) {
             bought.push(b);
-            // Print + move Drive file. Sequential per-row keeps the
-            // DYMO spooler tidy — parallel printing on one printer just
-            // produces interleaved errors.
-            await printAndMark(b);
           }
+          // Printing is deferred to the merge-and-open step after both legs
+          // finish (see printBought below).
           for (const e of (buyJson.errors ?? []) as BuyReportError[]) {
             errors.push(e);
           }
         }
       }
+
+      // ── Print ─────────────────────────────────────────────────────
+      // One merge-and-open pass for everything bought across both legs.
+      // ≥2 labels → a single combined PDF (one strip on the DYMO); a
+      // single label opens on its own. No-op when Print mode is off.
+      await printBought(bought);
 
       // ── Report + cleanup ──────────────────────────────────────────
       const totalAttempted = walmartOrders.length + amazonIds.length;
@@ -2387,7 +2543,12 @@ export default function ShippingLabelsPage() {
               value={sortBy}
               onChange={(e) =>
                 setSortBy(
-                  e.target.value as "urgency" | "cost" | "edd" | "deadline",
+                  e.target.value as
+                    | "urgency"
+                    | "cost"
+                    | "edd"
+                    | "deadline"
+                    | "product",
                 )
               }
               className="rounded border border-rule bg-surface px-1.5 py-1 text-[11.5px] text-ink focus:border-[#0071dc] focus:outline-none"
@@ -2396,6 +2557,7 @@ export default function ShippingLabelsPage() {
               <option value="cost">Label cost</option>
               <option value="edd">Delivery (EDD)</option>
               <option value="deadline">Deadline</option>
+              <option value="product">Product name</option>
             </select>
           </label>
           {buyMsg && (
