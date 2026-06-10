@@ -1342,13 +1342,31 @@ export default function ShippingLabelsPage() {
   // price / EDD without an extra lookup at render time. Plan keys on
   // orderNumber (Amazon-format), same as dashboard, so the merge is clean.
   const planByOrderNumber = useMemo(() => {
+    // In the default "api" mode, a Walmart row must reflect the WALMART quote
+    // ONLY — never the Veeqo plan rate. The plan route quotes Walmart orders
+    // through Veeqo too (a different carrier pool, against an UNVERIFIED
+    // package), and that phantom rate (a) showed a misleading "Rate ready —
+    // confirm to buy" on rows whose Walmart quote actually failed for missing
+    // dimensions, (b) MASKED the real "set the box/weight" error (it only
+    // renders when the plan isn't pending), and (c) isn't even buyable
+    // (Walmart buy needs dims; the Veeqo buy path is blocked for Walmart). So
+    // skip the Veeqo plan for Walmart rows here. When the operator has flipped
+    // the toggle to "veeqo", Walmart DOES buy through Veeqo, so keep it.
+    const skipVeeqoForWalmart = walmartBuySource === "api";
+    const walmartNums = skipVeeqoForWalmart
+      ? new Set(orders.filter((o) => o.isWalmart).map((o) => o.orderNumber))
+      : new Set<string>();
     const m = new Map<string, PlanItem>();
-    if (plan) for (const p of plan.orders) m.set(p.orderNumber, p);
-    // Walmart rate entries overlay/extend the Veeqo plan so Walmart rows show
+    if (plan)
+      for (const p of plan.orders) {
+        if (walmartNums.has(p.orderNumber)) continue;
+        m.set(p.orderNumber, p);
+      }
+    // Walmart rate entries overlay/extend the plan so Walmart rows show
     // carrier / cost / EDD / package through the same rendering path.
     for (const [num, p] of Object.entries(walmartRates)) m.set(num, p);
     return m;
-  }, [plan, walmartRates]);
+  }, [plan, walmartRates, orders, walmartBuySource]);
 
   // Final display order. "urgency" keeps filteredOrders' actionability sort;
   // the others re-sort by data that lives in the plan map (cost / EDD) or on
@@ -3632,6 +3650,13 @@ function OrderRow({
                 `${plan.weight} lbs`
               ) : planLoading ? (
                 "loading…"
+              ) : isReady ? (
+                // No saved weight/dims for this SKU. The cell is clickable —
+                // make the dash an explicit call to action instead of a bare
+                // "—" that looks like missing data with nothing to do.
+                <span className="text-[12px] font-medium text-warn-strong">
+                  Set weight/size
+                </span>
               ) : (
                 "—"
               )}
