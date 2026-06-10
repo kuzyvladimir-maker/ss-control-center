@@ -187,19 +187,31 @@ function selectBestRate(
         !r.titleLow.includes("tender to"),
     );
 
-    // Policy (Vladimir 2026-05-15): never buy faster than 2-Day for Frozen
-    // unless the customer themselves paid for Overnight / Next Day. We use
-    // the marketplace deliver-by date as a proxy — if it's within 1 day of
-    // ship-day, the customer's service tier was already fast (Next Day or
-    // tighter) and we must match it; otherwise cap at 2-day to avoid
-    // burning $60+ per label on Overnight when customer paid Standard.
+    // Policy (Vladimir 2026-05-15, refined 2026-06-10): don't PAY for faster-
+    // than-2-day service the customer didn't buy — but only when "faster"
+    // actually costs more. The point was to avoid burning $60+ on Overnight
+    // when the customer paid Standard; it was NEVER meant to skip a CHEAPER
+    // fast option. So: when there's slack to the deadline (≥2 days), drop a
+    // sub-2-day rate ONLY if it costs more than the cheapest ≥2-day rate. A
+    // cheaper-or-equal faster rate is kept — it saves money AND, for frozen,
+    // spends less time in transit (lower thaw risk). Without this, a $16.09
+    // 1-day UPS Ground lost to a $18.38 2-day USPS Priority (pricier AND
+    // slower) on order 114-6393545-7904214.
     const shipDt = new Date(actualShipDay + "T00:00:00");
     const deadlineDt = new Date(deliveryBy + "T00:00:00");
     const daysToDeadline = Math.round(
       (deadlineDt.getTime() - shipDt.getTime()) / 86_400_000,
     );
     if (daysToDeadline >= 2) {
-      pool = pool.filter((r) => r.calDays >= 2);
+      const twoDayPlus = pool.filter((r) => r.calDays >= 2);
+      if (twoDayPlus.length > 0) {
+        const cheapest2Day = Math.min(...twoDayPlus.map((r) => r.price));
+        // Keep all ≥2-day rates; keep a <2-day rate only if it's not pricier
+        // than the cheapest 2-day option.
+        pool = pool.filter((r) => r.calDays >= 2 || r.price <= cheapest2Day);
+      }
+      // If there are NO ≥2-day options, leave the pool alone — a faster
+      // service is the only way to hit the deadline.
     }
 
     // (Removed the old "no ground on Wednesday" rule — Vladimir 2026-06-10.)
