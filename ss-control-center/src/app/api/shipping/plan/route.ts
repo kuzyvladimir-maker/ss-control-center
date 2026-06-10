@@ -202,13 +202,18 @@ function selectBestRate(
       pool = pool.filter((r) => r.calDays >= 2);
     }
 
-    // Wednesday: ground doesn't work (3 business = 5 calendar)
-    if (dayName === "Wed") {
-      const noGround = pool.filter(
-        (r) => !r.titleLow.includes("ground")
-      );
-      if (noGround.length > 0) pool = noGround;
-    }
+    // (Removed the old "no ground on Wednesday" rule — Vladimir 2026-06-10.)
+    // It dropped EVERY ground-titled rate on Wednesdays on the assumption
+    // "ground from Wed = 3 business = 5 calendar days," judging by service
+    // NAME instead of the actual quoted date. But the calendar-day cap above
+    // (`calDays <= maxCalDays`, already tightened to 2 days for hot/critical
+    // destinations) is the real food-safety gate: it works off Veeqo's
+    // quoted EDD, so any ground rate still in the pool DOES deliver within
+    // the weather-aware window. The rule was wrongly rejecting a standard
+    // UPS Ground that Veeqo quoted at the SAME delivery date as 2nd Day Air,
+    // for ~$10 more. Policy: if standard Ground (not the Saver/Economy
+    // tender-to-USPS services excluded above) delivers within the cal-day
+    // cap, it's allowed — the cap already accounts for weather.
 
     // Friday: FedEx Express NEVER
     if (dayName === "Fri") {

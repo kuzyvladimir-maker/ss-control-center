@@ -3768,9 +3768,11 @@ function OrderRow({
           wrong. */}
       {isReady && plan?.productType === "Frozen" && (
         <div className="mt-2 ml-6 rounded bg-info-tint px-2 py-1.5 text-[11px] text-info">
-          Frozen — agent only considers rates that deliver within 3
-          calendar days (food safety). Cheaper Ground / Saver options
-          are filtered out even if they meet the marketplace deadline.
+          Frozen — agent only considers rates that deliver within the
+          food-safety window (3 calendar days, tightened to 2 when it&apos;s
+          hot at the destination). Standard Ground is allowed if it delivers
+          in time; only the unreliable Ground Saver / Ground Economy
+          (tender-to-USPS) services are excluded.
         </div>
       )}
 
