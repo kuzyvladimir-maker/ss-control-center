@@ -754,7 +754,7 @@ export default function ShippingLabelsPage() {
             carrier: s.carrierName ?? null,
             service: s.displayName ?? s.serviceType ?? null,
             price: typeof s.amount === "number" ? s.amount : null,
-            edd: s.deliveryDate ?? null,
+            edd: s.deliveryDate ? utcToPacificYMD(s.deliveryDate) : null,
             status: "pending",
             notes: j.selectionReason ?? null,
             weight: typeof b.weight === "number" ? b.weight : null,
@@ -781,7 +781,7 @@ export default function ShippingLabelsPage() {
             width: b.width,
             height: b.height,
             weight: b.weight,
-            edd: s.deliveryDate ?? null,
+            edd: s.deliveryDate ? utcToPacificYMD(s.deliveryDate) : null,
             shipByDate: usedShipDate,
           },
         }));
@@ -2816,7 +2816,9 @@ export default function ShippingLabelsPage() {
                   carrier: rate.carrierName,
                   service: rate.displayName,
                   price: rate.amount,
-                  edd: rate.deliveryDate,
+                  edd: rate.deliveryDate
+                    ? utcToPacificYMD(rate.deliveryDate)
+                    : null,
                 },
               };
             });
@@ -2829,7 +2831,9 @@ export default function ShippingLabelsPage() {
                   ...base,
                   carrierName: rate.carrierName,
                   serviceType: rate.serviceType,
-                  edd: rate.deliveryDate,
+                  edd: rate.deliveryDate
+                    ? utcToPacificYMD(rate.deliveryDate)
+                    : null,
                   shipByDate: pickedShipDate,
                 },
               };
@@ -5992,16 +5996,27 @@ function WalmartPickRateDialog({
             {sorted.map((rate, i) => {
               const isCurrent =
                 currentServiceType != null && rate.serviceType === currentServiceType;
-              // Does this rate hit the marketplace deadline? Prefer Walmart's
-              // own promise flag; fall back to comparing the rate's EDD with
-              // the deliver-by date. null = unknown (no badge).
+              // Walmart returns deliveryDate as a UTC instant near end-of-day
+              // (e.g. "2026-06-17T04:59:00Z" is really Jun 16 21:59 PT). It
+              // MUST be decoded to the Pacific calendar day — string-slicing
+              // the UTC head showed it a day late (Jun 17), which made a rate
+              // that actually meets the Jun 16 deadline look like it misses,
+              // while Walmart's promise flag still said "on time" → the badge
+              // contradicted the EDD on screen. Convert once, use everywhere.
+              const eddPT = rate.deliveryDate
+                ? utcToPacificYMD(rate.deliveryDate)
+                : "";
+              // On time vs the marketplace deadline, judged on the SAME dates
+              // the operator sees (Pacific EDD vs deliver-by) so the badge can
+              // never contradict the displayed dates. Walmart's own promise
+              // flag is only a fallback when there's no EDD to compare.
               const onTime =
-                rate.deliveryPromiseFulfilled === true
-                  ? true
-                  : rate.deliveryPromiseFulfilled === false
-                    ? false
-                    : deadlineBy && rate.deliveryDate
-                      ? (daysLate(deadlineBy, rate.deliveryDate) ?? 1) <= 0
+                deadlineBy && eddPT
+                  ? (daysLate(deadlineBy, eddPT) ?? 1) <= 0
+                  : rate.deliveryPromiseFulfilled === true
+                    ? true
+                    : rate.deliveryPromiseFulfilled === false
+                      ? false
                       : null;
               return (
                 <li key={`${rate.serviceType}-${i}`}>
@@ -6036,9 +6051,9 @@ function WalmartPickRateDialog({
                         </div>
                         <div className="mt-0.5 text-[11px] font-mono text-ink-3">
                           {(rate.carrierName ?? "").toUpperCase()}
-                          {rate.deliveryDate ? (
+                          {eddPT ? (
                             <span className={onTime === false ? "text-danger" : ""}>
-                              {` · EDD ${fmtDate(rate.deliveryDate)}`}
+                              {` · EDD ${fmtDate(eddPT)}`}
                             </span>
                           ) : (
                             ""
