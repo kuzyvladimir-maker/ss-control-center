@@ -1771,6 +1771,10 @@ export default function ShippingLabelsPage() {
               planId,
               itemIds,
               overrides: overridesByItemId,
+              // Walmart orders buy via Walmart by default. The Veeqo buy path
+              // is only allowed for them when the operator explicitly flips
+              // the Walmart source toggle to "veeqo" (Vladimir 2026-06-10).
+              allowWalmartViaVeeqo: walmartBuySource === "veeqo",
             }),
           });
           const buyJson = await buyRes.json();
@@ -2123,6 +2127,8 @@ export default function ShippingLabelsPage() {
           planId,
           itemIds: [planItemId],
           overrides: ov && planItemId ? { [planItemId]: ov } : undefined,
+          // See note above — Walmart→Veeqo buy only on the explicit toggle.
+          allowWalmartViaVeeqo: walmartBuySource === "veeqo",
         }),
       });
       const buyJson = await buyRes.json();

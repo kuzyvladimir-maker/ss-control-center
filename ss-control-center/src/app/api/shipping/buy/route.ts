@@ -98,6 +98,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { planId, itemIds } = body;
     const overrides: Record<string, BuyOverride> = body.overrides ?? {};
+    // Walmart orders are bought through Walmart's own Ship-with-Walmart API
+    // (/api/shipping/walmart/buy), NOT through Veeqo. This generic Veeqo buy
+    // route must REFUSE Walmart-channel items unless the caller explicitly
+    // opts in — which the UI does only when the operator has flipped the
+    // Walmart buy-source toggle to "veeqo" (the deliberate fallback for when
+    // Walmart's API is down). Without this, a Walmart order that slipped into
+    // a Veeqo buy would get a SECOND label on top of its Walmart one.
+    // (Vladimir 2026-06-10: never buy Walmart labels via Veeqo unless I set
+    // the toggle myself.)
+    const allowWalmartViaVeeqo = body.allowWalmartViaVeeqo === true;
 
     if (!planId) {
       return NextResponse.json(
@@ -197,6 +207,24 @@ export async function POST(request: NextRequest) {
     }
 
     for (const rawItem of itemsToBuy) {
+      // Hard guard: never buy a Walmart-channel order through Veeqo unless the
+      // operator explicitly opted in via the Walmart buy-source toggle. The UI
+      // already routes Walmart→Walmart by default; this is the server-side
+      // enforcement so it can't happen by accident (a stale toggle, a direct
+      // API call, a future code path) and double-buy on top of the Walmart
+      // label.
+      if (
+        (rawItem.channelKind ?? "").toLowerCase() === "walmart" &&
+        !allowWalmartViaVeeqo
+      ) {
+        results.errors.push({
+          orderNumber: rawItem.orderNumber,
+          error:
+            "Walmart order — labels are bought via Walmart, not Veeqo. Switch the Walmart buy source to Veeqo if you intend to buy this one through Veeqo.",
+          itemId: rawItem.id,
+        });
+        continue;
+      }
       // Apply per-item override BEFORE the required-fields check so an
       // override carrying every needed identifier can rescue an item the
       // algorithm picked nothing for. Override fields take precedence; the
