@@ -16,6 +16,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchAllOrders, getProduct } from "@/lib/veeqo/client";
+import { getWalmartClient } from "@/lib/walmart/client";
+import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import {
   buildPackingSignature,
   requiresPackingProfile,
@@ -334,6 +336,92 @@ export async function GET() {
       for (const r of wmRows) {
         walmartPoByCustomer.set(r.customerOrderId, r.purchaseOrderId);
         if (r.status === "Shipped") walmartShippedCustomerIds.add(r.customerOrderId);
+      }
+    }
+
+    // On-demand Walmart PO resolution. The walmartOrder table is filled by a
+    // 2-hourly cron, so a brand-new Walmart order sits in Veeqo (channel
+    // type_code = "walmart") for minutes before it lands in our table. Until
+    // then `isWalmart` was false → the row was treated as a Veeqo order, shown
+    // a Veeqo rate, and the buy got refused server-side ("bought via Walmart,
+    // not Veeqo") — unbuyable BOTH ways. So for any walmart-channel order we
+    // don't yet have a PO for, look it up straight from Walmart and cache it
+    // (so the next load + the cron don't re-fetch). Bounded + fully non-fatal:
+    // a lookup failure just leaves the order as before.
+    const unresolvedWalmart = veeqoOrders.filter(
+      (o) =>
+        (o.channel?.type_code ?? "").toLowerCase() === "walmart" &&
+        !walmartPoByCustomer.has(String(o.number ?? o.id)),
+    );
+    if (unresolvedWalmart.length > 0) {
+      try {
+        const wmApi = new WalmartOrdersApi(getWalmartClient(1));
+        const POOL = 6; // cap concurrency so a burst of new orders can't hammer Walmart
+        for (let i = 0; i < unresolvedWalmart.length; i += POOL) {
+          await Promise.all(
+            unresolvedWalmart.slice(i, i + POOL).map(async (o) => {
+              const custId = String(o.number ?? o.id);
+              try {
+                const page = await wmApi.getAllOrders({ customerOrderId: custId });
+                const wmOrder =
+                  page.orders.find((w) => w.customerOrderId === custId) ??
+                  page.orders[0];
+                if (!wmOrder?.purchaseOrderId) return;
+                walmartPoByCustomer.set(custId, wmOrder.purchaseOrderId);
+                if (wmOrder.status === "Shipped")
+                  walmartShippedCustomerIds.add(custId);
+                // Cache so subsequent loads hit the DB, not Walmart.
+                const ship = wmOrder.shippingInfo?.postalAddress;
+                await prisma.walmartOrder
+                  .upsert({
+                    where: { purchaseOrderId: wmOrder.purchaseOrderId },
+                    create: {
+                      purchaseOrderId: wmOrder.purchaseOrderId,
+                      customerOrderId: wmOrder.customerOrderId,
+                      customerEmailId: wmOrder.customerEmailId,
+                      storeIndex: 1,
+                      status: wmOrder.status,
+                      shipNodeType: wmOrder.shipNodeType,
+                      orderType: wmOrder.orderType,
+                      orderDate: wmOrder.orderDate,
+                      estimatedShipDate: wmOrder.shippingInfo?.estimatedShipDate,
+                      estimatedDeliveryDate:
+                        wmOrder.shippingInfo?.estimatedDeliveryDate,
+                      orderTotal: wmOrder.orderTotal,
+                      currency: wmOrder.currency || "USD",
+                      shipCity: ship?.city,
+                      shipState: ship?.state,
+                      shipZip: ship?.postalCode,
+                      shipCountry: ship?.country,
+                      numberOfItems: wmOrder.orderLines.reduce(
+                        (s, l) => s + (l.orderedQty || 0),
+                        0,
+                      ),
+                      rawData: JSON.stringify(wmOrder.raw),
+                    },
+                    update: {
+                      customerOrderId: wmOrder.customerOrderId,
+                      status: wmOrder.status,
+                      rawData: JSON.stringify(wmOrder.raw),
+                    },
+                  })
+                  .catch(() => {
+                    /* cache write is best-effort; in-memory map already set */
+                  });
+              } catch (e) {
+                console.warn(
+                  `[dashboard] Walmart PO lookup failed for ${custId}:`,
+                  e instanceof Error ? e.message : e,
+                );
+              }
+            }),
+          );
+        }
+      } catch (e) {
+        console.warn(
+          "[dashboard] on-demand Walmart PO resolution skipped:",
+          e instanceof Error ? e.message : e,
+        );
       }
     }
 
