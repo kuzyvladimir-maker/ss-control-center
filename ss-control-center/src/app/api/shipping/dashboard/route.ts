@@ -506,6 +506,14 @@ export async function GET() {
       const orderTotal =
         Number(o.total_price ?? o.subtotal_price ?? 0) || 0;
       const customerPaidShipping = Number(o.delivery_cost ?? 0) || 0;
+      // The shipping speed the buyer actually selected/paid for, straight
+      // from Veeqo's `delivery_method.name` ("Standard", "Expedited",
+      // "Second Day", "Next Day", "FREE Economy", …). Shown next to the
+      // customer-paid-shipping amount so the operator can see at a glance
+      // when a customer bought a faster tier than Standard and the label
+      // must match that promise. Null when Veeqo didn't carry one.
+      const customerShippingService =
+        (o.delivery_method?.name as string | undefined)?.trim() || null;
 
       // Shipping address — name/city/state — pulled from deliver_to so the
       // operator can sanity-check the destination on the row without
@@ -531,11 +539,25 @@ export async function GET() {
         // (same field /api/shipping/plan reads). The other candidate names
         // we tried before (`deliver_no_later_than`, `expected_delivery_date`)
         // aren't populated, so the row showed "—" for every order.
-        deliverBy:
-          o.due_date ??
-          o.deliver_no_later_than ??
-          o.expected_delivery_date ??
-          null,
+        //
+        // MUST be Pacific-normalized, exactly like `shipBy` above and like
+        // the plan route's rate engine (`veeqoDateToLocal` = utcToPacificYMD).
+        // Veeqo encodes the deadline as END-OF-DAY PACIFIC stored as next-day
+        // `T06:59:59Z` (e.g. due "2026-06-17T06:59:59Z" = the Jun 16 PT
+        // deadline). Sending the raw ISO let the UI string-slice it to the
+        // UTC date (Jun 17) — a day LATER than the real deadline — so the
+        // on-time/late badge compared a UTC-sliced deadline against the
+        // Pacific EDD and read "on time" for orders that are actually late.
+        // Normalizing here makes the displayed deadline identical to the one
+        // the rate engine enforces.
+        deliverBy: (() => {
+          const raw =
+            o.due_date ??
+            o.deliver_no_later_than ??
+            o.expected_delivery_date ??
+            null;
+          return raw ? utcToPacificYMD(raw) : null;
+        })(),
         state,
         needAttentionReason,
         items: itemsWithType,
@@ -543,6 +565,7 @@ export async function GET() {
         packingProfileFound: reqsProfile ? profileBySig.has(sig) : null,
         orderTotal,
         customerPaidShipping,
+        customerShippingService,
         currency: o.currency_code ?? "USD",
         // Marketplace kind from Veeqo's channel.type_code — "amazon",
         // "walmart", "ebay", "tiktok", "shopify", "direct" (used for

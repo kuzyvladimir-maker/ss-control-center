@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   RefreshCw,
   AlertTriangle,
@@ -100,6 +107,10 @@ interface DashboardOrder {
   packingProfileFound: boolean | null;
   orderTotal: number;
   customerPaidShipping: number;
+  // The shipping speed the buyer chose, from Veeqo's delivery_method.name
+  // ("Standard", "Expedited", "Second Day", "Next Day", …). Shown next to
+  // the customer-paid-shipping amount. Null when Veeqo didn't carry one.
+  customerShippingService?: string | null;
   currency: string;
   // Walmart-direct flow: when true, this order's label is rate-shopped +
   // bought via Walmart (not Veeqo), keyed by walmartPurchaseOrderId.
@@ -2078,11 +2089,17 @@ export default function ShippingLabelsPage() {
     }
 
     try {
+      // A manual rate override lets the operator buy even when the algorithm
+      // stopped the order (e.g. no rate meets the deadline). In that case we
+      // accept the order's plan item regardless of its "stop" status — the
+      // buy API rescues a stopped-but-overridden item, and the override
+      // carries every rate identifier the purchase needs.
+      const ov = rateOverrides[o.orderId];
+      const buyable = (p: { orderNumber: string; status: string }) =>
+        p.orderNumber === o.orderNumber &&
+        (p.status === "pending" || (!!ov && p.status === "stop"));
       let planId = plan?.planId ?? null;
-      let planItemId =
-        plan?.orders.find(
-          (p) => p.orderNumber === o.orderNumber && p.status === "pending"
-        )?.id ?? null;
+      let planItemId = plan?.orders.find(buyable)?.id ?? null;
       if (!planId || !planItemId) {
         const r = await fetch(
           `/api/shipping/plan?orderIds=${encodeURIComponent(o.orderId)}`
@@ -2090,14 +2107,15 @@ export default function ShippingLabelsPage() {
         const j = await r.json();
         if (!r.ok) throw new Error(j?.error || "Failed to plan");
         planId = j.planId;
-        const item = (j.orders ?? []).find(
-          (p: { orderNumber: string; status: string }) =>
-            p.orderNumber === o.orderNumber && p.status === "pending"
-        );
-        if (!item) throw new Error("No buyable rate found for this order");
+        const item = (j.orders ?? []).find(buyable);
+        if (!item)
+          throw new Error(
+            ov
+              ? "Override is missing rate details — re-pick the rate and try again"
+              : "No buyable rate found for this order",
+          );
         planItemId = item.id;
       }
-      const ov = rateOverrides[o.orderId];
       const buyRes = await fetch("/api/shipping/buy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -2754,8 +2772,18 @@ export default function ShippingLabelsPage() {
           order={editPackageModal}
           plan={planByOrderNumber.get(editPackageModal.orderNumber) ?? null}
           onClose={(refresh) => {
+            const num = editPackageModal.orderNumber;
             setEditPackageModal(null);
-            if (refresh) load();
+            if (refresh) {
+              // Weight/box changed → the rate must be re-quoted. Flag THIS
+              // order as re-quoting so its money/carrier cells show a spinner
+              // (the price shown is stale until the reload returns), then
+              // clear the flag once the fresh plan lands.
+              setRequoting((p) => ({ ...p, [num]: true }));
+              load().finally(() =>
+                setRequoting((p) => ({ ...p, [num]: false })),
+              );
+            }
           }}
         />
       )}
@@ -3233,11 +3261,23 @@ function OrderRow({
   const planPending = plan && plan.status === "pending";
   const planStop = plan && plan.status !== "pending" && plan.notes;
 
+  // A re-quote is in flight for THIS order (operator changed the package, or
+  // a Walmart ship-date re-quote is running). Drives the spinner on the
+  // money/carrier cells so the operator knows the price shown is being
+  // recomputed and isn't a stale value from before the edit.
+  const isRequoting = requoting === true;
+
+  // The price actually in effect: a manual rate override wins over the
+  // algorithm's pick. Without this the Carrier cell showed the operator's
+  // chosen rate while Label cost kept displaying the old algorithmic price —
+  // they looked inconsistent. Both the displayed cost and the margin use it.
+  const effectivePrice = rateOverride?.price ?? plan?.price ?? null;
+
   // Margin sanity: customer paid X for shipping, label costs Y. Positive
   // margin = we made money on shipping; negative = we ate the difference.
   const shippingMargin =
-    plan?.price != null
-      ? order.customerPaidShipping - plan.price
+    effectivePrice != null
+      ? order.customerPaidShipping - effectivePrice
       : null;
 
   // Walmart purchase/ship state (Veeqo still says "ready" because buying via
@@ -3508,6 +3548,18 @@ function OrderRow({
         <Cell
           label="Customer paid shipping"
           value={fmt$(order.customerPaidShipping)}
+          // The shipping tier the buyer actually chose (Standard / Expedited
+          // / Second Day / Next Day). Surfaced right under the amount so the
+          // operator can see when a customer paid for a faster service than
+          // Standard and the label must match that promise. Highlighted when
+          // it's anything other than plain Standard / Free / Economy.
+          sub={order.customerShippingService ?? undefined}
+          subClass={
+            order.customerShippingService &&
+            isExpeditedService(order.customerShippingService)
+              ? "text-warn-strong font-medium"
+              : undefined
+          }
         />
         <Cell
           label="Marketplace deadline"
@@ -3539,13 +3591,20 @@ function OrderRow({
               <Pencil size={9} className="text-ink-3" />
             </div>
             <div className="mt-0.5 truncate font-semibold tabular text-ink">
-              {plan?.weight != null
-                ? `${plan.weight} lbs`
-                : planLoading
-                  ? "loading…"
-                  : "—"}
+              {isRequoting ? (
+                <span className="inline-flex items-center gap-1 text-ink-3">
+                  <Loader2 size={12} className="animate-spin" />
+                  <span className="text-[11px] font-normal">updating…</span>
+                </span>
+              ) : plan?.weight != null ? (
+                `${plan.weight} lbs`
+              ) : planLoading ? (
+                "loading…"
+              ) : (
+                "—"
+              )}
             </div>
-            {plan?.boxSize && (
+            {!isRequoting && plan?.boxSize && (
               <div className="truncate text-[10.5px] text-ink-3">
                 {plan.boxSize}
               </div>
@@ -3556,21 +3615,30 @@ function OrderRow({
           <Cell
             label={isBought ? "Label cost (bought)" : "Label cost"}
             value={
-              planLoading && !plan
-                ? "loading…"
-                : plan?.price != null
-                  ? fmt$(plan.price)
-                  : planStop
-                    ? "stopped"
-                    : "—"
+              isRequoting ? (
+                <span className="inline-flex items-center gap-1 text-ink-3">
+                  <Loader2 size={12} className="animate-spin" />
+                  <span className="text-[11px] font-normal">recalculating…</span>
+                </span>
+              ) : planLoading && !plan ? (
+                "loading…"
+              ) : effectivePrice != null ? (
+                fmt$(effectivePrice)
+              ) : planStop ? (
+                "stopped"
+              ) : (
+                "—"
+              )
             }
             valueClass={
               shippingMargin != null && shippingMargin < 0
                 ? "text-danger"
                 : "text-ink"
             }
+            // Hide the (now stale) margin while a re-quote is running so the
+            // operator doesn't read a margin computed against the old price.
             sub={
-              shippingMargin != null
+              !isRequoting && shippingMargin != null
                 ? `margin ${shippingMargin >= 0 ? "+" : ""}${fmt$(shippingMargin)}`
                 : undefined
             }
@@ -3610,15 +3678,22 @@ function OrderRow({
                 rateOverride ? "text-green-ink" : "text-ink",
               )}
             >
-              {rateOverride
-                ? rateOverride.service ?? rateOverride.carrier ?? "—"
-                : plan?.service
-                  ? plan.service
-                  : plan?.carrier
-                    ? plan.carrier
-                    : planLoading
-                      ? "loading…"
-                      : "—"}
+              {isRequoting ? (
+                <span className="inline-flex items-center gap-1 text-ink-3">
+                  <Loader2 size={12} className="animate-spin" />
+                  <span className="text-[11px] font-normal">re-quoting…</span>
+                </span>
+              ) : rateOverride ? (
+                rateOverride.service ?? rateOverride.carrier ?? "—"
+              ) : plan?.service ? (
+                plan.service
+              ) : plan?.carrier ? (
+                plan.carrier
+              ) : planLoading ? (
+                "loading…"
+              ) : (
+                "—"
+              )}
             </div>
             <div className="flex items-center justify-between gap-1 text-[10.5px] text-ink-3">
               <span>
@@ -3806,7 +3881,16 @@ function OrderRow({
 
       {isReady && !wmBought && !wmShipped && (
         <div className="mt-2 ml-6 flex flex-wrap items-center justify-between gap-2">
-          {planStop ? (
+          {planStop && rateOverride ? (
+            // Algorithm stopped this order (e.g. no rate meets the deadline),
+            // but the operator manually picked a rate — let them buy it and
+            // just warn that it may ship late. The override is the operator
+            // taking responsibility for the deadline miss.
+            <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[11px] font-medium text-warn-strong">
+              Manual override — no on-time rate found, this label may ship
+              late. {plan?.notes}
+            </span>
+          ) : planStop ? (
             <span className="rounded bg-danger-tint px-1.5 py-0.5 text-[11px] font-medium text-danger">
               {plan?.notes}
             </span>
@@ -3847,12 +3931,18 @@ function OrderRow({
             size="sm"
             onClick={onBuy}
             disabled={
-              buying || !planPending || !!walmartStatus?.labelLookupFailed
+              buying ||
+              // Buyable when the algorithm has a pending rate, OR the operator
+              // manually overrode a stopped order (buy their pick anyway).
+              !(planPending || (planStop && rateOverride)) ||
+              !!walmartStatus?.labelLookupFailed
             }
             title={
               walmartStatus?.labelLookupFailed
                 ? `Can't verify if a label was already bought (${walmartStatus.labelLookupError ?? "Walmart lookup failed"}). Re-quote before buying to avoid a double charge.`
-                : undefined
+                : planStop && rateOverride
+                  ? "Buy your manually-picked rate even though no rate meets the deadline (may ship late)."
+                  : undefined
             }
             className="h-7 text-[11.5px]"
           >
@@ -4120,6 +4210,24 @@ function fmtDate(iso: string | null | undefined): string {
   return iso;
 }
 
+/** Parse a calendar-day string into a UTC-midnight timestamp for whole-day
+ *  differencing. Every shipping date reaches the UI already normalized to a
+ *  marketplace calendar day (Pacific for Veeqo, Walmart-native for Walmart),
+ *  so we compare them as bare Y/M/D — never re-interpreting a timezone here.
+ *  This is the fix for the off-by-one badges: `new Date("2026-06-16")` is
+ *  parsed as UTC midnight and then read back in the operator's local zone
+ *  (Eastern), which rolls it to Jun 15 and skews "days left" by a day. We
+ *  pull the Y/M/D straight from the string head instead. Falls back to
+ *  Date parsing for any non-YMD input (e.g. a stray full ISO). */
+function calDayUTC(s: string): number | null {
+  const m = /^\s*(\d{4})-(\d{2})-(\d{2})/.exec(s);
+  if (m) return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  const d = new Date(s);
+  return Number.isNaN(d.getTime())
+    ? null
+    : Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
 /** Days between marketplace deadline and carrier EDD. Negative → carrier
  *  arrives before deadline (good). Positive → late. */
 function daysLate(
@@ -4127,11 +4235,10 @@ function daysLate(
   edd: string | null | undefined
 ): number | null {
   if (!deliverBy || !edd) return null;
-  const a = new Date(edd);
-  const b = new Date(deliverBy);
-  if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) return null;
-  const ms = a.getTime() - b.getTime();
-  return Math.round(ms / 86400000);
+  const a = calDayUTC(edd);
+  const b = calDayUTC(deliverBy);
+  if (a == null || b == null) return null;
+  return Math.round((a - b) / 86400000);
 }
 
 function deadlineRiskNote(
@@ -4159,11 +4266,11 @@ function deadlineRiskClass(
 /** Days from today to the deadline, in calendar days. Negative = past. */
 function daysUntilDeadline(deliverBy: string | null | undefined): number | null {
   if (!deliverBy) return null;
-  const d = new Date(deliverBy);
-  if (Number.isNaN(d.getTime())) return null;
+  const deadline = calDayUTC(deliverBy);
+  if (deadline == null) return null;
   const today = new Date();
   return Math.round(
-    (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) -
+    (deadline -
       Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) /
       86400000
   );
@@ -4196,11 +4303,13 @@ function Cell({
   value,
   sub,
   valueClass,
+  subClass,
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
   sub?: string;
   valueClass?: string;
+  subClass?: string;
 }) {
   return (
     <div className="rounded bg-surface-tint px-2 py-1.5">
@@ -4216,9 +4325,32 @@ function Cell({
         {value}
       </div>
       {sub && (
-        <div className="truncate text-[10.5px] text-ink-3">{sub}</div>
+        <div className={cn("truncate text-[10.5px]", subClass || "text-ink-3")}>
+          {sub}
+        </div>
       )}
     </div>
+  );
+}
+
+/** Is this Veeqo delivery_method.name a faster-than-standard tier? Used to
+ *  highlight the customer's chosen shipping service on the row. Matches the
+ *  expedited keywords Amazon/Walmart use; everything else (Standard, Free,
+ *  Economy, Ground, blank) reads as the normal tier. */
+function isExpeditedService(name: string): boolean {
+  const n = name.toLowerCase();
+  return (
+    n.includes("expedit") ||
+    n.includes("next day") ||
+    n.includes("one day") ||
+    n.includes("1 day") ||
+    n.includes("second day") ||
+    n.includes("two day") ||
+    n.includes("2 day") ||
+    n.includes("2-day") ||
+    n.includes("priority") ||
+    n.includes("overnight") ||
+    n.includes("express")
   );
 }
 

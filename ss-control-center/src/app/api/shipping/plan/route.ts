@@ -71,6 +71,28 @@ function getNextMonday(from: string): string {
   return d.toISOString().split("T")[0];
 }
 
+// Run `fn` over `items` with at most `poolSize` concurrent executions.
+// Used to parallelize the per-order rate pre-warm below without firing all
+// requests at Veeqo at once (it rate-limits bursts). Each worker pulls the
+// next index until the list is drained.
+async function mapPool<T>(
+  items: T[],
+  poolSize: number,
+  fn: (item: T) => Promise<void>
+): Promise<void> {
+  let idx = 0;
+  const workers = Array.from(
+    { length: Math.min(Math.max(poolSize, 1), items.length) },
+    async () => {
+      while (idx < items.length) {
+        const i = idx++;
+        await fn(items[i]);
+      }
+    }
+  );
+  await Promise.all(workers);
+}
+
 // ── Select best rate ──
 // Rates use actual Veeqo field names:
 //   sub_carrier_id = "UPS"/"FEDEX"/"USPS"
@@ -418,6 +440,50 @@ export async function GET(request: NextRequest) {
       totalNetCharge: string | null; baseRate: string | null;
     }> = [];
 
+    // ── Pre-warm rate quotes in parallel ──────────────────────────────────
+    // The dominant per-order latency in the loop below is the sequential
+    // `getShippingRates` round-trip — with N ready orders that was N calls in
+    // series (the source of the "shipping page is slow" lag). Fetch them
+    // concurrently up front, keyed by allocationId, so the loop reads from
+    // this cache instead of awaiting. Purely an optimization: the loop falls
+    // back to a direct fetch on any cache miss, so the result is identical
+    // even if these gates ever drift from the loop's. The Frozen Monday-shift
+    // refetch is deliberately NOT cached — it mutates dispatch_date first and
+    // must quote live.
+    const ratesByAlloc = new Map<
+      string,
+      Awaited<ReturnType<typeof getShippingRates>>
+    >();
+    {
+      const warmAllocIds = new Set<string>();
+      for (const order of orders) {
+        if (orderIdFilter && !orderIdFilter.has(String(order.id))) continue;
+        const ct = (order.channel?.type_code || "").toLowerCase();
+        if (ct === "walmart") continue; // Walmart quotes via its own path
+        const placed =
+          order.tags?.some((t: { name: string }) => t.name === "Placed") ||
+          ct === "shopify";
+        if (!placed) continue;
+        if (
+          !orderIdFilter &&
+          (!order.dispatch_date ||
+            veeqoDateToLocal(order.dispatch_date) !== dispatchTarget)
+        )
+          continue;
+        if (String(order.status ?? "").toLowerCase() === "shipped") continue;
+        const allocId = order.allocations?.[0]?.id;
+        if (allocId) warmAllocIds.add(String(allocId));
+      }
+      await mapPool([...warmAllocIds], 6, async (id) => {
+        try {
+          ratesByAlloc.set(id, await getShippingRates(id));
+        } catch {
+          // Leave uncached — the loop's direct fetch re-runs it and surfaces
+          // the real error in context.
+        }
+      });
+    }
+
     for (const order of orders) {
       // When the caller passed an explicit orderIds filter, only process
       // those rows (lets the UI cheap-refresh a single card).
@@ -706,7 +772,11 @@ export async function GET(request: NextRequest) {
 
       if (!stopReason && allocationId) {
         try {
-          const ratesResponse = await getShippingRates(String(allocationId));
+          // Read the parallel pre-warm cache; fall back to a live fetch on a
+          // miss (e.g. an order whose gates differed from the pre-warm pass).
+          const ratesResponse =
+            ratesByAlloc.get(String(allocationId)) ??
+            (await getShippingRates(String(allocationId)));
           const rates: VeeqoRate[] = ratesResponse?.available || [];
 
           if (isAlt) {

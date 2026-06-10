@@ -115,7 +115,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
 
-    let itemsToBuy = plan.items.filter((i) => i.status === "pending");
+    // Normally only "pending" items are buyable. But an item the algorithm
+    // stopped (status "stop" — e.g. "no rate delivers by the deadline") can
+    // still be bought when the operator supplies a full manual rate override
+    // for it: that's the operator explicitly choosing to ship a late/other
+    // rate, taking responsibility for the deadline miss. The per-item
+    // override merge + required-fields check below already guard against an
+    // incomplete override, so including stopped-but-overridden items here is
+    // safe — they fail the required-fields check if the override is partial.
+    let itemsToBuy = plan.items.filter(
+      (i) => i.status === "pending" || !!overrides[i.id],
+    );
     if (itemIds && itemIds.length > 0) {
       itemsToBuy = itemsToBuy.filter((i) => itemIds.includes(i.id));
     }
