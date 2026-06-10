@@ -19,6 +19,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { getWalmartClient, WalmartApiError } from "@/lib/walmart/client";
 import { WalmartOrdersApi } from "@/lib/walmart/orders";
 import { buyShippingLabel, downloadLabelPdf, type BoxInput } from "@/lib/walmart/shipping";
@@ -92,7 +93,38 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Order is Cancelled — refusing to buy a label." }, { status: 409 });
   }
 
-  // Double-buy guard: if a label already exists for this PO, refuse. The
+  // Authoritative double-buy guard #1: OUR OWN durable record. Walmart's
+  // /shipping/labels lookup below is eventually consistent and returns EMPTY
+  // for minutes after a buy — that lag window is exactly where double-buys
+  // happened (order looked buyable again, this guard's live probe saw no
+  // label, so a re-buy went through). The instant our previous buy succeeded
+  // we wrote a WalmartLabelPurchase row, so check it FIRST: if we already
+  // bought a (non-discarded) label for this PO, refuse immediately regardless
+  // of what Walmart's index currently says. Non-fatal on DB error — we fall
+  // through to the live lookup, preserving prior behaviour.
+  try {
+    const local = await prisma.walmartLabelPurchase.findUnique({
+      where: { purchaseOrderId },
+    });
+    if (local && !local.discardedAt) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: `A label was already purchased for this order (tracking ${local.trackingNumber}, ${local.carrierName}). Discard it before buying again.`,
+          alreadyBought: true,
+          trackingNumber: local.trackingNumber,
+        },
+        { status: 409 },
+      );
+    }
+  } catch (e) {
+    console.warn(
+      "[walmart/buy] local label-record check failed (non-fatal):",
+      e instanceof Error ? e.message : e,
+    );
+  }
+
+  // Double-buy guard #2 (live): if a label already exists for this PO, refuse. The
   // order stays Acknowledged after a buy (Veeqo/Walmart don't flip it), so the
   // UI can't always tell — this server-side check prevents a second paid
   // label. Discard the existing one first to re-buy.
@@ -166,6 +198,40 @@ export async function POST(request: NextRequest) {
       );
     }
     throw err;
+  }
+
+  // Durably record the purchase RIGHT NOW — before the (best-effort) PDF
+  // step — so a reload or a re-buy attempt sees it instantly, without waiting
+  // for Walmart's labels index to catch up. This is the record both the buy
+  // guard above and the dashboard's bought-detection read. Non-fatal: the
+  // label IS already bought; a failed write just means we fall back to the
+  // (laggy) live lookup until the next successful write.
+  try {
+    await prisma.walmartLabelPurchase.upsert({
+      where: { purchaseOrderId },
+      create: {
+        purchaseOrderId,
+        customerOrderId: String(order.customerOrderId ?? purchaseOrderId),
+        storeIndex: STORE_INDEX,
+        trackingNumber: result.trackingNumber ?? "",
+        carrierName: result.carrierName ?? carrierName,
+        serviceType: result.carrierServiceType ?? serviceType,
+        discardedAt: null,
+      },
+      update: {
+        customerOrderId: String(order.customerOrderId ?? purchaseOrderId),
+        trackingNumber: result.trackingNumber ?? "",
+        carrierName: result.carrierName ?? carrierName,
+        serviceType: result.carrierServiceType ?? serviceType,
+        boughtAt: new Date(),
+        discardedAt: null,
+      },
+    });
+  } catch (e) {
+    console.error(
+      "[walmart/buy] failed to persist label record (non-fatal — label IS bought):",
+      e instanceof Error ? e.message : e,
+    );
   }
 
   // Best-effort label PDF → Google Drive (never blocks the buy).

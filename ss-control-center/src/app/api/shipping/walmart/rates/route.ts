@@ -99,6 +99,34 @@ export async function POST(request: NextRequest) {
         lookupErr instanceof Error ? lookupErr.message : String(lookupErr);
     }
   }
+  // Authoritative local fallback: Walmart's lookup is eventually consistent
+  // and returns empty (or 429s) for minutes after a buy. If WE recorded
+  // buying a (non-discarded) label for this PO, treat the order as already
+  // bought so the row shows "bought — not yet shipped" instead of offering a
+  // duplicate buy. This is what closes the double-buy window for the
+  // dashboard. Non-fatal on DB error — keep whatever the live lookup said.
+  if (!existingLabel) {
+    try {
+      const local = await prisma.walmartLabelPurchase.findUnique({
+        where: { purchaseOrderId },
+      });
+      if (local && !local.discardedAt && local.trackingNumber) {
+        existingLabel = {
+          trackingNumber: local.trackingNumber,
+          carrierName: local.carrierName,
+        };
+        // We KNOW it's bought (our own record), so it's no longer ambiguous —
+        // clear the lookup-failed flag the UI uses to block the Buy button.
+        labelLookupFailed = false;
+        labelLookupError = null;
+      }
+    } catch (e) {
+      console.warn(
+        "[walmart/rates] local label-record check failed (non-fatal):",
+        e instanceof Error ? e.message : e,
+      );
+    }
+  }
   if (existingLabel || orderStatus === "Shipped") {
     return NextResponse.json({
       ok: true,

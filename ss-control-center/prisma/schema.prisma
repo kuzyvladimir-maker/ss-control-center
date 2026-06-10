@@ -951,6 +951,34 @@ model WalmartOrder {
   @@index([customerOrderId])
 }
 
+// Durable record of a Ship-with-Walmart label WE bought, written the instant
+// /api/shipping/walmart/buy succeeds. This is the authoritative "already
+// bought" signal — Walmart's own GET /shipping/labels/purchase-orders/{po}
+// lookup is eventually consistent and returns EMPTY for minutes after a buy,
+// during which the order looked buyable again and a re-buy wasn't caught
+// (double-charge). We OR this local record with the live Walmart lookup in
+// both the buy guard and the dashboard's bought-detection so a label we just
+// bought can never reappear as buyable, regardless of Walmart's index lag.
+// One row per PO; `discardedAt` is set when the label is discarded so a
+// fresh label can be bought afterwards.
+model WalmartLabelPurchase {
+  id              String    @id @default(cuid())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  purchaseOrderId String    @unique // Walmart PO — one active label per PO
+  customerOrderId String // Veeqo order.number — dashboard joins on this
+  storeIndex      Int       @default(1)
+  trackingNumber  String
+  carrierName     String
+  serviceType     String?
+  boughtAt        DateTime  @default(now())
+  // Set when the label is discarded/cancelled → the order becomes buyable
+  // again. A non-null value means "no active label" for guard/detection.
+  discardedAt     DateTime?
+
+  @@index([customerOrderId])
+}
+
 // Per-row reconciliation report transactions. Each row is one money event.
 model WalmartReconTransaction {
   id        String   @id @default(cuid())

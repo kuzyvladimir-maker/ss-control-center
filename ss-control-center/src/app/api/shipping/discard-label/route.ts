@@ -15,6 +15,7 @@
 // label without dropping the order out of Shipping Labels.
 
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { veeqoFetch } from "@/lib/veeqo/client";
 import { refundShipmentForOrder } from "@/lib/veeqo/refund";
 import { getWalmartClient } from "@/lib/walmart/client";
@@ -39,6 +40,24 @@ interface VeeqoOrderForDiscard {
   id?: string | number;
   number?: string;
   channel?: { type_code?: string; name?: string } | null;
+}
+
+// Mark our durable Walmart label record discarded so the order becomes
+// buyable again (the buy guard + dashboard detection treat a discarded
+// record as "no active label"). Keyed by customerOrderId (= Veeqo
+// order.number), which is what this route knows. Non-fatal.
+async function clearLocalWalmartLabel(customerOrderId: string) {
+  try {
+    await prisma.walmartLabelPurchase.updateMany({
+      where: { customerOrderId, discardedAt: null },
+      data: { discardedAt: new Date() },
+    });
+  } catch (e) {
+    console.warn(
+      "[discard-label] failed to clear local Walmart label record (non-fatal):",
+      e instanceof Error ? e.message : e,
+    );
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -127,6 +146,7 @@ export async function POST(req: NextRequest) {
           // Fallback path failed → try Veeqo refund.
           try {
             const result = await refundShipmentForOrder(orderId);
+            await clearLocalWalmartLabel(orderNumber);
             return NextResponse.json({
               ok: true,
               channel: "walmart",
@@ -150,6 +170,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      await clearLocalWalmartLabel(orderNumber);
       return NextResponse.json({
         ok: true,
         channel: "walmart",
