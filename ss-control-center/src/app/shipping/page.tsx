@@ -4334,20 +4334,22 @@ function Cell({
 }
 
 /** Is this Veeqo delivery_method.name a faster-than-standard tier? Used to
- *  highlight the customer's chosen shipping service on the row. Matches the
- *  expedited keywords Amazon/Walmart use; everything else (Standard, Free,
- *  Economy, Ground, blank) reads as the normal tier. */
+ *  highlight the customer's chosen shipping service on the row. Strips
+ *  spaces/hyphens first so it catches BOTH Amazon's compact names
+ *  ("NextDay", "SecondDay") and Veeqo's spaced titles ("Next Day Air",
+ *  "2nd Day"). Everything else (Standard, Free, Economy, Ground) reads as
+ *  the normal tier. */
 function isExpeditedService(name: string): boolean {
-  const n = name.toLowerCase();
+  const n = name.toLowerCase().replace(/[\s_-]+/g, "");
   return (
     n.includes("expedit") ||
-    n.includes("next day") ||
-    n.includes("one day") ||
-    n.includes("1 day") ||
-    n.includes("second day") ||
-    n.includes("two day") ||
-    n.includes("2 day") ||
-    n.includes("2-day") ||
+    n.includes("nextday") ||
+    n.includes("oneday") ||
+    n.includes("1day") ||
+    n.includes("secondday") ||
+    n.includes("2ndday") ||
+    n.includes("twoday") ||
+    n.includes("2day") ||
     n.includes("priority") ||
     n.includes("overnight") ||
     n.includes("express")
