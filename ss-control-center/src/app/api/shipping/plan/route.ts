@@ -1032,7 +1032,31 @@ export async function GET(request: NextRequest) {
                   ? `Frozen — none of ${meetingDeadline}/${rates.length} on-time rates deliver within ${maxCalDays} calendar days (food safety)${riskTag}. Monday-shift trick also didn't help.`
                   : `No rate where EDD ≤ Delivery By (${deliveryBy}). ${rates.length} rates checked.`;
             } else {
-              stopReason = `No rate where EDD ≤ Delivery By (${deliveryBy}). ${rates.length} rates checked.`;
+              // Dry: no carrier delivers by the deadline. Spell out the
+              // soonest available delivery + how many days late it is, so the
+              // operator instantly sees the situation (often a rural ZIP or a
+              // PO Box that only USPS serves) and knows the order CAN still
+              // ship — just late — via a manual rate pick. Beats the old
+              // cryptic "No rate where EDD ≤ …" that read like a hard failure.
+              const soonest = rates
+                .map((r) => veeqoDateToLocal(r.delivery_promise_date))
+                .filter((d): d is string => !!d)
+                .sort()[0];
+              if (soonest) {
+                const lateDays = Math.round(
+                  (new Date(soonest + "T00:00:00").getTime() -
+                    new Date(deliveryBy + "T00:00:00").getTime()) /
+                    86_400_000,
+                );
+                stopReason =
+                  `No on-time rate — deadline ${deliveryBy}, soonest delivery ${soonest}` +
+                  (lateDays > 0
+                    ? ` (${lateDays} day${lateDays === 1 ? "" : "s"} late)`
+                    : "") +
+                  `. ${rates.length} rates checked. Pick a rate to ship anyway.`;
+              } else {
+                stopReason = `No rate where EDD ≤ Delivery By (${deliveryBy}). ${rates.length} rates checked.`;
+              }
             }
           }
         } catch (e) {
