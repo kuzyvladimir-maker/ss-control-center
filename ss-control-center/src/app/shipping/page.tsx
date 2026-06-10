@@ -1738,7 +1738,7 @@ export default function ShippingLabelsPage() {
             errors.push({
               orderNumber: o.orderNumber,
               itemId: o.orderId,
-              error: e instanceof Error ? e.message : String(e),
+              error: errMsg(e),
             });
           }
         }
@@ -1823,7 +1823,7 @@ export default function ShippingLabelsPage() {
       // (Amazon) state. Operator hits Refresh when they want them gone.
       applyBoughtLocally(bought);
     } catch (e) {
-      setBuyMsg(e instanceof Error ? e.message : String(e));
+      setBuyMsg(errMsg(e));
     } finally {
       setBuying(false);
     }
@@ -2079,11 +2079,23 @@ export default function ShippingLabelsPage() {
           errors: [],
         });
         setBuyMsg(`Bought ${o.orderNumber} (Walmart) — not yet marked shipped`);
-        // Print + move Drive file if print mode is on.
-        await printAndMark(success);
-        await load();
+        // The label IS bought. Reflect it in the row right away (tracking +
+        // Mark-as-Shipped) via the optimistic update — no full reload needed.
+        applyBoughtLocally([success]);
+        // Printing is a post-purchase convenience. It (and any refresh) must
+        // NEVER turn a completed buy into a "failed" message — a print/reload
+        // hiccup here is exactly what showed "Buy failed — [object Object]" on
+        // an order whose Walmart label was already bought. Swallow it.
+        try {
+          await printAndMark(success);
+        } catch (printErr) {
+          console.warn(
+            "[buy] print after Walmart buy failed (non-fatal — label IS bought):",
+            printErr,
+          );
+        }
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
+        const msg = errMsg(e);
         setBuyMsg(msg);
         setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
       } finally {
@@ -2152,10 +2164,8 @@ export default function ShippingLabelsPage() {
         throw new Error(errs[0]?.error || "Veeqo rejected the purchase");
       }
       setBuyMsg(`Bought ${o.orderNumber}`);
-      // Print + move Drive file if print mode is on.
-      for (const b of bought) {
-        await printAndMark(b);
-      }
+      // Commit the success in the UI FIRST (clear the override, flip the row
+      // to bought) so a print/refresh hiccup afterwards can't undo it.
       setRateOverrides((prev) => {
         const next = { ...prev };
         delete next[o.orderId];
@@ -2164,8 +2174,20 @@ export default function ShippingLabelsPage() {
       // Optimistic local update — row stays visible until manual refresh
       // so the operator can see what they just bought.
       applyBoughtLocally(bought);
+      // Print + move Drive file if print mode is on — post-purchase, so a
+      // failure here must NOT mark a completed buy as failed.
+      try {
+        for (const b of bought) {
+          await printAndMark(b);
+        }
+      } catch (printErr) {
+        console.warn(
+          "[buy] print after buy failed (non-fatal — label IS bought):",
+          printErr,
+        );
+      }
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
+      const msg = errMsg(e);
       setBuyMsg(msg);
       setBuyErrors((prev) => ({ ...prev, [o.orderId]: msg }));
     } finally {
@@ -4198,6 +4220,26 @@ function CopyOrderNumber({ value }: { value: string }) {
       {copied ? <Check size={12} className="text-green" /> : <Copy size={12} />}
     </button>
   );
+}
+
+/** Pull a human-readable message out of anything thrown or returned — an
+ *  Error, an API error object ({error}/{message}), a string, else a JSON
+ *  dump. Prevents the dreaded "[object Object]" when a non-Error object
+ *  reaches a catch (e.g. a rejected fetch payload). */
+function errMsg(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (typeof e === "string") return e;
+  if (e && typeof e === "object") {
+    const o = e as Record<string, unknown>;
+    if (typeof o.error === "string") return o.error;
+    if (typeof o.message === "string") return o.message;
+    try {
+      return JSON.stringify(e);
+    } catch {
+      return String(e);
+    }
+  }
+  return String(e);
 }
 
 /** Compact "5/14" date for dense grid cells. Falls back to the raw value
