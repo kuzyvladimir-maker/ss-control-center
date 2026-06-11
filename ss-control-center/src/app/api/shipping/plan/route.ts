@@ -938,11 +938,29 @@ export async function GET(request: NextRequest) {
           //   * monDeadlineDays >= 1 — Monday must be before the deadline.
           //   * dayName !== "Mon" — today being Monday would shift a full
           //     week out; surface as a manual stop instead.
+          //
+          // ALSO fire when today's ONLY Frozen-valid pick is a same/next-day
+          // OVERNIGHT (selectedCalDays <= 1). That happens when shipping late
+          // in the week pushes every cheaper 2-/3-day service past the cal-day
+          // cap over the weekend, leaving only a ruinous overnight (Brooklyn
+          // order 113-8209299-9582650: UPS Next Day Air Saver $55.66 for a
+          // $0-shipping order, when a Monday-shipped FedEx 2Day delivers in 2
+          // days for $17.78, still before the 6/18 deadline). We only ACTUALLY
+          // switch below when Monday's vetted pick is CHEAPER (mondayIsCheaper),
+          // so this never downgrades a genuinely-needed overnight — and a tight
+          // customer deadline is already gated out by `monDeadlineDays >= 1`.
+          // The old over-eager trigger that broke 113-2379726 fired on a 3-day
+          // today-pick; gating the new case to `selectedCalDays <= 1` keeps
+          // that incident fixed.
+          const todayPickIsOvernight =
+            selectedRate != null &&
+            selectedCalDays >= 0 &&
+            selectedCalDays <= 1;
           const tryMonday =
             productType === "Frozen" &&
             monDeadlineDays >= 1 &&
             dayInfo.dayName !== "Mon" &&
-            !selectedRate;
+            (!selectedRate || todayPickIsOvernight);
 
           if (tryMonday) {
             const originalDispatch: string | undefined = order.dispatch_date;
