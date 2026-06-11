@@ -73,6 +73,9 @@ export async function POST(request: NextRequest) {
       count: r.count,
       totalInCache: r.totalInCache,
       cacheLastSyncedAt: r.lastSyncedAt,
+      // Matches that exist only in non-PUBLISHED statuses (hidden by the
+      // unchecked "include UNPUBLISHED" box) — the UI hints at these.
+      excludedByStatus: r.excludedByStatus ?? 0,
       matches: r.matches.map((m) => ({
         ...m,
         alreadyRetired: retiredMap.has(m.sku),

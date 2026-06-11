@@ -82,6 +82,9 @@ export function RetireFromSaleModal({
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [cacheNote, setCacheNote] = useState<string | null>(null);
+  // Matches that exist only in non-PUBLISHED statuses (hidden by the
+  // unchecked box) — drives the "N more in UNPUBLISHED" hint.
+  const [excludedByStatus, setExcludedByStatus] = useState(0);
 
   const [executing, setExecuting] = useState<Set<string>>(new Set());
   const [executeResults, setExecuteResults] = useState<Map<string, ExecuteResult>>(
@@ -127,6 +130,7 @@ export function RetireFromSaleModal({
         matches?: SearchMatch[];
         cacheLastSyncedAt?: string | null;
         totalInCache?: number;
+        excludedByStatus?: number;
         error?: string;
       };
       if (!res.ok) {
@@ -135,6 +139,7 @@ export function RetireFromSaleModal({
       }
       const found = data.matches ?? [];
       setMatches(found);
+      setExcludedByStatus(data.excludedByStatus ?? 0);
       if (data.cacheLastSyncedAt) {
         const synced = new Date(data.cacheLastSyncedAt);
         const ageHours = Math.round(
@@ -340,10 +345,37 @@ export function RetireFromSaleModal({
               <span>{searchError}</span>
             </div>
           )}
+          {/* Hint: matches exist in UNPUBLISHED but the box is off. Shows
+              whether or not PUBLISHED returned anything — the product the
+              operator wants (e.g. a retired/unpublished SKU still taking
+              orders) is often exactly here. */}
+          {!searching &&
+            matches !== null &&
+            !includeUnpublished &&
+            excludedByStatus > 0 && (
+              <div className="mb-2 flex items-center justify-between gap-2 rounded-md bg-info-tint px-2.5 py-1.5 text-[12px] text-info">
+                <span>
+                  Ещё <span className="font-medium">{excludedByStatus}</span>{" "}
+                  в UNPUBLISHED / других статусах скрыто — нужный товар может
+                  быть там.
+                </span>
+                <button
+                  type="button"
+                  className="shrink-0 font-medium underline"
+                  onClick={() => {
+                    setIncludeUnpublished(true);
+                    void runSearch(query, true);
+                  }}
+                >
+                  Показать
+                </button>
+              </div>
+            )}
           {!searching && matches !== null && matches.length === 0 && (
             <div className="text-[12.5px] text-ink-3">
-              Ничего не найдено. Попробуй сократить запрос или включить
-              UNPUBLISHED.
+              {!includeUnpublished && excludedByStatus > 0
+                ? "В PUBLISHED ничего не найдено."
+                : "Ничего не найдено. Попробуй сократить запрос или включить UNPUBLISHED."}
             </div>
           )}
           {matches !== null && matches.length > 0 && (

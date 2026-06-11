@@ -97,6 +97,29 @@ export interface CatalogSearchResult {
   count: number;
   totalInCache: number;
   lastSyncedAt: Date | null;
+  // How many ALSO-matching items were hidden because they aren't PUBLISHED
+  // (only set when includeUnpublished is false). Lets the UI say "N more in
+  // UNPUBLISHED — enable the checkbox" instead of a bare "nothing found".
+  excludedByStatus?: number;
+}
+
+// Words too generic to help locate a product — dropped from tokenization so
+// ranking keys on the brand/flavour words that actually discriminate.
+const SEARCH_STOPWORDS = new Set([
+  "the", "of", "a", "an", "and", "with", "for", "to", "in", "on", "by", "or",
+  "oz", "fl", "ct", "pack", "count", "fluid", "ounce",
+]);
+
+/** Split a query into distinct lowercase search tokens (≥2 chars, no stopwords). */
+function tokenizeQuery(q: string): string[] {
+  return Array.from(
+    new Set(
+      q
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter((t) => t.length >= 2 && !SEARCH_STOPWORDS.has(t)),
+    ),
+  );
 }
 
 /**
@@ -112,34 +135,74 @@ export async function searchWalmartCatalogCache(
 ): Promise<CatalogSearchResult> {
   const q = query.trim();
   const limit = opts.limit ?? 50;
+  const tokens = tokenizeQuery(q);
 
-  const where: Record<string, unknown> = {
-    storeIndex,
-    OR: [{ sku: { contains: q } }, { title: { contains: q } }],
-  };
-  if (!opts.includeUnpublished) where.publishedStatus = "PUBLISHED";
+  // RECALL: match items containing ANY query token in title OR sku — so a
+  // title that differs by a word ("Hidden Valley Ranch ... Taco" vs the typed
+  // "Hidden Valley The Original Ranch Taco") still surfaces, instead of the
+  // old whole-string `contains` that needed the exact phrase verbatim and
+  // returned nothing. Falls back to whole-string when there are no usable
+  // tokens (e.g. a query that's all stopwords/symbols).
+  const tokenOr =
+    tokens.length > 0
+      ? tokens.flatMap((t) => [
+          { title: { contains: t } },
+          { sku: { contains: t } },
+        ])
+      : [{ title: { contains: q } }, { sku: { contains: q } }];
+  const baseWhere: Record<string, unknown> = { storeIndex, OR: tokenOr };
+  const where: Record<string, unknown> = opts.includeUnpublished
+    ? baseWhere
+    : { ...baseWhere, publishedStatus: "PUBLISHED" };
 
-  const [rows, totalInCache, newest] = await Promise.all([
-    prisma.walmartCatalogItem.findMany({ where, take: limit }),
+  // Pull a generous candidate set and rank in-process — the cache is only a
+  // few thousand rows so this stays sub-second.
+  const CANDIDATES = 400;
+  const [rows, totalInCache, newest, excludedByStatus] = await Promise.all([
+    prisma.walmartCatalogItem.findMany({ where, take: CANDIDATES }),
     prisma.walmartCatalogItem.count({ where: { storeIndex } }),
     prisma.walmartCatalogItem.findFirst({
       where: { storeIndex },
       orderBy: { syncedAt: "desc" },
       select: { syncedAt: true },
     }),
+    // Matches that exist but are hidden by the PUBLISHED-only filter.
+    opts.includeUnpublished
+      ? Promise.resolve(0)
+      : prisma.walmartCatalogItem.count({
+          where: { ...baseWhere, NOT: { publishedStatus: "PUBLISHED" } },
+        }),
   ]);
 
+  // RELEVANCE: rank by (1) exact whole-query phrase present, (2) most distinct
+  // query tokens matched, (3) shorter title (a more specific match), so the
+  // best candidates lead even though the WHERE matched on ANY token.
+  const qLower = q.toLowerCase();
+  const ranked = rows
+    .map((r) => {
+      const hay = `${r.title ?? ""} ${r.sku ?? ""}`.toLowerCase();
+      const tokenHits = tokens.filter((t) => hay.includes(t)).length;
+      const phrase = qLower && hay.includes(qLower) ? 1 : 0;
+      return { r, tokenHits, phrase, len: (r.title ?? "").length };
+    })
+    .sort(
+      (a, b) =>
+        b.phrase - a.phrase || b.tokenHits - a.tokenHits || a.len - b.len,
+    )
+    .slice(0, limit);
+
   return {
-    matches: rows.map((r) => ({
+    matches: ranked.map(({ r }) => ({
       itemId: r.itemId ?? "",
       sku: r.sku,
       title: r.title ?? "",
       lifecycleStatus: r.lifecycleStatus ?? "",
       publishedStatus: r.publishedStatus ?? "",
     })),
-    count: rows.length,
+    count: ranked.length,
     totalInCache,
     lastSyncedAt: newest?.syncedAt ?? null,
+    excludedByStatus,
   };
 }
 
