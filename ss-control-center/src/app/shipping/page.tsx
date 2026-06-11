@@ -737,9 +737,60 @@ export default function ShippingLabelsPage() {
             labelLookupError: j.labelLookupError ?? null,
           },
         }));
-        // Already bought / shipped, or no buyable rate at this date → clear
-        // the rate so the row shows the right state instead of a stale price.
-        if (j.alreadyBought || j.orderStatus === "Shipped" || !j.selected || !j.box) {
+        // Already bought / shipped → clear the rate so the row shows that
+        // state (walmartStatus above drives the "bought / not shipped" UI).
+        if (j.alreadyBought || j.orderStatus === "Shipped") {
+          dropMaps();
+          return;
+        }
+        // Walmart returned a PACKAGE but no buyable rate (0 rates / nothing
+        // selected) even though dims are fine — typically an OVERDUE order
+        // (ship-by already passed) where no service can still hit the
+        // deliver-by from today's ship date. Show the package we DO know plus
+        // a clear reason, instead of a vague "Awaiting rate" + a false "Set
+        // weight/size" (the order HAS dimensions). Keep walmartBuyInfo cleared
+        // so Buy stays disabled.
+        if (j.box && !j.selected) {
+          clearError();
+          setWalmartBuyInfo((p) => {
+            const n = { ...p };
+            delete n[o.orderNumber];
+            return n;
+          });
+          const overdue =
+            o.shipBy && shipByDate && o.shipBy < shipByDate.slice(0, 10);
+          const reason =
+            `No Walmart rate delivers by ${o.deliverBy ? fmtDate(o.deliverBy) : "the deadline"} ` +
+            `when shipping ${fmtDate(shipByDate)}. ` +
+            (overdue
+              ? `This order's ship-by (${fmtDate(o.shipBy)}) has passed — it can't be shipped on time.`
+              : `No service is fast enough — try an earlier ship date.`);
+          const wb = j.box;
+          setWalmartRates((p) => ({
+            ...p,
+            [o.orderNumber]: {
+              id: `wm-${o.orderNumber}`,
+              orderNumber: o.orderNumber,
+              carrier: null,
+              service: null,
+              price: null,
+              edd: null,
+              status: "stop",
+              notes: reason,
+              weight: typeof wb.weight === "number" ? wb.weight : null,
+              boxSize: `${wb.length}x${wb.width}x${wb.height}`,
+              productType: null,
+              labelDate: null,
+              physicalShipDate: null,
+              shipDateTrickApplied: false,
+              datesMatch: true,
+              actualShipDay: null,
+              allocationId: null,
+            },
+          }));
+          return;
+        }
+        if (!j.selected || !j.box) {
           dropMaps();
           return;
         }
