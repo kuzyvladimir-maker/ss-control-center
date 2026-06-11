@@ -49,6 +49,25 @@ export function isOwnOrReseller(seller?: string | null): boolean {
   return OWN_OR_RESELLER.some((b) => s.includes(b));
 }
 
+// FIRST-PARTY ONLY (Vladimir's rule #8): on a retailer's own marketplace we buy
+// ONLY from the retailer itself, never third-party resellers — their prices are
+// inflated and are not our procurement source. BlueCart exposes is_marketplace_item
+// per offer; we trust that flag first, then fall back to the seller name. Anything
+// not provably first-party is rejected (better a miss than a wrong/reseller cost).
+export function isFirstParty(offer: { isMarketplaceItem: boolean | null; sellerName: string | null; retailer: string }): boolean {
+  if (offer.isMarketplaceItem === true) return false; // explicit third-party/reseller
+  if (offer.isMarketplaceItem === false) return true; // explicit first-party
+  // Flag unknown → accept only when the seller name IS the retailer itself.
+  const s = (offer.sellerName || "").toLowerCase().replace(/\s+/g, "");
+  if (!s) return false; // unknown seller + unknown flag → not provably 1P
+  return (
+    s.startsWith(offer.retailer.toLowerCase()) ||
+    s.includes("walmart.com") ||
+    s.includes("samsclub") ||
+    s.includes("target.com")
+  );
+}
+
 // Parse a pack/multipack count out of a title. Returns 1 when nothing multipack-y is found.
 export function extractPackSize(title?: string | null): number {
   if (!title) return 1;
@@ -220,6 +239,7 @@ export type ScoredOffer = RetailOffer & {
 export function scoreOffer(offer: RetailOffer, cp: CanonicalProduct): ScoredOffer {
   const base = { ...offer, accepted: false, rejectReason: null as string | null, isBaseUnit: false };
   if (isOwnOrReseller(offer.sellerName)) return { ...base, rejectReason: `own/reseller (${offer.sellerName})` };
+  if (!isFirstParty(offer)) return { ...base, rejectReason: `not first-party (${offer.sellerName || "unknown seller"})` };
   const tg = tokenGate(offer.title, cp);
   if (!tg.ok) return { ...base, rejectReason: tg.reason };
   if (offer.price === null) return { ...base, rejectReason: "no price" };

@@ -1,150 +1,3667 @@
 [
   {
-    "sku": "FaisalX-1241",
-    "query": "Arnold Keto Bread 20 oz loaf",
+    "sku": "Athar-164",
+    "query": "Pepperidge Farm Farmhouse Hearty White Bread 24 oz",
     "category": "Dry",
-    "brand": "Arnold",
-    "product_line": "Keto Bread",
-    "flavor": "Original",
-    "size": "20 oz",
+    "brand": "Pepperidge Farm",
+    "product_line": "Farmhouse",
+    "flavor": "Hearty White",
+    "size": "24 oz",
     "units_in_listing": 2,
-    "is_bundle": true,
+    "is_bundle": false,
     "offers": [
       {
         "retailer": "walmart",
-        "seller": "MiniXpress",
-        "price": 12.76,
+        "seller": "bezyhome",
+        "price": 27,
         "pack": 1,
         "accepted": false,
-        "reason": "own/reseller (MiniXpress)",
-        "url": "https://www.walmart.com/ip/Arnold-Superior-Keto-Bread-20-oz-Seeded-White-Bread-Bag/1623599625?classType=REGULAR"
+        "reason": "not first-party (bezyhome)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Hearty-White-Bread-24-oz-Bag/1257963291?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mendyl Distribution",
+        "price": 16.76,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Mendyl Distribution)",
+        "url": "https://www.walmart.com/ip/1-pack-Pepperidge-Farm-Farmhouse-Hearty-White-Bread-24-Oz-Loaf/19660000166?classType=REGULAR"
       },
       {
         "retailer": "walmart",
         "seller": "STARFITSTORE",
-        "price": 20.24,
+        "price": 17.54,
         "pack": 2,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Keto-Bread-Loaf-20-oz-Pack-of-2/8374958031?classType=VARIANT"
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Hearty-White-24-oz-Pack-of-2/5495653274?classType=REGULAR"
       },
       {
         "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 50.77,
-        "pack": 3,
+        "seller": "Mendyl Distribution",
+        "price": 24.99,
+        "pack": 2,
         "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Keto-Bread-Loaf-20-oz-Pack-Of-3/9441762859?classType=VARIANT"
+        "reason": "not first-party (Mendyl Distribution)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Sourdough-Sliced-Bread-24-oz-pack-of-2/17050817865?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mav Deals",
+        "price": 24.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (Mav Deals)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Sourdough-Bread-24-oz-Bag/20131610661?classType=REGULAR"
       },
       {
         "retailer": "walmart",
         "seller": "STARFITSTORE",
-        "price": 89.09,
+        "price": 67.49,
         "pack": 6,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Keto-Bread-Loaf-20-oz-Pack-of-6/8398265065?classType=VARIANT"
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Multigrain-Bread-24-oz-Pack-of-6/8390500167?classType=VARIANT"
       },
       {
         "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 110.25,
-        "pack": 7,
+        "seller": "PickAPrime LLC",
+        "price": 7.49,
+        "pack": 1,
         "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Keto-Bread-Loaf-20-oz-Pack-Of-7/9444952447?classType=VARIANT"
+        "reason": "not first-party (PickAPrime LLC)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Butter-Bread-22-oz-Loaf/941993352?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Al Hakeem Services Inc.",
+        "price": 12.74,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Al Hakeem Services Inc.)",
+        "url": "https://www.walmart.com/ip/Farmhouse-Hearty-White-Bread-24-Oz-Loaf/20107917696?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Maple",
+        "price": 22.6,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Maple)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Homestyle-Oat-Bread-24-oz-Bag/20076371458?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Infinity Trend",
+        "price": 19,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Infinity Trend)",
+        "url": "https://www.walmart.com/ip/2x-Pepperidge-Farm-Farmhouse-Butter-Bread-22-oz-Loaf/15166657633?classType=REGULAR"
       },
       {
         "retailer": "walmart",
         "seller": "STARFITSTORE",
-        "price": 62.33,
+        "price": 37.79,
         "pack": 4,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Keto-Bread-Loaf-20-oz-Pack-of-4/9525403156?classType=VARIANT"
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Multigrain-Bread-24-oz-Pack-of-4/8398257283?classType=VARIANT"
       },
       {
         "retailer": "walmart",
         "seller": "STARFITSTORE",
-        "price": 78.22,
-        "pack": 5,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Keto-Bread-Loaf-20-oz-Pack-Of-5/9424308997?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Walmart.com",
-        "price": 6.48,
-        "pack": 1,
-        "accepted": false,
-        "reason": "brand \"arnold\" absent",
-        "url": "https://www.walmart.com/ip/Oroweat-Superior-Keto-Bread-20-oz-Seeded-White-Bread-Bag/1870902212?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 20.24,
+        "price": 18.32,
         "pack": 2,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Country-Sourdough-Bread-Rustic-with-Rich-Deep-Flavor-24-oz-Pack-of-2/8398257285?classType=VARIANT"
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Multigrain-Bread-24-oz-Pack-of-2/8394303069?classType=VARIANT"
       },
       {
         "retailer": "walmart",
-        "seller": "Express Services 727",
-        "price": 0,
-        "pack": 8,
+        "seller": "Value Home",
+        "price": 31.52,
+        "pack": 3,
         "accepted": false,
-        "reason": "price suspect ($0)",
-        "url": "https://www.walmart.com/ip/Arnold-Superior-Keto-Plain-Hamburger-Buns-8-count-Pre-sliced-Hamburger-Buns-12-oz-Bag/785016890?classType=REGULAR"
+        "reason": "not first-party (Value Home)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Homestyle-Oat-Bread-3-Pack-24-oz-Loaves-7033/5431666053?classType=VARIANT"
       },
       {
         "retailer": "walmart",
-        "seller": "Express Services 727",
+        "seller": "Z. Sourcing",
         "price": 0,
-        "pack": 8,
+        "pack": 1,
         "accepted": false,
-        "reason": "price suspect ($0)",
-        "url": "https://www.walmart.com/ip/Arnold-Keto-Buns-8-count-White-Hot-Dog-Buns-12-oz-Bag/566622128?classType=REGULAR"
+        "reason": "not first-party (Z. Sourcing)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Honey-White-Bread-22-oz-Loaf/981296582?classType=REGULAR"
       }
     ],
     "winner": null
   },
   {
-    "sku": "FaisalX-1229",
-    "query": "Arnold Whole Grains 12 Grains and Seeds Bread 24 oz loaf",
+    "sku": "FaisalX-1145",
+    "query": "Pepperidge Farm Jewish Rye Seedless Bread 16 oz",
     "category": "Dry",
-    "brand": "Arnold",
-    "product_line": "Whole Grains",
-    "flavor": "12 Grains and Seeds",
-    "size": "24 oz",
+    "brand": "Pepperidge Farm",
+    "product_line": "Jewish Rye",
+    "flavor": "Seedless",
+    "size": "16 oz",
     "units_in_listing": 2,
-    "is_bundle": true,
-    "offers": [],
-    "winner": null
-  },
-  {
-    "sku": "RizwanX-4597",
-    "query": "Green Giant FreshLock Variety Pack 8 cans vegetables",
-    "category": "Dry",
-    "brand": "Green Giant",
-    "product_line": "FreshLock",
-    "flavor": "variety",
-    "size": "8 pack",
-    "units_in_listing": 1,
-    "is_bundle": true,
+    "is_bundle": false,
     "offers": [
       {
         "retailer": "walmart",
         "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
+        "price": 47.64,
+        "pack": 4,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-FreshLock-Variety-Pack-8-Shelf-Stable-Canned-Vegetables/16516300862?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Rye-Seedless-Bread-16-oz-Pack-of-4/8464550923?classType=VARIANT"
       },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 67.49,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Rye-Seedless-Bread-16-oz-Pack-of-6/8503256750?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 0,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Rye-Seedless-Bread-16-oz-Pack-of-2/8466901364?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 58.74,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Rye-Seeded-Bread-16-oz-Bag-Pack-of-6/8412902254?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Al Hakeem Services Inc.",
+        "price": 13.28,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Al Hakeem Services Inc.)",
+        "url": "https://www.walmart.com/ip/Jewish-Rye-Seedless-Bread-16-oz-Bag/20042716496?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "PickAPrime LLC",
+        "price": 0,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (PickAPrime LLC)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Rye-Seeded-Bread-16-oz-Bag/10452831?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "PickAPrime LLC",
+        "price": 0,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (PickAPrime LLC)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Rye-Pump-Deli-Swirl-Bread-16-Oz/10452819?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 0,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Rye-Seeded-Bread-16-oz-Bag-Pack-of-2/8399505608?classType=VARIANT"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "FaisalX-1212",
+    "query": "Sara Lee Artesano Smooth Multigrain Bread 20 oz",
+    "category": "Dry",
+    "brand": "Sara Lee",
+    "product_line": "Artesano",
+    "flavor": "Smooth Multigrain",
+    "size": "20 oz",
+    "units_in_listing": 4,
+    "is_bundle": false,
+    "offers": [],
+    "winner": null
+  },
+  {
+    "sku": "FaisalX-1328",
+    "query": "Snyder's of Hanover Pretzel Pieces Cheddar Cheese 3.25 oz",
+    "category": "Dry",
+    "brand": "Snyder's of Hanover",
+    "product_line": "Pretzel Pieces",
+    "flavor": "Cheddar Cheese",
+    "size": "3.25 oz",
+    "units_in_listing": 6,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Latindistributors LLC",
+        "price": 12.89,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Latindistributors LLC)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Pieces-Cheddar-Cheese-8-oz/308423713?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "SUPERDEALS USA",
+        "price": 14.99,
+        "pack": 9,
+        "accepted": false,
+        "reason": "own/reseller (SUPERDEALS USA)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Pieces-Cheddar-Cheese-2-25-oz-Tubes-Pack-of-9/7013659760?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "SUPERDEALS USA",
+        "price": 19.99,
+        "pack": 12,
+        "accepted": false,
+        "reason": "own/reseller (SUPERDEALS USA)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Pieces-Cheddar-Cheese-2-25-oz-Pack-of-12-bundled-by-SUPERDEALS-with-mystery-gift-in-every-order/7019162505?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "That Warehouse LLC",
+        "price": 1.98,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (That Warehouse LLC)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Pieces-Hot-Buffalo-Wing-3-25-oz/2541462207?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Food Service Direct",
+        "price": 30.6,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Food Service Direct)",
+        "url": "https://www.walmart.com/ip/Snyder-s-Of-Hanover-Cheddar-Cheese-Pretzel-Pieces-8-Ounces-6-per-case/512296805?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "LH Enterprises LLC",
+        "price": 31.49,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (LH Enterprises LLC)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Cheddar-Cheese-Flavored-Pretzel-Pieces-4-Pack-11-25-oz-Bags/922827269?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "OFFICE SUPPLY PRO",
+        "price": 20,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (OFFICE SUPPLY PRO)",
+        "url": "https://www.walmart.com/ip/2-Pack-Snyder-s-of-Hanover-Cheddar-Cheese-Flavored-Pretzel-Pieces-11-25-oz/17073964388?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Click N Chip",
+        "price": 13.9,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Click N Chip)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Pieces-Cheddar-Cheese-Party-Size-18-Oz/16470154097?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Circle of Drink",
+        "price": 27.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Circle of Drink)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Pieces-Honey-Mustard-Onion-3-25oz-6ct/269630335?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mahad Sells",
+        "price": 37.5,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Mahad Sells)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Cheddar-Cheese-Flavored-Pretzel-Pieces-11-25-oz-3pk-With-Olive-Green-Bowl-By-ValueNest/17892561039?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mahad Sells",
+        "price": 25,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Mahad Sells)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Cheddar-Cheese-Flavored-Pretzel-Pieces-11-25-oz-2pk-With-Olive-Green-Bowl-By-ValueNest/17895802644?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.78,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Snyder-s-Of-Hanover-Cheddar-Cheese-Pretzel-Sandwiches-8-oz/10293722?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Click N Chip",
+        "price": 6.9,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Click N Chip)",
+        "url": "https://www.walmart.com/ip/1PACK-Snyder-s-of-Hanover-Pretzel-Sandwiches-Cheddar-Cheese/13176221694?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mahad Sells",
+        "price": 10.01,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Mahad Sells)",
+        "url": "https://www.walmart.com/ip/1-x-Snyder-s-of-Hanover-Cheddar-Cheese-Flavored-Pretzel-Pieces-11-25-Oz/19395973913?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Tribeca Curations",
+        "price": 15.68,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Tribeca Curations)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Sandwiches-Cheddar-Cheese-8-oz-2-pk/1331898678?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.78,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Pieces-Honey-Mustard-and-Onion-11-25-oz/872139910?classType=VARIANT&athbdg=L1600"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Seaton Snacks",
+        "price": 23.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Seaton Snacks)",
+        "url": "https://www.walmart.com/ip/Snyder-s-Hanover-Pretzel-Pieces-Variety-Pack-Two-Delicious-Flavors-Honey-Mustard-Onion-Pretzel-Pieces-12-oz-Cheddar-Cheese-Pretzel-Pieces-8-oz-Health/1362238568?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mahad Sells",
+        "price": 32.5,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (Mahad Sells)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Cheddar-Cheese-Flavored-Pretzel-Pieces-11-25-oz-4pk-With-Olive-Green-Bowl-By-ValueNest/17905954204?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Click N Chip",
+        "price": 29.7,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (Click N Chip)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Filled-Pretzel-Sandwiches-Cheddar-Cheese-Flavored-4-Pack-8-oz-Bags/696697378?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Click N Chip",
+        "price": 23.9,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Click N Chip)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Sandwiches-Cheddar-Cheese-8-oz-Pack-of-3/8483518346?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "SUPERDEALS USA",
+        "price": 20.99,
+        "pack": 12,
+        "accepted": false,
+        "reason": "own/reseller (SUPERDEALS USA)",
+        "url": "https://www.walmart.com/ip/Snyder-s-Hanover-Pretzel-Pieces-Variety-12-Pack-bundled-SUPERDEALS-4-Cheddar-Cheese-4-Honey-Mustard-Onion-4-Jalapeno-Pretzels-2-25-oz-bag-total-27-Ou/9688271914?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "SUPERDEALS USA",
+        "price": 20.99,
+        "pack": 12,
+        "accepted": false,
+        "reason": "own/reseller (SUPERDEALS USA)",
+        "url": "https://www.walmart.com/ip/Snyder-s-Hanover-Pretzel-Pieces-Family-Favorite-Bundle-12-Pack-2-25-oz-each-4-Honey-Mustard-Onion-4-Cheddar-Cheese-2-Jalapeno-2-Hot-Buffalo-Wings-Inc/14999908842?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.78,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Pieces-Hot-Buffalo-Wing-11-25-oz/398518174?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "That Warehouse LLC",
+        "price": 1.98,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (That Warehouse LLC)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Pieces-Honey-Mustard-and-Onion-3-5-oz/20435314?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Click N Chip",
+        "price": 27.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Click N Chip)",
+        "url": "https://www.walmart.com/ip/Snyder-Pretzels-Bulk-Pack-Cheddar-Cheese-Filled-Pretzel-Sandwiches-3-Individually-Sealed-8-Ounce-Bags-Go-Snacks-Lunches-Movie-Nights-Cornershop-Confe/12422569572?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Click N Chip",
+        "price": 28,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (Click N Chip)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Filled-Pretzel-Sandwiches-Cheddar-Cheese-4-Pack-8-oz-Bags/959686366?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "McPathfin Brands",
+        "price": 25.36,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (McPathfin Brands)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Pieces-Variety-Pack-of-Pretzels-2-25-oz-20-Ct/570904609?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Click N Chip",
+        "price": 27.49,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Click N Chip)",
+        "url": "https://www.walmart.com/ip/4-Pack-Snyder-s-of-Hanover-Cheddar-Cheese-Flavored-Pretzel-Pieces-11-25-oz/17052257837?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.64,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Mini-Pretzels-3-5-oz/20435313?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mahad Sells",
+        "price": 28.98,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Mahad Sells)",
+        "url": "https://www.walmart.com/ip/3-Pack-Snyder-s-Hanover-Cheddar-Cheese-Pretzel-Sandwiches-Crunchy-Snack-Creamy-Filling-8-oz-Bag-Perfect-Parties-On-the-Go-Grey-Bowl-Value-Nest/17045968101?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Seaton Snacks",
+        "price": 31.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Seaton Snacks)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Hot-Buffalo-Wing-Pretzel-Pieces-2-25-oz/43285944?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "OMA Store",
+        "price": 18.01,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (OMA Store)",
+        "url": "https://www.walmart.com/ip/Pack-of-3-Snyder-s-of-Hanover-Pretzel-Pieces-Hot-Buffalo-Wing-11-25-oz-packaging-may-vary/16918752889?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "SUPERDEALS USA",
+        "price": 19.99,
+        "pack": 12,
+        "accepted": false,
+        "reason": "own/reseller (SUPERDEALS USA)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Pieces-Hot-Buffalo-Wing-2-25-Oz-Pack-of-12-bundled-by-SUPERDEALS-with-mystery-gift-in-every-order/7021673157?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ENTERPRISES USA LLC",
+        "price": 23.99,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (ENTERPRISES USA LLC)",
+        "url": "https://www.walmart.com/ip/Pack-Of-3-Snyder-s-of-Hanover-Honey-Mustard-Onion-Pretzel-Pieces-11-25-oz-Package-May-Vary/19889960759?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "SUPERDEALS USA",
+        "price": 19.99,
+        "pack": 12,
+        "accepted": false,
+        "reason": "own/reseller (SUPERDEALS USA)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Pieces-Honey-Mustard-Onion-2-25-oz-Pack-of-12-bundled-by-SUPERDEALS-with-mystery-gift-in-every-order/7017672266?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "GBG Custom Sol",
+        "price": 19.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (GBG Custom Sol)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Pretzel-Pieces-Hot-Buffalo-Wing-Snack-Pack-2-25-oz/1428424222?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Saveinstant",
+        "price": 104.05,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Saveinstant)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Honey-Mustard-Onion-Pretzel-Pieces-2-25-oz-60-Case/20115914482?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Saveinstant",
+        "price": 104.05,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Saveinstant)",
+        "url": "https://www.walmart.com/ip/Snyder-s-of-Hanover-Hot-Buffalo-Wing-Pretzel-Pieces-2-25-oz-60-Case/20109814855?classType=REGULAR"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 1.64,
+      "perUnit": 1.64
+    }
+  },
+  {
+    "sku": "FaisalX-1732",
+    "query": "Nature's Own Life Keto Soft White Bread 16 oz loaf",
+    "category": "Dry",
+    "brand": "Nature's Own",
+    "product_line": "Life Keto",
+    "flavor": "Soft White",
+    "size": "16 oz",
+    "units_in_listing": 7,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 6.64,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Keto-Soft-White-Bread-Net-1-Carb-Sliced-White-Keto-Bread-16-oz/2174176834?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Infinity Trend",
+        "price": 46.99,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (Infinity Trend)",
+        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Keto-Soft-White-Bread-Net-1-Carb-Sliced-White-Keto-Bread-16-oz-Loaf-Pack-Of-4/9528865690?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 38.61,
+        "pack": 3,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Keto-Soft-White-Bread-Net-1-Carb-Sliced-White-Keto-Bread-16-oz-Loaf-Pack-Of-3/9424258235?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Brit Commerce",
+        "price": 81.49,
+        "pack": 7,
+        "accepted": false,
+        "reason": "own/reseller (Brit Commerce)",
+        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Keto-Soft-White-Bread-Net-1-Carb-Sliced-White-Keto-Bread-16-oz-Loaf-Pack-Of-7/9426023197?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 78.3,
+        "pack": 5,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Keto-Soft-White-Bread-Net-1-Carb-Sliced-White-Keto-Bread-16-oz-Loaf-Pack-Of-5/9455906057?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Express Services 727",
+        "price": 10.95,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Express Services 727)",
+        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Sugar-Free-100-Whole-Grain-Bread-Loaf-Sugar-Free-Whole-Grain-Bread-16-oz-1-Count/10449995?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Express Services 727",
+        "price": 30.75,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Express Services 727)",
+        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Honey-Wheat-40-Calories-per-Slice-Keto-Friendly-Sandwich-Bread-16-oz-Loaf-Pack-Of-3/9421819616?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Express Services 727",
+        "price": 0,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Express Services 727)",
+        "url": "https://www.walmart.com/ip/Nature-s-Own-Keto-Bread-16-oz-2-Loaves/5340313844?classType=REGULAR"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 6.64,
+      "perUnit": 6.64
+    }
+  },
+  {
+    "sku": "FaisalX-2272",
+    "query": "BODYARMOR LYTE Peach Mango 16 fl oz bottle",
+    "category": "Dry",
+    "brand": "BODYARMOR",
+    "product_line": "LYTE Sports Drink",
+    "flavor": "Peach Mango",
+    "size": "16 fl oz",
+    "units_in_listing": 8,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "ONE TECH DIGITAL",
+        "price": 14,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (ONE TECH DIGITAL)",
+        "url": "https://www.walmart.com/ip/BODYARMOR-LYTE-Peach-Mango-16-fl-oz-Bottle/20098461117?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/BODYARMOR-Lyte-Peach-Mango-Electrolyte-Sports-Drink-16-fl-oz-Bottle/475284717?classType=REGULAR&athbdg=L1300"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 6.74,
+        "pack": 6,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/BODYARMOR-Lyte-Peach-Mango-Bottles-16-fl-oz-6-Pack/18628974631?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 16.03,
+        "pack": 12,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/BODYARMOR-Lyte-Peach-Mango-Electrolyte-Sports-Drink-16-fl-oz-12-Pack-Bottles/534038555?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Rasinn Supply LLC",
+        "price": 16.96,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Rasinn Supply LLC)",
+        "url": "https://www.walmart.com/ip/BODYARMOR-Lyte-Peach-Mango-Sports-Drink-Bottle-16-fl-oz-3-count/19602900017?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 21.26,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/BODYARMOR-LYTE-Sports-Drink-Peach-Mango-16-fl-oz-Pack-of-4/10116704287?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Azfran Surplus LLC",
+        "price": 15.92,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Azfran Surplus LLC)",
+        "url": "https://www.walmart.com/ip/BODYARMOR-LYTE-Peach-Mango-16-fl-oz-Bottle-Pack-of-2/16238565770?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mymish",
+        "price": 10.59,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Mymish)",
+        "url": "https://www.walmart.com/ip/Pack-2-BODYARMOR-LYTE-Sports-Drink-Low-Calorie-Sports-Beverage-Peach-Mango-Natural-Flavors-Vitamins-Potassium-Packed-Electrolytes-Preservatives-Perfe/19995813705?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Jaspreet Singh",
+        "price": 34.98,
+        "pack": 6,
+        "accepted": false,
+        "reason": "not first-party (Jaspreet Singh)",
+        "url": "https://www.walmart.com/ip/BODYARMOR-Lyte-Peach-Mango-Electrolyte-Sports-Drink-16-fl-oz-6-Pack-Bottles/19692756003?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 31.04,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/BODYARMOR-LYTE-Sports-Drink-Peach-Mango-16-fl-oz-Pack-of-6/10109758106?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 39.57,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/BODYARMOR-LYTE-Sports-Drink-Peach-Mango-16-fl-oz-Pack-of-8/10126870205?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 6.74,
+        "pack": 8,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/BODYARMOR-Lyte-Peach-Mango-Electrolyte-Sports-Drink-12-fl-oz-8-Pack-Bottles/680619211?classType=REGULAR&athbdg=L1102"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 15.88,
+        "pack": 18,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/BODYARMOR-LYTE-Sports-Drink-Peach-Mango-12-fl-oz-18-Pack/618872943?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 16.8,
+        "pack": 12,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/BODYARMOR-Lyte-Strawberry-Banana-Electrolyte-Sports-Drink-16-fl-oz-12-Pack-Bottles/1656570476?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "JB Tov Trading LLC",
+        "price": 2.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (JB Tov Trading LLC)",
+        "url": "https://www.walmart.com/ip/BODYARMOR-Lyte-Strawberry-Banana-Sports-Drink-16-fl-oz-Bottle/1791121620?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/BODYARMOR-Orange-Mango-Electrolyte-Sports-Drink-16-fl-oz-Bottle/127984097?classType=VARIANT&athbdg=L1300"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Visionspark Trading IND",
+        "price": 19.79,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (Visionspark Trading IND)",
+        "url": "https://www.walmart.com/ip/BODYARMOR-Lyte-Strawberry-Banana-Sports-Drink-Bottle-16-fl-oz-3-count/19608711523?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "PEAKVALUE LLC",
+        "price": 32,
+        "pack": 6,
+        "accepted": false,
+        "reason": "not first-party (PEAKVALUE LLC)",
+        "url": "https://www.walmart.com/ip/BODYARMOR-Orange-Mango-Electrolyte-Sports-Drink-16-fl-oz-6-Pack-Bottles/19665556177?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 17.28,
+        "pack": 12,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/BODYARMOR-Orange-Mango-Electrolyte-Sports-Drink-16-fl-oz-12-Pack-Bottles/437623813?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "NXTGENN",
+        "price": 73.98,
+        "pack": 12,
+        "accepted": false,
+        "reason": "not first-party (NXTGENN)",
+        "url": "https://www.walmart.com/ip/BODYARMOR-Lyte-Strawberry-Banana-Electrolyte-Sports-Drink-16-fl-oz-12-Pack-Bottles/19633817393?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/BODYARMOR-Lyte-Blueberry-Pomegranate-Electrolyte-Sports-Drink-16-fl-oz-Bottle/229556647?classType=REGULAR&athbdg=L1300"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 1,
+      "perUnit": 1
+    }
+  },
+  {
+    "sku": "FaisalX-2815",
+    "query": "Campbell's Condensed Heart Healthy Tomato Soup 10.75 oz can",
+    "category": "Dry",
+    "brand": "Campbell's",
+    "product_line": "Condensed Heart Healthy",
+    "flavor": "Tomato",
+    "size": "10.75 oz",
+    "units_in_listing": 8,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.96,
+        "pack": 1,
+        "accepted": false,
+        "reason": "brand \"campbell's\" absent",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Heart-Healthy-Tomato-Soup-1-5-Servings-of-Veggies-10-75-oz-Can/10308268?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "One Click Away",
+        "price": 7,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (One Click Away)",
+        "url": "https://www.walmart.com/ip/1-pack-Campbell-s-Condensed-Heart-Healthy-Tomato-Soup-10-75-oz-Can/19684057084?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Sixth Stack",
+        "price": 11.3,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Sixth Stack)",
+        "url": "https://www.walmart.com/ip/Pack-of-2-Campbell-s-Condensed-Heart-Healthy-Tomato-Soup-Can-10-75-oz/15068324648?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "GOODS HUB",
+        "price": 12.51,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (GOODS HUB)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Healthy-Request-Tomato-Soup-10-75oz-pack-of-2/15758859676?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.34,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can/10321636?classType=VARIANT&athbdg=L1102"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 35.24,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Heart-Healthy-Tomato-Soup-10-75-oz-Can-Pack-of-8/10605304687?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mymish",
+        "price": 17.03,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Mymish)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Heart-Healthy-Tomato-Soup-1-5-Servings-of-Veggies-10-75-oz-Can-Pack-of-3/17444569228?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mahad Sells",
+        "price": 14.67,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Mahad Sells)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Heart-Healthy-Tomato-Soup-10-75-oz-Can-3-pack-with-Bowel-by-Mahad/20204812982?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 4.97,
+        "pack": 4,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can-4-Count/43346748?classType=VARIANT&athbdg=L1102"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mymish",
+        "price": 8.98,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Mymish)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Heart-Healthy-Tomato-Soup-10-75-oz-Can/19889317148?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "APIX",
+        "price": 1.29,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (APIX)",
+        "url": "https://www.walmart.com/ip/Campbell-Condensed-Tomato-Soup-10-75-oz-Can-4-Count/17349259583?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "The Wireless Circle",
+        "price": 2.46,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (The Wireless Circle)",
+        "url": "https://www.walmart.com/ip/2-pack-Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can/16005410211?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "AyuHome Inc",
+        "price": 7.98,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (AyuHome Inc)",
+        "url": "https://www.walmart.com/ip/2-pack-Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can/16207571870?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Grab Deals LLC",
+        "price": 33.02,
+        "pack": 5,
+        "accepted": false,
+        "reason": "own/reseller (Grab Deals LLC)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Heart-Healthy-Tomato-Soup-1-5-Servings-of-Veggies-10-75-oz-Can-Pack-of-5/17472708162?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "APIX",
+        "price": 4,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (APIX)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can-2-Pack/18647313867?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "One Click Away",
+        "price": 6.55,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (One Click Away)",
+        "url": "https://www.walmart.com/ip/Pack-of-1-Campbell-s-Condensed-Heart-Healthy-Tomato-Soup-10-75-oz-Can/19009054175?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 52.2,
+        "pack": 48,
+        "accepted": false,
+        "reason": "price suspect ($52.2)",
+        "url": "https://www.walmart.com/ip/48-pack-Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can/179756249?classType=VARIANT&athbdg=L1600"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Click N Chip",
+        "price": 6.4,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Click N Chip)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can-Pack-of-3/17447072853?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Rasinn Supply LLC",
+        "price": 16.93,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Rasinn Supply LLC)",
+        "url": "https://www.walmart.com/ip/Campbells-Condensed-Tomato-Soup-4-CT-10-75-oz-Pack-of-1/19631203708?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Al Hakeem Services Inc.",
+        "price": 13.78,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (Al Hakeem Services Inc.)",
+        "url": "https://www.walmart.com/ip/Pack-of-1-Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can-4-Pack/20101621214?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Al Hakeem Services Inc.",
+        "price": 10.82,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Al Hakeem Services Inc.)",
+        "url": "https://www.walmart.com/ip/Condensed-Heart-Healthy-Tomato-Soup-10-75-oz-Can-Pack-of-1/20132921832?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Gleam Tech Inc",
+        "price": 23.9,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Gleam Tech Inc)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can-4-Count-3Pack/16457554362?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Harris Online Inc.",
+        "price": 10.92,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (Harris Online Inc.)",
+        "url": "https://www.walmart.com/ip/Condensed-Heart-Healthy-Tomato-Soup-10-75-oz-Can/20059724702?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "AyuHome Inc",
+        "price": 15,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (AyuHome Inc)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can-3Pack/16417510732?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Gleam Tech Inc",
+        "price": 15.9,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Gleam Tech Inc)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can-4-Count-2Pack/16415924493?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "TOP TECH LLC",
+        "price": 12.01,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (TOP TECH LLC)",
+        "url": "https://www.walmart.com/ip/Pack-of-1-Condensed-Heart-Healthy-Tomato-Soup-10-75-oz-Can/20141268761?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "aftab e mart ",
+        "price": 15.99,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (aftab e mart )",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Healthy-Request-Tomato-Soup-10-75oz-pack-of-2/14367514947?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mymish",
+        "price": 14.88,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (Mymish)",
+        "url": "https://www.walmart.com/ip/Pack-1-Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can-4-Pack/19995865708?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "2Nspire LLC",
+        "price": 11,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (2Nspire LLC)",
+        "url": "https://www.walmart.com/ip/1-pack-Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can-4-Pack/19663453997?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mymish",
+        "price": 15.2,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (Mymish)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can-4-Pack/19891752802?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 253,
+        "pack": 72,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-oz-Pack-of-72/15570254919?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 66.66,
+        "pack": 18,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-Oz-Can-Pack-of-18/5078391794?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 63.49,
+        "pack": 17,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-oz-Pack-of-17/15539923087?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 55.18,
+        "pack": 14,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-Oz-Can-Pack-of-14/5097712449?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": null,
+        "price": 0,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (unknown seller)",
+        "url": "https://www.walmart.com/ip/2X-Campbell-s-Healthy-Request-Tomato-Soup-10-75-oz/9681600218"
+      },
+      {
+        "retailer": "walmart",
+        "seller": null,
+        "price": 0,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (unknown seller)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-oz-Can-4-Pack/20107917784"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 245.04,
+        "pack": 20,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-oz-Pack-of-20/5075490356?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 60.31,
+        "pack": 16,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-Oz-Can-Pack-of-16/5097712453?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 178.95,
+        "pack": 60,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Campbell-s-Condensed-Tomato-Soup-10-75-oz-Pack-of-60/15589764805?classType=VARIANT"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 1.34,
+      "perUnit": 1.34
+    }
+  },
+  {
+    "sku": "FaisalX-343",
+    "query": "Pepperidge Farm Farmhouse Butter Hamburger Buns 8 count",
+    "category": "Dry",
+    "brand": "Pepperidge Farm",
+    "product_line": "Farmhouse",
+    "flavor": "Butter",
+    "size": "8 count",
+    "units_in_listing": 6,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 33.87,
+        "pack": 3,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Butter-Hamburger-Buns-3-Pack-8-Count-Bags/5399608049?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 64.81,
+        "pack": 7,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Butter-Hamburger-Buns-Pack-of-7/7572864789?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Sara Vita Labs",
+        "price": 12.76,
+        "pack": 8,
+        "accepted": false,
+        "reason": "not first-party (Sara Vita Labs)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Hearty-White-Hamburger-Buns-8-Pack-Bag-Includes-1-Plastic-Planter/17770720002?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 19.67,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Butter-Hamburger-Buns-Pack-of-2/7568619752?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 32.14,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Butter-Hamburger-Buns-Pack-of-4/7577573564?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 51.5,
+        "pack": 5,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Butter-Hamburger-Buns-Pack-of-5/7571501554?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 108.97,
+        "pack": 11,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Butter-Hamburger-Buns-Pack-of-11/7574371149?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 78.31,
+        "pack": 9,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Butter-Hamburger-Buns-Pack-of-9/7594363477?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 55.36,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Butter-Hamburger-Buns-Pack-of-6/7580503326?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 126.97,
+        "pack": 12,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Butter-Hamburger-Buns-Pack-of-12/7588918896?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 86.14,
+        "pack": 10,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Farmhouse-Butter-Hamburger-Buns-Pack-of-10/7568669704?classType=VARIANT"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "FaisalX-3755",
+    "query": "Progresso Light Creamy Potato With Bacon & Cheese Soup 18.5 oz can",
+    "category": "Dry",
+    "brand": "Progresso",
+    "product_line": "Light",
+    "flavor": "Creamy Potato With Bacon & Cheese",
+    "size": "18.5 oz",
+    "units_in_listing": 6,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 23.76,
+        "pack": 12,
+        "accepted": false,
+        "reason": "price suspect ($23.76)",
+        "url": "https://www.walmart.com/ip/12-pack-Progresso-Light-Creamy-Potato-With-Bacon-Cheese-Canned-Soup-Gluten-Free-18-5-oz/8114157642?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ViralCart",
+        "price": 27.72,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (ViralCart)",
+        "url": "https://www.walmart.com/ip/Progresso-Light-Creamy-Potato-With-Bacon-Cheese-Canned-Soup-Gluten-Free-18-5-oz-Can/20232200739?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 26.45,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Progresso-Light-Creamy-Potato-With-Bacon-Cheese-Canned-Soup-Gluten-Free-18-5-oz-Pack-of-4/11371611142?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mahad Sells",
+        "price": 23.01,
+        "pack": 5,
+        "accepted": false,
+        "reason": "not first-party (Mahad Sells)",
+        "url": "https://www.walmart.com/ip/Progresso-Light-Creamy-Potato-With-Bacon-Cheese-Canned-Soup-Gluten-Free-18-5-oz-Pack-of-5/17480554304?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 35.9,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Progresso-Light-Creamy-Potato-With-Bacon-Cheese-Canned-Soup-Gluten-Free-18-5-oz-Pack-of-6/11399410693?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "GOODS HUB",
+        "price": 21.05,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (GOODS HUB)",
+        "url": "https://www.walmart.com/ip/Progresso-Light-Creamy-Potato-With-Bacon-Cheese-Canned-Soup-Gluten-Free-18-5-oz-3pack/16415924494?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 2.58,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Progresso-Loaded-Potato-Bacon-Soup-Rich-Hearty-Canned-Soup-18-5-oz/17209064?classType=VARIANT&athbdg=L1600"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Sara Vita Labs",
+        "price": 17.1,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Sara Vita Labs)",
+        "url": "https://www.walmart.com/ip/Progresso-Loaded-Potato-with-Bacon-and-Cheese-Soup-Rich-and-Hearty-Canned-Soup-18-5-oz/19887200244?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 27.13,
+        "pack": 12,
+        "accepted": false,
+        "reason": "price suspect ($27.13)",
+        "url": "https://www.walmart.com/ip/12-pack-Progresso-Loaded-Potato-Bacon-Soup-Rich-Hearty-Canned-Soup-18-5-oz/493011934?classType=VARIANT&athbdg=L1600"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Wise Advice 24/7",
+        "price": 5.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Wise Advice 24/7)",
+        "url": "https://www.walmart.com/ip/Progresso-Loaded-Potato-Bacon-Soup-Rich-Hearty-Canned-Soup-18-5-oz/18061062396?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mymish",
+        "price": 9.92,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Mymish)",
+        "url": "https://www.walmart.com/ip/Progresso-Loaded-Potato-AJH3-nbsp-Bacon-Soup-Rich-Hearty-Canned-Soup-18-5-oz/16277370498?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Spark Elec",
+        "price": 16.63,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Spark Elec)",
+        "url": "https://www.walmart.com/ip/2X-Progresso-Loaded-Potato-Bacon-Soup-Rich-Hearty-Canned-Soup-18-5-Oz/8909356786?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Faststores",
+        "price": 15.49,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Faststores)",
+        "url": "https://www.walmart.com/ip/Progresso-Loaded-Potato-with-Bacon-and-Cheese-Soup-Rich-and-Hearty-Canned-Soup-18-5-oz-2Pack/16363821494?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "KASB Chic",
+        "price": 15.66,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (KASB Chic)",
+        "url": "https://www.walmart.com/ip/Progresso-Loaded-Potato-Bacon-Soup-Rich-Hearty-Canned-Soup-18-5-oz-Pack-of-4/11388452720?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 2.58,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Progresso-Light-Creamy-Chicken-Noodle-Canned-Soup-18-5-oz/497701048?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Click N Chip",
+        "price": 15.8,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Click N Chip)",
+        "url": "https://www.walmart.com/ip/Progresso-Loaded-Potato-Bacon-Soup-Rich-Hearty-Canned-Soup-18-5-oz-Pack-of-2/16329552028?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 2.58,
+        "pack": 1,
+        "accepted": false,
+        "reason": "missing tokens: creamy,potato,bacon,cheese",
+        "url": "https://www.walmart.com/ip/Progresso-Light-Chicken-Pot-Pie-Style-Canned-Soup-18-5-oz/23598003?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 23.51,
+        "pack": 12,
+        "accepted": false,
+        "reason": "price suspect ($23.51)",
+        "url": "https://www.walmart.com/ip/12-pack-Progresso-Light-Creamy-Chicken-Noodle-Canned-Soup-18-5-oz/17094853739?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 2.58,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Progresso-Light-Broccoli-Cheese-Canned-Soup-Gluten-Free-18-oz/643147471?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 2.82,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Progresso-Pitmaster-Beer-Cheese-with-Sausage-and-Potatoes-18oz/13982720745?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mendyl Distribution",
+        "price": 23.8,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Mendyl Distribution)",
+        "url": "https://www.walmart.com/ip/Progresso-Loaded-Potato-with-Bacon-and-Cheese-Soup-Rich-and-Hearty-Canned-Soup-18-5-oz-3Pack/16411814699?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "KASB Chic",
+        "price": 25.98,
+        "pack": 6,
+        "accepted": false,
+        "reason": "not first-party (KASB Chic)",
+        "url": "https://www.walmart.com/ip/Progresso-Loaded-Potato-Bacon-Soup-Rich-Hearty-Canned-Soup-18-5-oz-Pack-of-6/11363923721?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ViralCart",
+        "price": 27.72,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (ViralCart)",
+        "url": "https://www.walmart.com/ip/Progresso-Light-Chicken-Pot-Pie-Style-Canned-Soup-18-5-oz-Can/20224508086?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 2.58,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Progresso-Rich-Hearty-Gluten-Free-Broccoli-Cheese-Soup-With-Bacon-18-oz/478663562?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 26.45,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Progresso-Rich-Hearty-Italian-Sausage-Potato-Canned-Soup-Gluten-Free-18-5-oz-Pack-of-4/11385357024?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "OLIVIA WILSON SUPER STORE USA",
+        "price": 8.91,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (OLIVIA WILSON SUPER STORE USA)",
+        "url": "https://www.walmart.com/ip/Progresso-Pitmaster-Sausage-and-Beer-Cheese-with-Potatoes-Canned-Soup-18-oz-2pack/16448767830?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mymish",
+        "price": 9.92,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Mymish)",
+        "url": "https://www.walmart.com/ip/1x-Progresso-Light-Creamy-Chicken-Noodle-Canned-Soup-18-5-oz/18993008410?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 22.8,
+        "pack": 12,
+        "accepted": false,
+        "reason": "price suspect ($22.8)",
+        "url": "https://www.walmart.com/ip/12-pack-Progresso-Light-Broccoli-Cheese-Canned-Soup-Gluten-Free-18-oz/17047123363?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Air Falcon",
+        "price": 5.98,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Air Falcon)",
+        "url": "https://www.walmart.com/ip/2X-Progresso-Rich-Hearty-Loaded-Potato-Bacon-Canned-Soup-18-50-oz-1-ct/8672560975?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 45.35,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Progresso-Loaded-Potato-Bacon-Soup-Rich-Hearty-Canned-Soup-18-5-oz-Pack-of-8/11348422116?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Ozwold Goods LLC",
+        "price": 10.97,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Ozwold Goods LLC)",
+        "url": "https://www.walmart.com/ip/Progresso-Light-Broccoli-Cheese-Canned-Soup-Gluten-Free-18-oz-Pack-of-2/16332318067?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Snack Time Shop",
+        "price": 21.7,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Snack Time Shop)",
+        "url": "https://www.walmart.com/ip/2X-Progresso-Rich-Hearty-Gluten-Free-Italian-Sausage-Potato-Canned-Soup-18-5-oz/8656807537?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 35.9,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Progresso-Rich-Hearty-Italian-Sausage-Potato-Canned-Soup-Gluten-Free-18-5-oz-Pack-of-6/11371051161?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "HADICO",
+        "price": 16.92,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (HADICO)",
+        "url": "https://www.walmart.com/ip/Progresso-Pitmaster-Sausage-and-Beer-Cheese-with-Potatoes-Canned-Soup-18-oz-3pack/16456902569?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "GOODS HUB",
+        "price": 10.44,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (GOODS HUB)",
+        "url": "https://www.walmart.com/ip/Progresso-Light-Chicken-Pot-Pie-Style-Canned-Soup-18-5-oz/16831051361?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 28.27,
+        "pack": 12,
+        "accepted": false,
+        "reason": "price suspect ($28.27)",
+        "url": "https://www.walmart.com/ip/12-pack-Progresso-Pitmaster-Sausage-and-Beer-Cheese-with-Potatoes-Canned-Soup-18-oz/17092054349?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "KASB Chic",
+        "price": 25.03,
+        "pack": 5,
+        "accepted": false,
+        "reason": "not first-party (KASB Chic)",
+        "url": "https://www.walmart.com/ip/Progresso-Loaded-Potato-with-Bacon-and-Cheese-Soup-Rich-and-Hearty-Canned-Soup-18-5-oz-Pack-of-5/17464767193?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 35.9,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Progresso-Light-Broccoli-Cheese-Canned-Soup-Gluten-Free-18-oz-Pack-of-6/11388452728?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mendyl Distribution",
+        "price": 23.8,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Mendyl Distribution)",
+        "url": "https://www.walmart.com/ip/Progresso-Rich-and-Hearty-Italian-Sausage-and-Potato-Canned-Soup-Gluten-Free-18-5-oz-Pack-of-3/17423173714?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Al Hakeem Services Inc.",
+        "price": 11.14,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Al Hakeem Services Inc.)",
+        "url": "https://www.walmart.com/ip/Pack-of-1-Loaded-Potato-with-Bacon-and-Cheese-Soup-Rich-and-Hearty-Canned-Soup-18-5-oz/20105369034?classType=REGULAR"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 2.58,
+      "perUnit": 2.58
+    }
+  },
+  {
+    "sku": "FaisalX-4165",
+    "query": "La Banderita Carb Counter Zero Net Carbs Soft Taco Tortillas",
+    "category": "Dry",
+    "brand": "La Banderita",
+    "product_line": "Carb Counter",
+    "flavor": "Zero Net Carbs Soft Taco",
+    "size": "11.85 oz",
+    "units_in_listing": 4,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "PickAPrime LLC",
+        "price": 20.29,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (PickAPrime LLC)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Zero-Net-Carbs-Soft-Taco-16-Count/480322613?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ValorServe Enterprise LLC",
+        "price": 21.95,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (ValorServe Enterprise LLC)",
+        "url": "https://www.walmart.com/ip/2pack-La-Banderita-Carb-Counter-Zero-Net-Carbs-Soft-Taco-Flour-Tortillas-11-8-oz-8-Count/17406765548?classType=VARIANT&athbdg=L1600"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Sara Vita Labs",
+        "price": 21.9,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Sara Vita Labs)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Zero-Net-Carbs-Soft-Taco-Flour-Tortillas-11-8-oz-8-Count/19214366016?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Light House Network ",
+        "price": 22.86,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Light House Network )",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Zero-Net-Carbs-Soft-Taco-Flour-Tortillas-11-8-OZ-8-Count/20083559312?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Ole Mexican Foods",
+        "price": 13,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (Ole Mexican Foods)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Street-Taco-5-Size-Flour-Tortillas-Zero-Net-Carbs-Keto-Certified-10-8-oz-14-Count-Pack-of-4/573487000?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ValorServe Enterprise LLC",
+        "price": 27.95,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (ValorServe Enterprise LLC)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Zero-Net-Carbs-8-Flour-Soft-Taco-Tortilla-Family-Pack-16-ct-2-Packs-32-Tortillas-ValorServe-Mini-Kitchen-Utensil-Keto-Frien/10282857872?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 50.4,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Zero-Net-Carbs-Soft-Taco-Tortillas-Pack-of-4/11689818852?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ValorServe Enterprise LLC",
+        "price": 28.95,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (ValorServe Enterprise LLC)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-ZERO-Net-Carbs-Street-Taco-Birria-Spiced-Flour-Tortillas-0g-Net-Carbs-Keto-Friendly-4-5-16-Count-10-8-oz-4-Packs-ValorServe/2932949444?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ValorServe Enterprise LLC",
+        "price": 23.95,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (ValorServe Enterprise LLC)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Zero-Net-Carbs-Soft-Taco-16-count-pack-of-2/7879815725?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Ole Mexican Foods",
+        "price": 19.14,
+        "pack": 6,
+        "accepted": false,
+        "reason": "not first-party (Ole Mexican Foods)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Street-Taco-4-5-Size-Flour-Tortillas-Zero-Net-Carbs-Keto-Certified-10-8-oz-14-Count-Pack-of-6/10691058244?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ValorServe Enterprise LLC",
+        "price": 26.86,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (ValorServe Enterprise LLC)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-ZERO-Net-Carbs-8-Size-FlourTortillas-Keto-Certified-11-8-oz-8-Count-Pack-of-4/1201259076?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Online Grocery Outlet",
+        "price": 22.49,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Online Grocery Outlet)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Street-Taco-Flour-Tortillas-0g-Net-Carbs-Keto-Friendly-4-5-32-Count-Family-Size-20-3-oz-2-Packs-ValorServe-Mini-Kitchen-Ute/1450878641?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 71.89,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Zero-Net-Carbs-Soft-Taco-Tortillas-Pack-of-6/11694203379?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ValorServe Enterprise LLC",
+        "price": 29.95,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (ValorServe Enterprise LLC)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Zero-Carb-Tortillas-Variety-Pack-4-5-8-Size-Keto-Certified-10-8-11-9-oz-e-14-8-Count-Pack-2-4-5-Pack-2-8-ValorServe-Mini-Ki/5327059140?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 93.37,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Zero-Net-Carbs-Soft-Taco-Tortillas-Pack-of-8/11703052565?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Z. Sourcing",
+        "price": 0,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Z. Sourcing)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Zero-Net-Carbs-Soft-Taco-Flour-Tortillas-11-8-oz-8-Count/5190570561?classType=VARIANT&athbdg=L1600"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "PickAPrime LLC",
+        "price": 20.29,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (PickAPrime LLC)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Zero-Net-Carbs-Soft-Taco-16-Count/480322613?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 5.34,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Mission-Zero-Net-Flour-Tortillas-0g-Net-Carbs-Keto-Certified-8-0-Soft-Taco-8-Count-11-29-oz/8241501085?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ValorServe Enterprise LLC",
+        "price": 12.95,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (ValorServe Enterprise LLC)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Low-Carb-Tortillas-8ct/21128281?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 5.27,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Mission-Zero-Net-Carbs-Spinach-Tortilla-Wraps-8-Each/17239267908?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 5.44,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Ol-Mexican-Foods-Xtreme-Wellness-High-Fiber-Zero-Net-Carb-Soft-Flour-Tortillas-11-8-oz-8-Count/8874957952?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ValorServe Enterprise LLC",
+        "price": 12.95,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (ValorServe Enterprise LLC)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Large-Soft-Flour-Tortillas-13-7-oz-6-Count/767352316?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Sara Vita Labs",
+        "price": 17.9,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Sara Vita Labs)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Small-Street-Taco-Flour-Tortillas-14-Count-10-8-oz/19182109776?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Light House Network ",
+        "price": 19.74,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Light House Network )",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Small-Street-Taco-Flour-Tortillas-14-Count-10-8-OZ/20142102485?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "TOP TECH LLC",
+        "price": 14.98,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (TOP TECH LLC)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Small-Street-Taco-Flour-Tortillas-16-Count-10-2-oz/17062708372?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ValorServe Enterprise LLC",
+        "price": 28.95,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (ValorServe Enterprise LLC)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-ZERO-Net-Carbs-Street-Taco-Variety-Pack-Birria-Spiced-Original-Flour-Tortillas-4-Packs-ValorServe-Mini-Kitchen-Utensil-Low/19110269958?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3.98,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/La-Tortilla-Factory-Carb-Cutting-Zero-Net-Carb-Flour-Tortillas-11-oz-8-Count/1414033812?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Light House Network ",
+        "price": 21.74,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Light House Network )",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Carb-Lean-Tortillas-Soft-Taco-Flour-Tortillas-8-Count-11-9-OZ/20124858356?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ViralCart",
+        "price": 24.84,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (ViralCart)",
+        "url": "https://www.walmart.com/ip/Mission-Zero-Net-Flour-Tortillas-0g-Net-Carbs-Keto-Certified-8-0-Soft-Taco-11-29-oz-8-Count/20014874838?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Light House Network ",
+        "price": 19.74,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Light House Network )",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Street-Taco-Birria-Flour-Tortillas-10-8-OZ-14-Count/20165956022?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Sara Vita Labs",
+        "price": 16.9,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Sara Vita Labs)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Snack-Size-Flour-Tortillas-7-9-oz-8-Count/19259206679?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 66.56,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Street-Taco-Flour-Tortillas-14-Count-Pack-of-8/11683164839?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 84,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Carb-Lean-Tortillas-Soft-Taco-Flour-Tortillas-8-Count-Pack-of-8/11705612724?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Sara Vita Labs",
+        "price": 24.9,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Sara Vita Labs)",
+        "url": "https://www.walmart.com/ip/Mission-Zero-Net-Carbs-Spinach-Flour-Tortillas-Soft-Taco-Size-8-Count/19178124695?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Maple",
+        "price": 14.9,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Maple)",
+        "url": "https://www.walmart.com/ip/Ol-Mexican-Foods-Xtreme-Wellness-High-Fiber-Zero-Net-Carb-Soft-Taco-Flour-Tortilla-Wraps-11-8-oz-8-Count/18702400975?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Light House Network ",
+        "price": 22.94,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Light House Network )",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Large-Soft-Flour-Tortillas-13-7-OZ-6-Count/20109362561?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ValorServe Enterprise LLC",
+        "price": 18.95,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (ValorServe Enterprise LLC)",
+        "url": "https://www.walmart.com/ip/2x-La-Banderita-Carb-Counter-Small-Street-Taco-Flour-Tortillas-16-Count-10-2-oz/17092411481?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "ValorServe Enterprise LLC",
+        "price": 18.95,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (ValorServe Enterprise LLC)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Small-Street-Taco-Flour-Tortillas-16-Count-10-2-oz-2-Pack-Offer-from-Winrock-Store/16140202640?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "SmileSpot",
+        "price": 35.99,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (SmileSpot)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Street-Taco-Birria-Flour-Tortillas-10-8-oz-14-Count-Bag-Pack-of-2/15615805661?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 64.85,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/La-Banderita-Carb-Counter-Carb-Lean-Tortillas-Soft-Taco-Flour-Tortillas-8-Count-Pack-of-6/11706470102?classType=VARIANT"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 3.98,
+      "perUnit": 3.98
+    }
+  },
+  {
+    "sku": "FaisalX-4746",
+    "query": "Skippy Natural Creamy Peanut Butter with Honey 15 oz jar",
+    "category": "Dry",
+    "brand": "Skippy",
+    "product_line": "Natural",
+    "flavor": "Creamy Peanut Butter with Honey",
+    "size": "15 oz",
+    "units_in_listing": 2,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 2.98,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Skippy-Natural-Creamy-Peanut-Butter-Spread-with-Honey-15-Ounce/37447672?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 0,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/SKIPPY-Natural-Creamy-Peanut-Butter-Spread-with-Honey-6-G-Protein-per-Serving-15-oz-Plastic-Jar-Pack-of-2/12160763126?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Snack Time Shop",
+        "price": 0,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Snack Time Shop)",
+        "url": "https://www.walmart.com/ip/Pack-of-2-Skippy-Natural-Creamy-Peanut-Butter-Spread-with-Honey-15-oz-Package-May-Vary/16244555684?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 6.58,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/SKIPPY-Natural-Creamy-Peanut-Butter-Spread-with-Honey-6-G-Protein-Per-Serving-40-oz-Plastic-Jar/38360209?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Dornexllc",
+        "price": 10.13,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Dornexllc)",
+        "url": "https://www.walmart.com/ip/SKIPPY-Natural-Creamy-Peanut-Butter-Spread-with-Honey-6-g-Protein-Per-Serving-40-oz/17248140?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 9.92,
+        "pack": 4,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/4-pack-SKIPPY-Peanut-Butter-Creamy-Roasted-Honey-Nut-Spread-7-g-Protein-Per-Serving-16-3-oz-Plastic-Jar/6301858314?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 6.58,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/SKIPPY-Natural-Creamy-Peanut-Butter-Spread-7-G-Protein-per-Serving-Plastic-Jar-40-oz/37447683?classType=VARIANT&athbdg=L1600"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Al Hakeem Services Inc.",
+        "price": 12.02,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Al Hakeem Services Inc.)",
+        "url": "https://www.walmart.com/ip/Pack-of-1-Natural-Creamy-Peanut-Butter-Spread-and-Honey-Contains-80-Peanuts-16-Ounces/20101621248?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 0,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/SKIPPY-Natural-Peanut-Butter-Spread-Creamy-7G-Protein-per-Serving-15-oz-Jar-Pack-of-2/12182920353?classType=VARIANT"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 2.98,
+      "perUnit": 2.98
+    }
+  },
+  {
+    "sku": "RizwanX-123",
+    "query": "Rotel Chili Fixin's Diced Tomatoes Green Chilies 10 oz can",
+    "category": "Dry",
+    "brand": "Rotel",
+    "product_line": "Chili Fixin's",
+    "flavor": "Diced Tomatoes & Green Chilies",
+    "size": "10 oz",
+    "units_in_listing": 8,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 13.88,
+        "pack": 12,
+        "accepted": false,
+        "reason": "price suspect ($13.88)",
+        "url": "https://www.walmart.com/ip/12-pack-ROTEL-Chili-Fixin-s-Diced-Tomatoes-Green-Chilies-10-oz/17066569210?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 17.97,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/ROTEL-Chili-Fixin-s-Diced-Tomatoes-Green-Chilies-10-oz-Pack-of-4/13475262606?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.48,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/ROTEL-Chunky-Diced-Tomatoes-and-Green-Chilies-10-oz/10308565?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "M&M Store",
+        "price": 22.95,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (M&M Store)",
+        "url": "https://www.walmart.com/ip/Ro-Tel-Diced-Tomatoes-Green-Chilies-10-oz-8-ct/898776524?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Maple",
+        "price": 16.3,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Maple)",
+        "url": "https://www.walmart.com/ip/ROTEL-Mild-Diced-Tomatoes-and-Green-Chilies-10-oz/20066074971?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "aftab e mart ",
+        "price": 13.99,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (aftab e mart )",
+        "url": "https://www.walmart.com/ip/2-pack-Ro-Tel-Diced-Tomatoes-with-Green-Chiles-10-Oz/19001352316?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 35.77,
+        "pack": 24,
+        "accepted": false,
+        "reason": "price suspect ($35.77)",
+        "url": "https://www.walmart.com/ip/24-pack-ROTEL-Original-Diced-Tomatoes-and-Green-Chilies-10-oz/570653788?classType=VARIANT&athbdg=L1600"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 8.19,
+        "pack": 1,
+        "accepted": false,
+        "reason": "brand \"rotel\" absent",
+        "url": "https://www.walmart.com/ip/RO-TEL-Original-Diced-Tomatoes-and-Green-Chilies-10-oz-4-Count/3967800347?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Al Hakeem Services Inc.",
+        "price": 11.9,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Al Hakeem Services Inc.)",
+        "url": "https://www.walmart.com/ip/2-Pack-Chili-Fixin-s-Seasoned-Diced-Tomatoes-and-Green-Chilies-10-oz/20085970846?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 25.05,
+        "pack": 24,
+        "accepted": false,
+        "reason": "price suspect ($25.05)",
+        "url": "https://www.walmart.com/ip/24-pack-ROTEL-Mild-Diced-Tomatoes-and-Green-Chilies-10-oz/17095157288?classType=VARIANT&athbdg=L1600"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "M&M Store",
+        "price": 32,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (M&M Store)",
+        "url": "https://www.walmart.com/ip/2-Pack-Ro-Tel-Diced-Tomatoes-Green-Chilies-10-oz-8-ct/494579625?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Spark Elec",
+        "price": 17.89,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Spark Elec)",
+        "url": "https://www.walmart.com/ip/Rotel-Original-Diced-Tomatoes-and-Green-Chilies-10-oz-Pack-of-2/5338702889?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Click N Chip",
+        "price": 11.7,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Click N Chip)",
+        "url": "https://www.walmart.com/ip/2-pack-ROTEL-Mild-Diced-Tomatoes-and-Green-Chilies-10-oz/7895364623?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "LETSBIZ SSHOP",
+        "price": 13.98,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (LETSBIZ SSHOP)",
+        "url": "https://www.walmart.com/ip/Rotel-Original-Diced-Tomatoes-and-Green-Chilies-10-oz-Pack-of-4/5332962077?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Uplifting Deals",
+        "price": 14.98,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (Uplifting Deals)",
+        "url": "https://www.walmart.com/ip/ROTEL-Original-Diced-Tomatoes-and-Green-Chilies-10-oz-8-Cans/168822984?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "GOODS HUB",
+        "price": 14.65,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (GOODS HUB)",
+        "url": "https://www.walmart.com/ip/2-pack-ROTEL-Original-Diced-Tomatoes-and-Green-Chilies-10-oz/7903862672?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "IZ Ventures",
+        "price": 12.01,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (IZ Ventures)",
+        "url": "https://www.walmart.com/ip/2-pack-ROTEL-Original-Diced-Tomatoes-and-Green-Chilies-10-oz/18205856458?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mendyl Distribution",
+        "price": 18.45,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Mendyl Distribution)",
+        "url": "https://www.walmart.com/ip/ROTEL-Mild-Diced-Tomatoes-and-Green-Chilies-10-oz-Pack-of-3/19565459390?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 13.88,
+        "pack": 12,
+        "accepted": false,
+        "reason": "price suspect ($13.88)",
+        "url": "https://www.walmart.com/ip/12-pack-ROTEL-Original-No-Salt-Added-Diced-Tomatoes-and-Green-Chilies-10-oz/15361217654?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mymish",
+        "price": 13.75,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Mymish)",
+        "url": "https://www.walmart.com/ip/3-pack-ROTEL-Original-Diced-Tomatoes-and-Green-Chilies-10-oz/13910661904?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "One Click Away",
+        "price": 3.55,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (One Click Away)",
+        "url": "https://www.walmart.com/ip/RO-TEL-Fire-Roasted-Diced-Tomatoes-and-Green-Chilies-10-oz/1278388323?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 13.88,
+        "pack": 12,
+        "accepted": false,
+        "reason": "price suspect ($13.88)",
+        "url": "https://www.walmart.com/ip/12-pack-ROTEL-Fire-Roasted-Diced-Tomatoes-Green-Chilies-10-oz/17075050947?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mendyl Distribution",
+        "price": 15.99,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Mendyl Distribution)",
+        "url": "https://www.walmart.com/ip/2-Pack-RO-TEL-Chunky-Diced-Tomatoes-and-Green-Chilies-10-oz/19417711503?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "One Click Away",
+        "price": 4,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (One Click Away)",
+        "url": "https://www.walmart.com/ip/ROTEL-Fire-Roasted-Diced-Tomatoes-Green-Chilies-10-oz-Pack-of-1/19654606831?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "TRENDY THREAD",
+        "price": 30.38,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (TRENDY THREAD)",
+        "url": "https://www.walmart.com/ip/ROTEL-Mild-Diced-Tomatoes-and-Green-Chilies-10-oz-Pack-of-4/13468714512?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 25.65,
+        "pack": 12,
+        "accepted": false,
+        "reason": "price suspect ($25.65)",
+        "url": "https://www.walmart.com/ip/12-pack-ROTEL-Chunky-Diced-Tomatoes-and-Green-Chilies-10-oz/17075000510?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "IZ Ventures",
+        "price": 20.99,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (IZ Ventures)",
+        "url": "https://www.walmart.com/ip/ROTEL-Original-No-Salt-Added-Diced-Tomatoes-Green-Chilies-3-Pack-10-oz-Cans-Spicy-Tomato-Blend-Keto-Friendly-Non-GMO-Shelf-Stable/20002467829?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mendyl Distribution",
+        "price": 20.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Mendyl Distribution)",
+        "url": "https://www.walmart.com/ip/ROTEL-Fire-Roasted-Diced-Tomatoes-and-Green-Chilies-10-oz-4-cans/5682893388?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 14.71,
+        "pack": 12,
+        "accepted": false,
+        "reason": "price suspect ($14.71)",
+        "url": "https://www.walmart.com/ip/Price-case-Rotel-Mexican-Lime-And-Cilantro-Diced-Tomatoes/954971619?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "TRENDY THREAD",
+        "price": 23.59,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (TRENDY THREAD)",
+        "url": "https://www.walmart.com/ip/ROTEL-Fire-Roasted-Diced-Tomatoes-Green-Chilies-10-oz-Pack-of-3/19579951588?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Desert Harvest",
+        "price": 0,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Desert Harvest)",
+        "url": "https://www.walmart.com/ip/ROTEL-Chili-Fixin-s-Diced-Tomatoes-Green-Chilies-10-oz-3-Pack/17915370284?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Irasa world",
+        "price": 0,
+        "pack": 8,
+        "accepted": false,
+        "reason": "not first-party (Irasa world)",
+        "url": "https://www.walmart.com/ip/Ro-tel-Original-Organic-Diced-Tomatoes-Green-Chilies-10-Ounce-Can-Pack-of-8/228015899?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Hazels's Choice",
+        "price": 0,
+        "pack": 8,
+        "accepted": false,
+        "reason": "not first-party (Hazels's Choice)",
+        "url": "https://www.walmart.com/ip/ROTEL-Mild-Diced-Tomatoes-and-Green-Chilies-10-oz-Pack-of-8/13454971949?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mymish",
+        "price": 0,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Mymish)",
+        "url": "https://www.walmart.com/ip/ROTEL-Original-Diced-Tomatoes-and-Green-Chilies-10-oz-Pack-of-3/19335466243?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "One Click Away",
+        "price": 9.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (One Click Away)",
+        "url": "https://www.walmart.com/ip/ROTEL-Lime-Cilantro-Green-Chili-Mexican-Style-Diced-Tomatoes-10-oz/19604907939?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 29.04,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/ROTEL-Lime-Cilantro-Green-Chili-Mexican-Style-Diced-Tomatoes-10-oz-Pack-of-8/13462604383?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Online Grocery Outlet",
+        "price": 9.88,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Online Grocery Outlet)",
+        "url": "https://www.walmart.com/ip/Rotel-Hatch-Diced-Tomatoes-and-Fire-Roasted-Hatch-Chilies-10-oz-Can/2177181628?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "One Click Away",
+        "price": 9.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (One Click Away)",
+        "url": "https://www.walmart.com/ip/ROTEL-Lime-Cilantro-Green-Chili-Mexican-Style-Diced-Tomatoes-10-oz-Pack-of-1/19623353211?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mendyl Distribution",
+        "price": 0,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Mendyl Distribution)",
+        "url": "https://www.walmart.com/ip/ROTEL-Lime-Cilantro-Green-Chili-Mexican-Style-Diced-Tomatoes-10-oz-Pack-of-3/19619770383?classType=REGULAR"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 1.48,
+      "perUnit": 1.48
+    }
+  },
+  {
+    "sku": "RizwanX-2168",
+    "query": "Chef Woo Roasted Chicken Ramen Cup Noodles 20g Protein 2.5 oz",
+    "category": "Dry",
+    "brand": "Chef Woo",
+    "product_line": "Ramen Cup Noodles",
+    "flavor": "Roasted Chicken",
+    "size": "2.5 oz",
+    "units_in_listing": 6,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Atmada Nutrition",
+        "price": 88.99,
+        "pack": 24,
+        "accepted": false,
+        "reason": "not first-party (Atmada Nutrition)",
+        "url": "https://www.walmart.com/ip/Pack-Of-24-Chef-Woo-Ramen-Roasted-Chicken-Flavor-2-5-Oz/20321613803?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 33.9,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Chef-Woo-Roasted-Chicken-Ramen-Cup-Noodles-20g-Protein-Pack-of-6/14752515526?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 42.27,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Chef-Woo-Roasted-Chicken-Ramen-Cup-Noodles-20g-Protein-Pack-of-8/14726814306?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 10.44,
+        "pack": 6,
+        "accepted": false,
+        "reason": "price suspect ($10.44)",
+        "url": "https://www.walmart.com/ip/6-pack-CHEF-WOO-Baja-Chili-Ramen-High-Protein-Noodles-20g-of-Animal-free-Bioavailable-Protein-2-5-oz-Cup/14176619185?classType=VARIANT"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "RizwanX-2330",
+    "query": "Barilla Al Bronzo Bucatini Pasta 14.1 oz box",
+    "category": "Dry",
+    "brand": "Barilla",
+    "product_line": "Al Bronzo",
+    "flavor": "Bucatini",
+    "size": "14.1 oz",
+    "units_in_listing": 4,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 26.99,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Barilla-Al-Bronzo-Bucatini-Pasta-Bronze-Cut-Pasta-Non-GMO-Kosher-Pack-of-4/14742510940?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 42,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Barilla-Al-Bronzo-Bucatini-Pasta-Bronze-Cut-Pasta-Non-GMO-Kosher-Pack-of-6/14752615209?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 0,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Barilla-Al-Bronzo-Bucatini-Pasta-Bronze-Cut-Pasta-Non-GMO-Kosher-Pack-of-2/14675822737?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Online Grocery Outlet",
+        "price": 9.48,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Online Grocery Outlet)",
+        "url": "https://www.walmart.com/ip/Barilla-Al-Bronzo-N-310-Bucatini-1-lb/15368760183?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Online Grocery Outlet",
+        "price": 9.48,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Online Grocery Outlet)",
+        "url": "https://www.walmart.com/ip/Barilla-Al-Bronzo-N-305-Spaghetti-1-lb/15355164038?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "M&S Velasquez LLC",
+        "price": 8.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (M&S Velasquez LLC)",
+        "url": "https://www.walmart.com/ip/1-x-Barilla-Al-Bronzo-Fusilloni-Pasta-1-lb-Bronze-Cut-Pasta-Created-from-High-Quality-Durum-Wheat-Imported-from-Italy-Non-GMO-Kosher/19454807830?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 5.48,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Barilla-Al-Bronzo-Organic-Bronze-Cut-Fusilloni-Pasta-16-oz/19267561901?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Online Grocery Outlet",
+        "price": 9.48,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Online Grocery Outlet)",
+        "url": "https://www.walmart.com/ip/Barilla-Al-Bronzo-Bronze-Cut-Fusilloni-Pasta-16-oz/15337119936?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 6.46,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Barilla-Al-Bronzo-Organic-Bronze-Cut-Mezzi-Rigatoni-Pasta-16-oz/19277808965?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 41.84,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Barilla-Al-Bronzo-Spaghetti-Pasta-Bronze-Cut-Pasta-Non-GMO-Kosher-Pack-of-6/14727411025?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 28.34,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Barilla-Al-Bronzo-Spaghetti-Pasta-Bronze-Cut-Pasta-Non-GMO-Kosher-Pack-of-4/14752665114?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "HINOJOSA AGUADO FAMILY LLC",
+        "price": 5.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (HINOJOSA AGUADO FAMILY LLC)",
+        "url": "https://www.walmart.com/ip/1-x-Barilla-Al-Bronzo-Spaghetti-Pasta-1-lb-Bronze-Cut-Pasta-Created-from-High-Quality-Durum-Wheat-Imported-from-Italy-Non-GMO-Kosher/19395172227?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Wise Advice 24/7",
+        "price": 11.99,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Wise Advice 24/7)",
+        "url": "https://www.walmart.com/ip/2-Pack-BARILLA-Al-Bronzo-Pasta-Spaghetti-16-oz/16852970867?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Wise Advice 24/7",
+        "price": 12.47,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Wise Advice 24/7)",
+        "url": "https://www.walmart.com/ip/Barilla-Al-Bronzo-Pasta-Spaghetti-16-oz-Pack-of-3/17091962873?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "FRANOVA EMPORIUM",
+        "price": 0,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (FRANOVA EMPORIUM)",
+        "url": "https://www.walmart.com/ip/Barilla-Al-Bronzo-Bronze-Cut-Mezzi-Rigatoni-Pasta-16-oz/15337119844?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "HINOJOSA AGUADO FAMILY LLC",
+        "price": 0,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (HINOJOSA AGUADO FAMILY LLC)",
+        "url": "https://www.walmart.com/ip/Barilla-Al-Bronzo-Pasta-Spaghetti-16-oz/17082867650?classType=REGULAR"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 5.48,
+      "perUnit": 5.48
+    }
+  },
+  {
+    "sku": "RizwanX-2731",
+    "query": "Del Monte No Sugar Added Mandarin Oranges 15 oz can",
+    "category": "Dry",
+    "brand": "Del Monte",
+    "product_line": "No Sugar Added Mandarin Oranges",
+    "flavor": "Mandarin Oranges",
+    "size": "15 oz",
+    "units_in_listing": 2,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "RNN ",
+        "price": 15.55,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (RNN )",
+        "url": "https://www.walmart.com/ip/Del-Monte-No-Sugar-Added-Mandarin-Oranges-15-oz-Can-Canned-Fruit/20435156?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "LRB Super Store",
+        "price": 19.59,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (LRB Super Store)",
+        "url": "https://www.walmart.com/ip/2-Pack-Del-Monte-No-Sugar-Added-Mandarin-Oranges-Canned-Fruit-15-oz-Can/10320715761?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 19.72,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Del-Monte-No-Sugar-Added-Mandarin-Oranges-Canned-Fruit-15-oz-Pack-of-2/14789020062?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 0,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Del-Monte-No-Sugar-Added-Mandarin-Oranges-Canned-Fruit-15-oz-Pack-of-4/14786112133?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 12.27,
+        "pack": 4,
+        "accepted": false,
+        "reason": "price suspect ($12.27)",
+        "url": "https://www.walmart.com/ip/Del-Monte-Mandarin-Oranges-No-Sugar-Added-15-oz-Can-Pack-of-4-Canned-Fruit/411378403?classType=VARIANT"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "RizwanX-3011",
+    "query": "Contadina Tomato Paste Italian Herbs 6 oz can",
+    "category": "Dry",
+    "brand": "Contadina",
+    "product_line": "Tomato Paste",
+    "flavor": "Italian Herbs",
+    "size": "6 oz",
+    "units_in_listing": 6,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.06,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Contadina-Canned-Tomato-Paste-with-Italian-Herbs-6-oz-Can/10295178?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Light House Network ",
+        "price": 14.1,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Light House Network )",
+        "url": "https://www.walmart.com/ip/Contadina-Canned-Tomato-Paste-with-Italian-Herbs-6-oz/20103802309?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mendyl Distribution",
+        "price": 15,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Mendyl Distribution)",
+        "url": "https://www.walmart.com/ip/Pack-of-2-CONTADINA-Tomato-Paste-With-Italian-Herbs-6-oz-Can/18126752203?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 20.33,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Contadina-Canned-Tomato-Paste-with-Italian-Herbs-6-oz-Can-Pack-of-8/14803902796?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Harris Online Inc.",
+        "price": 11.09,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (Harris Online Inc.)",
+        "url": "https://www.walmart.com/ip/Pack-of-2-CONTADINA-Tomato-Paste-With-Italian-Herbs-6-oz-Can/20062758101?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 17.02,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Contadina-Canned-Tomato-Paste-with-Italian-Herbs-6-oz-Can-Pack-of-6/14822705333?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.06,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Contadina-Tomato-Paste-6-oz-Can/10295175?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.06,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Contadina-Canned-Tomato-Paste-with-Pesto-6-oz-Can/22002489?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Light House Network ",
+        "price": 12.6,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Light House Network )",
+        "url": "https://www.walmart.com/ip/Contadina-Tomato-Paste-6-oz/20127806458?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.06,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Contadina-Tomato-Paste-with-Roasted-Garlic-6-oz-Can/10295278?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 15.3,
+        "pack": 12,
+        "accepted": false,
+        "reason": "price suspect ($15.3)",
+        "url": "https://www.walmart.com/ip/12-pack-Contadina-Tomato-Paste-6-oz-Can/485455537?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Augustin Enterprises ",
+        "price": 17.79,
+        "pack": 4,
+        "accepted": false,
+        "reason": "not first-party (Augustin Enterprises )",
+        "url": "https://www.walmart.com/ip/Contadina-Tomato-Paste-with-Roasted-Garlic-6-oz-Can-Pack-of-4/14803564859?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Maple",
+        "price": 11.6,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Maple)",
+        "url": "https://www.walmart.com/ip/Contadina-Tomato-Paste-with-Roasted-Garlic-6-oz/20109057366?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Augustin Enterprises ",
+        "price": 12.99,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Augustin Enterprises )",
+        "url": "https://www.walmart.com/ip/Pack-of-2-Contadina-Tomato-Paste-with-Roasted-Garlic-6-oz-Can-Red-78742-07525/17474874980?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 12.72,
+        "pack": 12,
+        "accepted": false,
+        "reason": "price suspect ($12.72)",
+        "url": "https://www.walmart.com/ip/12-pack-Contadina-Canned-Tomato-Paste-with-Pesto-6-oz-Can/611512774?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.93,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Contadina-Canned-Tomatoes-Canned-Tomato-Paste-12-oz-Can/10295176?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.48,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Contadina-Tomato-Sauce-With-Italian-Herbs-15-oz-Can/10295266?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Food Service Direct",
+        "price": 128.61,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Food Service Direct)",
+        "url": "https://www.walmart.com/ip/Contadina-Tomato-Paste-6-Case-96-Ounce/5321078486?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Yaraphic LLC",
+        "price": 18.02,
+        "pack": 6,
+        "accepted": false,
+        "reason": "not first-party (Yaraphic LLC)",
+        "url": "https://www.walmart.com/ip/Contadina-Tomato-Paste-with-Roasted-Garlic-6-oz-Can-Pack-of-6/14806018166?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Maple",
+        "price": 12.1,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Maple)",
+        "url": "https://www.walmart.com/ip/Contadina-Canned-Tomato-Paste-with-Pesto-6-oz/20049301258?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Maple",
+        "price": 14.6,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Maple)",
+        "url": "https://www.walmart.com/ip/Contadina-Canned-Tomatoes-Canned-Tomato-Paste-12-oz/20109007803?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mahad Sells",
+        "price": 22.99,
+        "pack": 6,
+        "accepted": false,
+        "reason": "not first-party (Mahad Sells)",
+        "url": "https://www.walmart.com/ip/Contadina-Canned-Tomatoes-Canned-Tomato-Paste-12-oz-Can-Pack-of-6/14822555686?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mymish",
+        "price": 9.18,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Mymish)",
+        "url": "https://www.walmart.com/ip/2-pack-Contadina-Canned-Roma-Style-Tomato-Paste-6-Ounce/19628922378?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "aftab e mart ",
+        "price": 12.99,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (aftab e mart )",
+        "url": "https://www.walmart.com/ip/Pack-of-2-Contadina-Canned-Roma-Style-Tomato-Paste-6-Ounce/18090601619?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "aftab e mart ",
+        "price": 12.99,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (aftab e mart )",
+        "url": "https://www.walmart.com/ip/2-x-Contadina-Canned-Roma-Style-Tomato-Paste-6-Ounce/19868612097?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 0,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Contadina-Tomato-Paste-with-Roasted-Garlic-6-oz-Can-Pack-of-8/14792217468?classType=VARIANT"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 1.06,
+      "perUnit": 1.06
+    }
+  },
+  {
+    "sku": "RizwanX-3152",
+    "query": "Bush's Reduced Sodium Pinto Beans 16 oz can",
+    "category": "Dry",
+    "brand": "Bush's",
+    "product_line": "Bush's Best Reduced Sodium",
+    "flavor": "Pinto Beans",
+    "size": "16 oz",
+    "units_in_listing": 4,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "ONE TECH DIGITAL",
+        "price": 9.45,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (ONE TECH DIGITAL)",
+        "url": "https://www.walmart.com/ip/2X-Bush-s-Reduced-Sodium-Pinto-Beans-16-oz-16-oz/13756954176?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Ozwold Goods LLC",
+        "price": 12.92,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Ozwold Goods LLC)",
+        "url": "https://www.walmart.com/ip/Bush-s-Reduced-Sodium-Pinto-Beans-16oz/16184301952?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Rasinn Supply LLC",
+        "price": 20.98,
+        "pack": 5,
+        "accepted": false,
+        "reason": "not first-party (Rasinn Supply LLC)",
+        "url": "https://www.walmart.com/ip/Bushs-Reduced-Sodium-Pinto-Beans-16-oz-5-Pack/19513564130?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Spark Elec",
+        "price": 16.89,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Spark Elec)",
+        "url": "https://www.walmart.com/ip/Pack-of-2-Bush-s-Reduced-Sodium-Pinto-Beans-16-oz-16-oz/15084514757?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Value Home",
+        "price": 12.99,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Value Home)",
+        "url": "https://www.walmart.com/ip/Bush-s-Reduced-Sodium-Pinto-Beans-16oz-Pack-of-2/14792217471?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 17.29,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Bush-s-Reduced-Sodium-Pinto-Beans-16oz-Pack-of-4/14806018179?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 22.69,
+        "pack": 8,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Bush-s-Reduced-Sodium-Pinto-Beans-16oz-Pack-of-8/14780519165?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 1.48,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Bush-s-Canned-Pinto-Beans-Canned-Beans-16-oz-Can/10306794?classType=VARIANT&athbdg=L1600"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Maple",
+        "price": 16.4,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Maple)",
+        "url": "https://www.walmart.com/ip/Bush-s-Canned-Pinto-Beans-Canned-Beans-16-oz-Can/20086369007?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "HN Group",
+        "price": 9.7,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (HN Group)",
+        "url": "https://www.walmart.com/ip/BUSH-S-BEST-Pinto-Beans-16-Ounce-Can-Canned-Beans-Pinto-Beans-Canned-Source-Plant-Based-Protein-Fiber-Low-Fat-Gluten-Free-Soups-Salads-Pack-2/16539267676?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 13.73,
+        "pack": 12,
+        "accepted": false,
+        "reason": "missing tokens: best,reduced,sodium,pinto,beans",
+        "url": "https://www.walmart.com/ip/Bush-s-Best-White-Hominy-15-5-oz-Case-of-12/5526964585?classType=VARIANT"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 1.48,
+      "perUnit": 1.48
+    }
+  },
+  {
+    "sku": "RizwanX-3299",
+    "query": "Green Giant Cut Green Beans Family Size 20 oz can",
+    "category": "Dry",
+    "brand": "Green Giant",
+    "product_line": "Green Beans",
+    "flavor": "Cut",
+    "size": "20 oz",
+    "units_in_listing": 4,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 18.1,
+        "pack": 2,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Green-Beans-Cut-Family-Size-20-oz-Pack-of-2/14765073813?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 29.17,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Green-Beans-Cut-Family-Size-20-oz-Pack-of-4/14805918298?classType=VARIANT"
+      }
+    ],
+    "winner": null
+  },
+  {
+    "sku": "RizwanX-3667",
+    "query": "Klass Aguas Frescas Melon Powdered Drink Mix 14.1 oz",
+    "category": "Dry",
+    "brand": "Klass",
+    "product_line": "Aguas Frescas",
+    "flavor": "Melon",
+    "size": "14.1 oz",
+    "units_in_listing": 2,
+    "is_bundle": false,
+    "offers": [
+      {
+        "retailer": "walmart",
+        "seller": "Mymish",
+        "price": 17.67,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Mymish)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Melon-with-Vitamin-C-Multiserve-Powdered-Drink-Mix-14-1oz-Pack-of-2/15483254529?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 5.83,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Klass-Drink-Mix-Melon-14-1-Oz-1-Count/171607593?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 26.66,
+        "pack": 3,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Melon-Flavored-Drink-Mix-14-1-oz-Pack-of-3/15265262584?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 98.58,
+        "pack": 20,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Melon-Flavored-Drink-Mix-14-1-oz-Pack-of-20/601210409?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Click Cart",
+        "price": 7.13,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Click Cart)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Melon-with-Vitamin-C-Multiserve-Powdered-Drink-Mix-14-1oz/13281968?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 35.08,
+        "pack": 5,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Melon-Flavored-Drink-Mix-14-1-oz-Pack-of-5/15237624382?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 162.1,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Watermelon-Flavored-Drink-Mix/366124635?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Frankie J's Corner",
+        "price": 48.85,
+        "pack": 8,
+        "accepted": false,
+        "reason": "not first-party (Frankie J's Corner)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Melon-Flavored-Drink-Mix-14-1-oz-Pack-of-8/504865338?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 45.24,
+        "pack": 6,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Melon-with-Vitamin-C-Multiserve-Powdered-Drink-Mix-14-1oz-Pack-of-6/15496568661?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 146.95,
+        "pack": 32,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Melon-Flavored-Drink-Mix-14-1-oz-Pack-of-32/15265312529?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 30.62,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Watermelon-Flavored-Drink-Mix/518328443?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 81.46,
+        "pack": 16,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Melon-Flavored-Drink-Mix-14-1-oz-Pack-of-16/900053118?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 81.46,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Watermelon-Flavored-Drink-Mix/163007524?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 341.27,
+        "pack": 72,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Melon-Flavored-Drink-Mix-14-1-oz-Pack-of-72/15265312528?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 73.1,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Watermelon-Flavored-Drink-Mix/995451401?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 162.81,
+        "pack": 36,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Melon-Flavored-Drink-Mix-14-1-oz-Pack-of-36/446526921?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 56.01,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Watermelon-Flavored-Drink-Mix/520284496?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 65.75,
+        "pack": 12,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Melon-Flavored-Drink-Mix-14-1-oz-Pack-of-12/342302559?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 112.98,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Watermelon-Flavored-Drink-Mix/610484820?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 367.4,
+        "pack": 84,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Melon-Flavored-Drink-Mix-14-1-oz-Pack-of-84/15240321266?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 73.1,
+        "pack": 14,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Melon-Flavored-Drink-Mix-14-1-oz-Pack-of-14/916283363?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 208.53,
+        "pack": 48,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Melon-Flavored-Drink-Mix-14-1-oz-Pack-of-48/15247108581?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 300.22,
+        "pack": 60,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Melon-Flavored-Drink-Mix-14-1-oz-Pack-of-60/15240371306?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 97.49,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Watermelon-Flavored-Drink-Mix/750132153?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 39.11,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Watermelon-Flavored-Drink-Mix/730801343?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 38.41,
+        "pack": 6,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Cantaloupe-Flavored-Drink-Mix-Melon-Pack-of-6/240622202?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 92.63,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Watermelon-Flavored-Drink-Mix/604073475?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 21.75,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Watermelon-Flavored-Drink-Mix/579306136?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 0,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Melon-with-Vitamin-C-Multiserve-Powdered-Drink-Mix-14-1oz-Pack-of-4/15437472280?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Cucumber-Limeade-with-Vitamin-C-Multiserve-Powdered-Drink-Mix-14-1oz/850072748?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Pineapple-with-Vitamin-C-Multiserve-Powdered-Drink-Mix-14-1oz/13281967?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Hibiscus-with-Vitamin-C-Multiserve-Powdered-Drink-Mix-14-1oz/16778691?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Mumeenahs ",
+        "price": 11.48,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (Mumeenahs )",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Mango-with-Vitamin-C-Multiserve-Powdered-Drink-Mix-14-1oz/10317695?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Walmart.com",
+        "price": 3,
+        "pack": 1,
+        "accepted": true,
+        "reason": null,
+        "url": "https://www.walmart.com/ip/Klass-Watermelon-Naturally-Flavored-Drink-Mix/13281969?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 112.98,
+        "pack": 24,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Limonada-Limeade-Drink-Mix-14-1-oz-Pack-of-24/514983674?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "WIDESTEP",
+        "price": 13.62,
+        "pack": 1,
+        "accepted": false,
+        "reason": "not first-party (WIDESTEP)",
+        "url": "https://www.walmart.com/ip/Klass-Hibiscus-Flavored-Drink-Mix-14-1-oz-Package-May-Vary/16033555138?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 73.1,
+        "pack": 14,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Tropical-Punch-Flavored-Drink-Mix-with-Dried-Fruit-14-1-oz-Pack-of-14/263874536?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Overstock Drugstore",
+        "price": 73.1,
+        "pack": 14,
+        "accepted": false,
+        "reason": "not first-party (Overstock Drugstore)",
+        "url": "https://www.walmart.com/ip/Klass-Fresa-Strawberry-Drink-Mix-14-1-oz-Pack-of-14/987824842?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 38.79,
+        "pack": 4,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Mango-with-Vitamin-C-Multiserve-Powdered-Drink-Mix-14-1oz-Pack-of-4/15437472278?classType=VARIANT"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "Value Home",
+        "price": 11.84,
+        "pack": 2,
+        "accepted": false,
+        "reason": "not first-party (Value Home)",
+        "url": "https://www.walmart.com/ip/Klass-Aguas-Frescas-Hibiscus-with-Vitamin-C-Multiserve-Powdered-Drink-Mix-14-1oz-Pack-of-2/15496568662?classType=VARIANT"
+      }
+    ],
+    "winner": {
+      "retailer": "walmart",
+      "price": 3,
+      "perUnit": 3
+    }
+  },
+  {
+    "sku": "RizwanX-4608",
+    "query": "Green Giant Nature's Pantry 8 can garden vegetable variety pack",
+    "category": "Dry",
+    "brand": "Green Giant",
+    "product_line": "Nature's Pantry",
+    "flavor": "variety",
+    "size": "8-can variety pack",
+    "units_in_listing": 8,
+    "is_bundle": true,
+    "offers": [
       {
         "retailer": "walmart",
         "seller": "STARFITSTORE",
@@ -153,69 +3670,6 @@
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
         "url": "https://www.walmart.com/ip/Green-Giant-Nature-s-Variety-Pack-8-Can-Garden-Vegetable-Selection/16554856888?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Essentials-Variety-Pack-8-Can-All-Purpose-Vegetable-Combo/16495574571?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-ReadyHarvest-8-Can-Shelf-Stable-Garden-Veggie-Variety-Pack/16532217618?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Meal-Maker-Variety-Pack-8-Can-Weeknight-Vegetable-Staples/16495923367?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Essential-Eight-Variety-Pack-8-Can-Nutrient-Rich-Veggie/16501769207?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Essentials-Variety-Pack-8-Can-Classic-Veggie-Assortment/16532217619?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-PrepSmart-Pack-8-Can-Variety-Pack-Shelf-Stable-Veggie-Assortment-for-Meal-Planning/16512409861?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-All-Season-Pantry-Variety-Pack-8-Can-Versatile-Veggies/16539404872?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -233,61 +3687,7 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Pantry-Provisions-Variety-Pack-8-Can-Everyday-Veggie-Essentials/16543118443?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Nourish-Pack-8-Can-Variety-Pack-Shelf-Stable-Mixed-Vegetables-for-Wellness-Convenience/16553764125?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Vault-Variety-Pack-8-Can-Emergency-Food-Supply/16553765475?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Daily-Greens-Variety-Pack-8-Can-Nutrient-Rich-Veggie/16507201293?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Harvest-Variety-Pack-8-Can-Shelf-Stable-Vegetable-Collection/16516300861?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Kitchen-Ready-Variety-Pack-8-Can-Meal-Prep-Veggie/16536952932?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Ready-Reserve-Variety-Pack-8-Can-Emergency-Veggie-Supply-Kit/16512259660?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Medley-Mix-8-Can-Colorful-Garden-Variety-Pack/16495923368?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -314,7 +3714,7 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Homestyle-Harvest-Variety-Pack-8-Can-Garden-Veggie-Collection/16543068818?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-Ready-Reserve-Variety-Pack-8-Can-Emergency-Veggie-Supply-Kit/16512259660?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -323,7 +3723,7 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Compact-Cuisine-Variety-Pack-8-Can-Space-Saving-Veggie/16507201297?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-Meal-Maker-Variety-Pack-8-Can-Weeknight-Vegetable-Staples/16495923367?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -332,7 +3732,7 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Veggie-Variety-8-Can-Pantry-Pack/16554856890?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-All-Season-Pantry-Variety-Pack-8-Can-Versatile-Veggies/16539404872?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -341,7 +3741,7 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Simply-Veggies-Variety-Pack-8-Can-Everyday-Essentials-Vegetable/16536952370?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-ReadyHarvest-8-Can-Shelf-Stable-Garden-Veggie-Variety-Pack/16532217618?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -350,142 +3750,7 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Kitchen-Ready-Variety-Pack-8-Can-Prepped-Veggie-Medley/16516150951?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Chef-s-Choice-Variety-Pack-8-Can-Culinary-Grade-Veggie-Selection/16539404873?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Variety-Pack-Veggie-Stack-8-Can-Balanced-Meal-Builder/16516200926?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Vault-8-Can-Shelf-Stable-Variety-Pack-for-Reliable-Nutrition/16528703126?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Kitchen-Staples-Variety-Pack-8-Can-Mixed-Vegetable-Pantry-Pack/16507201296?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Variety-Vault-8-Can-Emergency-Everyday-Pack/16516200923?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Time-Variety-Pack-8-Can-Family-Favorites/16516150950?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Harvest-Harmony-Variety-Pack-8-Can-Colorful-Vegetable-Collection/16516300859?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Quick-Serve-Veggie-Variety-Pack-8-Can-Shelf-Stable-Assorted-Vegetables/16516150949?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Ready-Harvest-Variety-Pack-8-Can-Quick-Use-Vegetable-Medley/16512409858?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Medley-Mix-8-Can-Colorful-Garden-Variety-Pack/16495923368?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Prep-Variety-Pack-8-Can-Meal-Builder-Vegetables/16512259656?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Farmstand-Favorites-Variety-Pack-8-Can-Homestyle-Vegetable-Medley/16543118440?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Pantry-Pride-Variety-Pack-8-Can-Classic-Vegetable-Collection/16539404871?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Essentials-Variety-Pack-8-Can-Long-Life-Vegetable-Mix/16536952933?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Flex-Variety-Pack-8-Can-Flexible-Cooking-Essentials/16512309456?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-FreshLock-Variety-Pack-8-Shelf-Stable-Canned-Vegetables/16516300862?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -503,7 +3768,7 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Daily-Greens-8-Can-Shelf-Stable-Veggie-Booster-Variety-Pack/16554856887?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Veggie-Variety-8-Can-Pantry-Pack/16554856890?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -512,7 +3777,7 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Essential-Veggies-Variety-Pack-8-Emergency-Everyday-Vegetable-cans/16512309460?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Essentials-Variety-Pack-8-Can-All-Purpose-Vegetable-Combo/16495574571?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -521,7 +3786,7 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Budget-Buddy-Variety-Pack-8-Can-Affordable-Veggie-Essentials/16543118441?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Vault-Variety-Pack-8-Can-Emergency-Food-Supply/16553765475?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -530,7 +3795,25 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Anytime-Veggies-8-Can-Variety-Pack-for-On-Demand-Nutrition/16528703125?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-Essential-Eight-Variety-Pack-8-Can-Nutrient-Rich-Veggie/16501769207?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Pantry-Provisions-Variety-Pack-8-Can-Everyday-Veggie-Essentials/16543118443?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Homestyle-Harvest-Variety-Pack-8-Can-Garden-Veggie-Collection/16543068818?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -540,6 +3823,96 @@
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
         "url": "https://www.walmart.com/ip/Green-Giant-Harvest-Classics-8-Can-Garden-Vegetable-Variety-Pack/16507151760?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Pantry-Pride-Variety-Pack-8-Can-Classic-Vegetable-Collection/16539404871?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Kitchen-Staples-Variety-Pack-8-Can-Mixed-Vegetable-Pantry-Pack/16507201296?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Ready-Harvest-Variety-Pack-8-Can-Quick-Use-Vegetable-Medley/16512409858?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Nourish-Pack-8-Can-Variety-Pack-Shelf-Stable-Mixed-Vegetables-for-Wellness-Convenience/16553764125?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Essentials-Variety-Pack-8-Can-Classic-Veggie-Assortment/16532217619?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Simply-Veggies-Variety-Pack-8-Can-Everyday-Essentials-Vegetable/16536952370?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Quick-Serve-Veggie-Variety-Pack-8-Can-Shelf-Stable-Assorted-Vegetables/16516150949?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-PrepSmart-Pack-8-Can-Variety-Pack-Shelf-Stable-Veggie-Assortment-for-Meal-Planning/16512409861?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Essentials-Variety-Pack-8-Can-Long-Life-Vegetable-Mix/16536952933?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Harvest-Variety-Pack-8-Can-Shelf-Stable-Vegetable-Collection/16516300861?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -557,25 +3930,7 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Balanced-Bites-Variety-Pack-8-Can-Low-Sodium-Vegetable/16516300864?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Lite-Variety-Pack-8-Can-Low-Calorie-Vegetable/16539354303?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 52.64,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Family-Feast-Variety-Pack-8-Can-Mealtime-Veggie-Favorites/16478066237?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-Daily-Greens-Variety-Pack-8-Can-Nutrient-Rich-Veggie/16507201293?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -593,7 +3948,7 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Nourish-Go-Variety-Pack-8-Can-Shelf-Stable-Veggie-Mix-for-Life-on-the-Move/16478066235?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Vault-8-Can-Shelf-Stable-Variety-Pack-for-Reliable-Nutrition/16528703126?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -611,7 +3966,7 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Vital-Veggies-Variety-Pack-8-Can-Nutrition-Booster/16507201294?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-Variety-Pack-Veggie-Stack-8-Can-Balanced-Meal-Builder/16516200926?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -620,7 +3975,7 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-QuickFix-Veggie-Kit-Variety-Pack-8-Can-Fast-Healthy-Pantry/16516300863?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-Harvest-Harmony-Variety-Pack-8-Can-Colorful-Vegetable-Collection/16516300859?classType=REGULAR"
       },
       {
         "retailer": "walmart",
@@ -629,719 +3984,45 @@
         "pack": 1,
         "accepted": false,
         "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Boost-Variety-Pack-8-Can-Fiber-Vitamin-Powerhouse/16536902538?classType=REGULAR"
+        "url": "https://www.walmart.com/ip/Green-Giant-Kitchen-Ready-Variety-Pack-8-Can-Meal-Prep-Veggie/16536952932?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Time-Variety-Pack-8-Can-Family-Favorites/16516150950?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Lite-Variety-Pack-8-Can-Low-Calorie-Vegetable/16539354303?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Veggie-Variety-Vault-8-Can-Emergency-Everyday-Pack/16516200923?classType=REGULAR"
+      },
+      {
+        "retailer": "walmart",
+        "seller": "STARFITSTORE",
+        "price": 52.64,
+        "pack": 1,
+        "accepted": false,
+        "reason": "own/reseller (STARFITSTORE)",
+        "url": "https://www.walmart.com/ip/Green-Giant-Everyday-Prep-Variety-Pack-8-Can-Meal-Builder-Vegetables/16512259656?classType=REGULAR"
       }
     ],
     "winner": null
-  },
-  {
-    "sku": "RizwanX-2168",
-    "query": "Chef Woo Roasted Chicken Ramen Cup Noodles 20g Protein 2.5 oz",
-    "category": "Dry",
-    "brand": "Chef Woo",
-    "product_line": "Ramen Cup Noodles",
-    "flavor": "Roasted Chicken",
-    "size": "2.5 oz",
-    "units_in_listing": 6,
-    "is_bundle": true,
-    "offers": [
-      {
-        "retailer": "walmart",
-        "seller": "v Fresh Finds v",
-        "price": 33.9,
-        "pack": 6,
-        "accepted": false,
-        "reason": "price suspect ($33.9)",
-        "url": "https://www.walmart.com/ip/Chef-Woo-Roasted-Chicken-Ramen-Cup-Noodles-20g-Protein-Pack-of-6/14752515526?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Atmada Nutrition",
-        "price": 88.99,
-        "pack": 24,
-        "accepted": false,
-        "reason": "price suspect ($88.99)",
-        "url": "https://www.walmart.com/ip/Pack-Of-24-Chef-Woo-Ramen-Roasted-Chicken-Flavor-2-5-Oz/20321613803?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 42.27,
-        "pack": 8,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Chef-Woo-Roasted-Chicken-Ramen-Cup-Noodles-20g-Protein-Pack-of-8/14726814306?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Walmart.com",
-        "price": 10.44,
-        "pack": 6,
-        "accepted": false,
-        "reason": "price suspect ($10.44)",
-        "url": "https://www.walmart.com/ip/6-pack-CHEF-WOO-Baja-Chili-Ramen-High-Protein-Noodles-20g-of-Animal-free-Bioavailable-Protein-2-5-oz-Cup/14176619185?classType=VARIANT"
-      }
-    ],
-    "winner": null
-  },
-  {
-    "sku": "RizwanX-199",
-    "query": "Del Monte Tender Petites Very Young Small Sweet Peas No Salt Added 15.25 oz can",
-    "category": "Dry",
-    "brand": "Del Monte",
-    "product_line": "Tender Petites",
-    "flavor": "Very Young Small Sweet Peas, No Salt Added",
-    "size": "15.25 oz",
-    "units_in_listing": 4,
-    "is_bundle": true,
-    "offers": [
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 33.9,
-        "pack": 6,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Del-Monte-Tender-Petites-Very-Young-Small-Sweet-Peas-No-Salt-Added-15-25-oz-Can-Pack-of-6/13480307136?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Mendyl Distribution",
-        "price": 34.99,
-        "pack": 4,
-        "accepted": false,
-        "reason": "price suspect ($34.99)",
-        "url": "https://www.walmart.com/ip/Del-Monte-Tender-Petites-Very-Young-Small-Sweet-Peas-No-Salt-Added-15-25-oz-Can-Pack-of-4/13464808306?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 42.67,
-        "pack": 8,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Del-Monte-Tender-Petites-Very-Young-Small-Sweet-Peas-No-Salt-Added-15-25-oz-Can-Pack-of-8/13457902479?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Zaf International Corp",
-        "price": 0,
-        "pack": 1,
-        "accepted": false,
-        "reason": "price suspect ($0)",
-        "url": "https://www.walmart.com/ip/Del-Monte-Tender-Petites-Very-Young-Small-Sweet-Peas-No-Salt-Added-15-25-oz-Can/3269112977?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Zaf International Corp",
-        "price": 0,
-        "pack": 1,
-        "accepted": false,
-        "reason": "price suspect ($0)",
-        "url": "https://www.walmart.com/ip/Del-Monte-Tender-Petites-Very-Young-Small-Sweet-Peas-No-Salt-Added-15-25-oz-Can/3269112977?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "HushCart",
-        "price": 3.5,
-        "pack": 1,
-        "accepted": true,
-        "reason": null,
-        "url": "https://www.walmart.com/ip/Del-Monte-Very-Young-Small-Sweet-Peas-15-25-oz-Can/29209934?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "ViralCart",
-        "price": 29.9,
-        "pack": 4,
-        "accepted": false,
-        "reason": "price suspect ($29.9)",
-        "url": "https://www.walmart.com/ip/Del-Monte-Very-Young-Small-Sweet-Peas-15-25-oz-Can-Canned-Vegetables-4-Pack-Offer/20286571330?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Walmart.com",
-        "price": 1.67,
-        "pack": 1,
-        "accepted": true,
-        "reason": null,
-        "url": "https://www.walmart.com/ip/DEL-MONTE-No-Salt-Added-Sweet-Peas-Canned-Vegetables-15-oz-Can/10318790?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Sandrin",
-        "price": 6,
-        "pack": 1,
-        "accepted": false,
-        "reason": "missing tokens: tender,petites,very,young,small,peas,",
-        "url": "https://www.walmart.com/ip/Del-Monte-No-Salt-Added-Fresh-Cut-Sweet-Peas-15-oz-pack-of-2/14550007999?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "One Click Away",
-        "price": 5.25,
-        "pack": 1,
-        "accepted": false,
-        "reason": "price suspect ($5.25)",
-        "url": "https://www.walmart.com/ip/Del-Monte-Very-Young-Small-Sweet-Peas-15-25-oz-Can-Canned-Vegetables/17920769090?classType=REGULAR"
-      }
-    ],
-    "winner": {
-      "retailer": "walmart",
-      "price": 1.67,
-      "perUnit": 1.67
-    }
-  },
-  {
-    "sku": "FaisalX-1646",
-    "query": "Sara Lee Artesano Golden Wheat Bread 20 oz",
-    "category": "Dry",
-    "brand": "Sara Lee",
-    "product_line": "Artesano",
-    "flavor": "Golden Wheat",
-    "size": "20 oz",
-    "units_in_listing": 3,
-    "is_bundle": true,
-    "offers": [
-      {
-        "retailer": "walmart",
-        "seller": "Walmart.com",
-        "price": 3.86,
-        "pack": 1,
-        "accepted": false,
-        "reason": "brand \"sara\" absent",
-        "url": "https://www.walmart.com/ip/ART-HAW-BRD-20OZ/19861971767?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 25.65,
-        "pack": 3,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Golden-Wheat-Bread-20-oz-Soft-Whole-Wheat-Pre-sliced-Wheat-Bread-Bag-Pack-Of-3/9426073101?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 64.79,
-        "pack": 7,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Golden-Wheat-Bread-20-oz-Soft-Whole-Wheat-Pre-sliced-Wheat-Bread-Bag-Pack-Of-7/9441762855?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 44.55,
-        "pack": 5,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Golden-Wheat-Bread-20-oz-Soft-Whole-Wheat-Pre-sliced-Wheat-Bread-Bag-Pack-Of-5/9422716062?classType=VARIANT"
-      }
-    ],
-    "winner": null
-  },
-  {
-    "sku": "FaisalX-1215",
-    "query": "Sara Lee Artesano Brioche Bread 20 oz",
-    "category": "Dry",
-    "brand": "Sara Lee",
-    "product_line": "Artesano Brioche",
-    "flavor": "Brioche",
-    "size": "20 oz",
-    "units_in_listing": 4,
-    "is_bundle": true,
-    "offers": [
-      {
-        "retailer": "walmart",
-        "seller": "Walmart.com",
-        "price": 3.86,
-        "pack": 1,
-        "accepted": true,
-        "reason": null,
-        "url": "https://www.walmart.com/ip/ART-BRI-BKY-BRD-20OZ/19883411944?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "ClickCart LLC",
-        "price": 20.92,
-        "pack": 2,
-        "accepted": false,
-        "reason": "price suspect ($20.92)",
-        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Brioche-Bakery-Bread-20-oz-Soft-Brioche-Bread-Bag-Pack-of-2/8412902256?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Smart Buyers Marketplace",
-        "price": 17.99,
-        "pack": 1,
-        "accepted": false,
-        "reason": "own/reseller (Smart Buyers Marketplace)",
-        "url": "https://www.walmart.com/ip/2x-Sara-Lee-Artesano-Brioche-Bakery-Bread-20-oz-Brioche-Bread-Bag/15158804185?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 30.23,
-        "pack": 4,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Brioche-Bakery-Bread-20-oz-Soft-Brioche-Bread-Bag-Pack-of-4/8399405772?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "ClickCart LLC",
-        "price": 25.52,
-        "pack": 3,
-        "accepted": false,
-        "reason": "price suspect ($25.52)",
-        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Brioche-Bakery-Bread-20-oz-Brioche-Bread-Bag-Pack-of-3/17316156400?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 42.78,
-        "pack": 6,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Sara-Lee-Artesano-Brioche-Bakery-Bread-20-oz-Soft-Brioche-Bread-Bag-Pack-of-6/8413924449?classType=VARIANT"
-      }
-    ],
-    "winner": {
-      "retailer": "walmart",
-      "price": 3.86,
-      "perUnit": 3.86
-    }
-  },
-  {
-    "sku": "FaisalX-1121",
-    "query": "Nature's Own Life Honey Wheat 40 Calories bread 16 oz",
-    "category": "Dry",
-    "brand": "Nature's Own",
-    "product_line": "Life",
-    "flavor": "Honey Wheat",
-    "size": "16 oz",
-    "units_in_listing": 2,
-    "is_bundle": true,
-    "offers": [
-      {
-        "retailer": "walmart",
-        "seller": "Express Services 727",
-        "price": 30.75,
-        "pack": 3,
-        "accepted": false,
-        "reason": "brand \"nature's\" absent",
-        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Honey-Wheat-40-Calories-per-Slice-Keto-Friendly-Sandwich-Bread-16-oz-Loaf-Pack-Of-3/9421819616?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 12.29,
-        "pack": 2,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Honey-Wheat-40-Calories-per-Slice-Keto-Friendly-Sandwich-Bread-16-oz-Pack-of-2/8406610361?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 72.24,
-        "pack": 7,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Honey-Wheat-40-Calories-per-Slice-Keto-Friendly-Sandwich-Bread-16-oz-Loaf-Pack-Of-7/9415372523?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Infinity Trend",
-        "price": 38,
-        "pack": 5,
-        "accepted": false,
-        "reason": "brand \"nature's\" absent",
-        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Honey-Wheat-40-Calories-per-Slice-Keto-Friendly-Sandwich-Bread-16-oz-Loaf-Pack-Of-5/9455906063?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Five Star Mart",
-        "price": 35.99,
-        "pack": 4,
-        "accepted": false,
-        "reason": "brand \"nature's\" absent",
-        "url": "https://www.walmart.com/ip/Nature-s-Own-Life-Honey-Wheat-40-Calories-per-Slice-Keto-Friendly-Sandwich-Bread-16-oz-Pack-of-4/8382622289?classType=VARIANT"
-      }
-    ],
-    "winner": null
-  },
-  {
-    "sku": "FaisalX-1142",
-    "query": "Pepperidge Farm Very Thin 100% Whole Wheat Bread 16 oz",
-    "category": "Dry",
-    "brand": "Pepperidge Farm",
-    "product_line": "Very Thin",
-    "flavor": "100% Whole Wheat",
-    "size": "16 oz",
-    "units_in_listing": 2,
-    "is_bundle": true,
-    "offers": [
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 35.09,
-        "pack": 4,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Very-Thin-100-Whole-Wheat-Bread-16-oz-Pack-of-4/8393164167?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 56.69,
-        "pack": 6,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Very-Thin-100-Whole-Wheat-Bread-16-oz-Pack-of-6/8394316918?classType=VARIANT"
-      }
-    ],
-    "winner": null
-  },
-  {
-    "sku": "FaisalX-1268",
-    "query": "Arnold Country Oatmeal Bread 24 oz loaf",
-    "category": "Dry",
-    "brand": "Arnold",
-    "product_line": "Country",
-    "flavor": "Oatmeal",
-    "size": "24 oz",
-    "units_in_listing": 2,
-    "is_bundle": true,
-    "offers": [
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 19.67,
-        "pack": 2,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Country-Oatmeal-Bread-Hearty-Texture-Flavor-24-oz-Pack-of-2/8374958100?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 55.46,
-        "pack": 6,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Country-Oatmeal-Bread-Hearty-Texture-Flavor-24-oz-Pack-of-6/8399505614?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 40.49,
-        "pack": 4,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Country-Oatmeal-Bread-Hearty-Texture-Flavor-24-oz-Pack-of-4/8394303892?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Brit Commerce",
-        "price": 24.99,
-        "pack": 2,
-        "accepted": false,
-        "reason": "own/reseller (Brit Commerce)",
-        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Oatnut-Bread-24-oz-Soft-Pre-sliced-Multigrain-Bread-Bag-Pack-of-2/8388171787?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Brit Commerce",
-        "price": 35.99,
-        "pack": 4,
-        "accepted": false,
-        "reason": "own/reseller (Brit Commerce)",
-        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Oatnut-Bread-24-oz-Soft-Pre-sliced-Multigrain-Bread-Bag-Pack-of-4/8412802873?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Brit Commerce",
-        "price": 22.99,
-        "pack": 2,
-        "accepted": false,
-        "reason": "own/reseller (Brit Commerce)",
-        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Small-Slice-Oatnut-Bread-Loaf-18-oz-Pack-of-2/8419313858?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 20.24,
-        "pack": 2,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Country-Sourdough-Bread-Rustic-with-Rich-Deep-Flavor-24-oz-Pack-of-2/8398257285?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Brit Commerce",
-        "price": 35.97,
-        "pack": 4,
-        "accepted": false,
-        "reason": "own/reseller (Brit Commerce)",
-        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Small-Slice-Oatnut-Bread-Loaf-18-oz-Pack-of-4/8412902258?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Brit Commerce",
-        "price": 47.97,
-        "pack": 6,
-        "accepted": false,
-        "reason": "own/reseller (Brit Commerce)",
-        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Small-Slice-Oatnut-Bread-Loaf-18-oz-Pack-of-6/8399355764?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Z. Sourcing",
-        "price": 0,
-        "pack": 1,
-        "accepted": false,
-        "reason": "missing tokens: country,oatmeal",
-        "url": "https://www.walmart.com/ip/Arnold-Whole-Grains-Healthy-Bread-24-oz-Multi-Grain-Multigrain-Bread-Bag/10403545?classType=REGULAR"
-      }
-    ],
-    "winner": null
-  },
-  {
-    "sku": "FaisalX-3743",
-    "query": "Progresso Vegetable Classics Creamy Mushroom Soup 18 oz can",
-    "category": "Dry",
-    "brand": "Progresso",
-    "product_line": "Vegetable Classics",
-    "flavor": "Creamy Mushroom",
-    "size": "18 oz",
-    "units_in_listing": 6,
-    "is_bundle": true,
-    "offers": [
-      {
-        "retailer": "walmart",
-        "seller": "Value Home",
-        "price": 28.99,
-        "pack": 4,
-        "accepted": false,
-        "reason": "price suspect ($28.99)",
-        "url": "https://www.walmart.com/ip/Progresso-Vegetable-Classics-Soup-Creamy-Mushroom-18-oz-Pack-of-4/11388552673?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 44.54,
-        "pack": 8,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Progresso-Vegetable-Classics-Soup-Creamy-Mushroom-18-oz-Pack-of-8/11366109747?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Value Home",
-        "price": 41.31,
-        "pack": 6,
-        "accepted": false,
-        "reason": "price suspect ($41.31)",
-        "url": "https://www.walmart.com/ip/Progresso-Vegetable-Classics-Soup-Creamy-Mushroom-18-oz-Pack-of-6/11395162682?classType=VARIANT"
-      }
-    ],
-    "winner": null
-  },
-  {
-    "sku": "FaisalX-1244",
-    "query": "Arnold Jewish Rye Bread Seedless 16 oz loaf",
-    "category": "Dry",
-    "brand": "Arnold",
-    "product_line": "Jewish Rye Bread",
-    "flavor": "Seedless",
-    "size": "16 oz",
-    "units_in_listing": 2,
-    "is_bundle": true,
-    "offers": [
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 13.88,
-        "pack": 2,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Jewish-Rye-Bread-Seedless-16-oz-Pack-of-2/8394303075?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 37.14,
-        "pack": 4,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Seedless-Jewish-Rye-Bread-16-oz-Classic-Rye-Loaf-Pack-of-4/16361613361?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 51.29,
-        "pack": 6,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Jewish-Rye-Bread-Seedless-16-oz-Pack-of-6/8412752877?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 16.19,
-        "pack": 2,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Jewish-Rye-Pumpernickel-Bread-16-oz-Pack-of-2/8406510682?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Al Hakeem Services Inc.",
-        "price": 13.28,
-        "pack": 1,
-        "accepted": false,
-        "reason": "brand \"arnold\" absent",
-        "url": "https://www.walmart.com/ip/Jewish-Rye-Seedless-Bread-16-oz-Bag/20042716496?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 18.89,
-        "pack": 2,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Jewish-Rye-Bread-Seeded-16-oz-Pack-of-2/8399455704?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 43.97,
-        "pack": 4,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Jewish-Rye-Pumpernickel-Bread-16-oz-Pack-of-4/8388171789?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 37.79,
-        "pack": 4,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Arnold-Jewish-Rye-Bread-Seeded-16-oz-Pack-of-4/8399405774?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 67.49,
-        "pack": 6,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Rye-Seedless-Bread-16-oz-Pack-of-6/8503256750?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Armrfit",
-        "price": 0,
-        "pack": 1,
-        "accepted": false,
-        "reason": "brand \"arnold\" absent",
-        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Rye-Seedless-Bread-16-oz-Bag/10452832?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Value Home",
-        "price": 0,
-        "pack": 2,
-        "accepted": false,
-        "reason": "brand \"arnold\" absent",
-        "url": "https://www.walmart.com/ip/Pepperidge-Farm-Jewish-Rye-Seedless-Bread-16-oz-Pack-of-2/8466901364?classType=VARIANT"
-      }
-    ],
-    "winner": null
-  },
-  {
-    "sku": "RizwanX-3877",
-    "query": "La Abuela Ready to Cook Burrito Size Flour Tortillas 18.5 oz 12 Count",
-    "category": "Dry",
-    "brand": "La Abuela",
-    "product_line": "Ready to Cook Burrito Size Flour Tortillas",
-    "flavor": "Flour",
-    "size": "18.5 oz",
-    "units_in_listing": 2,
-    "is_bundle": true,
-    "offers": [
-      {
-        "retailer": "walmart",
-        "seller": "Value Home",
-        "price": 16.99,
-        "pack": 2,
-        "accepted": false,
-        "reason": "price suspect ($16.99)",
-        "url": "https://www.walmart.com/ip/La-Abuela-Ready-to-Cook-Burrito-Size-Flour-Tortillas-18-5-oz-12-Count-Pack-of-2/15596111558?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 38.7,
-        "pack": 4,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/La-Abuela-Ready-to-Cook-Burrito-Size-Flour-Tortillas-18-5-oz-12-Count-Pack-of-4/15619815008?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 53.24,
-        "pack": 6,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/La-Abuela-Ready-to-Cook-Burrito-Size-Flour-Tortillas-18-5-oz-12-Count-Pack-of-6/15599603539?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "GOODS HUB",
-        "price": 14.52,
-        "pack": 18,
-        "accepted": false,
-        "reason": "price suspect ($14.52)",
-        "url": "https://www.walmart.com/ip/Tortilla-Land-Ready-to-Cook-Soft-Taco-Size-Flour-Tortillas-30-oz-18-Count/17738361221?classType=REGULAR"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "KANS ENTERPRISES LLC",
-        "price": 17.91,
-        "pack": 2,
-        "accepted": false,
-        "reason": "price suspect ($17.91)",
-        "url": "https://www.walmart.com/ip/La-Abuela-Flour-Tortillas-20-Count-22-oz-Pack-of-2/15573619551?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "STARFITSTORE",
-        "price": 63.34,
-        "pack": 6,
-        "accepted": false,
-        "reason": "own/reseller (STARFITSTORE)",
-        "url": "https://www.walmart.com/ip/La-Abuela-Flour-Tortillas-20-Count-22-oz-Pack-of-6/15554823985?classType=VARIANT"
-      },
-      {
-        "retailer": "walmart",
-        "seller": "Walmart.com",
-        "price": 4.77,
-        "pack": 18,
-        "accepted": true,
-        "reason": null,
-        "url": "https://www.walmart.com/ip/Tortilla-Land-Ready-to-Cook-Soft-Taco-Size-Flour-Tortillas-30-oz-18-Count/22374196?classType=REGULAR&athbdg=L1600"
-      }
-    ],
-    "winner": {
-      "retailer": "walmart",
-      "price": 4.77,
-      "perUnit": 0.26499999999999996
-    }
   }
 ]
