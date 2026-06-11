@@ -8,12 +8,16 @@
 //
 //   new listing price = competitor featured landed − our shipping − $0.01
 //
-// Safety rails (v1, before the full COGS margin module exists):
+// Safety rails:
 //   • Only ever LOWER the price, never raise.
 //   • Never drop more than MAX_DROP_PCT (10%) in one run — if winning would
 //     need a bigger cut, skip and flag for manual review (protects against a
 //     competitor dumping below our cost).
-//   • Hard absolute floor of $1.00 as a sanity stop.
+//   • COGS margin floor: when we have a SkuCost for the SKU, never price below
+//     the point that still keeps TARGET_MARGIN (20%) of the sale as margin AFTER
+//     Amazon's referral fee. Falls back to a hard $1.00 floor when cost is
+//     unknown. This is what turns "match Buy Box" into "match Buy Box, but never
+//     below our margin" — Buy Box is a signal, the margin floor is the law.
 //   • dryRun mode computes everything and logs, but changes no prices.
 //
 // Throughput: we scan with a per-run time budget and a Setting-backed cursor
@@ -30,8 +34,23 @@ import {
 } from "@/lib/amazon-sp-api/pricing";
 
 export const MAX_DROP_PCT = 0.1; // never auto-cut more than 10% in one run
-const ABS_FLOOR = 1.0; // never set a price below $1.00
+const ABS_FLOOR = 1.0; // hard sanity floor used only when we have no cost data
 const UNDERCUT = 0.01; // beat the featured offer by a penny
+
+// COGS-backed margin floor. SkuCost.totalCost is the BARE product cost (Dry) or
+// product+pkg+ice (Frozen) from Sellerboard/retail — it does NOT include Amazon's
+// referral fee. So the lowest sale price that still leaves TARGET_MARGIN of the
+// sale as our margin, after Amazon takes its referral cut, is:
+//     floor = cost / (1 − referral − margin)
+// e.g. cost $4.00 → 4 / (1 − 0.15 − 0.20) = 4 / 0.65 = $6.16.
+// Tune these two numbers to change the policy (they are the whole margin model).
+export const TARGET_MARGIN = 0.2; // project rule: keep at least 20% margin
+export const AMAZON_REFERRAL_PCT = 0.15; // Amazon food/grocery referral fee (items >$15)
+export function marginFloorPrice(totalCost: number): number {
+  const denom = 1 - AMAZON_REFERRAL_PCT - TARGET_MARGIN;
+  if (denom <= 0) return totalCost; // pathological config — fall back to raw cost
+  return Math.round((totalCost / denom) * 100) / 100;
+}
 const BATCH_SIZE = 20; // getListingOffersBatch max
 const BATCH_PAUSE_MS = 300; // pacing between batches
 const TIME_BUDGET_MS = 240_000; // stop & save cursor before Vercel's 300s cap
@@ -41,7 +60,8 @@ export type RepriceAction =
   | "skipped_winning"
   | "skipped_raise"
   | "skipped_cap"
-  | "skipped_floor"
+  | "skipped_floor" // would dip below the $1 hard floor (no cost data)
+  | "skipped_margin_floor" // would dip below the COGS-backed margin floor
   | "no_competition"
   | "error";
 
@@ -64,6 +84,8 @@ export interface Decision {
   targetLanded: number | null;
   competitors: number;
   reason?: string;
+  cost?: number | null; // latest known product cost (SkuCost.totalCost), if any
+  floor?: number; // the effective price floor applied to this decision
 }
 
 function round2(n: number): number {
@@ -78,7 +100,11 @@ function round2(n: number): number {
 export function decideReprice(
   meta: SkuMeta,
   offers: SkuOffers,
+  costInfo?: { cost?: number | null; floor?: number },
 ): Decision {
+  // Effective floor = the higher of the hard $1 sanity floor and the COGS-backed
+  // margin floor (when we have a cost for this SKU). No cost → just the $1 floor.
+  const effFloor = Math.max(ABS_FLOOR, costInfo?.floor ?? 0);
   const base: Omit<Decision, "action" | "newPrice" | "reason"> = {
     sku: meta.sku,
     asin: meta.asin,
@@ -87,6 +113,8 @@ export function decideReprice(
     shipping: 0,
     targetLanded: offers.buyBoxLanded,
     competitors: offers.totalOfferCount,
+    cost: costInfo?.cost ?? null,
+    floor: effFloor,
   };
 
   const mine = offers.offers.find((o) => o.mine);
@@ -126,13 +154,19 @@ export function decideReprice(
     return { ...base, action: "skipped_raise", newPrice: null };
   }
 
-  // Absolute sanity floor.
-  if (newPrice < ABS_FLOOR) {
+  // Margin floor — never price below what keeps our margin (or, with no cost
+  // data, below the $1 hard floor). This is the safety stop that stops the
+  // repricer from chasing the Buy Box down into a loss.
+  if (newPrice < effFloor) {
+    const marginBacked = (costInfo?.floor ?? 0) > ABS_FLOOR;
     return {
       ...base,
-      action: "skipped_floor",
+      action: marginBacked ? "skipped_margin_floor" : "skipped_floor",
       newPrice: null,
-      reason: `computed $${newPrice.toFixed(2)} < $${ABS_FLOOR.toFixed(2)} floor`,
+      reason: marginBacked
+        ? `computed $${newPrice.toFixed(2)} < margin floor $${effFloor.toFixed(2)} ` +
+          `(cost $${(costInfo?.cost ?? 0).toFixed(2)}, keep ${Math.round(TARGET_MARGIN * 100)}% after ${Math.round(AMAZON_REFERRAL_PCT * 100)}% fee)`
+        : `computed $${newPrice.toFixed(2)} < $${ABS_FLOOR.toFixed(2)} floor`,
     };
   }
 
@@ -155,6 +189,7 @@ export interface RunResult {
   scanned: number;
   repriced: number;
   skippedCap: number;
+  skippedFloor: number; // held at the margin/$1 floor — would have lost margin
   noCompetition: number;
   errors: number;
   changes: Decision[]; // only action === "repriced"
@@ -206,6 +241,7 @@ export async function repriceStore(
     scanned: 0,
     repriced: 0,
     skippedCap: 0,
+    skippedFloor: 0,
     noCompetition: 0,
     errors: 0,
     changes: [],
@@ -249,6 +285,8 @@ export async function repriceStore(
         metas.map((m) => m.sku),
       );
       const byKey = new Map(offers.map((o) => [o.sku, o]));
+      // Latest known product cost → margin floor, for this page's SKUs.
+      const floors = await loadCostFloors(metas.map((m) => m.sku));
 
       for (const meta of metas) {
         result.scanned++;
@@ -270,7 +308,8 @@ export async function repriceStore(
           continue;
         }
 
-        const decision = decideReprice(meta, o);
+        const cf = floors.get(meta.sku);
+        const decision = decideReprice(meta, o, { cost: cf?.cost, floor: cf?.floor });
 
         // Apply the price change (unless dryRun).
         if (decision.action === "repriced" && decision.newPrice != null) {
@@ -300,6 +339,10 @@ export async function repriceStore(
             result.skippedCap++;
             result.flagged.push(decision);
             break;
+          case "skipped_margin_floor":
+          case "skipped_floor":
+            result.skippedFloor++;
+            break;
           case "no_competition":
             result.noCompetition++;
             break;
@@ -321,6 +364,30 @@ export async function repriceStore(
   }
 
   return result;
+}
+
+/**
+ * Latest known product cost per SKU → its margin-protected price floor.
+ * SkuCost rows are dated; we take the most recent effectiveDate per SKU.
+ * SKUs with no cost row are simply absent from the map (→ $1 hard floor).
+ */
+async function loadCostFloors(
+  skus: string[],
+): Promise<Map<string, { cost: number; floor: number }>> {
+  const m = new Map<string, { cost: number; floor: number }>();
+  if (skus.length === 0) return m;
+  const rows = await prisma.skuCost.findMany({
+    where: { sku: { in: skus } },
+    orderBy: { effectiveDate: "desc" }, // ISO date strings sort correctly
+    select: { sku: true, totalCost: true },
+  });
+  for (const r of rows) {
+    // newest-first → the first row we see for a SKU is its latest cost.
+    if (!m.has(r.sku) && r.totalCost != null && r.totalCost > 0) {
+      m.set(r.sku, { cost: r.totalCost, floor: marginFloorPrice(r.totalCost) });
+    }
+  }
+  return m;
 }
 
 async function logDecision(
