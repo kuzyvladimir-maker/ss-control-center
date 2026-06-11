@@ -628,14 +628,43 @@ export async function GET(request: NextRequest) {
       // Multi-line OR qty>1  → use PackingProfile keyed by composition
       //                        signature. Profile is set up once by the
       //                        operator via /api/shipping/packing-profile.
-      const orderLines: Array<{ sku: string; quantity: number }> = (
-        order.line_items ?? []
-      )
-        .map((li: { sellable?: { sku_code?: string; sku?: string }; quantity?: number }) => ({
-          sku: String(li?.sellable?.sku_code ?? li?.sellable?.sku ?? ""),
-          quantity: Number(li?.quantity ?? 1),
-        }))
-        .filter((i: { sku: string; quantity: number }) => i.sku);
+      const orderLines: Array<{
+        sku: string;
+        quantity: number;
+        fallbackId: number | null;
+      }> = (order.line_items ?? [])
+        .map(
+          (li: {
+            sellable?: {
+              sku_code?: string;
+              sku?: string;
+              id?: number;
+              product_id?: number;
+              product?: { id?: number };
+            };
+            quantity?: number;
+          }) => ({
+            sku: String(li?.sellable?.sku_code ?? li?.sellable?.sku ?? ""),
+            quantity: Number(li?.quantity ?? 1),
+            // Same fallback the dashboard uses (sellable.product.id ??
+            // product_id ?? sellable.id) so SKU-less Shopify/eBay lines key on
+            // a stable id and match the saved packing profile.
+            fallbackId:
+              (typeof li?.sellable?.product?.id === "number"
+                ? li.sellable.product.id
+                : typeof li?.sellable?.product_id === "number"
+                  ? li.sellable.product_id
+                  : typeof li?.sellable?.id === "number"
+                    ? li.sellable.id
+                    : null),
+          }),
+        )
+        // Keep a line if it has EITHER a SKU or a fallback id — dropping
+        // SKU-less lines here made requiresPackingProfile() see an empty list.
+        .filter(
+          (i: { sku: string; quantity: number; fallbackId: number | null }) =>
+            i.sku || i.fallbackId != null,
+        );
 
       const firstSku =
         order.line_items?.[0]?.sellable?.sku_code ||

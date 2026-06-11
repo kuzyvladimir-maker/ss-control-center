@@ -9,12 +9,30 @@
 export interface OrderLineItem {
   sku: string;
   quantity: number;
+  // Stable fallback identity (Veeqo sellable / product id) used ONLY when the
+  // line has no SKU — e.g. Shopify (NAN health) / eBay listings that arrive
+  // without a sku_code. Without it those items were dropped from the signature
+  // → empty signature → "Order has no packing signature" → couldn't save a
+  // packing profile → couldn't quote/buy. Keyed as `#<id>` so it can never
+  // collide with a real SKU. Backward-compatible: a line WITH a SKU produces
+  // the exact same key as before, so existing saved profiles still match.
+  fallbackId?: string | number | null;
+}
+
+/** Deterministic key for one line: its SKU, else `#<fallbackId>`, else "". */
+function lineKey(i: OrderLineItem): string {
+  const sku = (i.sku ?? "").trim();
+  if (sku) return sku;
+  const fb = i.fallbackId != null ? String(i.fallbackId).trim() : "";
+  return fb ? `#${fb}` : "";
 }
 
 export function buildPackingSignature(items: OrderLineItem[]): string {
-  const filtered = items.filter((i) => i.sku && i.quantity > 0);
-  const sorted = [...filtered].sort((a, b) => a.sku.localeCompare(b.sku));
-  return sorted.map((i) => `${i.sku}:${i.quantity}`).join("|");
+  const keyed = items
+    .map((i) => ({ key: lineKey(i), quantity: i.quantity }))
+    .filter((i) => i.key && i.quantity > 0);
+  const sorted = [...keyed].sort((a, b) => a.key.localeCompare(b.key));
+  return sorted.map((i) => `${i.key}:${i.quantity}`).join("|");
 }
 
 export function buildPackingDescription(

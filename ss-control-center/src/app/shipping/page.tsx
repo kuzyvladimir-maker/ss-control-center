@@ -4939,9 +4939,10 @@ function PackingProfileDialog({
           <div>
             <div className="font-medium text-ink mb-1">Composition</div>
             <ul className="rounded border border-rule bg-surface-tint p-2 text-ink-2 space-y-0.5">
-              {order.items.map((i) => (
-                <li key={i.sku}>
-                  • {i.productTitle} × {i.quantity} ({i.sku})
+              {order.items.map((i, idx) => (
+                <li key={i.sku || idx}>
+                  • {i.productTitle} × {i.quantity}
+                  {i.sku ? ` (${i.sku})` : ""}
                 </li>
               ))}
             </ul>

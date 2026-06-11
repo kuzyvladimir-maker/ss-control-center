@@ -240,6 +240,7 @@ export async function GET() {
             items.map((i: LiteItem): OrderLineItem => ({
               sku: i.sku,
               quantity: i.quantity,
+              fallbackId: i.productId,
             }))
           )
         );
@@ -494,7 +495,11 @@ export async function GET() {
       );
       const sig = reqsProfile
         ? buildPackingSignature(
-            items.map((i) => ({ sku: i.sku, quantity: i.quantity }))
+            items.map((i) => ({
+              sku: i.sku,
+              quantity: i.quantity,
+              fallbackId: i.productId,
+            }))
           )
         : "";
 
