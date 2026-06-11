@@ -17,6 +17,11 @@ import { cleanProductQuery } from "@/lib/procurement/clean-product-query";
 interface RetireFromSaleModalProps {
   /** Original procurement product title — used for the initial query and shown in header. */
   productTitle: string;
+  /** The order's Walmart item SKU (e.g. RizwanX-65). Lets the modal find the
+   *  exact product via Walmart's reliable `?sku=` lookup even when the title
+   *  search / cache miss it (Walmart's offset-paginated catalog listing is
+   *  unreliable and can omit live items entirely). */
+  sku?: string | null;
   /** Source order id (purchase order) — recorded on each audit row as triggeredFrom. */
   triggeredFromOrderId?: string | null;
   onClose: () => void;
@@ -67,6 +72,7 @@ interface SkuDetail {
  */
 export function RetireFromSaleModal({
   productTitle,
+  sku: orderSku,
   triggeredFromOrderId,
   onClose,
 }: RetireFromSaleModalProps) {
@@ -85,6 +91,8 @@ export function RetireFromSaleModal({
   // Matches that exist only in non-PUBLISHED statuses (hidden by the
   // unchecked box) — drives the "N more in UNPUBLISHED" hint.
   const [excludedByStatus, setExcludedByStatus] = useState(0);
+  // Whether the last search hit Walmart live (authoritative) vs the cache.
+  const [searchedLive, setSearchedLive] = useState(false);
 
   const [executing, setExecuting] = useState<Set<string>>(new Set());
   const [executeResults, setExecuteResults] = useState<Map<string, ExecuteResult>>(
@@ -103,13 +111,14 @@ export function RetireFromSaleModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function runSearch(q: string, includeUnp: boolean) {
+  async function runSearch(q: string, includeUnp: boolean, live = false) {
     const cleaned = q.trim();
     if (!cleaned) {
       setSearchError("Введи название для поиска");
       return;
     }
     setSearching(true);
+    setSearchedLive(live);
     setSearchError(null);
     setMatches(null);
     setCacheNote(null);
@@ -124,6 +133,7 @@ export function RetireFromSaleModal({
           query: cleaned,
           limit: 100,
           includeUnpublished: includeUnp,
+          live,
         }),
       });
       const data = (await res.json()) as {
@@ -336,13 +346,51 @@ export function RetireFromSaleModal({
         <div className="min-h-[120px] flex-1 overflow-y-auto px-4 py-3">
           {searching && (
             <div className="flex items-center gap-2 text-[12.5px] text-ink-3">
-              <Loader2 size={14} className="animate-spin" /> Ищу в каталоге…
+              <Loader2 size={14} className="animate-spin" />{" "}
+              {searchedLive
+                ? "Ищу вживую на Walmart (может занять до ~20 сек)…"
+                : "Ищу в каталоге…"}
             </div>
           )}
           {searchError && (
             <div className="inline-flex items-start gap-1.5 rounded-md bg-danger-tint px-2 py-1.5 text-[12px] text-danger">
               <AlertCircle size={12} className="mt-0.5 shrink-0" />
               <span>{searchError}</span>
+            </div>
+          )}
+          {/* Live fallback. The cache mirror can miss a freshly-published SKU
+              (it's synced periodically), so after a cache search always offer
+              an authoritative live Walmart lookup — slower, but finds items
+              the cache doesn't have yet. */}
+          {!searching && matches !== null && !searchedLive && (
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-rule bg-surface-tint px-2.5 py-1.5 text-[12px] text-ink-3">
+              <span>Нет нужного товара? Каталог мог не успеть обновиться.</span>
+              <div className="flex shrink-0 items-center gap-3">
+                {orderSku && (
+                  // Reliable path: Walmart's `?sku=` lookup is instant and
+                  // always returns the exact item, even when the paginated
+                  // catalog listing (and our cache) omit it.
+                  <button
+                    type="button"
+                    className="font-medium text-[#0071dc] underline"
+                    onClick={() => runSearch(orderSku, true, true)}
+                  >
+                    Найти по SKU: {orderSku}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="font-medium text-[#0071dc] underline"
+                  onClick={() => runSearch(query, includeUnpublished, true)}
+                >
+                  Искать вживую по названию
+                </button>
+              </div>
+            </div>
+          )}
+          {!searching && searchedLive && matches !== null && (
+            <div className="mb-2 text-[11px] text-ink-4">
+              Результаты получены вживую с Walmart (актуально).
             </div>
           )}
           {/* Hint: matches exist in UNPUBLISHED but the box is off. Shows

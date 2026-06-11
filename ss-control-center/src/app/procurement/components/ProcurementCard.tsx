@@ -627,6 +627,7 @@ export function ProcurementCard({
       {retireOpen && (
         <RetireFromSaleModal
           productTitle={card.productTitle}
+          sku={card.sku}
           triggeredFromOrderId={orderId ?? null}
           onClose={() => setRetireOpen(false)}
         />
