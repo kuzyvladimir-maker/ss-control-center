@@ -71,24 +71,6 @@ function getNextMonday(from: string): string {
   return d.toISOString().split("T")[0];
 }
 
-// ── Is this a same/next-day OVERNIGHT service? ──
-// Keyed on the service NAME, not on calendar-day span. A Friday-shipped
-// "UPS Next Day Air Saver" spans 3 calendar days (Fri→Mon over the weekend)
-// yet is still a ruinously-priced overnight — the kind the Frozen Monday-shift
-// is meant to escape. Detecting it by title (rather than `calDays <= 1`) is
-// what lets the shift fire on a Friday, where the weekend inflates the span.
-// Deliberately matches ONLY genuine overnight/next-day services — NOT 2-/3-day
-// services like "FedEx Express Saver" (a valid 3-day rate that must NOT trigger
-// a delay-to-Monday; see the 113-2379726 incident in the Monday-shift block).
-function isOvernightService(title: string | null | undefined): boolean {
-  const t = (title || "").toLowerCase().replace(/\s+/g, " ");
-  return (
-    t.includes("next day air") || // UPS Next Day Air / Saver / Early A.M.
-    t.includes("nextday") || // collapsed spelling some feeds use
-    t.includes("overnight") // FedEx Priority / Standard / First Overnight
-  );
-}
-
 // Run `fn` over `items` with at most `poolSize` concurrent executions.
 // Used to parallelize the per-order rate pre-warm below without firing all
 // requests at Veeqo at once (it rate-limits bursts). Each worker pulls the
@@ -124,12 +106,6 @@ async function mapPool<T>(
 // our EDD column read one day later than Veeqo's and pushed cheaper
 // rates like UPS Ground Saver out of the deadline filter.
 
-// Module-level diagnostic — written by selectBestRate on each Frozen
-// invocation. The route handler reads this immediately after the call to
-// attach a short trace to the planItem's notes, so the operator can see
-// "why this rate was picked" in the UI without digging into Vercel logs.
-let lastFrozenRateDiagnostic: string | null = null;
-
 /**
  * Frozen calendar-day cap. Master Prompt v3.4 §5 tightens the transit
  * cap from "≤3 days" to "≤2 days" when the FrozenRiskAlert rates the
@@ -153,7 +129,7 @@ function selectBestRate(
   dayName: string,
   isAfterNoon: boolean,
   frozenRiskLevel: string | null = null
-): VeeqoRate | null {
+): { rate: VeeqoRate | null; diagnostic: string | null } {
   const deliveryByDate = new Date(deliveryBy + "T23:59:59");
   const shipDate = new Date(actualShipDay + "T00:00:00");
 
@@ -179,7 +155,7 @@ function selectBestRate(
     })
     .filter((r) => r.meetsDeadline && r.price > 0);
 
-  if (enriched.length === 0) return null;
+  if (enriched.length === 0) return { rate: null, diagnostic: null };
 
   // ── FROZEN ──
   if (productType === "Frozen") {
@@ -253,7 +229,7 @@ function selectBestRate(
       );
     }
 
-    if (pool.length === 0) return null;
+    if (pool.length === 0) return { rate: null, diagnostic: null };
 
     // Frozen rate selection policy (per Vladimir 2026-05-15):
     //   "If shipping cost is ±5% or under $1 difference, always prefer the
@@ -277,9 +253,10 @@ function selectBestRate(
       if (dt !== 0) return dt;
       return a.price - b.price;
     });
-    // Temporary diagnostic — log + stash a short trace so the route
-    // handler can attach it to planItem.notes (visible in UI). Remove
-    // once the FedEx One Rate pair behaves.
+    // Diagnostic — a short trace the route handler attaches to
+    // planItem.notes (visible in UI). Returned (not stashed in a module
+    // global) so the per-order loop can run in parallel without races.
+    let diagnostic: string | null = null;
     try {
       const cand = candidates
         .slice(0, 4)
@@ -299,11 +276,11 @@ function selectBestRate(
         `cand=[${cand.join(" | ")}] outside=[${skipped.join(" | ")}] ` +
         `picked=${candidates[0]?.title}/${candidates[0]?.eddLocal}`;
       console.log(summary);
-      lastFrozenRateDiagnostic = summary;
+      diagnostic = summary;
     } catch {
       /* logging must never break the buy flow */
     }
-    return candidates[0];
+    return { rate: candidates[0], diagnostic };
   }
 
   // ── DRY ──
@@ -319,9 +296,9 @@ function selectBestRate(
   // (isAfterNoon kept in the signature so call sites don't churn if the
   //  time-of-day rule comes back.)
   void isAfterNoon;
-  if (enriched.length === 0) return null;
+  if (enriched.length === 0) return { rate: null, diagnostic: null };
   const pool = [...enriched].sort((a, b) => a.price - b.price);
-  return pool[0];
+  return { rate: pool[0], diagnostic: null };
 }
 
 // ── Main handler ──
@@ -519,10 +496,21 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    for (const order of orders) {
+    // Process orders concurrently. Each order now ALWAYS runs the Frozen
+    // Monday re-quote (mutate dispatch_date → re-quote → restore, ~1.5s of
+    // Veeqo round-trips), so a sequential loop would stack that per Frozen
+    // row and make the page crawl. A bounded pool overlaps them. Safe to
+    // parallelize: the only cross-order writes are `planItems.push` (order-
+    // independent — the response is keyed by orderNumber) and the atomic
+    // `debug.filters.*++` counters; selectBestRate no longer uses a module
+    // global, and each order mutates only its OWN allocation/dispatch_date.
+    // Kept modest (5) to stay under Veeqo's burst rate-limit given the extra
+    // dispatch-date writes the Monday dance adds on top of the dim push.
+    const PLAN_LOOP_CONCURRENCY = 5;
+    await mapPool(orders, PLAN_LOOP_CONCURRENCY, async (order) => {
       // When the caller passed an explicit orderIds filter, only process
       // those rows (lets the UI cheap-refresh a single card).
-      if (orderIdFilter && !orderIdFilter.has(String(order.id))) continue;
+      if (orderIdFilter && !orderIdFilter.has(String(order.id))) return;
 
       // Shopify channels are third-party clients (NAN health and similar)
       // whose products live in our warehouse — they skip the supplier-
@@ -534,14 +522,14 @@ export async function GET(request: NextRequest) {
       const hasPlaced = order.tags?.some(
         (t: { name: string }) => t.name === "Placed"
       );
-      if (!hasPlaced && !planIsShopify) continue;
+      if (!hasPlaced && !planIsShopify) return;
       debug.filters.afterPlacedTag++;
 
       const shipBy = veeqoDateToLocal(order.dispatch_date);
       // The orderIds filter overrides the "today only" gate so refreshes
       // work for orders that aren't on today's dispatch date (e.g. a card
       // the operator just changed packing for).
-      if (!orderIdFilter && shipBy !== dispatchTarget) continue;
+      if (!orderIdFilter && shipBy !== dispatchTarget) return;
       debug.filters.afterDispatchDate++;
 
       const channel = order.channel?.name || "";
@@ -563,11 +551,11 @@ export async function GET(request: NextRequest) {
       if (!channelType && !isMergedAmazon) {
         // No channel info at all — skip (defensive; in practice every
         // Veeqo order has a channel).
-        continue;
+        return;
       }
       debug.filters.afterChannel++;
 
-      if (isWalmart && weekend) continue;
+      if (isWalmart && weekend) return;
       debug.filters.afterWalmartWeekend++;
 
       // Duplicate-purchase guard: trust Veeqo's order.status, NOT the
@@ -579,7 +567,7 @@ export async function GET(request: NextRequest) {
       // "awaiting_fulfillment" when the label is cancelled — exactly
       // the signal we want.
       const orderStatus = String(order.status ?? "").toLowerCase();
-      if (orderStatus === "shipped") continue;
+      if (orderStatus === "shipped") return;
       debug.filters.afterDuplicateCheck++;
 
       // ── Product type ──
@@ -856,8 +844,7 @@ export async function GET(request: NextRequest) {
           // so selectBestRate's existing fallback ("≤3 cal days") fires.
           const frozenRiskLevel =
             frozenRiskByOrderNumber.get(String(order.number)) ?? null;
-          lastFrozenRateDiagnostic = null;
-          selectedRate = selectBestRate(
+          const todaySel = selectBestRate(
             rates,
             productType,
             deliveryBy,
@@ -866,8 +853,9 @@ export async function GET(request: NextRequest) {
             isAfterNoon,
             frozenRiskLevel
           );
-          if (productType === "Frozen" && lastFrozenRateDiagnostic) {
-            frozenRateDebug = `today: ${lastFrozenRateDiagnostic}`;
+          selectedRate = todaySel.rate;
+          if (productType === "Frozen" && todaySel.diagnostic) {
+            frozenRateDebug = `today: ${todaySel.diagnostic}`;
           }
 
           // Surface a stopReason for non-Amazon orders whose rate quote
@@ -913,81 +901,35 @@ export async function GET(request: NextRequest) {
               )
             : -1;
 
-          // Compute cal-days-in-transit for the rate just picked, so the
-          // Monday-shift guard below can recognise borderline-Frozen
-          // picks. We re-derive instead of asking selectBestRate to
-          // return it, because that function's signature is shared with
-          // the Monday selection too and we want one source of truth
-          // for the math (`veeqoDateToLocal` + date diff).
-          let selectedCalDays: number = -1;
-          if (selectedRate) {
-            const eddLocal = veeqoDateToLocal(
-              selectedRate.delivery_promise_date
-            );
-            const eddDate = new Date(eddLocal + "T00:00:00");
-            const shipDate = new Date(actualShipDay + "T00:00:00");
-            selectedCalDays = Math.round(
-              (eddDate.getTime() - shipDate.getTime()) / 86_400_000
-            );
-          }
-
-          // Monday-shift policy (Vladimir 2026-06-09 — canonical):
+          // Monday-shift policy (Vladimir 2026-06-12 — canonical, supersedes
+          // the 2026-06-09/06-10 overnight-trigger versions):
           //
-          // A Frozen rate must satisfy BOTH conditions to be bought today:
-          //   1. delivers on/before the marketplace deadline, AND
-          //   2. transit ≤ the cal-day cap — 3 days normally, 2 when the
-          //      destination temperature is high/critical (frozenMaxCalDays).
-          // `selectBestRate` already enforces both, so a non-null
-          // `selectedRate` means today's ship date IS valid → buy it today.
+          // For EVERY Frozen order, compute TWO candidates and keep the
+          // economically better one:
+          //   • today's best rate (`selectedRate`), and
+          //   • the best rate if we instead dispatch next Monday.
+          // Each must satisfy the SAME two base conditions — deliver on/before
+          // the marketplace deadline AND within the frozen cal-day cap (3
+          // normally, 2 hot/critical), measured from THAT candidate's own ship
+          // day. selectBestRate enforces both per ship-day, so any non-null
+          // pick is already valid. Between two valid picks we take the CHEAPER;
+          // if they're within a small tolerance (max $3 / 5%) we keep the one
+          // that DELIVERS EARLIER (faster is worth a couple dollars — and for
+          // frozen, less transit = safer). The physical ship day doesn't matter
+          // to Amazon as long as both conditions hold, so always comparing
+          // Monday is safe and simply saves money: a Friday order's only
+          // in-window rate is often a $69 overnight, while a Monday-shipped
+          // 2-Day clears the same 6/17-6/18 deadline for ~$18.
           //
-          // The Monday-shift exists for the OPPOSITE case: shipping today
-          // can't meet the rule (e.g. ship Thu, every rate delivers Mon →
-          // > cap cal days). selectBestRate returns null. Only THEN do we
-          // move the dispatch_date to next Monday, re-quote, and take a
-          // Monday rate if it now satisfies deadline + cal-day cap.
-          //
-          // It must NOT fire when today already has a valid rate. The old
-          // `selectedCalDays >= 3` / Saturday-surcharge triggers did exactly
-          // that and delayed dispatch to chase a cheaper rate — e.g.
-          // 113-2379726-9067420: today's FedEx Express Saver was a valid
-          // 3-day rate, but the trick shoved it to a Mon UPS Ground that
-          // delivered 4 days LATER (Jun 16 vs Jun 12) just because cheaper.
-          //
-          //   * monDeadlineDays >= 1 — Monday must be before the deadline.
-          //   * dayName !== "Mon" — today being Monday would shift a full
-          //     week out; surface as a manual stop instead.
-          //
-          // ALSO fire when today's ONLY Frozen-valid pick is a same/next-day
-          // OVERNIGHT. That happens when shipping late in the week pushes every
-          // cheaper 2-/3-day service past the cal-day cap over the weekend,
-          // leaving only a ruinous overnight (Brooklyn order 113-8209299-
-          // 9582650: UPS Next Day Air Saver $55.66 for a $0-shipping order,
-          // when a Monday-shipped FedEx 2Day delivers in 2 days for $17.78,
-          // still before the 6/18 deadline). We only ACTUALLY switch below when
-          // Monday's vetted pick is CHEAPER (mondayIsCheaper), so this never
-          // downgrades a genuinely-needed overnight — and a tight customer
-          // deadline is already gated out by `monDeadlineDays >= 1`.
-          //
-          // Detect the overnight by SERVICE NAME (isOvernightService), not by
-          // `selectedCalDays <= 1`. A Friday-shipped "UPS Next Day Air Saver"
-          // spans Fri→Mon = 3 calendar days over the weekend, so the old
-          // cal-day check silently MISSED it and bought the $69 overnight every
-          // Friday (orders 112-6530340-5666624, 112-3866758-9972232,
-          // 114-8549240-4216210 — all $69-78 Next Day Air with a 6/17-6/18
-          // deadline that a Monday 2-Day clears for ~$18). The cal-day signal
-          // is kept as a fallback for any overnight whose title we don't match.
-          // The 113-2379726 incident stays fixed: its today-pick was a FedEx
-          // Express Saver (a 3-day service, NOT overnight) → isOvernightService
-          // is false and selectedCalDays was 3, so the shift still won't fire.
-          const todayPickIsOvernight =
-            selectedRate != null &&
-            (isOvernightService(selectedRate.title) ||
-              (selectedCalDays >= 0 && selectedCalDays <= 1));
+          //   * monDeadlineDays >= 1 — a Monday dispatch must still beat the
+          //     deadline; if it can't there is no Monday candidate and today's
+          //     pick stands (so a genuinely tight deadline is never delayed).
+          //   * dayInfo.dayName !== "Mon" — today already IS Monday; "next
+          //     Monday" would be a full week out, so don't shift.
           const tryMonday =
             productType === "Frozen" &&
             monDeadlineDays >= 1 &&
-            dayInfo.dayName !== "Mon" &&
-            (!selectedRate || todayPickIsOvernight);
+            dayInfo.dayName !== "Mon";
 
           if (tryMonday) {
             const originalDispatch: string | undefined = order.dispatch_date;
@@ -1004,8 +946,7 @@ export async function GET(request: NextRequest) {
               );
               const mondayRates: VeeqoRate[] =
                 mondayRatesResp?.available || [];
-              lastFrozenRateDiagnostic = null;
-              const mondayPick = selectBestRate(
+              const mondaySel = selectBestRate(
                 mondayRates,
                 productType,
                 deliveryBy,
@@ -1014,7 +955,8 @@ export async function GET(request: NextRequest) {
                 false,
                 frozenRiskLevel
               );
-              const mondayDebug = lastFrozenRateDiagnostic;
+              const mondayPick = mondaySel.rate;
+              const mondayDebug = mondaySel.diagnostic;
 
               const todayPrice = selectedRate
                 ? parseFloat(selectedRate.total_net_charge)
@@ -1023,58 +965,74 @@ export async function GET(request: NextRequest) {
                 ? parseFloat(mondayPick.total_net_charge)
                 : Infinity;
 
-              // Cal-days from Monday for the candidate rate — same math
-              // as for `selectedCalDays` above, just anchored at
-              // nextMonday instead of actualShipDay.
-              let mondayCalDays = -1;
-              if (mondayPick) {
-                const eddLocal = veeqoDateToLocal(
-                  mondayPick.delivery_promise_date
+              // Actual delivery dates (PT calendar day) for the tolerance
+              // tiebreak — "earlier delivery wins when the prices are close".
+              const todayEdd = selectedRate
+                ? new Date(
+                    veeqoDateToLocal(selectedRate.delivery_promise_date) +
+                      "T00:00:00"
+                  )
+                : null;
+              const mondayEdd = mondayPick
+                ? new Date(
+                    veeqoDateToLocal(mondayPick.delivery_promise_date) +
+                      "T00:00:00"
+                  )
+                : null;
+
+              // Choose between today's pick and Monday's pick. Both already
+              // satisfy deadline + frozen cal-day cap for their own ship day,
+              // so the choice is purely economic (Vladimir 2026-06-12):
+              //   - only one valid        → take it.
+              //   - both valid, far apart → CHEAPER wins (ship day is
+              //                             irrelevant to Amazon as long as
+              //                             both base conditions hold).
+              //   - both valid, within    → the EARLIER-delivering one wins;
+              //     max($3, 5%)             on an EDD tie the cheaper wins.
+              //                             (A couple dollars is worth +1 day
+              //                             faster — and less transit is safer
+              //                             for frozen.)
+              let takeMonday = false;
+              let switchReason = "";
+              if (mondayPick && !selectedRate) {
+                takeMonday = true;
+                switchReason = "no on-time rate from today";
+              } else if (mondayPick && selectedRate) {
+                const tol = Math.max(
+                  3,
+                  Math.min(todayPrice, mondayPrice) * 0.05
                 );
-                const eddDate = new Date(eddLocal + "T00:00:00");
-                const monShipDate = new Date(nextMonday + "T00:00:00");
-                mondayCalDays = Math.round(
-                  (eddDate.getTime() - monShipDate.getTime()) / 86_400_000
-                );
+                const within = Math.abs(todayPrice - mondayPrice) <= tol;
+                const monEarlier =
+                  mondayEdd != null &&
+                  todayEdd != null &&
+                  mondayEdd.getTime() < todayEdd.getTime();
+                const sameEdd =
+                  mondayEdd != null &&
+                  todayEdd != null &&
+                  mondayEdd.getTime() === todayEdd.getTime();
+                if (within) {
+                  if (monEarlier) {
+                    takeMonday = true;
+                    switchReason = `delivers earlier within $${tol.toFixed(0)}`;
+                  } else if (sameEdd && mondayPrice < todayPrice) {
+                    takeMonday = true;
+                    switchReason = `same EDD, $${(todayPrice - mondayPrice).toFixed(2)} cheaper`;
+                  }
+                  // else today is earlier-or-equal within the band → keep it.
+                } else if (mondayPrice < todayPrice) {
+                  takeMonday = true;
+                  switchReason = `saved $${(todayPrice - mondayPrice).toFixed(2)}`;
+                }
+                // else today is materially cheaper → keep today.
               }
 
-              // Pick Monday when EITHER it's cheaper OR it gives a
-              // strictly tighter EDD-in-cal-days (food safety wins
-              // over $0.50 of savings). We keep a `selectedRate == null`
-              // branch — when there's no today pick at all, *any* Monday
-              // rate is an improvement.
-              const mondayIsCheaper =
-                mondayPick != null && mondayPrice < todayPrice;
-              const mondayIsSafer =
-                mondayPick != null &&
-                selectedCalDays > 0 &&
-                mondayCalDays > 0 &&
-                mondayCalDays < selectedCalDays;
-              const mondayIsOnlyOption = mondayPick != null && !selectedRate;
-
-              if (mondayIsCheaper || mondayIsSafer || mondayIsOnlyOption) {
+              if (takeMonday && mondayPick) {
                 selectedRate = mondayPick;
-                // Swap the diagnostic over to the Monday trace so the
-                // operator sees what the Monday refetch saw — that's the
-                // call that produced the rate they're looking at.
+                // Swap the diagnostic to the Monday trace — that's the call
+                // that produced the rate now being shown.
                 if (mondayDebug) frozenRateDebug = `mon: ${mondayDebug}`;
-                const reasonBits: string[] = [];
-                if (mondayIsCheaper && todayPrice !== Infinity) {
-                  reasonBits.push(
-                    `saved $${(todayPrice - mondayPrice).toFixed(2)}`
-                  );
-                }
-                if (mondayIsSafer) {
-                  reasonBits.push(
-                    `${selectedCalDays}→${mondayCalDays} cal days (frozen rule)`
-                  );
-                }
-                if (mondayIsOnlyOption && reasonBits.length === 0) {
-                  reasonBits.push("no rate from today");
-                }
-                shipDateNote = `Shifted to Mon ${nextMonday}: ${reasonBits.join(
-                  " · "
-                )}`;
+                shipDateNote = `Shifted to Mon ${nextMonday}: ${switchReason}`;
               }
             } catch (e) {
               // Trick failed — fall back to today's pick. Don't leak the
@@ -1234,7 +1192,7 @@ export async function GET(request: NextRequest) {
         totalNetCharge: selectedRate?.total_net_charge || null,
         baseRate: selectedRate?.base_rate || null,
       });
-    }
+    });
 
     // ── Already-bought rows: show what was ACTUALLY bought ──────────────
     // Bought orders stay visible in the list (operator wants to see the
