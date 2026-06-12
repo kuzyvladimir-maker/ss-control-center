@@ -11,10 +11,15 @@
 // /api/shipping/plan.
 
 import { NextRequest, NextResponse } from "next/server";
-import { veeqoFetch, getShippingRates } from "@/lib/veeqo";
+import {
+  veeqoFetch,
+  getShippingRates,
+  updateOrderDispatchDate,
+} from "@/lib/veeqo";
 
 interface VeeqoOrderLite {
   id?: string | number;
+  dispatch_date?: string;
   allocations?: Array<{ id?: string | number }>;
 }
 
@@ -26,6 +31,16 @@ export async function GET(request: NextRequest) {
       { status: 400 },
     );
   }
+  // Optional `?shipDate=YYYY-MM-DD` — re-quote as if the package dispatches on
+  // that day. Veeqo derives every rate's EDD (and any weekend surcharge) from
+  // the order's dispatch_date, so to see the rates for a different ship day we
+  // PUT dispatch_date → re-quote → restore. Lets the rate modal recompute when
+  // the operator changes the ship date (mirrors the plan route's behaviour).
+  const shipDateParam = request.nextUrl.searchParams.get("shipDate");
+  const shipDate =
+    shipDateParam && /^\d{4}-\d{2}-\d{2}$/.test(shipDateParam)
+      ? shipDateParam
+      : null;
   try {
     const order = (await veeqoFetch(`/orders/${orderId}`)) as VeeqoOrderLite;
     const allocationId = order?.allocations?.[0]?.id;
@@ -35,9 +50,33 @@ export async function GET(request: NextRequest) {
         { status: 404 },
       );
     }
-    const ratesResp = await getShippingRates(String(allocationId));
-    const rates = ratesResp?.available || [];
-    return NextResponse.json({ rates });
+
+    const origDispatch = order.dispatch_date;
+    let movedDispatch = false;
+    try {
+      if (shipDate) {
+        await updateOrderDispatchDate(Number(orderId), `${shipDate}T06:59:59.000Z`);
+        movedDispatch = true;
+        // Veeqo recomputes the allocation's rate cache asynchronously.
+        await new Promise((r) => setTimeout(r, 800));
+      }
+      const ratesResp = await getShippingRates(String(allocationId));
+      const rates = ratesResp?.available || [];
+      return NextResponse.json({ rates, shipDate });
+    } finally {
+      // Always restore — the dispatch dance for the actual purchase happens in
+      // /api/shipping/buy from the plan item's physicalShipDate, not here.
+      if (movedDispatch && origDispatch) {
+        try {
+          await updateOrderDispatchDate(Number(orderId), origDispatch);
+        } catch (e) {
+          console.error(
+            `CRITICAL: failed to restore dispatch_date after shipDate re-quote on order ${orderId} — left at ${shipDate}. Original: ${origDispatch}`,
+            e,
+          );
+        }
+      }
+    }
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : String(e) },

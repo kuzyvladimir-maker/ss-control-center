@@ -315,6 +315,19 @@ export async function GET(request: NextRequest) {
         )
       : null;
 
+    // Optional `?shipDate=YYYY-MM-DD` — the operator manually picked a
+    // physical dispatch day (inline card picker / rate modal). When set we
+    // quote EVERY filtered order at exactly that day (PUT dispatch → live
+    // re-quote → restore) and SKIP the auto Monday-shift — they chose the
+    // day, so we honour it and just recompute the best rate for it. Only
+    // honoured alongside an orderIds filter (it's a per-card refresh, never
+    // the full-dashboard pass). Absent ⇒ zero behaviour change.
+    const shipDateParam = request.nextUrl?.searchParams.get("shipDate");
+    const shipDateOverride =
+      orderIdFilter && shipDateParam && /^\d{4}-\d{2}-\d{2}$/.test(shipDateParam)
+        ? shipDateParam
+        : null;
+
     const today = getTodayNY();
     const dayInfo = getDayInfo(today);
     const { isWeekend: weekend, actualShipDay, dispatchTarget } = dayInfo;
@@ -822,13 +835,38 @@ export async function GET(request: NextRequest) {
         }
       }
 
+      // When the operator forced a ship date, move Veeqo's dispatch_date to
+      // it BEFORE quoting (EDDs are derived from dispatch_date) and remember
+      // the original so the finally below restores it.
+      const overrideOrigDispatch: string | undefined =
+        shipDateOverride && !stopReason && allocationId
+          ? order.dispatch_date
+          : undefined;
       if (!stopReason && allocationId) {
         try {
+          if (shipDateOverride) {
+            try {
+              await updateOrderDispatchDate(
+                order.id,
+                `${shipDateOverride}T06:59:59.000Z`
+              );
+              // Veeqo recomputes the allocation's rate cache asynchronously.
+              await new Promise((r) => setTimeout(r, 800));
+            } catch (e) {
+              console.warn(
+                `[plan] shipDate override dispatch PUT failed for ${order.id}:`,
+                e instanceof Error ? e.message : e
+              );
+            }
+          }
           // Read the parallel pre-warm cache; fall back to a live fetch on a
           // miss (e.g. an order whose gates differed from the pre-warm pass).
-          const ratesResponse =
-            ratesByAlloc.get(String(allocationId)) ??
-            (await getShippingRates(String(allocationId)));
+          // For a shipDate override the cache (quoted at today's dispatch) is
+          // stale, so always quote live.
+          const ratesResponse = shipDateOverride
+            ? await getShippingRates(String(allocationId))
+            : (ratesByAlloc.get(String(allocationId)) ??
+              (await getShippingRates(String(allocationId))));
           const rates: VeeqoRate[] = ratesResponse?.available || [];
 
           if (isAlt) {
@@ -844,12 +882,18 @@ export async function GET(request: NextRequest) {
           // so selectBestRate's existing fallback ("≤3 cal days") fires.
           const frozenRiskLevel =
             frozenRiskByOrderNumber.get(String(order.number)) ?? null;
+          // Ship day driving the rate math: the operator's forced date when
+          // present, else today's computed dispatch day.
+          const effectiveShipDay = shipDateOverride || actualShipDay;
+          const effectiveDayName = shipDateOverride
+            ? getDayInfo(shipDateOverride).dayName
+            : dayInfo.dayName;
           const todaySel = selectBestRate(
             rates,
             productType,
             deliveryBy,
-            actualShipDay,
-            dayInfo.dayName,
+            effectiveShipDay,
+            effectiveDayName,
             isAfterNoon,
             frozenRiskLevel
           );
@@ -927,6 +971,7 @@ export async function GET(request: NextRequest) {
           //   * dayInfo.dayName !== "Mon" — today already IS Monday; "next
           //     Monday" would be a full week out, so don't shift.
           const tryMonday =
+            !shipDateOverride &&
             productType === "Frozen" &&
             monDeadlineDays >= 1 &&
             dayInfo.dayName !== "Mon";
@@ -1110,6 +1155,21 @@ export async function GET(request: NextRequest) {
           }
         } catch (e) {
           stopReason = `Rates error: ${e instanceof Error ? e.message : String(e)}`;
+        } finally {
+          // Restore the dispatch_date we moved for a shipDate override. The
+          // real dispatch is re-applied at purchase time in /api/shipping/buy
+          // from the plan item's physicalShipDate, so Veeqo state must be left
+          // unchanged here.
+          if (shipDateOverride && overrideOrigDispatch) {
+            try {
+              await updateOrderDispatchDate(order.id, overrideOrigDispatch);
+            } catch (e) {
+              console.error(
+                `CRITICAL: failed to restore dispatch_date after shipDate override on ${order.id} — left at ${shipDateOverride}. Original: ${overrideOrigDispatch}`,
+                e
+              );
+            }
+          }
         }
       } else if (!stopReason && !allocationId) {
         stopReason = "No allocation_id on order";
@@ -1142,13 +1202,22 @@ export async function GET(request: NextRequest) {
       // truth for new readers. shipDateTrickApplied tells the UI to
       // flag the card and the buy flow to do the dispatch-date dance.
       const labelDate = computeLabelDate(shipBy);
-      const trickFired = Boolean(shipDateNote);
-      const physicalShipDate = trickFired
-        ? nextMondayFrom(labelDate)
-        : labelDate;
-      const legacyActualShipDay = trickFired
-        ? getNextMonday(today)
-        : actualShipDay;
+      const autoTrick = Boolean(shipDateNote); // auto Monday-shift fired
+      // A manual ship-date override sets the physical ship day directly; the
+      // label date stays the Amazon-facing date so LSR isn't affected.
+      const physicalShipDate = shipDateOverride
+        ? shipDateOverride
+        : autoTrick
+          ? nextMondayFrom(labelDate)
+          : labelDate;
+      const legacyActualShipDay = shipDateOverride
+        ? shipDateOverride
+        : autoTrick
+          ? getNextMonday(today)
+          : actualShipDay;
+      // Drive the dual-date UI chip + the buy-time dispatch dance whenever the
+      // physical day differs from the label date — auto-shift OR manual override.
+      const trickFired = autoTrick || physicalShipDate !== labelDate;
 
       planItems.push({
         orderNumber: order.number,

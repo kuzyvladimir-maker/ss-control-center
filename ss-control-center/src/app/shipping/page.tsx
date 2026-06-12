@@ -163,6 +163,16 @@ interface PlanItem {
   // so the API can also push package dims to Veeqo's allocation_package
   // endpoint, so subsequent rate quotes use the new packaging.
   allocationId: string | null;
+  // Purchase identifiers (present in the /plan response). Surfaced on the type
+  // so a ship-date re-quote can build a full RateOverride from the recommended
+  // rate it returns.
+  serviceType?: string | null;
+  subCarrierId?: string | null;
+  serviceCarrier?: string | null;
+  carrierId?: string | null;
+  remoteShipmentId?: string | null;
+  totalNetCharge?: string | null;
+  baseRate?: string | null;
 }
 
 interface PlanResponse {
@@ -186,6 +196,9 @@ interface RateOverride {
   baseRate: string | null;
   edd: string | null; // YYYY-MM-DD
   price: number | null;
+  // Physical ship day the operator forced when picking this rate (inline
+  // picker / rate modal). Drives the buy's dispatch-date dance.
+  physicalShipDate?: string | null;
 }
 
 interface StoreTotals {
@@ -1057,17 +1070,88 @@ export default function ShippingLabelsPage() {
     for (const o of readyWalmartOrders) quoteWalmartOrder(o, safe);
   }
 
+  // Re-quote a Veeqo (Amazon/eBay/…) order at a forced ship date and store the
+  // recommended rate as an override, so the card shows the rate for the new day
+  // AND Buy purchases it dispatching on that day. Veeqo derives each rate's EDD
+  // (and weekend surcharges) from dispatch_date, so the rate genuinely changes
+  // with the ship date — the plan route does the PUT-dispatch→re-quote→restore
+  // and returns the recommendation; here we just persist it as the override.
+  const requoteAmazonOrder = useCallback(
+    async (o: DashboardOrder, shipDate: string) => {
+      setRequoting((p) => ({ ...p, [o.orderNumber]: true }));
+      try {
+        const r = await fetch(
+          `/api/shipping/plan?orderIds=${encodeURIComponent(
+            o.orderId,
+          )}&shipDate=${shipDate}`,
+        );
+        const j = (await r.json()) as PlanResponse & { error?: string };
+        if (!r.ok) throw new Error(j?.error || `HTTP ${r.status}`);
+        const item = (j.orders ?? []).find(
+          (it) => it.orderNumber === o.orderNumber,
+        );
+        if (item && item.status !== "stop" && item.totalNetCharge) {
+          // Valid rate at the new date → make it the override.
+          setRateOverrides((prev) => ({
+            ...prev,
+            [o.orderId]: {
+              carrier: item.carrier ?? null,
+              service: item.service ?? null,
+              serviceType: item.serviceType ?? null,
+              subCarrierId: item.subCarrierId ?? null,
+              serviceCarrier: item.serviceCarrier ?? null,
+              carrierId: item.carrierId ?? null,
+              remoteShipmentId: item.remoteShipmentId ?? null,
+              totalNetCharge: item.totalNetCharge ?? null,
+              baseRate: item.baseRate ?? null,
+              edd: item.edd ?? null,
+              price: item.price ?? null,
+              physicalShipDate: item.physicalShipDate ?? shipDate,
+            },
+          }));
+          setBuyErrors((prev) => {
+            if (!(o.orderId in prev)) return prev;
+            const next = { ...prev };
+            delete next[o.orderId];
+            return next;
+          });
+        } else {
+          // No on-time rate at this date — drop any stale override and surface
+          // the reason so the row doesn't keep showing the old day's rate.
+          setRateOverrides((prev) => {
+            if (!(o.orderId in prev)) return prev;
+            const next = { ...prev };
+            delete next[o.orderId];
+            return next;
+          });
+          setBuyErrors((prev) => ({
+            ...prev,
+            [o.orderId]:
+              item?.notes ||
+              `No rate delivers in time when shipping ${fmtDate(shipDate)}.`,
+          }));
+        }
+      } catch (e) {
+        console.warn("[requote] failed for", o.orderNumber, e);
+      } finally {
+        setRequoting((p) => ({ ...p, [o.orderNumber]: false }));
+      }
+    },
+    [],
+  );
+
   // Change one order's ship date (overrides the global for that order only).
-  // Walmart re-quotes through Walmart's API (rates DO vary by ship date there,
-  // and it drives both display and buy). Amazon does NOT re-quote: Veeqo's API
-  // returns a fixed quote regardless of dispatch date (verified — price + EDD
-  // don't move), so changing the date only re-derives the "N days" transit on
-  // the row (EDD − ship date). No Veeqo write, instant.
+  // BOTH channels now re-quote against the new dispatch day: Walmart through
+  // its own API, Veeqo/Amazon through the plan route (the old "Veeqo returns a
+  // fixed quote regardless of dispatch date" assumption was wrong — EDDs and
+  // weekend surcharges DO move, which is exactly why the Frozen Monday-shift
+  // re-quotes). The recommended rate becomes the row's override.
   function changeOrderShipDate(o: DashboardOrder, date: string) {
     if (!date) return;
     const safe = effectiveBusinessDay(date);
     setShipDateByOrder((p) => ({ ...p, [o.orderNumber]: safe }));
     if (o.isWalmart) quoteWalmartOrder(o, safe);
+    else void requoteAmazonOrder(o, safe);
   }
 
   // Orders narrowed to the selected channel. Every count and the list below
@@ -2947,12 +3031,26 @@ export default function ShippingLabelsPage() {
         <PickRateDialog
           order={pickRateModal}
           plan={planByOrderNumber.get(pickRateModal.orderNumber) ?? null}
+          initialShipDate={effectiveShipDate(pickRateModal.orderNumber)}
+          onShipDateChange={(d) =>
+            setShipDateByOrder((p) => ({
+              ...p,
+              [pickRateModal.orderNumber]: d,
+            }))
+          }
           onClose={() => setPickRateModal(null)}
           onPick={(override) => {
             setRateOverrides((prev) => ({
               ...prev,
               [pickRateModal.orderId]: override,
             }));
+            // Keep the row's ship-date chip in sync with the picked date.
+            if (override.physicalShipDate) {
+              setShipDateByOrder((p) => ({
+                ...p,
+                [pickRateModal.orderNumber]: override.physicalShipDate as string,
+              }));
+            }
             setPickRateModal(null);
           }}
         />
@@ -3521,16 +3619,21 @@ function OrderRow({
               // leaves and would contradict the Ship-date picker
               // (which now also advances Sat/Sun to next business day).
               const labelDate = plan.labelDate ?? plan.actualShipDay;
+              // A manual ship-date override (inline picker / rate modal) carries
+              // its own physical ship day. Prefer THAT so the chip never
+              // disagrees with the date picker after a re-quote; fall back to
+              // the batch plan's day when there's no override.
+              const overridePhysical = rateOverride?.physicalShipDate ?? null;
               const physicalShipDate =
-                plan.actualShipDay ?? plan.physicalShipDate;
+                overridePhysical ?? plan.actualShipDay ?? plan.physicalShipDate;
               if (!labelDate && !physicalShipDate) return null;
 
-              // Use only the explicit Ship-Date-Trick flag from the
-              // route. The old fallback (labelDate !== physicalShipDate)
-              // false-fires for every weekend load now that the chip
-              // anchors on actualShipDay (Mon) while labelDate stays
-              // Sun for the printed label.
-              const trickApplied = plan.shipDateTrickApplied === true;
+              // Show the dual Label/Physical chip whenever the physical day
+              // differs from the Amazon label date — via an override OR the
+              // route's explicit Ship-Date-Trick flag.
+              const trickApplied = overridePhysical
+                ? overridePhysical !== labelDate
+                : plan.shipDateTrickApplied === true;
 
               if (!trickApplied) {
                 return (
@@ -5806,24 +5909,36 @@ interface VeeqoRateLite {
 function PickRateDialog({
   order,
   plan,
+  initialShipDate,
+  onShipDateChange,
   onClose,
   onPick,
 }: {
   order: DashboardOrder;
   plan: PlanItem | null;
+  initialShipDate: string;
+  onShipDateChange: (d: string) => void;
   onClose: () => void;
   onPick: (override: RateOverride) => void;
 }) {
   const [rates, setRates] = useState<VeeqoRateLite[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  // The ship date drives the quote — Veeqo derives each rate's EDD (and any
+  // weekend surcharge) from the dispatch day. Changing it re-fetches the list
+  // for the new day so the rates recalculate, exactly like the card.
+  const [shipDate, setShipDate] = useState<string>(initialShipDate);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setErr(null);
     (async () => {
       try {
         const r = await fetch(
-          `/api/shipping/rates?orderId=${encodeURIComponent(order.orderId)}`,
+          `/api/shipping/rates?orderId=${encodeURIComponent(
+            order.orderId,
+          )}&shipDate=${shipDate}`,
         );
         const j = await r.json();
         if (cancelled) return;
@@ -5841,7 +5956,7 @@ function PickRateDialog({
     return () => {
       cancelled = true;
     };
-  }, [order.orderId]);
+  }, [order.orderId, shipDate]);
 
   // Sort rates cheapest-first so the typical pick is at the top.
   const sortedRates = useMemo(() => {
@@ -5875,6 +5990,8 @@ function PickRateDialog({
       baseRate: rate.base_rate ?? null,
       edd,
       price,
+      // Buy dispatches on the day the rates were quoted against.
+      physicalShipDate: shipDate,
     });
   }
 
@@ -5888,6 +6005,32 @@ function PickRateDialog({
             algorithm&apos;s current pick is highlighted.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Ship date — rates re-quote for the chosen dispatch day. */}
+        <div className="flex items-center gap-2 rounded border border-rule bg-bg-elev px-3 py-2">
+          <label
+            htmlFor="pickrate-shipdate"
+            className="text-[12px] font-medium text-ink-2"
+          >
+            Ship date
+          </label>
+          <input
+            id="pickrate-shipdate"
+            type="date"
+            value={shipDate}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (!v) return;
+              const safe = effectiveBusinessDay(v);
+              setShipDate(safe); // re-fetches the rate list for the new day
+              onShipDateChange(safe); // keep the card's date in sync
+            }}
+            className="rounded border border-rule bg-surface px-2 py-1 text-[12px] text-ink"
+          />
+          <span className="text-[11px] text-ink-3">
+            rates recalculate for this dispatch day
+          </span>
+        </div>
 
         {loading && (
           <div className="flex items-center justify-center py-10 text-[12px] text-ink-3">

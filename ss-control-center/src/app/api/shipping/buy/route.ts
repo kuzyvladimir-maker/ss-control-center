@@ -91,6 +91,10 @@ interface BuyOverride {
   baseRate?: string | null;
   carrier?: string | null;
   service?: string | null;
+  // Physical ship day the operator forced via the inline picker / rate modal.
+  // When present it becomes the dispatch date the label is bought against
+  // (the dispatch-date dance below keys off item.physicalShipDate).
+  physicalShipDate?: string | null;
 }
 
 export async function POST(request: NextRequest) {
@@ -243,6 +247,12 @@ export async function POST(request: NextRequest) {
             baseRate: ov.baseRate ?? rawItem.baseRate,
             carrier: ov.carrier ?? rawItem.carrier,
             service: ov.service ?? rawItem.service,
+            // A forced ship date overrides BOTH date columns so the
+            // dispatch-date dance (keyed on physicalShipDate) buys against the
+            // chosen day, and the warehouse note reflects it.
+            physicalShipDate:
+              ov.physicalShipDate ?? rawItem.physicalShipDate,
+            actualShipDay: ov.physicalShipDate ?? rawItem.actualShipDay,
           }
         : rawItem;
       try {
