@@ -138,11 +138,153 @@ export async function getProduct(productId: number) {
   return veeqoFetch(`/products/${productId}`);
 }
 
-// Get shipping rates for an allocation
+// Get shipping rates for an allocation (OLD endpoint — no ship-date parameter,
+// EDDs are a fixed "ship now" estimate). Kept for Dry + as a fallback.
 export async function getShippingRates(allocationId: string) {
   return veeqoFetch(
     `/shipping/rates/${allocationId}?from_allocation_package=true`
   );
+}
+
+// ── NEW Rate Shopping API — re-quotes EDDs by ship date ─────────────────────
+// `POST /shipping/api/v1/rates` accepts `preferred_shipment_date`, which is the
+// ONLY lever that re-anchors carrier EDDs to a chosen physical ship day. This
+// is exactly what Veeqo's web UI uses when you change the "Ship Date" dropdown.
+// The old GET endpoint above has NO date parameter, which is why the Frozen
+// Monday-shift trick never really worked. Full discovery + proof:
+// docs/wiki/veeqo-rate-shopping-api.md (verified live 2026-06-12).
+//
+// We normalize the (differently-named) response fields back onto the SAME shape
+// the old code consumes (delivery_promise_date / total_net_charge / title /
+// sub_carrier_id / name / shipping_service_options) so selectBestRate and the
+// buy flow read rates identically regardless of which endpoint produced them.
+
+export interface VeeqoNormalizedRate {
+  carrier: string; // "amazon_shipping_v2" (used as carrierId on buy)
+  name: string; // unique per-rate id (new: rate_id) — match on this to buy
+  title: string; // display service name (new: service_name)
+  short_title: string;
+  total_net_charge: string; // price (new: total_charge)
+  base_rate: string;
+  delivery_promise_date: string; // EDD (new: delivery_estimate)
+  sub_carrier_id: string; // "UPS" | "FEDEX" | "USPS" (new: carrier_id)
+  service_carrier: string; // "ups" | "fedex" | "usps"
+  remote_shipment_id: string;
+  service_id: string;
+  shipping_service_options: unknown;
+  [key: string]: unknown;
+}
+
+function normalizeV1Quote(q: Record<string, unknown>): VeeqoNormalizedRate {
+  const s = (v: unknown) => (v == null ? "" : String(v));
+  return {
+    carrier: "amazon_shipping_v2",
+    name: s(q.rate_id),
+    title: s(q.service_name),
+    short_title: s(q.service_name),
+    total_net_charge: s(q.total_charge),
+    base_rate: s(q.base_rate ?? q.total_charge),
+    delivery_promise_date: s(q.delivery_estimate),
+    sub_carrier_id: s(q.carrier_id).toUpperCase(),
+    service_carrier: s(q.service_carrier),
+    remote_shipment_id: s(q.remote_shipment_id ?? ""),
+    service_id: s(q.service_id ?? ""),
+    shipping_service_options: q.shipping_service_options ?? null,
+    rate_id: s(q.rate_id),
+  };
+}
+
+interface RateShopParcel {
+  weightOz: number;
+  lengthIn: number;
+  widthIn: number;
+  heightIn: number;
+}
+
+/**
+ * Quote carrier rates for a SPECIFIC physical ship date via the new Rate
+ * Shopping API. `order` is the full Veeqo order object (needs deliver_to,
+ * allocations[0].warehouse, line_items[].remote_id, number, due_date).
+ * `preferredShipmentDate` is an ISO 8601 datetime (the physical ship day).
+ * `parcel` overrides the package dims (lbs→oz handled by caller); when omitted
+ * we fall back to the allocation's total_weight + allocation_package.
+ *
+ * Returns `{ available: VeeqoNormalizedRate[] }` to mirror getShippingRates so
+ * callers swap endpoints without reshaping. Throws on a hard API error.
+ */
+export async function getRatesForShipDate(
+  order: Record<string, any>,
+  preferredShipmentDate: string,
+  parcel?: RateShopParcel
+): Promise<{ available: VeeqoNormalizedRate[] }> {
+  const alloc = order.allocations?.[0];
+  const wh = alloc?.warehouse ?? {};
+  const to = order.deliver_to ?? {};
+  const pkg = alloc?.allocation_package ?? {};
+
+  const toAddress = {
+    name: `${to.first_name ?? ""} ${to.last_name ?? ""}`.trim() || to.company || "Customer",
+    phone: to.phone || undefined,
+    line1: to.address1,
+    line2: to.address2 || undefined,
+    town: to.city,
+    postcode: to.zip,
+    country_code: to.country || "US",
+    county: to.state || undefined,
+  };
+  const fromAddress = {
+    name: wh.name || wh.trading_name || "Warehouse",
+    company: wh.trading_name || wh.name || undefined,
+    phone: wh.phone || undefined,
+    line1: wh.address_line_1 || wh.address1,
+    line2: wh.address_line_2 || undefined,
+    town: wh.city,
+    postcode: wh.post_code || wh.postcode || wh.zip,
+    country_code: wh.country || "US",
+    county: wh.region || wh.state || undefined,
+  };
+
+  const weightOz = parcel?.weightOz ?? alloc?.total_weight ?? 16;
+  const parcels = [
+    {
+      weight: weightOz,
+      weight_unit: "oz",
+      length: parcel?.lengthIn ?? pkg.depth ?? undefined,
+      width: parcel?.widthIn ?? pkg.width ?? undefined,
+      height: parcel?.heightIn ?? pkg.height ?? undefined,
+      dimension_unit: "in",
+    },
+  ];
+
+  const channelItems = (order.line_items ?? [])
+    .map((li: any) => ({
+      remote_id: String(li?.remote_id ?? li?.id ?? ""),
+      quantity: Number(li?.quantity ?? 1),
+    }))
+    .filter((ci: { remote_id: string }) => ci.remote_id);
+
+  const body = {
+    to_address: toAddress,
+    from_address: fromAddress,
+    parcels,
+    customer_reference: order.number,
+    is_amazon_order: true,
+    due_date: order.due_date || undefined,
+    preferred_shipment_date: preferredShipmentDate,
+    channel_items: channelItems,
+    include_unavailable_quotes: false,
+  };
+
+  const resp = await veeqoFetch(`/shipping/api/v1/rates`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+
+  const quotes: unknown[] = resp?.quotes ?? resp?.rates ?? resp?.available ?? [];
+  const available = (Array.isArray(quotes) ? quotes : []).map((q) =>
+    normalizeV1Quote(q as Record<string, unknown>)
+  );
+  return { available };
 }
 
 // Extract Value-Added-Service flags from a Veeqo rate object so the

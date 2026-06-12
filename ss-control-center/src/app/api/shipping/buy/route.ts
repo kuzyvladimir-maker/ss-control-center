@@ -398,15 +398,24 @@ export async function POST(request: NextRequest) {
           // every buy to send the SmartPost VAS contract (or lack
           // thereof) to Veeqo, hitting INVALID_VALUE_ADDED_SERVICES on
           // every UPS Ground Saver, FedEx Home Delivery, etc.
+          // Frozen orders are now SELECTED via the new Rate Shopping API
+          // (getRatesForShipDate), whose per-quote `rate_id` is stored in
+          // item.serviceType. That id will NOT exist in this OLD allocation-
+          // rates pool, so the name match fails and we fall back to matching
+          // the SERVICE (carrier + title). The label we buy is the correct
+          // service — the new API was only used to pick which service + which
+          // physical ship day; the physical label itself is bought through the
+          // allocation flow. Title is compared case-insensitively because the
+          // two endpoints differ in casing (new: "Fedex 2Day® One Rate", old:
+          // "FedEx 2Day® One Rate") — an exact compare would wrongly refuse
+          // every FedEx frozen buy.
+          const svcTitleLow = (item.service ?? "").trim().toLowerCase();
           const match =
             liveRates.find((r) => String(r.name) === item.serviceType) ??
-            // Fallback: match by sub_carrier_id + service title. Useful
-            // if Veeqo regenerates `name` UUIDs between fetches (not
-            // observed yet, but cheap to be defensive).
             liveRates.find(
               (r) =>
                 String(r.sub_carrier_id) === item.subCarrierId &&
-                String(r.title) === item.service
+                String(r.title).trim().toLowerCase() === svcTitleLow
             );
           if (match) {
             freshRate = match;

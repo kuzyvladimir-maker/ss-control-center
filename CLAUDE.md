@@ -50,7 +50,8 @@ Walmart — 1 аккаунт (API ключ пока отсутствует).
 |------|-----------|--------|
 | `docs/CUSTOMER_HUB_ALGORITHM_v2.2.md` | Customer Hub: Messages, A-to-Z, CB, Feedback, Decision Engine, Guardrails, Walmart | **Актуальный** |
 | `docs/AMAZON_NOTIFICATIONS_MAP.md` | Маппинг уведомлений Amazon → модули CC + Gmail queries | **Актуальный** |
-| `docs/MASTER_PROMPT_v3.4.md` | Shipping Labels | **Актуальный** (v3.1/v3.2/v3.3 сохранены как history) |
+| `docs/MASTER_PROMPT_v3.5.md` | Shipping Labels — Frozen-логика (2 условия + $3 + 15% Monday) + новый Rate Shopping API | **Актуальный** (v3.1-v3.4 как history) |
+| `docs/wiki/veeqo-rate-shopping-api.md` | Настоящий левер даты: POST /shipping/api/v1/rates + preferred_shipment_date | **Актуальный** |
 | `docs/FROZEN_ANALYTICS_v1.0.md` | Frozen delivery analytics | **Актуальный** |
 
 ## 📝 ПРАВИЛА ДОКУМЕНТИРОВАНИЯ
