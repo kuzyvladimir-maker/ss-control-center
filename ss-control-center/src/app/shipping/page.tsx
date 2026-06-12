@@ -2945,6 +2945,7 @@ export default function ShippingLabelsPage() {
       {buyReport && (
         <BuyReportDialog
           report={buyReport}
+          orders={orders}
           onClose={() => setBuyReport(null)}
         />
       )}
@@ -5343,11 +5344,21 @@ function SkuDataDialog({
 // ─────────────────────────────────────────────────────────────────────────
 function BuyReportDialog({
   report,
+  orders,
   onClose,
 }: {
   report: BuyReport;
+  orders: DashboardOrder[];
   onClose: () => void;
 }) {
+  // orderNumber → its line items, so each purchased row can show WHAT was in
+  // the box. Vladimir wants to recall what he bought a label for without
+  // leaving the result modal.
+  const itemsByOrder = useMemo(() => {
+    const m = new Map<string, DashboardItem[]>();
+    for (const o of orders) m.set(o.orderNumber, o.items);
+    return m;
+  }, [orders]);
   const okCount = report.bought.length;
   const failCount = report.errors.length;
   // Drive success — counted off pdfSource (the real signal), not labelPath
@@ -5467,6 +5478,28 @@ function BuyReportDialog({
                       <div className="font-mono text-[12px]">
                         {b.orderNumber}
                       </div>
+                      {(() => {
+                        // What was in this order — so the operator remembers
+                        // what the label was bought for.
+                        const items = itemsByOrder.get(b.orderNumber) ?? [];
+                        if (items.length === 0) return null;
+                        return (
+                          <ul className="mt-0.5 mb-1 space-y-px border-l-2 border-rule pl-2">
+                            {items.map((it, idx) => (
+                              <li
+                                key={idx}
+                                className="truncate text-[11px] text-ink-2"
+                                title={it.productTitle}
+                              >
+                                <span className="font-medium text-ink">
+                                  {it.quantity}×
+                                </span>{" "}
+                                {it.productTitle}
+                              </li>
+                            ))}
+                          </ul>
+                        );
+                      })()}
                       <div className="text-[11px] text-ink-2">
                         {b.service ?? b.carrier ?? ""}
                         {b.price != null && (
