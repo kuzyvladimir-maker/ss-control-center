@@ -938,23 +938,55 @@ export async function GET(request: NextRequest) {
               const mondayPrice = mondayPick
                 ? parseFloat(mondayPick.total_net_charge)
                 : Infinity;
+              // Transit days (= calendar days in transit) for each pick, from
+              // its OWN ship day. Fewer transit days = less thaw risk for frozen.
+              const transitDays = (rawEdd: string, shipYmd: string) =>
+                Math.round(
+                  (new Date(veeqoDateToLocal(rawEdd) + "T00:00:00").getTime() -
+                    new Date(shipYmd + "T00:00:00").getTime()) /
+                    86_400_000,
+                );
+              const todayTransit = selectedRate
+                ? transitDays(selectedRate.delivery_promise_date, actualShipDay)
+                : Infinity;
+              const mondayTransit = mondayPick
+                ? transitDays(mondayPick.delivery_promise_date, nextMonday)
+                : Infinity;
 
+              // Choose today vs Monday (Master Prompt v3.5 — refined by Vladimir
+              // 2026-06-12). Both already meet deadline + window. Take Monday if:
+              //   1. there's no valid rate today, OR
+              //   2. Monday is FASTER in transit (fewer days in transit → safer
+              //      for frozen) AND no more than $FROZEN_SPEED_TOLERANCE_USD
+              //      pricier (same $3 speed rule, applied across ship days), OR
+              //   3. Monday is >MONDAY_SHIFT_MIN_SAVING_PCT cheaper (a big saving
+              //      justifies the shift even when transit is the same/slower).
+              // Otherwise keep today.
               let takeMonday = false;
               let switchReason = "";
               if (mondayPick && !selectedRate) {
                 takeMonday = true;
                 switchReason = "no on-time rate from today";
-              } else if (
-                mondayPick &&
-                selectedRate &&
-                mondayPrice < todayPrice * (1 - MONDAY_SHIFT_MIN_SAVING_PCT)
-              ) {
-                takeMonday = true;
-                switchReason = `${Math.round(
-                  (1 - mondayPrice / todayPrice) * 100,
-                )}% cheaper ($${todayPrice.toFixed(2)}→$${mondayPrice.toFixed(2)})`;
+              } else if (mondayPick && selectedRate) {
+                if (
+                  mondayTransit < todayTransit &&
+                  mondayPrice <= todayPrice + FROZEN_SPEED_TOLERANCE_USD
+                ) {
+                  takeMonday = true;
+                  switchReason =
+                    `faster ${mondayTransit}d vs ${todayTransit}d transit` +
+                    ` (Mon $${mondayPrice.toFixed(2)} vs $${todayPrice.toFixed(2)})`;
+                } else if (
+                  mondayPrice < todayPrice * (1 - MONDAY_SHIFT_MIN_SAVING_PCT)
+                ) {
+                  takeMonday = true;
+                  switchReason = `${Math.round(
+                    (1 - mondayPrice / todayPrice) * 100,
+                  )}% cheaper ($${todayPrice.toFixed(2)}→$${mondayPrice.toFixed(2)})`;
+                }
               }
-              // else: today's rate is fine and Monday isn't >15% cheaper → keep today.
+              // else: today is faster-or-equal transit and Monday isn't >15%
+              // cheaper → keep today.
 
               if (takeMonday && mondayPick) {
                 selectedRate = mondayPick;

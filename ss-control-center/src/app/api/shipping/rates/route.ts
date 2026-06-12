@@ -14,14 +14,9 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   veeqoFetch,
   getShippingRates,
+  getRatesForShipDate,
   updateOrderDispatchDate,
 } from "@/lib/veeqo";
-
-interface VeeqoOrderLite {
-  id?: string | number;
-  dispatch_date?: string;
-  allocations?: Array<{ id?: string | number }>;
-}
 
 export async function GET(request: NextRequest) {
   const orderId = request.nextUrl.searchParams.get("orderId");
@@ -32,17 +27,21 @@ export async function GET(request: NextRequest) {
     );
   }
   // Optional `?shipDate=YYYY-MM-DD` — re-quote as if the package dispatches on
-  // that day. Veeqo derives every rate's EDD (and any weekend surcharge) from
-  // the order's dispatch_date, so to see the rates for a different ship day we
-  // PUT dispatch_date → re-quote → restore. Lets the rate modal recompute when
-  // the operator changes the ship date (mirrors the plan route's behaviour).
+  // that day. For Amazon orders we use the new Rate Shopping API
+  // (getRatesForShipDate → preferred_shipment_date), which genuinely re-anchors
+  // every rate's EDD to that ship day — exactly what Veeqo's web UI does and the
+  // same path the plan card uses (Master Prompt v3.5 +
+  // wiki/veeqo-rate-shopping-api.md). The OLD GET /shipping/rates endpoint has
+  // NO date parameter, so the previous PUT-dispatch dance was a no-op and the
+  // modal showed identical rates whatever date you picked — the exact bug this
+  // fixes.
   const shipDateParam = request.nextUrl.searchParams.get("shipDate");
   const shipDate =
     shipDateParam && /^\d{4}-\d{2}-\d{2}$/.test(shipDateParam)
       ? shipDateParam
       : null;
   try {
-    const order = (await veeqoFetch(`/orders/${orderId}`)) as VeeqoOrderLite;
+    const order = (await veeqoFetch(`/orders/${orderId}`)) as Record<string, any>;
     const allocationId = order?.allocations?.[0]?.id;
     if (!allocationId) {
       return NextResponse.json(
@@ -51,21 +50,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const origDispatch = order.dispatch_date;
+    const channelType = (order.channel?.type_code || "").toLowerCase();
+    const isAmazon =
+      channelType === "amazon" || order.channel?.name === "Merged Orders";
+
+    // Amazon + a chosen ship date → date-anchored quote via the new API.
+    if (shipDate && isAmazon) {
+      const resp = await getRatesForShipDate(order, `${shipDate}T16:00:00Z`);
+      return NextResponse.json({ rates: resp.available, shipDate });
+    }
+
+    // Fallback (non-Amazon channels, or no ship date): the old allocation-rates
+    // endpoint. For non-Amazon a shipDate re-quote still does the dispatch dance
+    // (harmless even though that endpoint ignores the date), preserving prior
+    // behaviour for eBay/TikTok/etc.
+    const origDispatch = order.dispatch_date as string | undefined;
     let movedDispatch = false;
     try {
       if (shipDate) {
         await updateOrderDispatchDate(Number(orderId), `${shipDate}T06:59:59.000Z`);
         movedDispatch = true;
-        // Veeqo recomputes the allocation's rate cache asynchronously.
         await new Promise((r) => setTimeout(r, 800));
       }
       const ratesResp = await getShippingRates(String(allocationId));
       const rates = ratesResp?.available || [];
       return NextResponse.json({ rates, shipDate });
     } finally {
-      // Always restore — the dispatch dance for the actual purchase happens in
-      // /api/shipping/buy from the plan item's physicalShipDate, not here.
       if (movedDispatch && origDispatch) {
         try {
           await updateOrderDispatchDate(Number(orderId), origDispatch);

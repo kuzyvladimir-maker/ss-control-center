@@ -4003,9 +4003,9 @@ function OrderRow({
           conditions: it delivers on/before the marketplace deadline, and
           within the food-safety window (3 calendar days, tightened to 2 when
           it&apos;s hot at the destination). A faster rate is preferred when it
-          costs no more than $3 extra. If shipping next Monday is more than 15%
-          cheaper, the label stays dated today but the package physically ships
-          Monday.
+          costs no more than $3 extra. The package physically ships next Monday
+          (label still dated today) when Monday is faster in transit at no more
+          than $3 extra, or more than 15% cheaper.
         </div>
       )}
 
