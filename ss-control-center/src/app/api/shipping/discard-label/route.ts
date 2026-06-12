@@ -37,9 +37,13 @@ interface Body {
 }
 
 interface VeeqoOrderForDiscard {
-  id?: string | number;
   number?: string;
-  channel?: { type_code?: string; name?: string } | null;
+  channel?: { type_code?: string } | null;
+  // Carried so we can hand the already-loaded order to refundShipmentForOrder
+  // instead of it re-fetching the same body.
+  allocations?: Array<{
+    shipment?: { id?: string | number; created_at?: string } | null;
+  }>;
 }
 
 // Mark our durable Walmart label record discarded so the order becomes
@@ -145,7 +149,7 @@ export async function POST(req: NextRequest) {
         if (labels.length === 0) {
           // Fallback path failed → try Veeqo refund.
           try {
-            const result = await refundShipmentForOrder(orderId);
+            const result = await refundShipmentForOrder(orderId, order);
             await clearLocalWalmartLabel(orderNumber);
             return NextResponse.json({
               ok: true,
@@ -182,7 +186,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Amazon (and anything else that buys through Veeqo).
-    const result = await refundShipmentForOrder(orderId);
+    const result = await refundShipmentForOrder(orderId, order);
     return NextResponse.json({
       ok: true,
       channel: channelType || "amazon",

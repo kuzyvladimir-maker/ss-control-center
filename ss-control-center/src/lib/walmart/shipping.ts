@@ -169,19 +169,6 @@ export async function buyShippingLabel(
   };
 }
 
-/** List the carriers enabled for SWW on this account. */
-export async function getSwwCarriers(
-  client: WalmartClient,
-): Promise<Array<{ carrierId: string; shortName: string; carrierName: string }>> {
-  const r = await client.request<any>("GET", "/shipping/labels/carriers");
-  const list: any[] = r?.carriers ?? r?.payload ?? [];
-  return list.map((c) => ({
-    carrierId: String(c?.carrierId ?? ""),
-    shortName: String(c?.shortName ?? ""),
-    carrierName: String(c?.carrierName ?? ""),
-  }));
-}
-
 /**
  * Discard (cancel) a Ship-with-Walmart label. Only possible while the order
  * is NOT yet marked Shipped. Keyed by carrier short name + tracking number

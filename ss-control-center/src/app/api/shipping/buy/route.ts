@@ -414,25 +414,14 @@ export async function POST(request: NextRequest) {
             // Capture every field whose name might hint at VAS or rate
             // requirements — the extractor uses `value_added_service*`
             // by convention, but Veeqo may have moved/renamed it.
-            const suspiciousFields = Object.fromEntries(
-              Object.entries(match).filter(([k]) => {
-                const lk = k.toLowerCase();
-                return (
-                  lk.includes("value_added") ||
-                  lk.includes("vas") ||
-                  lk.includes("addon") ||
-                  lk.includes("service") ||
-                  lk.includes("requirement") ||
-                  lk.includes("mandatory") ||
-                  lk.includes("option")
-                );
-              })
-            );
+            // Lightweight diagnostic kept ONLY for the error messages below
+            // (spliced into the thrown error when Veeqo rejects the buy). The
+            // old code also built a full `suspiciousFields` scan of every rate
+            // key and logged it on EVERY successful buy — pure happy-path
+            // noise/CPU, removed.
             rateDiagnostic =
               `rateKeys=[${Object.keys(match).join(",")}] · ` +
-              `suspiciousFields=${JSON.stringify(suspiciousFields)} · ` +
               `extracted=${JSON.stringify(liveVas)}`;
-            console.log(`[buy] ${item.orderNumber} · ${rateDiagnostic}`);
           } else {
             rateDiagnostic =
               `no rate match for remote_shipment_id=${item.remoteShipmentId}, ` +

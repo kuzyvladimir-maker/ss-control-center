@@ -53,7 +53,6 @@ export async function checkDymoStatus(): Promise<DymoStatus> {
       // DLS v8 returns the literal `true`; DCS sometimes returns `"true"`
       // (JSON-quoted). Accept either, case-insensitively.
       const ok = /^"?true"?$/i.test(text);
-      console.log("[dymo] StatusConnected", port, JSON.stringify(text), "→ ok=", ok);
       if (!ok) {
         lastError = `StatusConnected on ${port} returned ${text || "empty"}`;
         continue;
@@ -69,9 +68,7 @@ export async function checkDymoStatus(): Promise<DymoStatus> {
         continue;
       }
       const body = await printersRes.text();
-      console.log("[dymo] GetPrinters", port, "first 400 chars:", body.slice(0, 400));
       const printerName = pickPrinterFromResponse(body);
-      console.log("[dymo] pickPrinter result:", printerName);
       return {
         reachable: true,
         port,
@@ -80,7 +77,6 @@ export async function checkDymoStatus(): Promise<DymoStatus> {
       };
     } catch (e) {
       lastError = e instanceof Error ? e.message : String(e);
-      console.log("[dymo] probe failed on port", port, "→", lastError);
     }
   }
   return {

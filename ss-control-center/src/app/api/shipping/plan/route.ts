@@ -296,7 +296,8 @@ function selectBestRate(
   // (isAfterNoon kept in the signature so call sites don't churn if the
   //  time-of-day rule comes back.)
   void isAfterNoon;
-  if (enriched.length === 0) return { rate: null, diagnostic: null };
+  // (No empty-pool guard here — the `enriched.length === 0` return near the top
+  // of selectBestRate already covers it before the Frozen/Dry split.)
   const pool = [...enriched].sort((a, b) => a.price - b.price);
   return { rate: pool[0], diagnostic: null };
 }

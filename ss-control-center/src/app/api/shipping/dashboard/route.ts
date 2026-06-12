@@ -135,32 +135,47 @@ export async function GET() {
       : [];
     const overrideByPid = new Map(overrides.map((o) => [o.productId, o.type]));
 
-    // Fetch Veeqo product details in parallel batches (5/req at a time —
-    // Veeqo rate-limits aggressively). Only for products without an override.
+    // Fetch Veeqo product details for products without an override. Veeqo
+    // rate-limits aggressively, so cap at 5 in flight — but as a SLIDING
+    // window (workers drain a shared index) rather than fixed batches, so one
+    // slow call no longer stalls the other 4 in its batch. Started here but
+    // NOT awaited: it runs concurrently with the PackingProfile/SKU DB work and
+    // the Walmart-PO resolution below, and is awaited once just before the
+    // orders loop that actually reads `veeqoProductType` (line ~475). Cuts the
+    // dashboard's network wall-clock from probe+walmart to roughly max(...).
     const idsToProbe = idList.filter((pid) => !overrideByPid.has(pid));
     const veeqoProductType = new Map<number, "Frozen" | "Dry" | null>();
-    const BATCH = 5;
-    for (let i = 0; i < idsToProbe.length; i += BATCH) {
-      const slice = idsToProbe.slice(i, i + BATCH);
-      const results = await Promise.allSettled(slice.map((pid) => getProduct(pid)));
-      for (let j = 0; j < slice.length; j++) {
-        const res = results[j];
-        if (res.status !== "fulfilled") {
-          veeqoProductType.set(slice[j], null);
-          continue;
+    const PROBE_CONCURRENCY = 5;
+    const productProbeDone = (async () => {
+      let next = 0;
+      const worker = async () => {
+        while (next < idsToProbe.length) {
+          const pid = idsToProbe[next++];
+          try {
+            const product: any = await getProduct(pid);
+            const names: string[] = (product?.tags ?? []).map((t: any) =>
+              String(t?.name ?? "").toLowerCase(),
+            );
+            veeqoProductType.set(
+              pid,
+              names.some((n) => n === "frozen")
+                ? "Frozen"
+                : names.some((n) => n === "dry")
+                  ? "Dry"
+                  : null,
+            );
+          } catch {
+            veeqoProductType.set(pid, null);
+          }
         }
-        const product: any = res.value;
-        const tags: any[] = product?.tags ?? [];
-        const names = tags.map((t) => String(t?.name ?? "").toLowerCase());
-        if (names.some((n) => n === "frozen")) {
-          veeqoProductType.set(slice[j], "Frozen");
-        } else if (names.some((n) => n === "dry")) {
-          veeqoProductType.set(slice[j], "Dry");
-        } else {
-          veeqoProductType.set(slice[j], null);
-        }
-      }
-    }
+      };
+      await Promise.all(
+        Array.from(
+          { length: Math.min(PROBE_CONCURRENCY, idsToProbe.length) },
+          worker,
+        ),
+      );
+    })();
 
     const productType = (pid: number | undefined): "Frozen" | "Dry" | null => {
       if (pid == null) return null;
@@ -258,12 +273,15 @@ export async function GET() {
     for (const items of orderItems.values()) {
       for (const i of items) skuList.add(i.sku);
     }
+    // Only membership is needed (skuByCode.has below), so select just the sku
+    // column and build a Set — avoids materializing every column of every row.
     const skuRows = skuList.size
       ? await prisma.skuShippingData.findMany({
           where: { sku: { in: [...skuList] } },
+          select: { sku: true },
         })
       : [];
-    const skuByCode = new Map(skuRows.map((r) => [r.sku, r]));
+    const skuByCode = new Set(skuRows.map((r) => r.sku));
 
     // ── Per-order classification + assembly ─────────────────────────────
     const storeTotals = new Map<
@@ -425,6 +443,10 @@ export async function GET() {
         );
       }
     }
+
+    // Ensure the Veeqo product-type probe (kicked off above, overlapping the
+    // DB + Walmart work) has finished before the loop reads veeqoProductType.
+    await productProbeDone;
 
     const orders = [];
     for (const o of veeqoOrders) {

@@ -381,22 +381,6 @@ export async function updateAllocationPackage(
   });
 }
 
-/**
- * Read an allocation back so the caller can verify a just-written
- * package actually persisted. Returns the allocation object (with
- * `weight`, `depth`, `width`, `height`, `weight_unit`, `dimensions_unit`
- * fields on `allocation_package` when set) or whatever Veeqo gives us.
- *
- * Veeqo's PUT to /allocation_package can return 200 without persisting
- * (observed when the legacy `save_for_similar_shipments: true` payload
- * was sent — write looked successful, subsequent rate quotes still used
- * the old package). Reading the allocation back is the only reliable
- * post-write check.
- */
-export async function getAllocation(allocationId: number | string) {
-  return veeqoFetch(`/allocations/${allocationId}`);
-}
-
 // Add employee note to order
 export async function addEmployeeNote(orderId: number, text: string) {
   return veeqoFetch(`/orders/${orderId}`, {

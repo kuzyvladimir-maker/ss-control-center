@@ -47,10 +47,15 @@ export interface RefundResult {
 
 export async function refundShipmentForOrder(
   orderId: string,
+  // Optional already-fetched order body (the full Veeqo order, which carries
+  // `allocations[].shipment`). Callers that have just loaded the order — e.g.
+  // the discard-label route reads it to detect the channel — pass it here to
+  // avoid a second identical GET /orders/{id} against the rate-limited API.
+  preloadedOrder?: VeeqoOrderForRefund,
 ): Promise<RefundResult> {
-  const order = (await veeqoFetch(
-    `/orders/${orderId}`,
-  )) as VeeqoOrderForRefund;
+  const order =
+    preloadedOrder ??
+    ((await veeqoFetch(`/orders/${orderId}`)) as VeeqoOrderForRefund);
 
   // Pick the most recently-created shipment across all allocations.
   // Veeqo lets a single order have multiple allocations (split shipments)

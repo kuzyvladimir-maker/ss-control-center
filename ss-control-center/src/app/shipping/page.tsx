@@ -1077,21 +1077,27 @@ export default function ShippingLabelsPage() {
   // with the ship date — the plan route does the PUT-dispatch→re-quote→restore
   // and returns the recommendation; here we just persist it as the override.
   const requoteAmazonOrder = useCallback(
-    async (o: DashboardOrder, shipDate: string) => {
+    async (o: DashboardOrder, shipDate?: string) => {
       setRequoting((p) => ({ ...p, [o.orderNumber]: true }));
       try {
-        const r = await fetch(
-          `/api/shipping/plan?orderIds=${encodeURIComponent(
-            o.orderId,
-          )}&shipDate=${shipDate}`,
-        );
+        // shipDate present → quote at exactly that forced day (skips the auto
+        // Monday-shift; used by the date picker). Absent → let the engine
+        // decide (incl. Monday-shift); used after a weight/box change so only
+        // THIS order re-quotes instead of the whole list.
+        const url = shipDate
+          ? `/api/shipping/plan?orderIds=${encodeURIComponent(
+              o.orderId,
+            )}&shipDate=${shipDate}`
+          : `/api/shipping/plan?orderIds=${encodeURIComponent(o.orderId)}`;
+        const r = await fetch(url);
         const j = (await r.json()) as PlanResponse & { error?: string };
         if (!r.ok) throw new Error(j?.error || `HTTP ${r.status}`);
         const item = (j.orders ?? []).find(
           (it) => it.orderNumber === o.orderNumber,
         );
         if (item && item.status !== "stop" && item.totalNetCharge) {
-          // Valid rate at the new date → make it the override.
+          // Valid rate → make it the override (the buy applies it over a fresh
+          // re-fetch, so carrier/price/EDD + ship day all stay consistent).
           setRateOverrides((prev) => ({
             ...prev,
             [o.orderId]: {
@@ -1106,7 +1112,7 @@ export default function ShippingLabelsPage() {
               baseRate: item.baseRate ?? null,
               edd: item.edd ?? null,
               price: item.price ?? null,
-              physicalShipDate: item.physicalShipDate ?? shipDate,
+              physicalShipDate: item.physicalShipDate ?? shipDate ?? null,
             },
           }));
           setBuyErrors((prev) => {
@@ -1116,8 +1122,8 @@ export default function ShippingLabelsPage() {
             return next;
           });
         } else {
-          // No on-time rate at this date — drop any stale override and surface
-          // the reason so the row doesn't keep showing the old day's rate.
+          // No on-time rate — drop any stale override and surface the reason so
+          // the row doesn't keep showing the old rate.
           setRateOverrides((prev) => {
             if (!(o.orderId in prev)) return prev;
             const next = { ...prev };
@@ -1128,7 +1134,9 @@ export default function ShippingLabelsPage() {
             ...prev,
             [o.orderId]:
               item?.notes ||
-              `No rate delivers in time when shipping ${fmtDate(shipDate)}.`,
+              (shipDate
+                ? `No rate delivers in time when shipping ${fmtDate(shipDate)}.`
+                : "No on-time rate for this order."),
           }));
         }
       } catch (e) {
@@ -1330,6 +1338,27 @@ export default function ShippingLabelsPage() {
     };
     for (const o of scopedOrders) if (o.timeBucket) c[o.timeBucket] += 1;
     return c;
+  }, [scopedOrders]);
+
+  // Frozen / Dry / Untyped tab counts in ONE pass over scopedOrders, memoized.
+  // Previously the JSX ran three separate `scopedOrders.filter(...).length`
+  // passes on every render (e.g. each search keystroke), each with an inner
+  // `.every()`/`.some()` — wasted work for a value that only changes with
+  // scopedOrders.
+  const typeCounts = useMemo(() => {
+    let frozen = 0,
+      dry = 0,
+      untyped = 0;
+    for (const o of scopedOrders) {
+      if (o.items.length === 0) continue;
+      if (o.items.every((i) => i.knownType === "Frozen")) frozen += 1;
+      else if (o.items.every((i) => i.knownType === "Dry")) dry += 1;
+      if (
+        o.items.some((i) => i.knownType !== "Frozen" && i.knownType !== "Dry")
+      )
+        untyped += 1;
+    }
+    return { frozen, dry, untyped };
   }, [scopedOrders]);
 
   const filteredOrders = useMemo(() => {
@@ -2681,20 +2710,12 @@ export default function ShippingLabelsPage() {
             {
               id: "Frozen" as const,
               label: "Frozen",
-              count: scopedOrders.filter(
-                (o) =>
-                  o.items.length > 0 &&
-                  o.items.every((i) => i.knownType === "Frozen"),
-              ).length,
+              count: typeCounts.frozen,
             },
             {
               id: "Dry" as const,
               label: "Dry",
-              count: scopedOrders.filter(
-                (o) =>
-                  o.items.length > 0 &&
-                  o.items.every((i) => i.knownType === "Dry"),
-              ).length,
+              count: typeCounts.dry,
             },
             // Untyped = orders with at least one item that has no
             // Frozen/Dry tag. Added so Frozen + Dry + Untyped sums
@@ -2703,13 +2724,7 @@ export default function ShippingLabelsPage() {
             {
               id: "Untyped" as const,
               label: "Untyped",
-              count: scopedOrders.filter(
-                (o) =>
-                  o.items.length > 0 &&
-                  o.items.some(
-                    (i) => i.knownType !== "Frozen" && i.knownType !== "Dry",
-                  ),
-              ).length,
+              count: typeCounts.untyped,
             },
           ]}
           active={typeFilter}
@@ -2954,17 +2969,25 @@ export default function ShippingLabelsPage() {
           order={editPackageModal}
           plan={planByOrderNumber.get(editPackageModal.orderNumber) ?? null}
           onClose={(refresh) => {
-            const num = editPackageModal.orderNumber;
+            const ord = editPackageModal;
+            const num = ord.orderNumber;
             setEditPackageModal(null);
             if (refresh) {
-              // Weight/box changed → the rate must be re-quoted. Flag THIS
-              // order as re-quoting so its money/carrier cells show a spinner
-              // (the price shown is stale until the reload returns), then
-              // clear the flag once the fresh plan lands.
-              setRequoting((p) => ({ ...p, [num]: true }));
-              load().finally(() =>
-                setRequoting((p) => ({ ...p, [num]: false })),
-              );
+              // Weight/box changed → re-quote ONLY this order, not the whole
+              // list. The new dims were persisted to the catalog by
+              // edit-package, so the plan route re-pushes them and quotes
+              // fresh. (Previously this called full load(), re-quoting every
+              // ready order — slow when you only touched one.)
+              if (ord.isWalmart) {
+                setRequoting((p) => ({ ...p, [num]: true }));
+                quoteWalmartOrder(ord, effectiveShipDate(num)).finally(() =>
+                  setRequoting((p) => ({ ...p, [num]: false })),
+                );
+              } else {
+                // Pass the manually-forced ship date if one is set; otherwise
+                // let the engine decide (incl. the Frozen Monday-shift).
+                void requoteAmazonOrder(ord, shipDateByOrder[num]);
+              }
             }
           }}
         />
@@ -4348,9 +4371,6 @@ function MergeableBanner({
   );
 }
 
-// One-click copy button for an Amazon order number. Lives next to the
-// order number in OrderRow; the warehouse pastes it into Amazon Seller
-// Central / Veeqo search far more often than they retype it.
 /**
  * Quantity indicator next to a line item. qty=1 fades in (this is the norm);
  * qty>=2 pops in amber, qty>=4 amber+ring, qty>=10 red — matches the visual
@@ -4382,6 +4402,9 @@ function QtyBadge({ qty }: { qty: number }) {
   );
 }
 
+// One-click copy button for an Amazon order number. Lives next to the
+// order number in OrderRow; the warehouse pastes it into Amazon Seller
+// Central / Veeqo search far more often than they retype it.
 function CopyOrderNumber({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -5656,17 +5679,6 @@ function EditPackageDialog({
   const [weightUnit, setWeightUnit] = useState<WeightUnit>("lbs");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-
-  const handlePresetChange = (label: string) => {
-    setBoxLabel(label);
-    if (label === "custom") return; // leave L/W/H as-is for free editing
-    const preset = BOX_PRESETS.find((p) => p.label === label);
-    if (preset) {
-      setLength(String(preset.l));
-      setWidth(String(preset.w));
-      setHeight(String(preset.h));
-    }
-  };
 
   async function save() {
     setErr(null);
