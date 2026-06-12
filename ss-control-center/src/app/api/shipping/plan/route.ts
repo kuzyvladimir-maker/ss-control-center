@@ -71,6 +71,24 @@ function getNextMonday(from: string): string {
   return d.toISOString().split("T")[0];
 }
 
+// ── Is this a same/next-day OVERNIGHT service? ──
+// Keyed on the service NAME, not on calendar-day span. A Friday-shipped
+// "UPS Next Day Air Saver" spans 3 calendar days (Fri→Mon over the weekend)
+// yet is still a ruinously-priced overnight — the kind the Frozen Monday-shift
+// is meant to escape. Detecting it by title (rather than `calDays <= 1`) is
+// what lets the shift fire on a Friday, where the weekend inflates the span.
+// Deliberately matches ONLY genuine overnight/next-day services — NOT 2-/3-day
+// services like "FedEx Express Saver" (a valid 3-day rate that must NOT trigger
+// a delay-to-Monday; see the 113-2379726 incident in the Monday-shift block).
+function isOvernightService(title: string | null | undefined): boolean {
+  const t = (title || "").toLowerCase().replace(/\s+/g, " ");
+  return (
+    t.includes("next day air") || // UPS Next Day Air / Saver / Early A.M.
+    t.includes("nextday") || // collapsed spelling some feeds use
+    t.includes("overnight") // FedEx Priority / Standard / First Overnight
+  );
+}
+
 // Run `fn` over `items` with at most `poolSize` concurrent executions.
 // Used to parallelize the per-order rate pre-warm below without firing all
 // requests at Veeqo at once (it rate-limits bursts). Each worker pulls the
@@ -940,22 +958,31 @@ export async function GET(request: NextRequest) {
           //     week out; surface as a manual stop instead.
           //
           // ALSO fire when today's ONLY Frozen-valid pick is a same/next-day
-          // OVERNIGHT (selectedCalDays <= 1). That happens when shipping late
-          // in the week pushes every cheaper 2-/3-day service past the cal-day
-          // cap over the weekend, leaving only a ruinous overnight (Brooklyn
-          // order 113-8209299-9582650: UPS Next Day Air Saver $55.66 for a
-          // $0-shipping order, when a Monday-shipped FedEx 2Day delivers in 2
-          // days for $17.78, still before the 6/18 deadline). We only ACTUALLY
-          // switch below when Monday's vetted pick is CHEAPER (mondayIsCheaper),
-          // so this never downgrades a genuinely-needed overnight — and a tight
-          // customer deadline is already gated out by `monDeadlineDays >= 1`.
-          // The old over-eager trigger that broke 113-2379726 fired on a 3-day
-          // today-pick; gating the new case to `selectedCalDays <= 1` keeps
-          // that incident fixed.
+          // OVERNIGHT. That happens when shipping late in the week pushes every
+          // cheaper 2-/3-day service past the cal-day cap over the weekend,
+          // leaving only a ruinous overnight (Brooklyn order 113-8209299-
+          // 9582650: UPS Next Day Air Saver $55.66 for a $0-shipping order,
+          // when a Monday-shipped FedEx 2Day delivers in 2 days for $17.78,
+          // still before the 6/18 deadline). We only ACTUALLY switch below when
+          // Monday's vetted pick is CHEAPER (mondayIsCheaper), so this never
+          // downgrades a genuinely-needed overnight — and a tight customer
+          // deadline is already gated out by `monDeadlineDays >= 1`.
+          //
+          // Detect the overnight by SERVICE NAME (isOvernightService), not by
+          // `selectedCalDays <= 1`. A Friday-shipped "UPS Next Day Air Saver"
+          // spans Fri→Mon = 3 calendar days over the weekend, so the old
+          // cal-day check silently MISSED it and bought the $69 overnight every
+          // Friday (orders 112-6530340-5666624, 112-3866758-9972232,
+          // 114-8549240-4216210 — all $69-78 Next Day Air with a 6/17-6/18
+          // deadline that a Monday 2-Day clears for ~$18). The cal-day signal
+          // is kept as a fallback for any overnight whose title we don't match.
+          // The 113-2379726 incident stays fixed: its today-pick was a FedEx
+          // Express Saver (a 3-day service, NOT overnight) → isOvernightService
+          // is false and selectedCalDays was 3, so the shift still won't fire.
           const todayPickIsOvernight =
             selectedRate != null &&
-            selectedCalDays >= 0 &&
-            selectedCalDays <= 1;
+            (isOvernightService(selectedRate.title) ||
+              (selectedCalDays >= 0 && selectedCalDays <= 1));
           const tryMonday =
             productType === "Frozen" &&
             monDeadlineDays >= 1 &&
