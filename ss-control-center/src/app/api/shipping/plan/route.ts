@@ -62,15 +62,6 @@ function getDayInfo(today: string) {
   };
 }
 
-// ── Next Monday from a date string ──
-function getNextMonday(from: string): string {
-  const d = new Date(from + "T12:00:00");
-  const dow = d.getDay();
-  const daysUntilMon = dow === 0 ? 1 : 8 - dow;
-  d.setDate(d.getDate() + daysUntilMon);
-  return d.toISOString().split("T")[0];
-}
-
 // Run `fn` over `items` with at most `poolSize` concurrent executions.
 // Used to parallelize the per-order rate pre-warm below without firing all
 // requests at Veeqo at once (it rate-limits bursts). Each worker pulls the
@@ -937,7 +928,7 @@ export async function GET(request: NextRequest) {
           // /api/shipping/buy will re-apply the date before purchasing.
           // The restore in the finally block guarantees Veeqo state is
           // unchanged when the trick doesn't win.
-          const nextMonday = getNextMonday(today);
+          const nextMonday = nextMondayFrom(today);
           const monDeadlineDays = nextMonday
             ? Math.round(
                 (new Date(deliveryBy + "T00:00:00").getTime() -
@@ -1214,7 +1205,7 @@ export async function GET(request: NextRequest) {
       const legacyActualShipDay = shipDateOverride
         ? shipDateOverride
         : autoTrick
-          ? getNextMonday(today)
+          ? nextMondayFrom(today)
           : actualShipDay;
       // Drive the dual-date UI chip + the buy-time dispatch dance whenever the
       // physical day differs from the label date — auto-shift OR manual override.

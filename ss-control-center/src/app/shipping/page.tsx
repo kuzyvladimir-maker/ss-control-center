@@ -5507,11 +5507,14 @@ function BuyReportDialog({
                         const items = itemsByOrder.get(b.orderNumber) ?? [];
                         if (items.length === 0) return null;
                         return (
-                          <ul className="mt-0.5 mb-1 space-y-px border-l-2 border-rule pl-2">
+                          <ul className="mt-0.5 mb-1 min-w-0 space-y-px border-l-2 border-rule pl-2">
                             {items.map((it, idx) => (
                               <li
                                 key={idx}
-                                className="truncate text-[11px] text-ink-2"
+                                // Wrap long titles instead of forcing one nowrap
+                                // line — a single-line truncate was pushing the
+                                // row past the modal's right edge.
+                                className="text-[11px] text-ink-2 break-words"
                                 title={it.productTitle}
                               >
                                 <span className="font-medium text-ink">
