@@ -51,7 +51,6 @@ async function main() {
     `Keep the product's real label, colors, and shape exactly as in the reference — do not invent or alter packaging. ` +
     `No added text, no badges, no logos other than the product's own. Square 1:1 framing, product fills ~85% of the frame.`;
 
-  const t0 = Date.now ? 0 : 0; // Date.now banned in workflow scripts; fine here but unused
   const resp = await openai.images.edit({
     model: "gpt-image-1",
     image: await OpenAI.toFile(refBuf, "ref.png", { type: "image/png" }),
