@@ -54,19 +54,20 @@ export function rewriteMultipackContent(
     title = base.slice(0, Math.max(0, room)).replace(/[\s,;–-]+$/, "") + suffix;
   }
 
-  const formula = `This listing is a ${n}-pack. One order ships all ${n} ${noun}. Selecting quantity 1 sends ${n} ${noun}, not 1.`;
+  // "a multipack of N" avoids the a/an-before-a-number grammar trap
+  // ("a 8-pack" reads as "a eight-pack"). Walmart channel: original brand
+  // only, NO own-brand / gift-set / curator claim (per project rules).
+  const formula = `This listing is a multipack of ${n} ${noun}. One order ships all ${n} ${noun}. Selecting quantity 1 sends ${n} ${noun}, not 1.`;
   const oneOrder = `Each order contains ${n} ${noun} packaged together. To receive ${n} ${noun}, order quantity 1.`;
 
   const kept = (opts.existingBullets ?? []).filter(
-    (b) => b && !/quantity 1|pack ships|order contains/i.test(b),
+    (b) => b && !/quantity 1|pack ships|order contains|multipack of/i.test(b),
   );
   const bullets = [formula, oneOrder, ...kept].slice(0, 9);
 
   const description =
     `${formula} ${oneOrder}\n\n` +
-    `The ${n} ${noun} are the same item shown in the photos. ` +
-    `This gift basket is curated and assembled by Salutem Solutions LLC. ` +
-    `The included items are packaged by their original manufacturers.`;
+    `The ${n} ${noun} are the same item shown in the photos.`;
 
   return { title, bullets, description };
 }
