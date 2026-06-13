@@ -23,3 +23,4 @@ gcloud-key*.json
 # live in version control. Files stay on disk, just untracked.
 docs/*Cost_of_Goods_Sold*.csv
 docs/Summary_*.csv
+preview-multipack/
