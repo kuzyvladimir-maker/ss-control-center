@@ -954,13 +954,17 @@ export async function GET(request: NextRequest) {
                 : Infinity;
 
               // Choose today vs Monday (Master Prompt v3.5 — refined by Vladimir
-              // 2026-06-12). Both already meet deadline + window. Take Monday if:
+              // 2026-06-12). Both already meet deadline + window. We NEVER pick a
+              // Monday that delivers in MORE transit days than today (a slower
+              // delivery is unacceptable even for a big saving — Vladimir). Take
+              // Monday only if:
               //   1. there's no valid rate today, OR
-              //   2. Monday is FASTER in transit (fewer days in transit → safer
-              //      for frozen) AND no more than $FROZEN_SPEED_TOLERANCE_USD
-              //      pricier (same $3 speed rule, applied across ship days), OR
-              //   3. Monday is >MONDAY_SHIFT_MIN_SAVING_PCT cheaper (a big saving
-              //      justifies the shift even when transit is the same/slower).
+              //   2. Monday is FASTER in transit (fewer days → safer for frozen)
+              //      AND no more than $FROZEN_SPEED_TOLERANCE_USD pricier (same $3
+              //      speed rule, applied across ship days), OR
+              //   3. Monday is NOT slower (same transit days) AND is
+              //      >MONDAY_SHIFT_MIN_SAVING_PCT cheaper — a big saving at no
+              //      delivery-speed cost.
               // Otherwise keep today.
               let takeMonday = false;
               let switchReason = "";
@@ -977,16 +981,17 @@ export async function GET(request: NextRequest) {
                     `faster ${mondayTransit}d vs ${todayTransit}d transit` +
                     ` (Mon $${mondayPrice.toFixed(2)} vs $${todayPrice.toFixed(2)})`;
                 } else if (
+                  mondayTransit <= todayTransit &&
                   mondayPrice < todayPrice * (1 - MONDAY_SHIFT_MIN_SAVING_PCT)
                 ) {
                   takeMonday = true;
-                  switchReason = `${Math.round(
-                    (1 - mondayPrice / todayPrice) * 100,
-                  )}% cheaper ($${todayPrice.toFixed(2)}→$${mondayPrice.toFixed(2)})`;
+                  switchReason =
+                    `${Math.round((1 - mondayPrice / todayPrice) * 100)}% cheaper` +
+                    ` same ${mondayTransit}d transit ($${todayPrice.toFixed(2)}→$${mondayPrice.toFixed(2)})`;
                 }
               }
-              // else: today is faster-or-equal transit and Monday isn't >15%
-              // cheaper → keep today.
+              // else: Monday is slower, or not enough cheaper at the same speed →
+              // keep today. A slower Monday is never chosen.
 
               if (takeMonday && mondayPick) {
                 selectedRate = mondayPick;

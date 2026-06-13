@@ -72,11 +72,12 @@
    (каждый — со своими двумя условиями: EDD ≤ дедлайн И calDays ≤ окно от СВОЕГО дня отгрузки)
 
 3. Выбор дня отгрузки (transit = число дней В ПУТИ от своего дня отгрузки):
-   - нет bestToday, есть bestMonday                                  → понедельник
-   - transitMonday < transitToday  И  priceMonday ≤ priceToday + $3  → понедельник  (быстрее по транзиту, в пределах $3)
-   - priceMonday < priceToday × 0.85                                 → понедельник  (>15% дешевле)
-   - иначе                                                           → сегодня
-   - нет ни того ни другого                                          → need_attention: no_service
+   **Понедельник НИКОГДА не берём, если он доставляет ДОЛЬШЕ (transitMonday > transitToday) — даже за большую экономию.**
+   - нет bestToday, есть bestMonday                                    → понедельник
+   - transitMonday < transitToday  И  priceMonday ≤ priceToday + $3    → понедельник  (быстрее по транзиту, в пределах $3)
+   - transitMonday ≤ transitToday  И  priceMonday < priceToday × 0.85  → понедельник  (тот же срок, но >15% дешевле)
+   - иначе                                                             → сегодня
+   - нет ни того ни другого                                            → need_attention: no_service
 
 4. labelDate ВСЕГДА = сегодня (этикетка сегодняшним числом, физически отгружаем в выбранный день).
 ```
@@ -86,8 +87,9 @@
 > копеечная. Тот же $3-порог скорости, но применённый между днями отгрузки. Пример (заказ
 > `112-5404197`): сегодня FedEx Home $32.91 / 3 дня в пути vs понедельник FedEx 2Day $32.85 / 2 дня —
 > понедельник дешевле И на сутки меньше в пути → берём понедельник.
-> **15%-порог** остаётся для случая, когда транзит такой же или медленнее: тогда сдвиг оправдан только
-> существенной экономией. `MONDAY_SHIFT_MIN_SAVING_PCT = 0.15`, `FROZEN_SPEED_TOLERANCE_USD = 3`.
+> **15%-порог** применяется ТОЛЬКО когда срок доставки тот же (transitMonday = transitToday): тогда
+> большая экономия оправдывает сдвиг. **Если понедельник доставляет дольше — не берём ни за какие деньги**
+> (Владимир: «медленнее меня не устраивает»). `MONDAY_SHIFT_MIN_SAVING_PCT = 0.15`, `FROZEN_SPEED_TOLERANCE_USD = 3`.
 
 ### Чего БОЛЬШЕ НЕТ (удалено из старого механизма)
 - ❌ `PUT order.dispatch_date = понедельник → re-quote → restore` — старый эндпоинт даты не принимал,
@@ -127,11 +129,11 @@ POST https://api.veeqo.com/shipping/api/v1/rates
 Для каждого Frozen Amazon-заказа (любой день):
   bestToday  = cheapest valid @ today      // valid = EDD≤дедлайн И calDays≤окно(2/3)
   bestMonday = cheapest valid @ next Monday //   среди valid: +$3 абсолют за день быстрее
-  if  !bestToday && bestMonday                                    → ship Monday
-  elif transitMonday < transitToday && priceMonday ≤ priceToday+$3 → ship Monday   // быстрее, в пределах $3
-  elif priceMonday < priceToday*0.85                              → ship Monday   // >15% дешевле
-  elif bestToday                                                  → ship today
-  else                                                            → no_service
+  if  !bestToday && bestMonday                                       → ship Monday
+  elif transitMonday < transitToday && priceMonday ≤ priceToday+$3    → ship Monday   // быстрее, в пределах $3
+  elif transitMonday ≤ transitToday && priceMonday < priceToday*0.85  → ship Monday   // тот же срок, >15% дешевле
+  elif bestToday                                                     → ship today    // Monday медленнее → никогда
+  else                                                               → no_service
   labelDate = today всегда
 ```
 

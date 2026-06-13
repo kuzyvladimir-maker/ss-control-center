@@ -69,9 +69,9 @@ async function main() {
   if (bMon && !bToday) console.log("ship MONDAY (no valid today)");
   else if (bMon && bToday && bMon.days < bToday.days && bMon.p <= bToday.p + SPEED_TOL)
     console.log(`ship MONDAY — faster ${bMon.days}d vs ${bToday.days}d transit (Mon $${bMon.p.toFixed(2)} vs $${bToday.p.toFixed(2)})`);
-  else if (bMon && bToday && bMon.p < bToday.p * (1 - MON_MIN))
-    console.log(`ship MONDAY — ${Math.round((1 - bMon.p / bToday.p) * 100)}% cheaper ($${bToday.p.toFixed(2)}→$${bMon.p.toFixed(2)})`);
-  else if (bToday) console.log(`ship TODAY — $${bToday.p.toFixed(2)} (Monday ${bMon ? `$${bMon.p.toFixed(2)}/${bMon.days}d` : "none"} not better)`);
+  else if (bMon && bToday && bMon.days <= bToday.days && bMon.p < bToday.p * (1 - MON_MIN))
+    console.log(`ship MONDAY — ${Math.round((1 - bMon.p / bToday.p) * 100)}% cheaper, same ${bMon.days}d transit ($${bToday.p.toFixed(2)}→$${bMon.p.toFixed(2)})`);
+  else if (bToday) console.log(`ship TODAY — $${bToday.p.toFixed(2)} (Monday ${bMon ? `$${bMon.p.toFixed(2)}/${bMon.days}d` : "none"} not faster/not enough cheaper, or slower)`);
   else console.log("NO SERVICE");
   console.log();
 }

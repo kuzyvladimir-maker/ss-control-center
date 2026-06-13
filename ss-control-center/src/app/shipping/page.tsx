@@ -4005,7 +4005,8 @@ function OrderRow({
           it&apos;s hot at the destination). A faster rate is preferred when it
           costs no more than $3 extra. The package physically ships next Monday
           (label still dated today) when Monday is faster in transit at no more
-          than $3 extra, or more than 15% cheaper.
+          than $3 extra, or just as fast and more than 15% cheaper — never when
+          Monday would deliver slower.
         </div>
       )}
 
