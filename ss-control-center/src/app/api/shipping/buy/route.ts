@@ -12,6 +12,7 @@ import { sendTelegramMessage } from "@/lib/telegram";
 import { uploadLabelPdf } from "@/lib/google-drive";
 import { buildFolderPath, buildPdfFilename } from "@/lib/shipping-label-files";
 import { todayNY } from "@/lib/shipping/dates";
+import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
 import { writeFileSync, mkdirSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
 
@@ -63,18 +64,16 @@ function pickTrackingString(shipment: unknown): string | null {
 // Applied only to the weight pushed to Veeqo for FedEx One Rate labels.
 const FEDEX_ONE_RATE_WEIGHT_MULT = 1.2;
 
-// Parse the plan item's boxSize ("LxWxH", e.g. "12x12x10") into numbers.
-// Returns null when the string is missing or malformed so the caller can
-// decide whether to push dims to Veeqo or skip.
+// Parse the plan item's boxSize into numbers. Handles BOTH "LxWxH"
+// (e.g. "12x12x10") AND named presets ("XL", "M", …) via resolveBoxDimensions —
+// a named box previously returned null here, so the dim-push was skipped and the
+// label bought against Veeqo's stale package (wrong weight/size). Returns null
+// only when the string is missing or genuinely unresolvable.
 function parseBoxSize(
   boxSize: string | null | undefined,
 ): { l: number; w: number; h: number } | null {
-  if (!boxSize) return null;
-  const m = boxSize.match(
-    /^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)$/i,
-  );
-  if (!m) return null;
-  return { l: Number(m[1]), w: Number(m[2]), h: Number(m[3]) };
+  const d = resolveBoxDimensions(boxSize);
+  return d ? { l: d.length, w: d.width, h: d.height } : null;
 }
 
 // Per-itemId override: operator picked a different carrier/service through

@@ -16,6 +16,7 @@ import {
   requiresPackingProfile,
 } from "@/lib/shipping/packing-signature";
 import { computeLabelDate, nextMondayFrom } from "@/lib/shipping/dates";
+import { resolveBoxDimensions } from "@/lib/shipping/box-presets";
 import { normalizeChannelKind } from "@/lib/shipping-label-files";
 
 // ── Veeqo rate shape (actual API fields) ──
@@ -741,19 +742,22 @@ export async function GET(request: NextRequest) {
         skuWeight != null &&
         skuBoxSize
       ) {
-        const dimMatch = skuBoxSize.match(
-          /^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)$/i,
-        );
-        if (dimMatch) {
+        // resolveBoxDimensions handles BOTH "LxWxH" AND named presets ("XL",
+        // "M", …). The old raw regex only matched "LxWxH", so a named box like
+        // "XL" silently skipped the push and the order quoted against Veeqo's
+        // stale package — e.g. 112-0136653 (32lb XL) quoted as a tiny 10×8×6
+        // box, surfacing a bogus $17.78 FedEx 2Day One Rate flat price.
+        const dims = resolveBoxDimensions(skuBoxSize);
+        if (dims) {
           try {
             await updateAllocationPackage(allocationId, {
               weightLbs: skuWeight,
-              lengthIn: Number(dimMatch[1]),
-              widthIn: Number(dimMatch[2]),
-              heightIn: Number(dimMatch[3]),
+              lengthIn: dims.length,
+              widthIn: dims.width,
+              heightIn: dims.height,
             });
             console.log(
-              `[plan] ${order.number} allocation_package pushed: ${dimMatch[1]}x${dimMatch[2]}x${dimMatch[3]} ${skuWeight}lbs`,
+              `[plan] ${order.number} allocation_package pushed: ${dims.length}x${dims.width}x${dims.height} ${skuWeight}lbs`,
             );
           } catch (e) {
             console.warn(
@@ -763,7 +767,7 @@ export async function GET(request: NextRequest) {
           }
         } else {
           console.warn(
-            `[plan] ${order.number} skuBoxSize="${skuBoxSize}" did not match LxWxH regex — skipping package push`,
+            `[plan] ${order.number} skuBoxSize="${skuBoxSize}" not resolvable to dims — skipping package push`,
           );
         }
       }
@@ -797,22 +801,21 @@ export async function GET(request: NextRequest) {
           // anchoring; non-Amazon packs dims in Veeqo).
           const useNewRateApi = productType === "Frozen" && isAmazon;
           // Parcel for the new API, built from OUR catalog dims (lbs → oz).
-          const newApiParcel =
-            skuWeight != null && skuBoxSize
-              ? (() => {
-                  const m = skuBoxSize.match(
-                    /^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)$/i,
-                  );
-                  return m
-                    ? {
-                        weightOz: skuWeight * 16,
-                        lengthIn: Number(m[1]),
-                        widthIn: Number(m[2]),
-                        heightIn: Number(m[3]),
-                      }
-                    : undefined;
-                })()
+          // resolveBoxDimensions handles named presets ("XL") too — without it a
+          // named box fell through to the stale-allocation fallback and mispriced
+          // the rate (see 112-0136653).
+          const newApiParcel = (() => {
+            if (skuWeight == null || !skuBoxSize) return undefined;
+            const d = resolveBoxDimensions(skuBoxSize);
+            return d
+              ? {
+                  weightOz: skuWeight * 16,
+                  lengthIn: d.length,
+                  widthIn: d.width,
+                  heightIn: d.height,
+                }
               : undefined;
+          })();
 
           let rates: VeeqoRate[];
           if (useNewRateApi) {
