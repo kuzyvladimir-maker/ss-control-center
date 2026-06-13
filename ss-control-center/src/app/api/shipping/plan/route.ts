@@ -956,18 +956,21 @@ export async function GET(request: NextRequest) {
                 ? transitDays(mondayPick.delivery_promise_date, nextMonday)
                 : Infinity;
 
-              // Choose today vs Monday (Master Prompt v3.5 — refined by Vladimir
-              // 2026-06-12). Both already meet deadline + window. We NEVER pick a
-              // Monday that delivers in MORE transit days than today (a slower
-              // delivery is unacceptable even for a big saving — Vladimir). Take
-              // Monday only if:
+              // Choose today vs Monday (Master Prompt v3.5 — Vladimir
+              // 2026-06-12). selectBestRate already guarantees BOTH picks meet
+              // the deadline AND the frozen window, so BOTH are food-safe and
+              // on-time — within the window an extra transit day does NOT harm
+              // the food. So the choice is economic. Take Monday if:
               //   1. there's no valid rate today, OR
-              //   2. Monday is FASTER in transit (fewer days → safer for frozen)
-              //      AND no more than $FROZEN_SPEED_TOLERANCE_USD pricier (same $3
-              //      speed rule, applied across ship days), OR
-              //   3. Monday is NOT slower (same transit days) AND is
-              //      >MONDAY_SHIFT_MIN_SAVING_PCT cheaper — a big saving at no
-              //      delivery-speed cost.
+              //   2. Monday is FASTER in transit AND no more than
+              //      $FROZEN_SPEED_TOLERANCE_USD pricier (a near-free speed-up —
+              //      e.g. 112-5404197: Mon FedEx 2Day 2d/$32.85 vs today
+              //      FedEx Home 3d/$32.91), OR
+              //   3. Monday is >MONDAY_SHIFT_MIN_SAVING_PCT cheaper — a big
+              //      saving wins even if Monday takes one more transit day, as
+              //      long as it's still in the window (e.g. 112-8268143:
+              //      Mon 2Day $17.78 vs today Next Day Air Saturday $82.73 — both
+              //      inside the 2-day window, so take the $17.78).
               // Otherwise keep today.
               let takeMonday = false;
               let switchReason = "";
@@ -984,17 +987,16 @@ export async function GET(request: NextRequest) {
                     `faster ${mondayTransit}d vs ${todayTransit}d transit` +
                     ` (Mon $${mondayPrice.toFixed(2)} vs $${todayPrice.toFixed(2)})`;
                 } else if (
-                  mondayTransit <= todayTransit &&
                   mondayPrice < todayPrice * (1 - MONDAY_SHIFT_MIN_SAVING_PCT)
                 ) {
                   takeMonday = true;
                   switchReason =
                     `${Math.round((1 - mondayPrice / todayPrice) * 100)}% cheaper` +
-                    ` same ${mondayTransit}d transit ($${todayPrice.toFixed(2)}→$${mondayPrice.toFixed(2)})`;
+                    ` ($${todayPrice.toFixed(2)}→$${mondayPrice.toFixed(2)})`;
                 }
               }
-              // else: Monday is slower, or not enough cheaper at the same speed →
-              // keep today. A slower Monday is never chosen.
+              // else: today is cheaper-or-similar (and not beaten on speed) →
+              // keep today.
 
               if (takeMonday && mondayPick) {
                 selectedRate = mondayPick;
