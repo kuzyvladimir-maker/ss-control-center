@@ -176,39 +176,6 @@ export async function POST(request: NextRequest) {
       total: itemsToBuy.length,
     };
 
-    // Look up Frozen Analytics v2 alerts for every order we're about to buy
-    // a label for. Used downstream to prepend a risk tag to the PDF filename
-    // so warehouse / Drive listings surface the recommendation. One batch
-    // query, indexed by orderNumber for O(1) lookup in the loop below.
-    const orderNumbersToBuy = itemsToBuy
-      .map((i) => i.orderNumber)
-      .filter((n): n is string => !!n);
-    const frozenAlerts =
-      orderNumbersToBuy.length > 0
-        ? await prisma.frozenRiskAlert.findMany({
-            where: { orderId: { in: orderNumbersToBuy } },
-            orderBy: { createdAt: "desc" },
-          })
-        : [];
-    const frozenByOrder = new Map<
-      string,
-      { level: string; shortAdvice: string | null }
-    >();
-    for (const a of frozenAlerts) {
-      if (frozenByOrder.has(a.orderId)) continue; // take the freshest only
-      let firstRec: string | null = null;
-      try {
-        const arr = JSON.parse(a.recommendations) as string[];
-        firstRec = Array.isArray(arr) && arr.length > 0 ? arr[0] : null;
-      } catch {
-        firstRec = null;
-      }
-      frozenByOrder.set(a.orderId, {
-        level: a.riskLevel,
-        shortAdvice: firstRec,
-      });
-    }
-
     for (const rawItem of itemsToBuy) {
       // Hard guard: never buy a Walmart-channel order through Veeqo unless the
       // operator explicitly opted in via the Walmart buy-source toggle. The UI
@@ -623,8 +590,7 @@ export async function POST(request: NextRequest) {
                     .toString("utf-8")}`
                 );
               } else {
-              const frozenHint = frozenByOrder.get(item.orderNumber) ?? null;
-              const filename = buildPdfFilename(item, frozenHint);
+              const filename = buildPdfFilename(item);
               const folderPath = buildFolderPath(item);
               // Hold the PDF bytes for the auto-print path. The same
               // buffer also feeds the Drive upload below.
