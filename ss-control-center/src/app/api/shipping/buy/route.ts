@@ -503,9 +503,12 @@ export async function POST(request: NextRequest) {
         const str = (v: unknown, fallback: string): string =>
           v != null ? String(v) : fallback;
         const buyCarrierId = str(fr.carrier, item.carrierId);
+        // item.remoteShipmentId is no longer guard-narrowed to non-null (frozen
+        // new-API rates have none), so default it to "" — the live freshRate's
+        // remote_shipment_id is what's actually used.
         const buyRemoteShipmentId = str(
           fr.remote_shipment_id,
-          item.remoteShipmentId,
+          item.remoteShipmentId ?? "",
         );
         const buyServiceType = str(fr.name, item.serviceType);
         const buySubCarrierId = str(fr.sub_carrier_id, item.subCarrierId);
