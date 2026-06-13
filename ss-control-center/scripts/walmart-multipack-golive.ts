@@ -59,9 +59,13 @@ function buildMpItem(args: {
   productName: string; shortDescription: string; keyFeatures: string[];
   mainImageUrl: string; secondaryImageUrls: string[];
 }) {
-  // Per Walmart 5.0 errors: productName lives in the product-type (Visible)
-  // block, NOT in Orderable. secondaryImage requires >=4 entries when present,
-  // so we only include it when we actually have >=4.
+  // Built to the authoritative MP_MAINTENANCE 5.0 spec (POST /v3/items/spec):
+  //  - Header requires ONLY businessUnit(enum WALMART_US)/locale/version.
+  //    sellingChannel/subset/mart are NOT valid header fields.
+  //  - Orderable requires only sku + productIdentifiers.
+  //  - Visible[productType] has no required fields → partial update of just
+  //    the fields we change. productSecondaryImageURL minItems=1 here (the
+  //    >=4 rule is MP_ITEM full-setup only), so the badge can ride along.
   const visible: Record<string, unknown> = {
     productName: args.productName,
     brand: args.brand,
@@ -69,11 +73,15 @@ function buildMpItem(args: {
     keyFeatures: args.keyFeatures,
     mainImageUrl: args.mainImageUrl,
   };
-  if (args.secondaryImageUrls.length >= 4) {
+  if (args.secondaryImageUrls.length >= 1) {
     visible.productSecondaryImageURL = args.secondaryImageUrls;
   }
   return {
-    MPItemFeedHeader: { sellingChannel: "marketplace", version: "5.0.20260330-14_47_14-api", locale: "en", subset: "EXTERNAL", mart: "WALMART_US" },
+    MPItemFeedHeader: {
+      businessUnit: "WALMART_US",
+      locale: "en",
+      version: "5.0.20260330-14_47_14-api",
+    },
     MPItem: [
       {
         Orderable: {
