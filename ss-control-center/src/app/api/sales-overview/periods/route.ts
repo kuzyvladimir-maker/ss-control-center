@@ -23,6 +23,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchOrdersInRange } from "@/lib/veeqo/client";
+import { isFulfillmentOnlyStoreName } from "@/lib/procurement/excluded-stores";
 import { toZonedTime, fromZonedTime } from "date-fns-tz";
 import {
   startOfDay,
@@ -118,7 +119,7 @@ function normalizeStatus(raw: string): string {
 async function loadOtherChannelOrdersFromVeeqo(
   from: Date,
   to: Date,
-): Promise<Array<NormalizedOrder & { createdAt: Date }>> {
+): Promise<Array<NormalizedOrder & { createdAt: Date; channel: string }>> {
   let raw: unknown[];
   try {
     raw = await fetchOrdersInRange({
@@ -133,7 +134,7 @@ async function loadOtherChannelOrdersFromVeeqo(
     );
     return [];
   }
-  const out: Array<NormalizedOrder & { createdAt: Date }> = [];
+  const out: Array<NormalizedOrder & { createdAt: Date; channel: string }> = [];
   for (const item of raw) {
     if (!item || typeof item !== "object") continue;
     const o = item as Record<string, unknown>;
@@ -143,6 +144,11 @@ async function loadOtherChannelOrdersFromVeeqo(
         ? (ch.type_code as string).toLowerCase()
         : "";
     if (typeCode === "amazon" || typeCode === "walmart") continue;
+    // NAN health (and other fulfilment-only client stores) ship from our
+    // warehouse but the revenue is the client's — keep them out of OUR
+    // numbers, same as Procurement and the main overview endpoint.
+    const channelName = typeof ch?.name === "string" ? (ch.name as string) : "";
+    if (isFulfillmentOnlyStoreName(channelName)) continue;
     const createdAtRaw = String(o.created_at ?? "");
     if (!createdAtRaw) continue;
     const createdAt = new Date(createdAtRaw);
@@ -165,6 +171,7 @@ async function loadOtherChannelOrdersFromVeeqo(
       itemsCount: itemsCount || 1,
       status: normalizeStatus(String(o.status ?? "unknown")),
       createdAt,
+      channel: typeCode || "other",
     });
   }
   return out;
@@ -177,11 +184,12 @@ async function loadOtherChannelOrdersFromVeeqo(
 async function loadCachedOrders(
   from: Date,
   to: Date,
-  channel: "all" | "amazon" | "walmart",
+  wantAmazon: boolean,
+  wantWalmart: boolean,
   storeIndex: number | null,
 ): Promise<NormalizedOrder[]> {
   const tasks: Array<Promise<NormalizedOrder[]>> = [];
-  if (channel !== "walmart") {
+  if (wantAmazon) {
     tasks.push(
       prisma.amazonOrder
         .findMany({
@@ -200,7 +208,7 @@ async function loadCachedOrders(
         ),
     );
   }
-  if (channel !== "amazon") {
+  if (wantWalmart) {
     tasks.push(
       prisma.walmartOrder
         .findMany({
@@ -247,36 +255,66 @@ function summarize(orders: NormalizedOrder[]): Summary {
 
 async function summarizeWindow(
   win: Window,
-  channel: "all" | "amazon" | "walmart",
+  sel: ChannelSelection,
   storeIndex: number | null,
-  veeqoOthers: Array<NormalizedOrder & { createdAt: Date }>,
+  veeqoOthers: Array<NormalizedOrder & { createdAt: Date; channel: string }>,
 ): Promise<Summary> {
   const cached = await loadCachedOrders(
     win.from,
     win.to,
-    channel,
+    sel.wantAmazon,
+    sel.wantWalmart,
     storeIndex,
   );
-  // Filter the pre-fetched Veeqo "other channels" array into this
-  // window. Cheap in-memory pass — no extra API call.
-  const others =
-    channel === "all"
-      ? veeqoOthers.filter(
-          (o) => o.createdAt >= win.from && o.createdAt <= win.to,
-        )
-      : [];
+  // Filter the pre-fetched Veeqo "other channels" array into this window
+  // and down to the requested channel set. Cheap in-memory pass — no
+  // extra API call.
+  const others = sel.wantOthers
+    ? veeqoOthers.filter(
+        (o) =>
+          o.createdAt >= win.from &&
+          o.createdAt <= win.to &&
+          (sel.set === null || sel.set.has(o.channel)),
+      )
+    : [];
   return summarize([...cached, ...others]);
+}
+
+/** Resolved multi-select channel filter. `set === null` ⇒ all channels. */
+interface ChannelSelection {
+  set: Set<string> | null;
+  wantAmazon: boolean;
+  wantWalmart: boolean;
+  wantOthers: boolean;
+}
+
+function resolveChannelSelection(raw: string): ChannelSelection {
+  const requested = raw
+    .split(",")
+    .map((c) => c.trim().toLowerCase())
+    .filter(Boolean);
+  const set: Set<string> | null =
+    requested.length === 0 || requested.includes("all")
+      ? null
+      : new Set(requested);
+  return {
+    set,
+    wantAmazon: set === null || set.has("amazon"),
+    wantWalmart: set === null || set.has("walmart"),
+    wantOthers:
+      set === null ||
+      [...set].some((c) => c !== "amazon" && c !== "walmart"),
+  };
 }
 
 export async function GET(request: NextRequest) {
   try {
     const sp = request.nextUrl.searchParams;
-    const channelParam = sp.get("channel") as
-      | "amazon"
-      | "walmart"
-      | "all"
-      | null;
-    const channel = channelParam ?? "all";
+    // Multi-select channel filter — comma list via `channels=` (preferred)
+    // or legacy single `channel=`. "all" / empty ⇒ every channel.
+    const sel = resolveChannelSelection(
+      sp.get("channels") ?? sp.get("channel") ?? "all",
+    );
     const storeIndexRaw = sp.get("storeIndex");
     const storeIndex = storeIndexRaw ? parseInt(storeIndexRaw, 10) : null;
 
@@ -340,10 +378,9 @@ export async function GET(request: NextRequest) {
     // and silently dropped every non-cached channel).
     const broadestFrom = priorWindows.lastMonth.from; // start of month-before-last
     const broadestTo = now;
-    const veeqoOthers =
-      channel === "all"
-        ? await loadOtherChannelOrdersFromVeeqo(broadestFrom, broadestTo)
-        : [];
+    const veeqoOthers = sel.wantOthers
+      ? await loadOtherChannelOrdersFromVeeqo(broadestFrom, broadestTo)
+      : [];
 
     // Fire every window query in parallel — current + prior, all 5 periods.
     // All summarizeWindow calls now reuse the SAME veeqoOthers array,
@@ -359,16 +396,16 @@ export async function GET(request: NextRequest) {
       lastMonthCur,
       lastMonthPrior,
     ] = await Promise.all([
-      summarizeWindow(w.today, channel, storeIndex, veeqoOthers),
-      summarizeWindow(priorWindows.today, channel, storeIndex, veeqoOthers),
-      summarizeWindow(w.yesterday, channel, storeIndex, veeqoOthers),
-      summarizeWindow(priorWindows.yesterday, channel, storeIndex, veeqoOthers),
-      summarizeWindow(w.mtd, channel, storeIndex, veeqoOthers),
-      summarizeWindow(priorWindows.mtd, channel, storeIndex, veeqoOthers),
+      summarizeWindow(w.today, sel, storeIndex, veeqoOthers),
+      summarizeWindow(priorWindows.today, sel, storeIndex, veeqoOthers),
+      summarizeWindow(w.yesterday, sel, storeIndex, veeqoOthers),
+      summarizeWindow(priorWindows.yesterday, sel, storeIndex, veeqoOthers),
+      summarizeWindow(w.mtd, sel, storeIndex, veeqoOthers),
+      summarizeWindow(priorWindows.mtd, sel, storeIndex, veeqoOthers),
       // thisMonth current = mtd (same set of orders); skip.
-      summarizeWindow(priorWindows.thisMonth, channel, storeIndex, veeqoOthers),
-      summarizeWindow(w.lastMonth, channel, storeIndex, veeqoOthers),
-      summarizeWindow(priorWindows.lastMonth, channel, storeIndex, veeqoOthers),
+      summarizeWindow(priorWindows.thisMonth, sel, storeIndex, veeqoOthers),
+      summarizeWindow(w.lastMonth, sel, storeIndex, veeqoOthers),
+      summarizeWindow(priorWindows.lastMonth, sel, storeIndex, veeqoOthers),
     ]);
 
     // Forecast extrapolates current MTD pace through the rest of the

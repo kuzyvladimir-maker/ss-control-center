@@ -33,3 +33,16 @@ export function isFulfillmentOnlyStore(
   if (typeof name !== "string") return false;
   return NORMALIZED_SET.has(name.trim().toLowerCase());
 }
+
+/**
+ * Name-only variant — same exclusion check against a bare Veeqo
+ * `channel.name` string. Used by Sales Overview / Dashboard analytics so
+ * NAN health (a client whose orders we only fulfil, not sell) never lands
+ * in OUR revenue numbers.
+ */
+export function isFulfillmentOnlyStoreName(
+  name: string | null | undefined
+): boolean {
+  if (typeof name !== "string") return false;
+  return NORMALIZED_SET.has(name.trim().toLowerCase());
+}

@@ -30,14 +30,17 @@
  *     totalOrdersInWindow: number,                 // != orders.length when truncated
  *   }
  *
- * The endpoint reads only from our local cache (AmazonOrder / WalmartOrder),
- * which the existing orders-amazon / orders-walmart crons keep fresh. No
- * Veeqo calls here — that keeps response time well under a second even
- * for year-long windows.
+ * HYBRID source (mirrors /api/sales-overview/periods so the page's chart +
+ * breakdowns reconcile with the tiles): Amazon + Walmart from our local
+ * cache (AmazonOrder / WalmartOrder, kept fresh by the orders-* crons),
+ * every other channel (eBay / Merged / etc.) live from Veeqo. Fulfilment-
+ * only client stores (NAN health) are excluded everywhere. `channels=` is
+ * a comma list (multi-select); "all" / empty means every channel.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchOrdersInRange } from "@/lib/veeqo/client";
+import { isFulfillmentOnlyStoreName } from "@/lib/procurement/excluded-stores";
 import { toZonedTime, fromZonedTime } from "date-fns-tz";
 import {
   startOfDay,
@@ -323,31 +326,6 @@ function summarize(orders: NormalizedOrder[]) {
 // SKUs. Walmart top-SKU is a follow-up that probably wants its own
 // pre-aggregated table.
 // ─────────────────────────────────────────────────────────────────────
-/** Aggregate top SKUs from the (already-loaded) Veeqo orders' line
- *  items. Covers every channel that has line items, not just Amazon. */
-function buildTopSkusFromOrders(
-  orders: NormalizedOrder[],
-  limit = 10,
-): Array<{ sku: string; productName: string | null; qty: number }> {
-  const map = new Map<
-    string,
-    { productName: string | null; qty: number }
-  >();
-  for (const o of orders) {
-    for (const li of o.items) {
-      if (!li.sku) continue;
-      const row = map.get(li.sku) ?? { productName: li.productName, qty: 0 };
-      row.qty += li.quantity;
-      if (!row.productName && li.productName) row.productName = li.productName;
-      map.set(li.sku, row);
-    }
-  }
-  return [...map.entries()]
-    .map(([sku, v]) => ({ sku, productName: v.productName, qty: v.qty }))
-    .sort((a, b) => b.qty - a.qty)
-    .slice(0, limit);
-}
-
 async function buildTopSkus(
   from: Date,
   to: Date,
@@ -418,22 +396,14 @@ async function loadAmazonOrders(
 }
 
 /**
- * Pull EVERY order Veeqo has for the range — used as the single source
- * for the Sales Overview orders list so we get line items (product
- * image, title, sku, qty) for every channel including Amazon + Walmart.
- *
- * Pass `skipAmazonWalmart: true` to keep the old "non-cached channels
- * only" behaviour (used historically for tile aggregations).
+ * Pull the non-cached channels (eBay / TikTok / Shopify / Merged / Etsy)
+ * live from Veeqo for the range — Amazon + Walmart are skipped here
+ * because we take those from our local cache (authoritative). Brings
+ * line-item thumbnails for the channels that have no local mirror, and
+ * drops fulfilment-only client stores (NAN health) inside the loader.
  *
  * Best-effort: a Veeqo failure logs a warning and returns [].
  */
-async function loadAllVeeqoOrders(
-  from: Date,
-  to: Date,
-): Promise<NormalizedOrder[]> {
-  return loadVeeqoOrdersInternal(from, to, false);
-}
-
 async function loadOtherChannelOrders(
   from: Date,
   to: Date,
@@ -482,6 +452,11 @@ async function loadVeeqoOrdersInternal(
       typeof channelInfo?.name === "string"
         ? (channelInfo.name as string)
         : "";
+
+    // NAN health (and any other fulfilment-only client store) ships out of
+    // our warehouse but the revenue is the CLIENT's, not ours — keep it out
+    // of every Sales Overview number, exactly like Procurement does.
+    if (isFulfillmentOnlyStoreName(channelName)) continue;
 
     // Best-effort field extraction. Veeqo returns slightly different
     // shapes per channel, so we try each common key in order.
@@ -653,13 +628,22 @@ export async function GET(request: NextRequest) {
     const presetParam = sp.get("preset") as Preset | null;
     const fromParam = parseDateParam(sp.get("from"));
     const toParam = parseDateParam(sp.get("to"), true);
-    // Channel filter accepts ANY Veeqo type_code (amazon / walmart /
-    // ebay / tiktok / shopify / direct / etc.) plus the special "all"
-    // value. For unknown values we fall back to "all".
-    const channelRaw = (sp.get("channel") || "all").toLowerCase();
-    const channel = channelRaw;
-    const isOtherChannel =
-      channel !== "all" && channel !== "amazon" && channel !== "walmart";
+    // Channel filter is now MULTI-select. Accepts a comma list via
+    // `channels=amazon,walmart,ebay` (preferred) or the legacy single
+    // `channel=amazon`. The special value "all" (or an empty list) means
+    // every channel. Values are Veeqo type_codes (amazon / walmart / ebay
+    // / tiktok / shopify / direct / etc.).
+    const channelsRaw = sp.get("channels") ?? sp.get("channel") ?? "all";
+    const requested = channelsRaw
+      .split(",")
+      .map((c) => c.trim().toLowerCase())
+      .filter(Boolean);
+    // null channelSet ⇒ "all channels". Otherwise a concrete Set to keep.
+    const channelSet: Set<string> | null =
+      requested.length === 0 || requested.includes("all")
+        ? null
+        : new Set(requested);
+    const wantChannel = (c: string) => channelSet === null || channelSet.has(c);
     const storeIndexRaw = sp.get("storeIndex");
     const storeIndex = storeIndexRaw ? parseInt(storeIndexRaw, 10) : null;
     // Default cap 500 — keeps the response under ~1MB so the browser
@@ -692,20 +676,37 @@ export async function GET(request: NextRequest) {
     const priorTo = new Date(from.getTime() - 1);
     const priorFrom = new Date(priorTo.getTime() - windowMs);
 
-    // Veeqo is now the SINGLE source for the current window — it
-    // returns every channel (Amazon / Walmart / eBay / TikTok /
-    // Shopify / Merged) WITH line items (product image, title, sku,
-    // qty per line). Cached AmazonOrder / WalmartOrder rows don't
-    // carry line items, so showing "Veeqo-style" rows with thumbnails
-    // requires the live fetch regardless.
+    // HYBRID source — matches the period-tiles endpoint so the chart +
+    // breakdowns + orders list always reconcile with the tiles above:
+    //   • Amazon + Walmart come from OUR local cache (AmazonOrder /
+    //     WalmartOrder), kept fresh by the orders-* crons. These are the
+    //     authoritative revenue numbers (Veeqo under-reports them — its
+    //     created_at windowing and sync gaps drop most marketplace orders).
+    //   • Every other channel (eBay / Merged / etc., minus fulfilment-only
+    //     clients like NAN health) comes live from Veeqo, which is the only
+    //     place those orders exist — and brings line-item thumbnails too.
     //
-    // Prior-period (for delta arrows) still uses the cache — pulling
-    // Veeqo a second time for the prior window would double total
-    // latency without unlocking anything the deltas need.
-    const wantAmazon = channel === "all" || channel === "amazon";
-    const wantWalmart = channel === "all" || channel === "walmart";
-    const [veeqoAll, amzPrior, wmPrior] = await Promise.all([
-      loadAllVeeqoOrders(from, to),
+    // Cached Amazon/Walmart rows carry no line items, so their order-list
+    // rows show the item count rather than thumbnails — an accepted
+    // trade-off for numbers that match the dashboard.
+    const wantAmazon = wantChannel("amazon");
+    const wantWalmart = wantChannel("walmart");
+    // "others" = any requested channel that isn't amazon/walmart (or all).
+    const wantOthers =
+      channelSet === null ||
+      [...channelSet].some((c) => c !== "amazon" && c !== "walmart");
+
+    const [amzCur, wmCur, othersCur, amzPrior, wmPrior] = await Promise.all([
+      wantAmazon
+        ? loadAmazonOrders(from, to, storeIndex)
+        : Promise.resolve([] as NormalizedOrder[]),
+      wantWalmart
+        ? loadWalmartOrders(from, to)
+        : Promise.resolve([] as NormalizedOrder[]),
+      wantOthers
+        ? loadOtherChannelOrders(from, to)
+        : Promise.resolve([] as NormalizedOrder[]),
+      // Prior window (delta arrows) — cache-only, Amazon + Walmart.
       wantAmazon
         ? loadAmazonOrders(priorFrom, priorTo, storeIndex)
         : Promise.resolve([] as NormalizedOrder[]),
@@ -714,23 +715,22 @@ export async function GET(request: NextRequest) {
         : Promise.resolve([] as NormalizedOrder[]),
     ]);
 
-    // Narrow to the selected channel (skipped for "all"). Store-index
-    // filter (Amazon-multi-account) is applied post-hoc on Veeqo
-    // orders by matching channel.name against the configured store
-    // name — Veeqo doesn't expose our storeIndex.
-    let all = channel === "all"
-      ? veeqoAll
-      : veeqoAll.filter((o) => o.channel === channel);
-    if (storeIndex && channel === "amazon") {
-      const targetName = amazonStoreName(storeIndex).toLowerCase();
-      all = all.filter((o) => o.storeName.toLowerCase() === targetName);
-    }
+    // Narrow "others" to the explicitly-requested channels (Veeqo returns
+    // every non-amazon/walmart channel; keep only the ones asked for).
+    const others =
+      channelSet === null
+        ? othersCur
+        : othersCur.filter((o) => channelSet.has(o.channel));
 
+    const all = [...amzCur, ...wmCur, ...others];
     const prior = [...amzPrior, ...wmPrior];
 
-    // Top SKUs aggregated from the Veeqo line items — covers every
-    // channel that has them, not just Amazon.
-    const topSkus = buildTopSkusFromOrders(all, 10);
+    // Top SKUs — Amazon comes from the AmazonOrderShipment cache (the
+    // panel is Amazon-only), so it survives the switch away from Veeqo
+    // line items. Skipped entirely when Amazon isn't in the channel set.
+    const topSkus = wantAmazon
+      ? await buildTopSkus(from, to, storeIndex, 10)
+      : [];
 
     const dailyRevenue = buildDailyRevenue(all, from, to);
     const byChannel = buildChannelBreakdown(all);

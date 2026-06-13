@@ -27,6 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { ChannelToggle, channelHex, channelLabel } from "@/lib/channel-brands";
 
 // ─────────────────────────────────────────────────────────────────────
 // Types — mirror /api/sales-overview response
@@ -182,19 +183,8 @@ function pctDelta(curr: number, prior: number): {
   return { delta, pct, positive: delta >= 0 };
 }
 
-const CHANNEL_COLOR: Record<string, string> = {
-  amazon: "#ff9900",
-  walmart: "#0071dc",
-  ebay: "#e53238",
-  tiktok: "#fe2c55",
-  shopify: "#95bf47",
-  etsy: "#f1641e",
-  direct: "#6b7280", // Veeqo "Merged Orders" + manual direct entries
-  other: "#6b7280",
-};
-
-const channelColor = (key: string): string =>
-  CHANNEL_COLOR[key] ?? "#6b7280";
+// Channel colours + labels come from the shared brand kit
+// (@/lib/channel-brands) so Sales Overview matches Shipping Labels exactly.
 
 const STATUS_COLOR: Record<string, string> = {
   Shipped: "bg-green-soft2 text-green-ink",
@@ -216,10 +206,22 @@ export default function SalesOverviewPage() {
   const [preset, setPreset] = useState<Preset | "custom">("last30");
   const [customFrom, setCustomFrom] = useState<string>(addDays(todayET(), -29));
   const [customTo, setCustomTo] = useState<string>(todayET());
-  // Channel filter — "all" / "amazon" / "walmart" stay typed strictly,
-  // but the page also accepts other Veeqo type_codes (ebay / tiktok /
-  // shopify / direct / etc.) when they're present in the data.
-  const [channel, setChannel] = useState<string>("all");
+  // Channel filter — MULTI-select. Empty array = "All channels". Otherwise
+  // a list of Veeqo type_codes (amazon / walmart / ebay / direct / etc.).
+  // Clicking a chip toggles it; the "All" chip clears the selection.
+  const [selectedChannels, setSelectedChannels] = useState<string[]>([]);
+  // Stable, growing list of every channel ever seen in the data — so a
+  // channel's chip doesn't vanish once it's filtered out of the response.
+  const [knownChannels, setKnownChannels] = useState<string[]>([]);
+  // Serialised filter for the API + effect deps. "" ⇒ all channels.
+  const channelsKey = [...selectedChannels].sort().join(",");
+  const channelsParam = selectedChannels.length > 0 ? channelsKey : "all";
+
+  const toggleChannel = useCallback((c: string) => {
+    setSelectedChannels((prev) =>
+      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c],
+    );
+  }, []);
 
   // Orders-list local controls (sort + filter + search). The list is
   // capped server-side at 200 rows; we sort/filter/search on whatever
@@ -243,7 +245,7 @@ export default function SalesOverviewPage() {
     setPeriodsLoading(true);
     try {
       const sp = new URLSearchParams();
-      if (channel !== "all") sp.set("channel", channel);
+      if (channelsParam !== "all") sp.set("channels", channelsParam);
       const res = await fetch(`/api/sales-overview/periods?${sp.toString()}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as PeriodsResponse;
@@ -253,7 +255,8 @@ export default function SalesOverviewPage() {
     } finally {
       setPeriodsLoading(false);
     }
-  }, [channel]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [channelsKey]);
 
   useEffect(() => {
     void fetchPeriods();
@@ -270,7 +273,7 @@ export default function SalesOverviewPage() {
       } else {
         sp.set("preset", preset);
       }
-      if (channel !== "all") sp.set("channel", channel);
+      if (channelsParam !== "all") sp.set("channels", channelsParam);
       const res = await fetch(`/api/sales-overview?${sp.toString()}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as OverviewResponse;
@@ -280,11 +283,24 @@ export default function SalesOverviewPage() {
     } finally {
       setLoading(false);
     }
-  }, [preset, customFrom, customTo, channel]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preset, customFrom, customTo, channelsKey]);
 
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
+
+  // Grow the stable channel-chip list (union, never shrink) so a channel's
+  // filter chip stays put even after it's been filtered out of the data.
+  useEffect(() => {
+    if (!data) return;
+    const seen = data.byChannel.map((c) => c.channel);
+    setKnownChannels((prev) => {
+      const next = new Set(prev);
+      for (const c of seen) next.add(c);
+      return next.size === prev.length ? prev : [...next];
+    });
+  }, [data]);
 
   // Filtered / sorted order list for rendering
   const displayedOrders = useMemo(() => {
@@ -363,8 +379,8 @@ export default function SalesOverviewPage() {
         <div>
           <h1 className="text-lg font-semibold text-ink">Sales Overview</h1>
           <p className="text-[11px] text-ink-3">
-            All channels we cache locally (Amazon + Walmart). Reads from our DB —
-            no live Veeqo calls.
+            Amazon + Walmart from our DB (matches the dashboard); other channels
+            live from Veeqo. NAN health (client fulfilment) is excluded.
           </p>
         </div>
         <Button
@@ -386,64 +402,41 @@ export default function SalesOverviewPage() {
           lives in the 5 period tiles below. */}
       <Card>
         <CardContent className="flex flex-wrap items-center gap-3 py-3">
-          <div className="flex items-center gap-1">
+          {/* Channel filter — multi-select, brand-styled chips matching the
+              Shipping Labels page. "All" clears the selection; any other
+              chip toggles in/out so the operator can view e.g. Amazon +
+              Walmart together. */}
+          <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-[10.5px] font-medium uppercase tracking-wider text-ink-3 mr-1">
               Channel
             </span>
-            {(
-              [
-                ["all", "All"],
-                ["amazon", "Amazon"],
-                ["walmart", "Walmart"],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setChannel(id)}
-                className={cn(
-                  "rounded-md border px-2.5 py-1 text-[11.5px] font-medium transition",
-                  channel === id
-                    ? id === "amazon"
-                      ? "border-[#ff9900] bg-[#ff9900]/10 text-[#232f3e]"
-                      : id === "walmart"
-                        ? "border-[#0071dc] bg-[#0071dc]/10 text-[#0071dc]"
-                        : "border-green bg-green-soft text-green-ink"
-                    : "border-rule bg-surface text-ink-2 hover:border-silver-line",
-                )}
-              >
-                {label}
-              </button>
+            <button
+              type="button"
+              onClick={() => setSelectedChannels([])}
+              aria-pressed={selectedChannels.length === 0}
+              className={cn(
+                "rounded-md border px-3.5 py-1.5 text-[13px] font-bold leading-none tracking-tight transition",
+                selectedChannels.length === 0
+                  ? "border-green bg-green-soft text-green-ink shadow-sm"
+                  : "border-rule bg-surface text-ink-2 hover:border-silver-line",
+              )}
+            >
+              All
+            </button>
+            {/* Amazon + Walmart always available; other channels appear once
+                they've been seen in the data (knownChannels grows, never
+                shrinks, so chips stay put while filtering). */}
+            {Array.from(
+              new Set(["amazon", "walmart", ...knownChannels]),
+            ).map((c) => (
+              <ChannelToggle
+                key={c}
+                channel={c}
+                active={selectedChannels.includes(c)}
+                onClick={() => toggleChannel(c)}
+              />
             ))}
           </div>
-
-          {/* Extra channel chips for any non-cached channel actually
-              present in the current dataset (eBay/TikTok/Shopify/etc.) —
-              shown next to the fixed Amazon/Walmart chips so the
-              operator can narrow to just one of them. */}
-          {data &&
-            Array.from(new Set(data.orders.map((o) => o.channel)))
-              .filter((c) => c !== "amazon" && c !== "walmart")
-              .sort()
-              .map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setChannel(c as typeof channel)}
-                  className={cn(
-                    "rounded-md border px-2.5 py-1 text-[11.5px] font-medium capitalize transition",
-                    channel === c
-                      ? "border-ink bg-bg-elev text-ink"
-                      : "border-rule bg-surface text-ink-2 hover:border-silver-line",
-                  )}
-                  style={{
-                    color:
-                      channel === c ? channelColor(c) : undefined,
-                  }}
-                >
-                  {c}
-                </button>
-              ))}
 
           <div className="ml-auto flex items-center gap-2">
             <button
@@ -593,8 +586,12 @@ export default function SalesOverviewPage() {
                   return (
                     <div key={c.channel}>
                       <div className="mb-0.5 flex items-baseline justify-between gap-2 text-[12px]">
-                        <span className="font-medium capitalize text-ink">
-                          {c.channel}
+                        <span className="flex items-center gap-1.5 font-medium text-ink">
+                          <span
+                            className="inline-block h-2 w-2 rounded-full"
+                            style={{ background: channelHex(c.channel) }}
+                          />
+                          {channelLabel(c.channel)}
                         </span>
                         <span className="tabular text-ink-3">
                           {fmtMoneyExact(c.revenue)} · {c.orders} orders ·{" "}
@@ -606,7 +603,7 @@ export default function SalesOverviewPage() {
                           className="h-full transition-all"
                           style={{
                             width: `${pct}%`,
-                            background: channelColor(c.channel),
+                            background: channelHex(c.channel),
                           }}
                         />
                       </div>
@@ -667,8 +664,8 @@ export default function SalesOverviewPage() {
                       <tr key={`${s.channel}-${s.storeIndex}`} className="border-t border-rule/60">
                         <td className="py-1.5 pr-2">
                           <span className="text-ink">{s.storeName}</span>
-                          <span className="ml-1.5 text-[10.5px] capitalize text-ink-3">
-                            {s.channel}
+                          <span className="ml-1.5 text-[10.5px] text-ink-3">
+                            {channelLabel(s.channel)}
                           </span>
                         </td>
                         <td className="py-1.5 pr-2 text-right tabular text-ink">
@@ -765,7 +762,7 @@ export default function SalesOverviewPage() {
                     <option value="all">All channels</option>
                     {orderChannels.map((c) => (
                       <option key={c} value={c}>
-                        {c.charAt(0).toUpperCase() + c.slice(1)}
+                        {channelLabel(c)}
                       </option>
                     ))}
                   </select>
@@ -847,13 +844,13 @@ export default function SalesOverviewPage() {
                     </td>
                     <td className="whitespace-nowrap px-3 py-2">
                       <span
-                        className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium capitalize"
+                        className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium"
                         style={{
-                          background: `${channelColor(o.channel)}20`,
-                          color: channelColor(o.channel),
+                          background: `${channelHex(o.channel)}20`,
+                          color: channelHex(o.channel),
                         }}
                       >
-                        {o.channel}
+                        {channelLabel(o.channel)}
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-3 py-2 text-ink-2">{o.storeName}</td>
