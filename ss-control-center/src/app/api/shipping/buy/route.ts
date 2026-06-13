@@ -255,8 +255,15 @@ export async function POST(request: NextRequest) {
           }
         : rawItem;
       try {
+        // NOTE: remoteShipmentId is intentionally NOT required here. Frozen
+        // orders are quoted through the new Rate Shopping API, whose response
+        // has no remote_shipment_id — and we don't need it: the buy re-quotes
+        // the allocation live below and uses that fresh rate's
+        // remote_shipment_id (buyRemoteShipmentId = fr.remote_shipment_id).
+        // Requiring it here failed EVERY frozen bulk-buy with "Missing shipping
+        // data".
         if (
-          !item.allocationId || !item.carrierId || !item.remoteShipmentId ||
+          !item.allocationId || !item.carrierId ||
           !item.serviceType || !item.subCarrierId || !item.serviceCarrier ||
           !item.totalNetCharge || !item.baseRate
         ) {
