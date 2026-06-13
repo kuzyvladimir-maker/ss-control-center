@@ -60,10 +60,14 @@ export function rewriteMultipackContent(
   const formula = `This listing is a multipack of ${n} ${noun}. One order ships all ${n} ${noun}. Selecting quantity 1 sends ${n} ${noun}, not 1.`;
   const oneOrder = `Each order contains ${n} ${noun} packaged together. To receive ${n} ${noun}, order quantity 1.`;
 
+  // A third, purely factual bullet so we always meet Walmart's per-product-type
+  // minimum of 3 keyFeatures, even when the donor listing carried none.
+  const sameItem = `All ${n} ${noun} are the same item shown in the product photos.`;
+
   const kept = (opts.existingBullets ?? []).filter(
-    (b) => b && !/quantity 1|pack ships|order contains|multipack of/i.test(b),
+    (b) => b && !/quantity 1|pack ships|order contains|multipack of|same item shown/i.test(b),
   );
-  const bullets = [formula, oneOrder, ...kept].slice(0, 9);
+  const bullets = [formula, oneOrder, sameItem, ...kept].slice(0, 9);
 
   const description =
     `${formula} ${oneOrder}\n\n` +
