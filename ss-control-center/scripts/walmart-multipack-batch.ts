@@ -21,6 +21,8 @@ import { buildMultipackListing, inferUnitNoun, quantityLeadSentence, scrubBrandV
 import { uploadToR2, multipackImageKey } from "../src/lib/walmart/multipack/r2";
 import { fetchDonorDetail } from "../src/lib/walmart/multipack/donor";
 import { polishListingCopy } from "../src/lib/walmart/multipack/polish";
+import { validateListingContent } from "../src/lib/walmart/multipack/guidelines";
+import { logRemediation } from "../src/lib/walmart/multipack/analytics";
 
 const DONOR_IMAGE_CAP = 6; // total images = generated main + badge + up to this many real donor images
 
@@ -29,7 +31,24 @@ const SPEC_VERSION = "5.0.20260330-14_47_14-api";
 const STAMP = new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + Date.now().toString().slice(-5);
 const OUT = join(process.cwd(), "..", "preview-multipack");
 
-interface Job { sku: string; packCount: number; noun: string; feedId: string | null; url: string; title: string; status: string; detail: string; }
+interface Job { sku: string; packCount: number; noun: string; feedId: string | null; url: string; title: string; status: string; detail: string; meta?: any; }
+
+/** Known content gaps for this SKU from the listing-quality mirror (closed loop). */
+async function itemContentIssues(sku: string): Promise<string[]> {
+  try {
+    const r = await db.execute({ sql: `SELECT issuesSummary FROM WalmartListingQualityItem WHERE sku=? LIMIT 1`, args: [sku] });
+    const raw = (r.rows[0] as any)?.issuesSummary;
+    if (!raw) return [];
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (!Array.isArray(parsed)) return [];
+    // Only CONTENT issues are fixable via our copy/images; skip shipping/reviews.
+    return parsed
+      .filter((x: any) => x && x.component === "content")
+      .map((x: any) => `${x.title}${x.detail && x.detail !== x.title ? ` — ${x.detail}` : ""}`)
+      .filter(Boolean)
+      .slice(0, 12);
+  } catch { return []; }
+}
 
 async function loadCandidate(sku: string, liveTitle: string) {
   // Pack count straight from our SKU tables — do NOT depend on the
@@ -109,8 +128,9 @@ async function main() {
       const content = buildMultipackListing(cand.walmartTitle, cand.packCount, {
         noun, donorBullets: donor?.bullets, donorDescription: donor?.description,
       });
+      const contentIssues = await itemContentIssues(sku); // closed loop: known gaps
       const polished = (donor && (donor.bullets.length || donor.description))
-        ? await polishListingCopy({ productName: content.title.replace(/\s*—.*$/, ""), donorBullets: donor.bullets, donorDescription: donor.description })
+        ? await polishListingCopy({ productName: content.title.replace(/\s*—.*$/, ""), donorBullets: donor.bullets, donorDescription: donor.description, contentIssues })
         : null;
       if (polished) {
         content.keyFeatures = polished.keyFeatures.map(scrubBrandVoice).filter(Boolean);
@@ -142,11 +162,18 @@ async function main() {
         jobs.push({ sku, packCount: cand.packCount, noun, feedId: null, url: "(dry)", title: content.title, status: "DRY", detail: `${1 + secondaryImageUrls.length} imgs, ${content.keyFeatures.length} bullets` });
         continue;
       }
+      const gaps = validateListingContent({ title: content.title, keyFeatures: content.keyFeatures, description: content.description, imageCount: 1 + secondaryImageUrls.length });
       const resp: any = await client.requestRaw("POST", "/feeds", { params: { feedType: "MP_MAINTENANCE" }, body: payload });
       const feedId = resp.body?.feedId ?? null;
       const url = await buyerUrl(client, upc, cand.packCount);
-      jobs.push({ sku, packCount: cand.packCount, noun, feedId, url, title: content.title, status: feedId ? "SUBMITTED" : "POST_FAILED", detail: feedId ? "" : JSON.stringify(resp.body).slice(0, 120) });
-      console.log(`${sku}: feedId=${feedId} url=${url}`);
+      const meta = {
+        wpid: cur.wpid, upc, packCount: cand.packCount, newTitle: content.title,
+        bulletsCount: content.keyFeatures.length, imagesCount: 1 + secondaryImageUrls.length,
+        descriptionLength: content.description.length, mainImageUrl: mainUrl, usedAiPolish: !!polished,
+        contentIssues, gaps,
+      };
+      jobs.push({ sku, packCount: cand.packCount, noun, feedId, url, title: content.title, status: feedId ? "SUBMITTED" : "POST_FAILED", detail: feedId ? "" : JSON.stringify(resp.body).slice(0, 120), meta });
+      console.log(`${sku}: feedId=${feedId} url=${url}${gaps.length ? ` | gaps: ${gaps.map((g:any)=>g.issue).join("; ")}` : " | no content gaps"}`);
     } catch (e: any) {
       jobs.push({ sku, packCount: 0, noun: "", feedId: null, url: "—", title: "—", status: "ERROR", detail: e?.message?.slice(0, 100) });
       console.log(`${sku}: EXCEPTION ${e?.message}`);
@@ -164,12 +191,30 @@ async function main() {
         if (st === "PROCESSED" || st === "ERROR") {
           j.status = st;
           j.detail = `ok=${d.itemsSucceeded} fail=${d.itemsFailed}`;
+          (j as any).ingestOk = st === "PROCESSED" && Number(d.itemsFailed) === 0 && Number(d.itemsSucceeded) > 0;
           const errs = d?.itemDetails?.itemIngestionStatus?.[0]?.ingestionErrors?.ingestionError ?? [];
           if (errs.length) j.detail += " — " + errs.map((e: any) => e.field).join(", ");
         }
       } catch { /* keep polling */ }
     }
     console.log(`round ${round}: pending=${pending().length}`);
+  }
+
+  // Phase 2.5 — log each remediation with before-metrics (analytics foundation)
+  for (const j of jobs) {
+    if (!j.meta || !j.feedId) continue;
+    try {
+      await logRemediation(db, {
+        sku: j.sku, wpid: j.meta.wpid, upc: j.meta.upc, buyerItemId: (j.url.match(/ip\/(\d+)/) || [])[1] || null,
+        changeType: "multipack", feedId: j.feedId, feedType: "MP_MAINTENANCE", feedStatus: j.status,
+        ok: !!(j as any).ingestOk, packCount: j.meta.packCount, newTitle: j.meta.newTitle, titleChanged: true,
+        bulletsCount: j.meta.bulletsCount, imagesCount: j.meta.imagesCount, descriptionLength: j.meta.descriptionLength,
+        mainImageUrl: j.meta.mainImageUrl, usedAiPolish: j.meta.usedAiPolish,
+        changeSummary: { contentIssues: j.meta.contentIssues, gaps: j.meta.gaps },
+        notes: j.meta.gaps?.length ? `content gaps: ${j.meta.gaps.map((g: any) => g.issue).join("; ")}` : "no content gaps",
+      });
+      console.log(`logged remediation: ${j.sku}`);
+    } catch (e: any) { console.log(`log failed ${j.sku}: ${e?.message}`); }
   }
 
   // Phase 3 — report

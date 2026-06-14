@@ -5,6 +5,7 @@
 // exactly once. Deterministic fallback (caller's scrubbed copy) on any failure.
 
 import Anthropic from "@anthropic-ai/sdk";
+import { WALMART_CONTENT_RULES } from "./guidelines";
 
 const MODEL = "claude-sonnet-4-5";
 
@@ -12,6 +13,7 @@ export interface PolishInput {
   productName: string;      // brand + product, e.g. "BODYARMOR LYTE Peach Mango"
   donorBullets: string[];
   donorDescription: string;
+  contentIssues?: string[]; // known content gaps for THIS listing (closed loop)
 }
 export interface PolishedCopy {
   keyFeatures: string[];
@@ -26,12 +28,11 @@ function getClient(): Anthropic | null {
   return client;
 }
 
-const RULES = `Rules (Walmart listing, Salutem Solutions brand voice — STRICT):
-- Factual only. Describe what the product is, what's in it, sizes, uses, storage. No fluff.
+const RULES = `${WALMART_CONTENT_RULES}
+
+Brand voice (Salutem Solutions — STRICT, in addition to the above):
 - FORBIDDEN: emojis; promo/subjective adjectives (ultimate, perfect, delightful, delicious, ideal, amazing, incredible, premium, exclusive, must-have, best, finest, exceptional, outstanding, magnificent, wonderful, fantastic, superior, top-quality, world-class, awesome); manual bullet glyphs (•, -, *); health/medical claims (cure, treat, prevent, boost, detox, heal, weight loss).
-- Keyword-rich for search, but natural — no keyword stuffing, no repetition.
 - Do NOT mention pack count, quantity, "multipack", "N-pack", or "how many ship" — that is handled elsewhere.
-- Each key feature is one complete sentence, 40-180 characters, ending with a period.
 - Base everything on the provided donor facts; do not invent specs, certifications, or ingredients.`;
 
 /** Rewrite donor copy into professional listing bullets + description body. */
@@ -49,10 +50,11 @@ SOURCE DESCRIPTION:
 ${input.donorDescription || "(none)"}
 
 ${RULES}
+${input.contentIssues?.length ? `\nThis listing currently has these content gaps to fix:\n${input.contentIssues.map((i) => `- ${i}`).join("\n")}` : ""}
 
 Return ONLY valid JSON, no prose, in this exact shape:
 {"keyFeatures": ["...", "...", "...", "...", "..."], "description": "..."}
-Provide 5-7 keyFeatures. The description is 1 paragraph, 400-700 characters, factual and keyword-rich (no pack/quantity mention).`;
+Provide 5-7 keyFeatures. The description is 150-220 words (about 800-1300 characters), factual and keyword-rich, covering what it is, what's inside, sizes, uses and storage (no pack/quantity mention).`;
 
   try {
     const res = await c.messages.create({
