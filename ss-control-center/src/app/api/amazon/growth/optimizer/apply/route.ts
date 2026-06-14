@@ -56,9 +56,29 @@ export async function POST(request: NextRequest) {
       const result = await applyPlan(storeIndex, sellerId, plan, dryRun);
       results.push({ ...result, changes: plan.changes.length });
 
-      // On a real, accepted apply, re-score the SKU from a fresh read so the
-      // worklist updates without waiting for the next full sweep.
+      // On a real, accepted apply: log the remediation (BEFORE metrics from the
+      // pre-apply row) so the next sweep can measure the lift, then re-score the
+      // SKU from a fresh read so the worklist updates immediately.
       if (!dryRun && result.applied) {
+        try {
+          await prisma.amazonListingRemediation.create({
+            data: {
+              storeIndex,
+              sku,
+              asin: item?.asin ?? plan.asin,
+              itemName: item?.itemName ?? null,
+              fixKinds: JSON.stringify([...new Set(plan.changes.map((c) => c.kind))]),
+              changeCount: plan.changes.length,
+              submissionId: result.submissionId,
+              ok: true,
+              beforeHealthScore: item?.healthScore ?? null,
+              beforeErrorCount: item?.errorIssueCount ?? null,
+              beforeComplianceScore: item?.complianceScore ?? null,
+            },
+          });
+        } catch {
+          /* logging failure shouldn't fail the apply */
+        }
         try {
           await rescore(storeIndex, sellerId, sku);
         } catch {

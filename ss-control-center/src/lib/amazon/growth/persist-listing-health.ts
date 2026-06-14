@@ -139,6 +139,7 @@ export async function syncListingHealth(
       where: { storeIndex },
       data: { cursor: null, sweepStartedAt: null, lastFullSweepAt: new Date() },
     });
+    await measureRemediations(prisma, storeIndex, sweepStartedAt);
   }
 
   return {
@@ -235,6 +236,36 @@ async function writeSnapshot(prisma: PrismaClient, storeIndex: number): Promise<
   });
 
   return healthScore;
+}
+
+/**
+ * Fill AFTER-metrics for Optimizer remediations applied before this sweep
+ * started — the listing was just re-read, so its current score IS the "after".
+ * This is what charts the lift in the Optimizer's Impact section.
+ */
+async function measureRemediations(
+  prisma: PrismaClient,
+  storeIndex: number,
+  sweepStartedAt: Date,
+): Promise<void> {
+  const pending = await prisma.amazonListingRemediation.findMany({
+    where: { storeIndex, ok: true, afterMeasuredAt: null, runAt: { lt: sweepStartedAt } },
+  });
+  for (const rem of pending) {
+    const item = await prisma.amazonListingHealthItem.findUnique({
+      where: { amazon_health_item_dedup: { storeIndex, sku: rem.sku } },
+    });
+    if (!item) continue;
+    await prisma.amazonListingRemediation.update({
+      where: { id: rem.id },
+      data: {
+        afterMeasuredAt: new Date(),
+        afterHealthScore: item.healthScore,
+        afterErrorCount: item.errorIssueCount,
+        afterComplianceScore: item.complianceScore,
+      },
+    });
+  }
 }
 
 function parseDate(s: string | null): Date | null {
