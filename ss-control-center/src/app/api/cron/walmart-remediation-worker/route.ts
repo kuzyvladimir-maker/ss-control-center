@@ -25,24 +25,6 @@ import { logRemediation } from "@/lib/walmart/multipack/analytics";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-// TEMP diagnostic: GET ?diag=1 reports which heavy import fails to load in prod.
-export async function _diag() {
-  const mods: [string, () => Promise<any>][] = [
-    ["@libsql/client", () => import("@libsql/client")],
-    ["walmart/client", () => import("@/lib/walmart/client")],
-    ["multipack/composite", () => import("@/lib/walmart/multipack/composite")],
-    ["multipack/r2", () => import("@/lib/walmart/multipack/r2")],
-    ["multipack/donor", () => import("@/lib/walmart/multipack/donor")],
-    ["multipack/polish", () => import("@/lib/walmart/multipack/polish")],
-    ["multipack/analytics", () => import("@/lib/walmart/multipack/analytics")],
-    ["multipack/remediate", () => import("@/lib/walmart/multipack/remediate")],
-    ["sharp", () => import("sharp")],
-  ];
-  const results: Record<string, string> = {};
-  for (const [name, fn] of mods) { try { await fn(); results[name] = "ok"; } catch (e: any) { results[name] = `FAIL: ${e?.message || e}`; } }
-  return results;
-}
-
 const STORE = 1;
 const DRAIN_PER_TICK = 3;     // build+submit is ~30–60s each; 3 fits 300s with headroom
 const FINALIZE_PER_TICK = 25; // feed-status GETs are cheap
@@ -62,11 +44,6 @@ function db() {
 }
 
 export async function GET(request: NextRequest) {
-  // TEMP: verify native deps (sharp/libvips) load in prod without running the
-  // worker or submitting live feeds. No secret required; remove after confirmed.
-  if (new URL(request.url).searchParams.get("diag") === "1") {
-    return NextResponse.json({ diag: await _diag() });
-  }
   const authFail = requireCronAuth(request);
   if (authFail) return authFail;
   const started = Date.now();

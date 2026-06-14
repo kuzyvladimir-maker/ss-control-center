@@ -47,14 +47,18 @@ async function itemContentIssues(db: Client, sku: string): Promise<string[]> {
   } catch { return []; }
 }
 
-/** Pack count (from our SKU tables, NOT the catalog mirror) + clean donor photo. */
-async function loadCandidate(db: Client, sku: string, liveTitle: string) {
+/** Pack count + clean donor photo. Pack resolution mirrors the optimizer's
+ *  packExpr EXACTLY (SkuShippingData → SkuCost → titlePackCount) so the pipeline
+ *  treats the same listings as multipacks that the UI surfaced as multipacks. */
+async function loadCandidate(db: Client, sku: string, liveTitle: string, storeIndex = 1) {
   const p = await db.execute({
-    sql: `SELECT COALESCE(s.unitsInListing, c.packSize) AS pack
+    sql: `SELECT COALESCE(s.unitsInListing, c.packSize, cat.titlePackCount) AS pack
           FROM (SELECT ? AS sku) k
           LEFT JOIN SkuShippingData s ON s.sku=k.sku
-          LEFT JOIN SkuCost c ON c.sku=k.sku LIMIT 1`,
-    args: [sku],
+          LEFT JOIN SkuCost c ON c.sku=k.sku
+          LEFT JOIN WalmartCatalogItem cat ON cat.sku=k.sku AND cat.storeIndex=?
+          LIMIT 1`,
+    args: [sku, storeIndex],
   });
   const pack = Number((p.rows[0] as any)?.pack) || 0;
   if (pack < 2) return null;
