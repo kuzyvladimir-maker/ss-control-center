@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActionCenter } from "./ActionCenter";
 import { ListingQualityDashboard } from "./ListingQualityDashboard";
 import { BuyBoxPanel } from "./BuyBoxPanel";
-import { RemediationPanel } from "./RemediationPanel";
+import { ListingOptimizer } from "./ListingOptimizer";
 
 type LqFilter =
   | "all"
@@ -36,7 +36,7 @@ export function WalmartGrowthTabs() {
         <TabsList>
           <TabsTrigger value="action-center">Action Center</TabsTrigger>
           <TabsTrigger value="listing-quality">Listing Quality</TabsTrigger>
-          <TabsTrigger value="remediation">Remediation</TabsTrigger>
+          <TabsTrigger value="optimizer">Listing Optimizer</TabsTrigger>
           <TabsTrigger value="buy-box">Buy Box</TabsTrigger>
         </TabsList>
         <TabsContent value="action-center" className="mt-4">
@@ -45,8 +45,8 @@ export function WalmartGrowthTabs() {
         <TabsContent value="listing-quality" className="mt-4">
           <ListingQualityDashboard filter={lqFilter} onFilterChange={setLqFilter} />
         </TabsContent>
-        <TabsContent value="remediation" className="mt-4">
-          <RemediationPanel />
+        <TabsContent value="optimizer" className="mt-4">
+          <ListingOptimizer />
         </TabsContent>
         <TabsContent value="buy-box" className="mt-4">
           <BuyBoxPanel />
