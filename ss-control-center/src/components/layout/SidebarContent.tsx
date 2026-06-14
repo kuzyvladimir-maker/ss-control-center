@@ -16,6 +16,7 @@ import {
   ShoppingCart,
   Layers,
   Sprout,
+  Leaf,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -97,6 +98,11 @@ const operationsItems = (s: DashboardSummary): NavItem[] => [
     title: "Walmart Growth",
     href: "/walmart-growth",
     icon: Sprout,
+  },
+  {
+    title: "Amazon Growth",
+    href: "/amazon-growth",
+    icon: Leaf,
   },
 ];
 

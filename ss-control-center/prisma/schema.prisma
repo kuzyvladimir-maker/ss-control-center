@@ -1348,6 +1348,135 @@ model WalmartSkuFulfillment {
   @@index([storeIndex, avgHandlingDays])
 }
 
+// ─── Amazon Growth (Listing Health) ─────────────────────────────────────────
+// Amazon has NO native Listing Quality Score (unlike Walmart Insights), so we
+// COMPUTE our own "Listing Health Score" (0-100) from several real SP-API
+// signals: Listings Items issues + status, FYP suppressed-listings report,
+// Sales & Traffic conversion, Catalog content, and our compliance gate.
+// Design doc: docs/wiki/amazon-growth-roadmap.md. Mirrors the Walmart Grow
+// data-mirror pattern (snapshot history + per-SKU worklist + resumable sweep).
+model AmazonListingHealthSnapshot {
+  id         String   @id @default(cuid())
+  capturedAt DateTime @default(now())
+  storeIndex Int      @default(1)
+
+  // Seller-level rollup of the computed health score + component averages.
+  healthScore     Float // overall 0-100 (catalog avg)
+  buyabilityScore Float?
+  issuesScore     Float?
+  contentScore    Float?
+  complianceScore Float?
+  buyBoxScore     Float?
+  conversionScore Float?
+
+  totalListings     Int
+  suppressedCount   Int @default(0)
+  errorIssueCount   Int @default(0)
+  warningIssueCount Int @default(0)
+
+  rawData String?
+
+  @@index([storeIndex, capturedAt])
+}
+
+// Per-SKU computed health + the specific issues to fix = the worklist.
+// Upserted on (storeIndex, sku); a re-sync refreshes the row. Rows whose
+// syncedAt predates the latest sweep are pruned. `issuesSummary` holds the
+// distilled actionable issue list (JSON), not the full raw item.
+model AmazonListingHealthItem {
+  id         String @id @default(cuid())
+  storeIndex Int    @default(1)
+
+  sku           String
+  asin          String?
+  productType   String?
+  itemName      String?
+  conditionType String?
+  mainImageUrl  String?
+
+  healthScore     Float? // item overall 0-100 (computed)
+  // buyability | issues | content | compliance | buyBox | conversion
+  topFixComponent String?
+
+  // Component scores 0-100 (null = N/A / not yet enriched for this item)
+  buyabilityScore Float?
+  issuesScore     Float?
+  contentScore    Float?
+  complianceScore Float?
+  buyBoxScore     Float?
+  conversionScore Float?
+
+  // Status / structural facts (from Listings Items summaries)
+  isBuyable            Boolean @default(false)
+  isDiscoverable       Boolean @default(false)
+  isSuppressed         Boolean @default(false) // search-suppressed (FYP / not discoverable)
+  fulfillmentAvailable Boolean @default(false)
+
+  // Issues (from Listings Items issues[])
+  errorIssueCount   Int     @default(0)
+  warningIssueCount Int     @default(0)
+  issuesSummary     String? // JSON distilled issue list
+
+  // Featured Offer / Buy Box (Pricing API — Phase B)
+  hasFeaturedOffer Boolean @default(false)
+  buyBoxWinner     Boolean @default(false)
+  priceGap         Float?
+
+  // Conversion (Sales & Traffic report — Phase B)
+  sessions30d      Int?
+  pageViews30d     Int?
+  unitsOrdered30d  Int?
+  buyBoxPercentage Float?
+  unitSessionPct   Float? // conversion % (units / sessions)
+
+  // Suppression detail (FYP report — Phase B)
+  suppressionReason String?
+
+  lastUpdatedAt DateTime? // listing lastUpdatedDate from Amazon
+  syncedAt      DateTime  @default(now())
+
+  @@unique([storeIndex, sku], name: "amazon_health_item_dedup")
+  @@index([storeIndex, healthScore])
+  @@index([storeIndex, isSuppressed])
+  @@index([storeIndex, syncedAt])
+}
+
+// Resumable-sweep state for the Listings Items feed. Listings API is 5 req/s,
+// ~100 pages for our ~2000 listings (fits one cron run), but we keep the
+// resumable cursor pattern for safety + consistency with Walmart. Snapshot is
+// written at sweep start; stale items pruned only on a clean sweep completion.
+model AmazonHealthSyncState {
+  storeIndex Int @id @default(1)
+
+  cursor          String? // Amazon nextToken mid-sweep; null = no sweep in progress
+  sweepStartedAt  DateTime?
+  pagesThisSweep  Int       @default(0)
+  itemsThisSweep  Int       @default(0)
+  lastFullSweepAt DateTime?
+  updatedAt       DateTime  @updatedAt
+}
+
+// Async SP-API reports that enrich the health score across cron runs:
+// FYP (suppressed listings), SALES_TRAFFIC (per-ASIN conversion),
+// BRAND_ANALYTICS_SQP (search visibility — slow, >5min). State machine:
+// REQUESTED → IN_PROGRESS → DONE → (parsed into items) | ERROR. One row/request.
+model AmazonGrowthReport {
+  id              String    @id @default(cuid())
+  storeIndex      Int       @default(1)
+  reportType      String // FYP | SALES_TRAFFIC | BRAND_ANALYTICS_SQP
+  reportId        String    @unique
+  status          String    @default("REQUESTED") // REQUESTED | IN_PROGRESS | DONE | PARSED | ERROR
+  requestedAt     DateTime  @default(now())
+  statusCheckedAt DateTime?
+  doneAt          DateTime?
+  rowCount        Int?
+  error           String?
+  updatedAt       DateTime  @updatedAt
+
+  @@index([storeIndex, reportType, requestedAt])
+  @@index([status])
+}
+
 // ─── Account Health v2: Critical Alerts ────────────────────────────────────
 // Generated by src/lib/account-health/critical-alert-evaluator.ts whenever
 // a fresh snapshot breaches a threshold defined in alert-rules.ts. Each row
