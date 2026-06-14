@@ -51,11 +51,33 @@ function buildFilter(p: URLSearchParams) {
   const S = `COALESCE(perf.sales${period},0)`, U = `COALESCE(perf.units${period},0)`, O = `COALESCE(perf.orders${period},0)`, R = `COALESCE(perf.returns${period},0)`;
   const VIEWS = `COALESCE(q.pageViews30d,0)`;
   const num = (k: string) => (p.get(k) != null && p.get(k) !== "" ? Number(p.get(k)) : null);
-  const minSales = num("minSales"); if (minSales != null && minSales > 0) where.push(`${S} >= ${minSales}`);
-  const minUnits = num("minUnits"); if (minUnits != null && minUnits > 0) where.push(`${U} >= ${minUnits}`);
-  const minReviews = num("minReviews"); if (minReviews != null && minReviews > 0) where.push(`COALESCE(q.ratingCount,0) >= ${minReviews}`);
-  const minReturnPct = num("minReturnPct"); if (minReturnPct != null && minReturnPct > 0) where.push(`(${R}*100.0/NULLIF(${U},0)) >= ${minReturnPct}`);
+  // Two-sided ranges: min + max for sales / units / reviews / return-rate.
+  const rng = (k: string, expr: string, max: number) => {
+    const lo = num("min" + k), hi = num("max" + k);
+    if (lo != null && lo > 0) where.push(`${expr} >= ${lo}`);
+    if (hi != null && hi < max) where.push(`${expr} <= ${hi}`);
+  };
+  rng("Sales", S, 1000);
+  rng("Units", U, 50);
+  rng("Reviews", "COALESCE(q.ratingCount,0)", 50);
+  rng("ReturnPct", `(${R}*100.0/NULLIF(${U},0))`, 100);
   const maxConvPct = num("maxConvPct"); if (maxConvPct != null && maxConvPct < 100) where.push(`(${U}*100.0/NULLIF(${VIEWS},0)) <= ${maxConvPct}`);
+
+  // Health-type filter (chips).
+  const health = p.get("health");
+  const HEALTH_SQL: Record<string, string> = {
+    winner: `${U} > 0`,
+    leaky: `${U} = 0 AND ${VIEWS} >= 20`,
+    "high-return": `${U} >= 3 AND (${R}*1.0/NULLIF(${U},0)) >= 0.15`,
+    dead: `${VIEWS} = 0 AND COALESCE(q.ratingCount,0) = 0`,
+    new: `${U} = 0 AND ${VIEWS} < 20 AND (${VIEWS} > 0 OR COALESCE(q.ratingCount,0) > 0)`,
+  };
+  if (health && HEALTH_SQL[health]) where.push(`(${HEALTH_SQL[health]})`);
+
+  // Listing status (published / unpublished / error) from the catalog mirror.
+  const status = p.get("status");
+  const STATUS_SQL: Record<string, string> = { published: "PUBLISHED", unpublished: "UNPUBLISHED", error: "SYSTEM_PROBLEM" };
+  if (status && STATUS_SQL[status]) where.push(`wci.publishedStatus = '${STATUS_SQL[status]}'`);
 
   const sortKey = p.get("sort") || "views";
   const SORTS: Record<string, string> = {
@@ -71,7 +93,8 @@ export async function GET(request: NextRequest) {
   const p = new URL(request.url).searchParams;
   const storeIndex = Number(p.get("storeIndex") || 1);
   const { whereSql, args, packExpr, period, S, U, O, R, VIEWS, sortSql } = buildFilter(p);
-  const JOIN = `LEFT JOIN WalmartSkuPerf perf ON perf.sku=q.sku AND perf.storeIndex=q.storeIndex`;
+  const JOIN = `LEFT JOIN WalmartSkuPerf perf ON perf.sku=q.sku AND perf.storeIndex=q.storeIndex
+                LEFT JOIN WalmartCatalogItem wci ON wci.sku=q.sku AND wci.storeIndex=q.storeIndex`;
 
   // Live counts for the current filter.
   const countRow = (await prisma.$queryRawUnsafe(
@@ -87,7 +110,7 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(Number(p.get("limit") || 60), 200);
   const cand = (await prisma.$queryRawUnsafe(
     `SELECT q.sku, q.itemId, q.productName, q.lqScore, q.contentScore, q.issueCount, q.issuesSummary,
-            q.pageViews30d, q.ratingCount, q.isInStock, ${packExpr} AS packCount,
+            q.pageViews30d, q.ratingCount, q.isInStock, ${packExpr} AS packCount, wci.publishedStatus AS status,
             ${S} AS sales, ${U} AS units, ${O} AS orders, ${R} AS returns
        FROM WalmartListingQualityItem q ${JOIN} WHERE ${whereSql}
       ORDER BY ${sortSql} LIMIT ${limit}`,
@@ -108,7 +131,7 @@ export async function GET(request: NextRequest) {
     return {
       sku: r.sku, itemId: r.itemId, productName: r.productName, packCount: r.packCount,
       lqScore: r.lqScore, contentScore: r.contentScore, issueCount: r.issueCount, contentIssues,
-      pageViews30d: views, reviews: Number(r.ratingCount || 0), inStock: !!r.isInStock,
+      pageViews30d: views, reviews: Number(r.ratingCount || 0), inStock: !!r.isInStock, status: r.status || null,
       sales: Number(r.sales || 0), units, orders: Number(r.orders || 0), returns, conv, returnRate, health,
     };
   });

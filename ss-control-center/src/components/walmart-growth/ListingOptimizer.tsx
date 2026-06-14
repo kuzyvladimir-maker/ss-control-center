@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 
 interface Metrics { lq: number | null; content: number | null; conv: number | null; views: number | null; gmv: number | null; }
 interface HistoryRow { sku: string; url: string | null; runAt: string; ok: boolean; feedStatus: string | null; newTitle: string | null; bulletsCount: number | null; imagesCount: number | null; usedAiPolish: boolean; measured: boolean; before: Metrics; after: Metrics; deltas: Metrics; }
-interface Candidate { sku: string; productName: string | null; packCount: number | null; lqScore: number | null; contentScore: number | null; issueCount: number | null; contentIssues: string[]; pageViews30d: number | null; reviews: number; sales: number; units: number; orders: number; returns: number; conv: number | null; returnRate: number | null; health: string; }
+interface Candidate { sku: string; productName: string | null; packCount: number | null; lqScore: number | null; contentScore: number | null; issueCount: number | null; contentIssues: string[]; pageViews30d: number | null; reviews: number; sales: number; units: number; orders: number; returns: number; conv: number | null; returnRate: number | null; health: string; status: string | null; }
 interface ApiResp {
   period: number;
   counts: { match: number; pack4: number; withGaps: number };
@@ -72,6 +72,22 @@ function Slider({ label, min, max, value, onChange, suffix }: { label: string; m
   );
 }
 
+function RangeTwo({ label, max, lo, hi, onLo, onHi, suffix }: { label: string; max: number; lo: number; hi: number; onLo: (v: number) => void; onHi: (v: number) => void; suffix?: string }) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between">
+        <span className="text-[11px] font-mono uppercase tracking-[0.08em] text-ink-3">{label}</span>
+        <span className="text-[12px] font-semibold tabular text-ink">{lo}{suffix} – {hi >= max ? `${hi}+` : hi}{suffix}</span>
+      </div>
+      <input type="range" min={0} max={max} value={lo} onChange={(e) => onLo(Math.min(Number(e.target.value), hi))} className="mt-1 w-full accent-[var(--green)]" />
+      <input type="range" min={0} max={max} value={hi} onChange={(e) => onHi(Math.max(Number(e.target.value), lo))} className="-mt-1 w-full accent-[var(--silver-dark)]" />
+    </div>
+  );
+}
+
+const HEALTH_CHIPS = [{ id: "", label: "All health" }, { id: "winner", label: "Winner" }, { id: "leaky", label: "Leaky" }, { id: "high-return", label: "High-return" }, { id: "dead", label: "Dead" }, { id: "new", label: "New" }];
+const STATUS_OPTS = [{ id: "all", label: "All status" }, { id: "published", label: "Published" }, { id: "unpublished", label: "Unpublished" }, { id: "error", label: "Error" }];
+
 function DeltaCell({ before, after, d, digits = 0, suffix = "" }: { before: number | null; after: number | null; d: number | null; digits?: number; suffix?: string }) {
   if (after == null) return <span className="text-ink-3 text-[11px]">{fmt(before, digits)}{suffix} · pending</span>;
   const up = (d ?? 0) > 0, down = (d ?? 0) < 0;
@@ -84,7 +100,12 @@ function DeltaCell({ before, after, d, digits = 0, suffix = "" }: { before: numb
 }
 
 export function ListingOptimizer() {
-  const [f, setF] = useState({ packMin: 4, packMax: 24, lqMin: 0, lqMax: 100, contentMax: 100, hasIssues: true, excludeBundles: true, period: 30, sort: "views", minSales: 0, minUnits: 0, minReviews: 0, minReturnPct: 0 });
+  // Default = whole catalog (no filters); narrow with the controls. Presets re-apply scopes.
+  const [f, setF] = useState({
+    packMin: 1, packMax: 24, lqMin: 0, lqMax: 100, contentMax: 100, hasIssues: false, excludeBundles: false,
+    period: 30, sort: "views", status: "all", health: "",
+    minSales: 0, maxSales: 1000, minUnits: 0, maxUnits: 50, minReviews: 0, maxReviews: 50, minReturnPct: 0, maxReturnPct: 100,
+  });
   const [data, setData] = useState<ApiResp | null>(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -98,10 +119,16 @@ export function ListingOptimizer() {
     p.set("lqMin", String(f.lqMin)); p.set("lqMax", String(f.lqMax)); p.set("contentMax", String(f.contentMax));
     p.set("hasIssues", f.hasIssues ? "1" : "0"); p.set("excludeBundles", f.excludeBundles ? "1" : "0");
     p.set("period", String(f.period)); p.set("sort", f.sort);
+    if (f.status !== "all") p.set("status", f.status);
+    if (f.health) p.set("health", f.health);
     if (f.minSales) p.set("minSales", String(f.minSales));
+    if (f.maxSales < 1000) p.set("maxSales", String(f.maxSales));
     if (f.minUnits) p.set("minUnits", String(f.minUnits));
+    if (f.maxUnits < 50) p.set("maxUnits", String(f.maxUnits));
     if (f.minReviews) p.set("minReviews", String(f.minReviews));
+    if (f.maxReviews < 50) p.set("maxReviews", String(f.maxReviews));
     if (f.minReturnPct) p.set("minReturnPct", String(f.minReturnPct));
+    if (f.maxReturnPct < 100) p.set("maxReturnPct", String(f.maxReturnPct));
     return p.toString();
   }, [f]);
 
@@ -152,11 +179,11 @@ export function ListingOptimizer() {
             <label className="flex items-center gap-2 text-[12px] text-ink-2"><input type="checkbox" checked={f.hasIssues} onChange={(e) => setF({ ...f, hasIssues: e.target.checked })} /> Has content gaps</label>
             <label className="flex items-center gap-2 text-[12px] text-ink-2"><input type="checkbox" checked={f.excludeBundles} onChange={(e) => setF({ ...f, excludeBundles: e.target.checked })} /> Exclude mixed bundles</label>
 
-            <div className="border-t border-rule pt-3 text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">Performance ({f.period}d)</div>
-            <Slider label="Min sales $" min={0} max={1000} value={f.minSales} onChange={(v) => setF({ ...f, minSales: v })} />
-            <Slider label="Min units" min={0} max={50} value={f.minUnits} onChange={(v) => setF({ ...f, minUnits: v })} />
-            <Slider label="Min reviews" min={0} max={50} value={f.minReviews} onChange={(v) => setF({ ...f, minReviews: v })} />
-            <Slider label="Min return rate" min={0} max={50} value={f.minReturnPct} onChange={(v) => setF({ ...f, minReturnPct: v })} suffix="%" />
+            <div className="border-t border-rule pt-3 text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">Performance ({f.period}d) — range</div>
+            <RangeTwo label="Sales $" max={1000} lo={f.minSales} hi={f.maxSales} onLo={(v) => setF({ ...f, minSales: v })} onHi={(v) => setF({ ...f, maxSales: v })} />
+            <RangeTwo label="Units" max={50} lo={f.minUnits} hi={f.maxUnits} onLo={(v) => setF({ ...f, minUnits: v })} onHi={(v) => setF({ ...f, maxUnits: v })} />
+            <RangeTwo label="Reviews" max={50} lo={f.minReviews} hi={f.maxReviews} onLo={(v) => setF({ ...f, minReviews: v })} onHi={(v) => setF({ ...f, maxReviews: v })} />
+            <RangeTwo label="Return rate" max={100} lo={f.minReturnPct} hi={f.maxReturnPct} onLo={(v) => setF({ ...f, minReturnPct: v })} onHi={(v) => setF({ ...f, maxReturnPct: v })} suffix="%" />
 
             <div className="rounded-lg bg-bg-elev px-3 py-2 text-[11px] text-ink-3 flex items-center gap-1.5"><Lock size={11} /> Price, UPC, brand &amp; product type are never changed.</div>
           </div>
@@ -179,12 +206,24 @@ export function ListingOptimizer() {
                 </select>
               </div>
             </div>
+            <div className="mb-2 flex flex-wrap items-center gap-1.5">
+              {HEALTH_CHIPS.map((h) => (
+                <button key={h.id} onClick={() => setF({ ...f, health: h.id })}
+                  className={cn("rounded-full border px-2.5 py-1 text-[11px]", f.health === h.id ? "border-green bg-green text-green-cream" : "border-rule bg-surface text-ink-2 hover:bg-bg-elev")}>{h.label}</button>
+              ))}
+              <span className="mx-1 h-4 w-px bg-rule" />
+              {STATUS_OPTS.map((s) => (
+                <button key={s.id} onClick={() => setF({ ...f, status: s.id })}
+                  className={cn("rounded-full border px-2.5 py-1 text-[11px]", f.status === s.id ? "border-silver-dark bg-silver-tint text-silver-dark" : "border-rule bg-surface text-ink-2 hover:bg-bg-elev")}>{s.label}</button>
+              ))}
+            </div>
             <div className="max-h-[260px] overflow-auto rounded-lg border border-rule">
               <table className="w-full text-[12px]">
                 <thead className="sticky top-0 bg-surface"><tr className="border-b border-rule text-left text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">
                   <th className="px-2 py-1.5"><input type="checkbox" checked={allSelected} onChange={toggleAll} /></th>
                   <th className="px-2 py-1.5">Product</th>
                   <th className="px-2 py-1.5">Health</th>
+                  <th className="px-2 py-1.5">Status</th>
                   <th className="px-2 py-1.5">Pack</th>
                   {([["LQ", "lq"], ["Sales", "sales"], ["Units", "units"], ["Views", "views"], ["Conv", "conv"], ["Rev", "reviews"], ["Ret%", "returnRate"]] as const).map(([label, key]) => (
                     <th key={key} className="px-2 py-1.5 cursor-pointer select-none hover:text-ink" onClick={() => setF({ ...f, sort: key })}>
@@ -193,8 +232,8 @@ export function ListingOptimizer() {
                   ))}
                 </tr></thead>
                 <tbody>
-                  {loading && <tr><td colSpan={11} className="px-2 py-5 text-center text-ink-3">Loading…</td></tr>}
-                  {!loading && !candidates.length && <tr><td colSpan={11} className="px-2 py-5 text-center text-ink-3">No listings match — loosen the filters.</td></tr>}
+                  {loading && <tr><td colSpan={12} className="px-2 py-5 text-center text-ink-3">Loading…</td></tr>}
+                  {!loading && !candidates.length && <tr><td colSpan={12} className="px-2 py-5 text-center text-ink-3">No listings match — loosen the filters.</td></tr>}
                   {candidates.map((c) => {
                     const h = HEALTH[c.health] || HEALTH.new;
                     return (
@@ -202,6 +241,7 @@ export function ListingOptimizer() {
                         <td className="px-2 py-1.5"><input type="checkbox" checked={selected.has(c.sku)} onChange={() => toggle(c.sku)} /></td>
                         <td className="px-2 py-1.5 max-w-[220px]"><div className="truncate text-ink">{c.productName || c.sku}</div><div className="font-mono text-[10px] text-ink-3">{c.sku}</div></td>
                         <td className="px-2 py-1.5"><span className="rounded px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap" style={{ background: h.bg, color: h.color }}>{h.label}</span></td>
+                        <td className="px-2 py-1.5 text-[10px] text-ink-3 whitespace-nowrap">{c.status === "PUBLISHED" ? "Pub" : c.status === "UNPUBLISHED" ? "Unpub" : c.status === "SYSTEM_PROBLEM" ? "Error" : "—"}</td>
                         <td className="px-2 py-1.5"><span className={cn("rounded px-1.5 py-0.5 font-mono text-[11px]", (c.packCount ?? 0) >= 4 ? "bg-green-soft text-green-ink" : "bg-bg-elev text-ink-2")}>×{c.packCount ?? "?"}</span></td>
                         <td className="px-2 py-1.5 tabular">{fmt(c.lqScore)}</td>
                         <td className="px-2 py-1.5 tabular">{money(c.sales)}</td>

@@ -18,7 +18,7 @@ type LqFilter =
   | "content";
 
 export function WalmartGrowthTabs() {
-  const [tab, setTab] = useState("action-center");
+  const [tab, setTab] = useState("optimizer");
   const [lqFilter, setLqFilter] = useState<LqFilter>("trafficNoConversion");
 
   function jumpToWorklist(filter: string) {
@@ -34,9 +34,9 @@ export function WalmartGrowthTabs() {
       />
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList>
+          <TabsTrigger value="optimizer">Listing Optimizer</TabsTrigger>
           <TabsTrigger value="action-center">Action Center</TabsTrigger>
           <TabsTrigger value="listing-quality">Listing Quality</TabsTrigger>
-          <TabsTrigger value="optimizer">Listing Optimizer</TabsTrigger>
           <TabsTrigger value="buy-box">Buy Box</TabsTrigger>
         </TabsList>
         <TabsContent value="action-center" className="mt-4">
