@@ -9,7 +9,7 @@
 import { config as loadEnv } from "dotenv";
 loadEnv({ path: ".env.local" });
 loadEnv({ path: ".env" });
-import prisma from "../src/lib/prisma";
+import { prisma } from "../src/lib/prisma";
 import { getWalmartClient } from "../src/lib/walmart/client";
 import { syncListingQuality } from "../src/lib/walmart/persist-listing-quality";
 

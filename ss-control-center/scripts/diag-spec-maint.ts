@@ -18,6 +18,6 @@ async function main() {
   console.log("Orderable required:", ord.required);
   const vis = item.properties.Visible;
   const ptKey = Object.keys(vis.properties).find(k=>/sport/i.test(k));
-  console.log("Visible PT key:", ptKey, "| required:", vis.properties[ptKey]?.required);
+  console.log("Visible PT key:", ptKey, "| required:", ptKey ? vis.properties[ptKey]?.required : undefined);
 }
 main().catch(e => { console.error(e?.name, e?.message); process.exit(1); });
