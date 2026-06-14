@@ -1730,6 +1730,128 @@ function WalmartDiagnosePanel() {
   );
 }
 
+interface PaidSvc {
+  key: string; name: string; group: string; configured: boolean; status: "ok" | "error" | "unknown";
+  plan?: string | null; used?: number | null; remaining?: number | null; limit?: number | null;
+  unit?: string; resetAt?: string | null; balanceUsd?: number | null; detail?: string; asOf?: string | null;
+}
+
+function PaidServicesPanel() {
+  const [services, setServices] = useState<PaidSvc[] | null>(null);
+  const [budget, setBudget] = useState<number>(100);
+  const [budgetEdit, setBudgetEdit] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState<string | null>(null);
+
+  const load = useCallback(async (refresh?: string) => {
+    if (refresh) setRefreshing(refresh); else setLoading(true);
+    try {
+      const r = await fetch(`/api/settings/integrations${refresh ? `?refresh=${refresh}` : ""}`);
+      const j = await r.json();
+      setServices(j.services); setBudget(j.monthlyBudgetUsd ?? 100); setBudgetEdit(String(j.monthlyBudgetUsd ?? 100));
+    } catch { /* leave as-is */ } finally { setLoading(false); setRefreshing(null); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  async function saveBudget() {
+    const v = Number(budgetEdit);
+    if (!Number.isFinite(v) || v < 0) return;
+    await fetch("/api/settings/integrations", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ monthlyBudgetUsd: v }) });
+    setBudget(v);
+  }
+
+  const groups = ["Data & sourcing", "AI", "Infrastructure"];
+  const statusBadge = (s: PaidSvc) => {
+    if (!s.configured) return <Badge variant="secondary">Not configured</Badge>;
+    if (s.status === "ok") return <Badge className="bg-green-soft2 text-green-ink">Connected</Badge>;
+    if (s.status === "error") return <Badge className="bg-danger-tint text-danger">Error</Badge>;
+    return <Badge variant="secondary">Unknown</Badge>;
+  };
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <CardTitle className="text-base">Paid services &amp; usage</CardTitle>
+          <p className="text-xs text-ink-3 mt-0.5">Subscription status and remaining credits for metered APIs.</p>
+        </div>
+        <Button size="sm" variant="outline" onClick={() => load()} disabled={loading}>
+          <RefreshCw size={14} className={cn("mr-1.5", loading && "animate-spin")} /> Refresh
+        </Button>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Monthly budget ceiling */}
+        <div className="flex items-center justify-between rounded-lg border border-rule bg-bg-elev/40 px-3 py-2">
+          <div className="text-sm">
+            <span className="font-medium text-ink">Monthly budget ceiling</span>
+            <span className="text-ink-3"> — guardrail across all paid services</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-ink-3 text-sm">$</span>
+            <input type="number" min={0} value={budgetEdit} onChange={(e) => setBudgetEdit(e.target.value)}
+              className="w-20 rounded-md border border-rule bg-surface px-2 py-1 text-sm text-ink" />
+            <span className="text-ink-3 text-sm">/mo</span>
+            <Button size="sm" variant="outline" disabled={Number(budgetEdit) === budget} onClick={saveBudget}>Save</Button>
+          </div>
+        </div>
+
+        {loading && !services && <div className="flex items-center gap-2 text-sm text-ink-3"><Loader2 size={16} className="animate-spin" /> Checking services…</div>}
+
+        {groups.map((g) => {
+          const items = (services || []).filter((s) => s.group === g);
+          if (!items.length) return null;
+          return (
+            <div key={g}>
+              <div className="mb-1.5 text-[11px] font-mono uppercase tracking-[0.08em] text-ink-3">{g}</div>
+              <div className="space-y-2">
+                {items.map((s) => {
+                  const pct = s.used != null && s.limit ? Math.round((s.used / s.limit) * 100) : null;
+                  return (
+                    <div key={s.key} className="rounded-lg border border-rule px-3 py-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {s.status === "ok" ? <CheckCircle size={16} className="text-green" /> : s.status === "error" ? <XCircle size={16} className="text-danger" /> : <AlertTriangle size={16} className="text-ink-3" />}
+                          <span className="text-sm font-medium text-ink">{s.name}</span>
+                          {s.plan && <Badge variant="secondary" className="text-[10px]">{s.plan}</Badge>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {s.key === "unwrangle" && s.configured && (
+                            <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px]" disabled={refreshing === "unwrangle"} onClick={() => load("unwrangle")}>
+                              {refreshing === "unwrangle" ? <Loader2 size={12} className="animate-spin" /> : "Check now"}
+                            </Button>
+                          )}
+                          {statusBadge(s)}
+                        </div>
+                      </div>
+                      {s.remaining != null && s.limit != null && (
+                        <div className="mt-2">
+                          <div className="flex justify-between text-[11px] text-ink-3">
+                            <span>{s.remaining.toLocaleString()} of {s.limit.toLocaleString()} {s.unit} left</span>
+                            {s.resetAt && <span>resets {new Date(s.resetAt).toLocaleDateString()}</span>}
+                          </div>
+                          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-rule/40">
+                            <div className={cn("h-full rounded-full", (pct ?? 0) > 85 ? "bg-danger" : "bg-green")} style={{ width: `${pct ?? 0}%` }} />
+                          </div>
+                        </div>
+                      )}
+                      {s.remaining != null && s.limit == null && (
+                        <div className="mt-1 text-[11px] text-ink-3">{s.remaining.toLocaleString()} {s.unit} left{s.asOf ? ` · as of ${new Date(s.asOf).toLocaleString()}` : ""}</div>
+                      )}
+                      {s.balanceUsd != null && s.balanceUsd > 0 && <div className="mt-1 text-[11px] text-ink-3">Overage balance: ${s.balanceUsd}</div>}
+                      {s.detail && s.status !== "ok" && <div className="mt-1 text-[11px] text-ink-3">{s.detail}</div>}
+                      {s.detail && s.status === "ok" && s.remaining == null && <div className="mt-1 text-[11px] text-ink-3">{s.detail}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function SettingsPage() {
   const [connections, setConnections] = useState<ConnectionStatus[]>([
     { name: "Veeqo", status: "checking" },
@@ -1995,6 +2117,8 @@ export default function SettingsPage() {
             ))}
           </CardContent>
         </Card>
+
+        <PaidServicesPanel />
       </section>
 
       {/* ================================================================= */}
