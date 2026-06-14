@@ -1,4 +1,5 @@
 import { veeqoFetch } from "./client";
+import { parsePackSize } from "@/lib/procurement/pack-size";
 import { shouldIncludeOrderInProcurement } from "@/lib/procurement/filter-rules";
 import { hasTag, PROCUREMENT_TAGS } from "./tags";
 import { getInternalNotes } from "./notes";
@@ -23,6 +24,10 @@ export interface ProcurementCard {
   productTitle: string;
   productImageUrl: string | null;
   sku: string;
+  /** Set when Veeqo's stale product-master title disagrees on pack size with
+   *  the order-line title we now trust. Surfaced as a warning on the card so
+   *  the operator can sanity-check the buy quantity if Veeqo data drifts. */
+  packSizeWarning: string | null;
 
   // Quantities
   quantityOrdered: number;
@@ -214,6 +219,27 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
       const sellable = li.sellable ?? {};
       const product = sellable.product ?? {};
 
+      // Prefer the ORDER-LINE title (what the customer actually bought — this
+      // is what both Amazon and Veeqo's own order list show) over Veeqo's
+      // shared product-MASTER record, which can drift stale. We hit a case
+      // where the master read "2 Pack" while the live listing was "3 Pack",
+      // so picking the master made the pack parser under-buy the multipack
+      // (bought 2 of 3). See docs/wiki/procurement-title-source.md.
+      const lineTitle = sellable.product_title ?? sellable.title ?? null;
+      const masterTitle = product.title ?? product.name ?? null;
+      const productTitle = lineTitle ?? masterTitle ?? "?";
+
+      // Safety net: if the two titles disagree on parsed pack size, flag it so
+      // the operator double-checks the buy quantity even if Veeqo drifts again.
+      let packSizeWarning: string | null = null;
+      if (lineTitle && masterTitle && lineTitle !== masterTitle) {
+        const lineSize = parsePackSize(lineTitle)?.size ?? null;
+        const masterSize = parsePackSize(masterTitle)?.size ?? null;
+        if (lineSize !== null && masterSize !== null && lineSize !== masterSize) {
+          packSizeWarning = `Veeqo каталог: ${masterSize}-pack, заказ: ${lineSize}-pack — берём заказ (${lineSize}). Проверьте кол-во.`;
+        }
+      }
+
       cards.push({
         lineItemId,
         orderId: String(order.id ?? ""),
@@ -222,12 +248,8 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
         storeName: order.channel?.name ?? "Unknown",
         customerName: pickCustomerName(order),
         productId: String(product.id ?? ""),
-        productTitle:
-          product.title ??
-          product.name ??
-          sellable.title ??
-          sellable.product_title ??
-          "?",
+        productTitle,
+        packSizeWarning,
         productImageUrl: pickImageUrl(li),
         sku: sellable.sku_code ?? sellable.sku ?? "",
         quantityOrdered,

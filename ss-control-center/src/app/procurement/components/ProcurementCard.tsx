@@ -43,6 +43,10 @@ export interface QuantityInquiryFlag {
 export interface ProcurementCardData {
   lineItemId: string;
   productTitle: string;
+  /** Set when Veeqo's stale catalog title disagrees on pack size with the
+   *  order-line title — shown as an amber warning so the buy qty gets a
+   *  second look. */
+  packSizeWarning?: string | null;
   productImageUrl: string | null;
   sku: string;
   quantityOrdered: number;
@@ -519,6 +523,15 @@ export function ProcurementCard({
                 </button>
               )}
               {inquiryFlag && <InquiryStatusChip flag={inquiryFlag} />}
+            </div>
+          )}
+
+          {/* Pack-size mismatch between Veeqo's stale catalog and the order
+              line — the buy qty uses the order line, but flag it for a check. */}
+          {card.packSizeWarning && (
+            <div className="mt-2 inline-flex items-start gap-1.5 rounded-md bg-warn-tint px-2 py-1 text-[11.5px] text-warn-strong">
+              <AlertTriangle size={12} className="mt-0.5 shrink-0" />
+              <span>{card.packSizeWarning}</span>
             </div>
           )}
 
