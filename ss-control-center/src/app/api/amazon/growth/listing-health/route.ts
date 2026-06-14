@@ -202,6 +202,11 @@ function buildOrderBy(
       return [{ errorIssueCount: "desc" }, { healthScore: "asc" }];
     case "recent":
       return [{ lastUpdatedAt: "desc" }];
+    case "revenue":
+      return [{ revenue30d: "desc" }];
+    case "opportunity":
+      // Sales-upside first — the default "what to work on to grow sales" order.
+      return [{ opportunityScore: "desc" }, { healthScore: "asc" }];
     case "score":
     default:
       return [{ healthScore: "asc" }, { errorIssueCount: "desc" }];

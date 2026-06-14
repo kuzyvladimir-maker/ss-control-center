@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { RefreshCw, ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
+import { RefreshCw, ChevronDown, ChevronRight, ExternalLink, Sparkles, Wrench, Hand, Lock } from "lucide-react";
 import { Btn, Panel, PanelHeader, KpiCard, RiskPill } from "@/components/kit";
 import { cn } from "@/lib/utils";
 
@@ -41,9 +41,20 @@ interface HealthItemDto {
   warningIssueCount: number;
   issues: HealthIssue[];
   suppressionReason: string | null;
+  opportunityScore: number | null;
+  impressions30d: number | null;
+  clicks30d: number | null;
+  ctr: number | null;
   sessions30d: number | null;
+  pageViews30d: number | null;
+  cartAddRate: number | null;
   unitsOrdered30d: number | null;
   unitSessionPct: number | null;
+  purchaseRate: number | null;
+  buyBoxPercentage: number | null;
+  revenue30d: number | null;
+  returns30d: number | null;
+  returnRate: number | null;
   lastUpdatedAt: string | null;
 }
 interface HealthResponse {
@@ -81,7 +92,7 @@ interface HealthResponse {
 }
 
 type FilterId = "all" | "suppressed" | "hasErrors" | "lowScore" | "notBuyable";
-type SortId = "score" | "issues" | "recent";
+type SortId = "opportunity" | "revenue" | "score" | "issues" | "recent";
 
 // Component gauges — Phase A fills buyability/issues/compliance; the others
 // light up once the report cron (Phase B) enriches them.
@@ -139,7 +150,7 @@ export function ListingHealthDashboard({
   const [internalFilter, setInternalFilter] = useState<FilterId>("hasErrors");
   const filter = filterProp ?? internalFilter;
   const setFilter = (f: FilterId) => (onFilterChange ? onFilterChange(f) : setInternalFilter(f));
-  const [sort, setSort] = useState<SortId>("score");
+  const [sort, setSort] = useState<SortId>("opportunity");
   const [q, setQ] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -329,6 +340,8 @@ export function ListingHealthDashboard({
                     onChange={(e) => setSort(e.target.value as SortId)}
                     className="h-7 rounded-md border border-rule bg-surface px-2 text-[12px] text-ink-2 focus:outline-none"
                   >
+                    <option value="opportunity">Sort: opportunity</option>
+                    <option value="revenue">Sort: revenue</option>
                     <option value="score">Sort: lowest score</option>
                     <option value="issues">Sort: most errors</option>
                     <option value="recent">Sort: recently changed</option>
@@ -369,24 +382,25 @@ export function ListingHealthDashboard({
                 <thead>
                   <tr className="border-b border-rule text-left text-[10.5px] font-mono uppercase tracking-wider text-ink-3">
                     <th className="px-3 py-2 font-medium">Product</th>
+                    <th className="px-2 py-2 text-right font-medium">Opp.</th>
+                    <th className="px-2 py-2 text-right font-medium">Conv.</th>
                     <th className="px-2 py-2 font-medium">Health</th>
                     <th className="px-2 py-2 font-medium">Status</th>
-                    <th className="px-2 py-2 font-medium">Top fix</th>
                     <th className="px-2 py-2 text-right font-medium">Errors</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading && !data ? (
                     <tr>
-                      <td colSpan={5} className="px-3 py-8 text-center text-ink-3">Loading…</td>
+                      <td colSpan={6} className="px-3 py-8 text-center text-ink-3">Loading…</td>
                     </tr>
                   ) : data && data.worklist.items.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-3 py-8 text-center text-ink-3">No listings match this filter.</td>
+                      <td colSpan={6} className="px-3 py-8 text-center text-ink-3">No listings match this filter.</td>
                     </tr>
                   ) : (
                     data?.worklist.items.map((it) => (
-                      <HealthRow key={it.sku} it={it} isOpen={expanded.has(it.sku)} onToggle={() => toggle(it.sku)} />
+                      <HealthRow key={it.sku} it={it} storeIndex={storeIndex} isOpen={expanded.has(it.sku)} onToggle={() => toggle(it.sku)} />
                     ))
                   )}
                 </tbody>
@@ -404,13 +418,77 @@ export function ListingHealthDashboard({
   );
 }
 
-function HealthRow({ it, isOpen, onToggle }: { it: HealthItemDto; isOpen: boolean; onToggle: () => void }) {
+interface AdviceAction {
+  title: string;
+  lever: string;
+  rationale: string;
+  impact: "high" | "medium" | "low";
+  effort: "low" | "medium" | "high";
+  kind: "auto" | "semi" | "manual";
+}
+interface AdvicePlan {
+  diagnosis: string;
+  rootCause: string;
+  actions: AdviceAction[];
+  expectedOutcome: string;
+  confidence: string;
+}
+
+function pct(n: number | null): string {
+  return n == null ? "—" : `${(n * 100).toFixed(1)}%`;
+}
+function num(n: number | null): string {
+  return n == null ? "—" : n.toLocaleString();
+}
+function oppTone(s: number | null): { color: string; bg: string } {
+  if (s == null) return { color: "var(--ink-3)", bg: "var(--bg-elev)" };
+  if (s >= 60) return { color: "var(--danger)", bg: "var(--danger-tint)" };
+  if (s >= 30) return { color: "var(--warn-strong)", bg: "var(--warn-tint)" };
+  return { color: "var(--ink-3)", bg: "var(--bg-elev)" };
+}
+const KIND_ICON = { auto: Wrench, semi: Wrench, manual: Hand } as const;
+
+function HealthRow({
+  it,
+  storeIndex,
+  isOpen,
+  onToggle,
+}: {
+  it: HealthItemDto;
+  storeIndex: number;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
   const tone = scoreTone(it.healthScore);
+  const opp = oppTone(it.opportunityScore);
   const asinUrl = it.asin ? `https://www.amazon.com/dp/${it.asin}` : null;
+  const [advice, setAdvice] = useState<AdvicePlan | null>(null);
+  const [advising, setAdvising] = useState(false);
+  const [adviceErr, setAdviceErr] = useState<string | null>(null);
+
+  async function advise() {
+    setAdvising(true);
+    setAdviceErr(null);
+    try {
+      const res = await fetch("/api/amazon/growth/advisor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storeIndex, sku: it.sku }),
+      });
+      const j = await res.json();
+      if (j.ok) setAdvice(j.plan);
+      else setAdviceErr(j.error ?? "advisor failed");
+    } catch (e) {
+      setAdviceErr((e as Error).message);
+    } finally {
+      setAdvising(false);
+    }
+  }
+
   return (
     <>
       <tr className="border-b border-rule/60 hover:bg-bg-elev/40">
-        <td className="max-w-[360px] px-3 py-2">
+        <td className="max-w-[340px] px-3 py-2">
           <button type="button" onClick={onToggle} className="flex items-start gap-1.5 text-left">
             {isOpen ? (
               <ChevronDown size={13} className="mt-0.5 shrink-0 text-ink-3" />
@@ -422,10 +500,23 @@ function HealthRow({ it, isOpen, onToggle }: { it: HealthItemDto; isOpen: boolea
               <span className="block text-[11px] text-ink-4">
                 {it.sku}
                 {it.asin ? ` · ${it.asin}` : ""}
-                {it.productType ? ` · ${it.productType}` : ""}
+                {it.revenue30d != null && it.revenue30d > 0 ? ` · $${it.revenue30d.toFixed(0)}/30d` : ""}
               </span>
             </span>
           </button>
+        </td>
+        <td className="px-2 py-2 text-right">
+          <span
+            className="inline-flex h-5 min-w-[28px] items-center justify-center rounded px-1.5 text-[11px] font-semibold tabular"
+            style={{ background: opp.bg, color: opp.color }}
+          >
+            {it.opportunityScore == null ? "—" : it.opportunityScore.toFixed(0)}
+          </span>
+        </td>
+        <td className="px-2 py-2 text-right tabular">
+          <span className={cn(it.sessions30d && !it.unitsOrdered30d ? "text-danger" : "text-ink-2")}>
+            {pct(it.unitSessionPct)}
+          </span>
         </td>
         <td className="px-2 py-2">
           <span
@@ -444,26 +535,63 @@ function HealthRow({ it, isOpen, onToggle }: { it: HealthItemDto; isOpen: boolea
             <span className="text-[11px] text-warn-strong">Inactive</span>
           )}
         </td>
-        <td className="px-2 py-2 text-ink-2">{it.topFixComponent ?? "—"}</td>
         <td className="px-2 py-2 text-right tabular">
           <span className={cn(it.errorIssueCount > 0 ? "text-danger" : "text-ink-3")}>{it.errorIssueCount}</span>
         </td>
       </tr>
       {isOpen && (
         <tr className="border-b border-rule/60 bg-bg-elev/30">
-          <td colSpan={5} className="px-3 py-3">
+          <td colSpan={6} className="px-3 py-3">
+            {/* Productivity funnel */}
+            <div className="mb-2 grid grid-cols-2 gap-x-4 gap-y-1 text-[11.5px] text-ink-3 sm:grid-cols-4 lg:grid-cols-7">
+              <Metric label="Impressions" value={num(it.impressions30d)} />
+              <Metric label="CTR" value={pct(it.ctr)} />
+              <Metric label="Sessions" value={num(it.sessions30d)} />
+              <Metric label="Cart-add" value={pct(it.cartAddRate)} />
+              <Metric label="Conversion" value={pct(it.unitSessionPct)} flag={Boolean(it.sessions30d && !it.unitsOrdered30d)} />
+              <Metric label="Buy-box" value={it.buyBoxPercentage == null ? "—" : `${it.buyBoxPercentage.toFixed(0)}%`} />
+              <Metric label="Return rate" value={pct(it.returnRate)} flag={Boolean(it.returnRate && it.returnRate > 0.1)} />
+            </div>
             <div className="flex flex-wrap items-center gap-3 pb-2 text-[11.5px] text-ink-3">
               {asinUrl && (
                 <a href={asinUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-green hover:text-green-deep">
                   View on Amazon <ExternalLink size={11} />
                 </a>
               )}
-              <span>Discoverable: {it.isDiscoverable ? "yes" : "no"}</span>
               {it.suppressionReason && <span className="text-warn-strong">Suppressed: {it.suppressionReason}</span>}
-              {it.sessions30d != null && <span>30d sessions: {it.sessions30d}</span>}
-              {it.unitSessionPct != null && <span>Conv.: {(it.unitSessionPct * 100).toFixed(1)}%</span>}
-              {it.lastUpdatedAt && <span>Changed: {new Date(it.lastUpdatedAt).toLocaleDateString()}</span>}
+              <Btn size="sm" variant="primary" icon={<Sparkles size={13} />} onClick={advise} loading={advising}>
+                {advice ? "Re-advise" : "AI Advise"}
+              </Btn>
+              {adviceErr && <span className="text-danger">{adviceErr}</span>}
             </div>
+
+            {/* AI plan */}
+            {advice && (
+              <div className="mb-2 rounded-lg border border-green-mid/40 bg-green-soft/40 p-3 text-[12px]">
+                <p className="text-ink-2"><span className="font-medium text-green-ink">Diagnosis: </span>{advice.diagnosis}</p>
+                <p className="mt-1 text-ink-2"><span className="font-medium text-green-ink">Root cause: </span>{advice.rootCause}</p>
+                <div className="mt-2 space-y-1.5">
+                  {advice.actions.map((a, i) => {
+                    const Icon = KIND_ICON[a.kind] ?? Lock;
+                    return (
+                      <div key={i} className="flex items-start gap-2">
+                        <span className="mt-0.5 inline-flex items-center gap-1 rounded bg-surface px-1.5 py-0.5 text-[10px] font-semibold uppercase text-ink-2 border border-rule">
+                          <Icon size={10} />{a.impact}
+                        </span>
+                        <span className="text-ink-2">
+                          <span className="font-medium text-ink">{a.title}</span>
+                          <span className="ml-1 font-mono text-[10px] text-ink-4">{a.lever} · {a.kind} · effort {a.effort}</span>
+                          <span className="block text-ink-3">{a.rationale}</span>
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="mt-2 text-[11.5px] text-ink-3"><span className="font-medium text-ink-2">Expected: </span>{advice.expectedOutcome} <span className="text-ink-4">· confidence {advice.confidence}</span></p>
+              </div>
+            )}
+
+            {/* Amazon issues */}
             <div className="space-y-1">
               {it.issues.length === 0 ? (
                 <div className="text-[12px] text-ink-3">No issues recorded by Amazon.</div>
@@ -488,5 +616,14 @@ function HealthRow({ it, isOpen, onToggle }: { it: HealthItemDto; isOpen: boolea
         </tr>
       )}
     </>
+  );
+}
+
+function Metric({ label, value, flag }: { label: string; value: string; flag?: boolean }) {
+  return (
+    <div>
+      <div className="text-[9px] font-mono uppercase tracking-wider text-ink-4">{label}</div>
+      <div className={cn("tabular text-[12px]", flag ? "text-danger" : "text-ink-2")}>{value}</div>
+    </div>
   );
 }

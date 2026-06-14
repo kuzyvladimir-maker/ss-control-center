@@ -166,6 +166,38 @@ Listing Health / Buy Box / Optimizer). Переиспользуем компон
 7. ⏳ Калибровка весов score на реальном распределении.
 8. ⏳ Расширение на store2/store5 после стабилизации на store1/store3.
 
+## 🚀 GROWTH ENGINE (2026-06-14) — модуль = инструмент роста продаж, не витрина
+
+По требованию Vladimir: модуль должен **приоритизировать листинги по потенциалу
+роста продаж** и **давать конкретные советы что делать**, анализируя продуктивность
+каждого листинга (воронка: показы → клики/CTR → сессии → в корзину → покупки/конверсия
+→ возвраты → buy-box → выручка). Добавлено:
+
+- **Productivity-колонки** в `AmazonListingHealthItem` (migration `20260614230000`):
+  revenue30d, returns30d/returnRate, impressions/clicks/ctr, cartAdds/cartAddRate,
+  purchases/purchaseRate, opportunityScore. Sales&Traffic ingest заполняет
+  sessions/pageViews/conversion/buyBox/units/**revenue**. Impressions/CTR/cart-add —
+  из Brand Analytics SQP (keyword-level, медленный async — **ещё не подключён**,
+  advisor честно говорит «not measured»). Returns — нужен источник (refund/return data).
+- **Opportunity Score** (`computeOpportunity` в listing-health.ts): 0-100 sales-upside
+  rank. Suppressed=75+ (скрытый спрос). Иначе = трафик × (conversionGap 0.45 +
+  buyBoxGap 0.30 + healthGap 0.15 + returnGap 0.10). Высокий трафик + хорошая
+  конверсия + выигрыш buy-box → низкий (уже продуктивен). Дашборд сортирует по нему
+  по умолчанию. Проверено: топ store3 = high-traffic/low-conversion (правильно).
+- **AI Growth Advisor** (`advisor.ts`, **claude-opus-4-8** + structured output +
+  adaptive thinking, route `/api/amazon/growth/advisor`, кнопка «AI Advise» в worklist).
+  Получает ВСЮ воронку листинга → диагноз где течёт + ранжированные действия
+  (auto/semi/manual, lever, impact, effort) + ожидаемый эффект. Бренд-правила и
+  margin-floor зашиты в system prompt; null-метрики не выдумывает; missing data → harvest.
+  Проверено живьём: на White Castle Sliders (592 сессии, 1.5% conv, 10% buy-box)
+  правильно вычислил главную течь (Buy Box), поймал реальный баг productType=CAKE
+  у замороженного продукта, 99016, проранжировал. ~22s/листинг.
+
+**Бэклог growth-engine:** (1) Brand Analytics SQP ingest (показы/CTR/cart-add per ASIN —
+keyword-level, per-ASIN fan-out или агрегация); (2) источник returns per SKU;
+(3) pool-level advisor («проанализируй топ-N»); (4) кнопки «применить» из advisor →
+optimizer для auto-действий.
+
 ## ⚠️ НАХОДКИ Phase A (gotchas для следующих фаз)
 - **Listings Items пагинация останавливается на ~1000** (store1: numberOfResults=1454,
   но cursor исчерпался на 1000). Похоже на лимит энумерации Listings API без узкого
