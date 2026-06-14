@@ -154,7 +154,15 @@ Listing Health / Buy Box / Optimizer). Переиспользуем компон
    dedupe дублей атрибутов (99016). preview→validate(dry-run VALIDATION_PREVIEW)→apply(PATCH).
    Проверено: dry-run вернул **VALID** на реальном листинге ("Premium Quality"→"Quality",
    дедуп generic_keyword); structural gaps (битое изображение 100581) → "needs-data" (harvest), не угадываем.
+5b. ✅ **Walmart-parity апгрейд Optimizer (2026-06-14):** взято лучшее из Walmart Grow —
+   **Impact-трекинг** (модель `AmazonListingRemediation`: before-метрики при apply →
+   measure-after на следующем свипе → KPI «health lift» + before/after история =
+   закрывает Grow-петлю «фикс реально помог?»); **heatmap частых ERROR-issues**
+   (агрегат по коду — выявил **99016 дубль keyword: 511 листингов store3** = массовый
+   one-click таргет); **пагинация** кандидатов; safety-нота «price/UPC/brand/productType не меняются».
+   AI-аналитик Walmart НЕ портировал — его роль уже выполняет наш Action Center.
 6. ⏳ Brand Analytics SQP — медленный async, добавить в reports state machine.
+7. ⏳ Идея на будущее: queue+worker для массового apply (>25 SKU за раз), как Walmart remediation worker.
 7. ⏳ Калибровка весов score на реальном распределении.
 8. ⏳ Расширение на store2/store5 после стабилизации на store1/store3.
 
