@@ -103,8 +103,15 @@ async function buyerUrl(client: any, upc: string, packCount: number): Promise<st
 
 async function main() {
   const DRY = process.argv.includes("--dry");
-  const skus = process.argv.slice(2).filter((a) => !a.startsWith("--"));
-  if (!skus.length) { console.log("pass SKUs"); return; }
+  const FROM_QUEUE = process.argv.includes("--from-queue");
+  let skus = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+  if (FROM_QUEUE) {
+    const q = await db.execute(`SELECT sku FROM WalmartRemediationQueue WHERE status='queued' ORDER BY queuedAt ASC LIMIT 50`);
+    skus = (q.rows as any[]).map((r) => r.sku);
+    if (skus.length) await db.execute({ sql: `UPDATE WalmartRemediationQueue SET status='running', startedAt=CURRENT_TIMESTAMP WHERE status='queued' AND sku IN (${skus.map(() => "?").join(",")})`, args: skus });
+    console.log(`drained ${skus.length} SKU(s) from queue`);
+  }
+  if (!skus.length) { console.log("pass SKUs (or --from-queue with queued items)"); return; }
   mkdirSync(OUT, { recursive: true });
   const client = getWalmartClient(1);
   const jobs: Job[] = [];
@@ -215,6 +222,19 @@ async function main() {
       });
       console.log(`logged remediation: ${j.sku}`);
     } catch (e: any) { console.log(`log failed ${j.sku}: ${e?.message}`); }
+  }
+
+  // Mark queue rows done/error (only when draining the queue).
+  if (FROM_QUEUE) {
+    for (const j of jobs) {
+      const ok = !!(j as any).ingestOk;
+      try {
+        await db.execute({
+          sql: `UPDATE WalmartRemediationQueue SET status=?, finishedAt=CURRENT_TIMESTAMP, feedId=?, result=?, error=? WHERE sku=? AND status='running'`,
+          args: [ok ? "done" : "error", j.feedId ?? null, j.detail ?? null, ok ? null : (j.detail ?? j.status), j.sku],
+        });
+      } catch { /* ignore */ }
+    }
   }
 
   // Phase 3 — report

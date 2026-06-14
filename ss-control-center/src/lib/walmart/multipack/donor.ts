@@ -31,7 +31,7 @@ function htmlToText(html: string): string {
 
 function liItems(html: string): string[] {
   const out: string[] = [];
-  const re = /<li>(.*?)<\/li>/gis;
+  const re = /<li>([\s\S]*?)<\/li>/gi;
   let m;
   while ((m = re.exec(html))) {
     const t = m[1].replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
