@@ -127,8 +127,12 @@ export async function syncListingHealth(
   let sellerHealthScore: number | null = null;
   if (sweepComplete) {
     sellerHealthScore = await writeSnapshot(prisma, storeIndex);
+    // Prune items the sweep didn't see — EXCEPT FYP-surfaced suppressed rows,
+    // which may live beyond the Listings API ~1000-item enumeration. FYP clears
+    // isSuppressed itself when a listing is no longer suppressed, after which a
+    // later sweep can prune it normally.
     const pruned = await prisma.amazonListingHealthItem.deleteMany({
-      where: { storeIndex, syncedAt: { lt: sweepStartedAt } },
+      where: { storeIndex, syncedAt: { lt: sweepStartedAt }, isSuppressed: false },
     });
     itemsPruned = pruned.count;
     await prisma.amazonHealthSyncState.update({

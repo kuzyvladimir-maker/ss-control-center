@@ -222,6 +222,8 @@ async function ingestFyp(prisma: PrismaClient, storeIndex: number, text: string)
   const iReason = col("Reason");
   const iStatus = col("Status");
   const iIssue = col("Issue Description");
+  const iAsin = col("ASIN");
+  const iName = col("Product name");
 
   // Authoritative: reset everyone, then flag the listed SKUs.
   await prisma.amazonListingHealthItem.updateMany({
@@ -240,7 +242,39 @@ async function ingestFyp(prisma: PrismaClient, storeIndex: number, text: string)
     const existing = await prisma.amazonListingHealthItem.findUnique({
       where: { amazon_health_item_dedup: { storeIndex, sku } },
     });
-    if (!existing) continue;
+
+    if (!existing) {
+      // Suppressed SKU not yet in the mirror (e.g. beyond the Listings API
+      // ~1000-item enumeration). Create a minimal row so suppression — the
+      // highest-value signal — is never hidden by sweep coverage. The next
+      // sweep fills in the rest of the fields.
+      const components: ComponentScores = {
+        buyability: SUPPRESSED_BUYABILITY,
+        issues: null,
+        content: null,
+        compliance: null,
+        buyBox: null,
+        conversion: null,
+      };
+      await prisma.amazonListingHealthItem.create({
+        data: {
+          storeIndex,
+          sku,
+          asin: iAsin >= 0 ? cells[iAsin]?.trim() || null : null,
+          itemName: iName >= 0 ? cells[iName]?.trim() || null : null,
+          isSuppressed: true,
+          isBuyable: true,
+          isDiscoverable: false,
+          suppressionReason: reason || "Search suppressed",
+          buyabilityScore: SUPPRESSED_BUYABILITY,
+          healthScore: computeHealthScore(components),
+          topFixComponent: pickTopFix(components),
+        },
+      });
+      enriched++;
+      continue;
+    }
+
     const merged = { ...existing, buyabilityScore: SUPPRESSED_BUYABILITY };
     const { healthScore, topFixComponent } = recompute(merged);
     await prisma.amazonListingHealthItem.update({
