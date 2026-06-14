@@ -33,17 +33,20 @@ function buildFilter(p: URLSearchParams) {
   // Pack count: prefer our SKU tables, else the count parsed from the title
   // (titlePackCount, backfilled by walmart-backfill-pack.ts) so the filter sees
   // the full multipack catalog, not just the ~30 SKUs with a recorded pack.
-  const packExpr = `COALESCE((SELECT unitsInListing FROM SkuShippingData WHERE sku=q.sku LIMIT 1),(SELECT packSize FROM SkuCost WHERE sku=q.sku LIMIT 1),q.titlePackCount,1)`;
-  const where: string[] = ["q.storeIndex=?"];
+  // Base = full catalog (WalmartCatalogItem w) so unpublished/error listings show
+  // too; scores (q) + sales (perf) are LEFT-joined and may be null.
+  const packExpr = `COALESCE((SELECT unitsInListing FROM SkuShippingData WHERE sku=w.sku LIMIT 1),(SELECT packSize FROM SkuCost WHERE sku=w.sku LIMIT 1),w.titlePackCount,1)`;
+  const where: string[] = ["w.storeIndex=?"];
   const args: any[] = [];
   where.push(`${packExpr} BETWEEN ? AND ?`); args.push(packMin, packMax);
-  if (lqMin != null) { where.push(`q.lqScore >= ?`); args.push(lqMin); }
-  if (lqMax != null) { where.push(`q.lqScore <= ?`); args.push(lqMax); }
-  if (contentMax != null) { where.push(`q.contentScore <= ?`); args.push(contentMax); }
-  if (hasIssues) where.push(`q.issueCount > 0`);
-  if (excludeBundles) for (const w of BUNDLE_WORDS) { where.push(`LOWER(COALESCE(q.productName,'')) NOT LIKE ?`); args.push(`%${w}%`); }
-  where.push(`q.sku NOT IN (SELECT sku FROM WalmartListingRemediation WHERE ok=1)`);
-  where.push(`q.sku NOT IN (SELECT sku FROM WalmartRemediationQueue WHERE status IN ('queued','running'))`);
+  // Guard score filters so the default (0..100) never drops null-score (unpublished) rows.
+  if (lqMin != null && lqMin > 0) { where.push(`q.lqScore >= ?`); args.push(lqMin); }
+  if (lqMax != null && lqMax < 100) { where.push(`q.lqScore <= ?`); args.push(lqMax); }
+  if (contentMax != null && contentMax < 100) { where.push(`q.contentScore <= ?`); args.push(contentMax); }
+  if (hasIssues) where.push(`COALESCE(q.issueCount,0) > 0`);
+  if (excludeBundles) for (const bw of BUNDLE_WORDS) { where.push(`LOWER(COALESCE(w.title,'')) NOT LIKE ?`); args.push(`%${bw}%`); }
+  where.push(`w.sku NOT IN (SELECT sku FROM WalmartListingRemediation WHERE ok=1)`);
+  where.push(`w.sku NOT IN (SELECT sku FROM WalmartRemediationQueue WHERE status IN ('queued','running'))`);
 
   // Performance window (sales/units/returns from our own orders) + perf filters.
   const periodRaw = Number(p.get("period") ?? 30);
@@ -77,7 +80,7 @@ function buildFilter(p: URLSearchParams) {
   // Listing status (published / unpublished / error) from the catalog mirror.
   const status = p.get("status");
   const STATUS_SQL: Record<string, string> = { published: "PUBLISHED", unpublished: "UNPUBLISHED", error: "SYSTEM_PROBLEM" };
-  if (status && STATUS_SQL[status]) where.push(`wci.publishedStatus = '${STATUS_SQL[status]}'`);
+  if (status && STATUS_SQL[status]) where.push(`w.publishedStatus = '${STATUS_SQL[status]}'`);
 
   const sortKey = p.get("sort") || "views";
   const SORTS: Record<string, string> = {
@@ -93,27 +96,28 @@ export async function GET(request: NextRequest) {
   const p = new URL(request.url).searchParams;
   const storeIndex = Number(p.get("storeIndex") || 1);
   const { whereSql, args, packExpr, period, S, U, O, R, VIEWS, sortSql } = buildFilter(p);
-  const JOIN = `LEFT JOIN WalmartSkuPerf perf ON perf.sku=q.sku AND perf.storeIndex=q.storeIndex
-                LEFT JOIN WalmartCatalogItem wci ON wci.sku=q.sku AND wci.storeIndex=q.storeIndex`;
+  const JOIN = `LEFT JOIN WalmartListingQualityItem q ON q.sku=w.sku AND q.storeIndex=w.storeIndex
+                LEFT JOIN WalmartSkuPerf perf ON perf.sku=w.sku AND perf.storeIndex=w.storeIndex`;
 
-  // Live counts for the current filter.
+  // Live counts for the current filter (over the whole catalog).
   const countRow = (await prisma.$queryRawUnsafe(
     `SELECT COUNT(*) AS match,
             SUM(CASE WHEN ${packExpr} >= 4 THEN 1 ELSE 0 END) AS pack4,
-            SUM(CASE WHEN q.issueCount > 0 THEN 1 ELSE 0 END) AS withGaps
-       FROM WalmartListingQualityItem q ${JOIN} WHERE ${whereSql}`,
+            SUM(CASE WHEN COALESCE(q.issueCount,0) > 0 THEN 1 ELSE 0 END) AS withGaps
+       FROM WalmartCatalogItem w ${JOIN} WHERE ${whereSql}`,
     storeIndex, ...args,
   )) as Row[];
   const counts = { match: Number(countRow[0]?.match || 0), pack4: Number(countRow[0]?.pack4 || 0), withGaps: Number(countRow[0]?.withGaps || 0) };
 
-  // Candidate sample for the list (capped), with performance for the chosen period.
-  const limit = Math.min(Number(p.get("limit") || 60), 200);
+  // Candidate page (paginated), with performance for the chosen period.
+  const limit = Math.min(Number(p.get("limit") || 50), 200);
+  const offset = Math.max(Number(p.get("offset") || 0), 0);
   const cand = (await prisma.$queryRawUnsafe(
-    `SELECT q.sku, q.itemId, q.productName, q.lqScore, q.contentScore, q.issueCount, q.issuesSummary,
-            q.pageViews30d, q.ratingCount, q.isInStock, ${packExpr} AS packCount, wci.publishedStatus AS status,
+    `SELECT w.sku, w.itemId, COALESCE(w.title, q.productName) AS productName, q.lqScore, q.contentScore, q.issueCount, q.issuesSummary,
+            q.pageViews30d, q.ratingCount, q.isInStock, ${packExpr} AS packCount, w.publishedStatus AS status,
             ${S} AS sales, ${U} AS units, ${O} AS orders, ${R} AS returns
-       FROM WalmartListingQualityItem q ${JOIN} WHERE ${whereSql}
-      ORDER BY ${sortSql} LIMIT ${limit}`,
+       FROM WalmartCatalogItem w ${JOIN} WHERE ${whereSql}
+      ORDER BY ${sortSql} LIMIT ${limit} OFFSET ${offset}`,
     storeIndex, ...args,
   )) as Row[];
   const candidates = cand.map((r) => {
@@ -138,7 +142,7 @@ export async function GET(request: NextRequest) {
 
   // Content-gap heatmap across all multipack candidates (top recurring content issues).
   const heatRows = (await prisma.$queryRawUnsafe(
-    `SELECT issuesSummary FROM WalmartListingQualityItem q WHERE q.storeIndex=? AND ${packExpr} >= 2 AND q.issueCount > 0 LIMIT 2000`,
+    `SELECT issuesSummary FROM WalmartListingQualityItem q WHERE q.storeIndex=? AND COALESCE(q.titlePackCount,1) >= 2 AND q.issueCount > 0 LIMIT 2000`,
     storeIndex,
   )) as Row[];
   const heat: Record<string, number> = {};
@@ -172,7 +176,7 @@ export async function GET(request: NextRequest) {
     `SELECT sku, status, queuedAt, feedId, error FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('queued','running') ORDER BY queuedAt DESC LIMIT 100`, storeIndex,
   )) as Row[];
 
-  return NextResponse.json({ period, counts, candidates, contentGapHeatmap, summary, history, queue });
+  return NextResponse.json({ period, counts, candidates, contentGapHeatmap, summary, history, queue, page: { limit, offset, total: counts.match } });
 }
 
 export async function POST(request: NextRequest) {

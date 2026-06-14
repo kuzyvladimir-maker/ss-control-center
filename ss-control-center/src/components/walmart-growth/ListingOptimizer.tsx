@@ -27,6 +27,7 @@ interface ApiResp {
   summary: { applied: number; measured: number; pendingMeasure: number; avgLqDelta: number | null; avgContentDelta: number | null; avgConvDelta: number | null; };
   history: HistoryRow[];
   queue: { sku: string; status: string }[];
+  page: { limit: number; offset: number; total: number };
 }
 
 const SCOPE_FIELDS = [
@@ -106,6 +107,8 @@ export function ListingOptimizer() {
     period: 30, sort: "views", status: "all", health: "",
     minSales: 0, maxSales: 1000, minUnits: 0, maxUnits: 50, minReviews: 0, maxReviews: 50, minReturnPct: 0, maxReturnPct: 100,
   });
+  const [pageSize, setPageSize] = useState(50);
+  const [offset, setOffset] = useState(0);
   const [data, setData] = useState<ApiResp | null>(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -129,8 +132,12 @@ export function ListingOptimizer() {
     if (f.maxReviews < 50) p.set("maxReviews", String(f.maxReviews));
     if (f.minReturnPct) p.set("minReturnPct", String(f.minReturnPct));
     if (f.maxReturnPct < 100) p.set("maxReturnPct", String(f.maxReturnPct));
+    p.set("limit", String(pageSize)); p.set("offset", String(offset));
     return p.toString();
-  }, [f]);
+  }, [f, pageSize, offset]);
+
+  // Reset to first page whenever filters or page size change.
+  useEffect(() => { setOffset(0); }, [f, pageSize]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -217,7 +224,7 @@ export function ListingOptimizer() {
                   className={cn("rounded-full border px-2.5 py-1 text-[11px]", f.status === s.id ? "border-silver-dark bg-silver-tint text-silver-dark" : "border-rule bg-surface text-ink-2 hover:bg-bg-elev")}>{s.label}</button>
               ))}
             </div>
-            <div className="max-h-[260px] overflow-auto rounded-lg border border-rule">
+            <div className="max-h-[440px] overflow-auto rounded-lg border border-rule">
               <table className="w-full text-[12px]">
                 <thead className="sticky top-0 bg-surface"><tr className="border-b border-rule text-left text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">
                   <th className="px-2 py-1.5"><input type="checkbox" checked={allSelected} onChange={toggleAll} /></th>
@@ -255,6 +262,21 @@ export function ListingOptimizer() {
                   })}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-ink-3">
+              <span>
+                {data?.page.total ? `${offset + 1}–${Math.min(offset + (data?.candidates.length || 0), data.page.total)} of ${data.page.total.toLocaleString()}` : "0 of 0"}
+              </span>
+              <div className="flex items-center gap-2">
+                <span>Per page</span>
+                {[25, 50, 100].map((n) => (
+                  <button key={n} onClick={() => setPageSize(n)} className={cn("rounded px-1.5 py-0.5 font-mono", pageSize === n ? "bg-green text-green-cream" : "bg-bg-elev text-ink-2 hover:text-ink")}>{n}</button>
+                ))}
+                <Btn size="sm" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - pageSize))}>Prev</Btn>
+                <Btn size="sm" disabled={!data || offset + pageSize >= data.page.total} onClick={() => setOffset(offset + pageSize)}>Next</Btn>
+              </div>
             </div>
 
             <div className="mt-3 rounded-lg border border-rule p-3">

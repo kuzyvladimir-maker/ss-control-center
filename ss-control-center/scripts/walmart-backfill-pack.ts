@@ -32,19 +32,21 @@ export function packFromTitle(title: string): number | null {
   return null;
 }
 
-async function main() {
-  // Ensure column exists (SQLite ADD COLUMN is a no-op-safe via try/catch).
-  try { await db.execute(`ALTER TABLE WalmartListingQualityItem ADD COLUMN titlePackCount INTEGER`); console.log("added column titlePackCount"); }
-  catch { console.log("column titlePackCount already exists"); }
-
-  const rows = await db.execute(`SELECT id, sku, productName FROM WalmartListingQualityItem WHERE storeIndex=1`);
-  let set = 0, multipacks = 0;
+async function backfill(table: string, titleCol: string) {
+  try { await db.execute(`ALTER TABLE ${table} ADD COLUMN titlePackCount INTEGER`); console.log(`${table}: added column titlePackCount`); }
+  catch { console.log(`${table}: column exists`); }
+  const rows = await db.execute(`SELECT id, ${titleCol} AS title FROM ${table} WHERE storeIndex=1`);
+  let multipacks = 0;
   for (const r of rows.rows as any[]) {
-    const n = packFromTitle(r.productName || "");
+    const n = packFromTitle(r.title || "");
     if (n) multipacks++;
-    await db.execute({ sql: `UPDATE WalmartListingQualityItem SET titlePackCount=? WHERE id=?`, args: [n, r.id] });
-    set++;
+    await db.execute({ sql: `UPDATE ${table} SET titlePackCount=? WHERE id=?`, args: [n, r.id] });
   }
-  console.log(`scanned ${set} items · ${multipacks} parsed as multipacks (titlePackCount set)`);
+  console.log(`${table}: scanned ${rows.rows.length} · ${multipacks} multipacks`);
+}
+
+async function main() {
+  await backfill("WalmartListingQualityItem", "productName");
+  await backfill("WalmartCatalogItem", "title");
 }
 main().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1); });
