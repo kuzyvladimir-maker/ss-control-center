@@ -24,6 +24,7 @@ import {
   pickTopFix,
   scoreConversion,
   scoreBuyBox,
+  computeOpportunity,
   SUPPRESSED_BUYABILITY,
 } from "./listing-health";
 
@@ -269,6 +270,15 @@ async function ingestFyp(prisma: PrismaClient, storeIndex: number, text: string)
           buyabilityScore: SUPPRESSED_BUYABILITY,
           healthScore: computeHealthScore(components),
           topFixComponent: pickTopFix(components),
+          opportunityScore: computeOpportunity({
+            isSuppressed: true,
+            healthScore: computeHealthScore(components),
+            errorIssueCount: 0,
+            sessions: null,
+            unitSessionPct: null,
+            buyBoxPercentage: null,
+            returnRate: null,
+          }),
         },
       });
       enriched++;
@@ -286,6 +296,15 @@ async function ingestFyp(prisma: PrismaClient, storeIndex: number, text: string)
         buyabilityScore: SUPPRESSED_BUYABILITY,
         healthScore,
         topFixComponent,
+        opportunityScore: computeOpportunity({
+          isSuppressed: true,
+          healthScore,
+          errorIssueCount: existing.errorIssueCount,
+          sessions: existing.sessions30d,
+          unitSessionPct: existing.unitSessionPct,
+          buyBoxPercentage: existing.buyBoxPercentage,
+          returnRate: existing.returnRate,
+        }),
       },
     });
     enriched++;
@@ -296,7 +315,10 @@ async function ingestFyp(prisma: PrismaClient, storeIndex: number, text: string)
 interface StAsinEntry {
   childAsin?: string;
   parentAsin?: string;
-  salesByAsin?: { unitsOrdered?: number };
+  salesByAsin?: {
+    unitsOrdered?: number;
+    orderedProductSales?: { amount?: number };
+  };
   trafficByAsin?: {
     sessions?: number;
     browserPageViews?: number;
@@ -318,16 +340,17 @@ async function ingestSalesTraffic(prisma: PrismaClient, storeIndex: number, text
   }
   const entries = json.salesAndTrafficByAsin ?? [];
   // Aggregate by ASIN (report may have per-day rows for the same ASIN).
-  const byAsin = new Map<string, { sessions: number; pageViews: number; units: number; bbPctSum: number; bbN: number }>();
+  const byAsin = new Map<string, { sessions: number; pageViews: number; units: number; revenue: number; bbPctSum: number; bbN: number }>();
   for (const e of entries) {
     const asin = e.childAsin ?? e.parentAsin;
     if (!asin) continue;
     const t = e.trafficByAsin ?? {};
     const s = e.salesByAsin ?? {};
-    const cur = byAsin.get(asin) ?? { sessions: 0, pageViews: 0, units: 0, bbPctSum: 0, bbN: 0 };
+    const cur = byAsin.get(asin) ?? { sessions: 0, pageViews: 0, units: 0, revenue: 0, bbPctSum: 0, bbN: 0 };
     cur.sessions += t.sessions ?? 0;
     cur.pageViews += t.pageViews ?? (t.browserPageViews ?? 0) + (t.mobileAppPageViews ?? 0);
     cur.units += s.unitsOrdered ?? 0;
+    cur.revenue += s.orderedProductSales?.amount ?? 0;
     if (t.buyBoxPercentage != null) {
       cur.bbPctSum += t.buyBoxPercentage;
       cur.bbN += 1;
@@ -347,18 +370,29 @@ async function ingestSalesTraffic(prisma: PrismaClient, storeIndex: number, text
     for (const it of items) {
       const merged = { ...it, conversionScore, buyBoxScore };
       const { healthScore, topFixComponent } = recompute(merged);
+      const opportunityScore = computeOpportunity({
+        isSuppressed: it.isSuppressed,
+        healthScore,
+        errorIssueCount: it.errorIssueCount,
+        sessions: agg.sessions,
+        unitSessionPct,
+        buyBoxPercentage: buyBoxPct,
+        returnRate: it.returnRate,
+      });
       await prisma.amazonListingHealthItem.update({
         where: { id: it.id },
         data: {
           sessions30d: agg.sessions,
           pageViews30d: agg.pageViews,
           unitsOrdered30d: agg.units,
+          revenue30d: Math.round(agg.revenue * 100) / 100,
           buyBoxPercentage: buyBoxPct,
           unitSessionPct,
           conversionScore,
           buyBoxScore,
           healthScore,
           topFixComponent,
+          opportunityScore,
         },
       });
       enriched++;

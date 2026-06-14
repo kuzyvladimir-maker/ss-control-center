@@ -14,6 +14,7 @@ import { uploadToR2, multipackImageKey } from "./r2";
 import { fetchDonorDetail } from "./donor";
 import { polishListingCopy } from "./polish";
 import { validateListingContent } from "./guidelines";
+import { ensureDonorImage } from "../../sourcing/enrich";
 
 export const SPEC_VERSION = "5.0.20260330-14_47_14-api";
 const DONOR_IMAGE_CAP = 6;
@@ -45,6 +46,20 @@ async function itemContentIssues(db: Client, sku: string): Promise<string[]> {
       .map((x: any) => `${x.title}${x.detail && x.detail !== x.title ? ` — ${x.detail}` : ""}`)
       .filter(Boolean).slice(0, 12);
   } catch { return []; }
+}
+
+/** Pack size, mirroring the optimizer's packExpr EXACTLY (SkuShippingData →
+ *  SkuCost → WalmartCatalogItem.titlePackCount). 0 if unknown. */
+async function resolvePack(db: Client, sku: string, storeIndex = 1): Promise<number> {
+  const p = await db.execute({
+    sql: `SELECT COALESCE(
+            (SELECT unitsInListing FROM SkuShippingData WHERE sku=? LIMIT 1),
+            (SELECT packSize FROM SkuCost WHERE sku=? LIMIT 1),
+            (SELECT titlePackCount FROM WalmartCatalogItem WHERE sku=? AND storeIndex=? LIMIT 1)
+          ) AS pack`,
+    args: [sku, sku, sku, storeIndex],
+  });
+  return Number((p.rows[0] as any)?.pack) || 0;
 }
 
 /** Pack count + clean donor photo. Pack resolution mirrors the optimizer's
@@ -94,18 +109,33 @@ async function buyerUrl(client: any, upc: string, packCount: number): Promise<st
  */
 export async function buildAndSubmitOne(
   db: Client, client: any, sku: string,
-  opts: { scope?: RemediateScope | null; dry?: boolean; stamp: string },
+  opts: { scope?: RemediateScope | null; dry?: boolean; stamp: string; enrich?: boolean; storeIndex?: number },
 ): Promise<RemediateResult> {
   const scope: RemediateScope = opts.scope && Object.values(opts.scope).some(Boolean) ? opts.scope : ALL_SCOPE;
   const stamp = opts.stamp;
+  const storeIndex = opts.storeIndex ?? 1;
   const blank: RemediateResult = { status: "SKIP", feedId: null, url: "—", title: null, detail: "", packCount: 0, noun: "", meta: null };
 
   const itemRes: any = (await client.requestRaw("GET", `/items/${encodeURIComponent(sku)}`)).body;
   const cur = itemRes?.ItemResponse?.[0];
   if (!cur) return { ...blank, detail: "not found on Walmart" };
   const upc = cur.upc, productType = cur.productType;
-  const cand = await loadCandidate(db, sku, cur.productName || "");
-  if (!cand) return { ...blank, detail: "no donor photo/pack" };
+
+  // Resolve pack FIRST (so we never spend an enrichment credit on a non-multipack).
+  const pack0 = await resolvePack(db, sku, storeIndex);
+  if (pack0 < 2) return { ...blank, detail: "not a multipack (pack < 2)" };
+
+  // On-demand enrichment: if the catalog has no donor photo, ask the Sourcing
+  // Engine to fetch+persist one (BlueCart, 1 credit). Disabled via enrich:false
+  // when the budget guard trips.
+  let enrichNote = "";
+  if (opts.enrich !== false) {
+    try { const e = await ensureDonorImage(db, { sku, upc, title: cur.productName }); if (!e.alreadyHad && !e.found) enrichNote = e.reason || "enrich found nothing"; }
+    catch (e: any) { enrichNote = `enrich error: ${e?.message?.slice(0, 60)}`; }
+  }
+
+  const cand = await loadCandidate(db, sku, cur.productName || "", storeIndex);
+  if (!cand) return { ...blank, detail: `no donor photo${enrichNote ? ` (${enrichNote})` : ""}` };
   const noun = inferUnitNoun(cand.walmartTitle);
 
   const sc: any = (await client.requestRaw("GET", "/items/walmart/search", { params: { upc } })).body;

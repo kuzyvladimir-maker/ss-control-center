@@ -21,14 +21,16 @@ import { createClient } from "@libsql/client";
 import { getWalmartClient } from "@/lib/walmart/client";
 import { buildAndSubmitOne, checkFeed, RemediateScope } from "@/lib/walmart/multipack/remediate";
 import { logRemediation } from "@/lib/walmart/multipack/analytics";
+import { bluecartCreditsRemaining } from "@/lib/sourcing/enrich";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 const STORE = 1;
-const DRAIN_PER_TICK = 3;     // build+submit is ~30–60s each; 3 fits 300s with headroom
-const FINALIZE_PER_TICK = 25; // feed-status GETs are cheap
+const DRAIN_PER_TICK = 3;       // build+submit is ~30–60s each; 3 fits 300s with headroom
+const FINALIZE_PER_TICK = 25;   // feed-status GETs are cheap
 const TIME_BUDGET_MS = 230_000;
+const BLUECART_CREDIT_FLOOR = 300; // stop on-demand enrichment below this to protect the monthly allotment
 
 function requireCronAuth(request: NextRequest): NextResponse | null {
   const secret = process.env.CRON_SECRET;
@@ -78,6 +80,12 @@ export async function GET(request: NextRequest) {
   } catch (e) { /* table/permission issue — surfaced below via empty counts */ }
 
   // ── 2. DRAIN queued rows: build + submit ─────────────────────────────────
+  // Budget guard: only allow on-demand BlueCart enrichment while credits are
+  // comfortably above the floor (protects the monthly allotment / $ ceiling).
+  const credits = await bluecartCreditsRemaining();
+  const allowEnrich = credits == null ? true : credits > BLUECART_CREDIT_FLOOR;
+  (out as any).bluecartCredits = credits;
+  (out as any).enrichEnabled = allowEnrich;
   try {
     const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + String(Date.now()).slice(-5);
     while (Date.now() - started < TIME_BUDGET_MS) {
@@ -98,7 +106,7 @@ export async function GET(request: NextRequest) {
       try { const r = JSON.parse(job.result || "{}"); if (r && typeof r.scope === "object") scope = r.scope; } catch {}
 
       try {
-        const r = await buildAndSubmitOne(conn, client, job.sku, { scope, stamp });
+        const r = await buildAndSubmitOne(conn, client, job.sku, { scope, stamp, enrich: allowEnrich, storeIndex: STORE });
         if (r.feedId && r.meta) {
           await logRemediation(conn, {
             sku: job.sku, wpid: r.meta.wpid, upc: r.meta.upc, buyerItemId: (r.url.match(/ip\/(\d+)/) || [])[1] || null,

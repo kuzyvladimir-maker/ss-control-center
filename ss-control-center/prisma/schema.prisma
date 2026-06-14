@@ -1422,12 +1422,31 @@ model AmazonListingHealthItem {
   buyBoxWinner     Boolean @default(false)
   priceGap         Float?
 
-  // Conversion (Sales & Traffic report — Phase B)
+  // Conversion / productivity (Sales & Traffic report — Phase B)
   sessions30d      Int?
   pageViews30d     Int?
   unitsOrdered30d  Int?
   buyBoxPercentage Float?
   unitSessionPct   Float? // conversion % (units / sessions)
+  revenue30d       Float? // orderedProductSales — $ at risk/earned
+
+  // Returns (refund/return data)
+  returns30d Int?
+  returnRate Float? // returns / unitsOrdered
+
+  // Funnel from Brand Analytics Search Query Performance (keyword-level → ASIN).
+  // Impressions → clicks (CTR) → cart-adds (rate) → purchases (rate). Slow async,
+  // brand-registry-gated. Null until SQP ingest populates them.
+  impressions30d Int?
+  clicks30d      Int?
+  ctr            Float? // clicks / impressions
+  cartAdds30d    Int?
+  cartAddRate    Float? // cart-adds / clicks
+  purchases30d   Int?
+  purchaseRate   Float? // purchases / clicks
+
+  // Computed sales-upside rank — what to work on FIRST to grow sales.
+  opportunityScore Float?
 
   // Suppression detail (FYP report — Phase B)
   suppressionReason String?
@@ -1439,6 +1458,7 @@ model AmazonListingHealthItem {
   @@index([storeIndex, healthScore])
   @@index([storeIndex, isSuppressed])
   @@index([storeIndex, syncedAt])
+  @@index([storeIndex, opportunityScore])
 }
 
 // Resumable-sweep state for the Listings Items feed. Listings API is 5 req/s,

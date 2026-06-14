@@ -174,6 +174,7 @@ async function upsertItem(
     mainImageUrl: s.mainImageUrl,
     healthScore: s.healthScore,
     topFixComponent: s.topFixComponent,
+    opportunityScore: s.opportunityScore,
     buyabilityScore: s.components.buyability,
     issuesScore: s.components.issues,
     complianceScore: s.components.compliance,

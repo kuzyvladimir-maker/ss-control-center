@@ -130,9 +130,21 @@ export async function GET(request: NextRequest) {
     warningIssueCount: r.warningIssueCount,
     issues: safeParse(r.issuesSummary),
     suppressionReason: r.suppressionReason,
+    opportunityScore: r.opportunityScore,
+    // productivity funnel
+    impressions30d: r.impressions30d,
+    clicks30d: r.clicks30d,
+    ctr: r.ctr,
     sessions30d: r.sessions30d,
+    pageViews30d: r.pageViews30d,
+    cartAddRate: r.cartAddRate,
     unitsOrdered30d: r.unitsOrdered30d,
     unitSessionPct: r.unitSessionPct,
+    purchaseRate: r.purchaseRate,
+    buyBoxPercentage: r.buyBoxPercentage,
+    revenue30d: r.revenue30d,
+    returns30d: r.returns30d,
+    returnRate: r.returnRate,
     lastUpdatedAt: r.lastUpdatedAt,
   }));
 

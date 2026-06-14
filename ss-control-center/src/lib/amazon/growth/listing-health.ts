@@ -73,6 +73,7 @@ export interface ScoredListing {
   components: ComponentScores;
   healthScore: number;
   topFixComponent: ComponentKey | null;
+  opportunityScore: number;
 }
 
 // Promotional adjectives banned by brand voice (CLAUDE.md / Amazon subjective
@@ -174,6 +175,50 @@ export function scoreBuyBox(buyBoxPercentage: number | null): number | null {
 /** Buyability value for a search-suppressed listing (FYP-authoritative). */
 export const SUPPRESSED_BUYABILITY = 30;
 
+/**
+ * Opportunity Score (0-100) — sales-upside rank. NOT "how bad is the listing"
+ * but "how much sales can we unlock by fixing it". This is what the worklist
+ * sorts by, so operators work the money first.
+ *
+ * Logic: a listing is a big opportunity when there's DEMAND (traffic, or latent
+ * demand if suppressed) AND a fixable GAP (low conversion vs benchmark, lost
+ * featured offer, high returns, low health). A high-traffic listing that already
+ * converts well and wins the buy box scores LOW — it's productive, leave it.
+ */
+const CONVERSION_BENCHMARK = 0.1; // 10% unit-session rate (grocery baseline)
+
+export function computeOpportunity(m: {
+  isSuppressed: boolean;
+  healthScore: number | null;
+  errorIssueCount: number;
+  sessions: number | null;
+  unitSessionPct: number | null;
+  buyBoxPercentage: number | null;
+  returnRate: number | null;
+}): number {
+  // Suppressed = invisible in search → fixing unlocks all latent demand. Highest.
+  if (m.isSuppressed) return clamp(75 + Math.min(25, m.errorIssueCount * 3));
+
+  // Demand: how much traffic is in play (saturates ~200 sessions/30d).
+  const trafficNorm = m.sessions != null ? Math.min(1, m.sessions / 200) : 0;
+
+  // Gaps (each 0..1).
+  const conversionGap =
+    m.sessions != null && m.sessions >= 10 && m.unitSessionPct != null
+      ? Math.max(0, (CONVERSION_BENCHMARK - m.unitSessionPct) / CONVERSION_BENCHMARK)
+      : 0;
+  const buyBoxGap = m.buyBoxPercentage != null ? Math.max(0, (100 - m.buyBoxPercentage) / 100) : 0;
+  const healthGap = m.healthScore != null ? (100 - m.healthScore) / 100 : 0;
+  const returnGap = m.returnRate != null ? Math.min(1, m.returnRate * 2) : 0;
+
+  const raw = trafficNorm * (0.45 * conversionGap + 0.3 * buyBoxGap + 0.15 * healthGap + 0.1 * returnGap);
+
+  // Floor: listings with no traffic still carry a little upside from headroom,
+  // so a brand-new low-health listing isn't scored exactly 0.
+  const floor = m.sessions == null || m.sessions === 0 ? healthGap * 15 : 0;
+  return Math.round(clamp(raw * 100 + floor) * 10) / 10;
+}
+
 /** Highest-leverage component to fix = largest weight × gap-from-100. */
 export function pickTopFix(components: ComponentScores): ComponentKey | null {
   let best: ComponentKey | null = null;
@@ -237,5 +282,15 @@ export function scoreListing(raw: Record<string, unknown>): ScoredListing {
     components,
     healthScore: computeHealthScore(components),
     topFixComponent: pickTopFix(components),
+    // Phase A baseline (no traffic yet) — reports recompute with full funnel.
+    opportunityScore: computeOpportunity({
+      isSuppressed,
+      healthScore: computeHealthScore(components),
+      errorIssueCount,
+      sessions: null,
+      unitSessionPct: null,
+      buyBoxPercentage: null,
+      returnRate: null,
+    }),
   };
 }
