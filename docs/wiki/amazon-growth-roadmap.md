@@ -144,8 +144,16 @@ Listing Health / Buy Box / Optimizer). Переиспользуем компон
    + scoring lib + resumable sweep + API + cron + read-only дашборд `/amazon-growth`.
    Первый прогон: **store1 health 92.8** (1000 листингов, 700 с ERROR-issues),
    **store3 health 94.3** (553 листинга, 526 с ERROR). Component-веса = стартовая гипотеза.
-4. ⏳ **Phase B:** Action Center (диагностика → действия) + FYP/S&T reports cron + Buy Box (Pricing).
-5. ⏳ **Phase C:** Optimizer (preview→apply) на готовых scrub/rewrite/PATCH.
+4. ✅ **Phase B LIVE (2026-06-14):** reports state-machine (`reports.ts`, cron `amazon-reports`)
+   — FYP (authoritative suppression) + Sales&Traffic (per-ASIN conversion + buy-box %) →
+   обогащают health items (conversion/buyBox компоненты, isSuppressed/reason) с пересчётом
+   score. Action Center (`growth-diagnosis.ts` + UI) + Buy Box panel. Проверено: S&T
+   обогатил 433 листинга store3 (buyBox=433, conversion=120), FYP store3=0 suppressed (корректно).
+5. ✅ **Phase C LIVE (2026-06-14):** Optimizer (`optimizer.ts` + preview/apply routes + UI).
+   Детерминированные безопасные фиксы: title brand-voice scrub (убирает promo/emoji) +
+   dedupe дублей атрибутов (99016). preview→validate(dry-run VALIDATION_PREVIEW)→apply(PATCH).
+   Проверено: dry-run вернул **VALID** на реальном листинге ("Premium Quality"→"Quality",
+   дедуп generic_keyword); structural gaps (битое изображение 100581) → "needs-data" (harvest), не угадываем.
 6. ⏳ Brand Analytics SQP — медленный async, добавить в reports state machine.
 7. ⏳ Калибровка весов score на реальном распределении.
 8. ⏳ Расширение на store2/store5 после стабилизации на store1/store3.

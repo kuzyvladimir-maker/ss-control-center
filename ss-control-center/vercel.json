@@ -68,6 +68,10 @@
     {
       "path": "/api/cron/amazon-listing-health",
       "schedule": "35 */6 * * *"
+    },
+    {
+      "path": "/api/cron/amazon-reports",
+      "schedule": "5,25,45 * * * *"
     }
   ]
 }

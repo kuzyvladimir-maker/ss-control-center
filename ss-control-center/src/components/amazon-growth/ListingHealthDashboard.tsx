@@ -119,7 +119,16 @@ function ScoreGauge({ label, score }: { label: string; score: number | null }) {
   );
 }
 
-export function ListingHealthDashboard({ storeIndex }: { storeIndex: number }) {
+export function ListingHealthDashboard({
+  storeIndex,
+  filter: filterProp,
+  onFilterChange,
+}: {
+  storeIndex: number;
+  /** When provided, the filter is controlled by the parent (Action Center jumps). */
+  filter?: FilterId;
+  onFilterChange?: (f: FilterId) => void;
+}) {
   const [data, setData] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -127,7 +136,9 @@ export function ListingHealthDashboard({ storeIndex }: { storeIndex: number }) {
   // Default to the backlog that has real Phase-A signal. Authoritative
   // suppression comes from the FYP report (Phase B); status-derived
   // `isSuppressed` undercounts, so "Has errors" is the better landing filter.
-  const [filter, setFilter] = useState<FilterId>("hasErrors");
+  const [internalFilter, setInternalFilter] = useState<FilterId>("hasErrors");
+  const filter = filterProp ?? internalFilter;
+  const setFilter = (f: FilterId) => (onFilterChange ? onFilterChange(f) : setInternalFilter(f));
   const [sort, setSort] = useState<SortId>("score");
   const [q, setQ] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
