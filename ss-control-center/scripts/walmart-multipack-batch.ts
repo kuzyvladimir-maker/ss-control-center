@@ -17,8 +17,12 @@ import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { getWalmartClient } from "../src/lib/walmart/client";
 import { composeTiledMainImage, renderBadgeImage, fetchImageBuffer, highResImageUrl } from "../src/lib/walmart/multipack/composite";
-import { rewriteMultipackContent, inferUnitNoun } from "../src/lib/walmart/multipack/content";
+import { buildMultipackListing, inferUnitNoun, quantityLeadSentence, scrubBrandVoice } from "../src/lib/walmart/multipack/content";
 import { uploadToR2, multipackImageKey } from "../src/lib/walmart/multipack/r2";
+import { fetchDonorDetail } from "../src/lib/walmart/multipack/donor";
+import { polishListingCopy } from "../src/lib/walmart/multipack/polish";
+
+const DONOR_IMAGE_CAP = 6; // total images = generated main + badge + up to this many real donor images
 
 const db = createClient({ url: process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL!, authToken: process.env.TURSO_AUTH_TOKEN });
 const SPEC_VERSION = "5.0.20260330-14_47_14-api";
@@ -27,18 +31,22 @@ const OUT = join(process.cwd(), "..", "preview-multipack");
 
 interface Job { sku: string; packCount: number; noun: string; feedId: string | null; url: string; title: string; status: string; detail: string; }
 
-async function loadCandidate(sku: string) {
-  const w = await db.execute({
-    sql: `SELECT w.title AS wtitle, COALESCE(s.unitsInListing,c.packSize) AS pack
-          FROM WalmartCatalogItem w
-          LEFT JOIN SkuShippingData s ON s.sku=w.sku
-          LEFT JOIN SkuCost c ON c.sku=w.sku WHERE w.sku=? LIMIT 1`,
+async function loadCandidate(sku: string, liveTitle: string) {
+  // Pack count straight from our SKU tables — do NOT depend on the
+  // WalmartCatalogItem mirror (nightly sync can drop rows). Title comes from the
+  // live Walmart item passed in by the caller.
+  const p = await db.execute({
+    sql: `SELECT COALESCE(s.unitsInListing, c.packSize) AS pack
+          FROM (SELECT ? AS sku) k
+          LEFT JOIN SkuShippingData s ON s.sku=k.sku
+          LEFT JOIN SkuCost c ON c.sku=k.sku LIMIT 1`,
     args: [sku],
   });
-  const wr = w.rows[0] as any;
-  if (!wr) return null;
+  const pack = Number((p.rows[0] as any)?.pack) || 0;
+  if (pack < 2) return null; // not a multipack
   const r = await db.execute({
-    sql: `SELECT imageUrls FROM RetailPrice WHERE sku=? AND imageUrls IS NOT NULL AND imageUrls != ''
+    sql: `SELECT imageUrls, retailerProductId FROM RetailPrice
+          WHERE sku=? AND imageUrls IS NOT NULL AND imageUrls != '' AND sourceApi='bluecart'
           ORDER BY (CASE WHEN COALESCE(packSizeSeen,1)=1 THEN 0 ELSE 1 END), confidence DESC LIMIT 1`,
     args: [sku],
   });
@@ -48,10 +56,10 @@ async function loadCandidate(sku: string) {
   try { imgs = JSON.parse(rr.imageUrls); } catch { imgs = [rr.imageUrls]; }
   const raw = imgs.find((u) => typeof u === "string" && u.startsWith("http")) ?? "";
   if (!raw) return null;
-  return { sku, walmartTitle: wr.wtitle ?? sku, packCount: Number(wr.pack) || 2, baseImageUrl: highResImageUrl(raw) };
+  return { sku, walmartTitle: liveTitle || sku, packCount: pack, baseImageUrl: highResImageUrl(raw), itemId: String(rr.retailerProductId || "") };
 }
 
-function buildPayload(a: { sku: string; upc: string; brand: string; productType: string; productName: string; shortDescription: string; keyFeatures: string[]; mainImageUrl: string; secondaryImageUrl: string; }) {
+function buildPayload(a: { sku: string; upc: string; brand: string; productType: string; productName: string; shortDescription: string; keyFeatures: string[]; mainImageUrl: string; secondaryImageUrls: string[]; }) {
   return {
     MPItemFeedHeader: { businessUnit: "WALMART_US", locale: "en", version: SPEC_VERSION },
     MPItem: [{
@@ -59,7 +67,7 @@ function buildPayload(a: { sku: string; upc: string; brand: string; productType:
       Visible: { [a.productType]: {
         productName: a.productName, brand: a.brand, shortDescription: a.shortDescription,
         keyFeatures: a.keyFeatures, mainImageUrl: a.mainImageUrl,
-        productSecondaryImageURL: [a.secondaryImageUrl],
+        productSecondaryImageURL: a.secondaryImageUrls,
       } },
     }],
   };
@@ -75,7 +83,8 @@ async function buyerUrl(client: any, upc: string, packCount: number): Promise<st
 }
 
 async function main() {
-  const skus = process.argv.slice(2);
+  const DRY = process.argv.includes("--dry");
+  const skus = process.argv.slice(2).filter((a) => !a.startsWith("--"));
   if (!skus.length) { console.log("pass SKUs"); return; }
   mkdirSync(OUT, { recursive: true });
   const client = getWalmartClient(1);
@@ -88,20 +97,51 @@ async function main() {
       const cur = itemRes?.ItemResponse?.[0];
       if (!cur) { jobs.push({ sku, packCount: 0, noun: "", feedId: null, url: "—", title: "—", status: "SKIP", detail: "not found on Walmart" }); continue; }
       const upc = cur.upc, productType = cur.productType;
-      const cand = await loadCandidate(sku);
+      const cand = await loadCandidate(sku, cur.productName || "");
       if (!cand) { jobs.push({ sku, packCount: 0, noun: "", feedId: null, url: "—", title: "—", status: "SKIP", detail: "no donor photo/pack" }); continue; }
       const noun = inferUnitNoun(cand.walmartTitle);
-      const content = rewriteMultipackContent(cand.walmartTitle, cand.packCount, { noun });
       const sc: any = (await client.requestRaw("GET", "/items/walmart/search", { params: { upc } })).body;
       const brand = sc?.items?.[0]?.brand || cand.walmartTitle.split(" ")[0];
 
+      // Pull the donor's full gallery + real bullets/description (BlueCart detail).
+      const donor = cand.itemId ? await fetchDonorDetail(cand.itemId) : null;
+      // Deterministic build is the fallback; Claude polish is the primary path.
+      const content = buildMultipackListing(cand.walmartTitle, cand.packCount, {
+        noun, donorBullets: donor?.bullets, donorDescription: donor?.description,
+      });
+      const polished = (donor && (donor.bullets.length || donor.description))
+        ? await polishListingCopy({ productName: content.title.replace(/\s*—.*$/, ""), donorBullets: donor.bullets, donorDescription: donor.description })
+        : null;
+      if (polished) {
+        content.keyFeatures = polished.keyFeatures.map(scrubBrandVoice).filter(Boolean);
+        content.description = `${quantityLeadSentence(cand.packCount, noun)}\n\n${polished.description}`;
+      }
+
+      // Tiling/badge source = the CLEAN white-bg primary (RetailPrice search
+      // main_image). Donor detail's image[0] is often a pink infographic/lifestyle
+      // shot — unusable for tiling — so those ride along only as secondaries.
       const base = await fetchImageBuffer(cand.baseImageUrl);
       const main = await composeTiledMainImage(base, cand.packCount);
       const badge = await renderBadgeImage(base, cand.packCount, { noun });
       const mainUrl = await uploadToR2(main, multipackImageKey(sku, "main", STAMP));
       const badgeUrl = await uploadToR2(badge, multipackImageKey(sku, "badge", STAMP));
 
-      const payload = buildPayload({ sku, upc, brand, productType, productName: content.title, shortDescription: content.description, keyFeatures: content.bullets, mainImageUrl: mainUrl, secondaryImageUrl: badgeUrl });
+      // Real donor gallery images ride along directly (walmartimages.com CDN is
+      // Walmart-fetchable) — order: badge, then real product photos.
+      const donorImgs = (donor?.images ?? []).slice(0, DONOR_IMAGE_CAP);
+      const secondaryImageUrls = [badgeUrl, ...donorImgs];
+
+      const payload = buildPayload({ sku, upc, brand, productType, productName: content.title, shortDescription: content.description, keyFeatures: content.keyFeatures, mainImageUrl: mainUrl, secondaryImageUrls });
+      console.log(`\n▶ ${sku}: images=${1 + secondaryImageUrls.length} (main+badge+${donorImgs.length} donor) bullets=${content.keyFeatures.length}`);
+      if (DRY) {
+        console.log(`  TITLE: ${content.title}`);
+        console.log(`  MAIN:  ${mainUrl}`);
+        console.log(`  IMGS:  ${secondaryImageUrls.join("\n         ")}`);
+        console.log(`  BULLETS:\n   - ${content.keyFeatures.join("\n   - ")}`);
+        console.log(`  DESCRIPTION:\n   ${content.description.replace(/\n/g, "\n   ")}`);
+        jobs.push({ sku, packCount: cand.packCount, noun, feedId: null, url: "(dry)", title: content.title, status: "DRY", detail: `${1 + secondaryImageUrls.length} imgs, ${content.keyFeatures.length} bullets` });
+        continue;
+      }
       const resp: any = await client.requestRaw("POST", "/feeds", { params: { feedType: "MP_MAINTENANCE" }, body: payload });
       const feedId = resp.body?.feedId ?? null;
       const url = await buyerUrl(client, upc, cand.packCount);

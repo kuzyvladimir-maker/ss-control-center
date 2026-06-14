@@ -15,13 +15,16 @@ export function inferUnitNoun(title: string): string {
   return "packages";
 }
 
-/** Strip an existing trailing "(Pack of N)" / "N-Pack" so we can re-state it cleanly. */
+/** Strip an existing "(Pack of N)" / "N-Pack" / our "— N-Pack (N noun)" suffix
+ *  so re-running on an already-updated title is idempotent. Handles em-dash. */
 function stripPackPhrase(title: string): string {
   return title
-    .replace(/[,\-–]?\s*\(?\bpack of \d+\b\)?/i, "")
-    .replace(/[,\-–]?\s*\b\d+[-\s]?pack\b/i, "")
+    .replace(/\s*[—–-]\s*\d+[-\s]?pack\s*\(\s*\d+\s+\w+\s*\)\s*$/i, "") // our "— N-Pack (N noun)"
+    .replace(/\s*\(\s*\d+\s+\w+\s*\)\s*$/i, "")                          // leftover "(N noun)"
+    .replace(/[,—–-]?\s*\(?\bpack of \d+\b\)?/i, "")
+    .replace(/[,—–-]?\s*\b\d+[-\s]?pack\b/i, "")
     .replace(/\s{2,}/g, " ")
-    .replace(/[\s,;–-]+$/, "")
+    .replace(/[\s,;—–-]+$/, "")
     .trim();
 }
 
@@ -29,6 +32,91 @@ export interface MultipackContent {
   title: string;
   bullets: string[];
   description: string;
+}
+
+// ── Brand-voice enforcement (CLAUDE.md: applies to ALL listing content) ──────
+const PROMO_ADJECTIVES =
+  /\b(ultimate|perfect|delightful|delicious|ideal|amazing|incredible|premium|exclusive|must-have|best|finest|exceptional|outstanding|magnificent|wonderful|fantastic|superior|top-quality|world-class|awesome)\b/gi;
+// Emoji + symbol ranges + manual bullet glyphs.
+const EMOJI = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}️•●►▪○●►▪○]/gu;
+
+/** Enforce brand voice on one line of donor-sourced copy: drop emoji, manual
+ *  bullet glyphs, and promo adjectives; tidy whitespace/punctuation. */
+export function scrubBrandVoice(text: string): string {
+  let t = text.replace(EMOJI, " ").replace(PROMO_ADJECTIVES, " ");
+  t = t.replace(/\s{2,}/g, " ").replace(/\s+([,.;:!])/g, "$1").trim();
+  t = t.replace(/^[\s,;:.\-–]+/, "").replace(/[\s,;:]+$/, "").trim();
+  if (t && !/[.!?]$/.test(t)) t += ".";
+  // Capitalize first letter.
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+const QUANTITY_RE = /quantity 1|pack ships|order contains|multipack of|ships all|same item shown|not 1\b/i;
+
+/** The single, canonical pack-quantity sentence — stated once, in the description. */
+export function quantityLeadSentence(packCount: number, noun: string): string {
+  const n = Math.max(2, Math.floor(packCount));
+  return `This listing is a multipack of ${n} ${noun}: one order ships all ${n} ${noun} together — selecting quantity 1 sends ${n}, not 1.`;
+}
+
+export interface ListingContent {
+  title: string;
+  keyFeatures: string[];
+  description: string;
+}
+
+/**
+ * Professional listing rebuild for a multipack. The pack-quantity message is
+ * stated EXACTLY ONCE — in the description's lead sentence (it is already in the
+ * title, the main image, and the badge). Bullets stay product-focused, sourced
+ * from the donor's parsed feature bullets (brand-voice scrubbed, lightly
+ * normalized), so they carry the real selling info that drives content score.
+ */
+export function buildMultipackListing(
+  currentTitle: string,
+  packCount: number,
+  opts: { noun?: string; donorBullets?: string[]; donorDescription?: string } = {},
+): ListingContent {
+  const n = Math.max(2, Math.floor(packCount));
+  const noun = opts.noun ?? inferUnitNoun(currentTitle);
+  const base = stripPackPhrase(currentTitle);
+
+  const suffix = ` — ${n}-Pack (${n} ${noun})`;
+  let title = base + suffix;
+  if (title.length > TITLE_MAX) {
+    const room = TITLE_MAX - suffix.length;
+    title = base.slice(0, Math.max(0, room)).replace(/[\s,;–-]+$/, "") + suffix;
+  }
+
+  // Bullets: donor product bullets, scrubbed + de-duped, never the quantity line.
+  const seen = new Set<string>();
+  let keyFeatures = (opts.donorBullets ?? [])
+    .map(scrubBrandVoice)
+    .filter((b) => b.length >= 8 && b.length <= 500 && !QUANTITY_RE.test(b))
+    .filter((b) => { const k = b.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+
+  // If the donor was thin on bullets, derive a few factual ones from sentences
+  // in its description so the content score isn't starved.
+  if (keyFeatures.length < 3 && opts.donorDescription) {
+    for (const s of opts.donorDescription.split(/(?<=[.!?])\s+|\n+/)) {
+      const c = scrubBrandVoice(s.replace(/^•\s*/, ""));
+      if (c.length >= 12 && c.length <= 300 && !QUANTITY_RE.test(c)) {
+        const k = c.toLowerCase();
+        if (!seen.has(k)) { seen.add(k); keyFeatures.push(c); }
+      }
+      if (keyFeatures.length >= 5) break;
+    }
+  }
+  keyFeatures = keyFeatures.slice(0, 8);
+
+  // Quantity message: stated ONCE, here, as the description lead.
+  const quantityLead = quantityLeadSentence(n, noun);
+  const donorDesc = (opts.donorDescription ?? "")
+    .split(/\n+/).map(scrubBrandVoice).filter((l) => l && !QUANTITY_RE.test(l)).join(" ")
+    .slice(0, 4000);
+  const description = donorDesc ? `${quantityLead}\n\n${donorDesc}` : quantityLead;
+
+  return { title, keyFeatures, description };
 }
 
 /**
