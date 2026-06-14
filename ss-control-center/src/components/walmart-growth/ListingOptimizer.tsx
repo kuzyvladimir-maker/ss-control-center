@@ -183,8 +183,14 @@ export function ListingOptimizer() {
               <table className="w-full text-[12px]">
                 <thead className="sticky top-0 bg-surface"><tr className="border-b border-rule text-left text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">
                   <th className="px-2 py-1.5"><input type="checkbox" checked={allSelected} onChange={toggleAll} /></th>
-                  <th className="px-2 py-1.5">Product</th><th className="px-2 py-1.5">Health</th><th className="px-2 py-1.5">Pack</th><th className="px-2 py-1.5">LQ</th>
-                  <th className="px-2 py-1.5">Sales</th><th className="px-2 py-1.5">Units</th><th className="px-2 py-1.5">Views</th><th className="px-2 py-1.5">Conv</th><th className="px-2 py-1.5">Rev</th><th className="px-2 py-1.5">Ret%</th>
+                  <th className="px-2 py-1.5">Product</th>
+                  <th className="px-2 py-1.5">Health</th>
+                  <th className="px-2 py-1.5">Pack</th>
+                  {([["LQ", "lq"], ["Sales", "sales"], ["Units", "units"], ["Views", "views"], ["Conv", "conv"], ["Rev", "reviews"], ["Ret%", "returnRate"]] as const).map(([label, key]) => (
+                    <th key={key} className="px-2 py-1.5 cursor-pointer select-none hover:text-ink" onClick={() => setF({ ...f, sort: key })}>
+                      {label}{f.sort === key && <span className="ml-0.5">▾</span>}
+                    </th>
+                  ))}
                 </tr></thead>
                 <tbody>
                   {loading && <tr><td colSpan={11} className="px-2 py-5 text-center text-ink-3">Loading…</td></tr>}
