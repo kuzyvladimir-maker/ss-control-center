@@ -27,10 +27,16 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 const STORE = 1;
-const DRAIN_PER_TICK = 3;       // build+submit is ~30–60s each; 3 fits 300s with headroom
+const DRAIN_PER_TICK = 2;       // keep Walmart feed/API calls under the account threshold
 const FINALIZE_PER_TICK = 25;   // feed-status GETs are cheap
 const TIME_BUDGET_MS = 230_000;
 const BLUECART_CREDIT_FLOOR = 300; // stop on-demand enrichment below this to protect the monthly allotment
+const MAX_ATTEMPTS = 6;         // give a rate-limited SKU several retries before giving up
+const INTER_SKU_MS = 2000;      // space out SKUs so a burst doesn't trip the threshold
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+// Walmart "REQUEST_THRESHOLD_VIOLATED" / 429 are transient — retry, don't fail.
+const isRetryable = (s: string) => /REQUEST_THRESHOLD_VIOLATED|threshold|too many requests|rate.?limit|\b429\b/i.test(s || "");
 
 function requireCronAuth(request: NextRequest): NextResponse | null {
   const secret = process.env.CRON_SECRET;
@@ -51,7 +57,7 @@ export async function GET(request: NextRequest) {
   const started = Date.now();
   const conn = db();
   const client = getWalmartClient(STORE);
-  const out = { finalized: 0, done: 0, errored: 0, submitted: 0, skipped: 0, processed: [] as any[] };
+  const out = { finalized: 0, done: 0, errored: 0, submitted: 0, skipped: 0, requeued: 0, processed: [] as any[] };
 
   // ── 1. FINALIZE submitted feeds ──────────────────────────────────────────
   try {
@@ -90,20 +96,33 @@ export async function GET(request: NextRequest) {
     const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + String(Date.now()).slice(-5);
     while (Date.now() - started < TIME_BUDGET_MS) {
       const q = await conn.execute({
-        sql: `SELECT id, sku, result FROM WalmartRemediationQueue WHERE storeIndex=? AND status='queued' ORDER BY queuedAt ASC LIMIT 1`,
+        sql: `SELECT id, sku, result, attempts FROM WalmartRemediationQueue WHERE storeIndex=? AND status='queued' ORDER BY queuedAt ASC LIMIT 1`,
         args: [STORE],
       });
       const job = (q.rows as any[])[0];
       if (!job) break;
-      // Claim it so a concurrent tick can't grab the same row.
+      // Claim it (counting the attempt) so a concurrent tick can't grab the row.
+      const attempt = Number(job.attempts || 0) + 1;
       const claim = await conn.execute({
-        sql: `UPDATE WalmartRemediationQueue SET status='running', startedAt=CURRENT_TIMESTAMP WHERE id=? AND status='queued'`,
-        args: [job.id],
+        sql: `UPDATE WalmartRemediationQueue SET status='running', startedAt=CURRENT_TIMESTAMP, attempts=? WHERE id=? AND status='queued'`,
+        args: [attempt, job.id],
       });
       if (claim.rowsAffected === 0) continue;
 
       let scope: RemediateScope | null = null;
       try { const r = JSON.parse(job.result || "{}"); if (r && typeof r.scope === "object") scope = r.scope; } catch {}
+
+      // Transient (rate-limit) failures go back to the queue for a later tick;
+      // give up only after MAX_ATTEMPTS or for non-retryable errors.
+      const fail = async (msg: string) => {
+        if (isRetryable(msg) && attempt < MAX_ATTEMPTS) {
+          out.requeued++;
+          await conn.execute({ sql: `UPDATE WalmartRemediationQueue SET status='queued', startedAt=NULL, error=? WHERE id=?`, args: [msg.slice(0, 200), job.id] });
+        } else {
+          out.errored++;
+          await conn.execute({ sql: `UPDATE WalmartRemediationQueue SET status='error', finishedAt=CURRENT_TIMESTAMP, error=? WHERE id=?`, args: [msg.slice(0, 200), job.id] });
+        }
+      };
 
       try {
         const r = await buildAndSubmitOne(conn, client, job.sku, { scope, stamp, enrich: allowEnrich, storeIndex: STORE });
@@ -122,25 +141,19 @@ export async function GET(request: NextRequest) {
             args: [r.feedId, r.url, job.id],
           });
           out.submitted++;
+        } else if (r.status === "SKIP") {
+          out.skipped++;
+          await conn.execute({ sql: `UPDATE WalmartRemediationQueue SET status='skipped', finishedAt=CURRENT_TIMESTAMP, error=? WHERE id=?`, args: [r.detail || "skip", job.id] });
         } else {
-          // SKIP (no donor/pack/not-found) or POST failure → terminal so it doesn't loop.
-          const terminal = r.status === "SKIP" ? "skipped" : "error";
-          if (r.status === "SKIP") out.skipped++; else out.errored++;
-          await conn.execute({
-            sql: `UPDATE WalmartRemediationQueue SET status=?, finishedAt=CURRENT_TIMESTAMP, error=? WHERE id=?`,
-            args: [terminal, r.detail || r.status, job.id],
-          });
+          await fail(r.detail || r.status); // POST_FAILED — may be a transient threshold hit
         }
         out.processed.push({ sku: job.sku, status: r.status, feedId: r.feedId, url: r.url });
       } catch (e: any) {
-        out.errored++;
-        await conn.execute({
-          sql: `UPDATE WalmartRemediationQueue SET status='error', finishedAt=CURRENT_TIMESTAMP, error=? WHERE id=?`,
-          args: [String(e?.message || "exception").slice(0, 200), job.id],
-        });
+        await fail(String(e?.message || "exception"));
       }
 
-      if (out.submitted + out.skipped >= DRAIN_PER_TICK) break;
+      await sleep(INTER_SKU_MS); // space out so a burst doesn't trip Walmart's threshold
+      if (out.submitted + out.skipped + out.errored + out.requeued >= DRAIN_PER_TICK) break;
     }
   } catch (e) { /* drain loop guard */ }
 
