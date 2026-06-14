@@ -25,7 +25,7 @@ export function buildFilter(p: URLSearchParams) {
   if (p.get("oos") === "1") where.push(`q.isInStock = 0`); // out-of-stock only (null = unknown, excluded)
   if (excludeBundles) for (const bw of BUNDLE_WORDS) { where.push(`LOWER(COALESCE(w.title,'')) NOT LIKE ?`); args.push(`%${bw}%`); }
   where.push(`w.sku NOT IN (SELECT sku FROM WalmartListingRemediation WHERE ok=1)`);
-  where.push(`w.sku NOT IN (SELECT sku FROM WalmartRemediationQueue WHERE status IN ('queued','running'))`);
+  where.push(`w.sku NOT IN (SELECT sku FROM WalmartRemediationQueue WHERE status IN ('queued','running','submitted'))`);
 
   const periodRaw = Number(p.get("period") ?? 30);
   const period = [30, 90, 180].includes(periodRaw) ? periodRaw : 30;

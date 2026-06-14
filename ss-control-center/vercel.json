@@ -58,6 +58,10 @@
       "schedule": "15 */2 * * *"
     },
     {
+      "path": "/api/cron/walmart-remediation-worker",
+      "schedule": "*/2 * * * *"
+    },
+    {
       "path": "/api/cron/reprice-amazon",
       "schedule": "45 */2 * * *"
     },

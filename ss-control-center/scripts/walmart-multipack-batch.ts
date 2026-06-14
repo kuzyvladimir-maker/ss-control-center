@@ -23,6 +23,7 @@ import { fetchDonorDetail } from "../src/lib/walmart/multipack/donor";
 import { polishListingCopy } from "../src/lib/walmart/multipack/polish";
 import { validateListingContent } from "../src/lib/walmart/multipack/guidelines";
 import { logRemediation } from "../src/lib/walmart/multipack/analytics";
+import { buildAndSubmitOne } from "../src/lib/walmart/multipack/remediate";
 
 const DONOR_IMAGE_CAP = 6; // total images = generated main + badge + up to this many real donor images
 
@@ -119,68 +120,10 @@ async function main() {
   // Phase 1 — generate, upload, submit
   for (const sku of skus) {
     try {
-      const itemRes: any = (await client.requestRaw("GET", `/items/${encodeURIComponent(sku)}`)).body;
-      const cur = itemRes?.ItemResponse?.[0];
-      if (!cur) { jobs.push({ sku, packCount: 0, noun: "", feedId: null, url: "—", title: "—", status: "SKIP", detail: "not found on Walmart" }); continue; }
-      const upc = cur.upc, productType = cur.productType;
-      const cand = await loadCandidate(sku, cur.productName || "");
-      if (!cand) { jobs.push({ sku, packCount: 0, noun: "", feedId: null, url: "—", title: "—", status: "SKIP", detail: "no donor photo/pack" }); continue; }
-      const noun = inferUnitNoun(cand.walmartTitle);
-      const sc: any = (await client.requestRaw("GET", "/items/walmart/search", { params: { upc } })).body;
-      const brand = sc?.items?.[0]?.brand || cand.walmartTitle.split(" ")[0];
-
-      // Pull the donor's full gallery + real bullets/description (BlueCart detail).
-      const donor = cand.itemId ? await fetchDonorDetail(cand.itemId) : null;
-      // Deterministic build is the fallback; Claude polish is the primary path.
-      const content = buildMultipackListing(cand.walmartTitle, cand.packCount, {
-        noun, donorBullets: donor?.bullets, donorDescription: donor?.description,
-      });
-      const contentIssues = await itemContentIssues(sku); // closed loop: known gaps
-      const polished = (donor && (donor.bullets.length || donor.description))
-        ? await polishListingCopy({ productName: content.title.replace(/\s*—.*$/, ""), donorBullets: donor.bullets, donorDescription: donor.description, contentIssues })
-        : null;
-      if (polished) {
-        content.keyFeatures = polished.keyFeatures.map(scrubBrandVoice).filter(Boolean);
-        content.description = `${quantityLeadSentence(cand.packCount, noun)}\n\n${polished.description}`;
-      }
-
-      // Tiling/badge source = the CLEAN white-bg primary (RetailPrice search
-      // main_image). Donor detail's image[0] is often a pink infographic/lifestyle
-      // shot — unusable for tiling — so those ride along only as secondaries.
-      const base = await fetchImageBuffer(cand.baseImageUrl);
-      const main = await composeTiledMainImage(base, cand.packCount);
-      const badge = await renderBadgeImage(base, cand.packCount, { noun });
-      const mainUrl = await uploadToR2(main, multipackImageKey(sku, "main", STAMP));
-      const badgeUrl = await uploadToR2(badge, multipackImageKey(sku, "badge", STAMP));
-
-      // Real donor gallery images ride along directly (walmartimages.com CDN is
-      // Walmart-fetchable) — order: badge, then real product photos.
-      const donorImgs = (donor?.images ?? []).slice(0, DONOR_IMAGE_CAP);
-      const secondaryImageUrls = [badgeUrl, ...donorImgs];
-
-      const payload = buildPayload({ sku, upc, brand, productType, productName: content.title, shortDescription: content.description, keyFeatures: content.keyFeatures, mainImageUrl: mainUrl, secondaryImageUrls });
-      console.log(`\n▶ ${sku}: images=${1 + secondaryImageUrls.length} (main+badge+${donorImgs.length} donor) bullets=${content.keyFeatures.length}`);
-      if (DRY) {
-        console.log(`  TITLE: ${content.title}`);
-        console.log(`  MAIN:  ${mainUrl}`);
-        console.log(`  IMGS:  ${secondaryImageUrls.join("\n         ")}`);
-        console.log(`  BULLETS:\n   - ${content.keyFeatures.join("\n   - ")}`);
-        console.log(`  DESCRIPTION:\n   ${content.description.replace(/\n/g, "\n   ")}`);
-        jobs.push({ sku, packCount: cand.packCount, noun, feedId: null, url: "(dry)", title: content.title, status: "DRY", detail: `${1 + secondaryImageUrls.length} imgs, ${content.keyFeatures.length} bullets` });
-        continue;
-      }
-      const gaps = validateListingContent({ title: content.title, keyFeatures: content.keyFeatures, description: content.description, imageCount: 1 + secondaryImageUrls.length });
-      const resp: any = await client.requestRaw("POST", "/feeds", { params: { feedType: "MP_MAINTENANCE" }, body: payload });
-      const feedId = resp.body?.feedId ?? null;
-      const url = await buyerUrl(client, upc, cand.packCount);
-      const meta = {
-        wpid: cur.wpid, upc, packCount: cand.packCount, newTitle: content.title,
-        bulletsCount: content.keyFeatures.length, imagesCount: 1 + secondaryImageUrls.length,
-        descriptionLength: content.description.length, mainImageUrl: mainUrl, usedAiPolish: !!polished,
-        contentIssues, gaps,
-      };
-      jobs.push({ sku, packCount: cand.packCount, noun, feedId, url, title: content.title, status: feedId ? "SUBMITTED" : "POST_FAILED", detail: feedId ? "" : JSON.stringify(resp.body).slice(0, 120), meta });
-      console.log(`${sku}: feedId=${feedId} url=${url}${gaps.length ? ` | gaps: ${gaps.map((g:any)=>g.issue).join("; ")}` : " | no content gaps"}`);
+      // Single source of truth: same scope-aware pipeline the cron worker runs.
+      const r = await buildAndSubmitOne(db, client, sku, { dry: DRY, stamp: STAMP });
+      jobs.push({ sku, packCount: r.packCount, noun: r.noun, feedId: r.feedId, url: r.url, title: r.title ?? "—", status: r.status, detail: r.detail, meta: r.meta ?? undefined });
+      console.log(`${sku}: ${r.status} feedId=${r.feedId ?? "—"} url=${r.url}${r.meta?.gaps?.length ? ` | gaps: ${r.meta.gaps.map((g: any) => g.issue).join("; ")}` : ""}`);
     } catch (e: any) {
       jobs.push({ sku, packCount: 0, noun: "", feedId: null, url: "—", title: "—", status: "ERROR", detail: e?.message?.slice(0, 100) });
       console.log(`${sku}: EXCEPTION ${e?.message}`);
