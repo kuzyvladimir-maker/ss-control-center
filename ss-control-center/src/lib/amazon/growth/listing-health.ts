@@ -152,6 +152,28 @@ export function computeHealthScore(components: ComponentScores): number {
   return Math.round((weighted / weightSum) * 10) / 10;
 }
 
+/** Conversion component from Sales & Traffic. Only meaningful with enough
+ *  traffic; below `minSessions` we return null (insufficient data → excluded).
+ *  Heuristic: 10% unit-session rate maps to 100 (grocery baseline). */
+export function scoreConversion(
+  sessions: number | null,
+  unitSessionPct: number | null,
+  minSessions = 10,
+): number | null {
+  if (sessions == null || sessions < minSessions || unitSessionPct == null) return null;
+  return clamp((unitSessionPct / 0.1) * 100);
+}
+
+/** Buy Box / Featured Offer component — from Sales & Traffic buyBoxPercentage
+ *  (0-100). Null when we have no traffic signal for the ASIN. */
+export function scoreBuyBox(buyBoxPercentage: number | null): number | null {
+  if (buyBoxPercentage == null) return null;
+  return clamp(buyBoxPercentage);
+}
+
+/** Buyability value for a search-suppressed listing (FYP-authoritative). */
+export const SUPPRESSED_BUYABILITY = 30;
+
 /** Highest-leverage component to fix = largest weight × gap-from-100. */
 export function pickTopFix(components: ComponentScores): ComponentKey | null {
   let best: ComponentKey | null = null;

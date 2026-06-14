@@ -22,6 +22,7 @@ export function buildFilter(p: URLSearchParams) {
   if (lqMax != null && lqMax < 100) { where.push(`q.lqScore <= ?`); args.push(lqMax); }
   if (contentMax != null && contentMax < 100) { where.push(`q.contentScore <= ?`); args.push(contentMax); }
   if (hasIssues) where.push(`COALESCE(q.issueCount,0) > 0`);
+  if (p.get("oos") === "1") where.push(`q.isInStock = 0`); // out-of-stock only (null = unknown, excluded)
   if (excludeBundles) for (const bw of BUNDLE_WORDS) { where.push(`LOWER(COALESCE(w.title,'')) NOT LIKE ?`); args.push(`%${bw}%`); }
   where.push(`w.sku NOT IN (SELECT sku FROM WalmartListingRemediation WHERE ok=1)`);
   where.push(`w.sku NOT IN (SELECT sku FROM WalmartRemediationQueue WHERE status IN ('queued','running'))`);

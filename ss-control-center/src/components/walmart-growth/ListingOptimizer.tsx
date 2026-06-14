@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 interface Metrics { lq: number | null; content: number | null; conv: number | null; views: number | null; gmv: number | null; }
 interface HistoryRow { sku: string; url: string | null; runAt: string; ok: boolean; feedStatus: string | null; newTitle: string | null; bulletsCount: number | null; imagesCount: number | null; usedAiPolish: boolean; measured: boolean; before: Metrics; after: Metrics; deltas: Metrics; }
 interface Rec { type: "auto" | "advisory"; title: string; detail: string; skus: string[]; fields: string[]; }
-interface Candidate { sku: string; productName: string | null; packCount: number | null; lqScore: number | null; contentScore: number | null; issueCount: number | null; contentIssues: string[]; pageViews30d: number | null; reviews: number; sales: number; units: number; orders: number; returns: number; conv: number | null; returnRate: number | null; health: string; status: string | null; }
+interface Candidate { sku: string; productName: string | null; packCount: number | null; lqScore: number | null; contentScore: number | null; issueCount: number | null; contentIssues: string[]; pageViews30d: number | null; reviews: number; sales: number; units: number; orders: number; returns: number; conv: number | null; returnRate: number | null; health: string; status: string | null; inStock: boolean; }
 interface ApiResp {
   period: number;
   counts: { match: number; pack4: number; withGaps: number };
@@ -104,7 +104,7 @@ function DeltaCell({ before, after, d, digits = 0, suffix = "" }: { before: numb
 export function ListingOptimizer() {
   // Default = whole catalog (no filters); narrow with the controls. Presets re-apply scopes.
   const [f, setF] = useState({
-    packMin: 1, packMax: 24, lqMin: 0, lqMax: 100, contentMax: 100, hasIssues: false, excludeBundles: false,
+    packMin: 1, packMax: 24, lqMin: 0, lqMax: 100, contentMax: 100, hasIssues: false, excludeBundles: false, oos: false,
     period: 30, sort: "views", status: "all", health: "",
     minSales: 0, maxSales: 1000, minUnits: 0, maxUnits: 50, minReviews: 0, maxReviews: 50, minReturnPct: 0, maxReturnPct: 100,
   });
@@ -127,6 +127,7 @@ export function ListingOptimizer() {
     p.set("packMin", String(f.packMin)); p.set("packMax", String(f.packMax));
     p.set("lqMin", String(f.lqMin)); p.set("lqMax", String(f.lqMax)); p.set("contentMax", String(f.contentMax));
     p.set("hasIssues", f.hasIssues ? "1" : "0"); p.set("excludeBundles", f.excludeBundles ? "1" : "0");
+    if (f.oos) p.set("oos", "1");
     p.set("period", String(f.period)); p.set("sort", f.sort);
     if (f.status !== "all") p.set("status", f.status);
     if (f.health) p.set("health", f.health);
@@ -220,6 +221,7 @@ export function ListingOptimizer() {
             <Slider label="Content score — at most" min={0} max={100} value={f.contentMax} onChange={(v) => setF({ ...f, contentMax: v })} />
             <label className="flex items-center gap-2 text-[12px] text-ink-2"><input type="checkbox" checked={f.hasIssues} onChange={(e) => setF({ ...f, hasIssues: e.target.checked })} /> Has content gaps</label>
             <label className="flex items-center gap-2 text-[12px] text-ink-2"><input type="checkbox" checked={f.excludeBundles} onChange={(e) => setF({ ...f, excludeBundles: e.target.checked })} /> Exclude mixed bundles</label>
+            <label className="flex items-center gap-2 text-[12px] text-ink-2"><input type="checkbox" checked={f.oos} onChange={(e) => setF({ ...f, oos: e.target.checked })} /> Out of stock only</label>
 
             <div className="border-t border-rule pt-3 text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">Performance ({f.period}d) — range</div>
             <RangeTwo label="Sales $" max={1000} lo={f.minSales} hi={f.maxSales} onLo={(v) => setF({ ...f, minSales: v })} onHi={(v) => setF({ ...f, maxSales: v })} />
@@ -266,6 +268,7 @@ export function ListingOptimizer() {
                   <th className="px-2 py-1.5">Product</th>
                   <th className="px-2 py-1.5">Health</th>
                   <th className="px-2 py-1.5">Status</th>
+                  <th className="px-2 py-1.5">Stock</th>
                   <th className="px-2 py-1.5">Pack</th>
                   {([["LQ", "lq"], ["Sales", "sales"], ["Units", "units"], ["Views", "views"], ["Conv", "conv"], ["Rev", "reviews"], ["Ret%", "returnRate"]] as const).map(([label, key]) => (
                     <th key={key} className="px-2 py-1.5 cursor-pointer select-none hover:text-ink" onClick={() => setF({ ...f, sort: key })}>
@@ -274,8 +277,8 @@ export function ListingOptimizer() {
                   ))}
                 </tr></thead>
                 <tbody>
-                  {loading && <tr><td colSpan={12} className="px-2 py-5 text-center text-ink-3">Loading…</td></tr>}
-                  {!loading && !candidates.length && <tr><td colSpan={12} className="px-2 py-5 text-center text-ink-3">No listings match — loosen the filters.</td></tr>}
+                  {loading && <tr><td colSpan={13} className="px-2 py-5 text-center text-ink-3">Loading…</td></tr>}
+                  {!loading && !candidates.length && <tr><td colSpan={13} className="px-2 py-5 text-center text-ink-3">No listings match — loosen the filters.</td></tr>}
                   {candidates.map((c) => {
                     const h = HEALTH[c.health] || HEALTH.new;
                     return (
@@ -284,6 +287,7 @@ export function ListingOptimizer() {
                         <td className="px-2 py-1.5 max-w-[220px]"><div className="truncate text-ink">{c.productName || c.sku}</div><div className="font-mono text-[10px] text-ink-3">{c.sku}</div></td>
                         <td className="px-2 py-1.5"><span className="rounded px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap" style={{ background: h.bg, color: h.color }}>{h.label}</span></td>
                         <td className="px-2 py-1.5 text-[10px] text-ink-3 whitespace-nowrap">{c.status === "PUBLISHED" ? "Pub" : c.status === "UNPUBLISHED" ? "Unpub" : c.status === "SYSTEM_PROBLEM" ? "Error" : "—"}</td>
+                        <td className="px-2 py-1.5"><span className={cn("rounded px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap", c.inStock ? "bg-green-soft text-green-ink" : "bg-red-soft text-red-ink")}>{c.inStock ? "In stock" : "Out"}</span></td>
                         <td className="px-2 py-1.5"><span className={cn("rounded px-1.5 py-0.5 font-mono text-[11px]", (c.packCount ?? 0) >= 4 ? "bg-green-soft text-green-ink" : "bg-bg-elev text-ink-2")}>×{c.packCount ?? "?"}</span></td>
                         <td className="px-2 py-1.5 tabular">{fmt(c.lqScore)}</td>
                         <td className="px-2 py-1.5 tabular">{money(c.sales)}</td>
