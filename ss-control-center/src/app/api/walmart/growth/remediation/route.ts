@@ -76,18 +76,21 @@ export async function GET(request: NextRequest) {
 
   // 2. Recommended next targets — multipacks (pack>=2) with content issues,
   //    not already remediated. pack>=4 surfaces first (wave-1 scope).
+  // Correlated subqueries for pack count avoid JOIN fan-out (SkuShippingData /
+  // SkuCost can hold multiple rows per sku, which would duplicate candidates).
   const cand = (await prisma.$queryRawUnsafe(
     `SELECT q.sku, q.itemId, q.productName, q.lqScore, q.contentScore, q.issueCount, q.issuesSummary,
             q.pageViews30d, q.conversionRate30d, q.gmv30d, q.isInStock,
-            COALESCE(s.unitsInListing, c.packSize) AS packCount
+            COALESCE((SELECT unitsInListing FROM SkuShippingData WHERE sku=q.sku LIMIT 1),
+                     (SELECT packSize FROM SkuCost WHERE sku=q.sku LIMIT 1), 1) AS packCount
        FROM WalmartListingQualityItem q
-       LEFT JOIN SkuShippingData s ON s.sku=q.sku
-       LEFT JOIN SkuCost c ON c.sku=q.sku
       WHERE q.storeIndex=?
-        AND COALESCE(s.unitsInListing, c.packSize, 1) >= 2
+        AND COALESCE((SELECT unitsInListing FROM SkuShippingData WHERE sku=q.sku LIMIT 1),
+                     (SELECT packSize FROM SkuCost WHERE sku=q.sku LIMIT 1), 1) >= 2
         AND q.sku NOT IN (SELECT sku FROM WalmartListingRemediation WHERE ok=1)
         AND q.sku NOT IN (SELECT sku FROM WalmartRemediationQueue WHERE status IN ('queued','running'))
-      ORDER BY (CASE WHEN COALESCE(s.unitsInListing,c.packSize,1) >= 4 THEN 0 ELSE 1 END),
+      ORDER BY (CASE WHEN COALESCE((SELECT unitsInListing FROM SkuShippingData WHERE sku=q.sku LIMIT 1),
+                     (SELECT packSize FROM SkuCost WHERE sku=q.sku LIMIT 1), 1) >= 4 THEN 0 ELSE 1 END),
                q.pageViews30d DESC
       LIMIT 60`,
     storeIndex,
