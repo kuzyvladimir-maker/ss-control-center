@@ -31,9 +31,9 @@ function getClient(): Anthropic | null {
   return client;
 }
 
-export async function analyzePool(input: { period: number; aggregates: Record<string, number>; listings: PoolListing[] }): Promise<PoolAnalysis | null> {
+export async function analyzePool(input: { period: number; aggregates: Record<string, number>; listings: PoolListing[] }): Promise<PoolAnalysis> {
   const c = getClient();
-  if (!c) return null;
+  if (!c) throw new Error("ANTHROPIC_API_KEY is not set in this environment");
   const rows = input.listings.slice(0, 60).map((l) =>
     `- ${l.sku} | ${l.name?.slice(0, 50)} | status:${l.status || "?"} pack:${l.pack ?? "?"} LQ:${l.lq ?? "?"} content:${l.content ?? "?"} | ${input.period}d sales:$${l.sales} units:${l.units} conv:${l.conv != null ? (l.conv * 100).toFixed(1) + "%" : "—"} views:${l.views} reviews:${l.reviews} returns:${l.returns} inStock:${l.inStock} | issues: ${l.issues.join("; ") || "none"}`
   ).join("\n");
@@ -56,23 +56,20 @@ Group recommendations sensibly: pool-wide where it applies, or call out sub-grou
 Return ONLY valid JSON:
 {"narrative":"2-6 sentence diagnosis of the pool","recommendations":[{"type":"auto|advisory","title":"short","detail":"what & why","skus":["..."],"fields":["title","bullets"]}]}`;
 
-  try {
-    const res = await c.messages.create({ model: MODEL, max_tokens: 2500, messages: [{ role: "user", content: prompt }] });
-    const text = res.content.filter((b) => b.type === "text").map((b: any) => b.text).join("");
-    const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
-    const parsed = JSON.parse(json) as PoolAnalysis;
-    if (!parsed.narrative || !Array.isArray(parsed.recommendations)) return null;
-    const ALLOWED = new Set(["image", "gallery", "title", "bullets", "description", "attributes"]);
-    parsed.recommendations = parsed.recommendations.map((r) => ({
-      type: r.type === "auto" ? "auto" : "advisory",
-      title: String(r.title || "").slice(0, 200),
-      detail: String(r.detail || "").slice(0, 1500),
-      skus: Array.isArray(r.skus) ? r.skus.filter((s) => typeof s === "string").slice(0, 500) : [],
-      fields: r.type === "auto" && Array.isArray(r.fields) ? r.fields.filter((x) => ALLOWED.has(x)) : [],
-    }));
-    return parsed;
-  } catch (e) {
-    console.warn(`[analyst] failed: ${(e as Error).message}`);
-    return null;
-  }
+  const res = await c.messages.create({ model: MODEL, max_tokens: 2500, messages: [{ role: "user", content: prompt }] });
+  const text = res.content.filter((b) => b.type === "text").map((b: any) => b.text).join("");
+  const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+  let parsed: PoolAnalysis;
+  try { parsed = JSON.parse(json) as PoolAnalysis; }
+  catch { throw new Error(`Claude returned non-JSON: ${text.slice(0, 160)}`); }
+  if (!parsed.narrative || !Array.isArray(parsed.recommendations)) throw new Error("Claude returned an unexpected shape");
+  const ALLOWED = new Set(["image", "gallery", "title", "bullets", "description", "attributes"]);
+  parsed.recommendations = parsed.recommendations.map((r) => ({
+    type: r.type === "auto" ? "auto" : "advisory",
+    title: String(r.title || "").slice(0, 200),
+    detail: String(r.detail || "").slice(0, 1500),
+    skus: Array.isArray(r.skus) ? r.skus.filter((s) => typeof s === "string").slice(0, 500) : [],
+    fields: r.type === "auto" && Array.isArray(r.fields) ? r.fields.filter((x) => ALLOWED.has(x)) : [],
+  }));
+  return parsed;
 }

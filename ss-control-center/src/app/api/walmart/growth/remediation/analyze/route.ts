@@ -10,6 +10,7 @@ import { buildFilter, OPTIMIZER_JOIN } from "@/lib/walmart/optimizer-filter";
 import { analyzePool, PoolListing } from "@/lib/walmart/multipack/analyst";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60; // Claude analysis of up to 60 listings can take >15s
 type Row = Record<string, any>;
 
 export async function POST(request: NextRequest) {
@@ -17,13 +18,24 @@ export async function POST(request: NextRequest) {
   const storeIndex = Number(p.get("storeIndex") || 1);
   const { whereSql, args, packExpr, period, S, U, O, R, VIEWS } = buildFilter(p);
 
+  // If the Builder has rows checked, analyze exactly those (overrides the filter
+  // pool). Otherwise analyze the top-60 of the current filter by traffic.
+  const body = await request.json().catch(() => ({}));
+  const onlySkus: string[] = Array.isArray(body?.skus) ? body.skus.filter((s: any) => typeof s === "string").slice(0, 60) : [];
+
+  let scopeSql = whereSql, scopeArgs = args;
+  if (onlySkus.length) {
+    scopeSql = `w.storeIndex=? AND w.sku IN (${onlySkus.map(() => "?").join(",")})`;
+    scopeArgs = onlySkus;
+  }
+
   const rows = (await prisma.$queryRawUnsafe(
     `SELECT w.sku, COALESCE(w.title, q.productName) AS name, w.publishedStatus AS status, ${packExpr} AS pack,
             q.lqScore, q.contentScore, q.issuesSummary, q.pageViews30d, q.ratingCount, q.isInStock,
             ${S} AS sales, ${U} AS units, ${R} AS returns
-       FROM WalmartCatalogItem w ${OPTIMIZER_JOIN} WHERE ${whereSql}
+       FROM WalmartCatalogItem w ${OPTIMIZER_JOIN} WHERE ${scopeSql}
       ORDER BY ${VIEWS} DESC LIMIT 60`,
-    storeIndex, ...args,
+    storeIndex, ...scopeArgs,
   )) as Row[];
 
   if (!rows.length) return NextResponse.json({ narrative: "No listings match the current filter — nothing to analyze.", recommendations: [] });
@@ -52,7 +64,12 @@ export async function POST(request: NextRequest) {
     avgContent: Math.round(sum((l) => l.content || 0) / listings.length),
   };
 
-  const analysis = await analyzePool({ period, aggregates, listings });
-  if (!analysis) return NextResponse.json({ error: "analysis_unavailable", narrative: "Analyst is unavailable (no API key or transient error).", recommendations: [] }, { status: 200 });
-  return NextResponse.json(analysis);
+  try {
+    const analysis = await analyzePool({ period, aggregates, listings });
+    return NextResponse.json({ ...analysis, analyzed: listings.length });
+  } catch (e) {
+    const msg = (e as Error).message || "unknown error";
+    console.error(`[analyze] ${msg}`);
+    return NextResponse.json({ error: "analysis_failed", narrative: `Analyst error: ${msg}`, recommendations: [] }, { status: 200 });
+  }
 }

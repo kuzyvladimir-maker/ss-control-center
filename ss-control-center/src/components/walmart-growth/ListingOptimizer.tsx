@@ -173,7 +173,9 @@ export function ListingOptimizer() {
   async function analyze() {
     setAnalyzing(true); setAnalysis(null); setRecSel(new Set()); setApplyMsg(null);
     try {
-      const r = await fetch(`/api/walmart/growth/remediation/analyze?${qs}`, { method: "POST" });
+      // If rows are checked, analyze exactly those; otherwise the whole filtered pool.
+      const body = JSON.stringify(selected.size ? { skus: [...selected] } : {});
+      const r = await fetch(`/api/walmart/growth/remediation/analyze?${qs}`, { method: "POST", headers: { "Content-Type": "application/json" }, body });
       setAnalysis(await r.json());
     } catch { setApplyMsg("Analysis failed — try again."); } finally { setAnalyzing(false); }
   }
@@ -334,7 +336,7 @@ export function ListingOptimizer() {
       {/* AI analyst */}
       <Panel>
         <PanelHeader title="AI analyst — diagnose this pool"
-          right={<Btn size="sm" variant="primary" icon={<Sparkles size={13} />} loading={analyzing} onClick={analyze}>Analyze {data?.counts.match ? `${Math.min(data.counts.match, 60)} listings` : "pool"}</Btn>} />
+          right={<Btn size="sm" variant="primary" icon={<Sparkles size={13} />} loading={analyzing} onClick={analyze}>Analyze {selected.size ? `${selected.size} selected` : (data?.counts.match ? `${Math.min(data.counts.match, 60)} listings` : "pool")}</Btn>} />
         <div className="p-4">
           {!analysis && !analyzing && (
             <p className="text-[12px] text-ink-3">Reads the filtered pool — sales, units, conversion, stock, reviews, listing quality and Walmart&apos;s own flagged issues — and recommends how to lift conversion &amp; sales. Auto-fixable items can be queued in one click; the rest are flagged as manual.</p>
