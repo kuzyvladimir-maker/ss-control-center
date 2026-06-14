@@ -44,42 +44,73 @@ function buildFilter(p: URLSearchParams) {
   if (excludeBundles) for (const w of BUNDLE_WORDS) { where.push(`LOWER(COALESCE(q.productName,'')) NOT LIKE ?`); args.push(`%${w}%`); }
   where.push(`q.sku NOT IN (SELECT sku FROM WalmartListingRemediation WHERE ok=1)`);
   where.push(`q.sku NOT IN (SELECT sku FROM WalmartRemediationQueue WHERE status IN ('queued','running'))`);
-  return { whereSql: where.join(" AND "), args, packExpr };
+
+  // Performance window (sales/units/returns from our own orders) + perf filters.
+  const periodRaw = Number(p.get("period") ?? 30);
+  const period = [30, 90, 180].includes(periodRaw) ? periodRaw : 30;
+  const S = `COALESCE(perf.sales${period},0)`, U = `COALESCE(perf.units${period},0)`, O = `COALESCE(perf.orders${period},0)`, R = `COALESCE(perf.returns${period},0)`;
+  const VIEWS = `COALESCE(q.pageViews30d,0)`;
+  const num = (k: string) => (p.get(k) != null && p.get(k) !== "" ? Number(p.get(k)) : null);
+  const minSales = num("minSales"); if (minSales != null && minSales > 0) where.push(`${S} >= ${minSales}`);
+  const minUnits = num("minUnits"); if (minUnits != null && minUnits > 0) where.push(`${U} >= ${minUnits}`);
+  const minReviews = num("minReviews"); if (minReviews != null && minReviews > 0) where.push(`COALESCE(q.ratingCount,0) >= ${minReviews}`);
+  const minReturnPct = num("minReturnPct"); if (minReturnPct != null && minReturnPct > 0) where.push(`(${R}*100.0/NULLIF(${U},0)) >= ${minReturnPct}`);
+  const maxConvPct = num("maxConvPct"); if (maxConvPct != null && maxConvPct < 100) where.push(`(${U}*100.0/NULLIF(${VIEWS},0)) <= ${maxConvPct}`);
+
+  const sortKey = p.get("sort") || "views";
+  const SORTS: Record<string, string> = {
+    sales: `${S} DESC`, units: `${U} DESC`, views: `${VIEWS} DESC`,
+    conv: `(${U}*1.0/NULLIF(${VIEWS},0)) DESC`, reviews: `COALESCE(q.ratingCount,0) DESC`,
+    returnRate: `(${R}*1.0/NULLIF(${U},0)) DESC`, lq: `q.lqScore ASC`,
+  };
+  const sortSql = SORTS[sortKey] || SORTS.views;
+  return { whereSql: where.join(" AND "), args, packExpr, period, S, U, O, R, VIEWS, sortSql };
 }
 
 export async function GET(request: NextRequest) {
   const p = new URL(request.url).searchParams;
   const storeIndex = Number(p.get("storeIndex") || 1);
-  const { whereSql, args, packExpr } = buildFilter(p);
+  const { whereSql, args, packExpr, period, S, U, O, R, VIEWS, sortSql } = buildFilter(p);
+  const JOIN = `LEFT JOIN WalmartSkuPerf perf ON perf.sku=q.sku AND perf.storeIndex=q.storeIndex`;
 
   // Live counts for the current filter.
   const countRow = (await prisma.$queryRawUnsafe(
     `SELECT COUNT(*) AS match,
             SUM(CASE WHEN ${packExpr} >= 4 THEN 1 ELSE 0 END) AS pack4,
             SUM(CASE WHEN q.issueCount > 0 THEN 1 ELSE 0 END) AS withGaps
-       FROM WalmartListingQualityItem q WHERE ${whereSql}`,
+       FROM WalmartListingQualityItem q ${JOIN} WHERE ${whereSql}`,
     storeIndex, ...args,
   )) as Row[];
-  const counts = {
-    match: Number(countRow[0]?.match || 0),
-    pack4: Number(countRow[0]?.pack4 || 0),
-    withGaps: Number(countRow[0]?.withGaps || 0),
-  };
+  const counts = { match: Number(countRow[0]?.match || 0), pack4: Number(countRow[0]?.pack4 || 0), withGaps: Number(countRow[0]?.withGaps || 0) };
 
-  // Candidate sample for the list (capped).
+  // Candidate sample for the list (capped), with performance for the chosen period.
   const limit = Math.min(Number(p.get("limit") || 60), 200);
   const cand = (await prisma.$queryRawUnsafe(
     `SELECT q.sku, q.itemId, q.productName, q.lqScore, q.contentScore, q.issueCount, q.issuesSummary,
-            q.pageViews30d, q.conversionRate30d, q.gmv30d, q.isInStock, ${packExpr} AS packCount
-       FROM WalmartListingQualityItem q WHERE ${whereSql}
-      ORDER BY (CASE WHEN ${packExpr} >= 4 THEN 0 ELSE 1 END), q.pageViews30d DESC
-      LIMIT ${limit}`,
+            q.pageViews30d, q.ratingCount, q.isInStock, ${packExpr} AS packCount,
+            ${S} AS sales, ${U} AS units, ${O} AS orders, ${R} AS returns
+       FROM WalmartListingQualityItem q ${JOIN} WHERE ${whereSql}
+      ORDER BY ${sortSql} LIMIT ${limit}`,
     storeIndex, ...args,
   )) as Row[];
   const candidates = cand.map((r) => {
     let contentIssues: string[] = [];
     try { const j = JSON.parse(r.issuesSummary || "[]"); if (Array.isArray(j)) contentIssues = j.filter((x: any) => x?.component === "content").map((x: any) => x.title).filter(Boolean); } catch {}
-    return { sku: r.sku, itemId: r.itemId, productName: r.productName, packCount: r.packCount, lqScore: r.lqScore, contentScore: r.contentScore, issueCount: r.issueCount, contentIssues, pageViews30d: r.pageViews30d, conversionRate30d: r.conversionRate30d, gmv30d: r.gmv30d, inStock: !!r.isInStock };
+    const units = Number(r.units || 0), views = Number(r.pageViews30d || 0), returns = Number(r.returns || 0);
+    const conv = views > 0 ? units / views : null;
+    const returnRate = units > 0 ? returns / units : null;
+    // Health badge — prioritized.
+    let health = "new";
+    if (returnRate != null && returnRate >= 0.15 && units >= 3) health = "high-return";
+    else if (units > 0) health = "winner";
+    else if (views >= 20) health = "leaky";
+    else if (views === 0 && (r.ratingCount ?? 0) === 0) health = "dead";
+    return {
+      sku: r.sku, itemId: r.itemId, productName: r.productName, packCount: r.packCount,
+      lqScore: r.lqScore, contentScore: r.contentScore, issueCount: r.issueCount, contentIssues,
+      pageViews30d: views, reviews: Number(r.ratingCount || 0), inStock: !!r.isInStock,
+      sales: Number(r.sales || 0), units, orders: Number(r.orders || 0), returns, conv, returnRate, health,
+    };
   });
 
   // Content-gap heatmap across all multipack candidates (top recurring content issues).
@@ -118,7 +149,7 @@ export async function GET(request: NextRequest) {
     `SELECT sku, status, queuedAt, feedId, error FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('queued','running') ORDER BY queuedAt DESC LIMIT 100`, storeIndex,
   )) as Row[];
 
-  return NextResponse.json({ counts, candidates, contentGapHeatmap, summary, history, queue });
+  return NextResponse.json({ period, counts, candidates, contentGapHeatmap, summary, history, queue });
 }
 
 export async function POST(request: NextRequest) {

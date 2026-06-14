@@ -18,8 +18,9 @@ import { cn } from "@/lib/utils";
 
 interface Metrics { lq: number | null; content: number | null; conv: number | null; views: number | null; gmv: number | null; }
 interface HistoryRow { sku: string; url: string | null; runAt: string; ok: boolean; feedStatus: string | null; newTitle: string | null; bulletsCount: number | null; imagesCount: number | null; usedAiPolish: boolean; measured: boolean; before: Metrics; after: Metrics; deltas: Metrics; }
-interface Candidate { sku: string; productName: string | null; packCount: number | null; lqScore: number | null; contentScore: number | null; issueCount: number | null; contentIssues: string[]; pageViews30d: number | null; conversionRate30d: number | null; }
+interface Candidate { sku: string; productName: string | null; packCount: number | null; lqScore: number | null; contentScore: number | null; issueCount: number | null; contentIssues: string[]; pageViews30d: number | null; reviews: number; sales: number; units: number; orders: number; returns: number; conv: number | null; returnRate: number | null; health: string; }
 interface ApiResp {
+  period: number;
   counts: { match: number; pack4: number; withGaps: number };
   candidates: Candidate[];
   contentGapHeatmap: { title: string; count: number }[];
@@ -44,6 +45,19 @@ const PRESETS = [
 ];
 
 function fmt(n: number | null | undefined, d = 0) { return n == null ? "—" : Number(n).toFixed(d); }
+function money(n: number | null | undefined) { return n == null ? "—" : "$" + Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 }); }
+
+const HEALTH: Record<string, { label: string; bg: string; color: string }> = {
+  winner: { label: "Winner", bg: "var(--green-soft)", color: "var(--green-ink)" },
+  leaky: { label: "Leaky", bg: "var(--warn-tint)", color: "var(--warn-strong)" },
+  "high-return": { label: "High-return", bg: "var(--danger-tint)", color: "var(--danger)" },
+  dead: { label: "Dead", bg: "var(--silver-tint)", color: "var(--silver-dark)" },
+  new: { label: "New", bg: "var(--bg-elev)", color: "var(--ink-3)" },
+};
+const SORTS = [
+  { id: "views", label: "Traffic" }, { id: "sales", label: "Sales $" }, { id: "units", label: "Units" },
+  { id: "conv", label: "Conversion" }, { id: "reviews", label: "Reviews" }, { id: "returnRate", label: "Return rate" }, { id: "lq", label: "Worst LQ" },
+];
 
 function Slider({ label, min, max, value, onChange, suffix }: { label: string; min: number; max: number; value: number; onChange: (v: number) => void; suffix?: string }) {
   return (
@@ -70,7 +84,7 @@ function DeltaCell({ before, after, d, digits = 0, suffix = "" }: { before: numb
 }
 
 export function ListingOptimizer() {
-  const [f, setF] = useState({ packMin: 4, packMax: 24, lqMin: 0, lqMax: 100, contentMax: 100, hasIssues: true, excludeBundles: true });
+  const [f, setF] = useState({ packMin: 4, packMax: 24, lqMin: 0, lqMax: 100, contentMax: 100, hasIssues: true, excludeBundles: true, period: 30, sort: "views", minSales: 0, minUnits: 0, minReviews: 0, minReturnPct: 0 });
   const [data, setData] = useState<ApiResp | null>(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -83,6 +97,11 @@ export function ListingOptimizer() {
     p.set("packMin", String(f.packMin)); p.set("packMax", String(f.packMax));
     p.set("lqMin", String(f.lqMin)); p.set("lqMax", String(f.lqMax)); p.set("contentMax", String(f.contentMax));
     p.set("hasIssues", f.hasIssues ? "1" : "0"); p.set("excludeBundles", f.excludeBundles ? "1" : "0");
+    p.set("period", String(f.period)); p.set("sort", f.sort);
+    if (f.minSales) p.set("minSales", String(f.minSales));
+    if (f.minUnits) p.set("minUnits", String(f.minUnits));
+    if (f.minReviews) p.set("minReviews", String(f.minReviews));
+    if (f.minReturnPct) p.set("minReturnPct", String(f.minReturnPct));
     return p.toString();
   }, [f]);
 
@@ -123,7 +142,7 @@ export function ListingOptimizer() {
           <div className="space-y-4 border-rule p-4 md:border-r">
             <div className="flex flex-wrap gap-1.5">
               {PRESETS.map((p) => (
-                <button key={p.id} onClick={() => setF(p.f)} className="rounded-full border border-rule bg-surface px-2.5 py-1 text-[11px] text-ink-2 hover:bg-bg-elev hover:text-ink">{p.label}</button>
+                <button key={p.id} onClick={() => setF((cur) => ({ ...cur, ...p.f }))} className="rounded-full border border-rule bg-surface px-2.5 py-1 text-[11px] text-ink-2 hover:bg-bg-elev hover:text-ink">{p.label}</button>
               ))}
             </div>
             <Slider label="Pack size — min" min={2} max={24} value={f.packMin} onChange={(v) => setF({ ...f, packMin: Math.min(v, f.packMax) })} suffix="+" />
@@ -132,32 +151,62 @@ export function ListingOptimizer() {
             <Slider label="Content score — at most" min={0} max={100} value={f.contentMax} onChange={(v) => setF({ ...f, contentMax: v })} />
             <label className="flex items-center gap-2 text-[12px] text-ink-2"><input type="checkbox" checked={f.hasIssues} onChange={(e) => setF({ ...f, hasIssues: e.target.checked })} /> Has content gaps</label>
             <label className="flex items-center gap-2 text-[12px] text-ink-2"><input type="checkbox" checked={f.excludeBundles} onChange={(e) => setF({ ...f, excludeBundles: e.target.checked })} /> Exclude mixed bundles</label>
+
+            <div className="border-t border-rule pt-3 text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">Performance ({f.period}d)</div>
+            <Slider label="Min sales $" min={0} max={1000} value={f.minSales} onChange={(v) => setF({ ...f, minSales: v })} />
+            <Slider label="Min units" min={0} max={50} value={f.minUnits} onChange={(v) => setF({ ...f, minUnits: v })} />
+            <Slider label="Min reviews" min={0} max={50} value={f.minReviews} onChange={(v) => setF({ ...f, minReviews: v })} />
+            <Slider label="Min return rate" min={0} max={50} value={f.minReturnPct} onChange={(v) => setF({ ...f, minReturnPct: v })} suffix="%" />
+
             <div className="rounded-lg bg-bg-elev px-3 py-2 text-[11px] text-ink-3 flex items-center gap-1.5"><Lock size={11} /> Price, UPC, brand &amp; product type are never changed.</div>
           </div>
 
           {/* Targets + scope + run */}
           <div className="p-4">
-            <div className="mb-3 flex items-baseline gap-3">
-              <span className="text-[26px] font-semibold tabular text-ink">{loading ? "…" : data?.counts.match ?? 0}</span>
-              <span className="text-[12px] text-ink-3">listings match · {data?.counts.pack4 ?? 0} pack≥4 · {data?.counts.withGaps ?? 0} with content gaps</span>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-baseline gap-3">
+                <span className="text-[26px] font-semibold tabular text-ink">{loading ? "…" : data?.counts.match ?? 0}</span>
+                <span className="text-[12px] text-ink-3">match · {data?.counts.pack4 ?? 0} pack≥4 · {data?.counts.withGaps ?? 0} with gaps</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex rounded-md border border-rule overflow-hidden">
+                  {[30, 90, 180].map((d) => (
+                    <button key={d} onClick={() => setF({ ...f, period: d })} className={cn("px-2 py-1 text-[11px] font-mono", f.period === d ? "bg-green text-green-cream" : "bg-surface text-ink-2 hover:bg-bg-elev")}>{d}d</button>
+                  ))}
+                </div>
+                <select value={f.sort} onChange={(e) => setF({ ...f, sort: e.target.value })} className="rounded-md border border-rule bg-surface px-2 py-1 text-[11px] text-ink-2">
+                  {SORTS.map((s) => <option key={s.id} value={s.id}>Sort: {s.label}</option>)}
+                </select>
+              </div>
             </div>
-            <div className="max-h-[230px] overflow-y-auto rounded-lg border border-rule">
+            <div className="max-h-[260px] overflow-auto rounded-lg border border-rule">
               <table className="w-full text-[12px]">
                 <thead className="sticky top-0 bg-surface"><tr className="border-b border-rule text-left text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">
                   <th className="px-2 py-1.5"><input type="checkbox" checked={allSelected} onChange={toggleAll} /></th>
-                  <th className="px-2 py-1.5">Product</th><th className="px-2 py-1.5">Pack</th><th className="px-2 py-1.5">LQ</th><th className="px-2 py-1.5">Cont</th><th className="px-2 py-1.5">Views</th>
+                  <th className="px-2 py-1.5">Product</th><th className="px-2 py-1.5">Health</th><th className="px-2 py-1.5">Pack</th><th className="px-2 py-1.5">LQ</th>
+                  <th className="px-2 py-1.5">Sales</th><th className="px-2 py-1.5">Units</th><th className="px-2 py-1.5">Views</th><th className="px-2 py-1.5">Conv</th><th className="px-2 py-1.5">Rev</th><th className="px-2 py-1.5">Ret%</th>
                 </tr></thead>
                 <tbody>
-                  {loading && <tr><td colSpan={6} className="px-2 py-5 text-center text-ink-3">Loading…</td></tr>}
-                  {!loading && !candidates.length && <tr><td colSpan={6} className="px-2 py-5 text-center text-ink-3">No listings match — loosen the filters.</td></tr>}
-                  {candidates.map((c) => (
-                    <tr key={c.sku} className={cn("border-b border-rule/50 hover:bg-bg-elev/40", selected.has(c.sku) && "bg-green-soft/40")}>
-                      <td className="px-2 py-1.5"><input type="checkbox" checked={selected.has(c.sku)} onChange={() => toggle(c.sku)} /></td>
-                      <td className="px-2 py-1.5 max-w-[260px]"><div className="truncate text-ink">{c.productName || c.sku}</div><div className="font-mono text-[10px] text-ink-3">{c.sku}</div></td>
-                      <td className="px-2 py-1.5"><span className={cn("rounded px-1.5 py-0.5 font-mono text-[11px]", (c.packCount ?? 0) >= 4 ? "bg-green-soft text-green-ink" : "bg-bg-elev text-ink-2")}>×{c.packCount ?? "?"}</span></td>
-                      <td className="px-2 py-1.5 tabular">{fmt(c.lqScore)}</td><td className="px-2 py-1.5 tabular">{fmt(c.contentScore)}</td><td className="px-2 py-1.5 tabular">{fmt(c.pageViews30d)}</td>
-                    </tr>
-                  ))}
+                  {loading && <tr><td colSpan={11} className="px-2 py-5 text-center text-ink-3">Loading…</td></tr>}
+                  {!loading && !candidates.length && <tr><td colSpan={11} className="px-2 py-5 text-center text-ink-3">No listings match — loosen the filters.</td></tr>}
+                  {candidates.map((c) => {
+                    const h = HEALTH[c.health] || HEALTH.new;
+                    return (
+                      <tr key={c.sku} className={cn("border-b border-rule/50 hover:bg-bg-elev/40", selected.has(c.sku) && "bg-green-soft/40")}>
+                        <td className="px-2 py-1.5"><input type="checkbox" checked={selected.has(c.sku)} onChange={() => toggle(c.sku)} /></td>
+                        <td className="px-2 py-1.5 max-w-[220px]"><div className="truncate text-ink">{c.productName || c.sku}</div><div className="font-mono text-[10px] text-ink-3">{c.sku}</div></td>
+                        <td className="px-2 py-1.5"><span className="rounded px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap" style={{ background: h.bg, color: h.color }}>{h.label}</span></td>
+                        <td className="px-2 py-1.5"><span className={cn("rounded px-1.5 py-0.5 font-mono text-[11px]", (c.packCount ?? 0) >= 4 ? "bg-green-soft text-green-ink" : "bg-bg-elev text-ink-2")}>×{c.packCount ?? "?"}</span></td>
+                        <td className="px-2 py-1.5 tabular">{fmt(c.lqScore)}</td>
+                        <td className="px-2 py-1.5 tabular">{money(c.sales)}</td>
+                        <td className="px-2 py-1.5 tabular">{c.units || "—"}</td>
+                        <td className="px-2 py-1.5 tabular">{fmt(c.pageViews30d)}</td>
+                        <td className="px-2 py-1.5 tabular">{c.conv != null ? (c.conv * 100).toFixed(1) + "%" : "—"}</td>
+                        <td className="px-2 py-1.5 tabular">{c.reviews || "—"}</td>
+                        <td className="px-2 py-1.5 tabular">{c.returnRate != null ? (c.returnRate * 100).toFixed(0) + "%" : "—"}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
