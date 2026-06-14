@@ -30,7 +30,10 @@ function buildFilter(p: URLSearchParams) {
   const contentMax = p.get("contentMax") != null ? Number(p.get("contentMax")) : null;
   const hasIssues = p.get("hasIssues") === "1";
   const excludeBundles = p.get("excludeBundles") !== "0"; // default on
-  const packExpr = `COALESCE((SELECT unitsInListing FROM SkuShippingData WHERE sku=q.sku LIMIT 1),(SELECT packSize FROM SkuCost WHERE sku=q.sku LIMIT 1),1)`;
+  // Pack count: prefer our SKU tables, else the count parsed from the title
+  // (titlePackCount, backfilled by walmart-backfill-pack.ts) so the filter sees
+  // the full multipack catalog, not just the ~30 SKUs with a recorded pack.
+  const packExpr = `COALESCE((SELECT unitsInListing FROM SkuShippingData WHERE sku=q.sku LIMIT 1),(SELECT packSize FROM SkuCost WHERE sku=q.sku LIMIT 1),q.titlePackCount,1)`;
   const where: string[] = ["q.storeIndex=?"];
   const args: any[] = [];
   where.push(`${packExpr} BETWEEN ? AND ?`); args.push(packMin, packMax);
