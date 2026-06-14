@@ -28,6 +28,7 @@ interface ApiResp {
   summary: { applied: number; measured: number; pendingMeasure: number; avgLqDelta: number | null; avgContentDelta: number | null; avgConvDelta: number | null; };
   history: HistoryRow[];
   queue: { sku: string; status: string }[];
+  queueStats: { queued: number; running: number; submitted: number; done: number; error: number; skipped: number };
   page: { limit: number; offset: number; total: number };
 }
 
@@ -115,6 +116,7 @@ export function ListingOptimizer() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [scope, setScope] = useState<Record<string, boolean>>({ image: true, gallery: true, title: true, bullets: true, description: true, attributes: false });
   const [running, setRunning] = useState(false);
+  const [allMatching, setAllMatching] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   // AI analyst
   const [analysis, setAnalysis] = useState<{ narrative: string; recommendations: Rec[] } | null>(null);
@@ -153,6 +155,14 @@ export function ListingOptimizer() {
   }, [qs]);
   useEffect(() => { const t = setTimeout(load, 300); return () => clearTimeout(t); }, [load]); // debounce slider changes
 
+  // While the worker has active items, poll so progress updates without a manual refresh.
+  const activeWork = (data?.queueStats?.queued ?? 0) + (data?.queueStats?.running ?? 0) + (data?.queueStats?.submitted ?? 0);
+  useEffect(() => {
+    if (activeWork <= 0) return;
+    const t = setInterval(load, 15000);
+    return () => clearInterval(t);
+  }, [activeWork, load]);
+
   const candidates = data?.candidates ?? [];
   const candSkus = candidates.map((c) => c.sku);
   const toggle = (sku: string) => setSelected((s) => { const n = new Set(s); n.has(sku) ? n.delete(sku) : n.add(sku); return n; });
@@ -161,12 +171,19 @@ export function ListingOptimizer() {
   const scopeCount = Object.values(scope).filter(Boolean).length;
 
   async function run() {
-    if (!selected.size || !scopeCount) return;
+    const total = data?.counts.match ?? 0;
+    if (!scopeCount) return;
+    if (allMatching ? total === 0 : !selected.size) return;
+    if (allMatching && total > 200 && !confirm(`Queue ALL ${total.toLocaleString()} matching listings for optimization?`)) return;
     setRunning(true); setMsg(null);
     try {
-      const r = await fetch("/api/walmart/growth/remediation", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ skus: [...selected], scope }) });
+      // allMatching → enqueue the whole filtered pool server-side (thousands);
+      // otherwise just the checked rows.
+      const url = allMatching ? `/api/walmart/growth/remediation?${qs}` : "/api/walmart/growth/remediation";
+      const payload = allMatching ? { allMatching: true, scope } : { skus: [...selected], scope };
+      const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const j = await r.json();
-      setMsg(`Queued ${j.queued} listing(s). The optimizer applies them and logs before/after — watch the Impact section.`);
+      setMsg(`Queued ${j.queued} listing(s). The worker drains the queue automatically (≈every 2 min) — watch "In queue" below and the Impact section.`);
       setSelected(new Set()); await load();
     } catch { setMsg("Failed to queue — try again."); } finally { setRunning(false); }
   }
@@ -327,12 +344,48 @@ export function ListingOptimizer() {
               </div>
             </div>
 
-            <div className="mt-3 flex items-center justify-between">
-              <span className="text-[12px] text-ink-3">{selected.size} selected · {scopeCount} field{scopeCount === 1 ? "" : "s"}</span>
-              <Btn variant="primary" icon={<Play size={13} />} loading={running} disabled={!selected.size || !scopeCount} onClick={run}>Run optimization{selected.size ? ` · ${selected.size}` : ""}</Btn>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-3">
+                <span className="text-[12px] text-ink-3">{selected.size} selected · {scopeCount} field{scopeCount === 1 ? "" : "s"}</span>
+                <label className="flex items-center gap-1.5 text-[12px] text-ink-2">
+                  <input type="checkbox" checked={allMatching} onChange={(e) => setAllMatching(e.target.checked)} />
+                  Apply to all {data?.counts.match ? data.counts.match.toLocaleString() : ""} matching
+                </label>
+              </div>
+              <Btn variant="primary" icon={<Play size={13} />} loading={running}
+                disabled={scopeCount === 0 || (allMatching ? !(data?.counts.match) : !selected.size)} onClick={run}>
+                {allMatching ? `Run on all ${data?.counts.match ? data.counts.match.toLocaleString() : 0}` : `Run optimization${selected.size ? ` · ${selected.size}` : ""}`}
+              </Btn>
             </div>
             {msg && <div className="mt-2 rounded-lg border border-rule bg-green-soft px-3 py-2 text-[12px] text-green-ink">{msg}</div>}
-            {!!data?.queue.length && <div className="mt-2 text-[11px] text-ink-3">In queue: {data.queue.length} ({data.queue.filter((q) => q.status === "running").length} running)</div>}
+            {data?.queueStats && (() => {
+              const s = data.queueStats;
+              const active = s.queued + s.running + s.submitted;
+              const finished = s.done + s.error + s.skipped;
+              const total = active + finished;
+              if (total === 0) return null;
+              const pct = total ? Math.round((finished / total) * 100) : 0;
+              return (
+                <div className="mt-3 rounded-lg border border-rule bg-bg-elev/40 p-3">
+                  <div className="mb-1.5 flex items-center justify-between text-[11px]">
+                    <span className="font-mono uppercase tracking-[0.08em] text-ink-3">Worker progress {active > 0 && <span className="ml-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-green-ink align-middle" />}</span>
+                    <span className="text-ink-2">{finished} / {total} done · {pct}%</span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-rule/40">
+                    <div className="h-full rounded-full bg-green-ink transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-3">
+                    <span>Waiting: <b className="text-ink-2">{s.queued}</b></span>
+                    <span>Building: <b className="text-ink-2">{s.running}</b></span>
+                    <span>Awaiting Walmart: <b className="text-ink-2">{s.submitted}</b></span>
+                    <span>Done: <b className="text-green-ink">{s.done}</b></span>
+                    {s.error > 0 && <span>Errors: <b className="text-red-ink">{s.error}</b></span>}
+                    {s.skipped > 0 && <span>Skipped: <b className="text-ink-2">{s.skipped}</b></span>}
+                  </div>
+                  {active > 0 && <div className="mt-1.5 text-[10px] text-ink-3">Auto-refreshing — the worker drains the queue about every 2 minutes.</div>}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </Panel>

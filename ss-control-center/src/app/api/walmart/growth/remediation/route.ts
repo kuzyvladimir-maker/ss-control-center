@@ -13,9 +13,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { randomUUID } from "crypto";
-import { buildFilter } from "@/lib/walmart/optimizer-filter";
+import { buildFilter, OPTIMIZER_JOIN } from "@/lib/walmart/optimizer-filter";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+const ENQUEUE_CAP = 3000;
 
 type Row = Record<string, any>;
 const delta = (a: any, b: any): number | null => (a != null && b != null ? Number(a) - Number(b) : null);
@@ -101,27 +103,52 @@ export async function GET(request: NextRequest) {
   };
 
   const queue = (await prisma.$queryRawUnsafe(
-    `SELECT sku, status, queuedAt, feedId, error FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('queued','running') ORDER BY queuedAt DESC LIMIT 100`, storeIndex,
+    `SELECT sku, status, queuedAt, feedId, error FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('queued','running','submitted') ORDER BY queuedAt DESC LIMIT 100`, storeIndex,
   )) as Row[];
 
-  return NextResponse.json({ period, counts, candidates, contentGapHeatmap, summary, history, queue, page: { limit, offset, total: counts.match } });
+  // Live progress of the worker: counts per status (done/error since 24h so the
+  // bar reflects the current batch, not all-time history).
+  const statRows = (await prisma.$queryRawUnsafe(
+    `SELECT status, COUNT(*) AS c FROM WalmartRemediationQueue
+      WHERE storeIndex=? AND (status IN ('queued','running','submitted') OR (status IN ('done','error','skipped') AND COALESCE(finishedAt, queuedAt) >= datetime('now','-24 hours')))
+      GROUP BY status`, storeIndex,
+  )) as Row[];
+  const queueStats: Record<string, number> = { queued: 0, running: 0, submitted: 0, done: 0, error: 0, skipped: 0 };
+  for (const r of statRows) queueStats[String(r.status)] = Number(r.c || 0);
+
+  return NextResponse.json({ period, counts, candidates, contentGapHeatmap, summary, history, queue, queueStats, page: { limit, offset, total: counts.match } });
 }
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
-  const skus: string[] = Array.isArray(body?.skus) ? body.skus.filter((s: any) => typeof s === "string") : [];
   const scope = body?.scope && typeof body.scope === "object" ? body.scope : null; // {image,gallery,title,bullets,description,attributes}
   const storeIndex = Number(body?.storeIndex || 1);
-  if (!skus.length) return NextResponse.json({ error: "no skus" }, { status: 400 });
-  let queued = 0;
-  for (const sku of skus.slice(0, 500)) {
-    try {
-      await prisma.$executeRawUnsafe(
-        `INSERT INTO WalmartRemediationQueue (id, storeIndex, sku, status, requestedBy, result) VALUES (?, ?, ?, 'queued', 'ui', ?)`,
-        randomUUID(), storeIndex, sku, scope ? JSON.stringify({ scope }) : null,
-      );
-      queued++;
-    } catch { /* already queued/running */ }
+
+  // Two modes: explicit `skus` (checked rows), or `allMatching` → enqueue the
+  // ENTIRE filtered pool (thousands), resolved server-side from the same filter.
+  let skus: string[] = Array.isArray(body?.skus) ? body.skus.filter((s: any) => typeof s === "string") : [];
+  if (body?.allMatching) {
+    const { whereSql, args } = buildFilter(new URL(request.url).searchParams);
+    const rows = (await prisma.$queryRawUnsafe(
+      `SELECT w.sku FROM WalmartCatalogItem w ${OPTIMIZER_JOIN} WHERE ${whereSql} LIMIT ${ENQUEUE_CAP}`,
+      storeIndex, ...args,
+    )) as Row[];
+    skus = rows.map((r) => String(r.sku));
   }
-  return NextResponse.json({ queued, requested: skus.length });
+  if (!skus.length) return NextResponse.json({ error: "no skus" }, { status: 400 });
+
+  // Batched, dedup-tolerant insert (OR IGNORE skips SKUs already queued/running).
+  const requested = Math.min(skus.length, ENQUEUE_CAP);
+  let queued = 0;
+  for (let i = 0; i < requested; i += 100) {
+    const chunk = skus.slice(i, i + 100);
+    const values = chunk.map(() => "(?, ?, ?, 'queued', 'ui', ?)").join(", ");
+    const flat: any[] = [];
+    for (const sku of chunk) flat.push(randomUUID(), storeIndex, sku, scope ? JSON.stringify({ scope }) : null);
+    try {
+      const r = await prisma.$executeRawUnsafe(`INSERT OR IGNORE INTO WalmartRemediationQueue (id, storeIndex, sku, status, requestedBy, result) VALUES ${values}`, ...flat);
+      queued += Number(r) || 0;
+    } catch { /* chunk-level guard */ }
+  }
+  return NextResponse.json({ queued, requested });
 }
