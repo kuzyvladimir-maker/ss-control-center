@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 
 interface Metrics { lq: number | null; content: number | null; conv: number | null; views: number | null; gmv: number | null; }
 interface HistoryRow { sku: string; url: string | null; runAt: string; ok: boolean; feedStatus: string | null; newTitle: string | null; bulletsCount: number | null; imagesCount: number | null; usedAiPolish: boolean; measured: boolean; before: Metrics; after: Metrics; deltas: Metrics; }
+interface Rec { type: "auto" | "advisory"; title: string; detail: string; skus: string[]; fields: string[]; }
 interface Candidate { sku: string; productName: string | null; packCount: number | null; lqScore: number | null; contentScore: number | null; issueCount: number | null; contentIssues: string[]; pageViews30d: number | null; reviews: number; sales: number; units: number; orders: number; returns: number; conv: number | null; returnRate: number | null; health: string; status: string | null; }
 interface ApiResp {
   period: number;
@@ -115,6 +116,11 @@ export function ListingOptimizer() {
   const [scope, setScope] = useState<Record<string, boolean>>({ image: true, gallery: true, title: true, bullets: true, description: true, attributes: false });
   const [running, setRunning] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  // AI analyst
+  const [analysis, setAnalysis] = useState<{ narrative: string; recommendations: Rec[] } | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [recSel, setRecSel] = useState<Set<number>>(new Set());
+  const [applyMsg, setApplyMsg] = useState<string | null>(null);
 
   const qs = useMemo(() => {
     const p = new URLSearchParams();
@@ -162,6 +168,33 @@ export function ListingOptimizer() {
       setMsg(`Queued ${j.queued} listing(s). The optimizer applies them and logs before/after — watch the Impact section.`);
       setSelected(new Set()); await load();
     } catch { setMsg("Failed to queue — try again."); } finally { setRunning(false); }
+  }
+
+  async function analyze() {
+    setAnalyzing(true); setAnalysis(null); setRecSel(new Set()); setApplyMsg(null);
+    try {
+      const r = await fetch(`/api/walmart/growth/remediation/analyze?${qs}`, { method: "POST" });
+      setAnalysis(await r.json());
+    } catch { setApplyMsg("Analysis failed — try again."); } finally { setAnalyzing(false); }
+  }
+
+  // Apply selected AUTO recommendations: enqueue their SKUs with the recommended field scope.
+  async function applyRecs() {
+    if (!analysis) return;
+    const chosen = [...recSel].map((i) => analysis.recommendations[i]).filter((r) => r && r.type === "auto" && r.skus.length);
+    if (!chosen.length) return;
+    setApplyMsg(null);
+    let queued = 0;
+    for (const rec of chosen) {
+      const sc: Record<string, boolean> = { image: false, gallery: false, title: false, bullets: false, description: false, attributes: false };
+      for (const f of rec.fields) if (f in sc) sc[f] = true;
+      try {
+        const r = await fetch("/api/walmart/growth/remediation", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ skus: rec.skus, scope: sc }) });
+        queued += (await r.json()).queued || 0;
+      } catch { /* skip */ }
+    }
+    setApplyMsg(`Queued ${queued} listing(s) from ${chosen.length} recommendation(s).`);
+    setRecSel(new Set()); await load();
   }
 
   const s = data?.summary;
@@ -295,6 +328,50 @@ export function ListingOptimizer() {
             {msg && <div className="mt-2 rounded-lg border border-rule bg-green-soft px-3 py-2 text-[12px] text-green-ink">{msg}</div>}
             {!!data?.queue.length && <div className="mt-2 text-[11px] text-ink-3">In queue: {data.queue.length} ({data.queue.filter((q) => q.status === "running").length} running)</div>}
           </div>
+        </div>
+      </Panel>
+
+      {/* AI analyst */}
+      <Panel>
+        <PanelHeader title="AI analyst — diagnose this pool"
+          right={<Btn size="sm" variant="primary" icon={<Sparkles size={13} />} loading={analyzing} onClick={analyze}>Analyze {data?.counts.match ? `${Math.min(data.counts.match, 60)} listings` : "pool"}</Btn>} />
+        <div className="p-4">
+          {!analysis && !analyzing && (
+            <p className="text-[12px] text-ink-3">Reads the filtered pool — sales, units, conversion, stock, reviews, listing quality and Walmart&apos;s own flagged issues — and recommends how to lift conversion &amp; sales. Auto-fixable items can be queued in one click; the rest are flagged as manual.</p>
+          )}
+          {analyzing && <p className="text-[12px] text-ink-3">Analyzing up to 60 listings… reading metrics, issues &amp; Walmart policy (a few seconds).</p>}
+          {analysis && (
+            <div className="space-y-3">
+              <p className="text-[13px] text-ink-2 whitespace-pre-wrap">{analysis.narrative}</p>
+              {analysis.recommendations.map((rec, i) => {
+                const auto = rec.type === "auto" && rec.skus.length > 0;
+                return (
+                  <div key={i} className={cn("rounded-lg border p-3", auto ? "border-rule" : "border-rule bg-bg-elev/30")}>
+                    <div className="flex items-start gap-2">
+                      {auto ? (
+                        <input type="checkbox" className="mt-1" checked={recSel.has(i)} onChange={() => setRecSel((s) => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; })} />
+                      ) : <span className="mt-0.5 rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase" style={{ background: "var(--warn-tint)", color: "var(--warn-strong)" }}>Manual</span>}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[13px] font-semibold text-ink">{rec.title}</span>
+                          {rec.skus.length > 0 && <span className="text-[11px] text-ink-3">{rec.skus.length} listing{rec.skus.length === 1 ? "" : "s"}</span>}
+                          {auto && rec.fields.length > 0 && <span className="font-mono text-[10px] text-green-ink">{rec.fields.join(" · ")}</span>}
+                        </div>
+                        <p className="mt-1 text-[12px] text-ink-2">{rec.detail}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {analysis.recommendations.some((r) => r.type === "auto" && r.skus.length) && (
+                <div className="flex items-center justify-between">
+                  <span className="text-[12px] text-ink-3">{recSel.size} recommendation(s) selected</span>
+                  <Btn variant="primary" icon={<Play size={13} />} disabled={!recSel.size} onClick={applyRecs}>Apply selected</Btn>
+                </div>
+              )}
+              {applyMsg && <div className="rounded-lg border border-rule bg-green-soft px-3 py-2 text-[12px] text-green-ink">{applyMsg}</div>}
+            </div>
+          )}
         </div>
       </Panel>
 
