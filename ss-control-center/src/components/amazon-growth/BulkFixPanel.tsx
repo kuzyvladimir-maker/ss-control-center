@@ -134,6 +134,12 @@ const HEALTH_BADGE: Record<string, { label: string; bg: string; color: string }>
   new: { label: "New", bg: "var(--bg-elev)", color: "var(--ink-3)" },
 };
 
+function fmtDur(ms: number) {
+  const s = Math.max(0, Math.round(ms / 1000));
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  return `${m}m ${(s % 60).toString().padStart(2, "0")}s`;
+}
 function fmt(n: number | null | undefined, d = 0) { return n == null ? "—" : Number(n).toFixed(d); }
 function money(n: number | null | undefined) { return n == null ? "—" : "$" + Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 }); }
 function pct(n: number | null | undefined, scale = 100, d = 1) { return n == null ? "—" : (Number(n) * (scale === 100 ? 100 : 1)).toFixed(d) + "%"; }
@@ -174,6 +180,12 @@ export function BulkFixPanel({ storeIndex }: { storeIndex: number }) {
   const [busy, setBusy] = useState<null | "enqueue" | "draining">(null);
   const [msg, setMsg] = useState<string | null>(null);
   const autoRef = useRef(false);
+  // Run timing — elapsed, ETA, and "last change N ago" so a stall is visible.
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [lastActivityAt, setLastActivityAt] = useState<number | null>(null);
+  const [baseFinished, setBaseFinished] = useState(0);
+  const [, setTick] = useState(0);
+  const prevFinishedRef = useRef(0);
 
   const qs = useCallback(() => {
     const p = new URLSearchParams({ storeIndex: String(storeIndex), sort: f.sort, limit: String(pageSize), offset: String(offset) });
@@ -212,10 +224,21 @@ export function BulkFixPanel({ storeIndex }: { storeIndex: number }) {
     if (res.ok) {
       const j: ApiResp = await res.json();
       setData(j);
+      // Stamp "last activity" whenever the finished count grows.
+      const fin = j.stats.done + j.stats.skipped + j.stats.errored;
+      if (fin > prevFinishedRef.current) setLastActivityAt(Date.now());
+      prevFinishedRef.current = fin;
       return j.stats;
     }
     return null;
   }, [qs]);
+
+  // Tick once a second while a run is active so elapsed/ETA/"last change" update.
+  useEffect(() => {
+    if (!startedAt || busy == null) return;
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, [startedAt, busy]);
 
   // Reset to first page whenever the filter changes.
   useEffect(() => { setOffset(0); }, [
@@ -246,6 +269,12 @@ export function BulkFixPanel({ storeIndex }: { storeIndex: number }) {
     if (allMatching && total > 200 && !confirm(`Queue ALL ${total.toLocaleString()} matching listings for fixing?`)) return;
     setBusy("enqueue");
     setMsg(null);
+    // Start the run clock from the queue's current finished baseline.
+    const baseFin = (data?.stats.done ?? 0) + (data?.stats.skipped ?? 0) + (data?.stats.errored ?? 0);
+    setBaseFinished(baseFin);
+    prevFinishedRef.current = baseFin;
+    setStartedAt(Date.now());
+    setLastActivityAt(Date.now());
     try {
       const payload = allMatching
         ? { storeIndex, filter: filterBody, scope, allMatching: true }
@@ -286,6 +315,15 @@ export function BulkFixPanel({ storeIndex }: { storeIndex: number }) {
   const finished = (stats?.done ?? 0) + (stats?.skipped ?? 0) + (stats?.errored ?? 0);
   const total = active + finished;
   const progressPct = total ? Math.round((finished / total) * 100) : 0;
+
+  // Run timing (recomputed each tick).
+  const nowMs = Date.now();
+  const elapsedMs = startedAt ? nowMs - startedAt : 0;
+  const processed = Math.max(0, finished - baseFinished);
+  const ratePerMs = processed > 0 && elapsedMs > 0 ? processed / elapsedMs : 0;
+  const etaMs = ratePerMs > 0 && active > 0 ? active / ratePerMs : null;
+  const sinceActivityMs = lastActivityAt ? nowMs - lastActivityAt : 0;
+  const stalled = active > 0 && sinceActivityMs > 90_000;
 
   return (
     <Panel>
@@ -451,6 +489,23 @@ export function BulkFixPanel({ storeIndex }: { storeIndex: number }) {
                 {stats.errored > 0 && <span>Errors: <b className="text-red-ink">{stats.errored}</b></span>}
                 <span>Changes written: <b className="text-green-ink">{stats.changesTotal}</b></span>
               </div>
+              {/* Timing: elapsed · ETA · last-activity (stall detector) */}
+              {startedAt && (
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 border-t border-rule/60 pt-2 text-[11px]">
+                  <span className="text-ink-3">Elapsed <b className="text-ink-2 tabular">{fmtDur(elapsedMs)}</b></span>
+                  {active > 0 ? (
+                    <span className="text-ink-3">ETA <b className="text-ink-2 tabular">{etaMs != null ? `~${fmtDur(etaMs)}` : "—"}</b></span>
+                  ) : (
+                    <span className="text-green-ink">Done in {fmtDur(elapsedMs)}</span>
+                  )}
+                  {active > 0 && (
+                    <span className={stalled ? "text-danger" : "text-ink-3"}>
+                      Last change <b className={cn("tabular", stalled ? "text-danger" : "text-ink-2")}>{fmtDur(sinceActivityMs)} ago</b>
+                      {stalled ? " — looks stalled" : ""}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
