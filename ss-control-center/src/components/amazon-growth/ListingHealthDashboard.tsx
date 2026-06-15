@@ -16,6 +16,7 @@ import { useCallback, useEffect, useState } from "react";
 import { RefreshCw, ChevronDown, ChevronRight, ExternalLink, Sparkles, Wrench, Hand, Lock } from "lucide-react";
 import { Btn, Panel, PanelHeader, KpiCard, RiskPill } from "@/components/kit";
 import { cn } from "@/lib/utils";
+import { BulkAdvisePanel } from "./BulkAdvisePanel";
 
 // ── Types mirroring the GET route payload ──
 interface HealthIssue {
@@ -222,6 +223,10 @@ export function ListingHealthDashboard({
 
   return (
     <div className="space-y-5">
+      {/* Stage 2 — bulk AI analysis + fix over a filtered pool (deep per-listing,
+          LLM-driven). Run this after the deterministic Optimizer clean-up. */}
+      <BulkAdvisePanel storeIndex={storeIndex} />
+
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-ink-3">
           <span>Computed health — Amazon has no native quality score</span>

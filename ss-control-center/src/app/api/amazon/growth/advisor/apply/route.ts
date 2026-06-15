@@ -121,12 +121,36 @@ export async function POST(request: NextRequest) {
           ? { ...existing[0], value: coerce(value) }
           : { value: coerce(value), marketplace_id: MARKETPLACE_ID };
       }
+      // Guard: an attribute that's neither in this product's schema nor already
+      // on the listing has an invalid PATCH path. The advisor sometimes suggests
+      // a field that doesn't exist for this product type (e.g. item_net_weight on
+      // a MEAT listing) — reject cleanly instead of sending Amazon a 400.
+      if (!form && !existing) {
+        return NextResponse.json(
+          { ok: false, error: `'${parentAttr}' is not a valid attribute for product type ${productType} — needs manual review` },
+          { status: 422 },
+        );
+      }
+
       const patches: ListingPatch[] = [
         { op: existing ? "replace" : "add", path: `/attributes/${parentAttr}`, value: [entry] },
       ];
 
-      const resp = await patchListing(storeIndex, sellerId, sku, productType, patches, { validationPreview: dryRun });
-      const applied = !dryRun && resp?.status === "ACCEPTED";
+      // Validate first (even for a real write) so a bad value or path comes back
+      // as a clean "rejected", never a raw SP-API 400.
+      const preview = await patchListing(storeIndex, sellerId, sku, productType, patches, { validationPreview: true });
+      if (preview?.status !== "VALID" || dryRun) {
+        return NextResponse.json({
+          ok: true,
+          sku,
+          mode,
+          change: { attribute, value: coerce(value) },
+          result: { applied: false, dryRun, status: preview?.status ?? "INVALID", issues: preview?.issues },
+        });
+      }
+
+      const resp = await patchListing(storeIndex, sellerId, sku, productType, patches, {});
+      const applied = resp?.status === "ACCEPTED";
       if (applied) {
         await logChange(prisma, {
           storeIndex,

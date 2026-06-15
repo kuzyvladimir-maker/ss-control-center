@@ -19,7 +19,8 @@ async function main() {
   const client = createClient({ url, authToken });
   const sqlPath = resolve(
     process.cwd(),
-    "prisma/migrations/20260614170000_amazon_listing_health/migration.sql",
+    process.argv[2] ??
+      "prisma/migrations/20260614170000_amazon_listing_health/migration.sql",
   );
   const sql = readFileSync(sqlPath, "utf-8");
 

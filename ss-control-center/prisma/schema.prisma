@@ -1556,6 +1556,39 @@ model AmazonRemediationQueue {
   @@index([status, queuedAt])
 }
 
+// Bulk AI-advisor queue (the "stage 2" after the deterministic Optimizer).
+// Filter → pool → "Analyze & fix" enqueues here; a worker runs the LLM advisor
+// per listing, stores the diagnosis + action plan, and auto-applies the SAFE
+// executable subset (deterministic optimizer + structural unit_count/item_weight).
+// LLM = real cost, so this is operator-triggered (no cron).
+model AmazonAdvisorQueue {
+  id         String  @id @default(cuid())
+  storeIndex Int     @default(1)
+  sku        String
+  asin       String?
+  itemName   String?
+
+  status    String  @default("REQUESTED") // REQUESTED | RUNNING | DONE | SKIPPED | ERROR
+  autoApply Boolean @default(true) // apply the safe executable subset, not just analyze
+
+  // LLM advisor output
+  diagnosis       String?
+  rootCause       String?
+  expectedOutcome String?
+  confidence      String?
+  actionsJson     String? // full AdvisorAction[] (for the UI to render the plan)
+  actionsApplied  Int     @default(0) // how many actions we auto-executed
+  result          String? // human note: what was applied / why skipped
+  error           String?
+
+  queuedAt    DateTime  @default(now())
+  processedAt DateTime?
+
+  @@unique([storeIndex, sku], name: "amazon_advisor_queue_dedup")
+  @@index([storeIndex, status])
+  @@index([status, queuedAt])
+}
+
 // Change log / audit trail — EVERY write we make to an Amazon listing lands one
 // row here, regardless of which path made it (optimizer, advisor, bulk worker).
 // Captures: what listing, what field, before→after VALUES (for rollback), when,
