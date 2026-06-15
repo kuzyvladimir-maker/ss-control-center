@@ -154,10 +154,14 @@ export async function GET(request: NextRequest) {
 
   // Seller-level Listing Quality headline (Walmart's own score + 6 components) for
   // the health strip — folds the old Listing Quality tab into the Optimizer.
-  const snap = (await prisma.$queryRawUnsafe(
-    `SELECT listingQuality, contentScore, transactibilityScore, priceScore, offerScore, ratingReviewScore, shippingScore
-       FROM WalmartListingQualitySnapshot WHERE storeIndex=? ORDER BY createdAt DESC LIMIT 1`, storeIndex,
-  )) as Row[];
+  // Non-critical header strip — never let it blank the whole Optimizer if it fails.
+  let snap: Row[] = [];
+  try {
+    snap = (await prisma.$queryRawUnsafe(
+      `SELECT listingQuality, contentScore, transactibilityScore, priceScore, offerScore, ratingReviewScore, shippingScore
+         FROM WalmartListingQualitySnapshot WHERE storeIndex=? ORDER BY capturedAt DESC LIMIT 1`, storeIndex,
+    )) as Row[];
+  } catch { /* snapshot table optional — fall back to no seller score */ }
   const s0 = snap[0];
   const sellerScore = s0 ? {
     listingQuality: Number(s0.listingQuality),
