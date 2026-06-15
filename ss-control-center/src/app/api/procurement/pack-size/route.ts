@@ -47,7 +47,8 @@ OUTPUT: a single integer = how many physical items are in ONE customer-ordered u
 
 Rules:
 - If the title says "Pack of N", "Bundle of N", "Set of N", "Box of N", "Case of N", "Quantity of N", "N Count", "N Pack", "N-Can", "N Cans", "N Bottles", "N Pieces", "N Cartons", "N pcs" — the multiplier is N.
-- COMPOUND expressions multiply. "12 / Carton | Bundle of 2 Cartons" = 12 × 2 = 24. "8 cans per box, Pack of 3" = 8 × 3 = 24. "4 oz Bottles, 6 Count (Pack of 2)" = 6 × 2 = 12.
+- An explicit "Pack of N", "Bundle of N", "Box of N", "Case of N", "Set of N" or "Quantity of N" is AUTHORITATIVE — output N. Tokens like "N ct", "N count", "N oz", "N lb" sitting before it describe what is INSIDE one package, NOT how many packages the listing bundles, so do NOT multiply them in. "10 ct (Pack of 6)" = 6 (six bags, each a 10-count). "8 cans per box, Pack of 3" = 3. "4 oz Bottles, 6 Count (Pack of 2)" = 2.
+- Only multiply when there are TWO distinct PACKAGE-level counts and no plain "Pack of N", e.g. "12 / Carton | Bundle of 2 Cartons" = 12 × 2 = 24.
 - "Variety Pack" or "Bundle" alone without a number = 1.
 - Weight tokens are NOT counts. "10.5 Ounce Can, Quantity of 4" = 4, not 10. "4.2 lb" = 1.
 - Counts of flavours / varieties ("12 Flavors", "Mix of 6 Varieties") are NOT pack counts unless the title explicitly says one item per flavour. Default to 1 in that case.
@@ -73,6 +74,9 @@ INPUT: Green Giant Pantry Provisions Variety Pack – 8-Can Everyday Veggie Esse
 OUTPUT: 8
 
 INPUT: Del Monte Peaches Sliced 8.5 oz (Pack of 6)
+OUTPUT: 6
+
+INPUT: Thomas' Plain Mini Bagels, 10 ct (Pack of 6)
 OUTPUT: 6
 
 INPUT: Stur Drinks Black Cherry, Liquid Water Enhancer 1.62 fl oz (Pack of 4)
