@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
   // ── 1. FINALIZE submitted feeds ──────────────────────────────────────────
   try {
     const subs = await conn.execute({
-      sql: `SELECT sku, feedId FROM WalmartRemediationQueue WHERE storeIndex=? AND status='submitted' AND feedId IS NOT NULL ORDER BY finishedAt ASC LIMIT ?`,
+      sql: `SELECT id, sku, feedId, result FROM WalmartRemediationQueue WHERE storeIndex=? AND status='submitted' AND feedId IS NOT NULL ORDER BY finishedAt ASC LIMIT ?`,
       args: [STORE, FINALIZE_PER_TICK],
     });
     for (const row of subs.rows as any[]) {
@@ -71,10 +71,28 @@ export async function GET(request: NextRequest) {
         const res = await checkFeed(client, feedId);
         if (!res) continue; // still processing — leave 'submitted'
         out.finalized++;
+
+        // Catalog-conflict (QARTH / ERR_EXT_DATA): Walmart rejects content edits
+        // on cards we don't own. Fall back to IMAGE-ONLY (the priority fix — the
+        // tiled main image isn't "product identity" so it isn't blocked). Only
+        // retry once; if image-only also fails, it's truly locked → error.
+        let imageRetry = false;
+        try { imageRetry = !!JSON.parse(row.result || "{}").imageRetry; } catch {}
+        const conflict = !res.ok && /ERR_EXT_DATA|EXT_DATA_ERROR|0101119|QARTH/i.test(res.detail);
+        if (conflict && !imageRetry) {
+          out.requeued++;
+          await conn.execute({
+            sql: `UPDATE WalmartRemediationQueue SET status='queued', startedAt=NULL, finishedAt=NULL, feedId=NULL, attempts=0, result=?, error=? WHERE id=?`,
+            args: [JSON.stringify({ scope: { image: true, gallery: true }, imageRetry: true }), `catalog-locked → image-only retry`, row.id],
+          });
+          await conn.execute({ sql: `UPDATE WalmartListingRemediation SET feedStatus=?, ok=0 WHERE feedId=?`, args: [res.status, feedId] });
+          continue;
+        }
+
         if (res.ok) out.done++; else out.errored++;
         await conn.execute({
-          sql: `UPDATE WalmartRemediationQueue SET status=?, finishedAt=CURRENT_TIMESTAMP, result=?, error=? WHERE sku=? AND status='submitted'`,
-          args: [res.ok ? "done" : "error", res.detail, res.ok ? null : res.detail, row.sku],
+          sql: `UPDATE WalmartRemediationQueue SET status=?, finishedAt=CURRENT_TIMESTAMP, error=? WHERE id=?`,
+          args: [res.ok ? "done" : "error", res.ok ? (imageRetry ? "image-only applied (content catalog-locked)" : null) : res.detail, row.id],
         });
         // Flip the analytics row so measure-after will compute the delta.
         await conn.execute({
