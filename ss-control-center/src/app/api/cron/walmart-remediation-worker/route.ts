@@ -60,6 +60,15 @@ export async function GET(request: NextRequest) {
   const client = getWalmartClient(STORE);
   const out = { finalized: 0, done: 0, errored: 0, submitted: 0, skipped: 0, requeued: 0, processed: [] as any[] };
 
+  // ── 0. REAP stuck 'running' rows ─────────────────────────────────────────
+  // A tick killed mid-build (serverless timeout, or the read-block outage) leaves
+  // a claimed row stuck 'running'. No tick runs >300s, so anything 'running' for
+  // 10+ min is orphaned — return it to the queue (no feed was sent yet).
+  try {
+    const reap = await conn.execute({ sql: `UPDATE WalmartRemediationQueue SET status='queued', startedAt=NULL WHERE storeIndex=? AND status='running' AND startedAt < datetime('now','-10 minutes')`, args: [STORE] });
+    (out as any).reaped = reap.rowsAffected || 0;
+  } catch { /* ignore */ }
+
   // ── 1. FINALIZE submitted feeds ──────────────────────────────────────────
   try {
     const subs = await conn.execute({
