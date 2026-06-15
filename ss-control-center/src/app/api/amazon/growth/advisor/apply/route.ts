@@ -21,6 +21,7 @@ import { getListing, patchListing, type ListingPatch } from "@/lib/amazon-sp-api
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import { buildPlan, applyPlan } from "@/lib/amazon/growth/optimizer";
 import { scoreListing, type HealthIssue } from "@/lib/amazon/growth/listing-health";
+import { getAttributeForm, buildAttributeEntry } from "@/lib/amazon/growth/product-type-definitions";
 import { listSkus } from "@/lib/amazon-sp-api/listings";
 
 export const maxDuration = 120;
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
   let mode = "";
   let attribute = "";
   let value = "";
+  let subValues: Record<string, string> = {};
   let dryRun = false;
   try {
     const body = await request.json();
@@ -54,6 +56,7 @@ export async function POST(request: NextRequest) {
     mode = String(body?.mode ?? "");
     attribute = String(body?.attribute ?? "");
     value = String(body?.value ?? "");
+    if (body?.subValues && typeof body.subValues === "object") subValues = body.subValues;
     if (body?.dryRun === true) dryRun = true;
   } catch {
     /* fallthrough */
@@ -86,11 +89,20 @@ export async function POST(request: NextRequest) {
 
       const attrs = (listing.attributes ?? {}) as Record<string, Array<Record<string, unknown>> | undefined>;
       const existing = attrs[attribute];
-      // Mirror the existing entry's shape (preserves required siblings like unit/type),
-      // else construct a minimal marketplace-scoped entry.
-      const entry = existing && existing[0]
-        ? { ...existing[0], value: coerce(value) }
-        : { value: coerce(value), marketplace_id: MARKETPLACE_ID };
+
+      // Build a SCHEMA-VALID entry from Product Type Definitions (required
+      // sub-fields + valid enums); fall back to mirroring the existing shape.
+      let entry: Record<string, unknown>;
+      const form = await getAttributeForm(storeIndex, productType, attribute).catch(() => null);
+      if (form) {
+        entry = buildAttributeEntry(form, value, subValues);
+        // keep any required sibling we didn't set from the existing entry
+        if (existing?.[0]) entry = { ...existing[0], ...entry };
+      } else {
+        entry = existing && existing[0]
+          ? { ...existing[0], value: coerce(value) }
+          : { value: coerce(value), marketplace_id: MARKETPLACE_ID };
+      }
       const patches: ListingPatch[] = [
         { op: existing ? "replace" : "add", path: `/attributes/${attribute}`, value: [entry] },
       ];

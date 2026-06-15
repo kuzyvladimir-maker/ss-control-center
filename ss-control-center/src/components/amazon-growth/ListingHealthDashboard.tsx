@@ -468,32 +468,21 @@ function HealthRow({
   const [adviceErr, setAdviceErr] = useState<string | null>(null);
   const [applyBusy, setApplyBusy] = useState<number | null>(null);
   const [applyMsg, setApplyMsg] = useState<Record<number, string>>({});
-  const [attrVal, setAttrVal] = useState<Record<number, string>>({});
 
-  async function applyAction(idx: number, a: AdviceAction) {
+  // optimizer-mode actions (deterministic dedupe + brand-voice scrub).
+  async function applyOptimizer(idx: number) {
     setApplyBusy(idx);
     setApplyMsg((m) => ({ ...m, [idx]: "" }));
     try {
-      const body =
-        a.execution.mode === "set-attribute"
-          ? {
-              storeIndex,
-              sku: it.sku,
-              mode: "set-attribute",
-              attribute: a.execution.attribute,
-              value: attrVal[idx] ?? a.execution.suggestedValue ?? "",
-            }
-          : { storeIndex, sku: it.sku, mode: "optimizer" };
       const res = await fetch("/api/amazon/growth/advisor/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ storeIndex, sku: it.sku, mode: "optimizer" }),
       });
       const j = await res.json();
       let msg: string;
-      if (!j.ok) {
-        msg = `Error: ${j.error}`;
-      } else {
+      if (!j.ok) msg = `Error: ${j.error}`;
+      else {
         const r = j.result;
         if (r.applied) msg = "Applied to Amazon ✓";
         else if (r.skipped) msg = `Nothing to change (${r.skipped})`;
@@ -628,30 +617,22 @@ function HealthRow({
                           {/* Execute */}
                           <span className="mt-1 flex flex-wrap items-center gap-2">
                             {mode === "optimizer" && (
-                              <Btn size="sm" variant="primary" icon={<Wrench size={12} />} onClick={() => applyAction(i, a)} loading={applyBusy === i}>
-                                Apply fix
-                              </Btn>
-                            )}
-                            {mode === "set-attribute" && (
                               <>
-                                <span className="font-mono text-[10px] text-ink-4">{a.execution.attribute} =</span>
-                                <input
-                                  value={attrVal[i] ?? a.execution.suggestedValue ?? ""}
-                                  onChange={(e) => setAttrVal((v) => ({ ...v, [i]: e.target.value }))}
-                                  className="h-6 w-24 rounded border border-rule bg-surface px-1.5 text-[11px] text-ink focus:border-green-mid focus:outline-none"
-                                />
-                                <Btn size="sm" variant="primary" icon={<Wrench size={12} />} onClick={() => applyAction(i, a)} loading={applyBusy === i}>
-                                  Write to Amazon
+                                <Btn size="sm" variant="primary" icon={<Wrench size={12} />} onClick={() => applyOptimizer(i)} loading={applyBusy === i}>
+                                  Apply fix
                                 </Btn>
+                                {applyMsg[i] && (
+                                  <span className={cn("text-[11px]", applyMsg[i].startsWith("Applied") ? "text-green-ink" : applyMsg[i].includes("Nothing") ? "text-ink-3" : "text-danger")}>
+                                    {applyMsg[i]}
+                                  </span>
+                                )}
                               </>
+                            )}
+                            {mode === "set-attribute" && a.execution.attribute && (
+                              <SetAttributeControl storeIndex={storeIndex} sku={it.sku} attribute={a.execution.attribute} suggestedValue={a.execution.suggestedValue ?? ""} />
                             )}
                             {mode === "manual" && (
                               <span className="inline-flex items-center gap-1 text-[10px] text-ink-4"><Hand size={10} /> manual / decision</span>
-                            )}
-                            {applyMsg[i] && (
-                              <span className={cn("text-[11px]", applyMsg[i].startsWith("Applied") ? "text-green-ink" : applyMsg[i].includes("Nothing") ? "text-ink-3" : "text-danger")}>
-                                {applyMsg[i]}
-                              </span>
                             )}
                           </span>
                         </span>
@@ -688,6 +669,127 @@ function HealthRow({
         </tr>
       )}
     </>
+  );
+}
+
+interface AttrForm {
+  valueField: string | null;
+  valueType: "number" | "string" | null;
+  enumFields: Array<{ name: string; nested: boolean; allowed: string[] }>;
+}
+
+/** Set-attribute control: value input + a dropdown of Amazon's allowed values
+ *  per enum sub-field (from Product Type Definitions). Writes a schema-valid PATCH. */
+function SetAttributeControl({
+  storeIndex,
+  sku,
+  attribute,
+  suggestedValue,
+}: {
+  storeIndex: number;
+  sku: string;
+  attribute: string;
+  suggestedValue: string;
+}) {
+  const [form, setForm] = useState<AttrForm | null>(null);
+  const [value, setValue] = useState(suggestedValue);
+  const [sub, setSub] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/amazon/growth/advisor/attribute-form?storeIndex=${storeIndex}&sku=${encodeURIComponent(sku)}&attribute=${encodeURIComponent(attribute)}`,
+        );
+        const j = await res.json();
+        if (!alive) return;
+        if (j.ok) {
+          setForm(j.form);
+          if (j.current?.value != null) setValue(String(j.current.value));
+          const s: Record<string, string> = {};
+          for (const ef of j.form.enumFields as AttrForm["enumFields"]) {
+            const curr = j.current?.sub?.[ef.name];
+            s[ef.name] = curr && ef.allowed.includes(curr) ? curr : ef.allowed.includes("Count") ? "Count" : ef.allowed[0];
+          }
+          setSub(s);
+        } else {
+          setMsg(j.error ?? "schema unavailable");
+        }
+      } catch (e) {
+        if (alive) setMsg((e as Error).message);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [storeIndex, sku, attribute]);
+
+  async function write() {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const res = await fetch("/api/amazon/growth/advisor/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storeIndex, sku, mode: "set-attribute", attribute, value, subValues: sub }),
+      });
+      const j = await res.json();
+      if (!j.ok) setMsg(`Error: ${j.error}`);
+      else {
+        const r = j.result;
+        setMsg(
+          r.applied
+            ? "Applied to Amazon ✓"
+            : r.status === "INVALID"
+              ? `Amazon rejected: ${r.issues?.[0]?.message ?? "invalid"}`
+              : `Status: ${r.status ?? "?"}`,
+        );
+      }
+    } catch (e) {
+      setMsg(`Failed: ${(e as Error).message}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (loading) return <span className="text-[11px] text-ink-4">loading {attribute} options…</span>;
+
+  return (
+    <span className="flex flex-wrap items-center gap-1.5">
+      <span className="font-mono text-[10px] text-ink-4">{attribute} =</span>
+      <input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className="h-6 w-16 rounded border border-rule bg-surface px-1.5 text-[11px] text-ink focus:border-green-mid focus:outline-none"
+      />
+      {form?.enumFields.map((ef) => (
+        <select
+          key={ef.name}
+          value={sub[ef.name] ?? ""}
+          onChange={(e) => setSub((s) => ({ ...s, [ef.name]: e.target.value }))}
+          className="h-6 rounded border border-rule bg-surface px-1 text-[11px] text-ink-2 focus:outline-none"
+          title={ef.name}
+        >
+          {ef.allowed.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </select>
+      ))}
+      <Btn size="sm" variant="primary" icon={<Wrench size={12} />} onClick={write} loading={busy}>
+        Write to Amazon
+      </Btn>
+      {msg && (
+        <span className={cn("text-[11px]", msg.startsWith("Applied") ? "text-green-ink" : "text-danger")}>{msg}</span>
+      )}
+    </span>
   );
 }
 
