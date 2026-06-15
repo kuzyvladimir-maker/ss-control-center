@@ -114,7 +114,10 @@ export async function GET(request: NextRequest) {
     const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + String(Date.now()).slice(-5);
     while (Date.now() - started < TIME_BUDGET_MS) {
       const q = await conn.execute({
-        sql: `SELECT id, sku, result, attempts FROM WalmartRemediationQueue WHERE storeIndex=? AND status='queued' ORDER BY queuedAt ASC LIMIT 1`,
+        // attempts ASC first: a row re-queued this tick (rate-limit) has a higher
+        // attempt count, so fresh rows are picked before it — preventing the same
+        // SKU from being re-processed (double enrichment) within one tick.
+        sql: `SELECT id, sku, result, attempts FROM WalmartRemediationQueue WHERE storeIndex=? AND status='queued' ORDER BY attempts ASC, queuedAt ASC LIMIT 1`,
         args: [STORE],
       });
       const job = (q.rows as any[])[0];

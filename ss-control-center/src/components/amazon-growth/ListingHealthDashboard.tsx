@@ -425,6 +425,7 @@ interface AdviceAction {
   impact: "high" | "medium" | "low";
   effort: "low" | "medium" | "high";
   kind: "auto" | "semi" | "manual";
+  execution: { mode: "optimizer" | "set-attribute" | "manual"; attribute?: string; suggestedValue?: string };
 }
 interface AdvicePlan {
   diagnosis: string;
@@ -465,6 +466,47 @@ function HealthRow({
   const [advice, setAdvice] = useState<AdvicePlan | null>(null);
   const [advising, setAdvising] = useState(false);
   const [adviceErr, setAdviceErr] = useState<string | null>(null);
+  const [applyBusy, setApplyBusy] = useState<number | null>(null);
+  const [applyMsg, setApplyMsg] = useState<Record<number, string>>({});
+  const [attrVal, setAttrVal] = useState<Record<number, string>>({});
+
+  async function applyAction(idx: number, a: AdviceAction) {
+    setApplyBusy(idx);
+    setApplyMsg((m) => ({ ...m, [idx]: "" }));
+    try {
+      const body =
+        a.execution.mode === "set-attribute"
+          ? {
+              storeIndex,
+              sku: it.sku,
+              mode: "set-attribute",
+              attribute: a.execution.attribute,
+              value: attrVal[idx] ?? a.execution.suggestedValue ?? "",
+            }
+          : { storeIndex, sku: it.sku, mode: "optimizer" };
+      const res = await fetch("/api/amazon/growth/advisor/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const j = await res.json();
+      let msg: string;
+      if (!j.ok) {
+        msg = `Error: ${j.error}`;
+      } else {
+        const r = j.result;
+        if (r.applied) msg = "Applied to Amazon ✓";
+        else if (r.skipped) msg = `Nothing to change (${r.skipped})`;
+        else if (r.status === "INVALID") msg = `Amazon rejected: ${r.issues?.[0]?.message ?? "invalid"}`;
+        else msg = `Status: ${r.status ?? r.error ?? "?"}`;
+      }
+      setApplyMsg((m) => ({ ...m, [idx]: msg }));
+    } catch (e) {
+      setApplyMsg((m) => ({ ...m, [idx]: `Failed: ${(e as Error).message}` }));
+    } finally {
+      setApplyBusy(null);
+    }
+  }
 
   async function advise() {
     setAdvising(true);
@@ -570,18 +612,48 @@ function HealthRow({
               <div className="mb-2 rounded-lg border border-green-mid/40 bg-green-soft/40 p-3 text-[12px]">
                 <p className="text-ink-2"><span className="font-medium text-green-ink">Diagnosis: </span>{advice.diagnosis}</p>
                 <p className="mt-1 text-ink-2"><span className="font-medium text-green-ink">Root cause: </span>{advice.rootCause}</p>
-                <div className="mt-2 space-y-1.5">
+                <div className="mt-2 space-y-2">
                   {advice.actions.map((a, i) => {
                     const Icon = KIND_ICON[a.kind] ?? Lock;
+                    const mode = a.execution?.mode ?? "manual";
                     return (
                       <div key={i} className="flex items-start gap-2">
                         <span className="mt-0.5 inline-flex items-center gap-1 rounded bg-surface px-1.5 py-0.5 text-[10px] font-semibold uppercase text-ink-2 border border-rule">
                           <Icon size={10} />{a.impact}
                         </span>
-                        <span className="text-ink-2">
+                        <span className="min-w-0 flex-1 text-ink-2">
                           <span className="font-medium text-ink">{a.title}</span>
                           <span className="ml-1 font-mono text-[10px] text-ink-4">{a.lever} · {a.kind} · effort {a.effort}</span>
                           <span className="block text-ink-3">{a.rationale}</span>
+                          {/* Execute */}
+                          <span className="mt-1 flex flex-wrap items-center gap-2">
+                            {mode === "optimizer" && (
+                              <Btn size="sm" variant="primary" icon={<Wrench size={12} />} onClick={() => applyAction(i, a)} loading={applyBusy === i}>
+                                Apply fix
+                              </Btn>
+                            )}
+                            {mode === "set-attribute" && (
+                              <>
+                                <span className="font-mono text-[10px] text-ink-4">{a.execution.attribute} =</span>
+                                <input
+                                  value={attrVal[i] ?? a.execution.suggestedValue ?? ""}
+                                  onChange={(e) => setAttrVal((v) => ({ ...v, [i]: e.target.value }))}
+                                  className="h-6 w-24 rounded border border-rule bg-surface px-1.5 text-[11px] text-ink focus:border-green-mid focus:outline-none"
+                                />
+                                <Btn size="sm" variant="primary" icon={<Wrench size={12} />} onClick={() => applyAction(i, a)} loading={applyBusy === i}>
+                                  Write to Amazon
+                                </Btn>
+                              </>
+                            )}
+                            {mode === "manual" && (
+                              <span className="inline-flex items-center gap-1 text-[10px] text-ink-4"><Hand size={10} /> manual / decision</span>
+                            )}
+                            {applyMsg[i] && (
+                              <span className={cn("text-[11px]", applyMsg[i].startsWith("Applied") ? "text-green-ink" : applyMsg[i].includes("Nothing") ? "text-ink-3" : "text-danger")}>
+                                {applyMsg[i]}
+                              </span>
+                            )}
+                          </span>
                         </span>
                       </div>
                     );

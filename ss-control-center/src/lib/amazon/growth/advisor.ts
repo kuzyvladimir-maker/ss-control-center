@@ -56,6 +56,19 @@ export type ActionLever =
   | "content" | "images" | "price" | "buybox" | "keywords"
   | "reviews" | "suppression" | "attributes" | "other";
 
+/** How the operator can EXECUTE the action from the UI.
+ *  - optimizer: deterministic auto-fix we already run (dedupe duplicate attribute,
+ *    brand-voice/title scrub) — one-click Apply.
+ *  - set-attribute: set ONE attribute to a concrete value (e.g. unit_count = 4).
+ *    The UI pre-fills suggestedValue; the operator confirms; we PATCH it.
+ *  - manual: a human/business decision (pricing, reviews, content rewrite, harvest)
+ *    — no button. */
+export interface ActionExecution {
+  mode: "optimizer" | "set-attribute" | "manual";
+  attribute?: string;
+  suggestedValue?: string;
+}
+
 export interface AdvisorAction {
   title: string;
   lever: ActionLever;
@@ -63,6 +76,7 @@ export interface AdvisorAction {
   impact: "high" | "medium" | "low";
   effort: "low" | "medium" | "high";
   kind: "auto" | "semi" | "manual";
+  execution: ActionExecution;
 }
 
 export interface AdvisorResult {
@@ -90,8 +104,23 @@ const RESULT_SCHEMA = {
           impact: { type: "string", enum: ["high", "medium", "low"] },
           effort: { type: "string", enum: ["low", "medium", "high"] },
           kind: { type: "string", enum: ["auto", "semi", "manual"] },
+          execution: {
+            type: "object",
+            description: "How the operator executes this action from the UI.",
+            properties: {
+              mode: {
+                type: "string",
+                enum: ["optimizer", "set-attribute", "manual"],
+                description: "optimizer = deterministic dedupe/brand-voice scrub we already automate; set-attribute = set ONE attribute to a concrete value you can derive; manual = human/business decision (pricing, reviews, content rewrite, harvest).",
+              },
+              attribute: { type: "string", description: "For set-attribute: Amazon attribute machine name, e.g. unit_count, generic_keyword." },
+              suggestedValue: { type: "string", description: "For set-attribute: the concrete value to write, derived from the listing (e.g. 4 from 'Pack of 4'). Empty if you cannot derive it." },
+            },
+            required: ["mode"],
+            additionalProperties: false,
+          },
         },
-        required: ["title", "lever", "rationale", "impact", "effort", "kind"],
+        required: ["title", "lever", "rationale", "impact", "effort", "kind", "execution"],
         additionalProperties: false,
       },
     },
@@ -119,7 +148,13 @@ Diagnose where THIS listing leaks using the numbers given; null means not measur
 - kind=semi: needs generated content then review (rewrite title/bullets/A+, regenerate images).
 - kind=manual: a human/ops or business decision (pricing — gated on COGS; enroll reviews; restock).
 
-Brand rules (NON-NEGOTIABLE — never recommend violating them): no emojis, no promotional adjectives (ultimate/premium/best/perfect/amazing…), no health/medical claims, plain factual text, keep the "curated and assembled by Salutem Solutions LLC" gift-basket disclaimer. Pricing must protect ≥20% margin (COGS work is parallel — pricing actions are gated). Don't fabricate keywords or attribute values we don't have — route missing structural data to the sourcing harvest.
+For each action, set execution.mode so the operator can run it in one click — we have Amazon Listings API (PATCH) write access:
+- "optimizer": a deterministic fix we already automate — dedupe a duplicated attribute (e.g. generic_keyword occurs too many times) or scrub promo words/emojis from the title. No value needed.
+- "set-attribute": set ONE attribute to a concrete value you can DERIVE from the listing (title, pack size, weight). Provide execution.attribute (machine name like unit_count) and execution.suggestedValue (e.g. "4" derived from "Pack of 4"). The operator confirms the value before it's written, and Amazon validates the PATCH. Use this for fixable structural attributes — it's how we lift suppression.
+- "manual": pricing/buy-box (gated on COGS), reviews enrollment, image/content rewrite, or data we genuinely don't have — no auto-button.
+Prefer optimizer or set-attribute when the fix is concrete and derivable; only use manual when a human/business decision or missing real data is truly required.
+
+Brand rules (NON-NEGOTIABLE — never recommend violating them): no emojis, no promotional adjectives (ultimate/premium/best/perfect/amazing…), no health/medical claims, plain factual text, keep the "curated and assembled by Salutem Solutions LLC" gift-basket disclaimer. Pricing must protect ≥20% margin (COGS work is parallel — pricing actions are gated). Only derive attribute values you're confident about from the listing's own data — don't invent keywords or specs we have no basis for.
 
 Return only the structured plan.`;
 
