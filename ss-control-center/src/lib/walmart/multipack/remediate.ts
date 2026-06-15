@@ -138,9 +138,6 @@ export async function buildAndSubmitOne(
   if (!cand) return { ...blank, detail: `no donor photo${enrichNote ? ` (${enrichNote})` : ""}` };
   const noun = inferUnitNoun(cand.walmartTitle);
 
-  const sc: any = (await client.requestRaw("GET", "/items/walmart/search", { params: { upc } })).body;
-  const brand = sc?.items?.[0]?.brand || cand.walmartTitle.split(" ")[0];
-
   // Donor gallery + real bullets/description (only needed for content/gallery).
   const needDonor = !!(scope.bullets || scope.description || scope.gallery);
   const donor = needDonor && cand.itemId ? await fetchDonorDetail(cand.itemId) : null;
@@ -171,9 +168,12 @@ export async function buildAndSubmitOne(
     }
   }
 
-  // Scope-aware Visible block — only the chosen fields are sent. Brand is always
-  // included (the productType block requires it); it is never changed.
-  const visible: Record<string, any> = { brand };
+  // Scope-aware Visible block — only the chosen fields are sent. We deliberately
+  // do NOT send `brand`: it's a catalog-identity field we never change, and
+  // sending it triggers Walmart's ERR_EXT_DATA_0101119 ("Product ID exists with
+  // different details") conflict (the "QARTH" failures) when our value differs
+  // from the shared catalog. Omitting it lets the image/content update apply.
+  const visible: Record<string, any> = {};
   if (scope.title) visible.productName = content.title;
   if (scope.description) visible.shortDescription = content.description;
   if (scope.bullets) visible.keyFeatures = content.keyFeatures;
