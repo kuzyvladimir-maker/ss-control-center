@@ -12,7 +12,12 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 
-const MODEL = "claude-opus-4-8";
+// Default model for the single, deliberate per-listing "AI Advise" (deep dive).
+// The bulk advisor passes Sonnet — the task is bounded structured diagnosis over
+// a tiny context with code-side guardrails, so Opus's premium isn't warranted at
+// catalog scale (and Sonnet is faster + ~40% cheaper). See adviseListing(opts).
+const DEFAULT_MODEL = "claude-opus-4-8";
+export const BULK_ADVISOR_MODEL = "claude-sonnet-4-6";
 
 function getClient(): Anthropic {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -189,13 +194,21 @@ function buildUserPrompt(i: AdvisorInput): string {
   return lines.join("\n");
 }
 
-/** Run the advisor on one listing. Returns a validated, ranked action plan. */
-export async function adviseListing(input: AdvisorInput): Promise<AdvisorResult> {
+/** Run the advisor on one listing. Returns a validated, ranked action plan.
+ *  opts.thinking: pass "off" for the bulk path — adaptive thinking eats into
+ *  max_tokens and can truncate the JSON (and ~4x the latency); this task is a
+ *  bounded structured diagnosis, so the deep think isn't worth it at scale. */
+export async function adviseListing(
+  input: AdvisorInput,
+  opts?: { model?: string; thinking?: "adaptive" | "off" },
+): Promise<AdvisorResult> {
   const client = getClient();
   const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: 4096,
-    thinking: { type: "adaptive" },
+    model: opts?.model ?? DEFAULT_MODEL,
+    // Headroom so thinking (single path) + the structured plan never truncate the
+    // JSON. Only generated tokens are billed, so a higher cap is free insurance.
+    max_tokens: 6144,
+    thinking: opts?.thinking === "off" ? { type: "disabled" } : { type: "adaptive" },
     output_config: { format: { type: "json_schema", schema: RESULT_SCHEMA } },
     system: SYSTEM,
     messages: [{ role: "user", content: buildUserPrompt(input) }],

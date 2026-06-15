@@ -243,12 +243,25 @@ export function BulkAdvisePanel({ storeIndex }: { storeIndex: number }) {
 
   async function drainLoop() {
     setBusy("draining");
+    let fails = 0;
     try {
-      for (let i = 0; i < 400 && autoRef.current; i++) {
-        const res = await fetch("/api/amazon/growth/advisor-bulk/drain", { method: "POST" });
-        const j = await res.json();
+      for (let i = 0; i < 600 && autoRef.current; i++) {
+        try {
+          const res = await fetch("/api/amazon/growth/advisor-bulk/drain", { method: "POST" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const j = await res.json();
+          if (!j.ok) throw new Error(j.error || "worker error");
+          fails = 0;
+        } catch (e) {
+          // A timed-out / transient batch must NOT kill the whole run — the queue
+          // still has items (and stale RUNNING rows self-heal on the next drain).
+          // Back off and retry; give up only after several failures in a row.
+          fails++;
+          if (fails >= 4) { setMsg(`Stopped after repeated worker errors: ${(e as Error).message}`); break; }
+          setMsg(`Batch hiccup (${fails}/4) — retrying…`);
+          await new Promise((r) => setTimeout(r, 4000));
+        }
         const s = await loadQueue();
-        if (!j.ok) { setMsg(`Worker error: ${j.error}`); break; }
         if (!s || s.requested + s.running === 0) break;
       }
     } finally {

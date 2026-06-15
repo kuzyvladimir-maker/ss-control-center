@@ -16,7 +16,7 @@ import type { PrismaClient } from "@/generated/prisma/client";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { getListing, patchListing, listSkus, type ListingPatch } from "@/lib/amazon-sp-api/listings";
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
-import { adviseListing, type AdvisorInput, type AdvisorAction } from "./advisor";
+import { adviseListing, BULK_ADVISOR_MODEL, type AdvisorInput, type AdvisorAction } from "./advisor";
 import { buildPlan, applyPlan } from "./optimizer";
 import { logChange, logOptimizerChanges } from "./change-log";
 import { getAttributeForm, buildAttributeEntry } from "./product-type-definitions";
@@ -141,7 +141,7 @@ async function processAdvise(
   });
   if (!item) return { status: "SKIPPED", actionsApplied: 0, result: "not in mirror" };
 
-  const plan = await adviseListing(buildInput(item));
+  const plan = await adviseListing(buildInput(item), { model: BULK_ADVISOR_MODEL, thinking: "off" });
   const notes: string[] = [];
   let applied = 0;
 
@@ -202,6 +202,10 @@ export async function drainAdvisorQueue(
   const startedAt = Date.now();
   const budgetMs = opts.budgetMs ?? 110_000;
   const max = opts.max ?? 20;
+
+  // Reclaim rows left RUNNING by a previous batch killed mid-flight (e.g. a
+  // function timeout). The UI drains sequentially, so any RUNNING now is stale.
+  await prisma.amazonAdvisorQueue.updateMany({ where: { status: "RUNNING" }, data: { status: "REQUESTED" } });
 
   const sellerIds = new Map<number, string>();
   let processed = 0, done = 0, skipped = 0, errored = 0, actionsApplied = 0;
