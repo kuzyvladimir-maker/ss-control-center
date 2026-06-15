@@ -195,6 +195,14 @@ export function BulkAdvisePanel({ storeIndex }: { storeIndex: number }) {
     const id = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(id);
   }, [startedAt, busy]);
+  // Poll the queue while a run is active — each LLM listing takes ~20s, and a
+  // single drain batch can run ~110s before returning, so we refresh the stats
+  // independently to fill the bar live instead of in big jumps.
+  useEffect(() => {
+    if (busy == null) return;
+    const id = setInterval(() => { loadQueue(); }, 2500);
+    return () => clearInterval(id);
+  }, [busy, loadQueue]);
 
   const candidates = pool?.candidates ?? [];
   const candSkus = candidates.map((c) => c.sku);
@@ -224,6 +232,7 @@ export function BulkAdvisePanel({ storeIndex }: { storeIndex: number }) {
       if (!j.ok) { setMsg(`Error: ${j.error}`); setBusy(null); return; }
       setMsg(`Queued ${j.queued} listings for AI analysis…`);
       setSelected(new Set());
+      await loadQueue(); // pull the fresh queue now so the progress bar shows immediately
       autoRef.current = true;
       await drainLoop();
     } catch (e) {
