@@ -54,6 +54,15 @@ function scrubTitle(input: string): string {
   return scrubDescription(input).replace(/\s*\n+\s*/g, " ").replace(/\s+/g, " ").trim();
 }
 
+/** Human-readable summary of an attribute's values, so the change log shows
+ *  WHAT was deduped (e.g. "3 values: coffee, coffee, tea") not just a count. */
+function summarizeValues(arr: AttrValue[]): string {
+  const vals = arr.map((v) => (typeof v?.value === "string" ? v.value : JSON.stringify(v)));
+  const joined = vals.join(", ");
+  const body = joined.length > 120 ? joined.slice(0, 120) + "…" : joined;
+  return `${arr.length} value${arr.length === 1 ? "" : "s"}: ${body}`;
+}
+
 /** Parse "a maximum of N occurrence(s)" from a 99016-style message. */
 function parseMaxOccurrences(message: string): number | null {
   const m = message.match(/maximum of (\d+) occurrence/i);
@@ -97,20 +106,33 @@ export async function buildPlan(
   }
 
   // ── 2. Duplicate-attribute dedupe (issue 99016 et al.) ──
+  // 99016 fires on REPEATED values exceeding Amazon's allowed count. We first
+  // drop exact duplicates (the real offender) keeping distinct values in order,
+  // and only truncate to `max` if still over — so we never throw away a unique
+  // keyword unless Amazon's count limit genuinely forces it.
   for (const iss of issues) {
     const max = parseMaxOccurrences(iss.message);
     if (max == null) continue;
     for (const attrName of iss.attributeNames) {
       const arr = attrs[attrName];
       if (Array.isArray(arr) && arr.length > max) {
-        const kept = arr.slice(0, max);
-        changes.push({
-          kind: "dedupe-attribute",
-          field: attrName,
-          before: `${arr.length} values`,
-          after: `${kept.length} value(s)`,
+        const seen = new Set<string>();
+        const distinct = arr.filter((v) => {
+          const key = JSON.stringify(v);
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
         });
-        patches.push({ op: "replace", path: `/attributes/${attrName}`, value: kept });
+        const kept = distinct.length > max ? distinct.slice(0, max) : distinct;
+        if (kept.length < arr.length) {
+          changes.push({
+            kind: "dedupe-attribute",
+            field: attrName,
+            before: summarizeValues(arr),
+            after: summarizeValues(kept),
+          });
+          patches.push({ op: "replace", path: `/attributes/${attrName}`, value: kept });
+        }
       }
     }
   }

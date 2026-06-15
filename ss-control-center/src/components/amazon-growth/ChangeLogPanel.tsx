@@ -64,6 +64,26 @@ const OUTCOME_CLS: Record<string, string> = {
   harmful: "text-danger",
 };
 
+// Word-level diff for title scrubs (removal-only): words present in `before`
+// but gone from `after` are highlighted red-strike so a one-word change pops.
+function WordDiff({ before, after }: { before: string; after: string }) {
+  const kept = new Set(after.split(/\s+/).map((w) => w.trim()).filter(Boolean));
+  const toks = before.split(/(\s+)/);
+  return (
+    <span>
+      {toks.map((tok, i) => {
+        const w = tok.trim();
+        if (!w) return <span key={i}>{tok}</span>;
+        return kept.has(w) ? (
+          <span key={i} className="text-ink-3">{tok}</span>
+        ) : (
+          <span key={i} className="rounded px-0.5 line-through" style={{ background: "var(--danger-tint)", color: "var(--danger)" }}>{tok}</span>
+        );
+      })}
+    </span>
+  );
+}
+
 type OutcomeFilter = "all" | "useful" | "neutral" | "harmful" | "pending";
 
 export function ChangeLogPanel({ storeIndex }: { storeIndex: number }) {
@@ -182,8 +202,14 @@ export function ChangeLogPanel({ storeIndex }: { storeIndex: number }) {
                         {c.field && <span className="block text-[10px] text-ink-4">{c.field}</span>}
                       </td>
                       <td className="max-w-[280px] px-2 py-2 text-[11px]">
-                        <span className="text-ink-4 line-through">{compact(c.beforeValue)}</span>
-                        <span className="text-green-ink"> → {compact(c.afterValue)}</span>
+                        {c.changeType === "title-scrub" && typeof c.beforeValue === "string" && typeof c.afterValue === "string" ? (
+                          <WordDiff before={c.beforeValue} after={c.afterValue} />
+                        ) : (
+                          <>
+                            <span className="text-ink-4 line-through">{compact(c.beforeValue)}</span>
+                            <span className="text-green-ink"> → {compact(c.afterValue)}</span>
+                          </>
+                        )}
                       </td>
                       <td className={cn("whitespace-nowrap px-2 py-2 tabular text-[11px]", h.cls)}>{h.txt}</td>
                       <td className="px-2 py-2">
