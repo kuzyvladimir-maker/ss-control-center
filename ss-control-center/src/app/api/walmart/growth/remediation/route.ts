@@ -110,10 +110,10 @@ export async function GET(request: NextRequest) {
   // bar reflects the current batch, not all-time history).
   const statRows = (await prisma.$queryRawUnsafe(
     `SELECT status, COUNT(*) AS c FROM WalmartRemediationQueue
-      WHERE storeIndex=? AND (status IN ('queued','running','submitted') OR (status IN ('done','error','skipped') AND COALESCE(finishedAt, queuedAt) >= datetime('now','-24 hours')))
+      WHERE storeIndex=? AND (status IN ('queued','running','submitted','held') OR (status IN ('done','error','skipped') AND COALESCE(finishedAt, queuedAt) >= datetime('now','-24 hours')))
       GROUP BY status`, storeIndex,
   )) as Row[];
-  const queueStats: Record<string, number> = { queued: 0, running: 0, submitted: 0, done: 0, error: 0, skipped: 0 };
+  const queueStats: Record<string, number> = { queued: 0, running: 0, submitted: 0, held: 0, done: 0, error: 0, skipped: 0 };
   for (const r of statRows) queueStats[String(r.status)] = Number(r.c || 0);
 
   return NextResponse.json({ period, counts, candidates, contentGapHeatmap, summary, history, queue, queueStats, page: { limit, offset, total: counts.match } });

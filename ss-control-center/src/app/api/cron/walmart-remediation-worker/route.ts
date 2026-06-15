@@ -33,6 +33,7 @@ const TIME_BUDGET_MS = 230_000;
 const BLUECART_CREDIT_FLOOR = 300; // stop on-demand enrichment below this to protect the monthly allotment
 const MAX_ATTEMPTS = 6;         // give a rate-limited SKU several retries before giving up
 const INTER_SKU_MS = 2000;      // space out SKUs so a burst doesn't trip the threshold
+const BATCH_TARGET = 120;       // account safety: never expose more than this many listings in-flight at once
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // Walmart "REQUEST_THRESHOLD_VIOLATED" / 429 are transient — retry, don't fail.
@@ -112,6 +113,21 @@ export async function GET(request: NextRequest) {
   (out as any).enrichEnabled = allowEnrich;
   try {
     const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + String(Date.now()).slice(-5);
+
+    // Batch gate: keep at most BATCH_TARGET listings in-flight at once. The rest
+    // sit in 'held'; we top up only when the current batch drains. This bounds
+    // how many catalog changes are ever live at once (account safety).
+    const activeRow = await conn.execute({ sql: `SELECT COUNT(*) c FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('queued','running','submitted')`, args: [STORE] });
+    const active = Number((activeRow.rows[0] as any)?.c || 0);
+    if (active < BATCH_TARGET) {
+      const held = await conn.execute({ sql: `SELECT id FROM WalmartRemediationQueue WHERE storeIndex=? AND status='held' ORDER BY queuedAt ASC LIMIT ?`, args: [STORE, BATCH_TARGET - active] });
+      const ids = (held.rows as any[]).map((r) => r.id);
+      if (ids.length) {
+        await conn.execute({ sql: `UPDATE WalmartRemediationQueue SET status='queued' WHERE id IN (${ids.map(() => "?").join(",")})`, args: ids });
+        (out as any).promoted = ids.length;
+      }
+    }
+
     while (Date.now() - started < TIME_BUDGET_MS) {
       const q = await conn.execute({
         // attempts ASC first: a row re-queued this tick (rate-limit) has a higher

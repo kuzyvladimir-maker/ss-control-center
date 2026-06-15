@@ -28,7 +28,7 @@ interface ApiResp {
   summary: { applied: number; measured: number; pendingMeasure: number; avgLqDelta: number | null; avgContentDelta: number | null; avgConvDelta: number | null; };
   history: HistoryRow[];
   queue: { sku: string; status: string }[];
-  queueStats: { queued: number; running: number; submitted: number; done: number; error: number; skipped: number };
+  queueStats: { queued: number; running: number; submitted: number; held: number; done: number; error: number; skipped: number };
   page: { limit: number; offset: number; total: number };
 }
 
@@ -156,7 +156,7 @@ export function ListingOptimizer() {
   useEffect(() => { const t = setTimeout(load, 300); return () => clearTimeout(t); }, [load]); // debounce slider changes
 
   // While the worker has active items, poll so progress updates without a manual refresh.
-  const activeWork = (data?.queueStats?.queued ?? 0) + (data?.queueStats?.running ?? 0) + (data?.queueStats?.submitted ?? 0);
+  const activeWork = (data?.queueStats?.queued ?? 0) + (data?.queueStats?.running ?? 0) + (data?.queueStats?.submitted ?? 0) + (data?.queueStats?.held ?? 0);
   useEffect(() => {
     if (activeWork <= 0) return;
     const t = setInterval(load, 15000);
@@ -381,6 +381,7 @@ export function ListingOptimizer() {
                     <span>Done: <b className="text-green-ink">{s.done}</b></span>
                     {s.error > 0 && <span>Errors: <b className="text-red-ink">{s.error}</b></span>}
                     {s.skipped > 0 && <span>Skipped: <b className="text-ink-2">{s.skipped}</b></span>}
+                    {s.held > 0 && <span>Held (next batches): <b className="text-ink-2">{s.held}</b></span>}
                   </div>
                   {active > 0 && <div className="mt-1.5 text-[10px] text-ink-3">Auto-refreshing — the worker drains the queue about every 2 minutes.</div>}
                 </div>
