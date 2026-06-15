@@ -14,6 +14,7 @@ import { ActionCenter } from "./ActionCenter";
 import { ListingHealthDashboard } from "./ListingHealthDashboard";
 import { BuyBoxPanel } from "./BuyBoxPanel";
 import { ListingOptimizer } from "./ListingOptimizer";
+import { BulkFixPanel } from "./BulkFixPanel";
 
 export interface AmazonStore {
   index: number;
@@ -77,7 +78,8 @@ export function AmazonGrowthTabs() {
         <TabsContent value="listing-health" className="mt-4">
           <ListingHealthDashboard storeIndex={storeIndex} filter={healthFilter} onFilterChange={setHealthFilter} />
         </TabsContent>
-        <TabsContent value="optimizer" className="mt-4">
+        <TabsContent value="optimizer" className="mt-4 space-y-5">
+          <BulkFixPanel storeIndex={storeIndex} />
           <ListingOptimizer storeIndex={storeIndex} />
         </TabsContent>
         <TabsContent value="buy-box" className="mt-4">
