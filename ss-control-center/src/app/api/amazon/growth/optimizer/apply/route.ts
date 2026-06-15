@@ -14,6 +14,7 @@ import { prisma } from "@/lib/prisma";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { listSkus } from "@/lib/amazon-sp-api/listings";
 import { buildPlan, applyPlan } from "@/lib/amazon/growth/optimizer";
+import { logOptimizerChanges } from "@/lib/amazon/growth/change-log";
 import { scoreListing, type HealthIssue } from "@/lib/amazon/growth/listing-health";
 
 export const maxDuration = 180;
@@ -78,6 +79,11 @@ export async function POST(request: NextRequest) {
           });
         } catch {
           /* logging failure shouldn't fail the apply */
+        }
+        try {
+          await logOptimizerChanges(prisma, storeIndex, sku, plan, result, "optimizer");
+        } catch {
+          /* audit-log failure shouldn't fail the apply */
         }
         try {
           await rescore(storeIndex, sellerId, sku);

@@ -21,6 +21,7 @@ import type { PrismaClient } from "@/generated/prisma/client";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { listSkus } from "@/lib/amazon-sp-api/listings";
 import { scoreListing, type ScoredListing } from "./listing-health";
+import { measureChanges } from "./change-log";
 
 /** ~5 req/s ceiling per SP-API Listings docs → 220ms between calls. */
 const PACING_MS = 230;
@@ -140,6 +141,7 @@ export async function syncListingHealth(
       data: { cursor: null, sweepStartedAt: null, lastFullSweepAt: new Date() },
     });
     await measureRemediations(prisma, storeIndex, sweepStartedAt);
+    await measureChanges(prisma, storeIndex, sweepStartedAt);
   }
 
   return {

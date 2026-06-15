@@ -21,6 +21,7 @@ import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { getListing, patchListing, type ListingPatch } from "@/lib/amazon-sp-api/listings";
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import { buildPlan, applyPlan } from "./optimizer";
+import { logChange, logOptimizerChanges } from "./change-log";
 import { getAttributeForm, buildAttributeEntry } from "./product-type-definitions";
 import { scoreListing, computeHealthScore, pickTopFix, type HealthIssue } from "./listing-health";
 import { listSkus } from "@/lib/amazon-sp-api/listings";
@@ -65,8 +66,9 @@ function deriveWeight(title: string | null): { value: number; unit: string } | n
   return { value: Number(m[1]), unit };
 }
 
-/** Write one attribute (PTD-valid), validating first; returns the outcome. */
+/** Write one attribute (PTD-valid), validating first; logs to the audit trail. */
 async function writeAttribute(
+  prisma: PrismaClient,
   storeIndex: number,
   sellerId: string,
   sku: string,
@@ -88,7 +90,15 @@ async function writeAttribute(
     return { applied: false, status: preview?.status, issue: preview?.issues?.[0]?.message };
   }
   const resp = await patchListing(storeIndex, sellerId, sku, productType, patches, {});
-  return { applied: resp?.status === "ACCEPTED", status: resp?.status, issue: resp?.issues?.[0]?.message };
+  const applied = resp?.status === "ACCEPTED";
+  if (applied) {
+    await logChange(prisma, {
+      storeIndex, sku, source: "bulk", changeType: "attribute-set", field: attribute,
+      beforeValue: existing?.[0] ?? null, afterValue: entry, patch: patches,
+      submissionId: resp?.submissionId, amazonStatus: resp?.status,
+    }).catch(() => {});
+  }
+  return { applied, status: resp?.status, issue: resp?.issues?.[0]?.message };
 }
 
 /** Process one queued SKU. Returns the new status + change count + result note. */
@@ -115,6 +125,7 @@ async function processItem(
       if (res.applied) {
         changes += plan.changes.length;
         notes.push(`optimizer: ${plan.changes.map((c) => c.kind).join("+")}`);
+        await logOptimizerChanges(prisma, storeIndex, sku, plan, res, "bulk").catch(() => {});
       } else if (res.status === "INVALID") {
         notes.push(`optimizer rejected: ${(res.issues?.[0] as { message?: string })?.message ?? "invalid"}`);
       }
@@ -131,13 +142,13 @@ async function processItem(
     if (productType) {
       const unitCount = deriveUnitCount(title);
       if (unitCount != null) {
-        const r = await writeAttribute(storeIndex, sellerId, sku, productType, "unit_count", String(unitCount), { type: "Count" }, attrs.unit_count);
+        const r = await writeAttribute(prisma, storeIndex, sellerId, sku, productType, "unit_count", String(unitCount), { type: "Count" }, attrs.unit_count);
         if (r.applied) { changes++; notes.push(`unit_count=${unitCount} Count`); }
         else notes.push(`unit_count skipped: ${r.issue ?? r.status}`);
       }
       const weight = deriveWeight(title);
       if (weight) {
-        const r = await writeAttribute(storeIndex, sellerId, sku, productType, "item_weight", String(weight.value), { unit: weight.unit }, attrs.item_weight);
+        const r = await writeAttribute(prisma, storeIndex, sellerId, sku, productType, "item_weight", String(weight.value), { unit: weight.unit }, attrs.item_weight);
         if (r.applied) { changes++; notes.push(`item_weight=${weight.value} ${weight.unit}`); }
         else notes.push(`item_weight skipped: ${r.issue ?? r.status}`);
       }

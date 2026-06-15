@@ -22,6 +22,7 @@ import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import { buildPlan, applyPlan } from "@/lib/amazon/growth/optimizer";
 import { scoreListing, type HealthIssue } from "@/lib/amazon/growth/listing-health";
 import { getAttributeForm, buildAttributeEntry } from "@/lib/amazon/growth/product-type-definitions";
+import { logChange, logOptimizerChanges } from "@/lib/amazon/growth/change-log";
 import { listSkus } from "@/lib/amazon-sp-api/listings";
 
 export const maxDuration = 120;
@@ -73,7 +74,10 @@ export async function POST(request: NextRequest) {
       });
       const plan = await buildPlan(storeIndex, sellerId, sku, parseIssues(item?.issuesSummary ?? null));
       const result = await applyPlan(storeIndex, sellerId, plan, dryRun);
-      if (!dryRun && result.applied) await rescore(storeIndex, sellerId, sku);
+      if (!dryRun && result.applied) {
+        await logOptimizerChanges(prisma, storeIndex, sku, plan, result, "advisor").catch(() => {});
+        await rescore(storeIndex, sellerId, sku);
+      }
       return NextResponse.json({ ok: true, sku, mode, changes: plan.changes, result });
     }
 
@@ -109,7 +113,21 @@ export async function POST(request: NextRequest) {
 
       const resp = await patchListing(storeIndex, sellerId, sku, productType, patches, { validationPreview: dryRun });
       const applied = !dryRun && resp?.status === "ACCEPTED";
-      if (applied) await rescore(storeIndex, sellerId, sku);
+      if (applied) {
+        await logChange(prisma, {
+          storeIndex,
+          sku,
+          source: "advisor",
+          changeType: "attribute-set",
+          field: attribute,
+          beforeValue: existing?.[0] ?? null,
+          afterValue: entry,
+          patch: patches,
+          submissionId: resp?.submissionId,
+          amazonStatus: resp?.status,
+        }).catch(() => {});
+        await rescore(storeIndex, sellerId, sku);
+      }
       return NextResponse.json({
         ok: true,
         sku,
