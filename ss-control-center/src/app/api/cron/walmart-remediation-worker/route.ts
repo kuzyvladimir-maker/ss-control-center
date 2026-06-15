@@ -27,7 +27,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 const STORE = 1;
-const DRAIN_PER_TICK = 2;       // keep Walmart feed/API calls under the account threshold
+const DRAIN_PER_TICK = 6;       // submit more per tick; Walmart finalizes async (~100min/feed) so we don't wait on it
 const FINALIZE_PER_TICK = 25;   // feed-status GETs are cheap
 const TIME_BUDGET_MS = 230_000;
 const BLUECART_CREDIT_FLOOR = 300; // stop on-demand enrichment below this to protect the monthly allotment
@@ -114,10 +114,11 @@ export async function GET(request: NextRequest) {
   try {
     const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + String(Date.now()).slice(-5);
 
-    // Batch gate: keep at most BATCH_TARGET listings in-flight at once. The rest
-    // sit in 'held'; we top up only when the current batch drains. This bounds
-    // how many catalog changes are ever live at once (account safety).
-    const activeRow = await conn.execute({ sql: `SELECT COUNT(*) c FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('queued','running','submitted')`, args: [STORE] });
+    // Batch gate: bound how many we're ACTIVELY pushing (queued + running) to
+    // BATCH_TARGET. 'submitted' feeds are already accepted by Walmart and just
+    // await its slow (~100min) async finalize — they're not new catalog risk, so
+    // they don't count here (otherwise they'd throttle us to Walmart's pace).
+    const activeRow = await conn.execute({ sql: `SELECT COUNT(*) c FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('queued','running')`, args: [STORE] });
     const active = Number((activeRow.rows[0] as any)?.c || 0);
     if (active < BATCH_TARGET) {
       const held = await conn.execute({ sql: `SELECT id FROM WalmartRemediationQueue WHERE storeIndex=? AND status='held' ORDER BY queuedAt ASC LIMIT ?`, args: [STORE, BATCH_TARGET - active] });

@@ -116,7 +116,22 @@ export async function GET(request: NextRequest) {
   const queueStats: Record<string, number> = { queued: 0, running: 0, submitted: 0, held: 0, done: 0, error: 0, skipped: 0 };
   for (const r of statRows) queueStats[String(r.status)] = Number(r.c || 0);
 
-  return NextResponse.json({ period, counts, candidates, contentGapHeatmap, summary, history, queue, queueStats, page: { limit, offset, total: counts.match } });
+  // Processing ETA: elapsed since the run started + a smoothed throughput (last
+  // 2h) → estimated time remaining for everything still pending.
+  const progRow = (await prisma.$queryRawUnsafe(
+    `SELECT (julianday('now') - julianday(MIN(queuedAt))) * 24 * 60 AS elapsedMin,
+            (SELECT COUNT(*) FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('done','error','skipped') AND finishedAt >= datetime('now','-120 minutes')) AS fin2h,
+            (SELECT COUNT(*) FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('done','error','skipped')) AS finished
+       FROM WalmartRemediationQueue WHERE storeIndex=?`,
+    storeIndex, storeIndex, storeIndex,
+  )) as Row[];
+  const elapsedMin = Number(progRow[0]?.elapsedMin || 0);
+  const ratePerHour = Number(progRow[0]?.fin2h || 0) / 2;
+  const remaining = queueStats.held + queueStats.queued + queueStats.running + queueStats.submitted;
+  const etaHours = ratePerHour > 0.2 ? remaining / ratePerHour : null;
+  const progress = { elapsedMin, ratePerHour, remaining, etaHours, finished: Number(progRow[0]?.finished || 0) };
+
+  return NextResponse.json({ period, counts, candidates, contentGapHeatmap, summary, history, queue, queueStats, progress, page: { limit, offset, total: counts.match } });
 }
 
 export async function POST(request: NextRequest) {

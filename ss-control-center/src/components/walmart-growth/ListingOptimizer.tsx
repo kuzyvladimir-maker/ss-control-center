@@ -29,6 +29,7 @@ interface ApiResp {
   history: HistoryRow[];
   queue: { sku: string; status: string }[];
   queueStats: { queued: number; running: number; submitted: number; held: number; done: number; error: number; skipped: number };
+  progress?: { elapsedMin: number; ratePerHour: number; remaining: number; etaHours: number | null; finished: number };
   page: { limit: number; offset: number; total: number };
 }
 
@@ -49,6 +50,11 @@ const PRESETS = [
 
 function fmt(n: number | null | undefined, d = 0) { return n == null ? "—" : Number(n).toFixed(d); }
 function money(n: number | null | undefined) { return n == null ? "—" : "$" + Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 }); }
+function fmtDur(min: number | null | undefined) {
+  if (min == null || !isFinite(min) || min < 0) return "—";
+  const h = Math.floor(min / 60), m = Math.round(min % 60);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
 
 const HEALTH: Record<string, { label: string; bg: string; color: string }> = {
   winner: { label: "Winner", bg: "var(--green-soft)", color: "var(--green-ink)" },
@@ -383,7 +389,15 @@ export function ListingOptimizer() {
                     {s.skipped > 0 && <span>Skipped: <b className="text-ink-2">{s.skipped}</b></span>}
                     {s.held > 0 && <span>Held (next batches): <b className="text-ink-2">{s.held}</b></span>}
                   </div>
-                  {active > 0 && <div className="mt-1.5 text-[10px] text-ink-3">Auto-refreshing — the worker drains the queue about every 2 minutes.</div>}
+                  {data?.progress && (active > 0 || s.held > 0) && (
+                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-rule/40 pt-2 text-[11px] text-ink-2">
+                      <span>Elapsed: <b>{fmtDur(data.progress.elapsedMin)}</b></span>
+                      <span>Rate: <b>{data.progress.ratePerHour ? Math.round(data.progress.ratePerHour) : "—"}</b>/hr</span>
+                      <span>Remaining: <b>{data.progress.remaining.toLocaleString()}</b></span>
+                      <span>ETA: <b className="text-ink">{data.progress.etaHours != null ? fmtDur(data.progress.etaHours * 60) : "calculating…"}</b></span>
+                    </div>
+                  )}
+                  {active > 0 && <div className="mt-1.5 text-[10px] text-ink-3">Auto-refreshing — the worker drains the queue automatically.</div>}
                 </div>
               );
             })()}
