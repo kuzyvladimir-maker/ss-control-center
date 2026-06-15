@@ -75,6 +75,8 @@ const DEFAULT_FILTER = {
   retMax: 100,
   revMin: 0,
   revMax: 2000,
+  unitsMin: 0,
+  unitsMax: 100,
   health: "",
   status: "all",
   sort: "opportunity",
@@ -93,7 +95,7 @@ function resetScopes(): Partial<Filter> {
   return {
     suppressed: false, hasErrors: false, notBuyable: false, noBuyBox: false,
     oppMin: 0, healthMax: 100, sessMin: 0, errMin: 0,
-    convMin: 0, convMax: 100, bbMin: 0, bbMax: 100, retMin: 0, retMax: 100, revMin: 0, revMax: 2000,
+    convMin: 0, convMax: 100, bbMin: 0, bbMax: 100, retMin: 0, retMax: 100, revMin: 0, revMax: 2000, unitsMin: 0, unitsMax: 100,
     health: "", status: "all",
   };
 }
@@ -192,6 +194,8 @@ export function BulkFixPanel({ storeIndex }: { storeIndex: number }) {
     if (f.retMax < 100) p.set("retMax", String(f.retMax));
     if (f.revMin > 0) p.set("revMin", String(f.revMin));
     if (f.revMax < 2000) p.set("revMax", String(f.revMax));
+    if (f.unitsMin > 0) p.set("unitsMin", String(f.unitsMin));
+    if (f.unitsMax < 100) p.set("unitsMax", String(f.unitsMax));
     if (f.health) p.set("health", f.health);
     if (f.status !== "all") p.set("status", f.status);
     return p.toString();
@@ -217,7 +221,7 @@ export function BulkFixPanel({ storeIndex }: { storeIndex: number }) {
   useEffect(() => { setOffset(0); }, [
     f.q, f.suppressed, f.hasErrors, f.notBuyable, f.noBuyBox, f.oppMin, f.healthMax,
     f.sessMin, f.errMin, f.convMin, f.convMax, f.bbMin, f.bbMax, f.retMin, f.retMax,
-    f.revMin, f.revMax, f.health, f.status, pageSize,
+    f.revMin, f.revMax, f.unitsMin, f.unitsMax, f.health, f.status, pageSize,
   ]);
 
   // Debounced live pool/table as filters change.
@@ -315,11 +319,12 @@ export function BulkFixPanel({ storeIndex }: { storeIndex: number }) {
           <Slider label="Traffic (sessions) — at least" max={500} value={f.sessMin} onChange={(v) => setF({ ...f, sessMin: v })} />
           <Slider label="Errors — at least" max={20} value={f.errMin} onChange={(v) => setF({ ...f, errMin: v })} />
 
-          <div className="border-t border-rule pt-3 text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">Performance (30d) — range</div>
+          <div className="border-t border-rule pt-3 text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">Sales &amp; performance (last 30d)</div>
+          <RangeTwo label="Sales $" max={2000} lo={f.revMin} hi={f.revMax} onLo={(v) => setF({ ...f, revMin: v })} onHi={(v) => setF({ ...f, revMax: v })} />
+          <RangeTwo label="Units sold" max={100} lo={f.unitsMin} hi={f.unitsMax} onLo={(v) => setF({ ...f, unitsMin: v })} onHi={(v) => setF({ ...f, unitsMax: v })} />
           <RangeTwo label="Conversion" max={100} lo={f.convMin} hi={f.convMax} onLo={(v) => setF({ ...f, convMin: v })} onHi={(v) => setF({ ...f, convMax: v })} suffix="%" />
           <RangeTwo label="Buy Box" max={100} lo={f.bbMin} hi={f.bbMax} onLo={(v) => setF({ ...f, bbMin: v })} onHi={(v) => setF({ ...f, bbMax: v })} suffix="%" />
           <RangeTwo label="Return rate" max={100} lo={f.retMin} hi={f.retMax} onLo={(v) => setF({ ...f, retMin: v })} onHi={(v) => setF({ ...f, retMax: v })} suffix="%" />
-          <RangeTwo label="Revenue $" max={2000} lo={f.revMin} hi={f.revMax} onLo={(v) => setF({ ...f, revMin: v })} onHi={(v) => setF({ ...f, revMax: v })} />
 
           <div className="border-t border-rule pt-3 text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">Fixes to apply</div>
           <label className="flex items-center gap-2 text-[12px] text-ink-2"><input type="checkbox" checked={scope.dedupe} onChange={(e) => setScope({ ...scope, dedupe: e.target.checked })} /> Dedupe duplicate attributes</label>

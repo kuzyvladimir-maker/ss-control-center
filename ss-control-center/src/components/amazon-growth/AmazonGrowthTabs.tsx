@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActionCenter } from "./ActionCenter";
 import { ListingHealthDashboard } from "./ListingHealthDashboard";
 import { BuyBoxPanel } from "./BuyBoxPanel";
-import { ListingOptimizer } from "./ListingOptimizer";
+import { OptimizerResults } from "./OptimizerResults";
 import { BulkFixPanel } from "./BulkFixPanel";
 import { ChangeLogPanel } from "./ChangeLogPanel";
 
@@ -70,7 +70,7 @@ export function AmazonGrowthTabs() {
         <TabsList>
           <TabsTrigger value="action-center">Action Center</TabsTrigger>
           <TabsTrigger value="listing-health">Listing Health</TabsTrigger>
-          <TabsTrigger value="optimizer">Optimizer</TabsTrigger>
+          <TabsTrigger value="optimizer">Listing Optimizer</TabsTrigger>
           <TabsTrigger value="buy-box">Buy Box</TabsTrigger>
           <TabsTrigger value="change-log">Change Log</TabsTrigger>
         </TabsList>
@@ -82,7 +82,7 @@ export function AmazonGrowthTabs() {
         </TabsContent>
         <TabsContent value="optimizer" className="mt-4 space-y-5">
           <BulkFixPanel storeIndex={storeIndex} />
-          <ListingOptimizer storeIndex={storeIndex} />
+          <OptimizerResults storeIndex={storeIndex} />
         </TabsContent>
         <TabsContent value="buy-box" className="mt-4">
           <BuyBoxPanel storeIndex={storeIndex} />

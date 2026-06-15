@@ -33,14 +33,17 @@ interface BulkFilter {
   bbMax?: number;
   retMin?: number; // return % range
   retMax?: number;
-  revMin?: number; // revenue $ range
+  revMin?: number; // sales $ (revenue) range
   revMax?: number;
+  unitsMin?: number; // units sold range
+  unitsMax?: number;
   health?: string; // bucket chip: winner|leaky|high-return|dead|suppressed
   status?: string; // chip: buyable|notBuyable|error
 }
 
 // Range slider maxima — keep in sync with the UI so "at max" means "no cap".
-const REV_MAX = 2000; // $ revenue range ceiling
+const REV_MAX = 2000; // $ sales (revenue) range ceiling
+const UNITS_MAX = 100; // units-sold range ceiling
 
 // Health bucket → the WHERE that defines it (used by the Health chips).
 function bucketWhere(b: string): Prisma.AmazonListingHealthItemWhereInput | null {
@@ -83,9 +86,12 @@ function buildWhere(storeIndex: number, f: BulkFilter): Prisma.AmazonListingHeal
   // Return % range (stored 0-1).
   if (typeof f.retMin === "number" && f.retMin > 0) and.push({ returnRate: { gte: f.retMin / 100 } });
   if (typeof f.retMax === "number" && f.retMax < 100) and.push({ returnRate: { lte: f.retMax / 100 } });
-  // Revenue $ range.
+  // Sales $ (revenue, 30d) range.
   if (typeof f.revMin === "number" && f.revMin > 0) and.push({ revenue30d: { gte: f.revMin } });
   if (typeof f.revMax === "number" && f.revMax < REV_MAX) and.push({ revenue30d: { lte: f.revMax } });
+  // Units sold (30d) range.
+  if (typeof f.unitsMin === "number" && f.unitsMin > 0) and.push({ unitsOrdered30d: { gte: f.unitsMin } });
+  if (typeof f.unitsMax === "number" && f.unitsMax < UNITS_MAX) and.push({ unitsOrdered30d: { lte: f.unitsMax } });
 
   if (f.health) {
     const w = bucketWhere(f.health);
@@ -121,6 +127,8 @@ function filterFromParams(sp: URLSearchParams): BulkFilter {
     retMax: num("retMax"),
     revMin: num("revMin"),
     revMax: num("revMax"),
+    unitsMin: num("unitsMin"),
+    unitsMax: num("unitsMax"),
     health: sp.get("health") ?? undefined,
     status: sp.get("status") ?? undefined,
   };
