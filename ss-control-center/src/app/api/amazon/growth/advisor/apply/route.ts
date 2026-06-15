@@ -92,13 +92,27 @@ export async function POST(request: NextRequest) {
       if (!productType) return NextResponse.json({ ok: false, error: "no productType" }, { status: 422 });
 
       const attrs = (listing.attributes ?? {}) as Record<string, Array<Record<string, unknown>> | undefined>;
-      const existing = attrs[attribute];
+
+      // Amazon's JSON-Patch path can only address a TOP-LEVEL attribute, never a
+      // sub-field. For a nested target like "unit_count.type" we patch the whole
+      // parent ("unit_count"), keeping its existing value and setting only the
+      // named sub-field (nested enums require { value, language_tag }).
+      const dot = attribute.indexOf(".");
+      const parentAttr = dot >= 0 ? attribute.slice(0, dot) : attribute;
+      const subField = dot >= 0 ? attribute.slice(dot + 1) : null;
+      const existing = attrs[parentAttr];
 
       // Build a SCHEMA-VALID entry from Product Type Definitions (required
       // sub-fields + valid enums); fall back to mirroring the existing shape.
       let entry: Record<string, unknown>;
-      const form = await getAttributeForm(storeIndex, productType, attribute).catch(() => null);
-      if (form) {
+      const form = await getAttributeForm(storeIndex, productType, parentAttr).catch(() => null);
+      if (subField) {
+        // Set just the named sub-field on a copy of the existing parent entry.
+        const base: Record<string, unknown> = existing?.[0] ? { ...existing[0] } : { marketplace_id: MARKETPLACE_ID };
+        const ef = form?.enumFields.find((e) => e.name === subField);
+        base[subField] = ef?.nested ? { value: value.trim(), language_tag: "en_US" } : value.trim();
+        entry = base;
+      } else if (form) {
         entry = buildAttributeEntry(form, value, subValues);
         // keep any required sibling we didn't set from the existing entry
         if (existing?.[0]) entry = { ...existing[0], ...entry };
@@ -108,7 +122,7 @@ export async function POST(request: NextRequest) {
           : { value: coerce(value), marketplace_id: MARKETPLACE_ID };
       }
       const patches: ListingPatch[] = [
-        { op: existing ? "replace" : "add", path: `/attributes/${attribute}`, value: [entry] },
+        { op: existing ? "replace" : "add", path: `/attributes/${parentAttr}`, value: [entry] },
       ];
 
       const resp = await patchListing(storeIndex, sellerId, sku, productType, patches, { validationPreview: dryRun });
