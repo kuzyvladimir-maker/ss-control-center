@@ -52,7 +52,19 @@ export async function GET(request: NextRequest) {
   )) as Row[];
   const candidates = cand.map((r) => {
     let contentIssues: string[] = [];
-    try { const j = JSON.parse(r.issuesSummary || "[]"); if (Array.isArray(j)) contentIssues = j.filter((x: any) => x?.component === "content").map((x: any) => x.title).filter(Boolean); } catch {}
+    let issues: { component: string; label: string; title: string; detail: string; impact: string }[] = [];
+    try {
+      const j = JSON.parse(r.issuesSummary || "[]");
+      if (Array.isArray(j)) {
+        contentIssues = j.filter((x: any) => x?.component === "content").map((x: any) => x.title).filter(Boolean);
+        // Full per-issue list (all components) — Walmart's own diagnosis, surfaced
+        // inline so the Optimizer is both the diagnosis and the fix.
+        issues = j.filter((x: any) => x?.title).map((x: any) => ({
+          component: String(x.component || ""), label: String(x.componentLabel || x.component || ""),
+          title: String(x.title || ""), detail: String(x.detail || ""), impact: String(x.impact || ""),
+        })).slice(0, 20);
+      }
+    } catch {}
     const units = Number(r.units || 0), views = Number(r.pageViews30d || 0), returns = Number(r.returns || 0);
     const conv = views > 0 ? units / views : null;
     const returnRate = units > 0 ? returns / units : null;
@@ -64,7 +76,7 @@ export async function GET(request: NextRequest) {
     else if (views === 0 && (r.ratingCount ?? 0) === 0) health = "dead";
     return {
       sku: r.sku, itemId: r.itemId, productName: r.productName, packCount: r.packCount,
-      lqScore: r.lqScore, contentScore: r.contentScore, issueCount: r.issueCount, contentIssues,
+      lqScore: r.lqScore, contentScore: r.contentScore, issueCount: r.issueCount, contentIssues, issues,
       pageViews30d: views, reviews: Number(r.ratingCount || 0), inStock: !!r.isInStock, status: r.status || null,
       sales: Number(r.sales || 0), units, orders: Number(r.orders || 0), returns, conv, returnRate, health,
     };
@@ -131,7 +143,26 @@ export async function GET(request: NextRequest) {
   const etaHours = ratePerHour > 0.2 ? remaining / ratePerHour : null;
   const progress = { elapsedMin, ratePerHour, remaining, etaHours, finished: Number(progRow[0]?.finished || 0) };
 
-  return NextResponse.json({ period, counts, candidates, contentGapHeatmap, summary, history, queue, queueStats, progress, page: { limit, offset, total: counts.match } });
+  // Seller-level Listing Quality headline (Walmart's own score + 6 components) for
+  // the health strip — folds the old Listing Quality tab into the Optimizer.
+  const snap = (await prisma.$queryRawUnsafe(
+    `SELECT listingQuality, contentScore, transactibilityScore, priceScore, offerScore, ratingReviewScore, shippingScore
+       FROM WalmartListingQualitySnapshot WHERE storeIndex=? ORDER BY createdAt DESC LIMIT 1`, storeIndex,
+  )) as Row[];
+  const s0 = snap[0];
+  const sellerScore = s0 ? {
+    listingQuality: Number(s0.listingQuality),
+    components: [
+      { label: "Content", score: s0.contentScore != null ? Number(s0.contentScore) : null },
+      { label: "Published & in stock", score: s0.transactibilityScore != null ? Number(s0.transactibilityScore) : null },
+      { label: "Price", score: s0.priceScore != null ? Number(s0.priceScore) : null },
+      { label: "Offer", score: s0.offerScore != null ? Number(s0.offerScore) : null },
+      { label: "Ratings & reviews", score: s0.ratingReviewScore != null ? Number(s0.ratingReviewScore) : null },
+      { label: "Shipping speed", score: s0.shippingScore != null ? Number(s0.shippingScore) : null },
+    ],
+  } : null;
+
+  return NextResponse.json({ period, counts, candidates, contentGapHeatmap, summary, history, queue, queueStats, progress, sellerScore, page: { limit, offset, total: counts.match } });
 }
 
 export async function POST(request: NextRequest) {

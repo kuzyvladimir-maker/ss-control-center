@@ -4,27 +4,15 @@ import { useState } from "react";
 import { PageHead } from "@/components/kit";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActionCenter } from "./ActionCenter";
-import { ListingQualityDashboard } from "./ListingQualityDashboard";
 import { BuyBoxPanel } from "./BuyBoxPanel";
 import { ListingOptimizer } from "./ListingOptimizer";
 
-type LqFilter =
-  | "all"
-  | "trafficNoConversion"
-  | "outOfStock"
-  | "noReviews"
-  | "noFastShip"
-  | "inStockHasTraffic"
-  | "content";
-
 export function WalmartGrowthTabs() {
+  // Three tabs. The old "Listing Quality" tab is folded into the Optimizer: its
+  // seller score + 6 component gauges live in the health strip, and Walmart's
+  // per-listing issues are now inline + actionable (Fix / Ask AI) in the
+  // candidate table. Action Center is renamed "Overview".
   const [tab, setTab] = useState("optimizer");
-  const [lqFilter, setLqFilter] = useState<LqFilter>("trafficNoConversion");
-
-  function jumpToWorklist(filter: string) {
-    setLqFilter(filter as LqFilter);
-    setTab("listing-quality");
-  }
 
   return (
     <div className="space-y-5">
@@ -35,18 +23,14 @@ export function WalmartGrowthTabs() {
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList>
           <TabsTrigger value="optimizer">Listing Optimizer</TabsTrigger>
-          <TabsTrigger value="action-center">Action Center</TabsTrigger>
-          <TabsTrigger value="listing-quality">Listing Quality</TabsTrigger>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="buy-box">Buy Box</TabsTrigger>
         </TabsList>
-        <TabsContent value="action-center" className="mt-4">
-          <ActionCenter onJump={jumpToWorklist} />
-        </TabsContent>
-        <TabsContent value="listing-quality" className="mt-4">
-          <ListingQualityDashboard filter={lqFilter} onFilterChange={setLqFilter} />
-        </TabsContent>
         <TabsContent value="optimizer" className="mt-4">
           <ListingOptimizer />
+        </TabsContent>
+        <TabsContent value="overview" className="mt-4">
+          <ActionCenter onJump={() => setTab("optimizer")} />
         </TabsContent>
         <TabsContent value="buy-box" className="mt-4">
           <BuyBoxPanel />

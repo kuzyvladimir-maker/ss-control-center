@@ -11,15 +11,16 @@
  * WalmartRemediationQueue; this UI just builds the request and tracks results.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { RefreshCw, ExternalLink, ArrowUpRight, ArrowDownRight, Sparkles, Image as ImageIcon, ListChecks, Play, Lock } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState, Fragment } from "react";
+import { RefreshCw, ExternalLink, ArrowUpRight, ArrowDownRight, Sparkles, Image as ImageIcon, ListChecks, Play, Lock, ChevronRight } from "lucide-react";
 import { Btn, Panel, PanelHeader, KpiCard, RiskPill } from "@/components/kit";
 import { cn } from "@/lib/utils";
 
 interface Metrics { lq: number | null; content: number | null; conv: number | null; views: number | null; gmv: number | null; }
 interface HistoryRow { sku: string; url: string | null; runAt: string; ok: boolean; feedStatus: string | null; newTitle: string | null; bulletsCount: number | null; imagesCount: number | null; usedAiPolish: boolean; measured: boolean; before: Metrics; after: Metrics; deltas: Metrics; }
 interface Rec { type: "auto" | "advisory"; title: string; detail: string; skus: string[]; fields: string[]; }
-interface Candidate { sku: string; productName: string | null; packCount: number | null; lqScore: number | null; contentScore: number | null; issueCount: number | null; contentIssues: string[]; pageViews30d: number | null; reviews: number; sales: number; units: number; orders: number; returns: number; conv: number | null; returnRate: number | null; health: string; status: string | null; inStock: boolean; }
+interface LqIssue { component: string; label: string; title: string; detail: string; impact: string; }
+interface Candidate { sku: string; itemId: string | null; productName: string | null; packCount: number | null; lqScore: number | null; contentScore: number | null; issueCount: number | null; contentIssues: string[]; issues: LqIssue[]; pageViews30d: number | null; reviews: number; sales: number; units: number; orders: number; returns: number; conv: number | null; returnRate: number | null; health: string; status: string | null; inStock: boolean; }
 interface ApiResp {
   period: number;
   counts: { match: number; pack4: number; withGaps: number };
@@ -30,6 +31,7 @@ interface ApiResp {
   queue: { sku: string; status: string }[];
   queueStats: { queued: number; running: number; submitted: number; held: number; done: number; error: number; skipped: number };
   progress?: { elapsedMin: number; ratePerHour: number; remaining: number; etaHours: number | null; finished: number };
+  sellerScore?: { listingQuality: number; components: { label: string; score: number | null }[] } | null;
   page: { limit: number; offset: number; total: number };
 }
 
@@ -120,6 +122,8 @@ export function ListingOptimizer() {
   const [data, setData] = useState<ApiResp | null>(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [expandedRow, setExpandedRow] = useState<Set<string>>(new Set());
+  const [rowAi, setRowAi] = useState<Record<string, { loading?: boolean; narrative?: string; recs?: Rec[] }>>({});
   const [scope, setScope] = useState<Record<string, boolean>>({ image: true, gallery: true, title: true, bullets: true, description: true, attributes: false });
   const [running, setRunning] = useState(false);
   const [allMatching, setAllMatching] = useState(false);
@@ -176,6 +180,24 @@ export function ListingOptimizer() {
   const toggleAll = () => setSelected(allSelected ? new Set() : new Set(candSkus));
   const scopeCount = Object.values(scope).filter(Boolean).length;
 
+  const toggleRow = (sku: string) => setExpandedRow((s) => { const n = new Set(s); n.has(sku) ? n.delete(sku) : n.add(sku); return n; });
+
+  // Per-row actions: enqueue one listing, or run the AI analyst on just it.
+  async function fixOne(sku: string) {
+    try {
+      await fetch("/api/walmart/growth/remediation", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ skus: [sku], scope }) });
+      setMsg(`Queued ${sku} — watch Worker progress below.`); await load();
+    } catch { setMsg("Failed to queue — try again."); }
+  }
+  async function askAiOne(sku: string) {
+    setRowAi((s) => ({ ...s, [sku]: { loading: true } }));
+    try {
+      const r = await fetch(`/api/walmart/growth/remediation/analyze?${qs}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ skus: [sku] }) });
+      const j = await r.json();
+      setRowAi((s) => ({ ...s, [sku]: { narrative: j.narrative, recs: j.recommendations || [] } }));
+    } catch { setRowAi((s) => ({ ...s, [sku]: { narrative: "Analysis failed — try again." } })); }
+  }
+
   async function run() {
     const total = data?.counts.match ?? 0;
     if (!scopeCount) return;
@@ -225,8 +247,42 @@ export function ListingOptimizer() {
 
   const s = data?.summary;
 
+  const scoreTone = (s: number | null | undefined) => s == null ? "var(--ink-3)" : s >= 70 ? "var(--green-ink)" : s >= 40 ? "var(--warn-strong)" : "var(--danger)";
+
   return (
     <div className="space-y-5">
+      {/* Listing-quality health strip — Walmart's own seller score + 6 components.
+          (Folds in the old Listing Quality tab so this is the single hub.) */}
+      {data?.sellerScore && (
+        <Panel>
+          <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
+            <div className="flex shrink-0 items-center gap-3 sm:pr-4 sm:border-r sm:border-rule">
+              <div>
+                <div className="text-[11px] font-mono uppercase tracking-[0.1em] text-ink-3">Listing quality</div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[28px] font-semibold tabular leading-none" style={{ color: scoreTone(data.sellerScore.listingQuality) }}>{data.sellerScore.listingQuality}</span>
+                  <span className="text-[13px] text-ink-3">/100</span>
+                </div>
+                <div className="text-[10px] text-ink-3">Walmart seller score</div>
+              </div>
+            </div>
+            <div className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+              {data.sellerScore.components.map((c) => (
+                <div key={c.label} className="rounded-lg border border-rule bg-surface px-2.5 py-1.5">
+                  <div className="flex items-baseline justify-between gap-1">
+                    <span className="truncate text-[10px] font-mono uppercase tracking-[0.06em] text-ink-3">{c.label}</span>
+                    <span className="text-[13px] font-semibold tabular" style={{ color: scoreTone(c.score) }}>{c.score == null ? "—" : c.score}</span>
+                  </div>
+                  <div className="mt-1 h-1 overflow-hidden rounded-full bg-bg-elev">
+                    <div className="h-full rounded-full" style={{ width: `${c.score ?? 0}%`, background: scoreTone(c.score) }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Panel>
+      )}
+
       {/* Builder */}
       <Panel>
         <PanelHeader title="Build an optimization run" right={<Btn size="sm" icon={<RefreshCw size={13} />} onClick={load}>Refresh</Btn>} />
@@ -304,10 +360,21 @@ export function ListingOptimizer() {
                   {!loading && !candidates.length && <tr><td colSpan={13} className="px-2 py-5 text-center text-ink-3">No listings match — loosen the filters.</td></tr>}
                   {candidates.map((c) => {
                     const h = HEALTH[c.health] || HEALTH.new;
+                    const open = expandedRow.has(c.sku);
+                    const ai = rowAi[c.sku];
                     return (
-                      <tr key={c.sku} className={cn("border-b border-rule/50 hover:bg-bg-elev/40", selected.has(c.sku) && "bg-green-soft/40")}>
+                      <Fragment key={c.sku}>
+                      <tr className={cn("border-b border-rule/50 hover:bg-bg-elev/40", selected.has(c.sku) && "bg-green-soft/40", open && "bg-bg-elev/30")}>
                         <td className="px-2 py-1.5"><input type="checkbox" checked={selected.has(c.sku)} onChange={() => toggle(c.sku)} /></td>
-                        <td className="px-2 py-1.5 max-w-[220px]"><div className="truncate text-ink">{c.productName || c.sku}</div><div className="font-mono text-[10px] text-ink-3">{c.sku}</div></td>
+                        <td className="px-2 py-1.5 max-w-[220px] cursor-pointer" onClick={() => toggleRow(c.sku)}>
+                          <div className="flex items-center gap-1">
+                            <ChevronRight size={12} className={cn("shrink-0 text-ink-3 transition-transform", open && "rotate-90")} />
+                            <div className="min-w-0">
+                              <div className="truncate text-ink">{c.productName || c.sku}</div>
+                              <div className="font-mono text-[10px] text-ink-3">{c.sku}{c.issueCount ? ` · ${c.issueCount} issues` : ""}</div>
+                            </div>
+                          </div>
+                        </td>
                         <td className="px-2 py-1.5"><span className="rounded px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap" style={{ background: h.bg, color: h.color }}>{h.label}</span></td>
                         <td className="px-2 py-1.5 text-[10px] text-ink-3 whitespace-nowrap">{c.status === "PUBLISHED" ? "Pub" : c.status === "UNPUBLISHED" ? "Unpub" : c.status === "SYSTEM_PROBLEM" ? "Error" : "—"}</td>
                         <td className="px-2 py-1.5"><span className={cn("rounded px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap", c.inStock ? "bg-green-soft text-green-ink" : "bg-red-soft text-red-ink")}>{c.inStock ? "In stock" : "Out"}</span></td>
@@ -320,6 +387,44 @@ export function ListingOptimizer() {
                         <td className="px-2 py-1.5 tabular">{c.reviews || "—"}</td>
                         <td className="px-2 py-1.5 tabular">{c.returnRate != null ? (c.returnRate * 100).toFixed(0) + "%" : "—"}</td>
                       </tr>
+                      {open && (
+                        <tr className="border-b border-rule/50 bg-bg-elev/20">
+                          <td colSpan={13} className="px-4 py-3">
+                            <div className="mb-1.5 text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">Walmart's flagged issues</div>
+                            {c.issues?.length ? (
+                              <ul className="space-y-1">
+                                {c.issues.map((iss, i) => (
+                                  <li key={i} className="flex items-start gap-2 text-[12px] text-ink-2">
+                                    <span className={cn("mt-0.5 rounded px-1 py-0.5 text-[9px] font-medium uppercase whitespace-nowrap", iss.impact === "HIGH" ? "bg-red-soft text-red-ink" : iss.impact === "MEDIUM" ? "bg-warn-tint text-warn-strong" : "bg-bg-elev text-ink-3")}>{iss.impact || "—"}</span>
+                                    <span><b className="text-ink">{iss.label}:</b> {iss.title}{iss.detail && iss.detail !== iss.title ? <span className="text-ink-3"> — {iss.detail}</span> : null}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : <div className="text-[12px] text-ink-3">No issues flagged by Walmart for this listing.</div>}
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                              <Btn size="sm" variant="primary" icon={<Play size={12} />} onClick={() => fixOne(c.sku)}>Fix this listing</Btn>
+                              <Btn size="sm" icon={<Sparkles size={12} />} loading={ai?.loading} onClick={() => askAiOne(c.sku)}>Ask AI</Btn>
+                              {c.itemId && <a href={`https://www.walmart.com/ip/${c.itemId}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[12px] text-ink-3 hover:text-ink"><ExternalLink size={12} /> View on Walmart</a>}
+                            </div>
+                            {ai && !ai.loading && (
+                              <div className="mt-2 rounded-lg border border-rule bg-surface p-2.5 text-[12px]">
+                                {ai.narrative && <div className="text-ink-2">{ai.narrative}</div>}
+                                {ai.recs?.length ? (
+                                  <ul className="mt-1.5 space-y-1">
+                                    {ai.recs.map((r, i) => (
+                                      <li key={i} className="text-ink-2">
+                                        <span className={cn("mr-1 rounded px-1 py-0.5 text-[9px] font-medium uppercase", r.type === "auto" ? "bg-green-soft text-green-ink" : "bg-warn-tint text-warn-strong")}>{r.type === "auto" ? "auto-fix" : "needs you"}</span>
+                                        <b className="text-ink">{r.title}</b>{r.detail ? ` — ${r.detail}` : ""}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : null}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                      </Fragment>
                     );
                   })}
                 </tbody>
