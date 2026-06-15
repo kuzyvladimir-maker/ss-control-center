@@ -165,13 +165,22 @@ export function ListingOptimizer() {
   }, [qs]);
   useEffect(() => { const t = setTimeout(load, 300); return () => clearTimeout(t); }, [load]); // debounce slider changes
 
-  // While the worker has active items, poll so progress updates without a manual refresh.
+  // While the worker has active items, poll ONLY the lightweight counters (not the
+  // heavy candidate/heatmap/history rows) — that read amplification is what
+  // exhausted the DB read quota.
+  const pollLight = useCallback(async () => {
+    try {
+      const r = await fetch(`/api/walmart/growth/remediation?light=1`);
+      const j = await r.json();
+      if (j?.queueStats) setData((d) => (d ? { ...d, queueStats: j.queueStats, progress: j.progress } : d));
+    } catch { /* ignore transient */ }
+  }, []);
   const activeWork = (data?.queueStats?.queued ?? 0) + (data?.queueStats?.running ?? 0) + (data?.queueStats?.submitted ?? 0) + (data?.queueStats?.held ?? 0);
   useEffect(() => {
     if (activeWork <= 0) return;
-    const t = setInterval(load, 15000);
+    const t = setInterval(pollLight, 30000);
     return () => clearInterval(t);
-  }, [activeWork, load]);
+  }, [activeWork, pollLight]);
 
   const candidates = data?.candidates ?? [];
   const candSkus = candidates.map((c) => c.sku);

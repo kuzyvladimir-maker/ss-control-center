@@ -22,9 +22,40 @@ const ENQUEUE_CAP = 3000;
 type Row = Record<string, any>;
 const delta = (a: any, b: any): number | null => (a != null && b != null ? Number(a) - Number(b) : null);
 
+async function queueProgress(storeIndex: number) {
+  const statRows = (await prisma.$queryRawUnsafe(
+    `SELECT status, COUNT(*) AS c FROM WalmartRemediationQueue
+      WHERE storeIndex=? AND (status IN ('queued','running','submitted','held') OR (status IN ('done','error','skipped') AND COALESCE(finishedAt, queuedAt) >= datetime('now','-24 hours')))
+      GROUP BY status`, storeIndex,
+  )) as Row[];
+  const queueStats: Record<string, number> = { queued: 0, running: 0, submitted: 0, held: 0, done: 0, error: 0, skipped: 0 };
+  for (const r of statRows) queueStats[String(r.status)] = Number(r.c || 0);
+  const progRow = (await prisma.$queryRawUnsafe(
+    `SELECT (julianday('now') - julianday(MIN(queuedAt))) * 24 * 60 AS elapsedMin,
+            (SELECT COUNT(*) FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('done','error','skipped') AND finishedAt >= datetime('now','-120 minutes')) AS fin2h,
+            (SELECT COUNT(*) FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('done','error','skipped')) AS finished
+       FROM WalmartRemediationQueue WHERE storeIndex=?`,
+    storeIndex, storeIndex, storeIndex,
+  )) as Row[];
+  const elapsedMin = Number(progRow[0]?.elapsedMin || 0);
+  const ratePerHour = Number(progRow[0]?.fin2h || 0) / 2;
+  const remaining = queueStats.held + queueStats.queued + queueStats.running + queueStats.submitted;
+  const etaHours = ratePerHour > 0.2 ? remaining / ratePerHour : null;
+  return { queueStats, progress: { elapsedMin, ratePerHour, remaining, etaHours, finished: Number(progRow[0]?.finished || 0) } };
+}
+
 export async function GET(request: NextRequest) {
   const p = new URL(request.url).searchParams;
   const storeIndex = Number(p.get("storeIndex") || 1);
+
+  // Lightweight poll: only the live counters + ETA. Used by the module's
+  // auto-refresh so it doesn't re-read the heavy candidate/heatmap/history rows
+  // every few seconds (that read amplification is what exhausted the DB quota).
+  if (p.get("light") === "1") {
+    const { queueStats, progress } = await queueProgress(storeIndex);
+    return NextResponse.json({ light: true, queueStats, progress });
+  }
+
   const { whereSql, args, packExpr, period, S, U, O, R, VIEWS, sortSql } = buildFilter(p);
   const JOIN = `LEFT JOIN WalmartListingQualityItem q ON q.sku=w.sku AND q.storeIndex=w.storeIndex
                 LEFT JOIN WalmartSkuPerf perf ON perf.sku=w.sku AND perf.storeIndex=w.storeIndex`;
@@ -84,7 +115,7 @@ export async function GET(request: NextRequest) {
 
   // Content-gap heatmap across all multipack candidates (top recurring content issues).
   const heatRows = (await prisma.$queryRawUnsafe(
-    `SELECT issuesSummary FROM WalmartListingQualityItem q WHERE q.storeIndex=? AND COALESCE(q.titlePackCount,1) >= 2 AND q.issueCount > 0 LIMIT 2000`,
+    `SELECT issuesSummary FROM WalmartListingQualityItem q WHERE q.storeIndex=? AND COALESCE(q.titlePackCount,1) >= 2 AND q.issueCount > 0 LIMIT 500`,
     storeIndex,
   )) as Row[];
   const heat: Record<string, number> = {};
@@ -118,30 +149,8 @@ export async function GET(request: NextRequest) {
     `SELECT sku, status, queuedAt, feedId, error FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('queued','running','submitted') ORDER BY queuedAt DESC LIMIT 100`, storeIndex,
   )) as Row[];
 
-  // Live progress of the worker: counts per status (done/error since 24h so the
-  // bar reflects the current batch, not all-time history).
-  const statRows = (await prisma.$queryRawUnsafe(
-    `SELECT status, COUNT(*) AS c FROM WalmartRemediationQueue
-      WHERE storeIndex=? AND (status IN ('queued','running','submitted','held') OR (status IN ('done','error','skipped') AND COALESCE(finishedAt, queuedAt) >= datetime('now','-24 hours')))
-      GROUP BY status`, storeIndex,
-  )) as Row[];
-  const queueStats: Record<string, number> = { queued: 0, running: 0, submitted: 0, held: 0, done: 0, error: 0, skipped: 0 };
-  for (const r of statRows) queueStats[String(r.status)] = Number(r.c || 0);
-
-  // Processing ETA: elapsed since the run started + a smoothed throughput (last
-  // 2h) → estimated time remaining for everything still pending.
-  const progRow = (await prisma.$queryRawUnsafe(
-    `SELECT (julianday('now') - julianday(MIN(queuedAt))) * 24 * 60 AS elapsedMin,
-            (SELECT COUNT(*) FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('done','error','skipped') AND finishedAt >= datetime('now','-120 minutes')) AS fin2h,
-            (SELECT COUNT(*) FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('done','error','skipped')) AS finished
-       FROM WalmartRemediationQueue WHERE storeIndex=?`,
-    storeIndex, storeIndex, storeIndex,
-  )) as Row[];
-  const elapsedMin = Number(progRow[0]?.elapsedMin || 0);
-  const ratePerHour = Number(progRow[0]?.fin2h || 0) / 2;
-  const remaining = queueStats.held + queueStats.queued + queueStats.running + queueStats.submitted;
-  const etaHours = ratePerHour > 0.2 ? remaining / ratePerHour : null;
-  const progress = { elapsedMin, ratePerHour, remaining, etaHours, finished: Number(progRow[0]?.finished || 0) };
+  // Live worker progress + ETA (shared with the lightweight poll).
+  const { queueStats, progress } = await queueProgress(storeIndex);
 
   // Seller-level Listing Quality headline (Walmart's own score + 6 components) for
   // the health strip — folds the old Listing Quality tab into the Optimizer.
