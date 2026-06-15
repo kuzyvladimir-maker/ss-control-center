@@ -66,9 +66,12 @@ interface SkuDetail {
  *   4. Each Снять sets inventory=0 on Walmart and writes an audit row to
  *      WalmartListingRetirement.
  *
- * Already-retired SKUs (open WalmartListingRetirement rows) are shown
- * greyed-out with a "Уже снят" badge so the same SKU can't be re-zeroed
- * by mistake.
+ * A SKU is shown greyed-out with a "Снят" badge (and its button disabled)
+ * only when Walmart's LIVE stock is 0 — i.e. it's genuinely not selling.
+ * The local WalmartListingRetirement log is just a provisional hint while
+ * live stock loads: a SKU that was retired in the past but has since been
+ * restocked (сток > 0, still PUBLISHED) must stay retireable, not be hidden
+ * behind a stale log row.
  */
 export function RetireFromSaleModal({
   productTitle,
@@ -260,7 +263,20 @@ export function RetireFromSaleModal({
     }
   }
 
-  const eligible = (matches ?? []).filter((m) => !m.alreadyRetired);
+  // A SKU counts as "снят" only when Walmart actually shows it NOT selling —
+  // live сток === 0. The local retirement log (m.alreadyRetired) is used only
+  // as a provisional fallback WHILE live stock is still loading; once stock is
+  // known it wins. Otherwise a stale / never-rolled-back log row masks a
+  // restocked, still-PUBLISHED listing — the bug where 9 ACTIVE SKUs with
+  // сток:50 all showed "Снят" and the "Снять" button was disabled.
+  const effectivelyRetired = (m: SearchMatch): boolean => {
+    if (executeResults.get(m.sku)?.ok) return true; // zeroed this session
+    const qty = details.get(m.sku)?.currentQty ?? null;
+    if (qty === null) return m.alreadyRetired; // stock unknown → trust log
+    return qty === 0; // stock known → live truth
+  };
+
+  const eligible = (matches ?? []).filter((m) => !effectivelyRetired(m));
   const eligibleSkus = eligible.map((m) => m.sku);
 
   return (
@@ -448,11 +464,12 @@ export function RetireFromSaleModal({
                   // After a successful zero-out, show qty=0 immediately
                   // (don't wait for the next details refresh round-trip).
                   const liveQty = justDone ? 0 : detail?.currentQty ?? null;
+                  const effRetired = effectivelyRetired(m);
                   return (
                     <div
                       key={m.sku}
                       className={`flex items-start gap-2 px-2.5 py-2 ${
-                        m.alreadyRetired && !justDone ? "opacity-55" : ""
+                        effRetired && !justDone ? "opacity-55" : ""
                       } ${justDone ? "bg-green-soft/40" : ""}`}
                     >
                       {/* Thumbnail (40×40) — placeholder until details fetch resolves */}
@@ -518,7 +535,7 @@ export function RetireFromSaleModal({
                               сток: {liveQty}
                             </span>
                           )}
-                          {(m.alreadyRetired || justDone) && (
+                          {effRetired && (
                             <>
                               <span className="text-ink-4">·</span>
                               <span className="font-medium text-green-ink">
@@ -541,7 +558,7 @@ export function RetireFromSaleModal({
                         variant={justDone ? "ghost" : "default"}
                         size="sm"
                         loading={isBusy}
-                        disabled={m.alreadyRetired || justDone || isBusy}
+                        disabled={effRetired || isBusy}
                         icon={justDone ? <Check size={12} /> : <Ban size={12} />}
                         onClick={() => executeSkus([m.sku])}
                       >

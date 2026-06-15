@@ -9,6 +9,9 @@
  * Examples it handles:
  *   "Sara Lee ... Bag - Pack Of 7"               → { size: 7, label: "Pack of 7" }
  *   "Del Monte Peaches Sliced 8.5 oz (Pack of 6)" → { size: 6, label: "Pack of 6" }
+ *   "Thomas' Plain Mini Bagels, 10 ct (Pack of 6)" → { size: 6, label: "Pack of 6" }
+ *     (the "10 ct" is bagels inside ONE bag — contents, not a multiplier;
+ *      you buy 6 bags, so qty × 6, NOT qty × 60)
  *   "Bundle of 2 Cartons"                         → { size: 2, label: "Bundle of 2" }
  *   "Set of 12 Notebooks"                         → { size: 12, label: "Set of 12" }
  *   "Pack-of-4 ..."                               → { size: 4, label: "Pack of 4" }
@@ -78,6 +81,14 @@ const N_UNIT_PATTERNS: Array<{ regex: RegExp; unitLabel: string }> = [
 const ALL_N_CAPTURE_RE =
   /(?:^|[^.\d])(\d+)[\s\-]*(?:cans?|bottles?|boxes?|bags?|packs?|pouch(?:es)?|count|ct|pieces?|pcs|cartons?|of)\b/gi;
 
+// "N ct" / "N count" tokens describe how many items sit INSIDE one retail
+// package (e.g. "10 ct" = 10 bagels in one bag), not how many packages the
+// listing bundles. When we already have an explicit "Pack of N" multiplier
+// these per-unit counts must NOT count as a competing quantity — otherwise
+// we'd flag the title ambiguous and the AI fallback tends to multiply them
+// in ("10 ct (Pack of 6)" → 60 instead of 6).
+const CT_COUNT_NUMBER_RE = /(?:^|[^.\d])(\d+)[\s\-]*(?:count|ct)\b/gi;
+
 function isPlausibleSize(n: number): boolean {
   return Number.isFinite(n) && n >= 2 && n <= 999;
 }
@@ -146,6 +157,12 @@ function hasOtherPlausibleNumbers(title: string, picked: number): boolean {
   while ((m = ALL_N_CAPTURE_RE.exec(title)) !== null) {
     const n = parseInt(m[1], 10);
     if (isPlausibleSize(n)) seen.add(n);
+  }
+  // "N ct" / "N count" are per-package contents, not a second pack multiplier.
+  // Drop them so a title like "10 ct (Pack of 6)" isn't treated as ambiguous.
+  CT_COUNT_NUMBER_RE.lastIndex = 0;
+  while ((m = CT_COUNT_NUMBER_RE.exec(title)) !== null) {
+    seen.delete(parseInt(m[1], 10));
   }
   seen.delete(picked);
   return seen.size > 0;

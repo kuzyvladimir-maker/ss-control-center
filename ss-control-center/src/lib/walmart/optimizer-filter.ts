@@ -14,7 +14,12 @@ export function buildFilter(p: URLSearchParams) {
   const contentMax = p.get("contentMax") != null ? Number(p.get("contentMax")) : null;
   const hasIssues = p.get("hasIssues") === "1";
   const excludeBundles = p.get("excludeBundles") !== "0";
-  const packExpr = `COALESCE((SELECT unitsInListing FROM SkuShippingData WHERE sku=w.sku LIMIT 1),(SELECT packSize FROM SkuCost WHERE sku=w.sku LIMIT 1),w.titlePackCount,1)`;
+  // Pack source priority: our catalog data (SkuShippingData → SkuCost) → the
+  // title-parsed pack count. The parse lives in WalmartListingQualityItem
+  // (q.titlePackCount, broadly populated); WalmartCatalogItem.titlePackCount is
+  // currently NULL across the catalog, so without the q fallback this expression
+  // collapses to 1 for almost everything and the Optimizer surfaces ~0 multipacks.
+  const packExpr = `COALESCE((SELECT unitsInListing FROM SkuShippingData WHERE sku=w.sku LIMIT 1),(SELECT packSize FROM SkuCost WHERE sku=w.sku LIMIT 1),w.titlePackCount,q.titlePackCount,1)`;
   const where: string[] = ["w.storeIndex=?"];
   const args: any[] = [];
   where.push(`${packExpr} BETWEEN ? AND ?`); args.push(packMin, packMax);

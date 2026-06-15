@@ -49,31 +49,37 @@ async function itemContentIssues(db: Client, sku: string): Promise<string[]> {
 }
 
 /** Pack size, mirroring the optimizer's packExpr EXACTLY (SkuShippingData →
- *  SkuCost → WalmartCatalogItem.titlePackCount). 0 if unknown. */
+ *  SkuCost → WalmartCatalogItem.titlePackCount → WalmartListingQualityItem.titlePackCount).
+ *  The last fallback is the one that's actually populated catalog-wide — without
+ *  it pack resolves to 0 for almost every SKU and the worker SKIPs them. 0 if unknown. */
 async function resolvePack(db: Client, sku: string, storeIndex = 1): Promise<number> {
   const p = await db.execute({
     sql: `SELECT COALESCE(
             (SELECT unitsInListing FROM SkuShippingData WHERE sku=? LIMIT 1),
             (SELECT packSize FROM SkuCost WHERE sku=? LIMIT 1),
-            (SELECT titlePackCount FROM WalmartCatalogItem WHERE sku=? AND storeIndex=? LIMIT 1)
+            (SELECT titlePackCount FROM WalmartCatalogItem WHERE sku=? AND storeIndex=? LIMIT 1),
+            (SELECT titlePackCount FROM WalmartListingQualityItem WHERE sku=? AND storeIndex=? LIMIT 1)
           ) AS pack`,
-    args: [sku, sku, sku, storeIndex],
+    args: [sku, sku, sku, storeIndex, sku, storeIndex],
   });
   return Number((p.rows[0] as any)?.pack) || 0;
 }
 
 /** Pack count + clean donor photo. Pack resolution mirrors the optimizer's
- *  packExpr EXACTLY (SkuShippingData → SkuCost → titlePackCount) so the pipeline
- *  treats the same listings as multipacks that the UI surfaced as multipacks. */
+ *  packExpr EXACTLY (SkuShippingData → SkuCost → catalog titlePackCount →
+ *  listing-quality titlePackCount) so the pipeline treats the same listings as
+ *  multipacks that the UI surfaced as multipacks. The quality-item fallback is the
+ *  populated one (catalog titlePackCount is NULL catalog-wide). */
 async function loadCandidate(db: Client, sku: string, liveTitle: string, storeIndex = 1) {
   const p = await db.execute({
-    sql: `SELECT COALESCE(s.unitsInListing, c.packSize, cat.titlePackCount) AS pack
+    sql: `SELECT COALESCE(s.unitsInListing, c.packSize, cat.titlePackCount, q.titlePackCount) AS pack
           FROM (SELECT ? AS sku) k
           LEFT JOIN SkuShippingData s ON s.sku=k.sku
           LEFT JOIN SkuCost c ON c.sku=k.sku
           LEFT JOIN WalmartCatalogItem cat ON cat.sku=k.sku AND cat.storeIndex=?
+          LEFT JOIN WalmartListingQualityItem q ON q.sku=k.sku AND q.storeIndex=?
           LIMIT 1`,
-    args: [sku, storeIndex],
+    args: [sku, storeIndex, storeIndex],
   });
   const pack = Number((p.rows[0] as any)?.pack) || 0;
   if (pack < 2) return null;
