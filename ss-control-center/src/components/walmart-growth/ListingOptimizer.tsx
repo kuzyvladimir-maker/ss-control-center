@@ -124,7 +124,10 @@ export function ListingOptimizer() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [expandedRow, setExpandedRow] = useState<Set<string>>(new Set());
   const [rowAi, setRowAi] = useState<Record<string, { loading?: boolean; narrative?: string; recs?: Rec[] }>>({});
-  const [scope, setScope] = useState<Record<string, boolean>>({ image: true, gallery: true, title: true, bullets: true, description: true, attributes: false });
+  // Default = main image only (the tiled N-units image is the quantity-confusion
+  // fix). Content fields stay opt-in: they only apply on catalog cards we own and
+  // they cost Claude tokens, so they're off by default.
+  const [scope, setScope] = useState<Record<string, boolean>>({ image: true, gallery: false, title: false, bullets: false, description: false, attributes: false });
   const [running, setRunning] = useState(false);
   const [allMatching, setAllMatching] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);

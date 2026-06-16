@@ -157,21 +157,20 @@ export async function buildAndSubmitOne(
     content.description = `${quantityLeadSentence(cand.packCount, noun)}\n\n${polished.description}`;
   }
 
-  // Images: tiled main (scope.image) + badge (scope.gallery) + donor gallery.
+  // Images: the tiled main image (the actual quantity-confusion fix) is all we
+  // generate. We dropped the generated badge/infographic — its SVG text needs
+  // Arial/Helvetica, which the serverless runtime doesn't have, so it rendered as
+  // a blank coloured square. `gallery` now only forwards REAL donor photos.
   let mainUrl: string | null = null;
   const secondaryImageUrls: string[] = [];
-  if (scope.image || scope.gallery) {
+  if (scope.image) {
     const base = await fetchImageBuffer(cand.baseImageUrl);
-    if (scope.image) {
-      const main = await composeTiledMainImage(base, cand.packCount);
-      mainUrl = await uploadToR2(main, multipackImageKey(sku, "main", stamp));
-    }
-    if (scope.gallery) {
-      const badge = await renderBadgeImage(base, cand.packCount, { noun });
-      const badgeUrl = await uploadToR2(badge, multipackImageKey(sku, "badge", stamp));
-      const donorImgs = (donor?.images ?? []).slice(0, DONOR_IMAGE_CAP);
-      secondaryImageUrls.push(badgeUrl, ...donorImgs);
-    }
+    const main = await composeTiledMainImage(base, cand.packCount);
+    mainUrl = await uploadToR2(main, multipackImageKey(sku, "main", stamp));
+  }
+  if (scope.gallery) {
+    const donorImgs = (donor?.images ?? []).slice(0, DONOR_IMAGE_CAP);
+    secondaryImageUrls.push(...donorImgs);
   }
 
   // Scope-aware Visible block — only the chosen fields are sent. We deliberately

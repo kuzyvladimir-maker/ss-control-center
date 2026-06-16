@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
           out.requeued++;
           await conn.execute({
             sql: `UPDATE WalmartRemediationQueue SET status='queued', startedAt=NULL, finishedAt=NULL, feedId=NULL, attempts=0, result=?, error=? WHERE id=?`,
-            args: [JSON.stringify({ scope: { image: true, gallery: true }, imageRetry: true }), `catalog-locked → image-only retry`, row.id],
+            args: [JSON.stringify({ scope: { image: true }, imageRetry: true }), `catalog-locked → image-only retry`, row.id],
           });
           await conn.execute({ sql: `UPDATE WalmartListingRemediation SET feedStatus=?, ok=0 WHERE feedId=?`, args: [res.status, feedId] });
           continue;
