@@ -6,6 +6,54 @@
 
 import type { Client } from "@libsql/client";
 import { bluecartWalmartSearch } from "./retail-fetch";
+import { normUrl, htmlToText, liItems } from "../walmart/multipack/donor";
+
+export interface DetailResult { title: string; images: string[]; bullets: string[]; description: string; }
+
+/**
+ * Knowledge-base capture: pull the FULL BlueCart product detail (gallery, bullets,
+ * full description, specifications, ingredients, raw blob) and persist it to the
+ * RetailPrice row. ONE detail call (1 credit) that both feeds the listing content
+ * and permanently enriches our catalog. Returns the content for the caller's feed.
+ *
+ * Note: BlueCart has no structured nutrition_facts field — the nutrition label is
+ * usually one of the gallery images, and `ingredients`/`specifications` carry the
+ * rest. We store everything in `detailJson` so nothing is lost.
+ */
+export async function fetchAndStoreDetail(db: Client, sku: string, itemId: string): Promise<DetailResult | null> {
+  const key = process.env.BLUECART_API_KEY;
+  if (!key || !itemId) return null;
+  let j: any;
+  try {
+    const res = await fetch(`https://api.bluecartapi.com/request?api_key=${key}&type=product&item_id=${encodeURIComponent(itemId)}&walmart_domain=walmart.com`, { signal: AbortSignal.timeout(20000) });
+    if (!res.ok) return null;
+    j = await res.json();
+  } catch { return null; }
+  const p = j?.product || {};
+  if (!p || (!p.main_image && !(p.images || []).length)) return null;
+
+  const raw: string[] = [p.main_image, ...(p.images || []).map((x: any) => (typeof x === "string" ? x : x?.link))]
+    .filter((u): u is string => typeof u === "string" && u.startsWith("http"));
+  const seen = new Set<string>(); const images: string[] = [];
+  for (const u of raw) { const n = normUrl(u); if (!seen.has(n)) { seen.add(n); images.push(n); } }
+
+  let bullets: string[] = Array.isArray(p.feature_bullets) ? p.feature_bullets.map((b: any) => String(b).trim()).filter(Boolean) : [];
+  if (!bullets.length) bullets = liItems(p.description || "");
+  const description = htmlToText(p.description_full_html || p.description_full || p.description || "");
+  const specifications = Array.isArray(p.specifications) ? p.specifications : null;
+  const ingredients = typeof p.ingredients === "string" ? p.ingredients : (p.ingredients ? JSON.stringify(p.ingredients) : null);
+  const now = new Date().toISOString();
+
+  try {
+    await db.execute({
+      sql: `UPDATE RetailPrice SET imageUrls=?, keyFeatures=?, description=COALESCE(NULLIF(?,''),description), specifications=?, ingredients=?, detailJson=?, detailCapturedAt=?, updatedAt=?
+            WHERE retailer='walmart' AND retailerProductId=?`,
+      args: [JSON.stringify(images), JSON.stringify(bullets), description, specifications ? JSON.stringify(specifications) : null, ingredients, JSON.stringify(p).slice(0, 60000), now, now, itemId],
+    });
+  } catch { /* keep going — feed still works from the returned data */ }
+
+  return { title: p.title || "", images, bullets, description };
+}
 
 export interface EnrichResult { found: boolean; alreadyHad: boolean; creditsRemaining: number | null; offers: number; reason?: string; }
 

@@ -11,10 +11,9 @@ import type { Client } from "@libsql/client";
 import { composeTiledMainImage, renderBadgeImage, fetchImageBuffer, highResImageUrl } from "./composite";
 import { buildMultipackListing, inferUnitNoun, quantityLeadSentence, scrubBrandVoice } from "./content";
 import { uploadToR2, multipackImageKey } from "./r2";
-import { fetchDonorDetail } from "./donor";
 import { polishListingCopy } from "./polish";
 import { validateListingContent } from "./guidelines";
-import { ensureDonorImage } from "../../sourcing/enrich";
+import { ensureDonorImage, fetchAndStoreDetail } from "../../sourcing/enrich";
 
 export const SPEC_VERSION = "5.0.20260330-14_47_14-api";
 const DONOR_IMAGE_CAP = 6;
@@ -144,12 +143,16 @@ export async function buildAndSubmitOne(
   if (!cand) return { ...blank, detail: `no donor photo${enrichNote ? ` (${enrichNote})` : ""}` };
   const noun = inferUnitNoun(cand.walmartTitle);
 
-  // Donor gallery + real bullets/description (only needed for content/gallery).
-  const needDonor = !!(scope.bullets || scope.description || scope.gallery);
-  const donor = needDonor && cand.itemId ? await fetchDonorDetail(cand.itemId) : null;
+  // ALWAYS capture the full BlueCart detail (gallery, bullets, description, specs,
+  // ingredients, raw) into our catalog — even on image-only runs. We're building a
+  // knowledge base; the returned data also feeds the listing when scope needs it.
+  const donor = cand.itemId ? await fetchAndStoreDetail(db, sku, cand.itemId) : null;
   const content = buildMultipackListing(cand.walmartTitle, cand.packCount, { noun, donorBullets: donor?.bullets, donorDescription: donor?.description });
   const contentIssues = await itemContentIssues(db, sku);
-  const polished = (donor && (donor.bullets.length || donor.description))
+  // Claude polish ONLY when we're actually sending content fields (title/desc/
+  // bullets). Image-only runs skip it — no Anthropic spend.
+  const wantContent = !!(scope.title || scope.description || scope.bullets);
+  const polished = (wantContent && donor && (donor.bullets.length || donor.description))
     ? await polishListingCopy({ productName: content.title.replace(/\s*—.*$/, ""), donorBullets: donor.bullets, donorDescription: donor.description, contentIssues })
     : null;
   if (polished) {

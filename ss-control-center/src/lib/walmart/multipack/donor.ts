@@ -14,11 +14,11 @@ interface DonorDetail {
 }
 
 /** Strip Walmart CDN thumbnail params + normalize for de-dup. */
-function normUrl(u: string): string {
+export function normUrl(u: string): string {
   return u.split("?")[0];
 }
 
-function htmlToText(html: string): string {
+export function htmlToText(html: string): string {
   return html
     .replace(/<li>/gi, "\n• ")
     .replace(/<\/li>/gi, "")
@@ -29,7 +29,7 @@ function htmlToText(html: string): string {
     .trim();
 }
 
-function liItems(html: string): string[] {
+export function liItems(html: string): string[] {
   const out: string[] = [];
   const re = /<li>([\s\S]*?)<\/li>/gi;
   let m;

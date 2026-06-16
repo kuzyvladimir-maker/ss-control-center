@@ -25,6 +25,7 @@ export function WalmartGrowthTabs() {
           <TabsTrigger value="optimizer">Listing Optimizer</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="buy-box">Buy Box</TabsTrigger>
+          <TabsTrigger value="pricing">Pricing</TabsTrigger>
         </TabsList>
         <TabsContent value="optimizer" className="mt-4">
           <ListingOptimizer />
@@ -34,6 +35,19 @@ export function WalmartGrowthTabs() {
         </TabsContent>
         <TabsContent value="buy-box" className="mt-4">
           <BuyBoxPanel />
+        </TabsContent>
+        <TabsContent value="pricing" className="mt-4">
+          <div className="rounded-lg border border-rule bg-surface p-6">
+            <div className="text-[14px] font-semibold text-ink">
+              Pricing guardrails — Walmart
+            </div>
+            <p className="mt-2 max-w-2xl text-[13px] text-ink-2">
+              Same engine as Amazon → Pricing (target price + floor/ceiling, one-click
+              reprice). Waiting on per-product COGS for Walmart SKUs before it can
+              compute a target — cost determination is tracked separately. The
+              Amazon Uncrustables cost-model already validates the approach.
+            </p>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
