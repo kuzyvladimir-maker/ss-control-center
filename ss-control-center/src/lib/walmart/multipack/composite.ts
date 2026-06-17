@@ -146,13 +146,18 @@ export async function extractProduct(productImage: Buffer): Promise<Buffer> {
 
 /** Split N units into grid rows: 1 row up to 3, otherwise 2 rows (3 rows past
  *  12). e.g. 4→[2,2], 6→[3,3], 7→[4,3], 8→[4,4]. Top row carries any extra. */
+// Near-SQUARE grid so each unit is as LARGE as possible (a buyer must recognise
+// the product even in a tiny search thumbnail). cols≈rows≈√N minimises the larger
+// dimension → biggest cells. Rows are balanced (e.g. 10 → [4,3,3], not [5,5]).
+// 4 → 2×2, 6 → 3×2, 8 → [3,3,2], 9 → 3×3, 12 → 4×3, 16 → 4×4.
 function rowSplit(n: number): number[] {
-  const rows = n <= 3 ? 1 : n <= 12 ? 2 : 3;
-  const perRow = Math.ceil(n / rows);
+  if (n <= 3) return [n];
+  const cols = Math.ceil(Math.sqrt(n));
+  const rows = Math.ceil(n / cols);
   const counts: number[] = [];
   let left = n;
-  for (let r = 0; r < rows; r++) {
-    const c = Math.min(perRow, left);
+  for (let r = rows; r > 0; r--) {
+    const c = Math.ceil(left / r); // balance remaining units across remaining rows
     counts.push(c);
     left -= c;
   }
@@ -160,11 +165,10 @@ function rowSplit(n: number): number[] {
 }
 
 /**
- * PRIMARY image: show the REAL product as a clean GRID of N identical units —
- * 2 rows, no overlap, a clear gap between units both horizontally and
- * vertically, sized as large as possible (~95% of the frame). Each unit is
- * fully visible and legible. No text/badges (Walmart forbids them on the main
- * image).
+ * PRIMARY image: show the REAL product as a clean NEAR-SQUARE grid of N identical
+ * units (rows≈cols≈√N), no overlap, a clear gap between units, sized as large as
+ * possible (~95% of the frame) so each unit is recognisable even in a tiny search
+ * thumbnail. No text/badges (Walmart forbids them on the main image).
  */
 export async function composeTiledMainImage(
   productImage: Buffer,
