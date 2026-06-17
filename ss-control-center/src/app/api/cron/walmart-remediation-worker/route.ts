@@ -27,9 +27,9 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 const STORE = 1;
-const DRAIN_PER_TICK = 6;       // submit more per tick; Walmart finalizes async (~100min/feed) so we don't wait on it
+const DRAIN_PER_TICK = 3;       // lower rate: Wave 1 at 6/tick + overlapping ticks tripped Walmart's feed threshold (REQUEST_THRESHOLD_VIOLATED) hundreds of times
 const FINALIZE_PER_TICK = 25;   // feed-status GETs are cheap
-const TIME_BUDGET_MS = 230_000;
+const TIME_BUDGET_MS = 110_000; // < the 2-min cron interval, so ticks don't overlap and burst Walmart calls
 const BLUECART_CREDIT_FLOOR = 300; // stop on-demand enrichment below this to protect the monthly allotment
 const MAX_ATTEMPTS = 6;         // give a rate-limited SKU several retries before giving up
 const INTER_SKU_MS = 2000;      // space out SKUs so a burst doesn't trip the threshold

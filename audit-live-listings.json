@@ -3,12 +3,10 @@
     "sku": "FaisalX-2626",
     "url": "https://www.walmart.com/ip/10309802123",
     "imageKind": "other",
-    "imageOk": true,
+    "imageOk": false,
+    "liveTitle": "Campbell's Campbell’s Chunky Soup, Loaded Potato Seasoned with Bacon, ",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
@@ -16,11 +14,10 @@
     "url": "https://www.walmart.com/ip/10605304687",
     "imageKind": "other",
     "imageOk": false,
+    "liveTitle": "Campbell's Campbell’s Condensed Heart Healthy Tomato Soup, 10.75 oz Ca",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "health claims: heal",
+      "no bullets"
     ]
   },
   {
@@ -28,11 +25,59 @@
     "url": "https://www.walmart.com/ip/14803661716",
     "imageKind": "nutrition",
     "imageOk": false,
+    "liveTitle": "Glory Foods Seasoned Southern Style Honey Carrots Canned Vegetables 15",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4003",
+    "url": "https://www.walmart.com/ip/11530218027",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Hershey's Kisses Milk Chocolate Candy, Bag 4.84 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3866",
+    "url": "https://www.walmart.com/ip/11530268786",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Jack Link's Jack Link’s Beef Jerky, Teriyaki, 100% Beef, 11g of Protei",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2412",
+    "url": "https://www.walmart.com/ip/14722404370",
+    "imageKind": "back",
+    "imageOk": false,
+    "liveTitle": "Ronzoni Rotini 16 oz Non-GMO Spiral Corkscrew Pasta (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4456",
+    "url": "https://www.walmart.com/ip/11936359938",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Cheez-It White Cheddar Cheese Crackers, Baked Snack Crackers, 21 oz (P",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-189",
+    "url": "https://www.walmart.com/ip/7575310839",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Nature's Own Butterbread Sliced White Bread Loaf, 20 oz (Pack of 6)",
+    "textIssues": [
+      "no bullets"
     ]
   },
   {
@@ -40,11 +85,9 @@
     "url": "https://www.walmart.com/ip/11962161667",
     "imageKind": "nutrition",
     "imageOk": false,
+    "liveTitle": "Lance Sandwich Cookies, Nekot Fudge, 10 Individually Wrapped Packs, 6 ",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
@@ -52,11 +95,9 @@
     "url": "https://www.walmart.com/ip/15475159608",
     "imageKind": "other",
     "imageOk": false,
+    "liveTitle": "Gatorade Zero Zero Sugar Thirst Quencher Powder Lemon Lime 0.10 Oz 10 ",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
@@ -64,9 +105,8 @@
     "url": "https://www.walmart.com/ip/13468714520",
     "imageKind": "other",
     "imageOk": false,
+    "liveTitle": "Veg-All Original Mixed Vegetables, 15 oz (Pack of 6)",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
       "no bullets",
       "description too short/empty"
     ]
@@ -76,23 +116,19 @@
     "url": "https://www.walmart.com/ip/10596469552",
     "imageKind": "other",
     "imageOk": false,
+    "liveTitle": "Campbell's Condensed 25% Less Sodium Cream of Mushroom Soup, 10.5 oz C",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
     "sku": "FaisalX-4124",
     "url": "https://www.walmart.com/ip/11689818850",
-    "imageKind": "other",
+    "imageKind": "front",
     "imageOk": true,
+    "liveTitle": "Mission Super Soft Carb Balance Fajita Flour Tortillas, 8 oz, (Pack of",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
@@ -100,23 +136,20 @@
     "url": "https://www.walmart.com/ip/11399410691",
     "imageKind": "other",
     "imageOk": false,
+    "liveTitle": "Progresso Chickpea & Noodle Protein Soup, Vegetarian, 18.5 oz. (Pack o",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
     "sku": "RizwanX-3168",
     "url": "https://www.walmart.com/ip/14804062740",
-    "imageKind": "other",
+    "imageKind": "front",
     "imageOk": true,
+    "liveTitle": "Bush's Maple Cured Bacon Baked Beans 16oz (Pack of 6)",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "health claims: cure",
+      "no bullets"
     ]
   },
   {
@@ -124,11 +157,9 @@
     "url": "https://www.walmart.com/ip/11516523493",
     "imageKind": "other",
     "imageOk": false,
+    "liveTitle": "Jack Link's Jack Link’s Beef Jerky, 100% Beef, Original, 2.85 oz, 10g ",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
@@ -136,153 +167,129 @@
     "url": "https://www.walmart.com/ip/14708824666",
     "imageKind": "other",
     "imageOk": false,
+    "liveTitle": "Nissin Teriyaki Beef Flavor Noodles 4 oz (Pack of 6)",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
     "sku": "FaisalX-797",
     "url": "https://www.walmart.com/ip/7703801073",
-    "imageKind": "error",
-    "imageOk": true,
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Lay's Cheddar & Sour Cream Flavored Potato Chips, Party Size, 12.5 oz ",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
     "sku": "FaisalX-1266",
     "url": "https://www.walmart.com/ip/8412752881",
-    "imageKind": "error",
-    "imageOk": true,
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Arnold Superior Seeded Keto Bread Loaf, 20 oz (Pack of 4)",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "promo words: superior",
+      "no bullets"
     ]
   },
   {
     "sku": "FaisalX-4434",
     "url": "https://www.walmart.com/ip/11952268968",
-    "imageKind": "error",
-    "imageOk": true,
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Lance Sandwich Crackers, Malt with Peanut Butter, 10 Individually Wrap",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
     "sku": "FaisalX-278",
     "url": "https://www.walmart.com/ip/7567764028",
-    "imageKind": "error",
+    "imageKind": "other",
     "imageOk": true,
+    "liveTitle": "Martin's Potato Sandwich Rolls, Fresh 3.5 Inch Buns, (Pack of 7)",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
     "sku": "RizwanX-3036",
     "url": "https://www.walmart.com/ip/2787775459",
-    "imageKind": "error",
-    "imageOk": true,
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Muir Glen Crushed Tomatoes Fire Roasted - 14.5oz (Pack of 8)",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
     "sku": "RizwanX-4778",
     "url": "https://www.walmart.com/ip/17197774470",
-    "imageKind": "error",
-    "imageOk": true,
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Purina Fancy Feast Grilled Kitten Food Wet Cat Food Liver & Chicken Fe",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
     "sku": "RizwanX-90",
     "url": "https://www.walmart.com/ip/13440973921",
-    "imageKind": "error",
-    "imageOk": true,
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "HERDEZ TAQUERIA STREET SAUCE Original Verde Mild Taco Sauce, Shelf Sta",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
     "sku": "RizwanX-3869",
     "url": "https://www.walmart.com/ip/5536274882",
-    "imageKind": "error",
-    "imageOk": true,
+    "imageKind": "lifestyle",
+    "imageOk": false,
+    "liveTitle": "Old El Paso Restaurant Style Grande Flour Tortillas 6 Count (Pack of 4",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
     "sku": "FaisalX-2082",
     "url": "https://www.walmart.com/ip/9814019950",
-    "imageKind": "error",
-    "imageOk": true,
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Chef Boyardee Rice with Chicken and Vegetables, Microwavable Bowl, 7.2",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
     "sku": "FaisalX-5576",
     "url": "https://www.walmart.com/ip/12854404524",
-    "imageKind": "error",
-    "imageOk": true,
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "HOT TAMALES Fierce Cinnamon Flavored Chewy Candy, 3.5 Ounce, 1 Pouch (",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
     "sku": "FaisalX-1627",
     "url": "https://www.walmart.com/ip/9444013793",
-    "imageKind": "error",
+    "imageKind": "other",
     "imageOk": true,
+    "liveTitle": "Wonder Bread Classic Hot Dog Buns, White Bread Hot Dog Buns, 8 Count -",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
-      "no bullets",
-      "description too short/empty"
+      "no bullets"
     ]
   },
   {
     "sku": "FaisalX-5417",
     "url": "https://www.walmart.com/ip/11460607219",
-    "imageKind": "error",
-    "imageOk": true,
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Skittles Wild Berry Chewy Candy, Share Size - 4 oz Bag-Pack of 6",
     "textIssues": [
-      "title too short",
-      "no pack/qty in title",
       "no bullets",
       "description too short/empty"
     ]
@@ -290,13 +297,2916 @@
   {
     "sku": "RizwanX-3020",
     "url": "https://www.walmart.com/ip/14769501936",
-    "imageKind": "error",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Contadina Fire Roasted Diced Tomatoes 14.5 oz Can (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-126",
+    "url": "https://www.walmart.com/ip/13451117725",
+    "imageKind": "nutrition",
+    "imageOk": false,
+    "liveTitle": "Margaret Holmes Seasoned Green Lima Beans, Canned Beans, 15 oz (Pack o",
+    "textIssues": [
+      "no bullets",
+      "description too short/empty"
+    ]
+  },
+  {
+    "sku": "FaisalX-3574",
+    "url": "https://www.walmart.com/ip/11220868212",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Pringles Elote Mexican Street Corn Potato Crisps Chips, Lunch Snacks, ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-319",
+    "url": "https://www.walmart.com/ip/7569322315",
+    "imageKind": "lifestyle",
+    "imageOk": false,
+    "liveTitle": "Nature's Own White Hamburger Butter Buns, 16 oz, (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2569",
+    "url": "https://www.walmart.com/ip/10303218982",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Campbell's Campbell’s Chunky Soup, Ready to Serve Hearty Bean Soup wit",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4406",
+    "url": "https://www.walmart.com/ip/16314573547",
+    "imageKind": "other",
     "imageOk": true,
+    "liveTitle": "HORMEL COMPLEATS Microwave Meals – 8-Pack with No-Fridge Convenience",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2742",
+    "url": "https://www.walmart.com/ip/15610360815",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Campbell's Condensed Gluten Free Cream of Mushroom Soup 10.5 oz. (Pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5362",
+    "url": "https://www.walmart.com/ip/5346579448",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "SKITTLES Sour Gummies Chewy Candy Assortment, 5.8 oz Bag (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3526",
+    "url": "https://www.walmart.com/ip/11077603680",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Hamburger Helper Three Cheese Pasta, 6 oz Box (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4101",
+    "url": "https://www.walmart.com/ip/11523401162",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Orville Redenbacher's Orville Redenbacher’s Movie Theater Butter Flavo",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2227",
+    "url": "https://www.walmart.com/ip/14690151430",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Chef Woo Braised Beef Ramen Cup Noodle 20g Protein 2.5 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1284",
+    "url": null,
+    "imageKind": "other",
+    "imageOk": true,
+    "textIssues": [
+      "live content unavailable"
+    ]
+  },
+  {
+    "sku": "RizwanX-3210",
+    "url": "https://www.walmart.com/ip/14780519169",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Muir Glen Fire Roasted Crushed 28oz (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-771",
+    "url": "https://www.walmart.com/ip/7691704035",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Salutem Vita Barilla Gluten Free Penne Pasta, 12 oz, Pack of 10",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-280",
+    "url": "https://www.walmart.com/ip/7573273401",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Martin's Potato Sandwich Rolls, Fresh 3.5 Inch Buns, (Pack of 9)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1228",
+    "url": "https://www.walmart.com/ip/8393619891",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Arnold Whole Grains Healthy Bread, 24 oz, Soft Multi-Grain Multigrain ",
+    "textIssues": [
+      "health claims: heal",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3228",
+    "url": "https://www.walmart.com/ip/14805968261",
+    "imageKind": "nutrition",
+    "imageOk": false,
+    "liveTitle": "Glory Foods Canned Seasoned Collard Greens 27 oz Can (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3743",
+    "url": "https://www.walmart.com/ip/11395162682",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Progresso Vegetable Classics Soup, Creamy Mushroom, 18 oz (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-225",
+    "url": "https://www.walmart.com/ip/7581057489",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Nature's Own Perfectly Crafted Brioche Style Hamburger Buns, 8 Count, ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-292",
+    "url": "https://www.walmart.com/ip/7593974453",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Wonder Bread Classic Extra Soft White Bread Hamburger Buns, 15 oz, 8 C",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3011",
+    "url": "https://www.walmart.com/ip/14822705333",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Contadina Canned Tomato Paste with Italian Herbs 6 oz Can (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5060",
+    "url": "https://www.walmart.com/ip/12282711834",
+    "imageKind": "back",
+    "imageOk": false,
+    "liveTitle": "Celestial Seasonings Caffeine-Free Lemon Honey Drop Herbal Tea Bags, 1",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2431",
+    "url": "https://www.walmart.com/ip/14708924347",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Mueller's Corkscrews 16 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3771",
+    "url": "https://www.walmart.com/ip/11451603890",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Progresso Light, Chicken Pot Pie Style Soup, 18.5 oz. (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4793",
+    "url": "https://www.walmart.com/ip/12160763544",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "OREO Toffee Crunch Creme with Sugar Crystals Chocolate Sandwich Cookie",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3723",
+    "url": "https://www.walmart.com/ip/11382503638",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Progresso Green Split Pea Soup, Vegetable Classics Canned Soup, Gluten",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2666",
+    "url": "https://www.walmart.com/ip/10516657359",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Knorr No Artificial Flavors Ready-to-Eat in 20 Minutes Vegetable Soup ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1523",
+    "url": "https://www.walmart.com/ip/9261624490",
+    "imageKind": "nutrition",
+    "imageOk": false,
+    "liveTitle": "Wellsley Farms Peanut Butter Pretzel, 50 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1638",
+    "url": "https://www.walmart.com/ip/9450168252",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Sara Lee Whole Wheat Bread, 16 oz, Soft Wheat Bread, Bag -Pack Of 5",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2592",
+    "url": "https://www.walmart.com/ip/10303318008",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Campbell's Campbell’s Chunky Healthy Request Soup, Ready to Serve Roas",
+    "textIssues": [
+      "health claims: heal",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4518",
+    "url": "https://www.walmart.com/ip/11970010789",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Cheez-It Grooves Sharp White Cheddar Crunchy Cheese Crackers, Snack Cr",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1302",
+    "url": "https://www.walmart.com/ip/8455309490",
+    "imageKind": "back",
+    "imageOk": false,
+    "liveTitle": "Fritos Corn Chips, Original, 3.5 oz Bag (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4398",
+    "url": "https://www.walmart.com/ip/11947274394",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Lance Sandwich Cookies, Nekot Vanilla Creme, 10 Individually Wrapped P",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2186",
+    "url": "https://www.walmart.com/ip/14714708635",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Snapdragon Miso Ramen Cup 2.2 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3960",
+    "url": "https://www.walmart.com/ip/11545805273",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "REESE'S Peanut Butter Chocolate Drizzled Popcorn, 5.25 oz Sharing (Pac",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-379",
+    "url": "https://www.walmart.com/ip/7567567013",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Nature's Own Perfectly Crafted Multi Grain Bread Loaf, 22 oz, (Pack of",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-144",
+    "url": "https://www.walmart.com/ip/13481065635",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Margaret Holmes Field Peas and Snaps, Canned Vegetables, 15 oz (Pack o",
+    "textIssues": [
+      "no bullets",
+      "description too short/empty"
+    ]
+  },
+  {
+    "sku": "FaisalX-2013",
+    "url": null,
+    "imageKind": "other",
+    "imageOk": false,
+    "textIssues": [
+      "live content unavailable"
+    ]
+  },
+  {
+    "sku": "FaisalX-343",
+    "url": "https://www.walmart.com/ip/7580503326",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Pepperidge Farm Farmhouse Butter Hamburger Buns, (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5527",
+    "url": "https://www.walmart.com/ip/12840567486",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Spark Organics Classic Blend Flavored Fruit Chews, Dye Free Candy, 4 o",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-333",
+    "url": "https://www.walmart.com/ip/7574255581",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Nature's Own Hot Dog Butter Buns, 15 oz, (Pack of 7)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2211",
+    "url": "https://www.walmart.com/ip/14742610927",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Nissin Asian Noodles in Sauce, Sweet Chili Flavor Stir Fry Style (Pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2181",
+    "url": "https://www.walmart.com/ip/14742510938",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Nissin Cup Noodles Stir Fry Korean Spicy Beef Flavor Rice with Noodles",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4756",
+    "url": "https://www.walmart.com/ip/12185806979",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "SKIPPY Peanut Butter, Creamy, Plastic Jar 16.3 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4343",
+    "url": "https://www.walmart.com/ip/11922322284",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Club Reduced Fat Crackers, Snack Crackers, 11.7 oz (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3098",
+    "url": "https://www.walmart.com/ip/14822555688",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Bush's Black Beans, Canned Beans, 15 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3576",
+    "url": "https://www.walmart.com/ip/15437472276",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Cirkul Sabrocita Strawberry Flavor Cartridge Drink Mix (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4511",
+    "url": "https://www.walmart.com/ip/11962161673",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Cheez-It Puff'd White Cheddar Cheesy Baked Snacks, Puffed Snack Cracke",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3542",
+    "url": "https://www.walmart.com/ip/5259363815",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Orange Crush Crush Orange Powder Drink Mix Sugar Free 6 Count (Pack of",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4714",
+    "url": "https://www.walmart.com/ip/17221267432",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Purina Fancy Feast Classic Pate Kitten Food Wet Cat Food Cod Sole & Sh",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3442",
+    "url": "https://www.walmart.com/ip/14805968270",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Joan of Arc Spicy Chili Beans 15 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-777",
+    "url": "https://www.walmart.com/ip/7716352494",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Salutem Vita Barilla Gluten Free Spaghetti Pasta, 12 oz, Pack of 8",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3577",
+    "url": "https://www.walmart.com/ip/11232357069",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Pringles Honey Mustard Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3489",
+    "url": "https://www.walmart.com/ip/11087352997",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Hamburger Helper Cheesy Enchilada Rice, 7.5 oz Box (Pack of 10)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3789",
+    "url": "https://www.walmart.com/ip/15437472866",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Orange Crush Crush Liquid Water Enhancer Orange (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2251",
+    "url": "https://www.walmart.com/ip/10055351109",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "",
     "textIssues": [
       "title too short",
       "no pack/qty in title",
       "no bullets",
       "description too short/empty"
+    ]
+  },
+  {
+    "sku": "FaisalX-397",
+    "url": "https://www.walmart.com/ip/7584170389",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Nature's Own WhiteWheat Healthy White Bread, Sliced White Bread Loaf, ",
+    "textIssues": [
+      "health claims: heal",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1683",
+    "url": "https://www.walmart.com/ip/9424308997",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Arnold Keto Bread Loaf, 20 oz -Pack Of 5",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4463",
+    "url": "https://www.walmart.com/ip/11952268970",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Cheez-It Original Cheese Crackers, Baked Snack Crackers, 12 Count (Pac",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3752",
+    "url": "https://www.walmart.com/ip/11373064402",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Progresso Reduced Sodium, Savory Chicken & Wild Rice Soup, 19 oz. (Pac",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1233",
+    "url": "https://www.walmart.com/ip/8412802873",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Arnold Whole Grains Oatnut Bread, 24 oz, Soft Pre-sliced Multigrain Br",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3684",
+    "url": "https://www.walmart.com/ip/15475159073",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Ovaltine Chocolate Malt Powdered Drink Mix for Hot and Cold Milk Canis",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4313",
+    "url": "https://www.walmart.com/ip/11963107865",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Premium Original Mini Saltine Crackers, 11 oz (Pack of 8)",
+    "textIssues": [
+      "promo words: premium",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3579",
+    "url": "https://www.walmart.com/ip/15473967346",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Cirkul GoSip Strawberry Dream Flavor Cartridge Drink Mix (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4116",
+    "url": "https://www.walmart.com/ip/11535163112",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Snack Factory Pretzel Crisps, Honey Mustard and Onion, 7.2 oz (Pack of",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3326",
+    "url": "https://www.walmart.com/ip/10983314603",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Maruchan Instant Lunch w/Shrimp Instant Lunch, 2.25 oz (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2736",
+    "url": "https://www.walmart.com/ip/14771459038",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Del Monte Pear Halves in 100% Juice Canned Fruit 15 oz (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4210",
+    "url": "https://www.walmart.com/ip/16002022563",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Progresso Hearty Soup Collection 8-Pack – A Complete Soup Set for Comf",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3675",
+    "url": "https://www.walmart.com/ip/11374371184",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Progresso Traditional, Chicken & Sausage Gumbo Canned Soup, Gluten Fre",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4359",
+    "url": "https://www.walmart.com/ip/5926376421",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Wheat Thins Reduced Fat Whole Grain Wheat Crackers, Family Size, 12.5 ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3543",
+    "url": "https://www.walmart.com/ip/15473867624",
+    "imageKind": "nutrition",
+    "imageOk": false,
+    "liveTitle": "Orange Crush Crush Orange Powder Drink Mix Sugar Free 6 Count (Pack of",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2490",
+    "url": "https://www.walmart.com/ip/10287266368",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "HORMEL COMPLEATS Chicken & Dressing, 9.5 oz Plastic Tray, (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2686",
+    "url": "https://www.walmart.com/ip/10516307536",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Knorr No Artificial Flavors Creamy Pesto Rotini Pasta Cooks in 12 Minu",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3169",
+    "url": "https://www.walmart.com/ip/14765073807",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Bush's Vegetarian Baked Beans 8.3oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5165",
+    "url": "https://www.walmart.com/ip/12270518152",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Traditional Medicinals Organic Turmeric Tea Bags, 16 Ct (Pack of 2)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3497",
+    "url": "https://www.walmart.com/ip/14822555703",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "GOYA Premium Chick Peas 15.5 oz (Pack of 4)",
+    "textIssues": [
+      "promo words: premium",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3477",
+    "url": "https://www.walmart.com/ip/14806018196",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Hanover Garbanzo Beans 15.5 oz (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2344",
+    "url": "https://www.walmart.com/ip/14727411026",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "",
+    "textIssues": [
+      "title too short",
+      "no pack/qty in title",
+      "no bullets",
+      "description too short/empty"
+    ]
+  },
+  {
+    "sku": "FaisalX-3437",
+    "url": "https://www.walmart.com/ip/11081708912",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Rice-A-Roni Beef Flavor Rice Mix, 6.8 oz Cardboard Regular Box (Pack o",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3061",
+    "url": "https://www.walmart.com/ip/14765073805",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Vigo Seasoned Italian Style Breadcrumbs 8 oz About 8 Servings per Cont",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3780",
+    "url": "https://www.walmart.com/ip/11385307143",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Progresso Mediterranean-Style Lentil Protein Soup, Vegetarian, 19 oz. ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2726",
+    "url": "https://www.walmart.com/ip/14762069383",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Del Monte Pear Halves 15.25 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3853",
+    "url": "https://www.walmart.com/ip/6581919063",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "(4 pack) Swanson 100% Natural, Gluten-Free Beef Broth, 14.5 oz Can",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3510",
+    "url": "https://www.walmart.com/ip/14789459396",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Goya Pinto Beans (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-757",
+    "url": "https://www.walmart.com/ip/7690309742",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Salutem Vita Barilla Protein+ Penne Pasta, Plant Based Pasta, 14.5oz, ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3251",
+    "url": "https://www.walmart.com/ip/14803564868",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Contadina Whole Peeled Tomatoes 28 oz Can (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4741",
+    "url": "https://www.walmart.com/ip/10910110004",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Jif To Go Natural Creamy Peanut Butter Spread, 8- 1.5 Ounce Cups, Smoo",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3678",
+    "url": "https://www.walmart.com/ip/11382124105",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Progresso Traditional, Broccoli Cheese Canned Soup, Gluten Free, 18 oz",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3165",
+    "url": "https://www.walmart.com/ip/14806068088",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Bush's Brown Sugar Hickory Baked Beans 16oz (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "Mine-12",
+    "url": "https://www.walmart.com/ip/14119250847",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Fancy Feast Gravy Lovers Chicken Feast in Gravy 3 oz (Pack of 3)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1294",
+    "url": "https://www.walmart.com/ip/8466766745",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "SunChips Garden Salsa Whole Grain Snacks, 7 oz Bag (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-400",
+    "url": "https://www.walmart.com/ip/7556758818",
+    "imageKind": "lifestyle",
+    "imageOk": false,
+    "liveTitle": "Nature's Own WhiteWheat Healthy White Bread, Sliced White Bread Loaf, ",
+    "textIssues": [
+      "health claims: heal",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1207",
+    "url": "https://www.walmart.com/ip/8374958029",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Sara Lee Artesano Brioche Hot Dog Buns, 8 count, Soft Hot Dog Buns, 16",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5317",
+    "url": "https://www.walmart.com/ip/12841000780",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "TOOTSIE ROLL INDUSTRIES Tootsie Roll Chocolate Midgees, 15 Oz (Pack of",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4503",
+    "url": "https://www.walmart.com/ip/11963107871",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Cheez-It Grooves Bold Cheddar Cheese Crackers, Crunchy Snack Crackers,",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-180",
+    "url": "https://www.walmart.com/ip/7640705803",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Thomas' Nooks & Crannies Original English Muffins, 6 count, Plain Engl",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5396",
+    "url": "https://www.walmart.com/ip/5340499179",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Skittles Littles Share Size Mega Tube (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-165",
+    "url": "https://www.walmart.com/ip/13457902471",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Del Monte Canned Sweet Peas, Canned Vegetables, 8.5 oz Aluminum Can (P",
+    "textIssues": [
+      "no bullets",
+      "description too short/empty"
+    ]
+  },
+  {
+    "sku": "FaisalX-2265",
+    "url": "https://www.walmart.com/ip/10133562158",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "BODYARMOR Lyte Dragonfruit Berry Sports Drink, 16 fl oz, (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3245",
+    "url": "https://www.walmart.com/ip/14822306178",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Contadina Roma Tomato Style Tomato Sauce 29 oz Can (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4501",
+    "url": "https://www.walmart.com/ip/11954154432",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Cheez-It Hot and Spicy Cheese Crackers, Baked Snack Crackers, 12.4 oz ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3825",
+    "url": "https://www.walmart.com/ip/11402906660",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "College Inn Unsalted Beef Stock, 32 oz Carton (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3565",
+    "url": "https://www.walmart.com/ip/11238705339",
+    "imageKind": "back",
+    "imageOk": false,
+    "liveTitle": "Pringles Philly Cheesesteak Potato Crisps Chips, Lunch Snacks, 5.5 oz ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-59",
+    "url": "https://www.walmart.com/ip/13430701110",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Arby's Horsey Sauce, 16 oz. (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2243",
+    "url": "https://www.walmart.com/ip/10055351105",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Gatorade Gatorlyte, Cherry Lime Sports Drinks, 20 fl oz, (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2310",
+    "url": "https://www.walmart.com/ip/14742560993",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Mueller's Angel Hair 16 oz (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1911",
+    "url": "https://www.walmart.com/ip/9592619503",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Simply Non GMO All Natural Raspberry Lemonade Raspberry, 52 fl oz Bott",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3000",
+    "url": "https://www.walmart.com/ip/14803514301",
+    "imageKind": "nutrition",
+    "imageOk": false,
+    "liveTitle": "Contadina Tomato Sauce 15 oz Can (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4879",
+    "url": "https://www.walmart.com/ip/12182870239",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Glico Pocky Chocolate Covered Biscuit Sticks, 1.41 oz. (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1753",
+    "url": "https://www.walmart.com/ip/9595457236",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Fanta Strawberry Fruit Soda Pop, 2 Liter Bottle (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2427",
+    "url": "https://www.walmart.com/ip/10216667218",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Coffee Mate, The Original Powdered Coffee Creamer, 16 oz, (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5528",
+    "url": "https://www.walmart.com/ip/12854052196",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Spark Organics Classic Blend Flavored Fruit Chews, Dye Free Candy, 4 o",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4282",
+    "url": "https://www.walmart.com/ip/11947324304",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Nabisco Ritz Whole Wheat Classic Crackers, 12.9 oz (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3273",
+    "url": "https://www.walmart.com/ip/14822605542",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Green Giant Vegetable Blend 15 oz (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3883",
+    "url": "https://www.walmart.com/ip/11542370993",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Jack Link's Jack Link’s Beef Jerky, Peppered, 100% Beef, 11g of Protei",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2218",
+    "url": "https://www.walmart.com/ip/14725013155",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Mike's Hard Lemonade Mike's Mighty Good Ramen Soup Chicken Flavor 1.6 ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4454",
+    "url": "https://www.walmart.com/ip/11922322292",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Cheez-It Extra Toasty Cheese Crackers, Baked Snack Crackers, 21 oz (Pa",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5434",
+    "url": "https://www.walmart.com/ip/11457104412",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "SOUR PATCH KIDS Lemonade Fest Soft & Chewy Candy, 8.02 oz Bag-Pack of ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3706",
+    "url": "https://www.walmart.com/ip/11388452720",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Progresso Loaded Potato Bacon Soup, Rich & Hearty Canned Soup, 18.5 oz",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4161",
+    "url": "https://www.walmart.com/ip/11691513913",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Mission Zero Net Carbs Sriracha Ranch Street Taco Tortillas, 8.89 oz, ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2587",
+    "url": "https://www.walmart.com/ip/10309752136",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Campbell's Chunky Soup, Ready to Serve Savory Chicken with White and W",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1189",
+    "url": "https://www.walmart.com/ip/8427006270",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Sara Lee Delightful White Bread, 15 oz, Soft White Bread, Bag (Pack of",
+    "textIssues": [
+      "promo words: delightful",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-810",
+    "url": "https://www.walmart.com/ip/7700214153",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Lay's Kettle Cooked Jalapeno Flavor Potato Snack Chips, 12.5 Ounce Bag",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4540",
+    "url": "https://www.walmart.com/ip/11954154438",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Munchies Doritos Nacho Cheese Sandwich Crackers, 1.38 oz, 8 Count (Pac",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4093",
+    "url": "https://www.walmart.com/ip/11300818168",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Orville Redenbacher's Movie Theater Butter Microwave Popcorn, Mini Bag",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5516",
+    "url": "https://www.walmart.com/ip/12863407902",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "DOVE Chocolate Dove Promises Milk Chocolate Tiramisu Caramel Candy - 6",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2964",
+    "url": "https://www.walmart.com/ip/14805968253",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Hunt's 100% Natural Tomato Paste 6oz (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4542",
+    "url": "https://www.walmart.com/ip/11964162590",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Munchies Cheetos Cheddar Cheese Sandwich Crackers, 1.38 oz, 8 Count (P",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3171",
+    "url": "https://www.walmart.com/ip/14803564047",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Bush's Vegetarian Baked Beans 8.3oz (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5231",
+    "url": "https://www.walmart.com/ip/11022574936",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "2X - Sour Patch Kids Original Soft & Chewy Candy Theater Box-3.5 oz",
+    "textIssues": [
+      "no pack/qty in title",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4324",
+    "url": "https://www.walmart.com/ip/11953050112",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Toasteds Flatbreads Italian Herb Crackers, Party Snacks, 8.7 oz (Pack ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2264",
+    "url": "https://www.walmart.com/ip/10107616934",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "BODYARMOR Lyte Dragonfruit Berry Sports Drink, 16 fl oz, (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3308",
+    "url": "https://www.walmart.com/ip/10887411335",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Iams Proactive Health Adult Soft Wet Dog Food Paté With Chicken & Whol",
+    "textIssues": [
+      "health claims: heal",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4681",
+    "url": "https://www.walmart.com/ip/12164924022",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "KIND Breakfast Peanut Butter Banana Dark Chocolate Gluten Free Protein",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2974",
+    "url": "https://www.walmart.com/ip/6930610498",
+    "imageKind": "lifestyle",
+    "imageOk": false,
+    "liveTitle": "(4 pack) Hunt's Garlic Fire Roasted Diced Tomatoes, 14.5 oz Can",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1270",
+    "url": "https://www.walmart.com/ip/8399505614",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Arnold Country Oatmeal Bread, Hearty Texture & Flavor, 24 oz (Pack of ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3804",
+    "url": "https://www.walmart.com/ip/11395112004",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Progresso Chicken Broth, Reduced Sodium, Gluten Free, 32 oz. (Pack of ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3962",
+    "url": null,
+    "imageKind": "other",
+    "imageOk": false,
+    "textIssues": [
+      "live content unavailable"
+    ]
+  },
+  {
+    "sku": "FaisalX-3520",
+    "url": "https://www.walmart.com/ip/11077653909",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Hamburger Helper Potato Creamy Stroganoff, 5 oz Box (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5230",
+    "url": "https://www.walmart.com/ip/12863407857",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Sour Patch Kids, Soft & Chewy Candy, 3.5 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4191",
+    "url": "https://www.walmart.com/ip/11708605244",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "La Banderita Corn Tortillas Rica'S, 27.5 Oz. (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3289",
+    "url": "https://www.walmart.com/ip/10878673582",
+    "imageKind": "back",
+    "imageOk": false,
+    "liveTitle": "Sheba Perfect Portions Wet Kitten Food Paté Chicken Entree, Single 2.6",
+    "textIssues": [
+      "promo words: perfect",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4772",
+    "url": "https://www.walmart.com/ip/17242865445",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Purina Fancy Feast Grilled Kitten Food Wet Cat Food Salmon Feast in Gr",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1515",
+    "url": "https://www.walmart.com/ip/2708130003",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Kellogg's Cheez-It White Cheddar Cheese Crackers Family Size (Pack of ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4773",
+    "url": "https://www.walmart.com/ip/17242865445",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Purina Fancy Feast Grilled Kitten Food Wet Cat Food Salmon Feast in Gr",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4202",
+    "url": "https://www.walmart.com/ip/16058902202",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Campbell's Campbell’s Family Meal 12-Pack – A Delicious Assortment of ",
+    "textIssues": [
+      "promo words: delicious",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4707",
+    "url": "https://www.walmart.com/ip/17236113407",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Purina Fancy Feast Gravy Lovers Wet Cat Food Salmon & Sole in Gravy 3 ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-261",
+    "url": "https://www.walmart.com/ip/7569322293",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Martin's Old-Fashioned Real Butter Bread, 18 oz (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "Mine-22",
+    "url": "https://www.walmart.com/ip/1548703543",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Fancy Feast Delights With Cheddar Grilled Chicken & Cheddar Cheese Fea",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3585",
+    "url": "https://www.walmart.com/ip/15496311411",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Cirkul FitSip Blackberry Burst Flavor Cartridge Drink Mix (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-811",
+    "url": "https://www.walmart.com/ip/7706410358",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Lay's Kettle Cooked Jalapeno Flavor Potato Snack Chips, 12.5 Ounce Bag",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3234",
+    "url": "https://www.walmart.com/ip/14753566286",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Glory Foods Seasoned Southern Style Green Beans With Potatoes 27 oz Ca",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2967",
+    "url": "https://www.walmart.com/ip/14780519993",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Hunt's 100% Natural Basil Garlic & Oregano Diced Tomatoes 14.5oz (Pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2279",
+    "url": "https://www.walmart.com/ip/10108609864",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "BODYARMOR Flash IV Strawberry Kiwi Electrolyte Hydration Sports Drink,",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2168",
+    "url": "https://www.walmart.com/ip/14752515526",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Chef Woo Roasted Chicken Ramen Cup Noodles 20g Protein (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1441",
+    "url": "https://www.walmart.com/ip/233908134",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Nissin Cup O'Noodles Ramen Noodle Soup, Beef Flavor 2.25oz (60 Pack)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3408",
+    "url": "https://www.walmart.com/ip/11001862641",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Nissin Fire Wok Hot & Spicy Torched Teriyaki Chicken, 3.1oz Pillows (P",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "Mine-18",
+    "url": "https://www.walmart.com/ip/14169861882",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Hellow Pet Fancy Feast Chicken Feast Classic Grain Free Wet Cat Food P",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3569",
+    "url": "https://www.walmart.com/ip/11237402433",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Pringles Chili Cheese Fries Potato Crisps Chips, Lunch Snacks, 5.5 oz ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3977",
+    "url": "https://www.walmart.com/ip/11540708164",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Reese's Pieces Peanut Butter In a Crunchy Shell Candy, Bag 5.3 oz (Pac",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "Athar-1593",
+    "url": "https://www.walmart.com/ip/7028757709",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Lay's Party Size Barbecue Potato Chips 15.25 oz.4 pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3503",
+    "url": "https://www.walmart.com/ip/14806068097",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Goya Canned Cannellini 15.50 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4860",
+    "url": "https://www.walmart.com/ip/12159817143",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Nonni's Salted Caramel Biscotti, Milk Chocolate & Caramel Cookie, 6.72",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2502",
+    "url": "https://www.walmart.com/ip/10298263841",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "HORMEL COMPLEATS Beef Pot Roast, 9 oz Plastic Tray, (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2066",
+    "url": "https://www.walmart.com/ip/9817366585",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Chef Boyardee Beefaroni, Pasta in Meat Sauce, 14.25 oz (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4519",
+    "url": "https://www.walmart.com/ip/11922372859",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Cheez-It Grooves Sharp White Cheddar Crunchy Cheese Crackers, Snack Cr",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4631",
+    "url": "https://www.walmart.com/ip/11968120820",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Triscuit Garden Herb Whole Grain Wheat Crackers, 8.5 oz (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3970",
+    "url": "https://www.walmart.com/ip/11545755579",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Reese's REESES PLANT BASED OAT CHOCOLATE CONFECTION & PEANUT BUTTER MI",
+    "textIssues": [
+      "no bullets",
+      "description too short/empty"
+    ]
+  },
+  {
+    "sku": "RizwanX-3711",
+    "url": "https://www.walmart.com/ip/15494520375",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Swiss Miss Milk Chocolate Flavored Hot Cocoa Mix 8 Count Hot Cocoa Mix",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3533",
+    "url": "https://www.walmart.com/ip/11072204582",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Hamburger Helper Pasta Stroganoff, 6.4 oz Box (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2475",
+    "url": "https://www.walmart.com/ip/14726814312",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Mueller's Elbows Ridged Jumbo 16 oz (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-120",
+    "url": "https://www.walmart.com/ip/13457852939",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "RO*TEL Xtra Hot Diced Tomatoes With Ghost Peppers, 10 oz. (Pack of 8)",
+    "textIssues": [
+      "no bullets",
+      "description too short/empty"
+    ]
+  },
+  {
+    "sku": "RizwanX-3680",
+    "url": "https://www.walmart.com/ip/15496361323",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Klass Aguas Frescas Tamarind with Vitamin C Multiserve Powdered Drink ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3717",
+    "url": "https://www.walmart.com/ip/15469500635",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Cocoa Classics® Caramel & Chocolate Instant Hot Cocoa Mix 1.25 oz Serv",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-119",
+    "url": "https://www.walmart.com/ip/13462604389",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "RO*TEL Xtra Hot Diced Tomatoes With Ghost Peppers, 10 oz. (Pack of 6)",
+    "textIssues": [
+      "no bullets",
+      "description too short/empty"
+    ]
+  },
+  {
+    "sku": "RizwanX-2471",
+    "url": "https://www.walmart.com/ip/14743405484",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Mueller's Linguine 16 oz (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4598",
+    "url": "https://www.walmart.com/ip/11950217107",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Triscuit Reduced Fat Whole Grain Wheat Crackers, Vegan Crackers, Famil",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-184",
+    "url": "https://www.walmart.com/ip/7579610859",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Thomas' Nooks & Crannies Original English Muffins, 6 count, Plain Engl",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-111",
+    "url": null,
+    "imageKind": "other",
+    "imageOk": false,
+    "textIssues": [
+      "live content unavailable"
+    ]
+  },
+  {
+    "sku": "FaisalX-305",
+    "url": "https://www.walmart.com/ip/7571451611",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Pepperidge Farm Sesame Topped Hamburger Buns, (Pack of 12)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2157",
+    "url": "https://www.walmart.com/ip/10036773102",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Vita Coco Pressed Coconut Water, Nutrients & Electrolytes Rich, Origin",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1825",
+    "url": "https://www.walmart.com/ip/9625756338",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Diet Mountain Dew Citrus Soda Pop, 2 Liter Bottle (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4320",
+    "url": "https://www.walmart.com/ip/11922372036",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Toasteds Flatbreads Sea Salt and Olive Oil Crackers, Party Snacks, 8.7",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1216",
+    "url": "https://www.walmart.com/ip/8413924449",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Soft Brioche Bread, Bag",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4178",
+    "url": "https://www.walmart.com/ip/11691513915",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "La Banderita Carb Counter Snack Size Flour Tortillas 8 Count Bag (Pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4310",
+    "url": "https://www.walmart.com/ip/11952203049",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Premium Original Saltine Crackers, Family Size, 24 oz (Pack of 8)",
+    "textIssues": [
+      "promo words: premium",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4307",
+    "url": "https://www.walmart.com/ip/11954054021",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Premium Unsalted Tops Saltine Crackers, 16 oz (Pack of 8)",
+    "textIssues": [
+      "promo words: premium",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3500",
+    "url": "https://www.walmart.com/ip/14822555702",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "GOYA Pinto Beans 15.5 Oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-326",
+    "url": "https://www.walmart.com/ip/7580907857",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Nature's Own White Hamburger Butter Buns, 16 oz — 11-Pack (11 bags)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-378",
+    "url": "https://www.walmart.com/ip/7583218220",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Nature's Own Perfectly Crafted Multi Grain Bread Loaf, 22 oz, (Pack of",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1194",
+    "url": null,
+    "imageKind": "other",
+    "imageOk": true,
+    "textIssues": [
+      "live content unavailable"
+    ]
+  },
+  {
+    "sku": "FaisalX-2271",
+    "url": "https://www.walmart.com/ip/10109758106",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "BODYARMOR LYTE Sports Drink Peach Mango 16 fl oz, (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4304",
+    "url": "https://www.walmart.com/ip/16043167460",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Campbell’s Chunky 8-Pack – Ultimate Comfort Soups for All",
+    "textIssues": [
+      "promo words: ultimate",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4811",
+    "url": "https://www.walmart.com/ip/12179961413",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "OREO Cakesters Soft Snack Cakes, 5 - 2.02 oz Snack Packs (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3691",
+    "url": null,
+    "imageKind": "error",
+    "imageOk": true,
+    "textIssues": [
+      "live content unavailable"
+    ]
+  },
+  {
+    "sku": "FaisalX-2254",
+    "url": "https://www.walmart.com/ip/10029472355",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "POWERADE Electrolyte Enhanced Fruit Punch Sport Drink, 28 fl oz, (Pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3785",
+    "url": "https://www.walmart.com/ip/11396415627",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Progresso Light, New England Clam Chowder Soup, Gluten Free, 18.5 oz. ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4031",
+    "url": "https://www.walmart.com/ip/11532624504",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Quinn Snacks Quinn Maple Almond Butter Filled Pretzel Nuggets, 5.0 oz,",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4422",
+    "url": "https://www.walmart.com/ip/11947324320",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Lance Sandwich Crackers, ToastChee Cheddar, 10 Indivi — 4-Pack (4 pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1728",
+    "url": "https://www.walmart.com/ip/9455906063",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Nature's Own Nature’s Own Life Honey Wheat, 40 Calories per Slice Ke —",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2076",
+    "url": "https://www.walmart.com/ip/9822308500",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Chef Boyardee Mini Micro Beef Ravioli, 7.5 oz (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-12",
+    "url": "https://www.walmart.com/ip/13475306648",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Tabasco Sriracha Sauce, 11 oz Regular Bottle (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4371",
+    "url": "https://www.walmart.com/ip/11947374103",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Wheat Thins Reduced Fat Whole Grain Wheat Crackers, 8 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2703",
+    "url": "https://www.walmart.com/ip/10528365900",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Knorr No Artificial Flavors Creamy Garlic Spiral Pasta Cooks in 8 Minu",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5206",
+    "url": "https://www.walmart.com/ip/16682324838",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Hot Tamales Fierce Cinnamon Chewy Candy, 4.25 Ounce Theater Box (Pack ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-245",
+    "url": "https://www.walmart.com/ip/7571451605",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Sara Lee Classic Bread, 20 oz, Soft Plain White Bread, (Pack of 7)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4158",
+    "url": "https://www.walmart.com/ip/11694203377",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Mission Yellow Corn Rounds Tortilla Chips, 11 oz, 1 Count (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2397",
+    "url": "https://www.walmart.com/ip/14714608670",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Ronzoni Elbows 16 oz Non-GMO Macaroni Pasta for Mac and Cheese (Pack o",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1992",
+    "url": "https://www.walmart.com/ip/9806509208",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Cheetos Cheese Flavored Snacks Mexican Street Corn, 8 — 5-Pack (5 pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4784",
+    "url": "https://www.walmart.com/ip/12185756851",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "OREO Double Stuf Chocolate Sandwich Cookies, 14.03 oz (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3510",
+    "url": "https://www.walmart.com/ip/11064859224",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Hamburger Helper Double Cheeseburger Macaroni, 6 oz Box (Pack of 10)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4383",
+    "url": "https://www.walmart.com/ip/11968120806",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Town House FlipSides Original Oven Baked Crackers, Lunch Snacks, 9.2 o",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2040",
+    "url": null,
+    "imageKind": "error",
+    "imageOk": true,
+    "textIssues": [
+      "live content unavailable"
+    ]
+  },
+  {
+    "sku": "RizwanX-3284",
+    "url": "https://www.walmart.com/ip/14803514307",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Green Giant Beets Sliced Seasoned with Sea Salt 15 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3459",
+    "url": "https://www.walmart.com/ip/11087402873",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Rice-A-Roni, Rice Pilaf Rice & Pasta Mix, 7.2 oz Box, Uncooked Dry Ric",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2063",
+    "url": "https://www.walmart.com/ip/9830070903",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Chef Boyardee Lasagna, Pasta in Chunky Tomato Sauce, 14.5 oz (Pack of ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3102",
+    "url": "https://www.walmart.com/ip/14803514304",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Bush's Dark Red Kidney Beans 16oz (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-200",
+    "url": "https://www.walmart.com/ip/13480307136",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Del Monte Tender Petites Very Young Small Sweet Peas, No Salt Added, 1",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1666",
+    "url": "https://www.walmart.com/ip/9429501413",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Dave's Killer Bread® Plain Awesome® Organic Bagels, 16.75 oz (Pack of ",
+    "textIssues": [
+      "promo words: awesome",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3274",
+    "url": "https://www.walmart.com/ip/10883366527",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Sheba Gravy Indulgence Chicken Entee In Extra Gravy Cat Food, 2.6 Oz T",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4730",
+    "url": "https://www.walmart.com/ip/10872616343",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Jif Reduced Fat Creamy Peanut Butter Spread - 60% Pea — 6-Pack (6 pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2176",
+    "url": "https://www.walmart.com/ip/14708924340",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Nissin Cup Noodles Stir Fry Japanese Teriyaki Chicken Flavor Rice with",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2378",
+    "url": "https://www.walmart.com/ip/14712259641",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Banza Spaghetti Pasta - Gluten Free, High Protein Lower Carb (Pack of ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4287",
+    "url": "https://www.walmart.com/ip/11964212071",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "RITZ Bits Cheese Sandwich Crackers, 8.8 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5321",
+    "url": "https://www.walmart.com/ip/11456903746",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "NERDS Gummy Clusters, Candy, Very Berry, Crunchy and Gummy, 3 oz-Pack ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3716",
+    "url": "https://www.walmart.com/ip/11366159584",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Progresso Rich & Hearty Gluten Free Broccoli Cheese Soup — 6-Pack (6 c",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4401",
+    "url": "https://www.walmart.com/ip/11971256415",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Lance Sandwich Crackers, Toasty Cheddar, 10 Individua — 4-Pack (4 pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3215",
+    "url": "https://www.walmart.com/ip/14822306177",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Muir Glen Organic Diced Fire Roasted Tomatoes 28oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1177",
+    "url": "https://www.walmart.com/ip/8412902254",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Pepperidge Farm Jewish Rye Seeded Bread, 16 oz Bag (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5582",
+    "url": "https://www.walmart.com/ip/12853952750",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Nerds Rope Very Berry, Crunchy and Gummy Candy, .92 oz, Individually W",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2330",
+    "url": "https://www.walmart.com/ip/14675822737",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Barilla Al Bronzo Bucatini Pasta Bronze Cut Pasta Non-GMO & Kosher (Pa",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-247",
+    "url": "https://www.walmart.com/ip/7567764980",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Sara Lee Classic Bread, 20 oz, Soft Plain White Bread, (Pack of 9)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4293",
+    "url": "https://www.walmart.com/ip/11954104854",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "RITZ Toasted Chips Original Crackers, 8.1 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-77",
+    "url": "https://www.walmart.com/ip/13475256724",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Buffalo Wild Wings Medium Buffalo Sauce, 12 fl. oz. (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4696",
+    "url": "https://www.walmart.com/ip/10910060229",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Jif Extra Crunchy Peanut Butter, 40-Ounce Jar — 4-Pack (4 packages)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4833",
+    "url": "https://www.walmart.com/ip/12164824443",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "belVita Soft Baked Oats & Chocolate Breakfast Biscuits, 5 Packs (1 Bis",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4016",
+    "url": "https://www.walmart.com/ip/11523301456",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Hershey's Kisses Milk Chocolate Candy, Share 10.8 oz (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3339",
+    "url": "https://www.walmart.com/ip/10977611808",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Maruchan Ramen Noodle Soup Chicken Flavor, 3 oz Shelf Stable Package (",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2435",
+    "url": "https://www.walmart.com/ip/14726814311",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Mueller's Fettuccine 16 oz (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3655",
+    "url": "https://www.walmart.com/ip/11385808001",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Progresso Traditional, Creamy Chicken Noodle Canned Soup, 18.5 oz. (Pa",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-238",
+    "url": "https://www.walmart.com/ip/7568669682",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Pepperidge Farm Swirl Cinnamon Breakfast Bread, 16 oz — 11-Pack (11 lo",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-311",
+    "url": "https://www.walmart.com/ip/7564369586",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Nature's Own Perfectly Crafted Brioche Style Hot Dog Buns, 16 oz, (Pac",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1986",
+    "url": null,
+    "imageKind": "other",
+    "imageOk": false,
+    "textIssues": [
+      "live content unavailable"
+    ]
+  },
+  {
+    "sku": "FaisalX-188",
+    "url": "https://www.walmart.com/ip/7576857324",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Nature's Own Butterbread Sliced White Bread Loaf, 20 oz — 5-Pack (5 lo",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2352",
+    "url": "https://www.walmart.com/ip/14742660294",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Pasta Zara Spaghetti Organic (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4224",
+    "url": "https://www.walmart.com/ip/16013874884",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Progresso 8-Pack Soup Assortment – The Ultimate Collection of Savory, ",
+    "textIssues": [
+      "promo words: ultimate",
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-243",
+    "url": "https://www.walmart.com/ip/7583268207",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Sara Lee Classic Bread, 20 oz, Soft Plain White Bread — 5-Pack (5 loav",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-813",
+    "url": "https://www.walmart.com/ip/7704305001",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Lay's Dill Pickle Flavored Potato Chips, Party Size, 12.5 oz Bag (Pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1442",
+    "url": "https://www.walmart.com/ip/233908134",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Nissin Cup O'Noodles Ramen Noodle Soup, Beef Flavor 2.25oz (60 Pack)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4120",
+    "url": "https://www.walmart.com/ip/11541802666",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Snack Factory Garlic Parmesan Pretzel Crisps, 14 oz Party Size Bag (Pa",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4804",
+    "url": "https://www.walmart.com/ip/12178262172",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "OREO Chocolate Sandwich Cookies, 12 Snack Packs (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1161",
+    "url": "https://www.walmart.com/ip/8398257283",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Pepperidge Farm Farmhouse Multigrain Bread, 24 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3755",
+    "url": "https://www.walmart.com/ip/11399410693",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Progresso Light, Creamy Potato With Bacon & Cheese Canned Soup, Gluten",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3299",
+    "url": "https://www.walmart.com/ip/14805918298",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Green Giant Green Beans Cut Family Size 20 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2496",
+    "url": "https://www.walmart.com/ip/10308515019",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "HORMEL COMPLEATS Roast Beef & Mashed Potatoes, 9 oz Plastic Tray, (Pac",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-2404",
+    "url": "https://www.walmart.com/ip/14752365956",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Ronzoni Rigatoni Pasta 16 oz Large Ribbed Tubes Non-G — 4-Pack (4 pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1352",
+    "url": "https://www.walmart.com/ip/8468201786",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Cheetos Crunchy Cheese Puff Chips, 15 oz Bag (Pack of 6)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5515",
+    "url": "https://www.walmart.com/ip/12867655923",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "DOVE Chocolate Dove Promises Milk Chocolate Tiramisu Caramel Candy - 6",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3320",
+    "url": "https://www.walmart.com/ip/14803514308",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "GreenWise Organic Sweet Peas 15 oz (Pack of 4)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-3012",
+    "url": "https://www.walmart.com/ip/14803902796",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Contadina Canned Tomato Paste with Italian Herbs 6 oz Can (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4529",
+    "url": "https://www.walmart.com/ip/11954104864",
+    "imageKind": "front",
+    "imageOk": true,
+    "liveTitle": "Cheez-It Extra Toasty Cheddar Jack Cheese Crackers, Baked Snack Cracke",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-368",
+    "url": "https://www.walmart.com/ip/7573273996",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Nature's Own Life Sugar-Free 100% Whole Grain Bread Loaf, 16 oz, (Pack",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-5245",
+    "url": "https://www.walmart.com/ip/16841652939",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "4 Pack - Trolli Sour Brite Crawlers, Candy, Cherry-Lemon, Strawberry-G",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-2651",
+    "url": "https://www.walmart.com/ip/10532552518",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Knorr No Artificial Flavors Creamy Butter Fettuccine Pasta, 4.5 oz (Pa",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4089",
+    "url": "https://www.walmart.com/ip/290828647",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Orville Redenbacher's Smartpop! Butter Popcorn Mini (Pack of 8)",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-3277",
+    "url": "https://www.walmart.com/ip/10900118026",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "",
+    "textIssues": [
+      "title too short",
+      "no pack/qty in title",
+      "no bullets",
+      "description too short/empty"
+    ]
+  },
+  {
+    "sku": "FaisalX-3682",
+    "url": "https://www.walmart.com/ip/11385808934",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Progresso Traditional, Chicken & Herb Dumplings Canned Soup, 18.5 oz. ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-4972",
+    "url": "https://www.walmart.com/ip/12282811570",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Bigelow Tea Bigelow Salted Caramel, Black Tea Bags, 18 Count (Pack of ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1650",
+    "url": "https://www.walmart.com/ip/9460260147",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Sara Lee Artesano Brioche Hot Dog Buns, 8 count, Soft Hot Dog Buns, 16",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4196",
+    "url": "https://www.walmart.com/ip/16049362231",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Campbell's Campbell’s Soup Feast 12-Pack – A Flavorful Assortment of C",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-239",
+    "url": "https://www.walmart.com/ip/7580503312",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Pepperidge Farm Swirl Cinnamon Breakfast Bread, 16 oz — 12-Pack (12 lo",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4746",
+    "url": "https://www.walmart.com/ip/17197674303",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Purina Fancy Feast Grilled Kitten Food Wet Cat Food Salmon & Shrimp Fe",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4728",
+    "url": "https://www.walmart.com/ip/17237403927",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Purina Fancy Feast Classic Pate Kitten Food Wet Cat Food Tender Beef &",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4724",
+    "url": "https://www.walmart.com/ip/17242865444",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Purina Fancy Feast Classic Pate Kitten Food Wet Cat Food Tender Beef &",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4752",
+    "url": null,
+    "imageKind": "other",
+    "imageOk": true,
+    "textIssues": [
+      "live content unavailable"
+    ]
+  },
+  {
+    "sku": "RizwanX-4698",
+    "url": "https://www.walmart.com/ip/17232512653",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Purina Fancy Feast Gravy Lovers Wet Cat Food, Chicken Heart & Liver in",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4770",
+    "url": "https://www.walmart.com/ip/17204272077",
+    "imageKind": "error",
+    "imageOk": true,
+    "liveTitle": "Purina Fancy Feast Grilled Kitten Food Wet Cat Food Chicken Feast in G",
+    "textIssues": [
+      "no bullets",
+      "description too short/empty"
+    ]
+  },
+  {
+    "sku": "RizwanX-4679",
+    "url": "https://www.walmart.com/ip/17193509439",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Purina Fancy Feast Grilled Kitten Food Wet Cat Food Tuna Feast in Grav",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4682",
+    "url": "https://www.walmart.com/ip/17232562130",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Purina Fancy Feast Grilled Wet Cat Food, Seafood Feast in Gravy 3 oz C",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4692",
+    "url": "https://www.walmart.com/ip/17232462647",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Purina Fancy Feast Gravy Lovers Wet Cat Food Seared Salmon in Gravy 3 ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4186",
+    "url": "https://www.walmart.com/ip/16027321091",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Campbell's Campbell’s Hearty Soup Selection 12-Pack – A Flavorful Mix ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4689",
+    "url": "https://www.walmart.com/ip/17230904112",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Purina Fancy Feast Gravy Lovers Wet Cat Food Chicken Feast in Gravy 3 ",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4683",
+    "url": "https://www.walmart.com/ip/17232562130",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Purina Fancy Feast Grilled Wet Cat Food, Seafood Feast in Gravy 3 oz C",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "RizwanX-4788",
+    "url": null,
+    "imageKind": "other",
+    "imageOk": false,
+    "textIssues": [
+      "live content unavailable"
+    ]
+  },
+  {
+    "sku": "Mine-21",
+    "url": "https://www.walmart.com/ip/43459854",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Purina Fancy Feast Delights with Cheddar Wet Cat Food, Grilled Chicken",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-250",
+    "url": "https://www.walmart.com/ip/7593974422",
+    "imageKind": "other",
+    "imageOk": true,
+    "liveTitle": "Sara Lee Classic Bread, 20 oz, Soft Plain White Bread — 12-Pack (12 lo",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-1427",
+    "url": "https://www.walmart.com/ip/2100587704",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "",
+    "textIssues": [
+      "title too short",
+      "no pack/qty in title",
+      "no bullets",
+      "description too short/empty"
+    ]
+  },
+  {
+    "sku": "FaisalX-382",
+    "url": "https://www.walmart.com/ip/7571501556",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Nature's Own Perfectly Crafted Multi Grain Bread Loaf, 22 oz, (Pack of",
+    "textIssues": [
+      "no bullets"
+    ]
+  },
+  {
+    "sku": "FaisalX-393",
+    "url": "https://www.walmart.com/ip/7574400096",
+    "imageKind": "other",
+    "imageOk": false,
+    "liveTitle": "Nature's Own Perfectly Crafted Brioche Style Bread Lo — 12-Pack (12 lo",
+    "textIssues": [
+      "no bullets"
     ]
   }
 ]
