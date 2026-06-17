@@ -14,6 +14,7 @@ import { uploadToR2, multipackImageKey } from "./r2";
 import { polishListingCopy } from "./polish";
 import { validateListingContent } from "./guidelines";
 import { ensureDonorImage, fetchAndStoreDetail } from "../../sourcing/enrich";
+import { pickCleanFrontIndex, verifyMainImage } from "../../sourcing/vision";
 
 export const SPEC_VERSION = "5.0.20260330-14_47_14-api";
 const DONOR_IMAGE_CAP = 6;
@@ -160,16 +161,37 @@ export async function buildAndSubmitOne(
     content.description = `${quantityLeadSentence(cand.packCount, noun)}\n\n${polished.description}`;
   }
 
-  // Images: the tiled main image (the actual quantity-confusion fix) is all we
-  // generate. We dropped the generated badge/infographic — its SVG text needs
-  // Arial/Helvetica, which the serverless runtime doesn't have, so it rendered as
-  // a blank coloured square. `gallery` now only forwards REAL donor photos.
+  // Main image — VISION-GUARDED. Wave 1 tiled whatever came first (often the
+  // nutrition/back/lifestyle/promo shot → ugly). Now: (1) a vision model PICKS
+  // the cleanest front-on-white photo from the candidate pool; (2) we tile it;
+  // (3) the vision model VERIFIES the tile before we publish. If no clean front
+  // exists, or the tile fails verification, we DO NOT touch the main image
+  // (do-no-harm) and record why.
   let mainUrl: string | null = null;
+  let imageNote = "";
   const secondaryImageUrls: string[] = [];
   if (scope.image) {
-    const base = await fetchImageBuffer(cand.baseImageUrl);
-    const main = await composeTiledMainImage(base, cand.packCount);
-    mainUrl = await uploadToR2(main, multipackImageKey(sku, "main", stamp));
+    // Candidate pool = the full detail gallery + EVERY image we've captured for
+    // this product across all BlueCart offers (more candidates → better chance a
+    // clean front exists for vision to pick).
+    const poolSet = new Set<string>((donor?.images ?? []).filter(Boolean));
+    try {
+      const rps = await db.execute({ sql: `SELECT imageUrls FROM RetailPrice WHERE sku=? AND sourceApi='bluecart' AND imageUrls IS NOT NULL`, args: [sku] });
+      for (const row of rps.rows as any[]) { try { const arr = JSON.parse((row as any).imageUrls || "[]"); for (const u of arr) if (typeof u === "string" && u.startsWith("http")) poolSet.add(u.split("?")[0]); } catch {} }
+    } catch {}
+    if (cand.baseImageUrl) poolSet.add(cand.baseImageUrl);
+    const pool = Array.from(poolSet);
+    const idx = await pickCleanFrontIndex(pool);
+    if (idx < 0) {
+      imageNote = "no clean front image in source — left unchanged";
+    } else {
+      const base = await fetchImageBuffer(highResImageUrl(pool[idx]));
+      const main = await composeTiledMainImage(base, cand.packCount);
+      const candidateUrl = await uploadToR2(main, multipackImageKey(sku, "main", stamp));
+      const v = await verifyMainImage(candidateUrl);
+      if (v.ok) mainUrl = candidateUrl;
+      else imageNote = `tile rejected by vision (${v.kind}) — left unchanged`;
+    }
   }
   if (scope.gallery) {
     const donorImgs = (donor?.images ?? []).slice(0, DONOR_IMAGE_CAP);
@@ -187,6 +209,12 @@ export async function buildAndSubmitOne(
   if (scope.bullets) visible.keyFeatures = content.keyFeatures;
   if (mainUrl) visible.mainImageUrl = mainUrl;
   if (secondaryImageUrls.length) visible.productSecondaryImageURL = secondaryImageUrls;
+
+  // Nothing safe to send (image-only run but no clean image found) → SKIP, don't
+  // submit an empty feed. Flagged so it shows up as "needs a better photo".
+  if (Object.keys(visible).length === 0) {
+    return { ...blank, detail: imageNote || "nothing to update" };
+  }
 
   const payload = {
     MPItemFeedHeader: { businessUnit: "WALMART_US", locale: "en", version: SPEC_VERSION },

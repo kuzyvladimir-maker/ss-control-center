@@ -23,6 +23,18 @@ export interface DetailResult { title: string; images: string[]; bullets: string
 export async function fetchAndStoreDetail(db: Client, sku: string, itemId: string): Promise<DetailResult | null> {
   const key = process.env.BLUECART_API_KEY;
   if (!key || !itemId) return null;
+
+  // Already captured this product's detail? Reconstruct from our DB — no paid
+  // call (critical for re-runs over thousands of listings).
+  try {
+    const cached = await db.execute({ sql: `SELECT imageUrls, keyFeatures, description FROM RetailPrice WHERE retailer='walmart' AND retailerProductId=? AND detailJson IS NOT NULL LIMIT 1`, args: [itemId] });
+    if (cached.rows.length) {
+      const r: any = cached.rows[0];
+      let images: string[] = []; try { images = JSON.parse(r.imageUrls || "[]"); } catch {}
+      let bullets: string[] = []; try { bullets = JSON.parse(r.keyFeatures || "[]"); } catch {}
+      return { title: "", images, bullets, description: r.description || "" };
+    }
+  } catch {}
   let j: any;
   try {
     const res = await fetch(`https://api.bluecartapi.com/request?api_key=${key}&type=product&item_id=${encodeURIComponent(itemId)}&walmart_domain=walmart.com`, { signal: AbortSignal.timeout(20000) });
