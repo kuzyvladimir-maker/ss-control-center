@@ -108,6 +108,69 @@ SS Control Center **готовит flat-file**, Vladimir (или агент Jack
 - **Repricing → Download Inventory** шаблон (точные имена колонок их экспорта).
 - **Schedules** (как часто и для каких папок крутится репрайсер).
 
+## 9. Конфиг аккаунта salutem (по скриншотам 2026-06-16)
+**Один ChannelMAX-логин `salutem` управляет всеми Amazon-аккаунтами + Walmart.**
+SV Defaults (Calculator): markup **70%**, ShipCost **$2/lb**, VAT **$1.8** на venues:
+- `300 AmznUS [Salutem Solutions]`, `320 AmznUS2 [AMZ Com]`, `330 AmznUS3 [STARFIT]`,
+  `340 AmznUS4 [Retailer Distributor]`, `350 AmznUS5 [KVV]` (350 markup 10%),
+  `500 Walmart US` (10%).
+- → Через flat-file (с нужным `SellingVenue`) можно переоценивать **все** аккаунты,
+  включая те, куда SP-API не достаёт. Наш текущий файл `SellingVenue=AmazonUS` → venue 300 (Salutem).
+
+**Repricing Models:** `35218 Default` (863 SKU), `59149 never sold` (3527), `35219 Manual`,
+`35920 for FBA`, `59021 Manual min/max` (299). Наши Uncrustables сейчас в Default.
+
+**Default [35218] — реальные настройки и проблемы:**
+- Home: Enable=YES, CMAX Algorithmic=YES. NonFBA listings: Lower By $0.10 vs FBA/NonFBA/Amazon.
+- **Floor/Ceiling:** floor 35(a)=100% of Cost-Min (= наш Min, ок). **Ceiling 42(a)=110% of
+  Retail-Max** → наш Max НЕ жёсткий, цена может уйти на +10%. 35(b) если Min пуст → 77% of Max.
+- **If floor calculated:** 48(a) Add Actual Shipping=YES, 48(f) Add Amazon commission=YES,
+  36(a) Overwrite Floor From Category=YES → к нашему Min ДОБАВЛЯЕТ shipping+15%+markup = двойной счёт.
+- **Misc:** My Own Catalogs (nonFBA)→Maximize BuyBox (хорошо для уникальных); MAP feed=YES.
+- **Sales Velocity=YES:** не продал 1шт/24ч → −$0.10; продал 2/24ч → +$0.10. **Перемалывает
+  медленные frozen вниз к floor** — главная причина сползания цен.
+- Seller: 53(a) Never Ignore BuyBox=YES, без seller-specific правил.
+- Time-Variant / Custom-Code — пусто (доступны: время-зависимые цены, кастомный код с 30+ макросами).
+
+### ✅ Стратегия (ОБНОВЛЕНО по выгрузке инвентаря 2026-06-16)
+**НЕ создаём «Frozen Fixed» и НЕ фиксируем цену** (ранний неверный вывод). Цель Vladimir —
+**продажи**: его модель «never sold» намеренно роняет цену непродающихся листингов до
+конкурентного уровня (до ~30-35% наценки), а на удерживающих Buy Box — растит. Это верно.
+
+**Реальная проблема (из выгрузки `cmax_salutem_InventoryDownload`, 283 Uncrustable):**
+- 234 уже в модели **«never sold»**; **PurchaseCost задан лишь у 4 из 283** → CMax не
+  знает себестоимость; **MyFloor > заданного Min (~+18%)** из-за надстроек 48a/48f/36a;
+  **IGotBuybox=Y у 0**; 165 конкурентных. Пример 60шт: Min=$160, **MyFloor=$188**, наш
+  target=$154, реальное дно=$133 → floor задран ВЫШЕ нормальной цены, листинг физически
+  не может упасть до конкурентной → не продаётся. Алгоритм-вниз упёрся в задранное дно.
+
+**Решение (служит цели «продажи» ЕГО способом) — РЕАЛИЗОВАНО 2026-06-16:**
+1. Скормить CMax правильные данные на все 283 (3 venue: AmznUS/AmznUS3/AmznUS4):
+   `MinSellingPrice` = наш floor (landed×1.3), `MaxSellingPrice` = target,
+   **`PurchaseCost`** = наш landed cost. + синхронно опущен Amazon
+   `minimum_seller_allowed_price` до floor (57 store1, чтобы не ушли в Inactive).
+2. **Переселить наши SKU в существующую модель «Manual min/max» [59021]** — она УЖЕ
+   чистая: 35(a)=100% Cost-Min, 42(a)=100% Retail-Max, **вкладка If-floor-calculated
+   вся ВЫКЛ** (48a/48f/36a=No) → MyFloor=наш Min без раздувания; при этом конкурирует
+   вниз (NonFBA Lower By $0.20/$0.10). НЕ клонировать «never sold» (там 3527 чужих SKU
+   с надстройками floor — не трогать). Переселение = колонка `RepricingModelID=59021`
+   в файле (или Mass Update).
+3. Дальше алгоритм 59021 сам уронит цену до конкурентной → продажи.
+- Файл: `scripts/channelmax-export-corrected.ts` → `data/channelmax-uncrustables-corrected.txt`
+  (колонки SKU/ASIN/SellingVenue/Min/Max/PurchaseCost/**RepricingModelID=59021**).
+- Сегментация по продажам (Veeqo) → раскладка по моделям остаётся опцией на будущее.
+
+**Модели (подтверждено скринами):** `Default [35218]` ceiling 42a=**110%**, Sales Velocity ON,
+floor-надстройки ON. `never sold [59149]` 42a=100%, floor-надстройки **ON** (раздувают).
+`Manual min/max [59021]` 42a=100%, floor-надстройки **OFF** ← **наш целевой, чистый**.
+
+### Полезные колонки выгрузки инвентаря (75 шт)
+SKU, ASIN, ItemName, AmazonPrice, MinSellingPrice, MaxSellingPrice, **MyFloor, MyCeiling,
+MyPrice, PurchaseCost**, CommissionAmt, FBATotalFee, ActualShippingCost, ItemWight,
+**RepricingModelName, FolderName**, CompetitorCount, IsSelling, IGotBuybox, SalesRank, MAP.
+Folder→venue: `AmznUS-InvImp`=Salutem, `AmznUS4-InvImp`=Retailer, `AmznUS3-InvImp`=STARFIT.
+Анализатор: `scripts/cmax-inventory-analysis.ts`.
+
 ## Источники
 - [Inventory File Upload](https://channelmax.zendesk.com/hc/en-us/articles/4408231674011-Inventory-File-Upload)
 - [Getting Started — Repricing](https://channelmax.zendesk.com/hc/en-us/articles/4408239842075-Getting-Started-Guide-for-ChannelMAX-Repricing)
