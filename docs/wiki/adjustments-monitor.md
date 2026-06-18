@@ -14,6 +14,27 @@
 - 54 SkuAdjustmentProfile (10 нуждаются в SKU-DB update)
 - WeightAdjustment $-961.80 за 60d, Refund +$516.62, ReturnShipping $-6.90
 
+## UI таблицы — что показывается (2026-06-18)
+Колонка **Account** (Salutem Solutions / AMZ Commerce / Retailer
+Distributor / …) — берётся из `storeId`, который есть на ~100% строк, в
+отличие от order/SKU. Маппинг store1..5 → имя в
+`AdjustmentsTable.tsx` (`ACCOUNT_NAMES`), источник истины — CLAUDE.md.
+
+**Статус "Pending details"** (warn-бейдж) — для Amazon-строк без
+orderId/SKU/carrier. Это charge, пришедший только через real-time
+Financial Events (дата+сумма). Order ID / SKU / товар / carrier / вес
+приедут позже из **settlement-отчёта** (лаг 1–2 нед.) и заполнятся
+автоматически на следующем sync — задолго до конца 90-дневного окна
+спора. Раньше такие строки выглядели «пустыми/сломанными»; теперь
+развёрнутая строка честно это объясняет + даёт plain-English описание,
+что это за charge (`typeDescriptions`).
+
+> Почему order/SKU не приходят сразу: событие
+> `PostageBilling_PostageAdjustment` в `/finances/v0/financialEvents` НЕ
+> несёт ни OrderId, ни SellerSKU (подтверждено живым ответом API, см.
+> `docs/ADJUSTMENTS_DIAGNOSIS_REPORT_2026-05-22.md §5.3`). Единственная
+> атрибуция, доступная сразу — это аккаунт (storeId).
+
 ## Источники
 - **Amazon Financial Events** (`/finances/v0/financialEvents`) — real-time
 - **Amazon Settlement Reports** (`/reports/2021-06-30/...V2_FLAT_FILE_V2`)

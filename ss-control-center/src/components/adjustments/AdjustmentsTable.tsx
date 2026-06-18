@@ -21,6 +21,12 @@ import {
 interface Adjustment {
   id: string;
   channel: string;
+  // Which seller account the charge landed on — "store1".."store5" for
+  // Amazon, "walmart-store1" for Walmart. Always populated by every sync
+  // path (scan / settlement / walmart), so this is the one piece of
+  // attribution we have on 100% of rows even when order/SKU are still
+  // pending. Mapped to a human account name via accountName().
+  storeId: string | null;
   // Nullable: Amazon PostageBilling_PostageAdjustment events (the common
   // carrier reweigh recharge) have no per-order attribution — see the
   // ShippingAdjustment model in prisma/schema.prisma. Must be guarded
@@ -60,6 +66,50 @@ const typeLabels: Record<string, string> = {
   DIMadjustment: "DIM",
   CarrierAdjustment: "Carrier",
 };
+
+/** Plain-English explanation of what each charge type actually is. */
+const typeDescriptions: Record<string, string> = {
+  WeightAdjustment:
+    "The carrier re-weighed or re-measured this package after pickup and Amazon re-charged the difference on the Buy Shipping label.",
+  WeightAdjustmentRefund:
+    "Amazon refunded part of an earlier shipping charge — the carrier's correction came back in your favour.",
+  ReturnShipping:
+    "Carrier charge for the label used to ship a customer return back to us.",
+  CarrierAdjustment:
+    "A carrier correction applied to the shipping label cost.",
+};
+
+/**
+ * Map the internal seller-account id to the human account name shown in
+ * the UI. Source of truth is CLAUDE.md (store1..5 → account). Walmart is a
+ * single account, so we let the channel column speak for it and return null
+ * here (no per-store breakdown to show).
+ */
+const ACCOUNT_NAMES: Record<string, string> = {
+  store1: "Salutem Solutions",
+  store2: "Vladimir Personal",
+  store3: "AMZ Commerce",
+  store4: "Sirius International",
+  store5: "Retailer Distributor",
+};
+
+function accountName(storeId: string | null): string | null {
+  if (!storeId) return null;
+  if (storeId.startsWith("walmart")) return null;
+  return ACCOUNT_NAMES[storeId] ?? null;
+}
+
+/**
+ * A row is "pending details" when it's an Amazon charge that arrived via
+ * the real-time Financial Events feed (date + amount only) and hasn't yet
+ * been matched to its order. Amazon supplies order-id / SKU / product /
+ * carrier later, via the weekly settlement report — these rows fill in
+ * automatically on the next sync. Flagging them stops the empty cells from
+ * looking like a bug.
+ */
+function isPendingDetails(a: Adjustment): boolean {
+  return a.channel === "Amazon" && !a.orderId && !a.sku && !a.carrier;
+}
 
 /** Refund types — display as a positive (green) inflow, not red loss. */
 function isRefund(a: { adjustmentAmount: number; adjustmentType: string }): boolean {
@@ -287,7 +337,7 @@ export default function AdjustmentsTable({
             <TableRow>
               <TableHead className="w-8"></TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Channel</TableHead>
+              <TableHead>Account</TableHead>
               <TableHead>Order ID</TableHead>
               <TableHead>SKU</TableHead>
               <TableHead>Type</TableHead>
@@ -314,7 +364,14 @@ export default function AdjustmentsTable({
                     <TableCell className="text-xs text-ink-3">
                       {adj.adjustmentDate}
                     </TableCell>
-                    <TableCell className="text-xs">{adj.channel}</TableCell>
+                    <TableCell className="text-xs">
+                      <div className="font-medium text-ink leading-tight">
+                        {accountName(adj.storeId) ?? adj.channel}
+                      </div>
+                      <div className="text-[10.5px] text-ink-3">
+                        {adj.channel}
+                      </div>
+                    </TableCell>
                     <TableCell className="font-mono text-xs whitespace-nowrap">
                       {adj.orderId ?? "—"}
                     </TableCell>
@@ -339,16 +396,16 @@ export default function AdjustmentsTable({
                         <Badge className="bg-blue-soft2 text-blue-ink">
                           Disputed #{adj.disputeCaseId}
                         </Badge>
-                      ) : (
-                        <Badge
-                          className={
-                            adj.reviewed
-                              ? "bg-green-soft2 text-green-ink"
-                              : "bg-bg-elev text-ink-3"
-                          }
-                        >
-                          {adj.reviewed ? "Reviewed" : "New"}
+                      ) : adj.reviewed ? (
+                        <Badge className="bg-green-soft2 text-green-ink">
+                          Reviewed
                         </Badge>
+                      ) : isPendingDetails(adj) ? (
+                        <Badge className="bg-warn-tint text-warn-strong">
+                          Pending details
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-bg-elev text-ink-3">New</Badge>
                       )}
                     </TableCell>
                   </TableRow>
@@ -356,6 +413,39 @@ export default function AdjustmentsTable({
                     <TableRow key={`${adj.id}-detail`}>
                       <TableCell colSpan={8} className="bg-surface-tint p-4">
                         <div className="space-y-3 text-xs">
+                          {/* Account + what-is-this header */}
+                          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                            <span className="text-ink-3">Account:</span>
+                            <span className="font-medium text-ink">
+                              {accountName(adj.storeId) ?? adj.channel}
+                            </span>
+                            <span className="text-ink-4">·</span>
+                            <span className="text-ink-3">{adj.channel}</span>
+                          </div>
+                          {typeDescriptions[adj.adjustmentType] && (
+                            <p className="text-ink-2 leading-snug">
+                              {typeDescriptions[adj.adjustmentType]}
+                            </p>
+                          )}
+
+                          {/* Pending-details notice — explains the empty fields */}
+                          {isPendingDetails(adj) && (
+                            <div className="rounded-lg border border-warn/20 bg-warn-tint p-3 text-warn-strong">
+                              <p className="font-medium mb-0.5">
+                                Order & product details are still pending.
+                              </p>
+                              <p className="leading-snug">
+                                Amazon&apos;s real-time feed only reports the
+                                date and amount for this charge. The order ID,
+                                SKU, product, carrier and declared weight arrive
+                                with the weekly settlement report (typically
+                                within 1–2 weeks) and fill in automatically on
+                                the next sync — well inside the 90-day dispute
+                                window.
+                              </p>
+                            </div>
+                          )}
+
                           {/* Product row — image + name */}
                           <div className="flex items-start gap-3">
                             {adj.productImageUrl ? (
@@ -683,20 +773,24 @@ export default function AdjustmentsTable({
                     </Badge>
                   </div>
 
-                  {/* ACTION row: channel + status */}
+                  {/* ACTION row: account + status */}
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <span className="text-[11.5px] text-ink-2">
-                      {adj.channel}
+                      {accountName(adj.storeId) ?? adj.channel}
                     </span>
-                    <Badge
-                      className={
-                        adj.reviewed
-                          ? "bg-green-soft2 text-green-ink text-[10px]"
-                          : "bg-bg-elev text-ink-3 text-[10px]"
-                      }
-                    >
-                      {adj.reviewed ? "Reviewed" : "New"}
-                    </Badge>
+                    {adj.reviewed ? (
+                      <Badge className="bg-green-soft2 text-green-ink text-[10px]">
+                        Reviewed
+                      </Badge>
+                    ) : isPendingDetails(adj) ? (
+                      <Badge className="bg-warn-tint text-warn-strong text-[10px]">
+                        Pending details
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-bg-elev text-ink-3 text-[10px]">
+                        New
+                      </Badge>
+                    )}
                   </div>
 
                   {/* FOOTER: date */}
@@ -712,6 +806,34 @@ export default function AdjustmentsTable({
 
                 {expanded && (
                   <div className="bg-surface-tint px-4 pb-3 pt-2 space-y-3 text-[11.5px]">
+                    {/* Account + what-is-this */}
+                    <div className="flex flex-wrap items-baseline gap-x-2">
+                      <span className="text-ink-3">Account:</span>
+                      <span className="font-medium text-ink">
+                        {accountName(adj.storeId) ?? adj.channel}
+                      </span>
+                      <span className="text-ink-4">·</span>
+                      <span className="text-ink-3">{adj.channel}</span>
+                    </div>
+                    {typeDescriptions[adj.adjustmentType] && (
+                      <p className="text-ink-2 leading-snug">
+                        {typeDescriptions[adj.adjustmentType]}
+                      </p>
+                    )}
+                    {isPendingDetails(adj) && (
+                      <div className="rounded-lg border border-warn/20 bg-warn-tint p-3 text-warn-strong">
+                        <p className="font-medium mb-0.5">
+                          Order &amp; product details are still pending.
+                        </p>
+                        <p className="leading-snug">
+                          Amazon reports only the date and amount in real time.
+                          Order ID, SKU, product and carrier arrive with the
+                          weekly settlement report (1–2 weeks) and fill in
+                          automatically on the next sync.
+                        </p>
+                      </div>
+                    )}
+
                     {/* Product row — image + name */}
                     <div className="flex items-start gap-3">
                       {adj.productImageUrl ? (
