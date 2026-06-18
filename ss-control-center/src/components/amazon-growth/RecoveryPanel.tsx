@@ -9,10 +9,19 @@
  * snapshot own-brand content, and backfill the trailing 90 days.
  */
 
-import { useCallback, useEffect, useState } from "react";
-import { RefreshCw, Download, Camera, History as HistoryIcon } from "lucide-react";
+import { Fragment, useCallback, useEffect, useState } from "react";
+import { RefreshCw, Download, Camera, History as HistoryIcon, ChevronRight, ChevronDown, Undo2 } from "lucide-react";
 import { Btn, Panel, PanelHeader, KpiCard } from "@/components/kit";
 import { cn } from "@/lib/utils";
+
+interface RebuildKit {
+  asin: string;
+  inMirror: boolean;
+  sku: string | null;
+  snapshot: { id: string; title: string | null; bullets: string[]; mainImageUrl: string | null; imageCount: number | null; capturedAt: string } | null;
+  catalog: { title: string | null; brand: string | null; mainImageUrl: string | null; imageCount: number; bullets: string[] } | null;
+  bestSource: "snapshot" | "catalog" | "none";
+}
 
 interface LostWinner {
   asin: string; itemName: string | null;
@@ -33,6 +42,10 @@ export function RecoveryPanel({ storeIndex }: { storeIndex: number }) {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [kit, setKit] = useState<RebuildKit | null>(null);
+  const [kitLoading, setKitLoading] = useState(false);
+  const [restoring, setRestoring] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -78,6 +91,34 @@ export function RecoveryPanel({ storeIndex }: { storeIndex: number }) {
       }
       setMsg(`Backfill done — ${total} days ingested`);
     } finally { setBusy(null); }
+  }
+
+  async function toggleRow(asin: string) {
+    if (expanded === asin) { setExpanded(null); return; }
+    setExpanded(asin);
+    setKit(null);
+    setKitLoading(true);
+    try {
+      const res = await fetch(`/api/amazon/growth/history?storeIndex=${storeIndex}&asin=${encodeURIComponent(asin)}&view=rebuild`);
+      if (res.ok) setKit(await res.json());
+    } finally {
+      setKitLoading(false);
+    }
+  }
+
+  async function restore(sku: string) {
+    if (!confirm("Restore this listing's content (title/bullets/description) to the saved snapshot?")) return;
+    setRestoring(true); setMsg(null);
+    try {
+      const res = await fetch("/api/amazon/growth/history", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storeIndex, action: "restoreSnapshot", sku }),
+      });
+      const j = await res.json();
+      setMsg(j.ok ? `Restored ${j.restoredFields} content field(s) from snapshot ✓` : `Restore failed: ${j.error}`);
+    } finally {
+      setRestoring(false);
+    }
   }
 
   const c = data?.coverage;
@@ -132,10 +173,14 @@ export function RecoveryPanel({ storeIndex }: { storeIndex: number }) {
                 <tr><td colSpan={5} className="px-3 py-8 text-center text-ink-3">No lost winners yet — backfill history first (Backfill 90d), and the ~12-month comparison window fills as data accrues.</td></tr>
               ) : (
                 data.lostWinners.map((w) => (
-                  <tr key={w.asin} className="border-b border-rule/60 hover:bg-bg-elev/40">
+                  <Fragment key={w.asin}>
+                  <tr className="cursor-pointer border-b border-rule/60 hover:bg-bg-elev/40" onClick={() => toggleRow(w.asin)}>
                     <td className="max-w-[260px] px-3 py-2">
-                      <span className="block truncate text-ink">{w.itemName ?? w.asin}</span>
-                      <span className="block font-mono text-[10px] text-ink-4">{w.asin}</span>
+                      <span className="flex items-center gap-1 text-ink">
+                        {expanded === w.asin ? <ChevronDown size={13} className="shrink-0 text-ink-3" /> : <ChevronRight size={13} className="shrink-0 text-ink-3" />}
+                        <span className="truncate">{w.itemName ?? w.asin}</span>
+                      </span>
+                      <span className="block pl-4 font-mono text-[10px] text-ink-4">{w.asin}</span>
                     </td>
                     <td className="px-2 py-2 tabular">${w.historicalRevenue.toLocaleString()} · {w.historicalUnitsPerDay}/d</td>
                     <td className="px-2 py-2 tabular">${w.recentRevenue.toLocaleString()} · {w.recentUnitsPerDay}/d</td>
@@ -153,6 +198,58 @@ export function RecoveryPanel({ storeIndex }: { storeIndex: number }) {
                       {w.needsBrandCheck && <span className="ml-1 text-[10px] text-ink-4" title="Not in our mirror — confirm it was our brand via catalog">· verify brand</span>}
                     </td>
                   </tr>
+                  {expanded === w.asin && (
+                    <tr className="border-b border-rule/60 bg-bg-elev/30">
+                      <td colSpan={5} className="px-3 py-3">
+                        {kitLoading ? (
+                          <span className="text-[12px] text-ink-3">Loading rebuild kit…</span>
+                        ) : !kit ? (
+                          <span className="text-[12px] text-ink-3">No content source found.</span>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                              <span className="font-mono uppercase tracking-wider text-ink-3">Rebuild kit</span>
+                              <span className="rounded px-1.5 py-0.5 text-[10px]" style={{ background: "var(--bg-elev)", color: "var(--ink-2)" }}>
+                                source: {kit.bestSource}
+                              </span>
+                              {kit.inMirror && kit.snapshot && kit.sku ? (
+                                <Btn size="sm" variant="primary" icon={<Undo2 size={12} />} loading={restoring} onClick={() => restore(kit.sku!)}>
+                                  Restore content from snapshot
+                                </Btn>
+                              ) : kit.inMirror ? (
+                                <span className="text-[11px] text-ink-4">no snapshot yet — content shown from catalog; restore needs a saved snapshot</span>
+                              ) : (
+                                <span className="text-[11px] text-ink-4">offer gone — recreating the listing needs price/SKU (next phase); use this content to rebuild</span>
+                              )}
+                            </div>
+                            {(() => {
+                              const src = kit.snapshot ?? kit.catalog;
+                              if (!src) return <span className="text-[12px] text-ink-3">No content available.</span>;
+                              const bullets = src.bullets ?? [];
+                              return (
+                                <div className="grid gap-3 sm:grid-cols-[80px_1fr]">
+                                  {src.mainImageUrl ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={src.mainImageUrl} alt="" className="h-20 w-20 rounded border border-rule object-contain" />
+                                  ) : <div className="h-20 w-20 rounded border border-rule bg-bg-elev" />}
+                                  <div className="min-w-0 space-y-1">
+                                    <div className="text-[12px] text-ink">{src.title ?? "—"}</div>
+                                    {bullets.length > 0 && (
+                                      <ul className="list-disc space-y-0.5 pl-4 text-[11px] text-ink-2">
+                                        {bullets.slice(0, 5).map((b, i) => <li key={i} className="truncate">{b}</li>)}
+                                      </ul>
+                                    )}
+                                    {kit.snapshot && <div className="text-[10px] text-ink-4">snapshot from {new Date(kit.snapshot.capturedAt).toLocaleString()}</div>}
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 ))
               )}
             </tbody>

@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ingestDay, backfillDays, latestSettledDay } from "@/lib/amazon/growth/daily-history";
+import { measureChangesDiD } from "@/lib/amazon/growth/change-log";
 
 export const maxDuration = 300;
 
@@ -38,7 +39,9 @@ export async function GET(request: NextRequest) {
       const written = await ingestDay(prisma, storeIndex, latest);
       // Fill a few trailing gaps each run to build the ~90d trend window.
       const backfill = await backfillDays(prisma, storeIndex, new Date(latest.getTime() - 90 * DAY_MS), latest, { maxDays: 5 });
-      out.push({ storeIndex, latest: latest.toISOString().slice(0, 10), written, backfill });
+      // Now that today's funnel is in, measure any changes whose window elapsed.
+      const did = await measureChangesDiD(prisma, storeIndex);
+      out.push({ storeIndex, latest: latest.toISOString().slice(0, 10), written, backfill, did });
     } catch (err) {
       out.push({ storeIndex, error: (err as Error).message });
     }

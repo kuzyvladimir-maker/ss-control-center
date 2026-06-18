@@ -41,10 +41,10 @@ export async function pickCleanFrontIndex(urls: string[]): Promise<number> {
   const cands = urls.slice(0, 8);
   if (!cands.length) return -1;
   const prompt = `Above are ${cands.length} candidate product photos, index 0..${cands.length - 1} (in order).\n` +
-    `Pick the ONE best to use as a marketplace MAIN image: the product shown FRONT-facing — its front/label clearly visible, product filling most of the frame. ` +
-    `Prefer a plain white/light background; if none, still pick the best FRONT-facing shot on any background. ` +
-    `REJECT only: back-of-package, nutrition-facts panels, and pure marketing/promo art where the product front is NOT clearly shown. ` +
-    `Return -1 ONLY if no image shows the product front at all.\nReply with JSON only: {"best": <index or -1>}`;
+    `Pick the ONE best to use as a marketplace MAIN image: it MUST show the actual RETAIL PRODUCT AS SOLD — its PACKAGING (the can, box, bag, bottle, jar, or pouch) with the BRAND LABEL clearly visible and front-facing. This is the package the shopper receives. ` +
+    `Strongly prefer a plain white/light background.\n` +
+    `REJECT (never pick): a photo of the PREPARED/COOKED food or a SERVING of it (e.g. a bowl/plate/cup of the soup), recipe or serving-suggestion shots, nutrition-facts panels, back-of-package, lifestyle scenes, and pure promo/marketing art. The PACKAGE WITH ITS LABEL must be the main subject. ` +
+    `Return -1 ONLY if no image shows the product package with its label.\nReply with JSON only: {"best": <index or -1>}`;
   try {
     const j = parseJson(await ask(cands, prompt, 50));
     const b = Number(j?.best);

@@ -1626,6 +1626,14 @@ model AmazonChangeLog {
 
   outcome String? // useful | neutral | harmful
 
+  // Diff-in-diff lift (Phase 1): control-adjusted, from daily history. Honest
+  // measure of whether the change actually moved sales vs an unchanged control.
+  didMeasuredAt    DateTime?
+  didConfidence    String? // insufficient | low | medium | high
+  didLiftConvPp    Float? // conversion lift in percentage points (DiD)
+  didLiftRevPerDay Float? // revenue/day lift in $ (DiD)
+  didControlN      Int? // size of the matched control group
+
   rolledBack   Boolean   @default(false)
   rolledBackAt DateTime?
 

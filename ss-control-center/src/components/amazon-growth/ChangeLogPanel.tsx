@@ -31,6 +31,10 @@ interface ChangeRow {
   beforeErrorCount: number | null;
   afterErrorCount: number | null;
   outcome: string | null;
+  didConfidence: string | null;
+  didLiftConvPp: number | null;
+  didLiftRevPerDay: number | null;
+  didControlN: number | null;
   rolledBack: boolean;
   createdAt: string;
   afterMeasuredAt: string | null;
@@ -178,15 +182,16 @@ export function ChangeLogPanel({ storeIndex }: { storeIndex: number }) {
                 <th className="px-2 py-2">Change</th>
                 <th className="px-2 py-2">Before → after</th>
                 <th className="px-2 py-2">Health</th>
+                <th className="px-2 py-2">Lift (DiD)</th>
                 <th className="px-2 py-2">Outcome</th>
                 <th className="px-2 py-2"></th>
               </tr>
             </thead>
             <tbody>
               {loading && !data ? (
-                <tr><td colSpan={7} className="px-3 py-8 text-center text-ink-3">Loading…</td></tr>
+                <tr><td colSpan={8} className="px-3 py-8 text-center text-ink-3">Loading…</td></tr>
               ) : data && data.changes.length === 0 ? (
-                <tr><td colSpan={7} className="px-3 py-8 text-center text-ink-3">No changes logged yet.</td></tr>
+                <tr><td colSpan={8} className="px-3 py-8 text-center text-ink-3">No changes logged yet.</td></tr>
               ) : (
                 data?.changes.map((c) => {
                   const h = delta(c.beforeHealthScore, c.afterHealthScore);
@@ -212,6 +217,21 @@ export function ChangeLogPanel({ storeIndex }: { storeIndex: number }) {
                         )}
                       </td>
                       <td className={cn("whitespace-nowrap px-2 py-2 tabular text-[11px]", h.cls)}>{h.txt}</td>
+                      <td className="whitespace-nowrap px-2 py-2 text-[11px]">
+                        {c.didConfidence == null ? (
+                          <span className="text-ink-4">—</span>
+                        ) : c.didConfidence === "insufficient" ? (
+                          <span className="text-ink-4" title="not enough traffic/coverage to measure">n/a</span>
+                        ) : (
+                          <span
+                            className={cn("tabular", (c.didLiftConvPp ?? 0) > 0 ? "text-green-ink" : (c.didLiftConvPp ?? 0) < 0 ? "text-danger" : "text-ink-3")}
+                            title={`conversion ${(c.didLiftConvPp ?? 0) > 0 ? "+" : ""}${c.didLiftConvPp}pp · revenue ${(c.didLiftRevPerDay ?? 0) > 0 ? "+" : ""}$${c.didLiftRevPerDay}/day · ${c.didControlN} controls · ${c.didConfidence} confidence`}
+                          >
+                            {(c.didLiftConvPp ?? 0) > 0 ? "+" : ""}{c.didLiftConvPp}pp
+                            <span className="ml-1 text-[9px] text-ink-4">{c.didConfidence}</span>
+                          </span>
+                        )}
+                      </td>
                       <td className="px-2 py-2">
                         {c.rolledBack ? (
                           <span className="text-[11px] text-ink-4">rolled back</span>

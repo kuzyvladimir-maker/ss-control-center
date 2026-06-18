@@ -11,6 +11,9 @@
 
 import type { PrismaClient } from "@/generated/prisma/client";
 import type { OptimizerPlan, ApplyResult } from "./optimizer";
+import { measureLift } from "./diff-in-diff";
+
+const DAY_MS = 864e5;
 
 export type ChangeSource = "optimizer" | "advisor" | "bulk" | "manual";
 
@@ -86,6 +89,55 @@ export async function logOptimizerChanges(
  * classify the outcome. Health/errors move next sweep; conversion is the slower
  * signal (updates when the next Sales & Traffic report lands).
  */
+/**
+ * Control-adjusted lift (diff-in-diff) for changes whose measurement window has
+ * fully elapsed. This is the HONEST outcome — it subtracts how unchanged peers
+ * moved over the same window, so a market swing isn't credited to our change.
+ * Runs only once the post-window has passed; needs daily history coverage.
+ */
+export async function measureChangesDiD(
+  prisma: PrismaClient,
+  storeIndex: number,
+  opts: { burnInDays?: number; postDays?: number } = {},
+): Promise<{ measured: number; confident: number }> {
+  const burnIn = opts.burnInDays ?? 3;
+  const postDays = opts.postDays ?? 14;
+  // Only changes old enough that the full post-window has elapsed.
+  const cutoff = new Date(Date.now() - (burnIn + postDays + 1) * DAY_MS);
+  const pending = await prisma.amazonChangeLog.findMany({
+    where: { storeIndex, didMeasuredAt: null, rolledBack: false, asin: { not: null }, createdAt: { lt: cutoff } },
+    take: 200,
+  });
+
+  let measured = 0;
+  let confident = 0;
+  for (const row of pending) {
+    if (!row.asin) continue;
+    try {
+      const lift = await measureLift(prisma, storeIndex, row.asin, row.createdAt, { burnInDays: burnIn, postDays });
+      const data: Record<string, unknown> = {
+        didMeasuredAt: new Date(),
+        didConfidence: lift.confidence,
+        didLiftConvPp: lift.liftConversionPp,
+        didLiftRevPerDay: lift.liftRevenuePerDay,
+        didControlN: lift.controlN,
+      };
+      // Refine outcome from the control-adjusted lift when we trust it.
+      if (lift.confidence !== "insufficient" && lift.confidence !== "low") {
+        const conv = lift.liftConversionPp ?? 0;
+        const rev = lift.liftRevenuePerDay ?? 0;
+        data.outcome = conv > 0.5 || rev > 0.5 ? "useful" : conv < -0.5 || rev < -0.5 ? "harmful" : "neutral";
+        confident++;
+      }
+      await prisma.amazonChangeLog.update({ where: { id: row.id }, data });
+      measured++;
+    } catch {
+      /* leave for the next sweep */
+    }
+  }
+  return { measured, confident };
+}
+
 export async function measureChanges(
   prisma: PrismaClient,
   storeIndex: number,
