@@ -14,7 +14,7 @@ import { uploadToR2, multipackImageKey } from "./r2";
 import { polishListingCopy } from "./polish";
 import { validateListingContent } from "./guidelines";
 import { ensureDonorImage, fetchAndStoreDetail } from "../../sourcing/enrich";
-import { pickCleanFrontIndex, verifyMainImage } from "../../sourcing/vision";
+import { pickFrontRanked, verifyMainImage } from "../../sourcing/vision";
 
 export const SPEC_VERSION = "5.0.20260330-14_47_14-api";
 const DONOR_IMAGE_CAP = 6;
@@ -181,16 +181,22 @@ export async function buildAndSubmitOne(
     } catch {}
     if (cand.baseImageUrl) poolSet.add(cand.baseImageUrl);
     const pool = Array.from(poolSet);
-    const idx = await pickCleanFrontIndex(pool);
-    if (idx < 0) {
-      imageNote = "no clean front image in source — left unchanged";
+    // Self-correcting: rank package-front candidates, then tile each and have
+    // vision VERIFY the tile; publish the FIRST that passes. If none passes,
+    // leave the main image unchanged (do-no-harm) and flag it.
+    const ranked = await pickFrontRanked(pool);
+    if (!ranked.length) {
+      imageNote = "no product-package image in source — left unchanged";
     } else {
-      const base = await fetchImageBuffer(highResImageUrl(pool[idx]));
-      const main = await composeTiledMainImage(base, cand.packCount);
-      const candidateUrl = await uploadToR2(main, multipackImageKey(sku, "main", stamp));
-      const v = await verifyMainImage(candidateUrl);
-      if (v.ok) mainUrl = candidateUrl;
-      else imageNote = `tile rejected by vision (${v.kind}) — left unchanged`;
+      for (const idx of ranked) {
+        const base = await fetchImageBuffer(highResImageUrl(pool[idx]));
+        const main = await composeTiledMainImage(base, cand.packCount);
+        const candidateUrl = await uploadToR2(main, multipackImageKey(sku, "main", `${stamp}-${idx}`));
+        const v = await verifyMainImage(candidateUrl);
+        if (v.ok) { mainUrl = candidateUrl; break; }
+        imageNote = `candidate rejected by vision (${v.kind})`;
+      }
+      if (!mainUrl) imageNote = `no candidate passed verify — left unchanged (${imageNote})`;
     }
   }
   if (scope.gallery) {

@@ -53,6 +53,25 @@ export async function pickCleanFrontIndex(urls: string[]): Promise<number> {
 }
 
 /**
+ * Rank the candidate photos best-first for use as the package-front source.
+ * Returns up to `top` indices (best first); empty if none show the package.
+ * Used to RETRY: if the best pick's tile fails verification, try the next.
+ */
+export async function pickFrontRanked(urls: string[], top = 3): Promise<number[]> {
+  const cands = urls.slice(0, 8);
+  if (!cands.length) return [];
+  const prompt = `Above are ${cands.length} candidate product photos, index 0..${cands.length - 1} (in order).\n` +
+    `Rank the ones that show the actual RETAIL PRODUCT PACKAGE (can/box/bag/bottle/jar/pouch) with the BRAND LABEL clearly visible, front-facing — best first. Prefer plain white/light backgrounds. ` +
+    `EXCLUDE: prepared/cooked food or a serving (e.g. a bowl/plate of soup), recipe/serving-suggestion shots, nutrition panels, back-of-package, lifestyle, and promo art. ` +
+    `Return JSON only: {"ranked": [indices best-first, up to ${top}]}. Empty array if none show the package.`;
+  try {
+    const j = parseJson(await ask(cands, prompt, 60));
+    const arr = Array.isArray(j?.ranked) ? j.ranked : [];
+    return arr.map((x: any) => Number(x)).filter((i: number) => Number.isInteger(i) && i >= 0 && i < cands.length).slice(0, top);
+  } catch { return []; }
+}
+
+/**
  * Verify a GENERATED main image (often the product tiled in a grid) is acceptable
  * to publish: the product is shown FRONT-facing. Reject back/nutrition/pure-promo.
  * The publish gate — false → do not push.
