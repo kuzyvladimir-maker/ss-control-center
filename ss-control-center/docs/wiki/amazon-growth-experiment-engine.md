@@ -94,11 +94,37 @@ the current Change Log outcome does, and it overstates/understates effects).
 - Recovery: detect a stripped/changed once-top listing → restore winning version → sales recover.
 - Compounding: richer Learning Store → sharper advisor proposals → rising win rate.
 
-## Phasing
+## Phasing — status (2026-06-18)
 
-- **Phase 0 (data backbone):** daily funnel history (A) + listing snapshots (B) +
-  historical sales backfill ~2yr (Salutem Vita/Starfit) + lost-winner detector (E, identify).
-- **Phase 1:** control groups + diff-in-diff (replace naive before/after) + Recovery restore.
-- **Phase 2:** experiment engine state machine over cohorts (C).
-- **Phase 3:** Learning Store (D) feeding the advisor + epsilon-greedy exploration.
-- **Phase 4:** native Amazon Experiments for eligible high-traffic brand ASINs (if API permits).
+- **Phase 0 — BUILT.** AmazonAsinDaily (daily funnel; reports.runSalesTrafficWindow,
+  daily-history.ts) + AmazonListingSnapshot (snapshots.ts, own-brand, hash-deduped) +
+  lost-winners.ts (+ Catalog API brand resolution) + /history API + crons
+  (amazon-daily-history, amazon-snapshots) + Recovery tab.
+- **Phase 1 — BUILT.** diff-in-diff.ts (control-adjusted lift) + AmazonChangeLog DiD
+  columns + measureChangesDiD (in daily cron) + Lift(DiD) column. Recovery restore:
+  catalog.ts + rebuild-kit + restoreSnapshot (validated, logged, reversible).
+- **Phase 2 — BUILT (running).** cron amazon-auto-improve (hourly): finds own-brand
+  listings with a DETERMINISTICALLY-fixable problem (suppression / 99016 dedupe) and
+  enqueues them for the safe remediation worker. Conservative, own-brand only,
+  deterministic only, validated, reversible, DiD-measured. Other ERROR issues
+  (18971/8541 = manual) are intentionally left alone. The propose→apply→measure loop
+  now self-runs. (Full cohort experiment state machine for CONTENT variants — title/
+  image A/B — deferred; current loop covers the safe structural levers.)
+- **Phase 3 — BUILT.** learning-store.ts aggregates DiD outcomes by (changeType ×
+  category) → proven levers; summarizeForAdvisor injects them into the advisor prompt
+  (single + bulk). /learnings GET. Populates as measured changes accrue.
+- **Phase 4 — NOT BUILT (by design).** Native Amazon "Manage Your Experiments" is a
+  Brand-Registry UI feature, not reliably automatable via SP-API. Use it manually for
+  the few highest-traffic brand ASINs; our own controlled diff-in-diff covers the rest.
+
+## What runs automatically (crons)
+- amazon-daily-history (09:20) — ingest latest day + trailing backfill + measureChangesDiD.
+- amazon-snapshots (09:50) — version own-brand content.
+- amazon-auto-improve (hourly :15) — enqueue safe fixes for own-brand fixable issues.
+- amazon-remediation (every 2 min, pre-existing) — drains the queue, applies fixes.
+
+## Notes / honest limits
+- Lift numbers need data accrual: measureLift returns "insufficient" until ≥5 pre+post
+  days and ≥30 sessions exist; the daily cron + Backfill 90d build that up.
+- Auto-improve only does structural safe fixes; content rewrites & price stay manual/
+  operator-triggered (brand-rule + COGS-margin gated). Conversion-content A/B = future.

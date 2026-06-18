@@ -45,12 +45,17 @@ export async function GET(request: NextRequest) {
 
   for (const storeIndex of STORES) {
     try {
-      // Own-brand listings with a fixable problem, worst-opportunity first.
+      // Own-brand listings with a DETERMINISTICALLY-fixable problem, worst-
+      // opportunity first. We target only what the safe worker can actually fix:
+      //  - search-suppressed (derive structural unit_count/weight from the title), or
+      //  - a "maximum of N occurrence(s)" duplicate-attribute issue (99016 dedupe).
+      // Other ERROR issues (18971 listing-limitation, 8541 catalog mismatch, …) are
+      // manual/business and are intentionally left alone — no churn, no wasted calls.
       const candidates = await prisma.amazonListingHealthItem.findMany({
         where: {
           storeIndex,
           OR: [{ itemName: { contains: "Salutem Vita" } }, { itemName: { contains: "Starfit" } }],
-          AND: [{ OR: [{ isSuppressed: true }, { errorIssueCount: { gt: 0 } }] }],
+          AND: [{ OR: [{ isSuppressed: true }, { issuesSummary: { contains: "occurrence" } }] }],
         },
         orderBy: { opportunityScore: "desc" },
         select: { sku: true, asin: true, itemName: true },
