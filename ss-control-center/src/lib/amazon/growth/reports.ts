@@ -99,6 +99,83 @@ async function downloadDocument(storeId: string, documentId: string): Promise<st
   return buf.toString("utf-8");
 }
 
+// ─── Reusable windowed Sales & Traffic pull (daily-history ingest + backfill) ──
+export interface StAsinRow {
+  asin: string;
+  sessions: number;
+  pageViews: number;
+  units: number;
+  totalOrderItems: number;
+  revenue: number;
+  featuredOfferPct: number | null;
+  unitSessionPct: number | null;
+  avgSellingPrice: number | null;
+}
+
+/** Run a Sales & Traffic report for an EXPLICIT window and return per-ASIN rows
+ *  aggregated over it. Synchronous (creates → polls → downloads). Works for
+ *  historical windows (~2yr back, verified). The report aggregates per-ASIN over
+ *  the window, so for daily granularity request a 1-day window per day. */
+export async function runSalesTrafficWindow(
+  storeIndex: number,
+  startISO: string,
+  endISO: string,
+  opts: { pollMs?: number; maxPolls?: number } = {},
+): Promise<StAsinRow[]> {
+  const storeId = `store${storeIndex}`;
+  const token = await getCachedAccessToken(storeId);
+  const body = {
+    reportType: "GET_SALES_AND_TRAFFIC_REPORT",
+    marketplaceIds: [MARKETPLACE_ID],
+    dataStartTime: startISO,
+    dataEndTime: endISO,
+    reportOptions: { dateGranularity: "DAY", asinGranularity: "CHILD" },
+  };
+  const cr = await fetch(`${SP_ENDPOINT}/reports/2021-06-30/reports`, {
+    method: "POST",
+    headers: { "x-amz-access-token": token, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!cr.ok) throw new Error(`createReport window failed ${cr.status}: ${await cr.text()}`);
+  const reportId = (await cr.json()).reportId as string;
+
+  const pollMs = opts.pollMs ?? 7000;
+  const maxPolls = opts.maxPolls ?? 25;
+  for (let i = 0; i < maxPolls; i++) {
+    await new Promise((r) => setTimeout(r, pollMs));
+    const st = await getReportStatus(storeId, reportId);
+    if (st.status === "DONE" && st.documentId) {
+      const text = await downloadDocument(storeId, st.documentId);
+      const json = JSON.parse(text) as { salesAndTrafficByAsin?: StAsinEntry[] };
+      return (json.salesAndTrafficByAsin ?? [])
+        .map((e): StAsinRow | null => {
+          const asin = e.childAsin ?? e.parentAsin;
+          if (!asin) return null;
+          const t = e.trafficByAsin ?? {};
+          const s = e.salesByAsin ?? {};
+          const sessions = t.sessions ?? 0;
+          const units = s.unitsOrdered ?? 0;
+          const revenue = s.orderedProductSales?.amount ?? 0;
+          const pageViews = t.pageViews ?? (t.browserPageViews ?? 0) + (t.mobileAppPageViews ?? 0);
+          return {
+            asin,
+            sessions,
+            pageViews,
+            units,
+            totalOrderItems: s.totalOrderItems ?? 0,
+            revenue: Math.round(revenue * 100) / 100,
+            featuredOfferPct: t.buyBoxPercentage ?? null,
+            unitSessionPct: t.unitSessionPercentage != null ? t.unitSessionPercentage / 100 : sessions > 0 ? units / sessions : null,
+            avgSellingPrice: units > 0 ? Math.round((revenue / units) * 100) / 100 : null,
+          };
+        })
+        .filter((r): r is StAsinRow => r != null);
+    }
+    if (st.status === "CANCELLED" || st.status === "FATAL") throw new Error(`report ${st.status}`);
+  }
+  throw new Error("report window timed out");
+}
+
 // ─── State machine driver (one step per call) ───────────────────────────────
 export interface ReportStep {
   storeIndex: number;
@@ -318,6 +395,7 @@ interface StAsinEntry {
   salesByAsin?: {
     unitsOrdered?: number;
     orderedProductSales?: { amount?: number };
+    totalOrderItems?: number;
   };
   trafficByAsin?: {
     sessions?: number;
