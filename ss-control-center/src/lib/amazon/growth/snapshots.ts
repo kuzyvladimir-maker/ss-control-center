@@ -40,7 +40,7 @@ export async function snapshotListing(
   const listing = await getListing(storeIndex, sellerId, sku);
   const summary = listing.summaries?.find((s) => s.marketplaceId === MARKETPLACE_ID) ?? listing.summaries?.[0];
   const flat = flattenListing(listing);
-  const brand = flat.brand || (summary?.brand?.[0]?.value ?? "");
+  const brand = flat.brand;
 
   if (opts.ownBrandOnly !== false && !isOwnBrand(brand, flat.title)) {
     return { written: false, reason: "not own brand", brand };

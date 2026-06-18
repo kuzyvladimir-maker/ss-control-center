@@ -16,6 +16,7 @@ import { BuyBoxPanel } from "./BuyBoxPanel";
 import { OptimizerResults } from "./OptimizerResults";
 import { BulkFixPanel } from "./BulkFixPanel";
 import { ChangeLogPanel } from "./ChangeLogPanel";
+import { RecoveryPanel } from "./RecoveryPanel";
 import { PricingDashboard } from "@/components/pricing/PricingDashboard";
 
 export interface AmazonStore {
@@ -74,6 +75,7 @@ export function AmazonGrowthTabs() {
           <TabsTrigger value="optimizer">Listing Optimizer</TabsTrigger>
           <TabsTrigger value="buy-box">Buy Box</TabsTrigger>
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
+          <TabsTrigger value="recovery">Recovery</TabsTrigger>
           <TabsTrigger value="change-log">Change Log</TabsTrigger>
         </TabsList>
         <TabsContent value="action-center" className="mt-4">
@@ -91,6 +93,9 @@ export function AmazonGrowthTabs() {
         </TabsContent>
         <TabsContent value="pricing" className="mt-4">
           <PricingDashboard storeIndex={storeIndex} />
+        </TabsContent>
+        <TabsContent value="recovery" className="mt-4">
+          <RecoveryPanel storeIndex={storeIndex} />
         </TabsContent>
         <TabsContent value="change-log" className="mt-4">
           <ChangeLogPanel storeIndex={storeIndex} />

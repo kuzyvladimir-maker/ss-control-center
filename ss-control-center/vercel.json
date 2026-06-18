@@ -80,6 +80,14 @@
     {
       "path": "/api/cron/amazon-remediation",
       "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/cron/amazon-daily-history",
+      "schedule": "20 9 * * *"
+    },
+    {
+      "path": "/api/cron/amazon-snapshots",
+      "schedule": "50 9 * * *"
     }
   ]
 }

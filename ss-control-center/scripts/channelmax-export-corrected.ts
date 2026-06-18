@@ -43,9 +43,10 @@ function venueFor(folder: string): string {
   return "AmazonUS"; // Salutem (proven)
 }
 
-// Move our SKUs to the clean "Manual min/max" model (35a=100% Cost-Min,
-// 42a=100% Retail-Max, all floor-additions OFF → MyFloor=Min, no double-count).
-const REPRICING_MODEL_ID = "59021";
+// Move our SKUs to the dedicated "Frozen own-cost" [60067] model: clean floor
+// (35a=100% Cost-Min, 42a=100% Retail-Max, floor-additions 48a/48f/36a OFF →
+// MyFloor=Min) + Sales Velocity (no sale/24h → -1.5%, >=2 sales/24h → +1%).
+const REPRICING_MODEL_ID = "60067";
 const out = [
   "SKU\tASIN\tSellingVenue\tMinSellingPrice\tMaxSellingPrice\tPurchaseCost\tRepricingModelID",
 ];

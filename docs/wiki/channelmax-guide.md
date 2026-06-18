@@ -149,13 +149,16 @@ SV Defaults (Calculator): markup **70%**, ShipCost **$2/lb**, VAT **$1.8** на 
    `MinSellingPrice` = наш floor (landed×1.3), `MaxSellingPrice` = target,
    **`PurchaseCost`** = наш landed cost. + синхронно опущен Amazon
    `minimum_seller_allowed_price` до floor (57 store1, чтобы не ушли в Inactive).
-2. **Переселить наши SKU в существующую модель «Manual min/max» [59021]** — она УЖЕ
-   чистая: 35(a)=100% Cost-Min, 42(a)=100% Retail-Max, **вкладка If-floor-calculated
-   вся ВЫКЛ** (48a/48f/36a=No) → MyFloor=наш Min без раздувания; при этом конкурирует
-   вниз (NonFBA Lower By $0.20/$0.10). НЕ клонировать «never sold» (там 3527 чужих SKU
-   с надстройками floor — не трогать). Переселение = колонка `RepricingModelID=59021`
-   в файле (или Mass Update).
-3. Дальше алгоритм 59021 сам уронит цену до конкурентной → продажи.
+2. **Переселить наши SKU в выделенную модель «Frozen own-cost» [60067]** (клон «never
+   sold», создан Vladimir 2026-06-17). Настройки: 35(a)=100% Cost-Min, 42(a)=100%
+   Retail-Max, **If-floor-calculated всё ВЫКЛ** (48a/48f/36a=No → MyFloor=наш Min, без
+   раздувания) + **Sales Velocity: нет продаж за 24ч → −1.5%, ≥2 продаж/24ч → +1%**.
+   Переселение = колонка `RepricingModelID=60067` в файле. (НЕ трогаем «never sold»
+   [59149] — там 3527 чужих SKU; «Manual min/max» [59021] чистая, но без sales-velocity
+   и с 299 ручными SKU.)
+3. Поведение: uncontested товары алгоритм поднимает к target (Maximize BuyBox), затем
+   Sales Velocity роняет −1.5%/день пока не продастся (target→floor ≈ 9 дней); продаётся
+   → держит/растит. Contested — конкурирует вниз. Floor (landed×1.3) — реальное дно.
 - Файл: `scripts/channelmax-export-corrected.ts` → `data/channelmax-uncrustables-corrected.txt`
   (колонки SKU/ASIN/SellingVenue/Min/Max/PurchaseCost/**RepricingModelID=59021**).
 - Сегментация по продажам (Veeqo) → раскладка по моделям остаётся опцией на будущее.
