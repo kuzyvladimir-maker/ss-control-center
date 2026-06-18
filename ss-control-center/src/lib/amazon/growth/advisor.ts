@@ -200,9 +200,12 @@ function buildUserPrompt(i: AdvisorInput): string {
  *  bounded structured diagnosis, so the deep think isn't worth it at scale. */
 export async function adviseListing(
   input: AdvisorInput,
-  opts?: { model?: string; thinking?: "adaptive" | "off" },
+  opts?: { model?: string; thinking?: "adaptive" | "off"; learnings?: string },
 ): Promise<AdvisorResult> {
   const client = getClient();
+  const userPrompt = opts?.learnings
+    ? `${buildUserPrompt(input)}\n\n${opts.learnings}`
+    : buildUserPrompt(input);
   const response = await client.messages.create({
     model: opts?.model ?? DEFAULT_MODEL,
     // Headroom so thinking (single path) + the structured plan never truncate the
@@ -211,7 +214,7 @@ export async function adviseListing(
     thinking: opts?.thinking === "off" ? { type: "disabled" } : { type: "adaptive" },
     output_config: { format: { type: "json_schema", schema: RESULT_SCHEMA } },
     system: SYSTEM,
-    messages: [{ role: "user", content: buildUserPrompt(input) }],
+    messages: [{ role: "user", content: userPrompt }],
   } as Anthropic.MessageCreateParamsNonStreaming);
 
   const textBlock = response.content.find((b) => b.type === "text");

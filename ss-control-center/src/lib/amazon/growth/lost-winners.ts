@@ -13,6 +13,7 @@
 
 import type { PrismaClient } from "@/generated/prisma/client";
 import { isOwnBrand } from "./snapshots";
+import { getCatalogContent } from "./catalog";
 
 const DAY_MS = 864e5;
 
@@ -58,6 +59,7 @@ export interface LostWinnerOpts {
   minHistoricalRevenue?: number; // ignore noise below this (default 40)
   minDropPct?: number; // only surface declines ≥ this (default 60)
   ownBrandOnly?: boolean; // default true — only confirmed own-brand + needs-check
+  resolveBrand?: number; // resolve brand via Catalog API for up to N gone candidates, dropping confirmed non-own-brand (default 0 = off)
 }
 
 export async function detectLostWinners(
@@ -123,5 +125,28 @@ export async function detectLostWinners(
   }
 
   out.sort((a, b) => b.historicalRevenue - a.historicalRevenue);
+
+  // Optionally confirm brand for the top gone-from-catalog candidates via the
+  // Catalog API, so the own-brand view isn't cluttered with dropped reseller ASINs.
+  const resolveN = opts.resolveBrand ?? 0;
+  if (ownBrandOnly && resolveN > 0) {
+    const toCheck = out.filter((w) => w.needsBrandCheck).slice(0, resolveN);
+    const resolved = await Promise.all(
+      toCheck.map(async (w) => {
+        const cat = await getCatalogContent(storeIndex, w.asin).catch(() => null);
+        return { asin: w.asin, brand: cat?.brand ?? null, title: cat?.title ?? null, fetched: !!cat };
+      }),
+    );
+    const byAsin = new Map(resolved.map((r) => [r.asin, r]));
+    return out.filter((w) => {
+      if (!w.needsBrandCheck) return true;
+      const r = byAsin.get(w.asin);
+      if (!r || !r.fetched) return true; // couldn't resolve → keep, still flagged
+      const own = isOwnBrand(r.brand, r.title);
+      if (own) { w.ownBrand = true; w.needsBrandCheck = false; if (!w.itemName) w.itemName = r.title; }
+      return own; // drop confirmed non-own-brand
+    });
+  }
+
   return out;
 }

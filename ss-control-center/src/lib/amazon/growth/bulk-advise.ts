@@ -17,6 +17,7 @@ import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { getListing, patchListing, listSkus, type ListingPatch } from "@/lib/amazon-sp-api/listings";
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import { adviseListing, BULK_ADVISOR_MODEL, type AdvisorInput, type AdvisorAction } from "./advisor";
+import { summarizeForAdvisor } from "./learning-store";
 import { buildPlan, applyPlan } from "./optimizer";
 import { logChange, logOptimizerChanges } from "./change-log";
 import { getAttributeForm, buildAttributeEntry } from "./product-type-definitions";
@@ -141,7 +142,8 @@ async function processAdvise(
   });
   if (!item) return { status: "SKIPPED", actionsApplied: 0, result: "not in mirror" };
 
-  const plan = await adviseListing(buildInput(item), { model: BULK_ADVISOR_MODEL, thinking: "off" });
+  const learnings = await summarizeForAdvisor(prisma, storeIndex, item.productType).catch(() => "");
+  const plan = await adviseListing(buildInput(item), { model: BULK_ADVISOR_MODEL, thinking: "off", learnings });
   const notes: string[] = [];
   let applied = 0;
 

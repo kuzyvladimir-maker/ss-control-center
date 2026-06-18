@@ -88,6 +88,10 @@
     {
       "path": "/api/cron/amazon-snapshots",
       "schedule": "50 9 * * *"
+    },
+    {
+      "path": "/api/cron/amazon-auto-improve",
+      "schedule": "15 * * * *"
     }
   ]
 }

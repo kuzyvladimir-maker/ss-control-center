@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { adviseListing, type AdvisorInput } from "@/lib/amazon/growth/advisor";
+import { summarizeForAdvisor } from "@/lib/amazon/growth/learning-store";
 
 export const maxDuration = 120;
 
@@ -77,7 +78,8 @@ export async function POST(request: NextRequest) {
   };
 
   try {
-    const plan = await adviseListing(input);
+    const learnings = await summarizeForAdvisor(prisma, storeIndex, it.productType).catch(() => "");
+    const plan = await adviseListing(input, { learnings });
     return NextResponse.json({ ok: true, sku, plan });
   } catch (err) {
     return NextResponse.json({ ok: false, error: (err as Error).message }, { status: 502 });

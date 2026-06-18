@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     prisma.amazonAsinDaily.aggregate({ where: { storeIndex }, _min: { date: true }, _max: { date: true } }),
     prisma.amazonListingSnapshot.count({ where: { storeIndex } }),
     prisma.amazonListingSnapshot.findFirst({ where: { storeIndex }, orderBy: { capturedAt: "desc" }, select: { capturedAt: true } }),
-    detectLostWinners(prisma, storeIndex).catch(() => []),
+    detectLostWinners(prisma, storeIndex, { resolveBrand: 12 }).catch(() => []),
   ]);
 
   return NextResponse.json({
