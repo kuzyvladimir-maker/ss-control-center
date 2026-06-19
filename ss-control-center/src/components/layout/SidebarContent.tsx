@@ -18,6 +18,7 @@ import {
   Sprout,
   Leaf,
   BookOpen,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -109,6 +110,11 @@ const operationsItems = (s: DashboardSummary): NavItem[] => [
     title: "Amazon Growth",
     href: "/amazon-growth",
     icon: Leaf,
+  },
+  {
+    title: "A+ Content",
+    href: "/amazon-aplus",
+    icon: Sparkles,
   },
 ];
 
