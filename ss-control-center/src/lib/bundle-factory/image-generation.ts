@@ -48,6 +48,15 @@ const COST_USD_BY_SIZE: Record<string, number> = {
   "1536x1536": 0.06,
 };
 
+// High-quality (and gpt-image-2) costs more — measured ~$0.235 for a
+// 1536×1024 high-quality image (2026-06-19). Used when quality==="high".
+const HIGH_COST_USD_BY_SIZE: Record<string, number> = {
+  "1024x1024": 0.19,
+  "1024x1536": 0.25,
+  "1536x1024": 0.25,
+  "1536x1536": 0.25,
+};
+
 export interface RewriteFeedback {
   /** Logos surfaced by Rule 6 on the prior attempt — used to build a
    *  stronger negative prompt. */
@@ -68,6 +77,11 @@ export interface ImageGenerationInput {
   retry_context?: RewriteFeedback;
   /** Size override; default `1024x1024`. */
   size?: keyof typeof COST_USD_BY_SIZE;
+  /** OpenAI image model override; default `gpt-image-1`. A+ Content Factory
+   *  passes `gpt-image-2` for photoreal product/lifestyle shots. */
+  model?: string;
+  /** Quality override; default OpenAI auto. A+ uses `high` for hero/product shots. */
+  quality?: "low" | "medium" | "high" | "auto";
 }
 
 export interface ImageGenerationOutput {
@@ -139,8 +153,9 @@ function safeSlug(s: string): string {
   return s.replace(SLUG_RE, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "anon";
 }
 
-function costCentsForSize(size: string): number {
-  const usd = COST_USD_BY_SIZE[size] ?? COST_USD_BY_SIZE[DEFAULT_SIZE];
+function costCentsForSize(size: string, quality?: string): number {
+  const table = quality === "high" ? HIGH_COST_USD_BY_SIZE : COST_USD_BY_SIZE;
+  const usd = table[size] ?? table[DEFAULT_SIZE];
   return Math.ceil(usd * 100);
 }
 
@@ -190,10 +205,11 @@ export async function generateMainImage(
   let response: { data?: Array<{ url?: string; b64_json?: string }> };
   try {
     response = await openai.images.generate({
-      model: MODEL,
+      model: input.model ?? MODEL,
       prompt: finalPrompt,
       size,
       n: 1,
+      ...(input.quality ? { quality: input.quality } : {}),
     });
   } catch (e) {
     return {
@@ -209,7 +225,7 @@ export async function generateMainImage(
   if (!first || (!first.url && !first.b64_json)) {
     return {
       image_url: null,
-      cost_cents: costCentsForSize(size),
+      cost_cents: costCentsForSize(size, input.quality),
       prompt_used: finalPrompt,
       mock_mode: false,
       error: "OpenAI returned no image data",
@@ -233,7 +249,7 @@ export async function generateMainImage(
   } catch (e) {
     return {
       image_url: null,
-      cost_cents: costCentsForSize(size),
+      cost_cents: costCentsForSize(size, input.quality),
       prompt_used: finalPrompt,
       mock_mode: false,
       error: `Failed to materialise OpenAI image: ${e instanceof Error ? e.message : String(e)}`,
@@ -247,7 +263,7 @@ export async function generateMainImage(
   if (!r2 || !r2PublicUrl) {
     return {
       image_url: `data:image/png;base64,${imageBytes.toString("base64")}`,
-      cost_cents: costCentsForSize(size),
+      cost_cents: costCentsForSize(size, input.quality),
       prompt_used: finalPrompt,
       mock_mode: false,
       error: "R2 not configured — returned data: URL (not for production)",
@@ -279,7 +295,7 @@ export async function generateMainImage(
   } catch (e) {
     return {
       image_url: null,
-      cost_cents: costCentsForSize(size),
+      cost_cents: costCentsForSize(size, input.quality),
       prompt_used: finalPrompt,
       mock_mode: false,
       error: `R2 upload failed: ${e instanceof Error ? e.message : String(e)}`,
@@ -289,7 +305,7 @@ export async function generateMainImage(
   const base = r2PublicUrl.replace(/\/+$/, "");
   return {
     image_url: `${base}/${key}`,
-    cost_cents: costCentsForSize(size),
+    cost_cents: costCentsForSize(size, input.quality),
     prompt_used: finalPrompt,
     mock_mode: false,
   };

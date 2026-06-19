@@ -42,6 +42,8 @@ export function AplusFactory() {
   const [msg, setMsg] = useState<string | null>(null);
   const [review, setReview] = useState<Job | null>(null);
   const [comments, setComments] = useState("");
+  const [textModel, setTextModel] = useState<"opus" | "sonnet">("opus");
+  const [imageModel, setImageModel] = useState<"gpt-image-2" | "gpt-image-1" | "smart">("gpt-image-2");
 
   const loadJobs = useCallback(async () => {
     const res = await fetch(`/api/amazon/aplus?storeIndex=${storeIndex}&view=jobs`);
@@ -65,7 +67,7 @@ export function AplusFactory() {
   async function generate(sku: string) {
     setBusy(sku); setMsg(null);
     try {
-      const j = await post({ action: "generate", sku });
+      const j = await post({ action: "generate", sku, textModel, imageModel });
       setMsg(j.ok ? (j.qualified ? "Сгенерировано ✓ — на ревью" : `Сгенерировано, но гейт нашёл нарушения (${j.violations?.length})`) : `Ошибка: ${j.error}`);
       await loadJobs();
       setTab("jobs");
@@ -87,7 +89,7 @@ export function AplusFactory() {
   async function regenImages(jobId: string) {
     setBusy(jobId + ":img"); setMsg(null);
     try {
-      await post({ action: "generateImages", id: jobId });
+      await post({ action: "generateImages", id: jobId, imageModel, force: true });
       const res = await fetch(`/api/amazon/aplus?storeIndex=${storeIndex}&view=jobs`);
       const data = await res.json();
       setJobs(data.jobs ?? []); setSummary(data.summary ?? null);
@@ -117,6 +119,27 @@ export function AplusFactory() {
 
       <div className="flex items-start gap-2 rounded-lg border border-rule bg-bg-elev/40 px-3 py-2 text-[12px] leading-relaxed text-ink-2">
         <Info size={14} className="mt-0.5 shrink-0 text-ink-3" /><span>{HELP}</span>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-4 rounded-lg border border-rule bg-bg-elev/40 px-3 py-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-mono uppercase tracking-[0.1em] text-ink-3">Text model</span>
+          <select value={textModel} onChange={(e) => setTextModel(e.target.value as typeof textModel)}
+            className="rounded-md border border-rule bg-bg px-2 py-1 text-[12px] text-ink">
+            <option value="opus">Opus 4.8 (best, pricier)</option>
+            <option value="sonnet">Sonnet 4.6 (cheaper, fast)</option>
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-mono uppercase tracking-[0.1em] text-ink-3">Image model</span>
+          <select value={imageModel} onChange={(e) => setImageModel(e.target.value as typeof imageModel)}
+            className="rounded-md border border-rule bg-bg px-2 py-1 text-[12px] text-ink">
+            <option value="gpt-image-2">gpt-image-2 (photoreal, ~$0.24/img)</option>
+            <option value="gpt-image-1">gpt-image-1 (cheaper, ~$0.06/img)</option>
+            <option value="smart">Smart (photos→2, infographics→1)</option>
+          </select>
+        </div>
+        <span className="text-[11px] text-ink-3">Текст — генерация копирайта (Anthropic). Картинки — графика (OpenAI). «Перегенерировать картинки» в ревью использует выбранную image-модель.</span>
       </div>
 
       <div className="flex items-center gap-1.5">

@@ -31,7 +31,7 @@ export const FDA_DISCLAIMER =
 
 // Shown to the model so OWN-brand products show the actual product, while gift
 // baskets stay logo-free. In all cases: never show OTHER companies' logos/packaging.
-const OWN_IMG = "Show the actual OWN-brand product clearly and appetizingly; our own Salutem Vita branding is acceptable. NO other companies' brand logos or packaging text. Professional high-res commercial photography, no readable third-party labels.";
+const OWN_IMG = "Show the actual product itself clearly and appetizingly as a clean studio/lifestyle photograph. Do NOT render any printed text, labels, logos or packaging copy on the product (the brand lives in the live text, not the image — generators render text as garbled nonsense). Professional high-res commercial photography.";
 const GIFT_IMG = "Premium gift-basket LIFESTYLE / in-use scene. Absolutely NO brand logos, NO packaging labels, NO readable text of ANY brand (the contents are third-party — never show their marks). Generic appetizing food / gifting presentation only.";
 
 export const CONCEPT_CONFIG: Record<Concept, ConceptConfig> = {

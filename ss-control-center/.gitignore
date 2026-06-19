@@ -51,3 +51,4 @@ next-env.d.ts
 
 # Throwaway test SQLite DBs (e.g. tmp-lqtest.db) created by diag scripts.
 tmp-*.db
+tmp-aplus-test/

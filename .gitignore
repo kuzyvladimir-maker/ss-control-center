@@ -24,3 +24,4 @@ gcloud-key*.json
 docs/*Cost_of_Goods_Sold*.csv
 docs/Summary_*.csv
 preview-multipack/
+tmp-aplus-test/

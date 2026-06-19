@@ -18,7 +18,8 @@ import {
 } from "./modules";
 import { CONCEPT_CONFIG, CURATOR_DISCLAIMER, FDA_DISCLAIMER, type Concept } from "./concepts";
 
-const MODEL = "claude-opus-4-8";
+export type TextModel = "opus" | "sonnet";
+const TEXT_MODEL_ID: Record<TextModel, string> = { opus: "claude-opus-4-8", sonnet: "claude-sonnet-4-6" };
 
 let _client: Anthropic | null = null;
 function client() { return (_client ??= new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })); }
@@ -96,6 +97,7 @@ CONVERSION RULES (verified):
 - HERO headline states the PRIMARY BENEFIT (what the shopper gets), not just the product name.
 - Copy is SHORT and benefit-first: benefit in the first words; 2–3 short sentences per block; benefit cells = ONE short icon-style claim + 1 sentence. No walls of text. Answer buyer questions, not a keyword list.
 - VISUAL COHESION: ALL image briefs must share ONE consistent look — same palette, lighting, surface/setting and styling — so the 5 modules read as a single designed page, not random photos.
+- PHOTOREAL BRIEFS: write each imageBrief as a precise COMMERCIAL PHOTOGRAPH brief. Name the ACTUAL physical product accurately (exact cut/shape/texture/color — e.g. "bone-in beef short ribs, English cut, rib-bone cross-section visible, deep-red marbled meat", not just "meat"), plus camera/styling (angle, soft natural light, shallow depth of field, surface, garnish). Photorealistic, appetizing, true to the real product. NEVER request any text, label, logo, packaging copy or watermark in the image.
 - The benefits module is 3 icon-style benefit cells. The 4th module ("${c.serveLabel}") is concrete and reduces hesitation.
 - NEVER put text inside the image (mobile reflow makes it unreadable) — all copy goes in the text fields.
 
@@ -110,7 +112,7 @@ NON-NEGOTIABLE (a gate rejects violations):
 Fill the storyboard: hero (benefit), brandStory, benefits (EXACTLY 3 icon-style cells), serve ("${c.serveLabel}"), whatsInside ("${c.whatsInsideLabel}").`;
 }
 
-export async function generateAplusPlan(input: GeneratorInput, concept: Concept): Promise<AplusPlan> {
+export async function generateAplusPlan(input: GeneratorInput, concept: Concept, textModel: TextModel = "opus"): Promise<AplusPlan> {
   const c = CONCEPT_CONFIG[concept];
   const userPrompt = `Listing:
 SKU: ${input.sku} | ASIN: ${input.asin ?? "—"}
@@ -121,8 +123,10 @@ Concept: ${c.label}
 
 Fill the conversion storyboard for this concept. Short benefit-first copy; cohesive image briefs; module 4 = ${c.serveLabel}; module 5 = ${c.whatsInsideLabel}.`;
 
+  // Opus → adaptive thinking; Sonnet → thinking off (adaptive eats max_tokens → truncated JSON).
   const resp = await client().messages.create({
-    model: MODEL, max_tokens: 4096, thinking: { type: "adaptive" },
+    model: TEXT_MODEL_ID[textModel], max_tokens: 4096,
+    thinking: textModel === "opus" ? { type: "adaptive" } : { type: "disabled" },
     output_config: { format: { type: "json_schema", schema: RESULT_SCHEMA } },
     system: buildSystem(concept), messages: [{ role: "user", content: userPrompt }],
   } as Anthropic.MessageCreateParamsNonStreaming);

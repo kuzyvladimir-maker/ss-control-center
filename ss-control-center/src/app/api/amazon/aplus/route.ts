@@ -11,11 +11,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { scanCoverage } from "@/lib/amazon/aplus/scanner";
-import { generateAplusPlan, assembleFromPlan, imageSlots } from "@/lib/amazon/aplus/generator";
+import { generateAplusPlan, assembleFromPlan, imageSlots, type TextModel } from "@/lib/amazon/aplus/generator";
 import { classifyConcept, CONCEPT_CONFIG } from "@/lib/amazon/aplus/concepts";
 import { qualify } from "@/lib/amazon/aplus/qualification";
 import { validateContent, createContentDocument, associateAsins, submitForApproval, type AplusContentDocument } from "@/lib/amazon/aplus/client";
-import { generateImagesForJob } from "@/lib/amazon/aplus/images";
+import { generateImagesForJob, type ImageModel } from "@/lib/amazon/aplus/images";
 import { logChange } from "@/lib/amazon/growth/change-log";
 
 export const maxDuration = 300;
@@ -57,6 +57,9 @@ export async function POST(request: NextRequest) {
   const action = String(body.action ?? "");
   const sku = String(body.sku ?? "");
   const id = body.id ? String(body.id) : "";
+  const textModel: TextModel = body.textModel === "sonnet" ? "sonnet" : "opus";
+  const imageModel: ImageModel =
+    body.imageModel === "gpt-image-1" ? "gpt-image-1" : body.imageModel === "smart" ? "smart" : "gpt-image-2";
 
   try {
     // ── generate: LLM A+ storyboard → assemble → qualification gate → store ──
@@ -68,7 +71,7 @@ export async function POST(request: NextRequest) {
       const concept = classifyConcept(item.itemName, item.productType, brandOf(item.itemName));
       const plan = await generateAplusPlan({
         sku, asin: item.asin, itemName: item.itemName, productType: item.productType, brand: brandOf(item.itemName),
-      }, concept);
+      }, concept, textModel);
       const doc = assembleFromPlan(plan, concept); // structure + text; image refs filled at publish
       const gate = qualify(doc, { disclaimer: CONCEPT_CONFIG[concept].disclaimer });
       const imagePlan = {
@@ -95,14 +98,15 @@ export async function POST(request: NextRequest) {
         },
       });
       // Generate the actual images (best-effort) so the job arrives with a real preview.
-      const imgRes = await generateImagesForJob(prisma, job.id).catch(() => ({ generated: 0, failed: 0 }));
+      const imgRes = await generateImagesForJob(prisma, job.id, imageModel).catch(() => ({ generated: 0, failed: 0 }));
       return NextResponse.json({ ok: true, action, jobId: job.id, qualified: gate.pass, violations: gate.violations, images: imgRes });
     }
 
     // Re-generate (or fill) the images for an existing job.
     if (action === "generateImages") {
       if (!id) return NextResponse.json({ ok: false, error: "id required" }, { status: 400 });
-      const res = await generateImagesForJob(prisma, id);
+      const force = body.force === true;
+      const res = await generateImagesForJob(prisma, id, imageModel, force);
       return NextResponse.json({ ok: true, action, ...res });
     }
 
