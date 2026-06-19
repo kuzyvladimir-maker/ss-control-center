@@ -107,63 +107,105 @@ const stripHtml = (s?: string | null) => (s ? String(s).replace(/<[^>]+>/g, " ")
 
 export interface HarvestResult { ok: boolean; productId: string; images: number; upc: string | null; hasIngredients: boolean; merged: number; imageFlagged?: boolean; reason?: string }
 
-// PHASE 3 — full content harvest for ONE product (1 BlueCart credit). Pulls the
-// full BlueCart product detail (gallery ≥5 incl the nutrition-label image, bullets,
-// description, ingredients, specifications, UPC) and writes it onto DonorProduct.
-// Selective by design — call only for products we'll actually use, not all N.
-export async function harvestDonorDetail(db: Client, productId: string): Promise<HarvestResult> {
-  const key = process.env.BLUECART_API_KEY;
-  if (!key) return { ok: false, productId, images: 0, upc: null, hasIngredients: false, merged: 0, reason: "no bluecart key" };
-  const off = await db.execute({ sql: `SELECT retailerProductId FROM "DonorOffer" WHERE donorProductId=? AND retailer='walmart' AND retailerProductId IS NOT NULL LIMIT 1`, args: [productId] });
-  const itemId = off.rows[0]?.retailerProductId as string | undefined;
-  if (!itemId) return { ok: false, productId, images: 0, upc: null, hasIngredients: false, merged: 0, reason: "no walmart offer to detail" };
+interface DetailContent { images: string[]; bullets: string[]; description: string | null; ingredients: string | null; specifications: any[] | null; upc: string | null; category: string | null; source: string }
 
-  let j: any;
+function normImages(arr: any): string[] {
+  const raw = (Array.isArray(arr) ? arr : []).map((x: any) => (typeof x === "string" ? x : x?.url || x?.link)).filter((u: any) => typeof u === "string" && u.startsWith("http"));
+  const seen = new Set<string>(); const out: string[] = [];
+  for (const u of raw) { if (!seen.has(u)) { seen.add(u); out.push(u); } }
+  return out;
+}
+function parseIngredients(ing: any): string | null {
+  if (!ing) return null;
+  if (typeof ing === "string") return ing.trim() || null;
+  if (typeof ing === "object") { const vals = Object.values(ing).map((v: any) => (v && typeof v === "object" ? v.value : v)).filter((x: any) => typeof x === "string" && x.trim()); return vals.length ? vals.join(" | ") : null; }
+  return null;
+}
+
+// Unwrangle walmart_detail — RICHER than BlueCart (key_features bullets, gen_ai
+// description, directions, warnings) and on our 100k-credit Unwrangle plan
+// (~2.5 credits/call). Preferred source so we spare BlueCart's 10k/mo allotment.
+async function fetchUnwrangleDetail(key: string, url: string): Promise<DetailContent | null> {
+  try {
+    const res = await fetch(`https://data.unwrangle.com/api/getter/?platform=walmart_detail&url=${encodeURIComponent(url)}&api_key=${key}`, { signal: AbortSignal.timeout(25000) });
+    if (!res.ok) return null;
+    const j: any = await res.json();
+    const d = j?.detail || j?.product;
+    if (!d || j?.success === false) return null;
+    const images = normImages(d.images);
+    if (!images.length && !d.upc) return null;
+    const cats = Array.isArray(d.categories) ? d.categories.map((c: any) => (typeof c === "string" ? c : c?.name)).filter(Boolean) : [];
+    return {
+      images,
+      bullets: (Array.isArray(d.key_features) ? d.key_features : []).map((b: any) => String(b).trim()).filter(Boolean).slice(0, 12),
+      description: (typeof d.description === "string" && d.description.trim()) ? d.description : (typeof d.gen_ai_description === "string" ? d.gen_ai_description : null),
+      ingredients: parseIngredients(d.ingredients),
+      specifications: Array.isArray(d.specifications) ? d.specifications : null,
+      upc: d.upc || d.gtin || null,
+      category: cats.length ? String(cats[cats.length - 1]).slice(0, 60) : null,
+      source: "unwrangle",
+    };
+  } catch { return null; }
+}
+
+// BlueCart product detail — fallback (Walmart-specialised, 1 credit/call).
+async function fetchBluecartDetail(key: string, itemId: string): Promise<DetailContent | null> {
   try {
     const res = await fetch(`https://api.bluecartapi.com/request?api_key=${key}&type=product&item_id=${encodeURIComponent(itemId)}&walmart_domain=walmart.com`, { signal: AbortSignal.timeout(20000) });
-    if (!res.ok) return { ok: false, productId, images: 0, upc: null, hasIngredients: false, merged: 0, reason: `http ${res.status}` };
-    j = await res.json();
-  } catch (e: any) { return { ok: false, productId, images: 0, upc: null, hasIngredients: false, merged: 0, reason: String(e?.message || "fetch failed").slice(0, 60) }; }
+    if (!res.ok) return null;
+    const j: any = await res.json();
+    const p = j?.product;
+    if (!p || (!p.main_image && !(p.images || []).length)) return null;
+    const html = String(p.description_full_html || p.description_html || p.description || "");
+    const cb = Array.isArray(p.breadcrumbs) ? p.breadcrumbs.map((b: any) => (typeof b === "string" ? b : b?.name)).filter(Boolean) : [];
+    return {
+      images: normImages([p.main_image, ...(p.images || [])]),
+      bullets: [...html.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => stripHtml(m[1]) || "").filter(Boolean).slice(0, 12),
+      description: stripHtml(p.description_full_html || p.description_full || p.description),
+      ingredients: parseIngredients(p.ingredients),
+      specifications: Array.isArray(p.specifications) ? p.specifications : null,
+      upc: p.upc || p.gtin || (Array.isArray(p.gtins) ? p.gtins[0] : null) || null,
+      category: cb.length ? String(cb[cb.length - 1]).slice(0, 60) : null,
+      source: "bluecart",
+    };
+  } catch { return null; }
+}
 
-  const p = j?.product || {};
-  const raw: string[] = [p.main_image, ...(p.images || []).map((x: any) => (typeof x === "string" ? x : x?.link))].filter((u: any) => typeof u === "string" && u.startsWith("http"));
-  const seen = new Set<string>(); const images: string[] = [];
-  for (const u of raw) { if (!seen.has(u)) { seen.add(u); images.push(u); } }
-  // BlueCart has no feature_bullets — pull <li> bullet items out of the HTML description.
-  const html = String(p.description_full_html || p.description_html || p.description || "");
-  const bullets: string[] = [...html.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
-    .map((m) => stripHtml(m[1]) || "").filter(Boolean).slice(0, 12);
-  const description = stripHtml(p.description_full_html || p.description_full || p.description);
-  const breadcrumbs = Array.isArray(p.breadcrumbs) ? p.breadcrumbs.map((b: any) => (typeof b === "string" ? b : b?.name)).filter(Boolean) : [];
-  const category = breadcrumbs.length ? String(breadcrumbs[breadcrumbs.length - 1]).slice(0, 60) : null;
-  const ingredients = typeof p.ingredients === "string" ? p.ingredients : (p.ingredients ? JSON.stringify(p.ingredients) : null);
-  const specifications = Array.isArray(p.specifications) ? p.specifications : null;
-  // BlueCart has no structured nutrition field — the label is a gallery image; we
-  // keep nutrition-ish specs + ingredients as the textual record.
-  const nutrition = p.nutrition_facts ? JSON.stringify(p.nutrition_facts)
-    : (specifications ? JSON.stringify(specifications.filter((s: any) => /nutri|serving|calorie|sodium|fat|protein|carb/i.test(JSON.stringify(s)))) : null);
-  const upc: string | null = p.upc || p.gtin || (Array.isArray(p.gtins) ? p.gtins[0] : null) || null;
+// PHASE 3 — full content harvest for ONE product. Pulls the full product detail
+// (gallery ≥5 incl the nutrition-label image, bullets, description, ingredients,
+// specs, UPC) onto DonorProduct, then runs image-QC. Prefers Unwrangle (richer +
+// 100k-credit plan); falls back to BlueCart. Selective by design.
+export async function harvestDonorDetail(db: Client, productId: string): Promise<HarvestResult> {
+  const off = await db.execute({ sql: `SELECT productUrl, retailerProductId FROM "DonorOffer" WHERE donorProductId=? AND retailer='walmart' ORDER BY (productUrl IS NOT NULL) DESC LIMIT 1`, args: [productId] });
+  const row: any = off.rows[0];
+  const url = row?.productUrl as string | undefined;
+  const itemId = row?.retailerProductId as string | undefined;
+  if (!url && !itemId) return { ok: false, productId, images: 0, upc: null, hasIngredients: false, merged: 0, reason: "no walmart offer to detail" };
+
+  let c: DetailContent | null = null;
+  const uwKey = process.env.UNWRANGLE_API_KEY;
+  const bcKey = process.env.BLUECART_API_KEY;
+  if (uwKey && url) c = await fetchUnwrangleDetail(uwKey, url);
+  if (!c && bcKey && itemId) c = await fetchBluecartDetail(bcKey, itemId);
+  if (!c) return { ok: false, productId, images: 0, upc: null, hasIngredients: false, merged: 0, reason: "detail fetch failed" };
+
+  // nutrition: no structured field anywhere (it's a gallery image) — keep nutrition-ish specs as the textual record.
+  const nutrition = c.specifications ? JSON.stringify(c.specifications.filter((s: any) => /nutri|serving|calorie|sodium|fat|protein|carb/i.test(JSON.stringify(s)))) : null;
   const now = new Date().toISOString();
-
   await db.execute({
     sql: `UPDATE "DonorProduct" SET mainImageUrl=COALESCE(?, mainImageUrl), imageUrls=?, bullets=?,
             description=COALESCE(NULLIF(?,''), description), ingredients=COALESCE(?, ingredients),
-            nutritionFacts=COALESCE(?, nutritionFacts), attributes=?, upc=COALESCE(?, upc),
+            nutritionFacts=COALESCE(NULLIF(?,'[]'), nutritionFacts), attributes=?, upc=COALESCE(?, upc),
             category=COALESCE(?, category), needsReview=0, updatedAt=? WHERE id=?`,
-    args: [images[0] ?? null, JSON.stringify(images), JSON.stringify(bullets), description, ingredients, nutrition,
-      specifications ? JSON.stringify(specifications) : null, upc, category, now, productId],
+    args: [c.images[0] ?? null, JSON.stringify(c.images), JSON.stringify(c.bullets), c.description, c.ingredients, nutrition,
+      c.specifications ? JSON.stringify(c.specifications) : null, c.upc, c.category, now, productId],
   });
 
-  // UPC is the strong cross-retailer key: fold any other product with the same UPC
-  // (a per-retailer duplicate) into this one, then drop the emptied dup.
   let merged = 0;
-  if (upc) merged = await mergeByUpc(db, productId, upc, now);
-
-  // Image QC ("Qual"): pick the cleanest front shot, or flag for rework.
+  if (c.upc) merged = await mergeByUpc(db, productId, c.upc, now);
   let imageFlagged = false;
   try { const qc = await qcProductImage(db, productId); imageFlagged = qc.flagged; } catch { /* best-effort */ }
-
-  return { ok: true, productId, images: images.length, upc, hasIngredients: !!ingredients, merged, imageFlagged };
+  return { ok: true, productId, images: c.images.length, upc: c.upc, hasIngredients: !!c.ingredients, merged, imageFlagged };
 }
 
 // Move offers from any OTHER product sharing this UPC into `keepId`, then delete the

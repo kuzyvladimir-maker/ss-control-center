@@ -20,7 +20,6 @@ export const maxDuration = 300;
 
 const HARVEST_PER_TICK = 18;
 const TIME_BUDGET_MS = 250_000;
-const CREDIT_FLOOR = 350; // above the enrichment floor so the two workers don't both drain to 0
 
 function requireCronAuth(request: NextRequest): NextResponse | null {
   const secret = process.env.CRON_SECRET;
@@ -42,11 +41,10 @@ export async function GET(request: NextRequest) {
   const conn = db();
   const out = { harvested: 0, images: 0, withUpc: 0, flagged: 0, errors: 0 };
 
-  const credits = await bluecartCreditsRemaining();
-  (out as any).bluecartCredits = credits;
-  if (credits != null && credits <= CREDIT_FLOOR) {
-    return NextResponse.json({ ok: true, paused: "bluecart credits at/below floor", ...out });
-  }
+  // Harvest now uses Unwrangle walmart_detail (100k-credit plan, ~2.5/product) —
+  // it no longer drains BlueCart, so no BlueCart credit gate. We surface the
+  // BlueCart balance for visibility only.
+  (out as any).bluecartCredits = await bluecartCreditsRemaining();
 
   // Products still lacking a full gallery, that have a Walmart offer to detail.
   const rows = await conn.execute({
