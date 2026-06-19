@@ -207,22 +207,37 @@ export async function unwrangleSearch(
   }
   if (j && j.success === false && /credit|quota|limit/i.test(JSON.stringify(j)))
     return { creditsRemaining: j.remaining_credits ?? 0, offers: [], trialExhausted: true };
-  const offers: RetailOffer[] = (j.products || []).map((x: any) => {
-    const title = x.name || x.title || null;
+  // Unwrangle returns its array under `results` (not `products`), HTML-encodes
+  // names (Bush&#39;s), and uses per-platform field names. Decode + normalize.
+  const decode = (s: string | null): string | null =>
+    s == null ? null : s
+      .replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&").replace(/&quot;|&#34;/g, '"')
+      .replace(/&nbsp;/g, " ").replace(/&#(\d+);/g, (_m, d) => String.fromCharCode(+d)).trim();
+  const offers: RetailOffer[] = (j.results || j.products || []).map((x: any) => {
+    const title = decode(x.name || x.title || null);
+    const imgs: string[] = (Array.isArray(x.images) && x.images.length
+      ? x.images
+      : [x.image_url, x.thumbnail, x.main_image]
+    ).filter((u: any) => typeof u === "string" && u.startsWith("http"));
+    // Target/Sam's/Costco results ARE that retailer's own catalog → first-party.
+    // Walmart-via-Unwrangle: judge by seller_name (3P if a non-Walmart seller).
+    const isMkt: boolean | null = retailer === "walmart"
+      ? (x.seller_name ? !/^walmart/i.test(x.seller_name) : null)
+      : false;
     return {
       retailer,
-      retailerProductId: String(x.item_id ?? x.id ?? x.url ?? ""),
+      retailerProductId: String(x.id ?? x.item_id ?? x.url ?? ""),
       price: x.price ?? x.min_price ?? null,
       currency: x.currency || "USD",
       inStock: x.in_stock ?? null,
       productUrl: x.url || x.link || null,
       title,
-      description: x.description ?? null,
+      description: decode(x.description ?? null),
       keyFeatures: Array.isArray(x.features) ? x.features : [],
-      imageUrls: [x.main_image || x.thumbnail].filter(Boolean),
+      imageUrls: imgs,
       packSizeSeen: extractPackSize(title),
-      isMarketplaceItem: x.seller_name && !/^walmart/i.test(x.seller_name) ? true : null,
-      sellerName: x.seller_name ?? x.brand ?? null,
+      isMarketplaceItem: isMkt,
+      sellerName: x.seller_name ?? (retailer === "walmart" ? null : retailer),
       sourceApi: "unwrangle",
     } as RetailOffer;
   });
