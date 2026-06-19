@@ -233,33 +233,37 @@ export function AplusFactory() {
               {/* WYSIWYG preview — image-forward A+ landing page */}
               <div className="space-y-5 rounded-lg bg-white p-4 text-[#0f1111]">
                 {!plan ? <div className="text-center text-[12px] text-gray-400">нет данных превью</div> : <>
-                  {/* Hero banner */}
+                  {/* 1. Hero banner — benefit headline */}
                   <div>
                     {img("hero", "w-full rounded")}
                     {plan.hero?.headline && <h2 className="mt-2 text-[18px] font-semibold">{plan.hero.headline}</h2>}
                     {plan.hero?.body && <p className="text-[13px] leading-relaxed text-gray-700">{plan.hero.body}</p>}
                   </div>
-                  {/* Inside — image left */}
+                  {/* 2. Brand story — image left */}
                   <div className="flex items-start gap-4 border-t border-gray-100 pt-4">
-                    <div className="w-[42%] shrink-0">{img("inside", "w-full rounded")}</div>
-                    <div className="flex-1">{plan.inside?.headline && <h3 className="mb-1 text-[15px] font-semibold">{plan.inside.headline}</h3>}<p className="text-[13px] leading-relaxed text-gray-700">{plan.inside?.body}</p></div>
+                    <div className="w-[42%] shrink-0">{img("brandStory", "w-full rounded")}</div>
+                    <div className="flex-1">{plan.brandStory?.headline && <h3 className="mb-1 text-[15px] font-semibold">{plan.brandStory.headline}</h3>}<p className="text-[13px] leading-relaxed text-gray-700">{plan.brandStory?.body}</p></div>
                   </div>
-                  {/* 4-image grid */}
+                  {/* 3. Top 3 benefits — 3-image block */}
                   <div className="border-t border-gray-100 pt-4">
-                    {plan.grid?.headline && <h3 className="mb-2 text-center text-[15px] font-semibold">{plan.grid.headline}</h3>}
-                    <div className="grid grid-cols-4 gap-3">
-                      {(plan.grid?.cells ?? []).map((c: { caption: string; body: string }, i: number) => (
-                        <div key={i} className="text-center">{img(`grid${i}`, "w-full rounded")}<div className="mt-1 text-[12px] font-semibold">{c.caption}</div><div className="text-[11px] leading-snug text-gray-600">{c.body}</div></div>
+                    {plan.benefits?.headline && <h3 className="mb-2 text-center text-[15px] font-semibold">{plan.benefits.headline}</h3>}
+                    <div className="grid grid-cols-3 gap-3">
+                      {(plan.benefits?.cells ?? []).map((c: { headline: string; body: string }, i: number) => (
+                        <div key={i} className="text-center">{img(`benefit${i}`, "w-full rounded")}<div className="mt-1 text-[12px] font-semibold">{c.headline}</div><div className="text-[11px] leading-snug text-gray-600">{c.body}</div></div>
                       ))}
                     </div>
                   </div>
-                  {/* Serve — image right */}
+                  {/* 4. Ways to serve — image right */}
                   <div className="flex items-start gap-4 border-t border-gray-100 pt-4">
                     <div className="flex-1">{plan.serve?.headline && <h3 className="mb-1 text-[15px] font-semibold">{plan.serve.headline}</h3>}<p className="text-[13px] leading-relaxed text-gray-700">{plan.serve?.body}</p></div>
                     <div className="w-[42%] shrink-0">{img("serve", "w-full rounded")}</div>
                   </div>
-                  {/* Disclaimer */}
-                  <div className="border-t border-gray-100 pt-4 text-center"><h3 className="mb-1 text-[14px] font-semibold">About This Gift Set</h3><p className="mx-auto max-w-2xl text-[12px] leading-relaxed text-gray-600">{DISCLAIMER_TXT}</p></div>
+                  {/* 5. What's inside + disclaimer */}
+                  <div className="border-t border-gray-100 pt-4 text-center">
+                    <h3 className="mb-1 text-[14px] font-semibold">{plan.whatsInside?.headline || "What's Inside"}</h3>
+                    {plan.whatsInside?.body && <p className="mx-auto max-w-2xl text-[12px] leading-relaxed text-gray-700">{plan.whatsInside.body}</p>}
+                    <p className="mx-auto mt-2 max-w-2xl text-[11px] leading-relaxed text-gray-500">{DISCLAIMER_TXT}</p>
+                  </div>
                 </>}
               </div>
 
