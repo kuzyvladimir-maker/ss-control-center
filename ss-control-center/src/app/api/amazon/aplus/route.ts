@@ -14,6 +14,7 @@ import { scanCoverage } from "@/lib/amazon/aplus/scanner";
 import { generateAplusPlan, assembleFromPlan } from "@/lib/amazon/aplus/generator";
 import { qualify } from "@/lib/amazon/aplus/qualification";
 import { validateContent, createContentDocument, associateAsins, submitForApproval, type AplusContentDocument } from "@/lib/amazon/aplus/client";
+import { generateImagesForJob } from "@/lib/amazon/aplus/images";
 import { logChange } from "@/lib/amazon/growth/change-log";
 
 export const maxDuration = 300;
@@ -66,9 +67,12 @@ export async function POST(request: NextRequest) {
       const plan = await generateAplusPlan({
         sku, asin: item.asin, itemName: item.itemName, productType: item.productType, brand: brandOf(item.itemName),
       });
-      const doc = assembleFromPlan(plan); // text modules; image briefs stored separately
+      const doc = assembleFromPlan(plan); // text modules; images filled below
       const gate = qualify(doc);
-      const imageBriefs = { hero: plan.heroImageBrief, modules: plan.modules.map((m) => ({ kind: m.kind, brief: m.imageBrief ?? null, alt: m.imageAlt ?? null })) };
+      const imagePlan = {
+        hero: { brief: plan.heroImageBrief, url: null },
+        modules: plan.modules.map((m) => ({ kind: m.kind, brief: m.imageBrief ?? null, alt: m.imageAlt ?? null, url: null })),
+      };
 
       const job = await prisma.amazonAplusJob.upsert({
         where: { amazon_aplus_job_dedup: { storeIndex, sku, variant: "A" } },
@@ -76,18 +80,27 @@ export async function POST(request: NextRequest) {
           storeIndex, sku, asin: item.asin, itemName: item.itemName, variant: "A",
           status: gate.pass ? "PENDING_APPROVAL" : "NEEDS_FIX",
           documentName: plan.documentName, contentJson: JSON.stringify(doc),
-          imagePlanJson: JSON.stringify(imageBriefs), qualificationJson: JSON.stringify(gate),
+          imagePlanJson: JSON.stringify(imagePlan), qualificationJson: JSON.stringify(gate),
           qualified: gate.pass, beforeConversion: item.unitSessionPct, generatedAt: new Date(),
         },
         update: {
           status: gate.pass ? "PENDING_APPROVAL" : "NEEDS_FIX",
           documentName: plan.documentName, contentJson: JSON.stringify(doc),
-          imagePlanJson: JSON.stringify(imageBriefs), qualificationJson: JSON.stringify(gate),
+          imagePlanJson: JSON.stringify(imagePlan), qualificationJson: JSON.stringify(gate),
           qualified: gate.pass, beforeConversion: item.unitSessionPct, generatedAt: new Date(),
           error: null, comments: null,
         },
       });
-      return NextResponse.json({ ok: true, action, jobId: job.id, qualified: gate.pass, violations: gate.violations });
+      // Generate the actual images (best-effort) so the job arrives with a real preview.
+      const imgRes = await generateImagesForJob(prisma, job.id).catch(() => ({ generated: 0, failed: 0 }));
+      return NextResponse.json({ ok: true, action, jobId: job.id, qualified: gate.pass, violations: gate.violations, images: imgRes });
+    }
+
+    // Re-generate (or fill) the images for an existing job.
+    if (action === "generateImages") {
+      if (!id) return NextResponse.json({ ok: false, error: "id required" }, { status: 400 });
+      const res = await generateImagesForJob(prisma, id);
+      return NextResponse.json({ ok: true, action, ...res });
     }
 
     if (action === "approve" || action === "reject") {

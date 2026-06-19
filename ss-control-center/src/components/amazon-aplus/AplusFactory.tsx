@@ -93,6 +93,17 @@ export function AplusFactory() {
       await loadJobs();
     } finally { setBusy(null); }
   }
+  async function regenImages(jobId: string) {
+    setBusy(jobId + ":img"); setMsg(null);
+    try {
+      await post({ action: "generateImages", id: jobId });
+      const res = await fetch(`/api/amazon/aplus?storeIndex=${storeIndex}&view=jobs`);
+      const data = await res.json();
+      setJobs(data.jobs ?? []); setSummary(data.summary ?? null);
+      const updated = (data.jobs ?? []).find((x: Job) => x.id === jobId);
+      if (updated) setReview(updated);
+    } finally { setBusy(null); }
+  }
 
   const STATUS_CLR: Record<string, string> = {
     PENDING_APPROVAL: "text-warn-strong", NEEDS_FIX: "text-danger", APPROVED: "text-green-ink",
@@ -224,19 +235,36 @@ export function AplusFactory() {
                 </div>
               )}
 
-              <div className="space-y-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[11px] text-ink-3">Превью как на странице листинга · картинки — AI lifestyle без чужих логотипов</span>
+                <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":img"} onClick={() => regenImages(review.id)}>Перегенерировать картинки</Btn>
+              </div>
+              {/* WYSIWYG preview — approximates the Amazon A+ layout */}
+              <div className="space-y-4 rounded-lg bg-white p-4 text-[#0f1111]">
+                {imgPlan?.hero?.url && <img src={imgPlan.hero.url} alt="" className="w-full rounded" />}
                 {(doc.contentModuleList ?? []).map((m: Record<string, unknown>, i: number) => {
                   const texts = moduleText(m);
-                  const brief = imgPlan?.modules?.[i]?.brief;
-                  return (
-                    <div key={i} className="rounded-lg border border-rule p-3">
-                      <div className="mb-1 font-mono text-[10px] uppercase tracking-wider text-ink-3">{String(m.contentModuleType)}</div>
-                      {texts.map((t, k) => <p key={k} className={cn("text-[12px]", k === 0 ? "font-medium text-ink" : "text-ink-2")}>{t}</p>)}
-                      {brief && <div className="mt-1.5 rounded bg-bg-elev px-2 py-1 text-[11px] text-ink-3"><b>Image brief:</b> {brief}</div>}
-                    </div>
-                  );
+                  const headline = texts[0];
+                  const body = texts.slice(1);
+                  const type = String(m.contentModuleType);
+                  const url: string | null = imgPlan?.modules?.[i]?.url ?? null;
+                  const brief: string | null = imgPlan?.modules?.[i]?.brief ?? null;
+                  const ssi = (m.standardSingleSideImage as { imagePositionType?: string } | undefined)?.imagePositionType;
+                  const imgEl = url
+                    ? <img src={url} alt="" className="w-full rounded" />
+                    : brief ? <div className="flex h-32 items-center justify-center rounded border border-dashed border-gray-300 p-2 text-center text-[10px] text-gray-400">картинка генерируется…<br />{brief.slice(0, 80)}</div> : null;
+
+                  if (type === "STANDARD_HEADER_IMAGE_TEXT") {
+                    return <div key={i} className="space-y-2 border-t border-gray-100 pt-3">{imgEl}{headline && <h3 className="text-[17px] font-semibold">{headline}</h3>}{body.map((t, k) => <p key={k} className="text-[13px] leading-relaxed">{t}</p>)}</div>;
+                  }
+                  if (type === "STANDARD_SINGLE_SIDE_IMAGE") {
+                    const textCol = <div className="flex-1">{headline && <h3 className="mb-1 text-[15px] font-semibold">{headline}</h3>}{body.map((t, k) => <p key={k} className="text-[13px] leading-relaxed">{t}</p>)}</div>;
+                    const imgCol = <div className="w-[45%] shrink-0">{imgEl}</div>;
+                    return <div key={i} className="flex items-start gap-4 border-t border-gray-100 pt-3">{ssi === "RIGHT" ? <>{textCol}{imgCol}</> : <>{imgCol}{textCol}</>}</div>;
+                  }
+                  // text / description — centered block
+                  return <div key={i} className="border-t border-gray-100 pt-3 text-center">{headline && <h3 className="mb-1 text-[15px] font-semibold">{headline}</h3>}{body.map((t, k) => <p key={k} className="mx-auto max-w-2xl text-[13px] leading-relaxed">{t}</p>)}</div>;
                 })}
-                {imgPlan?.hero && <div className="rounded-lg border border-dashed border-rule p-3 text-[11px] text-ink-3"><b>Hero image brief:</b> {imgPlan.hero}</div>}
               </div>
 
               <textarea value={comments} onChange={(e) => setComments(e.target.value)} placeholder="Комментарии (по модулям, что поправить)…" className="mt-3 h-20 w-full rounded-lg border border-rule bg-surface p-2 text-[12px] text-ink placeholder:text-ink-4 focus:outline-none" />
