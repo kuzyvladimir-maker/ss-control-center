@@ -396,6 +396,57 @@ export default function ReferenceCatalogPage() {
           </div>
         )}
       </Panel>
+
+      {/* Product detail drawer — verify what the engine collected per product */}
+      {selectedId && (
+        <div className="fixed inset-0 z-40 flex justify-end bg-black/20" onClick={closeDetail}>
+          <div className="h-full w-full max-w-[560px] overflow-y-auto bg-surface shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-rule bg-surface px-4 py-3">
+              <div className="text-[14px] font-semibold text-ink">Product detail</div>
+              <button onClick={closeDetail} className="text-ink-3 hover:text-ink"><X size={16} /></button>
+            </div>
+            {detailLoading ? (
+              <div className="flex items-center gap-2 px-4 py-12 text-[13px] text-ink-3"><Loader2 size={16} className="animate-spin" />Loading…</div>
+            ) : !detail ? (
+              <div className="px-4 py-12 text-[13px] text-ink-3">Failed to load.</div>
+            ) : (
+              <div className="space-y-4 p-4">
+                <div className="flex flex-wrap gap-2">
+                  {(detail.product.imageUrls || []).map((u: string, i: number) => (
+                    <div key={i} className="h-20 w-20 overflow-hidden rounded border border-rule bg-bg-elev">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={u} alt="" className="h-full w-full object-contain" loading="lazy" />
+                    </div>
+                  ))}
+                  {!(detail.product.imageUrls || []).length && <div className="text-[12.5px] text-ink-3">No gallery harvested yet — only a thumbnail.</div>}
+                </div>
+                <div>
+                  <div className="text-[15px] font-semibold text-ink">{detail.product.title || "—"}</div>
+                  <div className="mt-1 text-[12.5px] text-ink-3">{[detail.product.brand, detail.product.size, detail.product.category].filter(Boolean).join(" · ")}{detail.product.upc ? ` · UPC ${detail.product.upc}` : ""}</div>
+                </div>
+                <div>
+                  <div className="mb-1 text-[12px] font-semibold text-ink-2">Prices by retailer</div>
+                  <div className="space-y-1">
+                    {detail.offers.map((o: any, i: number) => (
+                      <div key={i} className="flex items-center gap-2 text-[12.5px]">
+                        <span className="w-20 capitalize text-ink-2">{o.retailer}</span>
+                        <span className="tabular text-ink">${Number(o.pricePerUnit ?? o.price ?? 0).toFixed(2)}/unit</span>
+                        {o.productUrl && <a href={o.productUrl} target="_blank" rel="noreferrer" className="text-ink-3 hover:text-green-ink"><ExternalLink size={12} /></a>}
+                      </div>
+                    ))}
+                    {!detail.offers.length && <div className="text-[12.5px] text-ink-3">No offers.</div>}
+                  </div>
+                </div>
+                {detail.product.description && (<div><div className="mb-1 text-[12px] font-semibold text-ink-2">Description</div><div className="text-[12.5px] leading-relaxed text-ink-2">{detail.product.description}</div></div>)}
+                {(detail.product.bullets || []).length > 0 && (<div><div className="mb-1 text-[12px] font-semibold text-ink-2">Highlights</div><ul className="list-disc space-y-0.5 pl-4 text-[12.5px] text-ink-2">{detail.product.bullets.map((b: string, i: number) => <li key={i}>{b}</li>)}</ul></div>)}
+                {detail.product.ingredients && (<div><div className="mb-1 text-[12px] font-semibold text-ink-2">Ingredients</div><div className="text-[12px] text-ink-3">{detail.product.ingredients}</div></div>)}
+                {(detail.product.attributes || []).length > 0 && (<div><div className="mb-1 text-[12px] font-semibold text-ink-2">Specifications</div><div className="grid grid-cols-1 gap-y-1 text-[12px]">{detail.product.attributes.map((a: any, i: number) => <div key={i} className="flex justify-between gap-3"><span className="text-ink-3">{a?.name}</span><span className="text-right text-ink-2">{a?.value}</span></div>)}</div></div>)}
+                {detail.product.nutritionFacts && (<div><div className="mb-1 text-[12px] font-semibold text-ink-2">Nutrition (raw)</div><div className="break-words text-[11.5px] text-ink-3">{String(detail.product.nutritionFacts).slice(0, 500)}</div></div>)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -91,8 +91,10 @@ const GIFT_RE = /\b(gift basket|gift set|gift box|variety pack|variety assortmen
 export function classifyConcept(itemName: string | null, productType: string | null, _brand: string | null): Concept {
   const t = itemName ?? "";
   const pt = (productType ?? "").toUpperCase();
-  if (COLDPACK_RE.test(t)) return "coldpack";
+  // Cooler BEFORE cold-pack: a "Styrofoam Cooler ... + Gel Ice Packs" combo is a
+  // cooler (the cooler is the primary product), not a cold-pack listing.
   if (COOLER_RE.test(t)) return "cooler";
+  if (COLDPACK_RE.test(t)) return "coldpack";
   if (SUPPLEMENT_RE.test(t) || /SUPPLEMENT|VITAMIN/.test(pt)) return "supplement";
   if (GIFT_RE.test(t)) return "giftbasket";
   return "ownfood";
