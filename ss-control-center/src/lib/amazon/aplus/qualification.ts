@@ -36,7 +36,8 @@ const SOFT: { rule: string; re: RegExp }[] = [
   { rule: "time-sensitive word", re: /\b(on sale now|latest|brand new)\b/i },
 ];
 
-const DISCLAIMER_RE = /curated and assembled by salutem solutions/i;
+const CURATOR_RE = /curated and assembled by salutem solutions/i;
+const FDA_RE = /not been evaluated by the food and drug administration/i;
 
 /** Pull every text string out of an A+ document for scanning. */
 function collectText(doc: AplusDocument): string {
@@ -51,7 +52,7 @@ function collectText(doc: AplusDocument): string {
   return parts.join("  ");
 }
 
-export function qualify(doc: AplusDocument): QualificationResult {
+export function qualify(doc: AplusDocument, opts: { disclaimer?: "curator" | "fda" | null } = {}): QualificationResult {
   const violations: Violation[] = [];
   const all = collectText(doc);
 
@@ -71,8 +72,11 @@ export function qualify(doc: AplusDocument): QualificationResult {
   if ((doc.contentModuleList?.length ?? 0) === 0) {
     violations.push({ severity: "error", rule: "no modules", found: "0" });
   }
-  if (!DISCLAIMER_RE.test(all)) {
+  if (opts.disclaimer === "curator" && !CURATOR_RE.test(all)) {
     violations.push({ severity: "error", rule: "missing curator disclaimer", found: "—" });
+  }
+  if (opts.disclaimer === "fda" && !FDA_RE.test(all)) {
+    violations.push({ severity: "error", rule: "missing FDA supplement disclaimer", found: "—" });
   }
 
   return { pass: !violations.some((v) => v.severity === "error"), violations };

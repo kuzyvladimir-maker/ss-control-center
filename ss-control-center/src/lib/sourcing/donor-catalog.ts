@@ -129,8 +129,13 @@ export async function harvestDonorDetail(db: Client, productId: string): Promise
   const raw: string[] = [p.main_image, ...(p.images || []).map((x: any) => (typeof x === "string" ? x : x?.link))].filter((u: any) => typeof u === "string" && u.startsWith("http"));
   const seen = new Set<string>(); const images: string[] = [];
   for (const u of raw) { if (!seen.has(u)) { seen.add(u); images.push(u); } }
-  const bullets: string[] = Array.isArray(p.feature_bullets) ? p.feature_bullets.map((b: any) => String(b).trim()).filter(Boolean) : [];
+  // BlueCart has no feature_bullets — pull <li> bullet items out of the HTML description.
+  const html = String(p.description_full_html || p.description_html || p.description || "");
+  const bullets: string[] = [...html.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
+    .map((m) => stripHtml(m[1]) || "").filter(Boolean).slice(0, 12);
   const description = stripHtml(p.description_full_html || p.description_full || p.description);
+  const breadcrumbs = Array.isArray(p.breadcrumbs) ? p.breadcrumbs.map((b: any) => (typeof b === "string" ? b : b?.name)).filter(Boolean) : [];
+  const category = breadcrumbs.length ? String(breadcrumbs[breadcrumbs.length - 1]).slice(0, 60) : null;
   const ingredients = typeof p.ingredients === "string" ? p.ingredients : (p.ingredients ? JSON.stringify(p.ingredients) : null);
   const specifications = Array.isArray(p.specifications) ? p.specifications : null;
   // BlueCart has no structured nutrition field — the label is a gallery image; we
@@ -144,9 +149,9 @@ export async function harvestDonorDetail(db: Client, productId: string): Promise
     sql: `UPDATE "DonorProduct" SET mainImageUrl=COALESCE(?, mainImageUrl), imageUrls=?, bullets=?,
             description=COALESCE(NULLIF(?,''), description), ingredients=COALESCE(?, ingredients),
             nutritionFacts=COALESCE(?, nutritionFacts), attributes=?, upc=COALESCE(?, upc),
-            needsReview=0, updatedAt=? WHERE id=?`,
+            category=COALESCE(?, category), needsReview=0, updatedAt=? WHERE id=?`,
     args: [images[0] ?? null, JSON.stringify(images), JSON.stringify(bullets), description, ingredients, nutrition,
-      specifications ? JSON.stringify(specifications) : null, upc, now, productId],
+      specifications ? JSON.stringify(specifications) : null, upc, category, now, productId],
   });
 
   // UPC is the strong cross-retailer key: fold any other product with the same UPC

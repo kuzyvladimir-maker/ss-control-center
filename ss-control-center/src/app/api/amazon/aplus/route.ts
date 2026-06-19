@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { scanCoverage } from "@/lib/amazon/aplus/scanner";
 import { generateAplusPlan, assembleFromPlan, imageSlots } from "@/lib/amazon/aplus/generator";
+import { classifyConcept, CONCEPT_CONFIG } from "@/lib/amazon/aplus/concepts";
 import { qualify } from "@/lib/amazon/aplus/qualification";
 import { validateContent, createContentDocument, associateAsins, submitForApproval, type AplusContentDocument } from "@/lib/amazon/aplus/client";
 import { generateImagesForJob } from "@/lib/amazon/aplus/images";
@@ -64,27 +65,29 @@ export async function POST(request: NextRequest) {
       const item = await prisma.amazonListingHealthItem.findUnique({ where: { amazon_health_item_dedup: { storeIndex, sku } } });
       if (!item) return NextResponse.json({ ok: false, error: "listing not in mirror" }, { status: 404 });
 
+      const concept = classifyConcept(item.itemName, item.productType, brandOf(item.itemName));
       const plan = await generateAplusPlan({
         sku, asin: item.asin, itemName: item.itemName, productType: item.productType, brand: brandOf(item.itemName),
-      });
-      const doc = assembleFromPlan(plan); // structure + text; image refs filled at publish
-      const gate = qualify(doc);
+      }, concept);
+      const doc = assembleFromPlan(plan, concept); // structure + text; image refs filled at publish
+      const gate = qualify(doc, { disclaimer: CONCEPT_CONFIG[concept].disclaimer });
       const imagePlan = {
         plan,
+        concept,
         slots: imageSlots(plan).map((s) => ({ ...s, url: null })),
       };
 
       const job = await prisma.amazonAplusJob.upsert({
         where: { amazon_aplus_job_dedup: { storeIndex, sku, variant: "A" } },
         create: {
-          storeIndex, sku, asin: item.asin, itemName: item.itemName, variant: "A",
+          storeIndex, sku, asin: item.asin, itemName: item.itemName, variant: "A", concept,
           status: gate.pass ? "PENDING_APPROVAL" : "NEEDS_FIX",
           documentName: plan.documentName, contentJson: JSON.stringify(doc),
           imagePlanJson: JSON.stringify(imagePlan), qualificationJson: JSON.stringify(gate),
           qualified: gate.pass, beforeConversion: item.unitSessionPct, generatedAt: new Date(),
         },
         update: {
-          status: gate.pass ? "PENDING_APPROVAL" : "NEEDS_FIX",
+          status: gate.pass ? "PENDING_APPROVAL" : "NEEDS_FIX", concept,
           documentName: plan.documentName, contentJson: JSON.stringify(doc),
           imagePlanJson: JSON.stringify(imagePlan), qualificationJson: JSON.stringify(gate),
           qualified: gate.pass, beforeConversion: item.unitSessionPct, generatedAt: new Date(),

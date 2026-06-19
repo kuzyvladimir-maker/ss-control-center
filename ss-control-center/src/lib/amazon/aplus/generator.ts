@@ -1,17 +1,14 @@
 /**
- * A+ Content Factory — generation engine (CONVERSION-PLAYBOOK storyboard).
+ * A+ Content Factory — generation engine (CONCEPT-AWARE + conversion playbook).
  *
- * Storyboard + rules are baked from verified research (docs/wiki/aplus-conversion-
- * playbook.md): A+ is an image-led, mobile-first, scannable landing page. Basic A+
- * = 5 modules, so we use the best-supported food/gift-set order:
- *   1) HERO banner — headline states the PRIMARY BENEFIT (not just the name)
- *   2) BRAND STORY — short factual "why / who it's for" (curator framing)
- *   3) TOP 3 BENEFITS — 3-image block, each a benefit + short caption
- *   4) HOW-TO / WAYS TO SERVE — usage module that removes "how do I use it" anxiety
- *   5) WHAT'S INSIDE — factual contents in LIVE text + the curator disclaimer
+ * Storyboard + rules baked from verified research (docs/wiki/aplus-conversion-
+ * playbook.md) AND competitor teardowns: image-led, mobile-first, scannable, with
+ * ONE cohesive visual look across modules, benefit-as-icon cells, and a concrete
+ * how-to / serving module. The CONCEPT (concepts.ts) tailors the template: own-food /
+ * cooler / cold-pack / supplement (our brand, show the product, no curator disclaimer;
+ * supplement adds FDA) vs gift-basket (third-party contents → logo-free + curator).
  *
- * Copy is short & benefit-first; never baked into images (mobile reflow). Images are
- * premium gift-basket LIFESTYLE scenes, NO third-party logos (brands named in text only).
+ * Basic A+ = 5 modules. Copy short & benefit-first; NEVER baked into images (mobile).
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -19,11 +16,9 @@ import {
   assembleDocument, headerImageText, singleSideImage, threeImageText, standardText,
   type AplusDocument, type ImageComponent,
 } from "./modules";
+import { CONCEPT_CONFIG, CURATOR_DISCLAIMER, FDA_DISCLAIMER, type Concept } from "./concepts";
 
 const MODEL = "claude-opus-4-8";
-
-export const DISCLAIMER =
-  "Curated and assembled by Salutem Solutions LLC as a gift basket. The included items are packaged by their original manufacturers.";
 
 let _client: Anthropic | null = null;
 function client() { return (_client ??= new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })); }
@@ -34,11 +29,11 @@ interface Slot { headline: string; body: string; imageBrief: string; imageAlt: s
 interface BenefitCell { headline: string; body: string; imageBrief: string; imageAlt: string }
 export interface AplusPlan {
   documentName: string;
-  hero: Slot;          // headline = PRIMARY BENEFIT
-  brandStory: Slot;    // why / who it's for (factual curator framing)
-  benefits: { headline: string; cells: BenefitCell[] }; // exactly 3
-  serve: Slot;         // how-to / ways to serve
-  whatsInside: { headline: string; body: string };      // factual contents (live text); disclaimer appended in code
+  hero: Slot;
+  brandStory: Slot;
+  benefits: { headline: string; cells: BenefitCell[] };
+  serve: Slot;
+  whatsInside: { headline: string; body: string };
 }
 
 const slotSchema = {
@@ -46,7 +41,7 @@ const slotSchema = {
   properties: {
     headline: { type: "string", description: "Short headline; lead with the benefit in the first words." },
     body: { type: "string", description: "2–3 short factual sentences max." },
-    imageBrief: { type: "string", description: "Image prompt: premium gift-basket LIFESTYLE/in-use scene, NO brand logos/packaging text." },
+    imageBrief: { type: "string", description: "Image prompt (see system rules for branding/cohesion)." },
     imageAlt: { type: "string", description: "Keyword-rich alt text ≤100 chars." },
   },
   required: ["headline", "body", "imageBrief", "imageAlt"],
@@ -63,13 +58,13 @@ const RESULT_SCHEMA = {
       properties: {
         headline: { type: "string" },
         cells: {
-          type: "array", description: "EXACTLY 3 benefit cells.",
+          type: "array", description: "EXACTLY 3 benefit cells; each headline is an icon-style short claim.",
           items: {
             type: "object", additionalProperties: false,
             properties: {
-              headline: { type: "string", description: "Benefit headline (≤40 chars), benefit-first." },
+              headline: { type: "string", description: "Icon-style benefit claim (≤24 chars), e.g. 'Ready in minutes'." },
               body: { type: "string", description: "1 short sentence." },
-              imageBrief: { type: "string", description: "In-use/lifestyle image prompt, NO logos/text." },
+              imageBrief: { type: "string" },
               imageAlt: { type: "string" },
             },
             required: ["headline", "body", "imageBrief", "imageAlt"],
@@ -83,7 +78,7 @@ const RESULT_SCHEMA = {
       type: "object", additionalProperties: false,
       properties: {
         headline: { type: "string" },
-        body: { type: "string", description: "Factual contents: name the included products + counts (e.g. 'Includes 8 Oscar Mayer Bun Length Franks'). Plain text." },
+        body: { type: "string", description: "Plain-text facts (contents/counts/ingredients/sizes per concept)." },
       },
       required: ["headline", "body"],
     },
@@ -91,37 +86,45 @@ const RESULT_SCHEMA = {
   required: ["documentName", "hero", "brandStory", "benefits", "serve", "whatsInside"],
 } as const;
 
-const SYSTEM = `You write HIGH-CONVERTING Amazon A+ Content (Basic, 5 modules) for SALUTEM SOLUTIONS own-brand gift baskets (Salutem Vita / Starfit) that CONTAIN genuine third-party-brand grocery products. A+ is an image-led, mobile-first, SCANNABLE landing page — not a text doc.
+function buildSystem(concept: Concept): string {
+  const c = CONCEPT_CONFIG[concept];
+  return `You write HIGH-CONVERTING Amazon A+ Content (Basic, 5 modules) for SALUTEM SOLUTIONS. A+ is an image-led, mobile-first, SCANNABLE landing page — not a text doc.
+
+IDEA-LED (do this first): infer WHAT this product is for — its audience, use-occasion, and the single core idea/benefit — and build the WHOLE A+ around that one idea, with imagery depicting that theme. Examples: a dog-food gift set → the idea of happy, healthy dogs and pleased dog owners (a gift for dog people); a breakfast-sandwich set → convenient ready breakfasts for school, work, lunches and short trips; a ready-meal gift set → an easy heat-and-eat solution to gift. Stay factual and within the rules below.
 
 CONVERSION RULES (verified):
 - HERO headline states the PRIMARY BENEFIT (what the shopper gets), not just the product name.
-- Copy is SHORT and benefit-first: lead with the benefit in the first words; 2–3 short sentences per block; benefit cells = 1 sentence. No walls of text. Write to answer buyer questions, NOT as a keyword list.
-- Image-led: image briefs are premium, appetizing, in-context food / gifting LIFESTYLE scenes. Each benefit image must read on its own (they stack on mobile).
-- BRAND STORY: short "why / who it's for" framing (gifting, sharing, occasions) — factual, our curator role.
-- HOW-TO / SERVE: concrete ways to serve/enjoy — removes "I don't know how to use it" hesitation.
-- WHAT'S INSIDE: factual contents in plain text — name the included products + counts.
+- Copy is SHORT and benefit-first: benefit in the first words; 2–3 short sentences per block; benefit cells = ONE short icon-style claim + 1 sentence. No walls of text. Answer buyer questions, not a keyword list.
+- VISUAL COHESION: ALL image briefs must share ONE consistent look — same palette, lighting, surface/setting and styling — so the 5 modules read as a single designed page, not random photos.
+- The benefits module is 3 icon-style benefit cells. The 4th module ("${c.serveLabel}") is concrete and reduces hesitation.
+- NEVER put text inside the image (mobile reflow makes it unreadable) — all copy goes in the text fields.
+
+CONCEPT: ${c.label}.
+${c.systemAddendum}
+IMAGE BRANDING RULE for every brief: ${c.imageSuffix}
 
 NON-NEGOTIABLE (a gate rejects violations):
 - Brand voice: NO promo adjectives (ultimate/perfect/premium/best/amazing/delicious/ideal…), NO emojis, NO health/medical claims. Benefit-led but FACTUAL.
 - A+ policy: NO pricing/discounts/free, NO shipping, NO guarantee/warranty, NO CTAs (buy now), NO contact/links, NO competitor comparison, NO time-sensitive words, NO eco-friendly/biodegradable, NO #1/best-selling.
-- IP (critical): NAME included third-party brands FACTUALLY in TEXT only (e.g. "Includes 8 Oscar Mayer Bun Length Franks"). NEVER imply a relationship (authorized/official/endorsed/partner). Image briefs must contain NO brand logos, NO packaging text, NO readable labels — generic appetizing food/gift presentation only.
-- NEVER put text inside the image (mobile reflow makes it unreadable) — all copy goes in the text fields.
 
-Infer the included items from the title. Fill the storyboard: hero (benefit), brandStory, benefits (EXACTLY 3), serve, whatsInside.`;
+Fill the storyboard: hero (benefit), brandStory, benefits (EXACTLY 3 icon-style cells), serve ("${c.serveLabel}"), whatsInside ("${c.whatsInsideLabel}").`;
+}
 
-export async function generateAplusPlan(input: GeneratorInput): Promise<AplusPlan> {
+export async function generateAplusPlan(input: GeneratorInput, concept: Concept): Promise<AplusPlan> {
+  const c = CONCEPT_CONFIG[concept];
   const userPrompt = `Listing:
 SKU: ${input.sku} | ASIN: ${input.asin ?? "—"}
 Title: ${input.itemName ?? "—"}
 Product type: ${input.productType ?? "—"}
 Our brand: ${input.brand ?? "Salutem Vita"}
+Concept: ${c.label}
 
-Fill the conversion storyboard. Short benefit-first copy, IP-safe logo-free image briefs.`;
+Fill the conversion storyboard for this concept. Short benefit-first copy; cohesive image briefs; module 4 = ${c.serveLabel}; module 5 = ${c.whatsInsideLabel}.`;
 
   const resp = await client().messages.create({
     model: MODEL, max_tokens: 4096, thinking: { type: "adaptive" },
     output_config: { format: { type: "json_schema", schema: RESULT_SCHEMA } },
-    system: SYSTEM, messages: [{ role: "user", content: userPrompt }],
+    system: buildSystem(concept), messages: [{ role: "user", content: userPrompt }],
   } as Anthropic.MessageCreateParamsNonStreaming);
 
   const block = resp.content.find((b) => b.type === "text");
@@ -144,13 +147,20 @@ export function imageSlots(plan: AplusPlan): ImageSlot[] {
   ];
 }
 
-/** Assemble the API content document (5 modules). refs maps slot key → ImageComponent. */
-export function assembleFromPlan(plan: AplusPlan, refs: Record<string, ImageComponent> = {}): AplusDocument {
+function disclaimerText(concept: Concept): string {
+  const d = CONCEPT_CONFIG[concept].disclaimer;
+  return d === "curator" ? CURATOR_DISCLAIMER : d === "fda" ? FDA_DISCLAIMER : "";
+}
+
+/** Assemble the 5-module API document for a concept. refs maps slot key → ImageComponent. */
+export function assembleFromPlan(plan: AplusPlan, concept: Concept, refs: Record<string, ImageComponent> = {}): AplusDocument {
+  const disc = disclaimerText(concept);
+  const lastBody = disc ? `${plan.whatsInside.body}\n\n${disc}` : plan.whatsInside.body;
   return assembleDocument(plan.documentName, [
     headerImageText({ headline: plan.hero.headline, body: plan.hero.body, img: refs.hero }),
     singleSideImage({ position: "LEFT", headline: plan.brandStory.headline, body: plan.brandStory.body, img: refs.brandStory }),
     threeImageText({ headline: plan.benefits.headline, cells: plan.benefits.cells.map((c, i) => ({ headline: c.headline, body: c.body, img: refs[`benefit${i}`] })) }),
     singleSideImage({ position: "RIGHT", headline: plan.serve.headline, body: plan.serve.body, img: refs.serve }),
-    standardText({ headline: plan.whatsInside.headline || "What's Inside", body: `${plan.whatsInside.body}\n\n${DISCLAIMER}` }),
+    standardText({ headline: plan.whatsInside.headline || CONCEPT_CONFIG[concept].whatsInsideLabel, body: lastBody }),
   ]);
 }

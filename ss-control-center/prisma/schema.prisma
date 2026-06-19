@@ -1718,6 +1718,7 @@ model AmazonAplusJob {
   // PENDING_APPROVAL | APPROVED | SUBMITTED (sent to Amazon) | PUBLISHED | REJECTED | FAILED
   status   String  @default("DRAFT")
   variant  String  @default("A") // for A/B: A or B
+  concept  String? // ownfood | cooler | coldpack | supplement | giftbasket (drives the template)
 
   documentName   String?
   contentJson    String? // the full A+ contentDocument JSON (modules, text, image refs)

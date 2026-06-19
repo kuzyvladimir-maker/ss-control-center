@@ -22,9 +22,14 @@ const HELP =
 interface Opportunity { sku: string; asin: string; itemName: string | null; opportunityScore: number | null; revenue30d: number | null }
 interface Job {
   id: string; sku: string; asin: string | null; itemName: string | null; status: string; qualified: boolean;
+  concept: string | null;
   documentName: string | null; contentJson: string | null; imagePlanJson: string | null; qualificationJson: string | null;
   comments: string | null; error: string | null;
 }
+
+const CONCEPT_LABEL: Record<string, string> = {
+  ownfood: "Own food", cooler: "Cooler", coldpack: "Cold packs", supplement: "Supplement", giftbasket: "Gift basket",
+};
 
 export function AplusFactory() {
   const [storeIndex, setStoreIndex] = useState(1);
@@ -182,7 +187,7 @@ export function AplusFactory() {
                   {jobs.length === 0 ? <tr><td colSpan={4} className="px-3 py-8 text-center text-ink-3">Заданий нет — сгенерируй из Opportunities.</td></tr> :
                     jobs.map((j) => (
                       <tr key={j.id} className="border-b border-rule/60 hover:bg-bg-elev/40">
-                        <td className="max-w-[360px] px-3 py-2"><span className="block truncate text-ink">{j.itemName ?? j.sku}</span><span className="font-mono text-[10px] text-ink-4">{j.sku}</span></td>
+                        <td className="max-w-[360px] px-3 py-2"><span className="block truncate text-ink">{j.itemName ?? j.sku}</span><span className="font-mono text-[10px] text-ink-4">{j.sku}{j.concept ? ` · ${CONCEPT_LABEL[j.concept] ?? j.concept}` : ""}</span></td>
                         <td className={cn("px-2 py-2 text-[11px] font-medium", STATUS_CLR[j.status] ?? "text-ink-3")}>{j.status}{j.error && <span className="block max-w-[200px] truncate text-[10px] text-danger">{j.error}</span>}</td>
                         <td className="px-2 py-2 text-[11px]">{j.qualified ? <span className="text-green-ink">pass</span> : <span className="text-danger">{(JSON.parse(j.qualificationJson ?? "{}").violations ?? []).filter((v: { severity: string }) => v.severity === "error").length} issues</span>}</td>
                         <td className="px-2 py-2 text-right">
@@ -205,11 +210,15 @@ export function AplusFactory() {
         const gate = review.qualificationJson ? JSON.parse(review.qualificationJson) : { violations: [] };
         const stored = review.imagePlanJson ? JSON.parse(review.imagePlanJson) : null;
         const plan = stored?.plan;
+        const concept: string | undefined = stored?.concept ?? review.concept ?? undefined;
         const slots: { key: string; url?: string | null; brief?: string }[] = stored?.slots ?? [];
         const urlOf = (k: string) => slots.find((s) => s.key === k)?.url ?? null;
         const ph = (label: string) => <div className="flex h-40 w-full items-center justify-center rounded border border-dashed border-gray-300 text-[10px] text-gray-400">{label}</div>;
         const img = (k: string, cls: string) => { const u = urlOf(k); return u ? <img src={u} alt="" className={cls} /> : ph("картинка генерируется…"); };
-        const DISCLAIMER_TXT = "Curated and assembled by Salutem Solutions LLC as a gift basket. The included items are packaged by their original manufacturers.";
+        const DISCLAIMER_TXT =
+          concept === "supplement" ? "These statements have not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease."
+          : concept === "giftbasket" ? "Curated and assembled by Salutem Solutions LLC as a gift basket. The included items are packaged by their original manufacturers."
+          : null;
         return (
           <div className="fixed inset-0 z-50 flex items-start justify-center overflow-auto bg-black/40 p-6" onClick={() => setReview(null)}>
             <div className="my-4 w-full max-w-3xl rounded-xl border border-rule bg-surface p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
@@ -262,7 +271,7 @@ export function AplusFactory() {
                   <div className="border-t border-gray-100 pt-4 text-center">
                     <h3 className="mb-1 text-[14px] font-semibold">{plan.whatsInside?.headline || "What's Inside"}</h3>
                     {plan.whatsInside?.body && <p className="mx-auto max-w-2xl text-[12px] leading-relaxed text-gray-700">{plan.whatsInside.body}</p>}
-                    <p className="mx-auto mt-2 max-w-2xl text-[11px] leading-relaxed text-gray-500">{DISCLAIMER_TXT}</p>
+                    {DISCLAIMER_TXT && <p className="mx-auto mt-2 max-w-2xl text-[11px] leading-relaxed text-gray-500">{DISCLAIMER_TXT}</p>}
                   </div>
                 </>}
               </div>

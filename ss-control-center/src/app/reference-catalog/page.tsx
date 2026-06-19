@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Loader2, AlertCircle, Search, X, RefreshCw, Wand2, ImageOff,
-  Boxes, Tags, Store, ListChecks, ExternalLink,
+  Boxes, Tags, Store, ListChecks, ExternalLink, Camera,
 } from "lucide-react";
 import { PageHead, Btn, Panel, PanelHeader, PanelBody, KpiCard } from "@/components/kit";
 import { cn } from "@/lib/utils";
@@ -22,12 +22,17 @@ type ProductRow = {
   offerCount: number;
   bestOfferUrl: string | null;
   needsReview: number | boolean | null;
+  imgCount: number | null;
+  hasDesc: number;
+  hasIngr: number;
+  hasNutri: number;
 };
 type Facets = {
   brands: { brand: string; n: number }[];
   categories: { category: string; n: number }[];
   retailers: { retailer: string; n: number }[];
 };
+type Quality = { fullGallery: number; withDesc: number; withBullets: number; withIngredients: number; withNutrition: number; withUpc: number; needsReview: number };
 type CatalogResp = {
   ok: boolean;
   products: ProductRow[];
@@ -36,6 +41,7 @@ type CatalogResp = {
   facets: Facets;
   growth: { d: string; n: number }[];
   queue: Record<string, number>;
+  quality: Quality | null;
   error?: string;
 };
 
@@ -58,6 +64,16 @@ export default function ReferenceCatalogPage() {
   const [vector, setVector] = useState("");
   const [enqueuing, setEnqueuing] = useState(false);
   const [enqueueMsg, setEnqueueMsg] = useState<string | null>(null);
+
+  // product detail drawer
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<{ product: any; offers: any[] } | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const openDetail = useCallback(async (id: string) => {
+    setSelectedId(id); setDetail(null); setDetailLoading(true);
+    try { const r = await fetch(`/api/reference-catalog/detail?id=${encodeURIComponent(id)}`); const j = await r.json(); if (j.ok) setDetail({ product: j.product, offers: j.offers }); } catch { /* */ } finally { setDetailLoading(false); }
+  }, []);
+  const closeDetail = () => { setSelectedId(null); setDetail(null); };
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(search), 300);
@@ -201,6 +217,43 @@ export default function ReferenceCatalogPage() {
         </Panel>
       </div>
 
+      {/* Content completeness — verify the engine is collecting content */}
+      {data?.quality && (
+        <Panel>
+          <PanelHeader
+            title="Content completeness"
+            right={<span className="text-[11.5px] text-ink-3">{data.total} products{Number(data.quality.needsReview) > 0 ? ` · ${data.quality.needsReview} need review` : ""}</span>}
+          />
+          <PanelBody>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 md:grid-cols-3">
+              {([
+                ["≥5 photos", data.quality.fullGallery],
+                ["Description", data.quality.withDesc],
+                ["Bullets", data.quality.withBullets],
+                ["Ingredients", data.quality.withIngredients],
+                ["Nutrition", data.quality.withNutrition],
+                ["UPC", data.quality.withUpc],
+              ] as [string, number][]).map(([label, value]) => {
+                const v = Number(value);
+                const pct = data.total ? Math.round((v / data.total) * 100) : 0;
+                return (
+                  <div key={label}>
+                    <div className="flex items-center justify-between text-[12px]">
+                      <span className="text-ink-2">{label}</span>
+                      <span className="tabular text-ink-3">{v} · {pct}%</span>
+                    </div>
+                    <div className="mt-1 h-1.5 overflow-hidden rounded bg-bg-elev">
+                      <div className="h-full rounded bg-green" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-3 text-[11.5px] text-ink-3">Full content lands as the harvest worker processes each product (BlueCart detail + vision image-QC). Click any row to inspect what was collected.</div>
+          </PanelBody>
+        </Panel>
+      )}
+
       {/* Vector enrichment */}
       <Panel>
         <PanelHeader title="Enrich the catalog" right={<span className="text-[11.5px] text-ink-3">queued {q.queued || 0} · running {q.running || 0} · done {q.done || 0}</span>} />
@@ -292,12 +345,13 @@ export default function ReferenceCatalogPage() {
                   <th className="px-2 py-2 font-medium text-right">$/unit</th>
                   <th className="px-2 py-2 font-medium">Retailer</th>
                   <th className="px-2 py-2 font-medium text-right">Offers</th>
+                  <th className="px-2 py-2 font-medium">Content</th>
                   <th className="px-2 py-2 font-medium">Source</th>
                 </tr>
               </thead>
               <tbody>
                 {data.products.map((p) => (
-                  <tr key={p.id} className="border-b border-rule/60 hover:bg-bg-elev/40">
+                  <tr key={p.id} onClick={() => openDetail(p.id)} className="cursor-pointer border-b border-rule/60 hover:bg-bg-elev/40">
                     <td className="px-4 py-2">
                       <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-md border border-rule bg-bg-elev">
                         {p.mainImageUrl ? (
@@ -321,8 +375,16 @@ export default function ReferenceCatalogPage() {
                     <td className="px-2 py-2 text-ink-3">{p.bestRetailer || "—"}</td>
                     <td className="px-2 py-2 text-right tabular text-ink-3">{p.offerCount}</td>
                     <td className="px-2 py-2">
+                      <div className="flex items-center gap-1.5 text-[11px]">
+                        <span className="inline-flex items-center gap-0.5 tabular text-ink-3"><Camera size={11} />{p.imgCount ?? 0}</span>
+                        <span className={p.hasDesc ? "text-green-ink" : "text-ink-4"} title="Description">D</span>
+                        <span className={p.hasIngr ? "text-green-ink" : "text-ink-4"} title="Ingredients">I</span>
+                        <span className={p.hasNutri ? "text-green-ink" : "text-ink-4"} title="Nutrition">N</span>
+                      </div>
+                    </td>
+                    <td className="px-2 py-2">
                       {p.bestOfferUrl ? (
-                        <a href={p.bestOfferUrl} target="_blank" rel="noopener noreferrer" title="Open source listing" className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-rule text-ink-3 hover:border-green-mid/40 hover:text-green-ink">
+                        <a href={p.bestOfferUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} title="Open source listing" className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-rule text-ink-3 hover:border-green-mid/40 hover:text-green-ink">
                           <ExternalLink size={14} />
                         </a>
                       ) : <span className="text-ink-4">—</span>}
