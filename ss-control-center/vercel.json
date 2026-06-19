@@ -91,7 +91,7 @@
     },
     {
       "path": "/api/cron/amazon-auto-improve",
-      "schedule": "15 * * * *"
+      "schedule": "10 10 * * *"
     }
   ]
 }

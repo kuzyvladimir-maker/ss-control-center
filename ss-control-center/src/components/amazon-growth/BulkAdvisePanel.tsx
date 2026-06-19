@@ -11,7 +11,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Square, RefreshCw, Sparkles, Brain } from "lucide-react";
+import { Square, RefreshCw, Sparkles, Brain, ExternalLink } from "lucide-react";
 import { Btn, Panel, PanelHeader, KpiCard } from "@/components/kit";
 import { cn } from "@/lib/utils";
 
@@ -360,7 +360,17 @@ export function BulkAdvisePanel({ storeIndex }: { storeIndex: number }) {
                   return (
                     <tr key={c.sku} className={cn("border-b border-rule/50 hover:bg-bg-elev/40", selected.has(c.sku) && "bg-green-soft/40")}>
                       <td className="px-2 py-1.5"><input type="checkbox" checked={selected.has(c.sku)} onChange={() => toggle(c.sku)} /></td>
-                      <td className="px-2 py-1.5 max-w-[220px]"><div className="truncate text-ink">{c.itemName || c.sku}</div><div className="font-mono text-[10px] text-ink-3">{c.sku}{c.isSuppressed ? " · suppressed" : ""}</div></td>
+                      <td className="px-2 py-1.5 max-w-[220px]">
+                        <div className="flex items-center gap-1">
+                          <span className="truncate text-ink">{c.itemName || c.sku}</span>
+                          {c.asin && (
+                            <a href={`https://www.amazon.com/dp/${c.asin}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} title="Open on Amazon" className="shrink-0 text-ink-4 hover:text-green-ink">
+                              <ExternalLink size={12} />
+                            </a>
+                          )}
+                        </div>
+                        <div className="font-mono text-[10px] text-ink-3">{c.sku}{c.isSuppressed ? " · suppressed" : ""}</div>
+                      </td>
                       <td className="px-2 py-1.5"><span className="rounded px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap" style={{ background: b.bg, color: b.color }}>{b.label}</span></td>
                       <td className="px-2 py-1.5 tabular">{fmt(c.opportunityScore)}</td>
                       <td className="px-2 py-1.5 tabular">{fmt(c.healthScore)}</td>

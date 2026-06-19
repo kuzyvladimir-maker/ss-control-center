@@ -11,8 +11,12 @@
  *
  * Conservative + safe by construction: own-brand only, deterministic fixes only
  * (never price/UPC/brand/productType, never AI-generated content), validated,
- * reversible. Small batches so it ramps gradually and bad effects surface early.
- * The existing amazon-remediation cron drains the queue.
+ * reversible. The existing amazon-remediation cron drains the queue.
+ *
+ * Cadence: ONCE DAILY (after the 6h health sweep + reports have surfaced any new
+ * issues). Structural defects don't appear hourly — they show up when a listing is
+ * created/edited or Amazon re-validates — so a daily pass catches anything new
+ * within a day with zero wasted churn. (Was hourly; that was pointless.)
  *
  * Auth: same Bearer CRON_SECRET gate as the other crons.
  */
