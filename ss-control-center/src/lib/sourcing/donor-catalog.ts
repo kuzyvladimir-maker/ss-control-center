@@ -14,7 +14,6 @@ import {
   type CanonicalProduct,
   type ScoredOffer,
 } from "./retail-fetch";
-import { analyzeImagesWithFallback } from "@/lib/ai-vision";
 
 // Parse a size token out of a title → normalized measure + amount (for $/measure).
 const UNIT_RE = /(\d+(?:\.\d+)?)\s*(fl\s*oz|oz|ct|count|lb|g|ml|l)\b/i;
@@ -214,10 +213,23 @@ export async function qcProductImage(db: Client, productId: string): Promise<Ima
   for (let i = 0; i < urls.length; i++) { const b = await toBase64(urls[i]); if (b) imgs.push({ i, b64: b }); }
   if (!imgs.length) return { ok: false, chosen: -1, flagged: false, reason: "no fetchable images" };
 
-  const prompt = `These ${imgs.length} images (indexes 0..${imgs.length - 1}, in the order shown) are photos of ONE grocery product. Pick the index of the CLEANEST image that shows the SINGLE product facing the camera front — plain packaging on a white/neutral background, with NO multipack collage, NO multiple units shown, and NO added badges/banners/marketing text overlays (e.g. "N pack", "value size", price stamps). Prefer a bare front-of-pack hero shot. Return ONLY JSON: {"best": <index, or -1 if none qualifies>, "reason": "short"}.`;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey || apiKey === "<api_key>") return { ok: false, chosen: -1, flagged: false, reason: "no anthropic key" };
+  const mediaType = (b: string) => b.startsWith("/9j/") ? "image/jpeg" : b.startsWith("iVBOR") ? "image/png" : b.startsWith("R0lG") ? "image/gif" : b.startsWith("UklG") ? "image/webp" : "image/jpeg";
+  // Calibrated: the product's OWN packaging/label is expected and fine — reject
+  // ONLY composites, multipacks, or banners/stamps ADDED on top of the photo.
+  const prompt = `These ${imgs.length} images (indexes 0..${imgs.length - 1}, in order) are photos of ONE grocery product. Choose the index of the best CATALOG THUMBNAIL: a clear shot of a SINGLE unit with its own packaging facing the camera. The product's OWN label/branding is expected and totally fine. Reject an image ONLY if it is a collage/grid of several photos, shows MULTIPLE units / a multipack, or has promotional banners or price stamps ADDED on top of the photo. A plain single-unit front shot is ideal; if several qualify, pick the cleanest. Return ONLY JSON {"best": <index, or -1 ONLY if every image is a collage/multipack/overlay>, "reason": "short"}.`;
   let res: any;
-  try { res = await analyzeImagesWithFallback(imgs.map((x) => x.b64), prompt); }
-  catch (e: any) { return { ok: false, chosen: -1, flagged: false, reason: String(e?.message || "vision failed").slice(0, 60) }; }
+  try {
+    const Anthropic = (await import("@anthropic-ai/sdk")).default;
+    const client = new Anthropic({ apiKey });
+    const content: any[] = imgs.map((x) => ({ type: "image", source: { type: "base64", media_type: mediaType(x.b64), data: x.b64 } }));
+    content.push({ type: "text", text: prompt });
+    const r = await client.messages.create({ model: "claude-haiku-4-5-20251001", max_tokens: 300, messages: [{ role: "user", content }] });
+    const tb = r.content.find((b: any) => b.type === "text") as any;
+    const m = tb?.text?.match(/\{[\s\S]*\}/);
+    res = m ? JSON.parse(m[0]) : null;
+  } catch (e: any) { return { ok: false, chosen: -1, flagged: false, reason: String(e?.message || "vision failed").slice(0, 60) }; }
 
   const best = typeof res?.best === "number" ? res.best : -1;
   const now = new Date().toISOString();
