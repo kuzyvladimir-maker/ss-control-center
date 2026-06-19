@@ -20,6 +20,12 @@ const HELP =
   "Фабрика A+ контента. «Сканировать» находит наши листинги (Salutem Vita/Starfit) БЕЗ A+. «Сгенерировать» — Claude пишет профессиональный A+ (SEO-текст + раскадровка), прогоняет через гейт квалификации (brand-voice + политика A+ + IP: чужие бренды только фактически, логотипы не в кадре). «Review» — смотришь готовый контент по модулям и комментируешь. «Approve» → «Publish» — отправка в Amazon (валидация → создание → привязка ASIN → на ревью Amazon). Ничего не публикуется без твоего approve. Картинки: брифы генерятся (lifestyle без чужих логотипов), сам слой картинок подключается отдельно.";
 
 interface Opportunity { sku: string; asin: string; itemName: string | null; opportunityScore: number | null; revenue30d: number | null }
+interface PoolItem {
+  sku: string; asin: string; itemName: string | null; concept: string; hasAplus: boolean;
+  revenue30d: number | null; unitsOrdered30d: number | null; unitSessionPct: number | null;
+  sessions30d: number | null; healthScore: number | null; opportunityScore: number | null;
+}
+type SortKey = "revenue30d" | "unitsOrdered30d" | "unitSessionPct" | "opportunityScore";
 interface Job {
   id: string; sku: string; asin: string | null; itemName: string | null; status: string; qualified: boolean;
   concept: string | null;
@@ -34,7 +40,7 @@ const CONCEPT_LABEL: Record<string, string> = {
 export function AplusFactory() {
   const [storeIndex, setStoreIndex] = useState(1);
   const [tab, setTab] = useState<"opportunities" | "jobs">("opportunities");
-  const [scan, setScan] = useState<{ ownBrandWithout: number; ownBrandWithAplus: number; ownBrandTotal: number; opportunities: Opportunity[] } | null>(null);
+  const [scan, setScan] = useState<{ ownBrandWithout: number; ownBrandWithAplus: number; ownBrandTotal: number; opportunities: Opportunity[]; pool: PoolItem[] } | null>(null);
   const [scanning, setScanning] = useState(false);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [summary, setSummary] = useState<{ pending: number; needsFix: number; approved: number; published: number } | null>(null);
@@ -44,6 +50,15 @@ export function AplusFactory() {
   const [comments, setComments] = useState("");
   const [textModel, setTextModel] = useState<"opus" | "sonnet">("opus");
   const [imageModel, setImageModel] = useState<"gpt-image-2" | "gpt-image-1" | "smart">("gpt-image-2");
+  // Catalog pool filters / selection
+  const [search, setSearch] = useState("");
+  const [minRev, setMinRev] = useState("");
+  const [minUnits, setMinUnits] = useState("");
+  const [minConv, setMinConv] = useState("");
+  const [aplusFilter, setAplusFilter] = useState<"without" | "all" | "with">("without");
+  const [sortKey, setSortKey] = useState<SortKey>("revenue30d");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulk, setBulk] = useState<{ done: number; total: number } | null>(null);
 
   const loadJobs = useCallback(async () => {
     const res = await fetch(`/api/amazon/aplus?storeIndex=${storeIndex}&view=jobs`);
@@ -96,6 +111,33 @@ export function AplusFactory() {
       const updated = (data.jobs ?? []).find((x: Job) => x.id === jobId);
       if (updated) setReview(updated);
     } finally { setBusy(null); }
+  }
+  // Full regenerate (text + images) on the chosen models — re-runs generate for the SKU.
+  async function regenAll(jobId: string, sku: string) {
+    setBusy(jobId + ":all"); setMsg(null);
+    try {
+      await post({ action: "generate", sku, textModel, imageModel });
+      const res = await fetch(`/api/amazon/aplus?storeIndex=${storeIndex}&view=jobs`);
+      const data = await res.json();
+      setJobs(data.jobs ?? []); setSummary(data.summary ?? null);
+      const updated = (data.jobs ?? []).find((x: Job) => x.sku === sku);
+      if (updated) setReview(updated);
+    } finally { setBusy(null); }
+  }
+  // Bulk-generate A+ for the selected SKUs, sequentially, into the Jobs queue.
+  async function bulkGenerate(skus: string[]) {
+    if (skus.length === 0) return;
+    setBulk({ done: 0, total: skus.length }); setMsg(null);
+    for (let i = 0; i < skus.length; i++) {
+      await post({ action: "generate", sku: skus[i], textModel, imageModel }).catch(() => {});
+      setBulk({ done: i + 1, total: skus.length });
+    }
+    setBulk(null); setSelected(new Set());
+    await loadJobs(); setTab("jobs");
+    setMsg(`Сгенерировано ${skus.length} A+ — на ревью (вкладка Jobs)`);
+  }
+  function toggleSel(sku: string) {
+    setSelected((prev) => { const n = new Set(prev); n.has(sku) ? n.delete(sku) : n.add(sku); return n; });
   }
 
   const STATUS_CLR: Record<string, string> = {
@@ -154,38 +196,90 @@ export function AplusFactory() {
 
       {tab === "opportunities" && (
         <Panel>
-          <PanelHeader title="Own-brand listings without A+" count={scan?.ownBrandWithout}
+          <PanelHeader title="Каталог — выбор листингов для A+" count={scan?.ownBrandTotal}
             right={<Btn size="sm" icon={<RefreshCw size={13} />} loading={scanning} onClick={runScan}>Scan</Btn>} />
           {!scan ? (
-            <div className="px-4 py-8 text-center text-[12px] text-ink-3">Жми «Scan» — найдём наши листинги без A+ (может занять ~10–20с, идёт по живому A+ API).</div>
-          ) : (
+            <div className="px-4 py-8 text-center text-[12px] text-ink-3">Жми «Scan» — подтянем весь наш каталог (Salutem Vita/Starfit) с пометкой A+ есть/нет (может занять ~10–20с, идёт по живому A+ API).</div>
+          ) : (() => {
+            const q = search.trim().toLowerCase();
+            const filtered = (scan.pool ?? []).filter((p) => {
+              if (aplusFilter === "without" && p.hasAplus) return false;
+              if (aplusFilter === "with" && !p.hasAplus) return false;
+              if (q && !`${p.itemName ?? ""} ${p.sku} ${p.asin}`.toLowerCase().includes(q)) return false;
+              if (minRev && (p.revenue30d ?? 0) < Number(minRev)) return false;
+              if (minUnits && (p.unitsOrdered30d ?? 0) < Number(minUnits)) return false;
+              if (minConv && (p.unitSessionPct ?? 0) < Number(minConv)) return false;
+              return true;
+            }).sort((a, b) => (Number(b[sortKey] ?? 0)) - (Number(a[sortKey] ?? 0)));
+            const allSel = filtered.length > 0 && filtered.every((p) => selected.has(p.sku));
+            const selInView = filtered.filter((p) => selected.has(p.sku)).length;
+            const SORTS: { k: SortKey; label: string }[] = [
+              { k: "revenue30d", label: "Продажи $" }, { k: "unitsOrdered30d", label: "Штуки" },
+              { k: "unitSessionPct", label: "Конверсия" }, { k: "opportunityScore", label: "Opp" },
+            ];
+            return (
             <>
-              <div className="grid grid-cols-3 gap-3 p-4">
+              <div className="grid grid-cols-3 gap-3 p-4 pb-2">
                 <KpiCard label="Без A+" value={scan.ownBrandWithout} iconVariant="warn" />
                 <KpiCard label="С A+" value={scan.ownBrandWithAplus} />
                 <KpiCard label="Всего own-brand" value={scan.ownBrandTotal} />
               </div>
-              <div className="max-h-[480px] overflow-auto">
+
+              {/* Search + filters */}
+              <div className="flex flex-wrap items-center gap-2 px-4 pb-2">
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Поиск: title / ASIN / SKU (напр. cooler)"
+                  className="min-w-[240px] flex-1 rounded-md border border-rule bg-bg px-2.5 py-1.5 text-[12px] text-ink" />
+                <select value={aplusFilter} onChange={(e) => setAplusFilter(e.target.value as typeof aplusFilter)} className="rounded-md border border-rule bg-bg px-2 py-1.5 text-[12px] text-ink">
+                  <option value="without">Без A+</option><option value="all">Все</option><option value="with">С A+</option>
+                </select>
+                <input value={minRev} onChange={(e) => setMinRev(e.target.value)} inputMode="numeric" placeholder="мин $ 30d" className="w-[90px] rounded-md border border-rule bg-bg px-2 py-1.5 text-[12px] text-ink" />
+                <input value={minUnits} onChange={(e) => setMinUnits(e.target.value)} inputMode="numeric" placeholder="мин шт" className="w-[80px] rounded-md border border-rule bg-bg px-2 py-1.5 text-[12px] text-ink" />
+                <input value={minConv} onChange={(e) => setMinConv(e.target.value)} inputMode="numeric" placeholder="мин конв%" className="w-[90px] rounded-md border border-rule bg-bg px-2 py-1.5 text-[12px] text-ink" />
+                <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className="rounded-md border border-rule bg-bg px-2 py-1.5 text-[12px] text-ink">
+                  {SORTS.map((s) => <option key={s.k} value={s.k}>↓ {s.label}</option>)}
+                </select>
+              </div>
+
+              {/* Bulk action bar */}
+              <div className="flex items-center justify-between gap-2 border-y border-rule bg-bg-elev/30 px-4 py-2">
+                <span className="text-[11px] text-ink-3">Показано {filtered.length} · выбрано {selected.size}</span>
+                <div className="flex items-center gap-2">
+                  {selected.size > 0 && <button onClick={() => setSelected(new Set())} className="text-[11px] text-ink-4 hover:text-ink">Сбросить</button>}
+                  <Btn size="sm" variant="primary" icon={<Sparkles size={12} />} disabled={selected.size === 0 || !!bulk}
+                    loading={!!bulk} onClick={() => bulkGenerate([...selected])}>
+                    {bulk ? `Генерится ${bulk.done}/${bulk.total}…` : `Сгенерить A+ (${selected.size})`}
+                  </Btn>
+                </div>
+              </div>
+
+              <div className="max-h-[460px] overflow-auto">
                 <table className="w-full text-[12px]">
                   <thead className="sticky top-0 bg-surface"><tr className="border-b border-rule text-left text-[10px] font-mono uppercase tracking-wider text-ink-3">
-                    <th className="px-3 py-2">Product</th><th className="px-2 py-2">Opp</th><th className="px-2 py-2">Rev 30d</th><th className="px-2 py-2"></th>
+                    <th className="px-2 py-2 w-8"><input type="checkbox" checked={allSel} ref={(el) => { if (el) el.indeterminate = !allSel && selInView > 0; }}
+                      onChange={() => setSelected((prev) => { const n = new Set(prev); if (allSel) filtered.forEach((p) => n.delete(p.sku)); else filtered.forEach((p) => n.add(p.sku)); return n; })} /></th>
+                    <th className="px-2 py-2">Product</th><th className="px-2 py-2">A+</th><th className="px-2 py-2">$ 30d</th><th className="px-2 py-2">Шт</th><th className="px-2 py-2">Конв</th><th className="px-2 py-2"></th>
                   </tr></thead>
                   <tbody>
-                    {scan.opportunities.map((o) => (
-                      <tr key={o.sku} className="border-b border-rule/50 hover:bg-bg-elev/40">
-                        <td className="max-w-[420px] px-3 py-2"><div className="flex items-center gap-1"><span className="truncate text-ink">{o.itemName ?? o.sku}</span>
-                          <a href={`https://www.amazon.com/dp/${o.asin}`} target="_blank" rel="noreferrer" className="shrink-0 text-ink-4 hover:text-green-ink"><ExternalLink size={12} /></a></div>
-                          <span className="font-mono text-[10px] text-ink-4">{o.sku}</span></td>
-                        <td className="px-2 py-2 tabular">{o.opportunityScore?.toFixed(0) ?? "—"}</td>
-                        <td className="px-2 py-2 tabular">{o.revenue30d != null ? "$" + o.revenue30d.toFixed(0) : "—"}</td>
-                        <td className="px-2 py-2 text-right"><Btn size="sm" variant="primary" icon={<Sparkles size={12} />} loading={busy === o.sku} onClick={() => generate(o.sku)}>Generate A+</Btn></td>
+                    {filtered.length === 0 ? <tr><td colSpan={7} className="px-3 py-8 text-center text-ink-3">Ничего не найдено под фильтры.</td></tr> :
+                    filtered.map((p) => (
+                      <tr key={p.sku} className={cn("border-b border-rule/50 hover:bg-bg-elev/40", selected.has(p.sku) && "bg-green-soft/40")}>
+                        <td className="px-2 py-2"><input type="checkbox" checked={selected.has(p.sku)} onChange={() => toggleSel(p.sku)} /></td>
+                        <td className="max-w-[380px] px-2 py-2"><div className="flex items-center gap-1"><span className="truncate text-ink">{p.itemName ?? p.sku}</span>
+                          <a href={`https://www.amazon.com/dp/${p.asin}`} target="_blank" rel="noreferrer" className="shrink-0 text-ink-4 hover:text-green-ink"><ExternalLink size={12} /></a></div>
+                          <span className="font-mono text-[10px] text-ink-4">{p.sku} · {CONCEPT_LABEL[p.concept] ?? p.concept}</span></td>
+                        <td className="px-2 py-2">{p.hasAplus ? <span className="text-[10px] text-green-ink">есть</span> : <span className="text-[10px] text-warn-strong">нет</span>}</td>
+                        <td className="px-2 py-2 tabular">{p.revenue30d != null ? "$" + p.revenue30d.toFixed(0) : "—"}</td>
+                        <td className="px-2 py-2 tabular">{p.unitsOrdered30d ?? "—"}</td>
+                        <td className="px-2 py-2 tabular">{p.unitSessionPct != null ? p.unitSessionPct.toFixed(1) + "%" : "—"}</td>
+                        <td className="px-2 py-2 text-right"><Btn size="sm" variant="outline" icon={<Sparkles size={12} />} loading={busy === p.sku} onClick={() => generate(p.sku)}>Generate</Btn></td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </>
-          )}
+            );
+          })()}
         </Panel>
       )}
 
@@ -258,9 +352,12 @@ export function AplusFactory() {
                 </div>
               )}
 
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-[11px] text-ink-3">Превью как на странице листинга · картинки — AI lifestyle без чужих логотипов</span>
-                <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":img"} onClick={() => regenImages(review.id)}>Перегенерировать картинки</Btn>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[11px] text-ink-3">Превью как на странице листинга · модели: {textModel === "opus" ? "Opus" : "Sonnet"} + {imageModel}</span>
+                <div className="flex items-center gap-1.5">
+                  <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":all"} onClick={() => regenAll(review.id, review.sku)}>Перегенерировать всё (текст+картинки)</Btn>
+                  <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":img"} onClick={() => regenImages(review.id)}>Только картинки</Btn>
+                </div>
               </div>
               {/* WYSIWYG preview — image-forward A+ landing page */}
               <div className="space-y-5 rounded-lg bg-white p-4 text-[#0f1111]">
