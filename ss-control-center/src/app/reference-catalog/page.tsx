@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Loader2, AlertCircle, Search, X, RefreshCw, Wand2, ImageOff,
-  Boxes, Tags, Store, ListChecks,
+  Boxes, Tags, Store, ListChecks, ExternalLink,
 } from "lucide-react";
 import { PageHead, Btn, Panel, PanelHeader, PanelBody, KpiCard } from "@/components/kit";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,7 @@ type ProductRow = {
   bestRetailer: string | null;
   pricePerMeasure: number | null;
   offerCount: number;
+  bestOfferUrl: string | null;
 };
 type Facets = {
   brands: { brand: string; n: number }[];
@@ -122,6 +123,12 @@ export default function ReferenceCatalogPage() {
   const retailersCount = data?.facets.retailers.length ?? 0;
   const queuedCount = (q.queued || 0) + (q.running || 0);
 
+  const growthDays = data?.growth ?? [];
+  const growthMax = Math.max(1, ...growthDays.map((g) => Number(g.n)));
+  const todayAdded = growthDays.length ? Number(growthDays[growthDays.length - 1].n) : 0;
+  const retailers = data?.facets.retailers ?? [];
+  const retailerMax = Math.max(1, ...retailers.map((r) => Number(r.n)));
+
   const anyFilter = !!(debounced || brand || category || retailer);
   const clearFilters = () => { setSearch(""); setBrand(""); setCategory(""); setRetailer(""); };
 
@@ -148,6 +155,49 @@ export default function ReferenceCatalogPage() {
             ...(q.error ? [{ label: `err ${q.error}`, variant: "urgent" as const }] : []),
           ]}
         />
+      </div>
+
+      {/* Growth + breakdown visualization */}
+      <div className="grid gap-3 md:grid-cols-2">
+        <Panel>
+          <PanelHeader title="Catalog growth" right={<span className="text-[11.5px] text-ink-3">+{todayAdded} latest</span>} />
+          <PanelBody>
+            {growthDays.length ? (
+              <div className="flex h-28 items-end gap-1">
+                {growthDays.map((g) => (
+                  <div key={g.d} className="flex flex-1 flex-col items-center justify-end gap-1" title={`${g.d}: +${g.n}`}>
+                    <div className="w-full rounded-t bg-green" style={{ height: `${Math.max(4, (Number(g.n) / growthMax) * 90)}px` }} />
+                    <div className="text-[9px] text-ink-4">{g.d.slice(5)}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center text-[12.5px] text-ink-3">No data yet.</div>
+            )}
+            <div className="mt-2 text-[11.5px] text-ink-3">New unique products added per day · {data?.total ?? 0} total</div>
+          </PanelBody>
+        </Panel>
+        <Panel>
+          <PanelHeader title="By retailer" count={retailers.length} />
+          <PanelBody>
+            {retailers.length ? (
+              <div className="space-y-1.5">
+                {retailers.map((r) => (
+                  <div key={r.retailer} className="flex items-center gap-2">
+                    <div className="w-20 truncate text-[12px] capitalize text-ink-2">{r.retailer}</div>
+                    <div className="h-3 flex-1 overflow-hidden rounded bg-bg-elev">
+                      <div className="h-full rounded bg-green" style={{ width: `${(Number(r.n) / retailerMax) * 100}%` }} />
+                    </div>
+                    <div className="w-12 text-right text-[11.5px] tabular text-ink-3">{r.n}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center text-[12.5px] text-ink-3">No offers yet.</div>
+            )}
+            <div className="mt-2 text-[11.5px] text-ink-3">Offers per retailer (price points across stores)</div>
+          </PanelBody>
+        </Panel>
       </div>
 
       {/* Vector enrichment */}
@@ -241,6 +291,7 @@ export default function ReferenceCatalogPage() {
                   <th className="px-2 py-2 font-medium text-right">$/unit</th>
                   <th className="px-2 py-2 font-medium">Retailer</th>
                   <th className="px-2 py-2 font-medium text-right">Offers</th>
+                  <th className="px-2 py-2 font-medium">Source</th>
                 </tr>
               </thead>
               <tbody>
@@ -250,7 +301,7 @@ export default function ReferenceCatalogPage() {
                       <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-md border border-rule bg-bg-elev">
                         {p.mainImageUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={p.mainImageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+                          <img src={p.mainImageUrl} alt="" className="h-full w-full object-contain" loading="lazy" />
                         ) : (
                           <ImageOff size={16} className="text-ink-4" />
                         )}
@@ -263,6 +314,13 @@ export default function ReferenceCatalogPage() {
                     <td className="px-2 py-2 text-right tabular text-ink-3">{perMeasure(p.pricePerMeasure, p.unitMeasure)}</td>
                     <td className="px-2 py-2 text-ink-3">{p.bestRetailer || "—"}</td>
                     <td className="px-2 py-2 text-right tabular text-ink-3">{p.offerCount}</td>
+                    <td className="px-2 py-2">
+                      {p.bestOfferUrl ? (
+                        <a href={p.bestOfferUrl} target="_blank" rel="noopener noreferrer" title="Open source listing" className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-rule text-ink-3 hover:border-green-mid/40 hover:text-green-ink">
+                          <ExternalLink size={14} />
+                        </a>
+                      ) : <span className="text-ink-4">—</span>}
+                    </td>
                   </tr>
                 ))}
               </tbody>

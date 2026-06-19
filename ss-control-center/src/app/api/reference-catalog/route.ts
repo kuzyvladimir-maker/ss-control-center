@@ -46,7 +46,8 @@ export async function GET(request: NextRequest) {
     const products = await conn.execute({
       sql: `SELECT dp.id, dp.brand, dp.title, dp.size, dp.unitMeasure, dp.category, dp.mainImageUrl,
                    dp.bestPrice, dp.bestRetailer, dp.pricePerMeasure,
-                   (SELECT COUNT(*) FROM "DonorOffer" o WHERE o.donorProductId = dp.id) AS offerCount
+                   (SELECT COUNT(*) FROM "DonorOffer" o WHERE o.donorProductId = dp.id) AS offerCount,
+                   (SELECT o3.productUrl FROM "DonorOffer" o3 WHERE o3.donorProductId = dp.id AND o3.productUrl IS NOT NULL ORDER BY o3.pricePerUnit ASC LIMIT 1) AS bestOfferUrl
             FROM "DonorProduct" dp ${whereSql}
             ORDER BY ${sort} LIMIT ?`,
       args: [...args, limit],
