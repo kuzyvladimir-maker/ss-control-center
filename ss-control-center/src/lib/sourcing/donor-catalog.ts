@@ -47,8 +47,53 @@ export function computeIdentityKey(o: { brand?: string | null; title?: string | 
 // orphaned offers. First title token, original case.
 export function deriveBrand(title?: string | null): string | null {
   if (!title) return null;
-  const w = title.trim().split(/\s+/)[0]?.replace(/[^A-Za-z0-9'&.-]/g, "");
-  return w && w.length >= 2 ? w : null;
+  const t = title.trim()
+    .replace(/^\(?\s*\d+\s*(?:-|\s)?\s*(?:pack|pk|count|ct)\s*\)?\s*/i, "") // strip "(4 pack) "
+    .replace(/^\d+(?:\.\d+)?\s*(?:fl\s*oz|oz|lb|ct|count|g|ml|l)\b\s*/i, ""); // strip "3.25 oz "
+  const w = t.split(/\s+/)[0]?.replace(/[^A-Za-z0-9'&.-]/g, "");
+  return w && w.length >= 2 && !/^\d+$/.test(w) ? w : null;
+}
+
+// Prefer the (clean) searched brand for display/identity; reject junk like
+// "(4 pack)" or a bare number that the title sometimes leads with.
+function cleanBrand(b?: string | null): string | null {
+  const s = (b || "").trim();
+  if (!s || /^\(?\d/.test(s) || /^pack\b/i.test(s)) return null;
+  return s;
+}
+
+// ── QA "qualification department" ──────────────────────────────────────────
+// tier-1 (free): obvious non-grocery markers — books/media/household/HBA.
+const NON_GROCERY = /\b(paperback|hardcover|board book|audiobook|kindle|notebook|diary|journal|vol\.?\s*\d|batteries?|d cell|in-wash|scent booster|detergent|fabric softener|laundry|dish soap|shampoo|conditioner|toothpaste|deodorant|paper towels?|toilet paper|napkins?|trash bags?|light bulb|recollections)\b/i;
+export function looksNonGrocery(title?: string | null): boolean {
+  return !!title && NON_GROCERY.test(title);
+}
+
+// tier-2 (cheap): one batched Haiku call classifies many titles grocery/not.
+// Fail-OPEN (all true) if the LLM is unavailable so a hiccup never wipes a run —
+// tier-1 + the first-party/brand/price gates still apply.
+export async function classifyGroceryTitles(titles: string[]): Promise<boolean[]> {
+  if (!titles.length) return [];
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey || apiKey === "<api_key>") return titles.map(() => true);
+  try {
+    const Anthropic = (await import("@anthropic-ai/sdk")).default;
+    const client = new Anthropic({ apiKey });
+    const list = titles.map((t, i) => `${i}. ${(t || "").slice(0, 140)}`).join("\n");
+    const res = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 3000,
+      messages: [{ role: "user", content:
+        `You are a grocery-catalog QA filter. For EACH numbered title decide if it is a GROCERY product — food, beverage, or edible consumable sold in a supermarket. Answer false for books, media, batteries, cleaning/laundry, health & beauty, toys, electronics, apparel, kitchenware, office, pet non-food.\nReturn ONLY a JSON array: [{"i":0,"food":true},...] covering every item.\n\n${list}` }],
+    });
+    const tb = res.content.find((b: any) => b.type === "text") as any;
+    const m = tb?.text?.match(/\[[\s\S]*\]/);
+    if (!m) return titles.map(() => true);
+    const arr = JSON.parse(m[0]) as { i: number; food: boolean }[];
+    const verdict = titles.map(() => true);
+    for (const v of arr) if (typeof v.i === "number" && v.i >= 0 && v.i < titles.length) verdict[v.i] = v.food !== false;
+    return verdict;
+  } catch { return titles.map(() => true); }
 }
 
 // Remove products left with zero offers (legacy duplicate artifacts from the old
@@ -177,54 +222,64 @@ export async function enrichTarget(
     } catch { /* skip this retailer on error */ }
   }
 
-  for (const b of batches) {
-    for (const o of b.offers) {
-      if (!o.accepted) { rejected++; continue; }
-      if (!o.retailerProductId) continue;
-      const { size, unitMeasure, unitAmount } = parseSize(o.title);
-      const offerBrand = deriveBrand(o.title) || cp.brand || null;
-      const identityKey = computeIdentityKey({ brand: offerBrand, title: o.title, size });
+  // QA "qualification dept": tier-1 deterministic non-grocery reject (free) +
+  // tier-2 batched LLM grocery judge (1 cheap Haiku call). Only survivors are
+  // written — keeps books / batteries / laundry out of the catalog.
+  const candidates: ScoredOffer[] = [];
+  for (const b of batches) for (const o of b.offers) {
+    if (!o.accepted) { rejected++; continue; }
+    if (!o.retailerProductId) continue;
+    if (looksNonGrocery(o.title)) { rejected++; continue; }
+    candidates.push(o);
+  }
+  const verdicts = await classifyGroceryTitles(candidates.map((o) => o.title || ""));
+  const survivors = candidates.filter((_, i) => verdicts[i]);
+  rejected += candidates.length - survivors.length;
 
-      // Resolve the product WITHOUT orphaning: if this exact offer already exists,
-      // keep it with its current product (never move an offer between products).
-      // Otherwise match by identityKey; otherwise create a new product.
-      let productId: string;
-      const existingOffer = await db.execute({ sql: `SELECT donorProductId FROM "DonorOffer" WHERE retailer=? AND retailerProductId=? LIMIT 1`, args: [o.retailer, o.retailerProductId] });
-      if (existingOffer.rows.length) {
-        productId = existingOffer.rows[0].donorProductId as string;
+  const brandHint = cleanBrand(cp.brand);
+  for (const o of survivors) {
+    const { size, unitMeasure, unitAmount } = parseSize(o.title);
+    const offerBrand = brandHint || deriveBrand(o.title) || null;
+    const identityKey = computeIdentityKey({ brand: offerBrand, title: o.title, size });
+
+    // Resolve the product WITHOUT orphaning: if this exact offer already exists,
+    // keep it with its current product. Otherwise match by identityKey; else create.
+    let productId: string;
+    const existingOffer = await db.execute({ sql: `SELECT donorProductId FROM "DonorOffer" WHERE retailer=? AND retailerProductId=? LIMIT 1`, args: [o.retailer, o.retailerProductId] });
+    if (existingOffer.rows.length) {
+      productId = existingOffer.rows[0].donorProductId as string;
+    } else {
+      const found = await db.execute({ sql: `SELECT id FROM "DonorProduct" WHERE identityKey=? LIMIT 1`, args: [identityKey] });
+      if (found.rows.length) {
+        productId = found.rows[0].id as string;
       } else {
-        const found = await db.execute({ sql: `SELECT id FROM "DonorProduct" WHERE identityKey=? LIMIT 1`, args: [identityKey] });
-        if (found.rows.length) {
-          productId = found.rows[0].id as string;
-        } else {
-          productId = crypto.randomUUID();
-          await db.execute({
-            sql: `INSERT INTO "DonorProduct" (id, brand, title, size, unitMeasure, unitAmount, mainImageUrl, imageUrls, identityKey, createdAt, updatedAt)
-                  VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
-            args: [productId, offerBrand, o.title ?? null, size, unitMeasure, unitAmount, (o.imageUrls || [])[0] ?? null, JSON.stringify(o.imageUrls || []), identityKey, now, now],
-          });
-          productsCreated++;
-        }
+        productId = crypto.randomUUID();
+        await db.execute({
+          sql: `INSERT INTO "DonorProduct" (id, brand, title, size, unitMeasure, unitAmount, mainImageUrl, imageUrls, identityKey, createdAt, updatedAt)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+          args: [productId, offerBrand, o.title ?? null, size, unitMeasure, unitAmount, (o.imageUrls || [])[0] ?? null, JSON.stringify(o.imageUrls || []), identityKey, now, now],
+        });
+        productsCreated++;
       }
-
-      const pack = o.packSizeSeen ?? 1;
-      const perUnit = o.price != null ? Math.round((o.price / (pack || 1)) * 100) / 100 : null;
-      await db.execute({
-        sql: `INSERT INTO "DonorOffer" (id, donorProductId, retailer, retailerProductId, via, price, packSizeSeen, pricePerUnit, currency, zip, inStock, productUrl, sellerName, isFirstParty, sourceApi, fetchedAt, createdAt, updatedAt)
-              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-              ON CONFLICT(retailer, retailerProductId) DO UPDATE SET
-                donorProductId=excluded.donorProductId, price=excluded.price, packSizeSeen=excluded.packSizeSeen,
-                pricePerUnit=excluded.pricePerUnit, inStock=excluded.inStock, productUrl=excluded.productUrl,
-                sellerName=excluded.sellerName, isFirstParty=excluded.isFirstParty, fetchedAt=excluded.fetchedAt, updatedAt=excluded.updatedAt`,
-        args: [
-          `do:${o.retailer}:${o.retailerProductId}`, productId, o.retailer, o.retailerProductId, "direct",
-          o.price ?? null, pack, perUnit, o.currency || "USD", opts.zip ?? null,
-          o.inStock === null ? null : o.inStock ? 1 : 0, o.productUrl ?? null, o.sellerName ?? null, 1, o.sourceApi ?? null, now, now, now,
-        ],
-      });
-      offersUpserted++;
-      await rollupProduct(db, productId, now);
     }
+
+    const pack = o.packSizeSeen ?? 1;
+    const perUnit = o.price != null ? Math.round((o.price / (pack || 1)) * 100) / 100 : null;
+    await db.execute({
+      sql: `INSERT INTO "DonorOffer" (id, donorProductId, retailer, retailerProductId, via, price, packSizeSeen, pricePerUnit, currency, zip, inStock, productUrl, sellerName, isFirstParty, sourceApi, fetchedAt, createdAt, updatedAt)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ON CONFLICT(retailer, retailerProductId) DO UPDATE SET
+              donorProductId=excluded.donorProductId, price=excluded.price, packSizeSeen=excluded.packSizeSeen,
+              pricePerUnit=excluded.pricePerUnit, inStock=excluded.inStock, productUrl=excluded.productUrl,
+              sellerName=excluded.sellerName, isFirstParty=excluded.isFirstParty, fetchedAt=excluded.fetchedAt, updatedAt=excluded.updatedAt`,
+      args: [
+        `do:${o.retailer}:${o.retailerProductId}`, productId, o.retailer, o.retailerProductId, "direct",
+        o.price ?? null, pack, perUnit, o.currency || "USD", opts.zip ?? null,
+        o.inStock === null ? null : o.inStock ? 1 : 0, o.productUrl ?? null, o.sellerName ?? null, 1, o.sourceApi ?? null, now, now, now,
+      ],
+    });
+    offersUpserted++;
+    await rollupProduct(db, productId, now);
   }
 
   return { query: opts.target, retailersHit, productsCreated, offersUpserted, rejected, creditsRemaining };
