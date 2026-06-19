@@ -1,24 +1,20 @@
 /**
  * A+ Content Factory — image generation.
  *
- * Turns the LLM's per-module image briefs into real images via the existing
- * Bundle Factory generator (OpenAI Images → hosted on R2), so the review modal can
- * show a real visual preview. Images are premium gift-basket LIFESTYLE scenes with
- * NO third-party logos/packaging text — the IP-safe rule (brands live in text only).
- *
- * R2 URLs are for preview + are uploaded to Amazon's A+ Uploads API at publish time
- * (publish step) to obtain uploadDestinationIds.
+ * Generates ALL image slots for a job (hero + inside + 4-grid + serve = 7) from the
+ * LLM briefs via Bundle Factory's generator (OpenAI Images → R2). Premium gift-basket
+ * LIFESTYLE scenes, NO third-party logos/packaging text (brands live in text only).
+ * R2 URLs power the visual preview; at publish they're uploaded to Amazon's A+ Uploads API.
  */
 
 import type { PrismaClient } from "@/generated/prisma/client";
 import { generateMainImage } from "@/lib/bundle-factory/image-generation";
 
-// Appended to every brief so the model never renders brand marks or text.
 const IP_SAFE_SUFFIX =
-  "Professional high-resolution commercial photography. Absolutely NO brand logos, NO packaging labels, NO readable text or watermarks anywhere in the image. Clean, premium, well-lit.";
+  "Professional high-resolution commercial food photography, premium gift presentation, warm natural light. Absolutely NO brand logos, NO packaging labels, NO readable text or watermarks anywhere. Clean and appetizing.";
 
-export interface ImagePlanModule { kind: string; brief: string | null; alt: string | null; url?: string | null }
-export interface ImagePlan { hero: { brief: string; url?: string | null }; modules: ImagePlanModule[] }
+export interface ImagePlanSlot { key: string; brief: string; alt: string | null; landscape?: boolean; url?: string | null }
+export interface StoredImagePlan { plan: unknown; slots: ImagePlanSlot[] }
 
 async function gen(brief: string, slug: string, landscape: boolean): Promise<string | null> {
   const out = await generateMainImage({
@@ -29,29 +25,19 @@ async function gen(brief: string, slug: string, landscape: boolean): Promise<str
   return out.image_url ?? null;
 }
 
-/** Generate all images for a job's plan; fills .url fields. Best-effort per image. */
+/** Generate every not-yet-filled image slot for a job. Best-effort per slot. */
 export async function generateImagesForJob(prisma: PrismaClient, jobId: string): Promise<{ generated: number; failed: number }> {
   const job = await prisma.amazonAplusJob.findUnique({ where: { id: jobId } });
   if (!job?.imagePlanJson) return { generated: 0, failed: 0 };
-  const plan = JSON.parse(job.imagePlanJson) as ImagePlan;
-  const slug = `aplus-${job.sku}`.toLowerCase();
+  const stored = JSON.parse(job.imagePlanJson) as StoredImagePlan;
+  const slug = `aplus-${job.sku}`.toLowerCase().replace(/[^a-z0-9-]/g, "");
 
   let generated = 0, failed = 0;
-
-  // Hero (landscape).
-  if (plan.hero?.brief && !plan.hero.url) {
-    const url = await gen(plan.hero.brief, `${slug}-hero`, true).catch(() => null);
-    if (url) { plan.hero.url = url; generated++; } else failed++;
+  for (const s of stored.slots ?? []) {
+    if (!s.brief || s.url) continue;
+    const url = await gen(s.brief, `${slug}-${s.key}`, !!s.landscape).catch(() => null);
+    if (url) { s.url = url; generated++; } else failed++;
   }
-  // Per-module images that have a brief.
-  for (let i = 0; i < (plan.modules?.length ?? 0); i++) {
-    const m = plan.modules[i];
-    if (!m.brief || m.url) continue;
-    const landscape = m.kind === "header";
-    const url = await gen(m.brief, `${slug}-m${i}`, landscape).catch(() => null);
-    if (url) { m.url = url; generated++; } else failed++;
-  }
-
-  await prisma.amazonAplusJob.update({ where: { id: jobId }, data: { imagePlanJson: JSON.stringify(plan) } });
+  await prisma.amazonAplusJob.update({ where: { id: jobId }, data: { imagePlanJson: JSON.stringify(stored) } });
   return { generated, failed };
 }

@@ -14,6 +14,7 @@ import {
   type CanonicalProduct,
   type ScoredOffer,
 } from "./retail-fetch";
+import { analyzeImagesWithFallback } from "@/lib/ai-vision";
 
 // Parse a size token out of a title → normalized measure + amount (for $/measure).
 const UNIT_RE = /(\d+(?:\.\d+)?)\s*(fl\s*oz|oz|ct|count|lb|g|ml|l)\b/i;
@@ -105,7 +106,7 @@ export async function cleanupOrphans(db: Client): Promise<number> {
 
 const stripHtml = (s?: string | null) => (s ? String(s).replace(/<[^>]+>/g, " ").replace(/&#(\d+);/g, (_m, d) => String.fromCharCode(+d)).replace(/&amp;/g, "&").replace(/\s+/g, " ").trim() : null);
 
-export interface HarvestResult { ok: boolean; productId: string; images: number; upc: string | null; hasIngredients: boolean; merged: number; reason?: string }
+export interface HarvestResult { ok: boolean; productId: string; images: number; upc: string | null; hasIngredients: boolean; merged: number; imageFlagged?: boolean; reason?: string }
 
 // PHASE 3 — full content harvest for ONE product (1 BlueCart credit). Pulls the
 // full BlueCart product detail (gallery ≥5 incl the nutrition-label image, bullets,
@@ -154,7 +155,11 @@ export async function harvestDonorDetail(db: Client, productId: string): Promise
   let merged = 0;
   if (upc) merged = await mergeByUpc(db, productId, upc, now);
 
-  return { ok: true, productId, images: images.length, upc, hasIngredients: !!ingredients, merged };
+  // Image QC ("Qual"): pick the cleanest front shot, or flag for rework.
+  let imageFlagged = false;
+  try { const qc = await qcProductImage(db, productId); imageFlagged = qc.flagged; } catch { /* best-effort */ }
+
+  return { ok: true, productId, images: images.length, upc, hasIngredients: !!ingredients, merged, imageFlagged };
 }
 
 // Move offers from any OTHER product sharing this UPC into `keepId`, then delete the
@@ -182,6 +187,47 @@ async function rollupProductExport(db: Client, productId: string, now: string) {
   const unitAmount = (prod.rows[0]?.unitAmount as number | null) ?? null;
   const ppm = unitAmount && best.pricePerUnit ? Math.round((best.pricePerUnit / unitAmount) * 1000) / 1000 : null;
   await db.execute({ sql: `UPDATE "DonorProduct" SET bestPrice=?, bestRetailer=?, pricePerMeasure=?, updatedAt=? WHERE id=?`, args: [best.pricePerUnit, best.retailer, ppm, now, productId] });
+}
+
+async function toBase64(url: string): Promise<string | null> {
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    if (!r.ok) return null;
+    return Buffer.from(await r.arrayBuffer()).toString("base64");
+  } catch { return null; }
+}
+
+export interface ImageQcResult { ok: boolean; chosen: number; flagged: boolean; reason?: string }
+
+// IMAGE QC ("Qual") — vision-inspect the harvested gallery, pick the CLEANEST
+// single-product front shot (no collage / multipack / badge overlays) and set it
+// as mainImageUrl. If none qualifies → flag needsReview (returned for rework).
+// One vision call per product (selective — run after harvest).
+export async function qcProductImage(db: Client, productId: string): Promise<ImageQcResult> {
+  const row = await db.execute({ sql: `SELECT imageUrls FROM "DonorProduct" WHERE id=? LIMIT 1`, args: [productId] });
+  let urls: string[] = [];
+  try { urls = JSON.parse((row.rows[0]?.imageUrls as string) || "[]"); } catch { /* */ }
+  urls = urls.filter((u) => typeof u === "string" && u.startsWith("http")).slice(0, 6);
+  if (!urls.length) return { ok: false, chosen: -1, flagged: false, reason: "no images" };
+
+  const imgs: { i: number; b64: string }[] = [];
+  for (let i = 0; i < urls.length; i++) { const b = await toBase64(urls[i]); if (b) imgs.push({ i, b64: b }); }
+  if (!imgs.length) return { ok: false, chosen: -1, flagged: false, reason: "no fetchable images" };
+
+  const prompt = `These ${imgs.length} images (indexes 0..${imgs.length - 1}, in the order shown) are photos of ONE grocery product. Pick the index of the CLEANEST image that shows the SINGLE product facing the camera front — plain packaging on a white/neutral background, with NO multipack collage, NO multiple units shown, and NO added badges/banners/marketing text overlays (e.g. "N pack", "value size", price stamps). Prefer a bare front-of-pack hero shot. Return ONLY JSON: {"best": <index, or -1 if none qualifies>, "reason": "short"}.`;
+  let res: any;
+  try { res = await analyzeImagesWithFallback(imgs.map((x) => x.b64), prompt); }
+  catch (e: any) { return { ok: false, chosen: -1, flagged: false, reason: String(e?.message || "vision failed").slice(0, 60) }; }
+
+  const best = typeof res?.best === "number" ? res.best : -1;
+  const now = new Date().toISOString();
+  if (best >= 0 && best < imgs.length) {
+    await db.execute({ sql: `UPDATE "DonorProduct" SET mainImageUrl=?, needsReview=0, updatedAt=? WHERE id=?`, args: [urls[imgs[best].i], now, productId] });
+    return { ok: true, chosen: imgs[best].i, flagged: false, reason: res?.reason };
+  }
+  // none clean → return for rework
+  await db.execute({ sql: `UPDATE "DonorProduct" SET needsReview=1, updatedAt=? WHERE id=?`, args: [now, productId] });
+  return { ok: true, chosen: -1, flagged: true, reason: res?.reason || "no clean front image" };
 }
 
 export interface EnrichTargetResult {

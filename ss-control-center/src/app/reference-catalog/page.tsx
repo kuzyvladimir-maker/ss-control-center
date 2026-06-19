@@ -21,6 +21,7 @@ type ProductRow = {
   pricePerMeasure: number | null;
   offerCount: number;
   bestOfferUrl: string | null;
+  needsReview: number | boolean | null;
 };
 type Facets = {
   brands: { brand: string; n: number }[];
@@ -308,7 +309,12 @@ export default function ReferenceCatalogPage() {
                       </div>
                     </td>
                     <td className="px-2 py-2 text-ink-2">{p.brand || "—"}</td>
-                    <td className="px-2 py-2 text-ink max-w-[360px]"><div className="truncate" title={p.title || ""}>{p.title || "—"}</div></td>
+                    <td className="px-2 py-2 text-ink max-w-[360px]">
+                      <div className="flex items-center gap-1.5">
+                        <span className="truncate" title={p.title || ""}>{p.title || "—"}</span>
+                        {p.needsReview ? <span className="shrink-0 rounded bg-warn-tint px-1.5 py-0.5 text-[10px] font-medium text-warn-strong" title="Image QC flagged — no clean front photo">review</span> : null}
+                      </div>
+                    </td>
                     <td className="px-2 py-2 text-ink-3 tabular">{p.size || "—"}</td>
                     <td className="px-2 py-2 text-right tabular text-ink">{money(p.bestPrice)}</td>
                     <td className="px-2 py-2 text-right tabular text-ink-3">{perMeasure(p.pricePerMeasure, p.unitMeasure)}</td>

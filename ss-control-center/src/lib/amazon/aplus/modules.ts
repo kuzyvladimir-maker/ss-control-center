@@ -67,6 +67,17 @@ export function companyLogo(opts: { img: ImageComponent }): ModuleJSON {
   return { contentModuleType: "STANDARD_COMPANY_LOGO", standardCompanyLogo: { companyLogo: opts.img } };
 }
 
+/** 4-image grid with a per-cell headline + short body — the "lifestyle grid"
+ *  module that makes A+ look like a landing page (e.g. Frito-Lay's 4 captions). */
+export function fourImageText(opts: { headline: string; cells: { headline: string; body: string; img?: ImageComponent }[] }): ModuleJSON {
+  const c = opts.cells;
+  const block = (i: number) => ({ image: c[i]?.img, headline: text((c[i]?.headline ?? "").slice(0, 160)), body: paragraph((c[i]?.body ?? "").slice(0, 1000)) });
+  return {
+    contentModuleType: "STANDARD_FOUR_IMAGE_TEXT",
+    standardFourImageText: { headline: text(opts.headline.slice(0, 70)), block1: block(0), block2: block(1), block3: block(2), block4: block(3) },
+  };
+}
+
 export { image as buildImage };
 
 export interface AplusDocument {

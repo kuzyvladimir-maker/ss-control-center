@@ -26,20 +26,6 @@ interface Job {
   comments: string | null; error: string | null;
 }
 
-function moduleText(m: Record<string, unknown>): string[] {
-  const out: string[] = [];
-  const walk = (o: unknown) => {
-    if (o == null) return;
-    if (typeof o === "object" && !Array.isArray(o)) {
-      const r = o as Record<string, unknown>;
-      if (typeof r.value === "string") out.push(r.value);
-      for (const v of Object.values(r)) walk(v);
-    } else if (Array.isArray(o)) o.forEach(walk);
-  };
-  walk(m);
-  return out.filter(Boolean);
-}
-
 export function AplusFactory() {
   const [storeIndex, setStoreIndex] = useState(1);
   const [tab, setTab] = useState<"opportunities" | "jobs">("opportunities");
@@ -216,9 +202,14 @@ export function AplusFactory() {
 
       {/* Review modal */}
       {review && (() => {
-        const doc = review.contentJson ? JSON.parse(review.contentJson) : { contentModuleList: [] };
         const gate = review.qualificationJson ? JSON.parse(review.qualificationJson) : { violations: [] };
-        const imgPlan = review.imagePlanJson ? JSON.parse(review.imagePlanJson) : null;
+        const stored = review.imagePlanJson ? JSON.parse(review.imagePlanJson) : null;
+        const plan = stored?.plan;
+        const slots: { key: string; url?: string | null; brief?: string }[] = stored?.slots ?? [];
+        const urlOf = (k: string) => slots.find((s) => s.key === k)?.url ?? null;
+        const ph = (label: string) => <div className="flex h-40 w-full items-center justify-center rounded border border-dashed border-gray-300 text-[10px] text-gray-400">{label}</div>;
+        const img = (k: string, cls: string) => { const u = urlOf(k); return u ? <img src={u} alt="" className={cls} /> : ph("картинка генерируется…"); };
+        const DISCLAIMER_TXT = "Curated and assembled by Salutem Solutions LLC as a gift basket. The included items are packaged by their original manufacturers.";
         return (
           <div className="fixed inset-0 z-50 flex items-start justify-center overflow-auto bg-black/40 p-6" onClick={() => setReview(null)}>
             <div className="my-4 w-full max-w-3xl rounded-xl border border-rule bg-surface p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
@@ -239,32 +230,37 @@ export function AplusFactory() {
                 <span className="text-[11px] text-ink-3">Превью как на странице листинга · картинки — AI lifestyle без чужих логотипов</span>
                 <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":img"} onClick={() => regenImages(review.id)}>Перегенерировать картинки</Btn>
               </div>
-              {/* WYSIWYG preview — approximates the Amazon A+ layout */}
-              <div className="space-y-4 rounded-lg bg-white p-4 text-[#0f1111]">
-                {imgPlan?.hero?.url && <img src={imgPlan.hero.url} alt="" className="w-full rounded" />}
-                {(doc.contentModuleList ?? []).map((m: Record<string, unknown>, i: number) => {
-                  const texts = moduleText(m);
-                  const headline = texts[0];
-                  const body = texts.slice(1);
-                  const type = String(m.contentModuleType);
-                  const url: string | null = imgPlan?.modules?.[i]?.url ?? null;
-                  const brief: string | null = imgPlan?.modules?.[i]?.brief ?? null;
-                  const ssi = (m.standardSingleSideImage as { imagePositionType?: string } | undefined)?.imagePositionType;
-                  const imgEl = url
-                    ? <img src={url} alt="" className="w-full rounded" />
-                    : brief ? <div className="flex h-32 items-center justify-center rounded border border-dashed border-gray-300 p-2 text-center text-[10px] text-gray-400">картинка генерируется…<br />{brief.slice(0, 80)}</div> : null;
-
-                  if (type === "STANDARD_HEADER_IMAGE_TEXT") {
-                    return <div key={i} className="space-y-2 border-t border-gray-100 pt-3">{imgEl}{headline && <h3 className="text-[17px] font-semibold">{headline}</h3>}{body.map((t, k) => <p key={k} className="text-[13px] leading-relaxed">{t}</p>)}</div>;
-                  }
-                  if (type === "STANDARD_SINGLE_SIDE_IMAGE") {
-                    const textCol = <div className="flex-1">{headline && <h3 className="mb-1 text-[15px] font-semibold">{headline}</h3>}{body.map((t, k) => <p key={k} className="text-[13px] leading-relaxed">{t}</p>)}</div>;
-                    const imgCol = <div className="w-[45%] shrink-0">{imgEl}</div>;
-                    return <div key={i} className="flex items-start gap-4 border-t border-gray-100 pt-3">{ssi === "RIGHT" ? <>{textCol}{imgCol}</> : <>{imgCol}{textCol}</>}</div>;
-                  }
-                  // text / description — centered block
-                  return <div key={i} className="border-t border-gray-100 pt-3 text-center">{headline && <h3 className="mb-1 text-[15px] font-semibold">{headline}</h3>}{body.map((t, k) => <p key={k} className="mx-auto max-w-2xl text-[13px] leading-relaxed">{t}</p>)}</div>;
-                })}
+              {/* WYSIWYG preview — image-forward A+ landing page */}
+              <div className="space-y-5 rounded-lg bg-white p-4 text-[#0f1111]">
+                {!plan ? <div className="text-center text-[12px] text-gray-400">нет данных превью</div> : <>
+                  {/* Hero banner */}
+                  <div>
+                    {img("hero", "w-full rounded")}
+                    {plan.hero?.headline && <h2 className="mt-2 text-[18px] font-semibold">{plan.hero.headline}</h2>}
+                    {plan.hero?.body && <p className="text-[13px] leading-relaxed text-gray-700">{plan.hero.body}</p>}
+                  </div>
+                  {/* Inside — image left */}
+                  <div className="flex items-start gap-4 border-t border-gray-100 pt-4">
+                    <div className="w-[42%] shrink-0">{img("inside", "w-full rounded")}</div>
+                    <div className="flex-1">{plan.inside?.headline && <h3 className="mb-1 text-[15px] font-semibold">{plan.inside.headline}</h3>}<p className="text-[13px] leading-relaxed text-gray-700">{plan.inside?.body}</p></div>
+                  </div>
+                  {/* 4-image grid */}
+                  <div className="border-t border-gray-100 pt-4">
+                    {plan.grid?.headline && <h3 className="mb-2 text-center text-[15px] font-semibold">{plan.grid.headline}</h3>}
+                    <div className="grid grid-cols-4 gap-3">
+                      {(plan.grid?.cells ?? []).map((c: { caption: string; body: string }, i: number) => (
+                        <div key={i} className="text-center">{img(`grid${i}`, "w-full rounded")}<div className="mt-1 text-[12px] font-semibold">{c.caption}</div><div className="text-[11px] leading-snug text-gray-600">{c.body}</div></div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Serve — image right */}
+                  <div className="flex items-start gap-4 border-t border-gray-100 pt-4">
+                    <div className="flex-1">{plan.serve?.headline && <h3 className="mb-1 text-[15px] font-semibold">{plan.serve.headline}</h3>}<p className="text-[13px] leading-relaxed text-gray-700">{plan.serve?.body}</p></div>
+                    <div className="w-[42%] shrink-0">{img("serve", "w-full rounded")}</div>
+                  </div>
+                  {/* Disclaimer */}
+                  <div className="border-t border-gray-100 pt-4 text-center"><h3 className="mb-1 text-[14px] font-semibold">About This Gift Set</h3><p className="mx-auto max-w-2xl text-[12px] leading-relaxed text-gray-600">{DISCLAIMER_TXT}</p></div>
+                </>}
               </div>
 
               <textarea value={comments} onChange={(e) => setComments(e.target.value)} placeholder="Комментарии (по модулям, что поправить)…" className="mt-3 h-20 w-full rounded-lg border border-rule bg-surface p-2 text-[12px] text-ink placeholder:text-ink-4 focus:outline-none" />

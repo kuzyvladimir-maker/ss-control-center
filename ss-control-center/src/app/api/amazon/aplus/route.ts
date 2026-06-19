@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { scanCoverage } from "@/lib/amazon/aplus/scanner";
-import { generateAplusPlan, assembleFromPlan } from "@/lib/amazon/aplus/generator";
+import { generateAplusPlan, assembleFromPlan, imageSlots } from "@/lib/amazon/aplus/generator";
 import { qualify } from "@/lib/amazon/aplus/qualification";
 import { validateContent, createContentDocument, associateAsins, submitForApproval, type AplusContentDocument } from "@/lib/amazon/aplus/client";
 import { generateImagesForJob } from "@/lib/amazon/aplus/images";
@@ -67,11 +67,11 @@ export async function POST(request: NextRequest) {
       const plan = await generateAplusPlan({
         sku, asin: item.asin, itemName: item.itemName, productType: item.productType, brand: brandOf(item.itemName),
       });
-      const doc = assembleFromPlan(plan); // text modules; images filled below
+      const doc = assembleFromPlan(plan); // structure + text; image refs filled at publish
       const gate = qualify(doc);
       const imagePlan = {
-        hero: { brief: plan.heroImageBrief, url: null },
-        modules: plan.modules.map((m) => ({ kind: m.kind, brief: m.imageBrief ?? null, alt: m.imageAlt ?? null, url: null })),
+        plan,
+        slots: imageSlots(plan).map((s) => ({ ...s, url: null })),
       };
 
       const job = await prisma.amazonAplusJob.upsert({
