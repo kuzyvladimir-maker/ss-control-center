@@ -287,6 +287,7 @@ export async function enrichTarget(
   for (const b of batches) for (const o of b.offers) {
     if (!o.accepted) { rejected++; continue; }
     if (!o.retailerProductId) continue;
+    if (!o.isBaseUnit) { rejected++; continue; } // SINGLE PRODUCTS ONLY — no 2/4/6-packs, multipacks or bundles
     if (looksNonGrocery(o.title)) { rejected++; continue; }
     candidates.push(o);
   }
