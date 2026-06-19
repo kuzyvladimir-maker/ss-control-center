@@ -99,7 +99,7 @@
     },
     {
       "path": "/api/cron/reference-harvest-worker",
-      "schedule": "*/7 * * * *"
+      "schedule": "*/5 * * * *"
     }
   ]
 }

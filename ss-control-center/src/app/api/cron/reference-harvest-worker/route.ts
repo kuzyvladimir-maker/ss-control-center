@@ -18,8 +18,8 @@ import { bluecartCreditsRemaining } from "@/lib/sourcing/enrich";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-const HARVEST_PER_TICK = 10;
-const TIME_BUDGET_MS = 240_000;
+const HARVEST_PER_TICK = 18;
+const TIME_BUDGET_MS = 250_000;
 const CREDIT_FLOOR = 350; // above the enrichment floor so the two workers don't both drain to 0
 
 function requireCronAuth(request: NextRequest): NextResponse | null {
