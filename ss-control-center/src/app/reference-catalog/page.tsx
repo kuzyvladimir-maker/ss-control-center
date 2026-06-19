@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import {
   Loader2, AlertCircle, Search, X, RefreshCw, Wand2, ImageOff,
-  Boxes, Tags, Store, ListChecks, ExternalLink, Camera,
+  Boxes, Tags, Store, ListChecks, ExternalLink, Camera, Check, Minus,
 } from "lucide-react";
 import { PageHead, Btn, Panel, PanelHeader, PanelBody, KpiCard } from "@/components/kit";
 import { cn } from "@/lib/utils";
@@ -410,43 +410,206 @@ export default function ReferenceCatalogPage() {
             ) : !detail ? (
               <div className="px-4 py-12 text-[13px] text-ink-3">Failed to load.</div>
             ) : (
-              <div className="space-y-4 p-4">
-                <div className="flex flex-wrap gap-2">
-                  {(detail.product.imageUrls || []).map((u: string, i: number) => (
-                    <div key={i} className="h-20 w-20 overflow-hidden rounded border border-rule bg-bg-elev">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={u} alt="" className="h-full w-full object-contain" loading="lazy" />
-                    </div>
-                  ))}
-                  {!(detail.product.imageUrls || []).length && <div className="text-[12.5px] text-ink-3">No gallery harvested yet — only a thumbnail.</div>}
-                </div>
-                <div>
-                  <div className="text-[15px] font-semibold text-ink">{detail.product.title || "—"}</div>
-                  <div className="mt-1 text-[12.5px] text-ink-3">{[detail.product.brand, detail.product.size, detail.product.category].filter(Boolean).join(" · ")}{detail.product.upc ? ` · UPC ${detail.product.upc}` : ""}</div>
-                </div>
-                <div>
-                  <div className="mb-1 text-[12px] font-semibold text-ink-2">Prices by retailer</div>
-                  <div className="space-y-1">
-                    {detail.offers.map((o: any, i: number) => (
-                      <div key={i} className="flex items-center gap-2 text-[12.5px]">
-                        <span className="w-20 capitalize text-ink-2">{o.retailer}</span>
-                        <span className="tabular text-ink">${Number(o.pricePerUnit ?? o.price ?? 0).toFixed(2)}/unit</span>
-                        {o.productUrl && <a href={o.productUrl} target="_blank" rel="noreferrer" className="text-ink-3 hover:text-green-ink"><ExternalLink size={12} /></a>}
-                      </div>
-                    ))}
-                    {!detail.offers.length && <div className="text-[12.5px] text-ink-3">No offers.</div>}
-                  </div>
-                </div>
-                {detail.product.description && (<div><div className="mb-1 text-[12px] font-semibold text-ink-2">Description</div><div className="text-[12.5px] leading-relaxed text-ink-2">{detail.product.description}</div></div>)}
-                {(detail.product.bullets || []).length > 0 && (<div><div className="mb-1 text-[12px] font-semibold text-ink-2">Highlights</div><ul className="list-disc space-y-0.5 pl-4 text-[12.5px] text-ink-2">{detail.product.bullets.map((b: string, i: number) => <li key={i}>{b}</li>)}</ul></div>)}
-                {detail.product.ingredients && (<div><div className="mb-1 text-[12px] font-semibold text-ink-2">Ingredients</div><div className="text-[12px] text-ink-3">{detail.product.ingredients}</div></div>)}
-                {(detail.product.attributes || []).length > 0 && (<div><div className="mb-1 text-[12px] font-semibold text-ink-2">Specifications</div><div className="grid grid-cols-1 gap-y-1 text-[12px]">{detail.product.attributes.map((a: any, i: number) => <div key={i} className="flex justify-between gap-3"><span className="text-ink-3">{a?.name}</span><span className="text-right text-ink-2">{a?.value}</span></div>)}</div></div>)}
-                {detail.product.nutritionFacts && (<div><div className="mb-1 text-[12px] font-semibold text-ink-2">Nutrition (raw)</div><div className="break-words text-[11.5px] text-ink-3">{String(detail.product.nutritionFacts).slice(0, 500)}</div></div>)}
-              </div>
+              <DetailBody product={detail.product} offers={detail.offers} />
             )}
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ───────────────────────── Product detail drawer body ─────────────────────────
+   Shows EVERY field harvested for a product so Vladimir can verify the engine
+   captured the full record: identity, price rollup, per-retailer offers (all
+   columns), full content (description / bullets / ingredients / specs /
+   nutrition), a collected-vs-missing checklist, and source metadata. */
+
+function fmtDate(s: any): string {
+  if (!s) return "—";
+  const str = String(s);
+  return str.length >= 10 ? str.slice(0, 10) : str;
+}
+
+// One labeled field. Renders a muted "—" when empty so missing data is visible.
+function Field({ label, value, mono }: { label: string; value: any; mono?: boolean }) {
+  const empty = value == null || value === "" || (Array.isArray(value) && !value.length);
+  return (
+    <div className="flex items-baseline justify-between gap-3 py-0.5">
+      <span className="shrink-0 text-[11.5px] text-ink-3">{label}</span>
+      <span className={cn("text-right text-[12px]", empty ? "text-ink-4" : mono ? "tabular text-ink-2" : "text-ink-2")}>
+        {empty ? "—" : String(value)}
+      </span>
+    </div>
+  );
+}
+
+function Section({ title, right, children }: { title: string; right?: ReactNode; children: ReactNode }) {
+  return (
+    <div className="rounded-lg border border-rule bg-bg-elev/30 p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <div className="text-[12px] font-semibold uppercase tracking-wide text-ink-3">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function DetailBody({ product: p, offers }: { product: any; offers: any[] }) {
+  const imgs: string[] = p.imageUrls || [];
+  const bullets: string[] = p.bullets || [];
+  const attrs: { name: string; value: string }[] = p.attributes || [];
+  const nutriRows: { label: string; value: string }[] = p.nutritionRows || [];
+
+  // Collected-vs-missing checklist — at-a-glance content QA for this one product.
+  const checklist: [string, boolean][] = [
+    ["Title", !!p.title],
+    ["≥5 photos", imgs.length >= 5],
+    ["Description", !!p.description],
+    ["Bullets", bullets.length > 0],
+    ["Ingredients", !!p.ingredients],
+    ["Nutrition", !!(nutriRows.length || p.nutritionRaw)],
+    ["Specs", attrs.length > 0],
+    ["UPC", !!p.upc],
+    ["Price", p.bestPrice != null],
+  ];
+  const done = checklist.filter(([, v]) => v).length;
+
+  return (
+    <div className="space-y-4 p-4">
+      {/* Gallery */}
+      <div>
+        <div className="mb-1.5 flex items-center justify-between">
+          <div className="text-[12px] font-semibold uppercase tracking-wide text-ink-3">Photos</div>
+          <span className="text-[11px] text-ink-3">{imgs.length} image{imgs.length === 1 ? "" : "s"}</span>
+        </div>
+        {imgs.length ? (
+          <div className="flex flex-wrap gap-2">
+            {imgs.map((u, i) => (
+              <a key={i} href={u} target="_blank" rel="noreferrer" className="h-20 w-20 overflow-hidden rounded border border-rule bg-bg-elev hover:border-green-mid/50">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={u} alt="" className="h-full w-full object-contain" loading="lazy" />
+              </a>
+            ))}
+          </div>
+        ) : (
+          <div className="text-[12.5px] text-ink-4">No gallery harvested yet — only a thumbnail.</div>
+        )}
+      </div>
+
+      {/* Title + flags */}
+      <div>
+        <div className="flex items-start gap-2">
+          <div className="text-[15px] font-semibold leading-snug text-ink">{p.title || "—"}</div>
+          {p.needsReview ? <span className="mt-0.5 shrink-0 rounded bg-warn-tint px-1.5 py-0.5 text-[10px] font-medium text-warn-strong" title="Image QC flagged — no clean front photo">review</span> : null}
+        </div>
+        <div className="mt-1 text-[12.5px] text-ink-3">{[p.brand, p.size, p.category].filter(Boolean).join(" · ") || "—"}</div>
+      </div>
+
+      {/* Collected-content checklist */}
+      <Section title="Collected content" right={<span className="text-[11px] text-ink-3">{done}/{checklist.length}</span>}>
+        <div className="grid grid-cols-3 gap-x-3 gap-y-1.5">
+          {checklist.map(([label, ok]) => (
+            <div key={label} className="flex items-center gap-1.5 text-[11.5px]">
+              {ok ? <Check size={13} className="shrink-0 text-green-ink" /> : <Minus size={13} className="shrink-0 text-ink-4" />}
+              <span className={ok ? "text-ink-2" : "text-ink-4"}>{label}</span>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* Identity */}
+      <Section title="Identity">
+        <Field label="Brand" value={p.brand} />
+        <Field label="Product line" value={p.productLine} />
+        <Field label="Flavor" value={p.flavor} />
+        <Field label="Container" value={p.containerType} />
+        <Field label="Size" value={p.size} />
+        <Field label="Unit measure" value={p.unitAmount != null || p.unitMeasure ? `${p.unitAmount ?? "?"} ${p.unitMeasure ?? ""}`.trim() : null} mono />
+        <Field label="Category" value={p.category} />
+        <Field label="UPC" value={p.upc} mono />
+        <Field label="GTIN" value={p.gtin} mono />
+        <Field label="Confidence" value={p.confidence != null ? `${Math.round(Number(p.confidence) * 100)}%` : null} mono />
+      </Section>
+
+      {/* Price rollup */}
+      <Section title="Best cost">
+        <Field label="Best price" value={p.bestPrice != null ? money(Number(p.bestPrice)) : null} mono />
+        <Field label="Best retailer" value={p.bestRetailer} />
+        <Field label="$/measure" value={p.pricePerMeasure != null ? perMeasure(Number(p.pricePerMeasure), p.unitMeasure) : null} mono />
+        <Field label="Currency" value={p.currency} />
+      </Section>
+
+      {/* Per-retailer offers — every column */}
+      <Section title="Offers by retailer" right={<span className="text-[11px] text-ink-3">{offers.length}</span>}>
+        {offers.length ? (
+          <div className="space-y-2.5">
+            {offers.map((o: any, i: number) => (
+              <div key={i} className="rounded-md border border-rule bg-surface p-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[12.5px] font-medium capitalize text-ink">{o.retailer}</span>
+                    {o.via && o.via !== "direct" && <span className="rounded bg-bg-elev px-1.5 py-0.5 text-[10px] text-ink-3">{o.via}</span>}
+                    {o.isFirstParty ? <span className="rounded bg-green-soft px-1.5 py-0.5 text-[10px] text-green-ink">1P</span> : <span className="rounded bg-bg-elev px-1.5 py-0.5 text-[10px] text-ink-3">3P</span>}
+                    {o.inStock === false && <span className="rounded bg-warn-tint px-1.5 py-0.5 text-[10px] text-warn-strong">out of stock</span>}
+                  </div>
+                  {o.productUrl && <a href={o.productUrl} target="_blank" rel="noreferrer" className="text-ink-3 hover:text-green-ink"><ExternalLink size={13} /></a>}
+                </div>
+                <div className="mt-1.5 grid grid-cols-2 gap-x-4">
+                  <Field label="Price" value={o.price != null ? money(Number(o.price)) : null} mono />
+                  <Field label="$/unit" value={o.pricePerUnit != null ? `$${Number(o.pricePerUnit).toFixed(2)}` : null} mono />
+                  <Field label="Pack size" value={o.packSizeSeen} mono />
+                  <Field label="ZIP" value={o.zip} mono />
+                  <Field label="Seller" value={o.sellerName} />
+                  <Field label="Source" value={o.sourceApi} />
+                  <Field label="Item ID" value={o.retailerProductId} mono />
+                  <Field label="Fetched" value={fmtDate(o.fetchedAt)} mono />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-[12.5px] text-ink-4">No offers.</div>
+        )}
+      </Section>
+
+      {/* Full content */}
+      {p.description && (
+        <Section title="Description"><div className="whitespace-pre-wrap text-[12.5px] leading-relaxed text-ink-2">{p.description}</div></Section>
+      )}
+      {bullets.length > 0 && (
+        <Section title="Highlights"><ul className="list-disc space-y-0.5 pl-4 text-[12.5px] text-ink-2">{bullets.map((b, i) => <li key={i}>{b}</li>)}</ul></Section>
+      )}
+      {p.ingredients && (
+        <Section title="Ingredients"><div className="text-[12px] leading-relaxed text-ink-2">{p.ingredients}</div></Section>
+      )}
+      {attrs.length > 0 && (
+        <Section title="Specifications" right={<span className="text-[11px] text-ink-3">{attrs.length}</span>}>
+          <div className="grid grid-cols-1 gap-y-1">
+            {attrs.map((a, i) => <div key={i} className="flex justify-between gap-3 text-[12px]"><span className="text-ink-3">{a.name}</span><span className="text-right text-ink-2">{a.value}</span></div>)}
+          </div>
+        </Section>
+      )}
+      {(nutriRows.length > 0 || p.nutritionRaw) && (
+        <Section title="Nutrition facts">
+          {nutriRows.length > 0 ? (
+            <div className="grid grid-cols-1 gap-y-1">
+              {nutriRows.map((n, i) => <div key={i} className="flex justify-between gap-3 text-[12px]"><span className="text-ink-3">{n.label}</span><span className="text-right text-ink-2">{n.value}</span></div>)}
+            </div>
+          ) : (
+            <div className="whitespace-pre-wrap break-words text-[11.5px] text-ink-3">{String(p.nutritionRaw)}</div>
+          )}
+        </Section>
+      )}
+
+      {/* Metadata */}
+      <Section title="Record metadata">
+        <Field label="Product ID" value={p.id} mono />
+        <Field label="Identity key" value={p.identityKey} mono />
+        <Field label="Added" value={fmtDate(p.createdAt)} mono />
+        <Field label="Updated" value={fmtDate(p.updatedAt)} mono />
+      </Section>
     </div>
   );
 }
