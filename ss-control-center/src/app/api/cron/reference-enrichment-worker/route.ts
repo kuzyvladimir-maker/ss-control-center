@@ -16,7 +16,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@libsql/client";
-import { enrichTarget } from "@/lib/sourcing/donor-catalog";
+import { enrichTarget, cleanupOrphans } from "@/lib/sourcing/donor-catalog";
 import { bluecartCreditsRemaining } from "@/lib/sourcing/enrich";
 
 export const dynamic = "force-dynamic";
@@ -103,6 +103,9 @@ export async function GET(request: NextRequest) {
     await sleep(INTER_JOB_MS);
     if (out.done + out.errored >= DRAIN_PER_TICK) break;
   }
+
+  // Self-heal: drop any products left with zero offers (legacy dedup artifacts).
+  try { (out as any).orphansCleaned = await cleanupOrphans(conn); } catch { /* best-effort */ }
 
   return NextResponse.json({ ok: true, tookMs: Date.now() - started, ...out });
 }

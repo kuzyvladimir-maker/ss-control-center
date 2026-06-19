@@ -41,6 +41,23 @@ export function computeIdentityKey(o: { brand?: string | null; title?: string | 
   return [brand, ...words, sz].filter(Boolean).join("|") || title.slice(0, 60);
 }
 
+// Brand derived from the OFFER's OWN title (stable regardless of which search
+// query surfaced it). Using the job's target as brand made the same real item
+// dedup differently per query ("Maruchan" vs "Maruchan Instant") → duplicates +
+// orphaned offers. First title token, original case.
+export function deriveBrand(title?: string | null): string | null {
+  if (!title) return null;
+  const w = title.trim().split(/\s+/)[0]?.replace(/[^A-Za-z0-9'&.-]/g, "");
+  return w && w.length >= 2 ? w : null;
+}
+
+// Remove products left with zero offers (legacy duplicate artifacts from the old
+// query-derived identityKey). Safe to call anytime.
+export async function cleanupOrphans(db: Client): Promise<number> {
+  const r = await db.execute(`DELETE FROM "DonorProduct" WHERE id NOT IN (SELECT DISTINCT donorProductId FROM "DonorOffer" WHERE donorProductId IS NOT NULL)`);
+  return r.rowsAffected || 0;
+}
+
 export interface EnrichTargetResult {
   query: string;
   retailersHit: string[];
@@ -84,21 +101,29 @@ export async function enrichTarget(
       if (!o.accepted) { rejected++; continue; }
       if (!o.retailerProductId) continue;
       const { size, unitMeasure, unitAmount } = parseSize(o.title);
-      const identityKey = computeIdentityKey({ brand: cp.brand, title: o.title, size });
+      const offerBrand = deriveBrand(o.title) || cp.brand || null;
+      const identityKey = computeIdentityKey({ brand: offerBrand, title: o.title, size });
 
-      // Resolve or create the product (dedup by identityKey).
-      const found = await db.execute({ sql: `SELECT id FROM "DonorProduct" WHERE identityKey=? LIMIT 1`, args: [identityKey] });
+      // Resolve the product WITHOUT orphaning: if this exact offer already exists,
+      // keep it with its current product (never move an offer between products).
+      // Otherwise match by identityKey; otherwise create a new product.
       let productId: string;
-      if (found.rows.length) {
-        productId = found.rows[0].id as string;
+      const existingOffer = await db.execute({ sql: `SELECT donorProductId FROM "DonorOffer" WHERE retailer=? AND retailerProductId=? LIMIT 1`, args: [o.retailer, o.retailerProductId] });
+      if (existingOffer.rows.length) {
+        productId = existingOffer.rows[0].donorProductId as string;
       } else {
-        productId = crypto.randomUUID();
-        await db.execute({
-          sql: `INSERT INTO "DonorProduct" (id, brand, title, size, unitMeasure, unitAmount, mainImageUrl, imageUrls, identityKey, createdAt, updatedAt)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
-          args: [productId, cp.brand ?? null, o.title ?? null, size, unitMeasure, unitAmount, (o.imageUrls || [])[0] ?? null, JSON.stringify(o.imageUrls || []), identityKey, now, now],
-        });
-        productsCreated++;
+        const found = await db.execute({ sql: `SELECT id FROM "DonorProduct" WHERE identityKey=? LIMIT 1`, args: [identityKey] });
+        if (found.rows.length) {
+          productId = found.rows[0].id as string;
+        } else {
+          productId = crypto.randomUUID();
+          await db.execute({
+            sql: `INSERT INTO "DonorProduct" (id, brand, title, size, unitMeasure, unitAmount, mainImageUrl, imageUrls, identityKey, createdAt, updatedAt)
+                  VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+            args: [productId, offerBrand, o.title ?? null, size, unitMeasure, unitAmount, (o.imageUrls || [])[0] ?? null, JSON.stringify(o.imageUrls || []), identityKey, now, now],
+          });
+          productsCreated++;
+        }
       }
 
       const pack = o.packSizeSeen ?? 1;
