@@ -96,6 +96,40 @@ claims) — reuse the same scrubber + add the A+-specific bans above.
 6. `STANDARD_COMPANY_LOGO` — Salutem Solutions / brand close.
 (Cap at 7; drop modules rather than exceed.)
 
+## Sources & how to re-verify
+
+Each fact below is tagged by source quality. **[PRIMARY]** = official Amazon / the
+SP-API schema (trust + cite directly). **[AGENCY]** = practitioner blog (corroborated,
+but re-check before relying). Re-verify by opening the URL; for API facts, the GitHub
+schema is the ground truth.
+
+- **A+ write access for us** — [PRIMARY] live API probe 2026-06-19 (validation → 400 not
+  403) + Developer Console role "Product Listing — includes A+ content" = APPROVED.
+- **15 module types / Premium not via API** — [PRIMARY] SP-API schema
+  `developer-docs.amazon.com/sp-api/docs/apluscontent_2020-11-01json` + the
+  `amzn/selling-partner-api-models` GitHub JSON (confidence high, vote 3-0).
+- **7-module submit cap (sellers)** — [PRIMARY] `developer-docs.amazon.com/sp-api/docs/create-edit-publish-aplus-content`.
+- **Image specs / per-module limits** — [PRIMARY] SP-API schema + `.../docs/a-content-document-examples`.
+- **A+ content image guidelines (RGB, <2MB, 72dpi, no GIF/watermark, alt-text)** —
+  [PRIMARY] Amazon A+ Content Guidelines: KDP `G4WB7VPPEAREHAAD` ＝ Seller Central
+  `GGW8U76SSNTRTBX7`.
+- **Prohibited-content policy (pricing/CTA/competitor/eco/etc.)** — [PRIMARY] the same
+  Amazon A+ guidelines + Amazon design blog `sell.amazon.com/blog/a-plus-content-design-guide`;
+  corroborated by [AGENCY] channelengine / ecomclips / sequencecommerce.
+- **"Third-party brand names blanket-forbidden in A+" → REFUTED 0-3** — the only source
+  asserting it (ecomclips blog) was killed by adversarial verify. (Final word on naming/
+  showing third-party contents comes from the IP doc, from PRIMARY Amazon + legal sources.)
+- **A+ text not reliably indexed / images' text unread** — [AGENCY, confidence MEDIUM]
+  — treat as "do not depend on it," not settled by a single primary URL.
+- **Conversion lift ~3–10% / what converts** — [AGENCY, practitioner estimate] — not
+  controlled data; directional only.
+
+**Trust rule going forward:** anything tagged [AGENCY]/MEDIUM is a hypothesis to confirm,
+not a fact to automate on. For the IP/gift-set ruleset (the high-stakes one), I will lean
+on [PRIMARY] Amazon policy + USPTO/legal sources, link every rule, and explicitly flag
+that an AI research pass is **not legal advice** — the final IP ruleset should get a real
+IP-attorney sanity check before we rely on it for automated publishing.
+
 ## Caveats / open questions
 - A+ text-indexing status not definitively settled by a single primary source → treat
   as "do not depend on it."
