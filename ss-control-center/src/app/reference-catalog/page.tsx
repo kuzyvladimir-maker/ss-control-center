@@ -48,6 +48,16 @@ type CatalogResp = {
 const money = (n: number | null) => (n == null ? "—" : `$${n.toFixed(2)}`);
 const perMeasure = (n: number | null, unit: string | null) => (n == null ? "—" : `$${n.toFixed(3)}/${unit || "u"}`);
 
+// Storage-class chip (Frozen | Refrigerated | Dry). Frozen is the one that matters
+// most operationally (needs a cooler), so it gets the loud blue.
+function TempBadge({ value }: { value: string | null }) {
+  const v = (value || "").toLowerCase();
+  if (v === "frozen") return <span className="shrink-0 rounded bg-info-tint px-1.5 py-0.5 text-[10px] font-medium text-info">Frozen</span>;
+  if (v === "refrigerated") return <span className="shrink-0 rounded bg-green-soft px-1.5 py-0.5 text-[10px] font-medium text-green-ink">Chilled</span>;
+  if (v === "dry") return <span className="shrink-0 rounded bg-bg-elev px-1.5 py-0.5 text-[10px] font-medium text-ink-3">Dry</span>;
+  return null;
+}
+
 export default function ReferenceCatalogPage() {
   const [data, setData] = useState<CatalogResp | null>(null);
   const [loading, setLoading] = useState(true);
@@ -299,7 +309,7 @@ export default function ReferenceCatalogPage() {
         </select>
         {data && data.facets.categories.length > 0 && (
           <select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-lg border border-rule bg-surface px-2.5 py-2 text-[12.5px] text-ink outline-none">
-            <option value="">All categories</option>
+            <option value="">All storage</option>
             {data.facets.categories.map((c) => <option key={c.category} value={c.category}>{c.category} ({c.n})</option>)}
           </select>
         )}
@@ -366,6 +376,7 @@ export default function ReferenceCatalogPage() {
                     <td className="px-2 py-2 text-ink max-w-[360px]">
                       <div className="flex items-center gap-1.5">
                         <span className="truncate" title={p.title || ""}>{p.title || "—"}</span>
+                        <TempBadge value={p.category} />
                         {p.needsReview ? <span className="shrink-0 rounded bg-warn-tint px-1.5 py-0.5 text-[10px] font-medium text-warn-strong" title="Image QC flagged — no clean front photo">review</span> : null}
                       </div>
                     </td>
@@ -502,9 +513,10 @@ function DetailBody({ product: p, offers }: { product: any; offers: any[] }) {
       <div>
         <div className="flex items-start gap-2">
           <div className="text-[15px] font-semibold leading-snug text-ink">{p.title || "—"}</div>
+          <TempBadge value={p.category} />
           {p.needsReview ? <span className="mt-0.5 shrink-0 rounded bg-warn-tint px-1.5 py-0.5 text-[10px] font-medium text-warn-strong" title="Image QC flagged — no clean front photo">review</span> : null}
         </div>
-        <div className="mt-1 text-[12.5px] text-ink-3">{[p.brand, p.size, p.category].filter(Boolean).join(" · ") || "—"}</div>
+        <div className="mt-1 text-[12.5px] text-ink-3">{[p.brand, p.size].filter(Boolean).join(" · ") || "—"}</div>
       </div>
 
       {/* Collected-content checklist */}
@@ -527,7 +539,7 @@ function DetailBody({ product: p, offers }: { product: any; offers: any[] }) {
         <Field label="Container" value={p.containerType} />
         <Field label="Size" value={p.size} />
         <Field label="Unit measure" value={p.unitAmount != null || p.unitMeasure ? `${p.unitAmount ?? "?"} ${p.unitMeasure ?? ""}`.trim() : null} mono />
-        <Field label="Category" value={p.category} />
+        <Field label="Storage class" value={p.category} />
         <Field label="UPC" value={p.upc} mono />
         <Field label="GTIN" value={p.gtin} mono />
         <Field label="Confidence" value={p.confidence != null ? `${Math.round(Number(p.confidence) * 100)}%` : null} mono />

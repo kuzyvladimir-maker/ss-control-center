@@ -62,6 +62,39 @@ function cleanBrand(b?: string | null): string | null {
   return s;
 }
 
+// ── Temperature classification (Frozen | Refrigerated | Dry) ────────────────
+// Storage class drives sourcing + shipping (frozen needs a cooler / dry-ice, dry
+// doesn't). Deterministic over title + bullets + description + retailer category
+// breadcrumbs. Defaults to "Dry". Stored on DonorProduct.category (per schema).
+export type Temperature = "Frozen" | "Refrigerated" | "Dry";
+export function classifyTemperature(parts: {
+  title?: string | null; bullets?: string[] | null; description?: string | null; retailerCats?: string[] | null;
+}): Temperature {
+  const title = (parts.title || "").toLowerCase();
+  const cats = (parts.retailerCats || []).join(" ").toLowerCase();
+  // Storage INSTRUCTIONS are reliable wherever they appear; a bare mention of
+  // "frozen" in marketing/cross-sell copy is NOT (brands plug their frozen lines
+  // on shelf-stable items), so body text only counts for explicit instructions.
+  const instr = [title, cats, ...(parts.bullets || []), parts.description].filter(Boolean).join(" \n ").toLowerCase();
+
+  // Frozen: word in the TITLE, the frozen aisle (retailer category), an
+  // unmistakably-frozen item type, or a keep-frozen storage instruction.
+  if (/\bfrozen\b/.test(title) || /\bfrozen\b/.test(cats)
+    || /\b(ice cream|gelato|sherbet|sorbet|popsicle|ice pop|freeze pop)\b/.test(title)
+    || /frozen (pizza|vegetabl|fruit|meal|dinner|entr|waffle|breakfast|novelt|treat|yogurt|dessert)/.test(title)
+    || /keep\s+frozen|store\s+frozen|keep at 0\s*°?\s*f\b/.test(instr))
+    return "Frozen";
+  // Refrigerated: explicit cold-storage requirement (NOT "refrigerate after
+  // opening", which applies to many shelf-stable items like ketchup).
+  // Refrigerated ONLY from the retailer's refrigerated aisle (reliable). Body-text
+  // "keep refrigerated" is too noisy — it shows up as "...after opening" (shelf-
+  // stable, like ketchup) and "...for best taste" (a serving note, like UHT
+  // coconut water), neither of which is a refrigerated product. Frozen vs Dry is
+  // the split that matters operationally; we don't guess Refrigerated from copy.
+  if (/refrigerated\b/.test(cats)) return "Refrigerated";
+  return "Dry";
+}
+
 // ── QA "qualification department" ──────────────────────────────────────────
 // tier-1 (free): obvious non-grocery markers — books/media/household/HBA.
 const NON_GROCERY = /\b(paperback|hardcover|board book|audiobook|kindle|notebook|diary|journal|vol\.?\s*\d|batteries?|d cell|in-wash|scent booster|detergent|fabric softener|laundry|dish soap|shampoo|conditioner|toothpaste|deodorant|paper towels?|toilet paper|napkins?|trash bags?|light bulb|recollections)\b/i;
@@ -107,7 +140,7 @@ const stripHtml = (s?: string | null) => (s ? String(s).replace(/<[^>]+>/g, " ")
 
 export interface HarvestResult { ok: boolean; productId: string; images: number; upc: string | null; hasIngredients: boolean; merged: number; imageFlagged?: boolean; reason?: string }
 
-interface DetailContent { images: string[]; bullets: string[]; description: string | null; ingredients: string | null; specifications: any[] | null; upc: string | null; category: string | null; source: string }
+interface DetailContent { images: string[]; bullets: string[]; description: string | null; ingredients: string | null; specifications: any[] | null; upc: string | null; category: string | null; categories: string[]; source: string }
 
 function normImages(arr: any): string[] {
   const raw = (Array.isArray(arr) ? arr : []).map((x: any) => (typeof x === "string" ? x : x?.url || x?.link)).filter((u: any) => typeof u === "string" && u.startsWith("http"));
@@ -143,6 +176,7 @@ async function fetchUnwrangleDetail(key: string, url: string): Promise<DetailCon
       specifications: Array.isArray(d.specifications) ? d.specifications : null,
       upc: d.upc || d.gtin || null,
       category: cats.length ? String(cats[cats.length - 1]).slice(0, 60) : null,
+      categories: cats.map((c: any) => String(c)),
       source: "unwrangle",
     };
   } catch { return null; }
@@ -166,6 +200,7 @@ async function fetchBluecartDetail(key: string, itemId: string): Promise<DetailC
       specifications: Array.isArray(p.specifications) ? p.specifications : null,
       upc: p.upc || p.gtin || (Array.isArray(p.gtins) ? p.gtins[0] : null) || null,
       category: cb.length ? String(cb[cb.length - 1]).slice(0, 60) : null,
+      categories: cb.map((c: any) => String(c)),
       source: "bluecart",
     };
   } catch { return null; }
@@ -191,14 +226,20 @@ export async function harvestDonorDetail(db: Client, productId: string): Promise
 
   // nutrition: no structured field anywhere (it's a gallery image) — keep nutrition-ish specs as the textual record.
   const nutrition = c.specifications ? JSON.stringify(c.specifications.filter((s: any) => /nutri|serving|calorie|sodium|fat|protein|carb/i.test(JSON.stringify(s)))) : null;
+
+  // Storage class (Frozen | Refrigerated | Dry) from the full harvested content —
+  // overrides any earlier title-only guess now that we have bullets/description/cats.
+  const tr = await db.execute({ sql: `SELECT title FROM "DonorProduct" WHERE id=? LIMIT 1`, args: [productId] });
+  const temperature = classifyTemperature({ title: tr.rows[0]?.title as string | null, bullets: c.bullets, description: c.description, retailerCats: c.categories });
+
   const now = new Date().toISOString();
   await db.execute({
     sql: `UPDATE "DonorProduct" SET mainImageUrl=COALESCE(?, mainImageUrl), imageUrls=?, bullets=?,
             description=COALESCE(NULLIF(?,''), description), ingredients=COALESCE(?, ingredients),
             nutritionFacts=COALESCE(NULLIF(?,'[]'), nutritionFacts), attributes=?, upc=COALESCE(?, upc),
-            category=COALESCE(?, category), needsReview=0, updatedAt=? WHERE id=?`,
+            category=?, needsReview=0, updatedAt=? WHERE id=?`,
     args: [c.images[0] ?? null, JSON.stringify(c.images), JSON.stringify(c.bullets), c.description, c.ingredients, nutrition,
-      c.specifications ? JSON.stringify(c.specifications) : null, c.upc, c.category, now, productId],
+      c.specifications ? JSON.stringify(c.specifications) : null, c.upc, temperature, now, productId],
   });
 
   let merged = 0;
@@ -360,10 +401,11 @@ export async function enrichTarget(
         productId = found.rows[0].id as string;
       } else {
         productId = crypto.randomUUID();
+        const temp0 = classifyTemperature({ title: o.title, description: o.description, bullets: o.keyFeatures });
         await db.execute({
-          sql: `INSERT INTO "DonorProduct" (id, brand, title, size, unitMeasure, unitAmount, mainImageUrl, imageUrls, identityKey, createdAt, updatedAt)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
-          args: [productId, offerBrand, o.title ?? null, size, unitMeasure, unitAmount, (o.imageUrls || [])[0] ?? null, JSON.stringify(o.imageUrls || []), identityKey, now, now],
+          sql: `INSERT INTO "DonorProduct" (id, brand, title, size, unitMeasure, unitAmount, category, mainImageUrl, imageUrls, identityKey, createdAt, updatedAt)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+          args: [productId, offerBrand, o.title ?? null, size, unitMeasure, unitAmount, temp0, (o.imageUrls || [])[0] ?? null, JSON.stringify(o.imageUrls || []), identityKey, now, now],
         });
         productsCreated++;
       }
