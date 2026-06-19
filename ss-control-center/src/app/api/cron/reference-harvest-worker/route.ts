@@ -18,7 +18,8 @@ import { bluecartCreditsRemaining } from "@/lib/sourcing/enrich";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-const HARVEST_PER_TICK = 18;
+const HARVEST_PER_TICK = 48;
+const CONCURRENCY = 6; // each product = 1 Unwrangle detail + 1 vision-QC; run a batch at once
 const TIME_BUDGET_MS = 250_000;
 
 function requireCronAuth(request: NextRequest): NextResponse | null {
@@ -47,23 +48,31 @@ export async function GET(request: NextRequest) {
   (out as any).bluecartCredits = await bluecartCreditsRemaining();
 
   // Products still lacking a full gallery, that have a Walmart offer to detail.
+  // Newest-first: a freshly-enriched product gets its full content fast, so the
+  // catalog (sorted "newest") never shows a wall of empty rows. The backlog still
+  // drains completely because harvested rows fall out of this query.
   const rows = await conn.execute({
     sql: `SELECT dp.id FROM "DonorProduct" dp
           WHERE (dp.imageUrls IS NULL OR json_array_length(dp.imageUrls) < 3)
             AND EXISTS (SELECT 1 FROM "DonorOffer" o WHERE o.donorProductId = dp.id AND o.retailer='walmart')
-          ORDER BY dp.updatedAt ASC LIMIT 60`,
-    args: [],
+          ORDER BY dp.createdAt DESC LIMIT ?`,
+    args: [HARVEST_PER_TICK * 2],
   });
   const ids = (rows.rows as any[]).map((r) => r.id);
 
-  for (const id of ids) {
+  // Process in concurrent batches — each product is independent (its own Unwrangle
+  // detail + vision-QC), so a batch of CONCURRENCY runs in roughly one product's time.
+  for (let i = 0; i < ids.length; i += CONCURRENCY) {
     if (Date.now() - started > TIME_BUDGET_MS) break;
     if (out.harvested + out.errors >= HARVEST_PER_TICK) break;
-    try {
-      const r = await harvestDonorDetail(conn, id);
-      if (r.ok) { out.harvested++; out.images += r.images; if (r.upc) out.withUpc++; if (r.imageFlagged) out.flagged++; }
+    const batch = ids.slice(i, i + CONCURRENCY);
+    const results = await Promise.all(
+      batch.map((id) => harvestDonorDetail(conn, id).then((r) => ({ ok: true as const, r })).catch(() => ({ ok: false as const })))
+    );
+    for (const x of results) {
+      if (x.ok && x.r.ok) { out.harvested++; out.images += x.r.images; if (x.r.upc) out.withUpc++; if (x.r.imageFlagged) out.flagged++; }
       else out.errors++;
-    } catch { out.errors++; }
+    }
   }
 
   return NextResponse.json({ ok: true, tookMs: Date.now() - started, ...out });

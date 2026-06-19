@@ -123,6 +123,14 @@ export function tokenGate(
   return { ok: true, reason: "ok" };
 }
 
+// Dedup image URLs (BlueCart often returns main_image === images[0], which showed
+// up as "two identical photos" on un-harvested rows). Keeps first-seen order.
+function dedupImages(arr: (string | null | undefined)[]): string[] {
+  const seen = new Set<string>(); const out: string[] = [];
+  for (const u of arr) { if (typeof u === "string" && u.startsWith("http") && !seen.has(u)) { seen.add(u); out.push(u); } }
+  return out;
+}
+
 async function getJson(url: string, timeoutMs = 20000): Promise<any> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -175,7 +183,7 @@ export async function bluecartWalmartSearch(
       title: p.title ?? null,
       description: p.description ?? null,
       keyFeatures: Array.isArray(p.feature_bullets) ? p.feature_bullets : [],
-      imageUrls: [p.main_image, ...(p.images || [])].filter(Boolean),
+      imageUrls: dedupImages([p.main_image, ...(p.images || [])]),
       packSizeSeen: extractPackSize(p.title),
       isMarketplaceItem: x.offers?.is_marketplace_item ?? null,
       sellerName: o.seller?.name ?? x.seller?.name ?? null,
@@ -215,10 +223,9 @@ export async function unwrangleSearch(
       .replace(/&nbsp;/g, " ").replace(/&#(\d+);/g, (_m, d) => String.fromCharCode(+d)).trim();
   const offers: RetailOffer[] = (j.results || j.products || []).map((x: any) => {
     const title = decode(x.name || x.title || null);
-    const imgs: string[] = (Array.isArray(x.images) && x.images.length
-      ? x.images
-      : [x.image_url, x.thumbnail, x.main_image]
-    ).filter((u: any) => typeof u === "string" && u.startsWith("http"));
+    const imgs: string[] = dedupImages(
+      (Array.isArray(x.images) && x.images.length ? x.images : [x.image_url, x.thumbnail, x.main_image])
+    );
     // Target/Sam's/Costco results ARE that retailer's own catalog → first-party.
     // Walmart-via-Unwrangle: judge by seller_name (3P if a non-Walmart seller).
     const isMkt: boolean | null = retailer === "walmart"
