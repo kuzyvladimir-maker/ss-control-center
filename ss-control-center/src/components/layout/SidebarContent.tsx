@@ -17,6 +17,7 @@ import {
   Layers,
   Sprout,
   Leaf,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -93,6 +94,11 @@ const operationsItems = (s: DashboardSummary): NavItem[] => [
     title: "Bundle Factory",
     href: "/bundle-factory",
     icon: Layers,
+  },
+  {
+    title: "Reference Catalog",
+    href: "/reference-catalog",
+    icon: BookOpen,
   },
   {
     title: "Walmart Growth",
