@@ -20,8 +20,11 @@
 
 import type { ValidatorFn } from "../types";
 
-/** Minimum acceptable gross margin on the sale price. */
-export const MARGIN_FLOOR = 0.2;
+/** Hard fallback margin floor, used only when no per-run value and no global
+ *  Setting are configured. The real value is a variable resolved per run by
+ *  `margin-config.ts` (wizard "target margin %" → Setting → this default) and
+ *  threaded in via `ValidatorInput.margin_floor_pct`. */
+export const DEFAULT_MARGIN_FLOOR = 0.2;
 
 function dollars(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -30,9 +33,18 @@ function dollars(cents: number): string {
 export const validatorMarginFloor: ValidatorFn = async ({
   sku,
   master_bundle,
+  margin_floor_pct,
 }) => {
   const price = sku.price_cents;
   const cost = master_bundle?.estimated_cost_cents ?? null;
+  // The floor is a per-run variable (wizard → Setting → default), resolved
+  // upstream and passed in. Guard against an unset/invalid injected value.
+  const floor =
+    typeof margin_floor_pct === "number" &&
+    margin_floor_pct > 0 &&
+    margin_floor_pct < 1
+      ? margin_floor_pct
+      : DEFAULT_MARGIN_FLOOR;
 
   // Price comes from the economics module; until it lands we don't block the
   // rest of validation — we just keep the SKU out of PASSED (not publishable).
@@ -59,17 +71,17 @@ export const validatorMarginFloor: ValidatorFn = async ({
   }
 
   const marginPct = (price - cost) / price;
-  if (marginPct < MARGIN_FLOOR) {
+  if (marginPct < floor) {
     return {
       validator_id: "validator-margin-floor",
       passed: false,
       severity: "error",
-      message: `Margin ${(marginPct * 100).toFixed(1)}% is below the ${(MARGIN_FLOOR * 100).toFixed(0)}% floor (price ${dollars(price)} vs COGS ${dollars(cost)}). Adjust the price in the economics module.`,
+      message: `Margin ${(marginPct * 100).toFixed(1)}% is below the ${(floor * 100).toFixed(0)}% target (price ${dollars(price)} vs COGS ${dollars(cost)}). Adjust the price in the economics module.`,
       details: {
         price_cents: price,
         cost_cents: cost,
         margin_pct: marginPct,
-        floor_pct: MARGIN_FLOOR,
+        floor_pct: floor,
       },
     };
   }
@@ -81,6 +93,7 @@ export const validatorMarginFloor: ValidatorFn = async ({
       price_cents: price,
       cost_cents: cost,
       margin_pct: marginPct,
+      floor_pct: floor,
     },
   };
 };

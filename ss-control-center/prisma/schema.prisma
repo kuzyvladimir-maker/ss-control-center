@@ -3361,6 +3361,22 @@ model FundAllocation {
   @@index([runId])
 }
 
+// PayoutLine — the bucketed breakdown of one payout ("разложить на молекулы"):
+// one row per (payout, bucket) with the signed summed amount. Powers the
+// Financial Plan statement view (sales / shipping / refunds / fees / ads / ...).
+model PayoutLine {
+  id        String   @id @default(cuid())
+  payoutId  String
+  marketplace String
+  bucket    String // sales | shipping_income | refunds | referral_fee | fba_fee | storage_fee | shipping_cost | ads | promo | fee_other | adjustment | tax_collected | reserve | other
+  amount    Float // signed, summed
+  count     Int    @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([payoutId])
+  @@index([bucket])
+}
+
 // FinancePlanRun — one weekly (or manual) distribution pass.
 model FinancePlanRun {
   id               String  @id @default(cuid())

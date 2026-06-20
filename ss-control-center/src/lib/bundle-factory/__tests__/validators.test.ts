@@ -110,6 +110,7 @@ function mkInput(sku: ChannelSKU): ValidatorInput {
       { product_name: "Cheez-It Original", manufacturer_brand: "Cheez-It", manufacturer_upc: "024100109838", qty: 3 },
     ],
     draft_brand: "Salutem Vita",
+    margin_floor_pct: 0.2,
   };
 }
 
@@ -446,6 +447,16 @@ test("validator-margin-floor passes at exactly 20% margin", async () => {
   // price $15.00 vs COGS $12.00 → exactly 20% margin → at the floor.
   const input = mkInput(mkSku({ price_cents: 1500 }));
   input.master_bundle = { ...input.master_bundle!, estimated_cost_cents: 1200 };
+  const out = await validatorMarginFloor(input);
+  assert.equal(out.passed, true);
+});
+
+test("validator-margin-floor floor is a variable (10% floor passes 14.3% margin)", async () => {
+  // Same $14.00/$12.00 (14.3% margin) that FAILS at the 20% default now PASSES
+  // when the per-run floor is lowered to 10% — proves the floor is a variable.
+  const input = mkInput(mkSku({ price_cents: 1400 }));
+  input.master_bundle = { ...input.master_bundle!, estimated_cost_cents: 1200 };
+  input.margin_floor_pct = 0.1;
   const out = await validatorMarginFloor(input);
   assert.equal(out.passed, true);
 });

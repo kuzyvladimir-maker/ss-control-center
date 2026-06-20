@@ -55,6 +55,10 @@ export interface ValidatorInput {
   /** `compliance-rerun` validator needs the parent BundleDraft brand so it
    *  can hand the gate a real `ComplianceInput.brand`. */
   draft_brand: string;
+  /** Target margin floor (fraction 0-1) resolved per run by margin-config.ts
+   *  (wizard "target margin %" → Setting `bundle_margin_floor_pct` → default).
+   *  Consumed by validator-margin-floor. */
+  margin_floor_pct: number;
 }
 
 export type ValidationOutcomeStatus =

@@ -56,6 +56,7 @@ import { validatorPackagingDims } from "./validators/validator-packaging-dims";
 import { validatorWeight } from "./validators/validator-weight";
 import { validatorCountryOfOrigin } from "./validators/validator-country-of-origin";
 import { validatorMarginFloor } from "./validators/validator-margin-floor";
+import { getMarginFloorPct } from "../margin-config";
 
 /**
  * Public list — exported so tests and the UI can enumerate "which
@@ -111,8 +112,14 @@ export async function runValidation(
     },
   });
 
+  // Resolve the per-run margin floor once (wizard override → Setting → default).
+  // Per-run override threading lands with the Studio orchestrator; until then
+  // this reads the global Setting `bundle_margin_floor_pct`.
+  const marginFloorPct = await getMarginFloorPct();
+
   const input: ValidatorInput = {
     sku,
+    margin_floor_pct: marginFloorPct,
     master_bundle: masterBundle
       ? {
           id: masterBundle.id,

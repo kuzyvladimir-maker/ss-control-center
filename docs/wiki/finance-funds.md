@@ -56,6 +56,26 @@ Run manually (`/finance` → Preview → Commit) or weekly via cron.
 - System funds seeded: "Restock reserve" (RESERVE, priority 0) + "Free / unallocated"
   (FREE, 9999). Vladimir adds FP1/FP2 funds in the UI.
 
+## Get Report — statement decomposition (added 2026-06-20)
+
+The Financial Plan page (`/finance`, sidebar "Financial Plan") leads with a
+**Get Report** button that pulls the last CLOSED marketplace settlement periods we
+haven't pulled yet and **decomposes each payout into a Net-Proceeds statement**
+(matches Amazon Seller Central's Statement View): sales, shipping collected,
+refunds, referral, FBA, storage, shipping/label cost, ads, promo, fees,
+adjustments, tax (wash), reserve (timing) → net.
+
+- Taxonomy + parser: `src/lib/finance/settlement.ts` (`bucketAmazonRow`,
+  `bucketWalmartRow`, `parseAmazonSettlement`). API endpoint map: [[marketplace-financial-apis.md]].
+- Storage: `PayoutLine` (one row per payout×bucket). Ingest: `src/lib/finance/payouts.ts`.
+- Incremental: Amazon tracks pulled `reportDocumentId`s in Setting
+  `finance:amazon:pulledReports`; Walmart skips dates already a Payout. Settlement
+  periods are immutable, so re-pull is safe (upsert).
+- Verified live on Turso 2026-06-20: 28 Amazon periods decomposed, net matches the
+  dashboard's Recent Payouts (6/7 $4,107.82, 6/15 $1,494.81). Walmart recon returned
+  empty rows → 0 (known gap, see API reference).
+- Tests: `scripts/check-finance-settlement.ts` (all pass).
+
 ## Next (later phases)
 F9 forecast (income vs plan, behind-plan alerts → Amazon/Walmart Grow); F4/F3 full
 fee+returns capture → entity P&L; F2 fix the empty `/economics`; F10 QuickBooks cash

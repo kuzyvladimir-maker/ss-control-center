@@ -104,7 +104,7 @@ const operationsItems = (s: DashboardSummary): NavItem[] => [
     icon: BookOpen,
   },
   {
-    title: "Finance",
+    title: "Financial Plan",
     href: "/finance",
     icon: PiggyBank,
   },

@@ -14,13 +14,33 @@ export async function GET(req: NextRequest) {
     orderBy: { depositDate: "desc" },
     take: 200,
   });
+  const ids = payouts.map((p) => p.id);
+  const lines = ids.length
+    ? await prisma.payoutLine.findMany({ where: { payoutId: { in: ids } } })
+    : [];
+
+  // Attach lines to each payout.
+  const linesByPayout = new Map<string, { bucket: string; amount: number; count: number }[]>();
+  for (const l of lines) {
+    const arr = linesByPayout.get(l.payoutId) ?? [];
+    arr.push({ bucket: l.bucket, amount: l.amount, count: l.count });
+    linesByPayout.set(l.payoutId, arr);
+  }
+  const payoutsWithLines = payouts.map((p) => ({ ...p, lines: linesByPayout.get(p.id) ?? [] }));
+
+  // Aggregate breakdown by bucket across all returned payouts.
+  const breakdown = new Map<string, number>();
+  for (const l of lines) breakdown.set(l.bucket, Math.round(((breakdown.get(l.bucket) ?? 0) + l.amount) * 100) / 100);
+
   const undistributed = payouts.filter((p) => !p.distributed);
   return NextResponse.json({
-    payouts,
+    payouts: payoutsWithLines,
+    breakdown: Object.fromEntries(breakdown),
     totals: {
       count: payouts.length,
       undistributedCount: undistributed.length,
       undistributedNet: Math.round(undistributed.reduce((s, p) => s + p.netAmount, 0) * 100) / 100,
+      totalNet: Math.round(payouts.reduce((s, p) => s + p.netAmount, 0) * 100) / 100,
     },
   });
 }
