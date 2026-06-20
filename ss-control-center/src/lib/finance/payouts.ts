@@ -22,8 +22,21 @@ import {
 } from "./settlement";
 import { AMAZON_STORE_ENTITY, WALMART_ENTITY, storeIdToIndex } from "./entities";
 
-const SKIPPED_AMAZON_STORES = new Set<string>(["store2"]);
 const PULLED_REPORTS_KEY = "finance:amazon:pulledReports";
+// Which Amazon accounts to pull. Default = the 2 LIVE accounts (Salutem store1 +
+// AMZ Commerce store3); blocked/suspended ones (store2/4/5) are excluded so their
+// stale/$0 settlements don't pollute the plan. Override via Setting CSV of indices.
+const LIVE_STORES_KEY = "finance:amazon:stores";
+const DEFAULT_LIVE_STORES = ["store1", "store3"];
+
+async function resolveAmazonStores(): Promise<string[]> {
+  const row = await prisma.setting.findUnique({ where: { key: LIVE_STORES_KEY } });
+  const wanted = row?.value
+    ? row.value.split(",").map((s) => `store${s.trim().replace(/\D/g, "")}`)
+    : DEFAULT_LIVE_STORES;
+  const configured = new Set(getConfiguredStores());
+  return wanted.filter((s) => configured.has(s));
+}
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
@@ -110,7 +123,7 @@ async function writePulledReports(set: Set<string>) {
 /** Amazon: pull NEW closed settlement reports → Payout + bucketed PayoutLines. */
 export async function ingestAmazonPayouts(daysBack = 120): Promise<IngestResult> {
   const res: IngestResult = { marketplace: "amazon", created: 0, updated: 0, periods: [], errors: [] };
-  const stores = getConfiguredStores().filter((s) => !SKIPPED_AMAZON_STORES.has(s));
+  const stores = await resolveAmazonStores();
   const createdSince = new Date(Date.now() - daysBack * 86_400_000).toISOString();
   const pulled = await readPulledReports();
 
