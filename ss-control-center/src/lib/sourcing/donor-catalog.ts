@@ -14,6 +14,7 @@ import {
   type CanonicalProduct,
   type ScoredOffer,
 } from "./retail-fetch";
+import { oxylabsSearch, oxylabsEnabled, type OxylabsRetailer } from "./oxylabs-fetch";
 
 // Parse a size token out of a title → normalized measure + amount (for $/measure).
 const UNIT_RE = /(\d+(?:\.\d+)?)\s*(fl\s*oz|oz|ct|count|lb|g|ml|l)\b/i;
@@ -124,6 +125,12 @@ const SHELF_STABLE_RE = /\b(canned|can|jarred|jar|vacuum|pouch|bottle|bread|buns
 // rejecting it as a multipack, and don't divide its price (the pack IS the unit;
 // cross-size comparison happens via $/measure).
 const CLUB_RETAILERS = new Set(["costco", "samsclub", "bjs", "restaurantdepot"]);
+
+// Instacart prices carry a delivery markup (~15%). When an offer is sourced via
+// Instacart we store the RAW price in `price` but the de-marked-up ESTIMATE in
+// `pricePerUnit` (flagged via="instacart"), so the rolled-up "real" cost approximates
+// the in-store shelf price. Calibrate per-retailer later from dual-priced products.
+const INSTACART_MARKUP = 1.15;
 
 export function classifyTemperature(parts: {
   title?: string | null; bullets?: string[] | null; description?: string | null; retailerCats?: string[] | null;
@@ -486,7 +493,7 @@ export interface EnrichTargetResult {
 // run only when `unwrangleRetailers` is passed (i.e. when that sub is paid).
 export async function enrichTarget(
   db: Client,
-  opts: { target: string; brand?: string | null; zip?: string | null; unwrangleRetailers?: ("walmart" | "target" | "samsclub" | "costco")[] },
+  opts: { target: string; brand?: string | null; zip?: string | null; unwrangleRetailers?: ("walmart" | "target" | "samsclub" | "costco")[]; oxylabsRetailers?: OxylabsRetailer[] },
 ): Promise<EnrichTargetResult> {
   const cp: CanonicalProduct = { brand: (opts.brand || opts.target.split(/\s+/).slice(0, 2).join(" ")) || undefined };
   const now = new Date().toISOString();
@@ -514,6 +521,17 @@ export async function enrichTarget(
       const uw = await unwrangleSearch(r, opts.target);
       if (!uw.trialExhausted) { if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: uw.offers.map((o) => scoreOffer(o, cp)) }); }
     } catch { /* skip this retailer on error */ }
+  }
+
+  // Oxylabs retailers (BJ's / Publix / Aldi direct, + Instacart fallback). Inert
+  // until OXYLABS_USERNAME/PASSWORD exist, so this is safe before the sub is paid.
+  if (oxylabsEnabled()) {
+    for (const r of opts.oxylabsRetailers ?? []) {
+      try {
+        const ox = await oxylabsSearch(r, opts.target);
+        if (!ox.trialExhausted && ox.offers.length) { if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: ox.offers.map((o) => scoreOffer(o, cp)) }); }
+      } catch { /* skip this source on error */ }
+    }
   }
 
   // QA "qualification dept": tier-1 deterministic non-grocery reject (free) +
@@ -566,8 +584,12 @@ export async function enrichTarget(
 
     // Clubs: the bulk pack is the buy unit → don't divide. Supermarkets: divide a
     // true N-pack bundle down to the per-unit price.
-    const pack = CLUB_RETAILERS.has(o.retailer) ? 1 : (o.packSizeSeen ?? 1);
-    const perUnit = o.price != null ? Math.round((o.price / (pack || 1)) * 100) / 100 : null;
+    const via: "direct" | "instacart" = o.via === "instacart" ? "instacart" : "direct";
+    const realPack = o.packSizeSeen ?? 1;            // recorded for display
+    const divisor = CLUB_RETAILERS.has(o.retailer) ? 1 : realPack; // clubs: pack IS the buy unit
+    let perUnit = o.price != null ? Math.round((o.price / (divisor || 1)) * 100) / 100 : null;
+    // Instacart: store the estimated in-store price (raw ÷ markup); raw stays in `price`.
+    if (via === "instacart" && perUnit != null) perUnit = Math.round((perUnit / INSTACART_MARKUP) * 100) / 100;
     await db.execute({
       sql: `INSERT INTO "DonorOffer" (id, donorProductId, retailer, retailerProductId, via, price, packSizeSeen, pricePerUnit, currency, zip, inStock, productUrl, sellerName, isFirstParty, sourceApi, fetchedAt, createdAt, updatedAt)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
@@ -576,8 +598,8 @@ export async function enrichTarget(
               pricePerUnit=excluded.pricePerUnit, inStock=excluded.inStock, productUrl=excluded.productUrl,
               sellerName=excluded.sellerName, isFirstParty=excluded.isFirstParty, fetchedAt=excluded.fetchedAt, updatedAt=excluded.updatedAt`,
       args: [
-        `do:${o.retailer}:${o.retailerProductId}`, productId, o.retailer, o.retailerProductId, "direct",
-        o.price ?? null, pack, perUnit, o.currency || "USD", opts.zip ?? null,
+        `do:${o.retailer}:${o.retailerProductId}`, productId, o.retailer, o.retailerProductId, via,
+        o.price ?? null, realPack, perUnit, o.currency || "USD", opts.zip ?? null,
         o.inStock === null ? null : o.inStock ? 1 : 0, o.productUrl ?? null, o.sellerName ?? null, 1, o.sourceApi ?? null, now, now, now,
       ],
     });

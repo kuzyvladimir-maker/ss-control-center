@@ -24,7 +24,8 @@ export type RetailOffer = {
   packSizeSeen: number | null;
   isMarketplaceItem: boolean | null; // true = 3P/reseller (incl. our own); false = first-party
   sellerName: string | null;
-  sourceApi: string; // bluecart | unwrangle
+  sourceApi: string; // bluecart | unwrangle | oxylabs
+  via?: "direct" | "instacart"; // instacart prices are inflated → de-marked-up downstream
 };
 
 // Canonical product the brain produced (subset we need here).

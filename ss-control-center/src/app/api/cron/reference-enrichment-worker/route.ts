@@ -29,6 +29,8 @@ const INTER_JOB_MS = 500;
 // Walmart included so it falls back to Unwrangle walmart_search when BlueCart is
 // down/exhausted (enrichTarget still prefers BlueCart for Walmart when available).
 const UNWRANGLE_RETAILERS: ("walmart" | "target" | "samsclub" | "costco")[] = ["walmart", "target", "samsclub", "costco"];
+// Oxylabs sources — auto-activate inside enrichTarget once OXYLABS creds exist.
+const OXYLABS_RETAILERS = ["bjs", "publix", "aldi", "instacart"] as const;
 const ZIP = "33765"; // Clearwater, FL — our buying zone
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -79,7 +81,7 @@ export async function GET(request: NextRequest) {
 
     try {
       const brand = job.targetType === "brand" ? String(job.target) : undefined;
-      const r = await enrichTarget(conn, { target: String(job.target), brand, zip: ZIP, unwrangleRetailers: UNWRANGLE_RETAILERS });
+      const r = await enrichTarget(conn, { target: String(job.target), brand, zip: ZIP, unwrangleRetailers: UNWRANGLE_RETAILERS, oxylabsRetailers: [...OXYLABS_RETAILERS] });
       out.productsCreated += r.productsCreated;
       out.offersUpserted += r.offersUpserted;
 
