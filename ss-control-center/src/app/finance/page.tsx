@@ -191,11 +191,12 @@ export default function FinancialPlanPage() {
         <CardHeader><CardTitle className="text-base">Pulled periods ({payouts.length})</CardTitle></CardHeader>
         <CardContent className="overflow-x-auto p-0">
           <table className="w-full text-sm">
-            <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Channel</th><th className="px-3 py-2">Account</th><th className="px-3 py-2">Period</th><th className="px-3 py-2 text-right">Net payout</th><th className="px-3 py-2 text-right">Sales</th><th className="px-3 py-2 text-right">Fees</th><th className="px-3 py-2">Status</th></tr></thead>
+            <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Channel</th><th className="px-3 py-2">Account</th><th className="px-3 py-2">Period</th><th className="px-3 py-2 text-right">Net payout</th><th className="px-3 py-2 text-right">Sales</th><th className="px-3 py-2 text-right">Payout % of sales</th><th className="px-3 py-2 text-right">Fees</th><th className="px-3 py-2">Status</th></tr></thead>
             <tbody>
               {payouts.map((p) => {
                 const sales = p.lines.filter((l) => ["sales", "shipping_income"].includes(l.bucket)).reduce((s, l) => s + l.amount, 0);
                 const fees = p.lines.filter((l) => BUCKET_META[l.bucket as Bucket]?.nature === "cost").reduce((s, l) => s + l.amount, 0);
+                const pctOfSales = sales > 0 ? (p.netAmount / sales) * 100 : null;
                 return (
                   <tr key={p.id} className="border-b last:border-0 hover:bg-muted/40">
                     <td className="px-3 py-2 capitalize">{p.marketplace}</td>
@@ -203,12 +204,13 @@ export default function FinancialPlanPage() {
                     <td className="px-3 py-2 text-muted-foreground">{p.periodStart ?? "—"} → {p.periodEnd ?? p.depositDate ?? "—"}</td>
                     <td className="px-3 py-2 text-right font-medium">{usd(p.netAmount)}</td>
                     <td className="px-3 py-2 text-right text-emerald-600">{usd(sales)}</td>
+                    <td className={cn("px-3 py-2 text-right tabular-nums", pctOfSales != null && pctOfSales < 50 ? "text-destructive" : "text-muted-foreground")}>{pctOfSales != null ? `${pctOfSales.toFixed(1)}%` : "—"}</td>
                     <td className="px-3 py-2 text-right text-destructive">{usd(fees)}</td>
                     <td className="px-3 py-2">{p.distributed ? <span className="text-xs text-muted-foreground">distributed</span> : <span className="text-xs text-amber-600">to distribute</span>}</td>
                   </tr>
                 );
               })}
-              {payouts.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">No periods pulled yet.</td></tr>}
+              {payouts.length === 0 && <tr><td colSpan={8} className="px-3 py-8 text-center text-muted-foreground">No periods pulled yet.</td></tr>}
             </tbody>
           </table>
         </CardContent>
