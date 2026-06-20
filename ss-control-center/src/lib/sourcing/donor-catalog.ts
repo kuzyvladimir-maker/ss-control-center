@@ -53,6 +53,7 @@ export const KNOWN_MULTIWORD_BRANDS = [
   "Sara Lee", "Nature's Own", "Minute Maid", "Snack Factory", "Hamburger Helper",
   "Vita Coco", "Good Thins", "Cape Cod", "Glory Foods", "Stove Top", "Cocoa Classics",
   "Margaret Holmes", "Le Sueur", "College Inn", "Great Value", "Stephen's Gourmet",
+  "Jimmy Dean", "Hot Pockets", "Mrs. Smith's", "Marie Callender's",
 ];
 const BRANDS_BY_LEN = [...KNOWN_MULTIWORD_BRANDS].sort((a, b) => b.length - a.length);
 
