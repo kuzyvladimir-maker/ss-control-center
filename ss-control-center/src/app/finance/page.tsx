@@ -278,11 +278,11 @@ export default function FinancialPlanPage() {
         <CardContent>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {funds.sort((a, b) => a.priority - b.priority).map((f) => (
-              <div key={f.id} className={cn("rounded-md border p-3", !f.active && "opacity-50")}>
+              <Link key={f.id} href={`/finance/funds/${f.id}`} className={cn("rounded-md border p-3 transition hover:border-primary hover:bg-muted/40", !f.active && "opacity-50")}>
                 <div className="flex items-center justify-between"><span className="text-xs uppercase text-muted-foreground">{f.group}</span><span className="text-[10px] text-muted-foreground">{f.allocationType === "percent" ? `${f.value}%` : usd(f.value)}</span></div>
                 <div className="truncate text-sm font-medium">{f.name}</div>
-                <div className="text-lg font-semibold">{usd(f.balance)}</div>
-              </div>
+                <div className={cn("text-lg font-semibold", f.balance < 0 && "text-destructive")}>{usd(f.balance)}</div>
+              </Link>
             ))}
             {funds.length === 0 && <p className="text-sm text-muted-foreground">No funds yet — add some on Manage funds.</p>}
           </div>

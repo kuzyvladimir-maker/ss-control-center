@@ -112,7 +112,7 @@ export default function ManageFundsPage() {
                   <td className="px-3 py-2">
                     <Input type="number" className="w-16" defaultValue={f.priority} onBlur={(e) => { const v = Number(e.target.value); if (v !== f.priority) patch(f.id, { priority: v }); }} disabled={f.isSystem} />
                   </td>
-                  <td className="px-3 py-2">{f.name}{f.isSystem && <span className="ml-1 text-[10px] text-muted-foreground">(system)</span>}</td>
+                  <td className="px-3 py-2"><Link href={`/finance/funds/${f.id}`} className="text-primary hover:underline">{f.name}</Link>{f.isSystem && <span className="ml-1 text-[10px] text-muted-foreground">(system)</span>}</td>
                   <td className="px-3 py-2 text-muted-foreground">{f.group}</td>
                   <td className="px-3 py-2">
                     {f.group === "RESERVE" ? <span className="text-muted-foreground">reserve % (main page)</span>

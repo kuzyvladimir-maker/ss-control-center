@@ -77,8 +77,11 @@ export async function runDistribution(opts: {
 
   for (const a of distribution.allocations) {
     if (a.amount <= 0) continue;
-    await prisma.fundAllocation.create({
-      data: { fundId: a.fundId, runId: run.id, amount: a.amount, date: runDate },
+    await prisma.fundEntry.create({
+      data: {
+        fundId: a.fundId, type: "allocation", amount: a.amount,
+        description: `Distribution ${runDate}`, status: "applied", runId: run.id,
+      },
     });
     await prisma.fund.update({
       where: { id: a.fundId },

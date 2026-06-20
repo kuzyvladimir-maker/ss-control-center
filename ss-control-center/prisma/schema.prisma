@@ -3377,6 +3377,26 @@ model PayoutLine {
   @@index([bucket])
 }
 
+// FundEntry — the ledger of every movement on a fund: allocations (credits from
+// payout distribution), manual spends (debits), and planned expenses (debits that
+// only hit the balance once marked paid). Fund.balance is the running total of
+// APPLIED entries (can go negative). A fund detail view lists these.
+model FundEntry {
+  id          String   @id @default(cuid())
+  fundId      String
+  type        String // allocation | spend | planned_expense | adjustment
+  amount      Float // signed: +credit to fund, − debit/spend
+  description String?
+  status      String   @default("applied") // applied | planned
+  dueDate     String? // ISO date for planned expenses
+  runId       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([fundId])
+  @@index([status])
+}
+
 // FinancePlanRun — one weekly (or manual) distribution pass.
 model FinancePlanRun {
   id               String  @id @default(cuid())
