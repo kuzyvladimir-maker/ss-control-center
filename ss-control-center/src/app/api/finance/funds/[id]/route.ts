@@ -34,6 +34,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!fund) return NextResponse.json({ error: "not found" }, { status: 404 });
   try {
     const b = await req.json();
+
+    // Generate unpaid bills from this fund's expense-item presets (per period).
+    if (b.kind === "generate_bills") {
+      const presets = await prisma.recurringExpense.findMany({ where: { category: fund.name, active: true } });
+      const existing = await prisma.fundEntry.findMany({ where: { fundId: id, type: "planned_expense", status: "planned" } });
+      const have = new Set(existing.map((e) => e.description));
+      let created = 0;
+      for (const p of presets) {
+        if (have.has(p.name)) continue; // already an unpaid bill
+        await prisma.fundEntry.create({ data: { fundId: id, type: "planned_expense", amount: -round2(p.amount), description: p.name, status: "planned" } });
+        created++;
+      }
+      return NextResponse.json({ ok: true, created });
+    }
+
     const mag = Math.abs(Number(b.amount));
     if (!Number.isFinite(mag) || mag === 0) return NextResponse.json({ error: "amount required" }, { status: 400 });
     const kind = b.kind === "planned" ? "planned" : b.kind === "deposit" ? "deposit" : "spend";
@@ -66,8 +81,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     if (b.action === "pay") {
       if (entry.status !== "planned") return NextResponse.json({ error: "not a planned entry" }, { status: 400 });
-      await prisma.fundEntry.update({ where: { id: entry.id }, data: { status: "applied" } });
-      await prisma.fund.update({ where: { id }, data: { balance: { increment: entry.amount } } }); // amount negative
+      // Optionally override the amount actually paid (e.g. biweekly salary total).
+      const amount = b.amount != null ? -Math.abs(round2(Number(b.amount))) : entry.amount;
+      await prisma.fundEntry.update({ where: { id: entry.id }, data: { status: "applied", amount } });
+      await prisma.fund.update({ where: { id }, data: { balance: { increment: amount } } }); // negative → debits
+      return NextResponse.json({ ok: true });
+    }
+    if (b.action === "unpay") {
+      if (entry.status !== "applied") return NextResponse.json({ error: "not a paid entry" }, { status: 400 });
+      await prisma.fundEntry.update({ where: { id: entry.id }, data: { status: "planned" } });
+      await prisma.fund.update({ where: { id }, data: { balance: { decrement: entry.amount } } }); // reverse the debit
       return NextResponse.json({ ok: true });
     }
     if (b.action === "delete") {

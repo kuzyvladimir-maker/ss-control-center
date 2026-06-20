@@ -10,7 +10,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, RefreshCw, Play, CheckCircle2, AlertCircle, Settings2, FileText, Receipt } from "lucide-react";
+import { Loader2, RefreshCw, Play, CheckCircle2, AlertCircle, Settings2, FileText, Receipt, Wand2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,6 +81,17 @@ export default function FinancialPlanPage() {
       if (!r.ok) throw new Error(r.error ?? "run failed");
       setRun(r);
       if (!preview) { setNote("Distribution committed — funds updated."); await load(); }
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
+  }
+
+  async function autoAllocate() {
+    setBusy("auto"); setError(null); setNote(null);
+    try {
+      const r = await fetch("/api/finance/funds/auto-allocate", { method: "POST" }).then((x) => x.json());
+      if (!r.ok) throw new Error(r.error ?? "failed");
+      const parts = (r.allocations ?? []).filter((a: { pct: number }) => a.pct > 0).map((a: { fund: string; pct: number }) => `${a.fund} ${a.pct}%`).join(", ");
+      setNote(`Fund % set from monthly needs (total $${r.totalMonthlyNeed}/mo): ${parts}`);
+      await load();
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
   }
 
@@ -233,6 +244,7 @@ export default function FinancialPlanPage() {
               <label className="block text-xs text-muted-foreground">Add payout manually ($)</label>
               <div className="flex items-center gap-1"><Input type="number" className="w-28" value={manualAmt} onChange={(e) => setManualAmt(e.target.value)} placeholder="0.00" /><Button onClick={addManualPayout} disabled={busy != null} variant="outline" size="sm">{busy === "manual" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}</Button></div>
             </div>
+            <Button onClick={autoAllocate} disabled={busy != null} variant="outline">{busy === "auto" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Wand2 className="mr-1 h-4 w-4" />}Auto-set % from needs</Button>
             <Button onClick={() => doRun(true)} disabled={busy != null} variant="outline">{busy === "preview" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Play className="mr-1 h-4 w-4" />}Preview</Button>
             <Button onClick={() => doRun(false)} disabled={busy != null || !run || run.preview === false}>{busy === "commit" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-1 h-4 w-4" />}Commit</Button>
           </div>
