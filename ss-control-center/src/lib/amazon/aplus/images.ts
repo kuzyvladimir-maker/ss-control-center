@@ -70,7 +70,11 @@ export async function generateImagesForJob(
     }).catch(() => {});
     const model = resolveModel(imageModel, s.key);
     const url = await gen(s.brief, `${slug}-${s.key}`, !!s.landscape, suffix, model).catch(() => null);
-    if (url) { s.url = url; generated++; } else failed++;
+    if (url) {
+      s.url = url; generated++;
+      // Persist after EACH image so a timeout/crash never loses a paid-for image.
+      await prisma.amazonAplusJob.update({ where: { id: jobId }, data: { imagePlanJson: JSON.stringify(stored) } }).catch(() => {});
+    } else failed++;
   }
   await prisma.amazonAplusJob.update({
     where: { id: jobId },

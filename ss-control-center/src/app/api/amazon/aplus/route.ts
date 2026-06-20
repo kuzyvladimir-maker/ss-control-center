@@ -91,10 +91,20 @@ export async function POST(request: NextRequest) {
       }, concept, textModel);
       const doc = assembleFromPlan(plan, concept); // structure + text; image refs filled at publish
       const gate = qualify(doc, { disclaimer: CONCEPT_CONFIG[concept].disclaimer });
+      // Carry over already-generated images by slot key — a TEXT regenerate must NOT
+      // discard (and re-pay for) images we already have. New images only via "Только картинки".
+      const existing = await prisma.amazonAplusJob.findUnique({
+        where: { amazon_aplus_job_dedup: { storeIndex, sku, variant: "A" } },
+        select: { imagePlanJson: true },
+      });
+      const prevUrl: Record<string, string | null> = {};
+      if (existing?.imagePlanJson) {
+        try { for (const s of (JSON.parse(existing.imagePlanJson).slots ?? [])) prevUrl[s.key] = s.url ?? null; } catch { /* */ }
+      }
       const imagePlan = {
         plan,
         concept,
-        slots: imageSlots(plan).map((s) => ({ ...s, url: null })),
+        slots: imageSlots(plan).map((s) => ({ ...s, url: prevUrl[s.key] ?? null })),
       };
 
       const job = await prisma.amazonAplusJob.upsert({
