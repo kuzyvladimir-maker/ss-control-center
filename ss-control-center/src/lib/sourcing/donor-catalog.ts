@@ -90,6 +90,17 @@ function cleanBrand(b?: string | null): string | null {
   return s;
 }
 
+// Normalize brand CASING so a vector typed "uncrustables" and "Uncrustables" don't
+// become two brands. Only fixes all-lowercase input (→ Title Case); leaves
+// deliberate ALLCAPS / mixed-case brands (BODYARMOR, OREO, SKIPPY, Cheez-It) alone.
+export function normalizeBrandCase(b?: string | null): string | null {
+  if (!b) return b ?? null;
+  const s = b.trim();
+  if (!s) return null;
+  if (s === s.toLowerCase()) return s.replace(/\b([a-z])/g, (m) => m.toUpperCase());
+  return s;
+}
+
 // ── Temperature classification (Frozen | Dry) ───────────────────────────────
 // TWO operational buckets. "Frozen" = anything that needs a COLD CHAIN — natively
 // frozen items AND refrigerated/perishable ones (raw/fresh meat, poultry, seafood,
@@ -486,10 +497,10 @@ export async function enrichTarget(
   const survivors = candidates.filter((_, i) => verdicts[i]);
   rejected += candidates.length - survivors.length;
 
-  const brandHint = cleanBrand(cp.brand);
+  const brandHint = normalizeBrandCase(cleanBrand(cp.brand));
   for (const o of survivors) {
     const { size, unitMeasure, unitAmount } = parseSize(o.title);
-    const offerBrand = canonicalMultiwordBrand(o.title) || brandHint || deriveBrand(o.title) || null;
+    const offerBrand = canonicalMultiwordBrand(o.title) || brandHint || normalizeBrandCase(deriveBrand(o.title)) || null;
     const identityKey = computeIdentityKey({ brand: offerBrand, title: o.title, size });
 
     // Resolve the product WITHOUT orphaning: if this exact offer already exists,
