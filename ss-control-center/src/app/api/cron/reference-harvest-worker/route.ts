@@ -51,9 +51,16 @@ export async function GET(request: NextRequest) {
   // Newest-first: a freshly-enriched product gets its full content fast, so the
   // catalog (sorted "newest") never shows a wall of empty rows. The backlog still
   // drains completely because harvested rows fall out of this query.
+  // Harvest products missing a gallery OR missing text content (Target search gives
+  // many images but no bullets/description/UPC, so image-count alone isn't "done").
+  // Time-gate (updatedAt > 1h ago) so a product whose detail genuinely lacks text
+  // isn't re-harvested every tick; freshly-created rows are handled inline by the
+  // enrichment worker, this cron is the backstop.
   const rows = await conn.execute({
     sql: `SELECT dp.id FROM "DonorProduct" dp
-          WHERE (dp.imageUrls IS NULL OR json_array_length(dp.imageUrls) < 3)
+          WHERE (dp.imageUrls IS NULL OR json_array_length(dp.imageUrls) < 3
+                 OR dp.description IS NULL OR dp.description='')
+            AND (dp.updatedAt IS NULL OR dp.updatedAt < datetime('now','-1 hour'))
             AND EXISTS (SELECT 1 FROM "DonorOffer" o WHERE o.donorProductId = dp.id
                         AND o.retailer IN ('walmart','target','samsclub','costco') AND o.productUrl IS NOT NULL)
           ORDER BY dp.createdAt DESC LIMIT ?`,

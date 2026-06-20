@@ -357,16 +357,24 @@ export async function harvestDonorDetail(db: Client, productId: string): Promise
   // Storage class (Frozen | Dry) from the full harvested content — LLM cold-chain
   // classifier (refrigerated/perishable ≡ Frozen for us), now that we have the
   // retailer aisle + bullets. Falls back to deterministic on any LLM hiccup.
-  const tr = await db.execute({ sql: `SELECT title FROM "DonorProduct" WHERE id=? LIMIT 1`, args: [productId] });
-  const [temperature] = await classifyTemperatureLLM([{ title: tr.rows[0]?.title as string | null, category: c.category, bullets: c.bullets }]);
+  const cur = await db.execute({ sql: `SELECT title, imageUrls, bullets FROM "DonorProduct" WHERE id=? LIMIT 1`, args: [productId] });
+  const [temperature] = await classifyTemperatureLLM([{ title: cur.rows[0]?.title as string | null, category: c.category, bullets: c.bullets }]);
+
+  // MERGE images (union, detail first) rather than overwrite — some retailers'
+  // detail returns fewer photos than their search gallery (Target), so a plain
+  // overwrite would shrink the gallery. Keep bullets only when detail has them.
+  let existingImgs: string[] = [];
+  try { existingImgs = JSON.parse((cur.rows[0]?.imageUrls as string) || "[]"); } catch { /* */ }
+  const mergedImgs = normImages([...c.images, ...existingImgs]);
+  const bulletsJson = c.bullets.length ? JSON.stringify(c.bullets) : null; // null → keep existing
 
   const now = new Date().toISOString();
   await db.execute({
-    sql: `UPDATE "DonorProduct" SET mainImageUrl=COALESCE(?, mainImageUrl), imageUrls=?, bullets=?,
+    sql: `UPDATE "DonorProduct" SET mainImageUrl=COALESCE(?, mainImageUrl), imageUrls=?, bullets=COALESCE(?, bullets),
             description=COALESCE(NULLIF(?,''), description), ingredients=COALESCE(?, ingredients),
             nutritionFacts=COALESCE(NULLIF(?,'[]'), nutritionFacts), attributes=?, upc=COALESCE(?, upc),
             category=?, needsReview=0, updatedAt=? WHERE id=?`,
-    args: [c.images[0] ?? null, JSON.stringify(c.images), JSON.stringify(c.bullets), c.description, c.ingredients, nutrition,
+    args: [mergedImgs[0] ?? null, JSON.stringify(mergedImgs), bulletsJson, c.description, c.ingredients, nutrition,
       c.specifications ? JSON.stringify(c.specifications) : null, c.upc, temperature, now, productId],
   });
 
@@ -374,7 +382,7 @@ export async function harvestDonorDetail(db: Client, productId: string): Promise
   if (c.upc) merged = await mergeByUpc(db, productId, c.upc, now);
   let imageFlagged = false;
   try { const qc = await qcProductImage(db, productId); imageFlagged = qc.flagged; } catch { /* best-effort */ }
-  return { ok: true, productId, images: c.images.length, upc: c.upc, hasIngredients: !!c.ingredients, merged, imageFlagged };
+  return { ok: true, productId, images: mergedImgs.length, upc: c.upc, hasIngredients: !!c.ingredients, merged, imageFlagged };
 }
 
 // Move offers from any OTHER product sharing this UPC into `keepId`, then delete the
