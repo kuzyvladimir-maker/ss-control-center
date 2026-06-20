@@ -15,6 +15,7 @@ import {
   type ScoredOffer,
 } from "./retail-fetch";
 import { oxylabsSearch, oxylabsEnabled, type OxylabsRetailer } from "./oxylabs-fetch";
+import { openClawSearch, openClawEnabled, type OpenClawRetailer } from "./openclaw-fetch";
 
 // Parse a size token out of a title → normalized measure + amount (for $/measure).
 const UNIT_RE = /(\d+(?:\.\d+)?)\s*(fl\s*oz|oz|ct|count|lb|g|ml|l)\b/i;
@@ -493,7 +494,7 @@ export interface EnrichTargetResult {
 // run only when `unwrangleRetailers` is passed (i.e. when that sub is paid).
 export async function enrichTarget(
   db: Client,
-  opts: { target: string; brand?: string | null; zip?: string | null; unwrangleRetailers?: ("walmart" | "target" | "samsclub" | "costco")[]; oxylabsRetailers?: OxylabsRetailer[] },
+  opts: { target: string; brand?: string | null; zip?: string | null; unwrangleRetailers?: ("walmart" | "target" | "samsclub" | "costco")[]; oxylabsRetailers?: OxylabsRetailer[]; openClawRetailers?: OpenClawRetailer[] },
 ): Promise<EnrichTargetResult> {
   const cp: CanonicalProduct = { brand: (opts.brand || opts.target.split(/\s+/).slice(0, 2).join(" ")) || undefined };
   const now = new Date().toISOString();
@@ -523,13 +524,24 @@ export async function enrichTarget(
     } catch { /* skip this retailer on error */ }
   }
 
-  // Oxylabs retailers (BJ's / Publix / Aldi direct, + Instacart fallback). Inert
-  // until OXYLABS_USERNAME/PASSWORD exist, so this is safe before the sub is paid.
+  // Oxylabs retailers (open sites: Aldi, + Instacart fallback). Inert until
+  // OXYLABS_USERNAME/PASSWORD exist, so this is safe before the sub is paid.
   if (oxylabsEnabled()) {
     for (const r of opts.oxylabsRetailers ?? []) {
       try {
         const ox = await oxylabsSearch(r, opts.target);
         if (!ox.trialExhausted && ox.offers.length) { if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: ox.offers.map((o) => scoreOffer(o, cp)) }); }
+      } catch { /* skip this source on error */ }
+    }
+  }
+
+  // OpenClaw retailers (member-gated: BJ's club, Publix store) — a logged-in browser
+  // on the OpenClaw box does the search. Inert until OPENCLAW_GROCERY_URL/TOKEN exist.
+  if (openClawEnabled()) {
+    for (const r of opts.openClawRetailers ?? []) {
+      try {
+        const oc = await openClawSearch(r, opts.target, opts.zip ?? "33765");
+        if (!oc.trialExhausted && oc.offers.length) { if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: oc.offers.map((o) => scoreOffer(o, cp)) }); }
       } catch { /* skip this source on error */ }
     }
   }
