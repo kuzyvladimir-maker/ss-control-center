@@ -24,9 +24,12 @@ export function monthlyAmount(amount: number, frequency: string): number {
   if (!Number.isFinite(amount)) return 0;
   if (frequency === "daily") return Math.round(amount * WORKDAYS_PER_MONTH * 100) / 100;
   if (frequency === "weekly") return Math.round(amount * WEEKS_PER_MONTH * 100) / 100;
+  if (frequency === "yearly") return Math.round((amount / 12) * 100) / 100;
   if (frequency === "one_time") return 0;
   return Math.round(amount * 100) / 100; // monthly
 }
+
+export const FREQUENCIES = ["monthly", "weekly", "daily", "yearly", "one_time"] as const;
 
 /** Map a (possibly Russian / Sellerboard) category label to our FP1 fund name. */
 export function mapCategory(raw: string): ExpenseCategory {

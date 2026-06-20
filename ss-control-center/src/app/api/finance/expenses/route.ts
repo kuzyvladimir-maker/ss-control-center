@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     const expense = await prisma.recurringExpense.create({
       data: {
         name: String(b.name), category: String(b.category), amount: Number(b.amount) || 0,
-        frequency: ["monthly", "weekly", "daily", "one_time"].includes(b.frequency) ? b.frequency : "monthly",
+        frequency: ["monthly", "weekly", "daily", "yearly", "one_time"].includes(b.frequency) ? b.frequency : "monthly",
         marketplace: b.marketplace ?? null, product: b.product ?? null,
         isAdSpend: Boolean(b.isAdSpend), source: "manual", notes: b.notes ?? null,
       },
@@ -83,7 +83,7 @@ export async function PATCH(req: NextRequest) {
     const data: Record<string, unknown> = {};
     for (const k of ["name", "category", "marketplace", "product", "notes"]) if (b[k] != null) data[k] = b[k];
     if (b.amount != null) data.amount = Number(b.amount) || 0;
-    if (b.frequency && ["monthly", "weekly", "daily", "one_time"].includes(b.frequency)) data.frequency = b.frequency;
+    if (b.frequency && ["monthly", "weekly", "daily", "yearly", "one_time"].includes(b.frequency)) data.frequency = b.frequency;
     if (b.active != null) data.active = Boolean(b.active);
     if (b.isAdSpend != null) data.isAdSpend = Boolean(b.isAdSpend);
     if (b.category) await ensureCategoryFunds([b.category]);

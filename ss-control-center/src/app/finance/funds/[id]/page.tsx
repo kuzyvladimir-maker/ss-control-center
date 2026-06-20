@@ -19,6 +19,7 @@ const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en
 
 interface Fund { id: string; name: string; group: string; balance: number }
 interface Entry { id: string; type: string; amount: number; description: string | null; status: string; dueDate: string | null; createdAt: string }
+interface Preset { id: string; name: string; amount: number; frequency: string }
 
 const TYPE_LABEL: Record<string, string> = {
   allocation: "Allocation", spend: "Spend", planned_expense: "Planned expense", adjustment: "Manual credit",
@@ -28,6 +29,8 @@ export default function FundDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [fund, setFund] = useState<Fund | null>(null);
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [presets, setPresets] = useState<Preset[]>([]);
+  const [payAmt, setPayAmt] = useState<Record<string, string>>({});
   const [plannedTotal, setPlannedTotal] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -39,9 +42,20 @@ export default function FundDetailPage() {
     try {
       const r = await fetch(`/api/finance/funds/${id}`).then((x) => x.json());
       if (r.error) throw new Error(r.error);
-      setFund(r.fund); setEntries(r.entries ?? []); setPlannedTotal(r.plannedTotal ?? 0);
+      setFund(r.fund); setEntries(r.entries ?? []); setPresets(r.presets ?? []); setPlannedTotal(r.plannedTotal ?? 0);
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }, [id]);
+
+  async function payPreset(p: Preset) {
+    const amount = Number(payAmt[p.id] ?? p.amount);
+    if (!Number.isFinite(amount) || amount === 0) { setError("Enter an amount"); return; }
+    setBusy(true); setError(null);
+    try {
+      const r = await fetch(`/api/finance/funds/${id}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "spend", amount, description: p.name }) }).then((x) => x.json());
+      if (!r.ok) throw new Error(r.error ?? "failed");
+      await load();
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
+  }
   useEffect(() => { load(); }, [load]);
 
   async function add(kind: "spend" | "planned", data: { amount: string; description: string; dueDate?: string }) {
@@ -90,6 +104,35 @@ export default function FundDetailPage() {
           <div className="text-xs text-muted-foreground">After paying all planned: {usd((fund?.balance ?? 0) + plannedTotal)}</div>
         </CardContent></Card>
       </div>
+
+      {/* Recurring payment presets — the expense items of this fund (from Expenses) */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Recurring payments (presets)</CardTitle>
+            <Link href="/finance/expenses" className="text-xs text-primary hover:underline">Manage expense items →</Link>
+          </div>
+        </CardHeader>
+        <CardContent className="overflow-x-auto p-0">
+          {presets.length === 0 ? (
+            <p className="px-3 py-4 text-sm text-muted-foreground">No expense items in this fund yet. Add them on the <Link href="/finance/expenses" className="text-primary hover:underline">Expenses</Link> page (category = this fund).</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Item</th><th className="px-3 py-2">Frequency</th><th className="px-3 py-2">Pay amount</th><th className="px-3 py-2"></th></tr></thead>
+              <tbody>
+                {presets.map((p) => (
+                  <tr key={p.id} className="border-b last:border-0">
+                    <td className="px-3 py-2">{p.name}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{p.frequency}</td>
+                    <td className="px-3 py-2"><Input type="number" className="w-28" value={payAmt[p.id] ?? String(p.amount)} onChange={(e) => setPayAmt({ ...payAmt, [p.id]: e.target.value })} /></td>
+                    <td className="px-3 py-2"><Button size="sm" variant="outline" onClick={() => payPreset(p)} disabled={busy}><Check className="mr-1 h-3 w-3" />Pay (debit)</Button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>

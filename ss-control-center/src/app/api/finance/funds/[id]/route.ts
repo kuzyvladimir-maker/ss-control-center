@@ -15,9 +15,15 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   if (!fund) return NextResponse.json({ error: "not found" }, { status: 404 });
   const entries = await prisma.fundEntry.findMany({ where: { fundId: id }, orderBy: { createdAt: "desc" } });
   const planned = entries.filter((e) => e.status === "planned");
+  // Recurring expense PRESETS for this fund = the expense items whose category
+  // matches the fund name. They show inside the fund as payments to make.
+  const presets = await prisma.recurringExpense.findMany({
+    where: { category: fund.name, active: true }, orderBy: { name: "asc" },
+  });
   return NextResponse.json({
     fund,
     entries,
+    presets,
     plannedTotal: round2(planned.reduce((s, e) => s + e.amount, 0)), // negative
   });
 }
