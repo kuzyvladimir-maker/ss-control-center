@@ -119,6 +119,12 @@ const COLD_AISLE_RE = /\b(frozen|refrigerated|deli|fresh meat|meat & seafood|sea
 // vacuum-packed, jarred) — these ship DRY regardless of contents.
 const SHELF_STABLE_RE = /\b(canned|can|jarred|jar|vacuum|pouch|bottle|bread|buns?|rolls?|bagels?|tortillas?|loaf|crackers?|chips?|cereal)\b/i;
 
+// Warehouse / membership clubs. Their native bulk pack (12-count box, #10 can) is a
+// legitimate purchase unit and a real sourcing lever — we keep it whole rather than
+// rejecting it as a multipack, and don't divide its price (the pack IS the unit;
+// cross-size comparison happens via $/measure).
+const CLUB_RETAILERS = new Set(["costco", "samsclub", "bjs", "restaurantdepot"]);
+
 export function classifyTemperature(parts: {
   title?: string | null; bullets?: string[] | null; description?: string | null; retailerCats?: string[] | null;
 }): Temperature {
@@ -490,7 +496,11 @@ export async function enrichTarget(
   for (const b of batches) for (const o of b.offers) {
     if (!o.accepted) { rejected++; continue; }
     if (!o.retailerProductId) continue;
-    if (!o.isBaseUnit) { rejected++; continue; } // SINGLE PRODUCTS ONLY — no 2/4/6-packs, multipacks or bundles
+    // Supermarkets (Walmart/Target): single retail unit only — no 2/4/6-pack bundles.
+    // Warehouse clubs (Costco/Sam's/BJ's/Restaurant Depot): their native bulk format
+    // IS a valid purchase unit (a 12-count box, a #10 can) and a real sourcing lever,
+    // so we keep it even when packSizeSeen > 1.
+    if (!o.isBaseUnit && !CLUB_RETAILERS.has(o.retailer)) { rejected++; continue; }
     if (looksNonGrocery(o.title)) { rejected++; continue; }
     candidates.push(o);
   }
@@ -527,7 +537,9 @@ export async function enrichTarget(
       }
     }
 
-    const pack = o.packSizeSeen ?? 1;
+    // Clubs: the bulk pack is the buy unit → don't divide. Supermarkets: divide a
+    // true N-pack bundle down to the per-unit price.
+    const pack = CLUB_RETAILERS.has(o.retailer) ? 1 : (o.packSizeSeen ?? 1);
     const perUnit = o.price != null ? Math.round((o.price / (pack || 1)) * 100) / 100 : null;
     await db.execute({
       sql: `INSERT INTO "DonorOffer" (id, donorProductId, retailer, retailerProductId, via, price, packSizeSeen, pricePerUnit, currency, zip, inStock, productUrl, sellerName, isFirstParty, sourceApi, fetchedAt, createdAt, updatedAt)
