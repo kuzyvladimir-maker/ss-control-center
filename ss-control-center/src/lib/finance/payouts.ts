@@ -22,7 +22,6 @@ import {
 } from "./settlement";
 import { AMAZON_STORE_ENTITY, WALMART_ENTITY, storeIdToIndex } from "./entities";
 
-const PULLED_REPORTS_KEY = "finance:amazon:pulledReports";
 // Which Amazon accounts to pull. Default = the 2 LIVE accounts (Salutem store1 +
 // AMZ Commerce store3); blocked/suspended ones (store2/4/5) are excluded so their
 // stale/$0 settlements don't pollute the plan. Override via Setting CSV of indices.
@@ -105,27 +104,11 @@ async function upsertPayoutWithLines(opts: {
   return existing ? "updated" : "created";
 }
 
-async function readPulledReports(): Promise<Set<string>> {
-  const row = await prisma.setting.findUnique({ where: { key: PULLED_REPORTS_KEY } });
-  try {
-    return new Set<string>(row?.value ? JSON.parse(row.value) : []);
-  } catch {
-    return new Set<string>();
-  }
-}
-async function writePulledReports(set: Set<string>) {
-  const value = JSON.stringify([...set].slice(-500)); // cap history
-  await prisma.setting.upsert({
-    where: { key: PULLED_REPORTS_KEY }, update: { value }, create: { key: PULLED_REPORTS_KEY, value },
-  });
-}
-
-/** Amazon: pull NEW closed settlement reports → Payout + bucketed PayoutLines. */
+/** Amazon: pull only the latest NEW closed settlement period(s) per account. */
 export async function ingestAmazonPayouts(daysBack = 120): Promise<IngestResult> {
   const res: IngestResult = { marketplace: "amazon", created: 0, updated: 0, periods: [], errors: [] };
   const stores = await resolveAmazonStores();
   const createdSince = new Date(Date.now() - daysBack * 86_400_000).toISOString();
-  const pulled = await readPulledReports();
 
   for (const storeId of stores) {
     const idx = storeIdToIndex(storeId);
@@ -136,16 +119,31 @@ export async function ingestAmazonPayouts(daysBack = 120): Promise<IngestResult>
       res.errors.push(`amazon ${storeId} list: ${e instanceof Error ? e.message : e}`);
       continue;
     }
-    const seen = new Set<string>();
-    for (const rep of reports) {
-      if (seen.has(rep.reportDocumentId)) continue;
-      seen.add(rep.reportDocumentId);
-      if (pulled.has(rep.reportDocumentId)) continue; // already processed — skip download
+    // Dedup the report list by document id.
+    const seenDoc = new Set<string>();
+    const unique = reports.filter((r) => (seenDoc.has(r.reportDocumentId) ? false : (seenDoc.add(r.reportDocumentId), true)));
+    const endOf = (r: { dataEndTime?: string }) => (r.dataEndTime ? r.dataEndTime.slice(0, 10) : "");
+
+    // We only want NEW payouts: nothing already accounted for. Cursor = the latest
+    // period end we've already stored for this account. If we have none yet, take
+    // ONLY the single most-recent closed period (not the whole history).
+    const agg = await prisma.payout.aggregate({
+      where: { marketplace: "amazon", storeIndex: idx }, _max: { periodEnd: true },
+    });
+    const cursor = agg._max.periodEnd; // ISO date string or null
+    let candidates;
+    if (cursor) {
+      candidates = unique.filter((r) => endOf(r) > cursor);
+    } else {
+      const maxEnd = unique.reduce((m, r) => (endOf(r) > m ? endOf(r) : m), "");
+      candidates = maxEnd ? unique.filter((r) => endOf(r) === maxEnd) : [];
+    }
+
+    for (const rep of candidates) {
       try {
         const url = await getReportDocumentUrl(storeId, rep.reportDocumentId);
         const tsv = await downloadReport(url);
-        const settlements = parseAmazonSettlement(tsv);
-        for (const s of settlements) {
+        for (const s of parseAmazonSettlement(tsv)) {
           if (!s.settlementId) continue;
           const externalId = `amazon:${storeId}:${s.settlementId}`;
           const status = await upsertPayoutWithLines({
@@ -157,13 +155,11 @@ export async function ingestAmazonPayouts(daysBack = 120): Promise<IngestResult>
           res[status]++;
           res.periods.push({ externalId, net: s.netAmount, period: s.periodEnd ?? s.depositDate });
         }
-        pulled.add(rep.reportDocumentId);
       } catch (e) {
         res.errors.push(`amazon ${rep.reportDocumentId}: ${e instanceof Error ? e.message : e}`);
       }
     }
   }
-  await writePulledReports(pulled);
   return res;
 }
 
