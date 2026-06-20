@@ -19,6 +19,7 @@ import {
   Leaf,
   BookOpen,
   Sparkles,
+  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -100,6 +101,11 @@ const operationsItems = (s: DashboardSummary): NavItem[] => [
     title: "Reference Catalog",
     href: "/reference-catalog",
     icon: BookOpen,
+  },
+  {
+    title: "Economics",
+    href: "/economics",
+    icon: DollarSign,
   },
   {
     title: "Walmart Growth",
