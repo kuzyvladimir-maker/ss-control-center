@@ -1,33 +1,14 @@
 /**
- * Bundle Factory — New Brief.
+ * Bundle Factory — old "New Brief" entry (Perplexity research flow).
  *
- * Server page wrapping the client-side multi-step form. PageHead is
- * rendered server-side; the form itself is a client island because each
- * step is fully interactive (validation, step transitions, submit).
+ * Phase 7: superseded by the single donor-sourced build flow. Kept as a
+ * redirect so old links/bookmarks land on the one create door instead of a
+ * second, conflicting entry. The legacy NewBriefForm is no longer reachable
+ * from the UI.
  */
 
-import { PageHead, Sep } from "@/components/kit";
-import { NewBriefForm } from "./NewBriefForm";
-
-export const dynamic = "force-dynamic";
+import { redirect } from "next/navigation";
 
 export default function NewBriefPage() {
-  return (
-    <>
-      <PageHead
-        title="New Brief"
-        subtitle={
-          <>
-            <span className="font-medium text-ink-2">Stage 1 — Brief Input</span>
-            <Sep />
-            <span className="text-ink-3">
-              Describe the bundle idea, then Stage 2 will research retail
-              candidates near Clearwater.
-            </span>
-          </>
-        }
-      />
-      <NewBriefForm />
-    </>
-  );
+  redirect("/bundle-factory/new");
 }

@@ -1,15 +1,15 @@
 /**
  * Secondary navigation for the Bundle Factory section.
  *
- * Pure design-system styling — no shadcn defaults. Active item uses
- * green-soft + green-ink (Salutem token), inactive items ink-2 with
- * bg-elev hover. Horizontal scroll on mobile so 380px iPhones don't
- * clip tabs.
+ * Phase 7: trimmed to the simple operator path — Overview (create) ·
+ * In progress · Published · Settings. The advanced/internal pages
+ * (Master Bundles, Audit, Compliance, Stores, Briefs) still exist by URL
+ * and are linked from the Overview "At a glance" strip; they're kept out
+ * of the top nav so the section reads as one straight flow.
  */
 
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -21,44 +21,13 @@ type SubNavItem = {
 
 const ITEMS: SubNavItem[] = [
   { href: "/bundle-factory", label: "Overview" },
-  { href: "/bundle-factory/briefs", label: "Briefs" },
-  { href: "/bundle-factory/drafts", label: "Drafts" },
-  { href: "/bundle-factory/master-bundles", label: "Master Bundles" },
-  { href: "/bundle-factory/live", label: "Live SKUs" },
-  { href: "/bundle-factory/audit", label: "Audit" },
-  { href: "/bundle-factory/compliance", label: "Compliance" },
-  { href: "/bundle-factory/stores", label: "Stores" },
+  { href: "/bundle-factory/drafts", label: "In progress" },
+  { href: "/bundle-factory/live", label: "Published" },
   { href: "/bundle-factory/settings", label: "Settings" },
 ];
 
 export function BundleFactorySubNav() {
   const pathname = usePathname();
-  // Live BLOCKED-count badge on the Audit tab — pulled from the most
-  // recent completed scan once on mount. Refresh only happens on page
-  // navigation, not via polling, to keep the topbar cheap.
-  const [blockedCount, setBlockedCount] = useState<number | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const r = await fetch(
-          "/api/bundle-factory/audit/scans?status=completed&limit=1",
-        );
-        if (!r.ok) return;
-        const { scans } = (await r.json()) as {
-          scans: Array<{ blocked_count: number }>;
-        };
-        if (!cancelled && scans.length > 0) {
-          setBlockedCount(scans[0].blocked_count);
-        }
-      } catch {
-        /* swallow — badge stays hidden */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   function isActive(href: string): boolean {
     if (href === "/bundle-factory") return pathname === "/bundle-factory";
@@ -72,10 +41,6 @@ export function BundleFactorySubNav() {
     >
       {ITEMS.map((item) => {
         const active = isActive(item.href);
-        const showBadge =
-          item.href === "/bundle-factory/audit" &&
-          blockedCount != null &&
-          blockedCount > 0;
         return (
           <Link
             key={item.href}
@@ -88,14 +53,6 @@ export function BundleFactorySubNav() {
             )}
           >
             {item.label}
-            {showBadge && (
-              <span
-                aria-label={`${blockedCount} blocked listings`}
-                className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-danger px-1.5 text-[10px] font-semibold leading-none text-cream"
-              >
-                {blockedCount}
-              </span>
-            )}
           </Link>
         );
       })}

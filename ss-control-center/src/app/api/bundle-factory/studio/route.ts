@@ -20,7 +20,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { badRequest, readJson, withErrorHandler } from "@/lib/bundle-factory/api-utils";
-import { PRODUCT_CATEGORIES, isOneOf } from "@/lib/bundle-factory/enums";
+import { PRODUCT_CATEGORIES, SALES_CHANNELS, isOneOf } from "@/lib/bundle-factory/enums";
 
 export const dynamic = "force-dynamic";
 
@@ -52,8 +52,15 @@ export const POST = withErrorHandler("studio-create", async (request: Request) =
   if (!isOneOf(HOUSE_BRANDS, body.house_brand)) {
     return badRequest(`house_brand must be one of ${HOUSE_BRANDS.join(", ")}`);
   }
-  if (body.marketplace !== "amazon") {
-    return badRequest("marketplace must be 'amazon' (Walmart lands next)");
+
+  // Channel: the operator picks where to sell (any of their channels). Falls
+  // back to the house brand's home Amazon account when not provided. Only the
+  // Amazon channels are wired for publish today — Walmart/eBay/TikTok land next.
+  const channel = isOneOf(SALES_CHANNELS, body.channel)
+    ? body.channel
+    : BRAND_CHANNEL[body.house_brand as (typeof HOUSE_BRANDS)[number]];
+  if (!channel.startsWith("AMAZON_")) {
+    return badRequest(`Channel "${channel}" is not wired for publishing yet — pick an Amazon account for now.`);
   }
   if (!isOneOf(SET_TYPES, body.set_type)) {
     return badRequest(`set_type must be one of ${SET_TYPES.join(", ")}`);
@@ -88,8 +95,8 @@ export const POST = withErrorHandler("studio-create", async (request: Request) =
   const targetMarginPct =
     Number.isFinite(rawMargin) && rawMargin > 0 ? rawMargin : null;
 
-  const channel = BRAND_CHANNEL[body.house_brand as (typeof HOUSE_BRANDS)[number]];
   const compositionType = SET_COMPOSITION[body.set_type as (typeof SET_TYPES)[number]];
+  const marketplace = channel.startsWith("AMAZON_") ? "amazon" : "walmart";
 
   // Full run config — the source of truth for the studio run, read by later
   // stages from GenerationJob.brief.
@@ -98,7 +105,8 @@ export const POST = withErrorHandler("studio-create", async (request: Request) =
     source: "donor-catalog",
     listing_name: listingName,
     house_brand: body.house_brand,
-    marketplace: body.marketplace,
+    channel,
+    marketplace,
     set_type: body.set_type,
     category: body.category,
     pack_count: packCount,
