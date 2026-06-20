@@ -29,10 +29,11 @@ const INTER_JOB_MS = 500;
 // Walmart included so it falls back to Unwrangle walmart_search when BlueCart is
 // down/exhausted (enrichTarget still prefers BlueCart for Walmart when available).
 const UNWRANGLE_RETAILERS: ("walmart" | "target" | "samsclub" | "costco")[] = ["walmart", "target", "samsclub", "costco"];
-// Oxylabs = open sites (Aldi + Instacart fallback). BJ's/Publix are member-gated →
-// routed through OpenClaw (logged-in browser). Each auto-activates when its creds exist.
-const OXYLABS_RETAILERS = ["aldi", "instacart"] as const;
-const OPENCLAW_RETAILERS = ["bjs", "publix"] as const;
+// OpenClaw (logged-in browser on the box) reliably covers all three gated grocery
+// nets — BJ's, Publix, Aldi. Oxylabs grocery targets are gated/empty, so it's not
+// called per-enrichment for now (kept wired for future Amazon/Walmart use).
+const OXYLABS_RETAILERS = [] as const;
+const OPENCLAW_RETAILERS = ["bjs", "publix", "aldi"] as const;
 const ZIP = "33765"; // Clearwater, FL — our buying zone
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
