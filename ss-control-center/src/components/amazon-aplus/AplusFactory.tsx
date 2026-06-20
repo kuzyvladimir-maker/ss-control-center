@@ -405,8 +405,8 @@ export function AplusFactory() {
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <span className="text-[11px] text-ink-3">Превью как на странице листинга · модели: {textModel === "opus" ? "Opus" : "Sonnet"} + {imageModel}</span>
                 <div className="flex items-center gap-1.5">
-                  <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":all"} onClick={() => regenAll(review.id, review.sku, review.itemName ?? review.sku)}>Перегенерировать всё (текст+картинки)</Btn>
-                  <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":img"} onClick={() => regenImages(review.id, review.sku, review.itemName ?? review.sku)}>Только картинки</Btn>
+                  <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":all"} onClick={() => regenAll(review.id, review.sku, review.itemName ?? review.sku)}>Текст заново (картинки сохранить)</Btn>
+                  <Btn size="sm" variant="primary" icon={<RefreshCw size={12} />} loading={busy === review.id + ":img"} onClick={() => regenImages(review.id, review.sku, review.itemName ?? review.sku)}>Картинки заново ($)</Btn>
                 </div>
               </div>
               {/* WYSIWYG preview — image-forward A+ landing page */}

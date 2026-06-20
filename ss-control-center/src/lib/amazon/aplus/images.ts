@@ -59,6 +59,9 @@ export async function generateImagesForJob(
 
   const todo = (stored.slots ?? []).filter((s) => s.brief && (!s.url || force));
   const total = todo.length;
+  // Unique version stamp per run → fresh R2 key → no stale-cache (R2 objects are
+  // cached for a year; overwriting the same key served the OLD image).
+  const stamp = Date.now().toString(36);
   let generated = 0, failed = 0, idx = 0;
   for (const s of stored.slots ?? []) {
     if (!s.brief || (s.url && !force)) continue;
@@ -69,7 +72,7 @@ export async function generateImagesForJob(
       data: { progressJson: JSON.stringify({ phase: "images", done: idx - 1, total, label: s.key }) },
     }).catch(() => {});
     const model = resolveModel(imageModel, s.key);
-    const url = await gen(s.brief, `${slug}-${s.key}`, !!s.landscape, suffix, model).catch(() => null);
+    const url = await gen(s.brief, `${slug}-${s.key}-${stamp}`, !!s.landscape, suffix, model).catch(() => null);
     if (url) {
       s.url = url; generated++;
       // Persist after EACH image so a timeout/crash never loses a paid-for image.
