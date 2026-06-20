@@ -119,16 +119,25 @@ export function AplusFactory() {
       await loadJobs();
     } finally { setBusy(null); }
   }
-  async function regenImages(jobId: string) {
+  async function regenImages(jobId: string, sku: string, name: string) {
     setBusy(jobId + ":img"); setMsg(null);
+    setGen({ idx: 1, total: 1, name, phase: "images", done: 0, tot: 6 });
+    let finished = false;
+    const p = post({ action: "generateImages", id: jobId, imageModel, force: true })
+      .then((r) => { finished = true; return r; }).catch(() => { finished = true; });
     try {
-      await post({ action: "generateImages", id: jobId, imageModel, force: true });
+      while (!finished) {
+        await sleep(900);
+        const pr = await fetchProgress(sku);
+        if (pr?.progress) setGen((g) => g ? { ...g, phase: pr.progress.phase, done: pr.progress.done, tot: pr.progress.total } : g);
+      }
+      await p;
       const res = await fetch(`/api/amazon/aplus?storeIndex=${storeIndex}&view=jobs`);
       const data = await res.json();
       setJobs(data.jobs ?? []); setSummary(data.summary ?? null);
       const updated = (data.jobs ?? []).find((x: Job) => x.id === jobId);
       if (updated) setReview(updated);
-    } finally { setBusy(null); }
+    } finally { setBusy(null); setGen(null); }
   }
   // Full regenerate (text + images) on the chosen models — re-runs generate for the SKU.
   async function regenAll(jobId: string, sku: string, name: string) {
@@ -397,7 +406,7 @@ export function AplusFactory() {
                 <span className="text-[11px] text-ink-3">Превью как на странице листинга · модели: {textModel === "opus" ? "Opus" : "Sonnet"} + {imageModel}</span>
                 <div className="flex items-center gap-1.5">
                   <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":all"} onClick={() => regenAll(review.id, review.sku, review.itemName ?? review.sku)}>Перегенерировать всё (текст+картинки)</Btn>
-                  <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":img"} onClick={() => regenImages(review.id)}>Только картинки</Btn>
+                  <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":img"} onClick={() => regenImages(review.id, review.sku, review.itemName ?? review.sku)}>Только картинки</Btn>
                 </div>
               </div>
               {/* WYSIWYG preview — image-forward A+ landing page */}
