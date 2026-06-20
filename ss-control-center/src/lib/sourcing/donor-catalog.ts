@@ -41,12 +41,40 @@ export function computeIdentityKey(o: { brand?: string | null; title?: string | 
   return [brand, ...words, sz].filter(Boolean).join("|") || title.slice(0, 60);
 }
 
+// Real MULTI-WORD grocery brands. First-token derivation truncates these
+// ("Green Giant" → "Green", "Del Monte" → "Del"), which split one brand across
+// two facets and read wrong in the UI. Longest match wins so "La Tortilla
+// Factory" beats "La Banderita". Curated (verified against catalog titles) — a
+// dictionary is reliable where a frequency heuristic isn't (it wrongly collapses
+// "Campbell's Condensed" / "Cheetos Crunchy", where word 2 is a product variety).
+export const KNOWN_MULTIWORD_BRANDS = [
+  "Dave's Killer Bread", "La Tortilla Factory", "La Banderita", "Del Monte",
+  "Coffee Mate", "Hidden Valley", "Pepperidge Farm", "Green Giant", "Chef Boyardee",
+  "Sara Lee", "Nature's Own", "Minute Maid", "Snack Factory", "Hamburger Helper",
+  "Vita Coco", "Good Thins", "Cape Cod", "Glory Foods", "Stove Top", "Cocoa Classics",
+  "Margaret Holmes", "Le Sueur", "College Inn", "Great Value", "Stephen's Gourmet",
+];
+const BRANDS_BY_LEN = [...KNOWN_MULTIWORD_BRANDS].sort((a, b) => b.length - a.length);
+
+// Return the canonical multi-word brand a title leads with, else null.
+export function canonicalMultiwordBrand(title?: string | null): string | null {
+  if (!title) return null;
+  const t = title.trim().toLowerCase();
+  for (const b of BRANDS_BY_LEN) {
+    const bl = b.toLowerCase();
+    if (t === bl || t.startsWith(bl + " ") || t.startsWith(bl + ",")) return b;
+  }
+  return null;
+}
+
 // Brand derived from the OFFER's OWN title (stable regardless of which search
 // query surfaced it). Using the job's target as brand made the same real item
 // dedup differently per query ("Maruchan" vs "Maruchan Instant") → duplicates +
-// orphaned offers. First title token, original case.
+// orphaned offers. Known multi-word brand first, else the first title token.
 export function deriveBrand(title?: string | null): string | null {
   if (!title) return null;
+  const known = canonicalMultiwordBrand(title);
+  if (known) return known;
   const t = title.trim()
     .replace(/^\(?\s*\d+\s*(?:-|\s)?\s*(?:pack|pk|count|ct)\s*\)?\s*/i, "") // strip "(4 pack) "
     .replace(/^\d+(?:\.\d+)?\s*(?:fl\s*oz|oz|lb|ct|count|g|ml|l)\b\s*/i, ""); // strip "3.25 oz "
@@ -386,7 +414,7 @@ export async function enrichTarget(
   const brandHint = cleanBrand(cp.brand);
   for (const o of survivors) {
     const { size, unitMeasure, unitAmount } = parseSize(o.title);
-    const offerBrand = brandHint || deriveBrand(o.title) || null;
+    const offerBrand = canonicalMultiwordBrand(o.title) || brandHint || deriveBrand(o.title) || null;
     const identityKey = computeIdentityKey({ brand: offerBrand, title: o.title, size });
 
     // Resolve the product WITHOUT orphaning: if this exact offer already exists,
