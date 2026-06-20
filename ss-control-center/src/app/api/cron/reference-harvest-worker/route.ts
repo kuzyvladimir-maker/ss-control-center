@@ -54,7 +54,8 @@ export async function GET(request: NextRequest) {
   const rows = await conn.execute({
     sql: `SELECT dp.id FROM "DonorProduct" dp
           WHERE (dp.imageUrls IS NULL OR json_array_length(dp.imageUrls) < 3)
-            AND EXISTS (SELECT 1 FROM "DonorOffer" o WHERE o.donorProductId = dp.id AND o.retailer='walmart')
+            AND EXISTS (SELECT 1 FROM "DonorOffer" o WHERE o.donorProductId = dp.id
+                        AND o.retailer IN ('walmart','target','samsclub','costco') AND o.productUrl IS NOT NULL)
           ORDER BY dp.createdAt DESC LIMIT ?`,
     args: [HARVEST_PER_TICK * 2],
   });

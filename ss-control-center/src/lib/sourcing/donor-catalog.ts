@@ -263,23 +263,32 @@ function parseIngredients(ing: any): string | null {
   return null;
 }
 
-// Unwrangle walmart_detail — RICHER than BlueCart (key_features bullets, gen_ai
-// description, directions, warnings) and on our 100k-credit Unwrangle plan
-// (~2.5 credits/call). Preferred source so we spare BlueCart's 10k/mo allotment.
-async function fetchUnwrangleDetail(key: string, url: string): Promise<DetailContent | null> {
+// Unwrangle product detail — RICHER than BlueCart and on our 100k-credit plan
+// (~2.5 credits/call). Works across retailers via per-platform endpoints; field
+// names differ (Walmart=key_features, Target=highlights; Target images live under
+// main_image), so we read each field with cross-platform fallbacks.
+const UNWRANGLE_DETAIL_PLATFORM: Record<string, string> = {
+  walmart: "walmart_detail", target: "target_detail", samsclub: "samsclub_detail", costco: "costco_detail",
+};
+async function fetchUnwrangleDetail(key: string, url: string, retailer: string): Promise<DetailContent | null> {
+  const platform = UNWRANGLE_DETAIL_PLATFORM[retailer];
+  if (!platform) return null;
   try {
-    const res = await fetch(`https://data.unwrangle.com/api/getter/?platform=walmart_detail&url=${encodeURIComponent(url)}&api_key=${key}`, { signal: AbortSignal.timeout(25000) });
+    const res = await fetch(`https://data.unwrangle.com/api/getter/?platform=${platform}&url=${encodeURIComponent(url)}&api_key=${key}`, { signal: AbortSignal.timeout(25000) });
     if (!res.ok) return null;
     const j: any = await res.json();
     const d = j?.detail || j?.product;
     if (!d || j?.success === false) return null;
-    const images = normImages(d.images);
+    // Images: some platforms put the primary in main_image and gallery in images.
+    const images = normImages([d.main_image, ...(Array.isArray(d.images) ? d.images : [])]);
     if (!images.length && !d.upc) return null;
     const cats = Array.isArray(d.categories) ? d.categories.map((c: any) => (typeof c === "string" ? c : c?.name)).filter(Boolean) : [];
+    // Bullets: Walmart→key_features, Target→highlights.
+    const rawBullets = Array.isArray(d.key_features) ? d.key_features : Array.isArray(d.highlights) ? d.highlights : [];
     return {
       images,
-      bullets: (Array.isArray(d.key_features) ? d.key_features : []).map((b: any) => String(b).trim()).filter(Boolean).slice(0, 12),
-      description: (typeof d.description === "string" && d.description.trim()) ? d.description : (typeof d.gen_ai_description === "string" ? d.gen_ai_description : null),
+      bullets: rawBullets.map((b: any) => String(typeof b === "object" ? (b?.value ?? b?.text ?? "") : b).trim()).filter(Boolean).slice(0, 12),
+      description: (typeof d.description === "string" && d.description.trim()) ? stripHtml(d.description) : (typeof d.gen_ai_description === "string" ? d.gen_ai_description : null),
       ingredients: parseIngredients(d.ingredients),
       specifications: Array.isArray(d.specifications) ? d.specifications : null,
       upc: d.upc || d.gtin || null,
@@ -319,17 +328,27 @@ async function fetchBluecartDetail(key: string, itemId: string): Promise<DetailC
 // specs, UPC) onto DonorProduct, then runs image-QC. Prefers Unwrangle (richer +
 // 100k-credit plan); falls back to BlueCart. Selective by design.
 export async function harvestDonorDetail(db: Client, productId: string): Promise<HarvestResult> {
-  const off = await db.execute({ sql: `SELECT productUrl, retailerProductId FROM "DonorOffer" WHERE donorProductId=? AND retailer='walmart' ORDER BY (productUrl IS NOT NULL) DESC LIMIT 1`, args: [productId] });
+  // Detail ANY retailer Unwrangle supports, preferring the richest source
+  // (Walmart > Target > Sam's > Costco). Pick that retailer's offer that has a URL.
+  const off = await db.execute({
+    sql: `SELECT retailer, productUrl, retailerProductId FROM "DonorOffer"
+          WHERE donorProductId=? AND retailer IN ('walmart','target','samsclub','costco')
+          ORDER BY CASE retailer WHEN 'walmart' THEN 0 WHEN 'target' THEN 1 WHEN 'samsclub' THEN 2 ELSE 3 END,
+                   (productUrl IS NOT NULL) DESC
+          LIMIT 1`,
+    args: [productId],
+  });
   const row: any = off.rows[0];
+  const retailer = row?.retailer as string | undefined;
   const url = row?.productUrl as string | undefined;
   const itemId = row?.retailerProductId as string | undefined;
-  if (!url && !itemId) return { ok: false, productId, images: 0, upc: null, hasIngredients: false, merged: 0, reason: "no walmart offer to detail" };
+  if (!url && !itemId) return { ok: false, productId, images: 0, upc: null, hasIngredients: false, merged: 0, reason: "no detailable offer" };
 
   let c: DetailContent | null = null;
   const uwKey = process.env.UNWRANGLE_API_KEY;
   const bcKey = process.env.BLUECART_API_KEY;
-  if (uwKey && url) c = await fetchUnwrangleDetail(uwKey, url);
-  if (!c && bcKey && itemId) c = await fetchBluecartDetail(bcKey, itemId);
+  if (uwKey && url && retailer) c = await fetchUnwrangleDetail(uwKey, url, retailer);
+  if (!c && bcKey && itemId && retailer === "walmart") c = await fetchBluecartDetail(bcKey, itemId);
   if (!c) return { ok: false, productId, images: 0, upc: null, hasIngredients: false, merged: 0, reason: "detail fetch failed" };
 
   // nutrition: no structured field anywhere (it's a gallery image) — keep nutrition-ish specs as the textual record.
