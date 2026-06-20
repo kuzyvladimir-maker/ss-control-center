@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { BUCKET_META, BUCKET_ORDER, type Bucket } from "@/lib/finance/settlement";
+import { ReceiptScanner } from "@/components/finance/ReceiptScanner";
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -213,6 +214,19 @@ export default function FinancialPlanPage() {
               {payouts.length === 0 && <tr><td colSpan={8} className="px-3 py-8 text-center text-muted-foreground">No periods pulled yet.</td></tr>}
             </tbody>
           </table>
+        </CardContent>
+      </Card>
+
+      {/* Scan a purchase receipt → debit a fund (resale buys → Restock reserve) */}
+      <Card>
+        <CardHeader><CardTitle className="text-base">Record a purchase (scan receipt)</CardTitle></CardHeader>
+        <CardContent>
+          <ReceiptScanner
+            funds={funds.map((f) => ({ id: f.id, name: f.name }))}
+            defaultFundId={funds.find((f) => f.group === "RESERVE")?.id ?? funds[0]?.id}
+            onSaved={load}
+          />
+          <p className="mt-2 text-xs text-muted-foreground">Resale buys (Walmart / BJ&apos;s / Sam&apos;s / Target / Costco / Instacart) → Restock reserve. Other business buys → pick the fund.</p>
         </CardContent>
       </Card>
 

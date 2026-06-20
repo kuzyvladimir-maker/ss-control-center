@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { ReceiptScanner } from "@/components/finance/ReceiptScanner";
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -153,6 +154,14 @@ export default function FundDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Scan a receipt → spend from this fund */}
+      <Card>
+        <CardHeader><CardTitle className="text-base">Scan a purchase receipt (debits this fund)</CardTitle></CardHeader>
+        <CardContent>
+          {fund && <ReceiptScanner funds={[{ id: fund.id, name: fund.name }]} defaultFundId={fund.id} onSaved={load} />}
+        </CardContent>
+      </Card>
 
       {/* Manual spend */}
       <Card>
