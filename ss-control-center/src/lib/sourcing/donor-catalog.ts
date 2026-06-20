@@ -103,6 +103,9 @@ export type Temperature = "Frozen" | "Dry";
 // Perishable product types that ship cold even when the title doesn't say "frozen".
 const PERISHABLE_RE = /\b(sausage roll|breakfast sausage|pork sausage|italian sausage|ground (beef|pork|turkey|chicken)|raw |fresh |deli |lunch ?meat|cold cuts|sliced (ham|turkey|chicken|beef)|hot ?dog|bratwurst|bacon|fresh mozzarella|biscuit dough|cookie dough|pie crust|tofu|eggs?\b)/i;
 const COLD_AISLE_RE = /\b(frozen|refrigerated|deli|fresh meat|meat & seafood|seafood|dairy)\b/i;
+// Shelf-stable markers that override a perishable-looking name (canned corn, bread,
+// vacuum-packed, jarred) — these ship DRY regardless of contents.
+const SHELF_STABLE_RE = /\b(canned|can|jarred|jar|vacuum|pouch|bottle|bread|buns?|rolls?|bagels?|tortillas?|loaf|crackers?|chips?|cereal)\b/i;
 
 export function classifyTemperature(parts: {
   title?: string | null; bullets?: string[] | null; description?: string | null; retailerCats?: string[] | null;
@@ -117,6 +120,9 @@ export function classifyTemperature(parts: {
     || /frozen (pizza|vegetabl|fruit|meal|dinner|entr|waffle|breakfast|novelt|treat|yogurt|dessert)/.test(title)
     || /keep\s+frozen|store\s+frozen|keep at 0\s*°?\s*f\b/.test(instr))
     return "Frozen";
+  // Canned / jarred / vacuum / bread → shelf-stable, even if the contents (corn,
+  // tuna) would otherwise be perishable. Overrides the perishable check below.
+  if (SHELF_STABLE_RE.test(title)) return "Dry";
   // Refrigerated / perishable → also Frozen for us (we ship it frozen with ice).
   if (COLD_AISLE_RE.test(cats) || PERISHABLE_RE.test(title)) return "Frozen";
   // A real "keep refrigerated" requirement (exclude "...after opening / for best
@@ -142,10 +148,11 @@ export async function classifyTemperatureLLM(items: { title?: string | null; cat
       model: "claude-haiku-4-5-20251001",
       max_tokens: 3500,
       messages: [{ role: "user", content:
-        `Classify each grocery product as FROZEN or DRY for a fulfillment operation that FREEZES and ships cold items with ice.\n` +
-        `FROZEN = needs a cold chain: natively frozen foods, AND refrigerated/perishable items — raw or fresh meat, poultry, seafood, fresh/raw sausage, bacon, deli & lunch meats, hot dogs, fresh dairy, eggs, butter, refrigerated dough/biscuits, tofu, fresh pasta.\n` +
-        `DRY = shelf-stable / ambient: canned, jarred, boxed, bagged snacks, dry pasta & rice, condiments, sauces in jars, drinks, candy, baking, coffee, cereal, shelf-stable (canned/pouched) meats like Vienna sausage or tuna.\n` +
-        `If unsure, lean DRY unless it clearly needs refrigeration or freezing.\n` +
+        `Classify each grocery product as FROZEN or DRY for a fulfillment operation that FREEZES and ships cold items with ice. Decide by HOW THE STORE SELLS IT: from a freezer/refrigerator → FROZEN; from a shelf at room temperature → DRY.\n` +
+        `FROZEN = sold cold (freezer or fridge): natively frozen foods; raw or fresh meat, poultry, seafood; fresh/raw sausage, bacon, hot dogs, deli & lunch meats; fresh dairy (milk, yogurt, fresh cheese), eggs, butter; refrigerated dough/biscuits; tofu; FRESH (refrigerated) pasta.\n` +
+        `DRY = shelf-stable / ambient, even if the contents would otherwise be perishable: ANY canned, jarred, vacuum-packed, pouched, or boxed shelf-stable item (e.g. canned/vacuum corn, canned tuna, Vienna sausage, boxed shelf tortellini); ALL bread, buns, rolls, bagels, tortillas and bakery loaves; chips, crackers, snacks; dry pasta & rice; condiments & jarred sauces; drinks; candy; baking; coffee; cereal.\n` +
+        `Key rule: canned/jarred/vacuum/pouched = DRY regardless of contents. Bread & bakery = DRY. Only mark FROZEN when the item genuinely lives in a freezer or refrigerator case.\n` +
+        `If unsure, lean DRY.\n` +
         `Return ONLY a JSON array [{"i":0,"frozen":true},...] covering EVERY item.\n\n${list}` }],
     });
     const tb = res.content.find((b: any) => b.type === "text") as any;
