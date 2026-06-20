@@ -47,3 +47,7 @@ preferring the stale master over the accurate order line.
 Could not validate live from a dev machine — Veeqo returns 401 locally (it appears to
 allowlist Vercel egress IPs), so the diagnosis is from the code path, which leaves no
 other source for the displayed title. Verify on prod after deploy.
+
+## Связано с
+- [Procurement module](procurement-module.md) — страница, где считается buy quantity
+- [Veeqo API](veeqo-api.md) — источник order-line и catalog-master заголовков

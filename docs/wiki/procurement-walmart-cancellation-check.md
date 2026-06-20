@@ -12,7 +12,7 @@ cancelOrderLines с reason **`CUSTOMER_CHANGED_MIND`**.
 Зачем: до 2026-06-07 Vladimir мог по инерции закупить инвентарь под заказ,
 который кастомер уже попросил отменить. Watchdog cron ловил такие
 запросы, но **только если label НЕ был куплен** (см.
-[walmart-cancellation-watchdog](walmart-cancellation-watchdog.md));
+cron `src/app/api/cron/walmart-cancellation-watchdog`);
 procurement-стадия — это до закупки и тем более до label, и именно
 здесь Vladimir принимает решение «закупаем или отменяем». Теперь
 сигнал виден up-front.

@@ -30,3 +30,7 @@ Each runs independently via `Promise.allSettled` — a failure in one doesn't st
 ## Required env
 
 `CRON_SECRET` must be set on the Vercel project. Without it, fan-out skips with a clear error in `results.cronFanOut.error` and only Amazon orders + finances get refreshed (the legacy `/api/sync` behaviour).
+
+## Связано с
+- [Dashboard](dashboard.md) — страница с кнопкой Refresh и KPI-полосой
+- [Account health](account-health.md) — метрики, обновляемые через fan-out

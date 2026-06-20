@@ -31,3 +31,7 @@ The `eddNYDate` workaround was removed — all callers go through `veeqoDateToLo
 ## Why Pacific and not NY
 
 Vladimir is on Eastern Time but Veeqo (a UK-origin product running on US carrier APIs) anchors all marketplace-facing timestamps in Pacific, the standard TZ used by US e-commerce platforms (Amazon, etc.). The goal is to match Veeqo's rendering, not the operator's wall clock — otherwise our deadline checks disagree with what the carrier's own promise looks like in Veeqo.
+
+## Связано с
+- [Veeqo Rate Shopping API](veeqo-rate-shopping-api.md) — отдаёт EDD, который мы конвертируем
+- [Shipping rate selection](shipping-rate-selection.md) — фильтр по дедлайну на основе EDD

@@ -24,6 +24,8 @@ inventory на этом же SKU.
   когда другой склад имеет 50 единиц)
 - `src/lib/jackie-mcp/tools/walmart-inventory.ts` — `walmart_inventory_update`
   получил `all_ship_nodes: true` опцию для retire-flow
+- [Walmart API](walmart-api.md) — эндпоинты inventory и ship-node discovery
+- [Walmart catalog cache](walmart-catalog-cache.md) — связанный баг рассинхрона каталога
 
 ---
 

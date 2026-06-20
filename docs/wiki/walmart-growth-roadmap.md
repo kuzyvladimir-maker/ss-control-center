@@ -44,3 +44,7 @@ Walmart content-пробелы (830 товаров) = в основном missin
 5. ⏳ Контент авто-фикс (preview→apply) — после harvest'а реальных данных.
 6. ⏳ Репрайсер (пол=маржа) — после COGS.
 7. ⏳ Two-Day программа / WFS для подходящего набора (после замера реального transit).
+
+## Связано с
+- [Amazon Growth roadmap](amazon-growth-roadmap.md) — зеркальный модуль роста на Amazon
+- [Walmart Growth listing quality](walmart-growth-listing-quality.md) — компонент Listing Quality score

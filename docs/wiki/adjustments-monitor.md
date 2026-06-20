@@ -71,11 +71,11 @@ started · jobName · status · items · duration.
 
 ## 🔗 Связи
 - **Зависит от:** [Amazon SP-API](amazon-sp-api.md) (Finances + Reports roles),
-  [SKU Database](google-sheets-sku-db.md), [Veeqo](veeqo.md) (carrier+tracking enrichment)
+  [SKU Database](google-sheets-sku-db.md), [Veeqo API](veeqo-api.md) (carrier+tracking enrichment)
 - **Используется в:** [Dashboard](dashboard.md) (`adjustments.monthlyTotal`,
   `adjustments.unreviewed` для сайдбара)
 - **Связанные модули:** [Shipping Labels](shipping-labels.md),
-  [Walmart Returns](../wiki/walmart-returns.md) (recon overlap)
+  [Walmart API](walmart-api.md) (recon/returns overlap)
 - **Disputes workflow:** [Adjustments Disputes](adjustments-disputes.md) —
   как оспаривать carrier reweigh overcharges + статус текущих cases
 - **См. также:** [Database Schema](database-schema.md),

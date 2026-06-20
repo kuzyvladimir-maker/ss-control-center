@@ -1,8 +1,28 @@
 {
   "hooks": {
-    "session_start": {
-      "command": "echo '--- Session started at '$(date '+%Y-%m-%d %H:%M')"
-    }
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "echo '--- Session started at '$(date '+%Y-%m-%d %H:%M')" },
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/scripts/wiki-brain.mjs\" hook-session" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/scripts/wiki-brain.mjs\" hook-postedit" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/scripts/wiki-brain.mjs\" hook-stop" }
+        ]
+      }
+    ]
   },
   "permissions": {
     "defaultMode": "bypassPermissions",

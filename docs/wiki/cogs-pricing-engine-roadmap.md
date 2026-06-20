@@ -67,3 +67,7 @@
 
 ## История
 - 2026-06-16: roadmap создан по запросу Vladimir; Фаза 0 завершена.
+
+## Связано с
+- [Pricing module](pricing-module.md) — ценовой кокпит фазы 5
+- [Product sourcing engine](product-sourcing-engine.md) — движок COGS/сорсинга фазы 3

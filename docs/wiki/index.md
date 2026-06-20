@@ -8,6 +8,9 @@
 ## 🗺️ Карта связей
 - [CONNECTIONS.md](CONNECTIONS.md) — полная карта зависимостей между статьями
 
+## 🧠 Поддержка базы знаний (авто)
+- [Wiki-Brain — авто-санитар знаний](wiki-brain-system.md) — скрипт `scripts/wiki-brain.mjs` + хуки Claude Code ловят сирот, битые ссылки и расхождение код↔доки. Запуск вручную: `node scripts/wiki-brain.mjs`
+
 ---
 
 ## 🎨 Design / UI
@@ -53,6 +56,19 @@
 - [Adjustments Monitor](adjustments-monitor.md) — корректировки веса/размеров
 - [A-to-Z & Chargeback](atoz-chargeback.md) — защита от претензий
 - [Feedback Manager](feedback-manager.md) — отзывы, классификация удаляемости
+- [Pricing Module](pricing-module.md) — модуль ценообразования: floor/ceiling guardrails, классификация по cost-модели, sync cron (старт с Uncrustables, store1)
+- [COGS / Pricing Engine Roadmap](cogs-pricing-engine-roadmap.md) — roadmap: единый каталог SKU с себестоимостью ритейлеров → динамическое ценообразование (6 фаз)
+- [Reference Catalog Engine](reference-catalog-engine.md) — архитектура справочной базы товаров от доноров (ритейлеров) для COGS и обогащения контента
+- [Amazon Growth Roadmap](amazon-growth-roadmap.md) — стратегия роста Amazon: источники данных, Listing Health Score, план модуля `/amazon-growth`
+- [Walmart Growth Roadmap](walmart-growth-roadmap.md) — стратегия роста Walmart: Action Center, List Quality, Buy Box, региональный темплейт доставки
+- [Dashboard Refresh Fan-out](dashboard-refresh-fan-out.md) — кнопка Refresh синхронизирует все данные (Amazon, Walmart, Health) параллельно
+- [Sales Overview — Hybrid Channels](sales-overview-hybrid-channels.md) — гибридный источник продаж: Amazon/Walmart из cache, остальные от Veeqo; NaN-health исключена
+- [Merge Orders](merge-orders.md) — сигнализация объединяемых заказов в Veeqo: группировка по адресу, deep-link в Mergeable view
+- [Procurement — Retire From Sale](procurement-retire-from-sale.md) — снятие товара с продажи на Walmart: поиск по каталогу, обнуление инвентаря всех SKU
+- [Procurement — Title Source](procurement-title-source.md) — фикс: заголовок берём из строки заказа (customer), не из устаревшего каталога Veeqo
+- [Procurement — Walmart Cancellation Check](procurement-walmart-cancellation-check.md) — live-проверка флага отмены от покупателя на странице закупок (одноклик)
+- [Walmart Quantity Inquiry](walmart-quantity-inquiry.md) — уточнение количества у клиента по email: поиск аномалий, модалка, крон опроса ответов
+- [Walmart Quantity Confusion Fix](walmart-quantity-confusion-fix.md) — мультипаки: детерминированный композит главного фото с сеткой товаров
 
 ## 🧮 Алгоритмы
 - [Выбор ставки (Rate Selection)](shipping-rate-selection.md) — Dry vs Frozen логика (Dry-правила упрощены 2026-05-14)
@@ -61,6 +77,8 @@
 - [Decision Engine](customer-hub-decision-engine.md) — 5 слоёв AI-анализа
 - [Frozen/Dry классификация](frozen-dry-classification.md) — по тегам Veeqo
 - [Weekend Distribution](weekend-distribution.md) — Frozen Пт→Пн/Вт + Ship Date Trick
+- [Frozen Risk Cap](shipping-frozen-risk-cap.md) — критический риск ограничивает транзит Frozen 2 днями вместо обычных 3
+- [Shipping v3.5 Checkpoint](shipping-v3.5-checkpoint.md) — чекпоинт рабочего состояния: Frozen shipping v3.5 проверена боем (12/12 labels), git-tag для отката
 
 ## 🔌 Интеграции
 - [Veeqo API](veeqo-api.md) — заказы, ставки, покупка labels
@@ -77,6 +95,11 @@
 - [Telegram](telegram-notifications.md) — уведомления Владимиру
 - [Weather & Geocoding](weather-geocoding.md) — температура для frozen analytics
 - [n8n Автоматизация](n8n-automation.md) — 3 workflow для shipping
+- [ChannelMAX Guide](channelmax-guide.md) — руководство по Amazon-репрайсеру ChannelMAX: загрузка инвентаря, флэт-файл репрайсинга, колонки
+- [Veeqo Package Sync](veeqo-package-sync.md) — sync габаритов в Veeqo: PUT allocation_package, verify из response (без лишних GET)
+- [Walmart Buy Shipping](walmart-buy-shipping.md) — покупка этикеток Walmart через SWW API: заказ остаётся Acknowledged, Shipped отмечается отдельно
+- [Walmart Multi-node Inventory](walmart-multi-node-inventory.md) — инвентарь на несколько ship nodes: fix retire-listing, чтобы обновлять все склады
+- [Drive Folder Structure](drive-folder-structure.md) — структура папок Google Drive для этикеток (по месяцам/дням/маркетплейсам)
 
 ## 📋 Бизнес-правила
 - [Timezone правила](timezone-rules.md) — UTC-7, America/New_York
@@ -85,6 +108,7 @@
 - [Walmart ограничения](walmart-restrictions.md) — no Frozen, no weekend, 10% budget
 - [Frozen Shipping Rules](frozen-shipping-rules.md) — ≤3 дня, food safety CS
 - [Label Filename Format](label-filename-format.md) — формат имени PDF
+- [Timezone EDD (Pacific)](timezone-edd.md) — Veeqo EDD конвертируется в Pacific timezone (не UTC/NY) для совпадения с UI
 
 ## 📌 Отложенные задачи (TODO)
 - [Деплой на Vercel + Postgres](deploy-to-vercel-plan.md) — план публикации в интернет, ~1ч 15м, отложен 2026-04-10

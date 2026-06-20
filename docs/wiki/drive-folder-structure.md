@@ -31,3 +31,7 @@ Turso migration: [`scripts/turso-migrate-channel-kind.mjs`](../../ss-control-cen
 `uploadLabelPdf` ensures a `Printed/` subfolder exists in the channel folder after each upload, via `getOrCreateFolder` (idempotent — never overwrites or empties an existing `Printed/`).
 
 The warehouse manually moves PDFs into `Printed/` after they come off the label printer. No automated move yet — see `feedback_drive_folder` if/when we add it.
+
+## Связано с
+- [Shipping labels](shipping-labels.md) — генерирует PDF, складываемые в эти папки
+- [Google Drive setup](google-drive-setup.md) — настройка доступа к Drive

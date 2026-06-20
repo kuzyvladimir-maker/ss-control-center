@@ -217,3 +217,7 @@ optimizer для auto-действий.
 - Авто-фикс контента: как у Walmart, угадывать структурные атрибуты опасно →
   заполнять из harvest sourcing-движка (`project_product_sourcing_engine`), не выдумывать.
 - store5 (US suspended 2026-05-17) — листинги мёртвые, не включать в первую волну.
+
+## Связано с
+- [Walmart Growth roadmap](walmart-growth-roadmap.md) — зеркальный модуль роста на Walmart
+- [Amazon SP-API](amazon-sp-api.md) — источник данных для рейтинга листингов

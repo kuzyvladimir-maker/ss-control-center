@@ -64,3 +64,7 @@ Veeqo uses `depth / width / height`, where `depth` is the longest dimension (= s
 - [Veeqo API: Update Allocation Package](https://developers.veeqo.com/api/operations/update-allocation-package/)
 - [`src/lib/veeqo/client.ts`](../../ss-control-center/src/lib/veeqo/client.ts) → `updateAllocationPackage()`
 - [`src/app/api/shipping/edit-package/route.ts`](../../ss-control-center/src/app/api/shipping/edit-package/route.ts) → `pushPackageToVeeqo()`
+
+## Связано с
+- [Veeqo API](veeqo-api.md) — клиент-обёртка и эндпоинты Veeqo
+- [Shipping labels](shipping-labels.md) — использует габариты пакета для рейтов

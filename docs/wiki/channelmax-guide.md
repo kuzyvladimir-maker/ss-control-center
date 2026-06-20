@@ -188,3 +188,7 @@ Folder→venue: `AmznUS-InvImp`=Salutem, `AmznUS4-InvImp`=Retailer, `AmznUS3-Inv
 
 ## История
 - 2026-06-16: база знаний создана; первый аплоад Min/Max (156 SKU, TaskID 327780).
+
+## Связано с
+- [Pricing module](pricing-module.md) — кокпит, генерирующий flat-file для ChannelMAX
+- [Uncrustables pricing model](uncrustables-pricing-model.md) — cost-модель, дающая Min/Max

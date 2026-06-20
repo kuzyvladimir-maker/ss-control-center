@@ -123,7 +123,7 @@ Failure breakdown:
 | 8541 | 1 | UPC/ASIN catalog data conflict | Yes (catalog cleanup) |
 | 90197 | 1 | Variant constraint mismatch | Yes |
 
-Only 19 listings (~1.8% of total) need further Claude prompt tuning; the other 4 (~0.4%) are out-of-scope (brand approval, catalog mismatch, HTML in fields the script doesn't touch). Per Vladimir's [feedback_wiki_notes.md](feedback_wiki_notes.md): all original bullets / descriptions / images are preserved on each `ListingRemediation` row → rollback remains possible if needed.
+Only 19 listings (~1.8% of total) need further Claude prompt tuning; the other 4 (~0.4%) are out-of-scope (brand approval, catalog mismatch, HTML in fields the script doesn't touch). Per Vladimir's wiki-notes feedback rule: all original bullets / descriptions / images are preserved on each `ListingRemediation` row → rollback remains possible if needed.
 
 ## Cost telemetry
 

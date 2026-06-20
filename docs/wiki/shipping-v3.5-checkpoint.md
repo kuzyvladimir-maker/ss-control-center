@@ -60,3 +60,7 @@ allocation-пакету (был фантомный дешёвый FedEx One Rate
 - `scripts/diag-explain-order.ts <ORDER#> [cap]` — bestToday vs bestMonday + решение.
 - `scripts/diag-weight-check.ts <ORDER#> [lbs] [LxWxH]` — рейты по правильному vs стейловому весу.
 - `scripts/diag-rate-shopping-v1.ts` — образец вызова нового API.
+
+## Связано с
+- [Shipping frozen risk cap](shipping-frozen-risk-cap.md) — окно 2/3 дня по FrozenRiskAlert
+- [Veeqo Rate Shopping API](veeqo-rate-shopping-api.md) — левер даты отгрузки

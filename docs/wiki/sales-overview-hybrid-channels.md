@@ -69,3 +69,7 @@ union-grown `knownChannels` list.
 The Dashboard (`/`) already reads only Amazon + Walmart from our cache and never
 included NAN health / Direct, with brand-colour dots (#ff9900 / #0071dc). No change
 needed there — it was already correct and on-brand.
+
+## Связано с
+- [Dashboard](dashboard.md) — уже читает Amazon+Walmart из кеша без NAN/Direct
+- [Sales cards dashboard](sales-cards-dashboard.md) — карточки продаж того же кеша
