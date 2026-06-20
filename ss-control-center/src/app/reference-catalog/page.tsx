@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo, type ReactNode } from "react
 import {
   Loader2, AlertCircle, Search, X, RefreshCw, Wand2, ImageOff,
   Boxes, Tags, Store, ListChecks, ExternalLink, Camera, Check, Minus,
+  Clock, CheckCircle2, XCircle,
 } from "lucide-react";
 import { PageHead, Btn, Panel, PanelHeader, PanelBody, KpiCard } from "@/components/kit";
 import { cn } from "@/lib/utils";
@@ -74,6 +75,11 @@ export default function ReferenceCatalogPage() {
   const [vector, setVector] = useState("");
   const [enqueuing, setEnqueuing] = useState(false);
   const [enqueueMsg, setEnqueueMsg] = useState<string | null>(null);
+  const [jobs, setJobs] = useState<any[]>([]);
+
+  const loadJobs = useCallback(async () => {
+    try { const r = await fetch("/api/reference-catalog/enqueue"); const j = await r.json(); if (j.ok) setJobs(j.jobs || []); } catch { /* */ }
+  }, []);
 
   // product detail drawer
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -113,6 +119,16 @@ export default function ReferenceCatalogPage() {
   }, [debounced, brand, category, retailer, sort]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { loadJobs(); }, [loadJobs]);
+
+  // While any job is queued/running, poll jobs (and the catalog) so the progress
+  // panel and counts update live as the worker drains the queue.
+  const hasActive = jobs.some((j) => j.status === "queued" || j.status === "running");
+  useEffect(() => {
+    if (!hasActive) return;
+    const t = setInterval(() => { loadJobs(); load(); }, 6000);
+    return () => clearInterval(t);
+  }, [hasActive, loadJobs, load]);
 
   const submitVector = useCallback(async () => {
     const target = vector.trim();
@@ -130,12 +146,13 @@ export default function ReferenceCatalogPage() {
       setEnqueueMsg(j.created ? `Queued "${target}" for enrichment` : `"${target}" is already in the queue`);
       setVector("");
       load();
+      loadJobs();
     } catch (e) {
       setEnqueueMsg(e instanceof Error ? e.message : "enqueue failed");
     } finally {
       setEnqueuing(false);
     }
-  }, [vector, load]);
+  }, [vector, load, loadJobs]);
 
   // Cumulative growth for the sparkline (a steadily-rising line).
   const growthCumulative = useMemo(() => {
@@ -285,8 +302,15 @@ export default function ReferenceCatalogPage() {
           </div>
           {enqueueMsg && <div className="mt-2 text-[12.5px] text-green-ink">{enqueueMsg}</div>}
           <div className="mt-2 text-[11.5px] text-ink-3">
-            Queues a directed enrichment job. The worker searches live retailers (first-party only), then fills the catalog.
+            Queues a directed enrichment job. The worker searches live retailers (first-party only), then fills the catalog. A queued job starts within a couple of minutes.
           </div>
+
+          {/* Live job progress */}
+          {jobs.length > 0 && (
+            <div className="mt-3 space-y-1.5 border-t border-rule pt-3">
+              {jobs.slice(0, 8).map((j) => <JobRow key={j.id} job={j} />)}
+            </div>
+          )}
         </PanelBody>
       </Panel>
 
@@ -426,6 +450,41 @@ export default function ReferenceCatalogPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ─────────────────────────── Enrichment job row ──────────────────────────────
+   One queued/running/done/error job with a live result summary (products + offers
+   found, which retailers were hit). Gives the "vector" box the progress Vladimir
+   asked for — what it found, per job. */
+function JobRow({ job }: { job: any }) {
+  let res: any = null;
+  try { res = job.result ? JSON.parse(job.result) : null; } catch { /* */ }
+  const status = job.status as string;
+  const icon = status === "done" ? <CheckCircle2 size={14} className="shrink-0 text-green-ink" />
+    : status === "running" ? <Loader2 size={14} className="shrink-0 animate-spin text-info" />
+    : status === "error" ? <XCircle size={14} className="shrink-0 text-danger" />
+    : <Clock size={14} className="shrink-0 text-ink-4" />;
+  const retailers: string[] = res?.retailersHit || [];
+  return (
+    <div className="flex items-center gap-2.5 text-[12.5px]">
+      {icon}
+      <span className="font-medium capitalize text-ink">{job.target}</span>
+      <div className="flex-1 truncate text-ink-3">
+        {status === "queued" && <span>queued — starts within ~2 min</span>}
+        {status === "running" && <span>searching retailers…</span>}
+        {status === "done" && res && (
+          <span>
+            <span className="text-green-ink">+{res.productsCreated} products</span>
+            {" · "}{res.offersUpserted} offers
+            {retailers.length ? <span className="text-ink-4">{" · "}{retailers.join(", ")}</span> : null}
+            {res.rejected ? <span className="text-ink-4">{" · "}{res.rejected} filtered out</span> : null}
+          </span>
+        )}
+        {status === "done" && !res && <span className="text-ink-4">done</span>}
+        {status === "error" && <span className="text-danger">{job.error || "failed"}</span>}
+      </div>
     </div>
   );
 }

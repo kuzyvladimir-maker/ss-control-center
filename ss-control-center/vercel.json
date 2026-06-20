@@ -95,7 +95,7 @@
     },
     {
       "path": "/api/cron/reference-enrichment-worker",
-      "schedule": "*/5 * * * *"
+      "schedule": "*/2 * * * *"
     },
     {
       "path": "/api/cron/reference-harvest-worker",

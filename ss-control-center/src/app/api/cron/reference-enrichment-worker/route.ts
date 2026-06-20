@@ -23,11 +23,12 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 const DRAIN_PER_TICK = 8;          // targets per tick; each ≈ 1 BlueCart + up to 3 Unwrangle calls
-const TIME_BUDGET_MS = 240_000;    // < the 5-min interval so ticks don't overlap
-const BLUECART_CREDIT_FLOOR = 300; // pause Walmart enrichment below this (protect the monthly allotment)
+const TIME_BUDGET_MS = 110_000;    // < the 2-min interval so ticks don't overlap
 const MAX_ATTEMPTS = 4;
 const INTER_JOB_MS = 500;
-const UNWRANGLE_RETAILERS: ("target" | "samsclub" | "costco")[] = ["target", "samsclub", "costco"];
+// Walmart included so it falls back to Unwrangle walmart_search when BlueCart is
+// down/exhausted (enrichTarget still prefers BlueCart for Walmart when available).
+const UNWRANGLE_RETAILERS: ("walmart" | "target" | "samsclub" | "costco")[] = ["walmart", "target", "samsclub", "costco"];
 const ZIP = "33765"; // Clearwater, FL — our buying zone
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -58,12 +59,10 @@ export async function GET(request: NextRequest) {
     (out as any).reaped = reap.rowsAffected || 0;
   } catch { /* ignore */ }
 
-  // Budget guard: don't burn BlueCart below the floor.
-  const credits = await bluecartCreditsRemaining();
-  (out as any).bluecartCredits = credits;
-  if (credits != null && credits <= BLUECART_CREDIT_FLOOR) {
-    return NextResponse.json({ ok: true, paused: "bluecart credits at/below floor", ...out });
-  }
+  // BlueCart balance is surfaced for visibility only. Enrichment no longer pauses
+  // on a low BlueCart floor — Walmart falls back to Unwrangle (100k-credit plan),
+  // so a depleted BlueCart must not stall the whole queue.
+  (out as any).bluecartCredits = await bluecartCreditsRemaining();
 
   while (Date.now() - started < TIME_BUDGET_MS) {
     const q = await conn.execute(`SELECT id, targetType, target, attempts FROM "EnrichmentJob" WHERE status='queued' ORDER BY priority DESC, attempts ASC, queuedAt ASC LIMIT 1`);

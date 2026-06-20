@@ -373,7 +373,7 @@ export interface EnrichTargetResult {
 // run only when `unwrangleRetailers` is passed (i.e. when that sub is paid).
 export async function enrichTarget(
   db: Client,
-  opts: { target: string; brand?: string | null; zip?: string | null; unwrangleRetailers?: ("target" | "samsclub" | "costco")[] },
+  opts: { target: string; brand?: string | null; zip?: string | null; unwrangleRetailers?: ("walmart" | "target" | "samsclub" | "costco")[] },
 ): Promise<EnrichTargetResult> {
   const cp: CanonicalProduct = { brand: (opts.brand || opts.target.split(/\s+/).slice(0, 2).join(" ")) || undefined };
   const now = new Date().toISOString();
@@ -383,16 +383,22 @@ export async function enrichTarget(
 
   // Collect (sourceApi, scoredOffers) from every live retailer.
   const batches: { offers: ScoredOffer[] }[] = [];
+
+  // Walmart (our #1 buying source): prefer BlueCart (clean is_marketplace_item 1P
+  // flag) but fall back to Unwrangle walmart_search when BlueCart is down/exhausted
+  // — so a depleted BlueCart never drops Walmart from new enrichments.
+  let walmartCovered = false;
   try {
     const bc = await bluecartWalmartSearch(opts.target);
     creditsRemaining = bc.creditsRemaining;
-    if (!bc.trialExhausted) { retailersHit.push("walmart"); batches.push({ offers: bc.offers.map((o) => scoreOffer(o, cp)) }); }
-  } catch { /* skip walmart on error */ }
+    if (!bc.trialExhausted && bc.offers.length) { retailersHit.push("walmart"); batches.push({ offers: bc.offers.map((o) => scoreOffer(o, cp)) }); walmartCovered = true; }
+  } catch { /* BlueCart unavailable — Unwrangle fallback below */ }
 
   for (const r of opts.unwrangleRetailers ?? []) {
+    if (r === "walmart" && walmartCovered) continue; // already covered by BlueCart (better 1P signal)
     try {
       const uw = await unwrangleSearch(r, opts.target);
-      if (!uw.trialExhausted) { retailersHit.push(r); batches.push({ offers: uw.offers.map((o) => scoreOffer(o, cp)) }); }
+      if (!uw.trialExhausted) { if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: uw.offers.map((o) => scoreOffer(o, cp)) }); }
     } catch { /* skip this retailer on error */ }
   }
 
