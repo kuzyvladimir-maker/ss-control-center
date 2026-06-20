@@ -100,6 +100,10 @@
     {
       "path": "/api/cron/reference-harvest-worker",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/finance-funds",
+      "schedule": "30 9 * * 1"
     }
   ]
 }

@@ -41,6 +41,9 @@ export interface ValidatorInput {
     packaging_spec: string;
     total_weight_oz: number | null;
     main_image_url: string;
+    /** COGS basis in cents — what WE pay to source the bundle. Used by
+     *  validator-margin-floor to enforce the ≥20% margin rule. */
+    estimated_cost_cents: number | null;
   } | null;
   /** Bundle components for inventory + multi-brand checks. */
   bundle_components: Array<{

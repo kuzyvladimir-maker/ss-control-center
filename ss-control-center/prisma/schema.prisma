@@ -3292,3 +3292,89 @@ model ProductPackSizeCache {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ─── Finance Core — Phase 1 (Funds) ────────────────────────────────────────
+// Cash-basis financial planning. Money in = marketplace payouts (already net of
+// marketplace fees). One global business pool, distributed by a priority
+// waterfall: RESERVE (restock: COGS+shipping+packaging) → FP1 → FP2 → FREE.
+// See docs/wiki/finance-funds.md + plan goofy-crafting-flamingo.md.
+
+// Payout — one marketplace deposit (Amazon settlement / Walmart recon payment).
+// `netAmount` (already net of marketplace fees) is the cash we distribute.
+model Payout {
+  id          String  @id @default(cuid())
+  marketplace String // amazon | walmart
+  storeIndex  Int? // source store/account (for traceability; pool is global)
+  entity      String? // legal entity name (denormalized for later per-entity P&L)
+  externalId  String // settlement-id / recon batch id — dedup key
+  periodStart String? // ISO date the payout period starts
+  periodEnd   String? // ISO date the payout period ends
+  depositDate String? // ISO date funds were deposited
+  grossSales  Float? // optional: gross before fees
+  feesTotal   Float? // optional: marketplace fees deducted
+  netAmount   Float // the distributable cash (net deposit)
+  currency    String  @default("USD")
+  // Set once this payout has been run through fund distribution.
+  distributed Boolean @default(false)
+  source      String  @default("settlement") // settlement | recon | manual
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([marketplace, externalId], name: "payout_dedup")
+  @@index([depositDate])
+  @@index([distributed])
+}
+
+// Fund — a configurable bucket (UI-CRUD). value = percent (0–100) when
+// allocationType="percent", else an absolute USD amount per run. `balance` is the
+// running accumulated amount. Seed: one RESERVE (priority 0) + one FREE (last).
+model Fund {
+  id             String  @id @default(cuid())
+  name           String
+  group          String // RESERVE | FP1 | FP2 | FREE
+  allocationType String  @default("percent") // percent | absolute
+  value          Float   @default(0)
+  priority       Int     @default(100) // lower = filled earlier
+  cap            Float? // optional per-run ceiling (USD)
+  balance        Float   @default(0)
+  active         Boolean @default(true)
+  isSystem       Boolean @default(false) // RESERVE / FREE seeded funds
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([group])
+  @@index([active])
+}
+
+// FundAllocation — one line of money moved into a fund during a run.
+model FundAllocation {
+  id        String   @id @default(cuid())
+  fundId    String
+  runId     String?
+  payoutId  String?
+  amount    Float
+  date      String? // ISO date of the run
+  createdAt DateTime @default(now())
+
+  @@index([fundId])
+  @@index([runId])
+}
+
+// FinancePlanRun — one weekly (or manual) distribution pass.
+model FinancePlanRun {
+  id               String  @id @default(cuid())
+  runDate          String // ISO date
+  periodStart      String?
+  periodEnd        String?
+  totalIn          Float   @default(0)
+  totalReserved    Float   @default(0)
+  totalDistributed Float   @default(0)
+  reserveRateUsed  Float   @default(0)
+  payoutCount      Int     @default(0)
+  source           String  @default("manual") // manual | cron
+  notes            String?
+  createdAt        DateTime @default(now())
+
+  @@index([runDate])
+}

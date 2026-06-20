@@ -24,6 +24,7 @@ import { validatorWeight } from "@/lib/bundle-factory/validation/validators/vali
 import { validatorCountryOfOrigin } from "@/lib/bundle-factory/validation/validators/validator-country-of-origin";
 import { validatorImageDimensions } from "@/lib/bundle-factory/validation/validators/validator-image-dimensions";
 import { validatorImageFormat } from "@/lib/bundle-factory/validation/validators/validator-image-format";
+import { validatorMarginFloor } from "@/lib/bundle-factory/validation/validators/validator-margin-floor";
 
 // ── Fixture builder ─────────────────────────────────────────────────────
 
@@ -103,6 +104,7 @@ function mkInput(sku: ChannelSKU): ValidatorInput {
       packaging_spec: "{}",
       total_weight_oz: 32,
       main_image_url: "https://example.com/img.png",
+      estimated_cost_cents: 1200,
     },
     bundle_components: [
       { product_name: "Cheez-It Original", manufacturer_brand: "Cheez-It", manufacturer_upc: "024100109838", qty: 3 },
@@ -412,4 +414,38 @@ test("validator-image-format fails on missing URL", async () => {
     mkInput(mkSku({ main_image_url: null })),
   );
   assert.equal(out.passed, false);
+});
+
+// ── validator-margin-floor (Phase 7) ────────────────────────────────────
+
+test("validator-margin-floor warns when price not set (awaiting economics)", async () => {
+  // mkSku defaults price_cents to 0 → price not yet provided by economics.
+  const out = await validatorMarginFloor(mkInput(mkSku()));
+  assert.equal(out.passed, false);
+  assert.equal(out.severity, "warning");
+});
+
+test("validator-margin-floor warns when COGS basis unknown", async () => {
+  const input = mkInput(mkSku({ price_cents: 1500 }));
+  input.master_bundle = { ...input.master_bundle!, estimated_cost_cents: null };
+  const out = await validatorMarginFloor(input);
+  assert.equal(out.passed, false);
+  assert.equal(out.severity, "warning");
+});
+
+test("validator-margin-floor errors when margin below 20%", async () => {
+  // price $14.00 vs COGS $12.00 → 14.3% margin < 20% floor.
+  const input = mkInput(mkSku({ price_cents: 1400 }));
+  input.master_bundle = { ...input.master_bundle!, estimated_cost_cents: 1200 };
+  const out = await validatorMarginFloor(input);
+  assert.equal(out.passed, false);
+  assert.equal(out.severity, "error");
+});
+
+test("validator-margin-floor passes at exactly 20% margin", async () => {
+  // price $15.00 vs COGS $12.00 → exactly 20% margin → at the floor.
+  const input = mkInput(mkSku({ price_cents: 1500 }));
+  input.master_bundle = { ...input.master_bundle!, estimated_cost_cents: 1200 };
+  const out = await validatorMarginFloor(input);
+  assert.equal(out.passed, true);
 });

@@ -55,6 +55,7 @@ import { validatorInventory } from "./validators/validator-inventory";
 import { validatorPackagingDims } from "./validators/validator-packaging-dims";
 import { validatorWeight } from "./validators/validator-weight";
 import { validatorCountryOfOrigin } from "./validators/validator-country-of-origin";
+import { validatorMarginFloor } from "./validators/validator-margin-floor";
 
 /**
  * Public list — exported so tests and the UI can enumerate "which
@@ -76,6 +77,7 @@ export const VALIDATORS: Array<{ id: string; fn: ValidatorFn }> = [
   { id: "validator-packaging-dims",       fn: validatorPackagingDims },
   { id: "validator-weight",               fn: validatorWeight },
   { id: "validator-country-of-origin",    fn: validatorCountryOfOrigin },
+  { id: "validator-margin-floor",         fn: validatorMarginFloor },
 ];
 
 /**
@@ -97,6 +99,7 @@ export async function runValidation(
       packaging_spec: true,
       total_weight_oz: true,
       main_image_url: true,
+      estimated_cost_cents: true,
       components: {
         select: {
           product_name: true,
@@ -118,6 +121,7 @@ export async function runValidation(
           packaging_spec: masterBundle.packaging_spec,
           total_weight_oz: masterBundle.total_weight_oz,
           main_image_url: masterBundle.main_image_url,
+          estimated_cost_cents: masterBundle.estimated_cost_cents,
         }
       : null,
     bundle_components: masterBundle?.components ?? [],
@@ -204,7 +208,7 @@ export async function persistValidation(
     from_status: sku.validation_status,
     to_status: outcome.status,
     reason: outcome.status === "PASSED"
-      ? "All 15 validators passed"
+      ? "All validators passed"
       : outcome.status === "NEEDS_REVIEW"
         ? `Warnings only: ${outcome.warnings.join(", ")}`
         : `Errors: ${outcome.failed.join(", ")}`,
