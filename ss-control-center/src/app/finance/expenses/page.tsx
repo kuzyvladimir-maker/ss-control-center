@@ -17,11 +17,12 @@ import { cn } from "@/lib/utils";
 
 const usd = (n: number) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const WEEKS = 52 / 12;
-const monthly = (a: number, f: string) => (f === "weekly" ? a * WEEKS : f === "one_time" ? 0 : a);
+const WORKDAYS = 260 / 12; // ≈21.67 (5-day week)
+const monthly = (a: number, f: string) => (f === "daily" ? a * WORKDAYS : f === "weekly" ? a * WEEKS : f === "one_time" ? 0 : a);
 
 interface Expense { id: string; name: string; category: string; amount: number; frequency: string; marketplace: string | null; isAdSpend: boolean; active: boolean; source: string }
 const CATEGORIES = ["Salaries", "Warehouse & Logistics", "Software", "Subscriptions", "Other"];
-const FREQS = ["monthly", "weekly", "one_time"];
+const FREQS = ["monthly", "weekly", "daily", "one_time"];
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);

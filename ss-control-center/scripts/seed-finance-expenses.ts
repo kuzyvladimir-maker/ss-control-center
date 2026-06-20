@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { monthlyAmount, EXPENSE_CATEGORIES } from "@/lib/finance/expenses";
 
-type Row = { name: string; category: string; amount: number; frequency: "monthly" | "weekly" };
+type Row = { name: string; category: string; amount: number; frequency: "monthly" | "weekly" | "daily" };
 const EXPENSES: Row[] = [
   // Subscriptions (Подписки)
   { name: "BJ's", category: "Subscriptions", amount: 5, frequency: "monthly" },
@@ -26,12 +26,11 @@ const EXPENSES: Row[] = [
   { name: "Обслуживание автомобиля Ford", category: "Warehouse & Logistics", amount: 142, frequency: "monthly" },
   { name: "FedEx Pick-up", category: "Warehouse & Logistics", amount: 12, frequency: "weekly" },
   { name: "UPS Pick-up", category: "Warehouse & Logistics", amount: 16, frequency: "weekly" },
-  // Salaries (ЗП)
-  { name: "Дмитрий и Лиза (Amazon команда)", category: "Salaries", amount: 136, frequency: "weekly" },
-  { name: "Мохаммед (TikTok)", category: "Salaries", amount: 63, frequency: "weekly" },
-  { name: "Елена (склад)", category: "Salaries", amount: 330, frequency: "weekly" },
-  { name: "Гульнара (ассистент/снабженец)", category: "Salaries", amount: 413, frequency: "weekly" },
-  { name: "Дмитрий (склад)", category: "Salaries", amount: 330, frequency: "weekly" },
+  // Salaries (ЗП) — current reality (2026-06-20): only Vadim is employed; Vladimir
+  // + Anna are owner-operators who should also draw an (adequate) salary.
+  { name: "Вадим Пугач (склад)", category: "Salaries", amount: 150, frequency: "daily" },
+  { name: "Владимир (owner salary)", category: "Salaries", amount: 0, frequency: "weekly" },
+  { name: "Анна (owner salary)", category: "Salaries", amount: 0, frequency: "weekly" },
 ];
 
 (async () => {

@@ -6,6 +6,7 @@
 // Sellerboard's expenses export (Indirect/Variable Expenses).
 
 export const WEEKS_PER_MONTH = 52 / 12; // 4.3333…
+export const WORKDAYS_PER_MONTH = 260 / 12; // ≈21.67 (5-day week)
 
 /** The FP1 fund categories derived from the expenses. Order = display order. */
 export const EXPENSE_CATEGORIES = [
@@ -17,9 +18,11 @@ export const EXPENSE_CATEGORIES = [
 ] as const;
 export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
 
-/** Normalize one expense to its MONTHLY cost (weekly × 52/12; one-time → 0). */
+/** Normalize one expense to its MONTHLY cost. daily = per working day (×260/12);
+ *  weekly × 52/12; one-time → 0; else monthly. */
 export function monthlyAmount(amount: number, frequency: string): number {
   if (!Number.isFinite(amount)) return 0;
+  if (frequency === "daily") return Math.round(amount * WORKDAYS_PER_MONTH * 100) / 100;
   if (frequency === "weekly") return Math.round(amount * WEEKS_PER_MONTH * 100) / 100;
   if (frequency === "one_time") return 0;
   return Math.round(amount * 100) / 100; // monthly
