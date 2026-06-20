@@ -90,37 +90,72 @@ function cleanBrand(b?: string | null): string | null {
   return s;
 }
 
-// ── Temperature classification (Frozen | Refrigerated | Dry) ────────────────
-// Storage class drives sourcing + shipping (frozen needs a cooler / dry-ice, dry
-// doesn't). Deterministic over title + bullets + description + retailer category
-// breadcrumbs. Defaults to "Dry". Stored on DonorProduct.category (per schema).
-export type Temperature = "Frozen" | "Refrigerated" | "Dry";
+// ── Temperature classification (Frozen | Dry) ───────────────────────────────
+// TWO operational buckets. "Frozen" = anything that needs a COLD CHAIN — natively
+// frozen items AND refrigerated/perishable ones (raw/fresh meat, poultry, seafood,
+// fresh sausage, bacon, deli, fresh dairy, eggs, refrigerated dough) — because we
+// FREEZE and ship them with ice (Vladimir's rule: chilled ≡ frozen for us). "Dry"
+// = shelf-stable / ambient. Stored on DonorProduct.category. The deterministic
+// version below is the fast fallback; classifyTemperatureLLM is the accurate path
+// (regex can't tell raw "sausage roll" from shelf-stable "Vienna sausage").
+export type Temperature = "Frozen" | "Dry";
+
+// Perishable product types that ship cold even when the title doesn't say "frozen".
+const PERISHABLE_RE = /\b(sausage roll|breakfast sausage|pork sausage|italian sausage|ground (beef|pork|turkey|chicken)|raw |fresh |deli |lunch ?meat|cold cuts|sliced (ham|turkey|chicken|beef)|hot ?dog|bratwurst|bacon|fresh mozzarella|biscuit dough|cookie dough|pie crust|tofu|eggs?\b)/i;
+const COLD_AISLE_RE = /\b(frozen|refrigerated|deli|fresh meat|meat & seafood|seafood|dairy)\b/i;
+
 export function classifyTemperature(parts: {
   title?: string | null; bullets?: string[] | null; description?: string | null; retailerCats?: string[] | null;
 }): Temperature {
   const title = (parts.title || "").toLowerCase();
   const cats = (parts.retailerCats || []).join(" ").toLowerCase();
-  // Storage INSTRUCTIONS are reliable wherever they appear; a bare mention of
-  // "frozen" in marketing/cross-sell copy is NOT (brands plug their frozen lines
-  // on shelf-stable items), so body text only counts for explicit instructions.
   const instr = [title, cats, ...(parts.bullets || []), parts.description].filter(Boolean).join(" \n ").toLowerCase();
 
-  // Frozen: word in the TITLE, the frozen aisle (retailer category), an
-  // unmistakably-frozen item type, or a keep-frozen storage instruction.
+  // Natively frozen: word in TITLE / frozen aisle / unmistakable item / keep-frozen.
   if (/\bfrozen\b/.test(title) || /\bfrozen\b/.test(cats)
     || /\b(ice cream|gelato|sherbet|sorbet|popsicle|ice pop|freeze pop)\b/.test(title)
     || /frozen (pizza|vegetabl|fruit|meal|dinner|entr|waffle|breakfast|novelt|treat|yogurt|dessert)/.test(title)
     || /keep\s+frozen|store\s+frozen|keep at 0\s*°?\s*f\b/.test(instr))
     return "Frozen";
-  // Refrigerated: explicit cold-storage requirement (NOT "refrigerate after
-  // opening", which applies to many shelf-stable items like ketchup).
-  // Refrigerated ONLY from the retailer's refrigerated aisle (reliable). Body-text
-  // "keep refrigerated" is too noisy — it shows up as "...after opening" (shelf-
-  // stable, like ketchup) and "...for best taste" (a serving note, like UHT
-  // coconut water), neither of which is a refrigerated product. Frozen vs Dry is
-  // the split that matters operationally; we don't guess Refrigerated from copy.
-  if (/refrigerated\b/.test(cats)) return "Refrigerated";
+  // Refrigerated / perishable → also Frozen for us (we ship it frozen with ice).
+  if (COLD_AISLE_RE.test(cats) || PERISHABLE_RE.test(title)) return "Frozen";
+  // A real "keep refrigerated" requirement (exclude "...after opening / for best
+  // taste / for freshness", which marks shelf-stable items like ketchup or UHT juice).
+  if (/(keep|must be (kept )?|sold)\s+refrigerated(?!\s+(after|once|when|upon|for))/.test(instr)) return "Frozen";
   return "Dry";
+}
+
+// LLM temperature classifier — batched Haiku with the cold-chain rule baked in.
+// Applies food knowledge the regex can't (raw sausage = cold, canned Vienna
+// sausage = dry). Fail-OPEN to the deterministic classifier so a hiccup never
+// blanks a run. Returns one verdict per input, in order.
+export async function classifyTemperatureLLM(items: { title?: string | null; category?: string | null; bullets?: string[] | null }[]): Promise<Temperature[]> {
+  const fallback = () => items.map((it) => classifyTemperature({ title: it.title, bullets: it.bullets, retailerCats: it.category ? [it.category] : null }));
+  if (!items.length) return [];
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey || apiKey === "<api_key>") return fallback();
+  try {
+    const Anthropic = (await import("@anthropic-ai/sdk")).default;
+    const client = new Anthropic({ apiKey });
+    const list = items.map((it, i) => `${i}. ${(it.title || "").slice(0, 150)}${it.category ? ` [aisle: ${it.category}]` : ""}`).join("\n");
+    const res = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 3500,
+      messages: [{ role: "user", content:
+        `Classify each grocery product as FROZEN or DRY for a fulfillment operation that FREEZES and ships cold items with ice.\n` +
+        `FROZEN = needs a cold chain: natively frozen foods, AND refrigerated/perishable items — raw or fresh meat, poultry, seafood, fresh/raw sausage, bacon, deli & lunch meats, hot dogs, fresh dairy, eggs, butter, refrigerated dough/biscuits, tofu, fresh pasta.\n` +
+        `DRY = shelf-stable / ambient: canned, jarred, boxed, bagged snacks, dry pasta & rice, condiments, sauces in jars, drinks, candy, baking, coffee, cereal, shelf-stable (canned/pouched) meats like Vienna sausage or tuna.\n` +
+        `If unsure, lean DRY unless it clearly needs refrigeration or freezing.\n` +
+        `Return ONLY a JSON array [{"i":0,"frozen":true},...] covering EVERY item.\n\n${list}` }],
+    });
+    const tb = res.content.find((b: any) => b.type === "text") as any;
+    const m = tb?.text?.match(/\[[\s\S]*\]/);
+    if (!m) return fallback();
+    const arr = JSON.parse(m[0]) as { i: number; frozen: boolean }[];
+    const out = fallback(); // deterministic default, LLM overrides per index
+    for (const v of arr) if (typeof v.i === "number" && v.i >= 0 && v.i < items.length) out[v.i] = v.frozen ? "Frozen" : "Dry";
+    return out;
+  } catch { return fallback(); }
 }
 
 // ── QA "qualification department" ──────────────────────────────────────────
@@ -162,6 +197,26 @@ export async function classifyGroceryTitles(titles: string[]): Promise<boolean[]
 export async function cleanupOrphans(db: Client): Promise<number> {
   const r = await db.execute(`DELETE FROM "DonorProduct" WHERE id NOT IN (SELECT DISTINCT donorProductId FROM "DonorOffer" WHERE donorProductId IS NOT NULL)`);
   return r.rowsAffected || 0;
+}
+
+// Collapse redundant SAME-retailer offers on one product. Unwrangle's search can
+// return two Walmart listings (different us_item_ids) for the same item, which
+// showed up as a "doubled" offer. We only keep first-party offers, so duplicates
+// from one retailer are genuinely the same product — keep the best (in-stock,
+// then cheapest per-unit, then one with a URL) and drop the rest.
+export async function dedupeOffersPerRetailer(db: Client): Promise<number> {
+  const dups = await db.execute(`SELECT donorProductId, retailer FROM "DonorOffer" GROUP BY donorProductId, retailer HAVING COUNT(*) > 1`);
+  let removed = 0;
+  for (const d of dups.rows as any[]) {
+    const offs = await db.execute({ sql: `SELECT id, pricePerUnit, inStock, productUrl FROM "DonorOffer" WHERE donorProductId=? AND retailer=?`, args: [d.donorProductId, d.retailer] });
+    const list = (offs.rows as any[]).slice().sort((a, b) => {
+      const ia = a.inStock === 0 ? 1 : 0, ib = b.inStock === 0 ? 1 : 0; if (ia !== ib) return ia - ib;
+      const pa = a.pricePerUnit ?? Infinity, pb = b.pricePerUnit ?? Infinity; if (pa !== pb) return pa - pb;
+      return (a.productUrl ? 0 : 1) - (b.productUrl ? 0 : 1);
+    });
+    for (const extra of list.slice(1)) { await db.execute({ sql: `DELETE FROM "DonorOffer" WHERE id=?`, args: [extra.id] }); removed++; }
+  }
+  return removed;
 }
 
 const stripHtml = (s?: string | null) => (s ? String(s).replace(/<[^>]+>/g, " ").replace(/&#(\d+);/g, (_m, d) => String.fromCharCode(+d)).replace(/&amp;/g, "&").replace(/\s+/g, " ").trim() : null);
@@ -255,10 +310,11 @@ export async function harvestDonorDetail(db: Client, productId: string): Promise
   // nutrition: no structured field anywhere (it's a gallery image) — keep nutrition-ish specs as the textual record.
   const nutrition = c.specifications ? JSON.stringify(c.specifications.filter((s: any) => /nutri|serving|calorie|sodium|fat|protein|carb/i.test(JSON.stringify(s)))) : null;
 
-  // Storage class (Frozen | Refrigerated | Dry) from the full harvested content —
-  // overrides any earlier title-only guess now that we have bullets/description/cats.
+  // Storage class (Frozen | Dry) from the full harvested content — LLM cold-chain
+  // classifier (refrigerated/perishable ≡ Frozen for us), now that we have the
+  // retailer aisle + bullets. Falls back to deterministic on any LLM hiccup.
   const tr = await db.execute({ sql: `SELECT title FROM "DonorProduct" WHERE id=? LIMIT 1`, args: [productId] });
-  const temperature = classifyTemperature({ title: tr.rows[0]?.title as string | null, bullets: c.bullets, description: c.description, retailerCats: c.categories });
+  const [temperature] = await classifyTemperatureLLM([{ title: tr.rows[0]?.title as string | null, category: c.category, bullets: c.bullets }]);
 
   const now = new Date().toISOString();
   await db.execute({
@@ -332,9 +388,13 @@ export async function qcProductImage(db: Client, productId: string): Promise<Ima
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey || apiKey === "<api_key>") return { ok: false, chosen: -1, flagged: false, reason: "no anthropic key" };
   const mediaType = (b: string) => b.startsWith("/9j/") ? "image/jpeg" : b.startsWith("iVBOR") ? "image/png" : b.startsWith("R0lG") ? "image/gif" : b.startsWith("UklG") ? "image/webp" : "image/jpeg";
-  // Calibrated: the product's OWN packaging/label is expected and fine — reject
-  // ONLY composites, multipacks, or banners/stamps ADDED on top of the photo.
-  const prompt = `These ${imgs.length} images (indexes 0..${imgs.length - 1}, in order) are photos of ONE grocery product. Choose the index of the best CATALOG THUMBNAIL: a clear shot of a SINGLE unit with its own packaging facing the camera. The product's OWN label/branding is expected and totally fine. Reject an image ONLY if it is a collage/grid of several photos, shows MULTIPLE units / a multipack, or has promotional banners or price stamps ADDED on top of the photo. A plain single-unit front shot is ideal; if several qualify, pick the cleanest. Return ONLY JSON {"best": <index, or -1 ONLY if every image is a collage/multipack/overlay>, "reason": "short"}.`;
+  // Pick the RETAIL PACKAGE shot — the product in its store packaging (box, bag,
+  // carton, can, jar, wrapper) front-facing, as it sits on the Walmart shelf. This
+  // is what the catalog thumbnail must show, NOT a plated/"prepared" photo of the
+  // food removed from packaging, a lifestyle scene, an infographic, or a label.
+  // Index 0 is the retailer's own primary image (usually the package) — strongly
+  // prefer it unless it is clearly bad.
+  const prompt = `These ${imgs.length} images (indexes 0..${imgs.length - 1}, in order) are photos of ONE grocery product sold at a retailer. Pick the index of the best CATALOG THUMBNAIL = the RETAIL PACKAGE as sold on the shelf: the product in its own box/bag/carton/can/jar/wrapper, front facing. STRONGLY PREFER the packaged-product shot. Do NOT pick: a "prepared"/plated photo of the food taken OUT of its packaging (e.g. a cooked sandwich or a bowl of the food), a lifestyle/hand/table scene, an infographic or text-heavy banner, a nutrition-facts or ingredients label image, a collage/grid, or a multipack of several units. Index 0 is the retailer's primary image — prefer it when it is a clean package front; only choose another index if 0 is one of the bad types above and another image is a clean package shot. Return ONLY JSON {"best": <index, or -1 ONLY if NONE shows the retail package>, "reason": "short"}.`;
   let res: any;
   try {
     const Anthropic = (await import("@anthropic-ai/sdk")).default;
@@ -365,6 +425,7 @@ export interface EnrichTargetResult {
   offersUpserted: number;
   rejected: number;
   creditsRemaining: number | null;
+  createdProductIds: string[]; // freshly-created products → harvest them right away
 }
 
 // Enrich the catalog for one target (brand or free-text query). Searches the
@@ -378,6 +439,7 @@ export async function enrichTarget(
   const cp: CanonicalProduct = { brand: (opts.brand || opts.target.split(/\s+/).slice(0, 2).join(" ")) || undefined };
   const now = new Date().toISOString();
   const retailersHit: string[] = [];
+  const createdProductIds: string[] = [];
   let productsCreated = 0, offersUpserted = 0, rejected = 0;
   let creditsRemaining: number | null = null;
 
@@ -442,6 +504,7 @@ export async function enrichTarget(
           args: [productId, offerBrand, o.title ?? null, size, unitMeasure, unitAmount, temp0, (o.imageUrls || [])[0] ?? null, JSON.stringify(o.imageUrls || []), identityKey, now, now],
         });
         productsCreated++;
+        createdProductIds.push(productId);
       }
     }
 
@@ -464,7 +527,7 @@ export async function enrichTarget(
     await rollupProduct(db, productId, now);
   }
 
-  return { query: opts.target, retailersHit, productsCreated, offersUpserted, rejected, creditsRemaining };
+  return { query: opts.target, retailersHit, productsCreated, offersUpserted, rejected, creditsRemaining, createdProductIds };
 }
 
 // Roll the cheapest CLEAN first-party DIRECT offer up to the product (bestPrice +

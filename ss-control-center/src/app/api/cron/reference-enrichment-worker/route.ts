@@ -16,7 +16,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@libsql/client";
-import { enrichTarget, cleanupOrphans } from "@/lib/sourcing/donor-catalog";
+import { enrichTarget, cleanupOrphans, dedupeOffersPerRetailer, harvestDonorDetail } from "@/lib/sourcing/donor-catalog";
 import { bluecartCreditsRemaining } from "@/lib/sourcing/enrich";
 
 export const dynamic = "force-dynamic";
@@ -82,12 +82,25 @@ export async function GET(request: NextRequest) {
       const r = await enrichTarget(conn, { target: String(job.target), brand, zip: ZIP, unwrangleRetailers: UNWRANGLE_RETAILERS });
       out.productsCreated += r.productsCreated;
       out.offersUpserted += r.offersUpserted;
+
+      // Harvest the freshly-created products RIGHT NOW (parallel batches) so a new
+      // brand never shows up with only a title + 1 thumbnail. Bounded by the tick's
+      // time budget; whatever doesn't fit is caught by the harvest cron (newest-first).
+      let harvested = 0;
+      const fresh = r.createdProductIds || [];
+      for (let i = 0; i < fresh.length && Date.now() - started < TIME_BUDGET_MS; i += 5) {
+        const batch = fresh.slice(i, i + 5);
+        const res = await Promise.all(batch.map((id) => harvestDonorDetail(conn, id).then((h) => h.ok).catch(() => false)));
+        harvested += res.filter(Boolean).length;
+      }
+      (out as any).harvested = ((out as any).harvested || 0) + harvested;
+
       await conn.execute({
         sql: `UPDATE "EnrichmentJob" SET status='done', finishedAt=CURRENT_TIMESTAMP, result=?, error=NULL WHERE id=?`,
-        args: [JSON.stringify(r), job.id],
+        args: [JSON.stringify({ ...r, harvested }), job.id],
       });
       out.done++;
-      out.processed.push({ target: job.target, ...r });
+      out.processed.push({ target: job.target, ...r, harvested });
     } catch (e: any) {
       const msg = String(e?.message || "exception").slice(0, 200);
       if (attempt < MAX_ATTEMPTS) {
@@ -103,8 +116,9 @@ export async function GET(request: NextRequest) {
     if (out.done + out.errored >= DRAIN_PER_TICK) break;
   }
 
-  // Self-heal: drop any products left with zero offers (legacy dedup artifacts).
+  // Self-heal: drop zero-offer products + collapse doubled same-retailer offers.
   try { (out as any).orphansCleaned = await cleanupOrphans(conn); } catch { /* best-effort */ }
+  try { (out as any).offersDeduped = await dedupeOffersPerRetailer(conn); } catch { /* best-effort */ }
 
   return NextResponse.json({ ok: true, tookMs: Date.now() - started, ...out });
 }
