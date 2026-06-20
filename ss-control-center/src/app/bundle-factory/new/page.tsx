@@ -1,14 +1,16 @@
 "use client";
 
 /**
- * Bundle Factory — "Start a build", Step 1 (config).
+ * Bundle Factory — "Start a build" (prompt-driven mass generator).
  *
- * Kept deliberately simple: the basics are name, channel, set type and size.
- * Everything else (category, variations, target margin, model, photos) lives
- * under "Advanced options", collapsed by default. On Continue it creates a
- * draft (POST /api/bundle-factory/studio) and moves to Step 2 (pick products).
+ * The operator describes, in plain words, what to mass-create — e.g.
+ * "50 Uncrustables gift sets in different variations". The algorithm does the
+ * rest: it finds the products in the catalog, assembles the sets, writes the
+ * titles + content, makes the photos, and returns a batch of drafts to
+ * approve. No manual naming, no category picking.
  *
- * UI strings are English (project rule).
+ * Visible inputs are just the prompt + where to sell. Everything optional
+ * (brand, model, photos, margin) lives under "Advanced". UI strings English.
  */
 
 import { useState } from "react";
@@ -16,16 +18,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageHead, Btn } from "@/components/kit";
 import { cn } from "@/lib/utils";
-import { ArrowRight, ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronRight, Sparkles } from "lucide-react";
 
 type HouseBrand = "Salutem Vita" | "Starfit";
-type SetType = "multipack" | "thematic";
-type TextModel = "opus" | "sonnet";
-type ImageStrategy = "reuse-donor" | "generate";
-type ImageModel = "gpt-image-1" | "gpt-image-2";
+type TextModel = "sonnet" | "opus";
+type PhotoStrategy = "reuse-donor" | "generate";
+type ImageQuality = "cheaper" | "best";
 
-// The operator's real sales channels. Amazon accounts publish today; the rest
-// land next, shown disabled so the full picture is visible.
 const CHANNELS: Array<{ value: string; label: string; disabled?: boolean }> = [
   { value: "AMAZON_SALUTEM", label: "Amazon · Salutem Solutions" },
   { value: "AMAZON_PERSONAL", label: "Amazon · Vladimir Personal" },
@@ -35,64 +34,51 @@ const CHANNELS: Array<{ value: string; label: string; disabled?: boolean }> = [
   { value: "WALMART", label: "Walmart — soon", disabled: true },
 ];
 
-const CATEGORIES: Array<{ value: string; label: string }> = [
-  { value: "SHELF_STABLE", label: "Shelf-stable" },
-  { value: "REFRIGERATED", label: "Refrigerated" },
-  { value: "FROZEN_GROCERY", label: "Frozen" },
-  { value: "HEALTH_BEAUTY", label: "Health & Beauty" },
-  { value: "PET_FOOD", label: "Pet food" },
-  { value: "BABY", label: "Baby" },
-  { value: "OTHER", label: "Other" },
+const EXAMPLES = [
+  "50 Uncrustables gift sets in different variations",
+  "30 frozen breakfast multipacks",
+  "20 chocolate variety gift baskets",
 ];
 
-export default function StudioStep1Page() {
+export default function StudioStartPage() {
   const router = useRouter();
 
-  const [listingName, setListingName] = useState("");
-  const [houseBrand, setHouseBrand] = useState<HouseBrand>("Salutem Vita");
+  const [prompt, setPrompt] = useState("");
   const [channel, setChannel] = useState("AMAZON_SALUTEM");
-  const [setType, setSetType] = useState<SetType>("multipack");
-  const [packCount, setPackCount] = useState(6);
 
-  // Advanced (collapsed by default)
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [category, setCategory] = useState("SHELF_STABLE");
-  const [variations, setVariations] = useState(1);
-  const [targetMargin, setTargetMargin] = useState("");
+  const [houseBrand, setHouseBrand] = useState<HouseBrand>("Salutem Vita");
   const [textModel, setTextModel] = useState<TextModel>("opus");
-  const [imageStrategy, setImageStrategy] = useState<ImageStrategy>("reuse-donor");
-  const [imageModel, setImageModel] = useState<ImageModel>("gpt-image-1");
+  const [photoStrategy, setPhotoStrategy] = useState<PhotoStrategy>("reuse-donor");
+  const [imageQuality, setImageQuality] = useState<ImageQuality>("cheaper");
+  const [targetMargin, setTargetMargin] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canContinue = listingName.trim().length > 0 && packCount >= 2 && !submitting;
+  const canGenerate = prompt.trim().length > 0 && !submitting;
 
-  async function onContinue() {
-    if (!canContinue) return;
+  async function onGenerate() {
+    if (!canGenerate) return;
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/api/bundle-factory/studio", {
+      const res = await fetch("/api/bundle-factory/studio/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          listing_name: listingName.trim(),
-          house_brand: houseBrand,
+          prompt: prompt.trim(),
           channel,
-          set_type: setType,
-          category,
-          pack_count: packCount,
-          variations,
-          target_margin_pct: targetMargin ? Number(targetMargin) : null,
+          house_brand: houseBrand,
           text_model: textModel,
-          image_strategy: imageStrategy,
-          image_model: imageStrategy === "generate" ? imageModel : null,
+          photo_strategy: photoStrategy,
+          image_quality: imageQuality,
+          target_margin_pct: targetMargin ? Number(targetMargin) : null,
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error ?? "Failed to create the build");
-      router.push(`/bundle-factory/new/${data.draft_id}`);
+      if (!res.ok) throw new Error(data?.error ?? "Failed to start the build");
+      router.push(`/bundle-factory/new/${data.batch_id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
       setSubmitting(false);
@@ -104,11 +90,10 @@ export default function StudioStep1Page() {
       <PageHead
         title="Start a build"
         subtitle={
-          <>
-            <span className="font-medium text-ink-2">Step 1 of 3</span>
-            <span className="text-ink-4">·</span>
-            <span>Configure the run. Next you&apos;ll pick the products.</span>
-          </>
+          <span>
+            Describe what to create. The algorithm finds the products, builds the
+            listings, names and writes them — you approve the batch.
+          </span>
         }
       />
 
@@ -119,21 +104,46 @@ export default function StudioStep1Page() {
         <ArrowLeft size={14} strokeWidth={1.8} /> Bundle Factory
       </Link>
 
-      <div className="max-w-2xl space-y-4">
-        <Field label="Listing name" hint="Internal name for this build — not the marketplace title.">
-          <input
-            value={listingName}
-            onChange={(e) => setListingName(e.target.value)}
-            placeholder="e.g. Frozen Breakfast Gift Set"
-            className="w-full rounded-[10px] border border-rule bg-surface px-3 py-2 text-[13.5px] text-ink outline-none placeholder:text-ink-4 focus:border-silver-line"
+      <div className="max-w-2xl space-y-5">
+        {/* PROMPT — the one thing the operator writes. */}
+        <div>
+          <label className="text-[13px] font-semibold text-ink">
+            What should the algorithm create?
+          </label>
+          <p className="mt-0.5 text-[12px] leading-snug text-ink-3">
+            Plain words — the brand or theme, how many, and any variations.
+          </p>
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            rows={3}
+            placeholder="e.g. 50 Uncrustables gift sets in different variations"
+            className="mt-2 w-full resize-y rounded-[12px] border border-rule bg-surface px-3.5 py-3 text-[14px] leading-relaxed text-ink outline-none placeholder:text-ink-4 focus:border-silver-line"
           />
-        </Field>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {EXAMPLES.map((ex) => (
+              <button
+                key={ex}
+                type="button"
+                onClick={() => setPrompt(ex)}
+                className="rounded-full border border-rule bg-surface px-2.5 py-1 text-[11.5px] text-ink-3 transition-colors hover:bg-bg-elev hover:text-ink"
+              >
+                {ex}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        <Field label="Sell on" hint="Which of your channels this listing publishes to.">
+        {/* SELL ON — where it publishes. */}
+        <div>
+          <label className="text-[13px] font-semibold text-ink">Sell on</label>
+          <p className="mt-0.5 text-[12px] leading-snug text-ink-3">
+            Which of your channels these listings publish to.
+          </p>
           <select
             value={channel}
             onChange={(e) => setChannel(e.target.value)}
-            className="w-full rounded-[10px] border border-rule bg-surface px-3 py-2 text-[13.5px] text-ink outline-none focus:border-silver-line"
+            className="mt-2 w-full rounded-[10px] border border-rule bg-surface px-3 py-2.5 text-[13.5px] text-ink outline-none focus:border-silver-line"
           >
             {CHANNELS.map((c) => (
               <option key={c.value} value={c.value} disabled={c.disabled}>
@@ -141,76 +151,69 @@ export default function StudioStep1Page() {
               </option>
             ))}
           </select>
-        </Field>
+        </div>
 
-        <Field label="House brand" hint="The registered brand the listing is published under.">
-          <Segmented
-            value={houseBrand}
-            onChange={setHouseBrand}
-            options={[
-              { value: "Salutem Vita", label: "Salutem Vita" },
-              { value: "Starfit", label: "Starfit" },
-            ]}
-          />
-        </Field>
-
-        <Field
-          label="Set type"
-          hint={
-            setType === "multipack"
-              ? "Multipack of one product, presented as a gift set."
-              : "Thematic gift set of different products."
-          }
-        >
-          <Segmented
-            value={setType}
-            onChange={setSetType}
-            options={[
-              { value: "multipack", label: "Multipack" },
-              { value: "thematic", label: "Thematic set" },
-            ]}
-          />
-        </Field>
-
-        <Field label="Items per set">
-          <NumberInput value={packCount} onChange={setPackCount} min={2} max={50} />
-        </Field>
-
-        {/* Advanced — collapsed by default so the basics stay clean. */}
+        {/* ADVANCED — only what the operator might want to tune: brand, model, photos, margin. */}
         <div className="rounded-[12px] border border-rule bg-surface-tint/40">
           <button
             type="button"
             onClick={() => setShowAdvanced((v) => !v)}
-            className="flex w-full items-center gap-1.5 px-3 py-2.5 text-[12.5px] font-medium text-ink-2 hover:text-ink"
+            className="flex w-full items-center gap-1.5 px-3.5 py-3 text-[12.5px] font-medium text-ink-2 hover:text-ink"
           >
             {showAdvanced ? <ChevronDown size={15} strokeWidth={1.9} /> : <ChevronRight size={15} strokeWidth={1.9} />}
-            Advanced options
-            <span className="ml-1 text-[11.5px] font-normal text-ink-4">category · variations · margin · model · photos</span>
+            Advanced
+            <span className="ml-1 text-[11.5px] font-normal text-ink-4">brand · model · photos · margin</span>
           </button>
 
           {showAdvanced && (
-            <div className="space-y-4 border-t border-rule px-3 py-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Category">
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full rounded-[10px] border border-rule bg-surface px-3 py-2 text-[13.5px] text-ink outline-none focus:border-silver-line"
-                  >
-                    {CATEGORIES.map((c) => (
-                      <option key={c.value} value={c.value}>{c.label}</option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Variations" hint="How many listings to draft.">
-                  <NumberInput value={variations} onChange={setVariations} min={1} max={5} />
-                </Field>
-              </div>
+            <div className="space-y-5 border-t border-rule px-3.5 py-4">
+              <Row label="House brand" hint="Which of your registered brands these publish under.">
+                <Segmented
+                  value={houseBrand}
+                  onChange={setHouseBrand}
+                  options={[
+                    { value: "Salutem Vita", label: "Salutem Vita" },
+                    { value: "Starfit", label: "Starfit" },
+                  ]}
+                />
+              </Row>
 
-              <Field
-                label="Target margin"
-                hint="Floor the listing must clear vs cost. Blank = global default. Price still comes from the economics module."
-              >
+              <Row label="Text model" hint="The model that writes titles, bullets and descriptions.">
+                <Segmented
+                  value={textModel}
+                  onChange={setTextModel}
+                  options={[
+                    { value: "sonnet", label: "Cheaper · Sonnet 4.6" },
+                    { value: "opus", label: "Best · Opus 4.8" },
+                  ]}
+                />
+              </Row>
+
+              <Row label="Photos" hint="Reuse real catalog photos, or generate new ones.">
+                <Segmented
+                  value={photoStrategy}
+                  onChange={setPhotoStrategy}
+                  options={[
+                    { value: "reuse-donor", label: "Use catalog photos" },
+                    { value: "generate", label: "Generate" },
+                  ]}
+                />
+              </Row>
+
+              {photoStrategy === "generate" && (
+                <Row label="Image quality" hint="Cheaper or the best generator available.">
+                  <Segmented
+                    value={imageQuality}
+                    onChange={setImageQuality}
+                    options={[
+                      { value: "cheaper", label: "Cheaper" },
+                      { value: "best", label: "Best" },
+                    ]}
+                  />
+                </Row>
+              )}
+
+              <Row label="Target margin" hint="Floor each listing must clear vs cost. Blank = global default. Price still comes from the economics module.">
                 <div className="flex items-center gap-2">
                   <input
                     value={targetMargin}
@@ -221,49 +224,7 @@ export default function StudioStep1Page() {
                   />
                   <span className="text-[13px] text-ink-3">%</span>
                 </div>
-              </Field>
-
-              <Field label="Text model" hint="LLM that writes title, bullets and description.">
-                <Segmented
-                  value={textModel}
-                  onChange={setTextModel}
-                  options={[
-                    { value: "opus", label: "Opus 4.8" },
-                    { value: "sonnet", label: "Sonnet 4.6" },
-                  ]}
-                />
-              </Field>
-
-              <Field
-                label="Photos"
-                hint={
-                  imageStrategy === "reuse-donor"
-                    ? "Use real product photos from the catalog (cheapest, accurate)."
-                    : "Generate new images. Pick the model below."
-                }
-              >
-                <Segmented
-                  value={imageStrategy}
-                  onChange={setImageStrategy}
-                  options={[
-                    { value: "reuse-donor", label: "Reuse donor photos" },
-                    { value: "generate", label: "Generate" },
-                  ]}
-                />
-              </Field>
-
-              {imageStrategy === "generate" && (
-                <Field label="Image model">
-                  <Segmented
-                    value={imageModel}
-                    onChange={setImageModel}
-                    options={[
-                      { value: "gpt-image-1", label: "Image-1 · cheaper" },
-                      { value: "gpt-image-2", label: "GPT Image-2 · pricier" },
-                    ]}
-                  />
-                </Field>
-              )}
+              </Row>
             </div>
           )}
         </div>
@@ -275,18 +236,17 @@ export default function StudioStep1Page() {
         )}
 
         <div className="flex items-center gap-3 pt-1">
-          <Btn variant="primary" size="md" onClick={onContinue} disabled={!canContinue} loading={submitting}>
-            Continue — pick products
-            <ArrowRight size={16} strokeWidth={2} />
+          <Btn variant="primary" size="md" onClick={onGenerate} disabled={!canGenerate} loading={submitting} icon={<Sparkles size={15} strokeWidth={1.9} />}>
+            Generate listings
           </Btn>
-          <span className="text-[12px] text-ink-3">Nothing publishes until you approve a preview.</span>
+          <span className="text-[12px] text-ink-3">Nothing publishes until you approve the batch.</span>
         </div>
       </div>
     </>
   );
 }
 
-function Field({
+function Row({
   label,
   hint,
   children,
@@ -299,34 +259,8 @@ function Field({
     <div>
       <label className="text-[12.5px] font-medium text-ink">{label}</label>
       {hint && <p className="mt-0.5 text-[11.5px] leading-snug text-ink-3">{hint}</p>}
-      <div className="mt-1.5">{children}</div>
+      <div className="mt-2">{children}</div>
     </div>
-  );
-}
-
-function NumberInput({
-  value,
-  onChange,
-  min,
-  max,
-}: {
-  value: number;
-  onChange: (n: number) => void;
-  min: number;
-  max: number;
-}) {
-  return (
-    <input
-      type="number"
-      value={value}
-      min={min}
-      max={max}
-      onChange={(e) => {
-        const n = Number(e.target.value);
-        if (Number.isFinite(n)) onChange(Math.max(min, Math.min(max, Math.round(n))));
-      }}
-      className="w-full max-w-[160px] rounded-[10px] border border-rule bg-surface px-3 py-2 text-[13.5px] tabular-nums text-ink outline-none focus:border-silver-line"
-    />
   );
 }
 
@@ -337,7 +271,7 @@ function Segmented<T extends string>({
 }: {
   value: T;
   onChange: (v: T) => void;
-  options: Array<{ value: T; label: string; disabled?: boolean; badge?: string }>;
+  options: Array<{ value: T; label: string }>;
 }) {
   return (
     <div className="inline-flex flex-wrap gap-1.5">
@@ -347,22 +281,15 @@ function Segmented<T extends string>({
           <button
             key={o.value}
             type="button"
-            disabled={o.disabled}
-            onClick={() => !o.disabled && onChange(o.value)}
+            onClick={() => onChange(o.value)}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-[10px] border px-3 py-2 text-[12.5px] font-medium transition-colors",
+              "rounded-[10px] border px-3 py-2 text-[12.5px] font-medium transition-colors",
               active
                 ? "border-green bg-green text-green-cream"
-                : "border-rule bg-surface text-ink-2 hover:bg-bg-elev",
-              o.disabled && "cursor-not-allowed opacity-50 hover:bg-surface"
+                : "border-rule bg-surface text-ink-2 hover:bg-bg-elev"
             )}
           >
             {o.label}
-            {o.badge && (
-              <span className="rounded-sm bg-silver-tint px-1 py-0.5 font-mono text-[9px] uppercase tracking-wider text-silver-dark">
-                {o.badge}
-              </span>
-            )}
           </button>
         );
       })}
