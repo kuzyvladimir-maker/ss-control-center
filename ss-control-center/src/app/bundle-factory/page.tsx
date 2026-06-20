@@ -1,16 +1,16 @@
 /**
- * Bundle Factory — Overview page.
+ * Bundle Factory — Overview / entry page.
  *
- * Phase 1 is foundation: this page shows pipeline-wide counters drawn
- * straight from the new tables (MasterBundle, ChannelSKU, BundleDraft,
- * GenerationJob, UPCPool) so Vladimir can at-a-glance confirm the
- * database is wired and seeded. Real AI pipeline UI lands in Phase 5+.
+ * Phase 7 redesign: this page must answer one question on open — "what do I
+ * do here?" — so it LEADS with a single green primary action (start a build)
+ * and a plain three-step explanation. The pipeline counters are demoted to a
+ * quiet secondary strip; they are status, not the task.
  */
 
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { PageHead } from "@/components/kit";
-import { Package2, Layers, FileBox, Globe2, FlaskConical } from "lucide-react";
+import { PageHead, HeroGreenCard, HeroLabel } from "@/components/kit";
+import { ArrowRight, PackageSearch, Sparkles, Eye } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -21,31 +21,13 @@ export default async function BundleFactoryOverviewPage() {
     masterLiveCount,
     draftCount,
     skuCount,
-    skuLiveCount,
     upcAvailable,
-    upcAssigned,
-    storeCount,
-    jobsActive,
-    briefsDraft,
-    briefsResearching,
-    briefsResearched,
   ] = await Promise.all([
     prisma.masterBundle.count(),
     prisma.masterBundle.count({ where: { lifecycle_status: "LIVE" } }),
     prisma.bundleDraft.count(),
     prisma.channelSKU.count(),
-    prisma.channelSKU.count({ where: { lifecycle_status: "LIVE" } }),
     prisma.uPCPool.count({ where: { status: "AVAILABLE" } }),
-    prisma.uPCPool.count({ where: { status: "ASSIGNED" } }),
-    prisma.storeRegistry.count({ where: { is_active: true } }),
-    prisma.generationJob.count({
-      where: { status: { in: ["PENDING", "IN_PROGRESS"] } },
-    }),
-    prisma.bundleDraft.count({ where: { status: "DRAFT" } }),
-    prisma.generationStage.count({
-      where: { stage: "RESEARCH", status: "IN_PROGRESS" },
-    }),
-    prisma.bundleDraft.count({ where: { status: "RESEARCHED" } }),
   ]);
 
   return (
@@ -54,183 +36,145 @@ export default async function BundleFactoryOverviewPage() {
         title="Bundle Factory"
         subtitle={
           <>
-            <span className="font-medium text-ink-2">Phase 1 foundation</span>
-            <span className="text-ink-4">·</span>
-            <span>
-              AI-driven gift-set pipeline for Salutem Vita / Starfit across
-              9 marketplace channels.
-            </span>
+            <span>Build new gift-set listings for </span>
+            <span className="font-medium text-ink-2">Salutem Vita / Starfit</span>
+            <span> — from your catalog to a marketplace-ready listing you approve.</span>
           </>
         }
       />
 
-      {/* KPI row — 4 metric cards. Salutem palette (cream surface, ink
-          text, tabular numbers, lucide icon at 26px). */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiCard
-          label="Master Bundles"
-          value={masterCount}
-          sub={`${masterLiveCount} live`}
-          icon={<Layers size={20} strokeWidth={1.6} className="text-green" />}
+      {/* PRIMARY ACTION — the one thing to do on this page. */}
+      <HeroGreenCard className="p-6">
+        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="max-w-2xl">
+            <HeroLabel>Create listings</HeroLabel>
+            <h2 className="mt-2 text-[22px] font-semibold leading-tight tracking-[-0.02em]">
+              Build a gift-set listing from your catalog
+            </h2>
+            <p className="mt-2 text-[13.5px] leading-relaxed" style={{ color: "rgba(240,232,208,0.82)" }}>
+              Pick products from the Reference Catalog. The engine assembles a
+              compliant listing — title, bullets, description and photos, with all
+              brand &amp; IP rules applied — and you approve a preview that looks
+              exactly like the marketplace page before anything publishes.
+            </p>
+          </div>
+          <div className="shrink-0">
+            <Link
+              href="/bundle-factory/new"
+              className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-green-cream px-5 text-[14px] font-semibold text-green-ink transition-colors hover:bg-white"
+            >
+              Start a build
+              <ArrowRight size={17} strokeWidth={2} />
+            </Link>
+          </div>
+        </div>
+      </HeroGreenCard>
+
+      {/* HOW IT WORKS — three plain steps so the flow is obvious. */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <StepCard
+          n={1}
+          icon={<PackageSearch size={18} strokeWidth={1.7} className="text-green" />}
+          title="Pick products"
+          body="Choose donor products from the Reference Catalog. Missing something? Pull it in — the sourcing engine fetches it."
         />
-        <KpiCard
-          label="Channel SKUs"
-          value={skuCount}
-          sub={`${skuLiveCount} live`}
-          icon={<Globe2 size={20} strokeWidth={1.6} className="text-green-mid" />}
+        <StepCard
+          n={2}
+          icon={<Sparkles size={18} strokeWidth={1.7} className="text-green" />}
+          title="Engine builds"
+          body="Content + photos generated to our brand voice and policies. Price comes from the economics module at your target margin."
         />
-        <KpiCard
-          label="Drafts in flight"
-          value={draftCount}
-          sub={`${jobsActive} active jobs`}
-          icon={<FileBox size={20} strokeWidth={1.6} className="text-info" />}
-        />
-        <KpiCard
-          label="UPC Pool"
-          value={upcAvailable}
-          sub={`${upcAssigned} assigned · ${storeCount} stores`}
-          icon={<Package2 size={20} strokeWidth={1.6} className="text-warn-strong" />}
+        <StepCard
+          n={3}
+          icon={<Eye size={18} strokeWidth={1.7} className="text-green" />}
+          title="Preview & approve"
+          body="See each listing exactly as the marketplace renders it. Edit if needed, then publish. Nothing goes live without your approval."
         />
       </div>
 
-      <div className="rounded-[14px] border border-rule bg-surface p-4">
-        <div className="flex items-center gap-2">
-          <FlaskConical size={16} strokeWidth={1.6} className="text-green-mid" />
-          <h2 className="text-[13px] font-semibold text-ink">
-            Research pipeline (Phase 2.1)
-          </h2>
+      {/* SECONDARY — quiet status strip + section links. Not the task. */}
+      <div className="rounded-[14px] border border-rule bg-surface px-4 py-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[10.5px] font-medium uppercase tracking-wider text-ink-3">
+            At a glance
+          </span>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px] text-ink-3">
+            <Link href="/bundle-factory/drafts" className="hover:text-ink">Drafts</Link>
+            <span className="text-ink-4">·</span>
+            <Link href="/bundle-factory/master-bundles" className="hover:text-ink">Master Bundles</Link>
+            <span className="text-ink-4">·</span>
+            <Link href="/bundle-factory/live" className="hover:text-ink">Live SKUs</Link>
+            <span className="text-ink-4">·</span>
+            <Link href="/bundle-factory/stores" className="hover:text-ink">Stores</Link>
+            <span className="text-ink-4">·</span>
+            <Link href="/bundle-factory/settings" className="hover:text-ink">Settings</Link>
+          </div>
         </div>
-        <div className="mt-3 grid grid-cols-3 gap-3">
-          <MiniKpi
-            label="Awaiting research"
-            value={briefsDraft}
-            href="/bundle-factory/briefs"
-            hint="Briefs in DRAFT — click to kick off Stage 2"
-          />
-          <MiniKpi
-            label="Researching now"
-            value={briefsResearching}
-            hint="Stage 2 currently calling Perplexity"
-          />
-          <MiniKpi
-            label="Pending variation"
-            value={briefsResearched}
-            href="/bundle-factory/briefs"
-            hint="Researched, awaiting Variation Matrix"
-          />
+        <div className="mt-3 flex flex-wrap items-center gap-x-8 gap-y-3">
+          <Stat label="Master bundles" value={masterCount} sub={`${masterLiveCount} live`} />
+          <Stat label="Channel SKUs" value={skuCount} />
+          <Stat label="Drafts in flight" value={draftCount} href="/bundle-factory/drafts" />
+          <Stat label="UPC pool" value={upcAvailable} sub="available" />
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <SectionCard
-          title="Pipeline"
-          body="The 7-stage pipeline (Brief → Research → Variation Matrix → Content → Image → Validation → Distribution) is scaffolded for Phase 1 but not yet executable. Drafts and Master Bundles created via API land here once the executor ships in Phase 5."
-          links={[
-            { href: "/bundle-factory/briefs", label: "Briefs →" },
-            { href: "/bundle-factory/drafts", label: "Drafts →" },
-            { href: "/bundle-factory/master-bundles", label: "Master Bundles →" },
-          ]}
-        />
-        <SectionCard
-          title="Foundation"
-          body="Sourcing registry, brand/account mapping, UPC pool, and marketplace rules seed are loaded. Inspect them in the section pages below."
-          links={[
-            { href: "/bundle-factory/stores", label: "Stores (37) →" },
-            { href: "/bundle-factory/settings", label: "Settings & UPC pool →" },
-            { href: "/bundle-factory/live", label: "Live SKUs →" },
-          ]}
-        />
       </div>
     </>
   );
 }
 
-function KpiCard({
-  label,
-  value,
-  sub,
+function StepCard({
+  n,
   icon,
+  title,
+  body,
 }: {
-  label: string;
-  value: number;
-  sub?: string;
-  icon?: React.ReactNode;
+  n: number;
+  icon: React.ReactNode;
+  title: string;
+  body: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-rule bg-surface px-4 py-3">
-      <div className="flex items-start justify-between">
-        <div className="text-[11px] font-medium uppercase tracking-wider text-ink-3">
-          {label}
-        </div>
+    <div className="rounded-[14px] border border-rule bg-surface p-4">
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-green-soft font-mono text-[12px] font-semibold text-green-ink">
+          {n}
+        </span>
         {icon}
+        <h3 className="text-[13.5px] font-semibold text-ink">{title}</h3>
       </div>
-      <div className="mt-2 font-mono text-[28px] font-semibold leading-none tabular-nums text-ink">
-        {value.toLocaleString("en-US")}
-      </div>
-      {sub && (
-        <div className="mt-2 text-[11.5px] tabular-nums text-ink-3">{sub}</div>
-      )}
+      <p className="mt-2.5 text-[12.5px] leading-relaxed text-ink-2">{body}</p>
     </div>
   );
 }
 
-function MiniKpi({
+function Stat({
   label,
   value,
-  hint,
+  sub,
   href,
 }: {
   label: string;
   value: number;
-  hint?: string;
+  sub?: string;
   href?: string;
 }) {
-  const body = (
-    <div className="rounded-lg border border-rule bg-bg-elev/40 px-3 py-2 transition-colors hover:bg-bg-elev">
+  const inner = (
+    <>
       <div className="text-[10.5px] font-medium uppercase tracking-wider text-ink-3">
         {label}
       </div>
-      <div className="mt-1 font-mono text-[20px] font-semibold leading-none tabular-nums text-ink">
-        {value.toLocaleString("en-US")}
+      <div className="mt-1 flex items-baseline gap-1.5">
+        <span className="font-mono text-[19px] font-semibold leading-none tabular-nums text-ink">
+          {value.toLocaleString("en-US")}
+        </span>
+        {sub && <span className="text-[11px] text-ink-3">{sub}</span>}
       </div>
-      {hint && (
-        <div className="mt-1.5 text-[11px] leading-tight text-ink-3">{hint}</div>
-      )}
-    </div>
+    </>
   );
   return href ? (
-    <Link href={href} className="block">
-      {body}
+    <Link href={href} className="block transition-opacity hover:opacity-70">
+      {inner}
     </Link>
   ) : (
-    body
-  );
-}
-
-function SectionCard({
-  title,
-  body,
-  links,
-}: {
-  title: string;
-  body: string;
-  links: Array<{ href: string; label: string }>;
-}) {
-  return (
-    <div className="rounded-[14px] border border-rule bg-surface p-4">
-      <div className="text-[13px] font-semibold text-ink">{title}</div>
-      <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-2">{body}</p>
-      <div className="mt-3 flex flex-wrap items-center gap-3">
-        {links.map((l) => (
-          <Link
-            key={l.href}
-            href={l.href}
-            className="text-[12px] font-medium text-green hover:text-green-deep"
-          >
-            {l.label}
-          </Link>
-        ))}
-      </div>
-    </div>
+    <div>{inner}</div>
   );
 }
