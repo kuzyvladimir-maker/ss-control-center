@@ -58,7 +58,7 @@ export function AplusFactory() {
   const [aplusFilter, setAplusFilter] = useState<"without" | "all" | "with">("without");
   const [sortKey, setSortKey] = useState<SortKey>("revenue30d");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bulk, setBulk] = useState<{ done: number; total: number } | null>(null);
+  const [gen, setGen] = useState<{ idx: number; total: number; name: string; phase: string; done?: number; tot?: number } | null>(null);
 
   const loadJobs = useCallback(async () => {
     const res = await fetch(`/api/amazon/aplus?storeIndex=${storeIndex}&view=jobs`);
@@ -79,14 +79,32 @@ export function AplusFactory() {
     return res.json();
   }
 
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  async function fetchProgress(sku: string) {
+    try { const r = await fetch(`/api/amazon/aplus?storeIndex=${storeIndex}&view=progress&sku=${encodeURIComponent(sku)}`); return r.ok ? await r.json() : null; }
+    catch { return null; }
+  }
+  // Fire generate and poll its server-side progress (analyzing → text → images N/total).
+  async function runGenerate(sku: string, name: string, idx: number, total: number) {
+    setGen({ idx, total, name, phase: "analyzing" });
+    let finished = false;
+    const p = post({ action: "generate", sku, textModel, imageModel })
+      .then((r) => { finished = true; return r; }).catch(() => { finished = true; return null; });
+    while (!finished) {
+      await sleep(900);
+      const pr = await fetchProgress(sku);
+      if (pr?.progress) setGen((g) => g ? { ...g, phase: pr.progress.phase, done: pr.progress.done, tot: pr.progress.total } : g);
+    }
+    return p;
+  }
   async function generate(sku: string) {
+    const name = scan?.pool.find((p) => p.sku === sku)?.itemName ?? sku;
     setBusy(sku); setMsg(null);
     try {
-      const j = await post({ action: "generate", sku, textModel, imageModel });
-      setMsg(j.ok ? (j.qualified ? "Сгенерировано ✓ — на ревью" : `Сгенерировано, но гейт нашёл нарушения (${j.violations?.length})`) : `Ошибка: ${j.error}`);
-      await loadJobs();
-      setTab("jobs");
-    } finally { setBusy(null); }
+      const j = await runGenerate(sku, name, 1, 1);
+      setMsg(j?.ok ? (j.qualified ? "Сгенерировано ✓ — на ревью" : `Сгенерировано, но гейт нашёл нарушения (${j.violations?.length})`) : `Ошибка: ${j?.error}`);
+      await loadJobs(); setTab("jobs");
+    } finally { setBusy(null); setGen(null); }
   }
   async function decide(id: string, action: "approve" | "reject") {
     setBusy(id);
@@ -113,28 +131,35 @@ export function AplusFactory() {
     } finally { setBusy(null); }
   }
   // Full regenerate (text + images) on the chosen models — re-runs generate for the SKU.
-  async function regenAll(jobId: string, sku: string) {
+  async function regenAll(jobId: string, sku: string, name: string) {
     setBusy(jobId + ":all"); setMsg(null);
     try {
-      await post({ action: "generate", sku, textModel, imageModel });
+      await runGenerate(sku, name, 1, 1);
       const res = await fetch(`/api/amazon/aplus?storeIndex=${storeIndex}&view=jobs`);
       const data = await res.json();
       setJobs(data.jobs ?? []); setSummary(data.summary ?? null);
       const updated = (data.jobs ?? []).find((x: Job) => x.sku === sku);
       if (updated) setReview(updated);
-    } finally { setBusy(null); }
+    } finally { setBusy(null); setGen(null); }
   }
-  // Bulk-generate A+ for the selected SKUs, sequentially, into the Jobs queue.
+  // Bulk-generate A+ for the selected SKUs, sequentially, with per-listing step progress.
   async function bulkGenerate(skus: string[]) {
     if (skus.length === 0) return;
-    setBulk({ done: 0, total: skus.length }); setMsg(null);
+    setMsg(null);
     for (let i = 0; i < skus.length; i++) {
-      await post({ action: "generate", sku: skus[i], textModel, imageModel }).catch(() => {});
-      setBulk({ done: i + 1, total: skus.length });
+      const name = scan?.pool.find((p) => p.sku === skus[i])?.itemName ?? skus[i];
+      await runGenerate(skus[i], name, i + 1, skus.length);
     }
-    setBulk(null); setSelected(new Set());
+    setGen(null); setSelected(new Set());
     await loadJobs(); setTab("jobs");
     setMsg(`Сгенерировано ${skus.length} A+ — на ревью (вкладка Jobs)`);
+  }
+  function phaseText(g: { phase: string; done?: number; tot?: number }): string {
+    if (g.phase === "analyzing") return "изучаю листинг…";
+    if (g.phase === "text") return "генерирую текст…";
+    if (g.phase === "images") return `генерирую картинки ${Math.min((g.done ?? 0) + 1, g.tot ?? 6)}/${g.tot ?? 6}`;
+    if (g.phase === "done") return "сборка готова";
+    return g.phase;
   }
   function toggleSel(sku: string) {
     setSelected((prev) => { const n = new Set(prev); n.has(sku) ? n.delete(sku) : n.add(sku); return n; });
@@ -194,6 +219,22 @@ export function AplusFactory() {
 
       {msg && <div className="rounded-lg border border-rule bg-green-soft px-3 py-2 text-[12px] text-green-ink">{msg}</div>}
 
+      {gen && (
+        <div className="rounded-lg border border-green/40 bg-green-soft/60 px-3 py-2.5">
+          <div className="flex items-center justify-between text-[12px] text-green-ink">
+            <span className="flex items-center gap-2"><Sparkles size={13} className="animate-pulse" />
+              <span className="font-medium">Лист {gen.idx}/{gen.total}:</span>
+              <span className="max-w-[420px] truncate">{gen.name}</span>
+            </span>
+            <span className="font-mono text-[11px]">{phaseText(gen)}</span>
+          </div>
+          <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-green/15">
+            <div className="h-full bg-green transition-all"
+              style={{ width: `${gen.phase === "analyzing" ? 10 : gen.phase === "text" ? 30 : gen.phase === "images" ? 35 + 60 * ((gen.done ?? 0) / (gen.tot || 6)) : 100}%` }} />
+          </div>
+        </div>
+      )}
+
       {tab === "opportunities" && (
         <Panel>
           <PanelHeader title="Каталог — выбор листингов для A+" count={scan?.ownBrandTotal}
@@ -245,9 +286,9 @@ export function AplusFactory() {
                 <span className="text-[11px] text-ink-3">Показано {filtered.length} · выбрано {selected.size}</span>
                 <div className="flex items-center gap-2">
                   {selected.size > 0 && <button onClick={() => setSelected(new Set())} className="text-[11px] text-ink-4 hover:text-ink">Сбросить</button>}
-                  <Btn size="sm" variant="primary" icon={<Sparkles size={12} />} disabled={selected.size === 0 || !!bulk}
-                    loading={!!bulk} onClick={() => bulkGenerate([...selected])}>
-                    {bulk ? `Генерится ${bulk.done}/${bulk.total}…` : `Сгенерить A+ (${selected.size})`}
+                  <Btn size="sm" variant="primary" icon={<Sparkles size={12} />} disabled={selected.size === 0 || !!gen}
+                    loading={!!gen} onClick={() => bulkGenerate([...selected])}>
+                    {gen ? `Лист ${gen.idx}/${gen.total}…` : `Сгенерить A+ (${selected.size})`}
                   </Btn>
                 </div>
               </div>
@@ -355,7 +396,7 @@ export function AplusFactory() {
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <span className="text-[11px] text-ink-3">Превью как на странице листинга · модели: {textModel === "opus" ? "Opus" : "Sonnet"} + {imageModel}</span>
                 <div className="flex items-center gap-1.5">
-                  <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":all"} onClick={() => regenAll(review.id, review.sku)}>Перегенерировать всё (текст+картинки)</Btn>
+                  <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":all"} onClick={() => regenAll(review.id, review.sku, review.itemName ?? review.sku)}>Перегенерировать всё (текст+картинки)</Btn>
                   <Btn size="sm" variant="outline" icon={<RefreshCw size={12} />} loading={busy === review.id + ":img"} onClick={() => regenImages(review.id)}>Только картинки</Btn>
                 </div>
               </div>

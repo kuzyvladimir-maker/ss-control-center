@@ -1726,6 +1726,7 @@ model AmazonAplusJob {
   qualificationJson String? // gate result: { pass, violations[] }
   qualified      Boolean @default(false)
   comments       String? // operator's per-module comments / notes
+  progressJson   String? // live generation progress: { phase, done, total, label } — polled by the UI
 
   contentReferenceKey String? // Amazon key after create
   submissionId        String?

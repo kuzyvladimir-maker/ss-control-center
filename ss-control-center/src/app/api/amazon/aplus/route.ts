@@ -35,6 +35,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ storeIndex, coverage: { ...cov, opportunities: cov.opportunities.slice(0, 200) } });
   }
 
+  // Lightweight progress poll for the live generation UI.
+  if (view === "progress") {
+    const sku = sp.get("sku") ?? "";
+    const job = await prisma.amazonAplusJob.findUnique({
+      where: { amazon_aplus_job_dedup: { storeIndex, sku, variant: "A" } },
+      select: { status: true, progressJson: true },
+    });
+    return NextResponse.json({ status: job?.status ?? null, progress: job?.progressJson ? JSON.parse(job.progressJson) : null });
+  }
+
   const jobs = await prisma.amazonAplusJob.findMany({
     where: { storeIndex },
     orderBy: { createdAt: "desc" },
@@ -68,7 +78,14 @@ export async function POST(request: NextRequest) {
       const item = await prisma.amazonListingHealthItem.findUnique({ where: { amazon_health_item_dedup: { storeIndex, sku } } });
       if (!item) return NextResponse.json({ ok: false, error: "listing not in mirror" }, { status: 404 });
 
+      // Early stub so the UI can poll progress while the LLM runs.
+      await prisma.amazonAplusJob.upsert({
+        where: { amazon_aplus_job_dedup: { storeIndex, sku, variant: "A" } },
+        create: { storeIndex, sku, asin: item.asin, itemName: item.itemName, variant: "A", status: "GENERATING", progressJson: JSON.stringify({ phase: "analyzing" }) },
+        update: { status: "GENERATING", progressJson: JSON.stringify({ phase: "analyzing" }), error: null },
+      });
       const concept = classifyConcept(item.itemName, item.productType, brandOf(item.itemName));
+      await prisma.amazonAplusJob.update({ where: { amazon_aplus_job_dedup: { storeIndex, sku, variant: "A" } }, data: { progressJson: JSON.stringify({ phase: "text", label: textModel }) } }).catch(() => {});
       const plan = await generateAplusPlan({
         sku, asin: item.asin, itemName: item.itemName, productType: item.productType, brand: brandOf(item.itemName),
       }, concept, textModel);
@@ -88,6 +105,7 @@ export async function POST(request: NextRequest) {
           documentName: plan.documentName, contentJson: JSON.stringify(doc),
           imagePlanJson: JSON.stringify(imagePlan), qualificationJson: JSON.stringify(gate),
           qualified: gate.pass, beforeConversion: item.unitSessionPct, generatedAt: new Date(),
+          progressJson: JSON.stringify({ phase: "images", done: 0, total: imagePlan.slots.length }),
         },
         update: {
           status: gate.pass ? "PENDING_APPROVAL" : "NEEDS_FIX", concept,
@@ -95,6 +113,7 @@ export async function POST(request: NextRequest) {
           imagePlanJson: JSON.stringify(imagePlan), qualificationJson: JSON.stringify(gate),
           qualified: gate.pass, beforeConversion: item.unitSessionPct, generatedAt: new Date(),
           error: null, comments: null,
+          progressJson: JSON.stringify({ phase: "images", done: 0, total: imagePlan.slots.length }),
         },
       });
       // Generate the actual images (best-effort) so the job arrives with a real preview.

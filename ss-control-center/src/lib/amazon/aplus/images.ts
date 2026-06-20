@@ -57,13 +57,24 @@ export async function generateImagesForJob(
   const slug = `aplus-${job.sku}`.toLowerCase().replace(/[^a-z0-9-]/g, "");
   const suffix = CONCEPT_CONFIG[(job.concept as Concept) ?? "ownfood"]?.imageSuffix ?? DEFAULT_SUFFIX;
 
-  let generated = 0, failed = 0;
+  const todo = (stored.slots ?? []).filter((s) => s.brief && (!s.url || force));
+  const total = todo.length;
+  let generated = 0, failed = 0, idx = 0;
   for (const s of stored.slots ?? []) {
     if (!s.brief || (s.url && !force)) continue;
+    idx++;
+    // Live progress so the UI can show "картинка 2/6 · serve".
+    await prisma.amazonAplusJob.update({
+      where: { id: jobId },
+      data: { progressJson: JSON.stringify({ phase: "images", done: idx - 1, total, label: s.key }) },
+    }).catch(() => {});
     const model = resolveModel(imageModel, s.key);
     const url = await gen(s.brief, `${slug}-${s.key}`, !!s.landscape, suffix, model).catch(() => null);
     if (url) { s.url = url; generated++; } else failed++;
   }
-  await prisma.amazonAplusJob.update({ where: { id: jobId }, data: { imagePlanJson: JSON.stringify(stored) } });
+  await prisma.amazonAplusJob.update({
+    where: { id: jobId },
+    data: { imagePlanJson: JSON.stringify(stored), progressJson: JSON.stringify({ phase: "done", done: total, total }) },
+  });
   return { generated, failed };
 }
