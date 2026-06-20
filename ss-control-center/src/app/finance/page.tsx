@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Loader2, RefreshCw, Play, CheckCircle2, AlertCircle, Settings2, FileText,
+  Loader2, RefreshCw, Play, CheckCircle2, AlertCircle, Settings2, FileText, Receipt,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -131,6 +131,7 @@ export default function FinancialPlanPage() {
           <Button onClick={getReport} disabled={busy != null}>
             {busy === "report" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <FileText className="mr-1 h-4 w-4" />}Get Report
           </Button>
+          <Link href="/finance/expenses"><Button variant="outline" size="sm"><Receipt className="mr-1 h-4 w-4" />Expenses</Button></Link>
           <Link href="/finance/funds"><Button variant="outline" size="sm"><Settings2 className="mr-1 h-4 w-4" />Manage funds</Button></Link>
           <Button onClick={load} variant="outline" size="sm"><RefreshCw className="h-4 w-4" /></Button>
         </div>

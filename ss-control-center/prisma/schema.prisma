@@ -3397,6 +3397,31 @@ model FundEntry {
   @@index([status])
 }
 
+// RecurringExpense — the editable master list of business expenses (OpEx),
+// seeded from Sellerboard's expenses export. Category = the FP1 fund it belongs to
+// (Salaries / Warehouse & Logistics / Software / Subscriptions / …). frequency
+// drives the monthly obligation per fund (weekly × 52/12). Amounts are editable —
+// Vladimir keeps them current. Optional product/marketplace attribution.
+model RecurringExpense {
+  id          String   @id @default(cuid())
+  name        String
+  category    String // = fund name (FP1)
+  amount      Float
+  frequency   String   @default("monthly") // monthly | weekly | one_time
+  currency    String   @default("USD")
+  marketplace String? // optional channel attribution
+  product     String? // optional product attribution
+  isAdSpend   Boolean  @default(false)
+  active      Boolean  @default(true)
+  source      String   @default("sellerboard") // sellerboard | manual
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([active])
+}
+
 // FinancePlanRun — one weekly (or manual) distribution pass.
 model FinancePlanRun {
   id               String  @id @default(cuid())
