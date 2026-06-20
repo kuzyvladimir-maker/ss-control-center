@@ -133,3 +133,7 @@ Practical effect: a transient Veeqo 502 no longer blocks the whole validation pa
 1. **Veeqo availability** — `validator-inventory` will warn on Veeqo 5xx; if you see a lot of these, check the Veeqo status page before assuming bundle is unstockable.
 2. **UPC pool depth** — `validator-upc-format` fails when `UPCPool.AVAILABLE` is empty for the prefix. Top up via `scripts/seed-upc-pool-available.ts` (see Bundle Factory Fixes 2026-05-21).
 3. **Single-brand browse-node** — pending per-category mapping; current single-brand bundles get the multi-brand GBE node. Works for Amazon but not optimal for organic discoverability.
+
+## Связано с
+- [Phase 2.5 — Distribution](phase-2-5-distribution.md) — следующий этап pipeline
+- [Bundle Factory](bundle-factory.md) — общая архитектура модуля

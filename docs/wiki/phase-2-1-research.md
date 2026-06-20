@@ -128,3 +128,7 @@ The Stage 5 image vision check then runs without `skip_image_check`. Phase 2.0 C
 5. Click **Run Research →** (typical ~30s; spinner + auto-poll keeps the page live).
 6. Curate the pool — remove obvious misses with the Remove action.
 7. Click **Continue to Variation Matrix →** when pool ≥ 5 items. Status flips to `VARIATION_SELECTED`. Phase 2.2 will pick up from here.
+
+## Связано с
+- [Phase 2.2 — Variation Matrix + Content Generation](phase-2-2-content-generation.md) — следующий этап pipeline
+- [Bundle Factory](bundle-factory.md) — общая архитектура модуля

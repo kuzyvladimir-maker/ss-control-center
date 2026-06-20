@@ -115,3 +115,7 @@ Routed through the same Telegram channel that handles Critical Alerts. Useful so
 3. **First publish should be a single-SKU dry-run** — pick the simplest draft, dry-run it, inspect the constructed payload in `distribution_errors` (it'll be there even on success as `validation_preview_response`), then go for real.
 4. **STORE4 SIRIUS unlock** — to add SIRIUS to the publish blast, Vladimir needs to create a SP-API developer app for that account and add credentials to `account-map.ts`.
 5. **STORE5 RETAILER** — US listing on this account is suspended (2026-05-17). Even after suspension lifts, the LWA refresh_token has been revoked; reauthorize before re-enabling.
+
+## Связано с
+- [Bundle Factory](bundle-factory.md) — общая архитектура модуля
+- [Amazon SP-API — Интеграция](amazon-sp-api.md) — write-API для публикации листингов

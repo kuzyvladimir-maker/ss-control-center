@@ -73,3 +73,7 @@ share one fee model (the legacy hardcoded 15% is `LEGACY_FLAT_REFERRAL`).
 - Walmart SKUs have ~zero Sellerboard COGS (Sellerboard is Amazon-only) → most
   show `cogs_missing` until the donor-base sourcing fills `SkuCost`.
 - P&L volume weighting is by order count until per-order line items exist (7.3).
+
+## Связано с
+- [COGS / True-Cost Agent](cogs-true-cost-agent.md) — заполняет SkuCost, который потребляет модуль
+- [Product Resolution & Retail Sourcing Engine](product-sourcing-engine.md) — источник себестоимости из донор-базы

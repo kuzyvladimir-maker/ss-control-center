@@ -130,3 +130,7 @@ The pipeline sets `manual_review_required=true` and leaves `compliance_status=BL
 1. **Env vars** — `OPENAI_API_KEY` + `R2_*` already wired in Phase 2.1 (mirror) and Phase 2.6.3 spec. No new keys.
 2. **No Turso migration** — the columns this stage writes (`main_image_url`, image-attempt counters) live on `BundleDraft` and were added in Phase 2.1 image-mirror schema.
 3. **OpenAI billing alert** — at $0.04/image the bill is bounded but real; set a $50/mo alert on the OpenAI dashboard.
+
+## Связано с
+- [Phase 2.4 — Validation Pipeline](phase-2-4-validation.md) — следующий этап pipeline
+- [Cloudflare R2 Setup Guide](cloudflare-r2-setup.md) — хранилище сгенерированных картинок

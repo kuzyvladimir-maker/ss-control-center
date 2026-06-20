@@ -203,3 +203,7 @@ Cloudflare R2 dashboard показывает usage в real-time:
 ---
 
 **Maintained by:** Vladimir + Claude · **Last reviewed:** 2026-05-17
+
+## Связано с
+- [Bundle Factory](bundle-factory.md) — потребитель R2-хранилища картинок
+- [Phase 2.3 — Image Generation](phase-2-3-image-generation.md) — грузит сгенерированные изображения в R2

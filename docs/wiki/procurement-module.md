@@ -488,3 +488,7 @@ Procurement
 ---
 
 **End of spec v1.0** — 2026-05-03
+
+## Связано с
+- [Shipping Labels — Модуль](shipping-labels.md) — следующий шаг после закупа товара
+- [Veeqo API — Интеграция](veeqo-api.md) — простановка тегов «куплено» в Veeqo

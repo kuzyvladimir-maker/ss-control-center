@@ -23,3 +23,7 @@
 - Shipping Labels модуль (БД с label данными)
 - Telegram (уведомления)
 - Опционально: UPS/FedEx/USPS API (Level 2)
+
+## Связано с
+- [Shipping Labels — Модуль](shipping-labels.md) — источник данных по купленным лейблам
+- [Carrier Tracking APIs](carrier-tracking-apis.md) — Level 2 трекинг через перевозчиков

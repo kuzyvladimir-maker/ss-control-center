@@ -151,3 +151,7 @@ All 28 tests PASS; smoke PASS.
    Idempotent (CREATE TABLE IF NOT EXISTS).
 2. **No new env vars** — `ANTHROPIC_API_KEY` already lives in Vercel from Phase 2.6.x.
 3. **KB sync** — when you edit anything under `docs/marketplace-rules/{amazon,walmart}/`, run `bash scripts/sync-kb-content.sh` so the baked copy under `ss-control-center/src/lib/bundle-factory/kb-content/` follows.
+
+## Связано с
+- [Phase 2.3 — Image Generation](phase-2-3-image-generation.md) — следующий этап pipeline
+- [Bundle Factory](bundle-factory.md) — общая архитектура модуля

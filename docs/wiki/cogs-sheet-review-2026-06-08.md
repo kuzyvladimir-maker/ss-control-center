@@ -66,3 +66,7 @@ title/description/keyFeatures/imageUrls — дополнить nutritionFacts + 
 5. **Полный сбор** с карточки: описание + bullets + атрибуты + ≥5 фото.
 6. **Переделать COGS-вкладку** (понятный формат) + вкладка вариаций с компонентами.
 7. **Мульти-ритейлер 5 площадок** + лучший источник (после решения по бюджету).
+
+## Связано с
+- [COGS True-Cost Agent](cogs-true-cost-agent.md) — движок, который правят эти замечания
+- [COGS→Catalog→Pricing roadmap](cogs-pricing-engine-roadmap.md) — общий план по себестоимости и ценам

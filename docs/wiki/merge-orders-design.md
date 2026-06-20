@@ -87,3 +87,7 @@ We start with strict matching (lowercase + trim only). If Veeqo's `mergeable=tru
 - Cross-channel merges
 - Address fuzzy matching beyond lowercase/trim
 - Merge undo (Veeqo's responsibility)
+
+## Связано с
+- [Merge Orders — Phase A1](merge-orders.md) — реализация по этому дизайну
+- [Shipping Labels — Модуль](shipping-labels.md) — где появляется фильтр mergeable и покупка лейбла

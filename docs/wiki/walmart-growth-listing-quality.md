@@ -74,3 +74,7 @@ Score**. Модуль вытягивает этот скор через Insights
   репрайсер. Только под guardrail маржи ≥20% и одобрение.
 - Не отдаётся нам: `listingQuality/categories` (404), `unpublished/counts`
   (500 на стороне Walmart).
+
+## Связано с
+- [Walmart Growth — стратегия](walmart-growth-roadmap.md) — общая стратегия и решения по росту
+- [Walmart Marketplace API — Интеграция](walmart-api.md) — Insights API, отдающий Listing Quality

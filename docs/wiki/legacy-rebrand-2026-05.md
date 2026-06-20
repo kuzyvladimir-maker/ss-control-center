@@ -24,3 +24,5 @@
 ← Mobile Adaptation audit (Phase 0, обнаружил баги)
 → Auth System (login UI)
 → Customer Hub (StoreTabs)
+- [Auth System — Control Center UI Login](auth-system.md) — экран логина, переведённый на Salutem
+- [Архитектура проекта](project-architecture.md) — общая структура UI и компонентов

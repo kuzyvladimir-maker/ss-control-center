@@ -49,3 +49,7 @@ carrier refund + заказ остаётся в Shipping Labels для re-quote)
   кнопка → confirm)
 - Бекенд `src/app/api/shipping/discard-label/route.ts` — **не менялся**,
   логика войдинга через Veeqo refund / Walmart DELETE корректна.
+
+## Связано с
+- [Shipping Labels — Модуль](shipping-labels.md) — где живёт кнопка Discard Label
+- [Dashboard — Модуль](dashboard.md) — потребитель той же toast-системы
