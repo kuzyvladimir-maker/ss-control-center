@@ -32,7 +32,7 @@ export default function FinancialPlanPage() {
   const [funds, setFunds] = useState<Fund[]>([]);
   const [fundsTotal, setFundsTotal] = useState(0);
   const [payouts, setPayouts] = useState<Payout[]>([]);
-  const [config, setConfig] = useState<{ method: string; manualPct: number; windowWeeks: number } | null>(null);
+  const [config, setConfig] = useState<{ method: string; manualPct: number; windowWeeks: number; taxRatePct?: number } | null>(null);
   const [run, setRun] = useState<RunResult | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -115,7 +115,7 @@ export default function FinancialPlanPage() {
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
   }
 
-  async function saveConfig(next: Partial<{ manualPct: number }>) {
+  async function saveConfig(next: Partial<{ manualPct: number; taxRatePct: number }>) {
     if (!config) return;
     setConfig({ ...config, ...next });
     await fetch("/api/finance/config", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(next) });
@@ -131,6 +131,9 @@ export default function FinancialPlanPage() {
   const netProceeds = Math.round(scoped.reduce((s, p) => s + p.netAmount, 0) * 100) / 100;
   const maxAbs = Math.max(1, ...statementRows.map((r) => Math.abs(r.amount)));
   const pendingNet = Math.round(payouts.filter((p) => !p.distributed).reduce((s, p) => s + p.netAmount, 0) * 100) / 100;
+  // Tax need = tax rate × turnover (sales+shipping) of the pending payouts.
+  const pendingSales = payouts.filter((p) => !p.distributed).reduce((s, p) => s + p.lines.filter((l) => ["sales", "shipping_income"].includes(l.bucket)).reduce((a, l) => a + l.amount, 0), 0);
+  const taxNeed = Math.round(((config?.taxRatePct ?? 1) / 100) * pendingSales * 100) / 100;
 
   const latestByAccount = new Map<string, Payout>();
   for (const p of [...payouts].sort((a, b) => (a.periodEnd ?? "").localeCompare(b.periodEnd ?? ""))) latestByAccount.set(`${p.marketplace}:${p.entity ?? ""}`, p);
@@ -264,6 +267,10 @@ export default function FinancialPlanPage() {
                   <label className="block text-xs text-muted-foreground">Reserve % — working capital (restock: COGS+shipping+packaging)</label>
                   <div className="flex items-center gap-1"><Input type="number" min={0} max={100} className="w-24" value={config ? Math.round(config.manualPct * 100) : 0} onChange={(e) => saveConfig({ manualPct: (Number(e.target.value) || 0) / 100 })} /><span className="text-sm text-muted-foreground">%</span></div>
                 </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground">Tax rate % (of sales turnover)</label>
+                  <div className="flex items-center gap-1"><Input type="number" min={0} step={0.1} className="w-20" value={config?.taxRatePct ?? 1} onChange={(e) => saveConfig({ taxRatePct: Number(e.target.value) || 0 })} /><span className="text-sm text-muted-foreground">%</span></div>
+                </div>
                 <Button onClick={autoAllocate} disabled={busy != null} variant="outline">{busy === "auto" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Wand2 className="mr-1 h-4 w-4" />}Auto-set % from needs</Button>
                 <Button onClick={() => doRun(true)} disabled={busy != null} variant="outline">{busy === "preview" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Play className="mr-1 h-4 w-4" />}Preview</Button>
                 <Button onClick={() => doRun(false)} disabled={busy != null || !run || run.preview === false}>{busy === "commit" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-1 h-4 w-4" />}Commit</Button>
@@ -283,7 +290,7 @@ export default function FinancialPlanPage() {
                       const f = funds.find((x) => x.id === a.fundId);
                       const editable = !!f && f.group !== "RESERVE" && f.group !== "FREE" && f.allocationType === "percent";
                       const dist = run.distribution.distributable || 0;
-                      const need = needs[a.name] ?? 0;
+                      const need = a.name === "Taxes" ? taxNeed : (needs[a.name] ?? 0);
                       const needPct = dist > 0 && need > 0 ? (need / dist) * 100 : 0;
                       return (
                         <tr key={a.fundId} className="border-t">
