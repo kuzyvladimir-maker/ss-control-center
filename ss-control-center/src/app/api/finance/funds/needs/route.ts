@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { accrueCategory } from "@/lib/finance/accrual";
+import { installmentMonthly } from "@/lib/finance/expenses";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -23,7 +24,7 @@ export async function GET() {
   const debts = await prisma.debt.findMany({ where: { status: "open" } });
   for (const d of debts) {
     if (!d.monthlyPayment) continue;
-    const due = Math.min(d.monthlyPayment, Math.max(0, d.amount - d.paid));
+    const due = Math.min(installmentMonthly(d.monthlyPayment, d.paymentFrequency), Math.max(0, d.amount - d.paid));
     const name = fundName.get(d.fundId);
     if (name && due > 0) needs[name] = round2((needs[name] ?? 0) + due);
   }

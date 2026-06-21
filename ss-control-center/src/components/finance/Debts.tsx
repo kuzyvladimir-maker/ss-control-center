@@ -12,10 +12,11 @@ import { Loader2, AlertCircle, Trash2, Plus, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { installmentMonthly, INSTALLMENT_FREQUENCIES } from "@/lib/finance/expenses";
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-interface Debt { id: string; amount: number; paid: number; monthlyPayment: number | null; description: string | null; dateIncurred: string | null; status: string }
+interface Debt { id: string; amount: number; paid: number; monthlyPayment: number | null; paymentFrequency: string | null; description: string | null; dateIncurred: string | null; status: string }
 
 export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () => void }) {
   const [debts, setDebts] = useState<Debt[]>([]);
@@ -24,7 +25,7 @@ export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () =>
   const [monthlyDue, setMonthlyDue] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [draft, setDraft] = useState({ amount: "", description: "", dateIncurred: "", monthlyPayment: "" });
+  const [draft, setDraft] = useState({ amount: "", description: "", dateIncurred: "", monthlyPayment: "", paymentFrequency: "monthly" });
   const [payAmt, setPayAmt] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
@@ -41,9 +42,9 @@ export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () =>
     if (!Number.isFinite(amount) || amount === 0) { setError("Enter the debt amount"); return; }
     setBusy(true); setError(null);
     try {
-      const r = await fetch("/api/finance/debts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "add", fundId, amount, description: draft.description, dateIncurred: draft.dateIncurred || null, monthlyPayment: draft.monthlyPayment || null }) }).then((x) => x.json());
+      const r = await fetch("/api/finance/debts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "add", fundId, amount, description: draft.description, dateIncurred: draft.dateIncurred || null, monthlyPayment: draft.monthlyPayment || null, paymentFrequency: draft.paymentFrequency }) }).then((x) => x.json());
       if (!r.ok) throw new Error(r.error ?? "failed");
-      setDraft({ amount: "", description: "", dateIncurred: "", monthlyPayment: "" }); await load();
+      setDraft({ amount: "", description: "", dateIncurred: "", monthlyPayment: "", paymentFrequency: "monthly" }); await load();
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
   }
 
@@ -77,15 +78,18 @@ export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () =>
       <div className="flex flex-wrap items-end gap-2 rounded-md border p-3">
         <div><label className="block text-xs text-muted-foreground">Amount $</label><Input type="number" className="w-28" value={draft.amount} onChange={(e) => setDraft({ ...draft, amount: e.target.value })} /></div>
         <div className="flex-1"><label className="block text-xs text-muted-foreground">Description</label><Input value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} placeholder="e.g. Working loan / 2024 tax installment" /></div>
-        <div><label className="block text-xs text-muted-foreground">Monthly $ (installment)</label><Input type="number" className="w-28" value={draft.monthlyPayment} onChange={(e) => setDraft({ ...draft, monthlyPayment: e.target.value })} placeholder="optional" /></div>
-        <div><label className="block text-xs text-muted-foreground">Date incurred</label><Input type="date" className="w-40" value={draft.dateIncurred} onChange={(e) => setDraft({ ...draft, dateIncurred: e.target.value })} /></div>
+        <div><label className="block text-xs text-muted-foreground">Installment $</label><Input type="number" className="w-24" value={draft.monthlyPayment} onChange={(e) => setDraft({ ...draft, monthlyPayment: e.target.value })} placeholder="optional" /></div>
+        <div><label className="block text-xs text-muted-foreground">Every</label>
+          <select value={draft.paymentFrequency} onChange={(e) => setDraft({ ...draft, paymentFrequency: e.target.value })} className="h-9 rounded-md border bg-background px-2 text-sm">{INSTALLMENT_FREQUENCIES.map((f) => <option key={f} value={f}>{f}</option>)}</select>
+        </div>
+        <div><label className="block text-xs text-muted-foreground">Date incurred</label><Input type="date" className="w-36" value={draft.dateIncurred} onChange={(e) => setDraft({ ...draft, dateIncurred: e.target.value })} /></div>
         <Button onClick={add} disabled={busy}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}</Button>
       </div>
 
       {/* Debts table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Debt</th><th className="px-3 py-2">Date incurred</th><th className="px-3 py-2 text-right">Amount</th><th className="px-3 py-2 text-right">Monthly</th><th className="px-3 py-2 text-right">Paid</th><th className="px-3 py-2 text-right">Remaining</th><th className="px-3 py-2">Pay</th><th className="px-3 py-2"></th></tr></thead>
+          <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Debt</th><th className="px-3 py-2">Date incurred</th><th className="px-3 py-2 text-right">Amount</th><th className="px-3 py-2 text-right">Installment</th><th className="px-3 py-2 text-right">≈ /mo</th><th className="px-3 py-2 text-right">Paid</th><th className="px-3 py-2 text-right">Remaining</th><th className="px-3 py-2">Pay</th><th className="px-3 py-2"></th></tr></thead>
           <tbody>
             {debts.map((d) => {
               const remaining = Math.round((d.amount - d.paid) * 100) / 100;
@@ -95,7 +99,8 @@ export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () =>
                   <td className="px-3 py-2">{d.description ?? "—"}</td>
                   <td className="px-3 py-2 text-muted-foreground">{d.dateIncurred ?? "—"}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{usd(d.amount)}</td>
-                  <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{d.monthlyPayment ? usd(d.monthlyPayment) : "—"}</td>
+                  <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{d.monthlyPayment ? `${usd(d.monthlyPayment)} / ${d.paymentFrequency ?? "monthly"}` : "—"}</td>
+                  <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{d.monthlyPayment ? usd(installmentMonthly(d.monthlyPayment, d.paymentFrequency)) : "—"}</td>
                   <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{usd(d.paid)}</td>
                   <td className="px-3 py-2 text-right font-medium tabular-nums text-destructive">{usd(remaining)}</td>
                   <td className="px-3 py-2">
@@ -110,7 +115,7 @@ export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () =>
                 </tr>
               );
             })}
-            {debts.length === 0 && <tr><td colSpan={8} className="px-3 py-6 text-center text-muted-foreground">No debts yet. Add them above (amount, monthly installment, description, date).</td></tr>}
+            {debts.length === 0 && <tr><td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">No debts yet. Add them above (amount, installment + frequency, description, date).</td></tr>}
           </tbody>
         </table>
       </div>

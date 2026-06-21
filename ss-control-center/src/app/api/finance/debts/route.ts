@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { installmentMonthly } from "@/lib/finance/expenses";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -21,7 +22,8 @@ export async function GET(req: NextRequest) {
   // Sum of monthly installments still owed (capped at remaining) — the monthly need.
   const monthlyDue = round2(debts.reduce((s, d) => {
     const rem = Math.max(0, d.amount - d.paid);
-    return s + (d.monthlyPayment ? Math.min(d.monthlyPayment, rem) : 0);
+    if (!d.monthlyPayment) return s;
+    return s + Math.min(installmentMonthly(d.monthlyPayment, d.paymentFrequency), rem);
   }, 0));
   return NextResponse.json({ debts, totalOriginal, totalRemaining, monthlyDue });
 }
@@ -34,7 +36,7 @@ export async function POST(req: NextRequest) {
       const amount = Math.abs(Number(b.amount));
       if (!b.fundId || !Number.isFinite(amount) || amount === 0) return NextResponse.json({ error: "fundId + amount required" }, { status: 400 });
       const debt = await prisma.debt.create({
-        data: { fundId: b.fundId, amount: round2(amount), description: b.description ?? null, dateIncurred: b.dateIncurred ?? null, monthlyPayment: b.monthlyPayment != null && Number(b.monthlyPayment) > 0 ? round2(Number(b.monthlyPayment)) : null },
+        data: { fundId: b.fundId, amount: round2(amount), description: b.description ?? null, dateIncurred: b.dateIncurred ?? null, monthlyPayment: b.monthlyPayment != null && Number(b.monthlyPayment) > 0 ? round2(Number(b.monthlyPayment)) : null, paymentFrequency: b.paymentFrequency ?? (b.monthlyPayment ? "monthly" : null) },
       });
       return NextResponse.json({ ok: true, debt });
     }
@@ -70,6 +72,7 @@ export async function PATCH(req: NextRequest) {
     if (b.description !== undefined) data.description = b.description;
     if (b.dateIncurred !== undefined) data.dateIncurred = b.dateIncurred;
     if (b.monthlyPayment !== undefined) data.monthlyPayment = b.monthlyPayment === null || b.monthlyPayment === "" ? null : round2(Number(b.monthlyPayment));
+    if (b.paymentFrequency !== undefined) data.paymentFrequency = b.paymentFrequency || null;
     const debt = await prisma.debt.update({ where: { id: b.id }, data });
     return NextResponse.json({ ok: true, debt });
   } catch (e) {

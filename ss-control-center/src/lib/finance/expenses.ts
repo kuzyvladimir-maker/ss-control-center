@@ -31,6 +31,19 @@ export function monthlyAmount(amount: number, frequency: string): number {
 
 export const FREQUENCIES = ["monthly", "weekly", "daily", "yearly", "one_time"] as const;
 
+export const INSTALLMENT_FREQUENCIES = ["monthly", "biweekly", "weekly", "daily"] as const;
+
+/** Averaged MONTHLY equivalent of a per-period installment payment. */
+export function installmentMonthly(amount: number, frequency: string | null | undefined): number {
+  if (!Number.isFinite(amount)) return 0;
+  switch (frequency) {
+    case "weekly": return Math.round(amount * (52 / 12) * 100) / 100;
+    case "biweekly": return Math.round(amount * (26 / 12) * 100) / 100;
+    case "daily": return Math.round(amount * 30.44 * 100) / 100;
+    default: return Math.round(amount * 100) / 100; // monthly
+  }
+}
+
 export const WORKDAYS_PER_WEEK = 5;
 export const WORKDAYS_PER_YEAR = 260;
 
