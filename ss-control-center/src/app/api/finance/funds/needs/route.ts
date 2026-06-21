@@ -7,16 +7,14 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { accrueCategory, accrueInstallments } from "@/lib/finance/accrual";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export async function GET() {
   const today = new Date().toISOString().slice(0, 10);
-  // Tick the meters up to today (safe to call repeatedly — keyed on lastAccruedDate).
-  try { await accrueCategory(null, today); } catch { /* never break the plan view */ }
-  try { await accrueInstallments(today); } catch { /* same */ }
-
+  // Read-only: the meters are advanced once a day by /api/cron/finance-accrual.
+  // We do NOT tick on every page load — that wrote dozens of rows per view and
+  // throttled Turso. Here we just read the stored accrued/paid.
   const fundOf = new Map((await prisma.fund.findMany({ select: { id: true, name: true } })).map((f) => [f.id, f.name]));
   const needs: Record<string, number> = {};
 

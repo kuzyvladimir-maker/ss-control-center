@@ -8,14 +8,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { installmentMonthly } from "@/lib/finance/expenses";
-import { accrueInstallments } from "@/lib/finance/accrual";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export async function GET(req: NextRequest) {
   const fundId = req.nextUrl.searchParams.get("fundId");
-  // Tick the installment owed-meters up to today before reading them.
-  try { await accrueInstallments(new Date().toISOString().slice(0, 10)); } catch { /* never break the view */ }
+  // Read-only: installment meters advance once a day via /api/cron/finance-accrual.
   const debts = await prisma.debt.findMany({
     where: fundId ? { fundId } : {},
     orderBy: [{ status: "asc" }, { dateIncurred: "asc" }],

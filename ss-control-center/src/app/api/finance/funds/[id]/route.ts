@@ -6,7 +6,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { accrueCategory } from "@/lib/finance/accrual";
 
 function round2(n: number) { return Math.round(n * 100) / 100; }
 
@@ -15,10 +14,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const fund = await prisma.fund.findUnique({ where: { id } });
   if (!fund) return NextResponse.json({ error: "not found" }, { status: 404 });
 
-  // Tick the meter: accrue this fund's expenses up to today before showing it.
-  const today = new Date().toISOString().slice(0, 10);
-  try { await accrueCategory(fund.name, today); } catch { /* accrual must never break the view */ }
-
+  // Read-only: meters advance once a day via /api/cron/finance-accrual (NOT on every
+  // view — per-load writes caused SQLite write-lock contention and hung the app).
   const entries = await prisma.fundEntry.findMany({ where: { fundId: id }, orderBy: { createdAt: "desc" } });
   // The fund's expenses (= category) with their accrued (owed) amounts.
   const expenses = await prisma.recurringExpense.findMany({

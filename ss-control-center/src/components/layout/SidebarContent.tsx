@@ -21,6 +21,7 @@ import {
   PiggyBank,
   Users,
   GraduationCap,
+  BarChart3,
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -85,6 +86,12 @@ const divisions = (s: DashboardSummary): Division[] => [
       // Planned (Vladimir 2026-06-21): staff directory + "hats" (post write-ups)
       // + instructions / SOPs / org policy. Module not built yet.
       { title: "Staff Hats", href: "/staff-hats", icon: Users, disabled: true },
+      // Planned (Vladimir 2026-06-21): org statistics — every division & key
+      // process has a stat, entered/graphed weekly, conditions assigned from
+      // trends. Org-board home = HCO Dept 3 (Inspections & Reports) = Div 1.
+      // Distinct from Dashboard (Div 7), which is the executive view that
+      // consumes these stats.
+      { title: "Statistics", href: "/statistics", icon: BarChart3, disabled: true },
     ],
   },
   {
