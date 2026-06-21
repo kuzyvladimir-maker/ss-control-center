@@ -3467,11 +3467,17 @@ model Receipt {
   tax         Float?
   date        String? // ISO date from the receipt
   currency    String   @default("USD")
-  status      String   @default("parsed") // parsed | saved
+  status      String   @default("parsed") // parsed | saved | home | review | refund
   fundId      String?
   fundEntryId String? // the spend entry created on save
   notes       String?
   rawText     String? // raw vision JSON for audit
+  // Email auto-ingest (Jackie spec): online purchase/refund receipts parsed from Gmail.
+  channel        String? // walmart_business | walmart_com | target | bjs | samsclub | instacart | doordash | amazon
+  orderId        String? // store order number — dedup key with channel
+  classification String? // business | home | unknown
+  sourceInbox    String?
+  emailId        String? // gmail message id
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { uploadToR2 } from "@/lib/walmart/multipack/r2";
 import { parseReceipt } from "@/lib/finance/receipt-ocr";
+import { ingestReceipt } from "@/lib/finance/ingest-receipt";
 
 export const maxDuration = 60;
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -24,6 +25,18 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const b = await req.json();
+
+    // Email auto-ingest (Jackie spec): accept one parsed record, or a batch.
+    if (b.action === "ingest") {
+      const records = Array.isArray(b.records) ? b.records : [b.record];
+      const results = [];
+      for (const rec of records) {
+        if (!rec) continue;
+        try { results.push({ store: rec.store, ...(await ingestReceipt(rec)) }); }
+        catch (e) { results.push({ store: rec?.store, status: "error", reason: e instanceof Error ? e.message : String(e) }); }
+      }
+      return NextResponse.json({ ok: true, results });
+    }
 
     if (b.action === "scan") {
       const raw = String(b.image ?? "").replace(/^data:image\/\w+;base64,/, "");
