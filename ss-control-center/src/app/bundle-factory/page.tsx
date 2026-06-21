@@ -115,10 +115,10 @@ export default async function BundleFactoryOverviewPage() {
           </div>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-x-8 gap-y-3">
-          <Stat label="Master bundles" value={masterCount} sub={`${masterLiveCount} live`} />
-          <Stat label="Channel SKUs" value={skuCount} />
+          <Stat label="Master bundles" value={masterCount} sub={`${masterLiveCount} live`} href="/bundle-factory/master-bundles" />
+          <Stat label="Channel SKUs" value={skuCount} href="/bundle-factory/live" />
           <Stat label="Drafts in flight" value={draftCount} href="/bundle-factory/drafts" />
-          <Stat label="UPC pool" value={upcAvailable} sub="available" />
+          <Stat label="UPC pool" value={upcAvailable} sub="available" href="/bundle-factory/settings" />
         </div>
       </div>
     </>
