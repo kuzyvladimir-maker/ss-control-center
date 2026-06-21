@@ -32,11 +32,11 @@ export interface AuthedUserWithAccess extends AuthedUser {
   modules: string[];
 }
 
-// Synthetic identity for requests authenticated with the SSCC_API_TOKEN.
-// External clients (OpenClaw, automation, scripts) carry no DB user but
-// must still pass `requireAuth` / `requireAdmin` checks to use admin-only
-// endpoints. We give them admin-equivalent rights and a recognisable
-// username so audit logs can distinguish them from real users.
+// Synthetic identities for requests authenticated with an API token. External
+// clients (OpenClaw / Jackie, automation, scripts) carry no DB user but must
+// still pass `requireAuth` / `requireAdmin` checks to use admin-only endpoints.
+// We give them admin-equivalent rights (role "admin" ⇒ every module) and a
+// recognisable username so audit logs can distinguish them from real users.
 const API_TOKEN_USER: AuthedUser = {
   id: "system:api-token",
   username: "api@sscc.system",
@@ -44,18 +44,42 @@ const API_TOKEN_USER: AuthedUser = {
   role: "admin",
 };
 
-function isApiTokenRequest(request: NextRequest): boolean {
-  const expected = process.env.SSCC_API_TOKEN;
-  if (!expected) return false;
-  const bearer = request.headers.get("Authorization")?.replace("Bearer ", "");
-  return bearer === expected;
+// Jackie (the OpenClaw agent) gets its OWN admin identity + token so its
+// traffic is distinguishable from generic SSCC_API_TOKEN automation and the
+// credential can be rotated independently. Same full-admin rights.
+const JACKIE_TOKEN_USER: AuthedUser = {
+  id: "system:jackie",
+  username: "jackie@openclaw",
+  displayName: "Jackie (OpenClaw agent)",
+  role: "admin",
+};
+
+/**
+ * Resolve a request's Bearer token to a synthetic admin identity, or null if
+ * no recognised token is present. Both tokens grant full admin — see the
+ * synthetic users above. Kept in sync with the token check in src/proxy.ts
+ * and verifyJackieAuth in src/lib/jackie-mcp/registry.ts.
+ */
+function apiTokenUser(request: NextRequest): AuthedUser | null {
+  const bearer = request.headers
+    .get("Authorization")
+    ?.replace(/^Bearer\s+/i, "")
+    .trim();
+  if (!bearer) return null;
+  const jackie = process.env.JACKIE_API_TOKEN;
+  const ssc = process.env.SSCC_API_TOKEN;
+  if (jackie && bearer === jackie) return JACKIE_TOKEN_USER;
+  if (ssc && bearer === ssc) return API_TOKEN_USER;
+  return null;
 }
 
 export async function getCurrentUser(
   request: NextRequest
 ): Promise<AuthedUser | null> {
-  // External API clients (Bearer SSCC_API_TOKEN) get admin identity
-  if (isApiTokenRequest(request)) return API_TOKEN_USER;
+  // External API clients (Bearer SSCC_API_TOKEN / JACKIE_API_TOKEN) get an
+  // admin identity. Jackie has its own so it's identifiable in audit logs.
+  const tokenUser = apiTokenUser(request);
+  if (tokenUser) return tokenUser;
 
   const token = request.cookies.get("sscc-session")?.value;
   if (!token) return null;

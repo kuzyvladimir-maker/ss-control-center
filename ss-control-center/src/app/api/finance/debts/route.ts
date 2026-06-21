@@ -8,11 +8,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { installmentMonthly } from "@/lib/finance/expenses";
+import { accrueInstallments } from "@/lib/finance/accrual";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export async function GET(req: NextRequest) {
   const fundId = req.nextUrl.searchParams.get("fundId");
+  // Tick the installment owed-meters up to today before reading them.
+  try { await accrueInstallments(new Date().toISOString().slice(0, 10)); } catch { /* never break the view */ }
   const debts = await prisma.debt.findMany({
     where: fundId ? { fundId } : {},
     orderBy: [{ status: "asc" }, { dateIncurred: "asc" }],
@@ -25,7 +28,9 @@ export async function GET(req: NextRequest) {
     if (!d.monthlyPayment) return s;
     return s + Math.min(installmentMonthly(d.monthlyPayment, d.paymentFrequency), rem);
   }, 0));
-  return NextResponse.json({ debts, totalOriginal, totalRemaining, monthlyDue });
+  // Owed right now = the daily-ticking accrued debt across installments (drives Needed).
+  const owedNow = round2(debts.reduce((s, d) => s + (d.accrued ?? 0), 0));
+  return NextResponse.json({ debts, totalOriginal, totalRemaining, monthlyDue, owedNow });
 }
 
 export async function POST(req: NextRequest) {
@@ -53,7 +58,9 @@ export async function POST(req: NextRequest) {
       });
       await prisma.fund.update({ where: { id: debt.fundId }, data: { balance: { decrement: round2(amount) } } });
       const paid = round2(debt.paid + amount);
-      await prisma.debt.update({ where: { id: debt.id }, data: { paid, status: paid >= debt.amount - 0.005 ? "settled" : "open" } });
+      // Paying an installment also draws down its owed counter (the Needed meter).
+      const accrued = Math.max(0, round2((debt.accrued ?? 0) - amount));
+      await prisma.debt.update({ where: { id: debt.id }, data: { paid, accrued, status: paid >= debt.amount - 0.005 ? "settled" : "open" } });
       return NextResponse.json({ ok: true, entry });
     }
 

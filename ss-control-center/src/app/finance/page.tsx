@@ -42,7 +42,6 @@ export default function FinancialPlanPage() {
   const [manualLabel, setManualLabel] = useState("");
   const [pctEdit, setPctEdit] = useState<Record<string, string>>({});
   const [needs, setNeeds] = useState<Record<string, number>>({});
-  const [needsDays, setNeedsDays] = useState(7);
   const [scope, setScope] = useState<"pending" | "all">("pending");
 
   const load = useCallback(async () => {
@@ -55,7 +54,7 @@ export default function FinancialPlanPage() {
         fetch("/api/finance/funds/needs").then((r) => r.json()),
       ]);
       setFunds(h.funds ?? []); setFundsTotal(h.total ?? 0);
-      setPayouts(p.payouts ?? []); setConfig(c); setNeeds(n.needs ?? {}); setNeedsDays(n.periodDays ?? 7);
+      setPayouts(p.payouts ?? []); setConfig(c); setNeeds(n.needs ?? {});
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -284,7 +283,7 @@ export default function FinancialPlanPage() {
                     <span>Free: <b className="text-foreground">{usd(run.distribution.free)}</b></span>
                     <span>{run.preview ? "PREVIEW — not committed" : "COMMITTED"}</span>
                   </div>
-                  <p className="mb-1 text-xs text-muted-foreground">Needed = each fund&apos;s cost for the last {needsDays} days since the previous plan (its monthly obligation pro-rated). Taxes = {config?.taxRatePct ?? 1.5}% of this payout.</p>
+                  <p className="mb-1 text-xs text-muted-foreground">Needed = how much each fund is owed right now — a daily-ticking debt that carries forward until you mark items Paid on the fund page. Taxes = {config?.taxRatePct ?? 1.5}% of this payout; the Expansion fund has no target.</p>
                   <table className="w-full">
                     <thead className="text-left text-xs uppercase text-muted-foreground"><tr><th className="py-1">Group</th><th>Fund</th><th className="text-right" title="Suggested: what this fund needs to cover its costs for the period since the last plan">Needed %</th><th className="text-right">Needed $</th><th className="text-right">My %</th><th className="text-right">Amount</th></tr></thead>
                     <tbody>{run.distribution.allocations.map((a) => {

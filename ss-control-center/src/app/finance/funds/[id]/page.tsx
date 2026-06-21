@@ -1,19 +1,18 @@
 "use client";
 
 /**
- * Fund detail — balance + BILLS + ledger.
+ * Fund detail — cash balance + OWED debt meter + ledger.
  *
- * Bills = the fund's expense items (presets from the Expenses catalog) turned into
- * payable bills for the period. Unpaid bills are RED and hang there even if the
- * fund can't cover them (the balance can go negative). Paying one (with the actual
- * amount) turns it GREEN and debits the fund. Three actions per bill: Paid / Not
- * paid (revert) / Delete (if it's no longer relevant).
+ * Owed = each expense item's daily-ticking debt (accrued = monthly cost ÷ 30.44 per
+ * day, carried forward). Pressing Paid (full or part) clears that item's debt and
+ * debits the fund's cash. This per-item owed total is what drives the plan's
+ * "Needed". The Debt/Installment fund uses the Debts table instead.
  */
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2, ArrowLeft, AlertCircle, Trash2, Check, RotateCcw, Plus, ListPlus } from "lucide-react";
+import { Loader2, ArrowLeft, AlertCircle, Trash2, Check, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +25,7 @@ const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en
 
 interface Fund { id: string; name: string; group: string; balance: number }
 interface Entry { id: string; type: string; amount: number; description: string | null; status: string; dueDate: string | null; createdAt: string }
-interface Preset { id: string; name: string; amount: number; frequency: string }
+interface Expense { id: string; name: string; amount: number; frequency: string; accrued: number }
 
 const TYPE_LABEL: Record<string, string> = { allocation: "Allocation", spend: "Spend", planned_expense: "Bill", adjustment: "Manual credit" };
 
@@ -35,10 +34,10 @@ export default function FundDetailPage() {
   const [fund, setFund] = useState<Fund | null>(null);
   const [allFunds, setAllFunds] = useState<{ id: string; name: string }[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
-  const [presets, setPresets] = useState<Preset[]>([]);
-  const [billAmt, setBillAmt] = useState<Record<string, string>>({});
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [accruedTotal, setAccruedTotal] = useState(0);
+  const [payAmt, setPayAmt] = useState<Record<string, string>>({});
   const [moveTo, setMoveTo] = useState<Record<string, string>>({});
-  const [plannedTotal, setPlannedTotal] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [spend, setSpend] = useState({ amount: "", description: "" });
@@ -51,7 +50,7 @@ export default function FundDetailPage() {
         fetch(`/api/finance/funds`).then((x) => x.json()),
       ]);
       if (r.error) throw new Error(r.error);
-      setFund(r.fund); setEntries(r.entries ?? []); setPresets(r.presets ?? []); setPlannedTotal(r.plannedTotal ?? 0);
+      setFund(r.fund); setEntries(r.entries ?? []); setExpenses(r.expenses ?? []); setAccruedTotal(r.accruedTotal ?? 0);
       setAllFunds((all.funds ?? []).map((f: { id: string; name: string }) => ({ id: f.id, name: f.name })));
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }, [id]);
@@ -74,8 +73,6 @@ export default function FundDetailPage() {
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
   }
 
-  const bills = entries.filter((e) => e.type === "planned_expense").sort((a, b) => (a.status === b.status ? 0 : a.status === "planned" ? -1 : 1));
-  const unpaidTotal = bills.filter((b) => b.status === "planned").reduce((s, b) => s + b.amount, 0);
   const isSalary = fund?.name === "Salaries" && fund?.group === "FP1";
   const isDebtFund = !!fund && ["debt", "expansion", "installment", "loan"].some((k) => fund.name.toLowerCase().includes(k));
 
@@ -84,7 +81,7 @@ export default function FundDetailPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{fund?.name ?? "Fund"}</h1>
-          <p className="text-sm text-muted-foreground">{fund?.group} fund — accumulates from payout distribution; bills are paid out of it.</p>
+          <p className="text-sm text-muted-foreground">{fund?.group} fund — cash accumulates from payout distribution; its debt ticks daily and is cleared when you press Paid.</p>
         </div>
         <Link href="/finance"><Button variant="outline" size="sm"><ArrowLeft className="mr-1 h-4 w-4" />Back</Button></Link>
       </div>
@@ -92,9 +89,9 @@ export default function FundDetailPage() {
       {error && <Card className="border-destructive"><CardContent className="flex items-center gap-2 py-3 text-destructive"><AlertCircle className="h-4 w-4" />{error}</CardContent></Card>}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">Balance</div><div className={cn("text-3xl font-semibold", (fund?.balance ?? 0) < 0 ? "text-destructive" : "text-emerald-600")}>{usd(fund?.balance ?? 0)}</div></CardContent></Card>
-        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">Unpaid bills</div><div className="text-3xl font-semibold text-destructive">{usd(unpaidTotal)}</div></CardContent></Card>
-        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">After paying bills</div><div className={cn("text-3xl font-semibold", ((fund?.balance ?? 0) + unpaidTotal) < 0 ? "text-destructive" : "")}>{usd((fund?.balance ?? 0) + unpaidTotal)}</div></CardContent></Card>
+        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">Balance (cash in fund)</div><div className={cn("text-3xl font-semibold", (fund?.balance ?? 0) < 0 ? "text-destructive" : "text-emerald-600")}>{usd(fund?.balance ?? 0)}</div></CardContent></Card>
+        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground" title="Daily-ticking debt — what this fund owes. Pay items below to reduce it.">Owed now (debt)</div><div className="text-3xl font-semibold text-amber-600">{usd(accruedTotal)}</div></CardContent></Card>
+        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">After clearing debt</div><div className={cn("text-3xl font-semibold", ((fund?.balance ?? 0) - accruedTotal) < 0 ? "text-destructive" : "")}>{usd((fund?.balance ?? 0) - accruedTotal)}</div></CardContent></Card>
       </div>
 
       {isSalary && (
@@ -111,43 +108,38 @@ export default function FundDetailPage() {
         </Card>
       )}
 
-      {/* Bills — the payable items for this period (hidden on the Debt fund) */}
+      {/* Owed — the fund's daily-ticking debt per expense item; press Paid to clear it
+          (full or part). Hidden on the Debt fund (it uses the Debts table). */}
       {!isDebtFund && (
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Bills to pay</CardTitle>
-            <div className="flex items-center gap-2">
-              <Link href="/finance/expenses" className="text-xs text-primary hover:underline">Manage expense items →</Link>
-              <Button size="sm" variant="outline" onClick={() => post({ kind: "generate_bills" })} disabled={busy}><ListPlus className="mr-1 h-4 w-4" />Generate from presets</Button>
-            </div>
+            <CardTitle className="text-base">Owed now — daily debt, press Paid to clear it</CardTitle>
+            <Link href="/finance/expenses" className="text-xs text-primary hover:underline">Manage expense items →</Link>
           </div>
         </CardHeader>
         <CardContent className="overflow-x-auto p-0">
-          {bills.length === 0 ? (
-            <p className="px-3 py-4 text-sm text-muted-foreground">No bills yet. Click <b>Generate from presets</b> to turn this fund&apos;s expense items into payable bills, or add presets on the <Link href="/finance/expenses" className="text-primary hover:underline">Expenses</Link> page.</p>
+          {expenses.length === 0 ? (
+            <p className="px-3 py-4 text-sm text-muted-foreground">No expense items in this fund. Add them on the <Link href="/finance/expenses" className="text-primary hover:underline">Expenses</Link> page — their daily debt then accrues here and feeds the plan&apos;s &quot;Needed&quot;.</p>
           ) : (
             <table className="w-full text-sm">
-              <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Bill</th><th className="px-3 py-2">Amount</th><th className="px-3 py-2">Status</th><th className="px-3 py-2"></th></tr></thead>
+              <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Expense</th><th className="px-3 py-2 text-right">Monthly</th><th className="px-3 py-2 text-right">Owed now</th><th className="px-3 py-2">Pay</th></tr></thead>
               <tbody>
-                {bills.map((bl) => {
-                  const unpaid = bl.status === "planned";
+                {expenses.map((e) => {
+                  const owed = e.accrued ?? 0;
+                  const due = owed > 0.005;
                   return (
-                    <tr key={bl.id} className={cn("border-b last:border-0", unpaid ? "bg-rose-50/50" : "bg-emerald-50/40")}>
-                      <td className="px-3 py-2">{bl.description ?? "—"}</td>
+                    <tr key={e.id} className={cn("border-b last:border-0", due ? "bg-amber-50/40" : "")}>
+                      <td className="px-3 py-2">{e.name} <span className="text-xs text-muted-foreground">({e.frequency})</span></td>
+                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{usd(e.amount)}</td>
+                      <td className="px-3 py-2 text-right font-medium tabular-nums text-amber-600">{due ? usd(owed) : "—"}</td>
                       <td className="px-3 py-2">
-                        {unpaid
-                          ? <Input type="number" className="w-28" value={billAmt[bl.id] ?? String(Math.abs(bl.amount))} onChange={(e) => setBillAmt({ ...billAmt, [bl.id]: e.target.value })} />
-                          : <span className="tabular-nums">{usd(bl.amount)}</span>}
-                      </td>
-                      <td className="px-3 py-2">{unpaid ? <span className="rounded bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">UNPAID</span> : <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600">PAID</span>}</td>
-                      <td className="px-3 py-2">
-                        <div className="flex gap-1">
-                          {unpaid
-                            ? <Button size="sm" onClick={() => patch({ entryId: bl.id, action: "pay", amount: Number(billAmt[bl.id] ?? Math.abs(bl.amount)) })} disabled={busy}><Check className="mr-1 h-3 w-3" />Paid</Button>
-                            : <Button size="sm" variant="outline" onClick={() => patch({ entryId: bl.id, action: "unpay" })} disabled={busy}><RotateCcw className="mr-1 h-3 w-3" />Not paid</Button>}
-                          <Button size="sm" variant="ghost" onClick={() => patch({ entryId: bl.id, action: "delete" })} disabled={busy}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        </div>
+                        {due ? (
+                          <div className="flex items-center gap-1">
+                            <Input type="number" className="w-24" value={payAmt[e.id] ?? owed.toFixed(2)} onChange={(ev) => setPayAmt({ ...payAmt, [e.id]: ev.target.value })} />
+                            <Button size="sm" onClick={() => { const a = Number(payAmt[e.id] ?? owed); if (Number.isFinite(a) && a > 0) { setPayAmt((p) => { const n = { ...p }; delete n[e.id]; return n; }); post({ kind: "pay_expense", expenseId: e.id, amount: a }); } }} disabled={busy}><Check className="mr-1 h-3 w-3" />Paid</Button>
+                          </div>
+                        ) : <span className="text-xs text-emerald-600">clear</span>}
                       </td>
                     </tr>
                   );
@@ -157,28 +149,6 @@ export default function FundDetailPage() {
           )}
         </CardContent>
       </Card>
-      )}
-
-      {/* Presets reference — add a single bill from a preset */}
-      {presets.length > 0 && (
-        <Card>
-          <CardHeader><CardTitle className="text-base">Expense presets in this fund</CardTitle></CardHeader>
-          <CardContent className="overflow-x-auto p-0">
-            <table className="w-full text-sm">
-              <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Item</th><th className="px-3 py-2">Amount</th><th className="px-3 py-2">Frequency</th><th className="px-3 py-2"></th></tr></thead>
-              <tbody>
-                {presets.map((p) => (
-                  <tr key={p.id} className="border-b last:border-0">
-                    <td className="px-3 py-2">{p.name}</td>
-                    <td className="px-3 py-2 tabular-nums">{usd(p.amount)}</td>
-                    <td className="px-3 py-2 text-muted-foreground">{p.frequency}</td>
-                    <td className="px-3 py-2"><Button size="sm" variant="outline" onClick={() => post({ kind: "planned", amount: p.amount, description: p.name })} disabled={busy}><Plus className="mr-1 h-3 w-3" />Add as bill</Button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
       )}
 
       {/* Scan a receipt + ad-hoc spend — not on the Debt fund (debts are paid via the Debts table) */}

@@ -1,6 +1,7 @@
 // Sanity checks for the accrual meter math (pure). No DB.
 // Run: npx tsx scripts/check-finance-accrual.ts
-import { dailyAccrualRate, daysBetween, weekdayDatesBetween, accrualAmount } from "@/lib/finance/accrual";
+import { dailyOwedRate, daysBetween, daysBefore, accrualAmount } from "@/lib/finance/accrual";
+import { monthlyAmount, installmentMonthly } from "@/lib/finance/expenses";
 
 let failures = 0;
 function eq(label: string, got: number, want: number, tol = 0.02) {
@@ -8,34 +9,29 @@ function eq(label: string, got: number, want: number, tol = 0.02) {
   if (!ok) failures++;
   console.log(`${ok ? "PASS" : "FAIL"}  ${label}: ${got}${ok ? "" : ` (want ${want})`}`);
 }
+function round2(n: number) { return Math.round(n * 100) / 100; }
 
-eq("daily rate monthly 110", dailyAccrualRate(110, "monthly"), 110 / 30.44);
-eq("daily rate weekly 55", dailyAccrualRate(55, "weekly"), 55 / 7);
-eq("daily rate daily 150", dailyAccrualRate(150, "daily"), 150);
-eq("one_time rate 0", dailyAccrualRate(99, "one_time"), 0);
+// Smooth daily owed rate = monthly cost ÷ 30.44 (same basis for every frequency).
+eq("owed rate monthly 110", dailyOwedRate(110, "monthly"), 110 / 30.44);
+eq("owed rate weekly 55", dailyOwedRate(55, "weekly"), monthlyAmount(55, "weekly") / 30.44);
+eq("owed rate daily 150 (salary)", dailyOwedRate(150, "daily"), monthlyAmount(150, "daily") / 30.44);
+eq("owed rate yearly 120", dailyOwedRate(120, "yearly"), (120 / 12) / 30.44);
 
 eq("daysBetween 7", daysBetween("2026-06-01", "2026-06-08"), 7);
 eq("daysBetween same day 0", daysBetween("2026-06-08", "2026-06-08"), 0);
+eq("daysBefore 7 of 06-08", daysBefore("2026-06-08", 7) === "2026-06-01" ? 1 : 0, 1);
 
-// 2026-06-01 is a Monday; weekdays strictly after 06-01 through 06-08 = Tue..Fri(2-5) + Mon(8) = 5.
-eq("weekdays 06-01→06-08", weekdayDatesBetween("2026-06-01", "2026-06-08").length, 5);
+// Smooth accrual: monthly cost × days/30.44.
+eq("internet $110/mo over 7d", accrualAmount(110, "2026-06-01", "2026-06-08"), round2(7 * 110 / 30.44));
+eq("salary $150/day → monthly smooth over 7d", accrualAmount(monthlyAmount(150, "daily"), "2026-06-01", "2026-06-08"), round2(7 * monthlyAmount(150, "daily") / 30.44));
 
-// Salary $150/day, worked days passed explicitly (TimeLog). 5 worked → 750.
-const worked5 = new Set(["2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-08"]);
-eq("salary accrual 5 worked days", accrualAmount({ amount: 150, frequency: "daily", category: "Salaries" }, "2026-06-01", "2026-06-08", worked5), 750);
-// 4 worked days → 600. Worked day == from (06-01) excluded; after today excluded.
-const worked4 = new Set(["2026-06-01", "2026-06-02", "2026-06-04", "2026-06-05", "2026-06-09"]);
-eq("salary accrual range-bounded 3", accrualAmount({ amount: 150, frequency: "daily", category: "Salaries" }, "2026-06-01", "2026-06-08", worked4), 450);
+// No double-count: second call from cursor==today adds nothing.
+eq("no double count (today→today)", accrualAmount(110, "2026-06-08", "2026-06-08"), 0);
+eq("first call > 0", accrualAmount(110, "2026-06-01", "2026-06-08") > 0 ? 1 : 0, 1);
 
-// Internet $110/month over 7 calendar days = 7 × 110/30.44 = 25.30.
-eq("internet 7d accrual", accrualAmount({ amount: 110, frequency: "monthly", category: "Warehouse & Logistics" }, "2026-06-01", "2026-06-08"), round2(7 * 110 / 30.44));
+// Installment averaged monthly drives its owed accrual.
+eq("biweekly $500 ≈ $1083/mo", installmentMonthly(500, "biweekly"), round2(500 * 26 / 12));
+eq("installment $1000/mo owed over 7d", accrualAmount(installmentMonthly(1000, "monthly"), "2026-06-01", "2026-06-08"), round2(7 * 1000 / 30.44));
 
-// No double-count: accrue 0→8 then 8→8 adds nothing extra.
-const a1 = accrualAmount({ amount: 110, frequency: "monthly", category: "x" }, "2026-06-01", "2026-06-08");
-const a2 = accrualAmount({ amount: 110, frequency: "monthly", category: "x" }, "2026-06-08", "2026-06-08");
-eq("no double count second call 0", a2, 0);
-eq("first call > 0", a1 > 0 ? 1 : 0, 1);
-
-function round2(n: number) { return Math.round(n * 100) / 100; }
 console.log(failures === 0 ? "\nALL PASS" : `\n${failures} FAILED`);
 process.exit(failures === 0 ? 0 : 1);

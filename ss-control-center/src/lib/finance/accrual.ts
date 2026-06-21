@@ -1,27 +1,27 @@
-// Accrual meter — expenses "tick" every day. Each expense carries `accrued` (the
-// currently-owed amount, not yet paid) and `lastAccruedDate` (cursor). Opening a
-// fund (or a daily cron) accrues from the cursor to today, so the owed amount is
-// always up to date and never double-counted. Non-salary expenses accrue per
-// CALENDAR day; salary expenses accrue per WORKED day (weekdays minus absences —
-// the timesheet marks absences, default = worked).
+// Accrual meter — every expense (and every installment debt) "ticks" each day and
+// builds up a running OWED counter (`accrued`). It goes UP daily by the item's
+// monthly cost ÷ 30.44, and only DOWN when you press "Paid" on that item. So the
+// owed amount carries forward: if a Financial Plan doesn't cover an item, its debt
+// stays and the next plan sees (old unpaid debt + newly accrued days).
+//
+// `lastAccruedDate` is the cursor (last day we ticked to). On the very first tick we
+// bootstrap one week of debt (BOOTSTRAP_DAYS) so a freshly-set-up fund shows a
+// meaningful week-one number instead of $0; after that it ticks one real day per day.
+//
+// Distribution "Needed" = the sum of these owed counters per fund. Taxes/Reserve are
+// NOT accrued (they're a % of the payout); the Expansion/Debt fund is not accrued.
 
 import { prisma } from "@/lib/prisma";
-import { perDayRate } from "./expenses";
+import { monthlyAmount, installmentMonthly } from "./expenses";
 
 const DAYS_PER_MONTH = 30.44;
+const BOOTSTRAP_DAYS = 7; // first-ever tick seeds one week of owed debt
 const round2 = (n: number) => Math.round(n * 100) / 100;
 export const SALARY_CATEGORY = "Salaries";
 
-/** Calendar per-day accrual rate for a non-salary expense. */
-export function dailyAccrualRate(amount: number, frequency: string): number {
-  if (!Number.isFinite(amount)) return 0;
-  switch (frequency) {
-    case "daily": return amount;
-    case "weekly": return amount / 7;
-    case "monthly": return amount / DAYS_PER_MONTH;
-    case "yearly": return amount / 365;
-    default: return 0; // one_time — doesn't tick
-  }
+/** Smooth per-CALENDAR-day owed rate = monthly cost ÷ 30.44 (same basis for all). */
+export function dailyOwedRate(amount: number, frequency: string): number {
+  return monthlyAmount(amount, frequency) / DAYS_PER_MONTH;
 }
 
 /** Whole calendar days strictly after `fromISO`, up to and including `toISO`. */
@@ -32,68 +32,57 @@ export function daysBetween(fromISO: string, toISO: string): number {
   return Math.max(0, Math.round((b - a) / 86_400_000));
 }
 
-/** Weekday (Mon–Fri) date strings strictly after `fromISO`, up to/including `toISO`. */
-export function weekdayDatesBetween(fromISO: string, toISO: string): string[] {
-  const out: string[] = [];
-  const d = new Date(`${fromISO}T00:00:00Z`);
-  const end = new Date(`${toISO}T00:00:00Z`);
-  if (Number.isNaN(d.getTime()) || Number.isNaN(end.getTime())) return out;
-  d.setUTCDate(d.getUTCDate() + 1);
-  let guard = 0;
-  while (d <= end && guard++ < 1000) {
-    const wd = d.getUTCDay();
-    if (wd !== 0 && wd !== 6) out.push(d.toISOString().slice(0, 10));
-    d.setUTCDate(d.getUTCDate() + 1);
-  }
-  return out;
+/** ISO date `days` before `today` (used to bootstrap the meter's first tick). */
+export function daysBefore(today: string, days: number): string {
+  const t = Date.parse(`${today}T00:00:00Z`);
+  if (Number.isNaN(t)) return today;
+  return new Date(t - days * 86_400_000).toISOString().slice(0, 10);
 }
 
-/** Pure: amount to ADD to `accrued` for one expense, accruing fromISO → today.
- *  For salary, pass the WORKED dates (from the timesheet); only those strictly
- *  after fromISO and ≤ today are paid. Non-salary accrues per calendar day. */
-export function accrualAmount(
-  expense: { amount: number; frequency: string; category: string },
-  fromISO: string,
-  today: string,
-  workedDates: Set<string> = new Set(),
-): number {
-  if (expense.category === SALARY_CATEGORY) {
-    let worked = 0;
-    for (const d of workedDates) if (d > fromISO && d <= today) worked++;
-    return round2(worked * perDayRate(expense.amount, expense.frequency));
-  }
-  if (expense.frequency === "one_time") return 0; // handled by a manual add
-  return round2(daysBetween(fromISO, today) * dailyAccrualRate(expense.amount, expense.frequency));
+/** Pure: amount to ADD to an item's `accrued`, accruing fromISO → today (smooth). */
+export function accrualAmount(monthlyCost: number, fromISO: string, today: string): number {
+  if (!Number.isFinite(monthlyCost) || monthlyCost <= 0) return 0;
+  return round2(daysBetween(fromISO, today) * (monthlyCost / DAYS_PER_MONTH));
 }
 
 /**
- * Accrue all active expenses in a category (or all categories when null) up to
- * `today`. First-ever accrual just starts the meter (cursor = today, adds 0) so
- * there's no surprise back-charge. Returns how much was added in total.
+ * Accrue all active expenses in a category (or all when null) up to `today`.
+ * First-ever tick bootstraps BOOTSTRAP_DAYS of debt. Returns total added.
  */
 export async function accrueCategory(category: string | null, today: string): Promise<number> {
   const where = category ? { category, active: true } : { active: true };
   const exps = await prisma.recurringExpense.findMany({ where });
   let added = 0;
   for (const e of exps) {
-    const from = e.lastAccruedDate ?? null;
-    if (from == null) {
-      // Start the meter now.
-      await prisma.recurringExpense.update({ where: { id: e.id }, data: { lastAccruedDate: today } });
-      continue;
-    }
+    const from = e.lastAccruedDate ?? daysBefore(today, BOOTSTRAP_DAYS);
     if (from >= today) continue; // already up to date
-    let workedDates = new Set<string>();
-    if (e.category === SALARY_CATEGORY) {
-      const logs = await prisma.timeLog.findMany({ where: { expenseId: e.id } });
-      workedDates = new Set(logs.map((l) => l.date)); // TimeLog = worked days
-    }
-    const add = accrualAmount(e, from, today, workedDates);
+    const add = accrualAmount(monthlyAmount(e.amount, e.frequency), from, today);
     await prisma.recurringExpense.update({
       where: { id: e.id },
-      data: { accrued: round2(e.accrued + add), lastAccruedDate: today },
+      data: { accrued: round2((e.accrued ?? 0) + add), lastAccruedDate: today },
     });
     added += add;
+  }
+  return round2(added);
+}
+
+/**
+ * Accrue open installment debts (those with a monthlyPayment) up to `today`. Each
+ * ticks by its averaged monthly installment ÷ 30.44, capped so owed never exceeds
+ * the remaining balance. First-ever tick bootstraps BOOTSTRAP_DAYS. Returns total.
+ */
+export async function accrueInstallments(today: string): Promise<number> {
+  const debts = await prisma.debt.findMany({ where: { status: "open" } });
+  let added = 0;
+  for (const d of debts) {
+    if (!d.monthlyPayment) continue;
+    const from = d.lastAccruedDate ?? daysBefore(today, BOOTSTRAP_DAYS);
+    if (from >= today) continue;
+    const monthly = installmentMonthly(d.monthlyPayment, d.paymentFrequency);
+    const remaining = Math.max(0, d.amount - d.paid);
+    const owed = Math.min(round2((d.accrued ?? 0) + accrualAmount(monthly, from, today)), remaining);
+    await prisma.debt.update({ where: { id: d.id }, data: { accrued: owed, lastAccruedDate: today } });
+    added += Math.max(0, owed - (d.accrued ?? 0));
   }
   return round2(added);
 }

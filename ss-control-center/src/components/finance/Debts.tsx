@@ -16,13 +16,14 @@ import { installmentMonthly, INSTALLMENT_FREQUENCIES } from "@/lib/finance/expen
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-interface Debt { id: string; amount: number; paid: number; monthlyPayment: number | null; paymentFrequency: string | null; description: string | null; dateIncurred: string | null; status: string }
+interface Debt { id: string; amount: number; paid: number; monthlyPayment: number | null; paymentFrequency: string | null; accrued: number; description: string | null; dateIncurred: string | null; status: string }
 
 export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () => void }) {
   const [debts, setDebts] = useState<Debt[]>([]);
   const [totalRemaining, setTotalRemaining] = useState(0);
   const [totalOriginal, setTotalOriginal] = useState(0);
   const [monthlyDue, setMonthlyDue] = useState(0);
+  const [owedNow, setOwedNow] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState({ amount: "", description: "", dateIncurred: "", monthlyPayment: "", paymentFrequency: "monthly" });
@@ -32,7 +33,7 @@ export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () =>
     setError(null);
     try {
       const r = await fetch(`/api/finance/debts?fundId=${fundId}`).then((x) => x.json());
-      setDebts(r.debts ?? []); setTotalRemaining(r.totalRemaining ?? 0); setTotalOriginal(r.totalOriginal ?? 0); setMonthlyDue(r.monthlyDue ?? 0);
+      setDebts(r.debts ?? []); setTotalRemaining(r.totalRemaining ?? 0); setTotalOriginal(r.totalOriginal ?? 0); setMonthlyDue(r.monthlyDue ?? 0); setOwedNow(r.owedNow ?? 0);
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }, [fundId]);
   useEffect(() => { load(); }, [load]);
@@ -70,6 +71,7 @@ export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () =>
 
       <div className="flex flex-wrap gap-4 text-sm">
         <span className="text-muted-foreground">Total owed (remaining): <b className="text-destructive">{usd(totalRemaining)}</b></span>
+        {owedNow > 0 && <span className="text-muted-foreground" title="Daily-ticking owed amount that drives this fund's Needed">Owed now: <b className="text-amber-600">{usd(owedNow)}</b></span>}
         {monthlyDue > 0 && <span className="text-muted-foreground">Monthly due: <b className="text-foreground">{usd(monthlyDue)}</b></span>}
         <span className="text-muted-foreground">Original total: <b className="text-foreground">{usd(totalOriginal)}</b></span>
       </div>
@@ -89,7 +91,7 @@ export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () =>
       {/* Debts table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Debt</th><th className="px-3 py-2">Date incurred</th><th className="px-3 py-2 text-right">Amount</th><th className="px-3 py-2 text-right">Installment</th><th className="px-3 py-2 text-right">≈ /mo</th><th className="px-3 py-2 text-right">Paid</th><th className="px-3 py-2 text-right">Remaining</th><th className="px-3 py-2">Pay</th><th className="px-3 py-2"></th></tr></thead>
+          <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Debt</th><th className="px-3 py-2">Date incurred</th><th className="px-3 py-2 text-right">Amount</th><th className="px-3 py-2 text-right">Installment</th><th className="px-3 py-2 text-right">≈ /mo</th><th className="px-3 py-2 text-right" title="Daily-ticking owed amount (drives Needed)">Owed now</th><th className="px-3 py-2 text-right">Paid</th><th className="px-3 py-2 text-right">Remaining</th><th className="px-3 py-2">Pay</th><th className="px-3 py-2"></th></tr></thead>
           <tbody>
             {debts.map((d) => {
               const remaining = Math.round((d.amount - d.paid) * 100) / 100;
@@ -101,6 +103,7 @@ export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () =>
                   <td className="px-3 py-2 text-right tabular-nums">{usd(d.amount)}</td>
                   <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{d.monthlyPayment ? `${usd(d.monthlyPayment)} / ${d.paymentFrequency ?? "monthly"}` : "—"}</td>
                   <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{d.monthlyPayment ? usd(installmentMonthly(d.monthlyPayment, d.paymentFrequency)) : "—"}</td>
+                  <td className="px-3 py-2 text-right tabular-nums font-medium text-amber-600">{(d.accrued ?? 0) > 0 ? usd(d.accrued) : "—"}</td>
                   <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{usd(d.paid)}</td>
                   <td className="px-3 py-2 text-right font-medium tabular-nums text-destructive">{usd(remaining)}</td>
                   <td className="px-3 py-2">
@@ -115,7 +118,7 @@ export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () =>
                 </tr>
               );
             })}
-            {debts.length === 0 && <tr><td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">No debts yet. Add them above (amount, installment + frequency, description, date).</td></tr>}
+            {debts.length === 0 && <tr><td colSpan={10} className="px-3 py-6 text-center text-muted-foreground">No debts yet. Add them above (amount, installment + frequency, description, date).</td></tr>}
           </tbody>
         </table>
       </div>

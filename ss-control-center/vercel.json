@@ -104,6 +104,10 @@
     {
       "path": "/api/cron/finance-funds",
       "schedule": "30 9 * * 1"
+    },
+    {
+      "path": "/api/cron/finance-accrual",
+      "schedule": "0 5 * * *"
     }
   ]
 }

@@ -1,43 +1,35 @@
-// Per-fund "needed" hint for the distribution: how much each fund needs to cover
-// its costs FOR THE PERIOD since the last Financial Plan. We don't depend on the
-// (still-incremental) accrual meter here — we compute the period need directly:
-//   need = monthly obligation × (days since last FP / 30.44)
-// Monthly obligation = sum of the fund's recurring expenses + installment debts.
-// Funds without obligations (Reserve/Free/Debt-lump) return 0 (Taxes is computed
-// on the page from the payout). This always shows a meaningful, period-sized hint.
+// Per-fund "Needed" for the distribution = the fund's OWED counter right now:
+// the sum of its expenses' accrued debt + its installment debts' accrued debt.
+// The meter ticks here (accrual is idempotent by date), so opening the plan always
+// shows the current owed amount — carried forward from prior unpaid plans, never a
+// fresh "since last click" number. Taxes/Reserve are %-of-payout (computed on the
+// page); the Expansion/Debt fund has no accrual → 0.
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { monthlyAmount, installmentMonthly } from "@/lib/finance/expenses";
-import { daysBetween } from "@/lib/finance/accrual";
+import { accrueCategory, accrueInstallments } from "@/lib/finance/accrual";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
-const DAYS_PER_MONTH = 30.44;
-const DEFAULT_PERIOD_DAYS = 7; // assume a weekly plan until there's an FP history
 
 export async function GET() {
   const today = new Date().toISOString().slice(0, 10);
-  const lastFp = await prisma.financePlanRun.findFirst({ orderBy: { runDate: "desc" } });
-  const periodDays = lastFp?.runDate ? Math.max(1, daysBetween(lastFp.runDate, today)) : DEFAULT_PERIOD_DAYS;
-  const factor = periodDays / DAYS_PER_MONTH;
+  // Tick the meters up to today (safe to call repeatedly — keyed on lastAccruedDate).
+  try { await accrueCategory(null, today); } catch { /* never break the plan view */ }
+  try { await accrueInstallments(today); } catch { /* same */ }
 
+  const fundOf = new Map((await prisma.fund.findMany({ select: { id: true, name: true } })).map((f) => [f.id, f.name]));
+  const needs: Record<string, number> = {};
+
+  // Recurring expenses: owed = accrued, grouped by category (= fund name).
   const expenses = await prisma.recurringExpense.findMany({ where: { active: true } });
-  const monthly: Record<string, number> = {};
-  for (const e of expenses) monthly[e.category] = (monthly[e.category] ?? 0) + monthlyAmount(e.amount, e.frequency);
+  for (const e of expenses) needs[e.category] = round2((needs[e.category] ?? 0) + (e.accrued ?? 0));
 
-  // Installment debts → their fund's monthly obligation.
-  const funds = await prisma.fund.findMany({ select: { id: true, name: true } });
-  const fundName = new Map(funds.map((f) => [f.id, f.name]));
+  // Installment debts: owed = accrued, grouped by their fund.
   const debts = await prisma.debt.findMany({ where: { status: "open" } });
   for (const d of debts) {
-    if (!d.monthlyPayment) continue;
-    const name = fundName.get(d.fundId);
-    if (name) monthly[name] = (monthly[name] ?? 0) + installmentMonthly(d.monthlyPayment, d.paymentFrequency);
+    const name = fundOf.get(d.fundId);
+    if (name && (d.accrued ?? 0) > 0) needs[name] = round2((needs[name] ?? 0) + (d.accrued ?? 0));
   }
 
-  // Scale the monthly obligation to the period since the last FP.
-  const needs: Record<string, number> = {};
-  for (const [name, m] of Object.entries(monthly)) needs[name] = round2(m * factor);
-
-  return NextResponse.json({ needs, periodDays, today });
+  return NextResponse.json({ needs, today });
 }

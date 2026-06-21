@@ -3502,6 +3502,11 @@ model Debt {
   // monthly equivalent drives the fund's monthly "need".
   monthlyPayment   Float? // per-period installment amount
   paymentFrequency String? // weekly | biweekly | monthly | daily
+  // Daily-ticking owed counter (same meter as RecurringExpense): accrues the monthly
+  // installment ÷ 30.44 each day, reduced when an installment is paid. Drives the
+  // Installments fund's "Needed". null cursor = not yet ticked.
+  accrued          Float    @default(0)
+  lastAccruedDate  String?
   description  String?
   dateIncurred String? // ISO date the debt first arose (to see how old it is)
   status       String   @default("open") // open | settled
