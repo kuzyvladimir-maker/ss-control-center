@@ -20,10 +20,12 @@ eq("daysBetween same day 0", daysBetween("2026-06-08", "2026-06-08"), 0);
 // 2026-06-01 is a Monday; weekdays strictly after 06-01 through 06-08 = Tue..Fri(2-5) + Mon(8) = 5.
 eq("weekdays 06-01→06-08", weekdayDatesBetween("2026-06-01", "2026-06-08").length, 5);
 
-// Salary $150/day, 5 worked weekdays, no absences = 750.
-eq("salary accrual 5 days", accrualAmount({ amount: 150, frequency: "daily", category: "Salaries" }, "2026-06-01", "2026-06-08"), 750);
-// With 1 absence (06-03) → 4 days = 600.
-eq("salary accrual w/ 1 absence", accrualAmount({ amount: 150, frequency: "daily", category: "Salaries" }, "2026-06-01", "2026-06-08", new Set(["2026-06-03"])), 600);
+// Salary $150/day, worked days passed explicitly (TimeLog). 5 worked → 750.
+const worked5 = new Set(["2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-08"]);
+eq("salary accrual 5 worked days", accrualAmount({ amount: 150, frequency: "daily", category: "Salaries" }, "2026-06-01", "2026-06-08", worked5), 750);
+// 4 worked days → 600. Worked day == from (06-01) excluded; after today excluded.
+const worked4 = new Set(["2026-06-01", "2026-06-02", "2026-06-04", "2026-06-05", "2026-06-09"]);
+eq("salary accrual range-bounded 3", accrualAmount({ amount: 150, frequency: "daily", category: "Salaries" }, "2026-06-01", "2026-06-08", worked4), 450);
 
 // Internet $110/month over 7 calendar days = 7 × 110/30.44 = 25.30.
 eq("internet 7d accrual", accrualAmount({ amount: 110, frequency: "monthly", category: "Warehouse & Logistics" }, "2026-06-01", "2026-06-08"), round2(7 * 110 / 30.44));

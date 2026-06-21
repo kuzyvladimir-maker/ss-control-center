@@ -48,16 +48,19 @@ export function weekdayDatesBetween(fromISO: string, toISO: string): string[] {
   return out;
 }
 
-/** Pure: amount to ADD to `accrued` for one expense, accruing fromISO → today. */
+/** Pure: amount to ADD to `accrued` for one expense, accruing fromISO → today.
+ *  For salary, pass the WORKED dates (from the timesheet); only those strictly
+ *  after fromISO and ≤ today are paid. Non-salary accrues per calendar day. */
 export function accrualAmount(
   expense: { amount: number; frequency: string; category: string },
   fromISO: string,
   today: string,
-  absences: Set<string> = new Set(),
+  workedDates: Set<string> = new Set(),
 ): number {
   if (expense.category === SALARY_CATEGORY) {
-    const worked = weekdayDatesBetween(fromISO, today).filter((d) => !absences.has(d));
-    return round2(worked.length * perDayRate(expense.amount, expense.frequency));
+    let worked = 0;
+    for (const d of workedDates) if (d > fromISO && d <= today) worked++;
+    return round2(worked * perDayRate(expense.amount, expense.frequency));
   }
   if (expense.frequency === "one_time") return 0; // handled by a manual add
   return round2(daysBetween(fromISO, today) * dailyAccrualRate(expense.amount, expense.frequency));
@@ -80,12 +83,12 @@ export async function accrueCategory(category: string | null, today: string): Pr
       continue;
     }
     if (from >= today) continue; // already up to date
-    let absences = new Set<string>();
+    let workedDates = new Set<string>();
     if (e.category === SALARY_CATEGORY) {
       const logs = await prisma.timeLog.findMany({ where: { expenseId: e.id } });
-      absences = new Set(logs.map((l) => l.date));
+      workedDates = new Set(logs.map((l) => l.date)); // TimeLog = worked days
     }
-    const add = accrualAmount(e, from, today, absences);
+    const add = accrualAmount(e, from, today, workedDates);
     await prisma.recurringExpense.update({
       where: { id: e.id },
       data: { accrued: round2(e.accrued + add), lastAccruedDate: today },

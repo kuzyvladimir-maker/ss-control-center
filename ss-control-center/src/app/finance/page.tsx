@@ -41,18 +41,20 @@ export default function FinancialPlanPage() {
   const [manualAmt, setManualAmt] = useState("");
   const [manualLabel, setManualLabel] = useState("");
   const [pctEdit, setPctEdit] = useState<Record<string, string>>({});
+  const [needs, setNeeds] = useState<Record<string, number>>({});
   const [scope, setScope] = useState<"pending" | "all">("pending");
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const [h, p, c] = await Promise.all([
+      const [h, p, c, n] = await Promise.all([
         fetch("/api/finance/funds/history?days=30").then((r) => r.json()),
         fetch("/api/finance/payouts").then((r) => r.json()),
         fetch("/api/finance/config").then((r) => r.json()),
+        fetch("/api/finance/funds/needs").then((r) => r.json()),
       ]);
       setFunds(h.funds ?? []); setFundsTotal(h.total ?? 0);
-      setPayouts(p.payouts ?? []); setConfig(c);
+      setPayouts(p.payouts ?? []); setConfig(c); setNeeds(n.needs ?? {});
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -276,20 +278,25 @@ export default function FinancialPlanPage() {
                     <span>{run.preview ? "PREVIEW — not committed" : "COMMITTED"}</span>
                   </div>
                   <table className="w-full">
-                    <thead className="text-left text-xs uppercase text-muted-foreground"><tr><th className="py-1">Group</th><th>Fund</th><th className="text-right">% of distributable</th><th className="text-right">Amount</th></tr></thead>
+                    <thead className="text-left text-xs uppercase text-muted-foreground"><tr><th className="py-1">Group</th><th>Fund</th><th className="text-right" title="Suggested: what this fund needs to cover its accrued expenses">Needed %</th><th className="text-right">Needed $</th><th className="text-right">My %</th><th className="text-right">Amount</th></tr></thead>
                     <tbody>{run.distribution.allocations.map((a) => {
                       const f = funds.find((x) => x.id === a.fundId);
                       const editable = !!f && f.group !== "RESERVE" && f.group !== "FREE" && f.allocationType === "percent";
+                      const dist = run.distribution.distributable || 0;
+                      const need = needs[a.name] ?? 0;
+                      const needPct = dist > 0 && need > 0 ? (need / dist) * 100 : 0;
                       return (
                         <tr key={a.fundId} className="border-t">
                           <td className="py-1 text-muted-foreground">{a.group}</td>
                           <td>{a.name}</td>
+                          <td className="text-right tabular-nums text-emerald-700">{need > 0 ? `${needPct.toFixed(1)}%` : "—"}</td>
+                          <td className="text-right tabular-nums text-emerald-700">{need > 0 ? usd(need) : "—"}</td>
                           <td className="text-right tabular-nums text-muted-foreground">
                             {a.group === "RESERVE"
-                              ? `${Math.round((run.distribution.reserve / (run.distribution.totalIn || 1)) * 100)}% of payout`
+                              ? `${Math.round((run.distribution.reserve / (run.distribution.totalIn || 1)) * 100)}%`
                               : editable
                                 ? (<span className="inline-flex items-center justify-end gap-0.5"><input type="number" value={pctEdit[a.fundId] ?? String(f!.value)} disabled={busy != null} onChange={(e) => setPctEdit({ ...pctEdit, [a.fundId]: e.target.value })} onBlur={(e) => { const v = Number(e.target.value); if (Number.isFinite(v) && v !== f!.value) setFundPct(a.fundId, v); }} className="w-14 rounded border bg-background px-1 py-0.5 text-right" />%</span>)
-                                : run.distribution.distributable > 0 ? `${((a.amount / run.distribution.distributable) * 100).toFixed(1)}%` : "—"}
+                                : dist > 0 ? `${((a.amount / dist) * 100).toFixed(1)}%` : "—"}
                           </td>
                           <td className="text-right font-medium">{usd(a.amount)}</td>
                         </tr>
