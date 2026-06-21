@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const usd = (n: number) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const up5 = (n: number) => Math.ceil((n - 1e-9) / 5) * 5; // round up to nearest $5
 
 interface Emp { id: string; name: string; amount: number; frequency: string; perDay: number; workedDates: string[]; days: number; monthPay: number; accrued: number; paid: number; owed: number }
 
@@ -66,7 +67,7 @@ export function Timesheet({ fundId, onChanged }: { fundId: string; onChanged?: (
   }
 
   async function pay(e: Emp) {
-    const amount = Number(payAmt[e.id] ?? e.owed);
+    const amount = Number(payAmt[e.id] ?? up5(e.owed));
     if (!Number.isFinite(amount) || amount <= 0) { setError("Enter a payment amount"); return; }
     setBusy(true); setError(null);
     try {
@@ -78,7 +79,7 @@ export function Timesheet({ fundId, onChanged }: { fundId: string; onChanged?: (
   }
 
   const dayList = Array.from({ length: daysInMonth(month) }, (_, i) => i + 1);
-  const totalOwed = emps.reduce((s, e) => s + e.owed, 0);
+  const totalOwed = emps.reduce((s, e) => s + up5(e.owed), 0);
 
   return (
     <div className="space-y-4">
@@ -90,20 +91,21 @@ export function Timesheet({ fundId, onChanged }: { fundId: string; onChanged?: (
       ) : (
         <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
-            <thead className="border-b bg-muted/30 text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Employee</th><th className="px-3 py-2 text-right">Accrued (начислено)</th><th className="px-3 py-2 text-right">Paid (выплачено)</th><th className="px-3 py-2 text-right">Owed (остаток)</th><th className="px-3 py-2">Pay</th></tr></thead>
+            <thead className="border-b bg-muted/30 text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Employee</th><th className="px-3 py-2 text-right">Accrued (начислено)</th><th className="px-3 py-2 text-right">Paid (выплачено)</th><th className="px-3 py-2 text-right">Balance (остаток)</th><th className="px-3 py-2">Pay</th></tr></thead>
             <tbody>
               {emps.map((e) => {
-                const due = e.owed > 0.005;
+                const balance = up5(e.owed); // remaining, rounded up to $5
+                const due = balance > 0.005;
                 return (
                   <tr key={e.id} className={cn("border-b last:border-0", due && "bg-amber-50/40")}>
                     <td className="px-3 py-2"><div className="font-medium">{e.name}</div><div className="text-[10px] text-muted-foreground">{usd(e.perDay)}/day ({e.frequency})</div></td>
-                    <td className="px-3 py-2 text-right"><Input key={`acc-${e.id}-${e.accrued}`} type="number" className="w-24 text-right tabular-nums" defaultValue={e.accrued.toFixed(2)} onBlur={(ev) => { if (Number(ev.target.value) !== e.accrued) patchBalance(e.id, "accrued", ev.target.value); }} disabled={busy} /></td>
+                    <td className="px-3 py-2 text-right"><Input key={`acc-${e.id}-${e.accrued}`} type="number" className="w-24 text-right tabular-nums" defaultValue={String(up5(e.accrued))} onBlur={(ev) => { const v = Number(ev.target.value); if (v !== up5(e.accrued)) patchBalance(e.id, "accrued", ev.target.value); }} disabled={busy} /></td>
                     <td className="px-3 py-2 text-right"><Input key={`paid-${e.id}-${e.paid}`} type="number" className="w-24 text-right tabular-nums" defaultValue={e.paid.toFixed(2)} onBlur={(ev) => { if (Number(ev.target.value) !== e.paid) patchBalance(e.id, "paid", ev.target.value); }} disabled={busy} /></td>
-                    <td className={cn("px-3 py-2 text-right font-medium tabular-nums", due ? "text-amber-600" : "text-emerald-600")}>{usd(e.owed)}</td>
+                    <td className={cn("px-3 py-2 text-right font-medium tabular-nums", due ? "text-amber-600" : "text-emerald-600")}>{usd(balance)}</td>
                     <td className="px-3 py-2">
                       {due ? (
                         <div className="flex items-center gap-1">
-                          <Input type="number" className="w-24" value={payAmt[e.id] ?? e.owed.toFixed(2)} onChange={(ev) => setPayAmt({ ...payAmt, [e.id]: ev.target.value })} />
+                          <Input type="number" className="w-24" value={payAmt[e.id] ?? String(balance)} onChange={(ev) => setPayAmt({ ...payAmt, [e.id]: ev.target.value })} />
                           <Button size="sm" onClick={() => pay(e)} disabled={busy}><Check className="mr-1 h-3 w-3" />Paid</Button>
                         </div>
                       ) : <span className="text-xs text-emerald-600">clear</span>}

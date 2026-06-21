@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { installmentMonthly, INSTALLMENT_FREQUENCIES } from "@/lib/finance/expenses";
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const up5 = (n: number) => Math.ceil((n - 1e-9) / 5) * 5; // round up to nearest $5
 
 interface Debt { id: string; amount: number; paid: number; monthlyPayment: number | null; paymentFrequency: string | null; accrued: number; description: string | null; dateIncurred: string | null; status: string }
 
@@ -71,7 +72,7 @@ export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () =>
 
       <div className="flex flex-wrap gap-4 text-sm">
         <span className="text-muted-foreground">Total owed (remaining): <b className="text-destructive">{usd(totalRemaining)}</b></span>
-        {owedNow > 0 && <span className="text-muted-foreground" title="Daily-ticking owed amount that drives this fund's Needed">Owed now: <b className="text-amber-600">{usd(owedNow)}</b></span>}
+        {owedNow > 0 && <span className="text-muted-foreground" title="Daily-ticking owed amount that drives this fund's Needed (rounded up to $5)">Owed now: <b className="text-amber-600">{usd(up5(owedNow))}</b></span>}
         {monthlyDue > 0 && <span className="text-muted-foreground">Monthly due: <b className="text-foreground">{usd(monthlyDue)}</b></span>}
         <span className="text-muted-foreground">Original total: <b className="text-foreground">{usd(totalOriginal)}</b></span>
       </div>
@@ -103,7 +104,7 @@ export function Debts({ fundId, onChanged }: { fundId: string; onChanged?: () =>
                   <td className="px-3 py-2 text-right tabular-nums">{usd(d.amount)}</td>
                   <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{d.monthlyPayment ? `${usd(d.monthlyPayment)} / ${d.paymentFrequency ?? "monthly"}` : "—"}</td>
                   <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{d.monthlyPayment ? usd(installmentMonthly(d.monthlyPayment, d.paymentFrequency)) : "—"}</td>
-                  <td className="px-3 py-2 text-right tabular-nums font-medium text-amber-600">{(d.accrued ?? 0) > 0 ? usd(d.accrued) : "—"}</td>
+                  <td className="px-3 py-2 text-right tabular-nums font-medium text-amber-600">{(d.accrued ?? 0) > 0 ? usd(up5(d.accrued)) : "—"}</td>
                   <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{usd(d.paid)}</td>
                   <td className="px-3 py-2 text-right font-medium tabular-nums text-destructive">{usd(remaining)}</td>
                   <td className="px-3 py-2">

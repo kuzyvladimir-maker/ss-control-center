@@ -105,8 +105,8 @@ export default function FundDetailPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">Balance (cash in fund)</div><div className={cn("text-3xl font-semibold", (fund?.balance ?? 0) < 0 ? "text-destructive" : "text-emerald-600")}>{usd(fund?.balance ?? 0)}</div></CardContent></Card>
-        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground" title="Outstanding = accrued − paid, across this fund's items. Carries forward each plan.">Owed now (остаток)</div><div className="text-3xl font-semibold text-amber-600">{usd(owedTotal)}</div></CardContent></Card>
-        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">After clearing debt</div><div className={cn("text-3xl font-semibold", ((fund?.balance ?? 0) - owedTotal) < 0 ? "text-destructive" : "")}>{usd((fund?.balance ?? 0) - owedTotal)}</div></CardContent></Card>
+        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground" title="Outstanding balance = accrued − paid, across this fund's items (rounded up to $5). Carries forward each plan.">Balance owed</div><div className="text-3xl font-semibold text-amber-600">{usd(up5(owedTotal))}</div></CardContent></Card>
+        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">After clearing debt</div><div className={cn("text-3xl font-semibold", ((fund?.balance ?? 0) - up5(owedTotal)) < 0 ? "text-destructive" : "")}>{usd((fund?.balance ?? 0) - up5(owedTotal))}</div></CardContent></Card>
       </div>
 
       {isSalary && fund && (
@@ -130,7 +130,7 @@ export default function FundDetailPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Balances — accrued / paid / owed (carries over each plan)</CardTitle>
+            <CardTitle className="text-base">Balances — accrued / paid / Balance (rounded up to $5, carries over each plan)</CardTitle>
             <Link href="/finance/expenses" className="text-xs text-primary hover:underline">Manage expense items →</Link>
           </div>
         </CardHeader>
@@ -139,23 +139,23 @@ export default function FundDetailPage() {
             <p className="px-3 py-4 text-sm text-muted-foreground">No expense items in this fund. Add them on the <Link href="/finance/expenses" className="text-primary hover:underline">Expenses</Link> page — each then accrues its daily debt here and feeds the plan&apos;s &quot;Needed&quot;.</p>
           ) : (
             <table className="w-full text-sm">
-              <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Expense</th><th className="px-3 py-2 text-right">Monthly</th><th className="px-3 py-2 text-right">Accrued</th><th className="px-3 py-2 text-right">Paid</th><th className="px-3 py-2 text-right">Owed</th><th className="px-3 py-2">Pay</th></tr></thead>
+              <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Expense</th><th className="px-3 py-2 text-right">Monthly</th><th className="px-3 py-2 text-right">Accrued</th><th className="px-3 py-2 text-right">Paid</th><th className="px-3 py-2 text-right" title="Outstanding balance = accrued − paid (rounded up to $5)">Balance</th><th className="px-3 py-2">Pay</th></tr></thead>
               <tbody>
                 {expenses.map((e) => {
-                  const owed = Math.max(0, round2((e.accrued ?? 0) - (e.paid ?? 0)));
-                  const due = owed > 0.005;
+                  const balance = up5(Math.max(0, round2((e.accrued ?? 0) - (e.paid ?? 0)))); // owed, rounded up to $5
+                  const due = balance > 0.005;
                   return (
                     <tr key={e.id} className={cn("border-b last:border-0", due ? "bg-amber-50/40" : "")}>
                       <td className="px-3 py-2">{e.name} <span className="text-xs text-muted-foreground">({e.frequency})</span></td>
-                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{usd(monthlyAmount(e.amount, e.frequency))}</td>
-                      <td className="px-3 py-2 text-right"><Input key={`acc-${e.id}-${e.accrued}`} type="number" className="w-24 text-right tabular-nums" defaultValue={(e.accrued ?? 0).toFixed(2)} onBlur={(ev) => { const v = ev.target.value; if (Number(v) !== (e.accrued ?? 0)) patchExpense(e.id, "accrued", v); }} disabled={busy} /></td>
+                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{usd(up5(monthlyAmount(e.amount, e.frequency)))}</td>
+                      <td className="px-3 py-2 text-right"><Input key={`acc-${e.id}-${e.accrued}`} type="number" className="w-24 text-right tabular-nums" defaultValue={String(up5(e.accrued ?? 0))} onBlur={(ev) => { const v = Number(ev.target.value); if (v !== up5(e.accrued ?? 0)) patchExpense(e.id, "accrued", String(v)); }} disabled={busy} /></td>
                       <td className="px-3 py-2 text-right"><Input key={`paid-${e.id}-${e.paid}`} type="number" className="w-24 text-right tabular-nums" defaultValue={(e.paid ?? 0).toFixed(2)} onBlur={(ev) => { const v = ev.target.value; if (Number(v) !== (e.paid ?? 0)) patchExpense(e.id, "paid", v); }} disabled={busy} /></td>
-                      <td className={cn("px-3 py-2 text-right font-medium tabular-nums", due ? "text-amber-600" : "text-emerald-600")}>{usd(owed)}</td>
+                      <td className={cn("px-3 py-2 text-right font-medium tabular-nums", due ? "text-amber-600" : "text-emerald-600")}>{usd(balance)}</td>
                       <td className="px-3 py-2">
                         {due ? (
                           <div className="flex items-center gap-1">
-                            <Input type="number" className="w-24" value={payAmt[e.id] ?? owed.toFixed(2)} onChange={(ev) => setPayAmt({ ...payAmt, [e.id]: ev.target.value })} />
-                            <Button size="sm" onClick={() => { const a = Number(payAmt[e.id] ?? owed); if (Number.isFinite(a) && a > 0) { setPayAmt((p) => { const n = { ...p }; delete n[e.id]; return n; }); post({ kind: "pay_expense", expenseId: e.id, amount: a }); } }} disabled={busy}><Check className="mr-1 h-3 w-3" />Paid</Button>
+                            <Input type="number" className="w-24" value={payAmt[e.id] ?? String(balance)} onChange={(ev) => setPayAmt({ ...payAmt, [e.id]: ev.target.value })} />
+                            <Button size="sm" onClick={() => { const a = Number(payAmt[e.id] ?? balance); if (Number.isFinite(a) && a > 0) { setPayAmt((p) => { const n = { ...p }; delete n[e.id]; return n; }); post({ kind: "pay_expense", expenseId: e.id, amount: a }); } }} disabled={busy}><Check className="mr-1 h-3 w-3" />Paid</Button>
                           </div>
                         ) : <span className="text-xs text-emerald-600">clear</span>}
                       </td>

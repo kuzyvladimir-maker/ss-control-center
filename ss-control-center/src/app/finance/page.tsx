@@ -20,6 +20,8 @@ import { BUCKET_META, BUCKET_ORDER, type Bucket } from "@/lib/finance/settlement
 import { ReceiptScanner } from "@/components/finance/ReceiptScanner";
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// Round UP to the nearest whole $5 (clean 5/10/15… amounts).
+const up5 = (n: number) => Math.ceil((n - 1e-9) / 5) * 5;
 
 interface Fund { id: string; name: string; group: string; allocationType: string; value: number; priority: number; balance: number; active: boolean; series: number[] }
 interface PayoutLine { bucket: string; amount: number; count: number }
@@ -122,7 +124,7 @@ export default function FinancialPlanPage() {
       for (const a of run.distribution.allocations) {
         const f = funds.find((x) => x.id === a.fundId);
         if (!f || f.group === "RESERVE" || f.group === "FREE" || f.allocationType !== "percent") continue;
-        const need = a.name === "Taxes" ? taxNeed : (needs[a.name] ?? 0);
+        const need = up5(a.name === "Taxes" ? taxNeed : (needs[a.name] ?? 0)); // cover the owed, rounded up to $5
         const pct = Math.round((need / distPool) * 1000) / 10; // 0.1% precision
         newPct[f.id] = String(pct);
         updates.push({ id: f.id, pct });
@@ -332,7 +334,7 @@ export default function FinancialPlanPage() {
                     <tbody>{run.distribution.allocations.map((a) => {
                       const f = funds.find((x) => x.id === a.fundId);
                       const editable = !!f && f.group !== "RESERVE" && f.group !== "FREE" && f.allocationType === "percent";
-                      const need = a.name === "Taxes" ? taxNeed : (needs[a.name] ?? 0);
+                      const need = up5(a.name === "Taxes" ? taxNeed : (needs[a.name] ?? 0)); // owed, rounded up to $5
                       const needPct = distPool > 0 && need > 0 ? (need / distPool) * 100 : 0;
                       // Amount recomputes live from the entered % (no need to re-Preview).
                       const liveAmount = a.group === "RESERVE" ? liveReserve
