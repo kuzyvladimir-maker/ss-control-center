@@ -43,6 +43,7 @@ export default function FinancialPlanPage() {
   const [pctEdit, setPctEdit] = useState<Record<string, string>>({});
   const [needs, setNeeds] = useState<Record<string, number>>({});
   const [scope, setScope] = useState<"pending" | "all">("pending");
+  const [xfer, setXfer] = useState({ from: "", to: "", amount: "", note: "" });
 
   const load = useCallback(async () => {
     setError(null);
@@ -58,6 +59,21 @@ export default function FinancialPlanPage() {
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }, []);
   useEffect(() => { load(); }, [load]);
+  // Open straight to the Funds tab when linked with ?tab=funds (e.g. a fund's Back button).
+  useEffect(() => { if (new URLSearchParams(window.location.search).get("tab") === "funds") setTab("funds"); }, []);
+
+  async function transfer() {
+    const amount = Number(xfer.amount);
+    if (!xfer.from || !xfer.to || xfer.from === xfer.to) { setError("Pick two different funds"); return; }
+    if (!Number.isFinite(amount) || amount <= 0) { setError("Enter a transfer amount"); return; }
+    setBusy("xfer"); setError(null); setNote(null);
+    try {
+      const r = await fetch("/api/finance/funds/transfer", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ fromFundId: xfer.from, toFundId: xfer.to, amount, note: xfer.note }) }).then((x) => x.json());
+      if (!r.ok) throw new Error(r.error ?? "transfer failed");
+      const fromName = funds.find((f) => f.id === xfer.from)?.name, toName = funds.find((f) => f.id === xfer.to)?.name;
+      setXfer({ from: "", to: "", amount: "", note: "" }); setNote(`Moved ${usd(amount)} from ${fromName} to ${toName}.`); await load();
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
+  }
 
   async function getReport() {
     setBusy("report"); setError(null); setNote(null); setPulled([]);
@@ -339,6 +355,24 @@ export default function FinancialPlanPage() {
             ))}
             {funds.length === 0 && <p className="text-sm text-muted-foreground">No funds yet — add some on Manage funds.</p>}
           </div>
+
+          {/* Move money between funds — records both legs in each fund's ledger */}
+          {funds.length > 0 && (
+            <Card>
+              <CardHeader><CardTitle className="text-base">Move money between funds</CardTitle></CardHeader>
+              <CardContent className="flex flex-wrap items-end gap-2">
+                <div><label className="block text-xs text-muted-foreground">From</label>
+                  <select value={xfer.from} onChange={(e) => setXfer({ ...xfer, from: e.target.value })} className="h-9 rounded-md border bg-background px-2 text-sm"><option value="">—</option>{funds.map((f) => <option key={f.id} value={f.id}>{f.name} ({usd(f.balance)})</option>)}</select>
+                </div>
+                <div><label className="block text-xs text-muted-foreground">To</label>
+                  <select value={xfer.to} onChange={(e) => setXfer({ ...xfer, to: e.target.value })} className="h-9 rounded-md border bg-background px-2 text-sm"><option value="">—</option>{funds.map((f) => <option key={f.id} value={f.id}>{f.name} ({usd(f.balance)})</option>)}</select>
+                </div>
+                <div><label className="block text-xs text-muted-foreground">Amount $</label><Input type="number" className="w-28" value={xfer.amount} onChange={(e) => setXfer({ ...xfer, amount: e.target.value })} /></div>
+                <div className="flex-1"><label className="block text-xs text-muted-foreground">Note (optional)</label><Input value={xfer.note} onChange={(e) => setXfer({ ...xfer, note: e.target.value })} placeholder="e.g. cover salaries shortfall" /></div>
+                <Button onClick={transfer} disabled={busy === "xfer"}>{busy === "xfer" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Transfer"}</Button>
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
     </div>

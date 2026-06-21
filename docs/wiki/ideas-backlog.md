@@ -20,4 +20,26 @@
 
 ---
 
+## Источники на Google Drive (найдено 2026-06-21)
+
+Готовый материал для будущих модулей **Staff Hats (Отд 1)** и **Training (Отд 5)**. Лежит в `Мой диск / 1_Проект Salutem / Док-ты`.
+
+**Курс для Training (Отд 5):**
+- «Полный курс обучения сотрудников для работы с замороженными продуктами.docx» — `15EKK1yWYQgutbFAjDRD6vM1Aev-cf-1J` (дубль `1TaR8u2YRuTyDuhVHuaS9h6f4bP3zxUSS`).
+
+**Шляпы / должностные инструкции для Staff Hats (Отд 1)** — папка «Должностные инструкции» `1-ro9FuPRMS1MfrwVsNNgYw76f0rKb3uF`:
+- Менеджер Фулфилмент Центра (МФЦ) — `10mLWaObaowaoSesRXhG2C6QIaeYm6s7A`
+- Ассистент Менеджера ФЦ — `171JhYjcmEYrE_Vd1220UsX-3JWvXOZO_`
+- Сотрудник Фулфилмент Центра (МФЦ) — `16vQUrMWHV1tlSy81is8sjI7UgxAwMTgl`
+- Сотрудник Отдела Снабжения (МФЦ) — `16wDSHWVs9LfT1ULTZIJkZ4-s55O0iAkK`
+- Руководитель по маркетингу и digital-продвижению — `1DzeAhHDxFtSQtyFsZBAicOMJ0XQO3DLZ`
+- Контентмейкер для маркетплейсов — `11M899qAJI7o22bp7b438hf5LVZzdSQzd`
+- Личный ассистент / помощник руководителя — `115FK91Ban7HVdQacceP03l-4vHwU67Kp`
+- TikTok Sales Channel Manager (interview brief) — `11SQBg0maYFmp82tpppuoyYbtL9oo8Uqo`
+- Должностные обязанности и регламент проекта — `16wfHeAQDAfv99-P5E32MGmmPNpSHcKCw`
+
+**Ещё не найдено отдельным файлом:** описание компании / миссия / стратегия — проверить «Должностные обязанности и регламент проекта.docx» и папку «Salutem Solution llc» (`14uQVrUI2dYGl_orHvSxOAriPZRX7cgM8`).
+
+---
+
 Источник раскладки по отделениям: [command-center-orgboard.md](lrh-green-volumes/command-center-orgboard.md)

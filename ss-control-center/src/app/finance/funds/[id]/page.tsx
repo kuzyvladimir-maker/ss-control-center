@@ -29,7 +29,7 @@ interface Fund { id: string; name: string; group: string; balance: number }
 interface Entry { id: string; type: string; amount: number; description: string | null; status: string; dueDate: string | null; createdAt: string }
 interface Expense { id: string; name: string; amount: number; frequency: string; accrued: number; paid: number }
 
-const TYPE_LABEL: Record<string, string> = { allocation: "Allocation", spend: "Spend", planned_expense: "Bill", adjustment: "Manual credit" };
+const TYPE_LABEL: Record<string, string> = { allocation: "Allocation", spend: "Spend", planned_expense: "Bill", adjustment: "Manual credit", transfer: "Transfer" };
 
 export default function FundDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -66,6 +66,17 @@ export default function FundDetailPage() {
       await load();
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
   }
+  // Manual balance edit (start-of-plan alignment): set an expense's accrued/paid.
+  async function patchExpense(expenseId: string, field: "accrued" | "paid", value: string) {
+    const v = Number(value);
+    if (!Number.isFinite(v)) return;
+    setBusy(true); setError(null);
+    try {
+      const r = await fetch("/api/finance/expenses", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: expenseId, [field]: v }) }).then((x) => x.json());
+      if (!r.ok) throw new Error(r.error ?? "failed");
+      await load();
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
+  }
   async function patch(body: object) {
     setBusy(true); setError(null);
     try {
@@ -85,7 +96,7 @@ export default function FundDetailPage() {
           <h1 className="text-2xl font-semibold">{fund?.name ?? "Fund"}</h1>
           <p className="text-sm text-muted-foreground">{fund?.group} fund — cash accumulates from payout distribution; its debt ticks daily and is cleared when you press Paid.</p>
         </div>
-        <Link href="/finance"><Button variant="outline" size="sm"><ArrowLeft className="mr-1 h-4 w-4" />Back</Button></Link>
+        <Link href="/finance?tab=funds"><Button variant="outline" size="sm"><ArrowLeft className="mr-1 h-4 w-4" />Back to funds</Button></Link>
       </div>
 
       {error && <Card className="border-destructive"><CardContent className="flex items-center gap-2 py-3 text-destructive"><AlertCircle className="h-4 w-4" />{error}</CardContent></Card>}
@@ -135,8 +146,8 @@ export default function FundDetailPage() {
                     <tr key={e.id} className={cn("border-b last:border-0", due ? "bg-amber-50/40" : "")}>
                       <td className="px-3 py-2">{e.name} <span className="text-xs text-muted-foreground">({e.frequency})</span></td>
                       <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{usd(monthlyAmount(e.amount, e.frequency))}</td>
-                      <td className="px-3 py-2 text-right tabular-nums">{usd(e.accrued ?? 0)}</td>
-                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{usd(e.paid ?? 0)}</td>
+                      <td className="px-3 py-2 text-right"><Input key={`acc-${e.id}-${e.accrued}`} type="number" className="w-24 text-right tabular-nums" defaultValue={(e.accrued ?? 0).toFixed(2)} onBlur={(ev) => { const v = ev.target.value; if (Number(v) !== (e.accrued ?? 0)) patchExpense(e.id, "accrued", v); }} disabled={busy} /></td>
+                      <td className="px-3 py-2 text-right"><Input key={`paid-${e.id}-${e.paid}`} type="number" className="w-24 text-right tabular-nums" defaultValue={(e.paid ?? 0).toFixed(2)} onBlur={(ev) => { const v = ev.target.value; if (Number(v) !== (e.paid ?? 0)) patchExpense(e.id, "paid", v); }} disabled={busy} /></td>
                       <td className={cn("px-3 py-2 text-right font-medium tabular-nums", due ? "text-amber-600" : "text-emerald-600")}>{usd(owed)}</td>
                       <td className="px-3 py-2">
                         {due ? (
@@ -188,19 +199,21 @@ export default function FundDetailPage() {
                   <tr key={e.id} className="border-b last:border-0">
                     <td className="px-3 py-2 text-muted-foreground">{e.createdAt.slice(0, 10)}</td>
                     <td className="px-3 py-2">{TYPE_LABEL[e.type] ?? e.type}</td>
-                    <td className="px-3 py-2">{e.description ?? "—"}</td>
-                    <td className={cn("px-3 py-2 text-right font-medium tabular-nums", e.amount < 0 ? "text-destructive" : "text-emerald-600")}>{usd(e.amount)}</td>
+                    <td className="px-3 py-2"><Input key={`desc-${e.id}-${e.description ?? ""}`} className="h-8 w-56 text-sm" defaultValue={e.description ?? ""} onBlur={(ev) => { if (ev.target.value !== (e.description ?? "")) patch({ entryId: e.id, action: "edit", description: ev.target.value }); }} disabled={busy} /></td>
+                    <td className="px-3 py-2 text-right"><Input key={`amt-${e.id}-${e.amount}`} type="number" className="h-8 w-28 text-right text-sm tabular-nums" defaultValue={e.amount.toFixed(2)} onBlur={(ev) => { if (Number(ev.target.value) !== e.amount) patch({ entryId: e.id, action: "edit", amount: Number(ev.target.value) }); }} disabled={busy} /></td>
                     <td className="px-3 py-2">{e.status === "planned" ? <span className="text-xs text-destructive">unpaid</span> : <span className="text-xs text-muted-foreground">applied</span>}</td>
                     <td className="px-3 py-2">
-                      {movable ? (
-                        <div className="flex items-center gap-1">
-                          <select value={moveTo[e.id] ?? id} onChange={(ev) => setMoveTo({ ...moveTo, [e.id]: ev.target.value })} className="h-8 rounded-md border bg-background px-1 text-xs">
-                            {allFunds.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
-                          </select>
-                          <Button size="sm" variant="outline" disabled={busy || (moveTo[e.id] ?? id) === id} onClick={() => patch({ entryId: e.id, action: "move", targetFundId: moveTo[e.id] })}>Approve</Button>
-                          <Button size="sm" variant="ghost" disabled={busy} onClick={() => patch({ entryId: e.id, action: "delete" })}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        </div>
-                      ) : <span className="text-xs text-muted-foreground">—</span>}
+                      <div className="flex items-center gap-1">
+                        {movable && (
+                          <>
+                            <select value={moveTo[e.id] ?? id} onChange={(ev) => setMoveTo({ ...moveTo, [e.id]: ev.target.value })} className="h-8 rounded-md border bg-background px-1 text-xs">
+                              {allFunds.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+                            </select>
+                            <Button size="sm" variant="outline" disabled={busy || (moveTo[e.id] ?? id) === id} onClick={() => patch({ entryId: e.id, action: "move", targetFundId: moveTo[e.id] })}>Move</Button>
+                          </>
+                        )}
+                        <Button size="sm" variant="ghost" disabled={busy} onClick={() => patch({ entryId: e.id, action: "delete" })}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </div>
                     </td>
                   </tr>
                 );

@@ -54,6 +54,17 @@ export function Timesheet({ fundId, onChanged }: { fundId: string; onChanged?: (
     } catch { load(); }
   }
 
+  // Manual balance edit (start-of-plan alignment) for a salary employee.
+  async function patchBalance(id: string, field: "accrued" | "paid", value: string) {
+    const v = Number(value);
+    if (!Number.isFinite(v)) return;
+    setBusy(true); setError(null);
+    try {
+      await fetch("/api/finance/expenses", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, [field]: v }) });
+      await load(); onChanged?.();
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
+  }
+
   async function pay(e: Emp) {
     const amount = Number(payAmt[e.id] ?? e.owed);
     if (!Number.isFinite(amount) || amount <= 0) { setError("Enter a payment amount"); return; }
@@ -86,8 +97,8 @@ export function Timesheet({ fundId, onChanged }: { fundId: string; onChanged?: (
                 return (
                   <tr key={e.id} className={cn("border-b last:border-0", due && "bg-amber-50/40")}>
                     <td className="px-3 py-2"><div className="font-medium">{e.name}</div><div className="text-[10px] text-muted-foreground">{usd(e.perDay)}/day ({e.frequency})</div></td>
-                    <td className="px-3 py-2 text-right tabular-nums">{usd(e.accrued)}</td>
-                    <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{usd(e.paid)}</td>
+                    <td className="px-3 py-2 text-right"><Input key={`acc-${e.id}-${e.accrued}`} type="number" className="w-24 text-right tabular-nums" defaultValue={e.accrued.toFixed(2)} onBlur={(ev) => { if (Number(ev.target.value) !== e.accrued) patchBalance(e.id, "accrued", ev.target.value); }} disabled={busy} /></td>
+                    <td className="px-3 py-2 text-right"><Input key={`paid-${e.id}-${e.paid}`} type="number" className="w-24 text-right tabular-nums" defaultValue={e.paid.toFixed(2)} onBlur={(ev) => { if (Number(ev.target.value) !== e.paid) patchBalance(e.id, "paid", ev.target.value); }} disabled={busy} /></td>
                     <td className={cn("px-3 py-2 text-right font-medium tabular-nums", due ? "text-amber-600" : "text-emerald-600")}>{usd(e.owed)}</td>
                     <td className="px-3 py-2">
                       {due ? (

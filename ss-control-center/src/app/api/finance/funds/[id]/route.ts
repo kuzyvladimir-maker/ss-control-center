@@ -110,6 +110,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       await prisma.fund.update({ where: { id }, data: { balance: { decrement: entry.amount } } }); // reverse the debit
       return NextResponse.json({ ok: true });
     }
+    // Manual edit of a ledger row (description and/or amount). For an already-applied
+    // entry, changing the amount adjusts the fund balance by the delta.
+    if (b.action === "edit") {
+      const data: Record<string, unknown> = {};
+      if (b.description !== undefined) data.description = b.description;
+      if (b.amount != null && Number.isFinite(Number(b.amount))) {
+        const newAmount = round2(Number(b.amount));
+        data.amount = newAmount;
+        if (entry.status === "applied") {
+          const delta = round2(newAmount - entry.amount);
+          if (delta !== 0) await prisma.fund.update({ where: { id }, data: { balance: { increment: delta } } });
+        }
+      }
+      await prisma.fundEntry.update({ where: { id: entry.id }, data });
+      return NextResponse.json({ ok: true });
+    }
     if (b.action === "delete") {
       if (entry.status === "applied") {
         await prisma.fund.update({ where: { id }, data: { balance: { decrement: entry.amount } } }); // reverse

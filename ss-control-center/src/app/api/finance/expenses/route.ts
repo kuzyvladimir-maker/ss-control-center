@@ -84,6 +84,9 @@ export async function PATCH(req: NextRequest) {
     for (const k of ["name", "category", "marketplace", "product", "notes"]) if (b[k] != null) data[k] = b[k];
     if (b.amount != null) data.amount = Number(b.amount) || 0;
     if (b.frequency && ["monthly", "weekly", "daily", "yearly", "one_time"].includes(b.frequency)) data.frequency = b.frequency;
+    // Manual balance override (start-of-plan alignment): set начислено / выплачено.
+    if (b.accrued != null) data.accrued = Math.max(0, Math.round(Number(b.accrued) * 100) / 100);
+    if (b.paid != null) data.paid = Math.max(0, Math.round(Number(b.paid) * 100) / 100);
     if (b.active != null) data.active = Boolean(b.active);
     if (b.isAdSpend != null) data.isAdSpend = Boolean(b.isAdSpend);
     if (b.category) await ensureCategoryFunds([b.category]);
