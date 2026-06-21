@@ -110,14 +110,27 @@ export default function FinancialPlanPage() {
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
   }
 
+  // Set each fund's % so its Amount exactly covers its Needed (owed) at the current
+  // distributable: My% = Needed$ / distributable. Leftover (if needs < 100%) → Free;
+  // if needs exceed the pool, the total goes over 100% (the over-100 guard flags it).
   async function autoAllocate() {
+    if (!run || distPool <= 0) { setError("Preview first (need a distributable amount)."); return; }
     setBusy("auto"); setError(null); setNote(null);
     try {
-      const r = await fetch("/api/finance/funds/auto-allocate", { method: "POST" }).then((x) => x.json());
-      if (!r.ok) throw new Error(r.error ?? "failed");
-      const parts = (r.allocations ?? []).filter((a: { pct: number }) => a.pct > 0).map((a: { fund: string; pct: number }) => `${a.fund} ${a.pct}%`).join(", ");
-      setNote(`Fund % set from monthly needs (total $${r.totalMonthlyNeed}/mo): ${parts}`);
+      const newPct: Record<string, string> = {};
+      const updates: { id: string; pct: number }[] = [];
+      for (const a of run.distribution.allocations) {
+        const f = funds.find((x) => x.id === a.fundId);
+        if (!f || f.group === "RESERVE" || f.group === "FREE" || f.allocationType !== "percent") continue;
+        const need = a.name === "Taxes" ? taxNeed : (needs[a.name] ?? 0);
+        const pct = Math.round((need / distPool) * 1000) / 10; // 0.1% precision
+        newPct[f.id] = String(pct);
+        updates.push({ id: f.id, pct });
+      }
+      setPctEdit((p) => ({ ...p, ...newPct })); // live amounts update immediately
+      await Promise.all(updates.map((u) => fetch("/api/finance/funds", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: u.id, allocationType: "percent", value: u.pct }) })));
       await load();
+      setNote("Fund % set to exactly cover each fund's Needed (owed) at the current distributable.");
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
   }
 
@@ -150,9 +163,13 @@ export default function FinancialPlanPage() {
   // Tax need = tax rate × the pending PAYOUT (net) being distributed.
   const taxNeed = Math.round(((config?.taxRatePct ?? 1.5) / 100) * pendingNet * 100) / 100;
 
-  // Live distribution math (recomputes as you type a fund's %): each percent fund's
-  // amount = its current % × distributable; the total % must not exceed 100.
-  const distPool = run?.distribution.distributable ?? 0;
+  // Live distribution math (recomputes as you type the Reserve % or a fund's %):
+  // reserve = In × reserve%; distributable = In − reserve; each percent fund's
+  // amount = its current % × distributable; the total fund % must not exceed 100.
+  const totalIn = run?.distribution.totalIn ?? 0;
+  const liveReservePct = config ? Math.max(0, Math.min(1, config.manualPct)) : 0.58;
+  const liveReserve = Math.round(totalIn * liveReservePct * 100) / 100;
+  const distPool = Math.round((totalIn - liveReserve) * 100) / 100;
   const curPct = (fundId: string) => { const f = funds.find((x) => x.id === fundId); return Number(pctEdit[fundId] ?? (f?.value ?? 0)) || 0; };
   const allocPctFunds = (run?.distribution.allocations ?? []).filter((a) => { const f = funds.find((x) => x.id === a.fundId); return !!f && f.group !== "RESERVE" && f.group !== "FREE" && f.allocationType === "percent"; });
   const totalAllocPct = Math.round(allocPctFunds.reduce((s, a) => s + curPct(a.fundId), 0) * 10) / 10;
@@ -301,8 +318,8 @@ export default function FinancialPlanPage() {
               {run && (
                 <div className="rounded-md border p-3 text-sm">
                   <div className="mb-2 flex flex-wrap gap-4 text-muted-foreground">
-                    <span>In: <b className="text-foreground">{usd(run.distribution.totalIn)}</b></span>
-                    <span>Reserve ({Math.round(run.distribution.reserveRate * 100)}%): <b className="text-foreground">{usd(run.distribution.reserve)}</b></span>
+                    <span>In: <b className="text-foreground">{usd(totalIn)}</b></span>
+                    <span>Reserve ({Math.round(liveReservePct * 100)}%): <b className="text-foreground">{usd(liveReserve)}</b></span>
                     <span>Distributable: <b className="text-foreground">{usd(distPool)}</b></span>
                     <span>Allocated: <b className={cn(overAllocated ? "text-destructive" : "text-foreground")}>{totalAllocPct}%</b></span>
                     <span>Free: <b className={cn((distPool * (1 - totalAllocPct / 100)) < -0.005 ? "text-destructive" : "text-foreground")}>{usd(distPool * (1 - totalAllocPct / 100))}</b></span>
@@ -318,7 +335,7 @@ export default function FinancialPlanPage() {
                       const need = a.name === "Taxes" ? taxNeed : (needs[a.name] ?? 0);
                       const needPct = distPool > 0 && need > 0 ? (need / distPool) * 100 : 0;
                       // Amount recomputes live from the entered % (no need to re-Preview).
-                      const liveAmount = a.group === "RESERVE" ? run.distribution.reserve
+                      const liveAmount = a.group === "RESERVE" ? liveReserve
                         : a.group === "FREE" ? distPool * (1 - totalAllocPct / 100)
                         : editable ? distPool * (curPct(a.fundId) / 100)
                         : a.amount;
@@ -331,7 +348,7 @@ export default function FinancialPlanPage() {
                           <td className="text-right tabular-nums text-emerald-700">{need > 0 ? usd(need) : "—"}</td>
                           <td className="text-right tabular-nums text-muted-foreground">
                             {a.group === "RESERVE"
-                              ? `${Math.round((run.distribution.reserve / (run.distribution.totalIn || 1)) * 100)}%`
+                              ? `${Math.round(liveReservePct * 100)}%`
                               : a.group === "FREE"
                                 ? `${(100 - totalAllocPct).toFixed(1)}%`
                                 : editable
