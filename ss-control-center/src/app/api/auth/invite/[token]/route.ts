@@ -11,6 +11,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSessionToken, hashPassword } from "@/lib/auth";
+import { attachAccessCookie } from "@/lib/auth-server";
+import { ADMIN_ROLE } from "@/lib/rbac/access";
 
 async function findValidInvite(token: string) {
   const invite = await prisma.invite.findUnique({ where: { token } });
@@ -85,12 +87,24 @@ export async function POST(
     );
   }
 
+  // The role on the invite may have been deleted between issue and accept.
+  // Fall back to "member" so the new account is never left with a dangling
+  // role (which would grant zero modules).
+  let assignedRole = invite.role;
+  if (assignedRole !== ADMIN_ROLE) {
+    const roleExists = await prisma.role.findUnique({
+      where: { key: assignedRole },
+      select: { key: true },
+    });
+    if (!roleExists) assignedRole = "member";
+  }
+
   const user = await prisma.user.create({
     data: {
       username: invite.email,
       passwordHash: hashPassword(password),
       displayName: displayName || invite.email,
-      role: invite.role,
+      role: assignedRole,
     },
   });
 
@@ -116,5 +130,6 @@ export async function POST(
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
   });
+  await attachAccessCookie(response, user);
   return response;
 }

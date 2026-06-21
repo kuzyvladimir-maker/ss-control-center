@@ -1962,15 +1962,24 @@ export default function SettingsPage() {
               User permissions
             </h2>
             <p className="mt-0.5 text-xs text-ink-3">
-              Invite teammates by email and manage their access roles.
+              Invite teammates by email, assign roles, and define what each
+              role can open.
             </p>
           </div>
-          <a
-            href="/settings/users"
-            className="inline-flex items-center rounded-md border border-rule bg-surface px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface-tint"
-          >
-            Manage users →
-          </a>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href="/settings/roles"
+              className="inline-flex items-center rounded-md border border-rule bg-surface px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface-tint"
+            >
+              Roles &amp; permissions →
+            </a>
+            <a
+              href="/settings/users"
+              className="inline-flex items-center rounded-md border border-rule bg-surface px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface-tint"
+            >
+              Manage users →
+            </a>
+          </div>
         </div>
       </section>
 

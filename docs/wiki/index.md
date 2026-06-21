@@ -22,6 +22,7 @@
 - [Database Schema](database-schema.md) — Prisma, 19 моделей
 - [Auth System (UI login)](auth-system.md) — логин в UI Control Center, SHA-256+salt, session cookies
 - [External API Auth](external-api-auth.md) — Bearer token, middleware, MCP Server
+- [RBAC — Roles & Permissions](rbac-roles-permissions.md) — кастомные роли, доступ по модулям (вкл/выкл), invite-only, Settings только admin; proxy + access cookie
 
 ## 📦 Модули
 - [Dashboard](dashboard.md) — главная страница, карточки, сводка

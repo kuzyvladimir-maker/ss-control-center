@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createSessionToken, verifyPassword } from "@/lib/auth";
+import { attachAccessCookie } from "@/lib/auth-server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,6 +38,10 @@ export async function POST(request: NextRequest) {
       path: "/",
       maxAge: 60 * 60 * 24 * 30, // 30 days
     });
+
+    // Stamp the RBAC access cookie so the proxy gate is correct on the very
+    // first navigation after login.
+    await attachAccessCookie(response, user);
 
     return response;
   } catch (error) {

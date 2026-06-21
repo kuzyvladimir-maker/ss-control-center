@@ -19,6 +19,29 @@ model User {
   createdAt    DateTime @default(now())
 }
 
+// RBAC roles. The built-in `admin` role bypasses all permission checks and
+// is the only role that can reach Settings (where roles are managed). Every
+// other role (the built-in `member` and any custom role an admin creates)
+// is granted a set of module keys it may open.
+//
+// `User.role` and `Invite.role` reference this table by `key` (a plain
+// string), so adding roles never requires touching the User/Invite models.
+model Role {
+  id        String   @id @default(cuid())
+  // URL-/code-safe identifier referenced by User.role + Invite.role.
+  key       String   @unique
+  // Human-friendly label shown in the UI.
+  name      String
+  // JSON array of module keys this role may open, e.g. ["finance","shipping"].
+  // See src/lib/rbac/modules.ts for the canonical key list. The `admin` role
+  // ignores this field (it sees everything).
+  modules   String   @default("[]")
+  // System roles (admin/member) can't be deleted or renamed by the UI.
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // Single-use invitations issued by an admin. A new user can only register
 // by visiting an invite link with a valid (unused, unexpired) token.
 model Invite {

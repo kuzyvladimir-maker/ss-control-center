@@ -3,15 +3,18 @@
  */
 
 import { NextResponse } from "next/server";
+import { ACCESS_COOKIE } from "@/lib/rbac/access-cookie";
 
 export function POST() {
   const response = NextResponse.json({ ok: true });
-  response.cookies.set("sscc-session", "", {
+  const clear = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "lax" as const,
     path: "/",
     maxAge: 0,
-  });
+  };
+  response.cookies.set("sscc-session", "", clear);
+  response.cookies.set(ACCESS_COOKIE, "", clear);
   return response;
 }

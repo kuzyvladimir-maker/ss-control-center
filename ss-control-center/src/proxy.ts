@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySessionToken } from "@/lib/auth";
+import { parseAccessCookie } from "@/lib/rbac/access-cookie";
+import { canAccessPath } from "@/lib/rbac/access";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -70,12 +72,35 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // ── 2. Session gate ────────────────────────────────────────────────
+  // No valid session ⇒ 401 for APIs, redirect to /login for pages. This is
+  // what makes the Control Center invite-only: accounts only come from
+  // invite links, and nothing is reachable without one.
   const sessionToken = request.cookies.get("sscc-session")?.value;
   if (!sessionToken || !verifySessionToken(sessionToken)) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // ── 3. RBAC module gate (pages only, optimistic) ───────────────────
+  // The user is authenticated. For page navigations, redirect to
+  // /no-access if their role (read from the signed `sscc-access` cookie,
+  // set at login and refreshed by /api/auth/me) can't open this module.
+  //
+  // Scoped to pages: per-module API authorization is enforced on the
+  // server via requireModuleAccess so machine clients (token auth above)
+  // and crons aren't affected. The cookie may lag a role edit by one
+  // navigation; the server guard + client AccessGuard are authoritative.
+  if (!pathname.startsWith("/api/") && pathname !== "/no-access") {
+    const access = parseAccessCookie(request.cookies.get("sscc-access")?.value);
+    if (access && !canAccessPath(access, pathname)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/no-access";
+      url.search = `from=${encodeURIComponent(pathname)}`;
+      return NextResponse.redirect(url);
+    }
   }
 
   return NextResponse.next();

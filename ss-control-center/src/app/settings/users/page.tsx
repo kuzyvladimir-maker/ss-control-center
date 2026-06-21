@@ -37,16 +37,22 @@ interface MeResponse {
   user?: { id: string; role: string };
 }
 
+interface RoleOption {
+  key: string;
+  name: string;
+}
+
 export default function UsersSettingsPage() {
   const [me, setMe] = useState<MeResponse["user"] | null>(null);
   const [users, setUsers] = useState<UserItem[]>([]);
   const [invites, setInvites] = useState<InviteItem[]>([]);
+  const [roles, setRoles] = useState<RoleOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [pageError, setPageError] = useState<string | null>(null);
 
   const [newEmail, setNewEmail] = useState("");
-  const [newRole, setNewRole] = useState<"member" | "admin">("member");
+  const [newRole, setNewRole] = useState<string>("member");
   const [createError, setCreateError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -54,10 +60,11 @@ export default function UsersSettingsPage() {
     setLoading(true);
     setPageError(null);
     try {
-      const [meRes, usersRes, invitesRes] = await Promise.all([
+      const [meRes, usersRes, invitesRes, rolesRes] = await Promise.all([
         fetch("/api/auth/me"),
         fetch("/api/admin/users"),
         fetch("/api/admin/invites"),
+        fetch("/api/admin/roles"),
       ]);
       if (meRes.status === 401) {
         setPageError("Not signed in");
@@ -73,8 +80,10 @@ export default function UsersSettingsPage() {
       }
       const usersJ = await usersRes.json();
       const invitesJ = await invitesRes.json();
+      const rolesJ = rolesRes.ok ? await rolesRes.json() : { items: [] };
       setUsers(usersJ.items ?? []);
       setInvites(invitesJ.items ?? []);
+      setRoles(rolesJ.items ?? []);
     } catch (err) {
       setPageError(err instanceof Error ? err.message : "Failed to load");
     } finally {
@@ -133,7 +142,7 @@ export default function UsersSettingsPage() {
     await load();
   }
 
-  async function changeRole(u: UserItem, role: "admin" | "member") {
+  async function changeRole(u: UserItem, role: string) {
     const res = await fetch(`/api/admin/users/${u.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -223,13 +232,14 @@ export default function UsersSettingsPage() {
               <select
                 id="role"
                 value={newRole}
-                onChange={(e) =>
-                  setNewRole(e.target.value as "admin" | "member")
-                }
+                onChange={(e) => setNewRole(e.target.value)}
                 className="mt-1 block rounded-md border border-silver-line px-3 py-2 text-sm shadow-sm focus:border-green focus:outline-none focus:ring-1 focus:ring-green-mid"
               >
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
+                {roles.map((r) => (
+                  <option key={r.key} value={r.key}>
+                    {r.name}
+                  </option>
+                ))}
               </select>
             </div>
             <Button type="submit" disabled={creating || !newEmail}>
@@ -276,13 +286,17 @@ export default function UsersSettingsPage() {
                       <select
                         value={u.role}
                         disabled={isMe}
-                        onChange={(e) =>
-                          changeRole(u, e.target.value as "admin" | "member")
-                        }
+                        onChange={(e) => changeRole(u, e.target.value)}
                         className="rounded border border-silver-line px-2 py-1 text-xs disabled:opacity-50"
                       >
-                        <option value="member">Member</option>
-                        <option value="admin">Admin</option>
+                        {!roles.some((r) => r.key === u.role) && (
+                          <option value={u.role}>{u.role}</option>
+                        )}
+                        {roles.map((r) => (
+                          <option key={r.key} value={r.key}>
+                            {r.name}
+                          </option>
+                        ))}
                       </select>
                       {u.role === "admin" && (
                         <ShieldCheck

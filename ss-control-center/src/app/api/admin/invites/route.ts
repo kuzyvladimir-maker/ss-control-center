@@ -76,7 +76,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Valid email required" }, { status: 400 });
   }
 
-  const role = body.role === "admin" ? "admin" : "member";
+  // Accept any existing role key (admin or a custom/member role). Unknown or
+  // missing → default to "member".
+  let role = "member";
+  if (body.role === "admin") {
+    role = "admin";
+  } else if (body.role) {
+    const exists = await prisma.role.findUnique({
+      where: { key: body.role },
+      select: { key: true },
+    });
+    if (exists) role = body.role;
+  }
   const days = Math.max(1, Math.min(30, body.expiresInDays ?? DEFAULT_EXPIRY_DAYS));
 
   // Reject if a user with this email/username already exists

@@ -26,11 +26,21 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  if (body.role !== "admin" && body.role !== "member") {
-    return NextResponse.json(
-      { error: "role must be 'admin' or 'member'" },
-      { status: 400 }
-    );
+  // Accept "admin" or any existing role key.
+  if (typeof body.role !== "string" || !body.role) {
+    return NextResponse.json({ error: "role is required" }, { status: 400 });
+  }
+  if (body.role !== "admin") {
+    const roleExists = await prisma.role.findUnique({
+      where: { key: body.role },
+      select: { key: true },
+    });
+    if (!roleExists) {
+      return NextResponse.json(
+        { error: `Unknown role '${body.role}'` },
+        { status: 400 }
+      );
+    }
   }
 
   if (id === auth.id && body.role !== auth.role) {
@@ -45,7 +55,8 @@ export async function PATCH(
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  if (target.role === "admin" && body.role === "member") {
+  // Don't allow demoting the last admin away from the admin role.
+  if (target.role === "admin" && body.role !== "admin") {
     const remainingAdmins = await prisma.user.count({
       where: { role: "admin", id: { not: id } },
     });

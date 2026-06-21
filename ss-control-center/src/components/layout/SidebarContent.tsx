@@ -25,6 +25,9 @@ import {
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { StoreFilterSelector } from "@/components/layout/StoreFilterSelector";
+import { useMe } from "@/lib/auth/use-me";
+import { canAccessModule } from "@/lib/rbac/access";
+import { moduleForPath } from "@/lib/rbac/modules";
 
 interface NavItem {
   title: string;
@@ -210,7 +213,19 @@ export default function SidebarContent({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const { user } = useMe();
   const [summary, setSummary] = useState<DashboardSummary>({});
+
+  // Show a nav item only if the user's role may open its module. Always-on
+  // modules (Dashboard) and non-module paths stay visible; while `/api/auth/me`
+  // is still loading (user === null) we show only always-on items so forbidden
+  // links never flash in.
+  const canSee = (href: string): boolean => {
+    const mod = moduleForPath(href);
+    if (!mod || mod.alwaysOn) return true;
+    if (!user) return false;
+    return canAccessModule({ role: user.role, modules: user.modules }, mod.key);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -291,14 +306,16 @@ export default function SidebarContent({
       {/* Operations */}
       <NavSection label="Operations" />
       <nav className="space-y-0.5 px-2">
-        {operationsItems(summary).map((item) => (
-          <NavLink
-            key={item.href}
-            item={item}
-            active={isActive(item.href)}
-            onNavigate={onNavigate}
-          />
-        ))}
+        {operationsItems(summary)
+          .filter((item) => canSee(item.href))
+          .map((item) => (
+            <NavLink
+              key={item.href}
+              item={item}
+              active={isActive(item.href)}
+              onNavigate={onNavigate}
+            />
+          ))}
       </nav>
 
       {/* Phase 2 */}
@@ -311,14 +328,16 @@ export default function SidebarContent({
 
       <div className="flex-1" />
 
-      {/* Settings (always at bottom) */}
-      <div className="px-2 pb-2">
-        <NavLink
-          item={settingsItem}
-          active={isActive("/settings")}
-          onNavigate={onNavigate}
-        />
-      </div>
+      {/* Settings (admin only, always at bottom) */}
+      {user?.isAdmin && (
+        <div className="px-2 pb-2">
+          <NavLink
+            item={settingsItem}
+            active={isActive("/settings")}
+            onNavigate={onNavigate}
+          />
+        </div>
+      )}
 
       {/* Helper card */}
       {(summary.orders?.awaitingShipment ?? 0) > 0 && (
