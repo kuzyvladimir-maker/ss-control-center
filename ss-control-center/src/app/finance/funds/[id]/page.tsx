@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2, ArrowLeft, AlertCircle, Trash2, Check, Plus } from "lucide-react";
+import { Loader2, ArrowLeft, AlertCircle, Trash2, Check, Plus, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -152,12 +152,14 @@ export default function FundDetailPage() {
                       <td className="px-3 py-2 text-right"><Input key={`paid-${e.id}-${e.paid}`} type="number" className="w-24 text-right tabular-nums" defaultValue={(e.paid ?? 0).toFixed(2)} onBlur={(ev) => { const v = ev.target.value; if (Number(v) !== (e.paid ?? 0)) patchExpense(e.id, "paid", v); }} disabled={busy} /></td>
                       <td className={cn("px-3 py-2 text-right font-medium tabular-nums", due ? "text-amber-600" : "text-emerald-600")}>{usd(balance)}</td>
                       <td className="px-3 py-2">
-                        {due ? (
-                          <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1">
+                          {due && <>
                             <Input type="number" className="w-24" value={payAmt[e.id] ?? String(balance)} onChange={(ev) => setPayAmt({ ...payAmt, [e.id]: ev.target.value })} />
                             <Button size="sm" onClick={() => { const a = Number(payAmt[e.id] ?? balance); if (Number.isFinite(a) && a > 0) { setPayAmt((p) => { const n = { ...p }; delete n[e.id]; return n; }); post({ kind: "pay_expense", expenseId: e.id, amount: a }); } }} disabled={busy}><Check className="mr-1 h-3 w-3" />Paid</Button>
-                          </div>
-                        ) : <span className="text-xs text-emerald-600">clear</span>}
+                          </>}
+                          {(e.paid ?? 0) > 0.005 && <Button size="sm" variant="outline" title="Undo the last payment — gives the money back to the fund" onClick={() => post({ kind: "undo_payment", expenseId: e.id })} disabled={busy}><RotateCcw className="mr-1 h-3 w-3" />Undo</Button>}
+                          {!due && !((e.paid ?? 0) > 0.005) && <span className="text-xs text-emerald-600">clear</span>}
+                        </div>
                       </td>
                     </tr>
                   );

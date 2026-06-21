@@ -3413,6 +3413,9 @@ model FundEntry {
   status      String   @default("applied") // applied | planned
   dueDate     String? // ISO date for planned expenses
   runId       String?
+  // When this entry is an expense payment (pay_expense), the expense it paid — so an
+  // Undo / ledger-delete can give the money back AND reduce that expense's `paid`.
+  expenseId   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

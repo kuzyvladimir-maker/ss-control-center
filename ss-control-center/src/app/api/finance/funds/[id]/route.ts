@@ -45,11 +45,29 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       // Owed (остаток) = accrued − paid, so paying raises `paid`, leaving accrued
       // (начислено, the running counter) intact.
       const [entry] = await prisma.$transaction([
-        prisma.fundEntry.create({ data: { fundId: id, type: "spend", amount: -round2(amount), description: `${exp.name} (paid)`, status: "applied" } }),
+        prisma.fundEntry.create({ data: { fundId: id, type: "spend", amount: -round2(amount), description: `${exp.name} (paid)`, status: "applied", expenseId: exp.id } }),
         prisma.fund.update({ where: { id }, data: { balance: { decrement: round2(amount) } } }),
         prisma.recurringExpense.update({ where: { id: exp.id }, data: { paid: round2((exp.paid ?? 0) + amount) } }),
       ]);
       return NextResponse.json({ ok: true, entry });
+    }
+
+    // Undo the most recent payment of an expense: give the money back to the fund and
+    // reduce the expense's `paid` (the owed balance reappears).
+    if (b.kind === "undo_payment") {
+      const last = await prisma.fundEntry.findFirst({
+        where: { fundId: id, expenseId: b.expenseId, type: "spend", status: "applied" },
+        orderBy: { createdAt: "desc" },
+      });
+      if (!last) return NextResponse.json({ error: "no payment to undo" }, { status: 404 });
+      const exp = await prisma.recurringExpense.findUnique({ where: { id: b.expenseId } });
+      const refund = Math.abs(last.amount);
+      await prisma.$transaction([
+        prisma.fund.update({ where: { id }, data: { balance: { increment: round2(refund) } } }),
+        prisma.recurringExpense.update({ where: { id: b.expenseId }, data: { paid: Math.max(0, round2((exp?.paid ?? 0) - refund)) } }),
+        prisma.fundEntry.delete({ where: { id: last.id } }),
+      ]);
+      return NextResponse.json({ ok: true, undone: refund });
     }
 
     // Generate unpaid bills from this fund's expense-item presets (per period).
@@ -129,6 +147,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (b.action === "delete") {
       if (entry.status === "applied") {
         await prisma.fund.update({ where: { id }, data: { balance: { decrement: entry.amount } } }); // reverse
+      }
+      // If this was an expense payment, deleting it also gives the owed back (reduce paid).
+      if (entry.expenseId) {
+        const exp = await prisma.recurringExpense.findUnique({ where: { id: entry.expenseId } });
+        if (exp) await prisma.recurringExpense.update({ where: { id: exp.id }, data: { paid: Math.max(0, round2((exp.paid ?? 0) - Math.abs(entry.amount))) } });
       }
       // Unlink any receipt (keep the image; allow re-filing later).
       await prisma.receipt.updateMany({ where: { fundEntryId: entry.id }, data: { fundEntryId: null, fundId: null, status: "parsed" } });
