@@ -52,15 +52,15 @@ export async function POST(req: NextRequest) {
       const remaining = round2(debt.amount - debt.paid);
       const amount = Math.min(Math.abs(Number(b.amount)) || remaining, remaining);
       if (!Number.isFinite(amount) || amount <= 0) return NextResponse.json({ error: "nothing to pay" }, { status: 400 });
-      // Debit the fund.
-      const entry = await prisma.fundEntry.create({
-        data: { fundId: debt.fundId, type: "spend", amount: -round2(amount), description: `Debt payment: ${debt.description ?? "debt"}`, status: "applied" },
-      });
-      await prisma.fund.update({ where: { id: debt.fundId }, data: { balance: { decrement: round2(amount) } } });
       const paid = round2(debt.paid + amount);
       // Paying an installment also draws down its owed counter (the Needed meter).
       const accrued = Math.max(0, round2((debt.accrued ?? 0) - amount));
-      await prisma.debt.update({ where: { id: debt.id }, data: { paid, accrued, status: paid >= debt.amount - 0.005 ? "settled" : "open" } });
+      // Atomic: ledger debit + fund balance + debt paid/accrued/status all-or-nothing.
+      const [entry] = await prisma.$transaction([
+        prisma.fundEntry.create({ data: { fundId: debt.fundId, type: "spend", amount: -round2(amount), description: `Debt payment: ${debt.description ?? "debt"}`, status: "applied" } }),
+        prisma.fund.update({ where: { id: debt.fundId }, data: { balance: { decrement: round2(amount) } } }),
+        prisma.debt.update({ where: { id: debt.id }, data: { paid, accrued, status: paid >= debt.amount - 0.005 ? "settled" : "open" } }),
+      ]);
       return NextResponse.json({ ok: true, entry });
     }
 

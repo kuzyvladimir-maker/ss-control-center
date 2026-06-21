@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salutem Control — Sidebar by Org Board (preview)</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root{
+  --bg:#F4F3EF; --bg-elev:#EDECE7; --surface:#FFFFFF; --surface-tint:#F8F7F3;
+  --ink:#15201B; --ink-2:#4E554F; --ink-3:#7A807B; --ink-4:#AEB2AD;
+  --rule:rgba(21,32,27,0.08); --rule-strong:rgba(21,32,27,0.16);
+  --green:#1F4D3F; --green-deep:#14352B; --green-mid:#3A6B5D;
+  --green-soft:#E6EEE9; --green-soft2:#CDDDD5; --green-ink:#12362C; --green-cream:#F0E8D0;
+  --silver:#B5B8B5; --silver-dark:#8E918E; --silver-tint:#EAEBE9; --silver-line:#D2D4D1;
+  --warn:#A05B20; --warn-tint:#F5E9DC; --warn-strong:#8B4A18;
+  --sans:'Inter Tight',-apple-system,system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+
+  /* 7 divisions — official org-board colors, muted to brand palette */
+  --d7:#3F6FA0;  /* 7 Administrative — blue   */
+  --d1:#B8901F;  /* 1 Communications — yellow */
+  --d2:#6B5A8C;  /* 2 Dissemination  — purple */
+  --d3:#A85C73;  /* 3 Treasury       — pink   */
+  --d4:#1F4D3F;  /* 4 Production     — green  */
+  --d5:#7D827D;  /* 5 Qualifications — gray   */
+  --d6:#9A6B1C;  /* 6 Public         — gold   */
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+.page{max-width:1180px;margin:0 auto;padding:28px 32px 64px;}
+
+/* ---- page head ---- */
+.h-title{font-size:24px;font-weight:600;letter-spacing:-0.025em;}
+.h-sub{color:var(--ink-2);font-size:13px;margin-top:6px;max-width:760px;}
+.h-note{display:inline-flex;align-items:center;gap:7px;margin-top:12px;
+  background:var(--green-soft);color:var(--green-ink);border-radius:6px;
+  padding:5px 10px;font-size:11.5px;font-weight:500;}
+.h-note .dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
+
+/* ---- legend ---- */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 26px;}
+.lg{display:inline-flex;align-items:center;gap:7px;background:var(--surface);
+  border:1px solid var(--rule);border-radius:7px;padding:6px 10px;font-size:11.5px;}
+.lg b{font-weight:600;}
+.lg .sw{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.lg .num{font-family:var(--mono);font-size:10px;color:var(--ink-3);}
+
+/* ---- two-up grid ---- */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;}
+.col-cap{font-size:13.5px;font-weight:600;margin-bottom:4px;}
+.col-desc{color:var(--ink-3);font-size:11.5px;margin-bottom:12px;min-height:32px;}
+
+/* ===================== SIDEBAR (shared) ===================== */
+.sidebar{width:236px;background:var(--bg);border:1px solid var(--rule);
+  border-radius:12px;padding:18px 12px;display:flex;flex-direction:column;
+  box-shadow:0 1px 2px rgba(21,32,27,0.04);}
+.brand{display:flex;align-items:center;gap:11px;padding:2px 8px 16px;}
+.brand-mark{width:32px;height:32px;background:var(--green);color:var(--green-cream);
+  border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:14px;
+  letter-spacing:-0.03em;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06),0 0 0 1px var(--silver-line);}
+.brand-info{flex:1;min-width:0;}
+.brand-name{font-weight:700;font-size:14.5px;letter-spacing:-0.02em;color:var(--ink);line-height:1.1;}
+.brand-meta{font-family:var(--mono);font-size:10px;color:var(--silver-dark);margin-top:2px;letter-spacing:0.04em;}
+.ws{margin:0 2px 14px;padding:9px 11px;background:var(--surface);border:1px solid var(--rule);
+  border-radius:8px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.ws-dot{width:7px;height:7px;border-radius:2px;background:var(--green);flex-shrink:0;}
+.ws-label{font-size:12.5px;color:var(--ink);font-weight:500;flex:1;line-height:1.1;}
+.ws-count{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);}
+
+.nav{display:flex;flex-direction:column;gap:1px;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:7px 11px;border-radius:7px;
+  color:var(--ink-2);cursor:pointer;transition:background .15s,color .15s;font-size:13px;text-decoration:none;}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;color:var(--ink-3);stroke-width:1.7;}
+.nav-item:hover{background:var(--bg-elev);color:var(--ink);}
+.nav-item:hover svg{color:var(--ink-2);}
+.nav-item.active{background:var(--green-soft);color:var(--green-ink);font-weight:500;}
+.nav-item.active svg{color:var(--green);}
+.nav-item .pill{margin-left:auto;font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:3px;font-weight:500;}
+.pill-active{background:var(--green);color:var(--green-cream);}
+.pill-warn{background:var(--warn-tint);color:var(--warn-strong);}
+.nav-item.disabled{opacity:.5;cursor:not-allowed;}
+.nav-item.disabled .coming{margin-left:auto;font-family:var(--mono);font-size:9px;
+  text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);background:var(--bg-elev);
+  padding:1px 5px;border-radius:3px;}
+.nav-item .lock{margin-left:auto;color:var(--ink-4);width:12px;height:12px;}
+
+/* ===== Variant A — bordered division cards (canonical order) ===== */
+.A .divblock{border-left:3px solid var(--dc);border-radius:0 8px 8px 0;
+  background:var(--surface-tint);margin:0 0 7px;padding:5px 4px 6px 0;}
+.A .divhead{display:flex;align-items:center;gap:8px;padding:5px 10px 5px 9px;}
+.A .divhead .badge{font-family:var(--mono);font-size:10px;font-weight:600;color:#fff;
+  background:var(--dc);min-width:17px;height:17px;border-radius:4px;display:grid;place-items:center;letter-spacing:-.02em;}
+.A .divhead .name{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:500;line-height:1.1;}
+.A .nav-item{margin:0 4px;}
+
+/* ===== Variant B — quiet labels, usage order, collapsible look ===== */
+.B .grp{margin-bottom:4px;}
+.B .grphead{display:flex;align-items:center;gap:8px;padding:11px 11px 5px;cursor:pointer;}
+.B .grphead .sw{width:8px;height:8px;border-radius:50%;background:var(--dc);flex-shrink:0;}
+.B .grphead .lab{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--silver-dark);font-weight:500;flex:1;}
+.B .grphead .chev{width:13px;height:13px;color:var(--ink-4);}
+.B .grphead .cnt{font-family:var(--mono);font-size:9.5px;color:var(--ink-4);}
+
+.foot{margin-top:14px;padding-top:10px;border-top:1px solid var(--rule);}
+.col-notes{margin-top:14px;font-size:11.5px;color:var(--ink-2);}
+.col-notes li{margin:3px 0 3px 16px;}
+.col-notes b{color:var(--ink);}
+@media(max-width:900px){.grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="h-title">Сайдбар по орг-схеме (7 отделений) — превью</div>
+  <div class="h-sub">Сейчас слева один плоский список из 15 пунктов. Ниже — два варианта, как сгруппировать его «пачками» по 7 отделениям Л.&nbsp;Рона&nbsp;Хаббарда. Раскладка модулей утверждена 21.06.2026 (Frozen analytics, Adjustments, Account Health → Отд&nbsp;5; Sales overview → Отд&nbsp;3).</div>
+  <div class="h-note"><span class="dot"></span>Это превью, не боевая версия. Выбери вариант (или смешать) — внедрю в живой сайдбар.</div>
+
+  <!-- legend -->
+  <div class="legend">
+    <span class="lg"><span class="sw" style="background:var(--d7)"></span><span class="num">7</span><b>Административное</b></span>
+    <span class="lg"><span class="sw" style="background:var(--d1)"></span><span class="num">1</span><b>Коммуникации</b></span>
+    <span class="lg"><span class="sw" style="background:var(--d2)"></span><span class="num">2</span><b>Распространения</b></span>
+    <span class="lg"><span class="sw" style="background:var(--d3)"></span><span class="num">3</span><b>Бухгалтерия</b></span>
+    <span class="lg"><span class="sw" style="background:var(--d4)"></span><span class="num">4</span><b>Производственное</b></span>
+    <span class="lg"><span class="sw" style="background:var(--d5)"></span><span class="num">5</span><b>Квалификации</b></span>
+    <span class="lg"><span class="sw" style="background:var(--d6)"></span><span class="num">6</span><b>По работе с публикой</b></span>
+  </div>
+
+  <div class="grid">
+
+    <!-- ============ VARIANT A ============ -->
+    <div>
+      <div class="col-cap">Вариант A — «Канон»</div>
+      <div class="col-desc">Порядок как на орг-доске: 7 → 1 → 2 → 3 → 4 → 5 → 6. Каждое отделение — блок с номером, названием и своим цветом. Максимально узнаваемая орг-схема.</div>
+
+      <aside class="sidebar A">
+        <div class="brand">
+          <div class="brand-mark">S</div>
+          <div class="brand-info"><div class="brand-name">Salutem</div><div class="brand-meta">COMMAND CENTER</div></div>
+        </div>
+        <div class="ws"><span class="ws-dot"></span><span class="ws-label">All stores</span><span class="ws-count">5</span></div>
+
+        <!-- 7 Administrative -->
+        <div class="divblock" style="--dc:var(--d7)">
+          <div class="divhead"><span class="badge">7</span><span class="name">Административное</span></div>
+          <nav class="nav">
+            <a class="nav-item active"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+          </nav>
+        </div>
+        <!-- 1 Communications -->
+        <div class="divblock" style="--dc:var(--d1)">
+          <div class="divhead"><span class="badge">1</span><span class="name">Коммуникации</span></div>
+          <nav class="nav">
+            <a class="nav-item"><i data-lucide="book-open"></i>Reference Catalog</a>
+            <a class="nav-item"><i data-lucide="settings"></i>Settings<i data-lucide="lock" class="lock"></i></a>
+          </nav>
+        </div>
+        <!-- 2 Dissemination -->
+        <div class="divblock" style="--dc:var(--d2)">
+          <div class="divhead"><span class="badge">2</span><span class="name">Распространения</span></div>
+          <nav class="nav">
+            <a class="nav-item"><i data-lucide="leaf"></i>Amazon Growth</a>
+            <a class="nav-item"><i data-lucide="sprout"></i>Walmart Growth</a>
+            <a class="nav-item"><i data-lucide="sparkles"></i>A+ Content</a>
+            <a class="nav-item disabled"><i data-lucide="tags"></i>Product listings<span class="coming">soon</span></a>
+          </nav>
+        </div>
+        <!-- 3 Treasury -->
+        <div class="divblock" style="--dc:var(--d3)">
+          <div class="divhead"><span class="badge">3</span><span class="name">Бухгалтерия</span></div>
+          <nav class="nav">
+            <a class="nav-item"><i data-lucide="piggy-bank"></i>Financial Plan</a>
+            <a class="nav-item"><i data-lucide="dollar-sign"></i>Economics</a>
+            <a class="nav-item"><i data-lucide="trending-up"></i>Sales overview</a>
+          </nav>
+        </div>
+        <!-- 4 Production -->
+        <div class="divblock" style="--dc:var(--d4)">
+          <div class="divhead"><span class="badge">4</span><span class="name">Производственное</span></div>
+          <nav class="nav">
+            <a class="nav-item"><i data-lucide="shopping-cart"></i>Procurement<span class="pill pill-active">12</span></a>
+            <a class="nav-item disabled"><i data-lucide="package"></i>Suppliers<span class="coming">soon</span></a>
+            <a class="nav-item"><i data-lucide="layers"></i>Bundle Factory</a>
+            <a class="nav-item"><i data-lucide="truck"></i>Shipping labels<span class="pill pill-active">7</span></a>
+          </nav>
+        </div>
+        <!-- 5 Qualifications -->
+        <div class="divblock" style="--dc:var(--d5)">
+          <div class="divhead"><span class="badge">5</span><span class="name">Квалификации</span></div>
+          <nav class="nav">
+            <a class="nav-item"><i data-lucide="heart-pulse"></i>Account Health<span class="pill pill-warn">3</span></a>
+            <a class="nav-item"><i data-lucide="thermometer"></i>Frozen analytics</a>
+            <a class="nav-item"><i data-lucide="receipt"></i>Adjustments<span class="pill pill-warn">2</span></a>
+          </nav>
+        </div>
+        <!-- 6 Public -->
+        <div class="divblock" style="--dc:var(--d6)">
+          <div class="divhead"><span class="badge">6</span><span class="name">По работе с публикой</span></div>
+          <nav class="nav">
+            <a class="nav-item"><i data-lucide="message-square"></i>Customer hub<span class="pill pill-active">4</span></a>
+          </nav>
+        </div>
+      </aside>
+
+      <ul class="col-notes">
+        <li><b>Плюс:</b> точно повторяет орг-доску — видно поток частицы 1→6 и Административное (7) во главе.</li>
+        <li><b>Минус:</b> длиннее по высоте, цвета делают сайдбар «громче».</li>
+      </ul>
+    </div>
+
+    <!-- ============ VARIANT B ============ -->
+    <div>
+      <div class="col-cap">Вариант B — «Рабочий поток»</div>
+      <div class="col-desc">Те же отделения и цвета, но порядок групп — под ежедневную работу (что чаще открываешь — выше). Тихие подписи, группы можно сворачивать. Ближе к нынешнему виду.</div>
+
+      <aside class="sidebar B">
+        <div class="brand">
+          <div class="brand-mark">S</div>
+          <div class="brand-info"><div class="brand-name">Salutem</div><div class="brand-meta">COMMAND CENTER</div></div>
+        </div>
+        <div class="ws"><span class="ws-dot"></span><span class="ws-label">All stores</span><span class="ws-count">5</span></div>
+
+        <!-- Dashboard pinned (Отд 7) -->
+        <nav class="nav"><a class="nav-item active"><i data-lucide="layout-dashboard"></i>Dashboard</a></nav>
+
+        <!-- 4 Production (daily driver) -->
+        <div class="grp" style="--dc:var(--d4)">
+          <div class="grphead"><span class="sw"></span><span class="lab">4 · Производство</span><span class="cnt">4</span><i data-lucide="chevron-down" class="chev"></i></div>
+          <nav class="nav">
+            <a class="nav-item"><i data-lucide="truck"></i>Shipping labels<span class="pill pill-active">7</span></a>
+            <a class="nav-item"><i data-lucide="shopping-cart"></i>Procurement<span class="pill pill-active">12</span></a>
+            <a class="nav-item"><i data-lucide="layers"></i>Bundle Factory</a>
+            <a class="nav-item disabled"><i data-lucide="package"></i>Suppliers<span class="coming">soon</span></a>
+          </nav>
+        </div>
+        <!-- 6 Public -->
+        <div class="grp" style="--dc:var(--d6)">
+          <div class="grphead"><span class="sw"></span><span class="lab">6 · Публика</span><span class="cnt">1</span><i data-lucide="chevron-down" class="chev"></i></div>
+          <nav class="nav">
+            <a class="nav-item"><i data-lucide="message-square"></i>Customer hub<span class="pill pill-active">4</span></a>
+          </nav>
+        </div>
+        <!-- 5 Qualifications -->
+        <div class="grp" style="--dc:var(--d5)">
+          <div class="grphead"><span class="sw"></span><span class="lab">5 · Квалификация</span><span class="cnt">3</span><i data-lucide="chevron-down" class="chev"></i></div>
+          <nav class="nav">
+            <a class="nav-item"><i data-lucide="heart-pulse"></i>Account Health<span class="pill pill-warn">3</span></a>
+            <a class="nav-item"><i data-lucide="receipt"></i>Adjustments<span class="pill pill-warn">2</span></a>
+            <a class="nav-item"><i data-lucide="thermometer"></i>Frozen analytics</a>
+          </nav>
+        </div>
+        <!-- 3 Treasury -->
+        <div class="grp" style="--dc:var(--d3)">
+          <div class="grphead"><span class="sw"></span><span class="lab">3 · Бухгалтерия</span><span class="cnt">3</span><i data-lucide="chevron-down" class="chev"></i></div>
+          <nav class="nav">
+            <a class="nav-item"><i data-lucide="trending-up"></i>Sales overview</a>
+            <a class="nav-item"><i data-lucide="piggy-bank"></i>Financial Plan</a>
+            <a class="nav-item"><i data-lucide="dollar-sign"></i>Economics</a>
+          </nav>
+        </div>
+        <!-- 2 Dissemination -->
+        <div class="grp" style="--dc:var(--d2)">
+          <div class="grphead"><span class="sw"></span><span class="lab">2 · Распространение</span><span class="cnt">4</span><i data-lucide="chevron-down" class="chev"></i></div>
+          <nav class="nav">
+            <a class="nav-item"><i data-lucide="leaf"></i>Amazon Growth</a>
+            <a class="nav-item"><i data-lucide="sprout"></i>Walmart Growth</a>
+            <a class="nav-item"><i data-lucide="sparkles"></i>A+ Content</a>
+            <a class="nav-item disabled"><i data-lucide="tags"></i>Product listings<span class="coming">soon</span></a>
+          </nav>
+        </div>
+        <!-- 1 Communications -->
+        <div class="grp" style="--dc:var(--d1)">
+          <div class="grphead"><span class="sw"></span><span class="lab">1 · Коммуникации</span><span class="cnt">2</span><i data-lucide="chevron-down" class="chev"></i></div>
+          <nav class="nav">
+            <a class="nav-item"><i data-lucide="book-open"></i>Reference Catalog</a>
+            <a class="nav-item"><i data-lucide="settings"></i>Settings<i data-lucide="lock" class="lock"></i></a>
+          </nav>
+        </div>
+      </aside>
+
+      <ul class="col-notes">
+        <li><b>Плюс:</b> самое нужное (отгрузка, закуп, клиенты) — наверху; короче за счёт сворачивания.</li>
+        <li><b>Минус:</b> порядок отделений не как на доске — это «рабочая» раскладка, не каноничная.</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+<script>lucide.createIcons();</script>
+</body>
+</html>

@@ -9,16 +9,23 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { monthlyAmount } from "@/lib/finance/expenses";
+import { monthlyAmount, installmentMonthly } from "@/lib/finance/expenses";
 
 export async function POST() {
   try {
     const funds = await prisma.fund.findMany({ where: { group: "FP1", active: true } });
     const expenses = await prisma.recurringExpense.findMany({ where: { active: true } });
 
-    // Monthly need per category (= fund name).
+    // Monthly need per category (= fund name): recurring expenses + installment debts.
     const need = new Map<string, number>();
     for (const e of expenses) need.set(e.category, (need.get(e.category) ?? 0) + monthlyAmount(e.amount, e.frequency));
+    const fundName = new Map(funds.map((f) => [f.id, f.name]));
+    const debts = await prisma.debt.findMany({ where: { status: "open" } });
+    for (const d of debts) {
+      if (!d.monthlyPayment) continue;
+      const name = fundName.get(d.fundId);
+      if (name) need.set(name, (need.get(name) ?? 0) + installmentMonthly(d.monthlyPayment, d.paymentFrequency));
+    }
 
     const totalNeed = funds.reduce((s, f) => s + (need.get(f.name) ?? 0), 0);
     const result: { fund: string; monthlyNeed: number; pct: number }[] = [];

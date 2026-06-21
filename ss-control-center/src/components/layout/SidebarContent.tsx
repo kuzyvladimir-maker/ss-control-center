@@ -292,7 +292,7 @@ export default function SidebarContent({
         <div className="leading-tight">
           <div className="text-[13px] font-semibold text-ink">Salutem</div>
           <div className="text-[10px] font-mono uppercase tracking-[0.14em] text-ink-3">
-            Control · v1.4
+            Command Center
           </div>
         </div>
       </div>
@@ -336,23 +336,6 @@ export default function SidebarContent({
             active={isActive("/settings")}
             onNavigate={onNavigate}
           />
-        </div>
-      )}
-
-      {/* Helper card */}
-      {(summary.orders?.awaitingShipment ?? 0) > 0 && (
-        <div className="m-3 rounded-lg border border-rule bg-green-soft px-3 py-2.5 text-green-ink">
-          <div className="text-[11px] font-semibold">Daily plan ready</div>
-          <div className="mt-0.5 text-[11px] text-green-ink/80 tabular">
-            {summary.orders?.awaitingShipment} shipments queued
-          </div>
-          <Link
-            href="/shipping"
-            onClick={onNavigate}
-            className="mt-2 inline-flex text-[11px] font-medium text-green hover:text-green-deep"
-          >
-            Continue →
-          </Link>
         </div>
       )}
     </div>

@@ -33,7 +33,10 @@ export const FREQUENCIES = ["monthly", "weekly", "daily", "yearly", "one_time"] 
 
 export const INSTALLMENT_FREQUENCIES = ["monthly", "biweekly", "weekly", "daily"] as const;
 
-/** Averaged MONTHLY equivalent of a per-period installment payment. */
+/** Averaged MONTHLY equivalent of a per-period installment (loan/tax) payment.
+ *  NOTE: "daily" here uses CALENDAR days (×30.44) on purpose — a loan/tax instalment
+ *  is paid every calendar day, unlike a daily WAGE (monthlyAmount uses ×21.67 work
+ *  days). The two daily bases differ by design; don't "unify" them. */
 export function installmentMonthly(amount: number, frequency: string | null | undefined): number {
   if (!Number.isFinite(amount)) return 0;
   switch (frequency) {

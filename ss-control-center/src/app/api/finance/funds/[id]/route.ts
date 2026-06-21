@@ -44,11 +44,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!exp) return NextResponse.json({ error: "expense not found" }, { status: 404 });
       const amount = Math.abs(Number(b.amount));
       if (!Number.isFinite(amount) || amount === 0) return NextResponse.json({ error: "amount required" }, { status: 400 });
-      const entry = await prisma.fundEntry.create({
-        data: { fundId: id, type: "spend", amount: -round2(amount), description: `${exp.name} (paid)`, status: "applied" },
-      });
-      await prisma.fund.update({ where: { id }, data: { balance: { decrement: round2(amount) } } });
-      await prisma.recurringExpense.update({ where: { id: exp.id }, data: { accrued: Math.max(0, round2((exp.accrued ?? 0) - amount)) } });
+      // Atomic: ledger debit + fund balance + reduce the owed counter all-or-nothing.
+      const [entry] = await prisma.$transaction([
+        prisma.fundEntry.create({ data: { fundId: id, type: "spend", amount: -round2(amount), description: `${exp.name} (paid)`, status: "applied" } }),
+        prisma.fund.update({ where: { id }, data: { balance: { decrement: round2(amount) } } }),
+        prisma.recurringExpense.update({ where: { id: exp.id }, data: { accrued: Math.max(0, round2((exp.accrued ?? 0) - amount)) } }),
+      ]);
       return NextResponse.json({ ok: true, entry });
     }
 
@@ -77,12 +78,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       });
       return NextResponse.json({ ok: true, entry });
     }
-    // spend (debit) or deposit (credit) — applied immediately.
+    // spend (debit) or deposit (credit) — applied immediately, atomically.
     const amount = kind === "deposit" ? round2(mag) : -round2(mag);
-    const entry = await prisma.fundEntry.create({
-      data: { fundId: id, type: kind === "deposit" ? "adjustment" : "spend", amount, description: b.description ?? null, status: "applied" },
-    });
-    await prisma.fund.update({ where: { id }, data: { balance: { increment: amount } } });
+    const [entry] = await prisma.$transaction([
+      prisma.fundEntry.create({ data: { fundId: id, type: kind === "deposit" ? "adjustment" : "spend", amount, description: b.description ?? null, status: "applied" } }),
+      prisma.fund.update({ where: { id }, data: { balance: { increment: amount } } }),
+    ]);
     return NextResponse.json({ ok: true, entry });
   } catch (e) {
     return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e) }, { status: 500 });
