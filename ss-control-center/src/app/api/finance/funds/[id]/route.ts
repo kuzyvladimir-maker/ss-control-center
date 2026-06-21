@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { accrueCategory } from "@/lib/finance/accrual";
 
 function round2(n: number) { return Math.round(n * 100) / 100; }
 
@@ -13,19 +14,21 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params;
   const fund = await prisma.fund.findUnique({ where: { id } });
   if (!fund) return NextResponse.json({ error: "not found" }, { status: 404 });
+
+  // Tick the meter: accrue this fund's expenses up to today before showing it.
+  const today = new Date().toISOString().slice(0, 10);
+  try { await accrueCategory(fund.name, today); } catch { /* accrual must never break the view */ }
+
   const entries = await prisma.fundEntry.findMany({ where: { fundId: id }, orderBy: { createdAt: "desc" } });
-  const planned = entries.filter((e) => e.status === "planned");
-  // Recurring expense PRESETS for this fund = the expense items whose category
-  // matches the fund name. They show inside the fund as payments to make.
-  const presets = await prisma.recurringExpense.findMany({
+  // The fund's expenses (= category) with their accrued (owed) amounts.
+  const expenses = await prisma.recurringExpense.findMany({
     where: { category: fund.name, active: true }, orderBy: { name: "asc" },
   });
-  return NextResponse.json({
-    fund,
-    entries,
-    presets,
-    plannedTotal: round2(planned.reduce((s, e) => s + e.amount, 0)), // negative
-  });
+  const accruedTotal = round2(expenses.reduce((s, e) => s + (e.accrued ?? 0), 0));
+  const plannedTotal = round2(entries.filter((e) => e.status === "planned").reduce((s, e) => s + e.amount, 0));
+  // `presets` kept for backward-compat with the current fund page until the
+  // accrued-to-pay UI replaces it.
+  return NextResponse.json({ fund, entries, expenses, presets: expenses, accruedTotal, plannedTotal });
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -34,6 +37,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!fund) return NextResponse.json({ error: "not found" }, { status: 404 });
   try {
     const b = await req.json();
+
+    // Pay (part of) an expense's accrued meter → debit the fund, reduce accrued.
+    if (b.kind === "pay_expense") {
+      const exp = await prisma.recurringExpense.findUnique({ where: { id: b.expenseId } });
+      if (!exp) return NextResponse.json({ error: "expense not found" }, { status: 404 });
+      const amount = Math.abs(Number(b.amount));
+      if (!Number.isFinite(amount) || amount === 0) return NextResponse.json({ error: "amount required" }, { status: 400 });
+      const entry = await prisma.fundEntry.create({
+        data: { fundId: id, type: "spend", amount: -round2(amount), description: `${exp.name} (paid)`, status: "applied" },
+      });
+      await prisma.fund.update({ where: { id }, data: { balance: { decrement: round2(amount) } } });
+      await prisma.recurringExpense.update({ where: { id: exp.id }, data: { accrued: Math.max(0, round2((exp.accrued ?? 0) - amount)) } });
+      return NextResponse.json({ ok: true, entry });
+    }
 
     // Generate unpaid bills from this fund's expense-item presets (per period).
     if (b.kind === "generate_bills") {

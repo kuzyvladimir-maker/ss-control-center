@@ -14,7 +14,11 @@
 
 import { prisma } from "@/lib/prisma";
 
-export const DEFAULT_MANUAL_PCT = 0.55; // sane starting reserve until tuned
+// Working-capital / restock reserve — the share of each payout returned to the
+// operating cycle (COGS + shipping + packaging) before distributing to funds.
+// 58% ≈ derived from the pricing formula (price = landed × (1+markup)/0.85) at a
+// realistic ~55% markup, plus a small buffer. Refine from real COGS later.
+export const DEFAULT_MANUAL_PCT = 0.58;
 export const DEFAULT_WINDOW_WEEKS = 4;
 
 const K = {

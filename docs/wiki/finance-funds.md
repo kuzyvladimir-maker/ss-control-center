@@ -76,6 +76,18 @@ adjustments, tax (wash), reserve (timing) → net.
   empty rows → 0 (known gap, see API reference).
 - Tests: `scripts/check-finance-settlement.ts` (all pass).
 
+## Accrual meter (IN PROGRESS — not yet deployed, 2026-06-20)
+
+Per Vladimir: expenses must "tick" daily on their own (a meter), so when you open
+a fund any day the accrued (owed) amount is already there, never double-counted.
+Built so far: `RecurringExpense.accrued` + `lastAccruedDate` (cursor) columns;
+`src/lib/finance/accrual.ts` (calendar-day accrual for non-salary, worked-day for
+salary; `accrueCategory`); fund GET ticks the meter on open; fund POST `pay_expense`
+debits the fund and reduces `accrued`. Math tested (`scripts/check-finance-accrual.ts`).
+TODO before deploy: fund-detail UI (replace presets/bills with an "accrued to pay"
+table), invert the timesheet (default weekdays worked → mark absences; show
+accrued/paid), daily accrual cron, and clear old planned-bill/TimeLog test data.
+
 ## Next (later phases)
 F9 forecast (income vs plan, behind-plan alerts → Amazon/Walmart Grow); F4/F3 full
 fee+returns capture → entity P&L; F2 fix the empty `/economics`; F10 QuickBooks cash

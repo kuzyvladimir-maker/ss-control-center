@@ -3415,6 +3415,12 @@ model RecurringExpense {
   active      Boolean  @default(true)
   source      String   @default("sellerboard") // sellerboard | manual
   notes       String?
+  // Accrual meter: the expense "ticks" every day. `accrued` = currently-owed
+  // (not yet paid) amount; `lastAccruedDate` = the date it was last accrued up to
+  // (cursor, prevents double-counting). Salary accrues per worked day, others per
+  // calendar day. Paying it debits the fund and reduces `accrued`.
+  accrued         Float   @default(0)
+  lastAccruedDate String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
