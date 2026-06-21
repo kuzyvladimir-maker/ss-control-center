@@ -150,6 +150,14 @@ export default function FinancialPlanPage() {
   // Tax need = tax rate × the pending PAYOUT (net) being distributed.
   const taxNeed = Math.round(((config?.taxRatePct ?? 1.5) / 100) * pendingNet * 100) / 100;
 
+  // Live distribution math (recomputes as you type a fund's %): each percent fund's
+  // amount = its current % × distributable; the total % must not exceed 100.
+  const distPool = run?.distribution.distributable ?? 0;
+  const curPct = (fundId: string) => { const f = funds.find((x) => x.id === fundId); return Number(pctEdit[fundId] ?? (f?.value ?? 0)) || 0; };
+  const allocPctFunds = (run?.distribution.allocations ?? []).filter((a) => { const f = funds.find((x) => x.id === a.fundId); return !!f && f.group !== "RESERVE" && f.group !== "FREE" && f.allocationType === "percent"; });
+  const totalAllocPct = Math.round(allocPctFunds.reduce((s, a) => s + curPct(a.fundId), 0) * 10) / 10;
+  const overAllocated = totalAllocPct > 100.05;
+
   const latestByAccount = new Map<string, Payout>();
   for (const p of [...payouts].sort((a, b) => (a.periodEnd ?? "").localeCompare(b.periodEnd ?? ""))) latestByAccount.set(`${p.marketplace}:${p.entity ?? ""}`, p);
 
@@ -288,40 +296,49 @@ export default function FinancialPlanPage() {
                 </div>
                 <Button onClick={autoAllocate} disabled={busy != null} variant="outline">{busy === "auto" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Wand2 className="mr-1 h-4 w-4" />}Auto-set % from needs</Button>
                 <Button onClick={() => doRun(true)} disabled={busy != null} variant="outline">{busy === "preview" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Play className="mr-1 h-4 w-4" />}Preview</Button>
-                <Button onClick={() => doRun(false)} disabled={busy != null || !run || run.preview === false}>{busy === "commit" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-1 h-4 w-4" />}Commit</Button>
+                <Button onClick={() => doRun(false)} disabled={busy != null || !run || run.preview === false || overAllocated} title={overAllocated ? "Funds exceed 100% — reduce a % first" : undefined}>{busy === "commit" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-1 h-4 w-4" />}Commit</Button>
               </div>
               {run && (
                 <div className="rounded-md border p-3 text-sm">
                   <div className="mb-2 flex flex-wrap gap-4 text-muted-foreground">
                     <span>In: <b className="text-foreground">{usd(run.distribution.totalIn)}</b></span>
                     <span>Reserve ({Math.round(run.distribution.reserveRate * 100)}%): <b className="text-foreground">{usd(run.distribution.reserve)}</b></span>
-                    <span>Distributable: <b className="text-foreground">{usd(run.distribution.distributable)}</b></span>
-                    <span>Free: <b className="text-foreground">{usd(run.distribution.free)}</b></span>
+                    <span>Distributable: <b className="text-foreground">{usd(distPool)}</b></span>
+                    <span>Allocated: <b className={cn(overAllocated ? "text-destructive" : "text-foreground")}>{totalAllocPct}%</b></span>
+                    <span>Free: <b className={cn((distPool * (1 - totalAllocPct / 100)) < -0.005 ? "text-destructive" : "text-foreground")}>{usd(distPool * (1 - totalAllocPct / 100))}</b></span>
                     <span>{run.preview ? "PREVIEW — not committed" : "COMMITTED"}</span>
                   </div>
+                  {overAllocated && <p className="mb-1 rounded bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">Funds add up to {totalAllocPct}% — over 100% of the distributable. Reduce a fund&apos;s % before committing.</p>}
                   <p className="mb-1 text-xs text-muted-foreground">Needed = how much each fund is owed right now — a daily-ticking debt that carries forward until you mark items Paid on the fund page. Taxes = {config?.taxRatePct ?? 1.5}% of this payout; the Expansion fund has no target.</p>
                   <table className="w-full">
-                    <thead className="text-left text-xs uppercase text-muted-foreground"><tr><th className="py-1">Group</th><th>Fund</th><th className="text-right" title="Suggested: what this fund needs to cover its costs for the period since the last plan">Needed %</th><th className="text-right">Needed $</th><th className="text-right">My %</th><th className="text-right">Amount</th></tr></thead>
+                    <thead className="text-left text-xs uppercase text-muted-foreground"><tr><th className="py-1">Group</th><th>Fund</th><th className="text-right">Balance</th><th className="text-right" title="Suggested: what this fund needs to cover its costs for the period since the last plan">Needed %</th><th className="text-right">Needed $</th><th className="text-right">My %</th><th className="text-right">Amount</th></tr></thead>
                     <tbody>{run.distribution.allocations.map((a) => {
                       const f = funds.find((x) => x.id === a.fundId);
                       const editable = !!f && f.group !== "RESERVE" && f.group !== "FREE" && f.allocationType === "percent";
-                      const dist = run.distribution.distributable || 0;
                       const need = a.name === "Taxes" ? taxNeed : (needs[a.name] ?? 0);
-                      const needPct = dist > 0 && need > 0 ? (need / dist) * 100 : 0;
+                      const needPct = distPool > 0 && need > 0 ? (need / distPool) * 100 : 0;
+                      // Amount recomputes live from the entered % (no need to re-Preview).
+                      const liveAmount = a.group === "RESERVE" ? run.distribution.reserve
+                        : a.group === "FREE" ? distPool * (1 - totalAllocPct / 100)
+                        : editable ? distPool * (curPct(a.fundId) / 100)
+                        : a.amount;
                       return (
                         <tr key={a.fundId} className="border-t">
                           <td className="py-1 text-muted-foreground">{a.group}</td>
-                          <td>{a.name}</td>
+                          <td><Link href={`/finance/funds/${a.fundId}`} className="text-primary hover:underline">{a.name}</Link></td>
+                          <td className={cn("text-right tabular-nums", (f?.balance ?? 0) < 0 ? "text-destructive" : "text-muted-foreground")}>{usd(f?.balance ?? 0)}</td>
                           <td className="text-right tabular-nums text-emerald-700">{need > 0 ? `${needPct.toFixed(1)}%` : "—"}</td>
                           <td className="text-right tabular-nums text-emerald-700">{need > 0 ? usd(need) : "—"}</td>
                           <td className="text-right tabular-nums text-muted-foreground">
                             {a.group === "RESERVE"
                               ? `${Math.round((run.distribution.reserve / (run.distribution.totalIn || 1)) * 100)}%`
-                              : editable
-                                ? (<span className="inline-flex items-center justify-end gap-0.5"><input type="number" value={pctEdit[a.fundId] ?? String(f!.value)} disabled={busy != null} onChange={(e) => setPctEdit({ ...pctEdit, [a.fundId]: e.target.value })} onBlur={(e) => { const v = Number(e.target.value); if (Number.isFinite(v) && v !== f!.value) setFundPct(a.fundId, v); }} className="w-14 rounded border bg-background px-1 py-0.5 text-right" />%</span>)
-                                : dist > 0 ? `${((a.amount / dist) * 100).toFixed(1)}%` : "—"}
+                              : a.group === "FREE"
+                                ? `${(100 - totalAllocPct).toFixed(1)}%`
+                                : editable
+                                  ? (<span className="inline-flex items-center justify-end gap-0.5"><input type="number" value={pctEdit[a.fundId] ?? String(f!.value)} disabled={busy != null} onChange={(e) => setPctEdit({ ...pctEdit, [a.fundId]: e.target.value })} onBlur={(e) => { const v = Number(e.target.value); if (Number.isFinite(v) && v !== f!.value) setFundPct(a.fundId, v); }} className="w-14 rounded border bg-background px-1 py-0.5 text-right" />%</span>)
+                                  : distPool > 0 ? `${((a.amount / distPool) * 100).toFixed(1)}%` : "—"}
                           </td>
-                          <td className="text-right font-medium">{usd(a.amount)}</td>
+                          <td className={cn("text-right font-medium", liveAmount < -0.005 && "text-destructive")}>{usd(liveAmount)}</td>
                         </tr>
                       );
                     })}</tbody>
