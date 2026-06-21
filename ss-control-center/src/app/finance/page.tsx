@@ -1,11 +1,12 @@
 "use client";
 
 /**
- * Financial Plan (FP) — staged flow:
- *   1. MONEY IN   — what each marketplace account paid out, for which period, decomposed (Net Proceeds).
- *   2. FUNDS      — accumulated balance per fund (deficit / surplus).
- *   3. DISTRIBUTE — waterfall the pending payout into funds (reserve restock → FP1 → FP2 → free), then Commit.
- * Inside a fund (click it): income/spending history + plan-fact of payments (mark Paid → debits the fund).
+ * Financial Plan (FP) — two tabs:
+ *   • Income — money in (payout + Net Proceeds breakdown) AND distribution of the
+ *     new payout into funds (reserve restock → waterfall → commit).
+ *   • Funds  — every fund with its balance + a 30-day mini balance chart, plus the
+ *     grand total across all funds. Click a fund for its ledger / bills.
+ * Cash basis, one global pool.
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -20,14 +21,16 @@ import { ReceiptScanner } from "@/components/finance/ReceiptScanner";
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-interface Fund { id: string; name: string; group: string; allocationType: string; value: number; priority: number; cap: number | null; balance: number; active: boolean; isSystem: boolean }
+interface Fund { id: string; name: string; group: string; allocationType: string; value: number; priority: number; balance: number; active: boolean; series: number[] }
 interface PayoutLine { bucket: string; amount: number; count: number }
 interface Payout { id: string; marketplace: string; entity: string | null; periodStart: string | null; periodEnd: string | null; depositDate: string | null; netAmount: number; distributed: boolean; lines: PayoutLine[] }
 interface AllocationLine { fundId: string; name: string; group: string; amount: number }
 interface RunResult { preview: boolean; distribution: { totalIn: number; reserve: number; reserveRate: number; distributable: number; allocations: AllocationLine[]; free: number }; reserveFellBack: boolean; payoutCount: number }
 
 export default function FinancialPlanPage() {
+  const [tab, setTab] = useState<"income" | "funds">("income");
   const [funds, setFunds] = useState<Fund[]>([]);
+  const [fundsTotal, setFundsTotal] = useState(0);
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [config, setConfig] = useState<{ method: string; manualPct: number; windowWeeks: number } | null>(null);
   const [run, setRun] = useState<RunResult | null>(null);
@@ -41,12 +44,13 @@ export default function FinancialPlanPage() {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const [f, p, c] = await Promise.all([
-        fetch("/api/finance/funds").then((r) => r.json()),
+      const [h, p, c] = await Promise.all([
+        fetch("/api/finance/funds/history?days=30").then((r) => r.json()),
         fetch("/api/finance/payouts").then((r) => r.json()),
         fetch("/api/finance/config").then((r) => r.json()),
       ]);
-      setFunds(f.funds ?? []); setPayouts(p.payouts ?? []); setConfig(c);
+      setFunds(h.funds ?? []); setFundsTotal(h.total ?? 0);
+      setPayouts(p.payouts ?? []); setConfig(c);
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -75,16 +79,6 @@ export default function FinancialPlanPage() {
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
   }
 
-  async function doRun(preview: boolean) {
-    setBusy(preview ? "preview" : "commit"); setError(null); setNote(null);
-    try {
-      const r = await fetch("/api/finance/run", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ preview }) }).then((x) => x.json());
-      if (!r.ok) throw new Error(r.error ?? "run failed");
-      setRun(r);
-      if (!preview) { setNote("Distribution committed — funds updated."); await load(); }
-    } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
-  }
-
   async function autoAllocate() {
     setBusy("auto"); setError(null); setNote(null);
     try {
@@ -93,6 +87,16 @@ export default function FinancialPlanPage() {
       const parts = (r.allocations ?? []).filter((a: { pct: number }) => a.pct > 0).map((a: { fund: string; pct: number }) => `${a.fund} ${a.pct}%`).join(", ");
       setNote(`Fund % set from monthly needs (total $${r.totalMonthlyNeed}/mo): ${parts}`);
       await load();
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
+  }
+
+  async function doRun(preview: boolean) {
+    setBusy(preview ? "preview" : "commit"); setError(null); setNote(null);
+    try {
+      const r = await fetch("/api/finance/run", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ preview }) }).then((x) => x.json());
+      if (!r.ok) throw new Error(r.error ?? "run failed");
+      setRun(r);
+      if (!preview) { setNote("Distribution committed — funds updated."); await load(); }
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
   }
 
@@ -121,7 +125,7 @@ export default function FinancialPlanPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Financial Plan</h1>
-          <p className="text-sm text-muted-foreground">1) Money in → 2) Funds (accumulated) → 3) Distribute the new payout into funds. Cash basis, one global pool.</p>
+          <p className="text-sm text-muted-foreground">Cash basis, one global pool. Money in → distribute into funds → pay bills from funds.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={getReport} disabled={busy != null}>{busy === "report" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <FileText className="mr-1 h-4 w-4" />}Get Report</Button>
@@ -132,6 +136,13 @@ export default function FinancialPlanPage() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 border-b">
+        {([["income", "Income & distribution"], ["funds", "Funds"]] as const).map(([k, label]) => (
+          <button key={k} onClick={() => setTab(k)} className={cn("border-b-2 px-4 py-2 text-sm font-medium", tab === k ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>{label}</button>
+        ))}
+      </div>
+
       {error && <Card className="border-destructive"><CardContent className="flex items-center gap-2 py-3 text-destructive"><AlertCircle className="h-4 w-4" />{error}</CardContent></Card>}
       {note && (
         <Card className="border-emerald-500"><CardContent className="py-3 text-sm">
@@ -140,159 +151,164 @@ export default function FinancialPlanPage() {
         </CardContent></Card>
       )}
 
-      {/* ─── STAGE 1: MONEY IN ─────────────────────────────────────────── */}
-      <SectionLabel n={1} title="Money in" />
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Kpi label="To distribute" value={usd(pendingNet)} accent={pendingNet >= 0 ? "pos" : "neg"} />
-        <Kpi label="Payouts waiting" value={String(payouts.filter((p) => !p.distributed).length)} />
-        <Kpi label="Periods pulled" value={String(payouts.length)} />
-        <Kpi label="Reserve %" value={config ? `${Math.round(config.manualPct * 100)}%` : "—"} />
-      </div>
+      {tab === "income" && (
+        <>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <Kpi label="To distribute" value={usd(pendingNet)} accent={pendingNet >= 0 ? "pos" : "neg"} />
+            <Kpi label="Payouts waiting" value={String(payouts.filter((p) => !p.distributed).length)} />
+            <Kpi label="Periods pulled" value={String(payouts.length)} />
+            <Kpi label="Reserve %" value={config ? `${Math.round(config.manualPct * 100)}%` : "—"} />
+          </div>
 
-      <Card>
-        <CardHeader><CardTitle className="text-base">Latest payout per account</CardTitle></CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[...latestByAccount.values()].map((p) => (
-              <div key={p.id} className="rounded-md border p-3">
-                <div className="flex items-center justify-between text-xs text-muted-foreground"><span className="capitalize">{p.marketplace}</span><span>{p.distributed ? "distributed" : "to distribute"}</span></div>
-                <div className="truncate text-sm font-medium">{p.entity ?? "—"}</div>
-                <div className="text-xs text-muted-foreground">{p.periodStart ?? "—"} → {p.periodEnd ?? p.depositDate ?? "—"}</div>
-                <div className="text-lg font-semibold">{usd(p.netAmount)}</div>
+          <Card>
+            <CardHeader><CardTitle className="text-base">Latest payout per account</CardTitle></CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {[...latestByAccount.values()].map((p) => (
+                  <div key={p.id} className="rounded-md border p-3">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground"><span className="capitalize">{p.marketplace}</span><span>{p.distributed ? "distributed" : "to distribute"}</span></div>
+                    <div className="truncate text-sm font-medium">{p.entity ?? "—"}</div>
+                    <div className="text-xs text-muted-foreground">{p.periodStart ?? "—"} → {p.periodEnd ?? p.depositDate ?? "—"}</div>
+                    <div className="text-lg font-semibold">{usd(p.netAmount)}</div>
+                  </div>
+                ))}
+                {latestByAccount.size === 0 && <p className="text-sm text-muted-foreground">No payouts yet. Click <b>Get Report</b>.</p>}
               </div>
-            ))}
-            {latestByAccount.size === 0 && <p className="text-sm text-muted-foreground">No payouts yet. Click <b>Get Report</b>.</p>}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Net Proceeds — what the marketplace paid (breakdown)</CardTitle>
+                <div className="flex rounded-md border text-xs">
+                  {(["pending", "all"] as const).map((s) => (<button key={s} onClick={() => setScope(s)} className={cn("px-3 py-1", scope === s ? "bg-primary text-primary-foreground" : "text-muted-foreground")}>{s === "pending" ? "To distribute" : "All history"}</button>))}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {statementRows.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{scope === "pending" ? "Nothing waiting — all pulled periods are distributed." : "No payouts yet."} Click <b>Get Report</b>.</p>
+              ) : (
+                <div className="space-y-4">
+                  <StatementGroup title="Income" rows={income} maxAbs={maxAbs} tone="pos" />
+                  <StatementGroup title="Costs" rows={costs} maxAbs={maxAbs} tone="neg" />
+                  {neutral.length > 0 && <StatementGroup title="Pass-through / timing" rows={neutral} maxAbs={maxAbs} tone="muted" />}
+                  <div className="flex items-center justify-between border-t pt-3 text-base font-semibold"><span>Net proceeds</span><span className={netProceeds >= 0 ? "text-emerald-600" : "text-destructive"}>{usd(netProceeds)}</span></div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">Pulled periods ({payouts.length})</CardTitle></CardHeader>
+            <CardContent className="overflow-x-auto p-0">
+              <table className="w-full text-sm">
+                <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Channel</th><th className="px-3 py-2">Account</th><th className="px-3 py-2">Period</th><th className="px-3 py-2 text-right">Net payout</th><th className="px-3 py-2 text-right">Sales</th><th className="px-3 py-2 text-right">Payout % of sales</th><th className="px-3 py-2 text-right">Fees</th><th className="px-3 py-2">Status</th></tr></thead>
+                <tbody>
+                  {payouts.map((p) => {
+                    const sales = p.lines.filter((l) => ["sales", "shipping_income"].includes(l.bucket)).reduce((s, l) => s + l.amount, 0);
+                    const fees = p.lines.filter((l) => BUCKET_META[l.bucket as Bucket]?.nature === "cost").reduce((s, l) => s + l.amount, 0);
+                    const pctOfSales = sales > 0 ? (p.netAmount / sales) * 100 : null;
+                    return (
+                      <tr key={p.id} className="border-b last:border-0 hover:bg-muted/40">
+                        <td className="px-3 py-2 capitalize">{p.marketplace}</td>
+                        <td className="px-3 py-2 text-muted-foreground">{p.entity ?? "—"}</td>
+                        <td className="px-3 py-2 text-muted-foreground">{p.periodStart ?? "—"} → {p.periodEnd ?? p.depositDate ?? "—"}</td>
+                        <td className="px-3 py-2 text-right font-medium">{usd(p.netAmount)}</td>
+                        <td className="px-3 py-2 text-right text-emerald-600">{usd(sales)}</td>
+                        <td className={cn("px-3 py-2 text-right tabular-nums", pctOfSales != null && pctOfSales < 50 ? "text-destructive" : "text-muted-foreground")}>{pctOfSales != null ? `${pctOfSales.toFixed(1)}%` : "—"}</td>
+                        <td className="px-3 py-2 text-right text-destructive">{usd(fees)}</td>
+                        <td className="px-3 py-2">{p.distributed ? <span className="text-xs text-muted-foreground">distributed</span> : <span className="text-xs text-amber-600">to distribute</span>}</td>
+                      </tr>
+                    );
+                  })}
+                  {payouts.length === 0 && <tr><td colSpan={8} className="px-3 py-8 text-center text-muted-foreground">No periods pulled yet.</td></tr>}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+
+          {/* Distribution — same tab as income */}
+          <Card>
+            <CardHeader><CardTitle className="text-base">Distribute the new payout into funds</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap items-end gap-3">
+                <div>
+                  <label className="block text-xs text-muted-foreground">Reserve % (restock: COGS+shipping+packaging)</label>
+                  <div className="flex items-center gap-1"><Input type="number" min={0} max={100} className="w-24" value={config ? Math.round(config.manualPct * 100) : 0} onChange={(e) => saveConfig({ manualPct: (Number(e.target.value) || 0) / 100 })} /><span className="text-sm text-muted-foreground">%</span></div>
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground">Add payout manually ($)</label>
+                  <div className="flex items-center gap-1"><Input type="number" className="w-28" value={manualAmt} onChange={(e) => setManualAmt(e.target.value)} placeholder="0.00" /><Button onClick={addManualPayout} disabled={busy != null} variant="outline" size="sm">{busy === "manual" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}</Button></div>
+                </div>
+                <Button onClick={autoAllocate} disabled={busy != null} variant="outline">{busy === "auto" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Wand2 className="mr-1 h-4 w-4" />}Auto-set % from needs</Button>
+                <Button onClick={() => doRun(true)} disabled={busy != null} variant="outline">{busy === "preview" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Play className="mr-1 h-4 w-4" />}Preview</Button>
+                <Button onClick={() => doRun(false)} disabled={busy != null || !run || run.preview === false}>{busy === "commit" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-1 h-4 w-4" />}Commit</Button>
+              </div>
+              {run && (
+                <div className="rounded-md border p-3 text-sm">
+                  <div className="mb-2 flex flex-wrap gap-4 text-muted-foreground">
+                    <span>In: <b className="text-foreground">{usd(run.distribution.totalIn)}</b></span>
+                    <span>Reserve ({Math.round(run.distribution.reserveRate * 100)}%): <b className="text-foreground">{usd(run.distribution.reserve)}</b></span>
+                    <span>Distributable: <b className="text-foreground">{usd(run.distribution.distributable)}</b></span>
+                    <span>Free: <b className="text-foreground">{usd(run.distribution.free)}</b></span>
+                    <span>{run.preview ? "PREVIEW — not committed" : "COMMITTED"}</span>
+                  </div>
+                  <table className="w-full">
+                    <thead className="text-left text-xs uppercase text-muted-foreground"><tr><th className="py-1">Fund</th><th>Group</th><th className="text-right">Amount</th></tr></thead>
+                    <tbody>{run.distribution.allocations.map((a) => (<tr key={a.fundId} className="border-t"><td className="py-1">{a.name}</td><td className="text-muted-foreground">{a.group}</td><td className="text-right font-medium">{usd(a.amount)}</td></tr>))}</tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {tab === "funds" && (
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Card className="border-primary"><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">All funds total</div><div className={cn("text-3xl font-semibold", fundsTotal < 0 ? "text-destructive" : "text-emerald-600")}>{usd(fundsTotal)}</div></CardContent></Card>
+            <Card className="sm:col-span-2"><CardContent className="py-3">
+              <ReceiptScanner funds={funds.map((f) => ({ id: f.id, name: f.name }))} defaultFundId={funds.find((f) => f.group === "RESERVE")?.id ?? funds[0]?.id} onSaved={load} />
+              <p className="mt-2 text-xs text-muted-foreground">Scan a purchase → debit a fund. Resale buys → Restock reserve; other buys → pick the fund.</p>
+            </CardContent></Card>
           </div>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Net Proceeds — what the marketplace paid (breakdown)</CardTitle>
-            <div className="flex rounded-md border text-xs">
-              {(["pending", "all"] as const).map((s) => (<button key={s} onClick={() => setScope(s)} className={cn("px-3 py-1", scope === s ? "bg-primary text-primary-foreground" : "text-muted-foreground")}>{s === "pending" ? "To distribute" : "All history"}</button>))}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {statementRows.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{scope === "pending" ? "Nothing waiting — all pulled periods are distributed." : "No payouts yet."} Click <b>Get Report</b>.</p>
-          ) : (
-            <div className="space-y-4">
-              <StatementGroup title="Income" rows={income} maxAbs={maxAbs} tone="pos" />
-              <StatementGroup title="Costs" rows={costs} maxAbs={maxAbs} tone="neg" />
-              {neutral.length > 0 && <StatementGroup title="Pass-through / timing" rows={neutral} maxAbs={maxAbs} tone="muted" />}
-              <div className="flex items-center justify-between border-t pt-3 text-base font-semibold"><span>Net proceeds</span><span className={netProceeds >= 0 ? "text-emerald-600" : "text-destructive"}>{usd(netProceeds)}</span></div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle className="text-base">Pulled periods ({payouts.length})</CardTitle></CardHeader>
-        <CardContent className="overflow-x-auto p-0">
-          <table className="w-full text-sm">
-            <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Channel</th><th className="px-3 py-2">Account</th><th className="px-3 py-2">Period</th><th className="px-3 py-2 text-right">Net payout</th><th className="px-3 py-2 text-right">Sales</th><th className="px-3 py-2 text-right">Payout % of sales</th><th className="px-3 py-2 text-right">Fees</th><th className="px-3 py-2">Status</th></tr></thead>
-            <tbody>
-              {payouts.map((p) => {
-                const sales = p.lines.filter((l) => ["sales", "shipping_income"].includes(l.bucket)).reduce((s, l) => s + l.amount, 0);
-                const fees = p.lines.filter((l) => BUCKET_META[l.bucket as Bucket]?.nature === "cost").reduce((s, l) => s + l.amount, 0);
-                const pctOfSales = sales > 0 ? (p.netAmount / sales) * 100 : null;
-                return (
-                  <tr key={p.id} className="border-b last:border-0 hover:bg-muted/40">
-                    <td className="px-3 py-2 capitalize">{p.marketplace}</td>
-                    <td className="px-3 py-2 text-muted-foreground">{p.entity ?? "—"}</td>
-                    <td className="px-3 py-2 text-muted-foreground">{p.periodStart ?? "—"} → {p.periodEnd ?? p.depositDate ?? "—"}</td>
-                    <td className="px-3 py-2 text-right font-medium">{usd(p.netAmount)}</td>
-                    <td className="px-3 py-2 text-right text-emerald-600">{usd(sales)}</td>
-                    <td className={cn("px-3 py-2 text-right tabular-nums", pctOfSales != null && pctOfSales < 50 ? "text-destructive" : "text-muted-foreground")}>{pctOfSales != null ? `${pctOfSales.toFixed(1)}%` : "—"}</td>
-                    <td className="px-3 py-2 text-right text-destructive">{usd(fees)}</td>
-                    <td className="px-3 py-2">{p.distributed ? <span className="text-xs text-muted-foreground">distributed</span> : <span className="text-xs text-amber-600">to distribute</span>}</td>
-                  </tr>
-                );
-              })}
-              {payouts.length === 0 && <tr><td colSpan={8} className="px-3 py-8 text-center text-muted-foreground">No periods pulled yet.</td></tr>}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
-
-      {/* Scan a purchase receipt → debit a fund (resale buys → Restock reserve) */}
-      <Card>
-        <CardHeader><CardTitle className="text-base">Record a purchase (scan receipt)</CardTitle></CardHeader>
-        <CardContent>
-          <ReceiptScanner
-            funds={funds.map((f) => ({ id: f.id, name: f.name }))}
-            defaultFundId={funds.find((f) => f.group === "RESERVE")?.id ?? funds[0]?.id}
-            onSaved={load}
-          />
-          <p className="mt-2 text-xs text-muted-foreground">Resale buys (Walmart / BJ&apos;s / Sam&apos;s / Target / Costco / Instacart) → Restock reserve. Other business buys → pick the fund.</p>
-        </CardContent>
-      </Card>
-
-      {/* ─── STAGE 2: FUNDS (accumulated) ──────────────────────────────── */}
-      <SectionLabel n={2} title="Funds — accumulated" hint="Click a fund to see its income/spending and plan payments." />
-      <Card>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {funds.sort((a, b) => a.priority - b.priority).map((f) => (
-              <Link key={f.id} href={`/finance/funds/${f.id}`} className={cn("rounded-md border p-3 transition hover:border-primary hover:bg-muted/40", !f.active && "opacity-50")}>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {funds.map((f) => (
+              <Link key={f.id} href={`/finance/funds/${f.id}`} className={cn("rounded-lg border p-4 transition hover:border-primary hover:bg-muted/40", !f.active && "opacity-50")}>
                 <div className="flex items-center justify-between"><span className="text-xs uppercase text-muted-foreground">{f.group}</span><span className="text-[10px] text-muted-foreground">{f.allocationType === "percent" ? `${f.value}%` : usd(f.value)}</span></div>
                 <div className="truncate text-sm font-medium">{f.name}</div>
-                <div className={cn("text-lg font-semibold", f.balance < 0 && "text-destructive")}>{usd(f.balance)}</div>
+                <div className={cn("text-2xl font-semibold", f.balance < 0 && "text-destructive")}>{usd(f.balance)}</div>
+                <Sparkline data={f.series} />
+                <div className="text-[10px] text-muted-foreground">last 30 days</div>
               </Link>
             ))}
             {funds.length === 0 && <p className="text-sm text-muted-foreground">No funds yet — add some on Manage funds.</p>}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* ─── STAGE 3: DISTRIBUTE ───────────────────────────────────────── */}
-      <SectionLabel n={3} title="Distribute the new payout into funds" hint="Reserve restock first, then waterfall by priority into FP1 → FP2 → free. Commit to settle onto funds." />
-      <Card>
-        <CardContent className="space-y-4 pt-6">
-          <div className="flex flex-wrap items-end gap-3">
-            <div>
-              <label className="block text-xs text-muted-foreground">Reserve % (restock: COGS+shipping+packaging)</label>
-              <div className="flex items-center gap-1"><Input type="number" min={0} max={100} className="w-24" value={config ? Math.round(config.manualPct * 100) : 0} onChange={(e) => saveConfig({ manualPct: (Number(e.target.value) || 0) / 100 })} /><span className="text-sm text-muted-foreground">%</span></div>
-            </div>
-            <div>
-              <label className="block text-xs text-muted-foreground">Add payout manually ($)</label>
-              <div className="flex items-center gap-1"><Input type="number" className="w-28" value={manualAmt} onChange={(e) => setManualAmt(e.target.value)} placeholder="0.00" /><Button onClick={addManualPayout} disabled={busy != null} variant="outline" size="sm">{busy === "manual" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}</Button></div>
-            </div>
-            <Button onClick={autoAllocate} disabled={busy != null} variant="outline">{busy === "auto" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Wand2 className="mr-1 h-4 w-4" />}Auto-set % from needs</Button>
-            <Button onClick={() => doRun(true)} disabled={busy != null} variant="outline">{busy === "preview" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Play className="mr-1 h-4 w-4" />}Preview</Button>
-            <Button onClick={() => doRun(false)} disabled={busy != null || !run || run.preview === false}>{busy === "commit" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-1 h-4 w-4" />}Commit</Button>
-          </div>
-          {run && (
-            <div className="rounded-md border p-3 text-sm">
-              <div className="mb-2 flex flex-wrap gap-4 text-muted-foreground">
-                <span>In: <b className="text-foreground">{usd(run.distribution.totalIn)}</b></span>
-                <span>Reserve ({Math.round(run.distribution.reserveRate * 100)}%): <b className="text-foreground">{usd(run.distribution.reserve)}</b></span>
-                <span>Distributable: <b className="text-foreground">{usd(run.distribution.distributable)}</b></span>
-                <span>Free: <b className="text-foreground">{usd(run.distribution.free)}</b></span>
-                <span>{run.preview ? "PREVIEW — not committed" : "COMMITTED"}</span>
-              </div>
-              <table className="w-full">
-                <thead className="text-left text-xs uppercase text-muted-foreground"><tr><th className="py-1">Fund</th><th>Group</th><th className="text-right">Amount</th></tr></thead>
-                <tbody>{run.distribution.allocations.map((a) => (<tr key={a.fundId} className="border-t"><td className="py-1">{a.name}</td><td className="text-muted-foreground">{a.group}</td><td className="text-right font-medium">{usd(a.amount)}</td></tr>))}</tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        </>
+      )}
     </div>
   );
 }
 
-function SectionLabel({ n, title, hint }: { n: number; title: string; hint?: string }) {
+function Sparkline({ data }: { data: number[] }) {
+  if (!data || data.length < 2) return <div className="h-9" />;
+  const w = 180, h = 36, pad = 3;
+  const min = Math.min(...data), max = Math.max(...data);
+  const range = max - min || 1;
+  const pts = data.map((v, i) => {
+    const x = pad + (i / (data.length - 1)) * (w - 2 * pad);
+    const y = h - pad - ((v - min) / range) * (h - 2 * pad);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+  const up = data[data.length - 1] >= data[0];
   return (
-    <div className="flex items-baseline gap-2 pt-2">
-      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">{n}</span>
-      <h2 className="text-lg font-semibold">{title}</h2>
-      {hint && <span className="text-xs text-muted-foreground">— {hint}</span>}
-    </div>
+    <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="my-1 block">
+      <polyline points={pts} fill="none" stroke={up ? "#10b981" : "#f43f5e"} strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
+    </svg>
   );
 }
 
