@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   // Auto-ingest (Walmart recon + Amazon settlement).
   if (req.nextUrl.searchParams.get("ingest") === "1") {
-    const daysBack = Number(req.nextUrl.searchParams.get("daysBack") ?? "90") || 90;
+    const daysBack = Number(req.nextUrl.searchParams.get("daysBack") ?? "35") || 35;
     try {
       const results = await ingestAllPayouts(daysBack);
       return NextResponse.json({ ok: true, results });

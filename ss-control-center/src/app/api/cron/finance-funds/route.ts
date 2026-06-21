@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   const authFail = requireCronAuth(request);
   if (authFail) return authFail;
   try {
-    const ingest = await ingestAllPayouts(90);
+    const ingest = await ingestAllPayouts(35);
     const run = await runDistribution({ preview: false, source: "cron" });
     return NextResponse.json({ ok: true, ingest, run });
   } catch (e) {

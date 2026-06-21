@@ -105,12 +105,13 @@ async function upsertPayoutWithLines(opts: {
 }
 
 /** Amazon: pull only the latest NEW closed settlement period(s) per account. */
-export async function ingestAmazonPayouts(daysBack = 88): Promise<IngestResult> {
+export async function ingestAmazonPayouts(daysBack = 35): Promise<IngestResult> {
   const res: IngestResult = { marketplace: "amazon", created: 0, updated: 0, periods: [], errors: [] };
   const stores = await resolveAmazonStores();
-  // Amazon's Reports API rejects createdSince older than 90 days ("RequestedFromDate
-  // is more than 90 days old"). Cap below that regardless of the caller's window —
-  // settlement reports we care about are far more recent anyway.
+  // `daysBack` is ONLY the window for LISTING available settlement reports — we still
+  // ingest just the latest closed period (or new ones since the cursor). 35 days
+  // catches the last ~2 biweekly settlements with margin. Hard-cap at 88 because
+  // Amazon's Reports API rejects createdSince older than 90 days.
   const cappedDays = Math.min(daysBack, 88);
   const createdSince = new Date(Date.now() - cappedDays * 86_400_000).toISOString();
 
@@ -220,7 +221,7 @@ export async function ingestWalmartPayouts(): Promise<IngestResult> {
   return res;
 }
 
-export async function ingestAllPayouts(daysBack = 120): Promise<IngestResult[]> {
+export async function ingestAllPayouts(daysBack = 35): Promise<IngestResult[]> {
   const out: IngestResult[] = [];
   try { out.push(await ingestWalmartPayouts()); }
   catch (e) { out.push({ marketplace: "walmart", created: 0, updated: 0, periods: [], errors: [String(e)] }); }
