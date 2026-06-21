@@ -28,6 +28,7 @@
 - [Auth System (UI login)](auth-system.md) — логин в UI Control Center, SHA-256+salt, session cookies
 - [External API Auth](external-api-auth.md) — Bearer token, middleware, MCP Server
 - [RBAC — Roles & Permissions](rbac-roles-permissions.md) — кастомные роли, доступ по модулям (вкл/выкл), invite-only, Settings только admin; proxy + access cookie
+- [Jackie — full admin API access](jackie-full-access.md) — агент OpenClaw Джеки: его существующий `JACKIE_API_TOKEN` теперь = полный admin на всех 264 эндпоинтах (MCP + manifest + прямой REST); новый токен НЕ создавали
 
 ## 📦 Модули
 - [Dashboard](dashboard.md) — главная страница, карточки, сводка
