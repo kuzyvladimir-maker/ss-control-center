@@ -75,7 +75,7 @@ export default function ManageFundsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Manage funds</h1>
-          <p className="text-sm text-muted-foreground">Waterfall order = priority (lower fills first). Percent funds draw from the post-reserve pool.</p>
+          <p className="text-sm text-muted-foreground">Waterfall order = priority (lower fills first). Percent funds draw from the post-reserve pool. Cap = optional max a fund gets in one distribution (extra flows to the next funds). Group and cap are editable.</p>
         </div>
         <Link href="/finance"><Button variant="outline" size="sm"><ArrowLeft className="mr-1 h-4 w-4" />Back</Button></Link>
       </div>
@@ -113,14 +113,20 @@ export default function ManageFundsPage() {
                     <Input type="number" className="w-16" defaultValue={f.priority} onBlur={(e) => { const v = Number(e.target.value); if (v !== f.priority) patch(f.id, { priority: v }); }} disabled={f.isSystem} />
                   </td>
                   <td className="px-3 py-2"><Link href={`/finance/funds/${f.id}`} className="text-primary hover:underline">{f.name}</Link>{f.isSystem && <span className="ml-1 text-[10px] text-muted-foreground">(system)</span>}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{f.group}</td>
+                  <td className="px-3 py-2">
+                    {f.isSystem ? <span className="text-muted-foreground">{f.group}</span>
+                      : <Select value={f.group} options={["FP1", "FP2"]} onChange={(v) => patch(f.id, { group: v })} />}
+                  </td>
                   <td className="px-3 py-2">
                     {f.group === "RESERVE" ? <span className="text-muted-foreground">reserve % (main page)</span>
                       : f.group === "FREE" ? <span className="text-muted-foreground">leftover</span>
                       : <Input type="number" className="w-24" defaultValue={f.value} onBlur={(e) => { const v = Number(e.target.value); if (v !== f.value) patch(f.id, { value: v }); }} />}
                     {f.group !== "RESERVE" && f.group !== "FREE" && <span className="ml-1 text-xs text-muted-foreground">{f.allocationType === "percent" ? "%" : "$"}</span>}
                   </td>
-                  <td className="px-3 py-2 text-muted-foreground">{f.cap != null ? usd(f.cap) : "—"}</td>
+                  <td className="px-3 py-2" title="Optional ceiling: max this fund can receive in one distribution; extra flows to the next funds.">
+                    {f.isSystem ? <span className="text-muted-foreground">—</span>
+                      : <Input type="number" className="w-24" defaultValue={f.cap ?? ""} placeholder="none" onBlur={(e) => { const raw = e.target.value.trim(); const v = raw === "" ? null : Number(raw); if (v !== f.cap) patch(f.id, { cap: v }); }} />}
+                  </td>
                   <td className="px-3 py-2 text-right font-medium">{usd(f.balance)}</td>
                   <td className="px-3 py-2"><input type="checkbox" checked={f.active} onChange={(e) => patch(f.id, { active: e.target.checked })} /></td>
                   <td className="px-3 py-2">{!f.isSystem && <Button variant="ghost" size="sm" onClick={() => del(f.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}</td>
