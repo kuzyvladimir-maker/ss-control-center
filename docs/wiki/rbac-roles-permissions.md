@@ -13,9 +13,9 @@ set of modules, invite-only entry, Settings reserved for admins.
 - **Hard enforcement on three layers** for non-permitted modules:
   1. **Sidebar** hides modules the role can't open; **Settings** link shows for
      admins only.
-  2. **Proxy** (`src/proxy.ts`) redirects a direct URL hit to `/no-access`.
-  3. **Server** (`requireModuleAccess`) — available to gate a module's API data
-     (see "Phase C" below).
+  2. **Proxy** (`src/proxy.ts`) redirects a direct URL hit to `/no-access`, and
+     returns 403 on the module's own data APIs (see "API data gate" below).
+  3. **Client** `AccessGuard` re-checks against fresh `/api/auth/me` state.
 
 ## Model
 
@@ -64,14 +64,30 @@ authoritative. `/api/auth/me` refreshes it on every page load, so it self-heals.
 `scripts/migrate-rbac-roles.mjs` (run with `node -r dotenv/config`). Applied to
 Turso (prod, what the app uses) + local `dev.db` files. Re-runnable safely.
 
-## Phase C — per-module API data protection (TODO, coordinate)
+## API data gate (per-module)
 
-The proxy already gates **pages** by module and **all `/api`** by session
-(any logged-in user). What's **not** yet enforced: a logged-in user whose role
-lacks a module could still call that module's data API directly. To close it,
-drop `requireModuleAccess(request, "<moduleKey>")` at the top of each module's
-API route handlers. Deferred deliberately — it's the broadest surface and
-several modules are under active parallel development; do it per-module to avoid
-churn.
+The proxy also returns **403** when a role hits the data API of a module it
+can't open. This is done centrally in `src/proxy.ts` via
+`moduleKeyForApiPath()` (in `access.ts`) — a curated map of `/api/...` prefixes
+that are **exclusively owned by one module** (verified to have no
+cross-module callers): `finance`, `economics`, `adjustments`, `procurement`,
+`bundle-factory`, `reference-catalog`, `account-health`, `analytics` +
+`sales-overview`.
+
+**Intentionally session-only (not module-gated), to avoid breaking shared
+pages:**
+- `shipping` — its `/api/shipping/dashboard` is polled by the sidebar for
+  everyone.
+- `frozen` — surfaced on the Shipping page (`FrozenRiskBadge`).
+- `customer-hub` (+`claims`/`feedback`) — surfaced on the home Dashboard.
+- `walmart-growth` / `amazon-growth` / `amazon-aplus` — ride shared
+  `/api/walmart` · `/api/amazon` prefixes with no dedicated, safe-to-gate path.
+- Shared infra (`/api/dashboard`, `/api/veeqo`, `/api/stores`, `/api/sync`,
+  `/api/integrations`, …) is never gated.
+
+For a stricter, DB-fresh guard on a specific endpoint, `requireModuleAccess`
+(in `auth-server.ts`) is available to drop into individual route handlers. The
+proxy gate is optimistic (reads the access cookie); machine clients (bearer
+token) and crons bypass it because they return earlier in the proxy.
 
 See also: [[wiki-brain-system]], CLAUDE.md (accounts/auth notes).

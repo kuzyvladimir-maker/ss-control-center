@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySessionToken } from "@/lib/auth";
 import { parseAccessCookie } from "@/lib/rbac/access-cookie";
-import { canAccessPath } from "@/lib/rbac/access";
+import {
+  canAccessModule,
+  canAccessPath,
+  moduleKeyForApiPath,
+} from "@/lib/rbac/access";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -84,16 +88,33 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // ── 3. RBAC module gate (pages only, optimistic) ───────────────────
-  // The user is authenticated. For page navigations, redirect to
-  // /no-access if their role (read from the signed `sscc-access` cookie,
-  // set at login and refreshed by /api/auth/me) can't open this module.
-  //
-  // Scoped to pages: per-module API authorization is enforced on the
-  // server via requireModuleAccess so machine clients (token auth above)
-  // and crons aren't affected. The cookie may lag a role edit by one
-  // navigation; the server guard + client AccessGuard are authoritative.
-  if (!pathname.startsWith("/api/") && pathname !== "/no-access") {
+  // ── 3. RBAC module gate (optimistic, via signed sscc-access cookie) ─
+  // Only authenticated browser users reach here — machine clients (bearer),
+  // crons, and debug routes all returned above. The cookie is set at login
+  // and refreshed by /api/auth/me, so it lags a role edit by at most one
+  // navigation; the client AccessGuard re-checks against fresh state.
+
+  // 3a. API data gate — block a module's own data endpoints for roles that
+  //     can't open it. Limited to API prefixes exclusively owned by one
+  //     module (see moduleKeyForApiPath) so shared endpoints stay reachable.
+  if (pathname.startsWith("/api/")) {
+    const apiModule = moduleKeyForApiPath(pathname);
+    if (apiModule) {
+      const access = parseAccessCookie(
+        request.cookies.get("sscc-access")?.value
+      );
+      if (access && !canAccessModule(access, apiModule)) {
+        return NextResponse.json(
+          { error: "Module access required" },
+          { status: 403 }
+        );
+      }
+    }
+    return NextResponse.next();
+  }
+
+  // 3b. Page gate — redirect a forbidden module's page to /no-access.
+  if (pathname !== "/no-access") {
     const access = parseAccessCookie(request.cookies.get("sscc-access")?.value);
     if (access && !canAccessPath(access, pathname)) {
       const url = request.nextUrl.clone();

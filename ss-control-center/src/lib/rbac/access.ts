@@ -50,6 +50,38 @@ export function accessibleModules(ctx: AccessContext): ModuleDef[] {
   return MODULES.filter((m) => canAccessModule(ctx, m.key));
 }
 
+/**
+ * Maps an `/api/...` path to the module that owns its DATA, for the proxy's
+ * API module-gate. ONLY lists prefixes that are exclusively owned by one
+ * module — verified to have no cross-module callers. Shared API areas
+ * (`/api/dashboard`, `/api/veeqo`, `/api/amazon`, `/api/walmart`, `/api/stores`,
+ * etc.) and modules whose data is surfaced on shared pages (shipping →
+ * sidebar, frozen → Shipping page, customer-hub → home Dashboard) are
+ * deliberately omitted so gating never breaks a page a user IS allowed to see.
+ * Those stay protected at the session level (any signed-in user).
+ *
+ * Order: longer/more-specific prefixes first.
+ */
+const API_MODULE_PREFIXES: Array<[string, string]> = [
+  ["/api/finance", "finance"],
+  ["/api/economics", "economics"],
+  ["/api/adjustments", "adjustments"],
+  ["/api/procurement", "procurement"],
+  ["/api/bundle-factory", "bundle-factory"],
+  ["/api/reference-catalog", "reference-catalog"],
+  ["/api/account-health", "account-health"],
+  ["/api/sales-overview", "analytics"],
+  ["/api/analytics", "analytics"],
+];
+
+/** The module key that owns this API path, or null if it isn't module-gated. */
+export function moduleKeyForApiPath(pathname: string): string | null {
+  for (const [prefix, key] of API_MODULE_PREFIXES) {
+    if (pathname === prefix || pathname.startsWith(prefix + "/")) return key;
+  }
+  return null;
+}
+
 /** Normalise an unknown DB value into a clean string[] of module keys. */
 export function parseModules(raw: unknown): string[] {
   if (Array.isArray(raw)) return raw.filter((x): x is string => typeof x === "string");
