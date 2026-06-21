@@ -124,7 +124,9 @@ export default function FinancialPlanPage() {
       for (const a of run.distribution.allocations) {
         const f = funds.find((x) => x.id === a.fundId);
         if (!f || f.group === "RESERVE" || f.group === "FREE" || f.allocationType !== "percent") continue;
-        const need = up5(a.name === "Taxes" ? taxNeed : (needs[a.name] ?? 0)); // cover the owed, rounded up to $5
+        // Cover this period's owed + top up any negative balance, rounded up to $5.
+        const rawNeed = a.name === "Taxes" ? taxNeed : (needs[a.name] ?? 0);
+        const need = up5(rawNeed + Math.max(0, -(f.balance ?? 0)));
         const pct = Math.round((need / distPool) * 1000) / 10; // 0.1% precision
         newPct[f.id] = String(pct);
         updates.push({ id: f.id, pct });
@@ -328,13 +330,16 @@ export default function FinancialPlanPage() {
                     <span>{run.preview ? "PREVIEW — not committed" : "COMMITTED"}</span>
                   </div>
                   {overAllocated && <p className="mb-1 rounded bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">Funds add up to {totalAllocPct}% — over 100% of the distributable. Reduce a fund&apos;s % before committing.</p>}
-                  <p className="mb-1 text-xs text-muted-foreground">Needed = how much each fund is owed right now — a daily-ticking debt that carries forward until you mark items Paid on the fund page. Taxes = {config?.taxRatePct ?? 1.5}% of this payout; the Expansion fund has no target.</p>
+                  <p className="mb-1 text-xs text-muted-foreground">Needed = this period&apos;s owed debt <b>plus topping up any negative fund balance</b> (e.g. Warehouse owes $2,005 and is −$1,100 → Needed $3,105). Rounded up to $5. Taxes = {config?.taxRatePct ?? 1.5}% of this payout; the Expansion fund has no period target.</p>
                   <table className="w-full">
                     <thead className="text-left text-xs uppercase text-muted-foreground"><tr><th className="py-1">Group</th><th>Fund</th><th className="text-right">Balance</th><th className="text-right" title="Suggested: what this fund needs to cover its costs for the period since the last plan">Needed %</th><th className="text-right">Needed $</th><th className="text-right">My %</th><th className="text-right">Amount</th></tr></thead>
                     <tbody>{run.distribution.allocations.map((a) => {
                       const f = funds.find((x) => x.id === a.fundId);
                       const editable = !!f && f.group !== "RESERVE" && f.group !== "FREE" && f.allocationType === "percent";
-                      const need = up5(a.name === "Taxes" ? taxNeed : (needs[a.name] ?? 0)); // owed, rounded up to $5
+                      // Needed = this period's owed + topping up any NEGATIVE balance (овердрафт).
+                      const rawNeed = a.name === "Taxes" ? taxNeed : (needs[a.name] ?? 0);
+                      const negBal = Math.max(0, -(f?.balance ?? 0));
+                      const need = up5(rawNeed + negBal); // rounded up to $5
                       const needPct = distPool > 0 && need > 0 ? (need / distPool) * 100 : 0;
                       // Amount recomputes live from the entered % (no need to re-Preview).
                       const liveAmount = a.group === "RESERVE" ? liveReserve
