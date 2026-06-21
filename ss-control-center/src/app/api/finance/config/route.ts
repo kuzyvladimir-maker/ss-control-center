@@ -9,7 +9,7 @@ const K = {
   windowWeeks: "finance:reserve:windowWeeks",
   taxRatePct: "finance:taxRatePct", // tax set-aside as % of sales turnover
 };
-const DEFAULT_TAX_RATE_PCT = 1;
+const DEFAULT_TAX_RATE_PCT = 1.5; // % of payout set aside for taxes
 
 async function get(key: string) {
   return (await prisma.setting.findUnique({ where: { key } }))?.value ?? null;

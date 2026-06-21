@@ -111,7 +111,8 @@ export default function FundDetailPage() {
         </Card>
       )}
 
-      {/* Bills — the payable items for this period */}
+      {/* Bills — the payable items for this period (hidden on the Debt fund) */}
+      {!isDebtFund && (
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -156,6 +157,7 @@ export default function FundDetailPage() {
           )}
         </CardContent>
       </Card>
+      )}
 
       {/* Presets reference — add a single bill from a preset */}
       {presets.length > 0 && (
@@ -179,7 +181,8 @@ export default function FundDetailPage() {
         </Card>
       )}
 
-      {/* Scan a receipt → spend from this fund */}
+      {/* Scan a receipt + ad-hoc spend — not on the Debt fund (debts are paid via the Debts table) */}
+      {!isDebtFund && (<>
       <Card>
         <CardHeader><CardTitle className="text-base">Scan a purchase receipt (debits this fund)</CardTitle></CardHeader>
         <CardContent>
@@ -187,7 +190,6 @@ export default function FundDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Manual spend */}
       <Card>
         <CardHeader><CardTitle className="text-base">Record an ad-hoc spend (debits now)</CardTitle></CardHeader>
         <CardContent className="flex flex-wrap items-end gap-2">
@@ -196,6 +198,7 @@ export default function FundDetailPage() {
           <Button onClick={() => { const a = Number(spend.amount); if (Number.isFinite(a) && a !== 0) { post({ kind: "spend", amount: a, description: spend.description }); setSpend({ amount: "", description: "" }); } }} disabled={busy}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}</Button>
         </CardContent>
       </Card>
+      </>)}
 
       {/* Full ledger */}
       <Card>

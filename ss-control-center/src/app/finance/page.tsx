@@ -131,9 +131,8 @@ export default function FinancialPlanPage() {
   const netProceeds = Math.round(scoped.reduce((s, p) => s + p.netAmount, 0) * 100) / 100;
   const maxAbs = Math.max(1, ...statementRows.map((r) => Math.abs(r.amount)));
   const pendingNet = Math.round(payouts.filter((p) => !p.distributed).reduce((s, p) => s + p.netAmount, 0) * 100) / 100;
-  // Tax need = tax rate × turnover (sales+shipping) of the pending payouts.
-  const pendingSales = payouts.filter((p) => !p.distributed).reduce((s, p) => s + p.lines.filter((l) => ["sales", "shipping_income"].includes(l.bucket)).reduce((a, l) => a + l.amount, 0), 0);
-  const taxNeed = Math.round(((config?.taxRatePct ?? 1) / 100) * pendingSales * 100) / 100;
+  // Tax need = tax rate × the pending PAYOUT (net) being distributed.
+  const taxNeed = Math.round(((config?.taxRatePct ?? 1.5) / 100) * pendingNet * 100) / 100;
 
   const latestByAccount = new Map<string, Payout>();
   for (const p of [...payouts].sort((a, b) => (a.periodEnd ?? "").localeCompare(b.periodEnd ?? ""))) latestByAccount.set(`${p.marketplace}:${p.entity ?? ""}`, p);
@@ -268,8 +267,8 @@ export default function FinancialPlanPage() {
                   <div className="flex items-center gap-1"><Input type="number" min={0} max={100} className="w-24" value={config ? Math.round(config.manualPct * 100) : 0} onChange={(e) => saveConfig({ manualPct: (Number(e.target.value) || 0) / 100 })} /><span className="text-sm text-muted-foreground">%</span></div>
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground">Tax rate % (of sales turnover)</label>
-                  <div className="flex items-center gap-1"><Input type="number" min={0} step={0.1} className="w-20" value={config?.taxRatePct ?? 1} onChange={(e) => saveConfig({ taxRatePct: Number(e.target.value) || 0 })} /><span className="text-sm text-muted-foreground">%</span></div>
+                  <label className="block text-xs text-muted-foreground">Tax rate % (of payout)</label>
+                  <div className="flex items-center gap-1"><Input type="number" min={0} step={0.1} className="w-20" value={config?.taxRatePct ?? 1.5} onChange={(e) => saveConfig({ taxRatePct: Number(e.target.value) || 0 })} /><span className="text-sm text-muted-foreground">%</span></div>
                 </div>
                 <Button onClick={autoAllocate} disabled={busy != null} variant="outline">{busy === "auto" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Wand2 className="mr-1 h-4 w-4" />}Auto-set % from needs</Button>
                 <Button onClick={() => doRun(true)} disabled={busy != null} variant="outline">{busy === "preview" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Play className="mr-1 h-4 w-4" />}Preview</Button>
