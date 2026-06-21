@@ -105,10 +105,14 @@ async function upsertPayoutWithLines(opts: {
 }
 
 /** Amazon: pull only the latest NEW closed settlement period(s) per account. */
-export async function ingestAmazonPayouts(daysBack = 120): Promise<IngestResult> {
+export async function ingestAmazonPayouts(daysBack = 88): Promise<IngestResult> {
   const res: IngestResult = { marketplace: "amazon", created: 0, updated: 0, periods: [], errors: [] };
   const stores = await resolveAmazonStores();
-  const createdSince = new Date(Date.now() - daysBack * 86_400_000).toISOString();
+  // Amazon's Reports API rejects createdSince older than 90 days ("RequestedFromDate
+  // is more than 90 days old"). Cap below that regardless of the caller's window —
+  // settlement reports we care about are far more recent anyway.
+  const cappedDays = Math.min(daysBack, 88);
+  const createdSince = new Date(Date.now() - cappedDays * 86_400_000).toISOString();
 
   for (const storeId of stores) {
     const idx = storeIdToIndex(storeId);
