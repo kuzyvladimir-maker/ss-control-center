@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ReceiptScanner } from "@/components/finance/ReceiptScanner";
 import { Timesheet } from "@/components/finance/Timesheet";
+import { Debts } from "@/components/finance/Debts";
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -76,6 +77,7 @@ export default function FundDetailPage() {
   const bills = entries.filter((e) => e.type === "planned_expense").sort((a, b) => (a.status === b.status ? 0 : a.status === "planned" ? -1 : 1));
   const unpaidTotal = bills.filter((b) => b.status === "planned").reduce((s, b) => s + b.amount, 0);
   const isSalary = fund?.name === "Salaries" && fund?.group === "FP1";
+  const isDebtFund = !!fund && (fund.name.toLowerCase().includes("debt") || fund.name.toLowerCase().includes("expansion"));
 
   return (
     <div className="space-y-6 p-6">
@@ -99,6 +101,13 @@ export default function FundDetailPage() {
         <Card>
           <CardHeader><CardTitle className="text-base">Timesheet — salaries by days worked</CardTitle></CardHeader>
           <CardContent><Timesheet onBillsCreated={load} /></CardContent>
+        </Card>
+      )}
+
+      {isDebtFund && fund && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Debts</CardTitle></CardHeader>
+          <CardContent><Debts fundId={fund.id} onChanged={load} /></CardContent>
         </Card>
       )}
 

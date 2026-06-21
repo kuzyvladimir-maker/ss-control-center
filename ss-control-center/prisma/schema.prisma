@@ -3465,6 +3465,24 @@ model TimeLog {
   @@index([date])
 }
 
+// Debt — a company debt tracked inside the Debt-repayment fund. `amount` = original
+// owed, `paid` = running paid (remaining = amount − paid). Paying debits the fund.
+// Listing debts does NOT make the fund negative — debts are a separate ledger; the
+// fund balance is money accumulated toward repaying them.
+model Debt {
+  id           String   @id @default(cuid())
+  fundId       String
+  amount       Float // original amount owed
+  paid         Float    @default(0)
+  description  String?
+  dateIncurred String? // ISO date the debt first arose (to see how old it is)
+  status       String   @default("open") // open | settled
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([fundId])
+}
+
 // FinancePlanRun — one weekly (or manual) distribution pass.
 model FinancePlanRun {
   id               String  @id @default(cuid())
