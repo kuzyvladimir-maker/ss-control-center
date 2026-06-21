@@ -11,8 +11,8 @@ facts (entities/partner/channels/debts): memory `reference_legal_entities` +
 Cash-basis financial planning by **funds**, one **global business pool**:
 
 ```
-Payout (marketplace deposit, net of fees)  →  pool "money in"
-  reserve = payout.net × reserveRate     → RESERVE fund (restock: COGS+shipping+packaging)
+Payout (marketplace deposit, net of fees AND shipping labels)  →  pool "money in"
+  reserve = payout.net × reserveRate     → RESERVE fund (restock: COGS+packaging — NOT shipping)
   distributable = net − reserve
   waterfall by priority: FP1 (life-support) → FP2 (growth) → FREE (leftover)
 ```
@@ -103,7 +103,8 @@ accrued days. Distribution **`Needed(fund) = Σ owed`** of its expenses + instal
   `monthlyAmount`, so a $55/week row shows $238/mo, not $55) · Accrued · Paid · Owed ·
   Pay. KPIs: cash balance / owed (остаток) / after-clearing.
 - **Taxes** and **Reserve** are NOT accrued — % of the payout (Taxes = `taxRatePct` ×
-  pending net, default 1.5%, on the FP page; Reserve = 58% off the top). **Expansion/Debt
+  pending net, default 1.5%, on the FP page; Reserve = currently **50%** off the top —
+  see "Reserve = COGS + packaging" below). **Expansion/Debt
   (FP2)** has no target → Needed 0.
 - `auto-allocate` ("Auto-set % from needs") = each FP1 fund's % from its monthly
   obligation **incl. installment debts**.
@@ -114,6 +115,36 @@ accrued days. Distribution **`Needed(fund) = Σ owed`** of its expenses + instal
   adversarial pass (2026-06-21): atomic-payment + auto-allocate fixes applied; taxNeed
   "dead code" and zero-accrued-filter findings dismissed (false positives — the Taxes
   fund exists at runtime; Needed is a hint, not a forced alloc).
+
+## Reserve = COGS + packaging (shipping excluded) — 2026-06-21
+
+Vladimir's insight: marketplace shipping labels (Amazon/Walmart Buy Shipping) are
+**deducted from the payout** — verified in the settlement (`shipping_cost` −$4,796 sits
+inside the net deposit; customer `shipping_income` roughly covers it). So the payout we
+distribute is already net of shipping; reserving COGS+packaging+**shipping** (the old
+0.58 basis) double-counted shipping. Reserve now covers **COGS + packaging only**
+(`blendReserveRate` drops shipping; `DEFAULT_MANUAL_PCT` flagged too-high).
+
+Reserve % derived from the Uncrustables pricing formula (`uncrustables-pricing-model.md`,
+`Price = Landed × (1+markup)/0.85`, Landed = товар+упаковка+shipping):
+> **reserve% = (товар+упаковка) / (Landed×(1+markup) − shipping)**, on the S cooler (92% of volume).
+- markup 60% → ~51%; markup 70% → ~47%. **Vladimir set 50%** manually (markup floats >60%
+  on average), Setting `finance:reserve:manualPct` = 0.5. Refine to real per-order COGS later.
+
+## Distribution UI — live preview (2026-06-21)
+- Changing **Reserve %** or any fund's **My %** recomputes distributable + every Amount
+  live (no re-Preview). **Auto-set % from needs** sets My% = `Needed$ / distributable`
+  (covers each fund's owed exactly; client-side). Total fund % shown; **over 100% blocks
+  Commit** (Free can't go negative). New **Balance** column + clickable fund names.
+- **Move money between funds**: `/api/finance/funds/transfer` writes BOTH legs to the
+  ledger (−source, +target) atomically; UI on the Funds tab.
+- Per-expense **Accrued/Paid** are editable (PATCH `/api/finance/expenses`); the **ledger**
+  is editable (description/amount via PATCH `edit`, balance-delta on applied) + deletable
+  on every row. Fund **Back** button → Funds tab (`/finance?tab=funds`).
+- **Get Report fix**: Amazon Reports list `createdSince` capped at 88 days (API rejects
+  >90d) and the window narrowed to 35 days — it only needs the latest closed settlement.
+- **Perf fix**: accrual no longer ticks on every GET (caused Turso SQLite write-lock
+  hangs). Meters advance once/day via `/api/cron/finance-accrual`; GETs are read-only.
 
 ## Next (later phases)
 F9 forecast (income vs plan, behind-plan alerts → Amazon/Walmart Grow); F4/F3 full

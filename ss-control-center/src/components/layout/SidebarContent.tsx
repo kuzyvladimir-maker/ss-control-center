@@ -83,9 +83,9 @@ const divisions = (s: DashboardSummary): Division[] => [
     color: "#B8901F",
     items: [
       { title: "Reference Catalog", href: "/reference-catalog", icon: BookOpen },
-      // Planned (Vladimir 2026-06-21): staff directory + "hats" (post write-ups)
-      // + instructions / SOPs / org policy. Module not built yet.
-      { title: "Staff Hats", href: "/staff-hats", icon: Users, disabled: true },
+      // Staff directory + "hats" (post write-ups / job descriptions), digitized
+      // from the Google Drive "Должностные инструкции" folder.
+      { title: "Staff Hats", href: "/staff-hats", icon: Users },
       // Planned (Vladimir 2026-06-21): org statistics — every division & key
       // process has a stat, entered/graphed weekly, conditions assigned from
       // trends. Org-board home = HCO Dept 3 (Inspections & Reports) = Div 1.
@@ -160,9 +160,9 @@ const divisions = (s: DashboardSummary): Division[] => [
         pillCount: s.adjustments?.unreviewed || undefined,
         pillVariant: "warn",
       },
-      // Planned (Vladimir 2026-06-21): staff training courses + completion
-      // tracking. Existing courses live on Vladimir's Google Drive.
-      { title: "Training", href: "/training", icon: GraduationCap, disabled: true },
+      // Staff training courses + per-browser completion tracking, digitized
+      // from Vladimir's existing Google Drive courses.
+      { title: "Training", href: "/training", icon: GraduationCap },
     ],
   },
   {
