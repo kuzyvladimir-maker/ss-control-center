@@ -1,17 +1,17 @@
 /**
- * Bundle Factory — batch status (after "Generate listings").
+ * Bundle Factory — batch progress (after "Generate listings").
  *
- * Loads the batch (GenerationJob) created from the operator's prompt and
- * shows it back honestly. The generation engine that reads the prompt,
- * sources products and assembles the listings will fill this page with
- * drafts to approve once it runs.
+ * Loads the batch (GenerationJob) created from the operator's prompt, shows
+ * the request back, and renders the live progress bar (BatchProgress) which
+ * drives the generator and reports done / total + the current step.
  */
 
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PageHead } from "@/components/kit";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { BatchProgress } from "@/components/bundle-factory/BatchProgress";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +33,7 @@ export default async function StudioBatchPage({
 
   const job = await prisma.generationJob.findUnique({
     where: { id },
-    select: { id: true, brief: true, status: true, created_at: true },
+    select: { id: true, brief: true },
   });
   if (!job) notFound();
 
@@ -53,8 +53,8 @@ export default async function StudioBatchPage({
   return (
     <>
       <PageHead
-        title="Build queued"
-        subtitle={<span>Your request is saved. Here&apos;s what the algorithm will build.</span>}
+        title="Building listings"
+        subtitle={<span>The algorithm is creating your batch. Watch it below — nothing publishes until you approve.</span>}
       />
 
       <Link
@@ -76,15 +76,7 @@ export default async function StudioBatchPage({
           </div>
         </div>
 
-        <div className="flex items-start gap-3 rounded-[14px] border border-rule bg-surface-tint/50 p-4">
-          <Clock size={18} strokeWidth={1.7} className="mt-0.5 shrink-0 text-ink-3" />
-          <div className="text-[12.5px] leading-relaxed text-ink-2">
-            <span className="font-medium text-ink">Generation engine in progress.</span> The step
-            that reads your request, finds the products in the catalog and assembles the listings is
-            being wired now. When it runs, your drafts will appear here to review and approve — nothing
-            publishes before that.
-          </div>
-        </div>
+        <BatchProgress batchId={job.id} />
       </div>
     </>
   );
