@@ -35,7 +35,11 @@ admin endpoints. Now it's admin everywhere.
    typed surface built for an agent.
 2. **REST manifest (non-MCP clients):** `GET /api/sscc/manifest` — the same 36
    tools as a plain JSON document (name, description, `write` flag,
-   `input_schema`).
+   `input_schema`). **`GET /api/sscc/manifest?full=1`** additionally returns
+   `rest_endpoints` — the complete map of all 264 `/api/*` paths the token can
+   call as admin (this is how an agent discovers paths without reading this
+   doc; the financial module is NOT a curated MCP tool — it's REST under
+   `/api/finance/*`).
 3. **Direct REST (full admin):** any `/api/*` endpoint below, called directly
    as admin. This is the "everything else" escape hatch beyond the 36 tools.
 
@@ -67,6 +71,41 @@ curl -H "Authorization: Bearer $JACKIE_API_TOKEN" \
   `CRON_SECRET`; `SSCC_API_TOKEN` is the other admin token.
 - Audit: Jackie's writes are attributed to `jackie@openclaw`
   (`id: system:jackie`).
+
+## Financial Plan — `/api/finance/*` (most-requested)
+
+The Financial Plan module is **REST, not an MCP tool**. There is no
+`/api/financial-plan` or `/api/debts` — it all lives under `/api/finance/`
+(the bare `/api/finance` has no handler → 404; use the sub-paths).
+
+**Funds** (each debt is attached to a fund):
+- `GET /api/finance/funds` → `{ funds: [{ id, name, group, balance, … }] }`
+- Stable system-fund ids: `fund_debt_expansion` ("Debt repayment / Expansion"),
+  `fund_installments` ("Installments / Loans"), `fund_reserve`, `fund_taxes`,
+  `fund_free`.
+
+**Debts** — `/api/finance/debts`:
+- `GET /api/finance/debts` (optional `?fundId=`) → `{ debts, totalOriginal, totalRemaining, monthlyDue, owedNow }`. With no `fundId` it returns ALL debts (each row carries its `fundId`).
+- `POST` add: `{ "action":"add", "fundId":"fund_debt_expansion", "amount":1234.56, "description":"…", "dateIncurred":"2026-06-21", "monthlyPayment":100, "paymentFrequency":"monthly" }` (`monthlyPayment`/`paymentFrequency` optional → makes it an installment; use `fund_installments`).
+- `POST` pay: `{ "action":"pay", "debtId":"…", "amount":100 }` (debits the fund + reduces the debt).
+- `PATCH`: `{ "id":"…", "amount"?, "description"?, "dateIncurred"?, "monthlyPayment"?, "paymentFrequency"? }`
+- `DELETE /api/finance/debts?id=…`
+
+**Other finance routes:** `config`, `expenses`, `funds/[id]`,
+`funds/auto-allocate`, `funds/history`, `funds/needs`, `payouts`, `receipts`,
+`run`, `timesheet` (see inventory below).
+
+```bash
+# list funds → find fund_debt_expansion, then read its debts
+curl -H "Authorization: Bearer $JACKIE_API_TOKEN" \
+  https://salutemsolutions.info/api/finance/funds
+curl -H "Authorization: Bearer $JACKIE_API_TOKEN" \
+  "https://salutemsolutions.info/api/finance/debts?fundId=fund_debt_expansion"
+# add a debt
+curl -X POST -H "Authorization: Bearer $JACKIE_API_TOKEN" -H "Content-Type: application/json" \
+  -d '{"action":"add","fundId":"fund_debt_expansion","amount":1500,"description":"Supplier invoice","dateIncurred":"2026-06-21"}' \
+  https://salutemsolutions.info/api/finance/debts
+```
 
 ## Full endpoint inventory (264 routes)
 
