@@ -37,7 +37,6 @@ export default function FundDetailPage() {
   const [presets, setPresets] = useState<Preset[]>([]);
   const [billAmt, setBillAmt] = useState<Record<string, string>>({});
   const [moveTo, setMoveTo] = useState<Record<string, string>>({});
-  const [view, setView] = useState<"fund" | "timesheet">("fund");
   const [plannedTotal, setPlannedTotal] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -90,26 +89,18 @@ export default function FundDetailPage() {
 
       {error && <Card className="border-destructive"><CardContent className="flex items-center gap-2 py-3 text-destructive"><AlertCircle className="h-4 w-4" />{error}</CardContent></Card>}
 
-      {isSalary && (
-        <div className="flex gap-1 border-b">
-          {([["fund", "Fund"], ["timesheet", "Timesheet"]] as const).map(([k, label]) => (
-            <button key={k} onClick={() => setView(k)} className={cn("border-b-2 px-4 py-2 text-sm font-medium", view === k ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>{label}</button>
-          ))}
-        </div>
-      )}
-
-      {isSalary && view === "timesheet" && (
-        <Card><CardHeader><CardTitle className="text-base">Timesheet — salaries by days worked</CardTitle></CardHeader>
-          <CardContent><Timesheet onBillsCreated={load} /></CardContent>
-        </Card>
-      )}
-
-      {(!isSalary || view === "fund") && (<>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">Balance</div><div className={cn("text-3xl font-semibold", (fund?.balance ?? 0) < 0 ? "text-destructive" : "text-emerald-600")}>{usd(fund?.balance ?? 0)}</div></CardContent></Card>
         <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">Unpaid bills</div><div className="text-3xl font-semibold text-destructive">{usd(unpaidTotal)}</div></CardContent></Card>
         <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">After paying bills</div><div className={cn("text-3xl font-semibold", ((fund?.balance ?? 0) + unpaidTotal) < 0 ? "text-destructive" : "")}>{usd((fund?.balance ?? 0) + unpaidTotal)}</div></CardContent></Card>
       </div>
+
+      {isSalary && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Timesheet — salaries by days worked</CardTitle></CardHeader>
+          <CardContent><Timesheet onBillsCreated={load} /></CardContent>
+        </Card>
+      )}
 
       {/* Bills — the payable items for this period */}
       <Card>
@@ -232,7 +223,6 @@ export default function FundDetailPage() {
           </table>
         </CardContent>
       </Card>
-      </>)}
     </div>
   );
 }
