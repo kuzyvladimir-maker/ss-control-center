@@ -19,6 +19,8 @@ import {
   Sparkles,
   DollarSign,
   PiggyBank,
+  Users,
+  GraduationCap,
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -80,6 +82,9 @@ const divisions = (s: DashboardSummary): Division[] => [
     color: "#B8901F",
     items: [
       { title: "Reference Catalog", href: "/reference-catalog", icon: BookOpen },
+      // Planned (Vladimir 2026-06-21): staff directory + "hats" (post write-ups)
+      // + instructions / SOPs / org policy. Module not built yet.
+      { title: "Staff Hats", href: "/staff-hats", icon: Users, disabled: true },
     ],
   },
   {
@@ -148,6 +153,9 @@ const divisions = (s: DashboardSummary): Division[] => [
         pillCount: s.adjustments?.unreviewed || undefined,
         pillVariant: "warn",
       },
+      // Planned (Vladimir 2026-06-21): staff training courses + completion
+      // tracking. Existing courses live on Vladimir's Google Drive.
+      { title: "Training", href: "/training", icon: GraduationCap, disabled: true },
     ],
   },
   {
