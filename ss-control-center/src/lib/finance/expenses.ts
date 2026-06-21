@@ -31,6 +31,19 @@ export function monthlyAmount(amount: number, frequency: string): number {
 
 export const FREQUENCIES = ["monthly", "weekly", "daily", "yearly", "one_time"] as const;
 
+export const WORKDAYS_PER_WEEK = 5;
+export const WORKDAYS_PER_YEAR = 260;
+
+/** Per-WORKING-DAY rate for a salary item (for timesheet pay = worked days × this). */
+export function perDayRate(amount: number, frequency: string): number {
+  if (!Number.isFinite(amount)) return 0;
+  if (frequency === "daily") return Math.round(amount * 100) / 100;
+  if (frequency === "weekly") return Math.round((amount / WORKDAYS_PER_WEEK) * 100) / 100;
+  if (frequency === "monthly") return Math.round((amount / WORKDAYS_PER_MONTH) * 100) / 100;
+  if (frequency === "yearly") return Math.round((amount / WORKDAYS_PER_YEAR) * 100) / 100;
+  return 0;
+}
+
 /** Map a (possibly Russian / Sellerboard) category label to our FP1 fund name. */
 export function mapCategory(raw: string): ExpenseCategory {
   const t = (raw || "").toLowerCase();

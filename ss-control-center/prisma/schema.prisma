@@ -3445,6 +3445,20 @@ model Receipt {
   @@index([status])
 }
 
+// TimeLog — a timesheet (табель): one row = one worked DAY for one employee
+// (employee = a RecurringExpense in the Salaries category). Salary for a period =
+// worked days × per-day rate; that becomes a bill in the Salaries fund.
+model TimeLog {
+  id        String   @id @default(cuid())
+  expenseId String // the salary RecurringExpense (employee)
+  date      String // YYYY-MM-DD worked
+  createdAt DateTime @default(now())
+
+  @@unique([expenseId, date], name: "timelog_dedup")
+  @@index([expenseId])
+  @@index([date])
+}
+
 // FinancePlanRun — one weekly (or manual) distribution pass.
 model FinancePlanRun {
   id               String  @id @default(cuid())
