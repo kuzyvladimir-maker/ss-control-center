@@ -77,7 +77,7 @@ export default function FundDetailPage() {
   const bills = entries.filter((e) => e.type === "planned_expense").sort((a, b) => (a.status === b.status ? 0 : a.status === "planned" ? -1 : 1));
   const unpaidTotal = bills.filter((b) => b.status === "planned").reduce((s, b) => s + b.amount, 0);
   const isSalary = fund?.name === "Salaries" && fund?.group === "FP1";
-  const isDebtFund = !!fund && (fund.name.toLowerCase().includes("debt") || fund.name.toLowerCase().includes("expansion"));
+  const isDebtFund = !!fund && ["debt", "expansion", "installment", "loan"].some((k) => fund.name.toLowerCase().includes(k));
 
   return (
     <div className="space-y-6 p-6">

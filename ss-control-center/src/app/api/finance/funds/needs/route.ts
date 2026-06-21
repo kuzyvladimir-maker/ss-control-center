@@ -17,5 +17,16 @@ export async function GET() {
   const needs: Record<string, number> = {};
   for (const e of expenses) needs[e.category] = round2((needs[e.category] ?? 0) + (e.accrued ?? 0));
 
+  // Installment debts add their monthly payment (capped at remaining) to their fund.
+  const funds = await prisma.fund.findMany({ select: { id: true, name: true } });
+  const fundName = new Map(funds.map((f) => [f.id, f.name]));
+  const debts = await prisma.debt.findMany({ where: { status: "open" } });
+  for (const d of debts) {
+    if (!d.monthlyPayment) continue;
+    const due = Math.min(d.monthlyPayment, Math.max(0, d.amount - d.paid));
+    const name = fundName.get(d.fundId);
+    if (name && due > 0) needs[name] = round2((needs[name] ?? 0) + due);
+  }
+
   return NextResponse.json({ needs, today });
 }

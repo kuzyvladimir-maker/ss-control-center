@@ -3474,6 +3474,9 @@ model Debt {
   fundId       String
   amount       Float // original amount owed
   paid         Float    @default(0)
+  // For installment/scheduled debts (рассрочка): the fixed amount paid each month.
+  // null = a lump/overdue debt with no schedule. Drives the fund's monthly "need".
+  monthlyPayment Float?
   description  String?
   dateIncurred String? // ISO date the debt first arose (to see how old it is)
   status       String   @default("open") // open | settled
