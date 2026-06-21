@@ -97,8 +97,28 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       if (entry.status === "applied") {
         await prisma.fund.update({ where: { id }, data: { balance: { decrement: entry.amount } } }); // reverse
       }
+      // Unlink any receipt (keep the image; allow re-filing later).
+      await prisma.receipt.updateMany({ where: { fundEntryId: entry.id }, data: { fundEntryId: null, fundId: null, status: "parsed" } });
       await prisma.fundEntry.delete({ where: { id: entry.id } });
       return NextResponse.json({ ok: true });
+    }
+    // Move a spend/adjustment to another fund (e.g. logged on the wrong fund).
+    if (b.action === "move") {
+      const target = await prisma.fund.findUnique({ where: { id: b.targetFundId } });
+      if (!target) return NextResponse.json({ error: "target fund not found" }, { status: 404 });
+      if (target.id === id) return NextResponse.json({ ok: true }); // no-op
+      if (entry.status === "applied") {
+        await prisma.fund.update({ where: { id }, data: { balance: { decrement: entry.amount } } }); // remove here
+      }
+      const moved = await prisma.fundEntry.create({
+        data: { fundId: target.id, type: entry.type, amount: entry.amount, description: entry.description, status: entry.status, dueDate: entry.dueDate },
+      });
+      if (entry.status === "applied") {
+        await prisma.fund.update({ where: { id: target.id }, data: { balance: { increment: entry.amount } } }); // add there
+      }
+      await prisma.receipt.updateMany({ where: { fundEntryId: entry.id }, data: { fundId: target.id, fundEntryId: moved.id } });
+      await prisma.fundEntry.delete({ where: { id: entry.id } });
+      return NextResponse.json({ ok: true, movedTo: target.id });
     }
     return NextResponse.json({ error: "unknown action" }, { status: 400 });
   } catch (e) {

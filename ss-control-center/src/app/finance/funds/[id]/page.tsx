@@ -31,9 +31,11 @@ const TYPE_LABEL: Record<string, string> = { allocation: "Allocation", spend: "S
 export default function FundDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [fund, setFund] = useState<Fund | null>(null);
+  const [allFunds, setAllFunds] = useState<{ id: string; name: string }[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [presets, setPresets] = useState<Preset[]>([]);
   const [billAmt, setBillAmt] = useState<Record<string, string>>({});
+  const [moveTo, setMoveTo] = useState<Record<string, string>>({});
   const [plannedTotal, setPlannedTotal] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -42,9 +44,13 @@ export default function FundDetailPage() {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const r = await fetch(`/api/finance/funds/${id}`).then((x) => x.json());
+      const [r, all] = await Promise.all([
+        fetch(`/api/finance/funds/${id}`).then((x) => x.json()),
+        fetch(`/api/finance/funds`).then((x) => x.json()),
+      ]);
       if (r.error) throw new Error(r.error);
       setFund(r.fund); setEntries(r.entries ?? []); setPresets(r.presets ?? []); setPlannedTotal(r.plannedTotal ?? 0);
+      setAllFunds((all.funds ?? []).map((f: { id: string; name: string }) => ({ id: f.id, name: f.name })));
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }, [id]);
   useEffect(() => { load(); }, [load]);
@@ -178,18 +184,32 @@ export default function FundDetailPage() {
         <CardHeader><CardTitle className="text-base">Ledger ({entries.length})</CardTitle></CardHeader>
         <CardContent className="overflow-x-auto p-0">
           <table className="w-full text-sm">
-            <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Date</th><th className="px-3 py-2">Type</th><th className="px-3 py-2">Description</th><th className="px-3 py-2 text-right">Amount</th><th className="px-3 py-2">Status</th></tr></thead>
+            <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Date</th><th className="px-3 py-2">Type</th><th className="px-3 py-2">Description</th><th className="px-3 py-2 text-right">Amount</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Move / delete</th></tr></thead>
             <tbody>
-              {entries.map((e) => (
-                <tr key={e.id} className="border-b last:border-0">
-                  <td className="px-3 py-2 text-muted-foreground">{e.createdAt.slice(0, 10)}</td>
-                  <td className="px-3 py-2">{TYPE_LABEL[e.type] ?? e.type}</td>
-                  <td className="px-3 py-2">{e.description ?? "—"}</td>
-                  <td className={cn("px-3 py-2 text-right font-medium tabular-nums", e.amount < 0 ? "text-destructive" : "text-emerald-600")}>{usd(e.amount)}</td>
-                  <td className="px-3 py-2">{e.status === "planned" ? <span className="text-xs text-destructive">unpaid</span> : <span className="text-xs text-muted-foreground">applied</span>}</td>
-                </tr>
-              ))}
-              {entries.length === 0 && <tr><td colSpan={5} className="px-3 py-8 text-center text-muted-foreground">No movements yet. Money arrives here when you distribute a payout; bills debit it when paid.</td></tr>}
+              {entries.map((e) => {
+                const movable = e.type === "spend" || e.type === "adjustment";
+                return (
+                  <tr key={e.id} className="border-b last:border-0">
+                    <td className="px-3 py-2 text-muted-foreground">{e.createdAt.slice(0, 10)}</td>
+                    <td className="px-3 py-2">{TYPE_LABEL[e.type] ?? e.type}</td>
+                    <td className="px-3 py-2">{e.description ?? "—"}</td>
+                    <td className={cn("px-3 py-2 text-right font-medium tabular-nums", e.amount < 0 ? "text-destructive" : "text-emerald-600")}>{usd(e.amount)}</td>
+                    <td className="px-3 py-2">{e.status === "planned" ? <span className="text-xs text-destructive">unpaid</span> : <span className="text-xs text-muted-foreground">applied</span>}</td>
+                    <td className="px-3 py-2">
+                      {movable ? (
+                        <div className="flex items-center gap-1">
+                          <select value={moveTo[e.id] ?? id} onChange={(ev) => setMoveTo({ ...moveTo, [e.id]: ev.target.value })} className="h-8 rounded-md border bg-background px-1 text-xs">
+                            {allFunds.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+                          </select>
+                          <Button size="sm" variant="outline" disabled={busy || (moveTo[e.id] ?? id) === id} onClick={() => patch({ entryId: e.id, action: "move", targetFundId: moveTo[e.id] })}>Approve</Button>
+                          <Button size="sm" variant="ghost" disabled={busy} onClick={() => patch({ entryId: e.id, action: "delete" })}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                      ) : <span className="text-xs text-muted-foreground">—</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+              {entries.length === 0 && <tr><td colSpan={6} className="px-3 py-8 text-center text-muted-foreground">No movements yet. Money arrives here when you distribute a payout; bills debit it when paid.</td></tr>}
             </tbody>
           </table>
         </CardContent>
