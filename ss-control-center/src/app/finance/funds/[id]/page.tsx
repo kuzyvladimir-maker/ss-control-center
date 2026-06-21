@@ -24,6 +24,8 @@ import { monthlyAmount } from "@/lib/finance/expenses";
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const round2 = (n: number) => Math.round(n * 100) / 100;
+// Round UP to the nearest whole $5 (Vladimir wants clean 5/10/15… amounts).
+const up5 = (n: number) => Math.ceil((n - 1e-9) / 5) * 5;
 
 interface Fund { id: string; name: string; group: string; balance: number }
 interface Entry { id: string; type: string; amount: number; description: string | null; status: string; dueDate: string | null; createdAt: string }
