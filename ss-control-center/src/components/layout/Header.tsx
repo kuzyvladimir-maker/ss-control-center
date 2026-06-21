@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LogOut, Menu, Search, ShieldCheck } from "lucide-react";
+import { LogOut, Menu, Search, ShieldCheck, Settings } from "lucide-react";
 import { CriticalAlertsBell } from "@/components/critical-alerts/CriticalAlertsBell";
 import { useMounted } from "@/lib/use-mounted";
 import { useMobileNav } from "@/lib/mobile-nav-context";
@@ -17,6 +18,7 @@ interface MeUser {
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const mounted = useMounted();
   const [me, setMe] = useState<MeUser | null>(null);
   const { setOpen: setMobileNavOpen } = useMobileNav();
@@ -91,6 +93,25 @@ export default function Header() {
 
       {/* Critical alerts feed — polls /api/alerts/unacknowledged */}
       <CriticalAlertsBell />
+
+      {/* Settings gear — admin only. Moved here from the sidebar (it used to
+          live in the org-board's Communications division); it's a top-level
+          admin utility, so it sits with the bell + user chip. */}
+      {me && mounted && me.role === "admin" && (
+        <Link
+          href="/settings"
+          title="Settings"
+          aria-label="Settings"
+          className={cn(
+            "grid h-9 w-9 place-items-center rounded-md transition-colors",
+            pathname.startsWith("/settings")
+              ? "bg-green-soft text-green-ink"
+              : "text-ink-2 hover:bg-bg-elev hover:text-ink"
+          )}
+        >
+          <Settings size={18} strokeWidth={1.8} />
+        </Link>
+      )}
 
       {/* User chip */}
       {me && mounted && (

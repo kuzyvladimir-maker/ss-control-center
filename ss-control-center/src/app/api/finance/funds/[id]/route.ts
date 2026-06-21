@@ -24,11 +24,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const expenses = await prisma.recurringExpense.findMany({
     where: { category: fund.name, active: true }, orderBy: { name: "asc" },
   });
+  // Owed (остаток) = accrued (начислено) − paid (выплачено), per expense.
+  const owedTotal = round2(expenses.reduce((s, e) => s + Math.max(0, (e.accrued ?? 0) - (e.paid ?? 0)), 0));
   const accruedTotal = round2(expenses.reduce((s, e) => s + (e.accrued ?? 0), 0));
-  const plannedTotal = round2(entries.filter((e) => e.status === "planned").reduce((s, e) => s + e.amount, 0));
-  // `presets` kept for backward-compat with the current fund page until the
-  // accrued-to-pay UI replaces it.
-  return NextResponse.json({ fund, entries, expenses, presets: expenses, accruedTotal, plannedTotal });
+  const paidTotal = round2(expenses.reduce((s, e) => s + (e.paid ?? 0), 0));
+  return NextResponse.json({ fund, entries, expenses, owedTotal, accruedTotal, paidTotal });
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -44,11 +44,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!exp) return NextResponse.json({ error: "expense not found" }, { status: 404 });
       const amount = Math.abs(Number(b.amount));
       if (!Number.isFinite(amount) || amount === 0) return NextResponse.json({ error: "amount required" }, { status: 400 });
-      // Atomic: ledger debit + fund balance + reduce the owed counter all-or-nothing.
+      // Atomic: ledger debit + fund balance + grow the expense's PAID (выплачено).
+      // Owed (остаток) = accrued − paid, so paying raises `paid`, leaving accrued
+      // (начислено, the running counter) intact.
       const [entry] = await prisma.$transaction([
         prisma.fundEntry.create({ data: { fundId: id, type: "spend", amount: -round2(amount), description: `${exp.name} (paid)`, status: "applied" } }),
         prisma.fund.update({ where: { id }, data: { balance: { decrement: round2(amount) } } }),
-        prisma.recurringExpense.update({ where: { id: exp.id }, data: { accrued: Math.max(0, round2((exp.accrued ?? 0) - amount)) } }),
+        prisma.recurringExpense.update({ where: { id: exp.id }, data: { paid: round2((exp.paid ?? 0) + amount) } }),
       ]);
       return NextResponse.json({ ok: true, entry });
     }

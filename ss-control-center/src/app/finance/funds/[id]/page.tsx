@@ -20,12 +20,14 @@ import { cn } from "@/lib/utils";
 import { ReceiptScanner } from "@/components/finance/ReceiptScanner";
 import { Timesheet } from "@/components/finance/Timesheet";
 import { Debts } from "@/components/finance/Debts";
+import { monthlyAmount } from "@/lib/finance/expenses";
 
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 interface Fund { id: string; name: string; group: string; balance: number }
 interface Entry { id: string; type: string; amount: number; description: string | null; status: string; dueDate: string | null; createdAt: string }
-interface Expense { id: string; name: string; amount: number; frequency: string; accrued: number }
+interface Expense { id: string; name: string; amount: number; frequency: string; accrued: number; paid: number }
 
 const TYPE_LABEL: Record<string, string> = { allocation: "Allocation", spend: "Spend", planned_expense: "Bill", adjustment: "Manual credit" };
 
@@ -35,7 +37,7 @@ export default function FundDetailPage() {
   const [allFunds, setAllFunds] = useState<{ id: string; name: string }[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [accruedTotal, setAccruedTotal] = useState(0);
+  const [owedTotal, setOwedTotal] = useState(0);
   const [payAmt, setPayAmt] = useState<Record<string, string>>({});
   const [moveTo, setMoveTo] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +52,7 @@ export default function FundDetailPage() {
         fetch(`/api/finance/funds`).then((x) => x.json()),
       ]);
       if (r.error) throw new Error(r.error);
-      setFund(r.fund); setEntries(r.entries ?? []); setExpenses(r.expenses ?? []); setAccruedTotal(r.accruedTotal ?? 0);
+      setFund(r.fund); setEntries(r.entries ?? []); setExpenses(r.expenses ?? []); setOwedTotal(r.owedTotal ?? 0);
       setAllFunds((all.funds ?? []).map((f: { id: string; name: string }) => ({ id: f.id, name: f.name })));
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   }, [id]);
@@ -90,14 +92,14 @@ export default function FundDetailPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">Balance (cash in fund)</div><div className={cn("text-3xl font-semibold", (fund?.balance ?? 0) < 0 ? "text-destructive" : "text-emerald-600")}>{usd(fund?.balance ?? 0)}</div></CardContent></Card>
-        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground" title="Daily-ticking debt — what this fund owes. Pay items below to reduce it.">Owed now (debt)</div><div className="text-3xl font-semibold text-amber-600">{usd(accruedTotal)}</div></CardContent></Card>
-        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">After clearing debt</div><div className={cn("text-3xl font-semibold", ((fund?.balance ?? 0) - accruedTotal) < 0 ? "text-destructive" : "")}>{usd((fund?.balance ?? 0) - accruedTotal)}</div></CardContent></Card>
+        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground" title="Outstanding = accrued − paid, across this fund's items. Carries forward each plan.">Owed now (остаток)</div><div className="text-3xl font-semibold text-amber-600">{usd(owedTotal)}</div></CardContent></Card>
+        <Card><CardContent className="py-4"><div className="text-xs uppercase text-muted-foreground">After clearing debt</div><div className={cn("text-3xl font-semibold", ((fund?.balance ?? 0) - owedTotal) < 0 ? "text-destructive" : "")}>{usd((fund?.balance ?? 0) - owedTotal)}</div></CardContent></Card>
       </div>
 
-      {isSalary && (
+      {isSalary && fund && (
         <Card>
-          <CardHeader><CardTitle className="text-base">Timesheet — salaries by days worked</CardTitle></CardHeader>
-          <CardContent><Timesheet onBillsCreated={load} /></CardContent>
+          <CardHeader><CardTitle className="text-base">Timesheet — per-employee balance (accrued / paid / owed)</CardTitle></CardHeader>
+          <CardContent><Timesheet fundId={fund.id} onChanged={load} /></CardContent>
         </Card>
       )}
 
@@ -108,31 +110,34 @@ export default function FundDetailPage() {
         </Card>
       )}
 
-      {/* Owed — the fund's daily-ticking debt per expense item; press Paid to clear it
-          (full or part). Hidden on the Debt fund (it uses the Debts table). */}
-      {!isDebtFund && (
+      {/* Per-expense balance: Accrued (начислено, ticks daily) − Paid (выплачено) =
+          Owed (остаток, carries forward). Press Paid to pay one down. Hidden on the
+          Debt fund (Debts table) and the Salaries fund (the Timesheet shows balances). */}
+      {!isDebtFund && !isSalary && (
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Owed now — daily debt, press Paid to clear it</CardTitle>
+            <CardTitle className="text-base">Balances — accrued / paid / owed (carries over each plan)</CardTitle>
             <Link href="/finance/expenses" className="text-xs text-primary hover:underline">Manage expense items →</Link>
           </div>
         </CardHeader>
         <CardContent className="overflow-x-auto p-0">
           {expenses.length === 0 ? (
-            <p className="px-3 py-4 text-sm text-muted-foreground">No expense items in this fund. Add them on the <Link href="/finance/expenses" className="text-primary hover:underline">Expenses</Link> page — their daily debt then accrues here and feeds the plan&apos;s &quot;Needed&quot;.</p>
+            <p className="px-3 py-4 text-sm text-muted-foreground">No expense items in this fund. Add them on the <Link href="/finance/expenses" className="text-primary hover:underline">Expenses</Link> page — each then accrues its daily debt here and feeds the plan&apos;s &quot;Needed&quot;.</p>
           ) : (
             <table className="w-full text-sm">
-              <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Expense</th><th className="px-3 py-2 text-right">Monthly</th><th className="px-3 py-2 text-right">Owed now</th><th className="px-3 py-2">Pay</th></tr></thead>
+              <thead className="border-b text-left text-xs uppercase text-muted-foreground"><tr><th className="px-3 py-2">Expense</th><th className="px-3 py-2 text-right">Monthly</th><th className="px-3 py-2 text-right">Accrued</th><th className="px-3 py-2 text-right">Paid</th><th className="px-3 py-2 text-right">Owed</th><th className="px-3 py-2">Pay</th></tr></thead>
               <tbody>
                 {expenses.map((e) => {
-                  const owed = e.accrued ?? 0;
+                  const owed = Math.max(0, round2((e.accrued ?? 0) - (e.paid ?? 0)));
                   const due = owed > 0.005;
                   return (
                     <tr key={e.id} className={cn("border-b last:border-0", due ? "bg-amber-50/40" : "")}>
                       <td className="px-3 py-2">{e.name} <span className="text-xs text-muted-foreground">({e.frequency})</span></td>
-                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{usd(e.amount)}</td>
-                      <td className="px-3 py-2 text-right font-medium tabular-nums text-amber-600">{due ? usd(owed) : "—"}</td>
+                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{usd(monthlyAmount(e.amount, e.frequency))}</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{usd(e.accrued ?? 0)}</td>
+                      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{usd(e.paid ?? 0)}</td>
+                      <td className={cn("px-3 py-2 text-right font-medium tabular-nums", due ? "text-amber-600" : "text-emerald-600")}>{usd(owed)}</td>
                       <td className="px-3 py-2">
                         {due ? (
                           <div className="flex items-center gap-1">

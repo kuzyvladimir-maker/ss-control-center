@@ -3438,11 +3438,13 @@ model RecurringExpense {
   active      Boolean  @default(true)
   source      String   @default("sellerboard") // sellerboard | manual
   notes       String?
-  // Accrual meter: the expense "ticks" every day. `accrued` = currently-owed
-  // (not yet paid) amount; `lastAccruedDate` = the date it was last accrued up to
-  // (cursor, prevents double-counting). Salary accrues per worked day, others per
-  // calendar day. Paying it debits the fund and reduces `accrued`.
+  // Accrual ledger: `accrued` = начислено (gross, cumulative). Non-salary grows it
+  // daily (monthly cost ÷ 30.44) via the meter; SALARY grows it per worked day via
+  // the timesheet (toggle ±perDay). `paid` = выплачено (cumulative, grows when you
+  // press Paid). Owed (остаток) = accrued − paid. `lastAccruedDate` = cursor for the
+  // daily meter (non-salary only).
   accrued         Float   @default(0)
+  paid            Float   @default(0)
   lastAccruedDate String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

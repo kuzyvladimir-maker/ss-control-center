@@ -9,10 +9,8 @@ import {
   MessageSquare,
   Thermometer,
   Receipt,
-  Tags,
   TrendingUp,
   Package,
-  Settings,
   ShoppingCart,
   Layers,
   Sprout,
@@ -82,7 +80,6 @@ const divisions = (s: DashboardSummary): Division[] => [
     color: "#B8901F",
     items: [
       { title: "Reference Catalog", href: "/reference-catalog", icon: BookOpen },
-      { title: "Settings", href: "/settings", icon: Settings, adminOnly: true },
     ],
   },
   {
@@ -93,7 +90,7 @@ const divisions = (s: DashboardSummary): Division[] => [
       { title: "Amazon Growth", href: "/amazon-growth", icon: Leaf },
       { title: "Walmart Growth", href: "/walmart-growth", icon: Sprout },
       { title: "A+ Content", href: "/amazon-aplus", icon: Sparkles },
-      { title: "Product listings", href: "/listings", icon: Tags, disabled: true },
+      { title: "Bundle Factory", href: "/bundle-factory", icon: Layers },
     ],
   },
   {
@@ -119,7 +116,6 @@ const divisions = (s: DashboardSummary): Division[] => [
         pillVariant: "active",
       },
       { title: "Suppliers", href: "/suppliers", icon: Package, disabled: true },
-      { title: "Bundle Factory", href: "/bundle-factory", icon: Layers },
       {
         title: "Shipping labels",
         href: "/shipping",

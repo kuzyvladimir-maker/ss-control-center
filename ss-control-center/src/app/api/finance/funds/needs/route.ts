@@ -20,9 +20,9 @@ export async function GET() {
   const fundOf = new Map((await prisma.fund.findMany({ select: { id: true, name: true } })).map((f) => [f.id, f.name]));
   const needs: Record<string, number> = {};
 
-  // Recurring expenses: owed = accrued, grouped by category (= fund name).
+  // Recurring expenses: owed (остаток) = accrued − paid, grouped by category (= fund).
   const expenses = await prisma.recurringExpense.findMany({ where: { active: true } });
-  for (const e of expenses) needs[e.category] = round2((needs[e.category] ?? 0) + (e.accrued ?? 0));
+  for (const e of expenses) needs[e.category] = round2((needs[e.category] ?? 0) + Math.max(0, (e.accrued ?? 0) - (e.paid ?? 0)));
 
   // Installment debts: owed = accrued, grouped by their fund.
   const debts = await prisma.debt.findMany({ where: { status: "open" } });

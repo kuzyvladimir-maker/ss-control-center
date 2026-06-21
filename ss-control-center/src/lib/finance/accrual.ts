@@ -54,6 +54,9 @@ export async function accrueCategory(category: string | null, today: string): Pr
   const exps = await prisma.recurringExpense.findMany({ where });
   let added = 0;
   for (const e of exps) {
+    // Salaries are NOT smooth-accrued — their owed counter is driven by the timesheet
+    // (worked days × per-day rate), adjusted on toggle/pay. Skip them here.
+    if (e.category === SALARY_CATEGORY) continue;
     const from = e.lastAccruedDate ?? daysBefore(today, BOOTSTRAP_DAYS);
     if (from >= today) continue; // already up to date
     const add = accrualAmount(monthlyAmount(e.amount, e.frequency), from, today);

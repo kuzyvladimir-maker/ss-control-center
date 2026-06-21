@@ -1,7 +1,11 @@
 // Timesheet (табель) for salary employees (= Salaries-category expense items).
-//   GET ?month=YYYY-MM            → employees + their worked dates + per-day rate
-//   POST { action:"toggle", expenseId, date }   → toggle a worked day
-//   POST { action:"create_bills", month }        → worked days × per-day rate → bills in Salaries fund
+// Each employee IS one expense item with its own balance: accrued (начислено) grows
+// by per-day rate for every worked day toggled on; paid (выплачено) grows when you
+// press Paid (via the fund's pay_expense); owed (остаток) = accrued − paid carries
+// forward. Salaries are NOT smooth-accrued by the daily meter — only the timesheet
+// moves their `accrued`.
+//   GET ?month=YYYY-MM            → employees + worked dates (month) + balance
+//   POST { action:"toggle", expenseId, date }  → toggle a worked day (±perDay accrued)
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -24,7 +28,13 @@ export async function GET(req: NextRequest) {
   const rows = emps.map((e) => {
     const dates = (byEmp.get(e.id) ?? []).sort();
     const rate = perDayRate(e.amount, e.frequency);
-    return { id: e.id, name: e.name, amount: e.amount, frequency: e.frequency, perDay: rate, workedDates: dates, days: dates.length, pay: round2(dates.length * rate) };
+    const accrued = round2(e.accrued ?? 0); // начислено (all-time worked days × rate)
+    const paid = round2(e.paid ?? 0);        // выплачено (all-time)
+    return {
+      id: e.id, name: e.name, amount: e.amount, frequency: e.frequency, perDay: rate,
+      workedDates: dates, days: dates.length, monthPay: round2(dates.length * rate),
+      accrued, paid, owed: round2(Math.max(0, accrued - paid)),
+    };
   });
   return NextResponse.json({ month, employees: rows });
 }
@@ -35,37 +45,24 @@ export async function POST(req: NextRequest) {
 
     if (b.action === "toggle") {
       if (!b.expenseId || !b.date) return NextResponse.json({ error: "expenseId + date required" }, { status: 400 });
+      const e = await prisma.recurringExpense.findUnique({ where: { id: b.expenseId } });
+      if (!e) return NextResponse.json({ error: "employee not found" }, { status: 404 });
+      const rate = perDayRate(e.amount, e.frequency);
       const existing = await prisma.timeLog.findUnique({ where: { timelog_dedup: { expenseId: b.expenseId, date: b.date } } });
-      if (existing) { await prisma.timeLog.delete({ where: { id: existing.id } }); return NextResponse.json({ ok: true, worked: false }); }
-      await prisma.timeLog.create({ data: { expenseId: b.expenseId, date: b.date } });
-      return NextResponse.json({ ok: true, worked: true });
-    }
-
-    if (b.action === "create_bills") {
-      const month = String(b.month || new Date().toISOString().slice(0, 7));
-      const fund = await prisma.fund.findFirst({ where: { name: SALARY_CATEGORY, group: "FP1" } });
-      if (!fund) return NextResponse.json({ error: "Salaries fund not found" }, { status: 404 });
-      const emps = await employees();
-      const logs = await prisma.timeLog.findMany({ where: { expenseId: { in: emps.map((e) => e.id) }, date: { startsWith: month } } });
-      const days = new Map<string, number>();
-      for (const l of logs) days.set(l.expenseId, (days.get(l.expenseId) ?? 0) + 1);
-
-      const existingBills = await prisma.fundEntry.findMany({ where: { fundId: fund.id, type: "planned_expense", status: "planned" } });
-      const have = new Set(existingBills.map((e) => e.description));
-
-      let created = 0;
-      const result: { name: string; days: number; pay: number }[] = [];
-      for (const e of emps) {
-        const d = days.get(e.id) ?? 0;
-        const pay = round2(d * perDayRate(e.amount, e.frequency));
-        if (pay <= 0) continue;
-        const description = `${e.name} — ${d}d (${month})`;
-        result.push({ name: e.name, days: d, pay });
-        if (have.has(description)) continue;
-        await prisma.fundEntry.create({ data: { fundId: fund.id, type: "planned_expense", amount: -pay, description, status: "planned" } });
-        created++;
+      if (existing) {
+        // Un-mark a worked day → start owing one day less (накопление −perDay).
+        await prisma.$transaction([
+          prisma.timeLog.delete({ where: { id: existing.id } }),
+          prisma.recurringExpense.update({ where: { id: e.id }, data: { accrued: Math.max(0, round2((e.accrued ?? 0) - rate)) } }),
+        ]);
+        return NextResponse.json({ ok: true, worked: false });
       }
-      return NextResponse.json({ ok: true, created, fundId: fund.id, result });
+      // Mark a worked day → accrue one more day of salary (начисление +perDay).
+      await prisma.$transaction([
+        prisma.timeLog.create({ data: { expenseId: b.expenseId, date: b.date } }),
+        prisma.recurringExpense.update({ where: { id: e.id }, data: { accrued: round2((e.accrued ?? 0) + rate) } }),
+      ]);
+      return NextResponse.json({ ok: true, worked: true });
     }
 
     return NextResponse.json({ error: "unknown action" }, { status: 400 });

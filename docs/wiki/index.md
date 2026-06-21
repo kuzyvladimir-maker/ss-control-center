@@ -19,6 +19,7 @@
 ---
 
 ## 🎨 Design / UI
+- [Sidebar по орг-схеме (7 отделений)](sidebar-orgboard.md) — левый сайдбар сгруппирован по 7 отделениям ЛРХ (вариант «Канон»), каждое отделение сворачивается стрелкой; превью `design/sidebar_orgboard_preview.html`
 - [Design System и mockup‘ы](design/index.md) — Salutem Design System v1.0, каталог 7 HTML mockup'ов в `/design/` (source of truth для Next.js UI)
 - [Mobile Adaptation](mobile-adaptation.md) — аудит мобильной адаптации, план перехода (sidebar→drawer, table→cards, breakpoint md=768px)
 
