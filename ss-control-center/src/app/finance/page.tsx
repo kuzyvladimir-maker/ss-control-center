@@ -11,7 +11,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, RefreshCw, Play, CheckCircle2, AlertCircle, Settings2, FileText, Receipt, Wand2, CalendarDays } from "lucide-react";
+import { Loader2, RefreshCw, Play, CheckCircle2, AlertCircle, Settings2, FileText, Receipt, Wand2, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,7 @@ export default function FinancialPlanPage() {
   const [note, setNote] = useState<string | null>(null);
   const [pulled, setPulled] = useState<{ marketplace: string; period: string | null; net: number }[]>([]);
   const [manualAmt, setManualAmt] = useState("");
+  const [manualLabel, setManualLabel] = useState("");
   const [scope, setScope] = useState<"pending" | "all">("pending");
 
   const load = useCallback(async () => {
@@ -73,9 +74,9 @@ export default function FinancialPlanPage() {
     if (!Number.isFinite(amt) || amt === 0) { setError("Enter a payout amount"); return; }
     setBusy("manual"); setError(null);
     try {
-      const r = await fetch("/api/finance/payouts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ netAmount: amt }) }).then((x) => x.json());
+      const r = await fetch("/api/finance/payouts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ netAmount: amt, entity: manualLabel.trim() || "Manual income", note: manualLabel.trim() }) }).then((x) => x.json());
       if (!r.ok) throw new Error(r.error ?? "add failed");
-      setManualAmt(""); setNote(`Manual payout ${usd(amt)} added.`); await load();
+      setManualAmt(""); setManualLabel(""); setNote(`Manual income ${usd(amt)} added — distribute it below.`); await load();
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
   }
 
@@ -129,7 +130,6 @@ export default function FinancialPlanPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={getReport} disabled={busy != null}>{busy === "report" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <FileText className="mr-1 h-4 w-4" />}Get Report</Button>
-          <Link href="/finance/timesheet"><Button variant="outline" size="sm"><CalendarDays className="mr-1 h-4 w-4" />Timesheet</Button></Link>
           <Link href="/finance/expenses"><Button variant="outline" size="sm"><Receipt className="mr-1 h-4 w-4" />Expense items</Button></Link>
           <Link href="/finance/funds"><Button variant="outline" size="sm"><Settings2 className="mr-1 h-4 w-4" />Manage funds</Button></Link>
           <Button onClick={load} variant="outline" size="sm"><RefreshCw className="h-4 w-4" /></Button>
@@ -159,6 +159,18 @@ export default function FinancialPlanPage() {
             <Kpi label="Periods pulled" value={String(payouts.length)} />
             <Kpi label="Reserve %" value={config ? `${Math.round(config.manualPct * 100)}%` : "—"} />
           </div>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">Add income manually</CardTitle></CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap items-end gap-2">
+                <div><label className="block text-xs text-muted-foreground">Amount $</label><Input type="number" className="w-32" value={manualAmt} onChange={(e) => setManualAmt(e.target.value)} placeholder="0.00" /></div>
+                <div className="flex-1"><label className="block text-xs text-muted-foreground">Label (optional)</label><Input value={manualLabel} onChange={(e) => setManualLabel(e.target.value)} placeholder="e.g. Leftover from previous payouts" /></div>
+                <Button onClick={addManualPayout} disabled={busy != null}>{busy === "manual" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-1 h-4 w-4" />}Add income</Button>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">Money you received outside the auto-pulled marketplace payouts (e.g. leftover cash). It joins the pool to distribute into funds below.</p>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader><CardTitle className="text-base">Latest payout per account</CardTitle></CardHeader>
@@ -237,10 +249,6 @@ export default function FinancialPlanPage() {
                 <div>
                   <label className="block text-xs text-muted-foreground">Reserve % (restock: COGS+shipping+packaging)</label>
                   <div className="flex items-center gap-1"><Input type="number" min={0} max={100} className="w-24" value={config ? Math.round(config.manualPct * 100) : 0} onChange={(e) => saveConfig({ manualPct: (Number(e.target.value) || 0) / 100 })} /><span className="text-sm text-muted-foreground">%</span></div>
-                </div>
-                <div>
-                  <label className="block text-xs text-muted-foreground">Add payout manually ($)</label>
-                  <div className="flex items-center gap-1"><Input type="number" className="w-28" value={manualAmt} onChange={(e) => setManualAmt(e.target.value)} placeholder="0.00" /><Button onClick={addManualPayout} disabled={busy != null} variant="outline" size="sm">{busy === "manual" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}</Button></div>
                 </div>
                 <Button onClick={autoAllocate} disabled={busy != null} variant="outline">{busy === "auto" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Wand2 className="mr-1 h-4 w-4" />}Auto-set % from needs</Button>
                 <Button onClick={() => doRun(true)} disabled={busy != null} variant="outline">{busy === "preview" ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Play className="mr-1 h-4 w-4" />}Preview</Button>
