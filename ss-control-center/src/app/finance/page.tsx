@@ -40,6 +40,7 @@ export default function FinancialPlanPage() {
   const [pulled, setPulled] = useState<{ marketplace: string; period: string | null; net: number }[]>([]);
   const [manualAmt, setManualAmt] = useState("");
   const [manualLabel, setManualLabel] = useState("");
+  const [pctEdit, setPctEdit] = useState<Record<string, string>>({});
   const [scope, setScope] = useState<"pending" | "all">("pending");
 
   const load = useCallback(async () => {
@@ -77,6 +78,17 @@ export default function FinancialPlanPage() {
       const r = await fetch("/api/finance/payouts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ netAmount: amt, entity: manualLabel.trim() || "Manual income", note: manualLabel.trim() }) }).then((x) => x.json());
       if (!r.ok) throw new Error(r.error ?? "add failed");
       setManualAmt(""); setManualLabel(""); setNote(`Manual income ${usd(amt)} added — distribute it below.`); await load();
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
+  }
+
+  async function setFundPct(fundId: string, pct: number) {
+    setBusy("pct"); setError(null);
+    try {
+      await fetch("/api/finance/funds", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: fundId, allocationType: "percent", value: pct }) });
+      setPctEdit((p) => { const n = { ...p }; delete n[fundId]; return n; });
+      await load();
+      const r = await fetch("/api/finance/run", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ preview: true }) }).then((x) => x.json());
+      if (r.ok) setRun(r);
     } catch (e) { setError(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
   }
 
@@ -266,14 +278,19 @@ export default function FinancialPlanPage() {
                   <table className="w-full">
                     <thead className="text-left text-xs uppercase text-muted-foreground"><tr><th className="py-1">Group</th><th>Fund</th><th className="text-right">% of distributable</th><th className="text-right">Amount</th></tr></thead>
                     <tbody>{run.distribution.allocations.map((a) => {
-                      const pct = a.group === "RESERVE"
-                        ? `${Math.round((run.distribution.reserve / (run.distribution.totalIn || 1)) * 100)}% of payout`
-                        : run.distribution.distributable > 0 ? `${((a.amount / run.distribution.distributable) * 100).toFixed(1)}%` : "—";
+                      const f = funds.find((x) => x.id === a.fundId);
+                      const editable = !!f && f.group !== "RESERVE" && f.group !== "FREE" && f.allocationType === "percent";
                       return (
                         <tr key={a.fundId} className="border-t">
                           <td className="py-1 text-muted-foreground">{a.group}</td>
                           <td>{a.name}</td>
-                          <td className="text-right tabular-nums text-muted-foreground">{pct}</td>
+                          <td className="text-right tabular-nums text-muted-foreground">
+                            {a.group === "RESERVE"
+                              ? `${Math.round((run.distribution.reserve / (run.distribution.totalIn || 1)) * 100)}% of payout`
+                              : editable
+                                ? (<span className="inline-flex items-center justify-end gap-0.5"><input type="number" value={pctEdit[a.fundId] ?? String(f!.value)} disabled={busy != null} onChange={(e) => setPctEdit({ ...pctEdit, [a.fundId]: e.target.value })} onBlur={(e) => { const v = Number(e.target.value); if (Number.isFinite(v) && v !== f!.value) setFundPct(a.fundId, v); }} className="w-14 rounded border bg-background px-1 py-0.5 text-right" />%</span>)
+                                : run.distribution.distributable > 0 ? `${((a.amount / run.distribution.distributable) * 100).toFixed(1)}%` : "—"}
+                          </td>
                           <td className="text-right font-medium">{usd(a.amount)}</td>
                         </tr>
                       );
