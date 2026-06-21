@@ -21,6 +21,7 @@ import {
   Sparkles,
   DollarSign,
   PiggyBank,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -36,6 +37,23 @@ interface NavItem {
   pillCount?: number;
   pillVariant?: "active" | "warn";
   disabled?: boolean;
+  /** Settings — only visible to admins (sits in the Communications division). */
+  adminOnly?: boolean;
+}
+
+/**
+ * A "division" is one of L. Ron Hubbard's seven org-board divisions. The whole
+ * sidebar is grouped this way (variant "Канон" approved by Vladimir 2026-06-21).
+ * Order top→bottom follows the org board's particle flow: 7 → 1 → 2 → 3 → 4 → 5 → 6.
+ * `num` = division number, `color` = its official org-board color (muted to brand),
+ * used for the left accent stripe + number badge. Full module→division mapping lives
+ * in docs/wiki/lrh-green-volumes/command-center-orgboard.md.
+ */
+interface Division {
+  num: string;
+  name: string;
+  color: string;
+  items: NavItem[];
 }
 
 interface DashboardSummary {
@@ -48,103 +66,109 @@ interface DashboardSummary {
   adjustments?: { monthlyTotal?: number; unreviewed?: number };
 }
 
-const operationsItems = (s: DashboardSummary): NavItem[] => [
-  { title: "Dashboard", href: "/", icon: LayoutDashboard },
-  // Sales Overview sits directly under Dashboard per Vladimir's
-  // 2026-06-05 sidebar reorg — it's a top-level view he opens many
-  // times a day to check revenue / orders / status across all stores,
-  // so it deserves the second slot rather than living in the
-  // Phase 2 catch-all section below.
-  { title: "Sales overview", href: "/analytics", icon: TrendingUp },
+// Module placement per Vladimir's 2026-06-21 decisions:
+//  - Frozen analytics, Adjustments, Account Health → Div 5 (Qualifications)
+//  - Sales overview → Div 3 (Treasury)
+const divisions = (s: DashboardSummary): Division[] => [
   {
-    title: "Account Health",
-    href: "/account-health",
-    icon: HeartPulse,
-    pillCount:
-      (s.health?.issues ?? 0) + (s.walmart?.healthIssues ?? 0) || undefined,
-    pillVariant: "warn",
+    num: "7",
+    name: "Executive",
+    color: "#3F6FA0",
+    items: [{ title: "Dashboard", href: "/", icon: LayoutDashboard }],
   },
   {
-    title: "Procurement",
-    href: "/procurement",
-    icon: ShoppingCart,
-    pillCount: s.procurement?.ordersToBuy || undefined,
-    pillVariant: "active",
+    num: "1",
+    name: "Communications",
+    color: "#B8901F",
+    items: [
+      { title: "Reference Catalog", href: "/reference-catalog", icon: BookOpen },
+      { title: "Settings", href: "/settings", icon: Settings, adminOnly: true },
+    ],
   },
   {
-    title: "Shipping labels",
-    href: "/shipping",
-    icon: Truck,
-    pillCount: s.orders?.awaitingShipment || undefined,
-    pillVariant: "active",
+    num: "2",
+    name: "Dissemination",
+    color: "#6B5A8C",
+    items: [
+      { title: "Amazon Growth", href: "/amazon-growth", icon: Leaf },
+      { title: "Walmart Growth", href: "/walmart-growth", icon: Sprout },
+      { title: "A+ Content", href: "/amazon-aplus", icon: Sparkles },
+      { title: "Product listings", href: "/listings", icon: Tags, disabled: true },
+    ],
   },
   {
-    title: "Customer hub",
-    href: "/customer-hub",
-    icon: MessageSquare,
-    pillCount: s.customerService?.openCases || undefined,
-    pillVariant: "active",
-  },
-  { title: "Frozen analytics", href: "/frozen-analytics", icon: Thermometer },
-  {
-    title: "Adjustments",
-    href: "/adjustments",
-    icon: Receipt,
-    // Unreviewed shipping adjustments (30d). The badge used to show
-    // s.claims.active by mistake — that's the A-to-Z claim queue, not
-    // adjustments.
-    pillCount: s.adjustments?.unreviewed || undefined,
-    pillVariant: "warn",
+    num: "3",
+    name: "Treasury",
+    color: "#A85C73",
+    items: [
+      { title: "Financial Plan", href: "/finance", icon: PiggyBank },
+      { title: "Economics", href: "/economics", icon: DollarSign },
+      { title: "Sales overview", href: "/analytics", icon: TrendingUp },
+    ],
   },
   {
-    title: "Bundle Factory",
-    href: "/bundle-factory",
-    icon: Layers,
+    num: "4",
+    name: "Production",
+    color: "#1F4D3F",
+    items: [
+      {
+        title: "Procurement",
+        href: "/procurement",
+        icon: ShoppingCart,
+        pillCount: s.procurement?.ordersToBuy || undefined,
+        pillVariant: "active",
+      },
+      { title: "Suppliers", href: "/suppliers", icon: Package, disabled: true },
+      { title: "Bundle Factory", href: "/bundle-factory", icon: Layers },
+      {
+        title: "Shipping labels",
+        href: "/shipping",
+        icon: Truck,
+        pillCount: s.orders?.awaitingShipment || undefined,
+        pillVariant: "active",
+      },
+    ],
   },
   {
-    title: "Reference Catalog",
-    href: "/reference-catalog",
-    icon: BookOpen,
+    num: "5",
+    name: "Qualifications",
+    color: "#7D827D",
+    items: [
+      {
+        title: "Account Health",
+        href: "/account-health",
+        icon: HeartPulse,
+        pillCount:
+          (s.health?.issues ?? 0) + (s.walmart?.healthIssues ?? 0) || undefined,
+        pillVariant: "warn",
+      },
+      { title: "Frozen analytics", href: "/frozen-analytics", icon: Thermometer },
+      {
+        title: "Adjustments",
+        href: "/adjustments",
+        icon: Receipt,
+        // Unreviewed shipping adjustments (30d). NOT s.claims.active — that's
+        // the A-to-Z claim queue, a different number.
+        pillCount: s.adjustments?.unreviewed || undefined,
+        pillVariant: "warn",
+      },
+    ],
   },
   {
-    title: "Financial Plan",
-    href: "/finance",
-    icon: PiggyBank,
-  },
-  {
-    title: "Economics",
-    href: "/economics",
-    icon: DollarSign,
-  },
-  {
-    title: "Walmart Growth",
-    href: "/walmart-growth",
-    icon: Sprout,
-  },
-  {
-    title: "Amazon Growth",
-    href: "/amazon-growth",
-    icon: Leaf,
-  },
-  {
-    title: "A+ Content",
-    href: "/amazon-aplus",
-    icon: Sparkles,
+    num: "6",
+    name: "Public",
+    color: "#9A6B1C",
+    items: [
+      {
+        title: "Customer hub",
+        href: "/customer-hub",
+        icon: MessageSquare,
+        pillCount: s.customerService?.openCases || undefined,
+        pillVariant: "active",
+      },
+    ],
   },
 ];
-
-const phase2Items: NavItem[] = [
-  { title: "Product listings", href: "/listings", icon: Tags, disabled: true },
-  // Sales overview moved into Operations under Dashboard.
-  // Product listings + Suppliers remain stubs and stay disabled.
-  { title: "Suppliers", href: "/suppliers", icon: Package, disabled: true },
-];
-
-const settingsItem: NavItem = {
-  title: "Settings",
-  href: "/settings",
-  icon: Settings,
-};
 
 function NavLink({
   item,
@@ -199,10 +223,66 @@ function NavLink({
   );
 }
 
-function NavSection({ label }: { label: string }) {
+/** One collapsible org-board division block (colored stripe + number badge + items). */
+function DivisionBlock({
+  div,
+  visibleItems,
+  collapsed,
+  onToggle,
+  isActive,
+  onNavigate,
+}: {
+  div: Division;
+  visibleItems: NavItem[];
+  collapsed: boolean;
+  onToggle: () => void;
+  isActive: (href: string) => boolean;
+  onNavigate?: () => void;
+}) {
+  if (visibleItems.length === 0) return null;
   return (
-    <div className="px-2.5 pb-1.5 pt-3 text-[10px] font-mono uppercase tracking-[0.14em] text-ink-3">
-      {label}
+    <div
+      className="mb-1.5 rounded-r-lg bg-surface-tint"
+      style={{ borderLeft: `3px solid ${div.color}` }}
+    >
+      {/* Header — click anywhere to collapse/expand */}
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center gap-2 px-2.5 py-1.5"
+        aria-expanded={!collapsed}
+      >
+        <span
+          className="grid h-[17px] min-w-[17px] place-items-center rounded font-mono text-[10px] font-semibold text-white"
+          style={{ background: div.color }}
+        >
+          {div.num}
+        </span>
+        <span className="flex-1 text-left font-mono text-[9.5px] font-medium uppercase tracking-[0.1em] text-ink-2">
+          {div.name}
+        </span>
+        <ChevronDown
+          size={13}
+          strokeWidth={1.8}
+          className={cn(
+            "text-ink-4 transition-transform",
+            collapsed && "-rotate-90"
+          )}
+        />
+      </button>
+
+      {!collapsed && (
+        <nav className="space-y-0.5 px-1 pb-1.5">
+          {visibleItems.map((item) => (
+            <NavLink
+              key={item.href}
+              item={item}
+              active={!item.disabled && isActive(item.href)}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </nav>
+      )}
     </div>
   );
 }
@@ -215,6 +295,19 @@ export default function SidebarContent({
   const pathname = usePathname();
   const { user } = useMe();
   const [summary, setSummary] = useState<DashboardSummary>({});
+  // Which division numbers are collapsed. Empty = all expanded. Kept in memory:
+  // it survives client-side navigation (this component stays mounted in the
+  // layout) and resets only on a full page reload.
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  const toggleDiv = (num: string) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(num)) next.delete(num);
+      else next.add(num);
+      return next;
+    });
+  };
 
   // Show a nav item only if the user's role may open its module. Always-on
   // modules (Dashboard) and non-module paths stay visible; while `/api/auth/me`
@@ -227,19 +320,24 @@ export default function SidebarContent({
     return canAccessModule({ role: user.role, modules: user.modules }, mod.key);
   };
 
+  // Decide which items in a division this user may see:
+  //  - disabled (Phase 2 teasers) always show, as "Soon"
+  //  - adminOnly (Settings) only for admins
+  //  - everything else gated by RBAC module access
+  const visibleItemsFor = (div: Division): NavItem[] =>
+    div.items.filter((item) => {
+      if (item.disabled) return true;
+      if (item.adminOnly) return !!user?.isAdmin;
+      return canSee(item.href);
+    });
+
   useEffect(() => {
     let cancelled = false;
     // Two parallel fetches:
     //   1. /api/dashboard/summary — fast, reads counts from our DB.
-    //      Used for Procurement / Customer hub / Account Health /
-    //      Adjustments (their own pages also read from DB, so the
-    //      sidebar count matches the page count).
-    //   2. /api/shipping/dashboard — slow, live-fetches Veeqo. Used
-    //      ONLY to override the shipping-labels count so the sidebar
-    //      shows the same number the Shipping Labels page shows
-    //      ("Awaiting fulfillment"). The DB version drifts because
-    //      orders-amazon cron only syncs once per day and Walmart isn't
-    //      counted at all in summary.
+    //   2. /api/shipping/dashboard — slow, live-fetches Veeqo, used ONLY to
+    //      override the shipping-labels count so the sidebar matches the
+    //      Shipping Labels page ("Awaiting fulfillment").
     const load = async () => {
       try {
         const [summaryRes, shippingRes] = await Promise.all([
@@ -261,8 +359,6 @@ export default function SidebarContent({
           ...(summaryJson ?? {}),
           orders: {
             ...(summaryJson?.orders ?? {}),
-            // Prefer the live count when available; otherwise keep the
-            // DB number so the badge isn't blank if Veeqo is down.
             awaitingShipment:
               liveShippingCount ?? summaryJson?.orders?.awaitingShipment,
           },
@@ -297,47 +393,25 @@ export default function SidebarContent({
         </div>
       </div>
 
-      {/* Global store filter — drives all Dashboard data. See
-          src/lib/store-filter/StoreFilterContext.tsx */}
+      {/* Global store filter — drives all Dashboard data. */}
       <div className="mx-3 mt-3">
         <StoreFilterSelector />
       </div>
 
-      {/* Operations */}
-      <NavSection label="Operations" />
-      <nav className="space-y-0.5 px-2">
-        {operationsItems(summary)
-          .filter((item) => canSee(item.href))
-          .map((item) => (
-            <NavLink
-              key={item.href}
-              item={item}
-              active={isActive(item.href)}
-              onNavigate={onNavigate}
-            />
-          ))}
-      </nav>
-
-      {/* Phase 2 */}
-      <NavSection label="Phase 2" />
-      <nav className="space-y-0.5 px-2">
-        {phase2Items.map((item) => (
-          <NavLink key={item.href} item={item} active={false} />
-        ))}
-      </nav>
-
-      <div className="flex-1" />
-
-      {/* Settings (admin only, always at bottom) */}
-      {user?.isAdmin && (
-        <div className="px-2 pb-2">
-          <NavLink
-            item={settingsItem}
-            active={isActive("/settings")}
+      {/* Org-board divisions (7 → 1 → 2 → 3 → 4 → 5 → 6), each collapsible. */}
+      <div className="mt-3 flex-1 space-y-0 overflow-y-auto px-2 pb-3">
+        {divisions(summary).map((div) => (
+          <DivisionBlock
+            key={div.num}
+            div={div}
+            visibleItems={visibleItemsFor(div)}
+            collapsed={collapsed.has(div.num)}
+            onToggle={() => toggleDiv(div.num)}
+            isActive={isActive}
             onNavigate={onNavigate}
           />
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }

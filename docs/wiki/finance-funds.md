@@ -76,17 +76,44 @@ adjustments, tax (wash), reserve (timing) → net.
   empty rows → 0 (known gap, see API reference).
 - Tests: `scripts/check-finance-settlement.ts` (all pass).
 
-## Accrual meter (IN PROGRESS — not yet deployed, 2026-06-20)
+## Owed-debt meter — drives "Needed" (DEPLOYED 2026-06-21)
 
-Per Vladimir: expenses must "tick" daily on their own (a meter), so when you open
-a fund any day the accrued (owed) amount is already there, never double-counted.
-Built so far: `RecurringExpense.accrued` + `lastAccruedDate` (cursor) columns;
-`src/lib/finance/accrual.ts` (calendar-day accrual for non-salary, worked-day for
-salary; `accrueCategory`); fund GET ticks the meter on open; fund POST `pay_expense`
-debits the fund and reduces `accrued`. Math tested (`scripts/check-finance-accrual.ts`).
-TODO before deploy: fund-detail UI (replace presets/bills with an "accrued to pay"
-table), invert the timesheet (default weekdays worked → mark absences; show
-accrued/paid), daily accrual cron, and clear old planned-bill/TimeLog test data.
+Vladimir's model for how much each payout should fund per fund: every expense item
+(and every installment debt) carries a daily-ticking **owed counter** = its monthly
+cost ÷ 30.44 per calendar day. It goes UP every day and DOWN only when you press
+**Paid** on that item (full or part). So unfunded debt **carries forward**: at the
+next plan, Needed = old unpaid debt + newly accrued days. Distribution
+**`Needed(fund) = Σ owed`** of its expenses + its installment debts.
+
+- `RecurringExpense.accrued` + `lastAccruedDate`, and `Debt.accrued` + `lastAccruedDate`
+  (cursor). `src/lib/finance/accrual.ts`: `dailyOwedRate` = `monthlyAmount/30.44`
+  (smooth, same basis for **all** categories incl. salary), `accrueCategory` (expenses)
+  + `accrueInstallments` (installment debts, capped at remaining). **First tick
+  bootstraps one week** (`BOOTSTRAP_DAYS=7`) so a freshly set-up fund shows a
+  meaningful week-one number instead of $0.
+- Ticked on read (`/api/finance/funds/needs`, fund GET, debts GET) **and** by a daily
+  cron `/api/cron/finance-accrual` (05:00). Idempotent by `lastAccruedDate`.
+- Pay → `pay_expense` (fund route) / debt `pay` action: debit the fund + reduce the
+  owed counter, run as a single **`prisma.$transaction`** (atomic; verified on Turso).
+- **Taxes** and **Reserve** are NOT accrued — they're a % of the payout (Taxes =
+  `taxRatePct` × pending net, default 1.5%, computed on the FP page; Reserve = 58%
+  off the top). The **Expansion/Debt (FP2)** fund has no target → Needed 0.
+- Fund page: an **"Owed now"** table per expense (monthly · owed · Paid) replaced the
+  old presets/bills view; KPIs are cash balance / owed debt / after-clearing.
+- `auto-allocate` ("Auto-set % from needs") sets each FP1 fund's % from its monthly
+  obligation **incl. installment debts** (kept in sync with Needs by an audit fix).
+- Installment debts (рассрочка): `monthlyPayment` + `paymentFrequency`
+  (monthly/biweekly/weekly/daily); `installmentMonthly` averages to a monthly figure
+  (daily here = calendar ×30.44 on purpose, unlike a daily wage's ×21.67 work days).
+- Tests: `scripts/check-finance-accrual.ts` (all pass). Numbers verified on Turso:
+  Salaries ~$3,239 / Warehouse ~$1,019 / Software ~$210 / Subs ~$12 / Installments
+  ~$404 for the 7-day bootstrap (≈ "$5k/week" for ~$20k/month).
+- Audited by a multi-agent adversarial pass (2026-06-21): atomic-payment + auto-allocate
+  fixes applied; taxNeed "dead code" and zero-accrued-filter findings dismissed (false
+  positives — the Taxes fund exists at runtime; Needed is a hint, not a forced alloc).
+- Open refinement: the Timesheet (salary by worked days) still exists as a side helper
+  but the owed meter accrues salary smoothly; worked-day precision in the meter is a
+  future refinement.
 
 ## Next (later phases)
 F9 forecast (income vs plan, behind-plan alerts → Amazon/Walmart Grow); F4/F3 full
