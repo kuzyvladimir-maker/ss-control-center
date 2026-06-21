@@ -264,8 +264,20 @@ export default function FinancialPlanPage() {
                     <span>{run.preview ? "PREVIEW — not committed" : "COMMITTED"}</span>
                   </div>
                   <table className="w-full">
-                    <thead className="text-left text-xs uppercase text-muted-foreground"><tr><th className="py-1">Fund</th><th>Group</th><th className="text-right">Amount</th></tr></thead>
-                    <tbody>{run.distribution.allocations.map((a) => (<tr key={a.fundId} className="border-t"><td className="py-1">{a.name}</td><td className="text-muted-foreground">{a.group}</td><td className="text-right font-medium">{usd(a.amount)}</td></tr>))}</tbody>
+                    <thead className="text-left text-xs uppercase text-muted-foreground"><tr><th className="py-1">Group</th><th>Fund</th><th className="text-right">% of distributable</th><th className="text-right">Amount</th></tr></thead>
+                    <tbody>{run.distribution.allocations.map((a) => {
+                      const pct = a.group === "RESERVE"
+                        ? `${Math.round((run.distribution.reserve / (run.distribution.totalIn || 1)) * 100)}% of payout`
+                        : run.distribution.distributable > 0 ? `${((a.amount / run.distribution.distributable) * 100).toFixed(1)}%` : "—";
+                      return (
+                        <tr key={a.fundId} className="border-t">
+                          <td className="py-1 text-muted-foreground">{a.group}</td>
+                          <td>{a.name}</td>
+                          <td className="text-right tabular-nums text-muted-foreground">{pct}</td>
+                          <td className="text-right font-medium">{usd(a.amount)}</td>
+                        </tr>
+                      );
+                    })}</tbody>
                   </table>
                 </div>
               )}
