@@ -25,7 +25,7 @@ const f = (
 ): FundConfig => ({ id, name: id, group, allocationType, value, priority, cap, active: true });
 
 // --- blendReserveRate ---
-eq("blend rate 55%", blendReserveRate({ cogs: 40, shipping: 10, packaging: 5, revenue: 100 }), 0.55);
+eq("blend rate 45% (shipping excluded)", blendReserveRate({ cogs: 40, shipping: 10, packaging: 5, revenue: 100 }), 0.45);
 eq("blend rate 0 revenue", blendReserveRate({ cogs: 5, shipping: 0, packaging: 0, revenue: 0 }), 0);
 eq("blend rate capped at 1", blendReserveRate({ cogs: 90, shipping: 30, packaging: 10, revenue: 100 }), 1);
 

@@ -1,8 +1,8 @@
 // Shared types for the Finance Core module — Phase 1 (Funds).
 //
 // Model: ONE global business pool. Money in = marketplace payouts (already net of
-// marketplace fees, cash basis). Each payout is distributed by a waterfall:
-//   1. RESERVE fund first   (reserve = payout × reserveRate; covers COGS+shipping+packaging restock)
+// marketplace fees AND shipping labels, cash basis). Each payout is distributed by a waterfall:
+//   1. RESERVE fund first   (reserve = payout × reserveRate; covers COGS+packaging restock — NOT shipping, already netted)
 //   2. FP1 funds (life-support) by priority
 //   3. FP2 funds (growth/obligations) by priority
 //   4. FREE fund gets whatever is left

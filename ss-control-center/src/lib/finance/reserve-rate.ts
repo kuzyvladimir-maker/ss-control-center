@@ -14,10 +14,12 @@
 
 import { prisma } from "@/lib/prisma";
 
-// Working-capital / restock reserve — the share of each payout returned to the
-// operating cycle (COGS + shipping + packaging) before distributing to funds.
-// 58% ≈ derived from the pricing formula (price = landed × (1+markup)/0.85) at a
-// realistic ~55% markup, plus a small buffer. Refine from real COGS later.
+// Working-capital / restock reserve — the share of each payout we set aside to
+// re-buy the next batch: COGS + packaging ONLY. Shipping is NOT reserved: marketplace
+// labels (Amazon/Walmart Buy Shipping) are deducted from the payout, so the payout we
+// distribute is already net of shipping — reserving for it again would double-count.
+// NOTE: the old 0.58 default was derived as COGS+packaging+SHIPPING and is therefore
+// too high. Pending Vladimir's real COGS+packaging share to reset; he can override in UI.
 export const DEFAULT_MANUAL_PCT = 0.58;
 export const DEFAULT_WINDOW_WEEKS = 4;
 
@@ -27,16 +29,19 @@ const K = {
   windowWeeks: "finance:reserve:windowWeeks",
 };
 
-/** Pure: blended reserve rate from summed recent costs vs revenue. */
+/** Pure: blended reserve rate from summed recent costs vs revenue.
+ *  Reserve = COGS + packaging only (what we FRONT to restock). Shipping is excluded —
+ *  it's already netted from the payout. `shipping` is accepted for back-compat but
+ *  intentionally ignored. */
 export function blendReserveRate(input: {
   cogs: number;
-  shipping: number;
+  shipping?: number;
   packaging: number;
   revenue: number;
 }): number {
-  const { cogs, shipping, packaging, revenue } = input;
+  const { cogs, packaging, revenue } = input;
   if (!Number.isFinite(revenue) || revenue <= 0) return 0;
-  const rate = (cogs + shipping + packaging) / revenue;
+  const rate = (cogs + packaging) / revenue; // shipping excluded — already netted from payout
   if (!Number.isFinite(rate) || rate < 0) return 0;
   return rate > 1 ? 1 : Math.round(rate * 10000) / 10000;
 }

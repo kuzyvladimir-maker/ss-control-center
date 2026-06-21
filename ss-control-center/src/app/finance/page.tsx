@@ -287,7 +287,7 @@ export default function FinancialPlanPage() {
             <CardContent className="space-y-4">
               <div className="flex flex-wrap items-end gap-3">
                 <div>
-                  <label className="block text-xs text-muted-foreground">Reserve % — working capital (restock: COGS+shipping+packaging)</label>
+                  <label className="block text-xs text-muted-foreground">Reserve % — working capital (restock: COGS+packaging; shipping already netted from payout)</label>
                   <div className="flex items-center gap-1"><Input type="number" min={0} max={100} className="w-24" value={config ? Math.round(config.manualPct * 100) : 0} onChange={(e) => saveConfig({ manualPct: (Number(e.target.value) || 0) / 100 })} /><span className="text-sm text-muted-foreground">%</span></div>
                 </div>
                 <div>
