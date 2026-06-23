@@ -3,29 +3,84 @@ import { todayNY, utcToPacificYMD } from "@/lib/shipping/dates";
 const VEEQO_API_KEY = process.env.VEEQO_API_KEY!;
 const VEEQO_BASE_URL = process.env.VEEQO_BASE_URL || "https://api.veeqo.com";
 
+// Transient HTTP statuses worth retrying — Veeqo intermittently throws these
+// under load (429 rate-limit; 500/502/503/504 gateway/overload blips). A single
+// such blip on ANY of the dozens of GETs the shipping plan fires used to abort
+// the whole page with "Veeqo API error …", which is exactly the "error popped
+// up → I reloaded → it worked" the operator reported. Retrying idempotent reads
+// makes those self-heal instead of surfacing to the UI.
+const VEEQO_RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
+const VEEQO_MAX_ATTEMPTS = 4;
+
 export async function veeqoFetch(path: string, options?: RequestInit) {
-  const res = await fetch(`${VEEQO_BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      "x-api-key": VEEQO_API_KEY,
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-  });
-  if (!res.ok) {
+  // Only RETRY idempotent reads. GET/HEAD can be safely re-sent; a POST to
+  // /shipping/shipments (label purchase) MUST NOT be — a transient error there
+  // might mean "label already bought", so re-sending could buy a SECOND label.
+  // PUTs (dispatch date / allocation package) are technically idempotent but we
+  // keep the conservative GET/HEAD-only rule so the buy POST is never in scope.
+  const method = (options?.method || "GET").toUpperCase();
+  const canRetry = method === "GET" || method === "HEAD";
+  const maxAttempts = canRetry ? VEEQO_MAX_ATTEMPTS : 1;
+
+  let lastErr: unknown = null;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    let res: Response;
+    try {
+      res = await fetch(`${VEEQO_BASE_URL}${path}`, {
+        ...options,
+        headers: {
+          "x-api-key": VEEQO_API_KEY,
+          "Content-Type": "application/json",
+          ...options?.headers,
+        },
+      });
+    } catch (e) {
+      // Network-level failure (DNS / connection reset / TLS / fetch timeout).
+      // Transient by nature — retry idempotent reads, otherwise rethrow.
+      lastErr = e;
+      if (canRetry && attempt < maxAttempts - 1) {
+        await new Promise((r) =>
+          setTimeout(r, 300 * 2 ** attempt + Math.random() * 200),
+        );
+        continue;
+      }
+      throw e;
+    }
+
+    if (!res.ok) {
+      const text = await res.text();
+      const err = new Error(`Veeqo API error ${res.status}: ${text}`);
+      // Retry transient statuses on idempotent reads with exponential backoff
+      // (300ms → 600ms → 1.2s + jitter). Non-transient (400/401/403/404/422)
+      // or non-idempotent calls throw immediately — no point masking a real
+      // client/validation error behind retries.
+      if (
+        canRetry &&
+        VEEQO_RETRY_STATUSES.has(res.status) &&
+        attempt < maxAttempts - 1
+      ) {
+        lastErr = err;
+        await new Promise((r) =>
+          setTimeout(r, 300 * 2 ** attempt + Math.random() * 200),
+        );
+        continue;
+      }
+      throw err;
+    }
+
+    // Some endpoints (e.g. /bulk_tagging) return 204 / empty body on success.
+    // res.json() would throw "Unexpected end of JSON input" on those.
+    if (res.status === 204) return null;
     const text = await res.text();
-    throw new Error(`Veeqo API error ${res.status}: ${text}`);
+    if (!text) return null;
+    try {
+      return JSON.parse(text);
+    } catch {
+      return text;
+    }
   }
-  // Some endpoints (e.g. /bulk_tagging) return 204 / empty body on success.
-  // res.json() would throw "Unexpected end of JSON input" on those.
-  if (res.status === 204) return null;
-  const text = await res.text();
-  if (!text) return null;
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text;
-  }
+  // Exhausted all attempts on a transient condition.
+  throw lastErr ?? new Error("Veeqo API error: request failed");
 }
 
 // Fetch all orders with pagination
