@@ -17,6 +17,9 @@ import {
   getRatesForShipDate,
   updateOrderDispatchDate,
 } from "@/lib/veeqo";
+import { prisma } from "@/lib/prisma";
+import { fetchSkuDatabase } from "@/lib/sku-database";
+import { resolveOrderParcel } from "@/lib/shipping/order-parcel";
 
 export async function GET(request: NextRequest) {
   const orderId = request.nextUrl.searchParams.get("orderId");
@@ -55,8 +58,31 @@ export async function GET(request: NextRequest) {
       channelType === "amazon" || order.channel?.name === "Merged Orders";
 
     // Amazon + a chosen ship date → date-anchored quote via the new API.
+    //
+    // CRITICAL: pass OUR catalog parcel (weight + box dims), exactly like the
+    // plan/card does. Without it getRatesForShipDate falls back to Veeqo's
+    // stored allocation_package — which Veeqo overwrites with an auto-
+    // "SUGGESTION" package (wrong weight/dims), inflating every rate and
+    // dropping some. That's the bug where the modal showed UPS 3 Day Select at
+    // $35.32 while the card (and Veeqo itself) showed the real $25.38, and the
+    // cheaper FedEx 2Day One Rate disappeared from the list. See
+    // src/lib/shipping/order-parcel.ts.
     if (shipDate && isAmazon) {
-      const resp = await getRatesForShipDate(order, `${shipDate}T16:00:00Z`);
+      let parcel;
+      try {
+        const skuDatabase = await fetchSkuDatabase();
+        parcel = await resolveOrderParcel(order, prisma, skuDatabase);
+      } catch (e) {
+        console.warn(
+          `[rates] parcel resolve failed for order ${orderId}, quoting without it:`,
+          e instanceof Error ? e.message : e,
+        );
+      }
+      const resp = await getRatesForShipDate(
+        order,
+        `${shipDate}T16:00:00Z`,
+        parcel,
+      );
       return NextResponse.json({ rates: resp.available, shipDate });
     }
 

@@ -251,9 +251,12 @@ function normalizeV1Quote(q: Record<string, unknown>): VeeqoNormalizedRate {
 
 interface RateShopParcel {
   weightOz: number;
-  lengthIn: number;
-  widthIn: number;
-  heightIn: number;
+  // Dimensions are optional: when absent (a SKU with a known weight but no box)
+  // the quote falls back to the allocation_package dims via the `?? pkg.*`
+  // chain below. weight-only is still far better than no parcel at all.
+  lengthIn?: number;
+  widthIn?: number;
+  heightIn?: number;
 }
 
 /**
