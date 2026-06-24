@@ -282,7 +282,16 @@ export async function getRatesForShipDate(
 
   const toAddress = {
     name: `${to.first_name ?? ""} ${to.last_name ?? ""}`.trim() || to.company || "Customer",
-    phone: to.phone || undefined,
+    // Pass company explicitly so a B2B/DC recipient's business + routing code
+    // still rides on the label even after normalizeShipToName moves it out of
+    // the name field.
+    company: to.company || undefined,
+    // Clean the phone (drop "ext."/letters) — Amazon Shipping rejects an
+    // extension-bearing number as an invalid ShipTo. Email falls back to the
+    // order's customer email (Amazon supplies an anonymized marketplace
+    // address) since deliver_to.email is usually null on Amazon orders.
+    phone: cleanPhone(to.phone),
+    email: to.email || order.customer?.email || undefined,
     line1: to.address1,
     line2: to.address2 || undefined,
     town: to.city,
@@ -488,6 +497,84 @@ export async function buyShippingLabel(payload: {
     method: "POST",
     body: JSON.stringify({ carrier: payload.carrierId, shipment }),
   });
+}
+
+// Strip a phone number down to a carrier-safe "+digits" form. Amazon Shipping
+// rejects phones carrying an extension or letters (e.g. "+1 763-225-9463 ext.
+// 71791") as part of an invalid-ShipTo error. We keep a leading "+" and the
+// digits, dropping everything from the first "ext"/"x<digits>" onward so the
+// extension doesn't leak into the kept digits. Returns the original string when
+// nothing usable remains (better to send something than empty).
+export function cleanPhone(
+  phone: string | null | undefined,
+): string | undefined {
+  if (!phone) return undefined;
+  const head = phone.split(/ext|x(?=[\s.\d])/i)[0];
+  const cleaned = head.replace(/[^\d+]/g, "");
+  return cleaned || phone || undefined;
+}
+
+/**
+ * Normalize a Veeqo order's ShipTo so the carrier (Amazon Shipping) accepts it.
+ *
+ * Amazon crams B2B / distribution-center recipients into the NAME field as
+ * "Surname, Company - Location - RoutingCode" (e.g. last_name = "Carr, J&J -
+ * MedTech Mooresville DC - SuiPOPC2382964"). The resulting full name is too long
+ * / malformed, and BOTH the rate APIs reject it with a misleading
+ * "Provided ShipTo address is invalid. Please check email/phone/country
+ * code/postal code" carrier error — so the order can neither quote nor buy.
+ *
+ * Fix: when last_name contains a comma (the Amazon "Surname, Company…" pattern),
+ * split it — keep the surname as the name, move the overflow into `company` so
+ * the routing code still prints on the label — and strip any phone extension.
+ * The corrected address is PUT back to Veeqo (so the stored address the old
+ * /shipping/rates endpoint and the buy flow read is valid too) AND mutated on
+ * the in-memory `order` so the immediately-following quote uses the new values.
+ *
+ * Idempotent: an already-clean address (no comma in last_name, clean phone) is a
+ * no-op and never hits Veeqo. Returns true when it changed something.
+ */
+export async function normalizeShipToName(
+  order: Record<string, any>,
+): Promise<boolean> {
+  const dt = order?.deliver_to;
+  if (!dt?.id) return false;
+
+  const lastName = String(dt.last_name ?? "");
+  const commaIdx = lastName.indexOf(",");
+  const phoneCleaned = cleanPhone(dt.phone);
+
+  // Decide the new name/company split.
+  let newLast = lastName;
+  let newCompany: string | undefined = dt.company ?? undefined;
+  if (commaIdx >= 0) {
+    newLast = lastName.slice(0, commaIdx).trim();
+    const overflow = lastName.slice(commaIdx + 1).trim();
+    newCompany =
+      [dt.company, overflow].filter(Boolean).join(" ").trim() || undefined;
+  }
+
+  const nameChanged = newLast !== lastName;
+  const companyChanged = (newCompany ?? null) !== (dt.company ?? null);
+  const phoneChanged = phoneCleaned !== dt.phone && phoneCleaned != null;
+  if (!nameChanged && !companyChanged && !phoneChanged) return false;
+
+  const attrs: Record<string, unknown> = { id: dt.id };
+  if (nameChanged) attrs.last_name = newLast;
+  if (companyChanged) attrs.company = newCompany ?? null;
+  if (phoneChanged) attrs.phone = phoneCleaned;
+
+  await veeqoFetch(`/orders/${order.id}`, {
+    method: "PUT",
+    body: JSON.stringify({ order: { deliver_to_attributes: attrs } }),
+  });
+
+  // Reflect the change on the in-memory order so the caller's next quote (which
+  // reads order.deliver_to) sees the corrected values without a re-fetch.
+  if (nameChanged) dt.last_name = newLast;
+  if (companyChanged) dt.company = newCompany ?? null;
+  if (phoneChanged) dt.phone = phoneCleaned;
+  return true;
 }
 
 // Set tag on a product (Frozen / Dry)

@@ -9,6 +9,7 @@ import {
   getTodayNY,
   updateOrderDispatchDate,
   updateAllocationPackage,
+  normalizeShipToName,
 } from "@/lib/veeqo";
 import { fetchSkuDatabase, type SkuRow } from "@/lib/sku-database";
 import {
@@ -696,6 +697,31 @@ export async function GET(request: NextRequest) {
         deliveryBy = `${y}-${m}-${d}`;
       }
       const allocationId = order.allocations?.[0]?.id;
+
+      // Normalize a malformed ShipTo before quoting. Amazon B2B / DC orders pack
+      // "Surname, Company - Location - RoutingCode" into the name field, which
+      // the carrier rejects ("Provided ShipTo address is invalid…") so the order
+      // can neither quote nor buy. normalizeShipToName splits the surname out,
+      // moves the overflow to `company`, strips phone extensions, and persists
+      // the fix to Veeqo (so the old /shipping/rates endpoint + buy flow read a
+      // valid address too). Idempotent + no network call when already clean, so
+      // it's safe to run for every order. Skipped for Walmart (bought via
+      // Walmart's own API, not Veeqo). Best-effort: a failure just leaves the
+      // original error to surface as before.
+      if (!isWalmart && allocationId && order.deliver_to?.id) {
+        try {
+          const fixed = await normalizeShipToName(order);
+          if (fixed)
+            console.log(
+              `[plan] ${order.number} ShipTo normalized (name="${order.deliver_to.first_name} ${order.deliver_to.last_name}", company="${order.deliver_to.company ?? ""}")`,
+            );
+        } catch (e) {
+          console.warn(
+            `[plan] ${order.number} ShipTo normalize failed:`,
+            e instanceof Error ? e.message : e,
+          );
+        }
+      }
 
       // ── Get rates & select best ──
       let selectedRate: VeeqoRate | null = null;
