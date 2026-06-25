@@ -4,10 +4,53 @@
 > SESSION-HANDOFF»*. Здесь — что мы делали, где остановились, и план. Обновляется
 > в конце каждой сессии.
 >
-> **Последнее обновление:** 2026-06-21 (вечер, смена машины iMac→MacBook) — весь день строили
-> **Financial Plan** (`/finance`). Всё на проде, всё запушено (`33e7d23`), рабочее дерево чистое,
-> ничего не «висит». Остановились на **авто-захвате чеков из почты** — протестировали end-to-end,
-> работает. См. блок «🆕 СЕССИЯ 2026-06-21» сразу ниже (там же — шаги «ПРОДОЛЖИТЬ НА MacBook»).
+> **Последнее обновление:** 2026-06-25 (iMac-Claude, смена машины iMac→MacBook) — перевёл
+> **генерацию картинок** с платного OpenAI Images API на **БЕСПЛАТНУЮ** через подписку ChatGPT
+> (Codex CLI `image_gen`, воркер на боксе). Всё на проде, запушено (`5660b09`), Vercel prod = Ready,
+> дерево чистое. См. блок «🆕 СЕССИЯ 2026-06-25» сразу ниже (там же — «ПРОДОЛЖИТЬ НА MacBook»).
+> _(Предыдущее: 2026-06-21 — Financial Plan `/finance` + авто-захват чеков, коммит `33e7d23`; блок ниже.)_
+
+---
+
+## 🆕 СЕССИЯ 2026-06-25 (iMac-Claude) — Картинки: платный OpenAI → БЕСПЛАТНЫЙ Codex (подписка ChatGPT)
+
+**ГДЕ ОСТАНОВИЛИСЬ:** задача ЗАКРЫТА и на проде. Картинки листингов (Bundle Factory) и A+ Content
+Factory теперь генерируются **бесплатно** через встроенный `image_gen` Codex CLI (gpt-image-2) на
+лимитах подписки ChatGPT — **$0/картинка**. Платный OpenAI Images API убран полностью (вызова
+`images.generate` в коде больше нет; `cost_cents` всегда 0). Расход OpenAI API по images = 0 структурно.
+
+### Сделано и на проде (коммит `5660b09`, пушнуто, Vercel prod = Ready)
+- **Архитектура:** Vercel `generateMainImage()` → POST `https://mcp.salutem.solutions/codex-image/generate`
+  (nginx TLS + Bearer) → воркер на боксе (systemd `codex-image-worker`, 127.0.0.1:8791) → `codex exec`
+  встроенный image_gen → PNG → Vercel грузит в R2. Codex нельзя запустить на Vercel (нужны `~/.codex` +
+  сессия подписки) ⇒ воркер на always-on боксе OpenClaw (104.219.53.204), он уже был `codex login`-нут
+  по подписке (auth_mode=chatgpt, без API-ключа).
+- **Защита от платного пути:** воркер вырезает `OPENAI_API_KEY`/`CODEX_API_KEY` из окружения → платный
+  фолбэк скилла (`scripts/image_gen.py`) физически не может сработать. (Сам `OPENAI_API_KEY` остаётся —
+  он ещё нужен для ТЕКСТА: customer-hub, ai-vision. Убран только путь картинок.)
+- **Код:** новый `src/lib/image-gen/codex-worker.ts` (HTTP-клиент + нормализация размера через `sharp`);
+  `src/lib/bundle-factory/image-generation.ts` переписан (тот же интерфейс — pipeline и A+ не тронуты).
+  Исходник воркера в репо: `ops/codex-image-worker/` (server.js + README со systemd-юнитом и nginx).
+- **Env:** `CODEX_IMAGE_WORKER_URL` + `CODEX_IMAGE_WORKER_TOKEN` — в `.env.local` И в Vercel Production.
+- **Проверки:** unit 8/8 ✅, `tsc --noEmit` 0 ошибок ✅, живой end-to-end через реальный код → R2 отдал
+  валидный PNG 1024×1024, cost=0 ✅. Док: `docs/wiki/codex-image-generation.md`. Память: `project_codex_image_worker`.
+
+### ▶️ ПРОДОЛЖИТЬ НА MacBook (сделай ПЕРВЫМ)
+1. **`git pull`** — заберёт коммит `5660b09` (codex-worker, переписанный image-generation, ops/, вики).
+2. **Секреты картинок НЕ в git** (`.env.local`). Если на MacBook их нет: `cd ss-control-center &&
+   vercel env pull .env.local` (они уже в Vercel prod). Или с бокса: `ssh openclaw 'cat /root/codex-image-worker/.env'`.
+3. **Проверить живьём:** `cd ss-control-center && npx tsx scripts/smoke-codex-image.ts` → ждём `PASS`
+   (реальная генерация по подписке → R2). Если 502 — `ssh openclaw 'codex login status'` должен быть
+   «Logged in using ChatGPT» (если нет — `codex login --device-auth`).
+4. Ничего не висит: дерево чистое, dev-серверов нет.
+
+### 🔜 ХВОСТЫ / опционально (не блокеры)
+- **Скорость** ~30–90 сек/картинка (агент подписки) vs ~10 сек у старого API. Vercel image-роуты
+  `maxDuration=300` + до 3 ретраев/канал → на мульти-канальном драфте можно подойти к потолку. Если упрёмся —
+  уменьшить ретраи или вынести bulk-генерацию в async-джобу.
+- **Размер фото:** валидатор хочет Amazon ≥2000²/Walmart ≥1500², а вызовы просят 1024²/1536×1024 (так было
+  и со старым API — pre-existing). Закрыть = поднять `size` у вызовов (подписка + sharp потянут больше).
+- A+ UI имеет дропдаун модели — теперь no-op (подписка сама берёт gpt-image-2); можно убрать из UI позже.
 
 ---
 
