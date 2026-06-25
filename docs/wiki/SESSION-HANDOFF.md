@@ -8,7 +8,7 @@
 > **генерацию картинок** с платного OpenAI Images API на **БЕСПЛАТНУЮ** через подписку ChatGPT
 > (Codex CLI `image_gen`, воркер на боксе). Всё на проде, запушено (`5660b09`), Vercel prod = Ready,
 > дерево чистое. См. блок «🆕 СЕССИЯ 2026-06-25» сразу ниже (там же — «ПРОДОЛЖИТЬ НА MacBook»).
-> _(Предыдущее: 2026-06-21 — Financial Plan `/finance` + авто-захват чеков, коммит `33e7d23`; блок ниже.)_
+> _(Предыдущее: 2026-06-24 — Walmart Compliance/T&S removals read-инструмент `f5c9019`; 2026-06-21 — Financial Plan `/finance` + авто-захват чеков `33e7d23`; блоки ниже.)_
 
 ---
 
@@ -51,6 +51,49 @@ Factory теперь генерируются **бесплатно** через 
 - **Размер фото:** валидатор хочет Amazon ≥2000²/Walmart ≥1500², а вызовы просят 1024²/1536×1024 (так было
   и со старым API — pre-existing). Закрыть = поднять `size` у вызовов (подписка + sharp потянут больше).
 - A+ UI имеет дропдаун модели — теперь no-op (подписка сама берёт gpt-image-2); можно убрать из UI позже.
+
+---
+
+## 🆕 СЕССИЯ 2026-06-24 — Walmart Compliance / T&S removals (read-инструмент)
+
+**ЗАДАЧА (Владимир):** достать через API полный машиночитаемый список SKU, которые Walmart снял
+за нарушения (Health & Compliance → «Item compliance», Trust & Safety «Download Reports») — не руками из UI.
+
+**РЕЗУЛЬТАТ:** инструмент `walmart_compliance_removals` готов, на проде, запушен.
+
+### Главная находка (для другого Клода — не трать время заново)
+Правильный эндпоинт — **обычный Items API на простом OAuth**, НЕ Insights и НЕ Reports:
+```
+GET /v3/items?publishedStatus=UNPUBLISHED&limit=200&offset=N   (offset-пагинация, дедуп по sku+wpid)
+```
+Причина снятия в `unpublishedReasons.reason[]`. **T&S-снятие = дословно**
+«Your item has been flagged by our internal team. To find out why, file a case in Case Management.»
+Это ≠ END_DATE («End Date has passed») и ≠ PRICE_RULE («violates … Pricing Rule»). Классифицируем по тексту.
+
+**Что НЕ подошло (проверено живьём на store 1 / seller 10001624309):**
+- Insights `/v3/insights/items/unpublished/counts` → 200, но T&S не считает (только END_DATE + price).
+- Insights `/v3/insights/items/unpublished/items` → **403** "Auth header required for this consumer"
+  (нужен `WM_CONSUMER.CHANNEL.TYPE` зарегистрированного Solution Provider — у нас нет). POST → 404.
+- Reports `reportType=ITEM` → нет колонки причины снятия.
+
+### Сделано и на проде
+- `src/lib/walmart/compliance-removals.ts` — `getComplianceRemovals()` (пагинатор + классификатор)
+- `src/app/api/walmart/compliance-removals/route.ts` — **`GET /api/walmart/compliance-removals`**
+  (JSON; `?format=csv`; `?includeAll=1`; `?storeIndex=1` = STARFITSTORE)
+- `scripts/diag-walmart-unpublished{,4}.ts` — пробы, задокументировавшие находку
+- Полная док: `ss-control-center/docs/wiki/walmart-compliance-removals.md`
+
+**Замер на 2026-06-24:** 572 unpublished → **42 уникальных T&S-снятия**, 434 price-rule, 96 end-date.
+
+### 🔜 СЛЕДУЮЩЕЕ (если Владимир захочет развить)
+1. Среди 42 T&S много старых промо-названий (Дима/ChatGPT: "Tasty Selection", "Delicious",
+   "Comfort Classics") = паттерн, триггерящий compliance (история 99300 в CLAUDE.md).
+   **Прогнать эти SKU через Smart Scrub** (Phase 2.6.1) — список теперь в один GET.
+2. UI-страница/виджет в SSCC поверх эндпоинта (пока только API + CSV).
+3. Опционально: ночной cron + Telegram-алерт на новые T&S-снятия.
+
+> ⚠️ В коммит вики `e694898` авто-save репозитория заодно подхватил несвязанные shipping-правки
+> (`veeqo/client.ts`, `shipping/plan/route.ts`) — это НЕ часть этой задачи, но они были в рабочем дереве.
 
 ---
 
