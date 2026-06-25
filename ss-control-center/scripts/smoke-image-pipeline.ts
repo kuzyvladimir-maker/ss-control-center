@@ -2,7 +2,7 @@
  * Phase 2.3 Stage 5 smoke test — drive the image pipeline end-to-end
  * against the dev DB. Three stubs let it run free of network cost:
  *
- *   1. OpenAI gpt-image-1 stub returns a tiny 1×1 PNG.
+ *   1. Codex image-worker stub returns a tiny 1×1 PNG (no live worker).
  *   2. Vision check stub returns "no foreign logos" for the first ASIN
  *      and "Lunchables detected" for the second — so we cover both the
  *      happy path AND the BLOCKED-then-retry path in a single run.
@@ -31,26 +31,19 @@ import { prisma } from "@/lib/prisma";
 import { runImageGeneration } from "@/lib/bundle-factory/image-pipeline";
 import type { VisionCheckResult } from "@/lib/bundle-factory/audit/vision-check";
 
-// 1×1 transparent PNG, base64-encoded — same constant used in the unit
-// test. Just enough bytes for the image-generation pipeline to "succeed".
-const TINY_PNG_B64 =
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+// 1×1 transparent PNG — same constant used in the unit test. Just enough
+// bytes for the image-generation pipeline to "succeed".
+const TINY_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+  "base64",
+);
 
 // ── Install stubs BEFORE any pipeline import ──────────────────────────
 
+// Codex image-worker stub: returns canned PNG bytes, no network/sharp.
 (globalThis as {
-  __BUNDLE_FACTORY_OPENAI_STUB__?: {
-    images: {
-      generate: (args: Record<string, unknown>) => Promise<{
-        data: Array<{ b64_json: string }>;
-      }>;
-    };
-  };
-}).__BUNDLE_FACTORY_OPENAI_STUB__ = {
-  images: {
-    generate: async () => ({ data: [{ b64_json: TINY_PNG_B64 }] }),
-  },
-};
+  __SS_CODEX_IMAGE_STUB__?: (args: { prompt: string; size?: string }) => Promise<Buffer>;
+}).__SS_CODEX_IMAGE_STUB__ = async () => TINY_PNG;
 
 // Vision stub returns clean for the first channel processed, dirty for
 // every subsequent channel — gives us one happy path and one
@@ -253,9 +246,10 @@ async function main() {
         `expected AMAZON_SALUTEM image_retry_count=1, got ${amazonRow.image_retry_count}`,
       );
     }
-    if (amazonRow.image_generation_cost_cents <= 0) {
+    // Subscription image_gen is free → cost is always 0 now.
+    if (amazonRow.image_generation_cost_cents !== 0) {
       throw new Error(
-        `expected AMAZON_SALUTEM image_generation_cost_cents > 0, got ${amazonRow.image_generation_cost_cents}`,
+        `expected AMAZON_SALUTEM image_generation_cost_cents === 0 (subscription path is free), got ${amazonRow.image_generation_cost_cents}`,
       );
     }
     if (!walmartRow?.manual_review_required) {

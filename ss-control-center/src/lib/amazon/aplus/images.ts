@@ -2,9 +2,14 @@
  * A+ Content Factory — image generation.
  *
  * Generates ALL image slots for a job (hero + inside + 4-grid + serve = 7) from the
- * LLM briefs via Bundle Factory's generator (OpenAI Images → R2). Premium gift-basket
- * LIFESTYLE scenes, NO third-party logos/packaging text (brands live in text only).
- * R2 URLs power the visual preview; at publish they're uploaded to Amazon's A+ Uploads API.
+ * LLM briefs via Bundle Factory's generator (Codex subscription image_gen → R2).
+ * Gift-basket LIFESTYLE scenes, NO third-party logos/packaging text (brands live in
+ * text only). R2 URLs power the visual preview; at publish they're uploaded to
+ * Amazon's A+ Uploads API.
+ *
+ * NOTE: the `model`/`quality` knobs below are now no-ops — the subscription
+ * image_gen tool picks the model (gpt-image-2). They're kept so the existing
+ * UI/route keep type-checking; landscape vs square is still honoured via `size`.
  */
 
 import type { PrismaClient } from "@/generated/prisma/client";
