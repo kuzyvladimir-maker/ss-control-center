@@ -527,9 +527,14 @@ export function DraftDetailClient(props: Props) {
       props.draftStatus === "VALIDATING" ||
       props.draftStatus === "VALIDATED" ||
       props.draftStatus === "ERROR");
+  // Publishable = validation PASSED or NEEDS_REVIEW (warnings only). FAILED is
+  // still blocked. Warnings don't block publish — the operator confirms in the
+  // modal.
+  const isPublishable = (status: string) =>
+    status === "PASSED" || status === "NEEDS_REVIEW";
   const publishPendingCount = rows.filter(
     (r) =>
-      r.validation_status === "PASSED" &&
+      isPublishable(r.validation_status) &&
       (r.listing_status === "PENDING" || r.listing_status === "FAILED"),
   ).length;
   // The ship-specs form is relevant once the draft is promotable/validating —
@@ -736,7 +741,7 @@ export function DraftDetailClient(props: Props) {
             channels={rows
               .filter(
                 (r) =>
-                  r.validation_status === "PASSED" &&
+                  isPublishable(r.validation_status) &&
                   (r.listing_status === "PENDING" ||
                     r.listing_status === "FAILED"),
               )
@@ -991,7 +996,8 @@ function ChannelCard({
             </Btn>
           )}
           {onRepublishSku &&
-            row.validation_status === "PASSED" &&
+            (row.validation_status === "PASSED" ||
+              row.validation_status === "NEEDS_REVIEW") &&
             (row.listing_status === "FAILED" || row.listing_status === "PENDING") && (
               <Btn variant="primary" disabled={busy} loading={busy} onClick={onRepublishSku}>
                 {row.listing_status === "FAILED" ? "Re-publish" : "Publish"}

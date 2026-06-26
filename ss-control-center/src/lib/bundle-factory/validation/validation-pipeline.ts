@@ -22,8 +22,9 @@
  *
  * Draft-level transition:
  *   IMAGE_GENERATED → VALIDATING on entry
- *   → VALIDATED when every CAN_PUBLISH SKU is PASSED
- *   → ERROR when zero pass after the run (all FAILED) — operator
+ *   → VALIDATED when every CAN_PUBLISH SKU is publishable (PASSED or
+ *      NEEDS_REVIEW — warnings don't block publish, per the operator decision)
+ *   → ERROR when zero publishable after the run (all FAILED) — operator
  *      handles the manual-review queue.
  *
  * Idempotent — re-runs replace validation_errors and bump attempt_count.
@@ -339,11 +340,16 @@ export async function runValidationForDraft(
     });
   }
 
-  const passed = per_sku.filter((s) => s.status === "PASSED").length;
+  // A SKU is publishable when it has no hard error: PASSED or NEEDS_REVIEW
+  // (warnings only). Per Vladimir 2026-06-26 advisory warnings don't block
+  // publish, so the draft reaches VALIDATED when every SKU is publishable.
+  const publishable = per_sku.filter(
+    (s) => s.status === "PASSED" || s.status === "NEEDS_REVIEW",
+  ).length;
   const failed = per_sku.filter((s) => s.status === "FAILED").length;
 
   let next = draft.status;
-  if (passed === per_sku.length) {
+  if (publishable === per_sku.length) {
     next = "VALIDATED";
   } else if (failed === per_sku.length && fromStatus === "IMAGE_GENERATED") {
     next = "ERROR";
@@ -360,15 +366,15 @@ export async function runValidationForDraft(
       to_status: next,
       reason:
         next === "VALIDATED"
-          ? `All ${passed}/${per_sku.length} ChannelSKUs PASSED`
-          : `Validation produced no passing SKUs (${failed}/${per_sku.length} FAILED)`,
+          ? `All ${publishable}/${per_sku.length} ChannelSKUs publishable (PASSED or warnings-only)`
+          : `Validation produced no publishable SKUs (${failed}/${per_sku.length} FAILED)`,
       actor: input.actor ?? "system",
       details: { per_sku: per_sku.map((s) => ({ channel: s.channel, status: s.status })) },
     });
   }
 
   return {
-    ok: passed > 0,
+    ok: publishable > 0,
     bundle_draft_id: draft.id,
     master_bundle_id: draft.master_bundle_id,
     per_sku,
