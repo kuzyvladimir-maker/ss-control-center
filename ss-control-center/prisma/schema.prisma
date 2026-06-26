@@ -3326,7 +3326,10 @@ model ProductPackSizeCache {
 // `netAmount` (already net of marketplace fees) is the cash we distribute.
 model Payout {
   id          String  @id @default(cuid())
-  marketplace String // amazon | walmart
+  // business = marketplace payouts (Finance Core). personal = personal income
+  // (owner's draw from the business + manual). Same waterfall engine, separate pool.
+  scope       String  @default("business")
+  marketplace String // amazon | walmart | personal
   storeIndex  Int? // source store/account (for traceability; pool is global)
   entity      String? // legal entity name (denormalized for later per-entity P&L)
   externalId  String // settlement-id / recon batch id — dedup key
@@ -3346,6 +3349,7 @@ model Payout {
   @@unique([marketplace, externalId], name: "payout_dedup")
   @@index([depositDate])
   @@index([distributed])
+  @@index([scope])
 }
 
 // Fund — a configurable bucket (UI-CRUD). value = percent (0–100) when
@@ -3353,6 +3357,7 @@ model Payout {
 // running accumulated amount. Seed: one RESERVE (priority 0) + one FREE (last).
 model Fund {
   id             String  @id @default(cuid())
+  scope          String  @default("business") // business | personal
   name           String
   group          String // RESERVE | FP1 | FP2 | FREE
   allocationType String  @default("percent") // percent | absolute
@@ -3368,6 +3373,7 @@ model Fund {
 
   @@index([group])
   @@index([active])
+  @@index([scope])
 }
 
 // FundAllocation — one line of money moved into a fund during a run.
@@ -3430,11 +3436,16 @@ model FundEntry {
 // Vladimir keeps them current. Optional product/marketplace attribution.
 model RecurringExpense {
   id          String   @id @default(cuid())
+  scope       String   @default("business") // business | personal
   name        String
   category    String // = fund name (FP1)
   amount      Float
   frequency   String   @default("monthly") // monthly | weekly | one_time
   currency    String   @default("USD")
+  // Personal bills: owner = whose bill (Владимир | Анна); dueDay = day of month it's
+  // due (drives the personal payment calendar). Null for business OpEx.
+  owner       String?
+  dueDay      Int?
   marketplace String? // optional channel attribution
   product     String? // optional product attribution
   isAdSpend   Boolean  @default(false)
@@ -3454,6 +3465,7 @@ model RecurringExpense {
 
   @@index([category])
   @@index([active])
+  @@index([scope])
 }
 
 // Receipt — a photographed purchase receipt. Uploaded to R2, OCR'd by Claude
@@ -3461,6 +3473,7 @@ model RecurringExpense {
 // against the chosen fund (resale buys → Cost-of-Goods / Restock reserve fund).
 model Receipt {
   id          String   @id @default(cuid())
+  scope       String   @default("business") // business | personal
   imageUrl    String
   merchant    String?
   total       Float?
@@ -3505,9 +3518,18 @@ model TimeLog {
 // fund balance is money accumulated toward repaying them.
 model Debt {
   id           String   @id @default(cuid())
+  scope        String   @default("business") // business | personal
   fundId       String
   amount       Float // original amount owed
   paid         Float    @default(0)
+  // Personal loans (mortgage/auto/personal): owner = whose, dueDay = day of month,
+  // apr = annual interest %, termMonths = remaining term, kind = loan type. These
+  // power the personal calendar + Phase-2 amortization/payoff. Null for business debts.
+  owner        String?
+  dueDay       Int?
+  apr          Float?
+  termMonths   Int?
+  kind         String? // mortgage | auto | personal | student | sba | other
   // For installment/scheduled debts (рассрочка): the per-period installment amount
   // + its frequency. null = a lump/overdue debt with no schedule. The averaged
   // monthly equivalent drives the fund's monthly "need".
@@ -3525,11 +3547,13 @@ model Debt {
   updatedAt    DateTime @updatedAt
 
   @@index([fundId])
+  @@index([scope])
 }
 
 // FinancePlanRun — one weekly (or manual) distribution pass.
 model FinancePlanRun {
   id               String  @id @default(cuid())
+  scope            String  @default("business") // business | personal
   runDate          String // ISO date
   periodStart      String?
   periodEnd        String?
@@ -3543,4 +3567,55 @@ model FinancePlanRun {
   createdAt        DateTime @default(now())
 
   @@index([runDate])
+  @@index([scope])
+}
+
+// CreditCard — a revolving credit line (the centerpiece of Personal Finance).
+// Unlike a Debt (installment), a card's balance fluctuates with spending. We track
+// the current balance, the statement balance (pay in full → no interest), the
+// credit limit (→ utilization, a credit-score driver), APR, the minimum payment
+// rule, and the statement/due days (→ the payment calendar). Paying a card debits
+// its `fundId` fund and lowers the balance (see CardEntry).
+model CreditCard {
+  id               String   @id @default(cuid())
+  scope            String   @default("personal") // personal | business
+  owner            String? // Владимир | Анна | <legal entity> for business cards
+  issuer           String // Chase | Amex | Capital One | Citi | …
+  name             String? // nickname: "Chase Freedom", "BJ's"
+  last4            String?
+  creditLimit      Float    @default(0)
+  currentBalance   Float    @default(0) // owed right now
+  statementBalance Float    @default(0) // balance at last statement close (pay in full = no interest)
+  apr              Float? // annual interest rate %
+  minPaymentFixed  Float    @default(0) // floor of the minimum payment ($35)
+  minPaymentPct    Float    @default(0) // % of balance for the minimum (2 = 2%)
+  statementDay     Int? // day of month the statement closes (1..31)
+  dueDay           Int? // day of month the payment is due (1..31)
+  autopay          String   @default("none") // none | min | statement | full | fixed
+  autopayAmount    Float? // for autopay = fixed
+  fundId           String? // which fund pays this card
+  active           Boolean  @default(true)
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([scope])
+  @@index([owner])
+  @@index([active])
+}
+
+// CardEntry — the ledger of one credit card: charges (+balance), payments
+// (−balance, debit a fund), interest, fees. Lets us show history and undo.
+model CardEntry {
+  id          String   @id @default(cuid())
+  cardId      String
+  type        String // charge | payment | interest | fee | adjustment
+  amount      Float // signed: +increases balance (charge/interest/fee), −payment
+  description String?
+  fundId      String? // fund the payment was drawn from (type=payment)
+  fundEntryId String? // the FundEntry created for a payment (for undo)
+  date        String? // ISO date
+  createdAt   DateTime @default(now())
+
+  @@index([cardId])
 }

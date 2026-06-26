@@ -5,28 +5,40 @@
 // fresh "since last click" number. Taxes/Reserve are %-of-payout (computed on the
 // page); the Expansion/Debt fund has no accrual → 0.
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { scopeOf } from "@/lib/finance/scope";
+import { minPayment } from "@/lib/finance/cards";
+import { CREDIT_CARDS_FUND } from "@/lib/finance/personal";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const scope = scopeOf(req);
   const today = new Date().toISOString().slice(0, 10);
   // Read-only: the meters are advanced once a day by /api/cron/finance-accrual.
   // We do NOT tick on every page load — that wrote dozens of rows per view and
   // throttled Turso. Here we just read the stored accrued/paid.
-  const fundOf = new Map((await prisma.fund.findMany({ select: { id: true, name: true } })).map((f) => [f.id, f.name]));
+  const fundOf = new Map((await prisma.fund.findMany({ where: { scope }, select: { id: true, name: true } })).map((f) => [f.id, f.name]));
   const needs: Record<string, number> = {};
 
   // Recurring expenses: owed (остаток) = accrued − paid, grouped by category (= fund).
-  const expenses = await prisma.recurringExpense.findMany({ where: { active: true } });
+  const expenses = await prisma.recurringExpense.findMany({ where: { active: true, scope } });
   for (const e of expenses) needs[e.category] = round2((needs[e.category] ?? 0) + Math.max(0, (e.accrued ?? 0) - (e.paid ?? 0)));
 
   // Installment debts: owed = accrued, grouped by their fund.
-  const debts = await prisma.debt.findMany({ where: { status: "open" } });
+  const debts = await prisma.debt.findMany({ where: { status: "open", scope } });
   for (const d of debts) {
     const name = fundOf.get(d.fundId);
     if (name && (d.accrued ?? 0) > 0) needs[name] = round2((needs[name] ?? 0) + (d.accrued ?? 0));
+  }
+
+  // Personal: credit-card minimum payments roll up into the "Credit Cards" fund's need,
+  // so the waterfall allocates enough each cycle to cover at least the minimums.
+  if (scope === "personal") {
+    const cards = await prisma.creditCard.findMany({ where: { active: true, scope } });
+    const totalMin = cards.reduce((s, c) => s + minPayment(c), 0);
+    if (totalMin > 0) needs[CREDIT_CARDS_FUND] = round2((needs[CREDIT_CARDS_FUND] ?? 0) + totalMin);
   }
 
   return NextResponse.json({ needs, today });

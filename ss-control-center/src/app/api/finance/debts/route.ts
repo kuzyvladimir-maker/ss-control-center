@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { installmentMonthly } from "@/lib/finance/expenses";
+import { scopeOf } from "@/lib/finance/scope";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
   const fundId = req.nextUrl.searchParams.get("fundId");
   // Read-only: installment meters advance once a day via /api/cron/finance-accrual.
   const debts = await prisma.debt.findMany({
-    where: fundId ? { fundId } : {},
+    where: { scope: scopeOf(req), ...(fundId ? { fundId } : {}) },
     orderBy: [{ status: "asc" }, { dateIncurred: "asc" }],
   });
   const totalOriginal = round2(debts.reduce((s, d) => s + d.amount, 0));
@@ -39,7 +40,16 @@ export async function POST(req: NextRequest) {
       const amount = Math.abs(Number(b.amount));
       if (!b.fundId || !Number.isFinite(amount) || amount === 0) return NextResponse.json({ error: "fundId + amount required" }, { status: 400 });
       const debt = await prisma.debt.create({
-        data: { fundId: b.fundId, amount: round2(amount), description: b.description ?? null, dateIncurred: b.dateIncurred ?? null, monthlyPayment: b.monthlyPayment != null && Number(b.monthlyPayment) > 0 ? round2(Number(b.monthlyPayment)) : null, paymentFrequency: b.paymentFrequency ?? (b.monthlyPayment ? "monthly" : null) },
+        data: {
+          scope: scopeOf(req), fundId: b.fundId, amount: round2(amount),
+          description: b.description ?? null, dateIncurred: b.dateIncurred ?? null,
+          monthlyPayment: b.monthlyPayment != null && Number(b.monthlyPayment) > 0 ? round2(Number(b.monthlyPayment)) : null,
+          paymentFrequency: b.paymentFrequency ?? (b.monthlyPayment ? "monthly" : null),
+          owner: b.owner ?? null, dueDay: b.dueDay != null && b.dueDay !== "" ? Number(b.dueDay) : null,
+          apr: b.apr != null && b.apr !== "" ? Number(b.apr) : null,
+          termMonths: b.termMonths != null && b.termMonths !== "" ? Number(b.termMonths) : null,
+          kind: b.kind ?? null,
+        },
       });
       return NextResponse.json({ ok: true, debt });
     }

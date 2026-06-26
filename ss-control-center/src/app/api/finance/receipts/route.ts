@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { uploadToR2 } from "@/lib/walmart/multipack/r2";
 import { parseReceipt } from "@/lib/finance/receipt-ocr";
 import { ingestReceipt } from "@/lib/finance/ingest-receipt";
+import { scopeOf } from "@/lib/finance/scope";
 
 export const maxDuration = 60;
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -15,7 +16,7 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 export async function GET(req: NextRequest) {
   const fundId = req.nextUrl.searchParams.get("fundId");
   const receipts = await prisma.receipt.findMany({
-    where: fundId ? { fundId } : {},
+    where: { scope: scopeOf(req), ...(fundId ? { fundId } : {}) },
     orderBy: { createdAt: "desc" },
     take: 50,
   });
@@ -24,6 +25,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const scope = scopeOf(req);
     const b = await req.json();
 
     // Email auto-ingest (Jackie spec): accept one parsed record, or a batch.
@@ -55,11 +57,11 @@ export async function POST(req: NextRequest) {
         fields = await parseReceipt(imageUrl);
       } catch (e) {
         // Still save the image so it's not lost; let the user fill fields.
-        const receipt = await prisma.receipt.create({ data: { imageUrl, status: "parsed", notes: `OCR failed: ${e instanceof Error ? e.message : e}` } });
+        const receipt = await prisma.receipt.create({ data: { scope, imageUrl, status: "parsed", notes: `OCR failed: ${e instanceof Error ? e.message : e}` } });
         return NextResponse.json({ ok: true, receipt, ocrError: true });
       }
       const receipt = await prisma.receipt.create({
-        data: { imageUrl, merchant: fields.merchant, total: fields.total, tax: fields.tax, date: fields.date, currency: fields.currency, status: "parsed", rawText: fields.raw },
+        data: { scope, imageUrl, merchant: fields.merchant, total: fields.total, tax: fields.tax, date: fields.date, currency: fields.currency, status: "parsed", rawText: fields.raw },
       });
       return NextResponse.json({ ok: true, receipt });
     }

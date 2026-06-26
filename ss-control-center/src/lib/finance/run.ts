@@ -8,6 +8,7 @@
 import { prisma } from "@/lib/prisma";
 import { distributeFunds } from "./distribute";
 import { getReserveRate } from "./reserve-rate";
+import type { Scope } from "./scope";
 import type { FundConfig, DistributionResult } from "./types";
 
 export interface RunResult {
@@ -20,8 +21,8 @@ export interface RunResult {
   runDate: string;
 }
 
-async function loadActiveFunds(): Promise<FundConfig[]> {
-  const rows = await prisma.fund.findMany({ where: { active: true } });
+async function loadActiveFunds(scope: Scope): Promise<FundConfig[]> {
+  const rows = await prisma.fund.findMany({ where: { active: true, scope } });
   return rows.map((r) => ({
     id: r.id,
     name: r.name,
@@ -38,14 +39,20 @@ export async function runDistribution(opts: {
   preview?: boolean;
   runDate?: string; // ISO date (caller stamps; scripts can't use Date.now in workflows but routes can)
   source?: "manual" | "cron";
+  scope?: Scope; // business (default) | personal
 }): Promise<RunResult> {
   const preview = opts.preview ?? true;
+  const scope: Scope = opts.scope ?? "business";
   const runDate = opts.runDate ?? new Date().toISOString().slice(0, 10);
 
+  // Personal has NO restock reserve — taxes are reserved in the business pool (one
+  // owner across all entities → one tax). All personal income flows into envelopes.
   const [funds, reserve, payouts] = await Promise.all([
-    loadActiveFunds(),
-    getReserveRate(),
-    prisma.payout.findMany({ where: { distributed: false } }),
+    loadActiveFunds(scope),
+    scope === "personal"
+      ? Promise.resolve({ rate: 0, method: "manual" as const, fellBackToManual: false })
+      : getReserveRate(),
+    prisma.payout.findMany({ where: { distributed: false, scope } }),
   ]);
 
   const totalIn = payouts.reduce((s, p) => s + (p.netAmount ?? 0), 0);
@@ -65,6 +72,7 @@ export async function runDistribution(opts: {
   // Commit: run record + allocations + balances + mark payouts.
   const run = await prisma.financePlanRun.create({
     data: {
+      scope,
       runDate,
       totalIn: distribution.totalIn,
       totalReserved: distribution.reserve,

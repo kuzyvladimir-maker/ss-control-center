@@ -15,7 +15,7 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 const SALARY_CATEGORY = "Salaries";
 
 async function employees() {
-  return prisma.recurringExpense.findMany({ where: { category: SALARY_CATEGORY, active: true }, orderBy: { name: "asc" } });
+  return prisma.recurringExpense.findMany({ where: { category: SALARY_CATEGORY, active: true, scope: "business" }, orderBy: { name: "asc" } });
 }
 
 export async function GET(req: NextRequest) {

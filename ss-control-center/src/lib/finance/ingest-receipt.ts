@@ -38,6 +38,7 @@ export async function ingestReceipt(r: ReceiptRecord): Promise<{ status: IngestS
   }
 
   const base = {
+    scope: "business" as const,
     imageUrl: `gmail:${r.email_id ?? "?"}`,
     merchant: r.store,
     total: round2(r.amount),
@@ -64,7 +65,7 @@ export async function ingestReceipt(r: ReceiptRecord): Promise<{ status: IngestS
   }
 
   // Business: purchase debits the Restock reserve, refund credits it.
-  const fund = await prisma.fund.findFirst({ where: { name: RESTOCK_FUND_NAME } });
+  const fund = await prisma.fund.findFirst({ where: { name: RESTOCK_FUND_NAME, scope: "business" } });
   if (!fund) return { status: "error", reason: "Restock reserve fund not found" };
 
   const isRefund = r.type === "refund";

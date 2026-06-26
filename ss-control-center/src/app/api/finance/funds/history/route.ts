@@ -3,13 +3,14 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { scopeOf } from "@/lib/finance/scope";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export async function GET(req: NextRequest) {
   const days = Math.min(90, Math.max(7, Number(req.nextUrl.searchParams.get("days") ?? "30") || 30));
 
-  const funds = await prisma.fund.findMany({ orderBy: { priority: "asc" } });
+  const funds = await prisma.fund.findMany({ where: { scope: scopeOf(req) }, orderBy: { priority: "asc" } });
   const entries = await prisma.fundEntry.findMany({
     where: { status: "applied" },
     orderBy: { createdAt: "asc" },

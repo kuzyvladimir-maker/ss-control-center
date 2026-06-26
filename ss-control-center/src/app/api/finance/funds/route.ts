@@ -3,12 +3,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { scopeOf } from "@/lib/finance/scope";
 
 const GROUPS = new Set(["RESERVE", "FP1", "FP2", "FREE"]);
 const TYPES = new Set(["percent", "absolute"]);
 
-export async function GET() {
-  const funds = await prisma.fund.findMany({ orderBy: { priority: "asc" } });
+export async function GET(req: NextRequest) {
+  const funds = await prisma.fund.findMany({ where: { scope: scopeOf(req) }, orderBy: { priority: "asc" } });
   return NextResponse.json({ funds });
 }
 
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest) {
     }
     const fund = await prisma.fund.create({
       data: {
+        scope: scopeOf(req),
         name: String(b.name),
         group: b.group,
         allocationType: TYPES.has(b.allocationType) ? b.allocationType : "percent",

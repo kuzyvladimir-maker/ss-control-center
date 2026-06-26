@@ -4,13 +4,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ingestAllPayouts } from "@/lib/finance/payouts";
+import { scopeOf } from "@/lib/finance/scope";
 
 export const maxDuration = 300;
 
 export async function GET(req: NextRequest) {
+  const scope = scopeOf(req);
   const onlyUndistributed = req.nextUrl.searchParams.get("undistributed") === "1";
   const payouts = await prisma.payout.findMany({
-    where: onlyUndistributed ? { distributed: false } : {},
+    where: { scope, ...(onlyUndistributed ? { distributed: false } : {}) },
     orderBy: { depositDate: "desc" },
     take: 200,
   });
@@ -58,20 +60,23 @@ export async function POST(req: NextRequest) {
   }
 
   // Manual payout entry — guarantees the engine is usable before auto-ingest data
-  // exists (e.g. Walmart recon not yet synced).
+  // exists (e.g. Walmart recon not yet synced). Also serves manual PERSONAL income
+  // (scope=personal, marketplace=personal) when called with ?scope=personal.
   try {
+    const scope = scopeOf(req);
     const b = await req.json();
     const net = Number(b.netAmount);
     if (!Number.isFinite(net) || net === 0) {
       return NextResponse.json({ error: "netAmount required" }, { status: 400 });
     }
-    const marketplace = b.marketplace === "walmart" ? "walmart" : b.marketplace === "amazon" ? "amazon" : "manual";
+    const marketplace = scope === "personal" ? "personal"
+      : b.marketplace === "walmart" ? "walmart" : b.marketplace === "amazon" ? "amazon" : "manual";
     const depositDate = b.depositDate || new Date().toISOString().slice(0, 10);
     const externalId = `manual:${depositDate}:${Math.round(net * 100)}:${b.note ?? ""}`.slice(0, 120);
     const payout = await prisma.payout.upsert({
       where: { payout_dedup: { marketplace, externalId } },
       create: {
-        marketplace, externalId, netAmount: Math.round(net * 100) / 100,
+        scope, marketplace, externalId, netAmount: Math.round(net * 100) / 100,
         depositDate, entity: b.entity ?? null, storeIndex: b.storeIndex ?? null, source: "manual",
       },
       update: { netAmount: Math.round(net * 100) / 100 },

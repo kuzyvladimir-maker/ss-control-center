@@ -19,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const entries = await prisma.fundEntry.findMany({ where: { fundId: id }, orderBy: { createdAt: "desc" } });
   // The fund's expenses (= category) with their accrued (owed) amounts.
   const expenses = await prisma.recurringExpense.findMany({
-    where: { category: fund.name, active: true }, orderBy: { name: "asc" },
+    where: { category: fund.name, active: true, scope: fund.scope }, orderBy: { name: "asc" },
   });
   // Owed (остаток) = accrued (начислено) − paid (выплачено), per expense.
   const owedTotal = round2(expenses.reduce((s, e) => s + Math.max(0, (e.accrued ?? 0) - (e.paid ?? 0)), 0));
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     // Generate unpaid bills from this fund's expense-item presets (per period).
     if (b.kind === "generate_bills") {
-      const presets = await prisma.recurringExpense.findMany({ where: { category: fund.name, active: true } });
+      const presets = await prisma.recurringExpense.findMany({ where: { category: fund.name, active: true, scope: fund.scope } });
       const existing = await prisma.fundEntry.findMany({ where: { fundId: id, type: "planned_expense", status: "planned" } });
       const have = new Set(existing.map((e) => e.description));
       let created = 0;

@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { runDistribution } from "@/lib/finance/run";
+import { scopeOf } from "@/lib/finance/scope";
 
 export const maxDuration = 120;
 
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
     /* empty body → preview */
   }
   try {
-    const result = await runDistribution({ preview, source: "manual" });
+    const result = await runDistribution({ preview, source: "manual", scope: scopeOf(req) });
     return NextResponse.json({ ok: true, ...result });
   } catch (e) {
     return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e) }, { status: 500 });

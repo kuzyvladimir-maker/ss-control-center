@@ -52,6 +52,9 @@ export const MODULES: ModuleDef[] = [
   { key: "reference-catalog", label: "Reference Catalog", href: "/reference-catalog" },
   { key: "staff-hats", label: "Staff Hats", href: "/staff-hats" },
   { key: "finance", label: "Financial Plan", href: "/finance" },
+  // Personal Finance — Vladimir's private pool (income, bills, credit cards).
+  // adminOnly: owner-only, never grantable to staff roles.
+  { key: "personal", label: "Personal Finance", href: "/personal", adminOnly: true },
   { key: "economics", label: "Economics", href: "/economics" },
   { key: "walmart-growth", label: "Walmart Growth", href: "/walmart-growth" },
   { key: "amazon-growth", label: "Amazon Growth", href: "/amazon-growth" },

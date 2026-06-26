@@ -19,6 +19,7 @@ import {
   Sparkles,
   DollarSign,
   PiggyBank,
+  Wallet,
   Users,
   GraduationCap,
   BarChart3,
@@ -111,6 +112,9 @@ const divisions = (s: DashboardSummary): Division[] => [
     color: "#A85C73",
     items: [
       { title: "Financial Plan", href: "/finance", icon: PiggyBank },
+      // Owner-only personal finance (income, bills, credit cards). adminOnly →
+      // only the admin/owner sees and can open it (see RBAC `personal` module).
+      { title: "Personal Finance", href: "/personal", icon: Wallet, adminOnly: true },
       { title: "Economics", href: "/economics", icon: DollarSign },
       { title: "Sales overview", href: "/analytics", icon: TrendingUp },
     ],

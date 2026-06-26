@@ -98,11 +98,22 @@ export function proxy(request: NextRequest) {
   //     can't open it. Limited to API prefixes exclusively owned by one
   //     module (see moduleKeyForApiPath) so shared endpoints stay reachable.
   if (pathname.startsWith("/api/")) {
+    const access = parseAccessCookie(
+      request.cookies.get("sscc-access")?.value
+    );
+    // Personal-scope data is owner-only — even when requested through a shared
+    // finance endpoint via `?scope=personal`. Closes the cross-module leak where
+    // a finance-role staffer could read personal funds/bills through /api/finance.
+    if (request.nextUrl.searchParams.get("scope") === "personal") {
+      if (access && !canAccessModule(access, "personal")) {
+        return NextResponse.json(
+          { error: "Module access required" },
+          { status: 403 }
+        );
+      }
+    }
     const apiModule = moduleKeyForApiPath(pathname);
     if (apiModule) {
-      const access = parseAccessCookie(
-        request.cookies.get("sscc-access")?.value
-      );
       if (access && !canAccessModule(access, apiModule)) {
         return NextResponse.json(
           { error: "Module access required" },

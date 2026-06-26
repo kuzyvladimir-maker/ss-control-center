@@ -63,6 +63,7 @@ export function accessibleModules(ctx: AccessContext): ModuleDef[] {
  * Order: longer/more-specific prefixes first.
  */
 const API_MODULE_PREFIXES: Array<[string, string]> = [
+  ["/api/personal", "personal"],
   ["/api/finance", "finance"],
   ["/api/economics", "economics"],
   ["/api/adjustments", "adjustments"],
