@@ -73,6 +73,11 @@ interface Props {
   /** BundleDraft.status — used to gate the Generate All Images header
    *  button (only shown when status==='GENERATED' or beyond). */
   draftStatus: string;
+  /** Auto retail price (cents) the listing will publish at — shown in the
+   *  marketplace preview. */
+  previewPriceCents: number;
+  /** House brand, shown in the preview "Brand:" line. */
+  brand: string;
 }
 
 export function DraftDetailClient(props: Props) {
@@ -710,12 +715,14 @@ export function DraftDetailClient(props: Props) {
         </div>
       ) : (
         <>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3">
           {rows.map((r) => (
             <ChannelCard
               key={r.id}
               row={r}
               busy={busy}
+              previewPriceCents={props.previewPriceCents}
+              brand={props.brand}
               onGenerateImage={() => generateImages([r.channel])}
               onRegenerateImage={() => regenerateImage(r.channel)}
               onValidateSku={
@@ -765,6 +772,8 @@ export function DraftDetailClient(props: Props) {
 function ChannelCard({
   row,
   busy,
+  previewPriceCents,
+  brand,
   onGenerateImage,
   onRegenerateImage,
   onValidateSku,
@@ -773,6 +782,8 @@ function ChannelCard({
 }: {
   row: GeneratedContentRow;
   busy: boolean;
+  previewPriceCents: number;
+  brand: string;
   onGenerateImage: () => void;
   onRegenerateImage: () => void;
   onValidateSku: (() => void) | null;
@@ -880,78 +891,35 @@ function ChannelCard({
         </div>
       )}
 
-      <div className="mt-3">
-        <Label>Title</Label>
-        <p className="mt-1 text-[12.5px] leading-snug text-ink">{row.title}</p>
-        <CharCounter value={row.title} />
-      </div>
+      <MarketplacePreview
+        channel={row.channel}
+        brand={brand}
+        title={row.title}
+        bullets={bullets}
+        description={row.description}
+        imageUrl={row.main_image_url}
+        priceCents={previewPriceCents}
+      />
 
-      <div className="mt-3">
-        <Label>Bullets ({bullets.length})</Label>
-        <ul className="mt-1 space-y-1 text-[11.5px] text-ink-2">
-          {bullets.map((b, i) => (
-            <li key={i} className="flex gap-2">
-              <span className="text-ink-3">{i + 1}.</span>
-              <span>{b}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="mt-3">
-        <Label>Description</Label>
-        <p className="mt-1 whitespace-pre-wrap text-[11.5px] leading-relaxed text-ink-2">
-          {row.description}
-        </p>
-        <div className="mt-1 text-[10.5px] tabular-nums text-ink-3">
-          {row.description.length} chars
-        </div>
-      </div>
-
-      <div className="mt-3 border-t border-rule/40 pt-3">
-        <Label>Main image</Label>
+      {/* Image action strip — the preview above shows the image; this is the
+          control to make or re-roll it. */}
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-rule/40 pt-3">
+        <span className="text-[11px] text-ink-3">
+          {row.main_image_url
+            ? `Картинка: попыток ${row.image_retry_count} · $${(row.image_generation_cost_cents / 100).toFixed(2)}`
+            : canStartImage
+              ? "Картинки ещё нет — сгенерируй главное изображение (2000×2000) для публикации."
+              : "Картинка станет доступна после бренд-проверки текста."}
+        </span>
         {row.main_image_url ? (
-          <div className="mt-2 space-y-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={row.main_image_url}
-              alt={`${row.channel} main`}
-              className="aspect-square w-full max-w-[260px] rounded-md border border-rule object-cover"
-            />
-            <div className="flex items-center justify-between gap-2 text-[10.5px] tabular-nums text-ink-3">
-              <span>
-                attempts: {row.image_retry_count} · $
-                {(row.image_generation_cost_cents / 100).toFixed(2)}
-              </span>
-              <Btn
-                variant="ghost"
-                disabled={busy}
-                loading={busy}
-                onClick={onRegenerateImage}
-              >
-                Re-roll
-              </Btn>
-            </div>
-          </div>
+          <Btn variant="ghost" disabled={busy} loading={busy} onClick={onRegenerateImage}>
+            Re-roll картинку
+          </Btn>
         ) : canStartImage ? (
-          <div className="mt-2 flex items-center justify-between gap-2">
-            <span className="text-[11.5px] text-ink-3">
-              Text passed compliance — generate the main image to ship.
-            </span>
-            <Btn
-              variant="primary"
-              disabled={busy}
-              loading={busy}
-              onClick={onGenerateImage}
-            >
-              Generate image
-            </Btn>
-          </div>
-        ) : (
-          <p className="mt-2 text-[11.5px] text-ink-3">
-            Image generation gated on text-compliance — pass Stage 4 first.
-          </p>
-        )}
+          <Btn variant="primary" disabled={busy} loading={busy} onClick={onGenerateImage}>
+            Generate image
+          </Btn>
+        ) : null}
       </div>
 
       {row.generation_cost_cents > 0 && (
@@ -1097,18 +1065,82 @@ function SpecInput({
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
+/**
+ * Marketplace preview — renders the generated content the way the shopper sees
+ * it on the storefront (Amazon-style PDP: image, title, brand, price, "About
+ * this item" bullets, product description). White surface + marketplace colors
+ * so it reads as a real listing, not a form.
+ */
+function MarketplacePreview({
+  channel,
+  brand,
+  title,
+  bullets,
+  description,
+  imageUrl,
+  priceCents,
+}: {
+  channel: string;
+  brand: string;
+  title: string;
+  bullets: string[];
+  description: string;
+  imageUrl: string | null;
+  priceCents: number;
+}) {
+  const market = channel.startsWith("AMAZON_")
+    ? "Amazon"
+    : channel === "WALMART"
+      ? "Walmart"
+      : channel;
+  const price = (priceCents / 100).toFixed(2);
   return (
-    <div className="text-[10.5px] font-medium uppercase tracking-wider text-ink-3">
-      {children}
-    </div>
-  );
-}
-
-function CharCounter({ value }: { value: string }) {
-  return (
-    <div className="mt-1 text-[10.5px] tabular-nums text-ink-3">
-      {value.length} chars
+    <div className="mt-3 overflow-hidden rounded-[12px] border border-rule bg-white">
+      <div className="flex items-center justify-between border-b border-rule bg-[#f7f8f8] px-3 py-1.5 text-[10.5px] uppercase tracking-wider text-[#565959]">
+        <span>Предпросмотр · как на {market}</span>
+        <span className="font-mono normal-case tracking-normal">{channel}</span>
+      </div>
+      <div className="grid grid-cols-1 gap-5 p-4 sm:grid-cols-[280px_1fr]">
+        <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border border-[#e7e7e7] bg-white">
+          {imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={imageUrl} alt={title} className="h-full w-full object-contain" />
+          ) : (
+            <span className="px-6 text-center text-[12px] leading-snug text-[#8d9091]">
+              Изображение появится после «Generate image»
+            </span>
+          )}
+        </div>
+        <div className="min-w-0">
+          <h3 className="text-[19px] font-medium leading-snug text-[#0F1111]">
+            {title}
+          </h3>
+          <div className="mt-1 text-[12.5px] text-[#007185]">Бренд: {brand}</div>
+          <div className="mt-1 text-[12px] text-[#565959]">
+            Новый листинг · ещё нет отзывов
+          </div>
+          <div className="mt-3 border-t border-[#e7e7e7] pt-3">
+            <span className="align-top text-[13px] text-[#0F1111]">$</span>
+            <span className="text-[28px] font-medium leading-none text-[#0F1111]">
+              {price}
+            </span>
+          </div>
+          <div className="mt-4">
+            <div className="text-[15px] font-bold text-[#0F1111]">About this item</div>
+            <ul className="mt-1.5 list-disc space-y-1.5 pl-5 text-[12.5px] leading-snug text-[#0F1111]">
+              {bullets.map((b, i) => (
+                <li key={i}>{b}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div className="border-t border-[#e7e7e7] px-4 py-3.5">
+        <div className="text-[15px] font-bold text-[#0F1111]">Product description</div>
+        <p className="mt-1.5 whitespace-pre-wrap text-[12.5px] leading-relaxed text-[#0F1111]">
+          {description}
+        </p>
+      </div>
     </div>
   );
 }

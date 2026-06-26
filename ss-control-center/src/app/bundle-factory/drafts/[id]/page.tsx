@@ -14,6 +14,10 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PageHead, Sep } from "@/components/kit";
+import {
+  getPricingModel,
+  computeListingPriceCents,
+} from "@/lib/bundle-factory/pricing-config";
 import { DraftDetailClient } from "./DraftDetailClient";
 
 export const dynamic = "force-dynamic";
@@ -97,6 +101,14 @@ export default async function DraftDetailPage({ params }: PageProps) {
     };
   }
 
+  // Auto retail price (pricing model × COGS) — what the listing will publish at.
+  // Shown in the marketplace preview so the operator sees the real price.
+  const pricingModel = await getPricingModel();
+  const previewPriceCents = computeListingPriceCents(
+    draft.draft_cost_cents ?? 0,
+    pricingModel,
+  );
+
   const channels = safeParse<string[]>(draft.target_channels) ?? [];
   const variants = draft.variation_matrix
     ? safeParse<Variant[]>(draft.variation_matrix.variants_json) ?? []
@@ -177,6 +189,8 @@ export default async function DraftDetailPage({ params }: PageProps) {
         canGenerate={Boolean(selectedVariant)}
         targetChannels={channels}
         draftStatus={draft.status}
+        previewPriceCents={previewPriceCents}
+        brand={draft.brand}
         initialContent={draft.generated_content.map((g) => {
           const cs = channelSkuByChannel[g.channel];
           return {
