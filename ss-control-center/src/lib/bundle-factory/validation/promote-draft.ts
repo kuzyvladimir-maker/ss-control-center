@@ -23,6 +23,11 @@ import {
   countDistinctBrands,
   resolveAmazonBrowseNode,
 } from "../browse-node-resolver";
+import {
+  getPricingModel,
+  computeListingPriceCents,
+  type PricingModel,
+} from "../pricing-config";
 
 export interface PromoteOutcome {
   master_bundle_id: string | null;
@@ -106,7 +111,10 @@ async function reserveUpc(draftId: string): Promise<{ id: string; upc: string } 
   }
 }
 
-async function ensureMasterBundle(draftId: string): Promise<string> {
+async function ensureMasterBundle(
+  draftId: string,
+  model: PricingModel,
+): Promise<string> {
   const draft = await prisma.bundleDraft.findUniqueOrThrow({
     where: { id: draftId },
     select: {
@@ -119,8 +127,9 @@ async function ensureMasterBundle(draftId: string): Promise<string> {
       draft_components: true,
       generation_job_id: true,
       draft_main_image_url: true,
+      draft_cost_cents: true,
       generated_content: {
-        select: { main_image_url: true, generation_cost_cents: true, image_generation_cost_cents: true },
+        select: { main_image_url: true },
       },
     },
   });
@@ -132,12 +141,12 @@ async function ensureMasterBundle(draftId: string): Promise<string> {
     draft.draft_main_image_url ??
     "https://placehold.co/1024x1024/e5e5e5/666666.png?text=pending+main";
 
-  // Sum cost from all GeneratedContent rows for a rough estimate.
-  let estimatedCost = 0;
-  for (const g of draft.generated_content) {
-    estimatedCost +=
-      (g.generation_cost_cents ?? 0) + (g.image_generation_cost_cents ?? 0);
-  }
+  // COGS basis = the bundle's GOODS cost (pack_count × donor unit price),
+  // carried on the draft as draft_cost_cents. Earlier this summed the AI
+  // generation cost (~1¢) instead, which made the margin validator price
+  // against a near-zero basis — wrong. The selling price is then the pricing
+  // model applied to this COGS.
+  const estimatedCost = draft.draft_cost_cents ?? 0;
 
   const slugBase = draft.draft_name
     .replace(/[^A-Za-z0-9]+/g, "-")
@@ -160,7 +169,7 @@ async function ensureMasterBundle(draftId: string): Promise<string> {
         sourcing_overhead_cents: 0,
       }),
       estimated_cost_cents: estimatedCost,
-      suggested_price_cents: Math.max(estimatedCost * 3, 1500),
+      suggested_price_cents: computeListingPriceCents(estimatedCost, model),
       packaging_spec: JSON.stringify({}),
       main_image_url: firstImage,
       secondary_images: JSON.stringify([]),
@@ -182,7 +191,20 @@ async function ensureMasterBundle(draftId: string): Promise<string> {
 export async function promoteDraftToChannelSkus(
   draftId: string,
 ): Promise<PromoteOutcome> {
-  const masterBundleId = await ensureMasterBundle(draftId);
+  const pricingModel = await getPricingModel();
+  const masterBundleId = await ensureMasterBundle(draftId, pricingModel);
+
+  // Auto retail price = pricing model applied to the bundle's COGS. Read the
+  // basis straight off the (now-correct) MasterBundle so every SKU prices
+  // identically and the margin validator can clear the floor.
+  const masterForPrice = await prisma.masterBundle.findUnique({
+    where: { id: masterBundleId },
+    select: { estimated_cost_cents: true },
+  });
+  const autoPriceCents = computeListingPriceCents(
+    masterForPrice?.estimated_cost_cents ?? 0,
+    pricingModel,
+  );
 
   const candidates = await prisma.generatedContent.findMany({
     where: {
@@ -247,7 +269,7 @@ export async function promoteDraftToChannelSkus(
             channel: row.channel,
             distinct_brands: distinctBrands,
           }),
-          price_cents: 0, // operator fills before publish
+          price_cents: autoPriceCents, // auto — pricing model × COGS
           main_image_url: row.main_image_url,
           compliance_status: "CAN_PUBLISH",
           compliance_check_id: row.compliance_check_id,

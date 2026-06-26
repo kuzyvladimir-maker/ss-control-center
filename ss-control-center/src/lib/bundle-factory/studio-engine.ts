@@ -16,9 +16,8 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import { generateContent } from "./content-generation";
+import { runContentGeneration } from "./content-pipeline";
 import type { Variant, VariantComponent } from "./variation-matrix";
-import { DISCLAIMER_BULLET, DISCLAIMER_DESCRIPTION } from "./remediation/disclaimer-text";
 
 export interface BatchProgress {
   status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
@@ -165,7 +164,6 @@ async function buildOneListing(args: {
   index: number;
   houseBrand: string;
   channel: string;
-  textModel: "opus" | "sonnet";
   donors: SourcedDonor[];
   packCount: number;
 }): Promise<{ ok: boolean; title: string }> {
@@ -204,41 +202,17 @@ async function buildOneListing(args: {
 
   const draftName = `${houseBrand} ${donorName(primary)} Gift Set`.slice(0, 120);
 
-  let title = draftName;
-  let bullets: string[] = [];
-  let description = "";
-  let ok = true;
-
-  const out = await generateContent({
-    template: "amazon",
-    draft_name: draftName,
-    brand: houseBrand,
-    category,
-    composition_type: "SINGLE_FLAVOR",
-    pack_count: packCount,
-    selected_variant: variant,
-  });
-
-  if (out.error || !out.title) {
-    ok = false;
-    title = draftName;
-    bullets = [];
-    description = "";
-  } else {
-    title = out.title;
-    bullets = out.bullets;
-    description = out.description;
-  }
-
-  // Append the curator disclaimer (exact verified wording) unless already there.
-  if (!bullets.some((b) => b.toLowerCase().includes("curated and assembled by salutem"))) {
-    bullets = [...bullets, DISCLAIMER_BULLET];
-  }
-  if (!description.toLowerCase().includes("curated and assembled by salutem")) {
-    description = description ? `${description}\n\n${DISCLAIMER_DESCRIPTION}` : DISCLAIMER_DESCRIPTION;
-  }
-
-  await prisma.bundleDraft.create({
+  // ── Bridge to the canonical pipeline ───────────────────────────────────────
+  // Earlier this engine baked content straight onto the BundleDraft and
+  // stopped — but the draft-detail UI, compliance gate, validation and the
+  // publish path all read GeneratedContent rows + a selected variant, so those
+  // drafts dead-ended with nothing to validate or publish. We now create the
+  // draft exactly like a brief-born one (with a VariationMatrix whose single
+  // variant is pre-selected) and hand it to runContentGeneration — the same
+  // orchestrator the "Generate content" button calls. It writes the per-channel
+  // GeneratedContent, runs the compliance gate (curator disclaimer auto-
+  // injected by rules 3+4) and flips the draft to GENERATED on a clean pass.
+  const draft = await prisma.bundleDraft.create({
     data: {
       generation_job_id: jobId,
       draft_name: draftName,
@@ -247,18 +221,43 @@ async function buildOneListing(args: {
       composition_type: "SINGLE_FLAVOR",
       pack_count: packCount,
       draft_components: JSON.stringify([component]),
-      draft_title: title,
-      draft_bullets: JSON.stringify(bullets),
-      draft_description: description,
       draft_main_image_url: primary.mainImageUrl ?? null,
       draft_cost_cents: costCents,
-      status: ok ? "GENERATED" : "ERROR",
+      status: "VARIATION_SELECTED",
       target_channels: JSON.stringify([channel]),
       compliance_status: "PENDING",
+      variation_matrix: {
+        create: {
+          variants_json: JSON.stringify([variant]),
+          selected_variant_idx: 0,
+          selected_at: new Date(),
+        },
+      },
     },
+    select: { id: true },
   });
 
-  return { ok, title };
+  let passed = false;
+  try {
+    const result = await runContentGeneration({
+      bundle_draft_id: draft.id,
+      channels: [channel],
+      actor: "studio-engine",
+    });
+    passed = result.outcomes.some((o) => o.compliance_status === "CAN_PUBLISH");
+  } catch {
+    passed = false;
+  }
+
+  // On a clean pass runContentGeneration leaves the draft at GENERATED with
+  // CAN_PUBLISH content and NO image. We deliberately stop here rather than
+  // reusing the donor photo: validator-image-dimensions hard-FAILS Amazon main
+  // images below 2000×2000, and donor thumbnails are smaller — so the operator
+  // generates real bundle images from the draft page ("Generate N images",
+  // free Codex worker), which lifts the draft to IMAGE_GENERATED and unlocks
+  // ship-specs → Validate → Publish. A BLOCKED result leaves the draft at
+  // VARIATION_SELECTED with BLOCKED rows the operator can re-try.
+  return { ok: passed, title: draftName };
 }
 
 // ── Tick ────────────────────────────────────────────────────────────────────
@@ -281,7 +280,6 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
   const prompt = typeof cfg.prompt === "string" ? cfg.prompt : "";
   const channel = typeof cfg.channel === "string" ? cfg.channel : "AMAZON_SALUTEM";
   const houseBrand = typeof cfg.house_brand === "string" ? cfg.house_brand : "Salutem Vita";
-  const textModel = cfg.text_model === "sonnet" ? "sonnet" : "opus";
 
   const state = readState(job.notes, job.bundles_target);
 
@@ -376,7 +374,6 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
     index: done,
     houseBrand,
     channel,
-    textModel,
     donors,
     packCount: plan.pack_count,
   });

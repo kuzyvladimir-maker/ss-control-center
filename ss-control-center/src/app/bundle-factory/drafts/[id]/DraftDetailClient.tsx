@@ -335,6 +335,42 @@ export function DraftDetailClient(props: Props) {
   const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [publishConfirmChecked, setPublishConfirmChecked] = useState(false);
 
+  // Manual ship-specs (Phase-2 scaffold — weight + L×W×H). Retail price is
+  // auto, so it's not entered here.
+  const [weightOz, setWeightOz] = useState("");
+  const [lengthIn, setLengthIn] = useState("");
+  const [widthIn, setWidthIn] = useState("");
+  const [heightIn, setHeightIn] = useState("");
+
+  async function saveShipSpecs() {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await fetch(
+        `/api/bundle-factory/drafts/${props.draftId}/ship-specs`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            weight_oz: Number(weightOz),
+            length_in: Number(lengthIn),
+            width_in: Number(widthIn),
+            height_in: Number(heightIn),
+          }),
+        },
+      );
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      // Re-validate immediately so the weight/dims validators flip to PASSED
+      // and the Publish button can appear.
+      await validateDraft();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function refreshSkusFromServer() {
     const fresh = await fetch(`/api/bundle-factory/drafts/${props.draftId}`);
     const freshData = await fresh.json();
@@ -496,6 +532,17 @@ export function DraftDetailClient(props: Props) {
       r.validation_status === "PASSED" &&
       (r.listing_status === "PENDING" || r.listing_status === "FAILED"),
   ).length;
+  // The ship-specs form is relevant once the draft is promotable/validating —
+  // i.e. it has CAN_PUBLISH content with an image. Weight + dims are required
+  // for validation to PASS and there's no auto-derivation yet.
+  const canEnterShipSpecs = rows.some(
+    (r) => r.compliance_status === "CAN_PUBLISH" && !!r.main_image_url,
+  );
+  const specsValid =
+    Number(weightOz) > 0 &&
+    Number(lengthIn) > 0 &&
+    Number(widthIn) > 0 &&
+    Number(heightIn) > 0;
   const showPublishAllBtn =
     publishPendingCount > 0 &&
     (props.draftStatus === "VALIDATED" ||
@@ -621,6 +668,35 @@ export function DraftDetailClient(props: Props) {
           </div>
         )}
       </div>
+
+      {canEnterShipSpecs && (
+        <div className="rounded-[14px] border border-rule bg-surface p-5">
+          <h2 className="text-[13px] font-semibold text-ink">
+            Ship specs — вес и габариты коробки
+          </h2>
+          <p className="mt-1 text-[12px] text-ink-3">
+            Розничная цена ставится автоматически. Вес и габариты пока вводятся
+            вручную — без них валидаторы не пропускают листинг. Значения
+            применяются ко всем каналам этого драфта.
+          </p>
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <SpecInput label="Вес (oz)" value={weightOz} onChange={setWeightOz} />
+            <SpecInput label="Длина (in)" value={lengthIn} onChange={setLengthIn} />
+            <SpecInput label="Ширина (in)" value={widthIn} onChange={setWidthIn} />
+            <SpecInput label="Высота (in)" value={heightIn} onChange={setHeightIn} />
+          </div>
+          <div className="mt-3 flex justify-end">
+            <Btn
+              variant="primary"
+              disabled={!specsValid || busy}
+              loading={busy}
+              onClick={saveShipSpecs}
+            >
+              Сохранить и проверить
+            </Btn>
+          </div>
+        </div>
+      )}
 
       {rows.length === 0 ? (
         <div className="rounded-[14px] border border-rule bg-surface p-6 text-center text-[12.5px] text-ink-3">
@@ -985,6 +1061,33 @@ function ComplianceBadge({
         </span>
       )}
     </div>
+  );
+}
+
+function SpecInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-[10.5px] font-medium uppercase tracking-wider text-ink-3">
+        {label}
+      </span>
+      <input
+        type="number"
+        inputMode="decimal"
+        min="0"
+        step="0.1"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="rounded-md border border-rule bg-bg-elev/40 px-2 py-1.5 text-[12.5px] text-ink tabular-nums outline-none focus:border-green-ink"
+      />
+    </label>
   );
 }
 
