@@ -22,6 +22,7 @@ import { logLifecycle } from "@/lib/bundle-factory/lifecycle-log";
 import { sendTelegramMessage } from "@/lib/telegram";
 
 import { channelTarget } from "./account-map";
+import { productTypeForBundle } from "@/lib/bundle-factory/attributes";
 import {
   submitToAmazon,
   type AmazonPublishResult,
@@ -322,7 +323,7 @@ export async function runDistribution(
         const r: AmazonPublishResult = await submitToAmazon({
           sku,
           storeIndex: target.storeIndex,
-          productType: input.amazonProductType ?? "PRODUCT",
+          productType: input.amazonProductType ?? productTypeForBundle(),
           dryRun: !apply,
           // On the very first attempt of a SKU we ALWAYS validation-preview
           // first; on retries we trust the operator already saw the

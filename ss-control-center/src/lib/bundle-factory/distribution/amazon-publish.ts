@@ -157,6 +157,28 @@ export function buildAmazonAttributes(
     ];
   }
 
+  // REQUIRED by the GROCERY / food product types (top-level `required` in the
+  // live SP-API schema). Without these the PUT is rejected. `food-gifts` is a
+  // valid GROCERY item_type_keyword and exactly matches a Salutem gift set.
+  attrs.item_type_keyword = [
+    { value: "food-gifts", marketplace_id: MARKETPLACE_ID },
+  ];
+  attrs.supplier_declared_dg_hz_regulation = [
+    { value: "not_applicable", marketplace_id: MARKETPLACE_ID },
+  ];
+
+  // Merge the rich attribute set the filler stored on the SKU (Phase 2.1) —
+  // ingredients, allergen_information, number_of_items, nutrition, etc., already
+  // shaped as Amazon attribute arrays. Overrides the base where keys overlap.
+  try {
+    const extra = sku.attributes ? JSON.parse(sku.attributes) : null;
+    if (extra && typeof extra === "object" && !Array.isArray(extra)) {
+      Object.assign(attrs, extra as Record<string, unknown>);
+    }
+  } catch {
+    /* malformed sku.attributes — ignore, base attrs still valid */
+  }
+
   return attrs;
 }
 
