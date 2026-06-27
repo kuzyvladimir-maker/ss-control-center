@@ -85,6 +85,16 @@ export interface ContentGenerationInput {
   composition_type: string;
   pack_count: number;
   selected_variant: Variant;
+  /** Real harvested manufacturer data for the primary donor product (from the
+   *  donor catalog — Walmart/Sam's/BJ's/etc.). Claude ADAPTS this into
+   *  brand-voice copy rather than inventing facts. Phase 1. */
+  donor_reference?: {
+    title?: string;
+    bullets?: string[];
+    description?: string;
+    ingredients?: string;
+    nutrition?: string;
+  };
   /** Additional regeneration context — populated by the feedback loop. */
   prior_failure?: {
     attempt: number;
@@ -207,6 +217,27 @@ function buildUserMessage(input: ContentGenerationInput): string {
   lines.push(formatComposition(variant.composition));
   lines.push("");
   lines.push(`Selected variant rationale: ${variant.notes}`);
+
+  // Real manufacturer reference data (Phase 1) — ground the copy in facts from
+  // the donor catalog instead of inventing. Claude ADAPTS, never copies verbatim.
+  const ref = input.donor_reference;
+  if (ref && (ref.title || ref.description || ref.bullets?.length || ref.ingredients || ref.nutrition)) {
+    lines.push("");
+    lines.push(
+      "MANUFACTURER REFERENCE DATA (real harvested product info — ADAPT into your own brand-voice copy; do NOT copy verbatim and do NOT invent facts not present here):",
+    );
+    if (ref.title) lines.push(`  Reference title: ${ref.title}`);
+    if (ref.bullets && ref.bullets.length > 0) {
+      lines.push("  Reference bullets:");
+      for (const b of ref.bullets.slice(0, 8)) lines.push(`    - ${b}`);
+    }
+    if (ref.description) lines.push(`  Reference description: ${ref.description.slice(0, 1200)}`);
+    if (ref.ingredients) lines.push(`  Ingredients: ${ref.ingredients.slice(0, 800)}`);
+    if (ref.nutrition) lines.push(`  Nutrition facts: ${ref.nutrition.slice(0, 600)}`);
+    lines.push(
+      "Ground the title, bullets, and description in this real data (flavors, format, preparation, storage, count). Stay strictly factual.",
+    );
+  }
 
   // Feedback context for regeneration attempts.
   if (input.prior_failure) {

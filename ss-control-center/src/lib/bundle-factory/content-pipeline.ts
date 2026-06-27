@@ -148,6 +148,44 @@ export async function runContentGeneration(
     (c) => ({ brand: c.brand, product_name: c.product_name }),
   );
 
+  // Phase 1 — pull the primary donor's harvested content so Claude ADAPTS real
+  // catalog data (titles/bullets/description/ingredients/nutrition harvested
+  // from Walmart/Sam's/BJ's/etc.) instead of inventing. A studio-built
+  // component's research_pool_id IS the DonorProduct id; brief-built drafts may
+  // not match — graceful (donor_reference stays undefined → prior behaviour).
+  let donorReference: ContentGenerationInput["donor_reference"];
+  const primaryDonorId = selected.composition[0]?.research_pool_id;
+  if (primaryDonorId) {
+    const donor = await prisma.donorProduct.findUnique({
+      where: { id: primaryDonorId },
+      select: {
+        title: true,
+        bullets: true,
+        description: true,
+        ingredients: true,
+        nutritionFacts: true,
+      },
+    });
+    if (donor) {
+      let bullets: string[] | undefined;
+      try {
+        const b = donor.bullets ? JSON.parse(donor.bullets) : null;
+        if (Array.isArray(b)) {
+          bullets = b.filter((x): x is string => typeof x === "string");
+        }
+      } catch {
+        /* malformed donor.bullets JSON — skip */
+      }
+      donorReference = {
+        title: donor.title ?? undefined,
+        bullets: bullets && bullets.length > 0 ? bullets : undefined,
+        description: donor.description ?? undefined,
+        ingredients: donor.ingredients ?? undefined,
+        nutrition: donor.nutritionFacts ?? undefined,
+      };
+    }
+  }
+
   const generationInputBase = {
     draft_name: draft.draft_name,
     brand: draft.brand,
@@ -155,6 +193,7 @@ export async function runContentGeneration(
     composition_type: draft.composition_type,
     pack_count: draft.pack_count,
     selected_variant: selected,
+    donor_reference: donorReference,
   };
 
   // Generate per template (dedup the 5 Amazon channels into one Claude
