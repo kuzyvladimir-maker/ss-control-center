@@ -3,6 +3,11 @@
 // miss. Deterministic and brand-voice safe (no promo adjectives, no emoji —
 // see CLAUDE.md). Respects Walmart limits: title <= 75 chars, bullet <= 500.
 
+// Brand-voice enforcement now lives in the shared lib (Phase 0.3). Re-exported
+// so existing importers (`./content`) keep working.
+import { scrubBrandVoice } from "@/lib/brand-voice";
+export { scrubBrandVoice };
+
 const TITLE_MAX = 75;
 
 /** Best-effort physical-unit noun from the product title, for natural copy. */
@@ -32,23 +37,6 @@ export interface MultipackContent {
   title: string;
   bullets: string[];
   description: string;
-}
-
-// ── Brand-voice enforcement (CLAUDE.md: applies to ALL listing content) ──────
-const PROMO_ADJECTIVES =
-  /\b(ultimate|perfect|delightful|delicious|ideal|amazing|incredible|premium|exclusive|must-have|best|finest|exceptional|outstanding|magnificent|wonderful|fantastic|superior|top-quality|world-class|awesome)\b/gi;
-// Emoji + symbol ranges + manual bullet glyphs.
-const EMOJI = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}️•●►▪○●►▪○]/gu;
-
-/** Enforce brand voice on one line of donor-sourced copy: drop emoji, manual
- *  bullet glyphs, and promo adjectives; tidy whitespace/punctuation. */
-export function scrubBrandVoice(text: string): string {
-  let t = text.replace(EMOJI, " ").replace(PROMO_ADJECTIVES, " ");
-  t = t.replace(/\s{2,}/g, " ").replace(/\s+([,.;:!])/g, "$1").trim();
-  t = t.replace(/^[\s,;:.\-–]+/, "").replace(/[\s,;:]+$/, "").trim();
-  if (t && !/[.!?]$/.test(t)) t += ".";
-  // Capitalize first letter.
-  return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
 const QUANTITY_RE = /quantity 1|pack ships|order contains|multipack of|ships all|same item shown|not 1\b/i;
