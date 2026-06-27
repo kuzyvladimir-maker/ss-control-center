@@ -48,7 +48,14 @@
   упаковку; frozen-hero её ТРЕБУЕТ (Jimmy Dean + Salutem) → нужна связанная инверсия промпта + Rule 6
   (разрешить свои + бренды компонентов бандла, блокировать только неожиданные). Не тестируется без живого
   воркера/vision. Нужен владелец (бокс) + решение по подходу (reference vs AI-approx).
-- Далее (без блокера): 4 (QA-офицер) → 5 (каналы/форма/resumability) → 6 (Growth на shared-модули).
+- ✅ Фаза 4 — Qualification Officer: `src/lib/bundle-factory/qualification/officer.ts` (`qualifyChannelSku`,
+  pure-функция: completeness + brand-voice + покрытие required-атрибутов реестра + аллергены/ингредиенты)
+  + `GET /api/bundle-factory/drafts/[id]/qualify` (advisory отчёт по всем ChannelSKU). Переиспользуем в Growth.
+- ⏳ Остаются (без блокера): Фаза 5 — channel-gate (frozen→только Amazon; в distribution-pipeline:
+  пропускать Walmart для FROZEN_GROCERY/REFRIGERATED по категории MasterBundle), богаче стартовая форма,
+  resumability билда (серверный тик вместо браузерного). Фаза 6 — перевести Amazon/Walmart Growth на
+  shared-модули (brand-voice уже общий; advisor ещё со своей копией; officer/registry — подключить).
+- UI-wiring: кнопку «QA-офицер» на экране драфта (вызов /qualify) — не сделано, тонкий слой.
 - ⚠️ Ранее в этой сессии уже починен сам pipeline (генерация→картинки→вес/габариты→validate→publish) + добавлены
   авто-цена, ship-specs, Amazon-превью, кликабельные драфты, публикация на NEEDS_REVIEW. См. memory `project_bundle_factory_pipeline_breaks`.
 
