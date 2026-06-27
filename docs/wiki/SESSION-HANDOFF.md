@@ -40,7 +40,15 @@
   `item_type_keyword="food-gifts"` + `supplier_declared_dg_hz_regulation`, filler rich-атрибутов
   (ingredients/allergen_information/number_of_items из донора → ChannelSKU.attributes →
   merge в payload). Walmart-payload расширение — отложено (Walmart не берёт frozen).
-- ⛔ Фаза 3 (картинки) — ЗАБЛОКИРОВАНА на инфраструктуре + решении владельца:
+- ✅ Фаза 3 РАЗБЛОКИРОВАНА (2026-06-27): воркер на боксе обновлён (`ops/codex-image-worker/server.js` —
+  принимает `reference_images`/`reference_urls`, пишет их в run-dir, codex использует как input-референсы),
+  задеплоен (scp на `root@104.219.53.204` = ssh-алиас `server`; README-алиас `openclaw` УСТАРЕЛ), nginx
+  `client_max_body_size`→24m, перезапущен. **Живой тест PASSED:** референс Uncrustables-эталона → на выходе
+  точная копия (брендированный кулер + реальные коробки + FROZEN GEL PACK). Бесплатный image_gen РЕАЛЬНО
+  использует референсы. Токен воркера — только на боксе `/root/codex-image-worker/.env` + Vercel (НЕ в .env.local).
+  ОСТАЛОСЬ по Фазе 3 (код): frozen-hero промпт в image-pipeline + передать референсы (донор-фото + 2 эталона
+  из `public/bundle-factory/frozen-refs/`) + инверсия Rule 6 (разрешить Salutem + бренды компонентов).
+- (история блокера, решено) Фаза 3 была заблокирована на:
   (1) бесплатный GPT image-воркер (`codex-image-worker` на боксе 104.219.53.204) принимает только
   `{prompt,size}` — БЕЗ референс-картинок; чтобы передавать 2 эталона + фото товара (для совпадения с
   одобренными рендерами и точной чужой упаковки), нужна доработка ВОРКЕРА на боксе (вне этого репо).
