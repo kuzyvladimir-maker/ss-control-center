@@ -36,10 +36,19 @@
 - ✅ Фаза 1.1 — контент адаптирует РЕАЛЬНЫЕ данные донора: `content-pipeline.ts` тянет
   donor (title/bullets/description/ingredients/nutrition), `content-generation.ts` рендерит блок
   "MANUFACTURER REFERENCE DATA" → Claude адаптирует, не выдумывает.
-- ⏳ Фаза 2 (СЛЕДУЮЩАЯ) — filler атрибутов по реестру + расширенные payload'ы Amazon/Walmart.
-  Сюда же входят 1.2 (аллергены из ingredients) и 1.3 (product type: **GROCERY** вместо несуществующего
-  GIFT_BASKET в `distribution/amazon-publish.ts`; pet→PET_FOOD). Реестр уже даёт `productTypeForBundle()`.
-- Далее: 3 (картинки: reference-воркер + frozen hero) → 4 (QA-офицер) → 5 (каналы/форма) → 6 (Growth).
+- ✅ Фаза 2 (Amazon) — product type **GROCERY** (вместо несуществующего GIFT_BASKET), обязательные
+  `item_type_keyword="food-gifts"` + `supplier_declared_dg_hz_regulation`, filler rich-атрибутов
+  (ingredients/allergen_information/number_of_items из донора → ChannelSKU.attributes →
+  merge в payload). Walmart-payload расширение — отложено (Walmart не берёт frozen).
+- ⛔ Фаза 3 (картинки) — ЗАБЛОКИРОВАНА на инфраструктуре + решении владельца:
+  (1) бесплатный GPT image-воркер (`codex-image-worker` на боксе 104.219.53.204) принимает только
+  `{prompt,size}` — БЕЗ референс-картинок; чтобы передавать 2 эталона + фото товара (для совпадения с
+  одобренными рендерами и точной чужой упаковки), нужна доработка ВОРКЕРА на боксе (вне этого репо).
+  (2) текущий `image-pipeline.buildImagePrompt` + compliance **Rule 6** (vision) ЗАПРЕЩАЮТ брендированную
+  упаковку; frozen-hero её ТРЕБУЕТ (Jimmy Dean + Salutem) → нужна связанная инверсия промпта + Rule 6
+  (разрешить свои + бренды компонентов бандла, блокировать только неожиданные). Не тестируется без живого
+  воркера/vision. Нужен владелец (бокс) + решение по подходу (reference vs AI-approx).
+- Далее (без блокера): 4 (QA-офицер) → 5 (каналы/форма/resumability) → 6 (Growth на shared-модули).
 - ⚠️ Ранее в этой сессии уже починен сам pipeline (генерация→картинки→вес/габариты→validate→publish) + добавлены
   авто-цена, ship-specs, Amazon-превью, кликабельные драфты, публикация на NEEDS_REVIEW. См. memory `project_bundle_factory_pipeline_breaks`.
 
