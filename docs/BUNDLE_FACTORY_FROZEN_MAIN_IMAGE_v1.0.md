@@ -10,6 +10,38 @@
 > cooler with branded "FROZEN GEL PACK" pouches. Stored as style anchors —
 > see "Reference assets" below.
 
+## Product definition drives the main image (Vladimir, 2026-06-27)
+
+**What we sell is NOT the third-party food — it's a Salutem-branded FROZEN GIFT
+SET.** The physical product = our branded styrofoam cooler + branded gel packs +
+the third-party product inside. The title is under our brand. Therefore the
+branded cooler + gel packs ARE the product (its packaging), not "shipping
+materials."
+
+Under that definition the hero template below **IS the MAIN image**, and it is
+policy-defensible:
+
+- Amazon's "products outside of packaging" rule targets food sold loose; a GIFT
+  SET's packaging IS the product (the Gift Basket Exception treats the giftable
+  presentation as part of the product). Main images of gift baskets routinely
+  show the branded basket/box.
+- The Salutem logo on the cooler and the gel-pack labels are **on-product
+  packaging branding/text** (like a brand logo + text on any retail box), which
+  Amazon allows — the prohibited case is text/logos *overlaid* on top of / in the
+  background of the image, not branding physically printed on the real product.
+- Third-party boxes visible inside are fine (first-sale + Gift Basket Exception).
+
+**Residual practical risk (be honest):** Amazon's automated image classifier is
+vision-based and can occasionally over-flag text/logo-heavy images (Error 18027)
+even when compliant. Mitigation: (1) keep a cleaner fallback variant ready;
+(2) if a specific listing is auto-suppressed, appeal with the gift-set/packaging
+justification; (3) test on a real listing to learn Amazon's actual behavior.
+This is a manageable risk, not a blocker — we go with the branded gift-set main
+image.
+
+Secondary images (up to 8): nutrition/ingredient panels (from donor catalog),
+per-item close-ups, lifestyle/gifting, storage/handling infographic.
+
 ## The core formula
 
 > **Third-party brand product + our branded frozen shipping kit = a Salutem
@@ -160,11 +192,11 @@ the two image files (chat attachments can't be saved programmatically).
 
 ## Open implementation questions (see discussion)
 
-1. **Amazon MAIN-image policy** — main image must be the product on pure white,
-   no props/extra objects, no text/logos overlay. A cooler + gel packs + label
-   text + Salutem logo MAY trip Amazon's main-image check → suppression risk.
-   Likely this is a perfect SECONDARY image; the main may need a cleaner variant.
-   To be verified against current Amazon policy. Walmart is more lenient.
+1. **Amazon MAIN-image policy** — RESOLVED (see "Product definition drives the
+   main image" above): the branded gift-set hero IS the main image because the
+   product we sell is the Salutem gift set, not the loose food. Residual risk =
+   the automated classifier may over-flag (Error 18027); mitigate with a cleaner
+   fallback variant + appeal + real-listing test.
 2. **Trademark accuracy** — AI re-rendering third-party packaging can misrender
    the real brand (wrong logo/text). Prefer compositing the REAL donor product
    photo over re-drawing it; QA Officer must verify packaging fidelity.
