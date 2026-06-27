@@ -28,6 +28,7 @@ import {
   computeListingPriceCents,
   type PricingModel,
 } from "../pricing-config";
+import { buildRichAmazonAttributes } from "../attributes/build-amazon-attributes";
 
 export interface PromoteOutcome {
   master_bundle_id: string | null;
@@ -220,8 +221,36 @@ export async function promoteDraftToChannelSkus(
 
   const draft = await prisma.bundleDraft.findUniqueOrThrow({
     where: { id: draftId },
-    select: { brand: true },
+    select: { brand: true, draft_components: true, pack_count: true },
   });
+
+  // Phase 2.1 — donor-derived rich attributes (ingredients, allergens, item
+  // count), computed once and stored on every ChannelSKU.attributes. The
+  // primary component's research_pool_id is the DonorProduct id on studio-built
+  // drafts; a miss falls back to empty attrs (base attrs still publish).
+  let richAttributesJson = JSON.stringify({});
+  try {
+    const comps = JSON.parse(draft.draft_components) as Array<{
+      research_pool_id?: string;
+    }>;
+    const primaryDonorId = Array.isArray(comps)
+      ? comps[0]?.research_pool_id
+      : undefined;
+    const donor = primaryDonorId
+      ? await prisma.donorProduct.findUnique({
+          where: { id: primaryDonorId },
+          select: { ingredients: true },
+        })
+      : null;
+    richAttributesJson = JSON.stringify(
+      buildRichAmazonAttributes({
+        ingredients: donor?.ingredients ?? null,
+        packCount: draft.pack_count,
+      }),
+    );
+  } catch {
+    /* malformed draft_components / donor miss — empty attrs, base still valid */
+  }
 
   // Browse node depends on the bundle's brand mix, not the channel.
   // Pull the MasterBundle's BundleComponents once and compute the
@@ -264,7 +293,7 @@ export async function promoteDraftToChannelSkus(
           title: row.title,
           bullets: row.bullets_json,
           description: row.description,
-          attributes: JSON.stringify({}),
+          attributes: richAttributesJson,
           channel_browse_node: resolveAmazonBrowseNode({
             channel: row.channel,
             distinct_brands: distinctBrands,
