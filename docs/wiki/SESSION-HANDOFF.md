@@ -12,6 +12,36 @@
 
 ---
 
+## 🆕 СЕССИЯ 2026-06-27 — Bundle Factory: полная пересборка под новую логику (В ПРОЦЕССЕ)
+
+**ЧТО ДЕЛАЕМ:** пересобираем Bundle Factory по согласованной с владельцем логике сборки карточки.
+Канонический план: вики [bundle-factory-rebuild-plan.md](bundle-factory-rebuild-plan.md) (Фазы 0–6).
+Общий фундамент: [listing-quality-stack.md](listing-quality-stack.md) (используется и Growth-модулями).
+Картинки frozen: `docs/BUNDLE_FACTORY_FROZEN_MAIN_IMAGE_v1.0.md`. Решения — в memory `project_bundle_factory_vision`.
+
+**КЛЮЧЕВЫЕ РЕШЕНИЯ (зафиксированы):**
+- Контент — Claude АДАПТИРУЕТ данные донор-каталога (не выдумывает).
+- Картинки — вторичные = реальные фото каталога; главная = frozen hero (брендированный кулер+гелевые
+  пакеты+товар = это и есть товар лицом, главная картинка). Генерация = бесплатный Codex/GPT-подписка воркер.
+  Эталоны: `ss-control-center/public/bundle-factory/frozen-refs/`.
+- Атрибуты — полный набор из API маркетплейсов (Amazon 80–117/тип в `docs/marketplace-rules/amazon/_schemas/`).
+- Товарная группа Amazon: по умолчанию GROCERY; корм → PET_FOOD (GIFT_BASKET у Amazon НЕ существует).
+- Walmart НЕ принимает frozen/refrigerated → заморозка только Amazon.
+- QA-офицер (Отд 5) проверяет каждый листинг по KB перед публикацией.
+
+**ГДЕ ОСТАНОВИЛИСЬ (continue here):**
+- ✅ Фаза 0.1 — реестр атрибутов: `ss-control-center/src/lib/bundle-factory/attributes/` (registry.ts + schemas/*.json + fill-map). tsc=0.
+- ✅ Фаза 0.2 — чистка KB (убрал эмодзи-примеры + строку «эмодзи в bullets OK» в title-policy обеих копий).
+- ⏳ Фаза 0.3 (СЛЕДУЮЩАЯ) — общий `src/lib/brand-voice/` (свести 3 копии: `compliance/banned-words.ts`,
+  `walmart/multipack/content.ts`, Amazon Growth advisor).
+- Далее: Фаза 1 (контент из каталога) → 2 (filler+payloads) → 3 (картинки) → 4 (QA-офицер) → 5 (каналы/форма) → 6 (Growth).
+- ⚠️ Ранее в этой сессии уже починен сам pipeline (генерация→картинки→вес/габариты→validate→publish) + добавлены
+  авто-цена, ship-specs, Amazon-превью, кликабельные драфты, публикация на NEEDS_REVIEW. См. memory `project_bundle_factory_pipeline_breaks`.
+
+**ОТ ВЛАДЕЛЬЦА НУЖНО (позже):** живой тест публикации на Amazon в конце.
+
+---
+
 ## 🆕 СЕССИЯ 2026-06-25 (iMac-Claude) — Картинки: платный OpenAI → БЕСПЛАТНЫЙ Codex (подписка ChatGPT)
 
 **ГДЕ ОСТАНОВИЛИСЬ:** задача ЗАКРЫТА и на проде. Картинки листингов (Bundle Factory) и A+ Content
