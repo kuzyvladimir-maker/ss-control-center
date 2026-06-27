@@ -30,11 +30,16 @@
 - QA-офицер (Отд 5) проверяет каждый листинг по KB перед публикацией.
 
 **ГДЕ ОСТАНОВИЛИСЬ (continue here):**
-- ✅ Фаза 0.1 — реестр атрибутов: `ss-control-center/src/lib/bundle-factory/attributes/` (registry.ts + schemas/*.json + fill-map). tsc=0.
-- ✅ Фаза 0.2 — чистка KB (убрал эмодзи-примеры + строку «эмодзи в bullets OK» в title-policy обеих копий).
-- ⏳ Фаза 0.3 (СЛЕДУЮЩАЯ) — общий `src/lib/brand-voice/` (свести 3 копии: `compliance/banned-words.ts`,
-  `walmart/multipack/content.ts`, Amazon Growth advisor).
-- Далее: Фаза 1 (контент из каталога) → 2 (filler+payloads) → 3 (картинки) → 4 (QA-офицер) → 5 (каналы/форма) → 6 (Growth).
+- ✅ Фаза 0 (фундамент): 0.1 реестр атрибутов (`src/lib/bundle-factory/attributes/`), 0.2 чистка KB
+  (эмодзи-примеры + строка «эмодзи в bullets OK» в title-policy), 0.3 общий `src/lib/brand-voice/`
+  (walmart/multipack переведён; Amazon Growth advisor — в Фазе 6).
+- ✅ Фаза 1.1 — контент адаптирует РЕАЛЬНЫЕ данные донора: `content-pipeline.ts` тянет
+  donor (title/bullets/description/ingredients/nutrition), `content-generation.ts` рендерит блок
+  "MANUFACTURER REFERENCE DATA" → Claude адаптирует, не выдумывает.
+- ⏳ Фаза 2 (СЛЕДУЮЩАЯ) — filler атрибутов по реестру + расширенные payload'ы Amazon/Walmart.
+  Сюда же входят 1.2 (аллергены из ingredients) и 1.3 (product type: **GROCERY** вместо несуществующего
+  GIFT_BASKET в `distribution/amazon-publish.ts`; pet→PET_FOOD). Реестр уже даёт `productTypeForBundle()`.
+- Далее: 3 (картинки: reference-воркер + frozen hero) → 4 (QA-офицер) → 5 (каналы/форма) → 6 (Growth).
 - ⚠️ Ранее в этой сессии уже починен сам pipeline (генерация→картинки→вес/габариты→validate→publish) + добавлены
   авто-цена, ship-specs, Amazon-превью, кликабельные драфты, публикация на NEEDS_REVIEW. См. memory `project_bundle_factory_pipeline_breaks`.
 
