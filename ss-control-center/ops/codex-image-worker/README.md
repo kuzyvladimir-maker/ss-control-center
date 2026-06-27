@@ -9,9 +9,18 @@ picture.
 
 ## What it does
 
-`POST /generate` (Bearer auth) `{ prompt, size }` → runs `codex exec` with the
-imagegen skill (built-in `image_gen` tool, ChatGPT subscription, $0) → returns the
-generated PNG bytes. `GET /health` → `{ ok: true }`. Requests are serialized.
+`POST /generate` (Bearer auth) `{ prompt, size, reference_images?, reference_urls? }`
+→ runs `codex exec` with the imagegen skill (built-in `image_gen` tool, ChatGPT
+subscription, $0) → returns the generated PNG bytes. `GET /health` → `{ ok: true }`.
+Requests are serialized.
+
+`reference_images` is an array of base64-encoded PNGs (product photos + the
+approved frozen-hero anchors); `reference_urls` an array of image URLs. They are
+written into a per-run working dir and the codex agent is told to pass them to
+`image_gen` as input/reference images (style + accurate third-party packaging).
+Backward compatible: omit them and it behaves exactly as before (text only).
+⚠️ Reference support depends on the codex `image_gen` tool accepting input
+images — confirm on the first real run.
 
 It strips `OPENAI_API_KEY` / `CODEX_API_KEY` from the child env so the paid
 `scripts/image_gen.py` fallback can never run.
@@ -80,7 +89,7 @@ location /codex-image/ {
     proxy_set_header Connection "";
     proxy_read_timeout 300s;
     proxy_send_timeout 300s;
-    client_max_body_size 4m;
+    client_max_body_size 24m;   # raised from 4m for base64 reference images
 }
 ```
 

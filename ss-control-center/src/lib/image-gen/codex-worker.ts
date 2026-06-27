@@ -73,6 +73,12 @@ export async function generateImagePngViaCodex(args: {
   prompt: string;
   size?: string;
   timeoutMs?: number;
+  /** Base64-encoded PNGs passed to the worker as visual references (product
+   *  photo + approved frozen-hero anchors). Requires the box worker to support
+   *  reference images (server.js writeRefs path). Ignored if empty. */
+  referenceImages?: string[];
+  /** Image URLs the worker fetches as references (alternative to base64). */
+  referenceUrls?: string[];
 }): Promise<CodexImageResult> {
   // Test/smoke stub — bypass network + sharp, return the canned bytes.
   const stub = (globalThis as { __SS_CODEX_IMAGE_STUB__?: CodexImageStub })
@@ -105,7 +111,16 @@ export async function generateImagePngViaCodex(args: {
         "content-type": "application/json",
         authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ prompt: args.prompt, size: args.size }),
+      body: JSON.stringify({
+        prompt: args.prompt,
+        size: args.size,
+        ...(args.referenceImages && args.referenceImages.length > 0
+          ? { reference_images: args.referenceImages }
+          : {}),
+        ...(args.referenceUrls && args.referenceUrls.length > 0
+          ? { reference_urls: args.referenceUrls }
+          : {}),
+      }),
       signal: AbortSignal.timeout(args.timeoutMs ?? DEFAULT_TIMEOUT_MS),
     });
   } catch (e) {
