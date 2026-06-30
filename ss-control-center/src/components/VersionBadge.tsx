@@ -17,7 +17,7 @@ export function VersionBadge({
   const sha = (process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 7);
   return (
     <div
-      className="pointer-events-none fixed bottom-2 right-2 z-50 select-none rounded-md border border-rule bg-surface/95 px-2 py-1 font-mono text-[10.5px] leading-none text-ink-2 shadow-sm backdrop-blur-sm"
+      className="pointer-events-none fixed bottom-2 right-2 z-50 select-none rounded-md bg-green px-2.5 py-1 font-mono text-[11px] font-medium leading-none text-green-cream shadow-md"
       title={sha ? `build ${sha}` : "local build"}
     >
       {module} {version}
