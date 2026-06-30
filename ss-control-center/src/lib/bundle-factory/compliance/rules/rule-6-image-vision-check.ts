@@ -39,7 +39,14 @@ export async function ruleImageVisionCheck(
   }
 
   const ownBrand = (input.brand || "").trim() || "Salutem Vita";
-  const result = await detectForeignLogosInImage(url, ownBrand);
+  // Phase 3 — the bundle's own component brands (genuine goods we resell,
+  // shown on purpose in the frozen hero under the gift-basket exception) are
+  // EXPECTED, not foreign-brand violations. Pass them as allowed so only
+  // UNEXPECTED brands (a hallucinated logo) flag.
+  const allowedBrands = (input.bundle_components ?? [])
+    .map((c) => (c.brand ?? "").trim())
+    .filter((b) => b.length > 0);
+  const result = await detectForeignLogosInImage(url, ownBrand, allowedBrands);
 
   if (result.error) {
     return {
