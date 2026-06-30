@@ -3449,12 +3449,14 @@ function OrderRow({
           >
             {/* Plain <img> — Veeqo CDN URLs aren't on next.config's allowed
                 list. Absolutely positioned so it fills the square without
-                feeding its intrinsic size back into the flex layout. */}
+                feeding its intrinsic size back into the flex layout.
+                object-contain (not cover) shows the WHOLE product photo with
+                no left/right cropping; a little padding keeps it off the edges. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={heroImage}
               alt=""
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-contain p-2"
               loading="lazy"
             />
           </button>
@@ -3617,8 +3619,8 @@ function OrderRow({
           <ul className="mt-1.5 space-y-2">
             {order.items.map((i) => (
               <li key={i.sku} className="text-ink-2">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="text-[16px] font-semibold leading-snug text-ink">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                  <span className="text-[19px] font-bold leading-snug text-ink">
                     {i.productTitle}
                   </span>
                   <QtyBadge qty={i.quantity} big />
@@ -4286,7 +4288,7 @@ function QtyBadge({ qty, big = false }: { qty: number; big?: boolean }) {
   if (!Number.isFinite(qty) || qty <= 0) return null;
   if (qty === 1) {
     return (
-      <span className={cn("text-ink-3", big ? "text-[14px]" : "text-[12.5px]")}>
+      <span className={cn("text-ink-3", big ? "text-[16px]" : "text-[12.5px]")}>
         × 1
       </span>
     );
@@ -4299,7 +4301,7 @@ function QtyBadge({ qty, big = false }: { qty: number; big?: boolean }) {
       className={cn(
         "inline-flex items-center justify-center rounded-full font-bold tabular leading-none",
         big
-          ? "h-7 min-w-[34px] px-2.5 text-[16px]"
+          ? "h-9 min-w-[42px] px-3 text-[20px]"
           : "h-5 min-w-[20px] px-1.5 text-[11.5px]",
         isHigh
           ? "bg-danger text-white ring-2 ring-danger/30"
