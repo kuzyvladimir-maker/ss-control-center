@@ -16,6 +16,8 @@
  * & Traffic). Design: docs/wiki/amazon-growth-roadmap.md.
  */
 
+import { hasEmoji, findPromoLanguage } from "@/lib/brand-voice";
+
 export type ComponentKey =
   | "buyability"
   | "issues"
@@ -76,18 +78,8 @@ export interface ScoredListing {
   opportunityScore: number;
 }
 
-// Promotional adjectives banned by brand voice (CLAUDE.md / Amazon subjective
-// claims). Kept here for the title compliance-lite check.
-const PROMO_WORDS = [
-  "ultimate", "perfect", "delightful", "delicious", "ideal", "amazing",
-  "incredible", "premium", "exclusive", "must-have", "best", "finest",
-  "exceptional", "outstanding", "magnificent", "wonderful", "fantastic",
-  "superior", "top-quality", "world-class", "awesome",
-];
-
-// Emoji / pictographs (covers the common ranges Amazon flags as 99300).
-const EMOJI_RE =
-  /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE0F}\u{2705}\u{274C}]/u;
+// Brand-voice promo/emoji checks now come from the shared lib (Phase 6) — same
+// canonical lists the Bundle Factory builder + compliance gate use.
 
 const MAX_STORED_ISSUES = 25;
 
@@ -114,12 +106,8 @@ function scoreIssues(errors: number, warnings: number): number {
 function scoreComplianceLite(itemName: string | null): number {
   if (!itemName) return 50; // no title to judge — neutral-ish
   let s = 100;
-  if (EMOJI_RE.test(itemName)) s -= 40;
-  const lower = itemName.toLowerCase();
-  const promoHits = PROMO_WORDS.filter((w) => {
-    const re = new RegExp(`\\b${w.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")}\\b`, "i");
-    return re.test(lower);
-  }).length;
+  if (hasEmoji(itemName)) s -= 40;
+  const promoHits = findPromoLanguage(itemName).length;
   s -= Math.min(promoHits * 15, 45);
   if (itemName.length > 200) s -= 20;
   return clamp(s);
