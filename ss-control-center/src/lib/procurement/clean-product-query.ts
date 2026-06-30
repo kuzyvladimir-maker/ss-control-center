@@ -51,23 +51,63 @@ export function cleanProductQuery(title: string): string {
 }
 
 /**
- * Strip pack/quantity noise but KEEP the weight/volume so the operator can
- * paste it into an online-store search and find the EXACT size variant.
+ * Remove weight / volume / size tokens from a title:
+ *   "18.5 oz", "18.5 oz.", "1.62 fl oz", "4.2 lb", "750 ml", "2 l", "500 g",
+ *   and the combined "4 x 12 oz" / "4 × 12 oz" form.
+ * A trailing period on the unit ("18.5 oz.") is consumed too.
  *
- * Sibling of `cleanProductQuery` (which strips weight too — used when we
- * want to match any pack of the same product on Walmart catalog).
+ * Single source of truth for size stripping, shared by:
+ *   - `cleanProductTitleForSearch` (the regex fallback below), and
+ *   - the /api/procurement/clean-title route, which applies it to BOTH the
+ *     AI output AND any value coming back from the DB cache — so titles
+ *     cached earlier (when weight was kept on purpose) still come out
+ *     size-free without having to flush the cache.
  *
- * Used by the "copy title" button on each Procurement card.
+ * Only digit-led tokens are touched, so product names that merely contain a
+ * unit letter are safe ("5 Gum", "100 Grand", "7 Up" are left alone).
+ */
+export function stripSizeTokens(input: string): string {
+  let s = input;
+
+  // Combined "4 x 12 oz" / "4 × 12 oz" (number × number unit).
+  s = s.replace(
+    /\b\d+(?:\.\d+)?\s*[×x]\s*\d+(?:\.\d+)?\s*(?:fl\s*)?(?:oz|ounces?|lb|lbs|pounds?|mg|mcg|kg|g|grams?|ml|milliliters?|l|liters?)\b\.?/gi,
+    "",
+  );
+  // Plain "<number> <unit>".
+  s = s.replace(
+    /\b\d+(?:\.\d+)?\s*(?:fl\s*)?(?:oz|ounces?|lb|lbs|pounds?|mg|mcg|kg|g|grams?|ml|milliliters?|l|liters?)\b\.?/gi,
+    "",
+  );
+
+  // Tidy the gap left behind (mid-string, trailing, or between commas).
+  s = s.replace(/\s*,\s*,/g, ",");
+  s = s.replace(/\s*,\s*$/g, "");
+  s = s.replace(/^\s*,\s*/g, "");
+  s = s.replace(/\s*[—–-]\s*$/g, "");
+  s = s.replace(/\s+([,.])/g, "$1");
+  s = s.replace(/\s{2,}/g, " ");
+  return s.trim();
+}
+
+/**
+ * Strip pack/quantity noise AND weight/volume so the "copy title" button on
+ * each Procurement card yields a clean, size-free search string. The operator
+ * pastes it into a marketplace search; keeping the weight used to pin the
+ * result to one size variant, which Vladimir asked to drop (2026-06-30).
+ *
+ * Sibling of `cleanProductQuery` (also strips weight — used by the Walmart
+ * "Снять с продажи" catalog search).
  *
  * Examples:
  *   "Arnold Premium Sub Rolls, 6 Count, 15 oz Box (Pack of 2)"
- *     → "Arnold Premium Sub Rolls, 15 oz Box"
+ *     → "Arnold Premium Sub Rolls, Box"
  *
  *   "Stur Drinks Black Cherry, Liquid Water Enhancer 1.62 fl oz (Pack of 4)"
- *     → "Stur Drinks Black Cherry, Liquid Water Enhancer 1.62 fl oz"
+ *     → "Stur Drinks Black Cherry, Liquid Water Enhancer"
  *
- *   "Fancy Feast Delights Wet Cat Food Variety Pack — 24 Cans, Cheese & Gravy"
- *     → "Fancy Feast Delights Wet Cat Food Variety Pack — Cheese & Gravy"
+ *   "Progresso Chickpea & Noodle Protein Soup, Vegetarian, 18.5 oz. (Pack of 6)"
+ *     → "Progresso Chickpea & Noodle Protein Soup, Vegetarian"
  *
  *   "Green Giant Nature's Pantry — 8-Can Garden Vegetable Variety Pack"
  *     → "Green Giant Nature's Pantry — Garden Vegetable Variety Pack"
@@ -92,11 +132,12 @@ export function cleanProductTitleForSearch(title: string): string {
   // 3. "× 4", "x 4", "×4", "x4" multipliers at the start or near the title.
   s = s.replace(/\s*[×x]\s*\d+\b/gi, "");
 
-  // NOTE: deliberately NOT stripping weight/volume tokens here — operator
-  // wants those in the clipboard so the online-store search lands on the
-  // right size variant.
+  // 4. Weight / volume / size tokens ("18.5 oz", "1 lb", "750 ml", …) — the
+  //    operator wants the copied title size-free so the marketplace search
+  //    isn't pinned to one weight variant.
+  s = stripSizeTokens(s);
 
-  // 4. Cleanup: leftover empty parens, double commas, dangling dashes.
+  // 5. Cleanup: leftover empty parens, double commas, dangling dashes.
   s = s.replace(/\(\s*\)/g, ""); // empty parens after pack strip
   // Dash followed by comma (= we stripped what sat between them):
   // "... Pack –, Cheese" → "... Pack, Cheese". Handle em/en/hyphen.
