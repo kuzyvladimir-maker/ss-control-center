@@ -3406,11 +3406,21 @@ function OrderRow({
     !wmShipped &&
     (isReady || isBought);
 
-  // Hero image for the row — the first item that actually has a photo.
-  // Rendered as a large square on the left (same height as the whole info
-  // block) so the operator recognises the product at a glance without
-  // opening the lightbox or squinting at a 40px thumbnail.
-  const heroImage = order.items.find((i) => i.imageUrl)?.imageUrl ?? null;
+  // Product photos for the row — one per distinct item image, rendered as a
+  // big square on the left (same height as the whole info block) so the
+  // operator recognises the product at a glance. Most orders have a single
+  // product, but a MERGED order (several Veeqo orders combined onto one label
+  // for the same recipient) carries several different products — show them ALL
+  // so none is hidden behind the first. Dedupe by URL and cap at 4 so the
+  // grid stays readable.
+  const heroImages: { url: string; title: string }[] = [];
+  const seenHeroUrls = new Set<string>();
+  for (const it of order.items) {
+    if (!it.imageUrl || seenHeroUrls.has(it.imageUrl)) continue;
+    seenHeroUrls.add(it.imageUrl);
+    heroImages.push({ url: it.imageUrl, title: it.productTitle });
+    if (heroImages.length >= 4) break;
+  }
 
   return (
     <div
@@ -3439,29 +3449,64 @@ function OrderRow({
       <div className="flex items-stretch gap-4">
         {/* Large square product image. `self-stretch aspect-square` makes its
             side equal the height of the right-hand info column, so it grows
-            with the card. Click to open fullscreen. */}
-        {heroImage ? (
+            with the card. Single product → one image; merged/multi-product
+            order → a grid so every product is visible. Click to open fullscreen.
+            Plain <img> (Veeqo CDN URLs aren't on next.config's allowed list),
+            absolutely positioned so it fills its cell without feeding its
+            intrinsic size back into the flex layout. object-contain (not cover)
+            shows the WHOLE photo with no cropping; padding keeps it off edges. */}
+        {heroImages.length === 0 ? (
+          <div className="shrink-0 self-stretch aspect-square min-h-[160px] rounded-lg border border-rule bg-bg-elev" />
+        ) : heroImages.length === 1 ? (
           <button
             type="button"
-            onClick={() => setLightboxImageUrl(heroImage)}
+            onClick={() => setLightboxImageUrl(heroImages[0].url)}
             aria-label="Open product photo fullscreen"
             className="relative shrink-0 self-stretch aspect-square min-h-[160px] cursor-zoom-in overflow-hidden rounded-lg border border-rule bg-surface"
           >
-            {/* Plain <img> — Veeqo CDN URLs aren't on next.config's allowed
-                list. Absolutely positioned so it fills the square without
-                feeding its intrinsic size back into the flex layout.
-                object-contain (not cover) shows the WHOLE product photo with
-                no left/right cropping; a little padding keeps it off the edges. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={heroImage}
+              src={heroImages[0].url}
               alt=""
               className="absolute inset-0 h-full w-full object-contain p-2"
               loading="lazy"
             />
           </button>
         ) : (
-          <div className="shrink-0 self-stretch aspect-square min-h-[160px] rounded-lg border border-rule bg-bg-elev" />
+          // Merged order: 2 → side by side; 3 → one across the top + two below;
+          // 4 → 2×2. The `bg-rule` container shows through the 1px gaps as
+          // hairline dividers between products.
+          <div
+            className={cn(
+              "grid shrink-0 self-stretch aspect-square min-h-[160px] gap-px overflow-hidden rounded-lg border border-rule bg-rule",
+              heroImages.length === 2
+                ? "grid-cols-2 grid-rows-1"
+                : "grid-cols-2 grid-rows-2",
+            )}
+          >
+            {heroImages.map((img, idx) => (
+              <button
+                key={img.url}
+                type="button"
+                onClick={() => setLightboxImageUrl(img.url)}
+                aria-label={`Open product photo: ${img.title}`}
+                title={img.title}
+                className={cn(
+                  "relative cursor-zoom-in overflow-hidden bg-surface",
+                  // 3 images: first spans the top row so there's no empty cell.
+                  heroImages.length === 3 && idx === 0 ? "col-span-2" : "",
+                )}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={img.url}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-contain p-1.5"
+                  loading="lazy"
+                />
+              </button>
+            ))}
+          </div>
         )}
 
         {/* Right column — every existing order detail. */}
