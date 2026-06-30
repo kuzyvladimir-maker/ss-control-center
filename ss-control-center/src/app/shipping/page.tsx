@@ -3406,6 +3406,12 @@ function OrderRow({
     !wmShipped &&
     (isReady || isBought);
 
+  // Hero image for the row — the first item that actually has a photo.
+  // Rendered as a large square on the left (same height as the whole info
+  // block) so the operator recognises the product at a glance without
+  // opening the lightbox or squinting at a 40px thumbnail.
+  const heroImage = order.items.find((i) => i.imageUrl)?.imageUrl ?? null;
+
   return (
     <div
       className={cn(
@@ -3426,6 +3432,38 @@ function OrderRow({
           onClose={() => setLightboxImageUrl(null)}
         />
       )}
+
+      {/* Two-column layout: a big square product photo on the left (stretched
+          to the full height of the info block), and ALL the order info on the
+          right. */}
+      <div className="flex items-stretch gap-4">
+        {/* Large square product image. `self-stretch aspect-square` makes its
+            side equal the height of the right-hand info column, so it grows
+            with the card. Click to open fullscreen. */}
+        {heroImage ? (
+          <button
+            type="button"
+            onClick={() => setLightboxImageUrl(heroImage)}
+            aria-label="Open product photo fullscreen"
+            className="relative shrink-0 self-stretch aspect-square min-h-[160px] cursor-zoom-in overflow-hidden rounded-lg border border-rule bg-surface"
+          >
+            {/* Plain <img> — Veeqo CDN URLs aren't on next.config's allowed
+                list. Absolutely positioned so it fills the square without
+                feeding its intrinsic size back into the flex layout. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={heroImage}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+            />
+          </button>
+        ) : (
+          <div className="shrink-0 self-stretch aspect-square min-h-[160px] rounded-lg border border-rule bg-bg-elev" />
+        )}
+
+        {/* Right column — every existing order detail. */}
+        <div className="min-w-0 flex-1">
       {/* Top row: select + identity + type tag */}
       <div className="flex items-start gap-3">
         {selectable ? (
@@ -3573,44 +3611,20 @@ function OrderRow({
           </div>
 
           {/* Items list — each on its own line so multi-item orders read
-              clearly. Thumbnail (~40px) on the left helps the operator
-              recognise the product without reading the title. */}
-          <ul className="mt-1 space-y-1.5">
+              clearly. The product photo now lives in the big square on the
+              left, so here we drop the thumbnail and give the title and the
+              order-count badge a much larger, easier-to-read size. */}
+          <ul className="mt-1.5 space-y-2">
             {order.items.map((i) => (
-              <li
-                key={i.sku}
-                className="flex items-start gap-2 text-[13px] text-ink-2"
-              >
-                {i.imageUrl ? (
-                  // Click to enlarge fullscreen (PhotoLightbox).
-                  <button
-                    type="button"
-                    onClick={() => setLightboxImageUrl(i.imageUrl ?? null)}
-                    className="shrink-0 cursor-zoom-in"
-                    aria-label="Open photo fullscreen"
-                  >
-                    {/* Plain <img> — Veeqo CDN URLs aren't on next.config's
-                        allowed list and these are small thumbnails not worth
-                        running through next/image optimisation. */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={i.imageUrl}
-                      alt=""
-                      className="h-10 w-10 rounded border border-rule bg-surface object-cover"
-                      loading="lazy"
-                    />
-                  </button>
-                ) : (
-                  <div className="h-10 w-10 shrink-0 rounded border border-rule bg-bg-elev" />
-                )}
-                <div className="min-w-0 flex-1 truncate">
-                  <span className="font-medium text-ink">
+              <li key={i.sku} className="text-ink-2">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="text-[16px] font-semibold leading-snug text-ink">
                     {i.productTitle}
-                  </span>{" "}
-                  <QtyBadge qty={i.quantity} />{" "}
-                  <span className="font-mono text-[11px] text-ink-3">
-                    ({i.sku})
                   </span>
+                  <QtyBadge qty={i.quantity} big />
+                </div>
+                <div className="mt-0.5 font-mono text-[11px] text-ink-3">
+                  {i.sku}
                 </div>
               </li>
             ))}
@@ -4158,6 +4172,10 @@ function OrderRow({
           )}
         </Button>
       </div>
+        </div>
+        {/* /right column */}
+      </div>
+      {/* /two-column layout */}
     </div>
   );
 }
@@ -4264,10 +4282,14 @@ function MergeableBanner({
  * operator must spot it before packing"). Vladimir asked for parity with
  * Veeqo's grey/yellow circle so the multi-qty cases jump out of the row.
  */
-function QtyBadge({ qty }: { qty: number }) {
+function QtyBadge({ qty, big = false }: { qty: number; big?: boolean }) {
   if (!Number.isFinite(qty) || qty <= 0) return null;
   if (qty === 1) {
-    return <span className="text-[12.5px] text-ink-3">× 1</span>;
+    return (
+      <span className={cn("text-ink-3", big ? "text-[14px]" : "text-[12.5px]")}>
+        × 1
+      </span>
+    );
   }
   const isHigh = qty >= 10;
   const isMid = qty >= 4;
@@ -4275,7 +4297,10 @@ function QtyBadge({ qty }: { qty: number }) {
     <span
       title={`Заказано ${qty} штук с одного листинга — проверь`}
       className={cn(
-        "inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11.5px] font-bold tabular leading-none",
+        "inline-flex items-center justify-center rounded-full font-bold tabular leading-none",
+        big
+          ? "h-7 min-w-[34px] px-2.5 text-[16px]"
+          : "h-5 min-w-[20px] px-1.5 text-[11.5px]",
         isHigh
           ? "bg-danger text-white ring-2 ring-danger/30"
           : isMid
