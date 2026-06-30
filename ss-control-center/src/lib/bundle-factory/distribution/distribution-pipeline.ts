@@ -208,6 +208,15 @@ export async function runDistribution(
     );
   }
 
+  // Phase 5 — Walmart prohibits frozen/perishable cold-chain food, so frozen/
+  // refrigerated sets are Amazon-only. Resolve the bundle's category once and
+  // skip Walmart SKUs below when it's cold.
+  const masterBundle = await prisma.masterBundle.findUnique({
+    where: { id: draft.master_bundle_id },
+    select: { category: true },
+  });
+  const isColdBundle = /FROZEN|REFRIGERATED/i.test(masterBundle?.category ?? "");
+
   // Load publishable SKUs, optionally filtered by channel set. Publishable =
   // PASSED or NEEDS_REVIEW (warnings only). Per Vladimir 2026-06-26, advisory
   // warnings (e.g. Veeqo stock unverifiable for a brand-new bundle) must NOT
@@ -260,6 +269,27 @@ export async function runDistribution(
     let batchFailed = 0;
     for (const sku of batch) {
       const target = channelTarget(sku.channel);
+
+      // Walmart channel gate: frozen/refrigerated food is prohibited on Walmart
+      // Marketplace → skip cold SKUs there (frozen sets publish on Amazon only).
+      if (isColdBundle && (target.kind === "walmart" || sku.channel === "WALMART")) {
+        per_sku.push({
+          sku_id: sku.id,
+          sku: sku.sku,
+          channel: sku.channel,
+          marketplace_kind: target.kind,
+          status: "SKIPPED",
+          submission_id: null,
+          issues: [],
+          marketplace_status: null,
+          skip_reason:
+            "Walmart prohibits frozen/perishable food — frozen/refrigerated sets are Amazon-only",
+          dry_run: !apply,
+          payload: {},
+        });
+        continue;
+      }
+
       // Hard sanity check: never publish a FAILED SKU. We already filtered to
       // PASSED / NEEDS_REVIEW above, but a future refactor could break that
       // filter — this is the safety net. NEEDS_REVIEW (warnings only) is
