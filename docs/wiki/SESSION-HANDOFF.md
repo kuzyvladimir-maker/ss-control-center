@@ -12,9 +12,15 @@
 
 ---
 
-## 🆕 СЕССИЯ 2026-06-27 — Bundle Factory: полная пересборка под новую логику (В ПРОЦЕССЕ)
+## 🆕 СЕССИЯ 2026-06-27/30 — Bundle Factory: полная пересборка (✅ ФАЗЫ 0–6 ГОТОВЫ, в проде)
 
-**ЧТО ДЕЛАЕМ:** пересобираем Bundle Factory по согласованной с владельцем логике сборки карточки.
+**ИТОГ:** все 6 фаз пересборки сделаны и задеплоены. Конец-в-конец: промпт → контент адаптирует данные
+донора → полные атрибуты (GROCERY + ингредиенты/аллергены) → frozen-hero картинка (брендированный кулер,
+по референсам, бесплатный воркер) → QA-офицер → публикация (frozen=только Amazon), билды достраиваются
+кроном при уходе со страницы. Growth-модули частично на shared brand-voice. ОСТАЁТСЯ (опц.): живой тест
+публикации владельцем; UI-кнопка QA-офицера; глубже завести Growth на QA-officer/registry; богаче стартовая форма.
+
+**ЧТО ДЕЛАЛИ:** пересобирали Bundle Factory по согласованной с владельцем логике сборки карточки.
 Канонический план: вики [bundle-factory-rebuild-plan.md](bundle-factory-rebuild-plan.md) (Фазы 0–6).
 Общий фундамент: [listing-quality-stack.md](listing-quality-stack.md) (используется и Growth-модулями).
 Картинки frozen: `docs/BUNDLE_FACTORY_FROZEN_MAIN_IMAGE_v1.0.md`. Решения — в memory `project_bundle_factory_vision`.
@@ -46,8 +52,10 @@
   `client_max_body_size`→24m, перезапущен. **Живой тест PASSED:** референс Uncrustables-эталона → на выходе
   точная копия (брендированный кулер + реальные коробки + FROZEN GEL PACK). Бесплатный image_gen РЕАЛЬНО
   использует референсы. Токен воркера — только на боксе `/root/codex-image-worker/.env` + Vercel (НЕ в .env.local).
-  ОСТАЛОСЬ по Фазе 3 (код): frozen-hero промпт в image-pipeline + передать референсы (донор-фото + 2 эталона
-  из `public/bundle-factory/frozen-refs/`) + инверсия Rule 6 (разрешить Salutem + бренды компонентов).
+  ✅ Фаза 3 КОД ГОТОВ: `image-pipeline.buildImagePrompt` (frozen-hero для cold / clean для shelf-stable, реальная
+  упаковка), передаёт референсы (донор-фото + R2-эталон `${R2_PUBLIC_URL}/prod/frozen-refs/anchor-*.png`),
+  `image-generation` шлёт `reference_urls`, Rule 6/vision-check инвертированы (`allowedBrands` = бренды компонентов).
+  6/6 prompt-тестов прошли. R2-креды РАБОЧИЕ (Vercel-managed; pull через `vercel env pull --environment=production`).
 - (история блокера, решено) Фаза 3 была заблокирована на:
   (1) бесплатный GPT image-воркер (`codex-image-worker` на боксе 104.219.53.204) принимает только
   `{prompt,size}` — БЕЗ референс-картинок; чтобы передавать 2 эталона + фото товара (для совпадения с
