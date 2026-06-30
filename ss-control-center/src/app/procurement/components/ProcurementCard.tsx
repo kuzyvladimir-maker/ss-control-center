@@ -464,7 +464,7 @@ export function ProcurementCard({
 
           {/* Quantity display */}
           {!isBought && (
-            <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
               <div
                 className={cn(
                   "inline-flex items-baseline gap-1 rounded-md px-2 py-0.5 text-[14px] font-semibold tabular",
@@ -485,23 +485,21 @@ export function ProcurementCard({
                 </span>
               </div>
               {pack !== null && !isPartial && (
-                <span className="text-[11.5px] tabular text-ink-3">
-                  {card.quantityOrdered} ×{" "}
+                <span className="inline-flex items-center gap-1.5 text-[11.5px] tabular text-ink-3">
+                  <OrderMultipleBadge count={card.quantityOrdered} />
                   <span className="font-medium text-ink-2">{pack.label}</span>
                 </span>
               )}
               {isPartial && (
-                <span className="text-[11.5px] tabular text-ink-3">
+                <span className="inline-flex items-center gap-1.5 text-[11.5px] tabular text-ink-3">
                   из {totalPhysical} шт всего
                   {pack !== null && (
-                    <>
-                      {" "}
-                      ({card.quantityOrdered} ×{" "}
+                    <span className="inline-flex items-center gap-1.5">
+                      <OrderMultipleBadge count={card.quantityOrdered} />
                       <span className="font-medium text-ink-2">
                         {pack.label}
                       </span>
-                      )
-                    </>
+                    </span>
                   )}
                 </span>
               )}
@@ -661,6 +659,30 @@ export function ProcurementCard({
         />
       )}
     </>
+  );
+}
+
+/** Order-multiple badge — how many times THIS listing was ordered (the "× N"
+ *  multiplier, NOT the per-listing pack size). Ordered once is unremarkable,
+ *  so it stays a quiet grey "1 ×". But 2+ is the case Vladimir kept missing:
+ *  a multipack ordered several times means buying several packs. So 2+ gets a
+ *  large, bright pill that's hard to overlook — amber for 2–4, red for 5+. */
+function OrderMultipleBadge({ count }: { count: number }) {
+  if (!Number.isFinite(count) || count <= 1) {
+    return <span className="tabular text-ink-3">{count} ×</span>;
+  }
+  const isHigh = count >= 5;
+  return (
+    <span
+      title={`Этот листинг заказан ${count} раз — купить ${count} комплекта`}
+      className={cn(
+        "inline-flex items-center gap-0.5 rounded-md px-2 py-0.5 align-middle font-extrabold tabular leading-none text-white shadow-sm ring-2",
+        isHigh ? "bg-danger ring-danger/30" : "bg-warn-strong ring-warn-tint",
+      )}
+    >
+      <span className="text-[20px]">{count}</span>
+      <span className="text-[13px] font-bold opacity-90">×</span>
+    </span>
   );
 }
 
