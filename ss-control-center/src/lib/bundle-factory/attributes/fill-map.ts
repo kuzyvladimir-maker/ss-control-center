@@ -73,13 +73,11 @@ export const FILL_MAP: Record<string, { fill: FillSource; source: string }> = {
 
   // ── Storage / temperature cues (computed from category) ───────────────────
   is_heat_sensitive: { fill: "review", source: "true for chocolate" },
-  // NOTE: the Listings-API attribute is `temperature_rating` (NOT the flat-file
-  // legacy `storage_temperature`, which does not exist on GROCERY). Its accepted
-  // values are a dropdown ("Ambient: Room Temperature", "Chilled: 33 to 38
-  // degrees", frozen …) — see docs/marketplace-rules/amazon/food-flat-file-notes.md.
-  // Held as `review` until the exact enum strings land from the Valid Values tab
-  // (a wrong enum makes the PUT reject).
-  temperature_rating: { fill: "review", source: "from category — NEEDS valid-value enum (Frozen/Chilled/Ambient)" },
+  // temperature_rating (Listings-API name; the flat-file legacy `storage_temperature`
+  // does NOT exist on GROCERY). Now COMPUTED from category with the exact FOOD
+  // valid-value strings (valid-values-food.ts): frozen→"Frozen: 0 degree",
+  // refrigerated→"Chilled: 33 to 38 degrees", else "Ambient: Room Temperature".
+  temperature_rating: { fill: "computed", source: "category → FOOD valid-value (Frozen/Chilled/Ambient)" },
 
   // ── Condition / offer defaults ────────────────────────────────────────────
   // Every listing is a brand-new sealed product. Listings-API enum pending the

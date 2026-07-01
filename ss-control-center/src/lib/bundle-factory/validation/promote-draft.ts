@@ -235,7 +235,7 @@ export async function promoteDraftToChannelSkus(
 
   const draft = await prisma.bundleDraft.findUniqueOrThrow({
     where: { id: draftId },
-    select: { brand: true, draft_components: true, pack_count: true },
+    select: { brand: true, draft_components: true, pack_count: true, category: true },
   });
 
   // Phase 2.1 — donor-derived rich attributes (ingredients, allergens, item
@@ -260,6 +260,7 @@ export async function promoteDraftToChannelSkus(
       buildRichAmazonAttributes({
         ingredients: donor?.ingredients ?? null,
         packCount: draft.pack_count,
+        category: draft.category,
       }),
     );
   } catch {

@@ -52,10 +52,40 @@ The flat-file exposes ~60 granular per-serving nutrient fields
 nutrition can be Claude-filled or blank, so we do NOT force the granular panel;
 we carry `ingredients`, `allergen_information` (FDA Big-9), and `nutritional_info`.
 
-## STILL NEEDED from Vladimir — the **Valid Values** tab (CSV)
+## Valid Values (received 2026-07-01, `FOOD7.csv`) → captured in code
 
-To wire the dropdown/enum fields with EXACT accepted strings (a wrong enum makes
-the PUT reject), send the Valid Values tab. Priority fields:
-`temperature_rating`, `condition_type`, `unit_count_type`, `cuisine`, `item_form`,
-`product_expiration_type`, `diet_type`. Once received → wire the exact enums into
-the filler + fill-map.
+The FOOD Valid Values tab is now encoded as typed constants in
+`src/lib/bundle-factory/attributes/valid-values-food.ts`. Key food enums:
+
+- **`temperature_rating`**: `Ambient: Room Temperature` · `Frozen: 0 degree` ·
+  `Chilled: 33 to 38 degrees`. **WIRED** — the filler now sets it from the
+  bundle category (frozen→`Frozen: 0 degree`).
+- **`condition_type`** (flat-file): `New`, `new, open_box`, `new, oem`, Used-*,
+  Collectible-*, `Club`, `Refurbished`. ⚠️ Listings API uses the token
+  `new_new` for new — not wired yet (verify encoding before sending).
+- **`unit_count_type`**: `Count`, `Fl Oz`, `Ounce`, `Pound`, `Gram`, `Foot`, `Sq Ft`.
+- **`product_expiration_type`**: `Does Not Expire`, `Expiration Date Required`,
+  `Expiration On Package`, `Production Date Required`, `Shelf Life`.
+- **`item_type_keyword`** (frozen BTG): `frozen-kids-meals-and-entrees` (vs the
+  gift keyword `food-gifts` we use now — switching places it in the frozen-meals
+  node; owner decision pending).
+- **`dangerous_goods`**: `GHS`/`Unknown`/`Other`/`Not Applicable`/`Transportation`/
+  `Waste`/`Storage` (Listings token for none = `not_applicable`).
+- **`diet_type`**: Vegan/Vegetarian/Halal/Gluten Free/Kosher/Paleo.
+- **`external_product_id_type`**: EAN/GCID/GTIN/UPC/ASIN/ISBN.
+- **`gtin_exemption_reason`**: Manufacture on Demand/Plan Item/Refurbished/
+  CustomProductBundle/ReplacementPart/Pre-Order.
+- **`allergen_information`**: large list incl. Big-9 + "… Free" / "… may contain"
+  variants (we only DECLARE positive Big-9 via extractAllergens).
+- **`occasion`**: Birthday/Christmas/Anniversary/… (gifting).
+- Units: weight LB/KG/GR/OZ/…; length/dims Angstrom…IN/FT/CM.
+
+## MAIN image — the cooler + gel packs ARE the product (Vladimir, firm decision)
+
+Do NOT flag the frozen-hero (Salutem styrofoam cooler + branded gel packs +
+product inside) as violating the MAIN-image "no props/logos" rule, and do NOT
+suggest moving it to a secondary slot. Vladimir has stated repeatedly: **we sell
+the product AS the frozen cooler kit** (cooler + gel packs are dispatched with
+the order), so they are the product, not props. The Amazon prohibition is on
+ADDED OVERLAY badges / inset images / promotional text — which we do NOT use
+("никакие бейджики мы не используем"). The frozen-hero stays the MAIN image.

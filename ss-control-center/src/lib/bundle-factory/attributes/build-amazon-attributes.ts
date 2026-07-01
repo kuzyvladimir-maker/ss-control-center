@@ -13,6 +13,7 @@
  */
 
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
+import { temperatureRatingForCategory } from "./valid-values-food";
 
 /** FDA Big-9 allergens + the ingredient keywords that imply each. Conservative:
  *  "butter"/"cream" are deliberately excluded from Milk to avoid "peanut butter"
@@ -40,6 +41,9 @@ export function extractAllergens(ingredients?: string | null): string[] {
 export interface RichAttrInput {
   ingredients?: string | null;
   packCount?: number | null;
+  /** Bundle category enum (FROZEN_* / REFRIGERATED_* / DRY_*). Drives the
+   *  Amazon `temperature_rating` attribute with the exact valid-value string. */
+  category?: string | null;
 }
 
 /** Amazon attribute arrays for the donor-derived fields. Empty object if no
@@ -72,6 +76,14 @@ export function buildRichAmazonAttributes(
 
   // Food — always expiration-dated.
   attrs.is_expiration_dated_product = [{ value: true, marketplace_id: m }];
+
+  // Storage temperature — exact Amazon FOOD valid-value string, from category.
+  // (frozen → "Frozen: 0 degree", refrigerated → "Chilled: 33 to 38 degrees",
+  // else "Ambient: Room Temperature"). The first-submit VALIDATION_PREVIEW
+  // catches a bad enum before the real PUT, so this is safe to send.
+  attrs.temperature_rating = [
+    { value: temperatureRatingForCategory(input.category), marketplace_id: m },
+  ];
 
   return attrs;
 }

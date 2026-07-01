@@ -244,7 +244,12 @@ export default async function DraftDetailPage({ params }: PageProps) {
     const rich = buildRichAmazonAttributes({
       ingredients: primaryDonor?.ingredients ?? null,
       packCount: draft.pack_count,
+      category: draft.category,
     });
+    const temp = rich.temperature_rating;
+    if (Array.isArray(temp) && temp[0] && typeof temp[0] === "object") {
+      push("Storage temperature", String((temp[0] as { value?: unknown }).value ?? ""));
+    }
     const ing = primaryDonor?.ingredients?.trim();
     if (ing) push("Ingredients", ing.slice(0, 600));
     const allergens = rich.allergen_information;
