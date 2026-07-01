@@ -37,6 +37,13 @@ $101.76 → при 35% марже **~$203.52**. 11 юнит-тестов. (XS н
 
 **Если владелец хочет ~$185-190** вместо $203 — снизить целевую маржу до ~30% в калькуляторе (тумблер).
 
+### Догон 2026-07-01 (тест владельца) — валидаторы own-brand, 2048px, таймаут, ЛОГОТИП
+
+- **VALIDATE: FAILED на корректном own-brand драфте** — own-brand был только в compliance-гейте, не в Stage-6 ВАЛИДАТОРАХ. Починил `validator-title` + `validator-brand-field` (own-brand ветки, `master_bundle.brand`). Коммит `379f675`, badge v2.5.
+- **Картинка 1024 → 2048** (`DEFAULT_SIZE`), проходит `validator-image-dimensions` (≥2000). Оставшиеся validate-ошибки (packaging-dims/weight) = ожидаемо, владелец вводит ship-specs.
+- **Генерация падала по таймауту** — воркер SIGKILL на 240с ровно на финише 4-мин генерации. Поднял воркер→285с (RUN_TIMEOUT_MS, передеплоил на бокс) + клиент→290с (codex-worker DEFAULT_TIMEOUT_MS), под потолком nginx/Vercel 300с. Коммит `abafcb4`.
+- **★ ГЛАВНОЕ: логотип бренда стирал НАШ vision-гейт, не OpenAI.** GPT рисовал настоящий логотип Smucker's Uncrustables на 1-й попытке, но Rule 6 знал в `allowedBrands` только «Uncrustables» (бренд компонента), а vision ловил ещё «Smucker's» (родительская марка) → BLOCKED → ретрай строил НЕГАТИВ-промпт и стирал логотип (попытка 2 = clean). Подтверждено в ComplianceCheck (`["Smucker's"]`). Фикс: Rule 6 в own-brand режиме разрешает весь passthrough-allowlist (Smucker's+Uncrustables) + сам бренд листинга; чужой бренд (Kraft) всё ещё флагается. Коммит `4227e5d`, badge **v2.6**. **Проверено end-to-end:** перегенерил → attempts=1, detected_logos=[], логотип Smucker's Uncrustables на каждой коробке, 2048px, наш кулер+гель. Урок: генерация УМЕЕТ бренды — мы их удаляли. Не строить композит; полная генерация работает.
+
 ---
 
 ## 🆕 СЕССИЯ 2026-06-30 (продолжение) — Own-brand режим (Uncrustables) + full-fidelity превью
