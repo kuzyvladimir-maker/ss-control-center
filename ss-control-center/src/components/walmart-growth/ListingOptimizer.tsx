@@ -124,6 +124,8 @@ export function ListingOptimizer() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [expandedRow, setExpandedRow] = useState<Set<string>>(new Set());
   const [rowAi, setRowAi] = useState<Record<string, { loading?: boolean; narrative?: string; recs?: Rec[] }>>({});
+  // Manual generation lever — per-row AI-image preview + apply (cutout is default; this is opt-in).
+  const [rowGen, setRowGen] = useState<Record<string, { loading?: boolean; previewUrl?: string; usedReference?: boolean; error?: string; applying?: boolean; feedId?: string }>>({});
   // Default = main image only (the tiled N-units image is the quantity-confusion
   // fix). Content fields stay opt-in: they only apply on catalog cards we own and
   // they cost Claude tokens, so they're off by default.
@@ -208,6 +210,26 @@ export function ListingOptimizer() {
       const j = await r.json();
       setRowAi((s) => ({ ...s, [sku]: { narrative: j.narrative, recs: j.recommendations || [] } }));
     } catch { setRowAi((s) => ({ ...s, [sku]: { narrative: "Analysis failed — try again." } })); }
+  }
+  // Generate an AI main image (gpt-image-2) for one listing — preview only, no publish (~1-4 min).
+  async function genImageOne(sku: string) {
+    setRowGen((s) => ({ ...s, [sku]: { loading: true } }));
+    try {
+      const r = await fetch(`/api/walmart/growth/remediation/generate-image?${qs}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sku }) });
+      const j = await r.json();
+      if (j.ok && j.previewUrl) setRowGen((s) => ({ ...s, [sku]: { previewUrl: j.previewUrl, usedReference: j.usedReference } }));
+      else setRowGen((s) => ({ ...s, [sku]: { error: j.error || "generation failed" } }));
+    } catch { setRowGen((s) => ({ ...s, [sku]: { error: "generation request failed" } })); }
+  }
+  // Publish an approved generated image.
+  async function applyGenOne(sku: string, imageUrl: string) {
+    setRowGen((s) => ({ ...s, [sku]: { ...s[sku], applying: true } }));
+    try {
+      const r = await fetch(`/api/walmart/growth/remediation/apply-generated?${qs}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sku, imageUrl }) });
+      const j = await r.json();
+      if (j.ok && j.feedId) setRowGen((s) => ({ ...s, [sku]: { ...s[sku], applying: false, feedId: j.feedId } }));
+      else setRowGen((s) => ({ ...s, [sku]: { ...s[sku], applying: false, error: j.error || "publish failed" } }));
+    } catch { setRowGen((s) => ({ ...s, [sku]: { ...s[sku], applying: false, error: "publish request failed" } })); }
   }
 
   async function run() {
@@ -374,6 +396,7 @@ export function ListingOptimizer() {
                     const h = HEALTH[c.health] || HEALTH.new;
                     const open = expandedRow.has(c.sku);
                     const ai = rowAi[c.sku];
+                    const gen = rowGen[c.sku];
                     return (
                       <Fragment key={c.sku}>
                       <tr className={cn("border-b border-rule/50 hover:bg-bg-elev/40", selected.has(c.sku) && "bg-green-soft/40", open && "bg-bg-elev/30")}>
@@ -416,8 +439,30 @@ export function ListingOptimizer() {
                             <div className="mt-3 flex flex-wrap items-center gap-2">
                               <Btn size="sm" variant="primary" icon={<Play size={12} />} onClick={() => fixOne(c.sku)}>Fix this listing</Btn>
                               <Btn size="sm" icon={<Sparkles size={12} />} loading={ai?.loading} onClick={() => askAiOne(c.sku)}>Ask AI</Btn>
+                              <Btn size="sm" icon={<Sparkles size={12} />} loading={gen?.loading} onClick={() => genImageOne(c.sku)}>Generate AI image</Btn>
                               {c.itemId && <a href={`https://www.walmart.com/ip/${c.itemId}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[12px] text-ink-3 hover:text-ink"><ExternalLink size={12} /> View on Walmart</a>}
                             </div>
+                            {gen && (gen.loading || gen.previewUrl || gen.error) && (
+                              <div className="mt-2 rounded-lg border border-rule bg-surface p-2.5 text-[12px]">
+                                {gen.loading && <div className="text-ink-3">Generating AI main image (gpt-image-2, ~1–4 min)… you can keep working.</div>}
+                                {gen.error && <div className="text-red-ink">Generation error: {gen.error}</div>}
+                                {gen.previewUrl && (
+                                  <div>
+                                    <div className="mb-1.5 text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">AI preview {gen.usedReference ? "(from donor reference)" : "(from title — check the label carefully)"}</div>
+                                    <img src={gen.previewUrl} alt="AI-generated main" className="mb-2 h-56 w-56 rounded border border-rule object-contain bg-white" />
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      {gen.feedId ? (
+                                        <span className="rounded bg-green-soft px-2 py-0.5 text-[11px] text-green-ink">Published — feed {gen.feedId}</span>
+                                      ) : (
+                                        <Btn size="sm" variant="primary" loading={gen.applying} onClick={() => applyGenOne(c.sku, gen.previewUrl!)}>Use this image (publish)</Btn>
+                                      )}
+                                      <a href={gen.previewUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[12px] text-ink-3 hover:text-ink"><ExternalLink size={12} /> Full size</a>
+                                      <Btn size="sm" onClick={() => genImageOne(c.sku)}>Regenerate</Btn>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                             {ai && !ai.loading && (
                               <div className="mt-2 rounded-lg border border-rule bg-surface p-2.5 text-[12px]">
                                 {ai.narrative && <div className="text-ink-2">{ai.narrative}</div>}

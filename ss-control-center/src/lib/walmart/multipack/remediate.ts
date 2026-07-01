@@ -261,6 +261,21 @@ export async function buildAndSubmitOne(
   };
 }
 
+/** Publish ONLY a main image for a SKU (used by the manual generation lever's
+ *  "apply" step). Reuses the MP_MAINTENANCE partial-feed path — touches nothing
+ *  but mainImageUrl. Returns the feedId (poll with checkFeed). */
+export async function submitMainImageOnly(client: any, sku: string, mainImageUrl: string): Promise<{ feedId: string | null; error?: string }> {
+  const itemRes: any = (await client.requestRaw("GET", `/items/${encodeURIComponent(sku)}`)).body;
+  const cur = itemRes?.ItemResponse?.[0];
+  if (!cur) return { feedId: null, error: "not found on Walmart" };
+  const payload = {
+    MPItemFeedHeader: { businessUnit: "WALMART_US", locale: "en", version: SPEC_VERSION },
+    MPItem: [{ Orderable: { sku, productIdentifiers: { productIdType: "UPC", productId: cur.upc } }, Visible: { [cur.productType]: { mainImageUrl } } }],
+  };
+  const resp: any = (await client.requestRaw("POST", "/feeds", { params: { feedType: "MP_MAINTENANCE" }, body: payload })).body;
+  return { feedId: resp?.feedId ?? null, error: resp?.feedId ? undefined : JSON.stringify(resp).slice(0, 160) };
+}
+
 /** Check one feed's terminal status. Returns null while still processing. */
 export async function checkFeed(client: any, feedId: string): Promise<{ status: "PROCESSED" | "ERROR"; ok: boolean; detail: string } | null> {
   const d: any = (await client.requestRaw("GET", `/feeds/${encodeURIComponent(feedId)}`, { params: { includeDetails: "true" } })).body;
