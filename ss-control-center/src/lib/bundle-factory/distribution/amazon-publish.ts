@@ -233,6 +233,15 @@ export function buildAmazonAttributes(
   attrs.melting_temperature = [
     { value: 32, unit: "degrees_fahrenheit", marketplace_id: MARKETPLACE_ID },
   ];
+  // fulfillment_availability — makes the offer BUYABLE (merchant-fulfilled).
+  // Without it the listing stays "Missing Information" (no fulfillment channel).
+  attrs.fulfillment_availability = [
+    {
+      fulfillment_channel_code: "DEFAULT",
+      quantity: 100,
+      marketplace_id: MARKETPLACE_ID,
+    },
+  ];
 
   // Fixed brand-story card in the gallery for cold-chain (frozen/refrigerated)
   // listings. Gated on the temperature_rating merged just above; no-op until the
