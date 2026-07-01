@@ -15,17 +15,25 @@ import { polishListingCopy } from "./polish";
 import { validateListingContent } from "./guidelines";
 import { ensureDonorImage, fetchAndStoreDetail } from "../../sourcing/enrich";
 import { pickBestFront, mainImageAcceptable, verifyMainImage } from "../../sourcing/vision";
+import { logRemediation } from "./analytics";
 
 export const SPEC_VERSION = "5.0.20260330-14_47_14-api";
 const DONOR_IMAGE_CAP = 6;
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export interface RemediateScope { image?: boolean; gallery?: boolean; title?: boolean; bullets?: boolean; description?: boolean; attributes?: boolean; }
 const ALL_SCOPE: RemediateScope = { image: true, gallery: true, title: true, bullets: true, description: true, attributes: false };
 
 export interface RemediateResult {
-  status: "SUBMITTED" | "POST_FAILED" | "SKIP" | "DRY" | "ERROR";
+  status: "SUBMITTED" | "POST_FAILED" | "SKIP" | "DRY" | "ERROR" | "BUILT";
   feedId: string | null; url: string; title: string | null; detail: string;
   packCount: number; noun: string; meta: RemediateMeta | null;
+  // Populated only when opts.buildOnly — the ready-to-submit MPItem entry + its
+  // productType + upc, so a batch driver can pack many SKUs into ONE feed (the
+  // fix for Walmart's per-feed REQUEST_THRESHOLD_VIOLATED throttle).
+  mpItem?: Record<string, any> | null;
+  productType?: string | null;
+  upc?: string | null;
 }
 export interface RemediateMeta {
   wpid: string | null; upc: string; packCount: number; newTitle: string | null;
@@ -116,7 +124,7 @@ async function buyerUrl(client: any, upc: string, packCount: number): Promise<st
  */
 export async function buildAndSubmitOne(
   db: Client, client: any, sku: string,
-  opts: { scope?: RemediateScope | null; dry?: boolean; stamp: string; enrich?: boolean; storeIndex?: number; forceImage?: boolean },
+  opts: { scope?: RemediateScope | null; dry?: boolean; stamp: string; enrich?: boolean; storeIndex?: number; forceImage?: boolean; buildOnly?: boolean },
 ): Promise<RemediateResult> {
   const scope: RemediateScope = opts.scope && Object.values(opts.scope).some(Boolean) ? opts.scope : ALL_SCOPE;
   const stamp = opts.stamp;
@@ -154,8 +162,13 @@ export async function buildAndSubmitOne(
   // Claude polish ONLY when we're actually sending content fields (title/desc/
   // bullets). Image-only runs skip it — no Anthropic spend.
   const wantContent = !!(scope.title || scope.description || scope.bullets);
-  const polished = (wantContent && donor && (donor.bullets.length || donor.description))
-    ? await polishListingCopy({ productName: content.title.replace(/\s*—.*$/, ""), donorBullets: donor.bullets, donorDescription: donor.description, contentIssues })
+  // A-to-Z GUARANTEE (Vladimir's hard rule): NEVER leave a listing bare. Even when
+  // the donor detail came back empty (no BlueCart itemId, Target-only fallback, or
+  // a failed detail call), we STILL ask Claude to write factual bullets +
+  // description from the product name + pack. A title-only listing is fine copy;
+  // an empty one is the "ужасный листинг" we were told to eliminate.
+  const polished = wantContent
+    ? await polishListingCopy({ productName: content.title.replace(/\s*—.*$/, ""), donorBullets: donor?.bullets ?? [], donorDescription: donor?.description ?? "", contentIssues })
     : null;
   if (polished) {
     content.keyFeatures = polished.keyFeatures.map(scrubBrandVoice).filter(Boolean);
@@ -252,18 +265,182 @@ export async function buildAndSubmitOne(
   }
 
   const gaps = validateListingContent({ title: content.title, keyFeatures: content.keyFeatures, description: content.description, imageCount: imagesCount });
-  const resp: any = await client.requestRaw("POST", "/feeds", { params: { feedType: "MP_MAINTENANCE" }, body: payload });
-  const feedId = resp.body?.feedId ?? null;
-  const url = await buyerUrl(client, upc, cand.packCount);
-  const meta: RemediateMeta = {
+  const buildMeta: RemediateMeta = {
     wpid: cur.wpid ?? null, upc, packCount: cand.packCount, newTitle: scope.title ? content.title : null,
     bulletsCount: scope.bullets ? content.keyFeatures.length : 0, imagesCount,
     descriptionLength: scope.description ? content.description.length : 0,
     mainImageUrl: mainUrl, usedAiPolish: !!polished, contentIssues, gaps,
   };
+
+  // BUILD-ONLY: everything is composed and validated but NOT submitted. Return the
+  // single MPItem entry so a batch driver can pack many into ONE MP_MAINTENANCE
+  // feed — this is what sidesteps Walmart's per-feed REQUEST_THRESHOLD_VIOLATED.
+  if (opts.buildOnly) {
+    return {
+      status: "BUILT", feedId: null, url: "(built)", title: content.title, detail: "",
+      packCount: cand.packCount, noun, meta: buildMeta,
+      mpItem: payload.MPItem[0], productType, upc,
+    };
+  }
+
+  const resp: any = await client.requestRaw("POST", "/feeds", { params: { feedType: "MP_MAINTENANCE" }, body: payload });
+  const feedId = resp.body?.feedId ?? null;
+  const url = await buyerUrl(client, upc, cand.packCount);
   return {
     status: feedId ? "SUBMITTED" : "POST_FAILED", feedId, url, title: content.title,
-    detail: feedId ? "" : JSON.stringify(resp.body).slice(0, 160), packCount: cand.packCount, noun, meta,
+    detail: feedId ? "" : JSON.stringify(resp.body).slice(0, 160), packCount: cand.packCount, noun, meta: buildMeta,
+  };
+}
+
+// ————————————————————————————————————————————————————————————————————————
+// SELF-CHECKING BATCH DRIVER
+// Fixes two failure modes of the naïve one-feed-per-SKU loop:
+//   1) Walmart REQUEST_THRESHOLD_VIOLATED — dozens of individual feeds trip the
+//      per-feed rate limit. We instead pack many SKUs into ONE MP_MAINTENANCE
+//      feed (Walmart's MPItem array is built for this) → a handful of feeds.
+//   2) Silent waste — a broken pipeline (bad key, vision down, empty donors)
+//      would burn credits + feed quota over 1000s of SKUs before anyone noticed.
+//      We run a CANARY: build the first few, check they came out FULL A-to-Z,
+//      and ABORT the whole run if the success rate is too low.
+// ————————————————————————————————————————————————————————————————————————
+
+/** Is this built listing a FULL A-to-Z result (image + ≥5 bullets + a real
+ *  description)? Used by the canary health-gate and the review gallery. */
+export function assessRemediation(meta: RemediateMeta | null): { full: boolean; reasons: string[] } {
+  if (!meta) return { full: false, reasons: ["no build meta"] };
+  const reasons: string[] = [];
+  if ((meta.imagesCount ?? 0) < 1) reasons.push("no image");
+  if ((meta.bulletsCount ?? 0) < 5) reasons.push(`only ${meta.bulletsCount ?? 0} bullets`);
+  if ((meta.descriptionLength ?? 0) < 500) reasons.push(`thin description (${meta.descriptionLength ?? 0} chars)`);
+  return { full: reasons.length === 0, reasons };
+}
+
+/** POST one feed carrying MANY MPItem entries, retrying ONLY on Walmart's
+ *  throttle with exponential backoff (60s, 120s, …). Non-throttle errors return
+ *  immediately (they won't fix themselves). */
+async function submitFeedBatch(client: any, mpItems: Record<string, any>[], tries = 5): Promise<{ feedId: string | null; error?: string }> {
+  const payload = { MPItemFeedHeader: { businessUnit: "WALMART_US", locale: "en", version: SPEC_VERSION }, MPItem: mpItems };
+  const throttled = (s: string) => /REQUEST_THRESHOLD_VIOLATED|TOO_MANY_REQUESTS|throttl|\b429\b/i.test(s);
+  let lastErr = "";
+  for (let attempt = 0; attempt < tries; attempt++) {
+    try {
+      const resp: any = await client.requestRaw("POST", "/feeds", { params: { feedType: "MP_MAINTENANCE" }, body: payload });
+      const feedId = resp.body?.feedId ?? null;
+      if (feedId) return { feedId };
+      lastErr = JSON.stringify(resp.body || {}).slice(0, 200);
+      if (!throttled(lastErr)) return { feedId: null, error: lastErr };
+    } catch (e: any) {
+      lastErr = String(e?.message || e).slice(0, 200);
+      if (!throttled(lastErr)) return { feedId: null, error: lastErr };
+    }
+    if (attempt < tries - 1) await sleep(60000 * (attempt + 1));
+  }
+  return { feedId: null, error: `throttled after ${tries} tries: ${lastErr}` };
+}
+
+export interface BatchProgress {
+  phase: "build" | "canary" | "submit" | "done" | "abort";
+  i?: number; total?: number; sku?: string; status?: string; full?: boolean;
+  note?: string; fullRate?: number; submitted?: number; failed?: number;
+}
+export type BuiltResult = RemediateResult & { sku: string; full: boolean };
+export interface BatchOutcome {
+  aborted: boolean; abortReason?: string;
+  results: BuiltResult[]; submitted: number; failed: number; built: number; skipped: number;
+  canaryFullRate: number;
+}
+export interface BatchOptions {
+  scope?: RemediateScope | null; stamp: string; enrich?: boolean; storeIndex?: number; forceImage?: boolean;
+  batchSize?: number;        // MPItems per feed (default 15)
+  canarySize?: number;       // first-N health sample (default 6)
+  minFullRate?: number;      // abort build if canary full-rate below this (default 0.5)
+  batchSpacingMs?: number;   // pause between feed POSTs (default 20000)
+  log?: boolean;             // write WalmartListingRemediation rows (default true)
+  onProgress?: (ev: BatchProgress) => void;
+}
+
+/**
+ * Build every SKU (buildOnly — no submit), health-check a canary sample, then
+ * submit in batched feeds with throttle-retry. This is the ONE entry point for
+ * multi-SKU remediation (CLI re-runs, the full-catalog sweep, and the QC console
+ * "Run" button) so the self-check lives in exactly one place.
+ */
+export async function buildAndSubmitMany(db: Client, client: any, skus: string[], opts: BatchOptions): Promise<BatchOutcome> {
+  const batchSize = opts.batchSize ?? 15;
+  const canarySize = Math.min(opts.canarySize ?? 6, skus.length);
+  const minFullRate = opts.minFullRate ?? 0.5;
+  const spacing = opts.batchSpacingMs ?? 20000;
+  const storeIndex = opts.storeIndex ?? 1;
+  const emit = (ev: BatchProgress) => { try { opts.onProgress?.(ev); } catch { /* progress must never break the run */ } };
+
+  // ---- Phase 1: BUILD (with canary health-gate) ----
+  const built: BuiltResult[] = [];
+  let canaryFull = 0, canaryDone = 0, canaryFullRate = 1;
+  for (let i = 0; i < skus.length; i++) {
+    const sku = skus[i];
+    let r: RemediateResult;
+    try {
+      r = await buildAndSubmitOne(db, client, sku, {
+        scope: opts.scope, stamp: opts.stamp, enrich: opts.enrich, storeIndex, forceImage: opts.forceImage, buildOnly: true,
+      });
+    } catch (e: any) {
+      r = { status: "ERROR", feedId: null, url: "—", title: null, detail: String(e?.message || e).slice(0, 140), packCount: 0, noun: "", meta: null };
+    }
+    const full = r.status === "BUILT" && assessRemediation(r.meta).full;
+    built.push({ ...r, sku, full });
+    emit({ phase: "build", i: i + 1, total: skus.length, sku, status: r.status, full, note: r.detail });
+
+    if (i + 1 <= canarySize) { canaryDone++; if (full) canaryFull++; }
+    if (i + 1 === canarySize && canaryDone > 0) {
+      canaryFullRate = canaryFull / canaryDone;
+      emit({ phase: "canary", i: canaryDone, total: canarySize, fullRate: canaryFullRate });
+      if (canaryFullRate < minFullRate) {
+        emit({ phase: "abort", fullRate: canaryFullRate, note: "canary below threshold — nothing submitted" });
+        return {
+          aborted: true,
+          abortReason: `canary full-rate ${(canaryFullRate * 100).toFixed(0)}% < ${(minFullRate * 100).toFixed(0)}% over first ${canaryDone} SKUs — pipeline looks broken, stopped before wasting credits/quota on the remaining ${skus.length - canaryDone}`,
+          results: built, submitted: 0, failed: 0,
+          built: built.filter((b) => b.status === "BUILT").length,
+          skipped: built.filter((b) => b.status !== "BUILT").length,
+          canaryFullRate,
+        };
+      }
+    }
+  }
+
+  // ---- Phase 2: SUBMIT in batched feeds (throttle-safe) ----
+  const submittable = built.filter((b) => b.status === "BUILT" && b.mpItem);
+  let submitted = 0, failed = 0;
+  for (let off = 0; off < submittable.length; off += batchSize) {
+    const chunk = submittable.slice(off, off + batchSize);
+    const feed = await submitFeedBatch(client, chunk.map((c) => c.mpItem as Record<string, any>));
+    for (const c of chunk) {
+      if (feed.feedId) { c.status = "SUBMITTED"; c.feedId = feed.feedId; submitted++; }
+      else { c.status = "POST_FAILED"; c.detail = feed.error || "batch feed failed"; failed++; }
+    }
+    emit({ phase: "submit", i: Math.min(off + batchSize, submittable.length), total: submittable.length, submitted, failed, note: feed.feedId || feed.error });
+    if (opts.log !== false) {
+      for (const c of chunk) {
+        try {
+          await logRemediation(db, {
+            sku: c.sku, storeIndex, wpid: c.meta?.wpid ?? null, upc: c.upc ?? c.meta?.upc ?? null,
+            feedId: c.feedId, feedType: "MP_MAINTENANCE", feedStatus: c.feedId ? "SUBMITTED" : "POST_FAILED", ok: c.status === "SUBMITTED",
+            packCount: c.packCount, newTitle: c.meta?.newTitle ?? undefined, titleChanged: !!c.meta?.newTitle,
+            bulletsCount: c.meta?.bulletsCount, imagesCount: c.meta?.imagesCount, descriptionLength: c.meta?.descriptionLength,
+            mainImageUrl: c.meta?.mainImageUrl ?? undefined, usedAiPolish: c.meta?.usedAiPolish,
+            changeSummary: { batch: true, full: c.full }, notes: c.full ? "A-to-Z (full donor)" : "A-to-Z (thin donor — title-based copy)",
+          });
+        } catch { /* logging must never break the run */ }
+      }
+    }
+    if (off + batchSize < submittable.length) await sleep(spacing);
+  }
+
+  emit({ phase: "done", total: skus.length, submitted, failed });
+  return {
+    aborted: false, results: built, submitted, failed, built: submittable.length,
+    skipped: built.filter((b) => b.status !== "SUBMITTED" && b.status !== "POST_FAILED").length,
+    canaryFullRate,
   };
 }
 
