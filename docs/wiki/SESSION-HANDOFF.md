@@ -4,11 +4,49 @@
 > SESSION-HANDOFF»*. Здесь — что мы делали, где остановились, и план. Обновляется
 > в конце каждой сессии.
 >
-> **Последнее обновление:** 2026-06-25 (iMac-Claude, смена машины iMac→MacBook) — перевёл
-> **генерацию картинок** с платного OpenAI Images API на **БЕСПЛАТНУЮ** через подписку ChatGPT
-> (Codex CLI `image_gen`, воркер на боксе). Всё на проде, запушено (`5660b09`), Vercel prod = Ready,
-> дерево чистое. См. блок «🆕 СЕССИЯ 2026-06-25» сразу ниже (там же — «ПРОДОЛЖИТЬ НА MacBook»).
+> **Последнее обновление:** 2026-06-30 (MacBook-Claude) — **own-brand режим (Uncrustables)** +
+> **full-fidelity превью** (все фото/цена+формула/все атрибуты). Оба в проде (`6ea7e24`, `fdd6fbe`),
+> Bundle Factory badge → v2.2. См. блок «🆕 СЕССИЯ 2026-06-30 (продолжение)» сразу ниже.
+> _(Предыдущее: 2026-06-25 — перевод генерации картинок на БЕСПЛАТНУЮ через подписку ChatGPT, `5660b09`.)_
 > _(Предыдущее: 2026-06-24 — Walmart Compliance/T&S removals read-инструмент `f5c9019`; 2026-06-21 — Financial Plan `/finance` + авто-захват чеков `33e7d23`; блоки ниже.)_
+
+---
+
+## 🆕 СЕССИЯ 2026-06-30 (продолжение) — Own-brand режим (Uncrustables) + full-fidelity превью
+
+**ИТОГ:** две задачи сделаны и в проде. Bundle Factory badge → **v2.2**.
+
+**1) Own-brand passthrough (исключение Uncrustables/Smucker's)** — коммит `6ea7e24`.
+Владелец: для брендов-исключений НЕ делаем gift-set. Листим под ИХ собственным брендом, чужой бренд
+в тайтле разрешён ТОЛЬКО когда в атрибуте `brand` стоит их бренд (а не Salutem Vita). Реализация:
+- `src/lib/bundle-factory/own-brand.ts` — крошечный проверенный allowlist (`Smucker's/Smuckers/Uncrustables`),
+  `isOwnBrandPassthrough()`, `resolveListingBrand()`. Режим выводится ЧИСТО из бренда листинга, без DB-флага.
+- Проброшено: studio-engine (draft.brand = донор-бренд, draftName = имя товара без «…Gift Set»),
+  content-generation (style-блок + user-msg ветвятся — бренд В тайтле, нет блока «no foreign brand»,
+  нет дисклеймера, не «gift set»), compliance gate (own_brand из бренда; правила 1/2/3/4 ветвятся —
+  донор-бренд ОК в тайтле + другие passthrough-термины типа «Uncrustables» рядом со «Smucker's», прочие
+  чужие бренды всё ещё флагаются; донор-бренд валиден как brand field; дисклеймер пропускается),
+  amazon-publish (атрибут `brand` = реальный бренд MasterBundle, был захардкожен «Salutem Vita»).
+- 7 unit-тестов own-brand в `compliance/__tests__/rules.test.ts` (все 31 проходят). 15 неверных
+  gift-set драфтов Uncrustables удалены из Turso. Память: `project_uncrustables_own_brand_exception`.
+- ⚠️ TBD: штрих-код (матчить существующий ASIN vs новый UPC — сверить с живыми листингами перед первой
+  own-brand публикацией). `item_type_keyword` пока «food-gifts» и для own-brand (валидный GROCERY-ключ,
+  не блокирует, но семантически «подарок» — уточнить позже).
+
+**2) Full-fidelity превью драфта** — коммит `fdd6fbe`. Владелец: в превью видно только 4 вещи, надо ВСЁ.
+- Галерея фото: сгенерированное титульное = hero; фото из донора (`ResearchPool.reference_image_urls`
+  по каждому компоненту + `draft_secondary_images`) = кликабельные превьюшки. Генерим ТОЛЬКО титул, остальное
+  тянется из донор-базы. Показывает счётчик и происхождение фото.
+- Цена кликабельна → `PricingModal` с формулой `price = max(floor, ceil(COGS × markup))`, живой разбор
+  COGS/markup/floor; markup и floor редактируются и сохраняются через новый роут
+  `GET/POST /api/bundle-factory/pricing` (глобальная модель, помечено явно).
+- Полная таблица атрибутов: разворачивает Amazon-attribute JSON из ChannelSKU (Phase 2.1 filler —
+  ingredients/allergens/number_of_items/nutrition…) + ship-specs (вес, Д×Ш×В), UPC, страна, browse node.
+- Файлы: `drafts/[id]/page.tsx` (грузит donorPhotos + attributes + pricing), `DraftDetailClient.tsx`
+  (галерея, PricingModal, buildPreviewAttributes), `api/bundle-factory/pricing/route.ts`.
+
+**СЛЕДУЮЩЕЕ (для владельца):** живой прогон одного Uncrustables-драфта в own-brand режиме до Publish;
+решить штрих-код; при желании — per-listing override цены (сейчас модель глобальная).
 
 ---
 
