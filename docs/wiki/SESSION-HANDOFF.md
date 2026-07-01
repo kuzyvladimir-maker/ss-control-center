@@ -4,12 +4,53 @@
 > SESSION-HANDOFF»*. Здесь — что мы делали, где остановились, и план. Обновляется
 > в конце каждой сессии.
 >
-> **Последнее обновление:** 2026-06-30 (MacBook-Claude) — по тесту владельца: **hero-картинка** теперь
-> воспроизводит РЕАЛЬНУЮ упаковку донора (порядок референсов + разметка ролей в воркере, воркер задеплоен
-> на бокс), **доставка** в калькуляторе авто-подставляется по размеру кулера (S$20/M$32/L$45/XL$60). В проде
-> (`363e3dd`), badge → **v2.4**. См. блок «🆕 СЕССИЯ 2026-06-30 (тест владельца)» ниже.
+> **Последнее обновление:** 2026-07-01 (день, MacBook-Claude) — **Walmart Grow: мультипаки доведены до дела**.
+> 82 брак-листинга ЗАКРЫТЫ (фото 82/82, текст 79/79, атрибуты). Новое: **слой атрибутов Walmart MP_ITEM 5.0**
+> (quantity trio `multipackQuantity`/`countPerPack`/`count` = 2-й рычаг против путаницы количества), **QC-экран
+> в модуле** (Review fix → фото до/после + «на переделку»), **cost-фикс** (кэш классификаций + донор-первым +
+> текст на Haiku → повторные прогоны ≈даром), **ужесточение отбора фото** (белый фон + ОДНА единица + без
+> лишнего/баннеров/мульти-групп + verify плитки), **deep re-enrich** по всем ритейлерам, **база знаний Walmart**.
+> Тест на 50 СВЕЖИХ мультипаках = **94% полного A-до-Я**. Коммиты `bea2689`…`535c896`. **⏸ ЖДЁМ ВЛАДЕЛЬЦА:
+> сигнал на полный прогон ~1857.** См. блок «🆕 СЕССИЯ 2026-07-01 (день) — Walmart мультипаки» ниже.
+> _(Предыдущее: 2026-07-01 ночь — Bundle Factory E2E на Amazon (3 ASIN Uncrustables) + Speedy UPC-пул, `b7469f6`.)_
+> _(Предыдущее: 2026-06-30 hero-картинка = реальная упаковка донора + доставка по кулеру, `363e3dd` → v2.4.)_
 > _(Предыдущее: `ece5099` калькулятор цены + превью атрибутов/фото → v2.3; `6ea7e24` own-brand → v2.2.)_
 > _(Предыдущее: 2026-06-24 — Walmart Compliance/T&S removals read-инструмент `f5c9019`; 2026-06-21 — Financial Plan `/finance` + авто-захват чеков `33e7d23`; блоки ниже.)_
+
+---
+
+## 🆕 СЕССИЯ 2026-07-01 (день, MacBook-Claude) — Walmart мультипаки: атрибуты + QC-экран + cost-фикс + ужесточение отбора фото
+
+> **Домен:** Walmart Grow / multipack remediation (`src/lib/walmart/multipack/`, `src/lib/sourcing/`, `src/app/api/walmart/growth/`, `src/components/walmart-growth/`). НЕ пересекается с Bundle Factory (Amazon) — это параллельный домен.
+
+**Контекст:** цель владельца — доделать модуль Walmart Grow, чтобы он САМ (через UI) чинил мультипак-листинги (главное фото показывало N единиц, а не 1 → путаница «заказал 1, пришло N» → возвраты). Начинали с 82 «брак» листингов среди уже-починенных.
+
+**Что сделано и задеплоено (всё в main, `bea2689`→`535c896`):**
+
+1. **Слой атрибутов Walmart MP_ITEM 5.0** (`src/lib/walmart/multipack/attributes.ts`, KB `docs/marketplace-rules/walmart/mp-item-food-attributes.md`). Владелец дал офиц. спеку (Seller Center bulk template). **Quantity trio** `multipackQuantity`=N / `countPerPack`=1 / `count`=N — системный 2-й рычаг против путаницы количества (Walmart знает, что N штук). + `manufacturer`/`ingredients`/`flavor`/`size`/`netContentStatement`/`allergens` из донора. **Живой тест выявил:** closed-list значения (`containerType`/`foodForm`/…) enum-отбиваются, `productNetContentUnit` = «not a valid field», `productLine` = нужен JSONArray → всё убрано; SAFE-набор подтверждён. `ALL_SCOPE.attributes=true`. `brand` НЕ шлём (QARTH). Новая `checkFeedItems()` = per-item feed-ошибки.
+
+2. **QC-экран в модуле** (`ListingOptimizer.tsx` → раскрыть листинг → «Review fix»): фото ДО/ПОСЛЕ + галерея + текст + чипы атрибутов из persisted-контента (без Walmart-лага) + заметка + «Send back for re-do» (`/api/walmart/growth/remediation/review`, worker читает `result.forceImage`). Контент persist-ится в `WalmartListingRemediation.changeSummary.content` (batch-driver И worker).
+
+3. **COST-фикс** (главное — vision на Sonnet-5 ел ~$30/ночь): **кэш классификаций** фото по (url, model+`CLASSIFY_VER`) в Turso `ImageClassification` + in-mem → повторные прогоны ≈даром (RizwanX-2964 5.4с→0.08с). **Донор-первым** (16 вызовов→1). **Текст на Haiku** (`polish.ts` MODEL=CLAUDE.cheap). Sonnet-5 только на финальном отборе+verify. Память `project_vision_cost_optimization`. ⚠️ ПЕРВЫЙ прогон 1857 всё равно ~$50-100 разово (потом кэш). ⚠️ Anthropic-кредиты кончались среди ночи → бывает bare-текст; владелец пополнил.
+
+4. **Ужесточение отбора фото** (владелец QC-нул 82, нашёл ~6 типов брака: баннеры/лайфстайл/инфографика/мульти-группа/лишние-предметы/битая-вырезка). Единое правило: источник = **ОДНА единица на БЕЛОМ фоне, без лишнего**. Правки в `vision.ts` `CLASSIFY_PROMPT` (goodFront требует whiteBg + single + no-extras + no-multi-unit), `pickBestFront` ленивый fallback (+whiteBg), новый **rescue** `pickBestFrontFromPool` (весь пул одним vision-вызовом), rescue-плитка теперь VERIFY-ится. Память `feedback_walmart_donor_photo_selection` (обновлена). ⚠️ Мульти-группа = ОПАСНО (12-банок × 8 = «96» → хуже путаница).
+
+5. **Deep re-enrich** (идея владельца) — `ensureDonorImage(…, {deep:true})`: если чистого белого фронта нет в каталоге → пере-обыскать ВСЕ ритейлеры (Walmart+Target+Sam's+Costco) и дотянуть фото. Самозалечивание: строгий→rescue→deep-enrich→плитка. SKIP-карточки (нет донора) тоже триггерят deep-enrich. BJ's пока НЕ подключён (нужен его Unwrangle platform-id).
+
+6. **База знаний Walmart** — 3 агента изучили marketplacelearn+developer docs → `docs/marketplace-rules/walmart/kb/` (item-setup/API/auth incl. rate limit ~10 feeds/час, content/LQ/image-specs, feeds/errors). QARTH = наш внутренний алиас для compliance-lock, не官-термин.
+
+**Результаты:**
+- **82 закрыты:** фото 82/82, текст 79/79, атрибуты. Галерея: https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-review/atoz82-final-mr2fe25p.html
+- **Тест на 50 СВЕЖИХ мультипаках (никогда не тронутых) = 94% полного A-до-Я, 0 провалов feed, 3 просят генерацию.** Галерея: https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-review/fresh50-mr2h6ngr.html
+
+**⏸ ГДЕ ОСТАНОВИЛИСЬ / ЧТО ДАЛЬШЕ (ждём владельца):**
+1. **Полный прогон каталога ~1857 непочиненных мультипаков** — движок доказан (94% на чистом входе, самозалечивается). Владелец QC-ит галерею 50 → даёт сигнал. Запуск: `buildAndSubmitMany` по пулу (packExpr≥4, не в 82, never-remediated). Пойдёт волнами; ~$50-100 vision разово.
+2. Добить 3 «нужна генерация» из fresh-50 + остаток по 82 (ручной рычаг «Generate AI image» в модуле).
+3. Опционально: ещё урезать cost первого прогона (Haiku грубо-сортирует → Sonnet финал; ИЛИ пополнить OpenAI под gpt-4o-mini — но раньше квота OpenAI умирала).
+4. Подтвердить приёмку атрибутов Walmart на feed-ах (сегодня были очень медленные; per-item тест уже доказал SAFE-набор).
+5. Батчинг worker'а (сейчас 1 feed/SKU) — нужен per-item finalize из-за QARTH; `submitFeedBatch` уже экспортирован.
+
+**Память проекта обновлена:** `feedback_self_verify_long_runs`, `feedback_walmart_remediation_a_to_z`, `project_vision_cost_optimization`, `feedback_walmart_donor_photo_selection`. Wiki-worklog: `docs/wiki/walmart-quantity-confusion-fix.md`.
 
 ---
 
