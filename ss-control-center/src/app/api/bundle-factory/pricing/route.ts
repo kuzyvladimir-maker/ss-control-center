@@ -19,13 +19,25 @@ import {
   getPricingModel,
   PRICING_MARKUP_SETTING_KEY,
   PRICING_MIN_PRICE_SETTING_KEY,
+  PRICING_MODE_SETTING_KEY,
+  PRICING_TARGET_MARGIN_SETTING_KEY,
+  PRICING_FBA_FEE_SETTING_KEY,
+  PRICING_CLOSING_FEE_SETTING_KEY,
+  PRICING_OWN_SHIPPING_SETTING_KEY,
+  PRICING_REFERRAL_PCT_SETTING_KEY,
 } from "@/lib/bundle-factory/pricing-config";
 
 export const dynamic = "force-dynamic";
 
 interface Body {
+  mode?: unknown;
   markup?: unknown;
+  target_margin_pct?: unknown;
   min_price_cents?: unknown;
+  fba_fee_cents?: unknown;
+  closing_fee_cents?: unknown;
+  own_shipping_cents?: unknown;
+  referral_pct?: unknown;
 }
 
 export const GET = withErrorHandler("bundle-factory/pricing[GET]", async () => {
@@ -38,49 +50,68 @@ export const POST = withErrorHandler(
   async (request: Request) => {
     const body = (await readJson<Body>(request)) ?? {};
 
+    const writes: Array<{ key: string; value: string }> = [];
+
+    // mode — "margin" | "markup".
+    if (body.mode != null) {
+      if (body.mode !== "margin" && body.mode !== "markup") {
+        return badRequest('mode must be "margin" or "markup".');
+      }
+      writes.push({ key: PRICING_MODE_SETTING_KEY, value: body.mode });
+    }
+
     // markup — a plain multiple ≥ 1 (below 1 would price under cost).
-    let markup: number | undefined;
     if (body.markup != null) {
-      const n =
-        typeof body.markup === "number" ? body.markup : Number(body.markup);
+      const n = num(body.markup);
       if (!Number.isFinite(n) || n < 1 || n > 100) {
         return badRequest("markup must be a number between 1 and 100 (e.g. 3 = 3×).");
       }
-      markup = Math.round(n * 1000) / 1000;
+      writes.push({ key: PRICING_MARKUP_SETTING_KEY, value: String(Math.round(n * 1000) / 1000) });
     }
 
-    // min price floor — cents ≥ 0.
-    let minPriceCents: number | undefined;
-    if (body.min_price_cents != null) {
-      const n =
-        typeof body.min_price_cents === "number"
-          ? body.min_price_cents
-          : Number(body.min_price_cents);
-      if (!Number.isFinite(n) || n < 0 || n > 100_000_00) {
-        return badRequest("min_price_cents must be a non-negative number of cents.");
+    // target margin — a fraction in [0, 0.95).
+    if (body.target_margin_pct != null) {
+      const n = num(body.target_margin_pct);
+      if (!Number.isFinite(n) || n < 0 || n >= 0.95) {
+        return badRequest("target_margin_pct must be a fraction between 0 and 0.95 (e.g. 0.35 = 35%).");
       }
-      minPriceCents = Math.round(n);
+      writes.push({ key: PRICING_TARGET_MARGIN_SETTING_KEY, value: String(Math.round(n * 10000) / 10000) });
     }
 
-    if (markup === undefined && minPriceCents === undefined) {
-      return badRequest("provide markup and/or min_price_cents.");
+    // referral override — a fraction in [0, 0.95); empty string clears it.
+    if (body.referral_pct != null) {
+      const n = num(body.referral_pct);
+      if (!Number.isFinite(n) || n < 0 || n >= 0.95) {
+        return badRequest("referral_pct must be a fraction between 0 and 0.95 (e.g. 0.15 = 15%).");
+      }
+      writes.push({ key: PRICING_REFERRAL_PCT_SETTING_KEY, value: String(Math.round(n * 10000) / 10000) });
     }
 
-    if (markup !== undefined) {
-      await prisma.setting.upsert({
-        where: { key: PRICING_MARKUP_SETTING_KEY },
-        create: { key: PRICING_MARKUP_SETTING_KEY, value: String(markup) },
-        update: { value: String(markup) },
-      });
+    // cents fields — non-negative.
+    for (const [field, key] of [
+      ["min_price_cents", PRICING_MIN_PRICE_SETTING_KEY],
+      ["fba_fee_cents", PRICING_FBA_FEE_SETTING_KEY],
+      ["closing_fee_cents", PRICING_CLOSING_FEE_SETTING_KEY],
+      ["own_shipping_cents", PRICING_OWN_SHIPPING_SETTING_KEY],
+    ] as const) {
+      const raw = (body as Record<string, unknown>)[field];
+      if (raw == null) continue;
+      const n = num(raw);
+      if (!Number.isFinite(n) || n < 0 || n > 100_000_00) {
+        return badRequest(`${field} must be a non-negative number of cents.`);
+      }
+      writes.push({ key, value: String(Math.round(n)) });
     }
-    if (minPriceCents !== undefined) {
+
+    if (writes.length === 0) {
+      return badRequest("provide at least one pricing field to update.");
+    }
+
+    for (const w of writes) {
       await prisma.setting.upsert({
-        where: { key: PRICING_MIN_PRICE_SETTING_KEY },
-        create: {
-          key: PRICING_MIN_PRICE_SETTING_KEY,
-          value: String(minPriceCents),
-        },
-        update: { value: String(minPriceCents) },
+        where: { key: w.key },
+        create: { key: w.key, value: w.value },
+        update: { value: w.value },
       });
     }
 
@@ -88,3 +119,7 @@ export const POST = withErrorHandler(
     return NextResponse.json({ ok: true, model });
   },
 );
+
+function num(v: unknown): number {
+  return typeof v === "number" ? v : Number(v);
+}

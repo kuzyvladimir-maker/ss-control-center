@@ -25,7 +25,7 @@ import {
 } from "../browse-node-resolver";
 import {
   getPricingModel,
-  computeListingPriceCents,
+  computeBundlePrice,
   type PricingModel,
 } from "../pricing-config";
 import { buildRichAmazonAttributes } from "../attributes/build-amazon-attributes";
@@ -149,6 +149,14 @@ async function ensureMasterBundle(
   // model applied to this COGS.
   const estimatedCost = draft.draft_cost_cents ?? 0;
 
+  // Cost-buildup price (goods + cooler/ice/box + fees, solved for target margin).
+  // Weight is unknown at first promotion (ship-specs entered later) → packaging
+  // is estimated; the price re-derives once weight lands and validation re-runs.
+  const priceCalc = computeBundlePrice(
+    { cogs_cents: estimatedCost, weight_lb: null, category: draft.category },
+    model,
+  );
+
   const slugBase = draft.draft_name
     .replace(/[^A-Za-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
@@ -166,11 +174,11 @@ async function ensureMasterBundle(
       pack_count: draft.pack_count,
       cost_breakdown: JSON.stringify({
         goods_cents: estimatedCost,
-        packaging_cents: 0,
+        packaging_cents: priceCalc.cost.packaging_cents,
         sourcing_overhead_cents: 0,
       }),
       estimated_cost_cents: estimatedCost,
-      suggested_price_cents: computeListingPriceCents(estimatedCost, model),
+      suggested_price_cents: priceCalc.selling_price_cents,
       packaging_spec: JSON.stringify({}),
       main_image_url: firstImage,
       secondary_images: JSON.stringify([]),
@@ -200,12 +208,18 @@ export async function promoteDraftToChannelSkus(
   // identically and the margin validator can clear the floor.
   const masterForPrice = await prisma.masterBundle.findUnique({
     where: { id: masterBundleId },
-    select: { estimated_cost_cents: true },
+    select: { estimated_cost_cents: true, category: true, total_weight_oz: true },
   });
-  const autoPriceCents = computeListingPriceCents(
-    masterForPrice?.estimated_cost_cents ?? 0,
+  const autoPriceCents = computeBundlePrice(
+    {
+      cogs_cents: masterForPrice?.estimated_cost_cents ?? 0,
+      weight_lb: masterForPrice?.total_weight_oz
+        ? masterForPrice.total_weight_oz / 16
+        : null,
+      category: masterForPrice?.category ?? null,
+    },
     pricingModel,
-  );
+  ).selling_price_cents;
 
   const candidates = await prisma.generatedContent.findMany({
     where: {

@@ -107,6 +107,7 @@ async function sourceDonors(theme: string) {
       category: true,
       bestPrice: true,
       mainImageUrl: true,
+      imageUrls: true,
     },
   });
 }
@@ -231,6 +232,21 @@ async function buildOneListing(args: {
       pack_count: packCount,
       draft_components: JSON.stringify([component]),
       draft_main_image_url: primary.mainImageUrl ?? null,
+      // Persist ALL donor photos so the preview + master bundle carry the full
+      // set (only the title image is generated; the rest come from the donor).
+      draft_secondary_images: (() => {
+        try {
+          const arr = primary.imageUrls ? JSON.parse(primary.imageUrls) : [];
+          if (!Array.isArray(arr)) return JSON.stringify([]);
+          const secondary = arr.filter(
+            (u): u is string =>
+              typeof u === "string" && u.trim().length > 0 && u !== primary.mainImageUrl,
+          );
+          return JSON.stringify(secondary);
+        } catch {
+          return JSON.stringify([]);
+        }
+      })(),
       draft_cost_cents: costCents,
       status: "VARIATION_SELECTED",
       target_channels: JSON.stringify([channel]),
@@ -364,6 +380,7 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
     select: {
       id: true, brand: true, productLine: true, flavor: true,
       title: true, category: true, bestPrice: true, mainImageUrl: true,
+      imageUrls: true,
     },
   });
   if (donors.length === 0) {

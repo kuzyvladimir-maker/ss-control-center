@@ -10,7 +10,7 @@
  *   - Polls /api/bundle-factory/drafts/[id] for fresh state after generation
  */
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Btn } from "@/components/kit";
 
@@ -84,17 +84,53 @@ interface Props {
   /** Auto retail price (cents) the listing will publish at — shown in the
    *  marketplace preview. */
   previewPriceCents: number;
-  /** Pricing model breakdown for the price modal (COGS × markup, floor). */
-  pricing: {
-    cogs_cents: number;
-    markup: number;
-    min_price_cents: number;
-  };
+  /** Full cost-buildup pricing state for the calculator modal. */
+  pricing: PricingProp;
   /** Donor-catalog photos (main + secondary), shown as the preview gallery
    *  alongside the generated title image. */
   donorPhotos: string[];
+  /** Donor-derived attribute preview (shown before a ChannelSKU exists). */
+  previewAttributes: Array<{ label: string; value: string }>;
   /** House brand, shown in the preview "Brand:" line. */
   brand: string;
+}
+
+// ── Pricing calculator types (mirror pricing-config.ts) ─────────────────────
+interface PricingModelShape {
+  mode: "margin" | "markup";
+  markup: number;
+  target_margin_pct: number;
+  min_price_cents: number;
+  fba_fee_cents: number;
+  closing_fee_cents: number;
+  own_shipping_cents: number;
+  referral_pct_override: number | null;
+}
+interface BundlePriceResultShape {
+  selling_price_cents: number;
+  mode: "margin" | "markup";
+  cooler_size: string | null;
+  packaging_estimated: boolean;
+  cost: {
+    goods_cents: number;
+    cooler_cents: number;
+    ice_cents: number;
+    box_cents: number;
+    packaging_cents: number;
+    fba_cents: number;
+    closing_cents: number;
+    own_shipping_cents: number;
+    total_cost_cents: number;
+  };
+  referral_pct: number;
+  referral_fee_cents: number;
+  profit_cents: number;
+  margin_pct: number;
+}
+interface PricingProp {
+  input: { cogs_cents: number; weight_lb: number | null; category: string | null };
+  model: PricingModelShape;
+  result: BundlePriceResultShape;
 }
 
 export function DraftDetailClient(props: Props) {
@@ -741,6 +777,7 @@ export function DraftDetailClient(props: Props) {
               previewPriceCents={props.previewPriceCents}
               pricing={props.pricing}
               donorPhotos={props.donorPhotos}
+              previewAttributes={props.previewAttributes}
               brand={props.brand}
               onGenerateImage={() => generateImages([r.channel])}
               onRegenerateImage={() => regenerateImage(r.channel)}
@@ -794,6 +831,7 @@ function ChannelCard({
   previewPriceCents,
   pricing,
   donorPhotos,
+  previewAttributes,
   brand,
   onGenerateImage,
   onRegenerateImage,
@@ -804,8 +842,9 @@ function ChannelCard({
   row: GeneratedContentRow;
   busy: boolean;
   previewPriceCents: number;
-  pricing: { cogs_cents: number; markup: number; min_price_cents: number };
+  pricing: PricingProp;
   donorPhotos: string[];
+  previewAttributes: Array<{ label: string; value: string }>;
   brand: string;
   onGenerateImage: () => void;
   onRegenerateImage: () => void;
@@ -924,7 +963,12 @@ function ChannelCard({
         donorPhotos={donorPhotos}
         priceCents={previewPriceCents}
         pricing={pricing}
-        attributes={buildPreviewAttributes(row)}
+        attributes={(() => {
+          // Prefer the real ChannelSKU attributes once the draft is promoted;
+          // fall back to the donor-derived preview at GENERATED stage.
+          const fromSku = buildPreviewAttributes(row);
+          return fromSku.length > 0 ? fromSku : previewAttributes;
+        })()}
       />
 
       {/* Image action strip — the preview above shows the image; this is the
@@ -1121,7 +1165,7 @@ function MarketplacePreview({
   imageUrl: string | null;
   donorPhotos: string[];
   priceCents: number;
-  pricing: { cogs_cents: number; markup: number; min_price_cents: number };
+  pricing: PricingProp;
   attributes: Array<{ label: string; value: string }>;
 }) {
   const market = channel.startsWith("AMAZON_")
@@ -1352,52 +1396,111 @@ function flattenAttrValue(raw: unknown): string {
 }
 
 /**
- * Pricing formula modal — shows how the auto price is derived
- * (`price = max(min_price, ceil(COGS × markup))`) and lets the operator adjust
- * the GLOBAL markup / floor. Saving re-prices every listing on next compute
- * (the factory has one pricing model, configured once) — labelled as such.
+ * Pricing calculator modal — the real cost buildup for a frozen gift set, like
+ * the ChannelMax calculator the owner uses. Left column = costs (goods +
+ * cooler/ice/box + FBA/closing/our shipping); right column = the marketplace
+ * referral fee + the solved selling price, profit and margin. The operator
+ * picks the lever (target MARGIN or a cost MARKUP), adjusts the fee estimates,
+ * and Saves — it re-prices every listing (one global model, labelled as such).
+ * Live numbers come from the server (POST .../pricing/preview) so the modal and
+ * the published price stay on one formula (computeBundlePrice).
  */
+const dollars = (cents: number) => `$${((cents || 0) / 100).toFixed(2)}`;
+
 function PricingModal({
   pricing,
   onClose,
 }: {
-  pricing: { cogs_cents: number; markup: number; min_price_cents: number };
+  pricing: PricingProp;
   onClose: () => void;
 }) {
   const router = useRouter();
-  const [markup, setMarkup] = useState(String(pricing.markup));
-  const [minPrice, setMinPrice] = useState(
-    (pricing.min_price_cents / 100).toFixed(2),
+  const m = pricing.model;
+
+  const [mode, setMode] = useState<"margin" | "markup">(m.mode);
+  const [markup, setMarkup] = useState(String(m.markup));
+  const [marginPct, setMarginPct] = useState(String(Math.round(m.target_margin_pct * 100)));
+  const [floor, setFloor] = useState((m.min_price_cents / 100).toFixed(2));
+  const [fba, setFba] = useState((m.fba_fee_cents / 100).toFixed(2));
+  const [closing, setClosing] = useState((m.closing_fee_cents / 100).toFixed(2));
+  const [ownShip, setOwnShip] = useState((m.own_shipping_cents / 100).toFixed(2));
+  const [referral, setReferral] = useState(
+    m.referral_pct_override == null ? "" : String(Math.round(m.referral_pct_override * 100)),
   );
+
+  const [result, setResult] = useState<BundlePriceResultShape>(pricing.result);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const cogs = pricing.cogs_cents;
-  const markupNum = Number(markup);
-  const minCents = Math.round(Number(minPrice) * 100);
-  const fromCost =
-    cogs > 0 && Number.isFinite(markupNum) ? Math.ceil(cogs * markupNum) : 0;
-  const preview =
-    Number.isFinite(minCents) && minCents >= 0
-      ? Math.max(minCents, fromCost)
-      : fromCost;
+  // The model as edited, in the API's shape.
+  const edited = {
+    mode,
+    markup: Number(markup),
+    target_margin_pct: Number(marginPct) / 100,
+    min_price_cents: Math.round(Number(floor) * 100),
+    fba_fee_cents: Math.round(Number(fba) * 100),
+    closing_fee_cents: Math.round(Number(closing) * 100),
+    own_shipping_cents: Math.round(Number(ownShip) * 100),
+    referral_pct_override: referral.trim() === "" ? null : Number(referral) / 100,
+  };
+
   const dirty =
-    markupNum !== pricing.markup || minCents !== pricing.min_price_cents;
-  const valid =
-    Number.isFinite(markupNum) &&
-    markupNum >= 1 &&
-    Number.isFinite(minCents) &&
-    minCents >= 0;
+    edited.mode !== m.mode ||
+    edited.markup !== m.markup ||
+    Math.abs(edited.target_margin_pct - m.target_margin_pct) > 1e-9 ||
+    edited.min_price_cents !== m.min_price_cents ||
+    edited.fba_fee_cents !== m.fba_fee_cents ||
+    edited.closing_fee_cents !== m.closing_fee_cents ||
+    edited.own_shipping_cents !== m.own_shipping_cents ||
+    edited.referral_pct_override !== m.referral_pct_override;
+
+  // Debounced live recompute on the server (single source of truth).
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/bundle-factory/pricing/preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            cogs_cents: pricing.input.cogs_cents,
+            weight_lb: pricing.input.weight_lb,
+            category: pricing.input.category,
+            model: edited,
+          }),
+        });
+        const j = await res.json().catch(() => null);
+        if (j?.ok && j.result) setResult(j.result as BundlePriceResultShape);
+      } catch {
+        /* keep last good result */
+      }
+    }, 300);
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, markup, marginPct, floor, fba, closing, ownShip, referral]);
 
   async function save() {
-    if (!valid) return;
     setSaving(true);
     setErr(null);
     try {
+      const body: Record<string, unknown> = {
+        mode: edited.mode,
+        markup: edited.markup,
+        target_margin_pct: edited.target_margin_pct,
+        min_price_cents: edited.min_price_cents,
+        fba_fee_cents: edited.fba_fee_cents,
+        closing_fee_cents: edited.closing_fee_cents,
+        own_shipping_cents: edited.own_shipping_cents,
+      };
+      if (edited.referral_pct_override != null)
+        body.referral_pct = edited.referral_pct_override;
       const res = await fetch("/api/bundle-factory/pricing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ markup: markupNum, min_price_cents: minCents }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => null);
@@ -1412,84 +1515,131 @@ function PricingModal({
     }
   }
 
+  const c = result.cost;
+  const marginColor =
+    result.margin_pct >= 0.2 ? "text-green-ink" : result.margin_pct >= 0.1 ? "text-warn" : "text-danger";
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-[14px] border border-rule bg-surface p-5 shadow-2xl"
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[14px] border border-rule bg-surface p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-[14px] font-semibold text-ink">Формула цены</h3>
+        <h3 className="text-[14px] font-semibold text-ink">Калькулятор цены</h3>
         <p className="mt-1 text-[12px] text-ink-3">
-          Цена считается автоматически из себестоимости набора (COGS):
-          <br />
-          <span className="font-mono text-[11.5px] text-ink-2">
-            price = max( floor, ceil(COGS × markup) )
-          </span>
+          Цена набора считается из полной себестоимости (товар + кулер + лёд +
+          коробка) и комиссий маркетплейса так, чтобы удержать целевую маржу.
         </p>
 
-        <div className="mt-3 space-y-1.5 rounded-md border border-rule bg-bg-elev/40 p-3 text-[12.5px]">
-          <FormulaRow
-            label="COGS (себестоимость)"
-            value={`$${(cogs / 100).toFixed(2)}`}
-          />
-          <FormulaRow label="× markup" value={`× ${markupNum || "—"}`} />
-          <FormulaRow
-            label="= ceil(COGS × markup)"
-            value={`$${(fromCost / 100).toFixed(2)}`}
-          />
-          <FormulaRow
-            label="floor (минимум)"
-            value={`$${(minCents / 100 || 0).toFixed(2)}`}
-          />
-          <div className="mt-1 flex items-center justify-between border-t border-rule pt-1.5 font-semibold text-ink">
-            <span>Итоговая цена</span>
-            <span className="tabular-nums">${(preview / 100).toFixed(2)}</span>
+        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {/* LEFT — cost buildup */}
+          <div className="rounded-md border border-rule bg-bg-elev/40 p-3">
+            <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-ink-3">
+              Себестоимость набора
+            </div>
+            <div className="space-y-1 text-[12.5px]">
+              <FormulaRow label="Товар (COGS)" value={dollars(c.goods_cents)} />
+              <FormulaRow
+                label={`Кулер${result.cooler_size ? ` (${result.cooler_size})` : ""}`}
+                value={dollars(c.cooler_cents)}
+              />
+              <FormulaRow label="Гелевый лёд" value={dollars(c.ice_cents)} />
+              <FormulaRow label="Картонная коробка" value={dollars(c.box_cents)} />
+            </div>
+            <div className="mt-2 border-t border-rule pt-2">
+              <MoneyInput label="FBA / фулфилмент" value={fba} onChange={setFba} />
+              <MoneyInput label="Closing fee" value={closing} onChange={setClosing} />
+              <MoneyInput label="Наша доставка (лейбл)" value={ownShip} onChange={setOwnShip} />
+            </div>
+            <div className="mt-2 flex items-center justify-between border-t border-rule pt-2 text-[12.5px] font-semibold text-ink">
+              <span>Итого себестоимость</span>
+              <span className="tabular-nums">{dollars(c.total_cost_cents)}</span>
+            </div>
+            {result.packaging_estimated && (
+              <p className="mt-1 text-[10.5px] text-warn">
+                Упаковка оценена (нет веса) — уточни в ship-specs, цена пересчитается.
+              </p>
+            )}
+          </div>
+
+          {/* RIGHT — fees, lever, result */}
+          <div className="rounded-md border border-rule bg-bg-elev/40 p-3">
+            <div className="mb-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-ink-3">
+              Комиссии и цена
+            </div>
+
+            <div className="mb-2 flex rounded-md border border-rule p-0.5 text-[11.5px]">
+              <button
+                type="button"
+                onClick={() => setMode("margin")}
+                className={`flex-1 rounded px-2 py-1 ${mode === "margin" ? "bg-green-ink text-white" : "text-ink-2"}`}
+              >
+                По марже
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("markup")}
+                className={`flex-1 rounded px-2 py-1 ${mode === "markup" ? "bg-green-ink text-white" : "text-ink-2"}`}
+              >
+                По маркапу
+              </button>
+            </div>
+
+            {mode === "margin" ? (
+              <PctInput label="Целевая маржа" value={marginPct} onChange={setMarginPct} />
+            ) : (
+              <label className="flex items-center justify-between gap-2 py-0.5 text-[12px] text-ink-2">
+                <span>Маркап (× себестоимости)</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="0.1"
+                  value={markup}
+                  onChange={(e) => setMarkup(e.target.value)}
+                  className="w-20 rounded-md border border-rule bg-surface px-2 py-1 text-right text-[12.5px] tabular-nums outline-none focus:border-green-ink"
+                />
+              </label>
+            )}
+            <PctInput
+              label="Referral (пусто = авто 8/15%)"
+              value={referral}
+              onChange={setReferral}
+              placeholder="авто"
+            />
+            <MoneyInput label="Пол цены (минимум)" value={floor} onChange={setFloor} />
+
+            <div className="mt-2 space-y-1 border-t border-rule pt-2 text-[12.5px]">
+              <FormulaRow
+                label={`Referral (${(result.referral_pct * 100).toFixed(1)}%)`}
+                value={`− ${dollars(result.referral_fee_cents)}`}
+              />
+              <div className="flex items-center justify-between pt-1 text-[13px] font-semibold text-ink">
+                <span>Цена продажи</span>
+                <span className="tabular-nums">{dollars(result.selling_price_cents)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-ink-2">Прибыль</span>
+                <span className={`tabular-nums font-medium ${marginColor}`}>
+                  {dollars(result.profit_cents)} ({(result.margin_pct * 100).toFixed(0)}%)
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1 text-[11px] uppercase tracking-wider text-ink-3">
-            Markup (×)
-            <input
-              type="number"
-              min="1"
-              step="0.1"
-              value={markup}
-              onChange={(e) => setMarkup(e.target.value)}
-              className="rounded-md border border-rule bg-bg-elev/40 px-2 py-1.5 text-[13px] text-ink tabular-nums outline-none focus:border-green-ink"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-[11px] uppercase tracking-wider text-ink-3">
-            Floor ($)
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-              className="rounded-md border border-rule bg-bg-elev/40 px-2 py-1.5 text-[13px] text-ink tabular-nums outline-none focus:border-green-ink"
-            />
-          </label>
-        </div>
-
-        <p className="mt-2 text-[11px] text-warn">
+        <p className="mt-3 text-[11px] text-warn">
           Изменение применяется ко ВСЕМ листингам фабрики (единая модель цены).
         </p>
-        {err && <p className="mt-2 text-[11px] text-danger">{err}</p>}
+        {err && <p className="mt-1 text-[11px] text-danger">{err}</p>}
 
         <div className="mt-4 flex items-center justify-end gap-2">
           <Btn variant="ghost" disabled={saving} onClick={onClose}>
             Закрыть
           </Btn>
-          <Btn
-            variant="primary"
-            disabled={!dirty || !valid || saving}
-            loading={saving}
-            onClick={save}
-          >
+          <Btn variant="primary" disabled={!dirty || saving} loading={saving} onClick={save}>
             Сохранить модель
           </Btn>
         </div>
@@ -1504,6 +1654,63 @@ function FormulaRow({ label, value }: { label: string; value: string }) {
       <span>{label}</span>
       <span className="tabular-nums">{value}</span>
     </div>
+  );
+}
+
+function MoneyInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <label className="flex items-center justify-between gap-2 py-0.5 text-[12px] text-ink-2">
+      <span>{label}</span>
+      <span className="flex items-center gap-1">
+        <span className="text-ink-3">$</span>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-20 rounded-md border border-rule bg-surface px-2 py-1 text-right text-[12.5px] tabular-nums outline-none focus:border-green-ink"
+        />
+      </span>
+    </label>
+  );
+}
+
+function PctInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <label className="flex items-center justify-between gap-2 py-0.5 text-[12px] text-ink-2">
+      <span>{label}</span>
+      <span className="flex items-center gap-1">
+        <input
+          type="number"
+          min="0"
+          step="1"
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-16 rounded-md border border-rule bg-surface px-2 py-1 text-right text-[12.5px] tabular-nums outline-none focus:border-green-ink"
+        />
+        <span className="text-ink-3">%</span>
+      </span>
+    </label>
   );
 }
 

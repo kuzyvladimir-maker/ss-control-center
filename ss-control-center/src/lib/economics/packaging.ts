@@ -15,9 +15,11 @@ import type { Cooler } from "@/lib/pricing/cost-model";
 
 /** Cooler shell cost only (no ice, no box) — the breakdown behind cost-model's
  *  bundled PACKAGING constant ($6/$9/$12/$16 + ice + $1 box). */
-const COOLER_SHELL: Record<Cooler, number> = { S: 6, M: 9, L: 12, XL: 16 };
-const BOX_COST = 1; // cardboard outer for a frozen cooler
-const DRY_BOX_COST = 1.5; // plain ambient box, no cooler/ice
+/** Cooler shell cost by size (USD). Exported so the Bundle Factory pricing
+ *  calculator can show the cooler line separately from ice + box. */
+export const COOLER_SHELL: Record<Cooler, number> = { S: 6, M: 9, L: 12, XL: 16 };
+export const BOX_COST = 1; // cardboard outer for a frozen cooler
+export const DRY_BOX_COST = 1.5; // plain ambient box, no cooler/ice
 const ICE_PER_PIECE = 0.1; // $0.10 per gel-ice piece (1 piece ≈ 1 lb)
 const ICE_RATIO = 0.8; // ice weight = 80% of product weight
 
