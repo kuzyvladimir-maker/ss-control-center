@@ -190,6 +190,50 @@ export function buildAmazonAttributes(
     /* malformed sku.attributes — ignore, base attrs still valid */
   }
 
+  // Required by the GROCERY/FOOD product type (Amazon 90220 "required but
+  // missing" on the first VALIDATION_PREVIEW): price, manufacturer, unit counts,
+  // shelf life, melting temperature. Counts derived from the title
+  // ("8oz/4ct - Pack of 6" → 4 per box × 6 boxes = 24 total).
+  const titleStr = sku.title ?? "";
+  const perUnit = parseInt(titleStr.match(/(\d+)\s*ct/i)?.[1] ?? "", 10) || null;
+  const boxes = parseInt(titleStr.match(/pack of\s*(\d+)/i)?.[1] ?? "", 10) || null;
+  const totalUnits = perUnit && boxes ? perUnit * boxes : boxes ?? perUnit ?? null;
+  const priceUsd = sku.price_cents != null ? sku.price_cents / 100 : null;
+
+  if (priceUsd != null) {
+    attrs.list_price = [
+      { value: priceUsd, currency: "USD", marketplace_id: MARKETPLACE_ID },
+    ];
+    attrs.purchasable_offer = [
+      {
+        currency: "USD",
+        marketplace_id: MARKETPLACE_ID,
+        our_price: [{ schedule: [{ value_with_tax: priceUsd }] }],
+      },
+    ];
+  }
+  attrs.manufacturer = [lt(listingBrand)];
+  if (totalUnits) {
+    attrs.unit_count = [
+      {
+        value: totalUnits,
+        type: { value: "Count", language_tag: "en_US" }, // nested enum object
+        marketplace_id: MARKETPLACE_ID,
+      },
+    ];
+  }
+  if (perUnit) {
+    attrs.each_unit_count = [{ value: perUnit, marketplace_id: MARKETPLACE_ID }];
+  }
+  // Exact GROCERY schema: fc_shelf_life unit enum is lowercase "days";
+  // melting_temperature unit enum is "degrees_fahrenheit".
+  attrs.fc_shelf_life = [
+    { value: 365, unit: "days", marketplace_id: MARKETPLACE_ID },
+  ];
+  attrs.melting_temperature = [
+    { value: 32, unit: "degrees_fahrenheit", marketplace_id: MARKETPLACE_ID },
+  ];
+
   // Fixed brand-story card in the gallery for cold-chain (frozen/refrigerated)
   // listings. Gated on the temperature_rating merged just above; no-op until the
   // asset url is set (brand-assets.ts). This also activates the secondary-image
