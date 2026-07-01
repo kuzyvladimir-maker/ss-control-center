@@ -43,6 +43,14 @@ interface GeneratedContentRow {
   validation_status: string; // PENDING | PASSED | NEEDS_REVIEW | FAILED
   validation_errors_json: string | null;
   validation_attempt_count: number;
+  // Full attribute set + ship specs — surfaced in the preview.
+  attributes_json: string | null;
+  upc: string | null;
+  country_of_origin: string | null;
+  package_weight_oz: number | null;
+  package_length_in: number | null;
+  package_width_in: number | null;
+  package_height_in: number | null;
   // Phase 2.5 Stage 7 — distribution state.
   listing_status: string; // PENDING | SUBMITTED | LIVE | FAILED | PENDING_REVIEW
   submission_id: string | null;
@@ -76,6 +84,15 @@ interface Props {
   /** Auto retail price (cents) the listing will publish at — shown in the
    *  marketplace preview. */
   previewPriceCents: number;
+  /** Pricing model breakdown for the price modal (COGS × markup, floor). */
+  pricing: {
+    cogs_cents: number;
+    markup: number;
+    min_price_cents: number;
+  };
+  /** Donor-catalog photos (main + secondary), shown as the preview gallery
+   *  alongside the generated title image. */
+  donorPhotos: string[];
   /** House brand, shown in the preview "Brand:" line. */
   brand: string;
 }
@@ -722,6 +739,8 @@ export function DraftDetailClient(props: Props) {
               row={r}
               busy={busy}
               previewPriceCents={props.previewPriceCents}
+              pricing={props.pricing}
+              donorPhotos={props.donorPhotos}
               brand={props.brand}
               onGenerateImage={() => generateImages([r.channel])}
               onRegenerateImage={() => regenerateImage(r.channel)}
@@ -773,6 +792,8 @@ function ChannelCard({
   row,
   busy,
   previewPriceCents,
+  pricing,
+  donorPhotos,
   brand,
   onGenerateImage,
   onRegenerateImage,
@@ -783,6 +804,8 @@ function ChannelCard({
   row: GeneratedContentRow;
   busy: boolean;
   previewPriceCents: number;
+  pricing: { cogs_cents: number; markup: number; min_price_cents: number };
+  donorPhotos: string[];
   brand: string;
   onGenerateImage: () => void;
   onRegenerateImage: () => void;
@@ -898,7 +921,10 @@ function ChannelCard({
         bullets={bullets}
         description={row.description}
         imageUrl={row.main_image_url}
+        donorPhotos={donorPhotos}
         priceCents={previewPriceCents}
+        pricing={pricing}
+        attributes={buildPreviewAttributes(row)}
       />
 
       {/* Image action strip — the preview above shows the image; this is the
@@ -1067,9 +1093,13 @@ function SpecInput({
 
 /**
  * Marketplace preview — renders the generated content the way the shopper sees
- * it on the storefront (Amazon-style PDP: image, title, brand, price, "About
- * this item" bullets, product description). White surface + marketplace colors
- * so it reads as a real listing, not a form.
+ * it on the storefront (Amazon-style PDP: photo gallery, title, brand, price,
+ * "About this item" bullets, product description, full attribute table). White
+ * surface + marketplace colors so it reads as a real listing, not a form.
+ *
+ * Per Vladimir 2026-06-30 the preview must show EVERYTHING: all photos (the
+ * generated title image + donor-catalog photos), the auto price with a click-
+ * through to the pricing formula, and every attribute that will publish.
  */
 function MarketplacePreview({
   channel,
@@ -1078,7 +1108,10 @@ function MarketplacePreview({
   bullets,
   description,
   imageUrl,
+  donorPhotos,
   priceCents,
+  pricing,
+  attributes,
 }: {
   channel: string;
   brand: string;
@@ -1086,14 +1119,33 @@ function MarketplacePreview({
   bullets: string[];
   description: string;
   imageUrl: string | null;
+  donorPhotos: string[];
   priceCents: number;
+  pricing: { cogs_cents: number; markup: number; min_price_cents: number };
+  attributes: Array<{ label: string; value: string }>;
 }) {
   const market = channel.startsWith("AMAZON_")
     ? "Amazon"
     : channel === "WALMART"
       ? "Walmart"
       : channel;
+
+  // Photo gallery: the generated title image is the hero (first), donor photos
+  // follow. Deduped, generated-first. If nothing generated yet, donor photos
+  // still preview the product.
+  const gallery: string[] = [];
+  const seen = new Set<string>();
+  for (const u of [imageUrl, ...donorPhotos]) {
+    if (typeof u === "string" && u && !seen.has(u)) {
+      seen.add(u);
+      gallery.push(u);
+    }
+  }
+  const [heroIdx, setHeroIdx] = useState(0);
+  const [priceOpen, setPriceOpen] = useState(false);
+  const hero = gallery[Math.min(heroIdx, gallery.length - 1)] ?? null;
   const price = (priceCents / 100).toFixed(2);
+
   return (
     <div className="mt-3 overflow-hidden rounded-[12px] border border-rule bg-white">
       <div className="flex items-center justify-between border-b border-rule bg-[#f7f8f8] px-3 py-1.5 text-[10.5px] uppercase tracking-wider text-[#565959]">
@@ -1101,14 +1153,52 @@ function MarketplacePreview({
         <span className="font-mono normal-case tracking-normal">{channel}</span>
       </div>
       <div className="grid grid-cols-1 gap-5 p-4 sm:grid-cols-[280px_1fr]">
-        <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border border-[#e7e7e7] bg-white">
-          {imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt={title} className="h-full w-full object-contain" />
-          ) : (
-            <span className="px-6 text-center text-[12px] leading-snug text-[#8d9091]">
-              Изображение появится после «Generate image»
-            </span>
+        <div>
+          <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border border-[#e7e7e7] bg-white">
+            {hero ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={hero} alt={title} className="h-full w-full object-contain" />
+            ) : (
+              <span className="px-6 text-center text-[12px] leading-snug text-[#8d9091]">
+                Изображение появится после «Generate image»
+              </span>
+            )}
+          </div>
+          {gallery.length > 1 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {gallery.map((u, i) => (
+                <button
+                  key={u}
+                  type="button"
+                  onClick={() => setHeroIdx(i)}
+                  title={
+                    i === 0 && u === imageUrl
+                      ? "Сгенерированное титульное фото"
+                      : "Фото из донорского каталога"
+                  }
+                  className={`relative h-11 w-11 overflow-hidden rounded border ${
+                    i === heroIdx
+                      ? "border-[#e77600] ring-1 ring-[#e77600]"
+                      : "border-[#e7e7e7]"
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={u} alt="" className="h-full w-full object-contain" />
+                  {i === 0 && u === imageUrl && (
+                    <span className="absolute inset-x-0 bottom-0 bg-[#0F1111]/70 text-center text-[7px] uppercase tracking-wide text-white">
+                      title
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+          {gallery.length > 0 && (
+            <div className="mt-1 text-[10.5px] text-[#8d9091]">
+              {gallery.length} фото
+              {imageUrl ? " · титул сгенерирован" : " · титул ещё не сгенерирован"}
+              {donorPhotos.length > 0 && ` · ${donorPhotos.length} из донора`}
+            </div>
           )}
         </div>
         <div className="min-w-0">
@@ -1119,12 +1209,20 @@ function MarketplacePreview({
           <div className="mt-1 text-[12px] text-[#565959]">
             Новый листинг · ещё нет отзывов
           </div>
-          <div className="mt-3 border-t border-[#e7e7e7] pt-3">
+          <button
+            type="button"
+            onClick={() => setPriceOpen(true)}
+            title="Показать формулу ценообразования"
+            className="mt-3 flex w-full items-baseline gap-1 border-t border-[#e7e7e7] pt-3 text-left hover:opacity-80"
+          >
             <span className="align-top text-[13px] text-[#0F1111]">$</span>
             <span className="text-[28px] font-medium leading-none text-[#0F1111]">
               {price}
             </span>
-          </div>
+            <span className="ml-1 self-center text-[11px] text-[#007185] underline">
+              формула цены
+            </span>
+          </button>
           <div className="mt-4">
             <div className="text-[15px] font-bold text-[#0F1111]">About this item</div>
             <ul className="mt-1.5 list-disc space-y-1.5 pl-5 text-[12.5px] leading-snug text-[#0F1111]">
@@ -1141,6 +1239,270 @@ function MarketplacePreview({
           {description}
         </p>
       </div>
+      {attributes.length > 0 && (
+        <div className="border-t border-[#e7e7e7] px-4 py-3.5">
+          <div className="text-[15px] font-bold text-[#0F1111]">
+            Product information · все атрибуты
+          </div>
+          <table className="mt-2 w-full border-collapse text-[12px]">
+            <tbody>
+              {attributes.map((a, i) => (
+                <tr
+                  key={a.label}
+                  className={i % 2 === 0 ? "bg-[#f7f8f8]" : "bg-white"}
+                >
+                  <td className="w-[42%] border border-[#e7e7e7] px-2 py-1 align-top font-medium text-[#565959]">
+                    {a.label}
+                  </td>
+                  <td className="border border-[#e7e7e7] px-2 py-1 align-top text-[#0F1111]">
+                    <span className="whitespace-pre-wrap break-words">{a.value}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {priceOpen && (
+        <PricingModal pricing={pricing} onClose={() => setPriceOpen(false)} />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Flatten the ChannelSKU's Amazon-attribute-shaped JSON (+ ship specs, UPC,
+ * country, browse node) into a plain [{label, value}] list for the preview
+ * table. Amazon attributes are arrays of `{value, ...}` objects (or nested
+ * dimensions); we render the human-meaningful part and skip marketplace/
+ * language plumbing. This is display-only — the real publish payload is built
+ * server-side by buildAmazonAttributes.
+ */
+function buildPreviewAttributes(
+  row: GeneratedContentRow,
+): Array<{ label: string; value: string }> {
+  const out: Array<{ label: string; value: string }> = [];
+  const push = (label: string, value: string | null | undefined) => {
+    const v = (value ?? "").toString().trim();
+    if (v) out.push({ label, value: v });
+  };
+
+  // Ship specs first — the fields the operator actively fills.
+  if (row.package_weight_oz != null)
+    push("Package weight", `${row.package_weight_oz} oz`);
+  if (
+    row.package_length_in != null &&
+    row.package_width_in != null &&
+    row.package_height_in != null
+  )
+    push(
+      "Package dimensions",
+      `${row.package_length_in} × ${row.package_width_in} × ${row.package_height_in} in`,
+    );
+  push("UPC", row.upc);
+  push("Country of origin", row.country_of_origin);
+  push("Amazon browse node", row.channel_browse_node);
+
+  // Rich attribute set (Phase 2.1 filler): Amazon attribute shape.
+  const attrs = safeParse<Record<string, unknown>>(row.attributes_json);
+  if (attrs && typeof attrs === "object") {
+    for (const [key, raw] of Object.entries(attrs)) {
+      const label = humanizeAttrKey(key);
+      push(label, flattenAttrValue(raw));
+    }
+  }
+  return out;
+}
+
+function humanizeAttrKey(key: string): string {
+  return key
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Best-effort render of one Amazon attribute value array into a short string. */
+function flattenAttrValue(raw: unknown): string {
+  const one = (v: unknown): string => {
+    if (v == null) return "";
+    if (typeof v === "string" || typeof v === "number" || typeof v === "boolean")
+      return String(v);
+    if (typeof v === "object") {
+      const o = v as Record<string, unknown>;
+      // {value, unit} → "12 ounces"; {value} → "12"; dimensions → nested.
+      if ("value" in o) {
+        const val = one(o.value);
+        const unit = "unit" in o ? ` ${one(o.unit)}` : "";
+        return `${val}${unit}`.trim();
+      }
+      if ("length" in o || "width" in o || "height" in o) {
+        const parts = ["length", "width", "height"]
+          .filter((k) => k in o)
+          .map((k) => one(o[k]));
+        return parts.join(" × ");
+      }
+      // Fallback: compact JSON, capped.
+      return JSON.stringify(o).slice(0, 120);
+    }
+    return "";
+  };
+  if (Array.isArray(raw)) {
+    return raw.map(one).filter(Boolean).join(", ").slice(0, 400);
+  }
+  return one(raw).slice(0, 400);
+}
+
+/**
+ * Pricing formula modal — shows how the auto price is derived
+ * (`price = max(min_price, ceil(COGS × markup))`) and lets the operator adjust
+ * the GLOBAL markup / floor. Saving re-prices every listing on next compute
+ * (the factory has one pricing model, configured once) — labelled as such.
+ */
+function PricingModal({
+  pricing,
+  onClose,
+}: {
+  pricing: { cogs_cents: number; markup: number; min_price_cents: number };
+  onClose: () => void;
+}) {
+  const router = useRouter();
+  const [markup, setMarkup] = useState(String(pricing.markup));
+  const [minPrice, setMinPrice] = useState(
+    (pricing.min_price_cents / 100).toFixed(2),
+  );
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const cogs = pricing.cogs_cents;
+  const markupNum = Number(markup);
+  const minCents = Math.round(Number(minPrice) * 100);
+  const fromCost =
+    cogs > 0 && Number.isFinite(markupNum) ? Math.ceil(cogs * markupNum) : 0;
+  const preview =
+    Number.isFinite(minCents) && minCents >= 0
+      ? Math.max(minCents, fromCost)
+      : fromCost;
+  const dirty =
+    markupNum !== pricing.markup || minCents !== pricing.min_price_cents;
+  const valid =
+    Number.isFinite(markupNum) &&
+    markupNum >= 1 &&
+    Number.isFinite(minCents) &&
+    minCents >= 0;
+
+  async function save() {
+    if (!valid) return;
+    setSaving(true);
+    setErr(null);
+    try {
+      const res = await fetch("/api/bundle-factory/pricing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ markup: markupNum, min_price_cents: minCents }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => null);
+        throw new Error(j?.error || `HTTP ${res.status}`);
+      }
+      router.refresh();
+      onClose();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-[14px] border border-rule bg-surface p-5 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-[14px] font-semibold text-ink">Формула цены</h3>
+        <p className="mt-1 text-[12px] text-ink-3">
+          Цена считается автоматически из себестоимости набора (COGS):
+          <br />
+          <span className="font-mono text-[11.5px] text-ink-2">
+            price = max( floor, ceil(COGS × markup) )
+          </span>
+        </p>
+
+        <div className="mt-3 space-y-1.5 rounded-md border border-rule bg-bg-elev/40 p-3 text-[12.5px]">
+          <FormulaRow
+            label="COGS (себестоимость)"
+            value={`$${(cogs / 100).toFixed(2)}`}
+          />
+          <FormulaRow label="× markup" value={`× ${markupNum || "—"}`} />
+          <FormulaRow
+            label="= ceil(COGS × markup)"
+            value={`$${(fromCost / 100).toFixed(2)}`}
+          />
+          <FormulaRow
+            label="floor (минимум)"
+            value={`$${(minCents / 100 || 0).toFixed(2)}`}
+          />
+          <div className="mt-1 flex items-center justify-between border-t border-rule pt-1.5 font-semibold text-ink">
+            <span>Итоговая цена</span>
+            <span className="tabular-nums">${(preview / 100).toFixed(2)}</span>
+          </div>
+        </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1 text-[11px] uppercase tracking-wider text-ink-3">
+            Markup (×)
+            <input
+              type="number"
+              min="1"
+              step="0.1"
+              value={markup}
+              onChange={(e) => setMarkup(e.target.value)}
+              className="rounded-md border border-rule bg-bg-elev/40 px-2 py-1.5 text-[13px] text-ink tabular-nums outline-none focus:border-green-ink"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-[11px] uppercase tracking-wider text-ink-3">
+            Floor ($)
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+              className="rounded-md border border-rule bg-bg-elev/40 px-2 py-1.5 text-[13px] text-ink tabular-nums outline-none focus:border-green-ink"
+            />
+          </label>
+        </div>
+
+        <p className="mt-2 text-[11px] text-warn">
+          Изменение применяется ко ВСЕМ листингам фабрики (единая модель цены).
+        </p>
+        {err && <p className="mt-2 text-[11px] text-danger">{err}</p>}
+
+        <div className="mt-4 flex items-center justify-end gap-2">
+          <Btn variant="ghost" disabled={saving} onClick={onClose}>
+            Закрыть
+          </Btn>
+          <Btn
+            variant="primary"
+            disabled={!dirty || !valid || saving}
+            loading={saving}
+            onClick={save}
+          >
+            Сохранить модель
+          </Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FormulaRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between text-ink-2">
+      <span>{label}</span>
+      <span className="tabular-nums">{value}</span>
     </div>
   );
 }

@@ -51,6 +51,15 @@ export default async function DraftDetailPage({ params }: PageProps) {
           validation_errors: true,
           validated_at: true,
           validation_attempt_count: true,
+          // Full attribute set (Phase 2.1 filler) + ship specs — surfaced in
+          // the preview so the operator sees EVERY field that will publish.
+          attributes: true,
+          upc: true,
+          country_of_origin: true,
+          package_weight_oz: true,
+          package_length_in: true,
+          package_width_in: true,
+          package_height_in: true,
           // Phase 2.5 distribution fields
           listing_status: true,
           submission_id: true,
@@ -73,6 +82,13 @@ export default async function DraftDetailPage({ params }: PageProps) {
       validation_errors: string | null;
       validated_at: Date | null;
       validation_attempt_count: number;
+      attributes: string | null;
+      upc: string | null;
+      country_of_origin: string | null;
+      package_weight_oz: number | null;
+      package_length_in: number | null;
+      package_width_in: number | null;
+      package_height_in: number | null;
       listing_status: string;
       submission_id: string | null;
       published_at: Date | null;
@@ -91,6 +107,13 @@ export default async function DraftDetailPage({ params }: PageProps) {
       validation_errors: cs.validation_errors,
       validated_at: cs.validated_at,
       validation_attempt_count: cs.validation_attempt_count,
+      attributes: cs.attributes,
+      upc: cs.upc,
+      country_of_origin: cs.country_of_origin,
+      package_weight_oz: cs.package_weight_oz,
+      package_length_in: cs.package_length_in,
+      package_width_in: cs.package_width_in,
+      package_height_in: cs.package_height_in,
       listing_status: cs.listing_status,
       submission_id: cs.submission_id,
       published_at: cs.published_at,
@@ -116,6 +139,40 @@ export default async function DraftDetailPage({ params }: PageProps) {
   const selectedIdx = draft.variation_matrix?.selected_variant_idx ?? null;
   const selectedVariant =
     selectedIdx != null ? variants[selectedIdx] : undefined;
+
+  // Donor photos — the operator wants EVERY photo in the preview. Only the
+  // title (main) image is generated; the rest are pulled from the donor
+  // catalog (ResearchPool.reference_image_urls for each component) plus any
+  // secondary images already stored on the draft. Deduped, order-preserving.
+  const donorPhotos: string[] = [];
+  {
+    const seen = new Set<string>();
+    const pushUrl = (u: unknown) => {
+      if (typeof u !== "string") return;
+      const url = u.trim();
+      if (!url || seen.has(url)) return;
+      seen.add(url);
+      donorPhotos.push(url);
+    };
+    pushUrl(draft.draft_main_image_url);
+    for (const u of safeParse<string[]>(draft.draft_secondary_images) ?? []) {
+      pushUrl(u);
+    }
+    const poolIds = (selectedVariant?.composition ?? [])
+      .map((c) => c.research_pool_id)
+      .filter((x): x is string => typeof x === "string" && x.length > 0);
+    if (poolIds.length > 0) {
+      const pools = await prisma.researchPool.findMany({
+        where: { id: { in: poolIds } },
+        select: { id: true, reference_image_urls: true },
+      });
+      // Preserve composition order.
+      const byId = new Map(pools.map((p) => [p.id, p.reference_image_urls]));
+      for (const pid of poolIds) {
+        for (const u of safeParse<string[]>(byId.get(pid)) ?? []) pushUrl(u);
+      }
+    }
+  }
 
   return (
     <>
@@ -190,6 +247,12 @@ export default async function DraftDetailPage({ params }: PageProps) {
         targetChannels={channels}
         draftStatus={draft.status}
         previewPriceCents={previewPriceCents}
+        pricing={{
+          cogs_cents: draft.draft_cost_cents ?? 0,
+          markup: pricingModel.markup,
+          min_price_cents: pricingModel.min_price_cents,
+        }}
+        donorPhotos={donorPhotos}
         brand={draft.brand}
         initialContent={draft.generated_content.map((g) => {
           const cs = channelSkuByChannel[g.channel];
@@ -217,6 +280,14 @@ export default async function DraftDetailPage({ params }: PageProps) {
             validation_status: cs?.validation_status ?? "PENDING",
             validation_errors_json: cs?.validation_errors ?? null,
             validation_attempt_count: cs?.validation_attempt_count ?? 0,
+            // Full attribute set + ship specs for the preview.
+            attributes_json: cs?.attributes ?? null,
+            upc: cs?.upc ?? null,
+            country_of_origin: cs?.country_of_origin ?? null,
+            package_weight_oz: cs?.package_weight_oz ?? null,
+            package_length_in: cs?.package_length_in ?? null,
+            package_width_in: cs?.package_width_in ?? null,
+            package_height_in: cs?.package_height_in ?? null,
             // Phase 2.5
             listing_status: cs?.listing_status ?? "PENDING",
             submission_id: cs?.submission_id ?? null,
