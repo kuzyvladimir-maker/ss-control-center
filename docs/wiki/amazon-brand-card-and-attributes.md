@@ -75,9 +75,10 @@ both ("Superior packaging" → "Insulated foam cooler and gel packs").
 - 2026-07-01 — статья создана. Session work: confirmed Food product type;
   richer FOOD attribute fill + allergen enum fix; built the cold-chain
   brand-story card mechanism (brand-assets.ts + amazon-publish wiring, tests
-  5/5) and generated the clean card via gpt-image-2. Commits: allergen/attrs
-  `b637664`, brand-card mechanism `50aa0fd`. Brand-card URL to be flipped live
-  once the final asset is chosen.
+  5/5) and generated + SHIPPED the clean card via gpt-image-2 (best of 3
+  variants). Card LIVE at R2 `prod/brand/salutem-brand-card-v1.png` (public
+  HTTP 200). Commits: attrs `b637664`, mechanism `50aa0fd`, activation
+  `e88308a`, wiki `cab16df`.
 
 ## Связи
 
