@@ -14,7 +14,7 @@ import { uploadToR2, multipackImageKey } from "./r2";
 import { polishListingCopy } from "./polish";
 import { validateListingContent } from "./guidelines";
 import { ensureDonorImage, fetchAndStoreDetail } from "../../sourcing/enrich";
-import { pickBestFront, mainImageAcceptable, verifyMainImage } from "../../sourcing/vision";
+import { pickBestFront, pickBestFrontFromPool, mainImageAcceptable, verifyMainImage } from "../../sourcing/vision";
 import { logRemediation } from "./analytics";
 import { buildFoodAttributes } from "./attributes";
 
@@ -233,6 +233,22 @@ export async function buildAndSubmitOne(
         if (v.ok) mainUrl = candidateUrl;
         else imageNote = `new tile rejected by verify (${v.kind}) — left unchanged`;
       }
+    }
+    // RESCUE: strict path left no main, but the pool may still hold a usable front
+    // the per-image gate/verify over-rejected (esp. soft bread fronts). Show the
+    // WHOLE pool to Sonnet at once and let it pick the best package-front directly.
+    // Trust that comparative pick — we tile it without re-gating on the strict
+    // verify (which was the thing wrongly stranding these). Vladimir does final QC.
+    if (!mainUrl && pool.length) {
+      try {
+        const rescueUrl = await pickBestFrontFromPool(pool, cur.productName || cand.walmartTitle);
+        if (rescueUrl) {
+          const base = await fetchImageBuffer(highResImageUrl(rescueUrl));
+          const main = await composeTiledMainImage(base, cand.packCount);
+          mainUrl = await uploadToR2(main, multipackImageKey(sku, "main", `${stamp}r`));
+          imageNote = "rescue front (whole-pool Sonnet pick)";
+        }
+      } catch { /* rescue is best-effort */ }
     }
   }
   if (scope.gallery) {

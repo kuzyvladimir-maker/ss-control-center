@@ -242,6 +242,26 @@ export async function pickBestFront(urls: string[], opts?: { listingTitle?: stri
   return fronts[0] ?? null;
 }
 
+/** RESCUE pick (Vladimir's approach): when the per-image strict gate leaves a SKU
+ *  with no main, show the WHOLE pool to Sonnet in ONE call and let it choose the
+ *  single best product-front directly — comparative judgment beats per-image
+ *  pass/fail, and the prompt is practical (a standing bread loaf with its label
+ *  facing the camera IS a valid front). Returns the chosen url, or null if the
+ *  pool genuinely has no package front. */
+export async function pickBestFrontFromPool(urls: string[], listingTitle: string): Promise<string | null> {
+  const cands = urls.slice(0, 12); // one multi-image call (token budget)
+  if (!cands.length) return null;
+  const prompt = `Listing: "${listingTitle}". Above are ${cands.length} candidate photos, index 0..${cands.length - 1} in order. Pick the index of the SINGLE best photo to use as the MAIN product image — the clearest view of the retail PACKAGE with its brand label facing the camera.
+IMPORTANT: a bread loaf, bun bag, or other SOFT package standing with its printed FRONT label toward the camera IS a valid front — accept it. A rigid box/can/bottle shown normally is a valid front.
+Reject ONLY: prepared/served food (a bowl, plate, sandwich, or serving scene), a Nutrition-Facts panel, a marketing infographic that is mostly callout text, or the BACK/side with a visible barcode.
+Prefer a plain WHITE background and the flavor/variant that matches the listing. Return JSON only: {"index": N} for the best, or {"index": -1} if NONE of them show the product package front.`;
+  try {
+    const j = parseJson(await ask(cands, prompt, 40, STRONG_MODEL));
+    const i = Number(j?.index);
+    return Number.isInteger(i) && i >= 0 && i < cands.length ? cands[i] : null;
+  } catch { return null; }
+}
+
 /** Keep/replace gate: is the CURRENT main image already an acceptable multipack
  *  main — a grid of UPRIGHT product FRONTS in ~the right count? If yes we leave it
  *  alone (no churn); if no (lying/back/serving/nutrition/infographic) we replace. */
