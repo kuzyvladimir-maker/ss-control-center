@@ -31,8 +31,10 @@ const DEFAULT_BUCKET = "salutem-bundle-factory";
 const PLACEHOLDER = "placeholder";
 
 // Per Amazon's main-image guidelines: 1:1 square, white background,
-// product fills ≥85% of frame. The worker normalizes output to this size.
-const DEFAULT_SIZE = "1024x1024";
+// product fills ≥85% of frame. Amazon requires ≥2000×2000 for zoom, and
+// validator-image-dimensions HARD-FAILS anything smaller — so we normalize to
+// 2048×2048 (codex-worker.ts upscales the generated PNG via sharp to this size).
+const DEFAULT_SIZE = "2048x2048";
 
 export interface RewriteFeedback {
   /** Logos surfaced by Rule 6 on the prior attempt — used to build a

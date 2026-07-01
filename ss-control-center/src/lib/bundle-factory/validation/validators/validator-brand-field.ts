@@ -8,6 +8,7 @@
  */
 
 import { ALLOWED_BRAND_FIELD_VALUES } from "@/lib/bundle-factory/compliance/banned-words";
+import { isOwnBrandPassthrough } from "@/lib/bundle-factory/own-brand";
 import type { ValidatorFn } from "../types";
 
 const ALLOWED_LOWER = new Set(
@@ -31,6 +32,12 @@ export const validatorBrandField: ValidatorFn = async ({ master_bundle }) => {
       severity: "error",
       message: "MasterBundle.brand is empty.",
     };
+  }
+  // Own-brand passthrough (Uncrustables): the listing publishes UNDER the donor
+  // brand, so the donor brand IS a legitimate brand-field value — mirrors
+  // compliance Rule 2. The house-brand allowlist only applies to gift sets.
+  if (isOwnBrandPassthrough(brand)) {
+    return { validator_id: "validator-brand-field", passed: true };
   }
   if (!ALLOWED_LOWER.has(brand.toLowerCase())) {
     return {

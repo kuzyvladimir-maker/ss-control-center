@@ -15,7 +15,7 @@ import { ArrowRight, PackageSearch, Sparkles, Eye } from "lucide-react";
 
 // Bump this when Bundle Factory ships a visible change (so the owner sees the
 // version tick up alongside the auto-changing build hash).
-const BUNDLE_FACTORY_VERSION = "v2.4";
+const BUNDLE_FACTORY_VERSION = "v2.5";
 
 export const dynamic = "force-dynamic";
 
