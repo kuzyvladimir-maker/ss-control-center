@@ -34,7 +34,8 @@ const RULES = `${WALMART_CONTENT_RULES}
 Brand voice (Salutem Solutions — STRICT, in addition to the above):
 - FORBIDDEN: emojis; promo/subjective adjectives (ultimate, perfect, delightful, delicious, ideal, amazing, incredible, premium, exclusive, must-have, best, finest, exceptional, outstanding, magnificent, wonderful, fantastic, superior, top-quality, world-class, awesome); manual bullet glyphs (•, -, *); health/medical claims (cure, treat, prevent, boost, detox, heal, weight loss).
 - Do NOT mention pack count, quantity, "multipack", "N-pack", or "how many ship" — that is handled elsewhere.
-- Base everything on the provided donor facts; do not invent specs, certifications, or ingredients.`;
+- When source bullets/description are provided, base everything on them; do not invent specs, certifications, or ingredients.
+- When NO source is provided, write general FACTUAL copy from the product name alone (what the product is, its common form/size if it is part of the name, typical uses and storage). Still never invent specific certifications, exact nutrition numbers, or ingredient lists you cannot know. A short factual listing beats an empty one.`;
 
 /** Rewrite donor copy into professional listing bullets + description body. */
 export async function polishListingCopy(input: PolishInput): Promise<PolishedCopy | null> {
