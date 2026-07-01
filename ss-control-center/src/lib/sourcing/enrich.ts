@@ -108,13 +108,20 @@ async function storeOffers(db: Client, sku: string, upc: string | null | undefin
  *  if one already exists. Tries BlueCart (Walmart 1P) FIRST, then falls back to
  *  the other paid retailers (Target → Sam's → Costco via Unwrangle) so a product
  *  BlueCart doesn't index still gets a real photo (Vladimir Step 3, 2026-06-30). */
-export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: string | null; title?: string | null }): Promise<EnrichResult> {
-  // Already have a usable donor image from ANY source? Then we're done.
-  const have = await db.execute({
-    sql: `SELECT 1 FROM RetailPrice WHERE sku=? AND imageUrls IS NOT NULL AND imageUrls!='' AND imageUrls!='[]' LIMIT 1`,
-    args: [opts.sku],
-  });
-  if (have.rows.length) return { found: true, alreadyHad: true, creditsRemaining: null, offers: 0 };
+export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: string | null; title?: string | null; deep?: boolean }): Promise<EnrichResult> {
+  // Already have a usable donor image from ANY source? Then we're done — UNLESS
+  // deep mode (Vladimir 2026-07-01): our catalog may only hold a composite /
+  // infographic / serving shot with NO clean product-front. Deep re-searches
+  // EVERY retailer (Walmart + Target + Sam's + Costco) even when we already have
+  // images, accumulating all of them, because the same commodity product is
+  // usually photographed cleanly on at least one other retailer.
+  if (!opts.deep) {
+    const have = await db.execute({
+      sql: `SELECT 1 FROM RetailPrice WHERE sku=? AND imageUrls IS NOT NULL AND imageUrls!='' AND imageUrls!='[]' LIMIT 1`,
+      args: [opts.sku],
+    });
+    if (have.rows.length) return { found: true, alreadyHad: true, creditsRemaining: null, offers: 0 };
+  }
 
   const title = String(opts.title || "").trim();
   const query = title || String(opts.upc || "").trim();
@@ -135,6 +142,9 @@ export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: st
   };
 
   let creditsRemaining: number | null = null;
+  let totalInserted = 0;
+  let anyFound = false;
+  const via: string[] = [];
 
   // 1) BlueCart (Walmart 1P) — cheapest, first.
   try {
@@ -142,22 +152,27 @@ export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: st
     creditsRemaining = res.creditsRemaining;
     if (!res.trialExhausted) {
       const { inserted, found } = await storeOffers(db, opts.sku, opts.upc, gate(res.offers), "ondemand");
-      if (found) return { found: true, alreadyHad: false, creditsRemaining, offers: inserted };
+      totalInserted += inserted; if (found) { anyFound = true; via.push("walmart"); }
+      // Normal mode: first hit wins. Deep mode: keep going to gather EVERY
+      // retailer's photos (one of them may have the clean front we lack).
+      if (found && !opts.deep) return { found: true, alreadyHad: false, creditsRemaining, offers: inserted };
     }
   } catch { /* fall through to other retailers */ }
 
-  // 2) Fallback — other paid retailers (Target / Sam's / Costco) via Unwrangle.
-  //    Stops at the first that yields a usable photo.
+  // 2) Other paid retailers (Target / Sam's / Costco) via Unwrangle.
   for (const retailer of ["target", "samsclub", "costco"] as const) {
     try {
       const res = await unwrangleSearch(retailer, query);
       if (res.trialExhausted) continue;
       const { inserted, found } = await storeOffers(db, opts.sku, opts.upc, gate(res.offers), `ondemand-${retailer}`);
-      if (found) return { found: true, alreadyHad: false, creditsRemaining, offers: inserted, reason: `via ${retailer}` };
+      totalInserted += inserted; if (found) { anyFound = true; via.push(retailer); }
+      if (found && !opts.deep) return { found: true, alreadyHad: false, creditsRemaining, offers: inserted, reason: `via ${retailer}` };
     } catch { /* try next retailer */ }
   }
 
-  return { found: false, alreadyHad: false, creditsRemaining, offers: 0, reason: "no usable image on walmart/target/sams/costco" };
+  return anyFound
+    ? { found: true, alreadyHad: false, creditsRemaining, offers: totalInserted, reason: `${opts.deep ? "deep " : ""}via ${via.join("+")}` }
+    : { found: false, alreadyHad: false, creditsRemaining, offers: 0, reason: "no usable image on walmart/target/sams/costco" };
 }
 
 /** Live BlueCart credits (free /account endpoint). Used as a budget guard before

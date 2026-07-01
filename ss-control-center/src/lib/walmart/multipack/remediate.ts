@@ -250,6 +250,31 @@ export async function buildAndSubmitOne(
         }
       } catch { /* rescue is best-effort */ }
     }
+    // DEEP RE-ENRICH fallback (Vladimir 2026-07-01): our catalog genuinely has no
+    // clean front (only composite/nutrition/serving). Commodity products ARE
+    // photographed cleanly on some OTHER retailer, so force a re-search across
+    // EVERY retailer (Walmart/Target/Sam's/Costco), add those photos to the pool,
+    // and re-pick (strict → rescue) on the enriched pool.
+    if (!mainUrl && opts.enrich !== false) {
+      try {
+        const before = pool.length;
+        await ensureDonorImage(db, { sku, upc, title: cur.productName, deep: true });
+        const p2 = new Set<string>(pool);
+        const rps2 = await db.execute({ sql: `SELECT imageUrls FROM RetailPrice WHERE sku=? AND imageUrls IS NOT NULL`, args: [sku] });
+        for (const row of rps2.rows as any[]) { try { const arr = JSON.parse((row as any).imageUrls || "[]"); for (const u of arr) if (typeof u === "string" && u.startsWith("http")) p2.add(u.split("?")[0]); } catch {} }
+        const pool2 = Array.from(p2);
+        if (pool2.length > before) {
+          const b2 = await pickBestFront(pool2, { listingTitle: cur.productName || cand.walmartTitle });
+          const pickUrl = b2?.url || (await pickBestFrontFromPool(pool2, cur.productName || cand.walmartTitle));
+          if (pickUrl) {
+            const base = await fetchImageBuffer(highResImageUrl(pickUrl));
+            const main = await composeTiledMainImage(base, cand.packCount);
+            mainUrl = await uploadToR2(main, multipackImageKey(sku, "main", `${stamp}e`));
+            imageNote = `deep re-enrich (+${pool2.length - before} photos) → new front`;
+          }
+        }
+      } catch { /* deep enrich is best-effort */ }
+    }
   }
   if (scope.gallery) {
     // Gallery = the product's OTHER photos (single-unit shot, nutrition panel,
