@@ -37,6 +37,53 @@ async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: s
 }
 function parseJson(t: string): any { try { return JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1)); } catch { return null; } }
 
+// ── Classification CACHE ──────────────────────────────────────────────────
+// A product photo's classification (front/back/nutrition/white-bg/…) never
+// changes, but every full run used to re-classify all 16 candidates per SKU on
+// the STRONG model — the main API cost. We cache each result by (url, model) in
+// Turso so re-runs are ~free. Transparent: no DB handle threaded through callers.
+import { createClient, type Client } from "@libsql/client";
+let _cacheDb: Client | null | undefined;
+let _cacheReady: Promise<void> | null = null;
+function cacheDb(): Client | null {
+  if (_cacheDb !== undefined) return _cacheDb;
+  const url = (process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || "").trim().replace(/^['"]|['"]$/g, "");
+  if (!url) { _cacheDb = null; return null; }
+  const authToken = (process.env.TURSO_AUTH_TOKEN || "").trim().replace(/^['"]|['"]$/g, "") || undefined;
+  try { _cacheDb = createClient({ url, authToken }); } catch { _cacheDb = null; }
+  return _cacheDb;
+}
+async function cacheEnsure(d: Client): Promise<void> {
+  if (!_cacheReady) _cacheReady = d.execute(`CREATE TABLE IF NOT EXISTS ImageClassification (url TEXT NOT NULL, model TEXT NOT NULL, type TEXT, orientation TEXT, barcode INTEGER, whiteBg INTEGER, goodFront INTEGER, conf REAL, createdAt TEXT, PRIMARY KEY (url, model))`).then(() => {});
+  await _cacheReady;
+}
+// In-memory layer over the DB cache: within one run (e.g. the 1857 sweep) each
+// URL is read from Turso at most once, then served from RAM — avoids thousands of
+// serial network round-trips.
+const _memClass = new Map<string, PhotoClass>();
+async function classFromCache(url: string, model: string): Promise<PhotoClass | null> {
+  const key = `${model}|${url}`;
+  const mem = _memClass.get(key); if (mem) return mem;
+  const d = cacheDb(); if (!d) return null;
+  try {
+    await cacheEnsure(d);
+    const r = await d.execute({ sql: `SELECT type,orientation,barcode,whiteBg,goodFront,conf FROM ImageClassification WHERE url=? AND model=?`, args: [url, model] });
+    const row: any = r.rows[0]; if (!row) return null;
+    const c: PhotoClass = { type: row.type ?? "other", orientation: row.orientation ?? "na", barcode: !!row.barcode, whiteBg: !!row.whiteBg, goodFront: !!row.goodFront, conf: Number(row.conf) || 0 };
+    _memClass.set(key, c);
+    return c;
+  } catch { return null; }
+}
+async function classToCache(url: string, model: string, c: PhotoClass): Promise<void> {
+  if (c.type === "error") return; // never cache a failed call
+  _memClass.set(`${model}|${url}`, c);
+  const d = cacheDb(); if (!d) return;
+  try {
+    await cacheEnsure(d);
+    await d.execute({ sql: `INSERT INTO ImageClassification (url,model,type,orientation,barcode,whiteBg,goodFront,conf,createdAt) VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT(url,model) DO UPDATE SET type=excluded.type,orientation=excluded.orientation,barcode=excluded.barcode,whiteBg=excluded.whiteBg,goodFront=excluded.goodFront,conf=excluded.conf`, args: [url, model, c.type, c.orientation, c.barcode ? 1 : 0, c.whiteBg ? 1 : 0, c.goodFront ? 1 : 0, c.conf, new Date().toISOString()] });
+  } catch { /* cache is best-effort */ }
+}
+
 /**
  * From candidate product photos, pick the ONE best as a marketplace MAIN image:
  * the product shown FRONT-facing (front/label visible). Prefer white background,
@@ -122,14 +169,18 @@ Reject as NOT goodFront: back/side, nutrition panels, infographics with callout 
 
 export async function classifyProductPhoto(url: string): Promise<PhotoClass> {
   const fallback: PhotoClass = { type: "error", orientation: "na", barcode: false, whiteBg: false, goodFront: false, conf: 0 };
+  const cached = await classFromCache(url, STRONG_MODEL);
+  if (cached) return cached; // ~free — the big re-run cost saver
   try {
     const j = parseJson(await ask([url], CLASSIFY_PROMPT, 120, STRONG_MODEL));
     if (!j) return fallback;
-    return {
+    const out: PhotoClass = {
       type: j.type ?? "other", orientation: j.orientation ?? "na",
       barcode: j.barcode === true, whiteBg: j.whiteBg === true, goodFront: j.goodFront === true,
       conf: typeof j.conf === "number" ? j.conf : 0,
     };
+    await classToCache(url, STRONG_MODEL, out);
+    return out;
   } catch { return fallback; }
 }
 
@@ -151,7 +202,15 @@ async function filterMatchingVariant(urls: string[], listingTitle: string): Prom
  *  null if NO good product-front exists in the pool (→ enrich / manual / skip).
  *  Pass listingTitle so a mixed-flavor pool doesn't yield the wrong variant, and
  *  prefer a WHITE background (Walmart main-image rule). */
-export async function pickBestFront(urls: string[], opts?: { listingTitle?: string }): Promise<{ url: string; cls: PhotoClass } | null> {
+export async function pickBestFront(urls: string[], opts?: { listingTitle?: string; preferUrl?: string }): Promise<{ url: string; cls: PhotoClass } | null> {
+  // DONOR-FIRST shortcut: the donor's OWN primary image is almost always a clean
+  // white-bg front of the correct product+flavor (Walmart requires a white main).
+  // Verify just IT (1 call) — if it's a good white-bg front, use it and skip
+  // classifying the whole pool. Turns the common case from 16 calls into 1.
+  if (opts?.preferUrl) {
+    const pc = await classifyProductPhoto(opts.preferUrl);
+    if (pc.goodFront && pc.conf >= 0.6 && pc.whiteBg) return { url: opts.preferUrl, cls: pc };
+  }
   const cands = urls.slice(0, 16);
   if (!cands.length) return null;
   const cls = await Promise.all(cands.map((u) => classifyProductPhoto(u)));
