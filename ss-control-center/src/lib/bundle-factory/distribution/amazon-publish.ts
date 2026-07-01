@@ -27,6 +27,7 @@
 import { spApiPut, MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { appendColdChainBrandCard } from "../attributes/brand-assets";
+import { buildSearchTerms } from "../attributes/search-terms";
 import type { ChannelSKU } from "@/generated/prisma/client";
 
 export type ProductTypeDefault = "PRODUCT" | string;
@@ -194,6 +195,20 @@ export function buildAmazonAttributes(
   // asset url is set (brand-assets.ts). This also activates the secondary-image
   // (other_product_image_locator_N) path, which was previously never populated.
   appendColdChainBrandCard(attrs, MARKETPLACE_ID);
+
+  // generic_keyword — Amazon backend search terms. Prefer a manual override on
+  // the SKU, else auto-derive from the title + category synonyms. Previously
+  // NEVER populated (fill-map declared it but nothing filled it) — real
+  // search-visibility gap. Guarded so a merged override is not clobbered.
+  if (!attrs.generic_keyword) {
+    const manual = (sku.search_terms ?? "").trim();
+    const keywords = manual || buildSearchTerms(sku.title, listingBrand);
+    if (keywords) {
+      attrs.generic_keyword = [
+        { value: keywords, language_tag: "en_US", marketplace_id: MARKETPLACE_ID },
+      ];
+    }
+  }
 
   return attrs;
 }
