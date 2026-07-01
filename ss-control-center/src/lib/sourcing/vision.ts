@@ -214,9 +214,17 @@ export async function pickBestFront(urls: string[], opts?: { listingTitle?: stri
   const cands = urls.slice(0, 16);
   if (!cands.length) return null;
   const cls = await Promise.all(cands.map((u) => classifyProductPhoto(u)));
-  let fronts = cls
-    .map((c, i) => ({ url: cands[i], cls: c }))
-    .filter((x) => x.cls.goodFront && x.cls.conf >= 0.6);
+  const all = cls.map((c, i) => ({ url: cands[i], cls: c }));
+  let fronts = all.filter((x) => x.cls.goodFront && x.cls.conf >= 0.6);
+  // LENIENT FALLBACK (Vladimir 2026-07-01): don't return "no photo" when a USABLE
+  // front exists. If nothing passed the strict goodFront gate, take the best real
+  // front the classifier saw — type=front, not lying, no barcode — even if it
+  // wasn't flagged "goodFront" (imperfect background / lower confidence). An
+  // imperfect real front beats an empty listing. Only pure lifestyle / nutrition /
+  // infographic / back stay excluded.
+  if (!fronts.length) {
+    fronts = all.filter((x) => x.cls.type === "front" && x.cls.orientation !== "lying" && !x.cls.barcode);
+  }
   if (!fronts.length) return null;
 
   // Flavor/variant match — drop wrong-flavor fronts from a mixed pool.
