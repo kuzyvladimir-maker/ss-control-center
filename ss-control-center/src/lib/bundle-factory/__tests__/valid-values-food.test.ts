@@ -8,7 +8,10 @@ import {
   temperatureRatingForCategory,
   TEMPERATURE_RATING,
 } from "@/lib/bundle-factory/attributes/valid-values-food";
-import { buildRichAmazonAttributes } from "@/lib/bundle-factory/attributes/build-amazon-attributes";
+import {
+  buildRichAmazonAttributes,
+  extractAllergens,
+} from "@/lib/bundle-factory/attributes/build-amazon-attributes";
 
 test("temperatureRatingForCategory — frozen → 'Frozen: 0 degree'", () => {
   assert.equal(temperatureRatingForCategory("FROZEN_SINGLE"), TEMPERATURE_RATING.FROZEN);
@@ -36,4 +39,32 @@ test("buildRichAmazonAttributes sets temperature_rating from category (exact enu
   assert.ok(Array.isArray(a.ingredients));
   assert.equal(a.number_of_items[0].value, 6);
   assert.ok(Array.isArray(a.allergen_information)); // wheat → Wheat
+  // extra recommended food attributes now filled (exact FOOD valid values)
+  assert.equal(a.condition_type[0].value, "new_new");
+  assert.equal(a.product_expiration_type[0].value, "Expiration Date Required");
+  assert.equal(a.is_heat_sensitive[0].value, "Yes"); // frozen → heat sensitive
+  assert.equal(a.contains_liquid_contents[0].value, "No"); // solid by default
+});
+
+test("is_heat_sensitive is 'No' for dry, 'Yes' when containsLiquid drink", () => {
+  const dry = buildRichAmazonAttributes({ category: "DRY_SNACKS" }) as Record<
+    string,
+    Array<{ value: unknown }>
+  >;
+  assert.equal(dry.is_heat_sensitive[0].value, "No");
+  const drink = buildRichAmazonAttributes({
+    category: "DRY_SNACKS",
+    containsLiquid: true,
+  }) as Record<string, Array<{ value: unknown }>>;
+  assert.equal(drink.contains_liquid_contents[0].value, "Yes");
+});
+
+test("allergen canonicals match Amazon FOOD valid values (not FDA labels)", () => {
+  // shrimp → 'Crustacean' (not 'Shellfish')
+  assert.deepEqual(extractAllergens("Shrimp, salt."), ["Crustacean"]);
+  // soy → 'Soy' (not 'Soybeans'); sesame → 'Sesame Seeds' (not 'Sesame')
+  assert.deepEqual(extractAllergens("Soy lecithin, sesame oil."), [
+    "Soy",
+    "Sesame Seeds",
+  ]);
 });

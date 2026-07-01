@@ -89,3 +89,41 @@ the product AS the frozen cooler kit** (cooler + gel packs are dispatched with
 the order), so they are the product, not props. The Amazon prohibition is on
 ADDED OVERLAY badges / inset images / promotional text — which we do NOT use
 ("никакие бейджики мы не используем"). The frozen-hero stays the MAIN image.
+
+## grocery vs food — the two product types use DIFFERENT valid values
+
+Source: `FOOD_GROCERY7.csv` (2026-07-01) — a Valid Values tab carrying BOTH the
+`grocery` and `food` product-type columns side by side. **Core lesson: a valid
+value from one product type is NOT accepted by the other** (different casing,
+different tokens, sometimes different field names). Pick the product type first,
+then use THAT column's values.
+
+Differences that matter for our (frozen) food bundles:
+
+| Field | FOOD (what we've wired) | GROCERY | Impact |
+|---|---|---|---|
+| `temperature_rating` | `Frozen: 0 degree` (Title, singular) | `frozen: 0 degrees` (lower, plural) | 🔴 wrong string = PUT reject |
+| `item_type_keyword` (frozen) | `frozen-kids-meals-and-entrees`, `frozen-french-toast`, `frozen-waffles` | `frozen-breakfast-foods`, `frozen-meals-and-entrees` | 🔴 different vocabularies |
+| dietary field | **Diet Type**: Vegan/Vegetarian/Halal/Gluten Free/Kosher/Paleo | **Specialty**: gmo-free/grass-fed/halal/kosher/organic/vegan/… (different NAME + lowercase tokens) | 🟡 different field + values |
+| gifting field | **Occasion**: Birthday/Christmas/Anniversary/… | **Subject Matter**: Winter/Autumn/Summer/Fathers Day/… | 🟡 different field |
+| `allergen_information` | ~160 Title-Case values (Milk, Wheat, Tree Nuts, "… Free", "… may contain") | ~40 lowercase snake_case tokens (milk, wheat, tree_nuts, egg_free…) | 🟡 different case/tokens |
+| `variation_theme` | Colour; SizeName; Size & Colour | Flavor; numberofitems; Size; Color; Weight; Flavor-Size; StyleName;… | 🟡 build variations |
+| `relationship_type` | Variation; package_contains | Accessory; Variation | 🟡 |
+| nutrition units | `pill(s)`, `teaspoon(s)`, `Bars`, `Portion(s)` | `pills`, `teaspoons`, `food_bars`, `portions` | 🟢 not forced |
+| Melting Temp Unit | Kelvin; F; C | Fahrenheit; Celsius | 🟢 n/a to food |
+| `product_id_type` | EAN/GCID/GTIN/UPC/ASIN/ISBN | adds `pzn` (German pharma) | 🟢 |
+| GHS Class / battery / CPSIA | Title Case | lowercase / snake_case tokens | 🟢 n/a |
+| Country of Origin | "The Democratic Republic of the Congo", "Russian Federation", "Myanmar" | "Democratic Republic of the Congo", "Russia", "Burma (Myanmar)" | 🟢 naming variants |
+| Unit Count Type / order-only | same 7 values, order differs | same 7 values, order differs | 🟢 cosmetic |
+
+Only on GROCERY: `Product Tax Code` = `A_GEN_NOTAX`. Only on FOOD: `Contains
+Liquid Contents?`, `Is the liquid product double sealed?`. `Product Expiration
+Type` and `Dangerous Goods Regulations` are shared (no per-category column).
+
+**Decision this drives:** publish Uncrustables under product type **Food** — that
+is what Amazon's Seller Central UI itself assigned, AND the values already wired
+in `valid-values-food.ts` (`Frozen: 0 degree`, `frozen-kids-meals-and-entrees`,
+Diet Type, Occasion, Title-Case allergens) are the FOOD column. Choosing GROCERY
+would require re-wiring temperature to `frozen: 0 degrees`, the keyword to
+`frozen-breakfast-foods`, allergens to lowercase, Diet Type→Specialty, and
+Occasion→Subject Matter. (Owner decision still open; recommend Food.)
