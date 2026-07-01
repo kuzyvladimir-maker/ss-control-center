@@ -197,7 +197,19 @@ export function buildAmazonAttributes(
   const titleStr = sku.title ?? "";
   const perUnit = parseInt(titleStr.match(/(\d+)\s*ct/i)?.[1] ?? "", 10) || null;
   const boxes = parseInt(titleStr.match(/pack of\s*(\d+)/i)?.[1] ?? "", 10) || null;
-  const totalUnits = perUnit && boxes ? perUnit * boxes : boxes ?? perUnit ?? null;
+  // Fallback to the merged rich-attr number_of_items (the known pack count) when
+  // the title carries no "Nct"/"Pack of N" pattern — otherwise a flat multipack
+  // ("… 30 Count …") would ship with NO unit_count, weakening the listing.
+  const richItemCount = (() => {
+    const v = attrs.number_of_items;
+    if (Array.isArray(v) && v[0] && typeof v[0] === "object") {
+      const n = Number((v[0] as { value?: unknown }).value);
+      return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
+    }
+    return null;
+  })();
+  const totalUnits =
+    (perUnit && boxes ? perUnit * boxes : boxes ?? perUnit) ?? richItemCount ?? null;
   const priceUsd = sku.price_cents != null ? sku.price_cents / 100 : null;
 
   if (priceUsd != null) {

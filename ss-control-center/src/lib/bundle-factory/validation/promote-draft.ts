@@ -29,6 +29,11 @@ import {
   type PricingModel,
 } from "../pricing-config";
 import { buildRichAmazonAttributes } from "../attributes/build-amazon-attributes";
+import {
+  mirrorDonorGallery,
+  galleryLocatorAttrs,
+} from "../attributes/gallery-images";
+import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 
 export interface PromoteOutcome {
   master_bundle_id: string | null;
@@ -235,7 +240,13 @@ export async function promoteDraftToChannelSkus(
 
   const draft = await prisma.bundleDraft.findUniqueOrThrow({
     where: { id: draftId },
-    select: { brand: true, draft_components: true, pack_count: true, category: true },
+    select: {
+      brand: true,
+      draft_components: true,
+      pack_count: true,
+      category: true,
+      draft_secondary_images: true,
+    },
   });
 
   // Phase 2.1 — donor-derived rich attributes (ingredients, allergens, item
@@ -243,6 +254,7 @@ export async function promoteDraftToChannelSkus(
   // primary component's research_pool_id is the DonorProduct id on studio-built
   // drafts; a miss falls back to empty attrs (base attrs still publish).
   let richAttributesJson = JSON.stringify({});
+  let nutritionImageUrl: string | null = null;
   try {
     const comps = JSON.parse(draft.draft_components) as Array<{
       research_pool_id?: string;
@@ -253,9 +265,24 @@ export async function promoteDraftToChannelSkus(
     const donor = primaryDonorId
       ? await prisma.donorProduct.findUnique({
           where: { id: primaryDonorId },
-          select: { ingredients: true },
+          select: { ingredients: true, nutritionFacts: true },
         })
       : null;
+    // Pull the nutrition-facts label image (a ready-made infographic) if present.
+    try {
+      const nf = donor?.nutritionFacts ? JSON.parse(donor.nutritionFacts) : null;
+      if (Array.isArray(nf)) {
+        const hit = nf.find(
+          (e) =>
+            e && typeof e === "object" &&
+            /image/i.test(String((e as { name?: string }).name ?? "")) &&
+            /^https?:\/\//.test(String((e as { value?: string }).value ?? "")),
+        );
+        if (hit) nutritionImageUrl = String((hit as { value?: string }).value);
+      }
+    } catch {
+      /* nutritionFacts not JSON — skip */
+    }
     richAttributesJson = JSON.stringify(
       buildRichAmazonAttributes({
         ingredients: donor?.ingredients ?? null,
@@ -265,6 +292,40 @@ export async function promoteDraftToChannelSkus(
     );
   } catch {
     /* malformed draft_components / donor miss — empty attrs, base still valid */
+  }
+
+  // Secondary GALLERY images (owner: every cold-chain listing needs 5+ gallery
+  // infographic/lifestyle photos). Mirror the donor's harvested secondary photos
+  // (+ the nutrition label) to R2 and attach them as other_product_image_locator_N
+  // in the rich attributes. Best-effort — a mirror failure just leaves the
+  // listing with its main image + brand card. Computed once, shared by all SKUs.
+  try {
+    const rich = JSON.parse(richAttributesJson) as Record<string, unknown>;
+    let secondary: string[] = [];
+    try {
+      const arr = draft.draft_secondary_images
+        ? JSON.parse(draft.draft_secondary_images)
+        : [];
+      if (Array.isArray(arr)) {
+        secondary = arr.filter(
+          (u): u is string => typeof u === "string" && u.trim().length > 0,
+        );
+      }
+    } catch {
+      /* not JSON — no donor gallery */
+    }
+    const galleryUrls = [nutritionImageUrl, ...secondary].filter(
+      (u): u is string => typeof u === "string" && u.length > 0,
+    );
+    if (galleryUrls.length > 0) {
+      const hosted = await mirrorDonorGallery(`draft-${draftId}-gallery`, galleryUrls);
+      if (hosted.length > 0) {
+        Object.assign(rich, galleryLocatorAttrs(hosted, MARKETPLACE_ID));
+        richAttributesJson = JSON.stringify(rich);
+      }
+    }
+  } catch {
+    /* gallery best-effort — never block promotion */
   }
 
   // Browse node depends on the bundle's brand mix, not the channel.

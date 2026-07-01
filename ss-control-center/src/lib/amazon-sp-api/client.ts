@@ -67,6 +67,18 @@ export async function spApiPut(
   return spApiRequest("PUT", path, { ...options, body });
 }
 
+// DELETE for the Listings Items 2021-08-01 endpoint. Used by the UPC burn loop
+// to remove a listing contribution that collided with an existing ASIN before
+// re-creating it on a fresh barcode (a plain PUT with a new UPC does NOT clear
+// an already-registered collision — Amazon requires delete + recreate).
+export async function spApiDelete(
+  path: string,
+  options: SpApiOptions = {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> {
+  return spApiRequest("DELETE", path, options);
+}
+
 async function spApiRequest(
   method: string,
   path: string,
