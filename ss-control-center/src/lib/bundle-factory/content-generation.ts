@@ -32,6 +32,7 @@ import {
   PROMOTIONAL_BANNED,
   HEALTH_CLAIM_BANNED,
 } from "./compliance/banned-words";
+import { isOwnBrandPassthrough } from "./own-brand";
 import type { Variant, VariantComponent } from "./variation-matrix";
 
 const MODEL = "claude-sonnet-4-5";
@@ -139,15 +140,53 @@ const EMPTY_OUTPUT: Omit<ContentGenerationOutput, "error"> = {
 const BANNED_PROMO_LIST = PROMOTIONAL_BANNED.join(", ");
 const BANNED_HEALTH_LIST = HEALTH_CLAIM_BANNED.join(", ");
 
-function buildStyleBlock(template: KbChannelTemplate): SystemBlockWithCache {
+function buildStyleBlock(
+  template: KbChannelTemplate,
+  ownBrand: boolean,
+  brand: string,
+): SystemBlockWithCache {
   const limits = CHANNEL_LIMITS[template];
+
+  // Rule 7 differs by mode:
+  //  - Gift-set (default): foreign brands are forbidden in the title (the
+  //    listing is Salutem's; the components are inventory, not endorsement).
+  //  - Own-brand passthrough (Uncrustables): the listing IS published under the
+  //    donor's own brand, so THAT brand belongs in the title. Any OTHER foreign
+  //    brand is still forbidden.
+  const rule7 = ownBrand
+    ? `7. BRAND IN TITLE: this listing is published UNDER THE BRAND "${brand}".
+   Use "${brand}" in the title — it is the genuine product's own brand, not a
+   foreign mark. Do NOT add any OTHER brand name to the title. Do NOT add
+   "Salutem", "Salutem Vita", "Starfit", "gift set", "gift basket", "curated",
+   or "assembled" anywhere — this is a standard product listing, not a gift set.`
+    : `7. NO FOREIGN BRAND IN TITLE under Salutem Vita / Starfit. You MAY
+   mention foreign brand names FACTUALLY in bullets/description ("Includes
+   8 Oscar Mayer Bun-Length Franks") — they are inventory, not endorsement.
+   Title positions belong to Salutem only.`;
+
+  // Disclaimer note only applies to gift-set listings. Own-brand listings get
+  // NO curator/assembler disclaimer (Rules 3+4 skip them).
+  const disclaimerNote = ownBrand
+    ? `This is a standard resale listing of a genuine branded product. Do NOT
+write any curator / assembler / "gift basket" disclaimer — there is none.`
+    : `The compliance gate appends a curator disclaimer bullet + description
+paragraph AFTER your output. DO NOT include the disclaimer yourself —
+duplicates trip Amazon's classifier. Leave at least one bullet slot
+unused (cap of ${limits.bullets_max} for that reason).`;
+
+  const intro = ownBrand
+    ? `You generate compliant marketplace listing content for a genuine branded
+product sold under its OWN brand ("${brand}"). This is NOT a Salutem gift set —
+do not frame it as one. This block is cached and applies to every request.`
+    : `You generate compliant marketplace listing content for Salutem Solutions
+LLC (brands: Salutem Vita, Starfit). This block is cached — it applies
+to every generation request and never changes mid-session.`;
+
   return {
     type: "text",
     text: `=== SALUTEM BRAND VOICE — STRICT (Vladimir 2026-05-19) ===
 
-You generate compliant marketplace listing content for Salutem Solutions
-LLC (brands: Salutem Vita, Starfit). This block is cached — it applies
-to every generation request and never changes mid-session.
+${intro}
 
 HARD RULES (output MUST satisfy every one):
 
@@ -164,10 +203,7 @@ HARD RULES (output MUST satisfy every one):
    bundles are FOOD, never supplements.
 6. NO FIRST-PERSON CTAs. Never write "we recommend", "order now", "buy
    today", "experience the ease", "discover".
-7. NO FOREIGN BRAND IN TITLE under Salutem Vita / Starfit. You MAY
-   mention foreign brand names FACTUALLY in bullets/description ("Includes
-   8 Oscar Mayer Bun-Length Franks") — they are inventory, not endorsement.
-   Title positions belong to Salutem only.
+${rule7}
 8. NO URLs, social handles, phone numbers.
 
 CHANNEL-SPECIFIC LIMITS (${template}):
@@ -175,10 +211,7 @@ CHANNEL-SPECIFIC LIMITS (${template}):
   - bullets:     ${limits.bullets_min}–${limits.bullets_max} items, each ≤ ${limits.bullet_max} chars
   - description: ≤ ${limits.description_max} characters total
 
-The compliance gate appends a curator disclaimer bullet + description
-paragraph AFTER your output. DO NOT include the disclaimer yourself —
-duplicates trip Amazon's classifier. Leave at least one bullet slot
-unused (cap of ${limits.bullets_max} for that reason).
+${disclaimerNote}
 
 OUTPUT FORMAT — return ONLY valid JSON, no markdown fences, no prose:
 
@@ -202,18 +235,28 @@ function formatComposition(components: VariantComponent[]): string {
 
 function buildUserMessage(input: ContentGenerationInput): string {
   const variant = input.selected_variant;
+  const ownBrand = isOwnBrandPassthrough(input.brand);
   const lines: string[] = [];
 
-  lines.push(`Generate ${input.template === "amazon" ? "Amazon" : "Walmart"} listing content for the following gift basket.`);
-  lines.push("");
-  lines.push(`Draft name (concept reference, do NOT use verbatim as title): ${input.draft_name}`);
-  lines.push(`House brand (the Salutem brand that owns the listing): ${input.brand}`);
+  if (ownBrand) {
+    lines.push(`Generate ${input.template === "amazon" ? "Amazon" : "Walmart"} listing content for the following genuine branded product (sold under its own brand, NOT a gift set).`);
+    lines.push("");
+    lines.push(`Draft name (concept reference, do NOT use verbatim as title): ${input.draft_name}`);
+    lines.push(`Brand (publish the listing under this brand, and use it in the title): ${input.brand}`);
+  } else {
+    lines.push(`Generate ${input.template === "amazon" ? "Amazon" : "Walmart"} listing content for the following gift basket.`);
+    lines.push("");
+    lines.push(`Draft name (concept reference, do NOT use verbatim as title): ${input.draft_name}`);
+    lines.push(`House brand (the Salutem brand that owns the listing): ${input.brand}`);
+  }
   lines.push(`Category: ${input.category.replace(/_/g, " ").toLowerCase()}`);
   lines.push(`Composition type: ${input.composition_type.replace(/_/g, " ").toLowerCase()}`);
   lines.push(`Pack count: ${input.pack_count} total units`);
   lines.push(`Suggested retail price: $${(variant.suggested_price_cents / 100).toFixed(2)}`);
   lines.push("");
-  lines.push(`Bundle contents (inventory the listing must describe):`);
+  lines.push(ownBrand
+    ? `Product contents (what is included — describe factually):`
+    : `Bundle contents (inventory the listing must describe):`);
   lines.push(formatComposition(variant.composition));
   lines.push("");
   lines.push(`Selected variant rationale: ${variant.notes}`);
@@ -312,7 +355,8 @@ export async function generateContentWithClient(
   input: ContentGenerationInput,
 ): Promise<ContentGenerationOutput> {
   const kb = await loadKnowledgeBase(input.template);
-  const styleBlock = buildStyleBlock(input.template);
+  const ownBrand = isOwnBrandPassthrough(input.brand);
+  const styleBlock = buildStyleBlock(input.template, ownBrand, input.brand);
 
   // KB blocks come FIRST (largest, most stable, cache-friendly), style
   // block comes LAST so it's still in the cached prefix but invalidates

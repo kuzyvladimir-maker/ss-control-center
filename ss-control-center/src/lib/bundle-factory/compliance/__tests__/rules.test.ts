@@ -306,3 +306,80 @@ test("rule-8 — health claim 'boost immune' fails", () => {
       r.reason === "promotional_language",
   );
 });
+
+// ── Own-brand passthrough (Uncrustables carve-out) ──────────────────────
+//
+// When `own_brand` is true the listing publishes UNDER the donor's own brand
+// (Smucker's), not Salutem. Rules 1/2/3/4 branch: the donor brand is allowed
+// in the title + as the brand field, and NO curator disclaimer is required.
+
+function ownBrandInput(): ComplianceInput {
+  return {
+    title: "Smucker's Uncrustables Peanut Butter and Grape Jelly Sandwich, 10 Count",
+    brand: "Smucker's",
+    bullets: [
+      "Includes 10 frozen peanut butter and grape jelly sandwiches.",
+      "Thaw 30 to 60 minutes before serving.",
+    ],
+    description:
+      "Smucker's Uncrustables frozen sandwiches. Keep frozen until ready to eat.",
+    browse_node: "12011207011",
+    main_image_url: null,
+    bundle_components: [
+      { brand: "Smucker's", product_name: "Uncrustables PB&J" },
+    ],
+    skip_image_check: true,
+    own_brand: true,
+  };
+}
+
+test("rule-1 own-brand — own donor brand in title passes", () => {
+  const r = ruleTitleForeignBrands(ownBrandInput());
+  assert.equal(r.passed, true);
+});
+
+test("rule-1 own-brand — a DIFFERENT foreign brand in title still fails", () => {
+  const input = ownBrandInput();
+  input.title = "Smucker's Uncrustables with Kraft Cheese, 10 Count";
+  const r = ruleTitleForeignBrands(input);
+  assert.equal(r.passed, false);
+  assert.equal(r.reason, "title_foreign_brand");
+  const brands = (r.details as { foreign_brands_in_title: string[] })
+    .foreign_brands_in_title;
+  assert.ok(brands.includes("Kraft"));
+  // The listing's own brand is NOT reported as a violation.
+  assert.ok(!brands.some((b) => /smucker|uncrustable/i.test(b)));
+});
+
+test("rule-2 own-brand — donor brand is an allowed brand field", () => {
+  const r = ruleBrandField(ownBrandInput());
+  assert.equal(r.passed, true);
+});
+
+test("rule-2 own-brand — empty brand still fails even in own-brand mode", () => {
+  const input = ownBrandInput();
+  input.brand = "";
+  const r = ruleBrandField(input);
+  assert.equal(r.passed, false);
+  assert.equal(r.reason, "brand_field_empty");
+});
+
+test("rule-3 own-brand — no disclaimer bullet required (passes without it)", () => {
+  const input = ownBrandInput();
+  const r = ruleDisclaimerBullets(input);
+  assert.equal(r.passed, true);
+});
+
+test("rule-3 own-brand — autoFix does NOT inject a gift-set disclaimer", () => {
+  const input = ownBrandInput();
+  const before = input.bullets.length;
+  const r = ruleDisclaimerBullets(input, { autoFix: true });
+  assert.equal(r.passed, true);
+  assert.notEqual(r.auto_fix_applied, true);
+  assert.equal(input.bullets.length, before);
+});
+
+test("rule-4 own-brand — no disclaimer description required (passes without it)", () => {
+  const r = ruleDisclaimerDescription(ownBrandInput());
+  assert.equal(r.passed, true);
+});

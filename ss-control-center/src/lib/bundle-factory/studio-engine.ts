@@ -17,6 +17,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { runContentGeneration } from "./content-pipeline";
+import { resolveListingBrand, isOwnBrandPassthrough } from "./own-brand";
 import type { Variant, VariantComponent } from "./variation-matrix";
 
 export interface BatchProgress {
@@ -200,7 +201,15 @@ async function buildOneListing(args: {
     notes: `Multipack of ${donorName(primary)}`,
   };
 
-  const draftName = `${houseBrand} ${donorName(primary)} Gift Set`.slice(0, 120);
+  // Own-brand passthrough (Uncrustables carve-out): list the genuine product
+  // UNDER THE DONOR's OWN brand, NOT as a Salutem gift set. The listing brand
+  // drives the whole downstream branch (content-gen + compliance derive the
+  // mode from it). Everything else stays the Salutem gift-set model.
+  const listingBrand = resolveListingBrand(primary.brand, houseBrand);
+  const ownBrand = isOwnBrandPassthrough(listingBrand);
+  const draftName = ownBrand
+    ? donorName(primary).slice(0, 120)
+    : `${houseBrand} ${donorName(primary)} Gift Set`.slice(0, 120);
 
   // ── Bridge to the canonical pipeline ───────────────────────────────────────
   // Earlier this engine baked content straight onto the BundleDraft and
@@ -216,7 +225,7 @@ async function buildOneListing(args: {
     data: {
       generation_job_id: jobId,
       draft_name: draftName,
-      brand: houseBrand,
+      brand: listingBrand,
       category,
       composition_type: "SINGLE_FLAVOR",
       pack_count: packCount,

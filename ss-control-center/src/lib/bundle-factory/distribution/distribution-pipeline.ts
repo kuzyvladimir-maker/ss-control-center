@@ -213,7 +213,7 @@ export async function runDistribution(
   // skip Walmart SKUs below when it's cold.
   const masterBundle = await prisma.masterBundle.findUnique({
     where: { id: draft.master_bundle_id },
-    select: { category: true },
+    select: { category: true, brand: true },
   });
   const isColdBundle = /FROZEN|REFRIGERATED/i.test(masterBundle?.category ?? "");
 
@@ -354,6 +354,7 @@ export async function runDistribution(
           sku,
           storeIndex: target.storeIndex,
           productType: input.amazonProductType ?? productTypeForBundle(),
+          brand: masterBundle?.brand,
           dryRun: !apply,
           // On the very first attempt of a SKU we ALWAYS validation-preview
           // first; on retries we trust the operator already saw the

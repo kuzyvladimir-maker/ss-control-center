@@ -42,6 +42,9 @@ export interface AmazonPublishInput {
   dryRun?: boolean;
   /** When true, also run a VALIDATION_PREVIEW before the real PUT. */
   validatePreviewFirst?: boolean;
+  /** Listing brand from the MasterBundle. Drives the Amazon `brand` attribute
+   *  (own-brand carve-out publishes under the donor brand, not Salutem). */
+  brand?: string | null;
 }
 
 export interface AmazonPublishResult {
@@ -76,6 +79,10 @@ export interface AmazonPublishResult {
  */
 export function buildAmazonAttributes(
   sku: ChannelSKU,
+  /** Listing brand from the MasterBundle (e.g. "Salutem Vita", "Starfit", or —
+   *  for the Uncrustables own-brand carve-out — "Smucker's"). Falls back to
+   *  "Salutem Vita" only when not supplied (legacy callers / tests). */
+  brand?: string | null,
 ): Record<string, unknown> {
   let bullets: string[] = [];
   try {
@@ -93,9 +100,11 @@ export function buildAmazonAttributes(
     marketplace_id: MARKETPLACE_ID,
   });
 
+  const listingBrand = (brand ?? "").trim() || "Salutem Vita";
+
   const attrs: Record<string, unknown> = {
     item_name: [lt(sku.title)],
-    brand: [lt("Salutem Vita")], // overridden below if master_bundle brand differs
+    brand: [lt(listingBrand)],
     bullet_point: bullets.map(lt),
     product_description: [lt(sku.description)],
   };
@@ -185,11 +194,12 @@ export function buildAmazonAttributes(
 export function buildAmazonPayload(
   sku: ChannelSKU,
   productType: string,
+  brand?: string | null,
 ): Record<string, unknown> {
   return {
     productType,
     requirements: "LISTING",
-    attributes: buildAmazonAttributes(sku),
+    attributes: buildAmazonAttributes(sku, brand),
   };
 }
 
@@ -197,7 +207,7 @@ export async function submitToAmazon(
   input: AmazonPublishInput,
 ): Promise<AmazonPublishResult> {
   const productType = input.productType ?? "PRODUCT";
-  const payload = buildAmazonPayload(input.sku, productType);
+  const payload = buildAmazonPayload(input.sku, productType, input.brand);
 
   if (input.dryRun) {
     return {

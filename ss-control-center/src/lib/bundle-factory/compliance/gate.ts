@@ -36,6 +36,7 @@ import { rulePromotionalLanguage } from "./rules/rule-8-promotional-language";
 
 import { writeAuditLog } from "./audit-log";
 import { findForeignBrandsInText } from "./banned-words";
+import { isOwnBrandPassthrough } from "../own-brand";
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null;
@@ -123,6 +124,9 @@ export async function runComplianceGate(
   const workingInput: ComplianceInput = {
     ...input,
     bullets: Array.isArray(input.bullets) ? [...input.bullets] : [],
+    // Own-brand passthrough (Uncrustables) — derive from the brand field when
+    // the caller didn't set it. Drives Rules 1/2/3/4 below.
+    own_brand: input.own_brand ?? isOwnBrandPassthrough(input.brand),
   };
 
   const rules: RuleResult[] = [];
