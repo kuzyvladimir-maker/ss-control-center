@@ -80,6 +80,35 @@ both ("Superior packaging" → "Insulated foam cooler and gel packs").
   HTTP 200). Commits: attrs `b637664`, mechanism `50aa0fd`, activation
   `e88308a`, wiki `cab16df`.
 
+## E2E publish PROVEN + the UPC-pool blocker (2026-07-01, overnight)
+
+Drove a Uncrustables draft through the REAL pipeline (prod Turso + SP-API) to a
+real Amazon PUT. **Amazon returned ACCEPTED** and the listing (SKU SZ-ASPI-JFAT,
+store1) persisted with 28 attributes, 0 API issues. Fixes that made it publish
+(all committed): the GROCERY product type needed attributes the builder never
+set — `list_price` + `purchasable_offer` (price/offer was entirely missing!),
+`manufacturer`, `unit_count` {value, type:{value:Count}}, `each_unit_count`,
+`fc_shelf_life` {unit:"days"}, `melting_temperature` {unit:"degrees_fahrenheit"},
+and `fulfillment_availability` {fulfillment_channel_code:"DEFAULT", quantity}
+(without which the offer isn't buyable). Exact shapes came from the SP-API
+productType definition via `getAttributeForm()` in `amazon/growth/product-type-definitions.ts`.
+
+**The one remaining blocker = UPC collision.** The barcode from `UPCPool`
+(742259000027) was already linked to another Amazon ASIN (B08P277HSC) → issue
+100980 → no ASIN created. **Root cause: `scripts/seed-upc-pool-available.ts`
+GENERATED the AVAILABLE pool** — sequential numbers within our owned SpeedyBarcode
+prefixes (742259/789232/617261) with a valid GS1 check digit but NO Amazon-usage
+check, so low sequences are already burned. `validator-upc-format` only checks
+the checksum, not Amazon availability.
+
+**Actions (2026-07-01):** all 2996 generated AVAILABLE rows → status
+`QUARANTINED` (937 ASSIGNED real-listing rows untouched); AVAILABLE now 0 so the
+pipeline pauses until a verified pool is loaded. Plan: import the verified-free
+SpeedyBarcode pool (Jackie filtering ~17k), build a Command Center **UPC Pool
+Manager** (upload + counts + barcode→product table), and add a pre-assign
+Catalog-API free-check. Details in memory: project_bundle_factory_e2e_publish,
+project_upc_pool_manager.
+
 ## Связи
 
 - [Listing Quality Stack](listing-quality-stack.md), [Bundle Factory](bundle-factory.md)
