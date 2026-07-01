@@ -10,13 +10,14 @@
 //     product front-facing before we ever publish it (the do-no-harm gate).
 
 import Anthropic from "@anthropic-ai/sdk";
+import { CLAUDE } from "@/lib/ai-models";
 
-const MODEL = "claude-haiku-4-5-20251001"; // cheap + vision-capable (legacy pickers)
+const MODEL = CLAUDE.cheap; // cheap + vision-capable (legacy pickers)
 // Quality-critical selection/verification uses a stronger model: Haiku could not
 // tell a bread loaf's UPRIGHT FRONT from a LYING end-slice or a barcode BACK, so
 // it tiled torец/back/nutrition/infographic shots. Sonnet + explicit orientation
 // & barcode rules fixes that (verified against real donor pools 2026-06-30).
-const STRONG_MODEL = "claude-sonnet-4-6";
+const STRONG_MODEL = CLAUDE.balanced;
 
 let client: Anthropic | null = null;
 function getClient(): Anthropic | null {
@@ -26,12 +27,12 @@ function getClient(): Anthropic | null {
   return client;
 }
 
-async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model = MODEL): Promise<string> {
+async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: string = MODEL): Promise<string> {
   const c = getClient();
   if (!c) throw new Error("ANTHROPIC_API_KEY missing");
   const content: any[] = imageUrls.map((u) => ({ type: "image", source: { type: "url", url: u } }));
   content.push({ type: "text", text: prompt });
-  const res = await c.messages.create({ model, max_tokens: maxTokens, messages: [{ role: "user", content }] });
+  const res = await c.messages.create({ model, max_tokens: maxTokens, thinking: { type: "disabled" }, messages: [{ role: "user", content }] });
   return res.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
 }
 function parseJson(t: string): any { try { return JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1)); } catch { return null; } }

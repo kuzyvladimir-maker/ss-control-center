@@ -29,6 +29,7 @@ import {
   cleanProductTitleForSearch,
   stripSizeTokens,
 } from "@/lib/procurement/clean-product-query";
+import { CLAUDE } from "@/lib/ai-models";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -42,7 +43,7 @@ interface CleanResponse {
   source: "cache" | "ai" | "regex";
 }
 
-const MODEL = "claude-haiku-4-5";
+const MODEL = CLAUDE.cheap;
 
 // System prompt is byte-identical across requests so the prompt cache
 // kicks in after the first call — only the per-call user message varies.

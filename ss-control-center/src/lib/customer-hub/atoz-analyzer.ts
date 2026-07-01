@@ -131,6 +131,7 @@ Generate the two responses. Return valid JSON only.`;
         const r = await client.messages.create({
           model,
           max_tokens: 2000,
+          thinking: { type: "disabled" },
           system: SYSTEM_PROMPT,
           messages: [{ role: "user", content: userMessage }],
         });

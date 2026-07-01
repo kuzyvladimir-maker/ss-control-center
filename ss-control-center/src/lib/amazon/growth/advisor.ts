@@ -11,13 +11,14 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+import { CLAUDE } from "@/lib/ai-models";
 
 // Default model for the single, deliberate per-listing "AI Advise" (deep dive).
 // The bulk advisor passes Sonnet — the task is bounded structured diagnosis over
 // a tiny context with code-side guardrails, so Opus's premium isn't warranted at
 // catalog scale (and Sonnet is faster + ~40% cheaper). See adviseListing(opts).
-const DEFAULT_MODEL = "claude-opus-4-8";
-export const BULK_ADVISOR_MODEL = "claude-sonnet-4-6";
+const DEFAULT_MODEL = CLAUDE.premium;
+export const BULK_ADVISOR_MODEL = CLAUDE.balanced;
 
 function getClient(): Anthropic {
   const apiKey = process.env.ANTHROPIC_API_KEY;

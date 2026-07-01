@@ -42,6 +42,7 @@ async function callClaude(prompt: string, model: string): Promise<string> {
   const response = await client.messages.create({
     model,
     max_tokens: 2000,
+    thinking: { type: "disabled" },
     messages: [{ role: "user", content: prompt }],
   });
   return response.content[0].type === "text" ? response.content[0].text : "";

@@ -6,8 +6,9 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { WALMART_CONTENT_RULES } from "./guidelines";
+import { CLAUDE } from "@/lib/ai-models";
 
-const MODEL = "claude-sonnet-4-5";
+const MODEL = CLAUDE.balanced;
 
 export interface PolishInput {
   productName: string;      // brand + product, e.g. "BODYARMOR LYTE Peach Mango"
@@ -60,6 +61,7 @@ Provide 5-7 keyFeatures. The description is 150-220 words (about 800-1300 charac
     const res = await c.messages.create({
       model: MODEL,
       max_tokens: 1500,
+      thinking: { type: "disabled" },
       messages: [{ role: "user", content: prompt }],
     });
     const text = res.content.filter((b) => b.type === "text").map((b: any) => b.text).join("");

@@ -48,6 +48,10 @@ async function callClaudeVision(
   const response = await client.messages.create({
     model,
     max_tokens: 4096,
+    // Sonnet 5 (the new default) turns thinking ON by default; keep it off to
+    // preserve the prior no-thinking behaviour and avoid truncating the JSON.
+    // Accepted no-op on Opus/Haiku too, so it's safe for any operator choice.
+    thinking: { type: "disabled" },
     messages: [{ role: "user", content }],
   });
 

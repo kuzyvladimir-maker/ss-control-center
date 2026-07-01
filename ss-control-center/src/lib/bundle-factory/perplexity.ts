@@ -13,8 +13,10 @@
  * `GenerationStage.error` for post-mortem.
  */
 
+import { PERPLEXITY } from "@/lib/ai-models";
+
 const PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions";
-const MODEL = "sonar-pro";
+const MODEL = PERPLEXITY;
 
 export interface PerplexityResearchProduct {
   product_name: string;

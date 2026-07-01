@@ -1055,6 +1055,7 @@ async function callClaude(
   const response = await client.messages.create({
     model,
     max_tokens: 2000,
+    thinking: { type: "disabled" },
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content: userMessage }],
   });
@@ -1090,6 +1091,7 @@ async function callClaudeRaw(
   const response = await client.messages.create({
     model,
     max_tokens: 1000,
+    thinking: { type: "disabled" },
     messages: [{ role: "user", content: prompt }],
   });
   return response.content[0].type === "text" ? response.content[0].text : "";

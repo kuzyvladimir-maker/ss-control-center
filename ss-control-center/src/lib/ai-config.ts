@@ -3,7 +3,7 @@
  *
  * Reads operator-configured preferences from the Setting table:
  *   - ai_primary_provider   "claude" | "openai"   (which one to try first)
- *   - ai_claude_model       Anthropic model ID    (e.g. claude-sonnet-4-20250514)
+ *   - ai_claude_model       Anthropic model ID    (e.g. claude-sonnet-5)
  *   - ai_openai_model       OpenAI model ID       (e.g. gpt-4o)
  *
  * Falls back to sensible defaults if no Setting row exists. Respects which
@@ -12,6 +12,12 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import {
+  CLAUDE,
+  OPENAI,
+  CLAUDE_MODEL_LABELS,
+  OPENAI_MODEL_LABELS,
+} from "@/lib/ai-models";
 
 export type ProviderName = "claude" | "openai";
 
@@ -24,25 +30,18 @@ export interface AIConfig {
   openaiConfigured: boolean;
 }
 
-// Models the UI lets the operator choose from. Keeping this list in code
-// (not DB) so the UI can show a dropdown with known options, but any
-// string stored in Setting is still honoured at call time.
-export const CLAUDE_MODELS: Array<{ id: string; label: string }> = [
-  { id: "claude-opus-4-6", label: "Claude Opus 4.6 (best quality)" },
-  { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6 (balanced)" },
-  { id: "claude-sonnet-4-20250514", label: "Claude Sonnet 4 (legacy, currently used)" },
-  { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5 (fastest, cheapest)" },
-];
+// Models the UI lets the operator choose from. Built from the central model
+// registry (src/lib/ai-models.ts) so the dropdown always reflects the models
+// we actually pin. Any string stored in Setting is still honoured at call time.
+export const CLAUDE_MODELS: Array<{ id: string; label: string }> =
+  Object.entries(CLAUDE_MODEL_LABELS).map(([id, label]) => ({ id, label }));
 
-export const OPENAI_MODELS: Array<{ id: string; label: string }> = [
-  { id: "gpt-4o", label: "GPT-4o (default)" },
-  { id: "gpt-4o-mini", label: "GPT-4o mini (cheapest)" },
-  { id: "gpt-4.1", label: "GPT-4.1 (large context)" },
-];
+export const OPENAI_MODELS: Array<{ id: string; label: string }> =
+  Object.entries(OPENAI_MODEL_LABELS).map(([id, label]) => ({ id, label }));
 
 export const DEFAULT_PRIMARY_PROVIDER: ProviderName = "claude";
-export const DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-20250514";
-export const DEFAULT_OPENAI_MODEL = "gpt-4o";
+export const DEFAULT_CLAUDE_MODEL = CLAUDE.balanced;
+export const DEFAULT_OPENAI_MODEL = OPENAI.default;
 
 export function isClaudeKeyValid(): boolean {
   const k = process.env.ANTHROPIC_API_KEY;

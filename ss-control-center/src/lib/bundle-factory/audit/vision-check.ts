@@ -23,6 +23,7 @@
 // the risk-scorer never sees them as foreign-brand violations.
 
 import Anthropic from "@anthropic-ai/sdk";
+import { CLAUDE } from "@/lib/ai-models";
 
 /**
  * Names that may appear in Vision detections but are NOT foreign
@@ -178,8 +179,9 @@ export async function detectForeignLogosInImage(
 
   try {
     const response = await client.messages.create({
-      model: "claude-sonnet-4-5",
+      model: CLAUDE.balanced,
       max_tokens: 500,
+      thinking: { type: "disabled" },
       messages: [
         {
           role: "user",

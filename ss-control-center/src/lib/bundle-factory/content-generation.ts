@@ -34,15 +34,14 @@ import {
 } from "./compliance/banned-words";
 import { isOwnBrandPassthrough } from "./own-brand";
 import type { Variant, VariantComponent } from "./variation-matrix";
+import { CLAUDE } from "@/lib/ai-models";
 
-const MODEL = "claude-sonnet-4-5";
+const MODEL = CLAUDE.balanced;
 const MAX_TOKENS = 2000;
 
-// Sonnet 4.5 pricing (cents per 1M tokens):
-//   input        $3.00
-//   cache read   $0.30
-//   cache write  $3.75
-//   output       $15.00
+// Sonnet 5 pricing (dollars per 1M tokens): $3 in / $15 out standard
+// (intro $2 / $10 through 2026-08-31). Kept at the standard rate below so the
+// displayed cost is conservative.
 const PRICE_INPUT_PER_MTOK = 3.0;
 const PRICE_CACHE_READ_PER_MTOK = 0.3;
 const PRICE_CACHE_WRITE_PER_MTOK = 3.75;
@@ -373,6 +372,10 @@ export async function generateContentWithClient(
     response = await client.messages.create({
       model: MODEL,
       max_tokens: MAX_TOKENS,
+      // Sonnet 5 turns adaptive thinking ON by default; disable it so thinking
+      // tokens don't eat MAX_TOKENS and truncate the JSON (behaviour parity
+      // with the pre-Sonnet-5 workhorse).
+      thinking: { type: "disabled" },
       system: systemBlocks,
       messages: [{ role: "user", content: userMessage }],
     });

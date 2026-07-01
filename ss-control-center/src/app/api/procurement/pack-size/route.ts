@@ -21,6 +21,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
 import { parsePackSize } from "@/lib/procurement/pack-size";
+import { CLAUDE } from "@/lib/ai-models";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -35,7 +36,7 @@ interface PackSizeResponse {
   source: "cache" | "ai" | "regex" | "default";
 }
 
-const MODEL = "claude-haiku-4-5";
+const MODEL = CLAUDE.cheap;
 
 // System prompt is byte-identical across requests — `cache_control` on it
 // means second+ calls pay ~10% of input cost on the (stable) instructions.

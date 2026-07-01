@@ -13,10 +13,11 @@ loadEnv({ path: ".env.local" });
 loadEnv({ path: ".env" });
 import { createClient } from "@libsql/client";
 import Anthropic from "@anthropic-ai/sdk";
+import { CLAUDE } from "@/lib/ai-models";
 
 const DRY = process.argv.includes("--dry-run");
 const APPLY_AT = 0.92;
-const MODEL = "claude-sonnet-4-20250514";
+const MODEL = CLAUDE.balanced;
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const SYS = `You classify grocery/e-commerce products for SHIPPING handling. Return ONLY a JSON array, one object per input line: [{"sku":"","category":"Frozen"|"Dry","confidence":0.0,"reason":"<=12 words"}].
@@ -41,6 +42,7 @@ const chunk = <T>(a: T[], n: number) => Array.from({ length: Math.ceil(a.length 
     try {
       const resp = await anthropic.messages.create({
         model: MODEL, max_tokens: 4096,
+        thinking: { type: "disabled" },
         messages: [{ role: "user", content: `${SYS}\n\nPRODUCTS (sku<TAB>title):\n${list}` }],
       });
       const txt = resp.content.find((c) => c.type === "text");
