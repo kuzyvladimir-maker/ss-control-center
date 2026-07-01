@@ -116,7 +116,7 @@ async function buyerUrl(client: any, upc: string, packCount: number): Promise<st
  */
 export async function buildAndSubmitOne(
   db: Client, client: any, sku: string,
-  opts: { scope?: RemediateScope | null; dry?: boolean; stamp: string; enrich?: boolean; storeIndex?: number },
+  opts: { scope?: RemediateScope | null; dry?: boolean; stamp: string; enrich?: boolean; storeIndex?: number; forceImage?: boolean },
 ): Promise<RemediateResult> {
   const scope: RemediateScope = opts.scope && Object.values(opts.scope).some(Boolean) ? opts.scope : ALL_SCOPE;
   const stamp = opts.stamp;
@@ -192,15 +192,21 @@ export async function buildAndSubmitOne(
       // KEEP/REPLACE (Vladimir): don't churn a listing whose current main is
       // ALREADY an upright-front grid; only replace lying/back/serving/etc. The
       // "current" main is our last published tile for this SKU.
+      // KEEP only avoids churning a genuinely-good current main. On an explicit
+      // RE-FIX (forceImage) we ALWAYS replace — mainImageAcceptable only checks
+      // "is it product fronts", NOT right flavor / white bg, so it would wrongly
+      // keep a pre-fix wrong-flavor/orange tile from an earlier image-only run.
       let keep = false;
-      try {
-        const r = await db.execute({ sql: `SELECT mainImageUrl FROM WalmartListingRemediation WHERE sku=? AND storeIndex=? AND ok=1 AND mainImageUrl IS NOT NULL AND mainImageUrl != '' ORDER BY runAt DESC LIMIT 1`, args: [sku, storeIndex] });
-        const curMain = (r.rows[0] as any)?.mainImageUrl as string | undefined;
-        if (curMain) {
-          const acc = await mainImageAcceptable(curMain, cand.packCount);
-          if (acc.good) { keep = true; imageNote = "current main already an upright-front grid — kept"; }
-        }
-      } catch {}
+      if (!opts.forceImage) {
+        try {
+          const r = await db.execute({ sql: `SELECT mainImageUrl FROM WalmartListingRemediation WHERE sku=? AND storeIndex=? AND ok=1 AND mainImageUrl IS NOT NULL AND mainImageUrl != '' ORDER BY runAt DESC LIMIT 1`, args: [sku, storeIndex] });
+          const curMain = (r.rows[0] as any)?.mainImageUrl as string | undefined;
+          if (curMain) {
+            const acc = await mainImageAcceptable(curMain, cand.packCount);
+            if (acc.good) { keep = true; imageNote = "current main already an upright-front grid — kept"; }
+          }
+        } catch {}
+      }
       if (!keep) {
         // Tile the chosen front and VERIFY before publishing (do-no-harm gate).
         const base = await fetchImageBuffer(highResImageUrl(best.url));
