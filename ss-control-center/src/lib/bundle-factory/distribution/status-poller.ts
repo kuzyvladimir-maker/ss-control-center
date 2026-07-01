@@ -89,22 +89,50 @@ async function pollAmazon(sku: ChannelSKU): Promise<PollResult> {
   const issues = (raw.issues ?? []).filter(
     (i) => i.severity === "ERROR" || i.severity === "WARNING",
   );
+  // Amazon's new-listing REVIEW HOLD (code 100521 / "we are reviewing this
+  // listing … allow up to 48 hours … otherwise the listing will be published")
+  // is reported with severity=ERROR + a CATALOG_ITEM_REMOVED enforcement, but it
+  // is NOT a rejection — it's a transient moderation gate that auto-clears and
+  // publishes. An ASIN is already assigned and the item shows DISCOVERABLE. So
+  // it must NOT mark the SKU FAILED (which would abort the publish flow); it maps
+  // to PENDING_REVIEW. Only NON-review ERROR issues are real failures.
+  const isReviewHold = (i: { code?: string; message?: string }): boolean => {
+    if (String(i.code ?? "").trim() === "100521") return true;
+    const m = (i.message ?? "").toLowerCase();
+    return (
+      /reviewing this listing/.test(m) ||
+      /allow up to \d+\s*hours/.test(m) ||
+      /the listing will be published/.test(m)
+    );
+  };
   const errors = issues.filter((i) => i.severity === "ERROR");
+  const hardErrors = errors.filter((i) => !isReviewHold(i));
+  const reviewHeld = errors.some(isReviewHold);
   const summary =
     raw.summaries?.find((s) => s.marketplaceId === MARKETPLACE_ID) ??
     raw.summaries?.[0];
   const asin = summary?.asin ?? null;
   const statusList = summary?.status ?? [];
 
-  // Heuristic: any ERROR issue → FAILED. Otherwise if Amazon assigned
-  // an ASIN AND status includes BUYABLE/DISCOVERABLE → LIVE. Else
-  // still in-progress.
-  if (errors.length > 0) {
+  // Only a genuine (non-review) ERROR is a real failure.
+  if (hardErrors.length > 0) {
     return {
       channel_sku_id: sku.id,
       new_listing_status: "FAILED",
       issues,
       asin,
+      raw,
+    };
+  }
+  // Under Amazon's review hold → PENDING_REVIEW (in catalog, not yet buyable);
+  // surface the ASIN + URL so the operator can watch it clear.
+  if (reviewHeld) {
+    return {
+      channel_sku_id: sku.id,
+      new_listing_status: "PENDING_REVIEW",
+      issues,
+      asin,
+      live_url: asin ? `https://www.amazon.com/dp/${asin}` : undefined,
       raw,
     };
   }

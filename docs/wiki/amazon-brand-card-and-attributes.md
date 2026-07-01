@@ -109,6 +109,64 @@ Manager** (upload + counts + barcode→product table), and add a pre-assign
 Catalog-API free-check. Details in memory: project_bundle_factory_e2e_publish,
 project_upc_pool_manager.
 
+## Speedy pool loaded + burn loop + gallery + the allergen fix + 3 real ASINs (2026-07-01, night)
+
+Second overnight run — closed the UPC blocker and drove 3 fresh listings all the
+way into the Amazon catalog.
+
+**UPC pool.** Imported Jackie's verified-free SpeedyBarcode export
+(`docs/speedy_free_pool*.csv`, 13,239 rows) → `UPCPool` AVAILABLE (13,234 new, 5
+already present, FIFO by `acquired_at`) via `scripts/_import-speedy-pool.ts`. The
+self-generated pool stays QUARANTINED. Retired `seed-upc-pool-available.ts`.
+First codes handed out: 756441901405 / …412 / …429 — **all clean, no burns**.
+
+**Burn-on-reject loop** (`distribution/upc-burn.ts` + `spApiDelete`). A UPC is
+only "free vs our Veeqo", never provably free on Amazon (a Catalog pre-check even
+mis-read 742259000034 as free). So publish self-cleans: `isUpcConflictIssue()`
+catches 8541/GTIN-collision → `healUpcConflict()` DELETEs the tainted
+contribution, burns the code, claims the next AVAILABLE one, re-PUTs. Non-UPC
+errors never burn. Wired into the `poll-pending` cron.
+
+**Secondary gallery** (`attributes/gallery-images.ts` + promote-draft). The
+`other_product_image_locator_1..N` slots were declared but never filled. Now
+promote-draft mirrors the donor's harvested secondary photos + nutrition label to
+R2 (upsized for Scene7/Walmart CDNs) and injects the locators; brand card appends
+last → 6 gallery slots (5 donor infographic/lifestyle + card), all HTTP 200.
+`unit_count` falls back to `number_of_items` for flat "30 Count" packs.
+
+**CRITICAL — allergen_information is LOWERCASE tokens, not Title-Case.** The first
+publish of a listing carrying allergens FAILED VALIDATION_PREVIEW with 3× error
+**90244** ("can't accept Peanuts/Soy/Wheat"). The live GROCERY **and** FOOD
+productType schemas share ONE 184-value enum of **lowercase underscore tokens**:
+`peanuts`, `soy`, `wheat`, `tree_nuts`, `sesame_seeds`, `milk`, `eggs`, `fish`,
+`crustacean` (+ every `..._free` / `..._may_contain`). The earlier claim in this
+article that "FOOD allergens are Title-Case (~160)" was **WRONG** — corrected.
+Fixed `BIG_9` in `build-amazon-attributes.ts` + `ALLERGEN_CORE_VALUES`. After the
+fix → VALIDATION_PREVIEW **ACCEPTED**.
+
+**Poller fix — code 100521 is a review HOLD, not a failure.** New listings come
+back with 100521 severity=ERROR + a CATALOG_ITEM_REMOVED enforcement, but the
+message is "we are reviewing this listing … allow up to 48 hours … otherwise the
+listing will be published." The ASIN is already assigned and the item is
+DISCOVERABLE. `status-poller.pollAmazon` now maps 100521 (and "reviewing this
+listing" text) to PENDING_REVIEW, so the flow doesn't false-FAIL a listing that
+Amazon is merely moderating.
+
+**E2E RESULT — 3 real ASINs in the catalog (store1, Salutem).** 3× Uncrustables
+Strawberry (donor `2904ec27`), 30/45/90 count. Each: own-brand draft (no
+gift-set, no curator disclaimer) → AI content (compliance-clean first try) →
+Codex cooler-hero main image (~6 MB) → promote (Speedy UPC + rich attrs + 6-image
+gallery) → ship-specs → validate → **real PUT ACCEPTED** → **ASIN assigned**:
+- 30ct `AZ-ASMY-VEQ2` / UPC 756441901405 → **ASIN B0H788M8WM**, $144.84
+- 45ct `UA-ASAO-RE7Q` / UPC 756441901412 → **ASIN B0H784LMG6**, $174.54
+- 90ct `VC-ASV1-378P` / UPC 756441901429 → **ASIN B0H786L5MW**, $263.64
+
+All 3 DISCOVERABLE with 36 attributes each, in Amazon's standard ≤48 h
+new-listing review (100521) → auto-go-BUYABLE unless Amazon requests info. That
+final flip is Amazon's gate, not ours. **Pipeline PROVEN end-to-end: generate →
+publish → placed in catalog with an ASIN.** Drivers: `scripts/_e2e-build.ts` +
+`_e2e-publish-poll.ts`.
+
 ## Связи
 
 - [Listing Quality Stack](listing-quality-stack.md), [Bundle Factory](bundle-factory.md)

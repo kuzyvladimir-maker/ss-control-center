@@ -21,19 +21,21 @@ import {
 /** FDA Big-9 allergens + the ingredient keywords that imply each. Conservative:
  *  "butter"/"cream" are deliberately excluded from Milk to avoid "peanut butter"
  *  false positives — the manufacturer label remains authoritative.
- *  NOTE: `canonical` MUST be the exact Amazon FOOD allergen_information valid
- *  value — "Crustacean" (not "Shellfish"), "Soy" (not "Soybeans"),
- *  "Sesame Seeds" (not "Sesame"); anything else is rejected by the PUT. */
+ *  NOTE: `canonical` MUST be the exact Amazon allergen_information valid value —
+ *  a LOWERCASE, underscore-joined token ("peanuts", "soy", "wheat", "tree_nuts",
+ *  "sesame_seeds", "crustacean"). Verified 2026-07-01 against the live GROCERY +
+ *  FOOD productType schema enums (both share the same 184-token lowercase list);
+ *  Title-Case values ("Peanuts"/"Soy"/"Wheat") are REJECTED with error 90244. */
 const BIG_9: Array<{ canonical: string; re: RegExp }> = [
-  { canonical: "Milk", re: /\b(milk|dairy|whey|casein|lactose|cheese)\b/i },
-  { canonical: "Eggs", re: /\b(egg|eggs|albumin)\b/i },
-  { canonical: "Fish", re: /\b(fish|cod|salmon|tuna|anchovy|tilapia)\b/i },
-  { canonical: "Crustacean", re: /\b(shellfish|shrimp|crab|lobster|prawn|crustacean)\b/i },
-  { canonical: "Tree Nuts", re: /\b(almond|walnut|cashew|pecan|pistachio|hazelnut|macadamia|tree ?nut)\b/i },
-  { canonical: "Peanuts", re: /\b(peanut|peanuts)\b/i },
-  { canonical: "Wheat", re: /\b(wheat|gluten|semolina|farina|durum)\b/i },
-  { canonical: "Soy", re: /\b(soy|soya|soybean|soybeans|soy lecithin)\b/i },
-  { canonical: "Sesame Seeds", re: /\b(sesame|tahini)\b/i },
+  { canonical: "milk", re: /\b(milk|dairy|whey|casein|lactose|cheese)\b/i },
+  { canonical: "eggs", re: /\b(egg|eggs|albumin)\b/i },
+  { canonical: "fish", re: /\b(fish|cod|salmon|tuna|anchovy|tilapia)\b/i },
+  { canonical: "crustacean", re: /\b(shellfish|shrimp|crab|lobster|prawn|crustacean)\b/i },
+  { canonical: "tree_nuts", re: /\b(almond|walnut|cashew|pecan|pistachio|hazelnut|macadamia|tree ?nut)\b/i },
+  { canonical: "peanuts", re: /\b(peanut|peanuts)\b/i },
+  { canonical: "wheat", re: /\b(wheat|gluten|semolina|farina|durum)\b/i },
+  { canonical: "soy", re: /\b(soy|soya|soybean|soybeans|soy lecithin)\b/i },
+  { canonical: "sesame_seeds", re: /\b(sesame|tahini)\b/i },
 ];
 
 /** Conservative FDA Big-9 allergen scan over an ingredient statement. */
