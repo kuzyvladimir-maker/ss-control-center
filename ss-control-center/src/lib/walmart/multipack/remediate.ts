@@ -14,7 +14,7 @@ import { uploadToR2, multipackImageKey } from "./r2";
 import { polishListingCopy } from "./polish";
 import { validateListingContent } from "./guidelines";
 import { ensureDonorImage, fetchAndStoreDetail } from "../../sourcing/enrich";
-import { pickFrontRanked, verifyMainImage } from "../../sourcing/vision";
+import { pickBestFront, mainImageAcceptable, verifyMainImage } from "../../sourcing/vision";
 
 export const SPEC_VERSION = "5.0.20260330-14_47_14-api";
 const DONOR_IMAGE_CAP = 6;
@@ -181,22 +181,34 @@ export async function buildAndSubmitOne(
     } catch {}
     if (cand.baseImageUrl) poolSet.add(cand.baseImageUrl);
     const pool = Array.from(poolSet);
-    // Self-correcting: rank package-front candidates, then tile each and have
-    // vision VERIFY the tile; publish the FIRST that passes. If none passes,
-    // leave the main image unchanged (do-no-harm) and flag it.
-    const ranked = await pickFrontRanked(pool);
-    if (!ranked.length) {
-      imageNote = "no product-package image in source — left unchanged";
+    // STRONG selector (Sonnet): pick the best UPRIGHT SINGLE-UNIT FRONT, rejecting
+    // back/barcode, nutrition, infographic, lifestyle/serving, and loaves lying on
+    // their end (Wave 1's weak Haiku picker tiled those → torец/back/serving mains).
+    const best = await pickBestFront(pool);
+    if (!best) {
+      imageNote = "no upright product-front in source — left unchanged (needs enrich/manual)";
     } else {
-      for (const idx of ranked) {
-        const base = await fetchImageBuffer(highResImageUrl(pool[idx]));
+      // KEEP/REPLACE (Vladimir): don't churn a listing whose current main is
+      // ALREADY an upright-front grid; only replace lying/back/serving/etc. The
+      // "current" main is our last published tile for this SKU.
+      let keep = false;
+      try {
+        const r = await db.execute({ sql: `SELECT mainImageUrl FROM WalmartListingRemediation WHERE sku=? AND storeIndex=? AND ok=1 AND mainImageUrl IS NOT NULL AND mainImageUrl != '' ORDER BY runAt DESC LIMIT 1`, args: [sku, storeIndex] });
+        const curMain = (r.rows[0] as any)?.mainImageUrl as string | undefined;
+        if (curMain) {
+          const acc = await mainImageAcceptable(curMain, cand.packCount);
+          if (acc.good) { keep = true; imageNote = "current main already an upright-front grid — kept"; }
+        }
+      } catch {}
+      if (!keep) {
+        // Tile the chosen front and VERIFY before publishing (do-no-harm gate).
+        const base = await fetchImageBuffer(highResImageUrl(best.url));
         const main = await composeTiledMainImage(base, cand.packCount);
-        const candidateUrl = await uploadToR2(main, multipackImageKey(sku, "main", `${stamp}-${idx}`));
-        const v = await verifyMainImage(candidateUrl);
-        if (v.ok) { mainUrl = candidateUrl; break; }
-        imageNote = `candidate rejected by vision (${v.kind})`;
+        const candidateUrl = await uploadToR2(main, multipackImageKey(sku, "main", stamp));
+        const v = await verifyMainImage(candidateUrl, cand.packCount);
+        if (v.ok) mainUrl = candidateUrl;
+        else imageNote = `new tile rejected by verify (${v.kind}) — left unchanged`;
       }
-      if (!mainUrl) imageNote = `no candidate passed verify — left unchanged (${imageNote})`;
     }
   }
   if (scope.gallery) {
