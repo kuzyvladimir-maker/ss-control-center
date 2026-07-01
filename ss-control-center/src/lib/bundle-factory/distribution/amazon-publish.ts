@@ -26,6 +26,7 @@
 
 import { spApiPut, MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
+import { appendColdChainBrandCard } from "../attributes/brand-assets";
 import type { ChannelSKU } from "@/generated/prisma/client";
 
 export type ProductTypeDefault = "PRODUCT" | string;
@@ -187,6 +188,12 @@ export function buildAmazonAttributes(
   } catch {
     /* malformed sku.attributes — ignore, base attrs still valid */
   }
+
+  // Fixed brand-story card in the gallery for cold-chain (frozen/refrigerated)
+  // listings. Gated on the temperature_rating merged just above; no-op until the
+  // asset url is set (brand-assets.ts). This also activates the secondary-image
+  // (other_product_image_locator_N) path, which was previously never populated.
+  appendColdChainBrandCard(attrs, MARKETPLACE_ID);
 
   return attrs;
 }
