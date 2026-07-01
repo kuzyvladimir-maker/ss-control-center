@@ -16,6 +16,7 @@ import { validateListingContent } from "./guidelines";
 import { ensureDonorImage, fetchAndStoreDetail } from "../../sourcing/enrich";
 import { pickBestFront, mainImageAcceptable, verifyMainImage } from "../../sourcing/vision";
 import { logRemediation } from "./analytics";
+import { buildFoodAttributes } from "./attributes";
 
 export const SPEC_VERSION = "5.0.20260330-14_47_14-api";
 const DONOR_IMAGE_CAP = 6;
@@ -39,6 +40,7 @@ export interface RemediateMeta {
   wpid: string | null; upc: string; packCount: number; newTitle: string | null;
   bulletsCount: number; imagesCount: number; descriptionLength: number;
   mainImageUrl: string | null; usedAiPolish: boolean; contentIssues: string[]; gaps: any[];
+  attributesCount?: number;
 }
 
 /** Known CONTENT gaps for this SKU from the listing-quality mirror (closed loop). */
@@ -259,6 +261,19 @@ export async function buildAndSubmitOne(
   if (mainUrl) visible.mainImageUrl = mainUrl;
   if (secondaryImageUrls.length) visible.productSecondaryImageURL = secondaryImageUrls;
 
+  // ATTRIBUTES (Walmart MP_ITEM 5.0) — the quantity trio (multipackQuantity /
+  // countPerPack / count) is the data-level fix for the "ordered 1, got N"
+  // confusion; the rest (manufacturer/ingredients/allergens/netContent/flavor)
+  // come from Walmart-sourced donor data and lift the listing-quality score.
+  let attributesFilled: string[] = [];
+  if (scope.attributes) {
+    try {
+      const { attrs, filled } = await buildFoodAttributes(db, sku, cand.packCount);
+      Object.assign(visible, attrs);
+      attributesFilled = filled;
+    } catch { /* attributes are best-effort */ }
+  }
+
   // Nothing safe to send (image-only run but no clean image found) → SKIP, don't
   // submit an empty feed. Flagged so it shows up as "needs a better photo".
   if (Object.keys(visible).length === 0) {
@@ -281,6 +296,7 @@ export async function buildAndSubmitOne(
     bulletsCount: scope.bullets ? content.keyFeatures.length : 0, imagesCount,
     descriptionLength: scope.description ? content.description.length : 0,
     mainImageUrl: mainUrl, usedAiPolish: !!polished, contentIssues, gaps,
+    attributesCount: attributesFilled.length,
   };
 
   // BUILD-ONLY: everything is composed and validated but NOT submitted. Return the
