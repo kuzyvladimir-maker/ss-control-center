@@ -185,7 +185,7 @@ export async function buildAndSubmitOne(
     // STRONG selector (Sonnet): pick the best UPRIGHT SINGLE-UNIT FRONT, rejecting
     // back/barcode, nutrition, infographic, lifestyle/serving, and loaves lying on
     // their end (Wave 1's weak Haiku picker tiled those → torец/back/serving mains).
-    const best = await pickBestFront(pool);
+    const best = await pickBestFront(pool, { listingTitle: cur.productName || cand.walmartTitle });
     if (!best) {
       imageNote = "no upright product-front in source — left unchanged (needs enrich/manual)";
     } else {

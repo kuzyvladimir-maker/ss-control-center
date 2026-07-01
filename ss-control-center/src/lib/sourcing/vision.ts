@@ -106,42 +106,70 @@ export interface PhotoClass {
   type: "front" | "back" | "nutrition" | "infographic" | "lifestyle" | "other" | "error";
   orientation: "standing" | "lying" | "na";
   barcode: boolean;
+  whiteBg: boolean;
   goodFront: boolean;
   conf: number;
 }
 
 const CLASSIFY_PROMPT = `You are choosing photos for an e-commerce MAIN image of a packaged grocery product. Classify THIS one photo. Return JSON only:
-{"type":"front|back|nutrition|infographic|lifestyle|other","orientation":"standing|lying|na","barcode":true|false,"goodFront":true|false,"conf":0.0-1.0}
+{"type":"front|back|nutrition|infographic|lifestyle|other","orientation":"standing|lying|na","barcode":true|false,"whiteBg":true|false,"goodFront":true|false,"conf":0.0-1.0}
 - type "front" = the sealed retail PACKAGE with its BRAND NAME label facing the camera.
 - Soft/floppy package (bread loaf/bag): "standing" = the loaf stands vertically (tall), its printed front label facing you; "lying" = it lies flat and you mainly see the top or the cut-END/side panel. Rigid box/can/bottle = "na".
 - "barcode": true if a UPC barcode strip is clearly visible (that side is the BACK/side, not the front).
+- "whiteBg": true only if the background is plain WHITE or very light grey (Walmart requires a white main-image background); false for colored/orange/lifestyle backgrounds.
 - "goodFront": true ONLY if type=front AND (standing or na) AND barcode=false AND it is a SINGLE package with the brand label clearly readable. Otherwise false.
 Reject as NOT goodFront: back/side, nutrition panels, infographics with callout text, lifestyle/prepared-food, a loaf lying showing its end/slice face, multi-pack bundles, or any photo with a visible barcode.`;
 
 export async function classifyProductPhoto(url: string): Promise<PhotoClass> {
-  const fallback: PhotoClass = { type: "error", orientation: "na", barcode: false, goodFront: false, conf: 0 };
+  const fallback: PhotoClass = { type: "error", orientation: "na", barcode: false, whiteBg: false, goodFront: false, conf: 0 };
   try {
     const j = parseJson(await ask([url], CLASSIFY_PROMPT, 120, STRONG_MODEL));
     if (!j) return fallback;
     return {
       type: j.type ?? "other", orientation: j.orientation ?? "na",
-      barcode: j.barcode === true, goodFront: j.goodFront === true,
+      barcode: j.barcode === true, whiteBg: j.whiteBg === true, goodFront: j.goodFront === true,
       conf: typeof j.conf === "number" ? j.conf : 0,
     };
   } catch { return fallback; }
 }
 
+/** From a MIXED-variant pool (e.g. many Nissin flavors), keep only the fronts that
+ *  are the SAME product + SAME flavor/variant as the listing — so we never tile the
+ *  wrong flavor. Returns matching urls; empty if none clearly match (caller falls back). */
+async function filterMatchingVariant(urls: string[], listingTitle: string): Promise<string[]> {
+  const cands = urls.slice(0, 8);
+  if (cands.length < 2) return cands;
+  const prompt = `The listing is: "${listingTitle}". Above are ${cands.length} candidate product photos, index 0..${cands.length - 1} (in order). Which show the SAME product as the listing — same brand AND the SAME flavor/variant? Match the flavor EXACTLY: e.g. "Korean Spicy Beef" must NOT match "Teriyaki Chicken"; "Whole Wheat" must NOT match "White". Return JSON only: {"match":[indices that are the same product+flavor]}. Empty array if none clearly match.`;
+  try {
+    const j = parseJson(await ask(cands, prompt, 60, STRONG_MODEL));
+    const arr = Array.isArray(j?.match) ? j.match : [];
+    return arr.map((i: any) => cands[Number(i)]).filter((u: any): u is string => typeof u === "string");
+  } catch { return []; }
+}
+
 /** Pick the single best UPRIGHT FRONT photo to tile. Returns its url + class, or
- *  null if NO good product-front exists in the pool (→ enrich / manual / skip). */
-export async function pickBestFront(urls: string[]): Promise<{ url: string; cls: PhotoClass } | null> {
-  const cands = urls.slice(0, 12);
+ *  null if NO good product-front exists in the pool (→ enrich / manual / skip).
+ *  Pass listingTitle so a mixed-flavor pool doesn't yield the wrong variant, and
+ *  prefer a WHITE background (Walmart main-image rule). */
+export async function pickBestFront(urls: string[], opts?: { listingTitle?: string }): Promise<{ url: string; cls: PhotoClass } | null> {
+  const cands = urls.slice(0, 16);
   if (!cands.length) return null;
   const cls = await Promise.all(cands.map((u) => classifyProductPhoto(u)));
-  const fronts = cls
+  let fronts = cls
     .map((c, i) => ({ url: cands[i], cls: c }))
     .filter((x) => x.cls.goodFront && x.cls.conf >= 0.6);
-  // Prefer a full STANDING package over a rigid/ambiguous one, then confidence.
+  if (!fronts.length) return null;
+
+  // Flavor/variant match — drop wrong-flavor fronts from a mixed pool.
+  if (opts?.listingTitle && fronts.length > 1) {
+    const matched = await filterMatchingVariant(fronts.map((f) => f.url), opts.listingTitle);
+    const kept = fronts.filter((f) => matched.includes(f.url));
+    if (kept.length) fronts = kept; // else keep all (don't strand on a fuzzy match)
+  }
+
+  // Prefer WHITE background (Walmart rule), then a full standing package, then conf.
   fronts.sort((a, b) =>
+    (Number(b.cls.whiteBg) - Number(a.cls.whiteBg)) ||
     (Number(b.cls.orientation === "standing") - Number(a.cls.orientation === "standing")) ||
     (b.cls.conf - a.cls.conf));
   return fronts[0] ?? null;
