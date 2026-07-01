@@ -329,8 +329,9 @@ export function assessRemediation(meta: RemediateMeta | null): { full: boolean; 
 
 /** POST one feed carrying MANY MPItem entries, retrying ONLY on Walmart's
  *  throttle with exponential backoff (60s, 120s, …). Non-throttle errors return
- *  immediately (they won't fix themselves). */
-async function submitFeedBatch(client: any, mpItems: Record<string, any>[], tries = 5): Promise<{ feedId: string | null; error?: string }> {
+ *  immediately (they won't fix themselves). Exported so the serverless queue
+ *  worker can pack a whole tick's SKUs into ONE feed instead of one-per-SKU. */
+export async function submitFeedBatch(client: any, mpItems: Record<string, any>[], tries = 5): Promise<{ feedId: string | null; error?: string }> {
   const payload = { MPItemFeedHeader: { businessUnit: "WALMART_US", locale: "en", version: SPEC_VERSION }, MPItem: mpItems };
   const throttled = (s: string) => /REQUEST_THRESHOLD_VIOLATED|TOO_MANY_REQUESTS|throttl|\b429\b/i.test(s);
   let lastErr = "";
