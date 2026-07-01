@@ -5,7 +5,7 @@
 // the exact shape the multipack pipeline reads. One BlueCart credit per miss.
 
 import type { Client } from "@libsql/client";
-import { bluecartWalmartSearch, unwrangleSearch, type RetailOffer } from "./retail-fetch";
+import { bluecartWalmartSearch, unwrangleSearch, isOwnOrReseller, type RetailOffer } from "./retail-fetch";
 import { normUrl, htmlToText, liItems } from "../walmart/multipack/donor";
 
 export interface DetailResult { title: string; images: string[]; bullets: string[]; description: string; }
@@ -124,9 +124,14 @@ export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: st
   // tile an unrelated product. Fall back to all if the filter leaves nothing.
   const toks = title.toLowerCase().split(/\s+/).filter((w) => w.length > 2).slice(0, 2);
   const gate = (offers: RetailOffer[]) => {
-    if (!toks.length) return offers;
-    const m = offers.filter((o) => { const t = (o.title || "").toLowerCase(); return toks.every((tk) => t.includes(tk)); });
-    return m.length ? m : offers;
+    // FIRST-PARTY ONLY (Vladimir's rule #8): the card must be sold by the retailer
+    // ITSELF, never a third-party reseller or one of our own storefronts — their
+    // photos are often repackaged bundles or our own bad listing. HARD filter.
+    // (Target/Sam's/Costco via Unwrangle are the retailer's own catalog → 1P.)
+    const fp = offers.filter((o) => o.isMarketplaceItem !== true && !isOwnOrReseller(o.sellerName));
+    if (!toks.length) return fp;
+    const m = fp.filter((o) => { const t = (o.title || "").toLowerCase(); return toks.every((tk) => t.includes(tk)); });
+    return m.length ? m : fp;
   };
 
   let creditsRemaining: number | null = null;
