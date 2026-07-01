@@ -25,7 +25,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import type { Cooler } from "@/lib/pricing/cost-model";
+import { type Cooler, LABEL as UNCRUSTABLES_LABEL } from "@/lib/pricing/cost-model";
 import type { Marketplace, FeeCategory } from "@/lib/economics/types";
 import {
   COOLER_SHELL,
@@ -50,8 +50,20 @@ export const DEFAULT_MIN_PRICE_CENTS = 999; // $9.99
 export const DEFAULT_FBA_FEE_CENTS = 0;
 /** Variable closing fee — 0 for grocery (applies to media). */
 export const DEFAULT_CLOSING_FEE_CENTS = 0;
-/** Our outbound label estimate (frozen ships cold) — operator sets globally. */
+/** Our outbound label estimate for DRY/ambient bundles — operator sets globally.
+ *  Frozen bundles auto-fill the label from the cooler size (see LABEL_CENTS). */
 export const DEFAULT_OWN_SHIPPING_CENTS = 0;
+
+/** Outbound shipping-label cost per cooler size, in cents. Calibrated from real
+ *  Veeqo shipment history (2026-06-15) — same source as cost-model.ts LABEL
+ *  ($20/$32/$45/$60). Frozen bundles ship in a cooler, so the label cost is
+ *  driven by the cooler the weight selects, not a flat guess. */
+export const FROZEN_LABEL_CENTS: Record<Cooler, number> = {
+  S: Math.round(UNCRUSTABLES_LABEL.S * 100),
+  M: Math.round(UNCRUSTABLES_LABEL.M * 100),
+  L: Math.round(UNCRUSTABLES_LABEL.L * 100),
+  XL: Math.round(UNCRUSTABLES_LABEL.XL * 100),
+};
 
 export const PRICING_MARKUP_SETTING_KEY = "bundle_pricing_markup";
 export const PRICING_MIN_PRICE_SETTING_KEY = "bundle_pricing_min_price_cents";
@@ -167,6 +179,9 @@ export interface BundlePriceResult {
   cooler_size: Cooler | null;
   /** true when weight was missing and packaging was estimated. */
   packaging_estimated: boolean;
+  /** true when the shipping label was auto-filled from the cooler size (frozen);
+   *  false when it came from the flat global own_shipping (dry, or override). */
+  shipping_auto: boolean;
   cost: {
     goods_cents: number;
     cooler_cents: number;
@@ -237,7 +252,15 @@ export function computeBundlePrice(
   const goods_cents = Math.max(0, Math.round(input.cogs_cents || 0));
   const fba_cents = Math.max(0, Math.round(model.fba_fee_cents || 0));
   const closing_cents = Math.max(0, Math.round(model.closing_fee_cents || 0));
-  const own_shipping_cents = Math.max(0, Math.round(model.own_shipping_cents || 0));
+
+  // Outbound shipping label. FROZEN bundles ship in a cooler, so the label is
+  // driven by the cooler size (calibrated per-cooler averages) — auto, unless
+  // the operator pinned a global override (>0). DRY/ambient uses the flat global.
+  const globalShip = Math.max(0, Math.round(model.own_shipping_cents || 0));
+  const shipping_auto = cold && cooler != null && globalShip === 0;
+  const own_shipping_cents = shipping_auto
+    ? FROZEN_LABEL_CENTS[cooler as Cooler]
+    : globalShip;
 
   const total_cost_cents =
     goods_cents + packaging_cents + fba_cents + closing_cents + own_shipping_cents;
@@ -276,6 +299,7 @@ export function computeBundlePrice(
     mode: model.mode,
     cooler_size: cooler,
     packaging_estimated: estimated,
+    shipping_auto,
     cost: {
       goods_cents,
       cooler_cents,

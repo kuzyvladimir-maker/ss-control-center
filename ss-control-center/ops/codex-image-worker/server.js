@@ -173,13 +173,22 @@ function buildPrompt(userPrompt, size, refFiles) {
     }
   }
   let refHint = "";
-  if (Array.isArray(refFiles) && refFiles.length > 0) {
-    const names = refFiles.map((f) => path.basename(f)).join(", ");
+  if (Array.isArray(refFiles) && refFiles.length === 1) {
+    const a = path.basename(refFiles[0]);
     refHint =
-      ` Reference image files are in the current working directory: ${names}. ` +
-      `Pass them to the image_gen tool as input/reference images and use them: ` +
-      `match their style, layout, lighting, and the look of any branded packaging, ` +
-      `cooler, and gel packs, and reproduce the real product packaging shown accurately.`;
+      ` Reference image ${a} is in the current working directory. Pass it to the ` +
+      `image_gen tool as an input/reference image and match its style, layout, ` +
+      `lighting, and any branded packaging shown.`;
+  } else if (Array.isArray(refFiles) && refFiles.length >= 2) {
+    // ROLE-LABELED references (caller sends anchor first, product second).
+    const anchor = path.basename(refFiles[0]);
+    const product = path.basename(refFiles[1]);
+    refHint =
+      ` Two reference image files are in the current working directory. ` +
+      `${anchor} is the KIT ANCHOR — use it ONLY for the styrofoam cooler look, the gel-pack style, and the overall layout/arrangement. ` +
+      `${product} is the DONOR PRODUCT PHOTO — it shows the REAL retail packaging (real brand name, real logo, real box art and colors). ` +
+      `You MUST reproduce the product packaging from ${product} EXACTLY as shown; do NOT invent, simplify, or substitute a different-looking package, and do NOT copy any product from the anchor image. ` +
+      `Pass BOTH files to the image_gen tool as input/reference images.`;
   }
   return (
     `Generate an image: ${userPrompt}.${sizeHint}${refHint} ` +

@@ -26,19 +26,21 @@ function model(over: Partial<PricingModel> = {}): PricingModel {
   };
 }
 
-test("frozen packaging buildup — Medium cooler when weight unknown", () => {
+test("frozen packaging buildup — Medium cooler + auto M shipping when weight unknown", () => {
   const r = computeBundlePrice(
     { cogs_cents: 5904, weight_lb: null, category: "FROZEN_SINGLE" },
     model(),
   );
-  // cooler M $9 + ice(9lb)=$0.72 + box $1 = $10.72
+  // cooler M $9 + ice(9lb)=$0.72 + box $1 = $10.72 packaging; shipping = M label $32
   assert.equal(r.cooler_size, "M");
   assert.equal(r.cost.cooler_cents, 900);
   assert.equal(r.cost.ice_cents, 72);
   assert.equal(r.cost.box_cents, 100);
   assert.equal(r.cost.packaging_cents, 1072);
   assert.equal(r.packaging_estimated, true);
-  assert.equal(r.cost.total_cost_cents, 5904 + 1072);
+  assert.equal(r.shipping_auto, true);
+  assert.equal(r.cost.own_shipping_cents, 3200); // calibrated M label
+  assert.equal(r.cost.total_cost_cents, 5904 + 1072 + 3200);
 });
 
 test("margin mode — solved price hits the target margin (35%)", () => {
@@ -46,8 +48,8 @@ test("margin mode — solved price hits the target margin (35%)", () => {
     { cogs_cents: 5904, weight_lb: null, category: "FROZEN_SINGLE" },
     model({ target_margin_pct: 0.35 }),
   );
-  // totalCost 6976 / (1 - 0.15 - 0.35=0.5) = 13952 cents
-  assert.equal(r.selling_price_cents, 13952);
+  // totalCost (5904+1072+3200=10176) / (1 - 0.15 - 0.35=0.5) = 20352 cents
+  assert.equal(r.selling_price_cents, 20352);
   // realized margin after actual tiered referral ≈ target
   assert.ok(Math.abs(r.margin_pct - 0.35) < 0.01, `margin ${r.margin_pct}`);
   assert.ok(r.profit_cents > 0);
@@ -58,8 +60,38 @@ test("markup mode — price = total landed cost × markup", () => {
     { cogs_cents: 5904, weight_lb: null, category: "FROZEN_SINGLE" },
     model({ mode: "markup", markup: 2 }),
   );
-  // total cost 6976 × 2 = 13952
-  assert.equal(r.selling_price_cents, 13952);
+  // total cost 10176 × 2 = 20352
+  assert.equal(r.selling_price_cents, 20352);
+});
+
+test("shipping auto-fills from cooler size (S $20 / M $32 / L $45 / XL $60)", () => {
+  const s = computeBundlePrice({ cogs_cents: 1000, weight_lb: 5, category: "FROZEN" }, model());
+  assert.equal(s.cooler_size, "S");
+  assert.equal(s.cost.own_shipping_cents, 2000);
+  const m = computeBundlePrice({ cogs_cents: 1000, weight_lb: 10, category: "FROZEN" }, model());
+  assert.equal(m.cost.own_shipping_cents, 3200);
+  const l = computeBundlePrice({ cogs_cents: 1000, weight_lb: 18, category: "FROZEN" }, model());
+  assert.equal(l.cost.own_shipping_cents, 4500);
+  const xl = computeBundlePrice({ cogs_cents: 1000, weight_lb: 25, category: "FROZEN" }, model());
+  assert.equal(xl.cost.own_shipping_cents, 6000);
+});
+
+test("global own_shipping override wins over the auto cooler label", () => {
+  const r = computeBundlePrice(
+    { cogs_cents: 1000, weight_lb: 10, category: "FROZEN" },
+    model({ own_shipping_cents: 4000 }),
+  );
+  assert.equal(r.shipping_auto, false);
+  assert.equal(r.cost.own_shipping_cents, 4000);
+});
+
+test("dry bundle uses the flat global shipping, not a cooler label", () => {
+  const r = computeBundlePrice(
+    { cogs_cents: 1000, weight_lb: 5, category: "DRY" },
+    model({ own_shipping_cents: 800 }),
+  );
+  assert.equal(r.shipping_auto, false);
+  assert.equal(r.cost.own_shipping_cents, 800);
 });
 
 test("weight drives the cooler size (18lb → L, 25lb → XL)", () => {
@@ -111,18 +143,18 @@ test("referral override changes the solved price", () => {
   assert.ok(lower.selling_price_cents < auto.selling_price_cents);
 });
 
-test("fees add to total cost and raise the price", () => {
+test("fba/closing fees add to total cost and raise the price", () => {
   const base = computeBundlePrice(
     { cogs_cents: 3000, weight_lb: 10, category: "FROZEN" },
     model(),
   );
   const withFees = computeBundlePrice(
     { cogs_cents: 3000, weight_lb: 10, category: "FROZEN" },
-    model({ fba_fee_cents: 500, own_shipping_cents: 1500 }),
+    model({ fba_fee_cents: 500, closing_fee_cents: 300 }),
   );
   assert.equal(
     withFees.cost.total_cost_cents,
-    base.cost.total_cost_cents + 2000,
+    base.cost.total_cost_cents + 800,
   );
   assert.ok(withFees.selling_price_cents > base.selling_price_cents);
 });

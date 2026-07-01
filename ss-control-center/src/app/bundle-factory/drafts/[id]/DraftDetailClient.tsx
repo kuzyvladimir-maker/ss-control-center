@@ -111,6 +111,7 @@ interface BundlePriceResultShape {
   mode: "margin" | "markup";
   cooler_size: string | null;
   packaging_estimated: boolean;
+  shipping_auto: boolean;
   cost: {
     goods_cents: number;
     cooler_cents: number;
@@ -1552,7 +1553,14 @@ function PricingModal({
             <div className="mt-2 border-t border-rule pt-2">
               <MoneyInput label="FBA / фулфилмент" value={fba} onChange={setFba} />
               <MoneyInput label="Closing fee" value={closing} onChange={setClosing} />
-              <MoneyInput label="Наша доставка (лейбл)" value={ownShip} onChange={setOwnShip} />
+              {result.shipping_auto ? (
+                <FormulaRow
+                  label={`Доставка (кулер ${result.cooler_size ?? "—"}, авто)`}
+                  value={dollars(result.cost.own_shipping_cents)}
+                />
+              ) : (
+                <MoneyInput label="Наша доставка (лейбл)" value={ownShip} onChange={setOwnShip} />
+              )}
             </div>
             <div className="mt-2 flex items-center justify-between border-t border-rule pt-2 text-[12.5px] font-semibold text-ink">
               <span>Итого себестоимость</span>

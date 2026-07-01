@@ -128,10 +128,10 @@ export function buildImagePrompt(args: {
     return [
       `A professional e-commerce main listing image on a pure white background, square 1:1.`,
       `This is a frozen gift set assembled and shipped by SALUTEM SOLUTIONS.`,
-      `Feature the real product shown in the product reference photo: ${products}. Reproduce its actual retail packaging accurately; do NOT rebrand or redesign it.`,
-      `Place the product inside a white EPS styrofoam insulated shipping cooler that carries the SALUTEM SOLUTIONS logo (realistic 3/4 front angle, lid leaning behind the cooler).`,
+      `The SECOND reference image is the DONOR PRODUCT PHOTO — the real retail box of ${products}. Reproduce that packaging EXACTLY as shown: same brand name, same logo, same box art, same colors and text. Do NOT rebrand, redesign, simplify, or substitute a look-alike package. The boxes inside the cooler must be visibly the same product as the second reference.`,
+      `The FIRST reference image is the KIT ANCHOR — copy from it the styrofoam cooler look, the gel-pack style, and the overall layout only (NOT the product).`,
+      `Place several of the real product boxes inside a white EPS styrofoam insulated shipping cooler that carries the SALUTEM SOLUTIONS logo (realistic 3/4 front angle, lid leaning behind the cooler).`,
       `Include 2 to 4 white branded gel packs reading "FROZEN GEL PACK", "KEEP FROZEN", "FOR FROZEN SHIPMENTS" with the Salutem Solutions logo — some inside the cooler next to the product, 1-2 in front.`,
-      `Match the kit reference image for the look of the cooler, the gel packs, and the overall layout.`,
       `Apply SALUTEM SOLUTIONS branding ONLY to the cooler and the gel packs — NEVER onto the third-party product packaging.`,
       `Subtle frost and cold condensation on the cooler and packs; NO loose ice, NO crushed ice, NO ice cubes.`,
       `No people, no hands, no lifestyle background, no extra props, no overlaid text, no watermarks.`,
@@ -271,12 +271,15 @@ export async function runImageGeneration(
     category: draft.category,
   });
 
-  // Phase 3 references passed to the image worker: the donor product photo
-  // (real packaging accuracy) + the approved hero anchor for cold bundles
-  // (Salutem cooler + gel-pack look). The worker fetches these URLs.
+  // Phase 3 references passed to the image worker — ORDER MATTERS. The worker
+  // role-labels them by position: ref-1 = the KIT ANCHOR (Salutem cooler +
+  // gel-pack look/layout), ref-2 = the DONOR PRODUCT PHOTO (the REAL retail
+  // packaging to reproduce exactly). Anchor FIRST, product SECOND — the reverse
+  // let Codex treat the donor photo as a mere style guide and invent a lookalike
+  // (wrong-brand) box instead of cloning the real one. The worker fetches these.
   const referenceUrls: string[] = [];
-  if (draft.draft_main_image_url) referenceUrls.push(draft.draft_main_image_url);
   if (isColdCategory(draft.category)) referenceUrls.push(frozenAnchorUrls()[0]);
+  if (draft.draft_main_image_url) referenceUrls.push(draft.draft_main_image_url);
 
   const outcomes: ChannelImageOutcome[] = [];
   let totalCost = 0;
