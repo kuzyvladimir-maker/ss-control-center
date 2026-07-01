@@ -184,17 +184,19 @@ export async function buildAndSubmitOne(
   let mainUrl: string | null = null;
   let imageNote = "";
   const secondaryImageUrls: string[] = [];
+
+  // Candidate image pool, built ONCE = the full donor detail gallery + EVERY image
+  // captured for this SKU across all offers + the base. Used for BOTH the main
+  // selector AND the secondary gallery, so a thin-donor SKU still gets photos.
+  const poolSet = new Set<string>((donor?.images ?? []).filter(Boolean).map((u) => u.split("?")[0]));
+  try {
+    const rps = await db.execute({ sql: `SELECT imageUrls FROM RetailPrice WHERE sku=? AND imageUrls IS NOT NULL`, args: [sku] });
+    for (const row of rps.rows as any[]) { try { const arr = JSON.parse((row as any).imageUrls || "[]"); for (const u of arr) if (typeof u === "string" && u.startsWith("http")) poolSet.add(u.split("?")[0]); } catch {} }
+  } catch {}
+  if (cand.baseImageUrl) poolSet.add(cand.baseImageUrl.split("?")[0]);
+  const pool = Array.from(poolSet);
+
   if (scope.image) {
-    // Candidate pool = the full detail gallery + EVERY image we've captured for
-    // this product across all BlueCart offers (more candidates → better chance a
-    // clean front exists for vision to pick).
-    const poolSet = new Set<string>((donor?.images ?? []).filter(Boolean));
-    try {
-      const rps = await db.execute({ sql: `SELECT imageUrls FROM RetailPrice WHERE sku=? AND imageUrls IS NOT NULL`, args: [sku] });
-      for (const row of rps.rows as any[]) { try { const arr = JSON.parse((row as any).imageUrls || "[]"); for (const u of arr) if (typeof u === "string" && u.startsWith("http")) poolSet.add(u.split("?")[0]); } catch {} }
-    } catch {}
-    if (cand.baseImageUrl) poolSet.add(cand.baseImageUrl);
-    const pool = Array.from(poolSet);
     // STRONG selector (Sonnet): pick the best UPRIGHT SINGLE-UNIT FRONT, rejecting
     // back/barcode, nutrition, infographic, lifestyle/serving, and loaves lying on
     // their end (Wave 1's weak Haiku picker tiled those → torец/back/serving mains).
@@ -232,8 +234,17 @@ export async function buildAndSubmitOne(
     }
   }
   if (scope.gallery) {
-    const donorImgs = (donor?.images ?? []).slice(0, DONOR_IMAGE_CAP);
-    secondaryImageUrls.push(...donorImgs);
+    // Gallery = the product's OTHER photos (single-unit shot, nutrition panel,
+    // ingredients, lifestyle). Broadened from donor.images to the FULL pool so a
+    // SKU whose BlueCart DETAIL came back thin still shows secondary photos —
+    // donor-detail images first (best quality/order), then any other captured.
+    const ordered = [...(donor?.images ?? []).map((u) => u.split("?")[0]), ...pool];
+    const seen = new Set<string>();
+    for (const u of ordered) {
+      if (!u || seen.has(u)) continue;
+      seen.add(u); secondaryImageUrls.push(u);
+      if (secondaryImageUrls.length >= DONOR_IMAGE_CAP) break;
+    }
   }
 
   // Scope-aware Visible block — only the chosen fields are sent. We deliberately
@@ -314,17 +325,24 @@ export async function buildAndSubmitOne(
  *  - `full`    : A-to-Z ideal = textOk AND imageOk. Used by the review gallery/QC
  *                to flag "needs a better photo" items.
  */
-export function assessRemediation(meta: RemediateMeta | null): { full: boolean; textOk: boolean; imageOk: boolean; reasons: string[] } {
-  if (!meta) return { full: false, textOk: false, imageOk: false, reasons: ["no build meta"] };
+export function assessRemediation(meta: RemediateMeta | null): { full: boolean; textOk: boolean; imageOk: boolean; galleryOk: boolean; reasons: string[] } {
+  if (!meta) return { full: false, textOk: false, imageOk: false, galleryOk: false, reasons: ["no build meta"] };
   const reasons: string[] = [];
-  const imageOk = (meta.imagesCount ?? 0) >= 1;
+  // imageOk = the MAIN photo specifically (the tiled N-unit shot). A listing with
+  // gallery images but NO main is NOT ok — earlier grading wrongly counted gallery
+  // toward the image, badging main-less listings "A-to-Z ✓" (Vladimir caught it).
+  const mainOk = !!meta.mainImageUrl;
+  const galleryCount = Math.max(0, (meta.imagesCount ?? 0) - (mainOk ? 1 : 0));
+  const galleryOk = galleryCount >= 2;
   const bulletsOk = (meta.bulletsCount ?? 0) >= 5;
   const descOk = (meta.descriptionLength ?? 0) >= 500;
-  if (!imageOk) reasons.push("no image (needs better photo / manual)");
+  if (!mainOk) reasons.push("no MAIN photo (needs generation / manual)");
+  if (!galleryOk) reasons.push(`thin gallery (${galleryCount} extra photos)`);
   if (!bulletsOk) reasons.push(`only ${meta.bulletsCount ?? 0} bullets`);
   if (!descOk) reasons.push(`thin description (${meta.descriptionLength ?? 0} chars)`);
   const textOk = bulletsOk && descOk;
-  return { full: imageOk && textOk, textOk, imageOk, reasons };
+  // full A-to-Z ideal (Vladimir's standard) = main photo + gallery + text.
+  return { full: mainOk && galleryOk && textOk, textOk, imageOk: mainOk, galleryOk, reasons };
 }
 
 /** POST one feed carrying MANY MPItem entries, retrying ONLY on Walmart's
