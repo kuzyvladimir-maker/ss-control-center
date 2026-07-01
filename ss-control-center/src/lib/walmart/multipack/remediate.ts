@@ -85,8 +85,9 @@ async function loadCandidate(db: Client, sku: string, liveTitle: string, storeIn
   if (pack < 2) return null;
   const r = await db.execute({
     sql: `SELECT imageUrls, retailerProductId FROM RetailPrice
-          WHERE sku=? AND imageUrls IS NOT NULL AND imageUrls != '' AND sourceApi='bluecart'
-          ORDER BY (CASE WHEN COALESCE(packSizeSeen,1)=1 THEN 0 ELSE 1 END), confidence DESC LIMIT 1`,
+          WHERE sku=? AND imageUrls IS NOT NULL AND imageUrls != ''
+          ORDER BY (CASE WHEN sourceApi='bluecart' THEN 0 ELSE 1 END),
+                   (CASE WHEN COALESCE(packSizeSeen,1)=1 THEN 0 ELSE 1 END), confidence DESC LIMIT 1`,
     args: [sku],
   });
   const rr = r.rows[0] as any;
@@ -176,7 +177,7 @@ export async function buildAndSubmitOne(
     // clean front exists for vision to pick).
     const poolSet = new Set<string>((donor?.images ?? []).filter(Boolean));
     try {
-      const rps = await db.execute({ sql: `SELECT imageUrls FROM RetailPrice WHERE sku=? AND sourceApi='bluecart' AND imageUrls IS NOT NULL`, args: [sku] });
+      const rps = await db.execute({ sql: `SELECT imageUrls FROM RetailPrice WHERE sku=? AND imageUrls IS NOT NULL`, args: [sku] });
       for (const row of rps.rows as any[]) { try { const arr = JSON.parse((row as any).imageUrls || "[]"); for (const u of arr) if (typeof u === "string" && u.startsWith("http")) poolSet.add(u.split("?")[0]); } catch {} }
     } catch {}
     if (cand.baseImageUrl) poolSet.add(cand.baseImageUrl);

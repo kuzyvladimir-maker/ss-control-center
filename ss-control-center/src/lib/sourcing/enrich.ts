@@ -5,7 +5,7 @@
 // the exact shape the multipack pipeline reads. One BlueCart credit per miss.
 
 import type { Client } from "@libsql/client";
-import { bluecartWalmartSearch } from "./retail-fetch";
+import { bluecartWalmartSearch, unwrangleSearch, type RetailOffer } from "./retail-fetch";
 import { normUrl, htmlToText, liItems } from "../walmart/multipack/donor";
 
 export interface DetailResult { title: string; images: string[]; bullets: string[]; description: string; }
@@ -69,33 +69,10 @@ export async function fetchAndStoreDetail(db: Client, sku: string, itemId: strin
 
 export interface EnrichResult { found: boolean; alreadyHad: boolean; creditsRemaining: number | null; offers: number; reason?: string; }
 
-/** Ensure a bluecart donor image exists in RetailPrice for `sku`. No-op (and no
- *  credit spent) if one already exists. */
-export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: string | null; title?: string | null }): Promise<EnrichResult> {
-  const have = await db.execute({
-    sql: `SELECT 1 FROM RetailPrice WHERE sku=? AND sourceApi='bluecart' AND imageUrls IS NOT NULL AND imageUrls!='' LIMIT 1`,
-    args: [opts.sku],
-  });
-  if (have.rows.length) return { found: true, alreadyHad: true, creditsRemaining: null, offers: 0 };
-
-  // BlueCart search works on TITLE (UPC search returns nothing for these items).
-  const title = String(opts.title || "").trim();
-  const query = title || String(opts.upc || "").trim();
-  if (!query) return { found: false, alreadyHad: false, creditsRemaining: null, offers: 0, reason: "no upc/title to search" };
-
-  const res = await bluecartWalmartSearch(query);
-  if (res.trialExhausted) return { found: false, alreadyHad: false, creditsRemaining: 0, offers: 0, reason: "bluecart credits exhausted" };
-
-  // Keep only offers that plausibly match this product (share the first two
-  // title tokens, e.g. the brand) — title search returns many loosely-related
-  // items, and we must not tile an unrelated product's photo. Fall back to all
-  // if the filter leaves nothing.
-  const toks = title.toLowerCase().split(/\s+/).filter((w) => w.length > 2).slice(0, 2);
-  const matches = toks.length
-    ? res.offers.filter((o) => { const t = (o.title || "").toLowerCase(); return toks.every((tk) => t.includes(tk)); })
-    : res.offers;
-  const offers = matches.length ? matches : res.offers;
-
+/** Persist a batch of retailer offers to RetailPrice (the shape the multipack
+ *  pipeline reads). Preserves each offer's own retailer/sourceApi so the pool
+ *  query can surface Target/Sam's/Costco photos too, not just BlueCart. */
+async function storeOffers(db: Client, sku: string, upc: string | null | undefined, offers: RetailOffer[], matchMethod: string): Promise<{ inserted: number; found: boolean }> {
   const now = new Date().toISOString();
   let inserted = 0, found = false;
   for (const o of offers) {
@@ -115,16 +92,67 @@ export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: st
           imageUrls=excluded.imageUrls, packSizeSeen=excluded.packSizeSeen, sourceApi=excluded.sourceApi,
           confidence=excluded.confidence, fetchedAt=excluded.fetchedAt, updatedAt=excluded.updatedAt`,
       args: [
-        `rp:${o.retailer}:${o.retailerProductId}`, opts.sku, opts.upc ?? null, o.retailer, o.retailerProductId,
+        `rp:${o.retailer}:${o.retailerProductId}`, sku, upc ?? null, o.retailer, o.retailerProductId,
         o.price, o.currency, o.inStock === null ? null : o.inStock ? 1 : 0, o.productUrl, o.title,
         o.description, JSON.stringify(o.keyFeatures || []), JSON.stringify(imgs), null,
-        packSeen, packSeen <= 1 ? 1 : 0, packSeen > 1 ? 1 : 0, "bluecart",
-        "ondemand", 0.5, now, now, now,
+        packSeen, packSeen <= 1 ? 1 : 0, packSeen > 1 ? 1 : 0, o.sourceApi || "bluecart",
+        matchMethod, 0.5, now, now, now,
       ],
     });
     inserted++;
   }
-  return { found, alreadyHad: false, creditsRemaining: res.creditsRemaining, offers: inserted, reason: found ? undefined : "no usable image in results" };
+  return { inserted, found };
+}
+
+/** Ensure a donor image exists in RetailPrice for `sku`. No-op (no credit spent)
+ *  if one already exists. Tries BlueCart (Walmart 1P) FIRST, then falls back to
+ *  the other paid retailers (Target → Sam's → Costco via Unwrangle) so a product
+ *  BlueCart doesn't index still gets a real photo (Vladimir Step 3, 2026-06-30). */
+export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: string | null; title?: string | null }): Promise<EnrichResult> {
+  // Already have a usable donor image from ANY source? Then we're done.
+  const have = await db.execute({
+    sql: `SELECT 1 FROM RetailPrice WHERE sku=? AND imageUrls IS NOT NULL AND imageUrls!='' AND imageUrls!='[]' LIMIT 1`,
+    args: [opts.sku],
+  });
+  if (have.rows.length) return { found: true, alreadyHad: true, creditsRemaining: null, offers: 0 };
+
+  const title = String(opts.title || "").trim();
+  const query = title || String(opts.upc || "").trim();
+  if (!query) return { found: false, alreadyHad: false, creditsRemaining: null, offers: 0, reason: "no upc/title to search" };
+
+  // Brand/title token gate — search returns loosely-related items; we must not
+  // tile an unrelated product. Fall back to all if the filter leaves nothing.
+  const toks = title.toLowerCase().split(/\s+/).filter((w) => w.length > 2).slice(0, 2);
+  const gate = (offers: RetailOffer[]) => {
+    if (!toks.length) return offers;
+    const m = offers.filter((o) => { const t = (o.title || "").toLowerCase(); return toks.every((tk) => t.includes(tk)); });
+    return m.length ? m : offers;
+  };
+
+  let creditsRemaining: number | null = null;
+
+  // 1) BlueCart (Walmart 1P) — cheapest, first.
+  try {
+    const res = await bluecartWalmartSearch(query);
+    creditsRemaining = res.creditsRemaining;
+    if (!res.trialExhausted) {
+      const { inserted, found } = await storeOffers(db, opts.sku, opts.upc, gate(res.offers), "ondemand");
+      if (found) return { found: true, alreadyHad: false, creditsRemaining, offers: inserted };
+    }
+  } catch { /* fall through to other retailers */ }
+
+  // 2) Fallback — other paid retailers (Target / Sam's / Costco) via Unwrangle.
+  //    Stops at the first that yields a usable photo.
+  for (const retailer of ["target", "samsclub", "costco"] as const) {
+    try {
+      const res = await unwrangleSearch(retailer, query);
+      if (res.trialExhausted) continue;
+      const { inserted, found } = await storeOffers(db, opts.sku, opts.upc, gate(res.offers), `ondemand-${retailer}`);
+      if (found) return { found: true, alreadyHad: false, creditsRemaining, offers: inserted, reason: `via ${retailer}` };
+    } catch { /* try next retailer */ }
+  }
+
+  return { found: false, alreadyHad: false, creditsRemaining, offers: 0, reason: "no usable image on walmart/target/sams/costco" };
 }
 
 /** Live BlueCart credits (free /account endpoint). Used as a budget guard before
