@@ -4,11 +4,248 @@
 > SESSION-HANDOFF»*. Здесь — что мы делали, где остановились, и план. Обновляется
 > в конце каждой сессии.
 >
-> **Последнее обновление:** 2026-06-25 (iMac-Claude, смена машины iMac→MacBook) — перевёл
-> **генерацию картинок** с платного OpenAI Images API на **БЕСПЛАТНУЮ** через подписку ChatGPT
-> (Codex CLI `image_gen`, воркер на боксе). Всё на проде, запушено (`5660b09`), Vercel prod = Ready,
-> дерево чистое. См. блок «🆕 СЕССИЯ 2026-06-25» сразу ниже (там же — «ПРОДОЛЖИТЬ НА MacBook»).
+> **Последнее обновление:** 2026-07-01 (день, MacBook-Claude) — **Walmart Grow: мультипаки доведены до дела**.
+> 82 брак-листинга ЗАКРЫТЫ (фото 82/82, текст 79/79, атрибуты). Новое: **слой атрибутов Walmart MP_ITEM 5.0**
+> (quantity trio `multipackQuantity`/`countPerPack`/`count` = 2-й рычаг против путаницы количества), **QC-экран
+> в модуле** (Review fix → фото до/после + «на переделку»), **cost-фикс** (кэш классификаций + донор-первым +
+> текст на Haiku → повторные прогоны ≈даром), **ужесточение отбора фото** (белый фон + ОДНА единица + без
+> лишнего/баннеров/мульти-групп + verify плитки), **deep re-enrich** по всем ритейлерам, **база знаний Walmart**.
+> Тест на 50 СВЕЖИХ мультипаках = **94% полного A-до-Я**. Коммиты `bea2689`…`535c896`. **⏸ ЖДЁМ ВЛАДЕЛЬЦА:
+> сигнал на полный прогон ~1857.** См. блок «🆕 СЕССИЯ 2026-07-01 (день) — Walmart мультипаки» ниже.
+> _(Предыдущее: 2026-07-01 ночь — Bundle Factory E2E на Amazon (3 ASIN Uncrustables) + Speedy UPC-пул, `b7469f6`.)_
+> _(Предыдущее: 2026-06-30 hero-картинка = реальная упаковка донора + доставка по кулеру, `363e3dd` → v2.4.)_
+> _(Предыдущее: `ece5099` калькулятор цены + превью атрибутов/фото → v2.3; `6ea7e24` own-brand → v2.2.)_
 > _(Предыдущее: 2026-06-24 — Walmart Compliance/T&S removals read-инструмент `f5c9019`; 2026-06-21 — Financial Plan `/finance` + авто-захват чеков `33e7d23`; блоки ниже.)_
+
+---
+
+## 🆕 СЕССИЯ 2026-07-01 (день, MacBook-Claude) — Walmart мультипаки: атрибуты + QC-экран + cost-фикс + ужесточение отбора фото
+
+> **Домен:** Walmart Grow / multipack remediation (`src/lib/walmart/multipack/`, `src/lib/sourcing/`, `src/app/api/walmart/growth/`, `src/components/walmart-growth/`). НЕ пересекается с Bundle Factory (Amazon) — это параллельный домен.
+
+**Контекст:** цель владельца — доделать модуль Walmart Grow, чтобы он САМ (через UI) чинил мультипак-листинги (главное фото показывало N единиц, а не 1 → путаница «заказал 1, пришло N» → возвраты). Начинали с 82 «брак» листингов среди уже-починенных.
+
+**Что сделано и задеплоено (всё в main, `bea2689`→`535c896`):**
+
+1. **Слой атрибутов Walmart MP_ITEM 5.0** (`src/lib/walmart/multipack/attributes.ts`, KB `docs/marketplace-rules/walmart/mp-item-food-attributes.md`). Владелец дал офиц. спеку (Seller Center bulk template). **Quantity trio** `multipackQuantity`=N / `countPerPack`=1 / `count`=N — системный 2-й рычаг против путаницы количества (Walmart знает, что N штук). + `manufacturer`/`ingredients`/`flavor`/`size`/`netContentStatement`/`allergens` из донора. **Живой тест выявил:** closed-list значения (`containerType`/`foodForm`/…) enum-отбиваются, `productNetContentUnit` = «not a valid field», `productLine` = нужен JSONArray → всё убрано; SAFE-набор подтверждён. `ALL_SCOPE.attributes=true`. `brand` НЕ шлём (QARTH). Новая `checkFeedItems()` = per-item feed-ошибки.
+
+2. **QC-экран в модуле** (`ListingOptimizer.tsx` → раскрыть листинг → «Review fix»): фото ДО/ПОСЛЕ + галерея + текст + чипы атрибутов из persisted-контента (без Walmart-лага) + заметка + «Send back for re-do» (`/api/walmart/growth/remediation/review`, worker читает `result.forceImage`). Контент persist-ится в `WalmartListingRemediation.changeSummary.content` (batch-driver И worker).
+
+3. **COST-фикс** (главное — vision на Sonnet-5 ел ~$30/ночь): **кэш классификаций** фото по (url, model+`CLASSIFY_VER`) в Turso `ImageClassification` + in-mem → повторные прогоны ≈даром (RizwanX-2964 5.4с→0.08с). **Донор-первым** (16 вызовов→1). **Текст на Haiku** (`polish.ts` MODEL=CLAUDE.cheap). Sonnet-5 только на финальном отборе+verify. Память `project_vision_cost_optimization`. ⚠️ ПЕРВЫЙ прогон 1857 всё равно ~$50-100 разово (потом кэш). ⚠️ Anthropic-кредиты кончались среди ночи → бывает bare-текст; владелец пополнил.
+
+4. **Ужесточение отбора фото** (владелец QC-нул 82, нашёл ~6 типов брака: баннеры/лайфстайл/инфографика/мульти-группа/лишние-предметы/битая-вырезка). Единое правило: источник = **ОДНА единица на БЕЛОМ фоне, без лишнего**. Правки в `vision.ts` `CLASSIFY_PROMPT` (goodFront требует whiteBg + single + no-extras + no-multi-unit), `pickBestFront` ленивый fallback (+whiteBg), новый **rescue** `pickBestFrontFromPool` (весь пул одним vision-вызовом), rescue-плитка теперь VERIFY-ится. Память `feedback_walmart_donor_photo_selection` (обновлена). ⚠️ Мульти-группа = ОПАСНО (12-банок × 8 = «96» → хуже путаница).
+
+5. **Deep re-enrich** (идея владельца) — `ensureDonorImage(…, {deep:true})`: если чистого белого фронта нет в каталоге → пере-обыскать ВСЕ ритейлеры (Walmart+Target+Sam's+Costco) и дотянуть фото. Самозалечивание: строгий→rescue→deep-enrich→плитка. SKIP-карточки (нет донора) тоже триггерят deep-enrich. BJ's пока НЕ подключён (нужен его Unwrangle platform-id).
+
+6. **База знаний Walmart** — 3 агента изучили marketplacelearn+developer docs → `docs/marketplace-rules/walmart/kb/` (item-setup/API/auth incl. rate limit ~10 feeds/час, content/LQ/image-specs, feeds/errors). QARTH = наш внутренний алиас для compliance-lock, не官-термин.
+
+**Результаты:**
+- **82 закрыты:** фото 82/82, текст 79/79, атрибуты. Галерея: https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-review/atoz82-final-mr2fe25p.html
+- **Тест на 50 СВЕЖИХ мультипаках (никогда не тронутых) = 94% полного A-до-Я, 0 провалов feed, 3 просят генерацию.** Галерея: https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-review/fresh50-mr2h6ngr.html
+
+**⏸ ГДЕ ОСТАНОВИЛИСЬ / ЧТО ДАЛЬШЕ (ждём владельца):**
+1. **Полный прогон каталога ~1857 непочиненных мультипаков** — движок доказан (94% на чистом входе, самозалечивается). Владелец QC-ит галерею 50 → даёт сигнал. Запуск: `buildAndSubmitMany` по пулу (packExpr≥4, не в 82, never-remediated). Пойдёт волнами; ~$50-100 vision разово.
+2. Добить 3 «нужна генерация» из fresh-50 + остаток по 82 (ручной рычаг «Generate AI image» в модуле).
+3. Опционально: ещё урезать cost первого прогона (Haiku грубо-сортирует → Sonnet финал; ИЛИ пополнить OpenAI под gpt-4o-mini — но раньше квота OpenAI умирала).
+4. Подтвердить приёмку атрибутов Walmart на feed-ах (сегодня были очень медленные; per-item тест уже доказал SAFE-набор).
+5. Батчинг worker'а (сейчас 1 feed/SKU) — нужен per-item finalize из-за QARTH; `submitFeedBatch` уже экспортирован.
+
+**Память проекта обновлена:** `feedback_self_verify_long_runs`, `feedback_walmart_remediation_a_to_z`, `project_vision_cost_optimization`, `feedback_walmart_donor_photo_selection`. Wiki-worklog: `docs/wiki/walmart-quantity-confusion-fix.md`.
+
+---
+
+## 🆕 СЕССИЯ 2026-07-01 (ночь, MacBook-Claude) — Bundle Factory ДОКАЗАН E2E: 3 реальных ASIN + пул баркодов
+
+**Главное: пайплайн прогнан от генерации до размещения в каталоге Amazon.** 3 листинга
+Uncrustables Peanut Butter & Strawberry (30/45/90 шт), донор `2904ec27`, аккаунт store1 (Salutem).
+Каждый: own-brand драфт (без gift-set, без curator-дисклеймера) → AI-текст (комплаенс с 1-й попытки) →
+Codex hero-картинка (кулер, ~6 МБ) → promote (Speedy-UPC + rich-атрибуты + галерея из 6 фото) →
+ship-specs → validate → **реальный PUT ACCEPTED → Amazon присвоил ASIN**:
+
+| Кол-во | SKU | UPC | ASIN | Цена | Статус |
+|---|---|---|---|---|---|
+| 30 | AZ-ASMY-VEQ2 | 756441901405 | **B0H788M8WM** | $144.84 | DISCOVERABLE, ревью ≤48ч (100521) |
+| 45 | UA-ASAO-RE7Q | 756441901412 | **B0H784LMG6** | $174.54 | DISCOVERABLE, ревью ≤48ч |
+| 90 | VC-ASV1-378P | 756441901429 | **B0H786L5MW** | $263.64 | DISCOVERABLE, ревью ≤48ч |
+
+Владелец посмотрел: **«листинги реально работают, не живые»** (в каталоге, но пока не BUYABLE — это
+стандартное 48ч-ревью Amazon для новых ASIN, ворота самого Amazon, не наш дефект). Хочет **пару моментов
+доработать дома** (что именно — уточнит на iMac; видел их в Seller Central).
+
+**Что построено (коммиты `6f945b1`, `a36a949`, `b7469f6`, в проде через Vercel):**
+1. **Пул SpeedyBarcode загружен** — 13 234 свободных баркода в `UPCPool` AVAILABLE (импорт `scripts/_import-speedy-pool.ts`, источник `docs/speedy_free_pool*.csv`). Фейковый сгенерированный пул (2 996) законсервирован (QUARANTINED); генератор `seed-upc-pool-available.ts` отключён. **0 сожжённых баркодов.**
+2. **Цикл «сгорел→следующий»** (`src/lib/bundle-factory/distribution/upc-burn.ts` + `spApiDelete`): при коллизии баркода (Amazon 8541/GTIN) — удалить листинг, сжечь код, взять следующий AVAILABLE, переопубликовать. Автоматом в cron `poll-pending`. Не-UPC ошибки баркод НЕ жгут.
+3. **Галерея вторичных фото** (`attributes/gallery-images.ts` + promote-draft): раньше `other_product_image_locator_N` не заполнялись; теперь донор-фото + нутрицион-этикетка зеркалятся в R2 и подставляются; брендовая карточка — последним слотом. 6 фото на листинг, все HTTP 200.
+4. **2 бага, всплывших на живой публикации:** (а) `allergen_information` = **строчные токены** (`peanuts`/`soy`/`wheat`/`tree_nuts`/`sesame_seeds`…), Title-Case = отказ 90244 — починено в `build-amazon-attributes.ts`; (б) код **100521** («на ревью до 48ч, потом опубликуем») система считала провалом — теперь `status-poller` мапит в PENDING_REVIEW.
+
+**Где остановились / что дальше (для iMac-Claude):**
+- ⏳ **Ждём: 3 ASIN пройдут 48ч-ревью → станут BUYABLE.** Проверить SP-API GET listing (статус BUYABLE, нет 100521) или Seller Central. Если Amazon запросит инфо — отработать.
+- 🔧 **Владелец хочет доработать «пару моментов»** — спросить, что именно он увидел утром.
+- 📋 **UPC Pool Manager UI (Deliverable 2) ещё НЕ сделан:** страница в Command Center — загрузка пула + счётчики (available/assigned/burned/quarantined + burn-rate) + таблица баркод→листинг. Counts: 13 234 AVAILABLE / 937 ASSIGNED / 2 996 QUARANTINED / 1 BURNED. Детали: память `project_upc_pool_manager`.
+- 🐛 **Мелочи (не блокеры):** `ingredients` иногда с удвоенным значением (донор-данные через « | ») — косметика; WARNING про `recommended_browse_nodes` (Amazon игнорит).
+- 📄 Полный разбор — вики `docs/wiki/amazon-brand-card-and-attributes.md` (низ), память `project_bundle_factory_e2e_publish`.
+
+**⚠️ ОТДЕЛЬНО — безопасность (аудит `docs/AUDIT_2026-07-01_FULL.md`, чужая сессия, но КРИТИЧНО):** в git закоммичена БД `dev.db`/`prisma/dev.db` с 5 живыми Google OAuth refresh-токенами; `/api/debug/*` открыты без авторизации и пишут в реальные заказы Veeqo. Отозвать токены + вычистить из git + закрыть debug-роуты — разобрать дома в первую очередь.
+
+
+## 🆕 СЕССИЯ 2026-06-30 (тест владельца) — картинка: реальная упаковка + доставка по кулеру
+
+Коммит `363e3dd`, badge **v2.4**. Владелец тестировал и нашёл 2 вещи.
+
+**1) Hero-картинка ставила ГЕНЕРИЧЕСКУЮ упаковку** (без бренда Uncrustables), т.к. референсы
+шли в неверном порядке (донор-фото первым, наш кулер вторым) и воркер не размечал роли → Codex
+принимал реальное фото товара за «стиль» и выдумывал похожую коробку. Фикс:
+- `image-pipeline.ts`: порядок референсов = АНКОР (кулер+гель, layout) первым, ДОНОР-ФОТО (реальная
+  упаковка, репродуцировать точно) вторым; промпт явно говорит какой референс какой + «воспроизведи
+  упаковку ТОЧНО, не выдумывай похожую».
+- `ops/codex-image-worker/server.js`: размечает роли двух референсов (ref-1 = анкор только для layout;
+  ref-2 = донор-товар = скопировать бренд/лого/арт точно). **Задеплоен на бокс** (scp root@104.219.53.204
+  + `systemctl restart codex-image-worker`, active).
+
+**2) Калькулятор: «Наша доставка» = $0.** Теперь для frozen лейбл авто-подставляется по РАЗМЕРУ КУЛЕРА
+из калиброванных средних (`src/lib/pricing/cost-model.ts` LABEL: S$20/M$32/L$45/XL$60 — из истории Veeqo,
+док `docs/wiki/uncrustables-pricing-model.md`). `computeBundlePrice` берёт лейбл по кулеру, который выбрал
+вес; глобальный override own_shipping всё ещё перебивает; dry — плоский глобальный. В калькуляторе строка
+«Доставка (кулер M, авто)». Пример: 60-шт M Uncrustables → COGS $59.04 + упаковка $10.72 + доставка $32 =
+$101.76 → при 35% марже **~$203.52**. 11 юнит-тестов. (XS не добавлял — это не кулер-тип для Uncrustables,
+а мелкая коробка ≤3 lb; кулер-модель S/M/L/XL.)
+
+**Если владелец хочет ~$185-190** вместо $203 — снизить целевую маржу до ~30% в калькуляторе (тумблер).
+
+### Догон 2026-07-01 (тест владельца) — валидаторы own-brand, 2048px, таймаут, ЛОГОТИП
+
+- **VALIDATE: FAILED на корректном own-brand драфте** — own-brand был только в compliance-гейте, не в Stage-6 ВАЛИДАТОРАХ. Починил `validator-title` + `validator-brand-field` (own-brand ветки, `master_bundle.brand`). Коммит `379f675`, badge v2.5.
+- **Картинка 1024 → 2048** (`DEFAULT_SIZE`), проходит `validator-image-dimensions` (≥2000). Оставшиеся validate-ошибки (packaging-dims/weight) = ожидаемо, владелец вводит ship-specs.
+- **Генерация падала по таймауту** — воркер SIGKILL на 240с ровно на финише 4-мин генерации. Поднял воркер→285с (RUN_TIMEOUT_MS, передеплоил на бокс) + клиент→290с (codex-worker DEFAULT_TIMEOUT_MS), под потолком nginx/Vercel 300с. Коммит `abafcb4`.
+- **★ ГЛАВНОЕ: логотип бренда стирал НАШ vision-гейт, не OpenAI.** GPT рисовал настоящий логотип Smucker's Uncrustables на 1-й попытке, но Rule 6 знал в `allowedBrands` только «Uncrustables» (бренд компонента), а vision ловил ещё «Smucker's» (родительская марка) → BLOCKED → ретрай строил НЕГАТИВ-промпт и стирал логотип (попытка 2 = clean). Подтверждено в ComplianceCheck (`["Smucker's"]`). Фикс: Rule 6 в own-brand режиме разрешает весь passthrough-allowlist (Smucker's+Uncrustables) + сам бренд листинга; чужой бренд (Kraft) всё ещё флагается. Коммит `4227e5d`, badge **v2.6**. **Проверено end-to-end:** перегенерил → attempts=1, detected_logos=[], логотип Smucker's Uncrustables на каждой коробке, 2048px, наш кулер+гель. Урок: генерация УМЕЕТ бренды — мы их удаляли. Не строить композит; полная генерация работает.
+
+---
+
+## 🆕 СЕССИЯ 2026-06-30 (продолжение) — Own-brand режим (Uncrustables) + full-fidelity превью
+
+**ИТОГ:** две задачи сделаны и в проде. Bundle Factory badge → **v2.2**.
+
+**1) Own-brand passthrough (исключение Uncrustables/Smucker's)** — коммит `6ea7e24`.
+Владелец: для брендов-исключений НЕ делаем gift-set. Листим под ИХ собственным брендом, чужой бренд
+в тайтле разрешён ТОЛЬКО когда в атрибуте `brand` стоит их бренд (а не Salutem Vita). Реализация:
+- `src/lib/bundle-factory/own-brand.ts` — крошечный проверенный allowlist (`Smucker's/Smuckers/Uncrustables`),
+  `isOwnBrandPassthrough()`, `resolveListingBrand()`. Режим выводится ЧИСТО из бренда листинга, без DB-флага.
+- Проброшено: studio-engine (draft.brand = донор-бренд, draftName = имя товара без «…Gift Set»),
+  content-generation (style-блок + user-msg ветвятся — бренд В тайтле, нет блока «no foreign brand»,
+  нет дисклеймера, не «gift set»), compliance gate (own_brand из бренда; правила 1/2/3/4 ветвятся —
+  донор-бренд ОК в тайтле + другие passthrough-термины типа «Uncrustables» рядом со «Smucker's», прочие
+  чужие бренды всё ещё флагаются; донор-бренд валиден как brand field; дисклеймер пропускается),
+  amazon-publish (атрибут `brand` = реальный бренд MasterBundle, был захардкожен «Salutem Vita»).
+- 7 unit-тестов own-brand в `compliance/__tests__/rules.test.ts` (все 31 проходят). 15 неверных
+  gift-set драфтов Uncrustables удалены из Turso. Память: `project_uncrustables_own_brand_exception`.
+- ⚠️ TBD: штрих-код (матчить существующий ASIN vs новый UPC — сверить с живыми листингами перед первой
+  own-brand публикацией). `item_type_keyword` пока «food-gifts» и для own-brand (валидный GROCERY-ключ,
+  не блокирует, но семантически «подарок» — уточнить позже).
+
+**2) Full-fidelity превью драфта** — коммит `fdd6fbe`. Владелец: в превью видно только 4 вещи, надо ВСЁ.
+- Галерея фото: сгенерированное титульное = hero; фото из донора (`ResearchPool.reference_image_urls`
+  по каждому компоненту + `draft_secondary_images`) = кликабельные превьюшки. Генерим ТОЛЬКО титул, остальное
+  тянется из донор-базы. Показывает счётчик и происхождение фото.
+- Цена кликабельна → `PricingModal` с формулой `price = max(floor, ceil(COGS × markup))`, живой разбор
+  COGS/markup/floor; markup и floor редактируются и сохраняются через новый роут
+  `GET/POST /api/bundle-factory/pricing` (глобальная модель, помечено явно).
+- Полная таблица атрибутов: разворачивает Amazon-attribute JSON из ChannelSKU (Phase 2.1 filler —
+  ingredients/allergens/number_of_items/nutrition…) + ship-specs (вес, Д×Ш×В), UPC, страна, browse node.
+- Файлы: `drafts/[id]/page.tsx` (грузит donorPhotos + attributes + pricing), `DraftDetailClient.tsx`
+  (галерея, PricingModal, buildPreviewAttributes), `api/bundle-factory/pricing/route.ts`.
+
+**СЛЕДУЮЩЕЕ (для владельца):** живой прогон одного Uncrustables-драфта в own-brand режиме до Publish;
+решить штрих-код; при желании — per-listing override цены (сейчас модель глобальная).
+
+### Догон 2026-06-30 (по фидбеку владельца на превью) — коммит `ece5099`, badge v2.3
+
+1. **Калькулятор цены (настоящий, как ChannelMax).** Было: наивно COGS×3. Стало: `computeBundlePrice()`
+   в `pricing-config.ts` — товар + кулер/лёд/коробка (из economics `packaging.ts` по весу) + FBA/closing/
+   наша доставка + Amazon referral (economics `fee-tables.ts`), решается под целевую МАРЖУ (дефолт 35%)
+   или МАРКАП. Флор. Чистая функция, 8 юнит-тестов. promote-draft теперь цену ставит через неё
+   (реальная цена = что в превью). Модалка переписана в 2 колонки (себестоимость слева, комиссии+цена+
+   прибыль+маржа справа), тумблер маржа/маркап, живой пересчёт через `POST /api/bundle-factory/pricing/preview`,
+   Save пишет глобальную модель (расширен `POST /api/bundle-factory/pricing`).
+2. **Превью атрибутов** было пустым на GENERATED (ChannelSKU ещё нет). page.tsx теперь считает донор-
+   атрибуты (ingredients→FDA аллергены, кол-во, нетто, хранение, страна) → видно ДО публикации; после
+   промоушена клиент берёт реальные ChannelSKU.attributes.
+3. **Все фото донора.** Показывалось 1, потому что page.tsx искал в ResearchPool, а studio-компоненты
+   ссылаются на DonorProduct.id. Теперь грузим DonorProduct (`mainImageUrl` + `imageUrls[]`); studio-engine
+   ещё и сохраняет все фото в `draft_secondary_images`. (Публикация доп. фото на Amazon — отдельный TODO.)
+4. **5 неверных Uncrustables-драфтов** (сделаны ДО деплоя own-brand в 20:06, поэтому Salutem+giftset) —
+   ПРИЧИНА подтверждена (тайминг, не баг). Исправлены на месте в Turso (brand→Uncrustables, имя→чистое)
+   + перегенерён контент локально (tsx→prod Turso+Claude) → CAN_PUBLISH, бренд в тайтле, без дисклеймера,
+   без Salutem. Прод-эндпоинты за авторизацией (401), поэтому гонял через локальный tsx.
+
+**ЕЩЁ TODO:** публикация вторичных фото на Amazon (`other_product_image_locator`); штрих-код own-brand;
+per-listing ценовой override.
+
+---
+
+## 🆕 СЕССИЯ 2026-06-27/30 — Bundle Factory: полная пересборка (✅ ФАЗЫ 0–6 ГОТОВЫ, в проде)
+
+**ИТОГ:** все 6 фаз пересборки сделаны и задеплоены. Конец-в-конец: промпт → контент адаптирует данные
+донора → полные атрибуты (GROCERY + ингредиенты/аллергены) → frozen-hero картинка (брендированный кулер,
+по референсам, бесплатный воркер) → QA-офицер → публикация (frozen=только Amazon), билды достраиваются
+кроном при уходе со страницы. Growth-модули частично на shared brand-voice. ОСТАЁТСЯ (опц.): живой тест
+публикации владельцем; UI-кнопка QA-офицера; глубже завести Growth на QA-officer/registry; богаче стартовая форма.
+
+**ЧТО ДЕЛАЛИ:** пересобирали Bundle Factory по согласованной с владельцем логике сборки карточки.
+Канонический план: вики [bundle-factory-rebuild-plan.md](bundle-factory-rebuild-plan.md) (Фазы 0–6).
+Общий фундамент: [listing-quality-stack.md](listing-quality-stack.md) (используется и Growth-модулями).
+Картинки frozen: `docs/BUNDLE_FACTORY_FROZEN_MAIN_IMAGE_v1.0.md`. Решения — в memory `project_bundle_factory_vision`.
+
+**КЛЮЧЕВЫЕ РЕШЕНИЯ (зафиксированы):**
+- Контент — Claude АДАПТИРУЕТ данные донор-каталога (не выдумывает).
+- Картинки — вторичные = реальные фото каталога; главная = frozen hero (брендированный кулер+гелевые
+  пакеты+товар = это и есть товар лицом, главная картинка). Генерация = бесплатный Codex/GPT-подписка воркер.
+  Эталоны: `ss-control-center/public/bundle-factory/frozen-refs/`.
+- Атрибуты — полный набор из API маркетплейсов (Amazon 80–117/тип в `docs/marketplace-rules/amazon/_schemas/`).
+- Товарная группа Amazon: по умолчанию GROCERY; корм → PET_FOOD (GIFT_BASKET у Amazon НЕ существует).
+- Walmart НЕ принимает frozen/refrigerated → заморозка только Amazon.
+- QA-офицер (Отд 5) проверяет каждый листинг по KB перед публикацией.
+
+**ГДЕ ОСТАНОВИЛИСЬ (continue here):**
+- ✅ Фаза 0 (фундамент): 0.1 реестр атрибутов (`src/lib/bundle-factory/attributes/`), 0.2 чистка KB
+  (эмодзи-примеры + строка «эмодзи в bullets OK» в title-policy), 0.3 общий `src/lib/brand-voice/`
+  (walmart/multipack переведён; Amazon Growth advisor — в Фазе 6).
+- ✅ Фаза 1.1 — контент адаптирует РЕАЛЬНЫЕ данные донора: `content-pipeline.ts` тянет
+  donor (title/bullets/description/ingredients/nutrition), `content-generation.ts` рендерит блок
+  "MANUFACTURER REFERENCE DATA" → Claude адаптирует, не выдумывает.
+- ✅ Фаза 2 (Amazon) — product type **GROCERY** (вместо несуществующего GIFT_BASKET), обязательные
+  `item_type_keyword="food-gifts"` + `supplier_declared_dg_hz_regulation`, filler rich-атрибутов
+  (ingredients/allergen_information/number_of_items из донора → ChannelSKU.attributes →
+  merge в payload). Walmart-payload расширение — отложено (Walmart не берёт frozen).
+- ✅ Фаза 3 РАЗБЛОКИРОВАНА (2026-06-27): воркер на боксе обновлён (`ops/codex-image-worker/server.js` —
+  принимает `reference_images`/`reference_urls`, пишет их в run-dir, codex использует как input-референсы),
+  задеплоен (scp на `root@104.219.53.204` = ssh-алиас `server`; README-алиас `openclaw` УСТАРЕЛ), nginx
+  `client_max_body_size`→24m, перезапущен. **Живой тест PASSED:** референс Uncrustables-эталона → на выходе
+  точная копия (брендированный кулер + реальные коробки + FROZEN GEL PACK). Бесплатный image_gen РЕАЛЬНО
+  использует референсы. Токен воркера — только на боксе `/root/codex-image-worker/.env` + Vercel (НЕ в .env.local).
+  ✅ Фаза 3 КОД ГОТОВ: `image-pipeline.buildImagePrompt` (frozen-hero для cold / clean для shelf-stable, реальная
+  упаковка), передаёт референсы (донор-фото + R2-эталон `${R2_PUBLIC_URL}/prod/frozen-refs/anchor-*.png`),
+  `image-generation` шлёт `reference_urls`, Rule 6/vision-check инвертированы (`allowedBrands` = бренды компонентов).
+  6/6 prompt-тестов прошли. R2-креды РАБОЧИЕ (Vercel-managed; pull через `vercel env pull --environment=production`).
+- (история блокера, решено) Фаза 3 была заблокирована на:
+  (1) бесплатный GPT image-воркер (`codex-image-worker` на боксе 104.219.53.204) принимает только
+  `{prompt,size}` — БЕЗ референс-картинок; чтобы передавать 2 эталона + фото товара (для совпадения с
+  одобренными рендерами и точной чужой упаковки), нужна доработка ВОРКЕРА на боксе (вне этого репо).
+  (2) текущий `image-pipeline.buildImagePrompt` + compliance **Rule 6** (vision) ЗАПРЕЩАЮТ брендированную
+  упаковку; frozen-hero её ТРЕБУЕТ (Jimmy Dean + Salutem) → нужна связанная инверсия промпта + Rule 6
+  (разрешить свои + бренды компонентов бандла, блокировать только неожиданные). Не тестируется без живого
+  воркера/vision. Нужен владелец (бокс) + решение по подходу (reference vs AI-approx).
+- ✅ Фаза 4 — Qualification Officer: `src/lib/bundle-factory/qualification/officer.ts` (`qualifyChannelSku`,
+  pure-функция: completeness + brand-voice + покрытие required-атрибутов реестра + аллергены/ингредиенты)
+  + `GET /api/bundle-factory/drafts/[id]/qualify` (advisory отчёт по всем ChannelSKU). Переиспользуем в Growth.
+- ⏳ Остаются (без блокера): Фаза 5 — channel-gate (frozen→только Amazon; в distribution-pipeline:
+  пропускать Walmart для FROZEN_GROCERY/REFRIGERATED по категории MasterBundle), богаче стартовая форма,
+  resumability билда (серверный тик вместо браузерного). Фаза 6 — перевести Amazon/Walmart Growth на
+  shared-модули (brand-voice уже общий; advisor ещё со своей копией; officer/registry — подключить).
+- UI-wiring: кнопку «QA-офицер» на экране драфта (вызов /qualify) — не сделано, тонкий слой.
+- ⚠️ Ранее в этой сессии уже починен сам pipeline (генерация→картинки→вес/габариты→validate→publish) + добавлены
+  авто-цена, ship-specs, Amazon-превью, кликабельные драфты, публикация на NEEDS_REVIEW. См. memory `project_bundle_factory_pipeline_breaks`.
+
+**ОТ ВЛАДЕЛЬЦА НУЖНО (позже):** живой тест публикации на Amazon в конце.
 
 ---
 

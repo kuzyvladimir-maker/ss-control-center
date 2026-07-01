@@ -82,40 +82,68 @@ export interface RunImageGenerationResult {
   note?: string;
 }
 
+/** Frozen/refrigerated → cold-chain (needs the Salutem cooler + gel packs). */
+export function isColdCategory(category: string): boolean {
+  const c = (category || "").toUpperCase();
+  return c.includes("FROZEN") || c.includes("REFRIGERATED");
+}
+
+/** Approved frozen-hero style anchors. R2-hosted in prod (the worker fetches
+ *  them); falls back to the app's public copies when R2 isn't configured. */
+export function frozenAnchorUrls(): string[] {
+  const r2 = process.env.R2_PUBLIC_URL;
+  if (r2) {
+    const base = r2.replace(/\/+$/, "");
+    return [
+      `${base}/prod/frozen-refs/anchor-uncrustables.png`,
+      `${base}/prod/frozen-refs/anchor-jimmy-dean.png`,
+    ];
+  }
+  return [
+    "https://salutemsolutions.info/bundle-factory/frozen-refs/ref-uncrustables.png",
+    "https://salutemsolutions.info/bundle-factory/frozen-refs/ref-jimmy-dean.png",
+  ];
+}
+
 // Visible for tests so the prompt rendering can be asserted without
-// round-tripping through OpenAI.
+// round-tripping through the image worker.
+//
+// Phase 3 (frozen-hero rebuild, see docs/BUNDLE_FACTORY_FROZEN_MAIN_IMAGE_v1.0.md):
+// the MAIN image shows the REAL product (genuine goods we resell) — for a cold
+// bundle, inside our Salutem-branded cooler with branded "FROZEN GEL PACK"
+// pouches (the product we actually sell is the Salutem gift set). The donor
+// product photo + the approved hero anchor are passed as visual references so
+// the packaging is accurate and the kit matches the approved look.
 export function buildImagePrompt(args: {
   brand: string;
   variant: Variant;
   composition_type: string;
+  category: string;
 }): string {
-  const composition = args.variant.composition
+  const products = args.variant.composition
     .map((c) => `${c.qty}× ${c.product_name}`)
     .join(", ");
 
-  // Style rules pulled directly from CLAUDE.md brand-voice section —
-  // factual, neutral, no promo language even inside the visual description.
+  if (isColdCategory(args.category)) {
+    return [
+      `A professional e-commerce main listing image on a pure white background, square 1:1.`,
+      `This is a frozen gift set assembled and shipped by SALUTEM SOLUTIONS.`,
+      `The SECOND reference image is the DONOR PRODUCT PHOTO — the real retail box of ${products}. Reproduce that packaging EXACTLY as shown: same brand name, same logo, same box art, same colors and text. Do NOT rebrand, redesign, simplify, or substitute a look-alike package. The boxes inside the cooler must be visibly the same product as the second reference.`,
+      `The FIRST reference image is the KIT ANCHOR — copy from it the styrofoam cooler look, the gel-pack style, and the overall layout only (NOT the product).`,
+      `Place several of the real product boxes inside a white EPS styrofoam insulated shipping cooler that carries the SALUTEM SOLUTIONS logo (realistic 3/4 front angle, lid leaning behind the cooler).`,
+      `Include 2 to 4 white branded gel packs reading "FROZEN GEL PACK", "KEEP FROZEN", "FOR FROZEN SHIPMENTS" with the Salutem Solutions logo — some inside the cooler next to the product, 1-2 in front.`,
+      `Apply SALUTEM SOLUTIONS branding ONLY to the cooler and the gel packs — NEVER onto the third-party product packaging.`,
+      `Subtle frost and cold condensation on the cooler and packs; NO loose ice, NO crushed ice, NO ice cubes.`,
+      `No people, no hands, no lifestyle background, no extra props, no overlaid text, no watermarks.`,
+    ].join("\n");
+  }
+
+  // Shelf-stable → clean gift set of the real products on white, no cooler.
   return [
-    `Professional product photograph of a curated gift basket / variety pack.`,
-    `Contents: ${composition}.`,
-    `Composition type: ${args.composition_type.toLowerCase().replace(/_/g, " ")}.`,
-    `Curated and assembled by ${args.brand}.`,
-    ``,
-    `STYLE:`,
-    `- Clean studio photography on a seamless pure white background.`,
-    `- Soft even lighting, minimal shadow under the items, no dramatic gradient.`,
-    `- Items neatly arranged so each is clearly visible — flat lay or shallow group composition.`,
-    `- Square 1:1 framing, items fill roughly 85% of the frame.`,
-    `- Sharp focus across all items, accurate colour.`,
-    ``,
-    `STRICT NEGATIVES (do not include any of these):`,
-    `- No third-party brand logos, brand text, or trademarked packaging artwork visible on any item.`,
-    `- No retailer marks, no shelf labels, no price tags, no UPC barcodes.`,
-    `- Use entirely generic, unbranded packaging — plain wrappers, blank cartons, neutral pouches.`,
-    `- No people, hands, mouths, or body parts.`,
-    `- No emojis, decorative icons, stars, sparkles, or burst graphics overlaid on the image.`,
-    `- No promotional text or marketing copy rendered into the image.`,
-    `- No watermarks, no signatures, no AI-generation artefacts.`,
+    `A professional e-commerce main listing image on a pure white background, square 1:1.`,
+    `Show the real product shown in the product reference photo: ${products}. Reproduce the actual retail packaging accurately; do NOT rebrand it.`,
+    `Arrange the items neatly as a gift set, products filling roughly 85% of the frame, soft even lighting, sharp focus, accurate colour.`,
+    `No cooler, no gel packs. No people, no lifestyle background, no extra props, no overlaid text, no watermarks.`,
   ].join("\n");
 }
 
@@ -240,7 +268,18 @@ export async function runImageGeneration(
     brand: draft.brand,
     variant: selected,
     composition_type: draft.composition_type,
+    category: draft.category,
   });
+
+  // Phase 3 references passed to the image worker — ORDER MATTERS. The worker
+  // role-labels them by position: ref-1 = the KIT ANCHOR (Salutem cooler +
+  // gel-pack look/layout), ref-2 = the DONOR PRODUCT PHOTO (the REAL retail
+  // packaging to reproduce exactly). Anchor FIRST, product SECOND — the reverse
+  // let Codex treat the donor photo as a mere style guide and invent a lookalike
+  // (wrong-brand) box instead of cloning the real one. The worker fetches these.
+  const referenceUrls: string[] = [];
+  if (isColdCategory(draft.category)) referenceUrls.push(frozenAnchorUrls()[0]);
+  if (draft.draft_main_image_url) referenceUrls.push(draft.draft_main_image_url);
 
   const outcomes: ChannelImageOutcome[] = [];
   let totalCost = 0;
@@ -255,6 +294,7 @@ export async function runImageGeneration(
       description: row.description,
       basePrompt,
       bundleComponents,
+      referenceUrls,
       actor: input.actor ?? "system",
     });
     outcomes.push(outcome);
@@ -334,6 +374,7 @@ interface ProcessOneRowInput {
   description: string;
   basePrompt: string;
   bundleComponents: BundleComponentInput[];
+  referenceUrls: string[];
   actor: string;
 }
 
@@ -356,6 +397,7 @@ async function processOneRow(
     const imgResult = await generateMainImage({
       prompt: basePrompt,
       r2_path_slug: r2Slug,
+      reference_urls: args.referenceUrls,
       retry_context: priorFailure
         ? { ...priorFailure, attempt }
         : undefined,

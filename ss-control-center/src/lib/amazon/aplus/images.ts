@@ -15,6 +15,7 @@
 import type { PrismaClient } from "@/generated/prisma/client";
 import { generateMainImage } from "@/lib/bundle-factory/image-generation";
 import { CONCEPT_CONFIG, type Concept } from "./concepts";
+import { IMAGE } from "@/lib/ai-models";
 
 const DEFAULT_SUFFIX =
   "Professional high-resolution commercial food photography, warm natural light. Clean and appetizing.";
@@ -24,14 +25,14 @@ const NO_TEXT = "Absolutely NO text, NO labels, NO logos, NO packaging copy, NO 
 
 /** Image-generation model choice. "smart" routes per slot. */
 export type ImageModel = "gpt-image-2" | "gpt-image-1" | "smart";
-const DEFAULT_IMAGE_MODEL: ImageModel = "gpt-image-2";
+const DEFAULT_IMAGE_MODEL: ImageModel = IMAGE.default;
 
 /** Slots we treat as infographic/diagram (cheaper model OK). None yet — all our
  *  slots are real product/lifestyle photos, where gpt-image-2 wins. Hook for later. */
 function isInfographic(_slotKey: string): boolean { return false; }
 
 function resolveModel(mode: ImageModel, slotKey: string): string {
-  if (mode === "smart") return isInfographic(slotKey) ? "gpt-image-1" : "gpt-image-2";
+  if (mode === "smart") return isInfographic(slotKey) ? IMAGE.cheap : IMAGE.default;
   return mode;
 }
 

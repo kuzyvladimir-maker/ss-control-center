@@ -3,6 +3,7 @@
 // (Anthropic SDK + URL image block + JSON parse from the text response).
 
 import Anthropic from "@anthropic-ai/sdk";
+import { CLAUDE } from "@/lib/ai-models";
 
 function getClient(): Anthropic | null {
   const key = process.env.ANTHROPIC_API_KEY;
@@ -33,8 +34,9 @@ export async function parseReceipt(imageUrl: string): Promise<ReceiptFields> {
   if (!client) throw new Error("ANTHROPIC_API_KEY not set");
 
   const resp = await client.messages.create({
-    model: "claude-sonnet-4-5",
+    model: CLAUDE.balanced,
     max_tokens: 400,
+    thinking: { type: "disabled" },
     messages: [
       {
         role: "user",

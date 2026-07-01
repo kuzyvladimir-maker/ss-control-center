@@ -16,6 +16,7 @@ import {
 } from "./retail-fetch";
 import { oxylabsSearch, oxylabsEnabled, type OxylabsRetailer } from "./oxylabs-fetch";
 import { openClawSearch, openClawEnabled, type OpenClawRetailer } from "./openclaw-fetch";
+import { CLAUDE } from "@/lib/ai-models";
 
 // Parse a size token out of a title → normalized measure + amount (for $/measure).
 const UNIT_RE = /(\d+(?:\.\d+)?)\s*(fl\s*oz|oz|ct|count|lb|g|ml|l)\b/i;
@@ -171,7 +172,7 @@ export async function classifyTemperatureLLM(items: { title?: string | null; cat
     const client = new Anthropic({ apiKey });
     const list = items.map((it, i) => `${i}. ${(it.title || "").slice(0, 150)}${it.category ? ` [aisle: ${it.category}]` : ""}`).join("\n");
     const res = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
+      model: CLAUDE.cheap,
       max_tokens: 3500,
       messages: [{ role: "user", content:
         `Classify each grocery product as FROZEN or DRY for a fulfillment operation that FREEZES and ships cold items with ice. Decide by HOW THE STORE SELLS IT: from a freezer/refrigerator → FROZEN; from a shelf at room temperature → DRY.\n` +
@@ -210,7 +211,7 @@ export async function classifyGroceryTitles(titles: string[]): Promise<boolean[]
     const client = new Anthropic({ apiKey });
     const list = titles.map((t, i) => `${i}. ${(t || "").slice(0, 140)}`).join("\n");
     const res = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
+      model: CLAUDE.cheap,
       max_tokens: 3000,
       messages: [{ role: "user", content:
         `You are a grocery-catalog QA filter. For EACH numbered title decide if it is a GROCERY product — food, beverage, or edible consumable sold in a supermarket. Answer false for books, media, batteries, cleaning/laundry, health & beauty, toys, electronics, apparel, kitchenware, office, pet non-food.\nReturn ONLY a JSON array: [{"i":0,"food":true},...] covering every item.\n\n${list}` }],
@@ -461,7 +462,7 @@ export async function qcProductImage(db: Client, productId: string): Promise<Ima
     const client = new Anthropic({ apiKey });
     const content: any[] = imgs.map((x) => ({ type: "image", source: { type: "base64", media_type: mediaType(x.b64), data: x.b64 } }));
     content.push({ type: "text", text: prompt });
-    const r = await client.messages.create({ model: "claude-haiku-4-5-20251001", max_tokens: 300, messages: [{ role: "user", content }] });
+    const r = await client.messages.create({ model: CLAUDE.cheap, max_tokens: 300, messages: [{ role: "user", content }] });
     const tb = r.content.find((b: any) => b.type === "text") as any;
     const m = tb?.text?.match(/\{[\s\S]*\}/);
     res = m ? JSON.parse(m[0]) : null;

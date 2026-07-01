@@ -10,7 +10,12 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PageHead, HeroGreenCard, HeroLabel } from "@/components/kit";
+import { VersionBadge } from "@/components/VersionBadge";
 import { ArrowRight, PackageSearch, Sparkles, Eye } from "lucide-react";
+
+// Bump this when Bundle Factory ships a visible change (so the owner sees the
+// version tick up alongside the auto-changing build hash).
+const BUNDLE_FACTORY_VERSION = "v2.7";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +37,7 @@ export default async function BundleFactoryOverviewPage() {
 
   return (
     <>
+      <VersionBadge module="Bundle Factory" version={BUNDLE_FACTORY_VERSION} />
       <PageHead
         title="Bundle Factory"
         subtitle={

@@ -3406,6 +3406,22 @@ function OrderRow({
     !wmShipped &&
     (isReady || isBought);
 
+  // Product photos for the row — one per distinct item image, rendered as a
+  // big square on the left (same height as the whole info block) so the
+  // operator recognises the product at a glance. Most orders have a single
+  // product, but a MERGED order (several Veeqo orders combined onto one label
+  // for the same recipient) carries several different products — show them ALL
+  // so none is hidden behind the first. Dedupe by URL and cap at 4 so the
+  // grid stays readable.
+  const heroImages: { url: string; title: string }[] = [];
+  const seenHeroUrls = new Set<string>();
+  for (const it of order.items) {
+    if (!it.imageUrl || seenHeroUrls.has(it.imageUrl)) continue;
+    seenHeroUrls.add(it.imageUrl);
+    heroImages.push({ url: it.imageUrl, title: it.productTitle });
+    if (heroImages.length >= 4) break;
+  }
+
   return (
     <div
       className={cn(
@@ -3426,6 +3442,75 @@ function OrderRow({
           onClose={() => setLightboxImageUrl(null)}
         />
       )}
+
+      {/* Two-column layout: a big square product photo on the left (stretched
+          to the full height of the info block), and ALL the order info on the
+          right. */}
+      <div className="flex items-stretch gap-4">
+        {/* Large square product image. `self-stretch aspect-square` makes its
+            side equal the height of the right-hand info column, so it grows
+            with the card. Single product → one image; merged/multi-product
+            order → a grid so every product is visible. Click to open fullscreen.
+            Plain <img> (Veeqo CDN URLs aren't on next.config's allowed list),
+            absolutely positioned so it fills its cell without feeding its
+            intrinsic size back into the flex layout. object-contain (not cover)
+            shows the WHOLE photo with no cropping; padding keeps it off edges. */}
+        {heroImages.length === 0 ? (
+          <div className="shrink-0 self-stretch aspect-square min-h-[160px] rounded-lg border border-rule bg-bg-elev" />
+        ) : heroImages.length === 1 ? (
+          <button
+            type="button"
+            onClick={() => setLightboxImageUrl(heroImages[0].url)}
+            aria-label="Open product photo fullscreen"
+            className="relative shrink-0 self-stretch aspect-square min-h-[160px] cursor-zoom-in overflow-hidden rounded-lg border border-rule bg-surface"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={heroImages[0].url}
+              alt=""
+              className="absolute inset-0 h-full w-full object-contain p-2"
+              loading="lazy"
+            />
+          </button>
+        ) : (
+          // Merged order: 2 → side by side; 3 → one across the top + two below;
+          // 4 → 2×2. The `bg-rule` container shows through the 1px gaps as
+          // hairline dividers between products.
+          <div
+            className={cn(
+              "grid shrink-0 self-stretch aspect-square min-h-[160px] gap-px overflow-hidden rounded-lg border border-rule bg-rule",
+              heroImages.length === 2
+                ? "grid-cols-2 grid-rows-1"
+                : "grid-cols-2 grid-rows-2",
+            )}
+          >
+            {heroImages.map((img, idx) => (
+              <button
+                key={img.url}
+                type="button"
+                onClick={() => setLightboxImageUrl(img.url)}
+                aria-label={`Open product photo: ${img.title}`}
+                title={img.title}
+                className={cn(
+                  "relative cursor-zoom-in overflow-hidden bg-surface",
+                  // 3 images: first spans the top row so there's no empty cell.
+                  heroImages.length === 3 && idx === 0 ? "col-span-2" : "",
+                )}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={img.url}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-contain p-1.5"
+                  loading="lazy"
+                />
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Right column — every existing order detail. */}
+        <div className="min-w-0 flex-1">
       {/* Top row: select + identity + type tag */}
       <div className="flex items-start gap-3">
         {selectable ? (
@@ -3573,44 +3658,20 @@ function OrderRow({
           </div>
 
           {/* Items list — each on its own line so multi-item orders read
-              clearly. Thumbnail (~40px) on the left helps the operator
-              recognise the product without reading the title. */}
-          <ul className="mt-1 space-y-1.5">
+              clearly. The product photo now lives in the big square on the
+              left, so here we drop the thumbnail and give the title and the
+              order-count badge a much larger, easier-to-read size. */}
+          <ul className="mt-1.5 space-y-2">
             {order.items.map((i) => (
-              <li
-                key={i.sku}
-                className="flex items-start gap-2 text-[13px] text-ink-2"
-              >
-                {i.imageUrl ? (
-                  // Click to enlarge fullscreen (PhotoLightbox).
-                  <button
-                    type="button"
-                    onClick={() => setLightboxImageUrl(i.imageUrl ?? null)}
-                    className="shrink-0 cursor-zoom-in"
-                    aria-label="Open photo fullscreen"
-                  >
-                    {/* Plain <img> — Veeqo CDN URLs aren't on next.config's
-                        allowed list and these are small thumbnails not worth
-                        running through next/image optimisation. */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={i.imageUrl}
-                      alt=""
-                      className="h-10 w-10 rounded border border-rule bg-surface object-cover"
-                      loading="lazy"
-                    />
-                  </button>
-                ) : (
-                  <div className="h-10 w-10 shrink-0 rounded border border-rule bg-bg-elev" />
-                )}
-                <div className="min-w-0 flex-1 truncate">
-                  <span className="font-medium text-ink">
+              <li key={i.sku} className="text-ink-2">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                  <span className="text-[19px] font-bold leading-snug text-ink">
                     {i.productTitle}
-                  </span>{" "}
-                  <QtyBadge qty={i.quantity} />{" "}
-                  <span className="font-mono text-[11px] text-ink-3">
-                    ({i.sku})
                   </span>
+                  <QtyBadge qty={i.quantity} big />
+                </div>
+                <div className="mt-0.5 font-mono text-[11px] text-ink-3">
+                  {i.sku}
                 </div>
               </li>
             ))}
@@ -4158,6 +4219,10 @@ function OrderRow({
           )}
         </Button>
       </div>
+        </div>
+        {/* /right column */}
+      </div>
+      {/* /two-column layout */}
     </div>
   );
 }
@@ -4264,10 +4329,14 @@ function MergeableBanner({
  * operator must spot it before packing"). Vladimir asked for parity with
  * Veeqo's grey/yellow circle so the multi-qty cases jump out of the row.
  */
-function QtyBadge({ qty }: { qty: number }) {
+function QtyBadge({ qty, big = false }: { qty: number; big?: boolean }) {
   if (!Number.isFinite(qty) || qty <= 0) return null;
   if (qty === 1) {
-    return <span className="text-[12.5px] text-ink-3">× 1</span>;
+    return (
+      <span className={cn("text-ink-3", big ? "text-[16px]" : "text-[12.5px]")}>
+        × 1
+      </span>
+    );
   }
   const isHigh = qty >= 10;
   const isMid = qty >= 4;
@@ -4275,7 +4344,10 @@ function QtyBadge({ qty }: { qty: number }) {
     <span
       title={`Заказано ${qty} штук с одного листинга — проверь`}
       className={cn(
-        "inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11.5px] font-bold tabular leading-none",
+        "inline-flex items-center justify-center rounded-full font-bold tabular leading-none",
+        big
+          ? "h-9 min-w-[42px] px-3 text-[20px]"
+          : "h-5 min-w-[20px] px-1.5 text-[11.5px]",
         isHigh
           ? "bg-danger text-white ring-2 ring-danger/30"
           : isMid

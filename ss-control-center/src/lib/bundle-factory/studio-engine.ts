@@ -17,6 +17,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { runContentGeneration } from "./content-pipeline";
+import { resolveListingBrand, isOwnBrandPassthrough } from "./own-brand";
 import type { Variant, VariantComponent } from "./variation-matrix";
 
 export interface BatchProgress {
@@ -106,6 +107,7 @@ async function sourceDonors(theme: string) {
       category: true,
       bestPrice: true,
       mainImageUrl: true,
+      imageUrls: true,
     },
   });
 }
@@ -200,7 +202,15 @@ async function buildOneListing(args: {
     notes: `Multipack of ${donorName(primary)}`,
   };
 
-  const draftName = `${houseBrand} ${donorName(primary)} Gift Set`.slice(0, 120);
+  // Own-brand passthrough (Uncrustables carve-out): list the genuine product
+  // UNDER THE DONOR's OWN brand, NOT as a Salutem gift set. The listing brand
+  // drives the whole downstream branch (content-gen + compliance derive the
+  // mode from it). Everything else stays the Salutem gift-set model.
+  const listingBrand = resolveListingBrand(primary.brand, houseBrand);
+  const ownBrand = isOwnBrandPassthrough(listingBrand);
+  const draftName = ownBrand
+    ? donorName(primary).slice(0, 120)
+    : `${houseBrand} ${donorName(primary)} Gift Set`.slice(0, 120);
 
   // ── Bridge to the canonical pipeline ───────────────────────────────────────
   // Earlier this engine baked content straight onto the BundleDraft and
@@ -216,12 +226,27 @@ async function buildOneListing(args: {
     data: {
       generation_job_id: jobId,
       draft_name: draftName,
-      brand: houseBrand,
+      brand: listingBrand,
       category,
       composition_type: "SINGLE_FLAVOR",
       pack_count: packCount,
       draft_components: JSON.stringify([component]),
       draft_main_image_url: primary.mainImageUrl ?? null,
+      // Persist ALL donor photos so the preview + master bundle carry the full
+      // set (only the title image is generated; the rest come from the donor).
+      draft_secondary_images: (() => {
+        try {
+          const arr = primary.imageUrls ? JSON.parse(primary.imageUrls) : [];
+          if (!Array.isArray(arr)) return JSON.stringify([]);
+          const secondary = arr.filter(
+            (u): u is string =>
+              typeof u === "string" && u.trim().length > 0 && u !== primary.mainImageUrl,
+          );
+          return JSON.stringify(secondary);
+        } catch {
+          return JSON.stringify([]);
+        }
+      })(),
       draft_cost_cents: costCents,
       status: "VARIATION_SELECTED",
       target_channels: JSON.stringify([channel]),
@@ -355,6 +380,7 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
     select: {
       id: true, brand: true, productLine: true, flavor: true,
       title: true, category: true, bestPrice: true, mainImageUrl: true,
+      imageUrls: true,
     },
   });
   if (donors.length === 0) {

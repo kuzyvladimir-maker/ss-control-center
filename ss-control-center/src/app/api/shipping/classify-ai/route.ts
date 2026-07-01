@@ -13,6 +13,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { getProduct } from "@/lib/veeqo/client";
+import { CLAUDE } from "@/lib/ai-models";
 
 const SYSTEM_PROMPT = `Ты классифицируешь товар как FROZEN или DRY для логистики.
 
@@ -153,8 +154,9 @@ export async function POST(request: NextRequest) {
   let rawText = "";
   try {
     const resp = await client.messages.create({
-      model: "claude-sonnet-4-5-20250929",
+      model: CLAUDE.balanced,
       max_tokens: 512,
+      thinking: { type: "disabled" },
       messages: [{ role: "user", content }],
     });
     const textBlock = resp.content.find((b) => b.type === "text");

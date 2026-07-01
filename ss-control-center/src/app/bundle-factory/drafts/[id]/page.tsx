@@ -14,6 +14,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PageHead, Sep } from "@/components/kit";
+import {
+  getPricingModel,
+  computeBundlePrice,
+} from "@/lib/bundle-factory/pricing-config";
+import { buildRichAmazonAttributes } from "@/lib/bundle-factory/attributes/build-amazon-attributes";
 import { DraftDetailClient } from "./DraftDetailClient";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +52,15 @@ export default async function DraftDetailPage({ params }: PageProps) {
           validation_errors: true,
           validated_at: true,
           validation_attempt_count: true,
+          // Full attribute set (Phase 2.1 filler) + ship specs — surfaced in
+          // the preview so the operator sees EVERY field that will publish.
+          attributes: true,
+          upc: true,
+          country_of_origin: true,
+          package_weight_oz: true,
+          package_length_in: true,
+          package_width_in: true,
+          package_height_in: true,
           // Phase 2.5 distribution fields
           listing_status: true,
           submission_id: true,
@@ -69,6 +83,13 @@ export default async function DraftDetailPage({ params }: PageProps) {
       validation_errors: string | null;
       validated_at: Date | null;
       validation_attempt_count: number;
+      attributes: string | null;
+      upc: string | null;
+      country_of_origin: string | null;
+      package_weight_oz: number | null;
+      package_length_in: number | null;
+      package_width_in: number | null;
+      package_height_in: number | null;
       listing_status: string;
       submission_id: string | null;
       published_at: Date | null;
@@ -87,6 +108,13 @@ export default async function DraftDetailPage({ params }: PageProps) {
       validation_errors: cs.validation_errors,
       validated_at: cs.validated_at,
       validation_attempt_count: cs.validation_attempt_count,
+      attributes: cs.attributes,
+      upc: cs.upc,
+      country_of_origin: cs.country_of_origin,
+      package_weight_oz: cs.package_weight_oz,
+      package_length_in: cs.package_length_in,
+      package_width_in: cs.package_width_in,
+      package_height_in: cs.package_height_in,
       listing_status: cs.listing_status,
       submission_id: cs.submission_id,
       published_at: cs.published_at,
@@ -97,6 +125,29 @@ export default async function DraftDetailPage({ params }: PageProps) {
     };
   }
 
+  // Auto retail price — the full cost-buildup calculator (goods + cooler/ice/box
+  // + marketplace fees, solved for the target margin). Same math promote-draft
+  // uses to set the published price, so the preview shows the REAL number.
+  const pricingModel = await getPricingModel();
+  const masterForPrice = draft.master_bundle_id
+    ? await prisma.masterBundle.findUnique({
+        where: { id: draft.master_bundle_id },
+        select: { total_weight_oz: true },
+      })
+    : null;
+  const priceWeightLb = masterForPrice?.total_weight_oz
+    ? masterForPrice.total_weight_oz / 16
+    : null;
+  const priceCalc = computeBundlePrice(
+    {
+      cogs_cents: draft.draft_cost_cents ?? 0,
+      weight_lb: priceWeightLb,
+      category: draft.category,
+    },
+    pricingModel,
+  );
+  const previewPriceCents = priceCalc.selling_price_cents;
+
   const channels = safeParse<string[]>(draft.target_channels) ?? [];
   const variants = draft.variation_matrix
     ? safeParse<Variant[]>(draft.variation_matrix.variants_json) ?? []
@@ -104,6 +155,114 @@ export default async function DraftDetailPage({ params }: PageProps) {
   const selectedIdx = draft.variation_matrix?.selected_variant_idx ?? null;
   const selectedVariant =
     selectedIdx != null ? variants[selectedIdx] : undefined;
+
+  // The bundle's components reference DonorProduct rows by id (a studio-built
+  // component's research_pool_id IS the DonorProduct id). We load them ONCE and
+  // use them for BOTH the photo gallery and the attribute preview below.
+  const poolIds = (selectedVariant?.composition ?? [])
+    .map((c) => c.research_pool_id)
+    .filter((x): x is string => typeof x === "string" && x.length > 0);
+  const donorRows = poolIds.length
+    ? await prisma.donorProduct.findMany({
+        where: { id: { in: poolIds } },
+        select: {
+          id: true,
+          mainImageUrl: true,
+          imageUrls: true,
+          ingredients: true,
+          size: true,
+          unitMeasure: true,
+          category: true,
+          upc: true,
+        },
+      })
+    : [];
+  const donorById = new Map(donorRows.map((d) => [d.id, d]));
+  // ResearchPool fallback for brief-built drafts (their component ids point at
+  // ResearchPool rows, not DonorProduct).
+  const poolRows = poolIds.length
+    ? await prisma.researchPool.findMany({
+        where: { id: { in: poolIds } },
+        select: { id: true, reference_image_urls: true },
+      })
+    : [];
+  const poolById = new Map(poolRows.map((p) => [p.id, p.reference_image_urls]));
+
+  // Donor photos — the operator wants EVERY photo in the preview. Only the
+  // title (main) image is generated; the rest are pulled from the donor
+  // catalog. Order: generated main first, then per-component donor photos
+  // (mainImageUrl + the imageUrls JSON array), then any draft-stored secondary
+  // images, then the ResearchPool fallback. Deduped, order-preserving.
+  const donorPhotos: string[] = [];
+  {
+    const seen = new Set<string>();
+    const pushUrl = (u: unknown) => {
+      if (typeof u !== "string") return;
+      const url = u.trim();
+      if (!url || seen.has(url)) return;
+      seen.add(url);
+      donorPhotos.push(url);
+    };
+    pushUrl(draft.draft_main_image_url);
+    // Preserve composition order.
+    for (const pid of poolIds) {
+      const d = donorById.get(pid);
+      if (d) {
+        pushUrl(d.mainImageUrl);
+        for (const u of safeParse<string[]>(d.imageUrls) ?? []) pushUrl(u);
+      }
+      for (const u of safeParse<string[]>(poolById.get(pid)) ?? []) pushUrl(u);
+    }
+    for (const u of safeParse<string[]>(draft.draft_secondary_images) ?? []) {
+      pushUrl(u);
+    }
+  }
+
+  // Attribute preview — at GENERATED stage there is no ChannelSKU yet, so the
+  // rich attributes aren't stored anywhere. We compute the SAME donor-derived
+  // attributes promote-draft would write (ingredients → FDA allergens, item
+  // count) plus the fixed food fields, so the operator sees exactly what will
+  // be filled BEFORE publish. Post-promotion the client prefers the real
+  // ChannelSKU.attributes.
+  const primaryDonor = poolIds.length ? donorById.get(poolIds[0]) : undefined;
+  const previewAttributes: Array<{ label: string; value: string }> = [];
+  {
+    const push = (label: string, value: string | null | undefined) => {
+      const v = (value ?? "").toString().trim();
+      if (v) previewAttributes.push({ label, value: v });
+    };
+    push("Brand", draft.brand);
+    push("Number of items", String(draft.pack_count));
+    if (primaryDonor?.size) push("Net content / size", primaryDonor.size);
+    push("Category", draft.category.replace(/_/g, " ").toLowerCase());
+    if (/FROZEN/i.test(draft.category)) push("Storage", "Keep frozen");
+    else if (/REFRIGERATED/i.test(draft.category)) push("Storage", "Keep refrigerated");
+    push("Country of origin", "United States");
+    push("Expiration dated product", "Yes");
+    if (primaryDonor?.upc) push("Donor UPC (reference)", primaryDonor.upc);
+    // Ingredients + allergens straight from the donor statement.
+    const rich = buildRichAmazonAttributes({
+      ingredients: primaryDonor?.ingredients ?? null,
+      packCount: draft.pack_count,
+      category: draft.category,
+    });
+    const temp = rich.temperature_rating;
+    if (Array.isArray(temp) && temp[0] && typeof temp[0] === "object") {
+      push("Storage temperature", String((temp[0] as { value?: unknown }).value ?? ""));
+    }
+    const ing = primaryDonor?.ingredients?.trim();
+    if (ing) push("Ingredients", ing.slice(0, 600));
+    const allergens = rich.allergen_information;
+    if (Array.isArray(allergens) && allergens.length > 0) {
+      push(
+        "Allergen information",
+        allergens
+          .map((a) => (a && typeof a === "object" ? (a as { value?: unknown }).value : a))
+          .filter(Boolean)
+          .join(", "),
+      );
+    }
+  }
 
   return (
     <>
@@ -177,6 +336,19 @@ export default async function DraftDetailPage({ params }: PageProps) {
         canGenerate={Boolean(selectedVariant)}
         targetChannels={channels}
         draftStatus={draft.status}
+        previewPriceCents={previewPriceCents}
+        pricing={{
+          input: {
+            cogs_cents: draft.draft_cost_cents ?? 0,
+            weight_lb: priceWeightLb,
+            category: draft.category,
+          },
+          model: pricingModel,
+          result: priceCalc,
+        }}
+        donorPhotos={donorPhotos}
+        previewAttributes={previewAttributes}
+        brand={draft.brand}
         initialContent={draft.generated_content.map((g) => {
           const cs = channelSkuByChannel[g.channel];
           return {
@@ -203,6 +375,14 @@ export default async function DraftDetailPage({ params }: PageProps) {
             validation_status: cs?.validation_status ?? "PENDING",
             validation_errors_json: cs?.validation_errors ?? null,
             validation_attempt_count: cs?.validation_attempt_count ?? 0,
+            // Full attribute set + ship specs for the preview.
+            attributes_json: cs?.attributes ?? null,
+            upc: cs?.upc ?? null,
+            country_of_origin: cs?.country_of_origin ?? null,
+            package_weight_oz: cs?.package_weight_oz ?? null,
+            package_length_in: cs?.package_length_in ?? null,
+            package_width_in: cs?.package_width_in ?? null,
+            package_height_in: cs?.package_height_in ?? null,
             // Phase 2.5
             listing_status: cs?.listing_status ?? "PENDING",
             submission_id: cs?.submission_id ?? null,

@@ -25,6 +25,12 @@ export function ruleBrandField(input: ComplianceInput): RuleResult {
       details: { brand },
     };
   }
+  // Own-brand passthrough (Uncrustables): the listing publishes UNDER the donor
+  // brand, so the donor brand IS a legitimate brand-field value — the allowed-
+  // list (Salutem Vita / Starfit / Generic) only applies to gift-set listings.
+  if (input.own_brand) {
+    return { rule_id: "rule-2-brand-field", passed: true };
+  }
   if (!ALLOWED_LOWER.has(brand.toLowerCase())) {
     return {
       rule_id: "rule-2-brand-field",

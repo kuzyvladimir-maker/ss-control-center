@@ -25,12 +25,13 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+import { CLAUDE } from "@/lib/ai-models";
 
-const MODEL = "claude-sonnet-4-5";
+const MODEL = CLAUDE.balanced;
 const MAX_TOKENS = 1500;
 
-// Sonnet 4.5 pricing per Anthropic public pricing page (per 1M tokens):
-//   input        $3.00
+// Sonnet 5 pricing per Anthropic public pricing page (per 1M tokens):
+//   input        $3.00  ($2.00 intro through 2026-08-31)
 //   cache read   $0.30  (10× cheaper)
 //   cache write  $3.75  (1.25× input)
 //   output       $15.00
@@ -281,6 +282,9 @@ async function callOnce(
   const response = await client.messages.create({
     model: MODEL,
     max_tokens: MAX_TOKENS,
+    // Sonnet 5 defaults thinking ON; keep it off so thinking tokens don't eat
+    // MAX_TOKENS and truncate the JSON (parity with the pre-Sonnet-5 behaviour).
+    thinking: { type: "disabled" },
     // System block split out so we can attach cache_control. The Anthropic
     // SDK accepts system as either a string OR an array of blocks; arrays
     // are required for cache_control.

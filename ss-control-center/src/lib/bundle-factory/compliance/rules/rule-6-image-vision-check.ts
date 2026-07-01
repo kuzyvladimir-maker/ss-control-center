@@ -16,6 +16,10 @@
 // can run without burning Anthropic credits.
 
 import { detectForeignLogosInImage } from "@/lib/bundle-factory/audit/vision-check";
+import {
+  isOwnBrandPassthrough,
+  OWN_BRAND_PASSTHROUGH_BRANDS,
+} from "../../own-brand";
 import type { ComplianceInput, RuleResult } from "../types";
 
 export async function ruleImageVisionCheck(
@@ -39,7 +43,28 @@ export async function ruleImageVisionCheck(
   }
 
   const ownBrand = (input.brand || "").trim() || "Salutem Vita";
-  const result = await detectForeignLogosInImage(url, ownBrand);
+  // Phase 3 — the bundle's own component brands (genuine goods we resell,
+  // shown on purpose in the frozen hero under the gift-basket exception) are
+  // EXPECTED, not foreign-brand violations. Pass them as allowed so only
+  // UNEXPECTED brands (a hallucinated logo) flag.
+  const allowedBrands = [
+    // The listing's own brand is always allowed on the image (it IS the
+    // product for own-brand listings; the Salutem cooler for gift sets).
+    ownBrand,
+    ...(input.bundle_components ?? [])
+      .map((c) => (c.brand ?? "").trim())
+      .filter((b) => b.length > 0),
+  ];
+  // Own-brand passthrough (Uncrustables): the REAL product logo must survive on
+  // the image — that's the whole point of listing under the donor brand. The
+  // vision model reports both "Uncrustables" AND "Smucker's" (the parent mark on
+  // the box), so allow the FULL passthrough allowlist, not just the single
+  // component brand. Without this the gate flagged "Smucker's", blocked, and the
+  // retry stripped the genuine logo off the box (Vladimir 2026-07-01).
+  if (isOwnBrandPassthrough(input.brand)) {
+    allowedBrands.push(...OWN_BRAND_PASSTHROUGH_BRANDS);
+  }
+  const result = await detectForeignLogosInImage(url, ownBrand, allowedBrands);
 
   if (result.error) {
     return {

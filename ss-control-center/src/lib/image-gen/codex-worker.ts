@@ -35,8 +35,11 @@ export interface CodexImageResult {
   error?: string;
 }
 
-// Image gen via the subscription path takes ~30-60s; allow generous headroom.
-const DEFAULT_TIMEOUT_MS = 240_000;
+// Codex image_gen with reference images routinely takes ~4 minutes. Keep this
+// just under the Vercel route maxDuration (300s) + nginx proxy_read_timeout so a
+// slow-but-successful generation isn't aborted client-side (240s clipped a 241s
+// run). 290s leaves ~10s for the response to travel back.
+const DEFAULT_TIMEOUT_MS = 290_000;
 
 function parseSize(size?: string): { w: number; h: number } | null {
   if (!size) return null;
@@ -73,6 +76,12 @@ export async function generateImagePngViaCodex(args: {
   prompt: string;
   size?: string;
   timeoutMs?: number;
+  /** Base64-encoded PNGs passed to the worker as visual references (product
+   *  photo + approved frozen-hero anchors). Requires the box worker to support
+   *  reference images (server.js writeRefs path). Ignored if empty. */
+  referenceImages?: string[];
+  /** Image URLs the worker fetches as references (alternative to base64). */
+  referenceUrls?: string[];
 }): Promise<CodexImageResult> {
   // Test/smoke stub — bypass network + sharp, return the canned bytes.
   const stub = (globalThis as { __SS_CODEX_IMAGE_STUB__?: CodexImageStub })
@@ -105,7 +114,16 @@ export async function generateImagePngViaCodex(args: {
         "content-type": "application/json",
         authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ prompt: args.prompt, size: args.size }),
+      body: JSON.stringify({
+        prompt: args.prompt,
+        size: args.size,
+        ...(args.referenceImages && args.referenceImages.length > 0
+          ? { reference_images: args.referenceImages }
+          : {}),
+        ...(args.referenceUrls && args.referenceUrls.length > 0
+          ? { reference_urls: args.referenceUrls }
+          : {}),
+      }),
       signal: AbortSignal.timeout(args.timeoutMs ?? DEFAULT_TIMEOUT_MS),
     });
   } catch (e) {

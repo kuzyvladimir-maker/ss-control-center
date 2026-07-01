@@ -74,12 +74,13 @@ GET /definitions/2020-09-01/productTypes?marketplaceIds=ATVPDKIKX0DER
       }
     ],
     "bullet_point": [
-      { "value": "🍕 Includes Lunchables Pizza with Pepperoni...", "language_tag": "en_US", "marketplace_id": "ATVPDKIKX0DER" },
-      { "value": "✅ Comes with ready-to-assemble pizza kit...", "language_tag": "en_US", "marketplace_id": "ATVPDKIKX0DER" },
-      { "value": "📦 Conveniently packaged...", "language_tag": "en_US", "marketplace_id": "ATVPDKIKX0DER" },
-      { "value": "🎉 No need for cooking...", "language_tag": "en_US", "marketplace_id": "ATVPDKIKX0DER" },
-      { "value": "🛡️ Individually wrapped... Makes a delightful gift set for pizza lovers 🎁", "language_tag": "en_US", "marketplace_id": "ATVPDKIKX0DER" }
+      { "value": "Includes 12 Lunchables Pizza with Pepperoni kits (4.3 oz each).", "language_tag": "en_US", "marketplace_id": "ATVPDKIKX0DER" },
+      { "value": "Each kit contains crust, pizza sauce, mozzarella, and pepperoni for no-cook assembly.", "language_tag": "en_US", "marketplace_id": "ATVPDKIKX0DER" },
+      { "value": "Individually wrapped units; refrigerate after opening per the manufacturer label.", "language_tag": "en_US", "marketplace_id": "ATVPDKIKX0DER" },
+      { "value": "Packaged together as a gift set; suitable for lunches, snacks, and on-the-go meals.", "language_tag": "en_US", "marketplace_id": "ATVPDKIKX0DER" },
+      { "value": "Curated and assembled by Salutem Solutions LLC as a gift basket.", "language_tag": "en_US", "marketplace_id": "ATVPDKIKX0DER" }
     ],
+    "_note": "Examples follow the brand-voice rules (CLAUDE.md): NO emojis, NO promotional adjectives (delightful/perfect/ultimate/etc.), factual only, with the curator/assembler disclaimer bullet.",
     "recommended_browse_nodes": [
       {
         "value": "12011207011",

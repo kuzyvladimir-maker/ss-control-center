@@ -1,0 +1,174 @@
+# Amazon listing completeness — rich attributes + cold-chain brand-story card
+
+Living wiki note (session 2026-07-01). Two owner directives for Bundle Factory
+Amazon listings, plus the code that implements them. Owner: Vladimir.
+
+## 1. Product type: Food (not Grocery) for food bundles
+
+Amazon's Seller Central classified Uncrustables as product type **Food** with
+`item_type_keyword = frozen-kids-meals-and-entrees`. The `FOOD_GROCERY7.csv`
+flat-file (Valid Values with BOTH `food` and `grocery` columns) proved the two
+product types use **different valid-value strings** — you cannot reuse one on the
+other. Full grocery-vs-food diff table lives in
+[amazon/food-flat-file-notes.md](../marketplace-rules/amazon/food-flat-file-notes.md).
+The values we wired in `valid-values-food.ts` are the **food** column, so Food is
+the right type and needs no rework.
+
+Key cold-chain differences: temperature_rating food `Frozen: 0 degree` vs grocery
+`frozen: 0 degrees`; keyword food `frozen-kids-meals-and-entrees` vs grocery
+`frozen-breakfast-foods`; food has Diet Type + Occasion, grocery has Specialty +
+Subject Matter; food allergens Title-Case (~160), grocery lowercase tokens (~40).
+
+## 2. Fill the FULL relevant attribute set (owner: better search visibility)
+
+Vladimir's rule: the more RELEVANT + truthful attributes a listing carries, the
+better it surfaces in Amazon search. So the filler
+(`buildRichAmazonAttributes`, `attributes/build-amazon-attributes.ts`) fills the
+rich set, not the minimum — but only applicable, non-invented values (a wrong
+enum rejects the PUT; a false claim raises a flag).
+
+- **Bug fixed:** allergen_information emitted `Shellfish`/`Soybeans`/`Sesame`,
+  which are NOT Amazon FOOD valid values → PUT-reject. Corrected to
+  `Crustacean`/`Soy`/`Sesame Seeds`.
+- **Added:** `condition_type=new_new`, `product_expiration_type=Expiration Date
+  Required`, `is_heat_sensitive` (Yes for cold-chain), `contains_liquid_contents`
+  (No default; override for drinks) — all exact FOOD valid-value strings.
+- Still-optional richer fields needing per-product data: granular nutrition panel,
+  `unit_count` (e.g. "60 sandwiches"), Diet Type, gift Occasion.
+
+## 3. Cold-chain brand-story card — unified static gallery image (MANDATORY)
+
+Every FROZEN/REFRIGERATED Amazon listing must carry a single **unified** "Dear
+customer / why-us" infographic (insulated foam cooler + gel packs / optimized
+delivery / dedicated support / gift sets — and the pricing rationale). It is a
+SECONDARY (gallery) image, never the MAIN (secondary slots allow text/graphics;
+the MAIN stays the frozen-hero cooler+product shot).
+
+**Architecture — generate ONCE, reuse everywhere:**
+- Produce the card once → upload to R2 (bucket via `R2_PUBLIC_URL`, e.g. key
+  `prod/brand/salutem-brand-card-v1.png`, 1-yr immutable cache).
+- `attributes/brand-assets.ts` — `BRAND_CARD_COLD_CHAIN_URL` constant +
+  `appendColdChainBrandCard(attrs, marketplaceId)`: appends the fixed url as the
+  LAST `other_product_image_locator_N` slot, gated on `temperature_rating`
+  (Frozen/Chilled only), no-op while the url is empty.
+- Wired into `buildAmazonAttributes` (`distribution/amazon-publish.ts`) after the
+  rich-attr merge.
+
+**Key discovery:** the publisher previously sent ONLY `main_product_image_locator`
+— the secondary `other_product_image_locator_1..4` slots were defined in
+`fill-map.ts` but NEVER populated. This work activates that gallery path (donor
+secondary photos can follow the same route later).
+
+**Generation:** the card is made with **gpt-image-2** via the in-house Codex
+worker (`lib/image-gen/codex-worker.ts` → `https://mcp.salutem.solutions/codex-image/generate`,
+$0/image, ChatGPT subscription; returns raw PNG bytes). gpt-image-2 renders text
++ the Salutem lotus logo cleanly (confirmed 2026-07-01). Prod creds
+(CODEX_IMAGE_WORKER_URL/TOKEN + R2_*) live in Vercel — pull with
+`vercel env pull --environment=production`, use, delete.
+
+**Brand voice on the card:** NO emojis/hearts, NO promo adjectives — the legacy
+card had a heart icon + "Superior packaging"; the regenerated clean version drops
+both ("Superior packaging" → "Insulated foam cooler and gel packs").
+
+## История
+
+- 2026-07-01 — статья создана. Session work: confirmed Food product type;
+  richer FOOD attribute fill + allergen enum fix; built the cold-chain
+  brand-story card mechanism (brand-assets.ts + amazon-publish wiring, tests
+  5/5) and generated + SHIPPED the clean card via gpt-image-2 (best of 3
+  variants). Card LIVE at R2 `prod/brand/salutem-brand-card-v1.png` (public
+  HTTP 200). Commits: attrs `b637664`, mechanism `50aa0fd`, activation
+  `e88308a`, wiki `cab16df`.
+
+## E2E publish PROVEN + the UPC-pool blocker (2026-07-01, overnight)
+
+Drove a Uncrustables draft through the REAL pipeline (prod Turso + SP-API) to a
+real Amazon PUT. **Amazon returned ACCEPTED** and the listing (SKU SZ-ASPI-JFAT,
+store1) persisted with 28 attributes, 0 API issues. Fixes that made it publish
+(all committed): the GROCERY product type needed attributes the builder never
+set — `list_price` + `purchasable_offer` (price/offer was entirely missing!),
+`manufacturer`, `unit_count` {value, type:{value:Count}}, `each_unit_count`,
+`fc_shelf_life` {unit:"days"}, `melting_temperature` {unit:"degrees_fahrenheit"},
+and `fulfillment_availability` {fulfillment_channel_code:"DEFAULT", quantity}
+(without which the offer isn't buyable). Exact shapes came from the SP-API
+productType definition via `getAttributeForm()` in `amazon/growth/product-type-definitions.ts`.
+
+**The one remaining blocker = UPC collision.** The barcode from `UPCPool`
+(742259000027) was already linked to another Amazon ASIN (B08P277HSC) → issue
+100980 → no ASIN created. **Root cause: `scripts/seed-upc-pool-available.ts`
+GENERATED the AVAILABLE pool** — sequential numbers within our owned SpeedyBarcode
+prefixes (742259/789232/617261) with a valid GS1 check digit but NO Amazon-usage
+check, so low sequences are already burned. `validator-upc-format` only checks
+the checksum, not Amazon availability.
+
+**Actions (2026-07-01):** all 2996 generated AVAILABLE rows → status
+`QUARANTINED` (937 ASSIGNED real-listing rows untouched); AVAILABLE now 0 so the
+pipeline pauses until a verified pool is loaded. Plan: import the verified-free
+SpeedyBarcode pool (Jackie filtering ~17k), build a Command Center **UPC Pool
+Manager** (upload + counts + barcode→product table), and add a pre-assign
+Catalog-API free-check. Details in memory: project_bundle_factory_e2e_publish,
+project_upc_pool_manager.
+
+## Speedy pool loaded + burn loop + gallery + the allergen fix + 3 real ASINs (2026-07-01, night)
+
+Second overnight run — closed the UPC blocker and drove 3 fresh listings all the
+way into the Amazon catalog.
+
+**UPC pool.** Imported Jackie's verified-free SpeedyBarcode export
+(`docs/speedy_free_pool*.csv`, 13,239 rows) → `UPCPool` AVAILABLE (13,234 new, 5
+already present, FIFO by `acquired_at`) via `scripts/_import-speedy-pool.ts`. The
+self-generated pool stays QUARANTINED. Retired `seed-upc-pool-available.ts`.
+First codes handed out: 756441901405 / …412 / …429 — **all clean, no burns**.
+
+**Burn-on-reject loop** (`distribution/upc-burn.ts` + `spApiDelete`). A UPC is
+only "free vs our Veeqo", never provably free on Amazon (a Catalog pre-check even
+mis-read 742259000034 as free). So publish self-cleans: `isUpcConflictIssue()`
+catches 8541/GTIN-collision → `healUpcConflict()` DELETEs the tainted
+contribution, burns the code, claims the next AVAILABLE one, re-PUTs. Non-UPC
+errors never burn. Wired into the `poll-pending` cron.
+
+**Secondary gallery** (`attributes/gallery-images.ts` + promote-draft). The
+`other_product_image_locator_1..N` slots were declared but never filled. Now
+promote-draft mirrors the donor's harvested secondary photos + nutrition label to
+R2 (upsized for Scene7/Walmart CDNs) and injects the locators; brand card appends
+last → 6 gallery slots (5 donor infographic/lifestyle + card), all HTTP 200.
+`unit_count` falls back to `number_of_items` for flat "30 Count" packs.
+
+**CRITICAL — allergen_information is LOWERCASE tokens, not Title-Case.** The first
+publish of a listing carrying allergens FAILED VALIDATION_PREVIEW with 3× error
+**90244** ("can't accept Peanuts/Soy/Wheat"). The live GROCERY **and** FOOD
+productType schemas share ONE 184-value enum of **lowercase underscore tokens**:
+`peanuts`, `soy`, `wheat`, `tree_nuts`, `sesame_seeds`, `milk`, `eggs`, `fish`,
+`crustacean` (+ every `..._free` / `..._may_contain`). The earlier claim in this
+article that "FOOD allergens are Title-Case (~160)" was **WRONG** — corrected.
+Fixed `BIG_9` in `build-amazon-attributes.ts` + `ALLERGEN_CORE_VALUES`. After the
+fix → VALIDATION_PREVIEW **ACCEPTED**.
+
+**Poller fix — code 100521 is a review HOLD, not a failure.** New listings come
+back with 100521 severity=ERROR + a CATALOG_ITEM_REMOVED enforcement, but the
+message is "we are reviewing this listing … allow up to 48 hours … otherwise the
+listing will be published." The ASIN is already assigned and the item is
+DISCOVERABLE. `status-poller.pollAmazon` now maps 100521 (and "reviewing this
+listing" text) to PENDING_REVIEW, so the flow doesn't false-FAIL a listing that
+Amazon is merely moderating.
+
+**E2E RESULT — 3 real ASINs in the catalog (store1, Salutem).** 3× Uncrustables
+Strawberry (donor `2904ec27`), 30/45/90 count. Each: own-brand draft (no
+gift-set, no curator disclaimer) → AI content (compliance-clean first try) →
+Codex cooler-hero main image (~6 MB) → promote (Speedy UPC + rich attrs + 6-image
+gallery) → ship-specs → validate → **real PUT ACCEPTED** → **ASIN assigned**:
+- 30ct `AZ-ASMY-VEQ2` / UPC 756441901405 → **ASIN B0H788M8WM**, $144.84
+- 45ct `UA-ASAO-RE7Q` / UPC 756441901412 → **ASIN B0H784LMG6**, $174.54
+- 90ct `VC-ASV1-378P` / UPC 756441901429 → **ASIN B0H786L5MW**, $263.64
+
+All 3 DISCOVERABLE with 36 attributes each, in Amazon's standard ≤48 h
+new-listing review (100521) → auto-go-BUYABLE unless Amazon requests info. That
+final flip is Amazon's gate, not ours. **Pipeline PROVEN end-to-end: generate →
+publish → placed in catalog with an ASIN.** Drivers: `scripts/_e2e-build.ts` +
+`_e2e-publish-poll.ts`.
+
+## Связи
+
+- [Listing Quality Stack](listing-quality-stack.md), [Bundle Factory](bundle-factory.md)
+- [amazon/food-flat-file-notes.md](../marketplace-rules/amazon/food-flat-file-notes.md)
+- Frozen-hero MAIN image stays the cooler+product shot (owner firm decision).

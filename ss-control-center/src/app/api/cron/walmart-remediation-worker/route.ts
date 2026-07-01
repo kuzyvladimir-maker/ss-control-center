@@ -157,7 +157,8 @@ export async function GET(request: NextRequest) {
       if (claim.rowsAffected === 0) continue;
 
       let scope: RemediateScope | null = null;
-      try { const r = JSON.parse(job.result || "{}"); if (r && typeof r.scope === "object") scope = r.scope; } catch {}
+      let forceImage = false;
+      try { const r = JSON.parse(job.result || "{}"); if (r && typeof r.scope === "object") scope = r.scope; forceImage = !!r?.forceImage; } catch {}
 
       // Transient (rate-limit) failures go back to the queue for a later tick;
       // give up only after MAX_ATTEMPTS or for non-retryable errors.
@@ -172,15 +173,18 @@ export async function GET(request: NextRequest) {
       };
 
       try {
-        const r = await buildAndSubmitOne(conn, client, job.sku, { scope, stamp, enrich: allowEnrich, storeIndex: STORE });
+        const r = await buildAndSubmitOne(conn, client, job.sku, { scope, stamp, enrich: allowEnrich, storeIndex: STORE, forceImage });
         if (r.feedId && r.meta) {
+          // Persist the generated Visible block so the QC review screen shows the
+          // full before/after without waiting on Walmart propagation.
+          const vis = r.mpItem?.Visible ? Object.values(r.mpItem.Visible)[0] : null;
           await logRemediation(conn, {
             sku: job.sku, wpid: r.meta.wpid, upc: r.meta.upc, buyerItemId: (r.url.match(/ip\/(\d+)/) || [])[1] || null,
             changeType: "multipack", feedId: r.feedId, feedType: "MP_MAINTENANCE", feedStatus: "SUBMITTED", ok: false,
             packCount: r.meta.packCount, newTitle: r.meta.newTitle ?? undefined, titleChanged: !!r.meta.newTitle,
             bulletsCount: r.meta.bulletsCount, imagesCount: r.meta.imagesCount, descriptionLength: r.meta.descriptionLength,
             mainImageUrl: r.meta.mainImageUrl ?? undefined, usedAiPolish: r.meta.usedAiPolish,
-            changeSummary: { contentIssues: r.meta.contentIssues, gaps: r.meta.gaps },
+            changeSummary: { contentIssues: r.meta.contentIssues, gaps: r.meta.gaps, attributesCount: r.meta.attributesCount ?? 0, content: vis },
             notes: r.meta.gaps?.length ? `content gaps: ${r.meta.gaps.map((g: any) => g.issue).join("; ")}` : "no content gaps",
           });
           await conn.execute({

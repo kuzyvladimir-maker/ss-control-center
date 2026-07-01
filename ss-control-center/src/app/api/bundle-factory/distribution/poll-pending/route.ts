@@ -22,6 +22,12 @@ import {
   persistPollResult,
   pollSubmissionStatus,
 } from "@/lib/bundle-factory/distribution/status-poller";
+import {
+  healUpcConflict,
+  isUpcConflictIssue,
+} from "@/lib/bundle-factory/distribution/upc-burn";
+import { channelTarget } from "@/lib/bundle-factory/distribution/account-map";
+import { productTypeForBundle } from "@/lib/bundle-factory/attributes";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -62,11 +68,54 @@ export const POST = withErrorHandler(
       channel: string;
       new_listing_status: string;
       issues_count: number;
+      healed?: { old_upc?: string; new_upc?: string; republished: boolean; reason?: string };
     }> = [];
 
     for (const sku of pending) {
       try {
         const r = await pollSubmissionStatus(sku);
+
+        // Barcode-collision self-heal: a SUBMITTED Amazon listing that comes back
+        // FAILED solely because its UPC is already registered to another ASIN is
+        // NOT a dead end — burn that barcode, take the next AVAILABLE one, delete
+        // the tainted contribution and re-publish. Leaves it SUBMITTED again so
+        // the next poll picks up the fresh result. Non-UPC failures fall through
+        // to the normal persist below (they must not burn the barcode).
+        const target = channelTarget(sku.channel);
+        if (
+          r.new_listing_status === "FAILED" &&
+          target.kind === "amazon" &&
+          typeof target.storeIndex === "number" &&
+          isUpcConflictIssue(r.issues)
+        ) {
+          const mb = sku.master_bundle_id
+            ? await prisma.masterBundle.findUnique({
+                where: { id: sku.master_bundle_id },
+                select: { brand: true },
+              })
+            : null;
+          const heal = await healUpcConflict(sku, {
+            storeIndex: target.storeIndex,
+            brand: mb?.brand,
+            productType: productTypeForBundle(),
+          });
+          results.push({
+            sku_id: sku.id,
+            sku: sku.sku,
+            channel: sku.channel,
+            new_listing_status: heal.republished ? "SUBMITTED" : "FAILED",
+            issues_count: r.issues.length,
+            healed: {
+              old_upc: heal.old_upc,
+              new_upc: heal.new_upc,
+              republished: heal.republished,
+              reason: heal.reason,
+            },
+          });
+          await sleep(SLEEP_BETWEEN_POLLS_MS);
+          continue;
+        }
+
         await persistPollResult(r);
         results.push({
           sku_id: sku.id,

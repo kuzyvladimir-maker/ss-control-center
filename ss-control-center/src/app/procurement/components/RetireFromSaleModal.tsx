@@ -10,6 +10,8 @@ import {
   Ban,
   ExternalLink,
   ImageOff,
+  ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import { Btn } from "@/components/kit";
 import { cleanProductQuery } from "@/lib/procurement/clean-product-query";
@@ -35,6 +37,12 @@ interface SearchMatch {
   publishedStatus: string;
   alreadyRetired: boolean;
   retiredAt: string | null;
+  /**
+   * "primary"   — the product itself + its pack/multipack/bundle variations.
+   * "secondary" — a different flavour/line of the same brand (shown collapsed).
+   * Older responses / the live path may omit it → treat as "primary".
+   */
+  tier?: "primary" | "secondary";
 }
 
 interface ExecuteResult {
@@ -107,6 +115,12 @@ export function RetireFromSaleModal({
   const [details, setDetails] = useState<Map<string, SkuDetail>>(new Map());
   const [loadingDetails, setLoadingDetails] = useState(false);
 
+  // Whether the collapsed "похожие товары" (secondary) block is expanded, and
+  // whether we've already lazily loaded thumbnails/qty for it (so revealing it
+  // doesn't re-fetch on every toggle).
+  const [showSimilar, setShowSimilar] = useState(false);
+  const [similarDetailsLoaded, setSimilarDetailsLoaded] = useState(false);
+
   // Auto-run the initial search so the modal opens with results already in
   // place — saves Vladimir a click when the cleaned query is what he wanted.
   useEffect(() => {
@@ -128,6 +142,8 @@ export function RetireFromSaleModal({
     setExecuteResults(new Map());
     setBulkConfirm(false);
     setDetails(new Map());
+    setShowSimilar(false);
+    setSimilarDetailsLoaded(false);
     try {
       const res = await fetch("/api/walmart/retire-listing/search", {
         method: "POST",
@@ -164,8 +180,17 @@ export function RetireFromSaleModal({
       }
       // Fire-and-forget: enrich each row with image + live qty in the
       // background. The list renders immediately with skeletons; thumbs
-      // and qty badges pop in as the call resolves.
-      if (found.length > 0) {
+      // and qty badges pop in as the call resolves. Only the PRIMARY rows
+      // (the product + its variations) are loaded up front — the collapsed
+      // "похожие" block loads its details lazily when expanded.
+      const primaryRows = found.filter((m) => m.tier !== "secondary");
+      if (primaryRows.length > 0) {
+        void fetchDetails(primaryRows);
+      } else if (found.length > 0) {
+        // No exact product/variation match — the "похожие" (secondary) block IS
+        // the only result, so auto-expand it and load its details up front.
+        setShowSimilar(true);
+        setSimilarDetailsLoaded(true);
         void fetchDetails(found);
       }
     } catch (e) {
@@ -188,7 +213,13 @@ export function RetireFromSaleModal({
       if (!res.ok) return;
       const data = (await res.json()) as { details?: SkuDetail[] };
       if (!data.details) return;
-      setDetails(new Map(data.details.map((d) => [d.sku, d])));
+      // Merge (don't replace) so a later lazy load for the "похожие" block
+      // keeps the already-loaded primary rows' thumbnails/qty.
+      setDetails((prev) => {
+        const next = new Map(prev);
+        for (const d of data.details!) next.set(d.sku, d);
+        return next;
+      });
     } catch {
       // Non-fatal — the modal still works without thumbnails/qty.
     } finally {
@@ -276,8 +307,130 @@ export function RetireFromSaleModal({
     return qty === 0; // stock known → live truth
   };
 
-  const eligible = (matches ?? []).filter((m) => !effectivelyRetired(m));
+  // Split into the tight PRIMARY list (product + its pack/multipack/bundle
+  // variations) and the collapsed SECONDARY "похожие" siblings (same brand,
+  // other flavour). A missing tier (live path / old response) counts as primary.
+  const primaryMatches = (matches ?? []).filter((m) => m.tier !== "secondary");
+  const secondaryMatches = (matches ?? []).filter((m) => m.tier === "secondary");
+
+  // Bulk "Снять все найденные" targets ONLY the primary list — never the
+  // collapsed siblings — so a mass-retire can't accidentally zero out other
+  // flavours of the brand. Individual per-row "Снять" still works on any row.
+  const eligible = primaryMatches.filter((m) => !effectivelyRetired(m));
   const eligibleSkus = eligible.map((m) => m.sku);
+
+  // One row renderer, reused by the primary list and the "похожие" block.
+  const renderRow = (m: SearchMatch) => {
+    const isBusy = executing.has(m.sku);
+    const result = executeResults.get(m.sku);
+    const justDone = result?.ok === true;
+    const justFailed = result && result.ok === false;
+    const detail = details.get(m.sku);
+    // After a successful zero-out, show qty=0 immediately (don't wait for the
+    // next details refresh round-trip).
+    const liveQty = justDone ? 0 : detail?.currentQty ?? null;
+    const effRetired = effectivelyRetired(m);
+    return (
+      <div
+        key={m.sku}
+        className={`flex items-start gap-2 px-2.5 py-2 ${
+          effRetired && !justDone ? "opacity-55" : ""
+        } ${justDone ? "bg-green-soft/40" : ""}`}
+      >
+        {/* Thumbnail (40×40) — placeholder until details fetch resolves */}
+        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-rule bg-bg-elev">
+          {detail?.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={detail.imageUrl}
+              alt=""
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+          ) : loadingDetails ? (
+            <Loader2 size={12} className="animate-spin text-ink-4" />
+          ) : (
+            <ImageOff size={14} className="text-ink-4" />
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 text-[12px] font-medium text-ink">
+            <span className="truncate">{m.title || "(без названия)"}</span>
+            {m.itemId && (
+              <a
+                href={`https://www.walmart.com/ip/${m.itemId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 text-ink-4 hover:text-ink-2"
+                title="Открыть на Walmart.com"
+              >
+                <ExternalLink size={11} />
+              </a>
+            )}
+          </div>
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10.5px] tabular text-ink-3">
+            <span>SKU: {m.sku}</span>
+            <span className="text-ink-4">·</span>
+            <span>{m.publishedStatus}</span>
+            {m.lifecycleStatus && (
+              <>
+                <span className="text-ink-4">·</span>
+                <span>{m.lifecycleStatus}</span>
+              </>
+            )}
+            {/* Live inventory badge */}
+            <span className="text-ink-4">·</span>
+            {loadingDetails && liveQty === null ? (
+              <span className="inline-flex items-center gap-1 text-ink-4">
+                <Loader2 size={9} className="animate-spin" />
+                сток…
+              </span>
+            ) : liveQty === null ? (
+              <span className="text-ink-4">сток: ?</span>
+            ) : liveQty === 0 ? (
+              // Show literal "0", not "OOS" — Vladimir wants the actual number
+              // visible so he can confirm at a glance whether the retire took.
+              <span className="rounded bg-bg-elev px-1 font-medium text-ink-3">
+                сток: 0
+              </span>
+            ) : (
+              <span className="rounded bg-green-soft px-1 font-medium text-green-ink">
+                сток: {liveQty}
+              </span>
+            )}
+            {effRetired && (
+              <>
+                <span className="text-ink-4">·</span>
+                <span className="font-medium text-green-ink">
+                  Снят
+                  {m.retiredAt
+                    ? ` ${new Date(m.retiredAt).toLocaleDateString("ru-RU")}`
+                    : ""}
+                </span>
+              </>
+            )}
+            {justFailed && result?.error && (
+              <>
+                <span className="text-ink-4">·</span>
+                <span className="text-danger">{result.error}</span>
+              </>
+            )}
+          </div>
+        </div>
+        <Btn
+          variant={justDone ? "ghost" : "default"}
+          size="sm"
+          loading={isBusy}
+          disabled={effRetired || isBusy}
+          icon={justDone ? <Check size={12} /> : <Ban size={12} />}
+          onClick={() => executeSkus([m.sku])}
+        >
+          {justDone ? "Снят" : "Снять"}
+        </Btn>
+      </div>
+    );
+  };
 
   return (
     <div
@@ -444,130 +597,69 @@ export function RetireFromSaleModal({
           )}
           {matches !== null && matches.length > 0 && (
             <>
-              <div className="mb-2 flex items-baseline justify-between text-[11.5px] text-ink-3">
-                <span>
-                  Найдено: <span className="font-medium text-ink">{matches.length}</span>{" "}
-                  {eligible.length < matches.length && (
-                    <span className="text-ink-4">
-                      (из них {eligible.length} ещё не снято)
+              {/* PRIMARY: the product itself + its pack / multipack / bundle
+                  variations. This is the tight list the operator acts on. */}
+              {primaryMatches.length > 0 ? (
+                <>
+                  <div className="mb-2 flex items-baseline justify-between text-[11.5px] text-ink-3">
+                    <span>
+                      Найдено:{" "}
+                      <span className="font-medium text-ink">
+                        {primaryMatches.length}
+                      </span>{" "}
+                      <span className="text-ink-4">
+                        (товар и вариации
+                        {eligible.length < primaryMatches.length
+                          ? `, из них ${eligible.length} ещё не снято`
+                          : ""}
+                        )
+                      </span>
                     </span>
-                  )}
-                </span>
-              </div>
-              <div className="divide-y divide-rule/60 rounded-md border border-rule/60">
-                {matches.map((m) => {
-                  const isBusy = executing.has(m.sku);
-                  const result = executeResults.get(m.sku);
-                  const justDone = result?.ok === true;
-                  const justFailed = result && result.ok === false;
-                  const detail = details.get(m.sku);
-                  // After a successful zero-out, show qty=0 immediately
-                  // (don't wait for the next details refresh round-trip).
-                  const liveQty = justDone ? 0 : detail?.currentQty ?? null;
-                  const effRetired = effectivelyRetired(m);
-                  return (
-                    <div
-                      key={m.sku}
-                      className={`flex items-start gap-2 px-2.5 py-2 ${
-                        effRetired && !justDone ? "opacity-55" : ""
-                      } ${justDone ? "bg-green-soft/40" : ""}`}
-                    >
-                      {/* Thumbnail (40×40) — placeholder until details fetch resolves */}
-                      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-rule bg-bg-elev">
-                        {detail?.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={detail.imageUrl}
-                            alt=""
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                          />
-                        ) : loadingDetails ? (
-                          <Loader2 size={12} className="animate-spin text-ink-4" />
-                        ) : (
-                          <ImageOff size={14} className="text-ink-4" />
-                        )}
-                      </div>
+                  </div>
+                  <div className="divide-y divide-rule/60 rounded-md border border-rule/60">
+                    {primaryMatches.map(renderRow)}
+                  </div>
+                </>
+              ) : (
+                <div className="mb-2 text-[12px] text-ink-3">
+                  Точных совпадений (товар или его вариации) не найдено — ниже
+                  похожие товары этого бренда.
+                </div>
+              )}
 
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 text-[12px] font-medium text-ink">
-                          <span className="truncate">{m.title || "(без названия)"}</span>
-                          {m.itemId && (
-                            <a
-                              href={`https://www.walmart.com/ip/${m.itemId}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="shrink-0 text-ink-4 hover:text-ink-2"
-                              title="Открыть на Walmart.com"
-                            >
-                              <ExternalLink size={11} />
-                            </a>
-                          )}
-                        </div>
-                        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10.5px] tabular text-ink-3">
-                          <span>SKU: {m.sku}</span>
-                          <span className="text-ink-4">·</span>
-                          <span>{m.publishedStatus}</span>
-                          {m.lifecycleStatus && (
-                            <>
-                              <span className="text-ink-4">·</span>
-                              <span>{m.lifecycleStatus}</span>
-                            </>
-                          )}
-                          {/* Live inventory badge */}
-                          <span className="text-ink-4">·</span>
-                          {loadingDetails && liveQty === null ? (
-                            <span className="inline-flex items-center gap-1 text-ink-4">
-                              <Loader2 size={9} className="animate-spin" />
-                              сток…
-                            </span>
-                          ) : liveQty === null ? (
-                            <span className="text-ink-4">сток: ?</span>
-                          ) : liveQty === 0 ? (
-                            // Show literal "0", not "OOS" — Vladimir wants
-                            // the actual number visible so he can confirm at
-                            // a glance whether the retire took effect.
-                            <span className="rounded bg-bg-elev px-1 font-medium text-ink-3">
-                              сток: 0
-                            </span>
-                          ) : (
-                            <span className="rounded bg-green-soft px-1 font-medium text-green-ink">
-                              сток: {liveQty}
-                            </span>
-                          )}
-                          {effRetired && (
-                            <>
-                              <span className="text-ink-4">·</span>
-                              <span className="font-medium text-green-ink">
-                                Снят
-                                {m.retiredAt
-                                  ? ` ${new Date(m.retiredAt).toLocaleDateString("ru-RU")}`
-                                  : ""}
-                              </span>
-                            </>
-                          )}
-                          {justFailed && result?.error && (
-                            <>
-                              <span className="text-ink-4">·</span>
-                              <span className="text-danger">{result.error}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      <Btn
-                        variant={justDone ? "ghost" : "default"}
-                        size="sm"
-                        loading={isBusy}
-                        disabled={effRetired || isBusy}
-                        icon={justDone ? <Check size={12} /> : <Ban size={12} />}
-                        onClick={() => executeSkus([m.sku])}
-                      >
-                        {justDone ? "Снят" : "Снять"}
-                      </Btn>
+              {/* SECONDARY: same brand, different flavour/line. Collapsed by
+                  default so the noise the old search flooded in stays one click
+                  away — and out of "Снять все найденные". */}
+              {secondaryMatches.length > 0 && (
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-1.5 rounded-md px-1 py-1.5 text-[12px] font-medium text-ink-3 hover:text-ink"
+                    onClick={() => {
+                      const next = !showSimilar;
+                      setShowSimilar(next);
+                      // Lazily load thumbnails/qty for the similar block the
+                      // first time it's opened.
+                      if (next && !similarDetailsLoaded) {
+                        setSimilarDetailsLoaded(true);
+                        void fetchDetails(secondaryMatches);
+                      }
+                    }}
+                  >
+                    {showSimilar ? (
+                      <ChevronDown size={13} />
+                    ) : (
+                      <ChevronRight size={13} />
+                    )}
+                    Похожие товары этого бренда ({secondaryMatches.length})
+                  </button>
+                  {showSimilar && (
+                    <div className="mt-1 divide-y divide-rule/60 rounded-md border border-rule/60">
+                      {secondaryMatches.map(renderRow)}
                     </div>
-                  );
-                })}
-              </div>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>

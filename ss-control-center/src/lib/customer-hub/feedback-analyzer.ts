@@ -8,6 +8,7 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+import { CLAUDE } from "@/lib/ai-models";
 
 export interface FeedbackAnalysisInput {
   rating: number;
@@ -184,8 +185,9 @@ export async function analyzeFeedback(
   try {
     const client = new Anthropic({ apiKey });
     const response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: CLAUDE.balanced,
       max_tokens: 1200,
+      thinking: { type: "disabled" },
       system: FEEDBACK_ANALYSIS_PROMPT,
       messages: [{ role: "user", content: buildUserMessage(input) }],
     });

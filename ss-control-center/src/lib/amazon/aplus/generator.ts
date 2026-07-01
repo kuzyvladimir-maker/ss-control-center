@@ -17,9 +17,10 @@ import {
   type AplusDocument, type ImageComponent,
 } from "./modules";
 import { CONCEPT_CONFIG, CURATOR_DISCLAIMER, FDA_DISCLAIMER, type Concept } from "./concepts";
+import { CLAUDE } from "@/lib/ai-models";
 
 export type TextModel = "opus" | "sonnet";
-const TEXT_MODEL_ID: Record<TextModel, string> = { opus: "claude-opus-4-8", sonnet: "claude-sonnet-4-6" };
+const TEXT_MODEL_ID: Record<TextModel, string> = { opus: CLAUDE.premium, sonnet: CLAUDE.balanced };
 
 let _client: Anthropic | null = null;
 function client() { return (_client ??= new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })); }

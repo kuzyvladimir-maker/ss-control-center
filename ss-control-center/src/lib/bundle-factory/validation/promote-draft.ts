@@ -25,9 +25,15 @@ import {
 } from "../browse-node-resolver";
 import {
   getPricingModel,
-  computeListingPriceCents,
+  computeBundlePrice,
   type PricingModel,
 } from "../pricing-config";
+import { buildRichAmazonAttributes } from "../attributes/build-amazon-attributes";
+import {
+  mirrorDonorGallery,
+  galleryLocatorAttrs,
+} from "../attributes/gallery-images";
+import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 
 export interface PromoteOutcome {
   master_bundle_id: string | null;
@@ -148,6 +154,14 @@ async function ensureMasterBundle(
   // model applied to this COGS.
   const estimatedCost = draft.draft_cost_cents ?? 0;
 
+  // Cost-buildup price (goods + cooler/ice/box + fees, solved for target margin).
+  // Weight is unknown at first promotion (ship-specs entered later) → packaging
+  // is estimated; the price re-derives once weight lands and validation re-runs.
+  const priceCalc = computeBundlePrice(
+    { cogs_cents: estimatedCost, weight_lb: null, category: draft.category },
+    model,
+  );
+
   const slugBase = draft.draft_name
     .replace(/[^A-Za-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
@@ -165,11 +179,11 @@ async function ensureMasterBundle(
       pack_count: draft.pack_count,
       cost_breakdown: JSON.stringify({
         goods_cents: estimatedCost,
-        packaging_cents: 0,
+        packaging_cents: priceCalc.cost.packaging_cents,
         sourcing_overhead_cents: 0,
       }),
       estimated_cost_cents: estimatedCost,
-      suggested_price_cents: computeListingPriceCents(estimatedCost, model),
+      suggested_price_cents: priceCalc.selling_price_cents,
       packaging_spec: JSON.stringify({}),
       main_image_url: firstImage,
       secondary_images: JSON.stringify([]),
@@ -199,12 +213,18 @@ export async function promoteDraftToChannelSkus(
   // identically and the margin validator can clear the floor.
   const masterForPrice = await prisma.masterBundle.findUnique({
     where: { id: masterBundleId },
-    select: { estimated_cost_cents: true },
+    select: { estimated_cost_cents: true, category: true, total_weight_oz: true },
   });
-  const autoPriceCents = computeListingPriceCents(
-    masterForPrice?.estimated_cost_cents ?? 0,
+  const autoPriceCents = computeBundlePrice(
+    {
+      cogs_cents: masterForPrice?.estimated_cost_cents ?? 0,
+      weight_lb: masterForPrice?.total_weight_oz
+        ? masterForPrice.total_weight_oz / 16
+        : null,
+      category: masterForPrice?.category ?? null,
+    },
     pricingModel,
-  );
+  ).selling_price_cents;
 
   const candidates = await prisma.generatedContent.findMany({
     where: {
@@ -220,8 +240,93 @@ export async function promoteDraftToChannelSkus(
 
   const draft = await prisma.bundleDraft.findUniqueOrThrow({
     where: { id: draftId },
-    select: { brand: true },
+    select: {
+      brand: true,
+      draft_components: true,
+      pack_count: true,
+      category: true,
+      draft_secondary_images: true,
+    },
   });
+
+  // Phase 2.1 — donor-derived rich attributes (ingredients, allergens, item
+  // count), computed once and stored on every ChannelSKU.attributes. The
+  // primary component's research_pool_id is the DonorProduct id on studio-built
+  // drafts; a miss falls back to empty attrs (base attrs still publish).
+  let richAttributesJson = JSON.stringify({});
+  let nutritionImageUrl: string | null = null;
+  try {
+    const comps = JSON.parse(draft.draft_components) as Array<{
+      research_pool_id?: string;
+    }>;
+    const primaryDonorId = Array.isArray(comps)
+      ? comps[0]?.research_pool_id
+      : undefined;
+    const donor = primaryDonorId
+      ? await prisma.donorProduct.findUnique({
+          where: { id: primaryDonorId },
+          select: { ingredients: true, nutritionFacts: true },
+        })
+      : null;
+    // Pull the nutrition-facts label image (a ready-made infographic) if present.
+    try {
+      const nf = donor?.nutritionFacts ? JSON.parse(donor.nutritionFacts) : null;
+      if (Array.isArray(nf)) {
+        const hit = nf.find(
+          (e) =>
+            e && typeof e === "object" &&
+            /image/i.test(String((e as { name?: string }).name ?? "")) &&
+            /^https?:\/\//.test(String((e as { value?: string }).value ?? "")),
+        );
+        if (hit) nutritionImageUrl = String((hit as { value?: string }).value);
+      }
+    } catch {
+      /* nutritionFacts not JSON — skip */
+    }
+    richAttributesJson = JSON.stringify(
+      buildRichAmazonAttributes({
+        ingredients: donor?.ingredients ?? null,
+        packCount: draft.pack_count,
+        category: draft.category,
+      }),
+    );
+  } catch {
+    /* malformed draft_components / donor miss — empty attrs, base still valid */
+  }
+
+  // Secondary GALLERY images (owner: every cold-chain listing needs 5+ gallery
+  // infographic/lifestyle photos). Mirror the donor's harvested secondary photos
+  // (+ the nutrition label) to R2 and attach them as other_product_image_locator_N
+  // in the rich attributes. Best-effort — a mirror failure just leaves the
+  // listing with its main image + brand card. Computed once, shared by all SKUs.
+  try {
+    const rich = JSON.parse(richAttributesJson) as Record<string, unknown>;
+    let secondary: string[] = [];
+    try {
+      const arr = draft.draft_secondary_images
+        ? JSON.parse(draft.draft_secondary_images)
+        : [];
+      if (Array.isArray(arr)) {
+        secondary = arr.filter(
+          (u): u is string => typeof u === "string" && u.trim().length > 0,
+        );
+      }
+    } catch {
+      /* not JSON — no donor gallery */
+    }
+    const galleryUrls = [nutritionImageUrl, ...secondary].filter(
+      (u): u is string => typeof u === "string" && u.length > 0,
+    );
+    if (galleryUrls.length > 0) {
+      const hosted = await mirrorDonorGallery(`draft-${draftId}-gallery`, galleryUrls);
+      if (hosted.length > 0) {
+        Object.assign(rich, galleryLocatorAttrs(hosted, MARKETPLACE_ID));
+        richAttributesJson = JSON.stringify(rich);
+      }
+    }
+  } catch {
+    /* gallery best-effort — never block promotion */
+  }
 
   // Browse node depends on the bundle's brand mix, not the channel.
   // Pull the MasterBundle's BundleComponents once and compute the
@@ -264,7 +369,7 @@ export async function promoteDraftToChannelSkus(
           title: row.title,
           bullets: row.bullets_json,
           description: row.description,
-          attributes: JSON.stringify({}),
+          attributes: richAttributesJson,
           channel_browse_node: resolveAmazonBrowseNode({
             channel: row.channel,
             distinct_brands: distinctBrands,

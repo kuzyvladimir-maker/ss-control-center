@@ -124,6 +124,11 @@ export function ListingOptimizer() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [expandedRow, setExpandedRow] = useState<Set<string>>(new Set());
   const [rowAi, setRowAi] = useState<Record<string, { loading?: boolean; narrative?: string; recs?: Rec[] }>>({});
+  // Manual generation lever — per-row AI-image preview + apply (cutout is default; this is opt-in).
+  const [rowGen, setRowGen] = useState<Record<string, { loading?: boolean; previewUrl?: string; usedReference?: boolean; error?: string; applying?: boolean; feedId?: string }>>({});
+  // QC review — the generated before/after (photo + gallery + text + attributes)
+  // pulled from the persisted remediation, + "send back for re-do" with a note.
+  const [rowReview, setRowReview] = useState<Record<string, { loading?: boolean; data?: any; note?: string; redoing?: boolean; redone?: boolean; error?: string }>>({});
   // Default = main image only (the tiled N-units image is the quantity-confusion
   // fix). Content fields stay opt-in: they only apply on catalog cards we own and
   // they cost Claude tokens, so they're off by default.
@@ -208,6 +213,47 @@ export function ListingOptimizer() {
       const j = await r.json();
       setRowAi((s) => ({ ...s, [sku]: { narrative: j.narrative, recs: j.recommendations || [] } }));
     } catch { setRowAi((s) => ({ ...s, [sku]: { narrative: "Analysis failed — try again." } })); }
+  }
+  // Generate an AI main image (gpt-image-2) for one listing — preview only, no publish (~1-4 min).
+  async function genImageOne(sku: string) {
+    setRowGen((s) => ({ ...s, [sku]: { loading: true } }));
+    try {
+      const r = await fetch(`/api/walmart/growth/remediation/generate-image?${qs}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sku }) });
+      const j = await r.json();
+      if (j.ok && j.previewUrl) setRowGen((s) => ({ ...s, [sku]: { previewUrl: j.previewUrl, usedReference: j.usedReference } }));
+      else setRowGen((s) => ({ ...s, [sku]: { error: j.error || "generation failed" } }));
+    } catch { setRowGen((s) => ({ ...s, [sku]: { error: "generation request failed" } })); }
+  }
+  // Publish an approved generated image.
+  async function applyGenOne(sku: string, imageUrl: string) {
+    setRowGen((s) => ({ ...s, [sku]: { ...s[sku], applying: true } }));
+    try {
+      const r = await fetch(`/api/walmart/growth/remediation/apply-generated?${qs}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sku, imageUrl }) });
+      const j = await r.json();
+      if (j.ok && j.feedId) setRowGen((s) => ({ ...s, [sku]: { ...s[sku], applying: false, feedId: j.feedId } }));
+      else setRowGen((s) => ({ ...s, [sku]: { ...s[sku], applying: false, error: j.error || "publish failed" } }));
+    } catch { setRowGen((s) => ({ ...s, [sku]: { ...s[sku], applying: false, error: "publish request failed" } })); }
+  }
+  // QC review — pull the persisted generated result (before/after + attributes).
+  async function reviewOne(sku: string) {
+    setRowReview((s) => ({ ...s, [sku]: { loading: true } }));
+    try {
+      const r = await fetch(`/api/walmart/growth/remediation/review?sku=${encodeURIComponent(sku)}`);
+      const j = await r.json();
+      if (j.found) setRowReview((s) => ({ ...s, [sku]: { data: j, note: "" } }));
+      else setRowReview((s) => ({ ...s, [sku]: { error: "No fix on record yet — run a fix first, then review." } }));
+    } catch { setRowReview((s) => ({ ...s, [sku]: { error: "Review request failed." } })); }
+  }
+  // Send a listing back for a fresh full A-to-Z pass with a QC note.
+  async function sendRedo(sku: string) {
+    const note = rowReview[sku]?.note || "";
+    setRowReview((s) => ({ ...s, [sku]: { ...s[sku], redoing: true } }));
+    try {
+      const r = await fetch(`/api/walmart/growth/remediation/review`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sku, note }) });
+      const j = await r.json();
+      if (j.ok) setRowReview((s) => ({ ...s, [sku]: { ...s[sku], redoing: false, redone: true } }));
+      else setRowReview((s) => ({ ...s, [sku]: { ...s[sku], redoing: false, error: j.error || "redo failed" } }));
+    } catch { setRowReview((s) => ({ ...s, [sku]: { ...s[sku], redoing: false, error: "redo request failed" } })); }
   }
 
   async function run() {
@@ -374,6 +420,8 @@ export function ListingOptimizer() {
                     const h = HEALTH[c.health] || HEALTH.new;
                     const open = expandedRow.has(c.sku);
                     const ai = rowAi[c.sku];
+                    const gen = rowGen[c.sku];
+                    const review = rowReview[c.sku];
                     return (
                       <Fragment key={c.sku}>
                       <tr className={cn("border-b border-rule/50 hover:bg-bg-elev/40", selected.has(c.sku) && "bg-green-soft/40", open && "bg-bg-elev/30")}>
@@ -416,8 +464,71 @@ export function ListingOptimizer() {
                             <div className="mt-3 flex flex-wrap items-center gap-2">
                               <Btn size="sm" variant="primary" icon={<Play size={12} />} onClick={() => fixOne(c.sku)}>Fix this listing</Btn>
                               <Btn size="sm" icon={<Sparkles size={12} />} loading={ai?.loading} onClick={() => askAiOne(c.sku)}>Ask AI</Btn>
+                              <Btn size="sm" icon={<Sparkles size={12} />} loading={gen?.loading} onClick={() => genImageOne(c.sku)}>Generate AI image</Btn>
+                              <Btn size="sm" icon={<ListChecks size={12} />} loading={review?.loading} onClick={() => reviewOne(c.sku)}>Review fix</Btn>
                               {c.itemId && <a href={`https://www.walmart.com/ip/${c.itemId}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[12px] text-ink-3 hover:text-ink"><ExternalLink size={12} /> View on Walmart</a>}
                             </div>
+                            {gen && (gen.loading || gen.previewUrl || gen.error) && (
+                              <div className="mt-2 rounded-lg border border-rule bg-surface p-2.5 text-[12px]">
+                                {gen.loading && <div className="text-ink-3">Generating AI main image (gpt-image-2, ~1–4 min)… you can keep working.</div>}
+                                {gen.error && <div className="text-red-ink">Generation error: {gen.error}</div>}
+                                {gen.previewUrl && (
+                                  <div>
+                                    <div className="mb-1.5 text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">AI preview {gen.usedReference ? "(from donor reference)" : "(from title — check the label carefully)"}</div>
+                                    <img src={gen.previewUrl} alt="AI-generated main" className="mb-2 h-56 w-56 rounded border border-rule object-contain bg-white" />
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      {gen.feedId ? (
+                                        <span className="rounded bg-green-soft px-2 py-0.5 text-[11px] text-green-ink">Published — feed {gen.feedId}</span>
+                                      ) : (
+                                        <Btn size="sm" variant="primary" loading={gen.applying} onClick={() => applyGenOne(c.sku, gen.previewUrl!)}>Use this image (publish)</Btn>
+                                      )}
+                                      <a href={gen.previewUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[12px] text-ink-3 hover:text-ink"><ExternalLink size={12} /> Full size</a>
+                                      <Btn size="sm" onClick={() => genImageOne(c.sku)}>Regenerate</Btn>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            {review && (review.data || review.error) && !review.data?.after && review.error && (
+                              <div className="mt-2 rounded-lg border border-rule bg-surface p-2.5 text-[12px] text-ink-3">{review.error}</div>
+                            )}
+                            {review?.data?.after && (
+                              <div className="mt-2 rounded-lg border border-rule bg-surface p-3 text-[12px]">
+                                <div className="mb-2 flex flex-wrap items-center gap-2 text-[10px] font-mono uppercase tracking-[0.08em] text-ink-3">
+                                  Generated fix (what we sent to Walmart)
+                                  <span className={cn("rounded px-1.5 py-0.5", review.data.after.ok ? "bg-green-soft text-green-ink" : "bg-warn-tint text-warn-strong")}>{review.data.after.feedStatus || "—"}</span>
+                                  <span>{review.data.after.imagesCount} imgs · {review.data.after.bulletsCount} bullets · {review.data.after.descriptionLength} chars{Object.keys(review.data.after.attributes || {}).length ? ` · ${Object.keys(review.data.after.attributes).length} attrs` : ""}</span>
+                                </div>
+                                <div className="flex gap-3">
+                                  <div className="flex-shrink-0">
+                                    <div className="mb-1 text-[9px] uppercase text-ink-3">After</div>
+                                    {review.data.after.mainImageUrl
+                                      ? <img src={review.data.after.mainImageUrl} alt="after" className="h-40 w-40 rounded border border-rule object-contain bg-white" />
+                                      : <div className="flex h-40 w-40 items-center justify-center rounded border border-dashed border-rule text-center text-[10px] text-ink-3">no new photo<br />(needs generation)</div>}
+                                    {review.data.before?.mainImageUrl && (
+                                      <div className="mt-1"><div className="mb-0.5 text-[9px] uppercase text-ink-3">Before</div><img src={review.data.before.mainImageUrl} alt="before" className="h-20 w-20 rounded border border-rule object-contain bg-white opacity-70" /></div>
+                                    )}
+                                    {!!(review.data.after.gallery || []).length && (
+                                      <div className="mt-1 flex flex-wrap gap-1">{review.data.after.gallery.slice(0, 6).map((u: string, i: number) => (<img key={i} src={u} alt="" className="h-9 w-9 rounded border border-rule object-contain bg-white" />))}</div>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="font-medium text-ink">{review.data.after.title}</div>
+                                    {review.data.after.bullets?.length ? (<ul className="mt-1 list-disc space-y-0.5 pl-4 text-ink-2">{review.data.after.bullets.map((x: string, i: number) => (<li key={i}>{x}</li>))}</ul>) : null}
+                                    {review.data.after.description && <p className="mt-1.5 whitespace-pre-wrap text-ink-3">{review.data.after.description}</p>}
+                                    {Object.keys(review.data.after.attributes || {}).length ? (
+                                      <div className="mt-1.5 flex flex-wrap gap-1">{Object.entries(review.data.after.attributes).map(([k, v]) => (<span key={k} className="rounded bg-bg-elev px-1.5 py-0.5 text-[10px] text-ink-2">{k}: {String(v).slice(0, 28)}</span>))}</div>
+                                    ) : null}
+                                  </div>
+                                </div>
+                                <div className="mt-2.5 flex items-center gap-2">
+                                  <input value={review.note || ""} onChange={(e) => setRowReview((s) => ({ ...s, [c.sku]: { ...s[c.sku], note: e.target.value } }))} placeholder="Note what to fix on re-do (optional)…" className="flex-1 rounded border border-rule bg-bg px-2 py-1 text-[12px] text-ink placeholder:text-ink-3" />
+                                  {review.redone
+                                    ? <span className="whitespace-nowrap rounded bg-green-soft px-2 py-1 text-[11px] text-green-ink">Sent back — worker will re-do it</span>
+                                    : <Btn size="sm" loading={review.redoing} onClick={() => sendRedo(c.sku)}>Send back for re-do</Btn>}
+                                </div>
+                              </div>
+                            )}
                             {ai && !ai.loading && (
                               <div className="mt-2 rounded-lg border border-rule bg-surface p-2.5 text-[12px]">
                                 {ai.narrative && <div className="text-ink-2">{ai.narrative}</div>}

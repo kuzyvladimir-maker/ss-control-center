@@ -4,16 +4,85 @@
  *   body: { email: string, role?: "admin" | "member", expiresInDays?: number }
  *
  * The created invite returns the full URL the recipient must visit to set
- * their password. Email delivery isn't wired yet — for now the admin
- * copy-pastes the link out of the response (or out of the Settings UI).
+ * their password, and the POST tries to EMAIL that link to the recipient
+ * through a connected Gmail account (the inviting admin's mailbox if it's
+ * connected, otherwise the first connected mailbox). Email is best-effort:
+ * the invite + link are always created and returned even if the send fails,
+ * so the admin can still copy the link manually. The response carries
+ * `emailSent` / `emailTo` / `emailError` so the UI can say which happened.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateInviteToken } from "@/lib/auth";
 import { requireAdmin } from "@/lib/auth-server";
+import {
+  getConnectedGmailAccounts,
+  getGmailAccountByEmail,
+  sendGmailMessage,
+} from "@/lib/gmail-api";
 
 const DEFAULT_EXPIRY_DAYS = 7;
+
+/**
+ * Try to email the invite link to the recipient. Best-effort: returns a
+ * result object instead of throwing, so a failed send never blocks invite
+ * creation. Prefers the inviting admin's own connected mailbox (so the
+ * message comes "from" them); falls back to the first connected Gmail
+ * account. If no mailbox is connected, returns sent:false with a reason.
+ */
+async function sendInviteEmail(opts: {
+  to: string;
+  link: string;
+  roleLabel: string;
+  inviterName: string;
+  adminEmail: string;
+  expiresAt: Date;
+}): Promise<{ sent: boolean; from?: string; error?: string }> {
+  try {
+    // Cheap path first (no Google call): the admin's stored mailbox.
+    const byAdmin = opts.adminEmail.includes("@")
+      ? await getGmailAccountByEmail(opts.adminEmail)
+      : null;
+    const sender = byAdmin ?? (await getConnectedGmailAccounts())[0] ?? null;
+    if (!sender) {
+      return { sent: false, error: "no Gmail account is connected" };
+    }
+
+    const expiryStr = opts.expiresAt.toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+    const body = `Здравствуйте!
+
+${opts.inviterName} приглашает вас в Salutem Command Center.
+Роль: ${opts.roleLabel}.
+
+Чтобы создать пароль и войти, перейдите по ссылке:
+${opts.link}
+
+Ссылка действительна до ${expiryStr}.
+Если вы не ожидали это приглашение, просто проигнорируйте письмо.`;
+
+    await sendGmailMessage(sender.refreshToken, {
+      to: opts.to,
+      subject: "Приглашение в Salutem Command Center",
+      body,
+      fromEmail: sender.email,
+    });
+    return { sent: true, from: sender.email };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Gmail send failed";
+    // A 403 almost always means the connected token predates the gmail.send
+    // scope — surface a clear hint so the admin knows how to fix it.
+    const hint = /insufficient|scope|permission|403/i.test(msg)
+      ? " — re-connect the mailbox in Settings → Gmail to grant send permission."
+      : "";
+    console.error("[invites] email send failed:", msg);
+    return { sent: false, error: msg + hint };
+  }
+}
 
 function inviteUrl(request: NextRequest, token: string): string {
   // Honour the forwarded host/proto on Vercel so the link points at the
@@ -121,12 +190,37 @@ export async function POST(request: NextRequest) {
     },
   });
 
+  const link = inviteUrl(request, invite.token);
+
+  // Human-readable role for the email ("Warehouse Worker", not
+  // "warehuse-worker"). Falls back to the key if there's no Role row.
+  const roleRow = await prisma.role
+    .findUnique({ where: { key: role }, select: { name: true } })
+    .catch(() => null);
+  const roleLabel =
+    roleRow?.name ?? (role === "admin" ? "Administrator" : role);
+
+  // Best-effort email — never blocks the invite. The link is already created
+  // above, so even an email failure leaves a usable copy-link in the UI.
+  const emailResult = await sendInviteEmail({
+    to: invite.email,
+    link,
+    roleLabel,
+    inviterName: adminUser.displayName || adminUser.username,
+    adminEmail: adminUser.username,
+    expiresAt: invite.expiresAt,
+  });
+
   return NextResponse.json({
     ok: true,
     id: invite.id,
     email: invite.email,
     role: invite.role,
     expiresAt: invite.expiresAt,
-    link: inviteUrl(request, invite.token),
+    link,
+    emailSent: emailResult.sent,
+    emailTo: emailResult.sent ? invite.email : null,
+    emailFrom: emailResult.from ?? null,
+    emailError: emailResult.error ?? null,
   });
 }

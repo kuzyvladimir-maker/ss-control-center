@@ -55,6 +55,11 @@ export default function UsersSettingsPage() {
   const [newRole, setNewRole] = useState<string>("member");
   const [createError, setCreateError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  // Result of the last invite's email attempt (best-effort send on the server).
+  const [inviteNotice, setInviteNotice] = useState<{
+    ok: boolean;
+    text: string;
+  } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -98,6 +103,7 @@ export default function UsersSettingsPage() {
   async function createInvite(e: React.FormEvent) {
     e.preventDefault();
     setCreateError(null);
+    setInviteNotice(null);
     setCreating(true);
     try {
       const res = await fetch("/api/admin/invites", {
@@ -110,6 +116,23 @@ export default function UsersSettingsPage() {
         setCreateError(data.error || `HTTP ${res.status}`);
         setCreating(false);
         return;
+      }
+      // Email is best-effort on the server: tell the admin whether it went
+      // out, or to fall back to copying the link below.
+      if (data.emailSent) {
+        setInviteNotice({
+          ok: true,
+          text: `Приглашение отправлено на ${data.emailTo}${
+            data.emailFrom ? ` (от ${data.emailFrom})` : ""
+          }.`,
+        });
+      } else {
+        setInviteNotice({
+          ok: false,
+          text: `Письмо не отправлено${
+            data.emailError ? `: ${data.emailError}` : ""
+          }. Скопируйте ссылку приглашения ниже и отправьте вручную.`,
+        });
       }
       setNewEmail("");
       await load();
@@ -250,10 +273,22 @@ export default function UsersSettingsPage() {
           {createError && (
             <p className="mt-2 text-xs text-danger">{createError}</p>
           )}
-          <p className="mt-3 text-xs text-ink-3">
-            Email delivery isn&apos;t wired yet — copy the invite link from the
-            list below and send it manually.
-          </p>
+          {inviteNotice ? (
+            <p
+              className={
+                "mt-3 text-xs " +
+                (inviteNotice.ok ? "text-green" : "text-warn")
+              }
+            >
+              {inviteNotice.text}
+            </p>
+          ) : (
+            <p className="mt-3 text-xs text-ink-3">
+              The invite link is emailed to the recipient automatically. If the
+              email can&apos;t be sent, copy the link from the list below and
+              send it manually.
+            </p>
+          )}
         </CardContent>
       </Card>
 

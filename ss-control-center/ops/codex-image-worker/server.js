@@ -42,7 +42,11 @@ const TOKEN = process.env.CODEX_IMAGE_WORKER_TOKEN || "";
 const CODEX_BIN = process.env.CODEX_BIN || "codex";
 const CODEX_HOME = process.env.CODEX_HOME || path.join(os.homedir(), ".codex");
 const GEN_DIR = path.join(CODEX_HOME, "generated_images");
-const RUN_TIMEOUT_MS = parseInt(process.env.RUN_TIMEOUT_MS || "240000", 10);
+// Codex image_gen with reference images routinely runs ~4 min. Kill only at
+// 285s — just under the nginx /codex-image/ proxy_read_timeout (300s) and the
+// caller's fetch timeout (290s). The old 240s SIGKILLed generations right at the
+// finish line (a 241s run died). Override via RUN_TIMEOUT_MS in the box .env.
+const RUN_TIMEOUT_MS = parseInt(process.env.RUN_TIMEOUT_MS || "285000", 10);
 
 if (!TOKEN) {
   console.error("FATAL: CODEX_IMAGE_WORKER_TOKEN is not set");
@@ -87,8 +91,41 @@ function listPngs() {
   return out;
 }
 
+// --- write reference images for a run; returns the file paths -----------------
+// Vercel sends `reference_images` (base64 PNGs — product photos + the approved
+// frozen-hero anchors) and/or `reference_urls`. We drop them into the run's
+// working dir so the codex agent can hand them to image_gen as visual references
+// (style/layout + accurate third-party packaging). Best-effort: a bad entry is
+// skipped, never fatal.
+async function writeRefs(refs, urls, runDir) {
+  const files = [];
+  let i = 0;
+  for (const b64 of Array.isArray(refs) ? refs : []) {
+    try {
+      const clean = String(b64).replace(/^data:image\/\w+;base64,/, "");
+      const buf = Buffer.from(clean, "base64");
+      if (buf.length === 0) continue;
+      const p = path.join(runDir, `ref-${++i}.png`);
+      await fsp.writeFile(p, buf);
+      files.push(p);
+    } catch { /* skip bad ref */ }
+  }
+  for (const u of Array.isArray(urls) ? urls : []) {
+    try {
+      const res = await fetch(String(u));
+      if (!res.ok) continue;
+      const buf = Buffer.from(await res.arrayBuffer());
+      if (buf.length === 0) continue;
+      const p = path.join(runDir, `ref-${++i}.png`);
+      await fsp.writeFile(p, buf);
+      files.push(p);
+    } catch { /* skip unreachable url */ }
+  }
+  return files;
+}
+
 // --- run codex exec with the paid path disabled -------------------------------
-function runCodex(prompt) {
+function runCodex(prompt, cwd) {
   return new Promise((resolve) => {
     const env = { ...process.env };
     // Belt-and-suspenders: the imagegen skill's paid CLI fallback
@@ -101,7 +138,7 @@ function runCodex(prompt) {
     const child = spawn(
       CODEX_BIN,
       ["exec", "--skip-git-repo-check", prompt],
-      { env, cwd: os.tmpdir(), stdio: ["ignore", "pipe", "pipe"] }
+      { env, cwd: cwd || os.tmpdir(), stdio: ["ignore", "pipe", "pipe"] }
     );
 
     let stdout = "";
@@ -130,7 +167,7 @@ function runCodex(prompt) {
 }
 
 // --- wrap the raw scene prompt into an imagegen instruction --------------------
-function buildPrompt(userPrompt, size) {
+function buildPrompt(userPrompt, size, refFiles) {
   let sizeHint = "";
   if (size) {
     const [w, h] = String(size).split("x").map((n) => parseInt(n, 10));
@@ -139,8 +176,26 @@ function buildPrompt(userPrompt, size) {
       sizeHint = ` Compose it as a ${shape} image, roughly ${w}x${h} pixels.`;
     }
   }
+  let refHint = "";
+  if (Array.isArray(refFiles) && refFiles.length === 1) {
+    const a = path.basename(refFiles[0]);
+    refHint =
+      ` Reference image ${a} is in the current working directory. Pass it to the ` +
+      `image_gen tool as an input/reference image and match its style, layout, ` +
+      `lighting, and any branded packaging shown.`;
+  } else if (Array.isArray(refFiles) && refFiles.length >= 2) {
+    // ROLE-LABELED references (caller sends anchor first, product second).
+    const anchor = path.basename(refFiles[0]);
+    const product = path.basename(refFiles[1]);
+    refHint =
+      ` Two reference image files are in the current working directory. ` +
+      `${anchor} is the KIT ANCHOR — use it ONLY for the styrofoam cooler look, the gel-pack style, and the overall layout/arrangement. ` +
+      `${product} is the DONOR PRODUCT PHOTO — it shows the REAL retail packaging (real brand name, real logo, real box art and colors). ` +
+      `You MUST reproduce the product packaging from ${product} EXACTLY as shown; do NOT invent, simplify, or substitute a different-looking package, and do NOT copy any product from the anchor image. ` +
+      `Pass BOTH files to the image_gen tool as input/reference images.`;
+  }
   return (
-    `Generate an image: ${userPrompt}.${sizeHint} ` +
+    `Generate an image: ${userPrompt}.${sizeHint}${refHint} ` +
     `Use the imagegen skill with the built-in image_gen tool. ` +
     `Do not ask any questions and do not request confirmation; just generate and save the image.`
   );
@@ -151,10 +206,26 @@ async function handleGenerate(body) {
   if (!prompt) return { status: 400, json: { error: "missing prompt" } };
   const size = body && body.size;
 
+  // Per-run working dir so reference images are isolated + auto-cleaned.
+  const runDir = await fsp.mkdtemp(path.join(os.tmpdir(), "codex-img-"));
+  let refFiles = [];
+  try {
+    refFiles = await writeRefs(
+      body && body.reference_images,
+      body && body.reference_urls,
+      runDir,
+    );
+  } catch { /* refs are best-effort */ }
+
   const beforePaths = new Set(listPngs().map((x) => x.p));
   const startedAt = Date.now() - 2000; // tolerate small clock skew
 
-  const { code, stdout, stderr } = await runCodex(buildPrompt(prompt, size));
+  const { code, stdout, stderr } = await runCodex(
+    buildPrompt(prompt, size, refFiles),
+    runDir,
+  );
+  // Drop the run dir (reference images) once codex is done with it.
+  try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {}
 
   const after = listPngs();
   // Prefer files that did not exist before this run; fall back to anything
@@ -206,7 +277,8 @@ const server = http.createServer((req, res) => {
   let data = "";
   req.on("data", (d) => {
     data += d;
-    if (data.length > 1_000_000) req.destroy();
+    // Raised for base64 reference images (product photo + frozen-hero anchors).
+    if (data.length > 24_000_000) req.destroy();
   });
   req.on("end", () => {
     let body;

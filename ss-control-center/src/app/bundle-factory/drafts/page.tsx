@@ -6,6 +6,7 @@
  * through the pipeline.
  */
 
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PageHead, Sep } from "@/components/kit";
 
@@ -64,12 +65,25 @@ export default async function DraftsPage() {
             </thead>
             <tbody>
               {drafts.map((d) => (
-                <tr key={d.id} className="border-t border-rule align-top">
+                <tr
+                  key={d.id}
+                  className="border-t border-rule align-top transition-colors hover:bg-surface-tint/50"
+                >
                   <Td>
-                    <div className="font-medium text-ink">{d.draft_name}</div>
-                    <div className="mt-0.5 font-mono text-[10.5px] text-ink-3">
-                      {d.id}
-                    </div>
+                    <Link
+                      href={`/bundle-factory/drafts/${d.id}`}
+                      className="group block"
+                    >
+                      <div className="font-medium text-green-ink group-hover:underline">
+                        {d.draft_name}{" "}
+                        <span className="text-[11px] font-normal text-ink-3 group-hover:text-green-ink">
+                          — открыть на ревью →
+                        </span>
+                      </div>
+                      <div className="mt-0.5 font-mono text-[10.5px] text-ink-3">
+                        {d.id}
+                      </div>
+                    </Link>
                   </Td>
                   <Td>{d.brand}</Td>
                   <Td>
@@ -124,11 +138,14 @@ function StatusPill({ status }: { status: string }) {
 }
 
 function fmtDate(d: Date): string {
+  // The server renders in UTC (Vercel). Show the operator's local Eastern time
+  // so timestamps match Vladimir's clock, not the server's.
   return d.toLocaleString("en-US", {
     month: "short",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "America/New_York",
   });
 }
 

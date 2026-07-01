@@ -9,6 +9,7 @@
  */
 
 import { findForeignBrandsInText } from "@/lib/bundle-factory/compliance/banned-words";
+import { isOwnBrandPassthrough } from "@/lib/bundle-factory/own-brand";
 import type { ValidatorFn } from "../types";
 
 // Amazon main product title spec: 200 chars max. Walmart's grocery
@@ -29,7 +30,7 @@ const TITLE_CHAR_CAP_BY_CHANNEL: Record<string, number> = {
 // Characters that fail Amazon listing validation (PDP code 99021).
 const FORBIDDEN_TITLE_CHARS = /[<>{}[\]^~`|\\]/;
 
-export const validatorTitle: ValidatorFn = async ({ sku }) => {
+export const validatorTitle: ValidatorFn = async ({ sku, master_bundle }) => {
   const title = (sku.title || "").trim();
 
   if (!title) {
@@ -63,7 +64,21 @@ export const validatorTitle: ValidatorFn = async ({ sku }) => {
     };
   }
 
-  const foreign = findForeignBrandsInText(title);
+  let foreign = findForeignBrandsInText(title);
+  // Own-brand passthrough (Uncrustables): the listing publishes UNDER the donor
+  // brand, so that brand IS allowed in the title — mirrors compliance Rule 1.
+  // Drop the listing's own brand + any allowlisted passthrough term (e.g. both
+  // "Smucker's" and "Uncrustables"); any OTHER foreign brand still fails.
+  const listingBrand = (master_bundle?.brand || "").trim();
+  if (isOwnBrandPassthrough(listingBrand)) {
+    const ownLower = listingBrand.toLowerCase();
+    foreign = foreign.filter((m) => {
+      if (isOwnBrandPassthrough(m)) return false;
+      const ml = m.toLowerCase();
+      if (ml.includes(ownLower) || ownLower.includes(ml)) return false;
+      return true;
+    });
+  }
   if (foreign.length > 0) {
     return {
       validator_id: "validator-title",

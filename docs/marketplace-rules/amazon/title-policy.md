@@ -53,7 +53,7 @@ Salutem Vita – {Generic Product Description}, {Size/Weight}, Gift Set – Pack
 ### 3. Запрещённые элементы
 
 - ❌ **Foreign brand names** под own brand (Salutem Vita / Starfit) → HARD BLOCK (см. секцию ниже)
-- ❌ **Emoji** — Amazon strict on emojis in titles. Хотя Vladimir использует эмодзи в bullets (это OK), в title — категорически нет.
+- ❌ **Emoji** — НИКАКИХ эмодзи нигде в листинге (title, bullets, description). Brand-voice rule (владелец, 2026-05-19): эмодзи непрофессиональны и триггерят Amazon PDP code 99300. Старое допущение «эмодзи в bullets OK» ОТМЕНЕНО.
 - ❌ **CAPS LOCK** — кроме acronyms ("USB", "BBQ", "FDA")
 - ❌ **Promotional phrases:** "Best Seller", "Buy Now", "100% Authentic", "Sale", "On Sale", "Free Shipping", "Limited Time"
 - ❌ **Subjective claims без proof:** "Best", "Amazing", "Top Quality"

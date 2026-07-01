@@ -78,6 +78,9 @@
 - [Reference Catalog Engine](reference-catalog-engine.md) — архитектура справочной базы товаров от доноров (ритейлеров) для COGS и обогащения контента
 - [Amazon Growth Roadmap](amazon-growth-roadmap.md) — стратегия роста Amazon: источники данных, Listing Health Score, план модуля `/amazon-growth`
 - [Walmart Growth Roadmap](walmart-growth-roadmap.md) — стратегия роста Walmart: Action Center, List Quality, Buy Box, региональный темплейт доставки
+- [Listing Quality Stack](listing-quality-stack.md) — **общий фундамент** для создания (Bundle Factory) И улучшения (Amazon/Walmart Growth) листингов: единый KB (атрибуты из API + правила картинок/контента), генерация картинок (frozen hero + GPT-subscription воркер), полнота атрибутов, brand-voice, QA-офицер. Принцип «один KB + общие модули, не копии» — 2026-06-27
+- [Bundle Factory — Rebuild Plan](bundle-factory-rebuild-plan.md) — пошаговый план пересборки (Фазы 0–6): фундамент (реестр атрибутов, чистка KB, brand-voice) → контент из каталога → полные атрибуты → картинки → QA-офицер → каналы → переиспользование в Growth. Owner sign-off 2026-06-27 — 2026-06-27
+- [Amazon Brand-Card + Attributes](amazon-brand-card-and-attributes.md) — Food product type (не Grocery) + полный набор атрибутов для поиска (allergen enum fix, condition/expiration/heat/liquid) + единая cold-chain бренд-карточка «Dear customer» в галерею каждого frozen/chilled листинга (генерится один раз gpt-image-2, переиспользуется из R2; активирован ранее пустой путь other_product_image_locator). 2026-07-01
 - [Dashboard Refresh Fan-out](dashboard-refresh-fan-out.md) — кнопка Refresh синхронизирует все данные (Amazon, Walmart, Health) параллельно
 - [Sales Overview — Hybrid Channels](sales-overview-hybrid-channels.md) — гибридный источник продаж: Amazon/Walmart из cache, остальные от Veeqo; NaN-health исключена
 - [Merge Orders](merge-orders.md) — сигнализация объединяемых заказов в Veeqo: группировка по адресу, deep-link в Mergeable view

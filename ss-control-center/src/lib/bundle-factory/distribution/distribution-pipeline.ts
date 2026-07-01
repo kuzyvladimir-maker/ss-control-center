@@ -22,6 +22,7 @@ import { logLifecycle } from "@/lib/bundle-factory/lifecycle-log";
 import { sendTelegramMessage } from "@/lib/telegram";
 
 import { channelTarget } from "./account-map";
+import { productTypeForBundle } from "@/lib/bundle-factory/attributes";
 import {
   submitToAmazon,
   type AmazonPublishResult,
@@ -207,11 +208,24 @@ export async function runDistribution(
     );
   }
 
-  // Load PASSED SKUs, optionally filtered by channel set.
+  // Phase 5 — Walmart prohibits frozen/perishable cold-chain food, so frozen/
+  // refrigerated sets are Amazon-only. Resolve the bundle's category once and
+  // skip Walmart SKUs below when it's cold.
+  const masterBundle = await prisma.masterBundle.findUnique({
+    where: { id: draft.master_bundle_id },
+    select: { category: true, brand: true },
+  });
+  const isColdBundle = /FROZEN|REFRIGERATED/i.test(masterBundle?.category ?? "");
+
+  // Load publishable SKUs, optionally filtered by channel set. Publishable =
+  // PASSED or NEEDS_REVIEW (warnings only). Per Vladimir 2026-06-26, advisory
+  // warnings (e.g. Veeqo stock unverifiable for a brand-new bundle) must NOT
+  // block publishing — the operator confirms in the modal. FAILED (a hard
+  // validator error) is still excluded.
   const skus = await prisma.channelSKU.findMany({
     where: {
       master_bundle_id: draft.master_bundle_id,
-      validation_status: "PASSED",
+      validation_status: { in: ["PASSED", "NEEDS_REVIEW"] },
       ...(input.channels && input.channels.length > 0
         ? { channel: { in: input.channels } }
         : {}),
@@ -255,10 +269,10 @@ export async function runDistribution(
     let batchFailed = 0;
     for (const sku of batch) {
       const target = channelTarget(sku.channel);
-      // Hard sanity check: never publish without PASSED. We already
-      // filtered by validation_status='PASSED' above, but a future
-      // refactor could break that filter — this is the safety net.
-      if (sku.validation_status !== "PASSED") {
+
+      // Walmart channel gate: frozen/refrigerated food is prohibited on Walmart
+      // Marketplace → skip cold SKUs there (frozen sets publish on Amazon only).
+      if (isColdBundle && (target.kind === "walmart" || sku.channel === "WALMART")) {
         per_sku.push({
           sku_id: sku.id,
           sku: sku.sku,
@@ -268,7 +282,32 @@ export async function runDistribution(
           submission_id: null,
           issues: [],
           marketplace_status: null,
-          skip_reason: `validation_status=${sku.validation_status} (must be PASSED)`,
+          skip_reason:
+            "Walmart prohibits frozen/perishable food — frozen/refrigerated sets are Amazon-only",
+          dry_run: !apply,
+          payload: {},
+        });
+        continue;
+      }
+
+      // Hard sanity check: never publish a FAILED SKU. We already filtered to
+      // PASSED / NEEDS_REVIEW above, but a future refactor could break that
+      // filter — this is the safety net. NEEDS_REVIEW (warnings only) is
+      // allowed through by operator decision; FAILED (errors) is not.
+      if (
+        sku.validation_status !== "PASSED" &&
+        sku.validation_status !== "NEEDS_REVIEW"
+      ) {
+        per_sku.push({
+          sku_id: sku.id,
+          sku: sku.sku,
+          channel: sku.channel,
+          marketplace_kind: target.kind,
+          status: "SKIPPED",
+          submission_id: null,
+          issues: [],
+          marketplace_status: null,
+          skip_reason: `validation_status=${sku.validation_status} (must be PASSED or NEEDS_REVIEW)`,
           dry_run: !apply,
           payload: {},
         });
@@ -314,7 +353,8 @@ export async function runDistribution(
         const r: AmazonPublishResult = await submitToAmazon({
           sku,
           storeIndex: target.storeIndex,
-          productType: input.amazonProductType ?? "PRODUCT",
+          productType: input.amazonProductType ?? productTypeForBundle(),
+          brand: masterBundle?.brand,
           dryRun: !apply,
           // On the very first attempt of a SKU we ALWAYS validation-preview
           // first; on retries we trust the operator already saw the

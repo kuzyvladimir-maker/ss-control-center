@@ -1,0 +1,122 @@
+# Amazon COFFEE — full attribute list (113)
+
+> Pulled live from SP-API getDefinitionsProductType (marketplace ATVPDKIKX0DER), requirements=LISTING. Raw schema: `COFFEE.schema.json`.
+
+## Required (7)
+
+- `brand` — Brand Name
+- `bullet_point` — Bullet Point
+- `country_of_origin` — Country of Origin
+- `item_name` — Title
+- `item_type_keyword` — Item Type Keyword
+- `product_description` — Product Description
+- `supplier_declared_dg_hz_regulation` — Dangerous Goods Regulations
+
+## Optional / recommended (106)
+
+- `allergen_information` — Allergen Information
+- `branded_coffee_machine_insert_type` — Branded Coffee Machine Insert Type
+- `caffeine_content_description` — Caffeine Content Description
+- `caffeine_content_per_serving` — Caffeine Content Per Serving
+- `california_proposition_65` — California Proposition 65
+- `certificate` — Certificate
+- `child_parent_sku_relationship` — Child Parent Sku Relationship
+- `coffee_blend_name` — Coffee Blend Name
+- `coffee_roast_level` — Coffee Roast Level
+- `coffee_type` — Coffee Type
+- `color` — Color
+- `compliance_media` — Compliance Media
+- `condition_note` — Offer Condition Note
+- `condition_type` — Item Condition
+- `configuration` — Configuration
+- `container` — Container
+- `contains_liquid_contents` — Contains Liquid Contents?
+- `country_as_labeled` — Country as Labeled
+- `customer_package_type` — Customer Package Type
+- `diet_type` — Diet Type
+- `each_unit_count` — Each Unit Count
+- `externally_assigned_product_identifier` — External Product ID
+- `fc_shelf_life` — Fulfillment Center Shelf Life
+- `flavor` — Flavor
+- `fulfillment_availability` — Fulfillment Availability
+- `generic_keyword` — Generic Keyword
+- `ghs` — GHS
+- `gift_options` — Gift Options
+- `hazmat` — Hazmat
+- `ingredients` — Ingredients
+- `is_expiration_dated_product` — Is Product Expirable
+- `is_green_purchasing_law_compliant` — Is Green Purchasing Law Compliant
+- `is_liquid_double_sealed` — Is the liquid product double sealed?
+- `is_this_product_subject_to_buyer_age_restrictions` — Is This Product Subject To Buyer Age Restrictions
+- `item_dimensions` — Item Dimensions
+- `item_display_weight` — Item Display Weight
+- `item_form` — Item Form
+- `item_package_dimensions` — Item Package Dimensions
+- `item_package_quantity` — Item Package Quantity
+- `item_package_weight` — Item Package Weight
+- `item_shape` — Item Shape
+- `item_weight` — Item Weight
+- `liquid_contents_description` — Liquid Contents Description
+- `liquid_packaging_type` — Liquid Packaging Type
+- `liquid_volume` — Liquid Volume
+- `list_price` — List Price
+- `main_offer_image_locator` — Main Offer Image Locator
+- `main_product_image_locator` — Main Product Image Locator
+- `manufacturer` — Manufacturer
+- `map_policy` — Minimum Advertised Price Display
+- `master_pack_layers_per_pallet_quantity` — Master Pack Layers per Pallet Quantity
+- `master_packs_per_layer_quantity` — Master Packs Per Layer Quantity
+- `material` — Material
+- `max_order_quantity` — Maximum Order Quantity
+- `merchant_release_date` — Merchant Release Date
+- `merchant_shipping_group` — Shipping Template
+- `merchant_suggested_asin` — Merchant Suggested ASIN
+- `model_name` — Model Name
+- `model_number` — Model Number
+- `number_of_items` — Number of Items
+- `nutritional_info` — Serving Size
+- `other_offer_image_locator_1` — Other Offer Image Locator
+- `other_offer_image_locator_2` — Other Offer Image Locator
+- `other_offer_image_locator_3` — Other Offer Image Locator
+- `other_offer_image_locator_4` — Other Offer Image Locator
+- `other_offer_image_locator_5` — Other Offer Image Locator
+- `other_product_image_locator_1` — Other Product Image Locator 1
+- `other_product_image_locator_2` — Other Product Image Locator 2
+- `other_product_image_locator_3` — Other Product Image Locator 3
+- `other_product_image_locator_4` — Other Product Image Locator 4
+- `other_product_image_locator_5` — Other Product Image Locator 5
+- `other_product_image_locator_6` — Other Product Image Locator 6
+- `other_product_image_locator_7` — Other Product Image Locator 7
+- `other_product_image_locator_8` — Other Product Image Locator 8
+- `package_contains_sku` — Package Contains SKU
+- `package_level` — Package Level
+- `package_size_name` — Package Size Name
+- `parentage_level` — Parentage Level
+- `part_number` — Part Number
+- `pattern` — Pattern
+- `product_expiration_type` — Product Expiration Type
+- `product_shelf_life` — Product Shelf Life
+- `product_site_launch_date` — Product Site Launch Date
+- `product_tax_code` — Product Tax Code
+- `purchasable_offer` — Purchasable Offer
+- `region_of_origin` — Region of Origin
+- `safety_data_sheet_url` — Safety Data Sheet (SDS or MSDS) URL
+- `safety_warning` — Safety Warning
+- `scent` — Scent
+- `serving_recommendation` — Serving Recommendation
+- `set_name` — Set Name
+- `ships_globally` — Ships Globally
+- `size` — Size
+- `skip_offer` — Skip Offer
+- `special_ingredients` — Special Ingredients
+- `specialty` — Specialty
+- `storage_instructions` — Storage Instructions
+- `style` — Style
+- `supplemental_condition_information` — Supplemental Condition Information
+- `supplier_declared_has_product_identifier_exemption` — Has GTIN exemption?
+- `swatch_product_image_locator` — Swatch Product Image Locator
+- `temperature_rating` — Temperature Rating
+- `title_differentiation` — Item Highlight
+- `unit_count` — Unit Count
+- `variation_theme` — Variation Theme
+- `variety` — Variety

@@ -31,8 +31,10 @@ const DEFAULT_BUCKET = "salutem-bundle-factory";
 const PLACEHOLDER = "placeholder";
 
 // Per Amazon's main-image guidelines: 1:1 square, white background,
-// product fills ≥85% of frame. The worker normalizes output to this size.
-const DEFAULT_SIZE = "1024x1024";
+// product fills ≥85% of frame. Amazon requires ≥2000×2000 for zoom, and
+// validator-image-dimensions HARD-FAILS anything smaller — so we normalize to
+// 2048×2048 (codex-worker.ts upscales the generated PNG via sharp to this size).
+const DEFAULT_SIZE = "2048x2048";
 
 export interface RewriteFeedback {
   /** Logos surfaced by Rule 6 on the prior attempt — used to build a
@@ -60,6 +62,11 @@ export interface ImageGenerationInput {
   model?: string;
   /** @deprecated Ignored — subscription path has no quality tiers. */
   quality?: "low" | "medium" | "high" | "auto";
+  /** Phase 3 — image URLs passed to the worker as visual references (the
+   *  donor product photo + the approved frozen-hero anchors). The box worker
+   *  fetches them and feeds image_gen so output matches the approved template
+   *  and reproduces the real packaging. */
+  reference_urls?: string[];
 }
 
 export interface ImageGenerationOutput {
@@ -143,7 +150,14 @@ export async function generateMainImage(
   const finalPrompt = buildFinalPrompt(input);
 
   // Generate via the Codex worker (subscription image_gen, $0/image).
-  const gen = await generateImagePngViaCodex({ prompt: finalPrompt, size });
+  const gen = await generateImagePngViaCodex({
+    prompt: finalPrompt,
+    size,
+    referenceUrls:
+      input.reference_urls && input.reference_urls.length > 0
+        ? input.reference_urls
+        : undefined,
+  });
 
   // Dev-mock path — worker not configured and no stub registered.
   if (gen.not_configured) {

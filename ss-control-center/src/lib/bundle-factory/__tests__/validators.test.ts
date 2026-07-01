@@ -227,6 +227,34 @@ test("validator-brand-field reports missing master bundle", async () => {
   assert.match(out.message ?? "", /MasterBundle/);
 });
 
+// ── own-brand passthrough (Uncrustables) across the validation layer ───
+
+test("validator-brand-field passes own-brand donor brand (Uncrustables)", async () => {
+  const input = mkInput(mkSku());
+  input.master_bundle = { ...input.master_bundle!, brand: "Uncrustables" };
+  const out = await validatorBrandField(input);
+  assert.equal(out.passed, true);
+});
+
+test("validator-title allows the own donor brand in title (own-brand mode)", async () => {
+  const input = mkInput(
+    mkSku({ title: "Uncrustables Chocolate Hazelnut Frozen Sandwich, 18 oz, Pack of 6" }),
+  );
+  input.master_bundle = { ...input.master_bundle!, brand: "Uncrustables" };
+  const out = await validatorTitle(input);
+  assert.equal(out.passed, true);
+});
+
+test("validator-title still fails a DIFFERENT foreign brand in own-brand mode", async () => {
+  const input = mkInput(
+    mkSku({ title: "Uncrustables with Kraft Cheese, Pack of 6" }),
+  );
+  input.master_bundle = { ...input.master_bundle!, brand: "Uncrustables" };
+  const out = await validatorTitle(input);
+  assert.equal(out.passed, false);
+  assert.match(out.message ?? "", /Kraft/i);
+});
+
 // ── validator-amazon-browse-node ──────────────────────────────────────
 
 test("validator-amazon-browse-node skips non-Amazon", async () => {

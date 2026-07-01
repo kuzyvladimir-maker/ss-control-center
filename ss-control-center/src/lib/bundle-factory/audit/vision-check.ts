@@ -23,6 +23,7 @@
 // the risk-scorer never sees them as foreign-brand violations.
 
 import Anthropic from "@anthropic-ai/sdk";
+import { CLAUDE } from "@/lib/ai-models";
 
 /**
  * Names that may appear in Vision detections but are NOT foreign
@@ -74,16 +75,26 @@ export const GENERIC_DELI_TERMS_IGNORELIST = [
  * by `scripts/rescore-audit-scan.ts` (offline re-evaluation of stored
  * detections without re-running the Vision API).
  */
-export function filterRealLogos(logos: string[]): string[] {
+export function filterRealLogos(
+  logos: string[],
+  allowedBrands: string[] = [],
+): string[] {
   const whitelist = OWN_BRANDS_WHITELIST.map((s) => s.toLowerCase());
   const ignorelist = GENERIC_DELI_TERMS_IGNORELIST.map((s) =>
     s.toLowerCase(),
   );
+  // Component brands the bundle legitimately resells (Phase 3): they APPEAR in
+  // the frozen-hero image on purpose (genuine goods, first-sale / gift-basket
+  // exception), so they are expected — not foreign-brand violations.
+  const allowed = allowedBrands
+    .map((s) => (s ?? "").trim().toLowerCase())
+    .filter(Boolean);
   return logos.filter((raw) => {
     const lower = (raw ?? "").trim().toLowerCase();
     if (!lower) return false;
     if (whitelist.includes(lower)) return false;
     if (ignorelist.includes(lower)) return false;
+    if (allowed.some((a) => lower.includes(a) || a.includes(lower))) return false;
     return true;
   });
 }
@@ -145,6 +156,9 @@ function getVisionStub(): VisionStub | null {
 export async function detectForeignLogosInImage(
   imageUrl: string,
   ownBrand: string,
+  /** Component brands the bundle legitimately resells (Phase 3) — expected in
+   *  the frozen hero, so not counted as foreign-brand violations. */
+  allowedBrands: string[] = [],
 ): Promise<VisionCheckResult> {
   const stub = getVisionStub();
   if (stub) return stub(imageUrl, ownBrand);
@@ -165,8 +179,9 @@ export async function detectForeignLogosInImage(
 
   try {
     const response = await client.messages.create({
-      model: "claude-sonnet-4-5",
+      model: CLAUDE.balanced,
       max_tokens: 500,
+      thinking: { type: "disabled" },
       messages: [
         {
           role: "user",
@@ -217,7 +232,7 @@ export async function detectForeignLogosInImage(
     const rawLogos: string[] = Array.isArray(parsed.detected_logos)
       ? parsed.detected_logos.filter((s: unknown) => typeof s === "string")
       : [];
-    const realLogos = filterRealLogos(rawLogos);
+    const realLogos = filterRealLogos(rawLogos, allowedBrands);
 
     return {
       has_foreign_logos: realLogos.length > 0,

@@ -42,6 +42,13 @@ export interface ComplianceInput {
   /** When true, Rule 6 is bypassed (used for unit smoke runs without
    *  Anthropic key, or when caller already validated image elsewhere). */
   skip_image_check?: boolean;
+
+  /** Own-brand passthrough mode (Uncrustables carve-out): the listing is
+   *  published UNDER the donor's own brand, not Salutem. When true: the donor
+   *  brand IS allowed in the title (Rule 1) and as the brand field (Rule 2),
+   *  and NO curator disclaimer is required/injected (Rules 3+4 skip). The gate
+   *  derives this from `brand` when not set explicitly. */
+  own_brand?: boolean;
 }
 
 export interface ComplianceOptions {

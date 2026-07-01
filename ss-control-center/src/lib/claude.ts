@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { CLAUDE } from "@/lib/ai-models";
 
 function getClient() {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -47,8 +48,9 @@ export async function analyzeScreenshots(
   });
 
   const response = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: CLAUDE.balanced,
     max_tokens: 4096,
+    thinking: { type: "disabled" },
     messages: [{ role: "user", content }],
   });
 

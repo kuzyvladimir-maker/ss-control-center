@@ -17,6 +17,12 @@ export function ruleDisclaimerDescription(
   input: ComplianceInput,
   options: ComplianceOptions = {},
 ): RuleResult {
+  // Own-brand passthrough (Uncrustables): NOT a gift set — no curator/assembler
+  // disclaimer (see Rule 3). Skip entirely.
+  if (input.own_brand) {
+    return { rule_id: "rule-4-disclaimer-description", passed: true };
+  }
+
   const description = typeof input.description === "string"
     ? input.description
     : "";
