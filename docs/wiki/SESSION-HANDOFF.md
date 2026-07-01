@@ -54,6 +54,40 @@
 
 ---
 
+## 🆕 СЕССИЯ 2026-07-01 (ночь, MacBook-Claude) — Bundle Factory ДОКАЗАН E2E: 3 реальных ASIN + пул баркодов
+
+**Главное: пайплайн прогнан от генерации до размещения в каталоге Amazon.** 3 листинга
+Uncrustables Peanut Butter & Strawberry (30/45/90 шт), донор `2904ec27`, аккаунт store1 (Salutem).
+Каждый: own-brand драфт (без gift-set, без curator-дисклеймера) → AI-текст (комплаенс с 1-й попытки) →
+Codex hero-картинка (кулер, ~6 МБ) → promote (Speedy-UPC + rich-атрибуты + галерея из 6 фото) →
+ship-specs → validate → **реальный PUT ACCEPTED → Amazon присвоил ASIN**:
+
+| Кол-во | SKU | UPC | ASIN | Цена | Статус |
+|---|---|---|---|---|---|
+| 30 | AZ-ASMY-VEQ2 | 756441901405 | **B0H788M8WM** | $144.84 | DISCOVERABLE, ревью ≤48ч (100521) |
+| 45 | UA-ASAO-RE7Q | 756441901412 | **B0H784LMG6** | $174.54 | DISCOVERABLE, ревью ≤48ч |
+| 90 | VC-ASV1-378P | 756441901429 | **B0H786L5MW** | $263.64 | DISCOVERABLE, ревью ≤48ч |
+
+Владелец посмотрел: **«листинги реально работают, не живые»** (в каталоге, но пока не BUYABLE — это
+стандартное 48ч-ревью Amazon для новых ASIN, ворота самого Amazon, не наш дефект). Хочет **пару моментов
+доработать дома** (что именно — уточнит на iMac; видел их в Seller Central).
+
+**Что построено (коммиты `6f945b1`, `a36a949`, `b7469f6`, в проде через Vercel):**
+1. **Пул SpeedyBarcode загружен** — 13 234 свободных баркода в `UPCPool` AVAILABLE (импорт `scripts/_import-speedy-pool.ts`, источник `docs/speedy_free_pool*.csv`). Фейковый сгенерированный пул (2 996) законсервирован (QUARANTINED); генератор `seed-upc-pool-available.ts` отключён. **0 сожжённых баркодов.**
+2. **Цикл «сгорел→следующий»** (`src/lib/bundle-factory/distribution/upc-burn.ts` + `spApiDelete`): при коллизии баркода (Amazon 8541/GTIN) — удалить листинг, сжечь код, взять следующий AVAILABLE, переопубликовать. Автоматом в cron `poll-pending`. Не-UPC ошибки баркод НЕ жгут.
+3. **Галерея вторичных фото** (`attributes/gallery-images.ts` + promote-draft): раньше `other_product_image_locator_N` не заполнялись; теперь донор-фото + нутрицион-этикетка зеркалятся в R2 и подставляются; брендовая карточка — последним слотом. 6 фото на листинг, все HTTP 200.
+4. **2 бага, всплывших на живой публикации:** (а) `allergen_information` = **строчные токены** (`peanuts`/`soy`/`wheat`/`tree_nuts`/`sesame_seeds`…), Title-Case = отказ 90244 — починено в `build-amazon-attributes.ts`; (б) код **100521** («на ревью до 48ч, потом опубликуем») система считала провалом — теперь `status-poller` мапит в PENDING_REVIEW.
+
+**Где остановились / что дальше (для iMac-Claude):**
+- ⏳ **Ждём: 3 ASIN пройдут 48ч-ревью → станут BUYABLE.** Проверить SP-API GET listing (статус BUYABLE, нет 100521) или Seller Central. Если Amazon запросит инфо — отработать.
+- 🔧 **Владелец хочет доработать «пару моментов»** — спросить, что именно он увидел утром.
+- 📋 **UPC Pool Manager UI (Deliverable 2) ещё НЕ сделан:** страница в Command Center — загрузка пула + счётчики (available/assigned/burned/quarantined + burn-rate) + таблица баркод→листинг. Counts: 13 234 AVAILABLE / 937 ASSIGNED / 2 996 QUARANTINED / 1 BURNED. Детали: память `project_upc_pool_manager`.
+- 🐛 **Мелочи (не блокеры):** `ingredients` иногда с удвоенным значением (донор-данные через « | ») — косметика; WARNING про `recommended_browse_nodes` (Amazon игнорит).
+- 📄 Полный разбор — вики `docs/wiki/amazon-brand-card-and-attributes.md` (низ), память `project_bundle_factory_e2e_publish`.
+
+**⚠️ ОТДЕЛЬНО — безопасность (аудит `docs/AUDIT_2026-07-01_FULL.md`, чужая сессия, но КРИТИЧНО):** в git закоммичена БД `dev.db`/`prisma/dev.db` с 5 живыми Google OAuth refresh-токенами; `/api/debug/*` открыты без авторизации и пишут в реальные заказы Veeqo. Отозвать токены + вычистить из git + закрыть debug-роуты — разобрать дома в первую очередь.
+
+
 ## 🆕 СЕССИЯ 2026-06-30 (тест владельца) — картинка: реальная упаковка + доставка по кулеру
 
 Коммит `363e3dd`, badge **v2.4**. Владелец тестировал и нашёл 2 вещи.
