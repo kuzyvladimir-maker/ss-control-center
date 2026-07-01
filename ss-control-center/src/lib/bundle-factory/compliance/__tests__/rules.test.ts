@@ -383,3 +383,32 @@ test("rule-4 own-brand — no disclaimer description required (passes without it
   const r = ruleDisclaimerDescription(ownBrandInput());
   assert.equal(r.passed, true);
 });
+
+// ── Rule 6 vision — own-brand logo must survive (Smucker's/Uncrustables) ──
+//
+// The frozen hero for an own-brand Uncrustables listing legitimately shows the
+// REAL product logo. The vision model reports both "Uncrustables" and the
+// parent "Smucker's" mark; both must be allowed (else the gate blocks and the
+// retry strips the genuine logo off the box). This tests the filter Rule 6 uses.
+
+import { filterRealLogos } from "../../audit/vision-check";
+import { OWN_BRAND_PASSTHROUGH_BRANDS } from "../../own-brand";
+
+test("filterRealLogos — own-brand allowlist clears Smucker's AND Uncrustables", () => {
+  const allowed = ["Uncrustables", ...OWN_BRAND_PASSTHROUGH_BRANDS];
+  const out = filterRealLogos(["Smucker's", "Uncrustables"], allowed);
+  assert.equal(out.length, 0);
+});
+
+test("filterRealLogos — a truly foreign logo still flags in own-brand mode", () => {
+  const allowed = ["Uncrustables", ...OWN_BRAND_PASSTHROUGH_BRANDS];
+  const out = filterRealLogos(["Smucker's", "Kraft"], allowed);
+  assert.deepEqual(out, ["Kraft"]);
+});
+
+test("filterRealLogos — WITHOUT the parent mark allowed, Smucker's flags (regression)", () => {
+  // The bug: allowedBrands had only the component brand "Uncrustables", so the
+  // vision-detected "Smucker's" was treated as foreign and stripped.
+  const out = filterRealLogos(["Smucker's"], ["Uncrustables"]);
+  assert.deepEqual(out, ["Smucker's"]);
+});
