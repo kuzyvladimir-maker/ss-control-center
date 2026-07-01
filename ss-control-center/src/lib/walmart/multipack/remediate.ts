@@ -151,7 +151,13 @@ export async function buildAndSubmitOne(
     catch (e: any) { enrichNote = `enrich error: ${e?.message?.slice(0, 60)}`; }
   }
 
-  const cand = await loadCandidate(db, sku, cur.productName || "", storeIndex);
+  let cand = await loadCandidate(db, sku, cur.productName || "", storeIndex);
+  // No donor at all (SKIP case: only an old bad main, no catalog content) → force a
+  // DEEP re-search across every retailer for real content + a clean front, then retry.
+  if (!cand && opts.enrich !== false) {
+    try { await ensureDonorImage(db, { sku, upc, title: cur.productName, deep: true }); } catch {}
+    cand = await loadCandidate(db, sku, cur.productName || "", storeIndex);
+  }
   if (!cand) return { ...blank, detail: `no donor photo${enrichNote ? ` (${enrichNote})` : ""}` };
   const noun = inferUnitNoun(cand.walmartTitle);
 
@@ -245,8 +251,13 @@ export async function buildAndSubmitOne(
         if (rescueUrl) {
           const base = await fetchImageBuffer(highResImageUrl(rescueUrl));
           const main = await composeTiledMainImage(base, cand.packCount);
-          mainUrl = await uploadToR2(main, multipackImageKey(sku, "main", `${stamp}r`));
-          imageNote = "rescue front (whole-pool Sonnet pick)";
+          const candidateUrl = await uploadToR2(main, multipackImageKey(sku, "main", `${stamp}r`));
+          // VERIFY the rescue tile too — this catches a broken cutout (garbage
+          // rectangles), a multi-unit source that multiplied the count, or a
+          // wrong subject. If it fails, leave mainUrl null so deep re-enrich runs.
+          const v = await verifyMainImage(candidateUrl, cand.packCount);
+          if (v.ok) { mainUrl = candidateUrl; imageNote = "rescue front (whole-pool Sonnet pick)"; }
+          else imageNote = `rescue tile rejected by verify (${v.kind})`;
         }
       } catch { /* rescue is best-effort */ }
     }

@@ -18,6 +18,10 @@ const MODEL = CLAUDE.cheap; // cheap + vision-capable (legacy pickers)
 // it tiled torец/back/nutrition/infographic shots. Sonnet + explicit orientation
 // & barcode rules fixes that (verified against real donor pools 2026-06-30).
 const STRONG_MODEL = CLAUDE.balanced;
+// Bump when the CLASSIFY_PROMPT rules change so the cache doesn't serve stale
+// classifications made under the old prompt (cache key = model + this version).
+const CLASSIFY_VER = "v2-solo";
+const CLASSIFY_KEY = `${STRONG_MODEL}@${CLASSIFY_VER}`;
 
 let client: Anthropic | null = null;
 function getClient(): Anthropic | null {
@@ -164,12 +168,14 @@ const CLASSIFY_PROMPT = `You are choosing photos for an e-commerce MAIN image of
 - Soft/floppy package (bread loaf/bag): "standing" = the loaf stands vertically (tall), its printed front label facing you; "lying" = it lies flat and you mainly see the top or the cut-END/side panel. Rigid box/can/bottle = "na".
 - "barcode": true if a UPC barcode strip is clearly visible (that side is the BACK/side, not the front).
 - "whiteBg": true only if the background is plain WHITE or very light grey (Walmart requires a white main-image background); false for colored/orange/lifestyle backgrounds.
-- "goodFront": true ONLY if type=front AND (standing or na) AND barcode=false AND it is a SINGLE package with the brand label clearly readable. Otherwise false.
-Reject as NOT goodFront: back/side, nutrition panels, infographics with callout text, lifestyle/prepared-food, a loaf lying showing its end/slice face, multi-pack bundles, or any photo with a visible barcode.`;
+- "goodFront": true ONLY if type=front AND whiteBg=true AND (standing or na) AND barcode=false AND it shows ONE SINGLE product package ALONE with the brand label clearly readable. Otherwise false. The WHITE background is required — Walmart's main-image rule; a photo on a colored/red/orange/blue background, a marketing banner, or a busy scene is NOT goodFront even if the package is clearly visible.
+Reject as NOT goodFront: back/side, nutrition panels, infographics with callout text, lifestyle/prepared-food, a loaf lying showing its end/slice face, multi-pack bundles, or any photo with a visible barcode.
+ALSO reject as NOT goodFront if the photo shows the product together with ANY OTHER distinct item or prop — e.g. a cup, bowl, plate, a second/different product, a free-gift item, or a "2-pack/X-pack offer" bundle graphic. We want the product BY ITSELF, nothing else in the frame.
+ALSO reject as NOT goodFront if the photo shows MORE THAN ONE unit of the product — a group, row, stack, or pile of 2+ identical packages/cups/cans. We tile a SINGLE unit into a grid ourselves, so the source MUST be exactly ONE unit; a photo already showing several units would multiply into a wrong, cluttered count.`;
 
 export async function classifyProductPhoto(url: string): Promise<PhotoClass> {
   const fallback: PhotoClass = { type: "error", orientation: "na", barcode: false, whiteBg: false, goodFront: false, conf: 0 };
-  const cached = await classFromCache(url, STRONG_MODEL);
+  const cached = await classFromCache(url, CLASSIFY_KEY);
   if (cached) return cached; // ~free — the big re-run cost saver
   try {
     const j = parseJson(await ask([url], CLASSIFY_PROMPT, 120, STRONG_MODEL));
@@ -179,7 +185,7 @@ export async function classifyProductPhoto(url: string): Promise<PhotoClass> {
       barcode: j.barcode === true, whiteBg: j.whiteBg === true, goodFront: j.goodFront === true,
       conf: typeof j.conf === "number" ? j.conf : 0,
     };
-    await classToCache(url, STRONG_MODEL, out);
+    await classToCache(url, CLASSIFY_KEY, out);
     return out;
   } catch { return fallback; }
 }
@@ -223,7 +229,10 @@ export async function pickBestFront(urls: string[], opts?: { listingTitle?: stri
   // imperfect real front beats an empty listing. Only pure lifestyle / nutrition /
   // infographic / back stay excluded.
   if (!fronts.length) {
-    fronts = all.filter((x) => x.cls.type === "front" && x.cls.orientation !== "lying" && !x.cls.barcode);
+    // Still require a WHITE background here — that's what excludes marketing
+    // banners / lifestyle / infographics (all colored bg). We only relax the
+    // classifier's "goodFront" perfectionism, not the white-background rule.
+    fronts = all.filter((x) => x.cls.type === "front" && x.cls.whiteBg && x.cls.orientation !== "lying" && !x.cls.barcode);
   }
   if (!fronts.length) return null;
 
@@ -251,10 +260,16 @@ export async function pickBestFront(urls: string[], opts?: { listingTitle?: stri
 export async function pickBestFrontFromPool(urls: string[], listingTitle: string): Promise<string | null> {
   const cands = urls.slice(0, 12); // one multi-image call (token budget)
   if (!cands.length) return null;
-  const prompt = `Listing: "${listingTitle}". Above are ${cands.length} candidate photos, index 0..${cands.length - 1} in order. Pick the index of the SINGLE best photo to use as the MAIN product image — the clearest view of the retail PACKAGE with its brand label facing the camera.
-IMPORTANT: a bread loaf, bun bag, or other SOFT package standing with its printed FRONT label toward the camera IS a valid front — accept it. A rigid box/can/bottle shown normally is a valid front.
-Reject ONLY: prepared/served food (a bowl, plate, sandwich, or serving scene), a Nutrition-Facts panel, a marketing infographic that is mostly callout text, or the BACK/side with a visible barcode.
-Prefer a plain WHITE background and the flavor/variant that matches the listing. Return JSON only: {"index": N} for the best, or {"index": -1} if NONE of them show the product package front.`;
+  const prompt = `Listing: "${listingTitle}". Above are ${cands.length} candidate photos, index 0..${cands.length - 1} in order. Pick the index of the photo that best works as the MAIN image: ONE SINGLE retail PRODUCT PACKAGE shown BY ITSELF, its front/brand label toward the camera, on a PLAIN WHITE background.
+ACCEPT: a rigid box / can / bottle shown normally; OR a soft package (bread loaf, bun bag) STANDING with its printed front label facing you — as long as it is ONE unit on a white/very-light background.
+REJECT — do NOT pick these; return {"index": -1} if they are all you have:
+- a NON-WHITE / colored / red / orange / blue background, or any marketing BANNER with large text overlays (e.g. "MADE FROM 100% FRESH ROMA TOMATOES", "THE START TO GREAT-TASTING MEALS");
+- lifestyle / serving / recipe scenes (a hand, a bowl or plate of prepared food, a kitchen scene) — even if a package appears in it;
+- Nutrition-Facts or Ingredients panels, or infographics that are mostly callout text;
+- the BACK / side, or a visible barcode;
+- MORE THAN ONE unit in the photo — a case, flat, tray, row, stack, or group of several packages/cans/cups (we tile a SINGLE unit ourselves; a multi-unit source multiplies into a hugely wrong count — DANGEROUS);
+- the product shown together with OTHER items or props (a cup, bowl, second product, free gift) or a "2-pack / X-pack offer" bundle.
+It is BETTER to return {"index": -1} (we will then search other retailers) than to pick a colored-background, banner, lifestyle, infographic, multi-unit, or bundle photo. Prefer the flavor/variant matching the listing. Return JSON only: {"index": N} for a CLEAN single product-package front on white, or {"index": -1} if none qualify.`;
   try {
     const j = parseJson(await ask(cands, prompt, 40, STRONG_MODEL));
     const i = Number(j?.index);
