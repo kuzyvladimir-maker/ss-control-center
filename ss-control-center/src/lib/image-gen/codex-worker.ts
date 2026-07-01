@@ -35,8 +35,11 @@ export interface CodexImageResult {
   error?: string;
 }
 
-// Image gen via the subscription path takes ~30-60s; allow generous headroom.
-const DEFAULT_TIMEOUT_MS = 240_000;
+// Codex image_gen with reference images routinely takes ~4 minutes. Keep this
+// just under the Vercel route maxDuration (300s) + nginx proxy_read_timeout so a
+// slow-but-successful generation isn't aborted client-side (240s clipped a 241s
+// run). 290s leaves ~10s for the response to travel back.
+const DEFAULT_TIMEOUT_MS = 290_000;
 
 function parseSize(size?: string): { w: number; h: number } | null {
   if (!size) return null;

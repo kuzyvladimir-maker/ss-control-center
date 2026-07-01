@@ -42,7 +42,11 @@ const TOKEN = process.env.CODEX_IMAGE_WORKER_TOKEN || "";
 const CODEX_BIN = process.env.CODEX_BIN || "codex";
 const CODEX_HOME = process.env.CODEX_HOME || path.join(os.homedir(), ".codex");
 const GEN_DIR = path.join(CODEX_HOME, "generated_images");
-const RUN_TIMEOUT_MS = parseInt(process.env.RUN_TIMEOUT_MS || "240000", 10);
+// Codex image_gen with reference images routinely runs ~4 min. Kill only at
+// 285s — just under the nginx /codex-image/ proxy_read_timeout (300s) and the
+// caller's fetch timeout (290s). The old 240s SIGKILLed generations right at the
+// finish line (a 241s run died). Override via RUN_TIMEOUT_MS in the box .env.
+const RUN_TIMEOUT_MS = parseInt(process.env.RUN_TIMEOUT_MS || "285000", 10);
 
 if (!TOKEN) {
   console.error("FATAL: CODEX_IMAGE_WORKER_TOKEN is not set");
