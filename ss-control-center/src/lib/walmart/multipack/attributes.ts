@@ -21,6 +21,10 @@ type Specs = Record<string, string>;
 
 // Donor spec display-name (lowercased) → { api attribute name, char cap }.
 // FREE-TEXT / numeric per the spec → never rejected on an enum value.
+// SAFE = confirmed accepted by live feed tests (2026-07-01). Scalar free-text /
+// numeric that Walmart neither enum-validates nor requires as a JSON array for
+// food product types. (Dropped after test: productLine → needs JSONArray;
+// productNetContentMeasure/Unit → "not a valid field" for MP_MAINTENANCE.)
 const SAFE_MAP: Record<string, { api: string; max: number }> = {
   "manufacturer": { api: "manufacturer", max: 60 },
   "ingredients": { api: "ingredients", max: 5000 },
@@ -29,23 +33,17 @@ const SAFE_MAP: Record<string, { api: string; max: number }> = {
   "allergens": { api: "foodAllergenStatements", max: 4000 },
   "allergen": { api: "foodAllergenStatements", max: 4000 },
   "flavor": { api: "flavor", max: 600 },
-  "flavor notes": { api: "flavor_notes", max: 500 },
-  "tasting notes": { api: "flavor_notes", max: 500 },
   "net content statement": { api: "netContentStatement", max: 500 },
-  "cuisine": { api: "cuisine", max: 30 },
-  "product line": { api: "productLine", max: 400 },
-  "texture": { api: "texture", max: 100 },
-  "occasion": { api: "occasion", max: 2000 },
-  "vegetable type": { api: "vegetable_type", max: 100 },
-  "fruit type": { api: "fruitType", max: 100 },
-  "dietary method": { api: "dietaryMethod", max: 1000 },
   "manufacturer part number": { api: "manufacturerPartNumber", max: 60 },
   "size": { api: "size", max: 500 },
 };
 
-// CLOSED-LIST attributes. Donor values come from Walmart so they should be
-// valid, but a mismatch bounces the item → the caller can strip these on a
-// rejection (opts.includeClosed=false) while keeping the SAFE layer.
+// CLOSED = enum-validated per product type (live feed rejected containerType,
+// texture, foodForm, container_material, food_condition even though the spec
+// labels some "Alphanumeric"). Donor values come from Walmart so they're usually
+// valid, but a mismatch bounces the whole item → sent only when includeClosed.
+// The descriptive alphanumerics (cuisine/occasion/vegetable/fruit/dietary/flavor
+// notes) are UNTESTED so parked here as a precaution.
 const CLOSED_MAP: Record<string, { api: string; max: number }> = {
   "container type": { api: "containerType", max: 100 },
   "container material": { api: "container_material", max: 50 },
@@ -57,6 +55,14 @@ const CLOSED_MAP: Record<string, { api: string; max: number }> = {
   "food preparation method": { api: "food_preparation_method", max: 100 },
   "preparation type": { api: "food_preparation_method", max: 100 },
   "retail packaging": { api: "ib_retail_packaging", max: 100 },
+  "texture": { api: "texture", max: 100 },
+  "cuisine": { api: "cuisine", max: 30 },
+  "occasion": { api: "occasion", max: 2000 },
+  "vegetable type": { api: "vegetable_type", max: 100 },
+  "fruit type": { api: "fruitType", max: 100 },
+  "dietary method": { api: "dietaryMethod", max: 1000 },
+  "flavor notes": { api: "flavor_notes", max: 500 },
+  "tasting notes": { api: "flavor_notes", max: 500 },
 };
 
 /** Parse RetailPrice.specifications (BlueCart shapes: flat [{name,value}] or
@@ -83,26 +89,6 @@ function parseSpecs(raw: string | null | undefined): Specs {
   return out;
 }
 
-/** Extract a numeric net-content measure + Walmart unit from a size/net-content
- *  string ("12 oz", "1.98 Lb", "6 - 5.3 OZ CUPS" → 5.3 oz). */
-function parseNetContent(...candidates: (string | undefined)[]): { measure: number; unit: string } | null {
-  const UNIT: Record<string, string> = {
-    oz: "oz", ounce: "oz", ounces: "oz", "fl oz": "fl oz", "fluid ounce": "fl oz", "fluid ounces": "fl oz",
-    lb: "lb", lbs: "lb", pound: "lb", pounds: "lb", g: "g", gram: "g", grams: "g", kg: "kg",
-    ml: "ml", l: "l", liter: "l", liters: "l",
-  };
-  for (const c of candidates) {
-    if (!c) continue;
-    const m = c.match(/([\d.]+)\s*(fl\s*oz|fluid\s*ounces?|ounces?|oz|lbs?|pounds?|grams?|g|kg|ml|liters?|l)\b/i);
-    if (m) {
-      const measure = parseFloat(m[1]);
-      const unit = UNIT[m[2].toLowerCase().replace(/\s+/g, " ")] || null;
-      if (unit && Number.isFinite(measure) && measure > 0) return { measure, unit };
-    }
-  }
-  return null;
-}
-
 export interface BuiltAttributes { attrs: Record<string, any>; filled: string[]; closedUsed: string[] }
 
 /**
@@ -113,7 +99,12 @@ export interface BuiltAttributes { attrs: Record<string, any>; filled: string[];
 export async function buildFoodAttributes(
   db: Client, sku: string, packCount: number, opts: { includeClosed?: boolean } = {},
 ): Promise<BuiltAttributes> {
-  const includeClosed = opts.includeClosed !== false;
+  // Default OFF: a live feed test showed closed-list values (containerType,
+  // foodForm, food_condition, container_material, texture, netContentUnit) get
+  // enum-rejected per productType and bounce the whole item. The SAFE free-text
+  // set + the quantity trio pass, so that's the default. Opt back in only when a
+  // per-productType enum map is built.
+  const includeClosed = opts.includeClosed === true;
   const attrs: Record<string, any> = {};
   const closedUsed: string[] = [];
 
@@ -152,17 +143,6 @@ export async function buildFoodAttributes(
   if (ingredientsCol) set("ingredients", ingredientsCol, 5000);
   for (const [name, { api, max }] of Object.entries(SAFE_MAP)) set(api, specs[name], max);
   if (includeClosed) for (const [name, { api, max }] of Object.entries(CLOSED_MAP)) set(api, specs[name], max, true);
-
-  // net content measure + unit (unit is a closed list, but standard oz/lb/g are
-  // universally valid) — parsed from the net-content statement / size.
-  if (includeClosed) {
-    const nc = parseNetContent(specs["net content statement"], specs["net content"], specs["size"], specs["product net content parent"]);
-    if (nc && attrs.productNetContentMeasure == null) {
-      attrs.productNetContentMeasure = nc.measure;
-      attrs.productNetContentUnit = nc.unit;
-      closedUsed.push("productNetContentUnit");
-    }
-  }
 
   return { attrs, filled: Object.keys(attrs), closedUsed };
 }

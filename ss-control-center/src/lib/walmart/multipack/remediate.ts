@@ -23,7 +23,7 @@ const DONOR_IMAGE_CAP = 6;
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export interface RemediateScope { image?: boolean; gallery?: boolean; title?: boolean; bullets?: boolean; description?: boolean; attributes?: boolean; }
-const ALL_SCOPE: RemediateScope = { image: true, gallery: true, title: true, bullets: true, description: true, attributes: false };
+const ALL_SCOPE: RemediateScope = { image: true, gallery: true, title: true, bullets: true, description: true, attributes: true };
 
 export interface RemediateResult {
   status: "SUBMITTED" | "POST_FAILED" | "SKIP" | "DRY" | "ERROR" | "BUILT";
@@ -316,6 +316,9 @@ export async function buildAndSubmitOne(
   return {
     status: feedId ? "SUBMITTED" : "POST_FAILED", feedId, url, title: content.title,
     detail: feedId ? "" : JSON.stringify(resp.body).slice(0, 160), packCount: cand.packCount, noun, meta: buildMeta,
+    // Expose the sent item so the caller (worker) can persist the generated
+    // content for the QC review screen, same as the batch driver.
+    mpItem: payload.MPItem[0], productType, upc,
   };
 }
 
@@ -474,13 +477,18 @@ export async function buildAndSubmitMany(db: Client, client: any, skus: string[]
     if (opts.log !== false) {
       for (const c of chunk) {
         try {
+          // Persist the full generated Visible block (title/bullets/description/
+          // gallery/attributes) so the in-module QC screen can show before/after
+          // WITHOUT Walmart's propagation lag (the whole point of the review UI).
+          const vis = c.mpItem?.Visible ? Object.values(c.mpItem.Visible)[0] : null;
           await logRemediation(db, {
             sku: c.sku, storeIndex, wpid: c.meta?.wpid ?? null, upc: c.upc ?? c.meta?.upc ?? null,
             feedId: c.feedId, feedType: "MP_MAINTENANCE", feedStatus: c.feedId ? "SUBMITTED" : "POST_FAILED", ok: c.status === "SUBMITTED",
             packCount: c.packCount, newTitle: c.meta?.newTitle ?? undefined, titleChanged: !!c.meta?.newTitle,
             bulletsCount: c.meta?.bulletsCount, imagesCount: c.meta?.imagesCount, descriptionLength: c.meta?.descriptionLength,
             mainImageUrl: c.meta?.mainImageUrl ?? undefined, usedAiPolish: c.meta?.usedAiPolish,
-            changeSummary: { batch: true, full: c.full }, notes: c.full ? "A-to-Z (full donor)" : "A-to-Z (thin donor — title-based copy)",
+            changeSummary: { batch: true, full: c.full, attributesCount: c.meta?.attributesCount ?? 0, content: vis },
+            notes: c.full ? "A-to-Z (full donor)" : "A-to-Z (thin donor — title-based copy)",
           });
         } catch { /* logging must never break the run */ }
       }
@@ -521,4 +529,26 @@ export async function checkFeed(client: any, feedId: string): Promise<{ status: 
   if (errs.length) detail += " — " + errs.map((e: any) => e.field).join(", ");
   const ok = st === "PROCESSED" && Number(d.itemsFailed) === 0 && Number(d.itemsSucceeded) > 0;
   return { status: st, ok, detail };
+}
+
+/** Per-item feed result. checkFeed only reads item[0]; this returns EVERY item's
+ *  sku + status + errors — needed to finalize a BATCHED feed per-SKU (half our
+ *  cards are QARTH-locked, so a batch feed is always mixed) and to see exactly
+ *  which attribute each item rejected. Returns null while still processing. */
+export async function checkFeedItems(client: any, feedId: string): Promise<{ status: "PROCESSED" | "ERROR"; items: Array<{ sku: string; ok: boolean; ingestionStatus: string; errorFields: string[]; errors: string[] }> } | null> {
+  const d: any = (await client.requestRaw("GET", `/feeds/${encodeURIComponent(feedId)}`, { params: { includeDetails: "true" } })).body;
+  const st = d?.feedStatus;
+  if (st !== "PROCESSED" && st !== "ERROR") return null;
+  const arr = d?.itemDetails?.itemIngestionStatus ?? [];
+  const items = (Array.isArray(arr) ? arr : []).map((it: any) => {
+    const errs = it?.ingestionErrors?.ingestionError ?? [];
+    return {
+      sku: it?.sku || it?.martItemId || "?",
+      ingestionStatus: it?.ingestionStatus || "?",
+      ok: it?.ingestionStatus === "SUCCESS",
+      errorFields: errs.map((e: any) => String(e?.field || e?.type || "")).filter(Boolean),
+      errors: errs.map((e: any) => `${e?.field || e?.type || "?"}: ${String(e?.description || "").slice(0, 90)}`),
+    };
+  });
+  return { status: st, items };
 }
