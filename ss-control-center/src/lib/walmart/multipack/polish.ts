@@ -58,22 +58,32 @@ Return ONLY valid JSON, no prose, in this exact shape:
 {"keyFeatures": ["...", "...", "...", "...", "..."], "description": "..."}
 Provide 5-7 keyFeatures. The description is 150-220 words (about 800-1300 characters), factual and keyword-rich, covering what it is, what's inside, sizes, uses and storage (no pack/quantity mention).`;
 
-  try {
-    const res = await c.messages.create({
-      model: MODEL,
-      max_tokens: 1500,
-      thinking: { type: "disabled" },
-      messages: [{ role: "user", content: prompt }],
-    });
-    const text = res.content.filter((b) => b.type === "text").map((b: any) => b.text).join("");
-    const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
-    const parsed = JSON.parse(json) as PolishedCopy;
-    if (!Array.isArray(parsed.keyFeatures) || !parsed.keyFeatures.length || !parsed.description) return null;
-    // Final safety net: hard-strip any glyphs/quantity the model may have slipped in.
-    parsed.keyFeatures = parsed.keyFeatures.map((b) => b.replace(/^[\s•*\-–—]+/, "").trim()).filter(Boolean).slice(0, 7);
-    return parsed;
-  } catch (e) {
-    console.warn(`[polish] Claude rewrite failed, using deterministic fallback: ${(e as Error).message}`);
-    return null;
+  // RETRY on transient failures. A single Anthropic overload/429/network blip must
+  // NOT silently produce a bare listing — over a 1000-SKU run those blips are
+  // frequent, and each one would leave an "ужасный листинг" with no bullets/desc.
+  // Copy generation is cheap and idempotent, so we re-ask up to 3× with backoff.
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  let lastErr = "";
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await c.messages.create({
+        model: MODEL,
+        max_tokens: 1500,
+        thinking: { type: "disabled" },
+        messages: [{ role: "user", content: prompt }],
+      });
+      const text = res.content.filter((b) => b.type === "text").map((b: any) => b.text).join("");
+      const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+      const parsed = JSON.parse(json) as PolishedCopy;
+      if (!Array.isArray(parsed.keyFeatures) || !parsed.keyFeatures.length || !parsed.description) throw new Error("empty/invalid copy");
+      // Final safety net: hard-strip any glyphs/quantity the model may have slipped in.
+      parsed.keyFeatures = parsed.keyFeatures.map((b) => b.replace(/^[\s•*\-–—]+/, "").trim()).filter(Boolean).slice(0, 7);
+      return parsed;
+    } catch (e) {
+      lastErr = (e as Error).message;
+      if (attempt < 2) await sleep(2500 * (attempt + 1)); // 2.5s, 5s
+    }
   }
+  console.warn(`[polish] Claude rewrite failed after 3 tries, deterministic fallback: ${lastErr}`);
+  return null;
 }

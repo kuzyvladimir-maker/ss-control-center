@@ -304,15 +304,27 @@ export async function buildAndSubmitOne(
 //      and ABORT the whole run if the success rate is too low.
 // ————————————————————————————————————————————————————————————————————————
 
-/** Is this built listing a FULL A-to-Z result (image + ≥5 bullets + a real
- *  description)? Used by the canary health-gate and the review gallery. */
-export function assessRemediation(meta: RemediateMeta | null): { full: boolean; reasons: string[] } {
-  if (!meta) return { full: false, reasons: ["no build meta"] };
+/**
+ * Grade a built listing.
+ *  - `textOk`  : ≥5 bullets AND a real (≥500-char) description. This is the
+ *                PIPELINE-health signal (enrich → polish → build worked). The
+ *                canary gates on this, so a handful of genuinely hard-photo SKUs
+ *                don't falsely abort an otherwise-healthy run.
+ *  - `imageOk` : a fresh main image was produced.
+ *  - `full`    : A-to-Z ideal = textOk AND imageOk. Used by the review gallery/QC
+ *                to flag "needs a better photo" items.
+ */
+export function assessRemediation(meta: RemediateMeta | null): { full: boolean; textOk: boolean; imageOk: boolean; reasons: string[] } {
+  if (!meta) return { full: false, textOk: false, imageOk: false, reasons: ["no build meta"] };
   const reasons: string[] = [];
-  if ((meta.imagesCount ?? 0) < 1) reasons.push("no image");
-  if ((meta.bulletsCount ?? 0) < 5) reasons.push(`only ${meta.bulletsCount ?? 0} bullets`);
-  if ((meta.descriptionLength ?? 0) < 500) reasons.push(`thin description (${meta.descriptionLength ?? 0} chars)`);
-  return { full: reasons.length === 0, reasons };
+  const imageOk = (meta.imagesCount ?? 0) >= 1;
+  const bulletsOk = (meta.bulletsCount ?? 0) >= 5;
+  const descOk = (meta.descriptionLength ?? 0) >= 500;
+  if (!imageOk) reasons.push("no image (needs better photo / manual)");
+  if (!bulletsOk) reasons.push(`only ${meta.bulletsCount ?? 0} bullets`);
+  if (!descOk) reasons.push(`thin description (${meta.descriptionLength ?? 0} chars)`);
+  const textOk = bulletsOk && descOk;
+  return { full: imageOk && textOk, textOk, imageOk, reasons };
 }
 
 /** POST one feed carrying MANY MPItem entries, retrying ONLY on Walmart's
@@ -375,7 +387,7 @@ export async function buildAndSubmitMany(db: Client, client: any, skus: string[]
 
   // ---- Phase 1: BUILD (with canary health-gate) ----
   const built: BuiltResult[] = [];
-  let canaryFull = 0, canaryDone = 0, canaryFullRate = 1;
+  let canaryHealthy = 0, canaryDone = 0, canaryRate = 1;
   for (let i = 0; i < skus.length; i++) {
     const sku = skus[i];
     let r: RemediateResult;
@@ -386,23 +398,28 @@ export async function buildAndSubmitMany(db: Client, client: any, skus: string[]
     } catch (e: any) {
       r = { status: "ERROR", feedId: null, url: "—", title: null, detail: String(e?.message || e).slice(0, 140), packCount: 0, noun: "", meta: null };
     }
-    const full = r.status === "BUILT" && assessRemediation(r.meta).full;
+    const a = assessRemediation(r.meta);
+    const full = r.status === "BUILT" && a.full;
+    const textOk = r.status === "BUILT" && a.textOk;
     built.push({ ...r, sku, full });
-    emit({ phase: "build", i: i + 1, total: skus.length, sku, status: r.status, full, note: r.detail });
+    emit({ phase: "build", i: i + 1, total: skus.length, sku, status: r.status, full, note: full ? "FULL" : a.reasons.join("; ") });
 
-    if (i + 1 <= canarySize) { canaryDone++; if (full) canaryFull++; }
+    // Canary gates on PIPELINE HEALTH (text produced), not on the ideal — a few
+    // hard-photo SKUs must not abort a healthy run; a systemic break (no text at
+    // all) must.
+    if (i + 1 <= canarySize) { canaryDone++; if (textOk) canaryHealthy++; }
     if (i + 1 === canarySize && canaryDone > 0) {
-      canaryFullRate = canaryFull / canaryDone;
-      emit({ phase: "canary", i: canaryDone, total: canarySize, fullRate: canaryFullRate });
-      if (canaryFullRate < minFullRate) {
-        emit({ phase: "abort", fullRate: canaryFullRate, note: "canary below threshold — nothing submitted" });
+      canaryRate = canaryHealthy / canaryDone;
+      emit({ phase: "canary", i: canaryDone, total: canarySize, fullRate: canaryRate });
+      if (canaryRate < minFullRate) {
+        emit({ phase: "abort", fullRate: canaryRate, note: "canary below threshold — nothing submitted" });
         return {
           aborted: true,
-          abortReason: `canary full-rate ${(canaryFullRate * 100).toFixed(0)}% < ${(minFullRate * 100).toFixed(0)}% over first ${canaryDone} SKUs — pipeline looks broken, stopped before wasting credits/quota on the remaining ${skus.length - canaryDone}`,
+          abortReason: `canary healthy-rate ${(canaryRate * 100).toFixed(0)}% < ${(minFullRate * 100).toFixed(0)}% over first ${canaryDone} SKUs (pipeline not producing content) — stopped before wasting credits/quota on the remaining ${skus.length - canaryDone}`,
           results: built, submitted: 0, failed: 0,
           built: built.filter((b) => b.status === "BUILT").length,
           skipped: built.filter((b) => b.status !== "BUILT").length,
-          canaryFullRate,
+          canaryFullRate: canaryRate,
         };
       }
     }
@@ -440,7 +457,7 @@ export async function buildAndSubmitMany(db: Client, client: any, skus: string[]
   return {
     aborted: false, results: built, submitted, failed, built: submittable.length,
     skipped: built.filter((b) => b.status !== "SUBMITTED" && b.status !== "POST_FAILED").length,
-    canaryFullRate,
+    canaryFullRate: canaryRate,
   };
 }
 
