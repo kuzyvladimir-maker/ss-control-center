@@ -66,6 +66,9 @@ export async function POST(request: NextRequest) {
         title: string;
         lifecycleStatus: string;
         publishedStatus: string;
+        // "primary" = the product + its pack/multipack/bundle variations;
+        // "secondary" = same-brand, different flavour (collapsed in the UI).
+        tier: "primary" | "secondary";
       }>;
       count: number;
       totalInCache: number;
@@ -85,7 +88,10 @@ export async function POST(request: NextRequest) {
         maxItemsScanned: 9000,
       });
       r = {
-        matches: res.matches,
+        // Live is a whole-string substring scan (already strict — it needs the
+        // typed query as a verbatim substring), so there's no loose tail to
+        // tier; treat every live hit as a primary match.
+        matches: res.matches.map((m) => ({ ...m, tier: "primary" as const })),
         count: res.matches.length,
         totalInCache: res.totalItemsAvailable,
         lastSyncedAt: null,

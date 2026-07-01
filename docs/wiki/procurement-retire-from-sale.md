@@ -78,6 +78,57 @@
 
 ---
 
+## 🎯 Умный фильтр каталога (rarity-weighted, two-tier)
+
+> Введён 2026-06-30. До этого поиск матчил товар, если он содержал **любое**
+> слово из запроса (`OR` по токенам) → generic-слова еды («snacks», «crackers»,
+> «cheese», «baked») вытаскивали **100** плюс-минус похожих товаров разных
+> брендов, и «Снять все найденные» грозило обнулить их все. Теперь —
+> `searchWalmartCatalogCache` в `src/lib/walmart/catalog-cache.ts`.
+
+**Как считается релевантность:**
+
+1. **Rarity-веса (IDF).** Для каждого слова запроса считаем, в скольких
+   товарах каталога оно встречается. Редкое слово (бренд `cheez`, вкус
+   `cheddar`) → высокий вес и рулит матчем; частое filler-слово (`snacks`,
+   `crackers`) → вес ≈ 0 и больше не создаёт ложных совпадений.
+2. **Brand anchor = первое слово запроса.** Тайтлы всегда начинаются с бренда
+   (`Cheez-It …`, `Nature's Own …`), поэтому `token[0]` надёжно = бренд.
+   Все чужие бренды отсекаются.
+3. **Signature = самое редкое НЕ-брендовое слово** (`puffed`, `butterbread`,
+   `nacho`, `golden`). Именно оно отличает *настоящую вариацию* от
+   соседа-однобрендовца, который отличается только этим словом
+   (`Cheez-It Puff'd White Cheddar` vs просто `Cheez-It White Cheddar Crackers`;
+   `Butterbread` vs `WhiteWheat`). Coverage сам по себе так не умеет — потеря
+   1 слова из многих даёт лишь мелкую просадку.
+
+**Два уровня (tier):**
+
+| Tier | Условие | Показ в модалке |
+|---|---|---|
+| **primary** | phrase-match (тайтл содержит весь запрос) **ИЛИ** есть бренд + signature + coverage ≥ `PRIMARY_MIN` (0.5) | Список по умолчанию — «товар и вариации» (pack/multipack/бандлы) |
+| **secondary** | есть бренд + coverage ≥ `SECONDARY_MIN` (0.25), но не primary | Свёрнуто за «Похожие товары этого бренда (N)» |
+| dropped | остальное | Не показывается |
+
+Пороги — константы `PRIMARY_MIN` / `SECONDARY_MIN` вверху `catalog-cache.ts`,
+легко подкрутить (выше = уже primary-список).
+
+**Проверено на реальном каталоге (3839 SKU, store1):**
+- `Cheez-It Puff'd White Cheddar…` → primary = 3 pack-варианта (+ бандл),
+  остальные 52 Cheez-It → secondary.
+- `Nature's Own Butterbread…` → primary = 9 Butterbread, WhiteWheat/Keto → secondary.
+- `Doritos Nacho Cheese…` / `OREO Golden…` → primary = только Nacho / только Golden.
+
+**Безопасность массового действия:** «Снять все найденные» теперь бьёт **только
+по primary-списку** — свёрнутые «похожие» в bulk не попадают. Пер-строчная
+кнопка «Снять» работает на любой строке (в т.ч. в «похожих»).
+
+Каждая строка primary/secondary несёт поле `tier` (`route.ts` прокидывает его
+из кэша; live-путь помечает всё как `primary`, т.к. он и так строгий —
+substring по всему запросу).
+
+---
+
 ## 🛡️ Защиты от дублей и ошибок
 
 | Защита | Где |
@@ -87,7 +138,8 @@
 | **Per-SKU independent failure** | один 404 не блокирует остальные — UI красит только проблемную строку |
 | **Audit row before action** | execute INSERT-ит до Walmart PUT? — **нет, после успешного PUT**, чтобы не залогать "сняли" если Walmart отверг |
 | **Max 100 SKU per call** | hard cap в execute endpoint — защита от случайного «снять весь магазин» |
-| **Search limit 100** | hard cap в search endpoint |
+| **Search limit 100** | hard cap в search endpoint (primary + secondary суммарно) |
+| **Bulk только по primary** | «Снять все найденные» targets только тесный primary-список; «похожие» (secondary) в bulk не входят — см. rarity-фильтр выше |
 
 ---
 
