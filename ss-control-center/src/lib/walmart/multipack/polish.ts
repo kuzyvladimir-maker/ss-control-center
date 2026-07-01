@@ -8,7 +8,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import { WALMART_CONTENT_RULES } from "./guidelines";
 import { CLAUDE } from "@/lib/ai-models";
 
-const MODEL = CLAUDE.balanced;
+// Text rewrite is far simpler than vision — Haiku handles the brand-voice bullets
+// + description fine, and scrubBrandVoice() post-cleans anyway. Cheap model = big
+// saving vs Sonnet on the per-listing copy call. (Override via opts.model.)
+const MODEL = CLAUDE.cheap;
 
 export interface PolishInput {
   productName: string;      // brand + product, e.g. "BODYARMOR LYTE Peach Mango"
