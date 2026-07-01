@@ -13,12 +13,13 @@
  * text/graphics, so a branded infographic is Amazon-compliant there (the MAIN
  * stays the frozen-hero cooler+product shot).
  *
- * While this url is empty the injection is a no-op, so shipping the wiring ahead
- * of the finished asset never publishes a broken/empty image slot. Set it to the
- * R2 public url once the clean, brand-voice-compliant card is produced (no
- * emoji, no promo adjectives like "Superior").
+ * LIVE asset (2026-07-01): generated via gpt-image-2, brand-voice-clean — no
+ * emoji, no promo adjectives ("Superior packaging" → "Insulated foam cooler and
+ * gel packs"). If this url is ever cleared to "" the injection becomes a safe
+ * no-op again (no broken/empty image slot).
  */
-export const BRAND_CARD_COLD_CHAIN_URL = "";
+export const BRAND_CARD_COLD_CHAIN_URL =
+  "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/brand/salutem-brand-card-v1.png";
 
 /** Cold-chain when the temperature_rating value denotes Frozen or Chilled
  *  (matches the exact FOOD valid-value strings "Frozen: 0 degree" /
