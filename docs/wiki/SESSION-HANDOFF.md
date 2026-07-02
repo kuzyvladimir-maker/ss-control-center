@@ -20,6 +20,39 @@
 
 ---
 
+## 🆕 СЕССИЯ 2026-07-01/02 (Claude Code, Opus 4.8 1M) — Bundle Factory: ЦЕНА + АВТОНОМНОСТЬ + МАСС-ДВИЖОК (под ключ, Amazon + Walmart)
+
+**Контекст:** владелец в длинной сессии переопределил Bundle Factory (масс-фабрика листингов из промта). Ушёл спать, велел «доделать всё под ключ для Amazon и Walmart (где есть ключи), eBay/Shopify пропустить, закоммитить/запушить, оставить handoff». Всё ниже — **на проде, tsc/тесты/`next build` чисто, деплои Ready.**
+
+**Каноничные правила (ЧИТАТЬ ПЕРВЫМ):**
+- `docs/wiki/bundle-factory-master-plan.md` — весь модуль (матрица режимы×категории×каналы, roadmap P0–P4).
+- `docs/wiki/bundle-factory-pricing-and-images.md` — цена/картинки/кулеры + §8 реальные бестселлеры/GUID + §9 ROI-формула.
+- Память: `project_bundle_factory_vision`, `project_bf_pricing_image_capacity`, `project_frozen_cooler_listings`, `project_uncrustables_own_brand_exception`, `project_upc_pool_unverified`.
+
+**СДЕЛАНО и на проде (коммиты):**
+- **P0 цена `5eb3cc0`:** доставка ВОН из цены товара (клиент платит через Amazon shipping-template, не в цене), **кулер по КОЛИЧЕСТВУ** (cost-model `coolerFor`: 1-30 S/31-60 M/61-72 L/73+ XL — фиксит баг «всегда M» от `weight_lb=null`), **derived markup 2.3** (= 34% маржа, выведено из бестселлеров, проверено 2×). 30-ct: было item $144.84 → стало **$85.56** (его бестселлер $86.15). `pricing-config.ts` (флаг `shipping_in_price` default false, `unit_count`), promote-draft.
+- **P0b картинки `500cb45`:** main count-accurate (Uncrustables: реальные коробки 4/10/15, число = количеству), «GIFT SET» на кулере для gift-set, инфо-карточка = **слот #1** после main. `image-pipeline.ts buildImagePrompt`, `attributes/brand-assets.ts`.
+- **P0c shipping-template `df58639`:** frozen-листинги прикрепляют `merchant_shipping_group` (Small Frozen GUID `27fef112-3cf4-4f8f-b117-7c47254aa16c`) + вес пакета по кулеру (S11/M17/L22/XL33 lb). `distribution/shipping-templates.ts` (env `BF_FROZEN_TEMPLATE_S/M/L/XL`), promote-draft.
+- **P1 автономность `5a7d727`:** **atomic-claim** в `tickBatch` (updateMany bundles_generated done→done+1 до сборки — нет двойной генерации/двойного Claude-спенда: там уже был cron `bundle-factory-tick` + браузер); **UPC-reaper** `reapExpiredReservations()` (протухший RESERVED→AVAILABLE — купленные коды не теряются); **cron `bundle-factory-poll-pending` (*/5)** — SUBMITTED сам→LIVE/FAILED + UPC self-heal (раньше был написан, но НЕ в расписании → листинги висли). `studio-engine.ts`, `distribution/upc-burn.ts`, `distribution/poll-pending-core.ts`, `vercel.json`.
+- **P2 масс-движок `e6fa9c7`:** `variation-planner.ts` `planVariations()` (чистая, 6 тестов) — комбинаторика: own-brand = вкусы×[30/45/90/120] + миксы 2/3/4 вкуса; gift-set = вариации по pack-size. Cap поднят 50→**500**. `studio-engine` строит МАТРИЦУ (не циклит доноров), `buildOneListing` собирает мульти-состав из спеки.
+- **P3 Walmart `c268cf8`:** канал WALMART разрешён в generate-роуте (генерит драфты, публикация через существующий walmart-publish, всё через approve).
+
+**⚠️ NEXT (для тебя / владельца):**
+1. **Репрайс 3 живых ASIN** (B0H788M8WM / B0H784LMG6 / B0H786L5MW) на новую цену — **нужен OK владельца** (новая 30-ct ≈ $85.56 + доставка отдельно).
+2. **GUID шаблонов M/L/XL** — владелец даст → env `BF_FROZEN_TEMPLATE_M/L/XL` (сейчас все кулеры → Small Frozen S).
+3. **Индивидуальные упаковки по цвету вкуса** (Uncrustables) — 2-й режим картинки + UI-селектор (владелец хочет ОБА: коробки И индив. упаковки). Сейчас сделаны только коробки.
+4. **P3 Walmart полностью:** мультипак-режим (НЕ gift-set), dry-only (Walmart не берёт frozen), quantity-confusion картинки; проверить walmart-publish на живом аккаунте.
+5. **P4 UI** — владелец ненавидит текущий UI, хочет 2–3 макета на выбор (дизайн — в отдельном чате, нужен его вкус). НЕ трогал.
+6. **Guards (P1 хвост):** Anthropic balance-guard (`probeAnthropic` пингует бесплатный `/v1/models` → не ловит исчерпание кредитов) + health codex-воркера.
+7. **Таблица вместимости кулеров** (розничная фасовка→кулер для gift-set, напр. Jimmy Dean 4/8/12; S=12 круассанов/2×8, M=3×8) — владелец соберёт.
+8. eBay/Shopify — отложено (нужны API-ключи).
+
+**Проверка:** tsc чисто (мои файлы), тесты **20/20** (цена 14 + планировщик 6), `next build` exit 0, деплои Ready.
+**GOTCHA:** stray-файлы в корне `ss-control-center/_fixrate.ts` + `_refix_full.ts` ломают ЛОКАЛЬНЫЙ tsc (untracked, на проде их нет). Для локального `next build` — временно убрать их.
+**ВАЖНО:** статус LIVE листинга НЕ читать из НАШЕЙ БД (лагала — poll-pending до этой сессии не был в расписании); сверять через SP-API `getListing`. 3 ASIN Uncrustables = **BUYABLE** на Amazon (проверено).
+
+---
+
 ## 🆕 СЕССИЯ 2026-07-02 (iMac-Claude, ночь) — COGS-движок: per-SKU распознавание + себестоимость на ПЛАТНЫХ API
 
 > **Домен:** COGS / donor-enrichment (`src/lib/sourcing/identify.ts`, `scripts/cogs-enrich-batch.ts`, правки `donor-catalog.ts`/`retail-fetch.ts`/`veeqo/product-image.ts`). Параллельно шла ДРУГАЯ сессия (MacBook-Claude, блок ниже) по Walmart-мультипакам/Oxylabs — её файлы (`enrich.ts`, `oxylabs-fetch.ts`, `bundle-factory/*`, `studio-engine.ts`, `variation-planner.ts`) я НЕ трогал и НЕ коммитил.
