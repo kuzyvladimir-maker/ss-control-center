@@ -10,6 +10,16 @@ import { normUrl, htmlToText, liItems } from "../walmart/multipack/donor";
 
 export interface DetailResult { title: string; images: string[]; bullets: string[]; description: string; }
 
+// Non-discriminating words dropped before the brand/variant donor-match gate:
+// stopwords + pack/size/unit noise. What remains (type + flavor + variant) is what
+// distinguishes one same-brand product from another, so the gate keys on it.
+const GATE_STOP = new Set([
+  "the", "and", "for", "with", "per", "of", "in", "new", "each",
+  "pack", "packs", "count", "ct", "cnt", "size", "pk", "pcs", "piece", "pieces",
+  "oz", "ounce", "ounces", "lb", "lbs", "fl", "gram", "grams", "kg", "ml", "gallon",
+  "bag", "bags", "box", "boxes", "case", "cases", "loaf", "loaves", "jar", "can", "cans",
+]);
+
 /**
  * Knowledge-base capture: pull the FULL BlueCart product detail (gallery, bullets,
  * full description, specifications, ingredients, raw blob) and persist it to the
@@ -127,18 +137,34 @@ export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: st
   const query = title || String(opts.upc || "").trim();
   if (!query) return { found: false, alreadyHad: false, creditsRemaining: null, offers: 0, reason: "no upc/title to search" };
 
-  // Brand/title token gate — search returns loosely-related items; we must not
-  // tile an unrelated product. Fall back to all if the filter leaves nothing.
-  const toks = title.toLowerCase().split(/\s+/).filter((w) => w.length > 2).slice(0, 2);
+  // Brand + variant token gate. The old gate matched only the FIRST TWO title
+  // words — i.e. the brand alone ("Pepperidge Farm", "Sara Lee") — so EVERY
+  // same-brand product (all buns + all breads) passed and got stored under one
+  // SKU, polluting its donor pool brand-wide. That mixed pool is what let the
+  // image picker tile a generic same-brand front onto the wrong product
+  // (2026-07-01 wrong-image batch). Now we require BOTH the brand AND enough of
+  // the variant/type tokens, and we FAIL CLOSED (no "fall back to all"): a
+  // polluted pool is worse than an empty one (empty → do-no-harm SKIP).
+  const meaningful = (s: string): string[] =>
+    s.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/)
+      .filter((w) => w.length >= 3 && !GATE_STOP.has(w) && !/^\d+$/.test(w));
+  const titleToks = meaningful(title);
+  const brandToks = titleToks.slice(0, 2);          // brand (e.g. pepperidge farm)
+  const variantToks = [...new Set(titleToks.slice(2))]; // type + flavor + variant
+  const needVariant = variantToks.length ? Math.max(1, Math.ceil(variantToks.length * 0.5)) : 0;
   const gate = (offers: RetailOffer[]) => {
     // FIRST-PARTY ONLY (Vladimir's rule #8): the card must be sold by the retailer
     // ITSELF, never a third-party reseller or one of our own storefronts — their
     // photos are often repackaged bundles or our own bad listing. HARD filter.
     // (Target/Sam's/Costco via Unwrangle are the retailer's own catalog → 1P.)
     const fp = offers.filter((o) => o.isMarketplaceItem !== true && !isOwnOrReseller(o.sellerName));
-    if (!toks.length) return fp;
-    const m = fp.filter((o) => { const t = (o.title || "").toLowerCase(); return toks.every((tk) => t.includes(tk)); });
-    return m.length ? m : fp;
+    if (!brandToks.length) return fp;
+    return fp.filter((o) => {
+      const t = (o.title || "").toLowerCase();
+      if (!brandToks.every((tk) => t.includes(tk))) return false;           // same brand
+      if (!needVariant) return true;
+      return variantToks.filter((tk) => t.includes(tk)).length >= needVariant; // same variant/type
+    });
   };
 
   let creditsRemaining: number | null = null;

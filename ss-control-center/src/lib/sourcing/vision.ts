@@ -213,7 +213,12 @@ export async function pickBestFront(urls: string[], opts?: { listingTitle?: stri
   // white-bg front of the correct product+flavor (Walmart requires a white main).
   // Verify just IT (1 call) — if it's a good white-bg front, use it and skip
   // classifying the whole pool. Turns the common case from 16 calls into 1.
-  if (opts?.preferUrl) {
+  // The shortcut is UNSAFE when a listingTitle is given: preferUrl is the pool's
+  // first image, which — because donor pools got polluted with same-brand but
+  // DIFFERENT-variant products — may be a clean front of the WRONG product. When
+  // we know the listing, do the full variant-aware selection below instead so we
+  // pick a SAME-variant front, not merely the first clean one. (2026-07-01 fix.)
+  if (opts?.preferUrl && !opts?.listingTitle) {
     const pc = await classifyProductPhoto(opts.preferUrl);
     if (pc.goodFront && pc.conf >= 0.6 && pc.whiteBg) return { url: opts.preferUrl, cls: pc };
   }
@@ -236,11 +241,18 @@ export async function pickBestFront(urls: string[], opts?: { listingTitle?: stri
   }
   if (!fronts.length) return null;
 
-  // Flavor/variant match — drop wrong-flavor fronts from a mixed pool.
+  // Flavor/variant match — drop wrong-flavor fronts from a mixed pool. FAIL-CLOSED
+  // (2026-07-01 fix): if we know the listing and NONE of the fronts are the same
+  // product+variant, return null rather than tiling a wrong-variant front. The old
+  // "keep all on no match" is exactly what let a generic same-brand front (e.g.
+  // Pepperidge "Soft White" buns) land on a different product (rye / hot-dog / Sara
+  // Lee). A downstream identity gate double-checks, but we never even offer a
+  // known-wrong candidate here.
   if (opts?.listingTitle && fronts.length > 1) {
     const matched = await filterMatchingVariant(fronts.map((f) => f.url), opts.listingTitle);
     const kept = fronts.filter((f) => matched.includes(f.url));
-    if (kept.length) fronts = kept; // else keep all (don't strand on a fuzzy match)
+    if (kept.length) fronts = kept;
+    else return null;
   }
 
   // Prefer WHITE background (Walmart rule), then a full standing package, then conf.
@@ -290,5 +302,34 @@ Return JSON only: {"subject":"front|lying|back|nutrition|infographic|serving|oth
     return { good: j?.good === true, subject: String(j?.subject || "other") };
   } catch {
     return { good: false, subject: "error" };
+  }
+}
+
+/**
+ * IDENTITY GATE (fail-closed) — the fix for the 2026-07-01 wrong-image batch.
+ *
+ * Does the package in this photo depict the SAME product as the listing —
+ * same BRAND, same product TYPE, and same FLAVOR/VARIANT? Called right before we
+ * tile+publish a donor as a listing's MAIN image, so a generic same-brand front
+ * (the polluted-pool failure mode) can never be published on a different product.
+ * Returns match:false on any error/ambiguity — we would rather leave the current
+ * image untouched (do-no-harm) than publish a mismatch.
+ */
+export async function frontMatchesListing(url: string, listingTitle: string): Promise<{ match: boolean; reason: string }> {
+  if (!listingTitle) return { match: false, reason: "no listing title" };
+  const prompt = `Listing title: "${listingTitle}".
+The image above is a single retail product package we intend to use as this listing's MAIN photo.
+Read the BRAND NAME and the FLAVOR/VARIANT text printed on the package label. Decide if it is the SAME product as the listing title. It MATCHES only if ALL of these hold:
+- SAME BRAND (the brand on the package equals the brand in the title, e.g. "Pepperidge Farm" ≠ "Sara Lee");
+- SAME product TYPE (hamburger/slider buns ≠ hot-dog buns ≠ sliced sandwich bread ≠ English muffins ≠ bagels);
+- SAME FLAVOR/VARIANT (e.g. "Soft White" ≠ "Sweet Hawaiian" ≠ "Whole Wheat" ≠ "Honey Wheat" ≠ "Multigrain" ≠ "Rye" ≠ "Oatmeal" ≠ "Butter").
+Judge from the LABEL TEXT you can actually read, not from the general shape/color. If the label is unreadable, or you are not confident it is the same product+variant, answer false.
+Return JSON only: {"match": true|false, "brandOnPackage": "<brand>", "variantOnPackage": "<variant>", "reason": "<short why>"}`;
+  try {
+    const j = parseJson(await ask([url], prompt, 150, STRONG_MODEL));
+    const reason = String(j?.reason || [j?.brandOnPackage, j?.variantOnPackage].filter(Boolean).join(" ") || "").slice(0, 90);
+    return { match: j?.match === true, reason };
+  } catch {
+    return { match: false, reason: "identity check error" };
   }
 }

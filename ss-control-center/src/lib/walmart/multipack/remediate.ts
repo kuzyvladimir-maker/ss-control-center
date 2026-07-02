@@ -14,7 +14,7 @@ import { uploadToR2, multipackImageKey } from "./r2";
 import { polishListingCopy } from "./polish";
 import { validateListingContent } from "./guidelines";
 import { ensureDonorImage, fetchAndStoreDetail } from "../../sourcing/enrich";
-import { pickBestFront, pickBestFrontFromPool, mainImageAcceptable, verifyMainImage } from "../../sourcing/vision";
+import { pickBestFront, pickBestFrontFromPool, mainImageAcceptable, verifyMainImage, frontMatchesListing } from "../../sourcing/vision";
 import { logRemediation } from "./analytics";
 import { buildFoodAttributes } from "./attributes";
 
@@ -205,20 +205,35 @@ export async function buildAndSubmitOne(
   const pool = Array.from(poolSet);
 
   if (scope.image) {
-    // STRONG selector (Sonnet): pick the best UPRIGHT SINGLE-UNIT FRONT, rejecting
-    // back/barcode, nutrition, infographic, lifestyle/serving, and loaves lying on
-    // their end (Wave 1's weak Haiku picker tiled those → torец/back/serving mains).
-    const best = await pickBestFront(pool, { listingTitle: cur.productName || cand.walmartTitle, preferUrl: cand.baseImageUrl });
+    const listingId = cur.productName || cand.walmartTitle;
+    // SINGLE CHOKE POINT for turning a chosen donor URL into a published main.
+    // IDENTITY GATE FIRST (fail-closed): the donor MUST be the same product+variant
+    // as this listing — this is what stops a generic same-brand front (e.g.
+    // Pepperidge "Soft White" buns) landing on a different product (rye / hot-dog /
+    // Sara Lee), the 2026-07-01 wrong-image batch. Then tile, then the structural
+    // verify. Any failure → null: leave the current main untouched (do-no-harm).
+    const tileVerifiedMain = async (donorUrl: string, keySuffix: string): Promise<{ url: string | null; note: string }> => {
+      const src = highResImageUrl(donorUrl);
+      const id = await frontMatchesListing(src, listingId);
+      if (!id.match) return { url: null, note: `donor is not this product — skipped (${id.reason})` };
+      const base = await fetchImageBuffer(src);
+      const main = await composeTiledMainImage(base, cand.packCount);
+      const candidateUrl = await uploadToR2(main, multipackImageKey(sku, "main", `${stamp}${keySuffix}`));
+      const v = await verifyMainImage(candidateUrl, cand.packCount);
+      if (!v.ok) return { url: null, note: `tile rejected by verify (${v.kind})` };
+      return { url: candidateUrl, note: "" };
+    };
+
+    // STRONG selector (Sonnet): pick the best UPRIGHT SINGLE-UNIT FRONT that is the
+    // SAME variant as the listing (pickBestFront now fails CLOSED on a mixed pool).
+    const best = await pickBestFront(pool, { listingTitle: listingId, preferUrl: cand.baseImageUrl });
     if (!best) {
-      imageNote = "no upright product-front in source — left unchanged (needs enrich/manual)";
+      imageNote = "no matching product-front in source — left unchanged (needs enrich/manual)";
     } else {
-      // KEEP/REPLACE (Vladimir): don't churn a listing whose current main is
-      // ALREADY an upright-front grid; only replace lying/back/serving/etc. The
-      // "current" main is our last published tile for this SKU.
-      // KEEP only avoids churning a genuinely-good current main. On an explicit
-      // RE-FIX (forceImage) we ALWAYS replace — mainImageAcceptable only checks
-      // "is it product fronts", NOT right flavor / white bg, so it would wrongly
-      // keep a pre-fix wrong-flavor/orange tile from an earlier image-only run.
+      // KEEP/REPLACE (Vladimir): don't churn a listing whose current main is already
+      // correct. "Correct" now means BOTH structurally good AND the same product+
+      // variant (identity) — the old keep-check ignored identity and would preserve a
+      // wrong-product tile from an earlier bad run. forceImage always replaces.
       let keep = false;
       if (!opts.forceImage) {
         try {
@@ -226,46 +241,32 @@ export async function buildAndSubmitOne(
           const curMain = (r.rows[0] as any)?.mainImageUrl as string | undefined;
           if (curMain) {
             const acc = await mainImageAcceptable(curMain, cand.packCount);
-            if (acc.good) { keep = true; imageNote = "current main already an upright-front grid — kept"; }
+            if (acc.good && (await frontMatchesListing(curMain, listingId)).match) {
+              keep = true; imageNote = "current main already a correct upright-front grid — kept";
+            }
           }
         } catch {}
       }
       if (!keep) {
-        // Tile the chosen front and VERIFY before publishing (do-no-harm gate).
-        const base = await fetchImageBuffer(highResImageUrl(best.url));
-        const main = await composeTiledMainImage(base, cand.packCount);
-        const candidateUrl = await uploadToR2(main, multipackImageKey(sku, "main", stamp));
-        const v = await verifyMainImage(candidateUrl, cand.packCount);
-        if (v.ok) mainUrl = candidateUrl;
-        else imageNote = `new tile rejected by verify (${v.kind}) — left unchanged`;
+        const t = await tileVerifiedMain(best.url, "");
+        if (t.url) mainUrl = t.url; else imageNote = `${t.note} — left unchanged`;
       }
     }
-    // RESCUE: strict path left no main, but the pool may still hold a usable front
-    // the per-image gate/verify over-rejected (esp. soft bread fronts). Show the
-    // WHOLE pool to Sonnet at once and let it pick the best package-front directly.
-    // Trust that comparative pick — we tile it without re-gating on the strict
-    // verify (which was the thing wrongly stranding these). Vladimir does final QC.
+    // RESCUE: strict path left no main; show the WHOLE pool to Sonnet in one call to
+    // pick the best same-variant package-front, then run it through the SAME identity
+    // + verify gate (no shortcut — that gate is exactly what was missing before).
     if (!mainUrl && pool.length) {
       try {
-        const rescueUrl = await pickBestFrontFromPool(pool, cur.productName || cand.walmartTitle);
+        const rescueUrl = await pickBestFrontFromPool(pool, listingId);
         if (rescueUrl) {
-          const base = await fetchImageBuffer(highResImageUrl(rescueUrl));
-          const main = await composeTiledMainImage(base, cand.packCount);
-          const candidateUrl = await uploadToR2(main, multipackImageKey(sku, "main", `${stamp}r`));
-          // VERIFY the rescue tile too — this catches a broken cutout (garbage
-          // rectangles), a multi-unit source that multiplied the count, or a
-          // wrong subject. If it fails, leave mainUrl null so deep re-enrich runs.
-          const v = await verifyMainImage(candidateUrl, cand.packCount);
-          if (v.ok) { mainUrl = candidateUrl; imageNote = "rescue front (whole-pool Sonnet pick)"; }
-          else imageNote = `rescue tile rejected by verify (${v.kind})`;
+          const t = await tileVerifiedMain(rescueUrl, "r");
+          if (t.url) { mainUrl = t.url; imageNote = "rescue front (whole-pool Sonnet pick)"; }
+          else imageNote = t.note;
         }
       } catch { /* rescue is best-effort */ }
     }
-    // DEEP RE-ENRICH fallback (Vladimir 2026-07-01): our catalog genuinely has no
-    // clean front (only composite/nutrition/serving). Commodity products ARE
-    // photographed cleanly on some OTHER retailer, so force a re-search across
-    // EVERY retailer (Walmart/Target/Sam's/Costco), add those photos to the pool,
-    // and re-pick (strict → rescue) on the enriched pool.
+    // DEEP RE-ENRICH fallback: our catalog has no matching front; force a re-search
+    // across EVERY retailer, add those photos to the pool, re-pick, and gate again.
     if (!mainUrl && opts.enrich !== false) {
       try {
         const before = pool.length;
@@ -275,13 +276,12 @@ export async function buildAndSubmitOne(
         for (const row of rps2.rows as any[]) { try { const arr = JSON.parse((row as any).imageUrls || "[]"); for (const u of arr) if (typeof u === "string" && u.startsWith("http")) p2.add(u.split("?")[0]); } catch {} }
         const pool2 = Array.from(p2);
         if (pool2.length > before) {
-          const b2 = await pickBestFront(pool2, { listingTitle: cur.productName || cand.walmartTitle });
-          const pickUrl = b2?.url || (await pickBestFrontFromPool(pool2, cur.productName || cand.walmartTitle));
+          const b2 = await pickBestFront(pool2, { listingTitle: listingId });
+          const pickUrl = b2?.url || (await pickBestFrontFromPool(pool2, listingId));
           if (pickUrl) {
-            const base = await fetchImageBuffer(highResImageUrl(pickUrl));
-            const main = await composeTiledMainImage(base, cand.packCount);
-            mainUrl = await uploadToR2(main, multipackImageKey(sku, "main", `${stamp}e`));
-            imageNote = `deep re-enrich (+${pool2.length - before} photos) → new front`;
+            const t = await tileVerifiedMain(pickUrl, "e");
+            if (t.url) { mainUrl = t.url; imageNote = `deep re-enrich (+${pool2.length - before} photos) → new front`; }
+            else imageNote = t.note;
           }
         }
       } catch { /* deep enrich is best-effort */ }
