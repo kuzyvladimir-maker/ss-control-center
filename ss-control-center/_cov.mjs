@@ -1,0 +1,16 @@
+import { config } from "dotenv"; config({ path: ".env.local" }); config({ path: ".env" });
+import { createClient } from "@libsql/client";
+const c=v=>(v||"").replace(/^['"]|['"]$/g,"");
+const db=createClient({url:c(process.env.TURSO_DATABASE_URL),authToken:c(process.env.TURSO_AUTH_TOKEN)});
+const q=async s=>(await db.execute(s)).rows;
+const IMG=`COALESCE(imageUrls,'') NOT IN ('','[]','null')`;
+const skusWithImg=`(SELECT DISTINCT sku FROM RetailPrice WHERE ${IMG})`;
+const total=(await q(`SELECT COUNT(DISTINCT sku) n FROM RetailPrice WHERE ${IMG}`))[0].n;
+console.log(`Distinct SKUs with a cached donor image in RetailPrice: ${total}`);
+const packExpr=`COALESCE((SELECT unitsInListing FROM SkuShippingData WHERE sku=w.sku LIMIT 1),(SELECT packSize FROM SkuCost WHERE sku=w.sku LIMIT 1),w.titlePackCount,q.titlePackCount,1)`;
+const bundleNot=["bundle","variety pack","variety","assorted","sampler","gift"].map(b=>`LOWER(COALESCE(w.title,'')) NOT LIKE '%${b}%'`).join(" AND ");
+const eligBase=`FROM WalmartCatalogItem w LEFT JOIN WalmartListingQualityItem q ON q.sku=w.sku AND q.storeIndex=w.storeIndex WHERE w.storeIndex=1 AND ${packExpr}>=4 AND w.publishedStatus='PUBLISHED' AND ${bundleNot} AND w.sku NOT IN (SELECT sku FROM WalmartListingRemediation WHERE ok=1) AND w.sku NOT IN (SELECT sku FROM WalmartRemediationQueue WHERE status IN ('queued','running','submitted','held'))`;
+const elig=(await q(`SELECT COUNT(*) n ${eligBase}`))[0].n;
+const cached=(await q(`SELECT COUNT(*) n ${eligBase} AND w.sku IN ${skusWithImg}`))[0].n;
+console.log(`ELIGIBLE=${elig}  with cached donor image (runs WITHOUT BlueCart)=${cached}  needs BlueCart enrichment=${elig-cached}`);
+db.close();
