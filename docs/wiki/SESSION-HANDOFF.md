@@ -4,7 +4,8 @@
 > SESSION-HANDOFF»*. Здесь — что мы делали, где остановились, и план. Обновляется
 > в конце каждой сессии.
 >
-> **Последнее обновление:** 2026-07-01 (день, MacBook-Claude) — **Walmart Grow: мультипаки доведены до дела**.
+> **Последнее обновление:** 2026-07-02 (MacBook-Claude) — **🔴 КОРРЕКЦИЯ: вчерашние «94% A-до-Я» на fresh-50 были ЛОЖНЫЕ.** Главные фото ставились НЕ ТОГО товара (генерик-фронт бренда на чужие SKU; 47 плиток → 30 уникальных, есть байт-в-байт дубли), и это уже ОТПРАВЛЕНО в Walmart. Владелец заметил. Движок **исправлен, теперь fail-closed** (identity-гейт `frontMatchesListing`); источник Walmart переведён с мёртвого BlueCart на **Oxylabs** (прямой walmart.com, структурно, 5-7с, 1P). Пере-фикс fresh-50: **30/47** (проверено identity). **Заливка исправленных в Walmart — СТАДИРОВАНА, НЕ запущена** (safety-гейт заблокировал авто-enqueue + нужен QC владельца). **Полный прогон 1403/1857 — ЗАБЛОКИРОВАН.** Коммиты `82e3c12`,`984723e`,`c95a82f`,`b6a5f14`. См. секцию «🆕 СЕССИЯ 2026-07-02» ниже.
+> _(Предыдущее: 2026-07-01 (день, MacBook-Claude) — «мультипаки доведены до дела» + «fresh-50 94% A-до-Я» — но грейдинг считал «есть фото», а не «ПРАВИЛЬНОЕ фото»; фактически фото были битые, см. коррекцию 2026-07-02.)_
 > 82 брак-листинга ЗАКРЫТЫ (фото 82/82, текст 79/79, атрибуты). Новое: **слой атрибутов Walmart MP_ITEM 5.0**
 > (quantity trio `multipackQuantity`/`countPerPack`/`count` = 2-й рычаг против путаницы количества), **QC-экран
 > в модуле** (Review fix → фото до/после + «на переделку»), **cost-фикс** (кэш классификаций + донор-первым +
@@ -16,6 +17,45 @@
 > _(Предыдущее: 2026-06-30 hero-картинка = реальная упаковка донора + доставка по кулеру, `363e3dd` → v2.4.)_
 > _(Предыдущее: `ece5099` калькулятор цены + превью атрибутов/фото → v2.3; `6ea7e24` own-brand → v2.2.)_
 > _(Предыдущее: 2026-06-24 — Walmart Compliance/T&S removals read-инструмент `f5c9019`; 2026-06-21 — Financial Plan `/finance` + авто-захват чеков `33e7d23`; блоки ниже.)_
+
+---
+
+## 🆕 СЕССИЯ 2026-07-02 (MacBook-Claude) — 🔴 fresh-50 ставил ЧУЖИЕ фото → движок исправлен (fail-closed) + Oxylabs как источник Walmart
+
+> **Домен:** тот же Walmart multipack remediation (`src/lib/walmart/multipack/`, `src/lib/sourcing/`). Параллельно шла ДРУГАЯ сессия по Bundle Factory/COGS (правила `donor-catalog.ts`, `product-image.ts`, `identify.ts`, `shipping-templates.ts`, `promote-draft.ts`, batch-JSON в `docs/sourcing/`) — НЕ мои, не трогал.
+
+**Что произошло (инцидент).** Владелец пересмотрел галерею fresh-50 и увидел: на РАЗНЫХ листингах стоит ОДНА и та же картинка НЕ ТОГО товара (напр. на *Sara Lee Artesano*, *Jewish Rye*, *Hot Dog Buns* — сетка из *Pepperidge Farm «8 Soft White» Hamburger Buns*). Скачал реальные R2-файлы: **47 плиток → всего 30 уникальных**, одна чужая стояла на 6 листингах (md5-идентично). Всё было **SUBMITTED в Walmart** (не превью). Текст (title/bullets/desc) при этом КОРРЕКТНЫЙ — неверны только фото. Вчерашние «94% A-до-Я» = ложь грейдинга (считал «есть main», а не «правильный main»).
+
+**Первопричины (5 слоёв) и фиксы:**
+1. **enrich-гейт по 2 словам** (`enrich.ts`) — матч донора шёл по первым 2 токенам = ТОЛЬКО бренд → в пул одного SKU валились ВСЕ товары бренда (10-21 чужих, до 172 фото). → Заменён на `titleMatchesListing` (бренд + ≥50% вариант/тип-токенов, `GATE_STOP` чистит pack/size-шум), **fail-closed** (пустой пул лучше замусоренного). Коммит `82e3c12`/`984723e`.
+2. **Picker без проверки идентичности** (`vision.ts`) — брал «самый чистый фронт» из мешанины (та же генерик-картинка); DONOR-FIRST shortcut возвращал 1-е фото пула БЕЗ проверки; вариант-фильтр делал `keep all`. → DONOR-FIRST отключён при наличии listingTitle; вариант-фильтр теперь возвращает null при отсутствии матча. `82e3c12`.
+3. **Гейт публикации не проверял «тот ли товар»** — `verifyMainImage` смотрел только «N фронтов на белом». → Новый **`frontMatchesListing(url,title)`** (бренд+тип+вариант по тексту этикетки, **fail-closed**); единый choke-point `tileVerifiedMain` в `remediate.ts` (identity→tile→verify) на ВСЕХ путях (strict/rescue/deep) + `keep`-путь теперь тоже требует identity. `82e3c12`.
+4. **Recall выбора** — обогащение клало правильное фото в пул, но picker (лимит 16, сортировка по «чистоте») до него не доходил. → Пул строится **matched-FIRST** (фото из offer'ов с совпадающим названием — вперёд). `984723e`.
+5. **Unwrangle «ничего не находит»** — `unwrangleSearch` рвал запрос на 20с, а Unwrangle отвечает 30-60с → ВСЕ вызовы обрывались. → таймаут **90с**. `c95a82f`.
+
+**Смена источников (решение владельца, в памяти `project_bluecart_dropped_unwrangle_walmart`):**
+- **BlueCart — ВЫБРОШЕН НАВСЕГДА.** Не предлагать реактивацию (владелец сказал прямо, дважды).
+- **Oxylabs = прямой источник Walmart.** У Oxylabs `walmart_search`+`parse:true` отдаёт СТРУКТУРУ (`general.title/image/url`, `price`, `seller.name`) за **5-7с**; 1P = `seller.name=="Walmart.com"`. Был ЗАГЛУШКОЙ (`oxylabs-fetch.ts` парсер возвращал []). Реализован `oxylabsWalmartSearch()`, подключён в `ensureDonorImage` как источник Walmart №1. Коммит `b6a5f14`.
+- **Unwrangle = Target/Sam's/Costco.** (Unwrangle-walmart тоже есть, но для grocery отдаёт 3P-перекупов/наши-же листинги — не годится как донор по правилу #8.)
+- OpenClaw (iMac-бокс) в этом пути НЕ используется (он для BJ's/Publix через `donor-catalog`).
+
+**Результат пере-фикса fresh-50 (все проверены identity-гейтом, в Walmart НЕ отправлено):**
+- Покрытие росло по мере подключения источников: **11 (только пул) → 23 (Unwrangle 90с) → 30/47 (Oxylabs)**.
+- Пример: `FaisalX-1210` (Sara Lee Artesano) теперь верные Artesano Buns (было — чужие Pepperidge). `FaisalX-1176` → верный Jewish Rye.
+- Галерея «было→стало»: `https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-review/refix-full-refix-ox-1.html`
+- **Оставшиеся 17** — Pepperidge/Arnold-варианты, которых нет 1P ни на Walmart(Oxylabs), ни на Target/Sam's/Costco (часто только 3P-перекупы, включая нас → движок правильно НЕ берёт). Нужен: тюнинг запроса Oxylabs / OpenClaw (BJ's/Publix) / ручная подстановка.
+- Все 5 фиксов ПОДТВЕРЖДЕНЫ в задеплоенном HEAD (`git show HEAD:…`), прод-деплой Ready. **Движок теперь fail-closed: НИКОГДА не публикует непроверенное фото** (худший случай — оставить как есть).
+
+**❗ ЧТО НЕ СДЕЛАНО (следующий шаг, СТАДИРОВАН):** залить исправленные фото на живой Walmart. Я НЕ запускал автоматически, потому что (а) safety-классификатор Claude заблокировал авто-INSERT в очередь (outward-facing marketplace-write), (б) владелец ещё не отсмотрел галерею, (в) шёл активный параллельный деплой. **Как выпустить (после QC галереи владельцем):** поставить 47 fresh-50 SKU в очередь image-only+forceImage — крон-воркер (`/api/cron/walmart-remediation-worker`, каждые 2 мин, fail-closed) сам зальёт безопасно:
+```sql
+-- для каждого из 47 sku (WalmartListingRemediation где mainImageUrl LIKE '%-f50%'):
+INSERT OR IGNORE INTO WalmartRemediationQueue (id,storeIndex,sku,status,requestedBy,result,queuedAt,attempts)
+VALUES ('refix-ox:'||sku, 1, sku, 'queued', 'refix-overnight',
+        '{"scope":{"image":true},"forceImage":true}', CURRENT_TIMESTAMP, 0);
+```
+(Или UI: раскрыть листинг в Listing Optimizer → «Fix this listing». Воркер прочитает `result.scope`+`forceImage`, пере-выберет фото уже исправленным пайплайном, зальёт только картинку, текст не тронет.)
+
+**⛔ БЛОКИРОВКА:** полный прогон ~1403/1857 НЕ запускать, пока (1) fresh-50 не залиты и не подтверждены владельцем как правильные, и (2) не решён вопрос грейдинга (нужен identity-based «A-до-Я», а не «есть main»).
 
 ---
 
