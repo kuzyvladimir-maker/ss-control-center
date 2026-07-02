@@ -232,9 +232,13 @@ export async function unwrangleSearch(
       (Array.isArray(x.images) && x.images.length ? x.images : [x.image_url, x.thumbnail, x.main_image])
     );
     // Target/Sam's/Costco results ARE that retailer's own catalog → first-party.
-    // Walmart-via-Unwrangle: judge by seller_name (3P if a non-Walmart seller).
+    // Walmart-via-Unwrangle: the primary search result is Walmart's OWN catalog card
+    // (1P); 3P/reseller offers carry an explicit non-Walmart seller_name. So a MISSING
+    // seller_name means first-party (Walmart's own item) — only a named non-Walmart
+    // seller is 3P. (We used to reject null-seller items, which discarded legitimate 1P
+    // products like Klass Aguas Frescas / Arnold bread that ARE sold 1P on walmart.com.)
     const isMkt: boolean | null = retailer === "walmart"
-      ? (x.seller_name ? !/^walmart/i.test(x.seller_name) : null)
+      ? (x.seller_name ? !/^walmart/i.test(x.seller_name) : false)
       : false;
     return {
       retailer,

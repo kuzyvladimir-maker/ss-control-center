@@ -20,6 +20,34 @@
 
 ---
 
+## 🆕 СЕССИЯ 2026-07-02 (iMac-Claude, ночь) — COGS-движок: per-SKU распознавание + себестоимость на ПЛАТНЫХ API
+
+> **Домен:** COGS / donor-enrichment (`src/lib/sourcing/identify.ts`, `scripts/cogs-enrich-batch.ts`, правки `donor-catalog.ts`/`retail-fetch.ts`/`veeqo/product-image.ts`). Параллельно шла ДРУГАЯ сессия (MacBook-Claude, блок ниже) по Walmart-мультипакам/Oxylabs — её файлы (`enrich.ts`, `oxylabs-fetch.ts`, `bundle-factory/*`, `studio-engine.ts`, `variation-planner.ts`) я НЕ трогал и НЕ коммитил.
+
+**Цель владельца:** движок должен пройти по ВСЕМ нашим продаваемым SKU (сначала Walmart 3 944, потом Amazon), по каждому распознать реальный товар (title+description+фото, разложить бандлы на компоненты), через платный движок найти его в рознице и записать РЕАЛЬНУЮ себестоимость + весь контент/фото в донор-каталог. Потом каталог → создание/редактирование листингов.
+
+**Что построено (мои файлы, в этом коммите):**
+1. **Общий «мозг» `src/lib/sourcing/identify.ts`** — распознавание из **title+description+буллетов+ВСЕХ фото**; `is_bundle`+`components[]` (разбор наборов); `confidence`. `gatherAmazonInputs` (SP-API: все фото+desc+буллеты) + `gatherWalmartInputs` (title + Veeqo фото/desc). Заменяет пилотные `cogs-identify*.ts` (те кормили только title+1 фото).
+2. **Запускалка `scripts/cogs-enrich-batch.ts`** — на произвольные N SKU: identify → `enrichTarget` (поиск+донор-БД+harvest) → **ТЕСНАЯ привязка цены** (бренд + отличит. слова линейки/вкуса + размер, НЕ «самое дешёвое по бренду») → сумма компонентов бандла → запись `SkuCost` по нашему sku + гейт `needsReview`. Аргументы: `--channel walmart|amazon --limit N`, явные SKU, `--confidence 0.7`, `--dry`, `--openclaw`.
+3. **Fix #0 (`donor-catalog.ts` enrichTarget):** Walmart теперь **Unwrangle-first** (BlueCart мёртв, оставлен запасным). НЕ конфликтует с Oxylabs-коммитом `b6a5f14` (тот в `enrich.ts`/`oxylabs-fetch.ts`).
+4. **`retail-fetch.ts`:** Unwrangle-Walmart с ПУСТЫМ seller_name = 1P (раньше отбрасывали легитимные 1P).
+5. **`veeqo/product-image.ts`:** `fetchVeeqoDetailBySku` (все фото+описание) — для Walmart-распознавания, когда есть валидный Veeqo-ключ.
+
+**Результат (10 Walmart-SKU, ТОЛЬКО платный Unwrangle, без iMac):** **7 верных COGS** в `SkuCost` (товар+размер сверены: Green Giant $6.36, Cheez-It $42.16, Buffalo Wild Wings $15.44, Bush's $2.96, Kellogg's $17.92, Malt-O-Meal $11.72, Pepperidge Farm $6.78), **3 честно во `needsReview`** (Arnold-хлеб, Klass×2). Распознавание 10/10 верно по одному тайтлу (0.85–0.92) — для Walmart-мультипаков фото не критичны. Amazon-путь проверен на `--dry` (SP-API даёт title+desc+буллеты+6 фото; confidence-гейт срабатывает). Снапшоты: `docs/sourcing/batch-walmart-2026-07-02.json`, `batch-amazon-...`.
+
+**🔑 КЛЮЧЕВОЙ ВЫВОД (владелец показал, что Klass/Arnold ЕСТЬ на Walmart → отладка сырого Unwrangle):** публичный `walmart_search` Unwrangle по нишевой/локальной бакалее отдаёт **ТОЛЬКО перекупов** (Overstock/Atmada/наш STARFITSTORE, $27–$137) — настоящей 1P-карточки в выдаче НЕТ; Target отдаёт нерелевантное. Реальная 1P-цена ($3.84 Arnold, $2.86 Klass) — на **business.walmart.com** (залогиненный Business+ владельца, магазин Clearwater), куда generic API не достаёт. На платном API 1P по нишевой бакалее физически недостижима → честный флаг верен, «плохо искал» — неверно.
+
+**⏸ ОТКРЫТЫЕ РЕШЕНИЯ (ждём владельца):**
+1. **Нишевая/локальная бакалея:** источник настоящей 1P = **business.walmart.com** через залогиненный браузер (аккаунт владельца) — примиряет правило «без iMac-костыля» (костыль был для магазинов, что платный API не умеет; здесь он ТОЖЕ провально не умеет). **ПЕРВЫЙ ШАГ для след. Claude: проверить, решает ли это Oxylabs-Walmart (коммит `b6a5f14`) — даёт ли Oxylabs прямой walmart.com 1P по Klass/Arnold** (он «прямой walmart.com, 1P» — возможно, обходит перекупов). Если да — переключить источник цены батча на Oxylabs. Иначе — business.walmart.com или вручную.
+2. **Стоимость полного прогона:** распознавание сейчас на дорогой vision (opus-4-6). Перед прогоном на 3 944 → на дешёвую (Haiku/Sonnet) + кэш `ImageClassification`, чтобы уложиться в $100/мес.
+3. **Масштаб (план владельца):** после «ок» на 10 → 50 → фон по всем 3 944 Walmart → потом Amazon (store1 ~1000, store3 540 через SP-API; store2/4/5 по API недоступны).
+
+**Локальные гочи:** Veeqo-ключ ЛОКАЛЬНО = 401 (протух; в prod рабочий) → Walmart-распознавание локально по тайтлу. `vercel env pull --production` заблокирован авто-режимом. BlueCart подтверждён деактивированным (`/account`). Реальный размер каталога: Walmart 3 944 (WalmartCatalogItem), Amazon store1 ~1000/store3 540; `SkuShippingData` (514/820) — узкий подсет, НЕ каталог.
+
+**Память проекта:** `project_cogs_engine_spec_gaps` (closure + root cause + no-iMac-preference), `project_bluecart_dropped_unwrangle_walmart`.
+
+---
+
 ## 🆕 СЕССИЯ 2026-07-02 (MacBook-Claude) — 🔴 fresh-50 ставил ЧУЖИЕ фото → движок исправлен (fail-closed) + Oxylabs как источник Walmart
 
 > **Домен:** тот же Walmart multipack remediation (`src/lib/walmart/multipack/`, `src/lib/sourcing/`). Параллельно шла ДРУГАЯ сессия по Bundle Factory/COGS (правила `donor-catalog.ts`, `product-image.ts`, `identify.ts`, `shipping-templates.ts`, `promote-draft.ts`, batch-JSON в `docs/sourcing/`) — НЕ мои, не трогал.

@@ -14,17 +14,26 @@
 
 import { veeqoFetch } from "./client";
 
+interface VeeqoImageLite {
+  src?: string;
+  url?: string;
+  display_url?: string;
+}
+
 interface VeeqoSellableLite {
   sku_code?: string;
   image_url?: string;
   main_thumbnail_url?: string;
+  images?: VeeqoImageLite[];
 }
 
 interface VeeqoProductLite {
   id?: number | string;
   title?: string;
+  description?: string;
   main_image_src?: string;
   main_image_url?: string;
+  images?: VeeqoImageLite[];
   sellables?: VeeqoSellableLite[];
 }
 
@@ -69,4 +78,59 @@ export async function fetchVeeqoImageBySku(
   // than nothing (visually shows the same product family).
   const p0 = products[0]!;
   return p0.main_image_src || p0.main_image_url || null;
+}
+
+/**
+ * Richer Veeqo lookup for the COGS identify brain: returns ALL images we can
+ * find for the SKU plus the product title + description. Walmart's Marketplace
+ * API exposes none of this, so Veeqo is our only source of the listing's own
+ * photos/description to feed vision (so it can decompose variety packs and read
+ * the "what's inside" description). Images are deduped, package/main first.
+ */
+export async function fetchVeeqoDetailBySku(
+  sku: string,
+): Promise<{ title: string | null; description: string | null; images: string[] }> {
+  const empty = { title: null, description: null, images: [] as string[] };
+  if (!sku.trim()) return empty;
+  let products: VeeqoProductLite[];
+  try {
+    const data = await veeqoFetch(`/products?query=${encodeURIComponent(sku)}`);
+    products = Array.isArray(data) ? (data as VeeqoProductLite[]) : [];
+  } catch {
+    return empty;
+  }
+  if (products.length === 0) return empty;
+
+  const pickImg = (i?: VeeqoImageLite): string | null =>
+    i?.display_url || i?.src || i?.url || null;
+  const collect = (urls: (string | null | undefined)[]): string[] => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const u of urls) {
+      if (typeof u === "string" && u.startsWith("http") && !seen.has(u)) { seen.add(u); out.push(u); }
+    }
+    return out;
+  };
+
+  // Prefer the product whose sellable sku_code EXACTLY matches — same rule as
+  // fetchVeeqoImageBySku, so we describe the right variant.
+  let product = products[0]!;
+  let sellable: VeeqoSellableLite | undefined;
+  outer: for (const p of products) {
+    for (const s of p.sellables ?? []) {
+      if (s.sku_code === sku) { product = p; sellable = s; break outer; }
+    }
+  }
+
+  const images = collect([
+    sellable?.image_url,
+    sellable?.main_thumbnail_url,
+    ...(sellable?.images ?? []).map(pickImg),
+    product.main_image_src,
+    product.main_image_url,
+    ...(product.images ?? []).map(pickImg),
+  ]);
+
+  const description = (product.description || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() || null;
+  return { title: product.title || null, description, images };
 }

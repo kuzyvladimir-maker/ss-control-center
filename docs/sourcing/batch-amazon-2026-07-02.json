@@ -1,0 +1,42 @@
+[
+  {
+    "sku": "VC-ASV1-378P",
+    "identity": {
+      "brand": "Smucker's",
+      "product_line": "Uncrustables",
+      "flavor": "Peanut Butter & Strawberry Jam",
+      "size": "8 oz",
+      "container_type": "box",
+      "base_unit": "Smucker's Uncrustables Peanut Butter & Strawberry Jam Sandwich 4 count 8 oz box",
+      "units_in_listing": 23,
+      "unit_basis": "box",
+      "is_bundle": false,
+      "components": [],
+      "retail_search_query": "Smucker's Uncrustables Peanut Butter Strawberry Jam 4 count box",
+      "confidence": 0.65,
+      "notes": "Listing states 90 individually wrapped 2 oz sandwiches. Photos show 4-count boxes (4 sandwiches x 2 oz = 8 oz per box). 90 sandwiches / 4 per box = 22.5 boxes, which doesn't divide evenly. Most likely this is either 90 individual sandwiches repackaged or approximately 23 boxes. The photos show the product shipped in a Salutem Solutions styrofoam cooler with frozen gel packs, indicating a third-party reseller bundle. Each retail shelf unit is a 4-count box at 8 oz (4 x 2 oz sandwiches).",
+      "imagesUsed": 6
+    },
+    "dry": true
+  },
+  {
+    "sku": "UA-ASAO-RE7Q",
+    "identity": {
+      "brand": "Smucker's",
+      "product_line": "Uncrustables",
+      "flavor": "Peanut Butter & Strawberry Jam",
+      "size": "8 oz",
+      "container_type": "box",
+      "base_unit": "Smucker's Uncrustables Peanut Butter & Strawberry Jam Sandwich 4 ct 8 oz box",
+      "units_in_listing": 12,
+      "unit_basis": "box",
+      "is_bundle": false,
+      "components": [],
+      "retail_search_query": "Smucker's Uncrustables Peanut Butter Strawberry Jam 4 count box",
+      "confidence": 0.75,
+      "notes": "Listing states 45 count but photos show 4-count boxes (4 sandwiches x 2 oz each = 8 oz per box). The main photo shows approximately 5-6 boxes in a styrofoam cooler. 45 sandwiches would require 11.25 boxes of 4-count, which doesn't divide evenly. Likely 12 boxes (48 sandwiches) based on the photos showing 4-count retail boxes, though the listing claims 45. Using 12 boxes as the most logical configuration matching the 4-count retail packaging shown.",
+      "imagesUsed": 6
+    },
+    "dry": true
+  }
+]

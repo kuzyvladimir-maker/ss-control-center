@@ -507,22 +507,29 @@ export async function enrichTarget(
   // Collect (sourceApi, scoredOffers) from every live retailer.
   const batches: { offers: ScoredOffer[] }[] = [];
 
-  // Walmart (our #1 buying source): prefer BlueCart (clean is_marketplace_item 1P
-  // flag) but fall back to Unwrangle walmart_search when BlueCart is down/exhausted
-  // — so a depleted BlueCart never drops Walmart from new enrichments.
+  // Walmart (our #1 buying source): Unwrangle walmart_search is the LIVE path.
+  // BlueCart's subscription was cancelled 2026-06 (its key now returns "deactivated"),
+  // so Unwrangle carries every retailer incl. Walmart. We still try BlueCart LAST as a
+  // fallback — only if Walmart wasn't covered AND its key is set — because it exposes
+  // the clean is_marketplace_item 1P flag Unwrangle lacks, in case the sub is revived.
   let walmartCovered = false;
-  try {
-    const bc = await bluecartWalmartSearch(opts.target);
-    creditsRemaining = bc.creditsRemaining;
-    if (!bc.trialExhausted && bc.offers.length) { retailersHit.push("walmart"); batches.push({ offers: bc.offers.map((o) => scoreOffer(o, cp)) }); walmartCovered = true; }
-  } catch { /* BlueCart unavailable — Unwrangle fallback below */ }
-
   for (const r of opts.unwrangleRetailers ?? []) {
-    if (r === "walmart" && walmartCovered) continue; // already covered by BlueCart (better 1P signal)
     try {
       const uw = await unwrangleSearch(r, opts.target);
-      if (!uw.trialExhausted) { if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: uw.offers.map((o) => scoreOffer(o, cp)) }); }
+      if (!uw.trialExhausted) {
+        if (uw.creditsRemaining != null) creditsRemaining = uw.creditsRemaining;
+        if (!retailersHit.includes(r)) retailersHit.push(r);
+        batches.push({ offers: uw.offers.map((o) => scoreOffer(o, cp)) });
+        if (r === "walmart" && uw.offers.length) walmartCovered = true;
+      }
     } catch { /* skip this retailer on error */ }
+  }
+  if (!walmartCovered && process.env.BLUECART_API_KEY) {
+    try {
+      const bc = await bluecartWalmartSearch(opts.target);
+      if (bc.creditsRemaining != null) creditsRemaining = bc.creditsRemaining;
+      if (!bc.trialExhausted && bc.offers.length) { if (!retailersHit.includes("walmart")) retailersHit.push("walmart"); batches.push({ offers: bc.offers.map((o) => scoreOffer(o, cp)) }); }
+    } catch { /* BlueCart unavailable */ }
   }
 
   // Oxylabs retailers (open sites: Aldi, + Instacart fallback). Inert until

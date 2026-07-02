@@ -1,0 +1,86 @@
+[
+  {
+    "sku": "FaisalX-1253",
+    "identity": {
+      "brand": "Arnold",
+      "product_line": "Country",
+      "flavor": "Sourdough",
+      "size": "24 oz",
+      "container_type": "loaf",
+      "base_unit": "Arnold Country Sourdough Bread 24 oz loaf",
+      "units_in_listing": 2,
+      "unit_basis": "loaf",
+      "is_bundle": false,
+      "components": [],
+      "retail_search_query": "Arnold Country Sourdough Bread 24 oz loaf",
+      "confidence": 0.92,
+      "notes": "Pack of 2 of the same Arnold Country Sourdough Bread loaf, each 24 oz. Photo confirms a single loaf of Arnold sourdough bread packaging.",
+      "imagesUsed": 0
+    },
+    "parts": [
+      {
+        "label": "Arnold Country Sourdough Bread 24 oz loaf",
+        "qty": 2,
+        "perUnit": null
+      }
+    ],
+    "costable": false,
+    "lowConf": false
+  },
+  {
+    "sku": "RizwanX-3679",
+    "identity": {
+      "brand": "Klass",
+      "product_line": "Aguas Frescas",
+      "flavor": "Tamarind",
+      "size": "14.1 oz",
+      "container_type": "bag",
+      "base_unit": "Klass Aguas Frescas Tamarind with Vitamin C Powdered Drink Mix 14.1 oz bag",
+      "units_in_listing": 2,
+      "unit_basis": "bag",
+      "is_bundle": false,
+      "components": [],
+      "retail_search_query": "Klass Aguas Frescas Tamarind Powdered Drink Mix 14.1 oz",
+      "confidence": 0.88,
+      "notes": "Pack of 2 of the same Klass Tamarind powdered drink mix. Container type assumed to be bag/pouch based on typical Klass Aguas Frescas packaging seen in photo. The 14.1 oz size is their standard multiserve pouch.",
+      "imagesUsed": 0
+    },
+    "parts": [
+      {
+        "label": "Klass Aguas Frescas Tamarind with Vitamin C Powdered Drink Mix 14.1 oz bag",
+        "qty": 2,
+        "perUnit": null
+      }
+    ],
+    "costable": false,
+    "lowConf": false
+  },
+  {
+    "sku": "RizwanX-3669",
+    "identity": {
+      "brand": "Klass",
+      "product_line": "Aguas Frescas",
+      "flavor": "Melon",
+      "size": "14.1 oz",
+      "container_type": "pouch",
+      "base_unit": "Klass Aguas Frescas Melon with Vitamin C Powdered Drink Mix 14.1 oz pouch",
+      "units_in_listing": 6,
+      "unit_basis": "pouch",
+      "is_bundle": false,
+      "components": [],
+      "retail_search_query": "Klass Aguas Frescas Melon Powdered Drink Mix 14.1 oz",
+      "confidence": 0.85,
+      "notes": "Pack of 6 identical pouches of Klass Aguas Frescas Melon flavor powdered drink mix. Container type assumed to be pouch based on typical Klass packaging for multiserve powdered drink mixes. Photo confirms the Klass Melon product but exact container type slightly uncertain without higher resolution.",
+      "imagesUsed": 0
+    },
+    "parts": [
+      {
+        "label": "Klass Aguas Frescas Melon with Vitamin C Powdered Drink Mix 14.1 oz pouch",
+        "qty": 6,
+        "perUnit": null
+      }
+    ],
+    "costable": false,
+    "lowConf": false
+  }
+]
