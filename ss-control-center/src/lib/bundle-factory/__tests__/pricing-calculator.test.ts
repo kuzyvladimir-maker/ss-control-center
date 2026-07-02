@@ -23,6 +23,7 @@ function model(over: Partial<PricingModel> = {}): PricingModel {
     closing_fee_cents: 0,
     own_shipping_cents: 0,
     referral_pct_override: null,
+    shipping_in_price: true, // legacy tests below assert the buildup WITH shipping in cost
     ...over,
   };
 }
@@ -54,6 +55,34 @@ test("margin mode — solved price hits the target margin (35%)", () => {
   // realized margin after actual tiered referral ≈ target
   assert.ok(Math.abs(r.margin_pct - 0.35) < 0.01, `margin ${r.margin_pct}`);
   assert.ok(r.profit_cents > 0);
+});
+
+test("count-based cooler — 30 units -> S ($7.50 pkg), 48 -> M ($10.90), not the weight fallback", () => {
+  const s = computeBundlePrice(
+    { cogs_cents: 3000, weight_lb: null, unit_count: 30, category: "FROZEN_GROCERY" },
+    model(),
+  );
+  assert.equal(s.cooler_size, "S");
+  assert.equal(s.cost.packaging_cents, 750); // cost-model PACKAGING.S = $7.50
+  const m = computeBundlePrice(
+    { cogs_cents: 4800, weight_lb: null, unit_count: 48, category: "FROZEN_GROCERY" },
+    model(),
+  );
+  assert.equal(m.cooler_size, "M");
+  assert.equal(m.cost.packaging_cents, 1090); // PACKAGING.M = $10.90
+});
+
+test("shipping-out (default) + markup 2.3 reproduces the 30-ct best-seller (~$86)", () => {
+  const r = computeBundlePrice(
+    { cogs_cents: 3000, weight_lb: null, unit_count: 30, category: "FROZEN_GROCERY" },
+    model({ mode: "markup", markup: 2.3, shipping_in_price: false }),
+  );
+  // base = goods $30 + packaging S $7.50 = $37.50; shipping NOT in price.
+  // price = 3750 * 2.3 = 8625 cents = $86.25 (his live best-seller = $86.15).
+  assert.equal(r.selling_price_cents, 8625);
+  // shipping still reported for the template (S label $20), just not in cost.
+  assert.equal(r.cost.own_shipping_cents, 2000);
+  assert.equal(r.cost.total_cost_cents, 3000 + 750); // goods + packaging only
 });
 
 test("roi mode — profit / (goods + packaging) hits target ROI (70%), shipping excluded from base", () => {

@@ -55,6 +55,8 @@ export const POST = withErrorHandler(
         m.referral_pct_override == null || m.referral_pct_override === ("" as unknown)
           ? base.referral_pct_override
           : Math.min(0.94, Math.max(0, n(m.referral_pct_override, base.referral_pct_override ?? 0.15))),
+      shipping_in_price:
+        typeof m.shipping_in_price === "boolean" ? m.shipping_in_price : base.shipping_in_price,
     };
 
     const result = computeBundlePrice(

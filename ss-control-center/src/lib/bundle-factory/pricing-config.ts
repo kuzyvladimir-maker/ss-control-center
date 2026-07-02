@@ -33,7 +33,12 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import { type Cooler, LABEL as UNCRUSTABLES_LABEL } from "@/lib/pricing/cost-model";
+import {
+  type Cooler,
+  LABEL as UNCRUSTABLES_LABEL,
+  PACKAGING as UNCRUSTABLES_PACKAGING,
+  coolerFor,
+} from "@/lib/pricing/cost-model";
 import type { Marketplace, FeeCategory } from "@/lib/economics/types";
 import {
   COOLER_SHELL,
@@ -46,16 +51,25 @@ import { referralFee } from "@/lib/economics/fee-tables";
 
 export type PricingMode = "margin" | "markup" | "roi";
 
-/** Cost-plus multiple over TOTAL landed cost (goods + packaging + fees). 3.0. */
-export const DEFAULT_PRICING_MARKUP = 3.0;
+/** Cost-plus multiple over (goods + packaging) — shipping is a separate line.
+ *  2.3 is DERIVED from Vladimir's real best-sellers (item ÷ (COGS+packaging) ≈
+ *  2.3 across his live Uncrustables), which corresponds to ~34% all-in margin.
+ *  30-ct: $37.50 × 2.3 = $86.25 (his $86.15); 48-ct: $58.90 × 2.3 = $135.47
+ *  (his $135.99). See docs/wiki/bundle-factory-pricing-and-images.md §8-9. */
+export const DEFAULT_PRICING_MARKUP = 2.3;
 /** Target margin kept after ALL costs + referral fee (fraction of revenue).
  *  Base = 30% (Vladimir 2026-07-01). */
 export const DEFAULT_TARGET_MARGIN_PCT = 0.30;
 /** Target ROI = profit / (goods + packaging). Shipping is EXCLUDED from the base
  *  (label bought from the marketplace). Base = 70% (Vladimir 2026-07-01). */
 export const DEFAULT_TARGET_ROI_PCT = 0.70;
-/** Which lever drives the price by default. Margin = the real calculator. */
-export const DEFAULT_PRICING_MODE: PricingMode = "margin";
+/** Which lever drives the price by default. Markup on (goods+packaging) — the
+ *  derived best-seller multiple; shipping is charged separately by the template. */
+export const DEFAULT_PRICING_MODE: PricingMode = "markup";
+/** Whether the outbound shipping label is baked INTO the item price. Default
+ *  false: the customer pays shipping via the Amazon shipping template (weight-
+ *  based), so it is NOT in the item price (Vladimir 2026-07-01). */
+export const DEFAULT_SHIPPING_IN_PRICE = false;
 /** Floor so tiny-COGS (or unknown-COGS) bundles still get a sane price. */
 export const DEFAULT_MIN_PRICE_CENTS = 999; // $9.99
 /** Amazon fulfillment fee estimate per unit — 0 for MFN/self-ship (our case). */
@@ -85,6 +99,7 @@ export const PRICING_TARGET_ROI_SETTING_KEY = "bundle_pricing_target_roi_pct";
 export const PRICING_FBA_FEE_SETTING_KEY = "bundle_pricing_fba_fee_cents";
 export const PRICING_CLOSING_FEE_SETTING_KEY = "bundle_pricing_closing_fee_cents";
 export const PRICING_OWN_SHIPPING_SETTING_KEY = "bundle_pricing_own_shipping_cents";
+export const PRICING_SHIPPING_IN_PRICE_SETTING_KEY = "bundle_pricing_shipping_in_price";
 export const PRICING_REFERRAL_PCT_SETTING_KEY = "bundle_pricing_referral_pct";
 
 /** Accept a markup as a plain multiple (3 or 3.0). Reject non-positive / NaN. */
@@ -117,6 +132,9 @@ export interface PricingModel {
   own_shipping_cents: number;
   /** Flat referral override (fraction). null → use the tiered fee-tables. */
   referral_pct_override: number | null;
+  /** When false (default), the shipping label is NOT baked into the item price —
+   *  the customer pays it via the Amazon shipping template. */
+  shipping_in_price: boolean;
 }
 
 /** Resolve the active pricing model (override → Setting → default). */
@@ -132,6 +150,7 @@ export async function getPricingModel(
     PRICING_FBA_FEE_SETTING_KEY,
     PRICING_CLOSING_FEE_SETTING_KEY,
     PRICING_OWN_SHIPPING_SETTING_KEY,
+    PRICING_SHIPPING_IN_PRICE_SETTING_KEY,
     PRICING_REFERRAL_PCT_SETTING_KEY,
   ];
   const rows = await prisma.setting.findMany({ where: { key: { in: keys } } });
@@ -171,6 +190,12 @@ export async function getPricingModel(
       normalizeCents(numOrNull(get(PRICING_OWN_SHIPPING_SETTING_KEY))) ??
       DEFAULT_OWN_SHIPPING_CENTS,
     referral_pct_override: referralOverride,
+    shipping_in_price:
+      get(PRICING_SHIPPING_IN_PRICE_SETTING_KEY) === "true"
+        ? true
+        : get(PRICING_SHIPPING_IN_PRICE_SETTING_KEY) === "false"
+          ? false
+          : DEFAULT_SHIPPING_IN_PRICE,
   };
 }
 
@@ -187,6 +212,10 @@ export interface BundlePriceInput {
   cogs_cents: number;
   /** Bundle weight in lb (for cooler/ice sizing). null → estimate (flagged). */
   weight_lb: number | null;
+  /** Total unit count. When set, the cooler is chosen by COUNT (coolerFor:
+   *  1-30 S / 31-60 M / 61-72 L / 73+ XL) — the correct sizing for Uncrustables
+   *  and other count-based products, instead of the weight fallback. */
+  unit_count?: number | null;
   /** Bundle category — FROZEN / REFRIGERATED → cold packaging; else dry box. */
   category: string | null;
   marketplace?: Marketplace; // default amazon
@@ -246,19 +275,29 @@ export function computeBundlePrice(
   let estimated = false;
 
   if (cold) {
+    const count = input.unit_count;
     const w = input.weight_lb;
-    if (w != null && Number.isFinite(w) && w > 0) {
+    if (count != null && Number.isFinite(count) && count > 0) {
+      // COUNT-based cooler (correct for Uncrustables et al.). Use the cost-model
+      // PACKAGING total (cooler shell + ice + box) so it matches the real
+      // per-cooler cost ($7.50 / $10.90 / $14.10 / $18.90).
+      cooler = coolerFor(count);
+      coolerDollars = COOLER_SHELL[cooler];
+      boxDollars = BOX_COST;
+      iceDollars = Math.max(0, UNCRUSTABLES_PACKAGING[cooler] - coolerDollars - boxDollars);
+    } else if (w != null && Number.isFinite(w) && w > 0) {
       cooler = coolerForWeight(w);
       coolerDollars = COOLER_SHELL[cooler];
       iceDollars = iceCost(w);
+      boxDollars = BOX_COST;
     } else {
-      // Frozen but no usable weight — assume a Medium cooler, flag the estimate.
+      // Frozen but no count or weight — assume a Medium cooler, flag the estimate.
       cooler = "M";
       coolerDollars = COOLER_SHELL.M;
       iceDollars = iceCost(9);
+      boxDollars = BOX_COST;
       estimated = true;
     }
-    boxDollars = BOX_COST;
   } else {
     // Dry / ambient: a plain box, no cooler / ice.
     boxDollars = DRY_BOX_COST;
@@ -283,8 +322,12 @@ export function computeBundlePrice(
     ? FROZEN_LABEL_CENTS[cooler as Cooler]
     : globalShip;
 
+  // Shipping is a SEPARATE line (customer pays via the Amazon shipping template)
+  // unless the operator pins it into the price. own_shipping_cents is still
+  // reported below as the template reference, just not in the price basis.
+  const shipping_in_cost_cents = model.shipping_in_price ? own_shipping_cents : 0;
   const total_cost_cents =
-    goods_cents + packaging_cents + fba_cents + closing_cents + own_shipping_cents;
+    goods_cents + packaging_cents + fba_cents + closing_cents + shipping_in_cost_cents;
 
   // Referral rate used to SOLVE the price. Our bundles list well above the $15
   // Amazon-grocery tier boundary, so the high tier (0.15) is the right solving

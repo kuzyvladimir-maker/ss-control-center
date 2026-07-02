@@ -106,6 +106,7 @@ interface PricingModelShape {
   closing_fee_cents: number;
   own_shipping_cents: number;
   referral_pct_override: number | null;
+  shipping_in_price: boolean;
 }
 interface BundlePriceResultShape {
   selling_price_cents: number;

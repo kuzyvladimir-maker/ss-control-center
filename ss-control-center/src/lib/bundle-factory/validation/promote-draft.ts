@@ -158,7 +158,12 @@ async function ensureMasterBundle(
   // Weight is unknown at first promotion (ship-specs entered later) → packaging
   // is estimated; the price re-derives once weight lands and validation re-runs.
   const priceCalc = computeBundlePrice(
-    { cogs_cents: estimatedCost, weight_lb: null, category: draft.category },
+    {
+      cogs_cents: estimatedCost,
+      weight_lb: null,
+      unit_count: draft.pack_count, // count-based cooler (fixes always-M when weight is null)
+      category: draft.category,
+    },
     model,
   );
 
@@ -213,7 +218,7 @@ export async function promoteDraftToChannelSkus(
   // identically and the margin validator can clear the floor.
   const masterForPrice = await prisma.masterBundle.findUnique({
     where: { id: masterBundleId },
-    select: { estimated_cost_cents: true, category: true, total_weight_oz: true },
+    select: { estimated_cost_cents: true, category: true, total_weight_oz: true, pack_count: true },
   });
   const autoPriceCents = computeBundlePrice(
     {
@@ -221,6 +226,7 @@ export async function promoteDraftToChannelSkus(
       weight_lb: masterForPrice?.total_weight_oz
         ? masterForPrice.total_weight_oz / 16
         : null,
+      unit_count: masterForPrice?.pack_count ?? null,
       category: masterForPrice?.category ?? null,
     },
     pricingModel,
