@@ -34,6 +34,7 @@ import {
   galleryLocatorAttrs,
 } from "../attributes/gallery-images";
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
+import { frozenShippingGroupGuid, packageWeightOz } from "../distribution/shipping-templates";
 
 export interface PromoteOutcome {
   master_bundle_id: string | null;
@@ -220,7 +221,7 @@ export async function promoteDraftToChannelSkus(
     where: { id: masterBundleId },
     select: { estimated_cost_cents: true, category: true, total_weight_oz: true, pack_count: true },
   });
-  const autoPriceCents = computeBundlePrice(
+  const autoPrice = computeBundlePrice(
     {
       cogs_cents: masterForPrice?.estimated_cost_cents ?? 0,
       weight_lb: masterForPrice?.total_weight_oz
@@ -230,7 +231,8 @@ export async function promoteDraftToChannelSkus(
       category: masterForPrice?.category ?? null,
     },
     pricingModel,
-  ).selling_price_cents;
+  );
+  const autoPriceCents = autoPrice.selling_price_cents;
 
   const candidates = await prisma.generatedContent.findMany({
     where: {
@@ -334,6 +336,24 @@ export async function promoteDraftToChannelSkus(
     /* gallery best-effort — never block promotion */
   }
 
+  // Frozen shipping: attach the Amazon shipping template (weight-based) + set the
+  // full package weight so the customer pays delivery separately (not baked into
+  // the item price). Cooler is the count-based one from the price calc above.
+  let coldPackageWeightOz: number | null = null;
+  const isCold = /FROZEN|REFRIGERATED|COLD/i.test(draft.category ?? "");
+  if (isCold && autoPrice.cooler_size) {
+    try {
+      const rich = JSON.parse(richAttributesJson) as Record<string, unknown>;
+      rich.merchant_shipping_group = [
+        { value: frozenShippingGroupGuid(autoPrice.cooler_size), marketplace_id: MARKETPLACE_ID },
+      ];
+      richAttributesJson = JSON.stringify(rich);
+      coldPackageWeightOz = packageWeightOz(autoPrice.cooler_size);
+    } catch {
+      /* leave attributes as-is if JSON parse fails */
+    }
+  }
+
   // Browse node depends on the bundle's brand mix, not the channel.
   // Pull the MasterBundle's BundleComponents once and compute the
   // distinct-brand count so resolveAmazonBrowseNode can decide.
@@ -376,6 +396,7 @@ export async function promoteDraftToChannelSkus(
           bullets: row.bullets_json,
           description: row.description,
           attributes: richAttributesJson,
+          ...(coldPackageWeightOz != null ? { package_weight_oz: coldPackageWeightOz } : {}),
           channel_browse_node: resolveAmazonBrowseNode({
             channel: row.channel,
             distinct_brands: distinctBrands,
