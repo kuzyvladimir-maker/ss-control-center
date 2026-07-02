@@ -35,8 +35,10 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
   if (prompt.length > 1000) return badRequest("Prompt is too long (max 1000 chars).");
 
   const channel = isOneOf(SALES_CHANNELS, body.channel) ? body.channel : "AMAZON_SALUTEM";
-  if (!channel.startsWith("AMAZON_")) {
-    return badRequest(`Channel "${channel}" is not wired for publishing yet — pick an Amazon account for now.`);
+  // Amazon (frozen + dry) and Walmart (dry multipacks — Walmart rejects frozen)
+  // are wired. eBay/TikTok land later.
+  if (!channel.startsWith("AMAZON_") && channel !== "WALMART") {
+    return badRequest(`Channel "${channel}" is not wired yet — pick an Amazon account or Walmart.`);
   }
 
   const houseBrand = isOneOf(HOUSE_BRANDS, body.house_brand) ? body.house_brand : "Salutem Vita";
