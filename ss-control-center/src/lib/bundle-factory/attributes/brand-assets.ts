@@ -40,12 +40,12 @@ function firstAttrValue(v: unknown): string | undefined {
 }
 
 /**
- * Append the fixed brand-story card as the LAST secondary gallery slot, but ONLY
- * for cold-chain listings (gated on the already-merged temperature_rating) and
- * ONLY when the asset url is set. Mutates `attrs` in place.
- *
- * Placed after any existing `other_product_image_locator_N` so donor secondary
- * photos (once wired) always precede the brand card in the gallery.
+ * Place the fixed brand-story / "why-us" card as gallery slot #1 (right after the
+ * MAIN image), per owner 2026-07-02 — the info card about the company + pricing
+ * should be the FIRST secondary image, not buried at the end. Only for cold-chain
+ * listings (gated on temperature_rating) and only when the asset url is set.
+ * Mutates `attrs` in place; existing donor gallery locators shift down (1→2, …),
+ * capped at Amazon's 8 secondary slots (the overflow donor photo is dropped).
  */
 export function appendColdChainBrandCard(
   attrs: Record<string, unknown>,
@@ -55,9 +55,17 @@ export function appendColdChainBrandCard(
   if (!url) return;
   if (!isColdChainTemperature(firstAttrValue(attrs.temperature_rating))) return;
 
-  let n = 1;
-  while (attrs[`other_product_image_locator_${n}`] != null) n++;
-  attrs[`other_product_image_locator_${n}`] = [
+  const MAX = 8;
+  let highest = 0;
+  for (let i = 1; i <= MAX; i++) {
+    if (attrs[`other_product_image_locator_${i}`] != null) highest = i;
+  }
+  // Shift down from the highest so we never overwrite an unread slot; anything
+  // that would land past slot MAX is dropped.
+  for (let i = Math.min(highest, MAX - 1); i >= 1; i--) {
+    attrs[`other_product_image_locator_${i + 1}`] = attrs[`other_product_image_locator_${i}`];
+  }
+  attrs["other_product_image_locator_1"] = [
     { media_location: url, language_tag: "en_US", marketplace_id: marketplaceId },
   ];
 }

@@ -42,6 +42,23 @@ import type { BundleComponentInput } from "./compliance/types";
 import type { Variant } from "./variation-matrix";
 import { logLifecycle } from "./lifecycle-log";
 import { NotFoundError, PreconditionError } from "./errors";
+import { isOwnBrandPassthrough } from "./own-brand";
+
+/** Break a total unit count into realistic Uncrustables retail boxes (4/10/15),
+ *  largest-first, so the main image shows a count-accurate number of boxes. */
+function describeRetailBoxes(total: number): string {
+  let rem = Math.max(0, Math.round(total));
+  const parts: string[] = [];
+  for (const p of [15, 10, 4]) {
+    const n = Math.floor(rem / p);
+    if (n > 0) {
+      parts.push(`${n} box${n > 1 ? "es" : ""} of ${p}`);
+      rem -= n * p;
+    }
+  }
+  if (rem > 0) parts.push(`${rem} individually-wrapped`);
+  return parts.join(" + ") || `boxes totalling ${total}`;
+}
 
 // Per spec: 2 retries on top of the initial attempt = 3 total tries.
 const MAX_IMAGE_RETRIES = 3;
@@ -125,12 +142,28 @@ export function buildImagePrompt(args: {
     .join(", ");
 
   if (isColdCategory(args.category)) {
+    // Own-brand (Uncrustables/Smucker's) → NOT a gift set; the main image must
+    // show a count-accurate number of real retail boxes. Gift set → several
+    // boxes of the different products + a "GIFT SET" mark on the cooler.
+    const ownBrand =
+      isOwnBrandPassthrough(args.brand) ||
+      args.variant.composition.some((c) => isOwnBrandPassthrough(c.brand));
+    const totalUnits = args.variant.composition.reduce((s, c) => s + c.qty, 0);
+    const boxLine = ownBrand
+      ? `Place real retail product boxes inside the cooler whose piece count EXACTLY matches ${totalUnits} total pieces — use realistic retail pack sizes (boxes of 4, 10 or 15): ${describeRetailBoxes(totalUnits)}. The number of boxes must visibly reflect this count, never a generic "a few boxes".`
+      : `Place several of the real product boxes inside the cooler, arranged as a gift set.`;
+    const coolerLine = ownBrand
+      ? `The cooler is a white EPS styrofoam insulated shipping cooler carrying the SALUTEM SOLUTIONS logo (realistic 3/4 front angle, lid leaning behind the cooler).`
+      : `The cooler is a white EPS styrofoam insulated shipping cooler carrying the SALUTEM SOLUTIONS logo AND the printed words "GIFT SET" (realistic 3/4 front angle, lid leaning behind the cooler).`;
     return [
       `A professional e-commerce main listing image on a pure white background, square 1:1.`,
-      `This is a frozen gift set assembled and shipped by SALUTEM SOLUTIONS.`,
+      ownBrand
+        ? `This is a frozen multipack assembled and shipped by SALUTEM SOLUTIONS.`
+        : `This is a frozen gift set assembled and shipped by SALUTEM SOLUTIONS.`,
       `The SECOND reference image is the DONOR PRODUCT PHOTO — the real retail box of ${products}. Reproduce that packaging EXACTLY as shown: same brand name, same logo, same box art, same colors and text. Do NOT rebrand, redesign, simplify, or substitute a look-alike package. The boxes inside the cooler must be visibly the same product as the second reference.`,
       `The FIRST reference image is the KIT ANCHOR — copy from it the styrofoam cooler look, the gel-pack style, and the overall layout only (NOT the product).`,
-      `Place several of the real product boxes inside a white EPS styrofoam insulated shipping cooler that carries the SALUTEM SOLUTIONS logo (realistic 3/4 front angle, lid leaning behind the cooler).`,
+      coolerLine,
+      boxLine,
       `Include 2 to 4 white branded gel packs reading "FROZEN GEL PACK", "KEEP FROZEN", "FOR FROZEN SHIPMENTS" with the Salutem Solutions logo — some inside the cooler next to the product, 1-2 in front.`,
       `Apply SALUTEM SOLUTIONS branding ONLY to the cooler and the gel packs — NEVER onto the third-party product packaging.`,
       `Subtle frost and cold condensation on the cooler and packs; NO loose ice, NO crushed ice, NO ice cubes.`,
