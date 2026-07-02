@@ -17,6 +17,7 @@ function model(over: Partial<PricingModel> = {}): PricingModel {
     mode: "margin",
     markup: 3,
     target_margin_pct: 0.35,
+    target_roi_pct: 0.70,
     min_price_cents: 999,
     fba_fee_cents: 0,
     closing_fee_cents: 0,
@@ -52,6 +53,20 @@ test("margin mode — solved price hits the target margin (35%)", () => {
   assert.equal(r.selling_price_cents, 20352);
   // realized margin after actual tiered referral ≈ target
   assert.ok(Math.abs(r.margin_pct - 0.35) < 0.01, `margin ${r.margin_pct}`);
+  assert.ok(r.profit_cents > 0);
+});
+
+test("roi mode — profit / (goods + packaging) hits target ROI (70%), shipping excluded from base", () => {
+  const r = computeBundlePrice(
+    { cogs_cents: 5904, weight_lb: null, category: "FROZEN_SINGLE" },
+    model({ mode: "roi", target_roi_pct: 0.70 }),
+  );
+  // base = goods 5904 + packaging 1072 = 6976; targetProfit = 0.70×6976 = 4883
+  // total_cost = 5904+1072+3200(ship) = 10176
+  // price = ceil((10176 + 4883) / (1 − 0.15)) = ceil(15059/0.85) = 17717
+  assert.equal(r.selling_price_cents, 17717);
+  // ROI measured against goods+packaging (shipping NOT in the base) ≈ 70%
+  assert.ok(Math.abs(r.roi_pct - 0.70) < 0.02, `roi ${r.roi_pct}`);
   assert.ok(r.profit_cents > 0);
 });
 

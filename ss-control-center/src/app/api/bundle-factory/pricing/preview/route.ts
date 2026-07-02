@@ -42,9 +42,11 @@ export const POST = withErrorHandler(
     const base = await getPricingModel();
     const m = body.model ?? {};
     const model: PricingModel = {
-      mode: m.mode === "markup" ? "markup" : m.mode === "margin" ? "margin" : base.mode,
+      mode:
+        m.mode === "markup" ? "markup" : m.mode === "roi" ? "roi" : m.mode === "margin" ? "margin" : base.mode,
       markup: Math.max(1, n(m.markup, base.markup)),
       target_margin_pct: Math.min(0.94, Math.max(0, n(m.target_margin_pct, base.target_margin_pct))),
+      target_roi_pct: Math.max(0, n(m.target_roi_pct, base.target_roi_pct)),
       min_price_cents: Math.max(0, Math.round(n(m.min_price_cents, base.min_price_cents))),
       fba_fee_cents: Math.max(0, Math.round(n(m.fba_fee_cents, base.fba_fee_cents))),
       closing_fee_cents: Math.max(0, Math.round(n(m.closing_fee_cents, base.closing_fee_cents))),

@@ -14,11 +14,19 @@
  * the packaging + referral-fee math so the factory and the /economics page stay
  * on ONE cost model.
  *
- * Two levers (operator picks one, configured once, applies to every listing):
+ * Three levers (operator picks one, configured once, applies to every listing):
  *   - "margin": solve price so `profit / revenue ≥ target_margin_pct` AFTER the
  *     referral fee and all costs.  price = totalCost / (1 − referral − margin)
- *   - "markup": price = totalLandedCost × markup   (ROI multiple)
- * Both are then floored at `min_price_cents`.
+ *   - "roi": solve price so `profit / (goods + packaging) ≥ target_roi_pct`.
+ *     The ROI base is COGS + ALL packaging (cooler+ice+box); SHIPPING is NOT in
+ *     the base (label bought from the marketplace) but is still a real cost the
+ *     price must cover. (Vladimir 2026-07-01.)
+ *   - "markup": price = totalLandedCost × markup   (cost-plus multiple)
+ * All are then floored at `min_price_cents`.
+ *
+ * Base targets (Vladimir 2026-07-01): margin 30% OR ROI 70%. Categories FROZEN
+ * and REFRIGERATED both use the cold buildup (cooler + gel ice); dry/ambient
+ * uses a plain box.
  *
  * The model is resolved with the same 3-tier pattern as margin-config:
  *   per-run override → global Setting → hard default.
@@ -36,12 +44,16 @@ import {
 } from "@/lib/economics/packaging";
 import { referralFee } from "@/lib/economics/fee-tables";
 
-export type PricingMode = "margin" | "markup";
+export type PricingMode = "margin" | "markup" | "roi";
 
 /** Cost-plus multiple over TOTAL landed cost (goods + packaging + fees). 3.0. */
 export const DEFAULT_PRICING_MARKUP = 3.0;
-/** Target margin kept after ALL costs + referral fee (fraction of revenue). */
-export const DEFAULT_TARGET_MARGIN_PCT = 0.35;
+/** Target margin kept after ALL costs + referral fee (fraction of revenue).
+ *  Base = 30% (Vladimir 2026-07-01). */
+export const DEFAULT_TARGET_MARGIN_PCT = 0.30;
+/** Target ROI = profit / (goods + packaging). Shipping is EXCLUDED from the base
+ *  (label bought from the marketplace). Base = 70% (Vladimir 2026-07-01). */
+export const DEFAULT_TARGET_ROI_PCT = 0.70;
 /** Which lever drives the price by default. Margin = the real calculator. */
 export const DEFAULT_PRICING_MODE: PricingMode = "margin";
 /** Floor so tiny-COGS (or unknown-COGS) bundles still get a sane price. */
@@ -69,6 +81,7 @@ export const PRICING_MARKUP_SETTING_KEY = "bundle_pricing_markup";
 export const PRICING_MIN_PRICE_SETTING_KEY = "bundle_pricing_min_price_cents";
 export const PRICING_MODE_SETTING_KEY = "bundle_pricing_mode";
 export const PRICING_TARGET_MARGIN_SETTING_KEY = "bundle_pricing_target_margin_pct";
+export const PRICING_TARGET_ROI_SETTING_KEY = "bundle_pricing_target_roi_pct";
 export const PRICING_FBA_FEE_SETTING_KEY = "bundle_pricing_fba_fee_cents";
 export const PRICING_CLOSING_FEE_SETTING_KEY = "bundle_pricing_closing_fee_cents";
 export const PRICING_OWN_SHIPPING_SETTING_KEY = "bundle_pricing_own_shipping_cents";
@@ -96,6 +109,8 @@ export interface PricingModel {
   mode: PricingMode;
   markup: number;
   target_margin_pct: number;
+  /** Target ROI = profit / (goods + packaging); shipping excluded from the base. */
+  target_roi_pct: number;
   min_price_cents: number;
   fba_fee_cents: number;
   closing_fee_cents: number;
@@ -113,6 +128,7 @@ export async function getPricingModel(
     PRICING_MIN_PRICE_SETTING_KEY,
     PRICING_MODE_SETTING_KEY,
     PRICING_TARGET_MARGIN_SETTING_KEY,
+    PRICING_TARGET_ROI_SETTING_KEY,
     PRICING_FBA_FEE_SETTING_KEY,
     PRICING_CLOSING_FEE_SETTING_KEY,
     PRICING_OWN_SHIPPING_SETTING_KEY,
@@ -128,7 +144,8 @@ export async function getPricingModel(
     DEFAULT_PRICING_MARKUP;
 
   const modeRaw = get(PRICING_MODE_SETTING_KEY);
-  const mode: PricingMode = modeRaw === "markup" ? "markup" : DEFAULT_PRICING_MODE;
+  const mode: PricingMode =
+    modeRaw === "markup" ? "markup" : modeRaw === "roi" ? "roi" : DEFAULT_PRICING_MODE;
 
   const referralOverride = normalizePct(numOrNull(get(PRICING_REFERRAL_PCT_SETTING_KEY)));
 
@@ -138,6 +155,9 @@ export async function getPricingModel(
     target_margin_pct:
       normalizePct(numOrNull(get(PRICING_TARGET_MARGIN_SETTING_KEY))) ??
       DEFAULT_TARGET_MARGIN_PCT,
+    target_roi_pct:
+      normalizePct(numOrNull(get(PRICING_TARGET_ROI_SETTING_KEY))) ??
+      DEFAULT_TARGET_ROI_PCT,
     min_price_cents:
       normalizeCents(numOrNull(get(PRICING_MIN_PRICE_SETTING_KEY))) ??
       DEFAULT_MIN_PRICE_CENTS,
@@ -198,6 +218,7 @@ export interface BundlePriceResult {
   referral_fee_cents: number;
   profit_cents: number;
   margin_pct: number; // profit / selling_price
+  roi_pct: number; // profit / (goods + packaging) — shipping excluded from base
 }
 
 function isColdCategory(category: string | null | undefined): boolean {
@@ -272,9 +293,20 @@ export function computeBundlePrice(
   const solveReferral =
     model.referral_pct_override != null ? model.referral_pct_override : 0.15;
 
+  // ROI base = goods + packaging (COGS + cooler/ice/box). SHIPPING is deliberately
+  // NOT in the base (label bought from the marketplace), but it IS still covered
+  // by the price via total_cost_cents. (Vladimir 2026-07-01.)
+  const roi_base_cents = goods_cents + packaging_cents;
+
   let priceCents: number;
   if (model.mode === "markup") {
     priceCents = Math.ceil(total_cost_cents * model.markup);
+  } else if (model.mode === "roi") {
+    // roi mode: profit / (goods + packaging) = target_roi, with shipping + referral
+    // still covered. Solve: price(1 − referral) = total_cost + roi × roi_base.
+    const targetProfit = Math.round(roi_base_cents * model.target_roi_pct);
+    const denom = Math.max(0.05, 1 - solveReferral);
+    priceCents = Math.ceil((total_cost_cents + targetProfit) / denom);
   } else {
     // margin mode: price = totalCost / (1 − referral − targetMargin)
     const denom = Math.max(0.05, 1 - solveReferral - model.target_margin_pct);
@@ -293,6 +325,9 @@ export function computeBundlePrice(
   const profit_cents = selling_price_cents - total_cost_cents - referral_fee_cents;
   const margin_pct =
     selling_price_cents > 0 ? profit_cents / selling_price_cents : 0;
+  // ROI = profit relative to the goods + packaging investment (shipping excluded
+  // from the base). Shown regardless of the mode used to solve the price.
+  const roi_pct = roi_base_cents > 0 ? profit_cents / roi_base_cents : 0;
 
   return {
     selling_price_cents,
@@ -315,6 +350,7 @@ export function computeBundlePrice(
     referral_fee_cents,
     profit_cents,
     margin_pct,
+    roi_pct,
   };
 }
 

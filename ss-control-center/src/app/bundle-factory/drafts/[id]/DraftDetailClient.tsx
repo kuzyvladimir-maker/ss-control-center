@@ -97,9 +97,10 @@ interface Props {
 
 // ── Pricing calculator types (mirror pricing-config.ts) ─────────────────────
 interface PricingModelShape {
-  mode: "margin" | "markup";
+  mode: "margin" | "markup" | "roi";
   markup: number;
   target_margin_pct: number;
+  target_roi_pct: number;
   min_price_cents: number;
   fba_fee_cents: number;
   closing_fee_cents: number;
@@ -108,7 +109,7 @@ interface PricingModelShape {
 }
 interface BundlePriceResultShape {
   selling_price_cents: number;
-  mode: "margin" | "markup";
+  mode: "margin" | "markup" | "roi";
   cooler_size: string | null;
   packaging_estimated: boolean;
   shipping_auto: boolean;
@@ -127,6 +128,7 @@ interface BundlePriceResultShape {
   referral_fee_cents: number;
   profit_cents: number;
   margin_pct: number;
+  roi_pct: number;
 }
 interface PricingProp {
   input: { cogs_cents: number; weight_lb: number | null; category: string | null };
@@ -1418,7 +1420,7 @@ function PricingModal({
   const router = useRouter();
   const m = pricing.model;
 
-  const [mode, setMode] = useState<"margin" | "markup">(m.mode);
+  const [mode, setMode] = useState<"margin" | "markup" | "roi">(m.mode);
   const [markup, setMarkup] = useState(String(m.markup));
   const [marginPct, setMarginPct] = useState(String(Math.round(m.target_margin_pct * 100)));
   const [floor, setFloor] = useState((m.min_price_cents / 100).toFixed(2));
