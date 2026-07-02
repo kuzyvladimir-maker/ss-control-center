@@ -10,7 +10,7 @@
 // raw HTML/JSON that differs per site and changes over time — the selectors must be
 // CALIBRATED against live responses once the key is active (see calibrateOxylabs()).
 
-import type { RetailOffer } from "./retail-fetch";
+import { extractPackSize, type RetailOffer } from "./retail-fetch";
 
 export type OxylabsRetailer = "bjs" | "publix" | "aldi" | "instacart";
 
@@ -76,6 +76,49 @@ function parseSearch(retailer: OxylabsRetailer, result: any): RetailOffer[] {
   const blobs = extractEmbeddedJson(html);
   void blobs; // TODO(calibrate): walk the embedded JSON for product name/price/image/url/upc
   return [];
+}
+
+// ── Walmart via Oxylabs STRUCTURED source ────────────────────────────────────
+// Oxylabs' dedicated `walmart_search` source returns PARSED product data (no HTML
+// scraping / calibration needed): general.{title,image,url,product_id},
+// price.price, seller.name. seller.name === "Walmart.com" ⇒ first-party (1P).
+// This is the proper, fast (~5-7s) direct walmart.com read — the Walmart donor
+// source (BlueCart is dropped; Unwrangle-walmart was slow and 3P-skewed).
+export async function oxylabsWalmartSearch(
+  query: string,
+): Promise<{ creditsRemaining: number | null; offers: RetailOffer[]; trialExhausted: boolean }> {
+  if (!oxylabsEnabled()) return { creditsRemaining: null, offers: [], trialExhausted: true };
+  const result = await oxylabsQuery({ source: "walmart_search", query, parse: true });
+  const raw = result?.content?.results;
+  if (!raw) return { creditsRemaining: null, offers: [], trialExhausted: false };
+  const items = (Array.isArray(raw) ? raw : Object.values(raw)).filter((x: any) => x && typeof x === "object");
+  const offers: RetailOffer[] = [];
+  for (const it of items as any[]) {
+    const g = it.general || {};
+    const title: string = g.title || "";
+    const img: string = g.image || "";
+    if (!title || typeof img !== "string" || !img.startsWith("http")) continue;
+    const sellerName: string | null = it.seller?.name ?? null;
+    const url = g.url ? (String(g.url).startsWith("http") ? String(g.url) : `https://www.walmart.com${g.url}`) : null;
+    offers.push({
+      retailer: "walmart",
+      retailerProductId: String(g.product_id || url || ""),
+      price: it.price?.price ?? null,
+      currency: it.price?.currency || "USD",
+      inStock: g.out_of_stock === true ? false : true,
+      productUrl: url,
+      title,
+      description: null,
+      keyFeatures: [],
+      imageUrls: [img.split("?")[0]],
+      packSizeSeen: extractPackSize(title),
+      // 1P iff sold by Walmart.com itself; any other seller name is 3P (rule #8).
+      isMarketplaceItem: sellerName ? !/^walmart\.com$/i.test(sellerName.trim()) : null,
+      sellerName,
+      sourceApi: "oxylabs",
+    } as RetailOffer);
+  }
+  return { creditsRemaining: null, offers, trialExhausted: false };
 }
 
 // Search one Oxylabs retailer for a query. Same return contract as the other

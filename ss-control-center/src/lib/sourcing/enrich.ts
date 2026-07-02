@@ -5,7 +5,8 @@
 // the exact shape the multipack pipeline reads. One BlueCart credit per miss.
 
 import type { Client } from "@libsql/client";
-import { bluecartWalmartSearch, unwrangleSearch, isOwnOrReseller, type RetailOffer } from "./retail-fetch";
+import { unwrangleSearch, isOwnOrReseller, type RetailOffer } from "./retail-fetch";
+import { oxylabsWalmartSearch } from "./oxylabs-fetch";
 import { normUrl, htmlToText, liItems } from "../walmart/multipack/donor";
 
 export interface DetailResult { title: string; images: string[]; bullets: string[]; description: string; }
@@ -186,25 +187,24 @@ export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: st
   let anyFound = false;
   const via: string[] = [];
 
-  // 1) BlueCart (Walmart 1P) — cheapest, first.
+  // 1) WALMART via Oxylabs — the direct, structured, first-party walmart.com read
+  //    (~5-7s). This is our Walmart source: BlueCart is dropped; Unwrangle-walmart
+  //    was slow (30-60s) and skewed to 3P reseller/own listings. Oxylabs returns
+  //    parsed general.{title,image,url} + seller.name (== "Walmart.com" ⇒ 1P).
   try {
-    const res = await bluecartWalmartSearch(query);
-    creditsRemaining = res.creditsRemaining;
-    if (!res.trialExhausted) {
-      const { inserted, found } = await storeOffers(db, opts.sku, opts.upc, gate(res.offers), "ondemand");
+    const ox = await oxylabsWalmartSearch(query);
+    if (!ox.trialExhausted) {
+      const { inserted, found } = await storeOffers(db, opts.sku, opts.upc, gate(ox.offers), "ondemand-oxylabs-walmart");
       totalInserted += inserted; if (found) { anyFound = true; via.push("walmart"); }
       // Normal mode: first hit wins. Deep mode: keep going to gather EVERY
-      // retailer's photos (one of them may have the clean front we lack).
-      if (found && !opts.deep) return { found: true, alreadyHad: false, creditsRemaining, offers: inserted };
+      // retailer's photos (one may have the clean front the others lack).
+      if (found && !opts.deep) return { found: true, alreadyHad: false, creditsRemaining, offers: inserted, reason: "via walmart(oxylabs)" };
     }
-  } catch { /* fall through to other retailers */ }
+  } catch { /* fall through to Unwrangle retailers */ }
 
-  // 2) Unwrangle retailers. INCLUDES Walmart (platform walmart_search) — the
-  //    fallback Walmart source when BlueCart is off/exhausted. Walmart-via-Unwrangle
-  //    surfaces many 3P reseller multipacks (dropped by the 1P gate) and can be slow,
-  //    so it's not a full BlueCart replacement, but it recovers the products whose
-  //    genuine 1P single-unit card it does return. Target/Sam's/Costco follow.
-  for (const retailer of ["walmart", "target", "samsclub", "costco"] as const) {
+  // 2) Unwrangle retailers (Target / Sam's / Costco) — for products those clubs
+  //    carry with a clean 1P photo that walmart.com itself lacks.
+  for (const retailer of ["target", "samsclub", "costco"] as const) {
     try {
       const res = await unwrangleSearch(retailer, query);
       if (res.trialExhausted) continue;
