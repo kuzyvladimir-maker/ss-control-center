@@ -13,7 +13,7 @@ import { buildMultipackListing, inferUnitNoun, quantityLeadSentence, scrubBrandV
 import { uploadToR2, multipackImageKey } from "./r2";
 import { polishListingCopy } from "./polish";
 import { validateListingContent } from "./guidelines";
-import { ensureDonorImage, fetchAndStoreDetail } from "../../sourcing/enrich";
+import { ensureDonorImage, fetchAndStoreDetail, titleMatchesListing } from "../../sourcing/enrich";
 import { pickBestFront, pickBestFrontFromPool, mainImageAcceptable, verifyMainImage, frontMatchesListing } from "../../sourcing/vision";
 import { logRemediation } from "./analytics";
 import { buildFoodAttributes } from "./attributes";
@@ -196,13 +196,30 @@ export async function buildAndSubmitOne(
   // Candidate image pool, built ONCE = the full donor detail gallery + EVERY image
   // captured for this SKU across all offers + the base. Used for BOTH the main
   // selector AND the secondary gallery, so a thin-donor SKU still gets photos.
-  const poolSet = new Set<string>((donor?.images ?? []).filter(Boolean).map((u) => u.split("?")[0]));
+  // Pool built matched-FIRST: photos from RetailPrice offers whose TITLE is the
+  // SAME product+variant as this listing lead, so the picker (which caps at 16)
+  // sees the correct-variant photos before any legacy same-brand junk still in the
+  // pool. Without this, enrichment can add the right photo yet the picker never
+  // reaches it (the 2026-07-01 low-recall case). donor-detail images (this SKU's
+  // own) lead; the base image (possibly a polluted first row) goes last.
+  const poolListingTitle = cur.productName || cand.walmartTitle;
+  const matchedImgs: string[] = [];
+  const otherImgs: string[] = [];
   try {
-    const rps = await db.execute({ sql: `SELECT imageUrls FROM RetailPrice WHERE sku=? AND imageUrls IS NOT NULL`, args: [sku] });
-    for (const row of rps.rows as any[]) { try { const arr = JSON.parse((row as any).imageUrls || "[]"); for (const u of arr) if (typeof u === "string" && u.startsWith("http")) poolSet.add(u.split("?")[0]); } catch {} }
+    const rps = await db.execute({ sql: `SELECT imageUrls, title FROM RetailPrice WHERE sku=? AND imageUrls IS NOT NULL`, args: [sku] });
+    for (const row of rps.rows as any[]) {
+      let arr: any[] = []; try { arr = JSON.parse((row as any).imageUrls || "[]"); } catch {}
+      const bucket = titleMatchesListing(poolListingTitle, String((row as any).title || "")) ? matchedImgs : otherImgs;
+      for (const u of arr) if (typeof u === "string" && u.startsWith("http")) bucket.push(u.split("?")[0]);
+    }
   } catch {}
-  if (cand.baseImageUrl) poolSet.add(cand.baseImageUrl.split("?")[0]);
-  const pool = Array.from(poolSet);
+  const seen = new Set<string>();
+  const pool: string[] = [];
+  for (const u of [
+    ...(donor?.images ?? []).filter(Boolean).map((u) => u.split("?")[0]),
+    ...matchedImgs, ...otherImgs,
+    ...(cand.baseImageUrl ? [cand.baseImageUrl.split("?")[0]] : []),
+  ]) { if (u && !seen.has(u)) { seen.add(u); pool.push(u); } }
 
   if (scope.image) {
     const listingId = cur.productName || cand.walmartTitle;

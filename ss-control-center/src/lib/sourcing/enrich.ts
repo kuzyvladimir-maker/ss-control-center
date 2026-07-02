@@ -20,6 +20,32 @@ const GATE_STOP = new Set([
   "bag", "bags", "box", "boxes", "case", "cases", "loaf", "loaves", "jar", "can", "cans",
 ]);
 
+function meaningfulToks(s: string): string[] {
+  return s.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/)
+    .filter((w) => w.length >= 3 && !GATE_STOP.has(w) && !/^\d+$/.test(w));
+}
+
+/**
+ * Does a candidate offer/photo TITLE describe the SAME product as our listing —
+ * same brand (first two meaningful tokens) AND enough variant/type tokens
+ * (≥50%)? Shared by (a) the enrichment gate that decides which offers to STORE,
+ * and (b) the optimizer's pool ordering that decides which stored photos the
+ * picker sees FIRST. Keeps "brand-wide pollution" out and surfaces the correct
+ * variant's photo even inside a legacy-polluted pool. Empty listing tokens →
+ * true (can't discriminate; the vision identity gate is the backstop).
+ */
+export function titleMatchesListing(listingTitle: string, offerTitle: string): boolean {
+  const toks = meaningfulToks(listingTitle);
+  const brand = toks.slice(0, 2);
+  if (!brand.length) return true;
+  const variant = [...new Set(toks.slice(2))];
+  const need = variant.length ? Math.max(1, Math.ceil(variant.length * 0.5)) : 0;
+  const t = (offerTitle || "").toLowerCase();
+  if (!brand.every((tk) => t.includes(tk))) return false;          // same brand
+  if (!need) return true;
+  return variant.filter((tk) => t.includes(tk)).length >= need;    // same variant/type
+}
+
 /**
  * Knowledge-base capture: pull the FULL BlueCart product detail (gallery, bullets,
  * full description, specifications, ingredients, raw blob) and persist it to the
@@ -145,26 +171,14 @@ export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: st
   // (2026-07-01 wrong-image batch). Now we require BOTH the brand AND enough of
   // the variant/type tokens, and we FAIL CLOSED (no "fall back to all"): a
   // polluted pool is worse than an empty one (empty → do-no-harm SKIP).
-  const meaningful = (s: string): string[] =>
-    s.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/)
-      .filter((w) => w.length >= 3 && !GATE_STOP.has(w) && !/^\d+$/.test(w));
-  const titleToks = meaningful(title);
-  const brandToks = titleToks.slice(0, 2);          // brand (e.g. pepperidge farm)
-  const variantToks = [...new Set(titleToks.slice(2))]; // type + flavor + variant
-  const needVariant = variantToks.length ? Math.max(1, Math.ceil(variantToks.length * 0.5)) : 0;
   const gate = (offers: RetailOffer[]) => {
     // FIRST-PARTY ONLY (Vladimir's rule #8): the card must be sold by the retailer
     // ITSELF, never a third-party reseller or one of our own storefronts — their
     // photos are often repackaged bundles or our own bad listing. HARD filter.
     // (Target/Sam's/Costco via Unwrangle are the retailer's own catalog → 1P.)
     const fp = offers.filter((o) => o.isMarketplaceItem !== true && !isOwnOrReseller(o.sellerName));
-    if (!brandToks.length) return fp;
-    return fp.filter((o) => {
-      const t = (o.title || "").toLowerCase();
-      if (!brandToks.every((tk) => t.includes(tk))) return false;           // same brand
-      if (!needVariant) return true;
-      return variantToks.filter((tk) => t.includes(tk)).length >= needVariant; // same variant/type
-    });
+    // Then keep only offers whose title is the SAME product+variant (fail-closed).
+    return fp.filter((o) => titleMatchesListing(title, o.title || ""));
   };
 
   let creditsRemaining: number | null = null;
