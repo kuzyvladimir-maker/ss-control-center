@@ -19,6 +19,7 @@ import { prisma } from "@/lib/prisma";
 import { runContentGeneration } from "./content-pipeline";
 import { resolveListingBrand, isOwnBrandPassthrough } from "./own-brand";
 import type { Variant, VariantComponent } from "./variation-matrix";
+import { planVariations, type VariationSpec } from "./variation-planner";
 
 export interface BatchProgress {
   status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
@@ -35,6 +36,8 @@ interface EnginePlan {
   theme: string;
   pack_count: number;
   donor_ids: string[];
+  /** The combinatorial matrix — one entry per listing to build (P2). */
+  specs: VariationSpec[];
 }
 
 interface EngineState {
@@ -55,9 +58,9 @@ export function parsePrompt(prompt: string): { count: number; theme: string; pac
   const lower = prompt.toLowerCase();
 
   // Count = first standalone integer (e.g. "50 ..."). Default 5.
-  const countMatch = lower.match(/\b(\d{1,3})\b/);
+  const countMatch = lower.match(/\b(\d{1,4})\b/);
   let count = countMatch ? parseInt(countMatch[1], 10) : 5;
-  count = Math.max(1, Math.min(50, count));
+  count = Math.max(1, Math.min(500, count)); // mass generation: up to 500 listings
 
   // Pack size = "pack of N" / "N-pack" / "N count". Default 6.
   const packMatch =
@@ -69,7 +72,7 @@ export function parsePrompt(prompt: string): { count: number; theme: string; pac
 
   // Theme = remaining significant tokens (drop the count + stopwords).
   const theme = prompt
-    .replace(/\b\d{1,3}\b/g, " ")
+    .replace(/\b\d{1,4}\b/g, " ")
     .split(/[^a-zA-Z0-9'&-]+/)
     .map((t) => t.trim())
     .filter((t) => t.length >= 3 && !STOPWORDS.has(t.toLowerCase()))
@@ -166,32 +169,38 @@ async function buildOneListing(args: {
   index: number;
   houseBrand: string;
   channel: string;
-  donors: SourcedDonor[];
-  packCount: number;
+  spec: VariationSpec;
+  donorsById: Map<string, SourcedDonor>;
 }): Promise<{ ok: boolean; title: string }> {
-  const { jobId, index, houseBrand, channel, donors, packCount } = args;
+  const { jobId, index, houseBrand, channel, spec, donorsById } = args;
 
-  // Each listing features a different donor product (the "variations").
-  const primary = donors[index % donors.length];
-  const unitPriceCents =
-    typeof primary.bestPrice === "number" && primary.bestPrice > 0
-      ? Math.round(primary.bestPrice * 100)
-      : 0;
+  // Build the composition from the variation spec — one component per flavor,
+  // each carrying its share of the total piece count (spec.quantities).
+  const components: VariantComponent[] = [];
+  spec.donor_ids.forEach((id, i) => {
+    const d = donorsById.get(id);
+    if (!d) return;
+    const unitPriceCents =
+      typeof d.bestPrice === "number" && d.bestPrice > 0 ? Math.round(d.bestPrice * 100) : 0;
+    components.push({
+      research_pool_id: d.id,
+      product_name: donorName(d),
+      brand: d.brand ?? "Unknown",
+      qty: spec.quantities[i] ?? 0,
+      unit_price_cents: unitPriceCents,
+    });
+  });
+  if (components.length === 0) return { ok: false, title: "(no donors for spec)" };
+
+  const primary = donorsById.get(spec.donor_ids[0]) ?? donorsById.get(components[0].research_pool_id)!;
   const category = mapCategory(primary.category);
-
-  const component: VariantComponent = {
-    research_pool_id: primary.id,
-    product_name: donorName(primary),
-    brand: primary.brand ?? "Unknown",
-    qty: packCount,
-    unit_price_cents: unitPriceCents,
-  };
-  const costCents = component.qty * component.unit_price_cents;
+  const packCount = spec.unit_count;
+  const costCents = components.reduce((s, c) => s + c.qty * c.unit_price_cents, 0);
 
   const variant: Variant = {
     idx: index,
-    name: `Variation ${index + 1}`,
-    composition: [component],
+    name: spec.label,
+    composition: components,
     cost_cents: costCents,
     // Placeholder for the content prompt only — the real selling price comes
     // from the economics module, the margin validator gates it before publish.
@@ -199,7 +208,7 @@ async function buildOneListing(args: {
     margin_cents: 0,
     margin_pct: 0,
     feasibility_score: 1,
-    notes: `Multipack of ${donorName(primary)}`,
+    notes: spec.label,
   };
 
   // Own-brand passthrough (Uncrustables carve-out): list the genuine product
@@ -208,9 +217,10 @@ async function buildOneListing(args: {
   // mode from it). Everything else stays the Salutem gift-set model.
   const listingBrand = resolveListingBrand(primary.brand, houseBrand);
   const ownBrand = isOwnBrandPassthrough(listingBrand);
+  const flavorNames = components.map((c) => c.product_name).join(" & ");
   const draftName = ownBrand
-    ? donorName(primary).slice(0, 120)
-    : `${houseBrand} ${donorName(primary)} Gift Set`.slice(0, 120);
+    ? `${flavorNames} — ${spec.unit_count} ct`.slice(0, 120)
+    : `${houseBrand} ${spec.label} Gift Set`.slice(0, 120);
 
   // ── Bridge to the canonical pipeline ───────────────────────────────────────
   // Earlier this engine baked content straight onto the BundleDraft and
@@ -228,9 +238,9 @@ async function buildOneListing(args: {
       draft_name: draftName,
       brand: listingBrand,
       category,
-      composition_type: "SINGLE_FLAVOR",
+      composition_type: spec.composition_type,
       pack_count: packCount,
-      draft_components: JSON.stringify([component]),
+      draft_components: JSON.stringify(components),
       draft_main_image_url: primary.mainImageUrl ?? null,
       // Persist ALL donor photos so the preview + master bundle carry the full
       // set (only the title image is generated; the rest come from the donor).
@@ -332,23 +342,38 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
       return progress;
     }
 
+    // Build the combinatorial matrix (flavors × counts + mixes). Own-brand
+    // (Uncrustables) → single flavors then 2/3/4-flavor mixes at 30/45/90/120;
+    // gift-set → variations at the pack size. Capped at the requested count.
+    const ownBrand = donors.some((d) => isOwnBrandPassthrough(d.brand));
+    const flavors = donors.map((d) => ({
+      id: d.id,
+      label: (d.flavor || d.productLine || donorName(d)).slice(0, 40),
+    }));
+    const specs = planVariations(flavors, {
+      targetCount: parsed.count,
+      ownBrand,
+      defaultPack: parsed.pack_count,
+    });
+    const usedIds = Array.from(new Set(specs.flatMap((s) => s.donor_ids)));
     const plan: EnginePlan = {
-      count: parsed.count,
+      count: specs.length,
       theme: parsed.theme,
       pack_count: parsed.pack_count,
-      donor_ids: donors.map((d) => d.id),
+      donor_ids: usedIds,
+      specs,
     };
     const progress: BatchProgress = {
       status: "RUNNING", phase: "sourcing",
-      step: `Found ${donors.length} products — building ${parsed.count} listings`,
-      total: parsed.count, done: 0, failed: 0, done_flag: false,
+      step: `Found ${donors.length} products — building ${specs.length} listings`,
+      total: specs.length, done: 0, failed: 0, done_flag: false,
     };
     await prisma.generationJob.update({
       where: { id: batchId },
       data: {
         status: "IN_PROGRESS",
         current_stage: "CONTENT_GENERATION",
-        bundles_target: parsed.count,
+        bundles_target: specs.length,
         bundles_generated: 0,
         notes: JSON.stringify({ plan, progress }),
       },
@@ -418,14 +443,11 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
     return progress;
   }
 
-  const result = await buildOneListing({
-    jobId: batchId,
-    index: done,
-    houseBrand,
-    channel,
-    donors,
-    packCount: plan.pack_count,
-  });
+  const donorsById = new Map(donors.map((d) => [d.id, d]));
+  const spec = plan.specs?.[done];
+  const result = spec
+    ? await buildOneListing({ jobId: batchId, index: done, houseBrand, channel, spec, donorsById })
+    : { ok: false, title: "(no variation spec)" };
 
   const newDone = done + 1;
   const newFailed = job.bundles_error + (result.ok ? 0 : 1);
