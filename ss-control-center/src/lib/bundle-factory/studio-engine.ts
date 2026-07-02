@@ -374,6 +374,29 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
     return progress;
   }
 
+  // Atomically CLAIM slot `done` before any expensive work, so a concurrent
+  // tick (cron backstop + browser polling) can't build the same listing twice
+  // and double the Claude spend. Only the tick that flips bundles_generated
+  // done→done+1 owns this slot.
+  const claim = await prisma.generationJob.updateMany({
+    where: { id: batchId, status: "IN_PROGRESS", bundles_generated: done },
+    data: { bundles_generated: done + 1 },
+  });
+  if (claim.count === 0) {
+    const fresh = await prisma.generationJob.findUnique({
+      where: { id: batchId },
+      select: { bundles_generated: true, bundles_target: true, bundles_error: true, status: true },
+    });
+    const d = fresh?.bundles_generated ?? done;
+    const t = fresh?.bundles_target ?? total;
+    return {
+      status: fresh?.status === "COMPLETED" ? "COMPLETED" : "RUNNING",
+      phase: d >= t ? "done" : "building",
+      step: `Building… ${d} of ${t}`,
+      total: t, done: d, failed: fresh?.bundles_error ?? 0, done_flag: d >= t,
+    };
+  }
+
   // Re-load the sourced donors (ids → rows) so we have image + price.
   const donors = await prisma.donorProduct.findMany({
     where: { id: { in: plan.donor_ids } },
@@ -420,8 +443,9 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
   await prisma.generationJob.update({
     where: { id: batchId },
     data: {
-      bundles_generated: newDone,
-      bundles_error: newFailed,
+      // bundles_generated already advanced by the atomic claim above; only track
+      // errors (increment, race-safe) + terminal status here.
+      ...(result.ok ? {} : { bundles_error: { increment: 1 } }),
       ...(isLast ? { status: "COMPLETED", completed_at: new Date() } : {}),
       notes: JSON.stringify({ plan, progress }),
     },

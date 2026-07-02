@@ -29,6 +29,26 @@ import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { logLifecycle } from "@/lib/bundle-factory/lifecycle-log";
 import { submitToAmazon } from "./amazon-publish";
 
+/**
+ * Return leaked RESERVED barcodes (past their TTL) to AVAILABLE. reserve →
+ * assign writes reserved_until = now+24h but nothing read it, so a crash between
+ * reserving a code and flipping it to ASSIGNED locked a paid barcode in RESERVED
+ * forever (the root cause of the quarantined pool). Safe to run on a cron — only
+ * touches rows whose reserved_until is already in the past.
+ */
+export async function reapExpiredReservations(): Promise<{ reaped: number }> {
+  const res = await prisma.uPCPool.updateMany({
+    where: { status: "RESERVED", reserved_until: { lt: new Date() } },
+    data: {
+      status: "AVAILABLE",
+      reserved_for_id: null,
+      reserved_at: null,
+      reserved_until: null,
+    },
+  });
+  return { reaped: res.count };
+}
+
 export interface Issue {
   code?: string;
   message?: string;

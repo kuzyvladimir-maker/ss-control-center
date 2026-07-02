@@ -112,6 +112,10 @@
     {
       "path": "/api/cron/bundle-factory-tick",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/bundle-factory-poll-pending",
+      "schedule": "*/5 * * * *"
     }
   ]
 }
