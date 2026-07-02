@@ -208,7 +208,11 @@ export async function unwrangleSearch(
   const url = `https://data.unwrangle.com/api/getter/?platform=${platform}&search=${encodeURIComponent(query)}&api_key=${key}`;
   let j: any;
   try {
-    j = await getJson(url);
+    // Unwrangle search routinely takes 30-60s (it scrapes live), so the default
+    // 20s cap was ABORTING every call → the enrichment thought "no product found"
+    // when the request simply hadn't returned yet (root cause of the 2026-07-01
+    // "Unwrangle finds nothing" symptom). Give it a real 90s budget.
+    j = await getJson(url, 90000);
   } catch (e: any) {
     if (e.status === 401 || e.status === 402 || /credit|quota|limit|insufficient/i.test(e.message))
       return { creditsRemaining: 0, offers: [], trialExhausted: true };

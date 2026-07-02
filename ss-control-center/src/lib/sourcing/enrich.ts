@@ -199,8 +199,12 @@ export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: st
     }
   } catch { /* fall through to other retailers */ }
 
-  // 2) Other paid retailers (Target / Sam's / Costco) via Unwrangle.
-  for (const retailer of ["target", "samsclub", "costco"] as const) {
+  // 2) Unwrangle retailers. INCLUDES Walmart (platform walmart_search) — the
+  //    fallback Walmart source when BlueCart is off/exhausted. Walmart-via-Unwrangle
+  //    surfaces many 3P reseller multipacks (dropped by the 1P gate) and can be slow,
+  //    so it's not a full BlueCart replacement, but it recovers the products whose
+  //    genuine 1P single-unit card it does return. Target/Sam's/Costco follow.
+  for (const retailer of ["walmart", "target", "samsclub", "costco"] as const) {
     try {
       const res = await unwrangleSearch(retailer, query);
       if (res.trialExhausted) continue;
