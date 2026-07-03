@@ -92,6 +92,7 @@
 - [Walmart Quantity Inquiry](walmart-quantity-inquiry.md) — уточнение количества у клиента по email: поиск аномалий, модалка, крон опроса ответов
 - [Walmart Quantity Confusion Fix](walmart-quantity-confusion-fix.md) — мультипаки: детерминированный композит главного фото с сеткой товаров
 - [Multipack — исправление чужих/дублирующихся фото (2026-07-01)](2026-07-01-multipack-wrong-image-fix.md) — инцидент+фикс: донор-гейт по 2 словам + identity-blind verify ставили фото не того товара на разные SKU; identity-гейт `frontMatchesListing` (fail-closed) + строгий enrich-матч
+- [🎯 Эталон идеального листинга Walmart](walmart-ideal-listing-spec.md) — qualification target: с чем движок СРАВНИВАЕТ листинг (main image / secondary / title / description / bullets / attributes), собран из офиц. гайда Walmart; identity-first «A-до-Я» вместо ложного «есть картинка»; поток Movement #1 (каталог → обогащение Oxylabs+Unwrangle → квалификация → улучшение)
 
 ## 🧮 Алгоритмы
 - [Выбор ставки (Rate Selection)](shipping-rate-selection.md) — Dry vs Frozen логика (Dry-правила упрощены 2026-05-14)
