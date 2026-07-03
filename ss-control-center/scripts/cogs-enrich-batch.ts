@@ -36,7 +36,7 @@ import { listSkus } from "@/lib/amazon-sp-api/listings";
 
 // --- args -------------------------------------------------------------------
 const argv = process.argv.slice(2);
-const VALUE_FLAGS = new Set(["channel", "limit", "confidence"]);
+const VALUE_FLAGS = new Set(["channel", "limit", "confidence", "concurrency"]);
 const getArg = (name: string, def: string): string => {
   const i = argv.indexOf(`--${name}`);
   return i >= 0 && argv[i + 1] ? argv[i + 1] : def;
@@ -55,14 +55,30 @@ const REIDENTIFY = argv.includes("--reidentify"); // force re-identify even if c
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// Retry enrichTarget once on a transient blip (Oxylabs/Unwrangle 5xx) so a single 502
-// doesn't lose a SKU on the full-catalog sweep.
+// Global cap on concurrent retailer-search groups (each enrichTarget = 1 Oxylabs +
+// up to 3 Unwrangle calls). Lets us fan out SKUs × bundle-components without blowing
+// the paid-API rate limits.
+function makeSemaphore(max: number) {
+  let active = 0;
+  const q: (() => void)[] = [];
+  return {
+    async acquire() { while (active >= max) await new Promise<void>((r) => q.push(r)); active++; },
+    release() { active--; const n = q.shift(); if (n) n(); },
+  };
+}
+const SEARCH_SEM = makeSemaphore(6);
+
+// Retry enrichTarget once on a transient blip (Oxylabs/Unwrangle 5xx), under the
+// global concurrency cap.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function enrichWithRetry(db: Client, opts: any, tries = 2): Promise<any> {
-  for (let i = 0; i < tries; i++) {
-    try { return await enrichTarget(db, opts); }
-    catch (e) { if (i === tries - 1) throw e; await sleep(1500); }
-  }
+  await SEARCH_SEM.acquire();
+  try {
+    for (let i = 0; i < tries; i++) {
+      try { return await enrichTarget(db, opts); }
+      catch (e) { if (i === tries - 1) throw e; await sleep(1500); }
+    }
+  } finally { SEARCH_SEM.release(); }
 }
 const firstToken = (s?: string) => (s || "").trim().toLowerCase().split(/\s+/)[0] || "";
 
@@ -130,7 +146,7 @@ async function cheapestCostForTarget(
   if (m.brandTok) { like.push("lower(dp.title) LIKE ?"); args.push(`%${m.brandTok}%`); }
   for (const t of m.tokens) { like.push("lower(dp.title) LIKE ?"); args.push(`%${t}%`); }
   const whereTok = like.length ? " AND " + like.join(" AND ") : "";
-  const sizeSel = m.sizeAmount != null ? "CASE WHEN dp.unitAmount = ? THEN 0 ELSE 1 END" : "0";
+  const sizeSel = m.sizeAmount != null ? "CASE WHEN dp.unitAmount = ? THEN 0 ELSE 1 END" : "NULL";
   if (m.sizeAmount != null) args.push(m.sizeAmount);
   const r = await db.execute({
     sql: `SELECT dp.title AS title, o.retailer AS retailer, o.pricePerUnit AS perUnit, dp.unitAmount AS ua, dp.unitMeasure AS um
@@ -159,8 +175,10 @@ async function cheapestCostForTarget(
 
   const snapshot: any[] = [];
   let costed = 0, review = 0, noPrice = 0;
+  const CONCURRENCY = Math.max(1, parseInt(getArg("concurrency", "4"), 10));
+  let _idx = 0;
 
-  for (const sku of skus) {
+  async function processSku(sku: string) {
     try {
       // CACHE: a product's IDENTITY is stable — reuse a prior identify (skips the
       // vision call AND the SP-API/Veeqo fetch) unless --reidentify. Prices/content are
@@ -175,7 +193,7 @@ async function cheapestCostForTarget(
       }
       if (!identity) {
         const inputs = CHANNEL === "amazon" ? await gatherAmazonInputs(sku) : await gatherWalmartInputs(db, sku);
-        if (!inputs.found) { console.log(`\n❌ ${sku}: no title/photos found`); continue; }
+        if (!inputs.found) { console.log(`\n❌ ${sku}: no title/photos found`); return; }
         identity = await identifyProduct(inputs);
         const nowI = new Date().toISOString();
         await db.execute({
@@ -192,7 +210,7 @@ async function cheapestCostForTarget(
       if (identity.components.length) console.log(`  components: ${identity.components.map((c: any) => `${c.qty}× ${c.product}${c.size ? " " + c.size : ""}`).join(" | ")}`);
       console.log(`  confidence: ${identity.confidence}${lowConf ? "  ⚠️ BELOW THRESHOLD → needsReview" : ""}  ${identity.notes ? "— " + identity.notes : ""}`);
 
-      if (DRY) { snapshot.push({ sku, identity, dry: true }); continue; }
+      if (DRY) { snapshot.push({ sku, identity, dry: true }); return; }
 
       // Targets: bundle → each component; else → single base unit.
       const targets = identity.is_bundle && identity.components.length
@@ -219,7 +237,7 @@ async function cheapestCostForTarget(
       const parts: { label: string; qty: number; perUnit: number | null; retailer?: string; matched?: string }[] = [];
       let costable = true;
 
-      for (const t of targets) {
+      await Promise.all(targets.map(async (t) => {
         const res = await enrichWithRetry(db, {
           target: t.query,
           brand: t.brandTok || null,
@@ -227,15 +245,15 @@ async function cheapestCostForTarget(
           unwrangleRetailers: ["walmart", "target", "samsclub", "costco"],
           openClawRetailers: openclaw ? ["bjs", "publix", "aldi"] : [],
         });
-        // Harvest freshly-created products (full content + ALL photos) — bounded to keep cost sane.
-        for (const pid of res.createdProductIds.slice(0, 3)) { try { await harvestDonorDetail(db, pid); } catch { /* best-effort */ } }
+        // Light harvest of the first fresh product for immediate content; the full
+        // gallery/nutrition harvest of every product is done by the reference-harvest cron.
+        for (const pid of res.createdProductIds.slice(0, 1)) { try { await harvestDonorDetail(db, pid); } catch { /* best-effort */ } }
 
         const cost = await cheapestCostForTarget(db, { brandTok: t.brandTok, tokens: t.tokens, sizeAmount: t.sizeAmount }, runStart);
         if (cost == null) { costable = false; parts.push({ label: t.label, qty: t.qty, perUnit: null }); }
         else parts.push({ label: t.label, qty: t.qty, perUnit: cost.perUnit, retailer: cost.retailer, matched: cost.title });
         console.log(`  · ${t.label}  →  ${cost ? `$${cost.perUnit.toFixed(2)}/u @ ${cost.retailer}  «${(cost.title || "").slice(0, 46)}» ${cost.size}` : "no clean 1P match"}  (hit ${res.retailersHit.join(",") || "none"}, rej ${res.rejected})`);
-        await sleep(300);
-      }
+      }));
 
       // COGS: bundle = Σ component perUnit×qty; single = perUnit × units_in_listing.
       const now = new Date().toISOString();
@@ -276,6 +294,17 @@ async function cheapestCostForTarget(
       console.log(`\n💥 ${sku}: ${String(e?.message).slice(0, 120)}`);
     }
   }
+
+  // Concurrency pool: process CONCURRENCY SKUs at once (each SKU's retailer calls stay
+  // sequential, but N SKUs overlap → ~N× throughput). SkuCost is written per-SKU so a
+  // kill mid-run keeps progress; the resumable query skips already-costed SKUs.
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, skus.length) }, async () => {
+    while (true) {
+      const i = _idx++;
+      if (i >= skus.length) break;
+      await processSku(skus[i]);
+    }
+  }));
 
   mkdirSync("../docs/sourcing", { recursive: true });
   const out = `../docs/sourcing/batch-${CHANNEL}-${new Date().toISOString().slice(0, 10)}.json`;
