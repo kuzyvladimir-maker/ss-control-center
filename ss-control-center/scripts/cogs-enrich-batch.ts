@@ -51,8 +51,19 @@ const CHANNEL = getArg("channel", "walmart").toLowerCase(); // walmart | amazon
 const LIMIT = parseInt(getArg("limit", "10"), 10);
 const MIN_CONF = parseFloat(getArg("confidence", "0.7"));
 const DRY = argv.includes("--dry");
+const REIDENTIFY = argv.includes("--reidentify"); // force re-identify even if cached
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// Retry enrichTarget once on a transient blip (Oxylabs/Unwrangle 5xx) so a single 502
+// doesn't lose a SKU on the full-catalog sweep.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function enrichWithRetry(db: Client, opts: any, tries = 2): Promise<any> {
+  for (let i = 0; i < tries; i++) {
+    try { return await enrichTarget(db, opts); }
+    catch (e) { if (i === tries - 1) throw e; await sleep(1500); }
+  }
+}
 const firstToken = (s?: string) => (s || "").trim().toLowerCase().split(/\s+/)[0] || "";
 
 const FILLER = new Set(["the", "and", "with", "for", "of", "a", "an", "size", "oz", "lb", "lbs", "fl", "ml", "g", "kg", "ct", "count", "pack", "pk", "box", "boxes", "can", "cans", "bag", "bags", "cup", "cups", "pouch", "jar", "bottle", "loaf", "loaves", "tray", "case", "each", "variety", "original", "classic", "brand", "new"]);
@@ -144,26 +155,35 @@ async function cheapestCostForTarget(
 
   for (const sku of skus) {
     try {
-      const inputs = CHANNEL === "amazon" ? await gatherAmazonInputs(sku) : await gatherWalmartInputs(db, sku);
-      if (!inputs.found) { console.log(`\n❌ ${sku}: no title/photos found`); continue; }
-
-      const identity = await identifyProduct(inputs);
+      // CACHE: a product's IDENTITY is stable — reuse a prior identify (skips the
+      // vision call AND the SP-API/Veeqo fetch) unless --reidentify. Prices/content are
+      // always re-fetched below, so the cost data stays fresh; only identity is cached.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let identity: any = null;
+      let cached = false;
+      if (!REIDENTIFY) {
+        const cx = await db.execute({ sql: `SELECT productIdentity FROM SkuShippingData WHERE sku=? LIMIT 1`, args: [sku] });
+        const pj = cx.rows[0]?.productIdentity as string | undefined;
+        if (pj) { try { const p = JSON.parse(pj); if (p && p.brand) { identity = { imagesUsed: 0, components: [], ...p }; cached = true; } } catch { /* fall through to re-identify */ } }
+      }
+      if (!identity) {
+        const inputs = CHANNEL === "amazon" ? await gatherAmazonInputs(sku) : await gatherWalmartInputs(db, sku);
+        if (!inputs.found) { console.log(`\n❌ ${sku}: no title/photos found`); continue; }
+        identity = await identifyProduct(inputs);
+        const nowI = new Date().toISOString();
+        await db.execute({
+          sql: `UPDATE SkuShippingData SET productIdentity=?, unitsInListing=?, baseUnitDesc=?, updatedAt=? WHERE sku=?`,
+          args: [JSON.stringify(identity), identity.units_in_listing ?? null, identity.base_unit ?? null, nowI, sku],
+        });
+      }
       const lowConf = identity.confidence < MIN_CONF;
 
-      console.log(`\n=== ${sku} ===`);
-      console.log(`  in    : title=${inputs.title ? "y" : "n"} desc=${inputs.description ? "y" : "n"} bullets=${inputs.bullets?.length ?? 0} photos=${identity.imagesUsed}`);
+      console.log(`\n=== ${sku} ===${cached ? "  (cached identity)" : ""}`);
       console.log(`  → ${identity.brand} | ${identity.product_line} | ${identity.flavor} | ${identity.size} | ${identity.container_type}`);
       console.log(`  base unit : ${identity.base_unit}`);
       console.log(`  UNITS: ${identity.units_in_listing} (${identity.unit_basis})  bundle=${identity.is_bundle}${identity.components.length ? ` [${identity.components.length} comp]` : ""}`);
-      if (identity.components.length) console.log(`  components: ${identity.components.map((c) => `${c.qty}× ${c.product}${c.size ? " " + c.size : ""}`).join(" | ")}`);
+      if (identity.components.length) console.log(`  components: ${identity.components.map((c: any) => `${c.qty}× ${c.product}${c.size ? " " + c.size : ""}`).join(" | ")}`);
       console.log(`  confidence: ${identity.confidence}${lowConf ? "  ⚠️ BELOW THRESHOLD → needsReview" : ""}  ${identity.notes ? "— " + identity.notes : ""}`);
-
-      // Persist identity onto SkuShippingData (best-effort; no-op if no row).
-      const nowI = new Date().toISOString();
-      await db.execute({
-        sql: `UPDATE SkuShippingData SET productIdentity=?, unitsInListing=?, baseUnitDesc=?, updatedAt=? WHERE sku=?`,
-        args: [JSON.stringify(identity), identity.units_in_listing ?? null, identity.base_unit ?? null, nowI, sku],
-      });
 
       if (DRY) { snapshot.push({ sku, identity, dry: true }); continue; }
 
@@ -178,7 +198,9 @@ async function cheapestCostForTarget(
             label: `${c.qty}× ${c.product}`,
           }))
         : [{
-            query: identity.retail_search_query,
+            // Clean structured query (brand + line + flavor + size), deduped — reads
+            // better on the retailer search than a verbose base_unit sentence.
+            query: [identity.brand, identity.product_line, identity.flavor, identity.size].filter(Boolean).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i).join(" ") || identity.retail_search_query,
             brandTok: firstToken(identity.brand),
             tokens: distinctiveTokens(identity.product_line, identity.flavor),
             sizeAmount: parseSizeNum(identity.size),
@@ -191,7 +213,7 @@ async function cheapestCostForTarget(
       let costable = true;
 
       for (const t of targets) {
-        const res = await enrichTarget(db, {
+        const res = await enrichWithRetry(db, {
           target: t.query,
           brand: t.brandTok || null,
           zip: "33765",

@@ -1,0 +1,118 @@
+[
+  {
+    "sku": "FaisalX-1253",
+    "identity": {
+      "imagesUsed": 0,
+      "components": [],
+      "brand": "Arnold",
+      "product_line": "Country",
+      "flavor": "Sourdough",
+      "size": "24 oz",
+      "container_type": "loaf",
+      "base_unit": "Arnold Country Sourdough Bread 24 oz loaf",
+      "units_in_listing": 2,
+      "unit_basis": "loaf",
+      "is_bundle": false,
+      "retail_search_query": "Arnold Country Sourdough Bread 24 oz loaf",
+      "confidence": 0.92,
+      "notes": "Pack of 2 of the same Arnold Country Sourdough Bread loaf, each 24 oz. Photo shows the single loaf packaging consistent with the title."
+    },
+    "parts": [
+      {
+        "label": "Arnold Country Sourdough Bread 24 oz loaf",
+        "qty": 2,
+        "perUnit": null
+      }
+    ],
+    "costable": false,
+    "lowConf": false
+  },
+  {
+    "sku": "RizwanX-3263",
+    "identity": {
+      "brand": "Green Giant",
+      "product_line": "Sweet Peas",
+      "flavor": "Sweet Peas",
+      "size": "15 oz",
+      "container_type": "can",
+      "base_unit": "Green Giant Sweet Peas 15 oz can",
+      "units_in_listing": 4,
+      "unit_basis": "can",
+      "is_bundle": false,
+      "components": [],
+      "retail_search_query": "Green Giant Sweet Peas 15 oz can",
+      "confidence": 0.85,
+      "notes": "Pack of 4 cans. No photo provided to visually confirm, but title clearly states product name, size, and count. Standard Green Giant vegetable can product.",
+      "imagesUsed": 0
+    },
+    "parts": [
+      {
+        "label": "Green Giant Sweet Peas 15 oz can",
+        "qty": 4,
+        "perUnit": 1.59,
+        "retailer": "target",
+        "matched": "Green Giant Sweet Peas - 15oz"
+      }
+    ],
+    "costable": true,
+    "lowConf": false
+  },
+  {
+    "sku": "RizwanX-3669",
+    "identity": {
+      "brand": "Klass",
+      "product_line": "Aguas Frescas",
+      "flavor": "Melon",
+      "size": "14.1 oz",
+      "container_type": "pouch",
+      "base_unit": "Klass Aguas Frescas Melon Powdered Drink Mix 14.1 oz pouch",
+      "units_in_listing": 6,
+      "unit_basis": "pouch",
+      "is_bundle": false,
+      "components": [],
+      "retail_search_query": "Klass Aguas Frescas Melon Powdered Drink Mix 14.1 oz",
+      "confidence": 0.85,
+      "notes": "Pack of 6 identical pouches. Klass is a well-known Mexican brand of powdered drink mixes (aguas frescas). The 14.1 oz size is typical for their multiserve packets. Confidence slightly reduced due to inability to see pouch details in photo, but title and brand are clear.",
+      "imagesUsed": 0
+    },
+    "parts": [
+      {
+        "label": "Klass Aguas Frescas Melon Powdered Drink Mix 14.1 oz pouch",
+        "qty": 6,
+        "perUnit": null
+      }
+    ],
+    "costable": false,
+    "lowConf": false
+  },
+  {
+    "sku": "RizwanX-215",
+    "identity": {
+      "brand": "Kellogg's",
+      "product_line": "Raisin Bran Crunch",
+      "flavor": "Raisin Bran Crunch",
+      "size": "20.7 oz",
+      "container_type": "box",
+      "base_unit": "Kellogg's Raisin Bran Crunch Breakfast Cereal 20.7 oz box",
+      "units_in_listing": 4,
+      "unit_basis": "box",
+      "is_bundle": false,
+      "components": [],
+      "retail_search_query": "Kellogg's Raisin Bran Crunch 20.7 oz box",
+      "confidence": 0.95,
+      "notes": "Pack of 4 boxes of the same product. Title clearly indicates '20.7oz (Pack 4)' meaning 4 individual family-size boxes. No photo provided to visually confirm, but text is unambiguous.",
+      "imagesUsed": 0
+    },
+    "parts": [
+      {
+        "label": "Kellogg's Raisin Bran Crunch Breakfast Cereal 20.7 oz box",
+        "qty": 4,
+        "perUnit": 4.98,
+        "retailer": "walmart",
+        "matched": "Kellogg's Raisin Bran Crunch Crunch Breakfast Cereal, Good Source of Fiber, Family Size, 20.7  oz"
+      }
+    ],
+    "costable": true,
+    "lowConf": false
+  }
+]

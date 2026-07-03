@@ -12,6 +12,7 @@
 
 import type { Client } from "@libsql/client";
 import { analyzeImagesWithFallback } from "@/lib/ai-vision";
+import { CLAUDE } from "@/lib/ai-models";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { getListing, flattenListing } from "@/lib/amazon-sp-api/listings";
 import { fetchVeeqoDetailBySku } from "@/lib/veeqo/product-image";
@@ -90,26 +91,38 @@ async function toBase64(url: string): Promise<string | null> {
   }
 }
 
-// Run the vision brain over the gathered inputs and normalize the output so
-// downstream code can trust the shape (defaults, sane bundle flag, clean components).
-export async function identifyProduct(inp: IdentifyInputs): Promise<ProductIdentity & { imagesUsed: number }> {
-  const urls = (inp.imageUrls ?? []).filter((u) => typeof u === "string" && u.startsWith("http")).slice(0, MAX_IMAGES);
-  const b64s: string[] = [];
-  for (const u of urls) {
-    const b = await toBase64(u);
-    if (b) b64s.push(b);
+function mediaType(b64: string): string {
+  return b64.startsWith("/9j/") ? "image/jpeg" : b64.startsWith("iVBOR") ? "image/png" : b64.startsWith("R0lG") ? "image/gif" : b64.startsWith("UklG") ? "image/webp" : "image/jpeg";
+}
+
+// Run identification on a GIVEN model (the tiering is decided by the caller). Falls
+// back to the shared multi-provider vision helper (opus/OpenAI) on any transient
+// error so a SKU is never lost to a blip.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function runIdentify(b64s: string[], prompt: string, model: string): Promise<any> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (apiKey && apiKey !== "<api_key>") {
+    try {
+      const Anthropic = (await import("@anthropic-ai/sdk")).default;
+      const client = new Anthropic({ apiKey });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const content: any[] = b64s.map((b) => ({ type: "image", source: { type: "base64", media_type: mediaType(b), data: b } }));
+      content.push({ type: "text", text: prompt });
+      const r = await client.messages.create({ model, max_tokens: 900, messages: [{ role: "user", content }] });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tb: any = r.content.find((b: any) => b.type === "text");
+      const m = tb?.text?.match(/\{[\s\S]*\}/);
+      if (m) return JSON.parse(m[0]);
+    } catch { /* fall through to the shared vision helper */ }
   }
+  return analyzeImagesWithFallback(b64s, prompt);
+}
 
-  const ctx =
-    `${PROMPT}\n\nLISTING TITLE: ${inp.title || "(none)"}` +
-    (inp.description ? `\nDESCRIPTION: ${String(inp.description).slice(0, 1500)}` : "") +
-    (inp.bullets?.length ? `\nBULLET POINTS:\n- ${inp.bullets.slice(0, 8).join("\n- ")}` : "") +
-    `\nPHOTOS PROVIDED: ${b64s.length}`;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const raw = (await analyzeImagesWithFallback(b64s, ctx)) as any;
+// Normalize a raw model output into a trustworthy ProductIdentity (defaults, sane
+// bundle flag, clean components).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeIdentity(raw: any, inp: IdentifyInputs): ProductIdentity {
   const id = (raw || {}) as Partial<ProductIdentity>;
-
   const components: ProductComponent[] = Array.isArray(id.components)
     ? (id.components as any[])
         .map((c) => ({
@@ -120,7 +133,6 @@ export async function identifyProduct(inp: IdentifyInputs): Promise<ProductIdent
         }))
         .filter((c) => c.product)
     : [];
-
   return {
     brand: id.brand || "",
     product_line: id.product_line || "",
@@ -135,8 +147,37 @@ export async function identifyProduct(inp: IdentifyInputs): Promise<ProductIdent
     retail_search_query: id.retail_search_query || id.base_unit || inp.title || "",
     confidence: typeof id.confidence === "number" ? id.confidence : 0,
     notes: id.notes || "",
-    imagesUsed: b64s.length,
   };
+}
+
+// Run the vision brain over the gathered inputs. TIERED: a cheap Haiku pass handles
+// the bulk; only the HARD cases (low confidence or a bundle to decompose) escalate to
+// Sonnet for a better read — most of the catalog stays on the cheap model.
+export async function identifyProduct(inp: IdentifyInputs): Promise<ProductIdentity & { imagesUsed: number }> {
+  const urls = (inp.imageUrls ?? []).filter((u) => typeof u === "string" && u.startsWith("http")).slice(0, MAX_IMAGES);
+  const b64s: string[] = [];
+  for (const u of urls) {
+    const b = await toBase64(u);
+    if (b) b64s.push(b);
+  }
+
+  const ctx =
+    `${PROMPT}\n\nLISTING TITLE: ${inp.title || "(none)"}` +
+    (inp.description ? `\nDESCRIPTION: ${String(inp.description).slice(0, 1500)}` : "") +
+    (inp.bullets?.length ? `\nBULLET POINTS:\n- ${inp.bullets.slice(0, 8).join("\n- ")}` : "") +
+    `\nPHOTOS PROVIDED: ${b64s.length}`;
+
+  // Tier 1 — cheap Haiku pass (handles title-only Walmart AND Amazon photos).
+  let id = normalizeIdentity(await runIdentify(b64s, ctx, CLAUDE.cheap), inp);
+  // Tier 2 — escalate ONLY the hard cases (low confidence, or a bundle whose
+  // components must be decomposed carefully) to Sonnet; take the better read.
+  if (id.confidence < 0.7 || id.is_bundle) {
+    try {
+      const id2 = normalizeIdentity(await runIdentify(b64s, ctx, CLAUDE.balanced), inp);
+      if (id2.confidence >= id.confidence) id = id2;
+    } catch { /* keep the tier-1 result */ }
+  }
+  return { ...id, imagesUsed: b64s.length };
 }
 
 // --- per-channel input gathering -------------------------------------------

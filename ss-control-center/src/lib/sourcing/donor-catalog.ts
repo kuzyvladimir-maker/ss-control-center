@@ -14,7 +14,7 @@ import {
   type CanonicalProduct,
   type ScoredOffer,
 } from "./retail-fetch";
-import { oxylabsSearch, oxylabsEnabled, type OxylabsRetailer } from "./oxylabs-fetch";
+import { oxylabsSearch, oxylabsWalmartSearch, oxylabsEnabled, type OxylabsRetailer } from "./oxylabs-fetch";
 import { openClawSearch, openClawEnabled, type OpenClawRetailer } from "./openclaw-fetch";
 import { CLAUDE } from "@/lib/ai-models";
 
@@ -507,13 +507,18 @@ export async function enrichTarget(
   // Collect (sourceApi, scoredOffers) from every live retailer.
   const batches: { offers: ScoredOffer[] }[] = [];
 
-  // Walmart (our #1 buying source): Unwrangle walmart_search is the LIVE path.
-  // BlueCart's subscription was cancelled 2026-06 (its key now returns "deactivated"),
-  // so Unwrangle carries every retailer incl. Walmart. We still try BlueCart LAST as a
-  // fallback — only if Walmart wasn't covered AND its key is set — because it exposes
-  // the clean is_marketplace_item 1P flag Unwrangle lacks, in case the sub is revived.
+  // Walmart (our #1 buying source): Oxylabs' structured walmart_search reads
+  // walmart.com DIRECTLY and returns clean 1P (seller "Walmart.com") — it recovers
+  // niche/local grocery (Klass, Arnold bread) that Unwrangle's public search only
+  // surfaces as inflated 3P/reseller. So Oxylabs is the PRIMARY Walmart source;
+  // Unwrangle-walmart is the fallback, then dead BlueCart last (if ever revived).
   let walmartCovered = false;
+  try {
+    const ox = await oxylabsWalmartSearch(opts.target);
+    if (!ox.trialExhausted && ox.offers.length) { retailersHit.push("walmart"); batches.push({ offers: ox.offers.map((o) => scoreOffer(o, cp)) }); walmartCovered = true; }
+  } catch { /* Oxylabs unavailable — Unwrangle walmart fallback below */ }
   for (const r of opts.unwrangleRetailers ?? []) {
+    if (r === "walmart" && walmartCovered) continue; // Oxylabs already gave clean 1P Walmart
     try {
       const uw = await unwrangleSearch(r, opts.target);
       if (!uw.trialExhausted) {
