@@ -31,6 +31,7 @@ import {
 } from "@/lib/sourcing/identify";
 import { enrichTarget, harvestDonorDetail } from "@/lib/sourcing/donor-catalog";
 import { openClawEnabled } from "@/lib/sourcing/openclaw-fetch";
+import { oxylabsGoogleShoppingSearch } from "@/lib/sourcing/oxylabs-fetch";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { listSkus } from "@/lib/amazon-sp-api/listings";
 
@@ -135,7 +136,27 @@ async function amazonSkus(n: number): Promise<string[]> {
 // Matched on brand + distinctive line/flavor tokens (+ size preference), among offers
 // sourced THIS run. Tight matching is what stops "Green Giant Sweet Peas" being priced
 // off "Happy Harvest Green Beans", or a 17oz box off a 3oz box.
-type CostHit = { perUnit: number; retailer: string; title: string; size: string; linePrice: boolean };
+type CostHit = { perUnit: number; retailer: string; title: string; size: string; linePrice: boolean; google?: boolean };
+
+// UNIVERSAL price fallback: when no clean 1P (exact or line-price sibling) exists at
+// Walmart/Target/Sam's/Costco, look the product up on Google Shopping (Oxylabs). Tight
+// brand+token match; cheapest matching merchant per unit. Tagged google-est (market
+// estimate, not a claimed shelf price) so no SKU is ever left without a number.
+async function googleShoppingCost(query: string, m: { brandTok: string; tokens: string[] }): Promise<CostHit | null> {
+  let offers: any[] = [];
+  try { offers = (await oxylabsGoogleShoppingSearch(query)).offers; } catch { return null; }
+  const bw = m.brandTok;
+  const cand = offers.filter((o) => {
+    const t = (o.title || "").toLowerCase();
+    if (o.price == null) return false;
+    if (bw && !t.includes(bw)) return false;
+    return m.tokens.every((tok) => t.includes(tok));
+  });
+  if (!cand.length) return null;
+  cand.sort((a, b) => (a.price / (a.packSizeSeen || 1)) - (b.price / (b.packSizeSeen || 1)));
+  const w = cand[0];
+  return { perUnit: Math.round((w.price / (w.packSizeSeen || 1)) * 100) / 100, retailer: "google", title: w.title || "", size: "", linePrice: false, google: true };
+}
 async function cheapestCostForTarget(
   db: Client,
   m: { brandTok: string; tokens: string[]; sizeAmount: number | null },
@@ -251,7 +272,7 @@ async function cheapestCostForTarget(
           }];
 
       const runStart = new Date().toISOString();
-      const parts: { label: string; qty: number; perUnit: number | null; retailer?: string; matched?: string; linePrice?: boolean }[] = [];
+      const parts: { label: string; qty: number; perUnit: number | null; retailer?: string; matched?: string; linePrice?: boolean; google?: boolean }[] = [];
       let costable = true;
 
       await Promise.all(targets.map(async (t) => {
@@ -267,10 +288,11 @@ async function cheapestCostForTarget(
         // gallery/nutrition harvest of every product is done by the reference-harvest cron.
         for (const pid of res.createdProductIds.slice(0, 1)) { try { await harvestDonorDetail(db, pid); } catch { /* best-effort */ } }
 
-        const cost = await cheapestCostForTarget(db, { brandTok: t.brandTok, tokens: t.tokens, sizeAmount: t.sizeAmount }, runStart);
+        let cost = await cheapestCostForTarget(db, { brandTok: t.brandTok, tokens: t.tokens, sizeAmount: t.sizeAmount }, runStart);
+        if (cost == null) cost = await googleShoppingCost(t.query, { brandTok: t.brandTok, tokens: t.tokens }); // universal fallback — never leave a SKU without a number
         if (cost == null) { costable = false; parts.push({ label: t.label, qty: t.qty, perUnit: null }); }
-        else parts.push({ label: t.label, qty: t.qty, perUnit: cost.perUnit, retailer: cost.retailer, matched: cost.title, linePrice: cost.linePrice });
-        console.log(`  · ${t.label}  →  ${cost ? `$${cost.perUnit.toFixed(2)}/u @ ${cost.retailer}${cost.linePrice ? " (line-price est)" : ""}  «${(cost.title || "").slice(0, 46)}» ${cost.size}` : "no clean 1P match"}  (hit ${res.retailersHit.join(",") || "none"}, rej ${res.rejected})`);
+        else parts.push({ label: t.label, qty: t.qty, perUnit: cost.perUnit, retailer: cost.retailer, matched: cost.title, linePrice: cost.linePrice, google: cost.google });
+        console.log(`  · ${t.label}  →  ${cost ? `$${cost.perUnit.toFixed(2)}/u @ ${cost.retailer}${cost.google ? " (google est)" : cost.linePrice ? " (line-price est)" : ""}  «${(cost.title || "").slice(0, 46)}» ${cost.size}` : "no price anywhere"}  (hit ${res.retailersHit.join(",") || "none"}, rej ${res.rejected})`);
       }));
 
       // COGS: bundle = Σ component perUnit×qty; single = perUnit × units_in_listing.
@@ -283,10 +305,11 @@ async function cheapestCostForTarget(
         const perUnitStore = identity.is_bundle ? total : round2(parts[0].perUnit || 0);
         const packSize = identity.is_bundle ? identity.components.reduce((s: number, c: any) => s + c.qty, 0) : (identity.units_in_listing || 1);
         const anyLine = parts.some((p) => p.linePrice);
-        const needsReview = lowConf ? 1 : 0;
+        const anyGoogle = parts.some((p) => p.google);
+        const needsReview = (lowConf || anyGoogle) ? 1 : 0;
         const noteParts = (identity.is_bundle
           ? `bundle: ${parts.map((p) => `${p.qty}×$${(p.perUnit || 0).toFixed(2)}`).join(" + ")}`
-          : `${parts[0].retailer} $${(parts[0].perUnit || 0).toFixed(2)}/u ×${identity.units_in_listing}`) + (anyLine ? " [line-price est]" : "");
+          : `${parts[0].retailer} $${(parts[0].perUnit || 0).toFixed(2)}/u ×${identity.units_in_listing}`) + (anyGoogle ? " [google est]" : "") + (anyLine ? " [line-price est]" : "");
         await db.execute({
           sql: `INSERT INTO "SkuCost"
             (id, sku, effectiveDate, productCost, totalCost, costPerUnit, packSize, includesPackaging,
@@ -302,7 +325,7 @@ async function cheapestCostForTarget(
           ],
         });
         costed++; if (needsReview) review++;
-        console.log(`  → COGS $${total.toFixed(2)} (listing)${identity.is_bundle ? ` = ${parts.length} components summed` : ""}${anyLine ? "  [line-price est]" : ""}${needsReview ? "  [needsReview: low confidence]" : ""}`);
+        console.log(`  → COGS $${total.toFixed(2)} (listing)${identity.is_bundle ? ` = ${parts.length} components summed` : ""}${anyGoogle ? "  [google est]" : ""}${anyLine ? "  [line-price est]" : ""}${needsReview ? "  [needsReview]" : ""}`);
       } else {
         noPrice++;
         console.log(`  → NO clean COGS (some target lacked a 1P price) — flagged for review`);

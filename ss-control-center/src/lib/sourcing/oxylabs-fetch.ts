@@ -121,6 +121,45 @@ export async function oxylabsWalmartSearch(
   return { creditsRemaining: null, offers, trialExhausted: false };
 }
 
+// ── Google Shopping via Oxylabs STRUCTURED source ────────────────────────────
+// The UNIVERSAL price fallback: when a product isn't cleanly first-party at
+// Walmart/Target/Publix, Google Shopping almost always has it. Returns market
+// offers (organic results) with a real numeric price + merchant name. These are
+// used as an ESTIMATE (tagged google-est downstream), never as a claimed 1P shelf
+// price — but they guarantee EVERY SKU gets some cost. No iMac / browser needed.
+export async function oxylabsGoogleShoppingSearch(
+  query: string,
+): Promise<{ offers: RetailOffer[] }> {
+  if (!oxylabsEnabled()) return { offers: [] };
+  const result = await oxylabsQuery({ source: "google_shopping_search", query, parse: true });
+  const organic = result?.content?.results?.organic;
+  const items = Array.isArray(organic) ? organic : [];
+  const offers: RetailOffer[] = [];
+  for (const it of items as any[]) {
+    const title: string = it?.title || "";
+    const price = typeof it?.price === "number" ? it.price : null;
+    if (!title || price == null || price <= 0) continue;
+    offers.push({
+      retailer: "google",
+      retailerProductId: String(it.product_id || it.url || title),
+      price,
+      currency: it.currency || "USD",
+      inStock: true,
+      productUrl: typeof it.url === "string" ? it.url : null,
+      title,
+      description: null,
+      keyFeatures: [],
+      // Google thumbnails come back as base64 data-URIs (not URLs) → skip for content.
+      imageUrls: typeof it.thumbnail === "string" && it.thumbnail.startsWith("http") ? [it.thumbnail] : [],
+      packSizeSeen: extractPackSize(title),
+      isMarketplaceItem: null,
+      sellerName: it.merchant?.name ?? null,
+      sourceApi: "oxylabs-google",
+    } as RetailOffer);
+  }
+  return { offers };
+}
+
 // Search one Oxylabs retailer for a query. Same return contract as the other
 // fetchers (creditsRemaining is N/A for Oxylabs → null).
 export async function oxylabsSearch(
