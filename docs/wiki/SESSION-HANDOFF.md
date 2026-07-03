@@ -4,7 +4,9 @@
 > SESSION-HANDOFF»*. Здесь — что мы делали, где остановились, и план. Обновляется
 > в конце каждой сессии.
 >
-> **Последнее обновление:** 2026-07-02 утро (Claude Code, Opus 4.8) — **✅ Bundle Factory (P0–P3) запушен, `origin/main` синхронна (HEAD `615466f`).** Владелец продолжит на работе. Всё ночное (цена/картинки/доставка/автономность/масс-движок/Walmart-канал) — на проде, tsc/тесты 20/20/`next build` чисто. **Верх стека для продолжения → блок «🆕 СЕССИЯ 2026-07-01/02» ниже, список «⚠️ NEXT» (п.1 репрайс 3 живых ASIN ждёт OK; п.2 GUID шаблонов M/L/XL; п.4 полный Walmart-мультипак; п.5 UI).** Ничего живого не менял без разрешения.
+> **Последнее обновление:** 2026-07-03 (Claude Code, Opus 4.8) — **✅ «под ключ» день: репрайс 3 живых ASIN ПРИМЕНЁН, Walmart create-path, Uncrustables 2-й режим картинки, guards.** tsc чист · тесты **48/48** · `next build` EXIT 0. **СДЕЛАНО:** (1) **репрайс 3 живых Uncrustables** новым движком: 30ct $144.84→**$86.25**, 45ct $174.54→**$128.57**, 90ct $263.64→**$250.47** (all ACCEPTED через SP-API, БД синхронизирована; ChannelMAX их НЕ трогает — нет в его файле). (2) **Walmart мультипак create-path** — brand pass-through (конец хардкоду «Salutem Vita») + quantity-trio (multipackQuantity/countPerPack/count) + packCount; dry-only уже enforced. (3) **Uncrustables image style** — 2-й режим «individual wraps» (индив. упаковки по цвету вкуса) + UI-селектор; **Walmart-канал разблокирован в UI**. (4) **guards** — Anthropic реальный balance-guard (ловит «credit balance too low») + codex worker health. **⚠️ ЖДЁТ ТЕБЯ (блокировано):** frozen shipping-template на 45/90 (нужны **M/XL GUID-ы** или подтверждение «один weight-tiered шаблон» — auto-mode заблокировал fallback-запись; скрипт `attach-frozen-template.ts` готов); тайловая quantity-confusion картинка для НОВЫХ Walmart-листингов + live-проверка Walmart-публикации (спамить не стал); P4 UI-редизайн. См. блок «🆕 СЕССИЯ 2026-07-03» ниже.
+>
+> _(Предыдущее: 2026-07-02 утро (Claude Code, Opus 4.8) — **✅ Bundle Factory (P0–P3) запушен, `origin/main` синхронна (HEAD `615466f`).** Всё ночное (цена/картинки/доставка/автономность/масс-движок/Walmart-канал) — на проде, tsc/тесты 20/20/`next build` чисто.)_
 >
 > _(Предыдущее: 2026-07-02 (MacBook-Claude) — **🔴 КОРРЕКЦИЯ: вчерашние «94% A-до-Я» на fresh-50 были ЛОЖНЫЕ.** Главные фото ставились НЕ ТОГО товара (генерик-фронт бренда на чужие SKU; 47 плиток → 30 уникальных, есть байт-в-байт дубли), и это уже ОТПРАВЛЕНО в Walmart. Владелец заметил. Движок **исправлен, теперь fail-closed** (identity-гейт `frontMatchesListing`); источник Walmart переведён с мёртвого BlueCart на **Oxylabs** (прямой walmart.com, структурно, 5-7с, 1P). Пере-фикс fresh-50: **30/47** (проверено identity). **Заливка исправленных в Walmart — СТАДИРОВАНА, НЕ запущена** (safety-гейт заблокировал авто-enqueue + нужен QC владельца). **Полный прогон 1403/1857 — ЗАБЛОКИРОВАН.** Коммиты `82e3c12`,`984723e`,`c95a82f`,`b6a5f14`. См. секцию «🆕 СЕССИЯ 2026-07-02» ниже.)_
 > _(Предыдущее: 2026-07-01 (день, MacBook-Claude) — «мультипаки доведены до дела» + «fresh-50 94% A-до-Я» — но грейдинг считал «есть фото», а не «ПРАВИЛЬНОЕ фото»; фактически фото были битые, см. коррекцию 2026-07-02.)_
@@ -19,6 +21,27 @@
 > _(Предыдущее: 2026-06-30 hero-картинка = реальная упаковка донора + доставка по кулеру, `363e3dd` → v2.4.)_
 > _(Предыдущее: `ece5099` калькулятор цены + превью атрибутов/фото → v2.3; `6ea7e24` own-brand → v2.2.)_
 > _(Предыдущее: 2026-06-24 — Walmart Compliance/T&S removals read-инструмент `f5c9019`; 2026-06-21 — Financial Plan `/finance` + авто-захват чеков `33e7d23`; блоки ниже.)_
+
+---
+
+## 🆕 СЕССИЯ 2026-07-03 (Claude Code, Opus 4.8) — Bundle Factory «под ключ»: репрайс живых + Walmart + 2-й режим картинки + guards
+
+**Контекст:** владелец сел «плотно закрыть топик под ключ». Дал OK на репрайс 3 живых ASIN и обещал GUID-ы M/L/XL. Порядок отдал мне. Всё ниже — **tsc чист, тесты 48/48, `next build` EXIT 0, запушено.**
+
+**СДЕЛАНО (коммиты):**
+- **Репрайс 3 живых Uncrustables (`reprice-bf-uncrustables.ts`)** — пересчитал `computeBundlePrice` (markup 2.3, shipping-out) и PATCH цены через SP-API. **Применено live:** 30ct (`AZ-ASMY-VEQ2`) $144.84→**$86.25**, 45ct (`UA-ASAO-RE7Q`) $174.54→**$128.57**, 90ct (`VC-ASV1-378P`) $263.64→**$250.47** — all ACCEPTED, `ChannelSKU.price_cents` синхронизирован. **ChannelMAX их НЕ реприсит** (нет в его файле → нет Min → откат невозможен). Проверено: репрайс прибылен ДАЖЕ при free-shipping (~17% маржа), с frozen-шаблоном ~34%.
+- **Walmart мультипак create-path** — `walmart-publish.ts`: конец хардкоду brand «Salutem Vita» (own-brand мультипаки идут под настоящим брендом) + **quantity-trio** (`multipackQuantity`/`countPerPack`/`count` при packCount≥2, по проверенной конвенции `walmart/multipack/attributes.ts`); `distribution-pipeline.ts` селектит `pack_count` и прокидывает brand+packCount в `submitToWalmart` (как уже делает Amazon). **dry-only уже enforced** (frozen/refrigerated SKUs для Walmart пропускаются, `distribution-pipeline.ts:275`). Фрейминг по `kb-content/walmart/multipack-policy`: single-brand→мультипак, Salutem Vita→Food Gift Baskets (оба верны как есть). +5 payload-тестов.
+- **Uncrustables image style** — `image-pipeline.ts buildImagePrompt`: параметр `uncrustables_image_mode` (`retail_boxes` дефолт | **`individual_wraps`** = индив. упаковки по цвету вкуса, count-accurate; бренд всё равно матчится с донор-фото). `runImageGeneration` читает режим из brief job'а (без миграции схемы). generate-роут принимает+хранит; **UI-селектор** «Uncrustables image style» в new/page.tsx; **Walmart-канал РАЗБЛОКИРОВАН в UI** (был `disabled: soon`). +3 теста (+ починил устаревший cold-тест после frozen-hero rewrite).
+- **Guards** — `settings/integrations/route.ts`: `probeAnthropic` теперь шлёт 1-токенный Haiku-message и ловит **«credit balance is too low» 400** (бесплатный `/v1/models` этого не видел); новый `probeCodex` — health free-воркера картинок (GET на POST-only `/generate` = box+nginx живы, без запуска генерации). Проверено live: Anthropic 200 credits-available, Codex reachable.
+
+**⚠️ NEXT (для владельца / отдельная работа):**
+1. **Frozen shipping-template на 45/90** — нужны **M/XL GUID-ы** ИЛИ подтверждение «один weight-tiered Small Frozen шаблон на всё» (тогда `attach-frozen-template.ts --apply` вешает на все 3). Сейчас auto-mode заблокировал запись с S-fallback на M/XL. **30ct готов навесить сразу** (S GUID реальный). Скрипт: `scripts/attach-frozen-template.ts` (preview чист, все 3 VALID; веса НЕ трогает — существующие 118/156/268oz точнее, чем band-веса `packageWeightOz`, которые завышают доставку — **это баг P0c для новых листингов, чинить: не оверрайдить реальный вес band-весом**).
+2. **Walmart live-проверка** — реальную публикацию не гонял (не спамлю маркетплейс); первый прогон пусть владелец посмотрит. **Тайловая quantity-confusion картинка для НОВЫХ BF-Walmart листингов** — не вшита в генератор (зрелый `walmart/multipack/composite.ts` делает это для существующих SKU; либо ремедиатить пост-публикацию, либо вшить composite в image-flow). **MP_ITEM 4.7→5.0** — create-feed на 4.7; если Walmart депрекейтит — миграция.
+3. **KB-статус Walmart устарел** (`multipack-policy.md`: «API on pause» — уже работает); поправить инфо-секцию (правила-секция корректна).
+4. **P4 UI-редизайн** — нужен вкус владельца (отдельный чат).
+
+**Проверка:** tsc чист (весь проект, включая фикс implicit-any в чужом `cogs-enrich-batch.ts`), тесты **48/48** (pricing 14 + planner 6 + distribution 19 + image 9), `next build` EXIT 0.
+**ВАЖНО (без изменений):** статус LIVE листинга — только SP-API, не наша БД (лагает). 3 ASIN Uncrustables — BUYABLE, репрайс проверен через live getListing.
 
 ---
 
