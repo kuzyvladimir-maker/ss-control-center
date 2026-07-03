@@ -75,9 +75,57 @@ async function probeAnthropic(): Promise<Svc> {
   const s: Svc = { key: "anthropic", name: "Anthropic Claude", group: "AI", configured: !!process.env.ANTHROPIC_API_KEY, status: "unknown", unit: "pay-as-you-go" };
   if (!s.configured) return s;
   try {
-    const { ok, status } = await getJson("https://api.anthropic.com/v1/models?limit=1", { headers: { "x-api-key": process.env.ANTHROPIC_API_KEY!, "anthropic-version": "2023-06-01" } });
-    s.status = ok ? "ok" : "error"; if (!ok) s.detail = `HTTP ${status}`;
+    // A free /v1/models ping only proves the key is valid — it returns 200 even
+    // when the credit balance is EXHAUSTED (which silently breaks every AI
+    // feature). So we make the smallest possible real message (Haiku, 1 token,
+    // ≈$0.000005) and read the "credit balance is too low" 400 Anthropic returns
+    // BEFORE billing — the real exhaustion signal.
+    const { ok, status, j } = await getJson(
+      "https://api.anthropic.com/v1/messages",
+      {
+        method: "POST",
+        headers: {
+          "x-api-key": process.env.ANTHROPIC_API_KEY!,
+          "anthropic-version": "2023-06-01",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 1,
+          messages: [{ role: "user", content: "ping" }],
+        }),
+      },
+    );
+    if (ok) {
+      s.status = "ok"; s.detail = "credits available";
+    } else {
+      const msg = String(j?.error?.message ?? "").toLowerCase();
+      if (status === 400 && /credit balance|too low|insufficient/.test(msg)) {
+        s.status = "error"; s.balanceUsd = 0;
+        s.detail = "Credit balance too low — top up or AI features stop working";
+      } else if (status === 401) {
+        s.status = "error"; s.detail = "invalid API key";
+      } else {
+        s.status = "error"; s.detail = (j?.error?.message ?? `HTTP ${status}`).slice(0, 120);
+      }
+    }
   } catch (e: any) { s.status = "error"; s.detail = e?.message?.slice(0, 100); }
+  return s;
+}
+
+async function probeCodex(): Promise<Svc> {
+  const url = process.env.CODEX_IMAGE_WORKER_URL;
+  const s: Svc = { key: "codex", name: "Codex image worker (free image gen)", group: "AI", configured: !!(url && process.env.CODEX_IMAGE_WORKER_TOKEN), status: "unknown", unit: "subscription" };
+  if (!s.configured || !url) { if (s.configured === false) s.detail = "not configured"; return s; }
+  try {
+    // The /generate endpoint is POST-only; a GET just proves the OpenClaw box +
+    // nginx ingress are up (any HTTP response = reachable) WITHOUT triggering a
+    // ~4-minute, ChatGPT-quota-consuming image generation.
+    const { status } = await getJson(url, { method: "GET" }, 6000);
+    s.status = "ok"; s.detail = `worker reachable (HTTP ${status})`;
+  } catch (e: any) {
+    s.status = "error"; s.detail = (e?.message ?? "unreachable").slice(0, 100);
+  }
   return s;
 }
 
@@ -102,8 +150,8 @@ function infra(): Svc[] {
 
 export async function GET(request: NextRequest) {
   const refresh = new URL(request.url).searchParams.get("refresh");
-  const [bc, uw, an, oa] = await Promise.all([probeBluecart(), probeUnwrangle(refresh === "unwrangle" || refresh === "all"), probeAnthropic(), probeOpenai()]);
-  const services = [bc, uw, an, oa, ...infra()];
+  const [bc, uw, an, oa, cx] = await Promise.all([probeBluecart(), probeUnwrangle(refresh === "unwrangle" || refresh === "all"), probeAnthropic(), probeOpenai(), probeCodex()]);
+  const services = [bc, uw, an, oa, cx, ...infra()];
   const budgetRow = await prisma.setting.findUnique({ where: { key: "paid_monthly_budget_usd" } }).catch(() => null);
   const monthlyBudgetUsd = budgetRow?.value ? Number(budgetRow.value) : 100;
   return NextResponse.json({ services, monthlyBudgetUsd, checkedAt: new Date().toISOString() });
