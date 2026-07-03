@@ -26,6 +26,9 @@ const HOUSE_BRANDS = ["Salutem Vita", "Starfit"] as const;
 const TEXT_MODELS = ["sonnet", "opus"] as const;
 const PHOTO_STRATEGIES = ["reuse-donor", "generate"] as const;
 const IMAGE_QUALITIES = ["cheaper", "best"] as const;
+// Own-brand (Uncrustables) main-image style: count-accurate retail cartons, or
+// the individual flavor-coloured sandwich wrappers. Vladimir wants both.
+const UNCRUSTABLES_IMAGE_MODES = ["retail_boxes", "individual_wraps"] as const;
 
 export const POST = withErrorHandler("studio-generate", async (request: Request) => {
   const body = (await readJson<Record<string, unknown>>(request)) ?? {};
@@ -45,6 +48,9 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
   const textModel = isOneOf(TEXT_MODELS, body.text_model) ? body.text_model : "opus";
   const photoStrategy = isOneOf(PHOTO_STRATEGIES, body.photo_strategy) ? body.photo_strategy : "reuse-donor";
   const imageQuality = isOneOf(IMAGE_QUALITIES, body.image_quality) ? body.image_quality : "cheaper";
+  const uncrustablesImageMode = isOneOf(UNCRUSTABLES_IMAGE_MODES, body.uncrustables_image_mode)
+    ? body.uncrustables_image_mode
+    : "retail_boxes";
 
   const rawMargin = Number(body.target_margin_pct);
   const targetMarginPct = Number.isFinite(rawMargin) && rawMargin > 0 ? rawMargin : null;
@@ -58,6 +64,7 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
     text_model: textModel,
     photo_strategy: photoStrategy,
     image_quality: imageQuality,
+    uncrustables_image_mode: uncrustablesImageMode,
     target_margin_pct: targetMarginPct,
   };
 

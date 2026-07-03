@@ -131,11 +131,17 @@ export function frozenAnchorUrls(): string[] {
 // pouches (the product we actually sell is the Salutem gift set). The donor
 // product photo + the approved hero anchor are passed as visual references so
 // the packaging is accurate and the kit matches the approved look.
+/** Own-brand (Uncrustables) main-image style. "retail_boxes" = count-accurate
+ *  real cartons (default); "individual_wraps" = the individual flavor-coloured
+ *  sandwich wrappers. Vladimir wants both, chosen per batch in the UI. */
+export type UncrustablesImageMode = "retail_boxes" | "individual_wraps";
+
 export function buildImagePrompt(args: {
   brand: string;
   variant: Variant;
   composition_type: string;
   category: string;
+  uncrustables_image_mode?: UncrustablesImageMode;
 }): string {
   const products = args.variant.composition
     .map((c) => `${c.qty}× ${c.product_name}`)
@@ -148,10 +154,19 @@ export function buildImagePrompt(args: {
     const ownBrand =
       isOwnBrandPassthrough(args.brand) ||
       args.variant.composition.some((c) => isOwnBrandPassthrough(c.brand));
+    // Own-brand image style: count-accurate retail BOXES (default) or the
+    // individual flavor-coloured WRAPPERS. Only applies to own-brand; a real
+    // gift set always shows the donor cartons.
+    const wraps = ownBrand && args.uncrustables_image_mode === "individual_wraps";
     const totalUnits = args.variant.composition.reduce((s, c) => s + c.qty, 0);
-    const boxLine = ownBrand
-      ? `Place real retail product boxes inside the cooler whose piece count EXACTLY matches ${totalUnits} total pieces — use realistic retail pack sizes (boxes of 4, 10 or 15): ${describeRetailBoxes(totalUnits)}. The number of boxes must visibly reflect this count, never a generic "a few boxes".`
-      : `Place several of the real product boxes inside the cooler, arranged as a gift set.`;
+    const boxLine = wraps
+      ? `Fill the cooler with individually-wrapped sandwiches — each a round, crimped-sealed sandwich in its OWN printed flavor wrapper (no retail cartons in this style). Show a count-accurate quantity reflecting ${totalUnits} sandwiches: neat stacked rows, and for large counts a dense tidy arrangement that clearly totals about ${totalUnits}. The WRAPPER COLOUR signals the flavor (e.g. a blue wrapper for peanut butter & grape, red for peanut butter & strawberry).`
+      : ownBrand
+        ? `Place real retail product boxes inside the cooler whose piece count EXACTLY matches ${totalUnits} total pieces — use realistic retail pack sizes (boxes of 4, 10 or 15): ${describeRetailBoxes(totalUnits)}. The number of boxes must visibly reflect this count, never a generic "a few boxes".`
+        : `Place several of the real product boxes inside the cooler, arranged as a gift set.`;
+    const productRefLine = wraps
+      ? `The SECOND reference image is the DONOR PRODUCT PHOTO of ${products} — match its BRAND identity exactly (same brand name, logo wordmark, flavor and colour language) but render the product as the individual flavor-coloured wrappers described above, NOT as the retail carton. Do NOT rebrand or invent a look-alike brand.`
+      : `The SECOND reference image is the DONOR PRODUCT PHOTO — the real retail box of ${products}. Reproduce that packaging EXACTLY as shown: same brand name, same logo, same box art, same colors and text. Do NOT rebrand, redesign, simplify, or substitute a look-alike package. The boxes inside the cooler must be visibly the same product as the second reference.`;
     const coolerLine = ownBrand
       ? `The cooler is a white EPS styrofoam insulated shipping cooler carrying the SALUTEM SOLUTIONS logo (realistic 3/4 front angle, lid leaning behind the cooler).`
       : `The cooler is a white EPS styrofoam insulated shipping cooler carrying the SALUTEM SOLUTIONS logo AND the printed words "GIFT SET" (realistic 3/4 front angle, lid leaning behind the cooler).`;
@@ -160,7 +175,7 @@ export function buildImagePrompt(args: {
       ownBrand
         ? `This is a frozen multipack assembled and shipped by SALUTEM SOLUTIONS.`
         : `This is a frozen gift set assembled and shipped by SALUTEM SOLUTIONS.`,
-      `The SECOND reference image is the DONOR PRODUCT PHOTO — the real retail box of ${products}. Reproduce that packaging EXACTLY as shown: same brand name, same logo, same box art, same colors and text. Do NOT rebrand, redesign, simplify, or substitute a look-alike package. The boxes inside the cooler must be visibly the same product as the second reference.`,
+      productRefLine,
       `The FIRST reference image is the KIT ANCHOR — copy from it the styrofoam cooler look, the gel-pack style, and the overall layout only (NOT the product).`,
       coolerLine,
       boxLine,
@@ -297,11 +312,30 @@ export async function runImageGeneration(
     selected,
   );
 
+  // Resolve the batch's Uncrustables image style (retail boxes vs individual
+  // flavor-coloured wraps) from the parent GenerationJob brief. Default: boxes.
+  let uncrustablesImageMode: UncrustablesImageMode = "retail_boxes";
+  if (draft.generation_job_id) {
+    const job = await prisma.generationJob.findUnique({
+      where: { id: draft.generation_job_id },
+      select: { brief: true },
+    });
+    try {
+      const brief = JSON.parse(job?.brief ?? "{}") as { uncrustables_image_mode?: string };
+      if (brief?.uncrustables_image_mode === "individual_wraps") {
+        uncrustablesImageMode = "individual_wraps";
+      }
+    } catch {
+      /* keep default */
+    }
+  }
+
   const basePrompt = buildImagePrompt({
     brand: draft.brand,
     variant: selected,
     composition_type: draft.composition_type,
     category: draft.category,
+    uncrustables_image_mode: uncrustablesImageMode,
   });
 
   // Phase 3 references passed to the image worker — ORDER MATTERS. The worker

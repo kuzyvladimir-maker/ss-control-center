@@ -44,11 +44,55 @@ test("buildImagePrompt (cold) — frozen hero: real product + Salutem cooler + g
   // Salutem branding goes ONLY on cooler/gel packs, never the third-party product.
   assert.match(out, /ONLY to the cooler and the gel packs/i);
   assert.match(out, /NEVER onto the third-party product/i);
-  // Real packaging, NOT the old "generic unbranded" approach.
-  assert.match(out, /reproduce its actual retail packaging/i);
+  // Real packaging reproduced exactly, NOT the old "generic unbranded" approach.
+  assert.match(out, /reproduce that packaging exactly/i);
   assert.ok(!/generic, unbranded/i.test(out), "must not ask for generic unbranded packaging");
   // No loose ice.
   assert.match(out, /NO loose ice/i);
+});
+
+test("buildImagePrompt (own-brand) — default is count-accurate RETAIL BOXES", () => {
+  const out = buildImagePrompt({
+    brand: "Smucker's",
+    variant: SAMPLE_VARIANT,
+    composition_type: "MULTI_FLAVOR",
+    category: "FROZEN_GROCERY",
+  });
+  assert.match(out, /real retail product boxes/i);
+  assert.match(out, /boxes of 4, 10 or 15/i);
+  assert.ok(!/individually-wrapped sandwiches/i.test(out));
+});
+
+test("buildImagePrompt (own-brand) — individual_wraps mode shows flavor-coloured wrappers", () => {
+  const out = buildImagePrompt({
+    brand: "Smucker's",
+    variant: SAMPLE_VARIANT,
+    composition_type: "MULTI_FLAVOR",
+    category: "FROZEN_GROCERY",
+    uncrustables_image_mode: "individual_wraps",
+  });
+  assert.match(out, /individually-wrapped sandwiches/i);
+  assert.match(out, /WRAPPER COLOUR signals the flavor/i);
+  // Not the retail-carton language in this mode.
+  assert.ok(!/real retail product boxes/i.test(out));
+  // Still branded correctly (match the donor brand, render as wrappers).
+  assert.match(out, /match its BRAND identity exactly/i);
+});
+
+test("buildImagePrompt — wraps mode is IGNORED for a real gift set (non-own-brand)", () => {
+  const out = buildImagePrompt({
+    brand: "Salutem Vita",
+    variant: {
+      ...SAMPLE_VARIANT,
+      composition: [{ qty: 3, product_name: "Ghirardelli Squares", brand: "Ghirardelli" }],
+    } as unknown as Parameters<typeof buildImagePrompt>[0]["variant"],
+    composition_type: "MULTI_FLAVOR",
+    category: "FROZEN_GROCERY",
+    uncrustables_image_mode: "individual_wraps",
+  });
+  // Non-own-brand → always the gift-set carton framing, never wrappers.
+  assert.ok(!/individually-wrapped sandwiches/i.test(out));
+  assert.match(out, /arranged as a gift set/i);
 });
 
 test("buildImagePrompt (shelf-stable) — clean product on white, no cooler", () => {

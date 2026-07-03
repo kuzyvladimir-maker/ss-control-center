@@ -24,6 +24,7 @@ type HouseBrand = "Salutem Vita" | "Starfit";
 type TextModel = "sonnet" | "opus";
 type PhotoStrategy = "reuse-donor" | "generate";
 type ImageQuality = "cheaper" | "best";
+type UncrustablesImageMode = "retail_boxes" | "individual_wraps";
 
 const CHANNELS: Array<{ value: string; label: string; disabled?: boolean }> = [
   { value: "AMAZON_SALUTEM", label: "Amazon · Salutem Solutions" },
@@ -31,7 +32,7 @@ const CHANNELS: Array<{ value: string; label: string; disabled?: boolean }> = [
   { value: "AMAZON_AMZCOM", label: "Amazon · AMZ Commerce" },
   { value: "AMAZON_SIRIUS", label: "Amazon · Sirius International" },
   { value: "AMAZON_RETAILER", label: "Amazon · Retailer Distributor" },
-  { value: "WALMART", label: "Walmart — soon", disabled: true },
+  { value: "WALMART", label: "Walmart (dry multipacks)" },
 ];
 
 const EXAMPLES = [
@@ -51,6 +52,8 @@ export default function StudioStartPage() {
   const [textModel, setTextModel] = useState<TextModel>("opus");
   const [photoStrategy, setPhotoStrategy] = useState<PhotoStrategy>("reuse-donor");
   const [imageQuality, setImageQuality] = useState<ImageQuality>("cheaper");
+  const [uncrustablesImageMode, setUncrustablesImageMode] =
+    useState<UncrustablesImageMode>("retail_boxes");
   const [targetMargin, setTargetMargin] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
@@ -73,6 +76,7 @@ export default function StudioStartPage() {
           text_model: textModel,
           photo_strategy: photoStrategy,
           image_quality: imageQuality,
+          uncrustables_image_mode: uncrustablesImageMode,
           target_margin_pct: targetMargin ? Number(targetMargin) : null,
         }),
       });
@@ -212,6 +216,20 @@ export default function StudioStartPage() {
                   />
                 </Row>
               )}
+
+              <Row
+                label="Uncrustables image style"
+                hint="Only affects Uncrustables (own-brand) sets: show real retail cartons, or the individual flavor-coloured sandwich wrappers."
+              >
+                <Segmented
+                  value={uncrustablesImageMode}
+                  onChange={setUncrustablesImageMode}
+                  options={[
+                    { value: "retail_boxes", label: "Retail boxes" },
+                    { value: "individual_wraps", label: "Individual wraps" },
+                  ]}
+                />
+              </Row>
 
               <Row label="Target margin" hint="Floor each listing must clear vs cost. Blank = global default. Price still comes from the economics module.">
                 <div className="flex items-center gap-2">
