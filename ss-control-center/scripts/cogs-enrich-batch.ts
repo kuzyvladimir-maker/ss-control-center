@@ -82,8 +82,15 @@ function parseSizeNum(size?: string | null): number | null {
 
 // --- SKU enumeration --------------------------------------------------------
 async function walmartSkus(db: Client, n: number): Promise<string[]> {
+  // Resumable sweep: prefer PUBLISHED SKUs NOT yet costed by this engine (LEFT JOIN
+  // SkuCost source='retail:batch' IS NULL). Each run advances through the catalog; a
+  // re-run continues where the last left off, and flagged/no-price SKUs (no SkuCost)
+  // get retried — which recovers the flaky niche items on a later pass.
   const r = await db.execute({
-    sql: `SELECT sku FROM WalmartCatalogItem WHERE publishedStatus='PUBLISHED' ORDER BY syncedAt DESC LIMIT ?`,
+    sql: `SELECT w.sku FROM WalmartCatalogItem w
+          LEFT JOIN "SkuCost" c ON c.sku = w.sku AND c.source='retail:batch'
+          WHERE w.publishedStatus='PUBLISHED' AND c.sku IS NULL
+          ORDER BY w.syncedAt DESC LIMIT ?`,
     args: [n],
   });
   return r.rows.map((x: any) => x.sku as string).filter(Boolean);
@@ -189,7 +196,7 @@ async function cheapestCostForTarget(
 
       // Targets: bundle → each component; else → single base unit.
       const targets = identity.is_bundle && identity.components.length
-        ? identity.components.map((c) => ({
+        ? identity.components.map((c: any) => ({
             query: [c.product, c.flavor, c.size].filter(Boolean).join(" "),
             brandTok: firstToken(c.product),
             tokens: distinctiveTokens(c.product, c.flavor),
@@ -238,7 +245,7 @@ async function cheapestCostForTarget(
         const round2 = (n: number) => Math.round(n * 100) / 100;
         const total = round2(listingCost);
         const perUnitStore = identity.is_bundle ? total : round2(parts[0].perUnit || 0);
-        const packSize = identity.is_bundle ? identity.components.reduce((s, c) => s + c.qty, 0) : (identity.units_in_listing || 1);
+        const packSize = identity.is_bundle ? identity.components.reduce((s: number, c: any) => s + c.qty, 0) : (identity.units_in_listing || 1);
         const needsReview = lowConf ? 1 : 0;
         const noteParts = identity.is_bundle
           ? `bundle: ${parts.map((p) => `${p.qty}×$${(p.perUnit || 0).toFixed(2)}`).join(" + ")}`
