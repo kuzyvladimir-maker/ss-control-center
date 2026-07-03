@@ -22,6 +22,14 @@ import type { ChannelSKU } from "@/generated/prisma/client";
 export interface WalmartPublishInput {
   sku: ChannelSKU;
   storeIndex: number;
+  /** Real brand of the bundle (from MasterBundle). Walmart multipacks list
+   *  under the genuine product brand for own-brand passthrough, else the house
+   *  brand. Falls back to "Salutem Vita" when not supplied. */
+  brand?: string | null;
+  /** Total unit count in the multipack. Drives the quantity trio
+   *  (multipackQuantity / countPerPack / count) — the #1 lever against Walmart
+   *  quantity-confusion returns. */
+  packCount?: number | null;
   /** Skip the real POST — used by the dryRun=true path. */
   dryRun?: boolean;
 }
@@ -46,6 +54,7 @@ const SPEC_VERSION = "4.7";
  */
 export function buildWalmartPayload(
   sku: ChannelSKU,
+  opts: { brand?: string | null; packCount?: number | null } = {},
 ): Record<string, unknown> {
   let bullets: string[] = [];
   try {
@@ -76,11 +85,15 @@ export function buildWalmartPayload(
     // Caller decides whether to abort; we just build the payload.
   }
 
+  // Brand: the real bundle brand (own-brand passthrough lists under the genuine
+  // product brand; house-brand sets under "Salutem Vita"). Never hardcode.
+  const brand = (opts.brand ?? "").trim() || "Salutem Vita";
+
   const item: Record<string, unknown> = {
     sku: sku.sku,
     productIdentifiers,
     productName: sku.title,
-    brand: "Salutem Vita", // ChannelSKU doesn't carry brand directly; pulled from MasterBundle in orchestrator if available
+    brand,
     shortDescription: sku.description,
     keyFeatures: bullets, // Walmart 'keyFeatures' aka bullets
     mainImageUrl,
@@ -92,6 +105,18 @@ export function buildWalmartPayload(
     countryOfOrigin: sku.country_of_origin ?? "US",
     productType: sku.item_type ?? "Gift Baskets",
   };
+
+  // Quantity trio — the multipack signal Walmart indexes and shows on the PDP,
+  // and the #1 lever against quantity-confusion returns (a multipack of N
+  // individually-saleable units → Multipack Quantity = N, Count Per Pack = 1,
+  // Total Count = N). Matches the proven multipack remediation convention
+  // (src/lib/walmart/multipack/attributes.ts). Only emitted for real multipacks.
+  const packCount = opts.packCount;
+  if (typeof packCount === "number" && Number.isFinite(packCount) && packCount >= 2) {
+    item.multipackQuantity = Math.round(packCount);
+    item.countPerPack = 1;
+    item.count = Math.round(packCount);
+  }
 
   if (
     sku.package_length_in != null &&
@@ -118,7 +143,10 @@ export function buildWalmartPayload(
 export async function submitToWalmart(
   input: WalmartPublishInput,
 ): Promise<WalmartPublishResult> {
-  const payload = buildWalmartPayload(input.sku);
+  const payload = buildWalmartPayload(input.sku, {
+    brand: input.brand,
+    packCount: input.packCount,
+  });
 
   if (input.dryRun) {
     return {

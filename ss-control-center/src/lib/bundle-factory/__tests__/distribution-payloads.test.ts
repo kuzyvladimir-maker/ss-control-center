@@ -161,6 +161,37 @@ test("buildWalmartPayload — productType defaults to 'Gift Baskets' when item_t
   assert.equal(item.productType, "Gift Baskets");
 });
 
+test("buildWalmartPayload — brand defaults to 'Salutem Vita' when not supplied", () => {
+  const payload = buildWalmartPayload(mkSku());
+  const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
+  assert.equal(item.brand, "Salutem Vita");
+});
+
+test("buildWalmartPayload — brand passes through (own-brand multipack)", () => {
+  const payload = buildWalmartPayload(mkSku(), { brand: "Uncrustables" });
+  const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
+  assert.equal(item.brand, "Uncrustables");
+});
+
+test("buildWalmartPayload — quantity trio emitted for a real multipack (packCount≥2)", () => {
+  const payload = buildWalmartPayload(mkSku(), { packCount: 30 });
+  const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
+  assert.equal(item.multipackQuantity, 30);
+  assert.equal(item.countPerPack, 1);
+  assert.equal(item.count, 30);
+});
+
+test("buildWalmartPayload — no quantity trio for a single unit / missing count", () => {
+  const single = buildWalmartPayload(mkSku(), { packCount: 1 });
+  const s = (single.MPItem as Array<Record<string, unknown>>)[0];
+  assert.equal(s.multipackQuantity, undefined);
+  assert.equal(s.count, undefined);
+
+  const none = buildWalmartPayload(mkSku());
+  const n = (none.MPItem as Array<Record<string, unknown>>)[0];
+  assert.equal(n.multipackQuantity, undefined);
+});
+
 // ── channelTarget — skip set + marketplace mapping ────────────────────
 
 test("channelTarget — AMAZON_SIRIUS reports skipReason (no SP-API app)", () => {

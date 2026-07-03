@@ -213,7 +213,7 @@ export async function runDistribution(
   // skip Walmart SKUs below when it's cold.
   const masterBundle = await prisma.masterBundle.findUnique({
     where: { id: draft.master_bundle_id },
-    select: { category: true, brand: true },
+    select: { category: true, brand: true, pack_count: true },
   });
   const isColdBundle = /FROZEN|REFRIGERATED/i.test(masterBundle?.category ?? "");
 
@@ -384,6 +384,8 @@ export async function runDistribution(
         const r: WalmartPublishResult = await submitToWalmart({
           sku,
           storeIndex: target.storeIndex,
+          brand: masterBundle?.brand,
+          packCount: masterBundle?.pack_count,
           dryRun: !apply,
         });
         outcome = {
