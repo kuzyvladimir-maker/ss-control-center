@@ -14,7 +14,7 @@
 
 import sharp from "sharp";
 
-const CANVAS = 2000; // Walmart recommends 2000x2000, 1:1, white RGB 255,255,255
+const CANVAS = 2200; // Walmart RECOMMENDED main-image size (2200x2200, 1:1, white RGB 255) — bigger canvas = bigger per-unit detail in a multipack grid (owner: maximize). Min-for-zoom is 1500.
 const WHITE = { r: 255, g: 255, b: 255, alpha: 1 };
 
 /**
