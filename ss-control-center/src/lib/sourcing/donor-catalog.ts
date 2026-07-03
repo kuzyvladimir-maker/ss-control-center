@@ -495,7 +495,7 @@ export interface EnrichTargetResult {
 // run only when `unwrangleRetailers` is passed (i.e. when that sub is paid).
 export async function enrichTarget(
   db: Client,
-  opts: { target: string; brand?: string | null; zip?: string | null; unwrangleRetailers?: ("walmart" | "target" | "samsclub" | "costco")[]; oxylabsRetailers?: OxylabsRetailer[]; openClawRetailers?: OpenClawRetailer[] },
+  opts: { target: string; brand?: string | null; zip?: string | null; unwrangleRetailers?: ("walmart" | "target" | "samsclub" | "costco")[]; oxylabsRetailers?: OxylabsRetailer[]; openClawRetailers?: OpenClawRetailer[]; allowNonGrocery?: boolean },
 ): Promise<EnrichTargetResult> {
   const cp: CanonicalProduct = { brand: (opts.brand || opts.target.split(/\s+/).slice(0, 2).join(" ")) || undefined };
   const now = new Date().toISOString();
@@ -571,11 +571,16 @@ export async function enrichTarget(
     // IS a valid purchase unit (a 12-count box, a #10 can) and a real sourcing lever,
     // so we keep it even when packSizeSeen > 1.
     if (!o.isBaseUnit && !CLUB_RETAILERS.has(o.retailer)) { rejected++; continue; }
-    if (looksNonGrocery(o.title)) { rejected++; continue; }
+    if (!opts.allowNonGrocery && looksNonGrocery(o.title)) { rejected++; continue; }
     candidates.push(o);
   }
-  const verdicts = await classifyGroceryTitles(candidates.map((o) => o.title || ""));
-  const survivors = candidates.filter((_, i) => verdicts[i]);
+  // Non-grocery allowed (household/cleaning resale niche) → skip the grocery judge; the
+  // tight brand+size cost match downstream keeps unrelated junk out anyway.
+  let survivors = candidates;
+  if (!opts.allowNonGrocery) {
+    const verdicts = await classifyGroceryTitles(candidates.map((o) => o.title || ""));
+    survivors = candidates.filter((_, i) => verdicts[i]);
+  }
   rejected += candidates.length - survivors.length;
 
   const brandHint = normalizeBrandCase(cleanBrand(cp.brand));

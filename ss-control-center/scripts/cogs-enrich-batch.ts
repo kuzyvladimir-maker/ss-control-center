@@ -135,12 +135,14 @@ async function amazonSkus(n: number): Promise<string[]> {
 // Matched on brand + distinctive line/flavor tokens (+ size preference), among offers
 // sourced THIS run. Tight matching is what stops "Green Giant Sweet Peas" being priced
 // off "Happy Harvest Green Beans", or a 17oz box off a 3oz box.
+type CostHit = { perUnit: number; retailer: string; title: string; size: string; linePrice: boolean };
 async function cheapestCostForTarget(
   db: Client,
   m: { brandTok: string; tokens: string[]; sizeAmount: number | null },
   sinceIso: string,
-): Promise<{ perUnit: number; retailer: string; title: string; size: string } | null> {
+): Promise<CostHit | null> {
   if (!m.brandTok && !m.tokens.length) return null;
+  // 1) EXACT: brand + all distinctive line/flavor tokens (+ size preference).
   const like: string[] = [];
   const args: any[] = [sinceIso];
   if (m.brandTok) { like.push("lower(dp.title) LIKE ?"); args.push(`%${m.brandTok}%`); }
@@ -148,16 +150,31 @@ async function cheapestCostForTarget(
   const whereTok = like.length ? " AND " + like.join(" AND ") : "";
   const sizeSel = m.sizeAmount != null ? "CASE WHEN dp.unitAmount = ? THEN 0 ELSE 1 END" : "NULL";
   if (m.sizeAmount != null) args.push(m.sizeAmount);
-  const r = await db.execute({
+  const exact: any = (await db.execute({
     sql: `SELECT dp.title AS title, o.retailer AS retailer, o.pricePerUnit AS perUnit, dp.unitAmount AS ua, dp.unitMeasure AS um
           FROM "DonorOffer" o JOIN "DonorProduct" dp ON dp.id = o.donorProductId
           WHERE o.isFirstParty=1 AND o.via='direct' AND o.pricePerUnit IS NOT NULL
             AND o.updatedAt >= ?${whereTok}
           ORDER BY ${sizeSel}, o.pricePerUnit ASC LIMIT 1`,
     args,
-  });
-  const row: any = r.rows[0];
-  return row ? { perUnit: row.perUnit as number, retailer: row.retailer as string, title: (row.title as string) || "", size: `${row.ua ?? ""}${row.um ?? ""}` } : null;
+  })).rows[0];
+  if (exact) return { perUnit: exact.perUnit, retailer: exact.retailer, title: (exact.title as string) || "", size: `${exact.ua ?? ""}${exact.um ?? ""}`, linePrice: false };
+
+  // 2) LINE-PRICE fallback: the exact flavor isn't sold 1P, but a same-brand + same-SIZE
+  // 1P sibling exists (flavors in a line are ~one price, ±cents). Requires a known size
+  // to stay honest. Solves Klass/Hormel-style variety bundles. Flagged as an estimate.
+  if (m.brandTok && m.sizeAmount != null) {
+    const sib: any = (await db.execute({
+      sql: `SELECT dp.title AS title, o.retailer AS retailer, o.pricePerUnit AS perUnit, dp.unitAmount AS ua, dp.unitMeasure AS um
+            FROM "DonorOffer" o JOIN "DonorProduct" dp ON dp.id = o.donorProductId
+            WHERE o.isFirstParty=1 AND o.via='direct' AND o.pricePerUnit IS NOT NULL
+              AND o.updatedAt >= ? AND lower(dp.title) LIKE ? AND dp.unitAmount = ?
+            ORDER BY o.pricePerUnit ASC LIMIT 1`,
+      args: [sinceIso, `%${m.brandTok}%`, m.sizeAmount],
+    })).rows[0];
+    if (sib) return { perUnit: sib.perUnit, retailer: sib.retailer, title: (sib.title as string) || "", size: `${sib.ua ?? ""}${sib.um ?? ""}`, linePrice: true };
+  }
+  return null;
 }
 
 // --- main -------------------------------------------------------------------
@@ -234,7 +251,7 @@ async function cheapestCostForTarget(
           }];
 
       const runStart = new Date().toISOString();
-      const parts: { label: string; qty: number; perUnit: number | null; retailer?: string; matched?: string }[] = [];
+      const parts: { label: string; qty: number; perUnit: number | null; retailer?: string; matched?: string; linePrice?: boolean }[] = [];
       let costable = true;
 
       await Promise.all(targets.map(async (t) => {
@@ -244,6 +261,7 @@ async function cheapestCostForTarget(
           zip: "33765",
           unwrangleRetailers: ["walmart", "target", "samsclub", "costco"],
           openClawRetailers: openclaw ? ["bjs", "publix", "aldi"] : [],
+          allowNonGrocery: true, // COGS engine costs ANY resale product (food + household)
         });
         // Light harvest of the first fresh product for immediate content; the full
         // gallery/nutrition harvest of every product is done by the reference-harvest cron.
@@ -251,8 +269,8 @@ async function cheapestCostForTarget(
 
         const cost = await cheapestCostForTarget(db, { brandTok: t.brandTok, tokens: t.tokens, sizeAmount: t.sizeAmount }, runStart);
         if (cost == null) { costable = false; parts.push({ label: t.label, qty: t.qty, perUnit: null }); }
-        else parts.push({ label: t.label, qty: t.qty, perUnit: cost.perUnit, retailer: cost.retailer, matched: cost.title });
-        console.log(`  · ${t.label}  →  ${cost ? `$${cost.perUnit.toFixed(2)}/u @ ${cost.retailer}  «${(cost.title || "").slice(0, 46)}» ${cost.size}` : "no clean 1P match"}  (hit ${res.retailersHit.join(",") || "none"}, rej ${res.rejected})`);
+        else parts.push({ label: t.label, qty: t.qty, perUnit: cost.perUnit, retailer: cost.retailer, matched: cost.title, linePrice: cost.linePrice });
+        console.log(`  · ${t.label}  →  ${cost ? `$${cost.perUnit.toFixed(2)}/u @ ${cost.retailer}${cost.linePrice ? " (line-price est)" : ""}  «${(cost.title || "").slice(0, 46)}» ${cost.size}` : "no clean 1P match"}  (hit ${res.retailersHit.join(",") || "none"}, rej ${res.rejected})`);
       }));
 
       // COGS: bundle = Σ component perUnit×qty; single = perUnit × units_in_listing.
@@ -264,10 +282,11 @@ async function cheapestCostForTarget(
         const total = round2(listingCost);
         const perUnitStore = identity.is_bundle ? total : round2(parts[0].perUnit || 0);
         const packSize = identity.is_bundle ? identity.components.reduce((s: number, c: any) => s + c.qty, 0) : (identity.units_in_listing || 1);
+        const anyLine = parts.some((p) => p.linePrice);
         const needsReview = lowConf ? 1 : 0;
-        const noteParts = identity.is_bundle
+        const noteParts = (identity.is_bundle
           ? `bundle: ${parts.map((p) => `${p.qty}×$${(p.perUnit || 0).toFixed(2)}`).join(" + ")}`
-          : `${parts[0].retailer} $${(parts[0].perUnit || 0).toFixed(2)}/u ×${identity.units_in_listing}`;
+          : `${parts[0].retailer} $${(parts[0].perUnit || 0).toFixed(2)}/u ×${identity.units_in_listing}`) + (anyLine ? " [line-price est]" : "");
         await db.execute({
           sql: `INSERT INTO "SkuCost"
             (id, sku, effectiveDate, productCost, totalCost, costPerUnit, packSize, includesPackaging,
@@ -283,7 +302,7 @@ async function cheapestCostForTarget(
           ],
         });
         costed++; if (needsReview) review++;
-        console.log(`  → COGS $${total.toFixed(2)} (listing)${identity.is_bundle ? ` = ${parts.length} components summed` : ""}${needsReview ? "  [needsReview: low confidence]" : ""}`);
+        console.log(`  → COGS $${total.toFixed(2)} (listing)${identity.is_bundle ? ` = ${parts.length} components summed` : ""}${anyLine ? "  [line-price est]" : ""}${needsReview ? "  [needsReview: low confidence]" : ""}`);
       } else {
         noPrice++;
         console.log(`  → NO clean COGS (some target lacked a 1P price) — flagged for review`);
