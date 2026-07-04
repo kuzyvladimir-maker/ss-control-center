@@ -356,7 +356,10 @@ export function unitSizeFromTitle(title: string): string {
   t = t.replace(/\(?\s*pack of \d+\s*\)?/ig, " ").replace(/\b\d+\s*-?\s*pack\b/ig, " ");
   const sizes = [...t.matchAll(/\b\d+(?:\.\d+)?\s*(?:fl\s*oz|oz|ounce|ct\b|count|lb|kg|g\b|ml|l\b)/ig)]
     .map((m) => m[0].replace(/\s+/g, " ").trim());
-  return [...new Set(sizes)].join(", ");
+  // First size token = the per-unit size. A multi-size join ("10 oz, 5 oz") would
+  // be a confusing "ONE unit =" hint in the prompt; the singleUnit check is
+  // independent of this hint anyway, so the primary size is enough.
+  return sizes[0] ?? "";
 }
 
 export interface DonorVerdict {

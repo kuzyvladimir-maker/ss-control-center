@@ -93,6 +93,7 @@
 - [Walmart Quantity Confusion Fix](walmart-quantity-confusion-fix.md) — мультипаки: детерминированный композит главного фото с сеткой товаров
 - [Multipack — исправление чужих/дублирующихся фото (2026-07-01)](2026-07-01-multipack-wrong-image-fix.md) — инцидент+фикс: донор-гейт по 2 словам + identity-blind verify ставили фото не того товара на разные SKU; identity-гейт `frontMatchesListing` (fail-closed) + строгий enrich-матч
 - [🎯 Эталон идеального листинга Walmart](walmart-ideal-listing-spec.md) — qualification target: с чем движок СРАВНИВАЕТ листинг (main image / secondary / title / description / bullets / attributes), собран из офиц. гайда Walmart; identity-first «A-до-Я» вместо ложного «есть картинка»; поток Movement #1 (каталог → обогащение Oxylabs+Unwrangle → квалификация → улучшение)
+- [Single-unit donor gate + qualification agent (2026-07-04)](single-unit-donor-gate-2026-07-04.md) — фикс инцидента «тайлили мультипак-донор → N упаковок вместо N единиц»: два fail-closed vision-гейта (`qualifyDonorFront` до тайла + `qualifyTiledMain` после), общий водопад `resolveDonorPhoto` (Walmart 1P → Google Images → Sam's/Target) в бою + честный 6-блочный грейд взамен «есть картинка = A-to-Z»
 
 ## 🧮 Алгоритмы
 - [Выбор ставки (Rate Selection)](shipping-rate-selection.md) — Dry vs Frozen логика (Dry-правила упрощены 2026-05-14)

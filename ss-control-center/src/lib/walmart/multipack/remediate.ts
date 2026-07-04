@@ -440,22 +440,30 @@ export async function buildAndSubmitOne(
 // ————————————————————————————————————————————————————————————————————————
 
 /**
- * Grade a built listing.
- *  - `textOk`  : ≥5 bullets AND a real (≥500-char) description. This is the
- *                PIPELINE-health signal (enrich → polish → build worked). The
- *                canary gates on this, so a handful of genuinely hard-photo SKUs
- *                don't falsely abort an otherwise-healthy run.
- *  - `imageOk` : a fresh main image was produced.
- *  - `full`    : A-to-Z ideal = textOk AND imageOk. Used by the review gallery/QC
- *                to flag "needs a better photo" items.
+ * Grade a built listing against the ideal-listing spec (эталон, 6 blocks).
+ *  - `imageOk` : the MAIN image PASSED qualifyTiledMain (single-unit cells + count
+ *                + identity + front + white). meta.mainImageUrl is only set on pass,
+ *                so this means "qualified", not merely "exists".
+ *  - `textOk`  : the PIPELINE-HEALTH signal the canary gates on. Content run =
+ *                3–10 bullets AND a real (≥700-char) description. IMAGE-ONLY run
+ *                (no text requested) → falls back to imageOk, so the canary judges
+ *                image production, not absent text (else it aborts a healthy run).
+ *  - `full`    : A-to-Z ideal = every IN-SCOPE block green (main + ≥4 images +
+ *                title ≤150 + description ≥700 + 3–10 bullets + ≥3 attributes).
+ * Pass `scope` so a scoped run isn't failed for fields it never built (an image-only
+ * retry has no title/bullets/description → those blocks are N/A). No scope → grade
+ * everything (the full A-to-Z standard).
  */
-export function assessRemediation(meta: RemediateMeta | null): { full: boolean; textOk: boolean; imageOk: boolean; galleryOk: boolean; reasons: string[] } {
+export function assessRemediation(meta: RemediateMeta | null, scope?: RemediateScope | null): { full: boolean; textOk: boolean; imageOk: boolean; galleryOk: boolean; reasons: string[] } {
   if (!meta) return { full: false, textOk: false, imageOk: false, galleryOk: false, reasons: ["no build meta"] };
   const reasons: string[] = [];
-  // Honest per-block grade against the ideal-listing spec (эталон, 6 blocks). This
-  // REPLACES the old "has a mainImageUrl = A-to-Z" shortcut. The main-image URL is
-  // only ever set when it PASSED qualifyTiledMain (single-unit cells + count +
-  // identity + front + white), so mainOk here means "qualified", not "exists".
+  // Only grade blocks this run actually built, so a scoped run isn't failed for N/A
+  // fields. No scope → grade everything (the full A-to-Z standard). The main-image
+  // URL is only set when it PASSED qualifyTiledMain, so mainOk means "qualified".
+  const s = scope && Object.values(scope).some(Boolean) ? scope : ALL_SCOPE;
+  const wantText = !!(s.title || s.bullets || s.description);
+  const wantGallery = !!(s.image || s.gallery);
+  const wantAttrs = !!s.attributes;
   // Block 1 — MAIN image (qualified at build; null if it failed the gate).
   const mainOk = !!meta.mainImageUrl;
   // Block 2 — ≥4 images total (main + secondary).
@@ -469,16 +477,18 @@ export function assessRemediation(meta: RemediateMeta | null): { full: boolean; 
   const bulletsOk = (meta.bulletsCount ?? 0) >= 3 && (meta.bulletsCount ?? 0) <= 10;
   // Block 6 — attributes filled (at minimum the quantity trio = 3).
   const attrsOk = (meta.attributesCount ?? 0) >= 3;
-  if (!mainOk) reasons.push("MAIN photo failed qualification (needs re-source / manual)");
-  if (!galleryOk) reasons.push(`only ${meta.imagesCount ?? 0} images (<4)`);
-  if (!titleOk) reasons.push(meta.newTitle ? `title ${titleLen} chars > 150` : "no rebuilt title");
-  if (!descOk) reasons.push(`thin description (${meta.descriptionLength ?? 0} chars < 700)`);
-  if (!bulletsOk) reasons.push(`bullets out of 3–10 range (${meta.bulletsCount ?? 0})`);
-  if (!attrsOk) reasons.push(`only ${meta.attributesCount ?? 0} attributes (<3)`);
-  // textOk = PIPELINE-HEALTH signal for the canary (content actually produced).
-  const textOk = bulletsOk && descOk;
-  // full A-to-Z ideal = ALL six эталон blocks green.
-  return { full: mainOk && galleryOk && titleOk && descOk && bulletsOk && attrsOk, textOk, imageOk: mainOk, galleryOk, reasons };
+  if (s.image && !mainOk) reasons.push("MAIN photo failed qualification (needs re-source / manual)");
+  if (wantGallery && !galleryOk) reasons.push(`only ${meta.imagesCount ?? 0} images (<4)`);
+  if (s.title && !titleOk) reasons.push(meta.newTitle ? `title ${titleLen} chars > 150` : "no rebuilt title");
+  if (s.description && !descOk) reasons.push(`thin description (${meta.descriptionLength ?? 0} chars < 700)`);
+  if (s.bullets && !bulletsOk) reasons.push(`bullets out of 3–10 range (${meta.bulletsCount ?? 0})`);
+  if (wantAttrs && !attrsOk) reasons.push(`only ${meta.attributesCount ?? 0} attributes (<3)`);
+  // textOk = canary health. Content run → text produced; image-only → image produced.
+  const textOk = wantText ? (bulletsOk && descOk) : mainOk;
+  // full A-to-Z ideal = every IN-SCOPE block green.
+  const full = (!s.image || mainOk) && (!wantGallery || galleryOk) && (!s.title || titleOk) &&
+    (!s.description || descOk) && (!s.bullets || bulletsOk) && (!wantAttrs || attrsOk);
+  return { full, textOk, imageOk: mainOk, galleryOk, reasons };
 }
 
 /** POST one feed carrying MANY MPItem entries, retrying ONLY on Walmart's
@@ -553,7 +563,7 @@ export async function buildAndSubmitMany(db: Client, client: any, skus: string[]
     } catch (e: any) {
       r = { status: "ERROR", feedId: null, url: "—", title: null, detail: String(e?.message || e).slice(0, 140), packCount: 0, noun: "", meta: null };
     }
-    const a = assessRemediation(r.meta);
+    const a = assessRemediation(r.meta, opts.scope);
     const full = r.status === "BUILT" && a.full;
     const textOk = r.status === "BUILT" && a.textOk;
     built.push({ ...r, sku, full });
