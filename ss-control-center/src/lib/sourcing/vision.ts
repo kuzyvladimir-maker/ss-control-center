@@ -333,3 +333,112 @@ Return JSON only: {"match": true|false, "brandOnPackage": "<brand>", "variantOnP
     return { match: false, reason: "identity check error" };
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SINGLE-UNIT DONOR GATE + PER-LISTING QUALIFICATION AGENT
+//
+// The 2026-07-04 incident: donor selection on the Walmart-1P / Sam's / Target
+// tiers took the raw first-offer image and only checked brand/variant identity.
+// It never checked that the photo is ONE single unit — so a "12 Pack" caddy, a
+// case, or a shrink-wrapped multipack passed, and tiling it N times produced
+// "N multipacks" (a 'pack 4' listing looked like 4 packs of 12). These two gates
+// close that hole: qualifyDonorFront vets EVERY candidate before tiling, and
+// qualifyTiledMain re-inspects the FINISHED tile point-by-point before publish.
+// Both are fail-closed (any error / ambiguity → pass:false, do-no-harm).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Read the PER-UNIT size from a multipack title (the size of ONE unit, not the
+ *  pack). "Cheez-It ... 21 oz (Pack of 4)" → "21 oz"; "Gatorade ... 28 fl oz,
+ *  (Pack of 8)" → "28 fl oz". Empty string if no size token is present. */
+export function unitSizeFromTitle(title: string): string {
+  let t = String(title || "");
+  // strip the multipack marker first so we read the PER-UNIT size, not the pack
+  t = t.replace(/\(?\s*pack of \d+\s*\)?/ig, " ").replace(/\b\d+\s*-?\s*pack\b/ig, " ");
+  const sizes = [...t.matchAll(/\b\d+(?:\.\d+)?\s*(?:fl\s*oz|oz|ounce|ct\b|count|lb|kg|g\b|ml|l\b)/ig)]
+    .map((m) => m[0].replace(/\s+/g, " ").trim());
+  return [...new Set(sizes)].join(", ");
+}
+
+export interface DonorVerdict {
+  brand: boolean; type: boolean; variant: boolean;
+  singleUnit: boolean; front: boolean; whiteBg: boolean;
+  pass: boolean; reason: string;
+}
+
+/**
+ * DONOR QUALIFICATION (fail-closed) — the ONE gate every candidate donor photo
+ * must pass before we tile it, in ANY tier (Walmart 1P, Google, Sam's, Target).
+ * Judges every point in a single Sonnet call:
+ *   brand / type / variant  — same product as the listing (identity)
+ *   singleUnit              — EXACTLY ONE sellable unit of the listing's size,
+ *                             not a case / caddy / multipack / shrink-pack / row
+ *   front / whiteBg         — upright front on a white background (Walmart rule)
+ * `pass` = all six true.
+ */
+export async function qualifyDonorFront(url: string, listingTitle: string, unitSize?: string): Promise<DonorVerdict> {
+  const fail = (reason: string): DonorVerdict => ({ brand: false, type: false, variant: false, singleUnit: false, front: false, whiteBg: false, pass: false, reason });
+  if (!listingTitle) return fail("no listing title");
+  const size = (unitSize || unitSizeFromTitle(listingTitle)).trim();
+  const unitLine = size
+    ? `This listing sells a pack of a SINGLE retail unit. ONE unit = ${size}.`
+    : `This listing sells a pack of a SINGLE retail unit (the base single package named in the title).`;
+  const prompt = `Listing title: "${listingTitle}".
+${unitLine}
+The image above is ONE candidate photo we may TILE to build the multipack main image. Judge each point strictly and INDEPENDENTLY. Return JSON only:
+{"brand":true|false,"type":true|false,"variant":true|false,"singleUnit":true|false,"front":true|false,"whiteBg":true|false,"reason":"<short>"}
+- "brand": the brand printed on the package equals the brand in the title.
+- "type": same product type (e.g. cheese crackers ≠ sandwich crackers; potato chips ≠ tortilla chips; juice bottle ≠ juice box).
+- "variant": same flavor/variant line (e.g. "Extra Cheesy" ≠ "Original"; "Lemon Lime" ≠ "Glacier Freeze").
+- "singleUnit": TRUE only if the photo shows EXACTLY ONE sellable unit of the size above, BY ITSELF. Answer FALSE if it shows a CASE, a shrink-wrapped multipack, a tray/caddy of several boxes, a row/stack/group of 2+ units, OR a package whose PRINTED pack-count on the front (e.g. "12 PACK", "8 COUNT", "6 CT", "CASE") means the package itself is a BUNDLE of several units rather than the single unit named in the title. We tile ONE unit N times ourselves — a multi-unit source multiplies into a hugely wrong, dangerous quantity.
+- "front": the package's UPRIGHT FRONT with the brand label toward the camera — NOT the back/side, NOT a visible barcode, NOT a Nutrition-Facts panel, NOT a soft package lying on its end/side, NOT a prepared-food serving (bowl/plate), NOT an infographic/marketing banner.
+- "whiteBg": plain WHITE or very-light background (colored/lifestyle backgrounds are false).`;
+  try {
+    const j = parseJson(await ask([url], prompt, 140, STRONG_MODEL));
+    if (!j) return fail("unparseable");
+    const v = {
+      brand: j.brand === true, type: j.type === true, variant: j.variant === true,
+      singleUnit: j.singleUnit === true, front: j.front === true, whiteBg: j.whiteBg === true,
+    };
+    const pass = v.brand && v.type && v.variant && v.singleUnit && v.front && v.whiteBg;
+    return { ...v, pass, reason: String(j.reason || "").slice(0, 100) };
+  } catch {
+    return fail("donor qualify error");
+  }
+}
+
+export interface TileVerdict {
+  identity: boolean; eachCellSingle: boolean; countOk: boolean;
+  front: boolean; whiteBg: boolean;
+  pass: boolean; reason: string;
+}
+
+/**
+ * PER-LISTING QUALIFICATION AGENT (fail-closed) — inspects the FINISHED tiled main
+ * image point-by-point before it can be published. This is the safety net that
+ * catches a multipack donor that slipped the donor gate: if each tile itself shows
+ * several units (a "12 pack" box, a 6-bottle shrink-pack, a case), eachCellSingle
+ * is false and the listing does NOT pass. `pass` = all points true.
+ */
+export async function qualifyTiledMain(url: string, listingTitle: string, packCount: number): Promise<TileVerdict> {
+  const fail = (reason: string): TileVerdict => ({ identity: false, eachCellSingle: false, countOk: false, front: false, whiteBg: false, pass: false, reason });
+  const prompt = `The image above is a FINISHED marketplace MAIN image. We built it by TILING one product unit into a grid to represent a multipack of ${packCount} units of the listing: "${listingTitle}".
+Judge each point strictly and INDEPENDENTLY. Return JSON only:
+{"identity":true|false,"eachCellSingle":true|false,"countOk":true|false,"front":true|false,"whiteBg":true|false,"reason":"<short>"}
+- "identity": the product shown is the SAME brand + type + flavor/variant as the listing title.
+- "eachCellSingle": EACH repeated tile shows EXACTLY ONE single retail unit. Answer FALSE if any single tile itself depicts MULTIPLE units — a "12 pack"/"8 count" box, a shrink-wrapped bundle of bottles, a case, a caddy/tray of several boxes, or a printed multi-pack graphic. (This is the critical error we must catch: a tile that is itself a multipack multiplies the true quantity.)
+- "countOk": the total number of repeated units visible in the grid is about ${packCount}.
+- "front": every unit is the upright FRONT (brand label to camera) — not back/barcode/nutrition/lying/serving/infographic.
+- "whiteBg": plain white background.`;
+  try {
+    const j = parseJson(await ask([url], prompt, 140, STRONG_MODEL));
+    if (!j) return fail("unparseable");
+    const v = {
+      identity: j.identity === true, eachCellSingle: j.eachCellSingle === true,
+      countOk: j.countOk === true, front: j.front === true, whiteBg: j.whiteBg === true,
+    };
+    const pass = v.identity && v.eachCellSingle && v.countOk && v.front && v.whiteBg;
+    return { ...v, pass, reason: String(j.reason || "").slice(0, 100) };
+  } catch {
+    return fail("tile qualify error");
+  }
+}

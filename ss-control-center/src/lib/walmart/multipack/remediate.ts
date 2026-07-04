@@ -14,7 +14,8 @@ import { uploadToR2, multipackImageKey } from "./r2";
 import { polishListingCopy } from "./polish";
 import { validateListingContent } from "./guidelines";
 import { ensureDonorImage, fetchAndStoreDetail, titleMatchesListing } from "../../sourcing/enrich";
-import { pickBestFront, pickBestFrontFromPool, mainImageAcceptable, verifyMainImage, frontMatchesListing } from "../../sourcing/vision";
+import { pickBestFront, pickBestFrontFromPool, qualifyDonorFront, qualifyTiledMain } from "../../sourcing/vision";
+import { resolveDonorPhoto } from "../../sourcing/resolve-donor";
 import { logRemediation } from "./analytics";
 import { buildFoodAttributes } from "./attributes";
 
@@ -229,18 +230,37 @@ export async function buildAndSubmitOne(
     // Pepperidge "Soft White" buns) landing on a different product (rye / hot-dog /
     // Sara Lee), the 2026-07-01 wrong-image batch. Then tile, then the structural
     // verify. Any failure → null: leave the current main untouched (do-no-harm).
-    const tileVerifiedMain = async (donorUrl: string, keySuffix: string): Promise<{ url: string | null; note: string }> => {
+    const tileVerifiedMain = async (donorUrl: string, keySuffix: string, o?: { donorGated?: boolean }): Promise<{ url: string | null; note: string }> => {
       const src = highResImageUrl(donorUrl);
-      const id = await frontMatchesListing(src, listingId);
-      if (!id.match) return { url: null, note: `donor is not this product — skipped (${id.reason})` };
+      // GATE 1 (donor) — same product AND exactly ONE single unit of the listing's
+      // size + upright front on white. Rejects a "12 Pack" caddy / case / shrink-
+      // pack (the 2026-07-04 multipack-tile bug). Skipped only when the caller
+      // already ran this gate (the live-waterfall resolver).
+      if (!o?.donorGated) {
+        const dg = await qualifyDonorFront(src, listingId);
+        if (!dg.pass) {
+          const bad = (["brand", "type", "variant", "singleUnit", "front", "whiteBg"] as const).filter((k) => !dg[k]).join("/");
+          return { url: null, note: `donor rejected (${bad}${dg.reason ? ": " + dg.reason : ""})` };
+        }
+      }
       const base = await fetchImageBuffer(src);
       const main = await composeTiledMainImage(base, cand.packCount);
       const candidateUrl = await uploadToR2(main, multipackImageKey(sku, "main", `${stamp}${keySuffix}`));
-      const v = await verifyMainImage(candidateUrl, cand.packCount);
-      if (!v.ok) return { url: null, note: `tile rejected by verify (${v.kind})` };
+      // GATE 2 (finished tile) — EACH cell is ONE unit, count ≈ N, identity + front
+      // + white. Replaces the weaker verifyMainImage (which never counted units).
+      const tv = await qualifyTiledMain(candidateUrl, listingId, cand.packCount);
+      if (!tv.pass) {
+        const bad = (["identity", "eachCellSingle", "countOk", "front", "whiteBg"] as const).filter((k) => !tv[k]).join("/");
+        return { url: null, note: `tile rejected (${bad}${tv.reason ? ": " + tv.reason : ""})` };
+      }
       return { url: candidateUrl, note: "" };
     };
 
+    // keep = the current main already qualifies → we neither rebuild nor run any
+    // fallback (avoids churn). Declared HERE (not inside the else) so EVERY fallback
+    // below honors it — otherwise rescue/deep/live-waterfall (all guarded on
+    // `!mainUrl`, which stays null on a keep) would replace a main we chose to keep.
+    let keep = false;
     // STRONG selector (Sonnet): pick the best UPRIGHT SINGLE-UNIT FRONT that is the
     // SAME variant as the listing (pickBestFront now fails CLOSED on a mixed pool).
     const best = await pickBestFront(pool, { listingTitle: listingId, preferUrl: cand.baseImageUrl });
@@ -251,16 +271,17 @@ export async function buildAndSubmitOne(
       // correct. "Correct" now means BOTH structurally good AND the same product+
       // variant (identity) — the old keep-check ignored identity and would preserve a
       // wrong-product tile from an earlier bad run. forceImage always replaces.
-      let keep = false;
       if (!opts.forceImage) {
         try {
           const r = await db.execute({ sql: `SELECT mainImageUrl FROM WalmartListingRemediation WHERE sku=? AND storeIndex=? AND ok=1 AND mainImageUrl IS NOT NULL AND mainImageUrl != '' ORDER BY runAt DESC LIMIT 1`, args: [sku, storeIndex] });
           const curMain = (r.rows[0] as any)?.mainImageUrl as string | undefined;
           if (curMain) {
-            const acc = await mainImageAcceptable(curMain, cand.packCount);
-            if (acc.good && (await frontMatchesListing(curMain, listingId)).match) {
-              keep = true; imageNote = "current main already a correct upright-front grid — kept";
-            }
+            // Keep ONLY if the current main passes the SAME per-listing gate as a
+            // fresh build (single-unit cells + count + identity + front + white).
+            // The old keep-check (mainImageAcceptable) never checked single-unit, so
+            // it could preserve a multipack-of-multipacks tile from an earlier run.
+            const tv = await qualifyTiledMain(curMain, listingId, cand.packCount);
+            if (tv.pass) { keep = true; imageNote = "current main already qualifies (single-unit grid) — kept"; }
           }
         } catch {}
       }
@@ -272,7 +293,7 @@ export async function buildAndSubmitOne(
     // RESCUE: strict path left no main; show the WHOLE pool to Sonnet in one call to
     // pick the best same-variant package-front, then run it through the SAME identity
     // + verify gate (no shortcut — that gate is exactly what was missing before).
-    if (!mainUrl && pool.length) {
+    if (!keep && !mainUrl && pool.length) {
       try {
         const rescueUrl = await pickBestFrontFromPool(pool, listingId);
         if (rescueUrl) {
@@ -284,7 +305,7 @@ export async function buildAndSubmitOne(
     }
     // DEEP RE-ENRICH fallback: our catalog has no matching front; force a re-search
     // across EVERY retailer, add those photos to the pool, re-pick, and gate again.
-    if (!mainUrl && opts.enrich !== false) {
+    if (!keep && !mainUrl && opts.enrich !== false) {
       try {
         const before = pool.length;
         await ensureDonorImage(db, { sku, upc, title: cur.productName, deep: true });
@@ -302,6 +323,21 @@ export async function buildAndSubmitOne(
           }
         }
       } catch { /* deep enrich is best-effort */ }
+    }
+    // LIVE WATERFALL — the local catalog had no qualifying single-unit front. Search
+    // Walmart 1P + Google Images + Sam's/Target LIVE (each candidate gated by
+    // qualifyDonorFront inside the resolver), then tile + qualifyTiledMain. This
+    // adds the Google-Images tier the prod pipeline never had → coverage parity
+    // with the validated trial. Slower/pricier per SKU, by design (quality > speed).
+    if (!keep && !mainUrl) {
+      try {
+        const dp = await resolveDonorPhoto(listingId);
+        if (dp) {
+          const t = await tileVerifiedMain(dp.url, "w", { donorGated: true });
+          if (t.url) { mainUrl = t.url; imageNote = `live ${dp.src}`; }
+          else imageNote = t.note;
+        } else if (!imageNote) imageNote = "no single-unit donor on Walmart/Google/Sam's/Target";
+      } catch { /* live waterfall is best-effort */ }
     }
   }
   if (scope.gallery) {
@@ -416,21 +452,33 @@ export async function buildAndSubmitOne(
 export function assessRemediation(meta: RemediateMeta | null): { full: boolean; textOk: boolean; imageOk: boolean; galleryOk: boolean; reasons: string[] } {
   if (!meta) return { full: false, textOk: false, imageOk: false, galleryOk: false, reasons: ["no build meta"] };
   const reasons: string[] = [];
-  // imageOk = the MAIN photo specifically (the tiled N-unit shot). A listing with
-  // gallery images but NO main is NOT ok — earlier grading wrongly counted gallery
-  // toward the image, badging main-less listings "A-to-Z ✓" (Vladimir caught it).
+  // Honest per-block grade against the ideal-listing spec (эталон, 6 blocks). This
+  // REPLACES the old "has a mainImageUrl = A-to-Z" shortcut. The main-image URL is
+  // only ever set when it PASSED qualifyTiledMain (single-unit cells + count +
+  // identity + front + white), so mainOk here means "qualified", not "exists".
+  // Block 1 — MAIN image (qualified at build; null if it failed the gate).
   const mainOk = !!meta.mainImageUrl;
-  const galleryCount = Math.max(0, (meta.imagesCount ?? 0) - (mainOk ? 1 : 0));
-  const galleryOk = galleryCount >= 2;
-  const bulletsOk = (meta.bulletsCount ?? 0) >= 5;
-  const descOk = (meta.descriptionLength ?? 0) >= 500;
-  if (!mainOk) reasons.push("no MAIN photo (needs generation / manual)");
-  if (!galleryOk) reasons.push(`thin gallery (${galleryCount} extra photos)`);
-  if (!bulletsOk) reasons.push(`only ${meta.bulletsCount ?? 0} bullets`);
-  if (!descOk) reasons.push(`thin description (${meta.descriptionLength ?? 0} chars)`);
+  // Block 2 — ≥4 images total (main + secondary).
+  const galleryOk = (meta.imagesCount ?? 0) >= 4;
+  // Block 3 — title present + within the 150-char ceiling.
+  const titleLen = (meta.newTitle ?? "").length;
+  const titleOk = !!meta.newTitle && titleLen <= 150;
+  // Block 4 — description ~150+ words (≥700 chars).
+  const descOk = (meta.descriptionLength ?? 0) >= 700;
+  // Block 5 — 3–10 key-feature bullets.
+  const bulletsOk = (meta.bulletsCount ?? 0) >= 3 && (meta.bulletsCount ?? 0) <= 10;
+  // Block 6 — attributes filled (at minimum the quantity trio = 3).
+  const attrsOk = (meta.attributesCount ?? 0) >= 3;
+  if (!mainOk) reasons.push("MAIN photo failed qualification (needs re-source / manual)");
+  if (!galleryOk) reasons.push(`only ${meta.imagesCount ?? 0} images (<4)`);
+  if (!titleOk) reasons.push(meta.newTitle ? `title ${titleLen} chars > 150` : "no rebuilt title");
+  if (!descOk) reasons.push(`thin description (${meta.descriptionLength ?? 0} chars < 700)`);
+  if (!bulletsOk) reasons.push(`bullets out of 3–10 range (${meta.bulletsCount ?? 0})`);
+  if (!attrsOk) reasons.push(`only ${meta.attributesCount ?? 0} attributes (<3)`);
+  // textOk = PIPELINE-HEALTH signal for the canary (content actually produced).
   const textOk = bulletsOk && descOk;
-  // full A-to-Z ideal (Vladimir's standard) = main photo + gallery + text.
-  return { full: mainOk && galleryOk && textOk, textOk, imageOk: mainOk, galleryOk, reasons };
+  // full A-to-Z ideal = ALL six эталон blocks green.
+  return { full: mainOk && galleryOk && titleOk && descOk && bulletsOk && attrsOk, textOk, imageOk: mainOk, galleryOk, reasons };
 }
 
 /** POST one feed carrying MANY MPItem entries, retrying ONLY on Walmart's
