@@ -12,6 +12,7 @@
 
 import type { Client } from "@libsql/client";
 import { analyzeImagesWithFallback } from "@/lib/ai-vision";
+import { identifyImageViaCodex } from "@/lib/image-gen/codex-worker";
 import { CLAUDE } from "@/lib/ai-models";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { getListing, flattenListing } from "@/lib/amazon-sp-api/listings";
@@ -95,11 +96,20 @@ function mediaType(b64: string): string {
   return b64.startsWith("/9j/") ? "image/jpeg" : b64.startsWith("iVBOR") ? "image/png" : b64.startsWith("R0lG") ? "image/gif" : b64.startsWith("UklG") ? "image/webp" : "image/jpeg";
 }
 
-// Run identification on a GIVEN model (the tiering is decided by the caller). Falls
-// back to the shared multi-provider vision helper (opus/OpenAI) on any transient
-// error so a SKU is never lost to a blip.
+// Run identification on a GIVEN model (the tiering is decided by the caller).
+// PRIMARY path is the FREE ChatGPT-subscription vision (Codex worker on the box) —
+// same subscription that generates our images, $0 per call. The paid Anthropic /
+// OpenAI vision APIs are only a FALLBACK for when the worker isn't reachable, so a
+// depleted pay-as-you-go balance never stalls the COGS sweep.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function runIdentify(b64s: string[], prompt: string, model: string): Promise<any> {
+  // TIER 1 — subscription vision (free). Returns null if the worker is unconfigured
+  // or errors, in which case we drop through to the paid providers below.
+  try {
+    const viaCodex = await identifyImageViaCodex(b64s, prompt);
+    if (viaCodex && (viaCodex as any).brand !== undefined) return viaCodex;
+  } catch { /* fall through to paid vision */ }
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (apiKey && apiKey !== "<api_key>") {
     try {

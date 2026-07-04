@@ -253,16 +253,90 @@ async function handleGenerate(body) {
   return { status: 200, png };
 }
 
+// --- VISION: run codex exec with image(s) attached, return the model's text -----
+// Same subscription path as generation, but here Codex READS the attached images
+// (`-i FILE`) and answers in text. Used for product identification (COGS engine).
+const VISION_TIMEOUT_MS = parseInt(process.env.VISION_TIMEOUT_MS || "180000", 10);
+function runCodexVision(imgFiles, prompt, cwd) {
+  return new Promise((resolve) => {
+    const env = { ...process.env };
+    delete env.OPENAI_API_KEY; // subscription-only, never the paid CLI fallback
+    delete env.CODEX_API_KEY;
+    env.CODEX_HOME = CODEX_HOME;
+
+    const args = ["exec", "--skip-git-repo-check"];
+    for (const f of imgFiles) { args.push("-i", f); } // attach each image as vision input
+    args.push(prompt);
+
+    const child = spawn(CODEX_BIN, args, { env, cwd: cwd || os.tmpdir(), stdio: ["ignore", "pipe", "pipe"] });
+    let stdout = "", stderr = "";
+    const cap = (s, d) => { s += d.toString(); return s.length > 200000 ? s.slice(-200000) : s; };
+    child.stdout.on("data", (d) => { stdout = cap(stdout, d); });
+    child.stderr.on("data", (d) => { stderr = cap(stderr, d); });
+    const timer = setTimeout(() => { try { child.kill("SIGKILL"); } catch {} resolve({ code: -1, stdout, stderr: stderr + "\n[worker] vision timed out" }); }, VISION_TIMEOUT_MS);
+    child.on("error", (e) => { clearTimeout(timer); resolve({ code: -1, stdout, stderr: stderr + "\n[worker] spawn error: " + e.message }); });
+    child.on("close", (code) => { clearTimeout(timer); resolve({ code, stdout, stderr }); });
+  });
+}
+
+// Extract the LAST parseable {...} object from codex stdout (which may contain
+// agent logs/reasoning before the final answer). Scans right-to-left, matching
+// each closing brace to its opener, and returns the first candidate that parses.
+function extractLastJson(text) {
+  let end = text.lastIndexOf("}");
+  while (end !== -1) {
+    let depth = 0, start = -1;
+    for (let i = end; i >= 0; i--) {
+      const c = text[i];
+      if (c === "}") depth++;
+      else if (c === "{") { depth--; if (depth === 0) { start = i; break; } }
+    }
+    if (start !== -1) { try { return JSON.parse(text.slice(start, end + 1)); } catch { /* keep scanning */ } }
+    end = text.lastIndexOf("}", end - 1);
+  }
+  return null;
+}
+
+async function handleAnalyze(body) {
+  const prompt = String((body && body.prompt) || "").trim();
+  if (!prompt) return { status: 400, json: { error: "missing prompt" } };
+
+  const runDir = await fsp.mkdtemp(path.join(os.tmpdir(), "codex-vis-"));
+  let imgFiles = [];
+  try {
+    imgFiles = await writeRefs(body && (body.images || body.reference_images), body && (body.image_urls || body.reference_urls), runDir);
+  } catch { /* best-effort */ }
+  if (!imgFiles.length) { try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {} return { status: 400, json: { error: "no images" } }; }
+
+  const names = imgFiles.map((f) => path.basename(f)).join(", ");
+  const wrapped =
+    `${prompt}\n\n` +
+    `The image file(s) ${names} are attached to this message — look at them. ` +
+    `Respond with ONLY a single JSON object (no markdown, no code fences, no prose, no explanation). ` +
+    `Do NOT generate or create any image. Do NOT ask questions or request confirmation.`;
+
+  const { code, stdout, stderr } = await runCodexVision(imgFiles, wrapped, runDir);
+  try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {}
+
+  const result = extractLastJson(stdout);
+  if (!result) {
+    return { status: 502, json: { error: "codex produced no json", code, stderr: stderr.slice(-1500), stdout: stdout.slice(-1500) } };
+  }
+  return { status: 200, json: { ok: true, result } };
+}
+
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, "http://localhost");
 
   if (req.method === "GET" && url.pathname === "/health") {
     res.writeHead(200, { "content-type": "application/json" });
-    res.end(JSON.stringify({ ok: true, genDir: GEN_DIR }));
+    res.end(JSON.stringify({ ok: true, genDir: GEN_DIR, vision: true }));
     return;
   }
 
-  if (req.method !== "POST" || url.pathname !== "/generate") {
+  const isGenerate = req.method === "POST" && url.pathname === "/generate";
+  const isAnalyze = req.method === "POST" && url.pathname === "/analyze";
+  if (!isGenerate && !isAnalyze) {
     res.writeHead(404, { "content-type": "application/json" });
     res.end(JSON.stringify({ error: "not found" }));
     return;
@@ -277,7 +351,7 @@ const server = http.createServer((req, res) => {
   let data = "";
   req.on("data", (d) => {
     data += d;
-    // Raised for base64 reference images (product photo + frozen-hero anchors).
+    // Raised for base64 reference/input images (product photo + frozen-hero anchors).
     if (data.length > 24_000_000) req.destroy();
   });
   req.on("end", () => {
@@ -289,7 +363,7 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({ error: "bad json" }));
       return;
     }
-    enqueue(() => handleGenerate(body))
+    enqueue(() => (isAnalyze ? handleAnalyze(body) : handleGenerate(body)))
       .then((result) => {
         if (result.png) {
           res.writeHead(200, { "content-type": "image/png", "content-length": result.png.length });
