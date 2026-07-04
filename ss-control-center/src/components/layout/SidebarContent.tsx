@@ -116,6 +116,7 @@ const divisions = (s: DashboardSummary): Division[] => [
       // only the admin/owner sees and can open it (see RBAC `personal` module).
       { title: "Personal Finance", href: "/personal", icon: Wallet, adminOnly: true },
       { title: "Economics", href: "/economics", icon: DollarSign },
+      { title: "SKU Cost Catalog", href: "/cogs", icon: Receipt },
       { title: "Sales overview", href: "/analytics", icon: TrendingUp },
     ],
   },

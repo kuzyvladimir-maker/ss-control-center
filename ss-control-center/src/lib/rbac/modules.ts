@@ -56,6 +56,7 @@ export const MODULES: ModuleDef[] = [
   // adminOnly: owner-only, never grantable to staff roles.
   { key: "personal", label: "Personal Finance", href: "/personal", adminOnly: true },
   { key: "economics", label: "Economics", href: "/economics" },
+  { key: "cogs", label: "SKU Cost Catalog", href: "/cogs" },
   { key: "walmart-growth", label: "Walmart Growth", href: "/walmart-growth" },
   { key: "amazon-growth", label: "Amazon Growth", href: "/amazon-growth" },
   { key: "amazon-aplus", label: "A+ Content", href: "/amazon-aplus" },
