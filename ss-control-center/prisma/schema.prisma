@@ -1966,6 +1966,50 @@ model SkuCost {
   @@index([source])
 }
 
+// SkuComponent — the STRUCTURAL bill-of-materials behind one of our listings.
+// A plain product => 1 row (itself). A bundle / gift-set / variety pack => N rows,
+// one per DISTINCT component (decomposed from photos + description by identify.ts).
+// Each row carries the resolved per-unit cost + HOW we got it (costMethod) + a link
+// into DonorProduct for the harvested full content (photos / description / nutrition
+// / UPC). SkuCost stores the ROLL-UP total per SKU; SkuComponent stores the parts.
+// One catalog, three jobs: economics (SUM lineCost), NEW listings (reuse component
+// content), IMPROVE listings (pull donor photos/nutrition per component).
+model SkuComponent {
+  id      String  @id @default(cuid())
+  sku     String
+  channel String? // walmart | amazon
+  idx     Int     @default(0) // component order within the listing
+
+  product String // component product name, e.g. "Hormel Chili No Beans"
+  flavor  String?
+  size    String?
+  qty     Int     @default(1) // how many of this component per listing
+
+  perUnitCost Float? // resolved cost for ONE of this component
+  lineCost    Float? // perUnitCost * qty (this component's contribution to COGS)
+  currency    String @default("USD")
+
+  // Provenance of the price:
+  //   exact       — clean 1P direct match at the retailer
+  //   line-price  — same-brand + same-size sibling (variety line, ±cents)
+  //   google      — Google Shopping market estimate (universal fallback)
+  //   own-brand   — our own product, manual landed cost (own-brand-costs.ts)
+  //   none        — no price found (flagged for review)
+  costMethod String?
+  retailer   String? // walmart | target | samsclub | costco | google | own-brand
+  matchedTitle String? // the donor/offer title we priced off
+
+  donorProductId    String? // link into DonorProduct for full content
+  isBundleComponent Boolean @default(false) // true when part of a decomposed bundle
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sku, idx], name: "sku_component_idx")
+  @@index([sku])
+  @@index([donorProductId])
+}
+
 // RetailPrice — raw price/content findings from the retail sourcing engine
 // (Jackie's external services: BlueCart/Unwrangle/ScrapeHero/Decodo/SerpApi).
 // One row per (retailer, retailer_product_id). `isBaseUnit` distinguishes the
