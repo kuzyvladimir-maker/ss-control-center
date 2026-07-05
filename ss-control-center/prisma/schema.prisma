@@ -2010,6 +2010,31 @@ model SkuComponent {
   @@index([donorProductId])
 }
 
+// CatalogSnapshot — one hourly capture of catalog / COGS / enrichment progress.
+// The time-series behind the Catalog Status dashboard: how coverage, enrichment,
+// and quality move as the background crons grind through the catalog.
+model CatalogSnapshot {
+  id         String   @id @default(cuid())
+  capturedAt DateTime @default(now())
+
+  walmartTotal     Int @default(0) // all mirror rows
+  walmartPublished Int @default(0) // publishedStatus=PUBLISHED
+
+  costedTotal     Int @default(0) // SkuCost source=retail:batch
+  costedPublished Int @default(0) // published Walmart SKUs that have a cost (coverage numerator)
+  needsReview     Int @default(0) // costed but soft (google/low-confidence)
+  ownBrand        Int @default(0) // costed via own-brand tier
+  exact           Int @default(0) // via clean 1P
+  linePrice       Int @default(0) // via line-price sibling
+  google          Int @default(0) // via Google Shopping estimate
+
+  donorProducts Int @default(0) // Reference/Donor catalog size
+  donorOffers   Int @default(0) // price points across retailers
+  withBom       Int @default(0) // SKUs with a SkuComponent bill-of-materials
+
+  @@index([capturedAt])
+}
+
 // RetailPrice — raw price/content findings from the retail sourcing engine
 // (Jackie's external services: BlueCart/Unwrangle/ScrapeHero/Decodo/SerpApi).
 // One row per (retailer, retailer_product_id). `isBaseUnit` distinguishes the

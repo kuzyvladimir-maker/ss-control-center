@@ -49,6 +49,7 @@ export const MODULES: ModuleDef[] = [
   { key: "adjustments", label: "Adjustments", href: "/adjustments" },
   { key: "training", label: "Training", href: "/training" },
   { key: "bundle-factory", label: "Bundle Factory", href: "/bundle-factory" },
+  { key: "catalog-status", label: "Catalog Status", href: "/catalog-status" },
   { key: "reference-catalog", label: "Reference Catalog", href: "/reference-catalog" },
   { key: "staff-hats", label: "Staff Hats", href: "/staff-hats" },
   { key: "finance", label: "Financial Plan", href: "/finance" },

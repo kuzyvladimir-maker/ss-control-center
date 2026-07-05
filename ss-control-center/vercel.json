@@ -124,6 +124,10 @@
     {
       "path": "/api/cron/walmart-catalog-report",
       "schedule": "25,55 * * * *"
+    },
+    {
+      "path": "/api/cron/catalog-snapshot",
+      "schedule": "50 * * * *"
     }
   ]
 }

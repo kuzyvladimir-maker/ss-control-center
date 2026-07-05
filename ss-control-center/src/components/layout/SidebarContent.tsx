@@ -83,6 +83,7 @@ const divisions = (s: DashboardSummary): Division[] => [
     name: "Communications",
     color: "#B8901F",
     items: [
+      { title: "Catalog Status", href: "/catalog-status", icon: BarChart3 },
       { title: "Reference Catalog", href: "/reference-catalog", icon: BookOpen },
       // Staff directory + "hats" (post write-ups / job descriptions), digitized
       // from the Google Drive "Должностные инструкции" folder.
