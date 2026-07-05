@@ -120,6 +120,10 @@
     {
       "path": "/api/cron/cogs-sweep?channel=auto&limit=10&concurrency=2",
       "schedule": "20 * * * *"
+    },
+    {
+      "path": "/api/cron/walmart-catalog-report",
+      "schedule": "10,40 * * * *"
     }
   ]
 }

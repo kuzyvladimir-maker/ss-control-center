@@ -16,11 +16,13 @@
 import type { PrismaClient } from "@/generated/prisma/client";
 import type { WalmartClient } from "./client";
 import { iterateWalmartCatalog, type WalmartItemSummary } from "./items";
+import { itemReportIsFresh } from "./catalog-report-sync";
 
 export interface CatalogSyncResult {
   storeIndex: number;
   written: number;
   replaced: number;
+  skipped?: string; // set when this /v3/items sync stepped aside for the ITEM report
 }
 
 // Rows-per-INSERT. ~8 columns → ~4000 bound params/statement, well under
@@ -52,6 +54,14 @@ export async function syncWalmartCatalog(
   client: WalmartClient,
   storeIndex: number,
 ): Promise<CatalogSyncResult> {
+  // The ITEM report (catalog-report-sync) is the AUTHORITATIVE full catalog. When it
+  // has refreshed the mirror recently, this /v3/items sync steps aside — it under-
+  // reports (~2981 of 3895 published), so re-running it would overwrite the fuller
+  // report data with a smaller set. It stays as a FALLBACK for when the report path
+  // is broken/stale.
+  if (await itemReportIsFresh(prisma, storeIndex)) {
+    return { storeIndex, written: 0, replaced: 0, skipped: "item-report-authoritative" };
+  }
   const syncedAt = new Date();
   const seen = new Set<string>();
   const rows: Array<{
