@@ -14,6 +14,7 @@
 import { useState, useEffect, useCallback, useRef, Fragment } from "react";
 import { Loader2, AlertCircle, Search, X, RefreshCw, Boxes, DollarSign, AlertTriangle, CircleSlash, ChevronRight, ExternalLink } from "lucide-react";
 import { PageHead, Btn, Panel, PanelHeader, PanelBody, KpiCard, HeroGreenCard, HeroLabel } from "@/components/kit";
+import { CatalogTabs } from "@/components/catalog/CatalogTabs";
 import { cn } from "@/lib/utils";
 
 type Component = {
@@ -104,6 +105,7 @@ export default function CogsPage() {
         subtitle={<>True landed cost (COGS) for every listing · {s?.costedTotal ?? 0} costed{s ? ` · ${s.walmartCoveragePct}% of published Walmart` : ""}</>}
         actions={<Btn variant="default" icon={<RefreshCw size={13} />} onClick={load} loading={loading}>Refresh</Btn>}
       />
+      <CatalogTabs />
 
       {/* HERO — lead with coverage + one plain next-step (Vladimir's UI rule). */}
       <HeroGreenCard>

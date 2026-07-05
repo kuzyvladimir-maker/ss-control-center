@@ -7,6 +7,7 @@ import {
   Clock, CheckCircle2, XCircle,
 } from "lucide-react";
 import { PageHead, Btn, Panel, PanelHeader, PanelBody, KpiCard } from "@/components/kit";
+import { CatalogTabs } from "@/components/catalog/CatalogTabs";
 import { cn } from "@/lib/utils";
 
 type ProductRow = {
@@ -183,6 +184,7 @@ export default function ReferenceCatalogPage() {
         subtitle={<>Donor product knowledge base · {data?.total ?? 0} unique products{anyFilter ? ` · ${data?.filtered ?? 0} match` : ""}</>}
         actions={<Btn variant="default" icon={<RefreshCw size={13} />} onClick={load} loading={loading}>Refresh</Btn>}
       />
+      <CatalogTabs />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

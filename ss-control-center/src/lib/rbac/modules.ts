@@ -49,7 +49,11 @@ export const MODULES: ModuleDef[] = [
   { key: "adjustments", label: "Adjustments", href: "/adjustments" },
   { key: "training", label: "Training", href: "/training" },
   { key: "bundle-factory", label: "Bundle Factory", href: "/bundle-factory" },
-  { key: "catalog-status", label: "Catalog Status", href: "/catalog-status" },
+  // ── Catalog (one module, three sub-views via in-page tabs) ──
+  // "catalog" owns the Overview/status page (/catalog) + the shared nav. The two
+  // detail sub-views keep their own module keys so their routes/data stay gated:
+  // "cogs" (/cogs, cost) and "reference-catalog" (/reference-catalog, content).
+  { key: "catalog", label: "Catalog", href: "/catalog" },
   { key: "reference-catalog", label: "Reference Catalog", href: "/reference-catalog" },
   { key: "staff-hats", label: "Staff Hats", href: "/staff-hats" },
   { key: "finance", label: "Financial Plan", href: "/finance" },

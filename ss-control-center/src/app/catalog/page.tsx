@@ -12,6 +12,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Loader2, AlertCircle, RefreshCw, DollarSign, Database, AlertTriangle, Boxes, ChevronRight, CheckCircle2 } from "lucide-react";
 import { PageHead, Btn, Panel, PanelHeader, PanelBody, KpiCard, HeroGreenCard, HeroLabel } from "@/components/kit";
+import { CatalogTabs } from "@/components/catalog/CatalogTabs";
 import { cn } from "@/lib/utils";
 
 type Stats = {
@@ -65,10 +66,11 @@ export default function CatalogStatusPage() {
   return (
     <div className="space-y-5">
       <PageHead
-        title="Catalog Status"
+        title="Catalog"
         subtitle={<>Background enrichment &amp; cost-collection progress{updatedAt ? ` · updated ${updatedAt}` : ""}</>}
         actions={<Btn variant="default" icon={<RefreshCw size={13} />} onClick={load} loading={loading}>Refresh</Btn>}
       />
+      <CatalogTabs />
 
       {/* HERO — overall COGS coverage of the live catalog */}
       <HeroGreenCard>

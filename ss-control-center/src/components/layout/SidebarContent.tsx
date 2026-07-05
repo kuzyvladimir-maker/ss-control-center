@@ -83,8 +83,8 @@ const divisions = (s: DashboardSummary): Division[] => [
     name: "Communications",
     color: "#B8901F",
     items: [
-      { title: "Catalog Status", href: "/catalog-status", icon: BarChart3 },
-      { title: "Reference Catalog", href: "/reference-catalog", icon: BookOpen },
+      // ONE "Catalog" entry — its sub-views (Overview / Cost / Content) are in-page tabs.
+      { title: "Catalog", href: "/catalog", icon: BookOpen },
       // Staff directory + "hats" (post write-ups / job descriptions), digitized
       // from the Google Drive "Должностные инструкции" folder.
       { title: "Staff Hats", href: "/staff-hats", icon: Users },
@@ -117,7 +117,6 @@ const divisions = (s: DashboardSummary): Division[] => [
       // only the admin/owner sees and can open it (see RBAC `personal` module).
       { title: "Personal Finance", href: "/personal", icon: Wallet, adminOnly: true },
       { title: "Economics", href: "/economics", icon: DollarSign },
-      { title: "SKU Cost Catalog", href: "/cogs", icon: Receipt },
       { title: "Sales overview", href: "/analytics", icon: TrendingUp },
     ],
   },
