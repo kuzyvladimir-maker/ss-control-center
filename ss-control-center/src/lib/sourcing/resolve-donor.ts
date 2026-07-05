@@ -14,6 +14,7 @@
 
 import { oxylabsWalmartSearch, oxylabsCreds } from "./oxylabs-fetch";
 import { unwrangleSearch } from "./retail-fetch";
+import { openClawSearch, openClawEnabled } from "./openclaw-fetch";
 import { qualifyDonorFront, unitSizeFromTitle, pickBestFront, pickBestFrontFromPool } from "./vision";
 import { highResImageUrl } from "../walmart/multipack/composite";
 
@@ -100,7 +101,25 @@ export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: 
     if (r) return r;
   } catch { /* next tier */ }
 
-  // T2: Google Images (broad, real) — pick fronts, then gate each
+  // T2: OTHER STORES first (owner rule: exhaust real retailers before Google — a
+  // product missing from walmart.com is usually stocked cleanly elsewhere).
+  //   Unwrangle: Sam's Club, Target, Costco.  OpenClaw browser: Publix, BJ's, Aldi.
+  const storeImgs = (offers: any[]): string[] => offers
+    .filter((o) => o.imageUrls?.[0])
+    .map((o) => ({ u: o.imageUrls[0] as string, s: overlap(listingTitle, o.title || "") }))
+    .filter((o) => o.s >= 0.4).sort((a, b) => b.s - a.s).map((o) => o.u);
+  for (const ret of ["samsclub", "target", "costco"] as const) {
+    try { const rr = await unwrangleSearch(ret, q); const r = await tryPool(storeImgs(rr.offers), ret); if (r) return r; } catch { /* next retailer */ }
+  }
+  if (openClawEnabled()) {
+    for (const ret of ["publix", "bjs", "aldi"] as const) {
+      try { const rr = await openClawSearch(ret, q); const r = await tryPool(storeImgs(rr.offers), ret); if (r) return r; } catch { /* next retailer */ }
+    }
+  }
+
+  // T3 (LAST RESORT before generation): Google Images — broad, whole-web. Real
+  // retailer 1P photos above are preferred; Google is the catch-all when no store
+  // we can read carries the product cleanly.
   try {
     const raw = (await googleImages(q + " package")).slice(0, 14);
     const picks: string[] = [];
@@ -110,20 +129,7 @@ export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: 
     if (pool && !picks.includes(pool)) picks.push(pool);
     const r = await tryPool(picks, "Google Images");
     if (r) return r;
-  } catch { /* next tier */ }
-
-  // T3: Sam's Club / Target (Unwrangle)
-  for (const ret of ["samsclub", "target"] as const) {
-    try {
-      const rr = await unwrangleSearch(ret, q);
-      const imgs = rr.offers
-        .filter((o) => o.imageUrls[0])
-        .map((o) => ({ u: o.imageUrls[0], s: overlap(listingTitle, o.title || "") }))
-        .filter((o) => o.s >= 0.4).sort((a, b) => b.s - a.s).map((o) => o.u);
-      const r = await tryPool(imgs, ret);
-      if (r) return r;
-    } catch { /* next retailer */ }
-  }
+  } catch { /* fall through → caller sends to generation */ }
 
   return null;
 }
