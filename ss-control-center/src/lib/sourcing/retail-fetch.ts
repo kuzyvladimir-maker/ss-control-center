@@ -78,6 +78,12 @@ export function extractPackSize(title?: string | null): number {
   // that package IS the base unit, so they must NOT divide (fixes La Abuela $0.26).
   const pats = [
     /pack of\s*(\d+)/, /(\d+)\s*[- ]?pack\b/, /(\d+)\s*[- ]?pk\b/, /case of\s*(\d+)/,
+    // "12 Units" = 12 separate packages (a case) — distinct from "N count" (pieces
+    // inside one package). "12x12 Oz" / "12 x 12 oz" = 12 packages of 12 oz each.
+    // These case markers were silently treated as 1 → the $33.99-for-12 → "$33.99/u"
+    // 12x overcount (Mueller's Egg Noodles).
+    /(\d+)\s*units\b/,
+    /(\d+)\s*x\s*[\d.]+\s*(?:oz|lb|lbs|fl|ml|g|kg|ct|count|pcs)\b/,
   ];
   for (const re of pats) {
     const m = t.match(re);
