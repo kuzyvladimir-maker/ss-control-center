@@ -96,15 +96,16 @@ function mediaType(b64: string): string {
   return b64.startsWith("/9j/") ? "image/jpeg" : b64.startsWith("iVBOR") ? "image/png" : b64.startsWith("R0lG") ? "image/gif" : b64.startsWith("UklG") ? "image/webp" : "image/jpeg";
 }
 
-// Run identification on a GIVEN model (the tiering is decided by the caller).
-// PRIMARY path is the FREE ChatGPT-subscription vision (Codex worker on the box) —
-// same subscription that generates our images, $0 per call. The paid Anthropic /
-// OpenAI vision APIs are only a FALLBACK for when the worker isn't reachable, so a
-// depleted pay-as-you-go balance never stalls the COGS sweep.
+// Identify a product from its images + text. ONE strong-model pass, no cheap tier.
+// PRIMARY: FREE ChatGPT-subscription vision — GPT-5.4 with high reasoning effort via
+// the Codex worker on the box, $0 per call. This is the only path used in normal
+// operation. FALLBACK (only if the box/worker is unreachable): a STRONG paid model
+// (Sonnet), NEVER the cheap tier — cheap models mis-identified products, so we keep
+// them out of identification entirely, even as a fallback.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function runIdentify(b64s: string[], prompt: string, model: string): Promise<any> {
-  // TIER 1 — subscription vision (free). Returns null if the worker is unconfigured
-  // or errors, in which case we drop through to the paid providers below.
+async function runIdentify(b64s: string[], prompt: string): Promise<any> {
+  // TIER 1 — subscription vision (GPT-5.4, high reasoning, $0). Returns null if the
+  // worker is unconfigured or errors → drop through to the strong paid fallback.
   try {
     const viaCodex = await identifyImageViaCodex(b64s, prompt);
     if (viaCodex && (viaCodex as any).brand !== undefined) return viaCodex;
@@ -118,7 +119,8 @@ async function runIdentify(b64s: string[], prompt: string, model: string): Promi
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const content: any[] = b64s.map((b) => ({ type: "image", source: { type: "base64", media_type: mediaType(b), data: b } }));
       content.push({ type: "text", text: prompt });
-      const r = await client.messages.create({ model, max_tokens: 900, messages: [{ role: "user", content }] });
+      // Strong model only (CLAUDE.balanced = Sonnet). Never CLAUDE.cheap.
+      const r = await client.messages.create({ model: CLAUDE.balanced, max_tokens: 900, messages: [{ role: "user", content }] });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const tb: any = r.content.find((b: any) => b.type === "text");
       const m = tb?.text?.match(/\{[\s\S]*\}/);
@@ -160,9 +162,11 @@ function normalizeIdentity(raw: any, inp: IdentifyInputs): ProductIdentity {
   };
 }
 
-// Run the vision brain over the gathered inputs. TIERED: a cheap Haiku pass handles
-// the bulk; only the HARD cases (low confidence or a bundle to decompose) escalate to
-// Sonnet for a better read — most of the catalog stays on the cheap model.
+// Run the vision brain over the gathered inputs in ONE pass on a strong model:
+// GPT-5.4 (high reasoning) via the free ChatGPT-subscription Codex worker, falling
+// back to Sonnet only if the box is unreachable. No cheap-model tier and no second
+// escalation call — the provider is a single strong model, so re-running it wouldn't
+// improve the read and would only burn a slot in the box's serial Codex queue.
 export async function identifyProduct(inp: IdentifyInputs): Promise<ProductIdentity & { imagesUsed: number }> {
   const urls = (inp.imageUrls ?? []).filter((u) => typeof u === "string" && u.startsWith("http")).slice(0, MAX_IMAGES);
   const b64s: string[] = [];
@@ -177,16 +181,8 @@ export async function identifyProduct(inp: IdentifyInputs): Promise<ProductIdent
     (inp.bullets?.length ? `\nBULLET POINTS:\n- ${inp.bullets.slice(0, 8).join("\n- ")}` : "") +
     `\nPHOTOS PROVIDED: ${b64s.length}`;
 
-  // Tier 1 — cheap Haiku pass (handles title-only Walmart AND Amazon photos).
-  let id = normalizeIdentity(await runIdentify(b64s, ctx, CLAUDE.cheap), inp);
-  // Tier 2 — escalate ONLY the hard cases (low confidence, or a bundle whose
-  // components must be decomposed carefully) to Sonnet; take the better read.
-  if (id.confidence < 0.7 || id.is_bundle) {
-    try {
-      const id2 = normalizeIdentity(await runIdentify(b64s, ctx, CLAUDE.balanced), inp);
-      if (id2.confidence >= id.confidence) id = id2;
-    } catch { /* keep the tier-1 result */ }
-  }
+  // ONE strong-model pass (GPT-5.4 via Codex subscription, or Sonnet fallback).
+  const id = normalizeIdentity(await runIdentify(b64s, ctx), inp);
   return { ...id, imagesUsed: b64s.length };
 }
 
