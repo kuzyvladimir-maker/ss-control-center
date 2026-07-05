@@ -11,6 +11,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { CLAUDE } from "@/lib/ai-models";
+import { identifyImageViaCodex } from "@/lib/image-gen/codex-worker";
 
 const MODEL = CLAUDE.cheap; // cheap + vision-capable (legacy pickers)
 // Quality-critical selection/verification uses a stronger model: Haiku could not
@@ -31,7 +32,42 @@ function getClient(): Anthropic | null {
   return client;
 }
 
+// Vision provider: the FREE ChatGPT-subscription path (GPT-5.4, high reasoning, via
+// the Codex worker on the box, $0/call) is PRIMARY, paid Anthropic (Sonnet) is the
+// RESERVE — mirrors identify.ts. Force one with SS_VISION_PROVIDER=codex|anthropic;
+// default "auto" = Codex-first, Sonnet-reserve. NOTE the Codex worker is a SERIAL
+// ~23s/call queue shared with Bundle Factory image gen, so a large sweep must keep
+// per-SKU calls low (batch multi-image where possible).
+function visionProvider(): "codex" | "anthropic" | "auto" {
+  const p = (process.env.SS_VISION_PROVIDER || "auto").toLowerCase();
+  return p === "codex" || p === "anthropic" ? p : "auto";
+}
+
+async function fetchB64(url: string): Promise<string | null> {
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    if (!r.ok) return null;
+    return Buffer.from(await r.arrayBuffer()).toString("base64");
+  } catch { return null; }
+}
+
 async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: string = MODEL): Promise<string> {
+  const provider = visionProvider();
+  // TIER 1 — FREE subscription vision (GPT-5.4 high) via the Codex worker, $0/call.
+  // Codex needs base64 (not URLs). If ALL images fetch and the worker answers with a
+  // JSON object, use it; the object is re-stringified so every caller's parseJson()
+  // works unchanged. Any miss → drop to the paid reserve (unless forced to codex).
+  if (provider !== "anthropic") {
+    try {
+      const b64s = (await Promise.all(imageUrls.map(fetchB64))).filter((b): b is string => !!b);
+      if (b64s.length === imageUrls.length && b64s.length > 0) {
+        const r = await identifyImageViaCodex(b64s, prompt);
+        if (r && typeof r === "object") return JSON.stringify(r);
+      }
+    } catch { /* fall through to paid reserve unless forced */ }
+    if (provider === "codex") throw new Error("codex vision unavailable");
+  }
+  // TIER 2 — paid Anthropic reserve (Sonnet). Sends image URLs directly.
   const c = getClient();
   if (!c) throw new Error("ANTHROPIC_API_KEY missing");
   const content: any[] = imageUrls.map((u) => ({ type: "image", source: { type: "url", url: u } }));
