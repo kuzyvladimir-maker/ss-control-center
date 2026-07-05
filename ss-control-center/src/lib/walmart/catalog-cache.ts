@@ -16,7 +16,7 @@
 import type { PrismaClient } from "@/generated/prisma/client";
 import type { WalmartClient } from "./client";
 import { iterateWalmartCatalog, type WalmartItemSummary } from "./items";
-import { itemReportIsFresh } from "./catalog-report-sync";
+import { itemReportIsFresh, MIN_SANE_ROWS } from "./catalog-report-sync";
 
 export interface CatalogSyncResult {
   storeIndex: number;
@@ -88,11 +88,32 @@ export async function syncWalmartCatalog(
     });
   }
 
+  // Floor guard (same as the ITEM-report path): a transient /v3/items glitch or an
+  // unrecognized response envelope makes iterateWalmartCatalog yield 0 rows and return
+  // WITHOUT throwing — the old code would then deleteMany + insert 0, wiping the mirror
+  // that Jackie search / account health / the COGS sweep depend on. As the FALLBACK
+  // that runs exactly when the guarded report path is already down, it must not wipe.
+  if (rows.length < MIN_SANE_ROWS) {
+    throw new Error(`/v3/items returned only ${rows.length} SKUs (< ${MIN_SANE_ROWS}) — refusing to replace mirror (degrade to stale, never empty)`);
+  }
+
+  // Preserve the lazily-warmed image cache across the replace (mirror of the ITEM path).
+  const priorImgs = await prisma.walmartCatalogItem.findMany({
+    where: { storeIndex },
+    select: { sku: true, mainImageUrl: true, mainImageFetchedAt: true },
+  });
+  const imgBySku = new Map(priorImgs.map((p) => [p.sku, p]));
+
   const replaced = await prisma.$transaction(
     async (tx) => {
       const prior = await tx.walmartCatalogItem.deleteMany({ where: { storeIndex } });
       for (let i = 0; i < rows.length; i += INSERT_CHUNK) {
-        await tx.walmartCatalogItem.createMany({ data: rows.slice(i, i + INSERT_CHUNK) });
+        await tx.walmartCatalogItem.createMany({
+          data: rows.slice(i, i + INSERT_CHUNK).map((r) => {
+            const img = imgBySku.get(r.sku);
+            return { ...r, mainImageUrl: img?.mainImageUrl ?? null, mainImageFetchedAt: img?.mainImageFetchedAt ?? null };
+          }),
+        });
       }
       return prior.count;
     },

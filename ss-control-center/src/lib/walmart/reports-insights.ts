@@ -43,6 +43,7 @@ export async function requestReport(
     params: { reportType, reportVersion: "v1" },
     body: {},
     headers: { "Content-Type": "application/json" },
+    noRetryOn429: true, // fail fast → caller defers to next tick (tiny rate bucket)
   });
   if (res.status === 429) throw new ReportRateLimitedError();
   if (!res.ok) {
@@ -65,7 +66,7 @@ export async function getReportStatus(
   client: WalmartClient,
   requestId: string
 ): Promise<ReportStatus> {
-  const res = await client.requestRaw("GET", `/reports/reportRequests/${requestId}`);
+  const res = await client.requestRaw("GET", `/reports/reportRequests/${requestId}`, { noRetryOn429: true });
   if (res.status === 429) throw new ReportRateLimitedError();
   if (!res.ok) {
     throw new Error(`getReportStatus ${requestId} ${res.status}: ${stringify(res.body)}`);
@@ -87,6 +88,7 @@ export async function getReportDownloadUrl(
   for (const key of ["requestId", "requestID"] as const) {
     const res = await client.requestRaw("GET", "/reports/downloadReport", {
       params: { [key]: requestId },
+      noRetryOn429: true,
     });
     if (res.status === 429) throw new ReportRateLimitedError();
     if (res.status === 400 || res.status === 404) continue;

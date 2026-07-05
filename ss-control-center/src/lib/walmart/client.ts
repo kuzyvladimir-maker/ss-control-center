@@ -47,6 +47,11 @@ interface RequestOptions {
   raw?: boolean;
   /** Extra headers to merge in. */
   headers?: Record<string, string>;
+  /** Fail fast on HTTP 429 instead of the 5x backoff retry. For the /reports
+   *  endpoint, whose rate bucket is tiny: a REQUEST_THRESHOLD_VIOLATED can't
+   *  succeed on same-invocation retry and just deepens the violation — the caller
+   *  (report state machines) defers to the next cron tick instead. */
+  noRetryOn429?: boolean;
 }
 
 export class WalmartApiError extends Error {
@@ -457,8 +462,11 @@ export class WalmartClient {
       }
 
       // Retry on 429 / 5xx only — 4xx (other than 401 first attempt) are
-      // application errors, return them straight to the caller.
-      if ((res.status === 429 || res.status >= 500) && attempt < MAX_RETRIES) {
+      // application errors, return them straight to the caller. Callers on a
+      // strictly-rate-limited endpoint (e.g. /reports) pass noRetryOn429 so a 429
+      // returns immediately instead of hammering the bucket 5x before deferring.
+      const retriable429 = res.status === 429 && !options.noRetryOn429;
+      if ((retriable429 || res.status >= 500) && attempt < MAX_RETRIES) {
         let delay = Math.min(
           BACKOFF_BASE_MS * 2 ** attempt + Math.random() * 250,
           BACKOFF_MAX_MS
