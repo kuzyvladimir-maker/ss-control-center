@@ -42,8 +42,12 @@ function visionProvider(): "codex" | "claude" | "anthropic" | "auto" {
   const p = (process.env.SS_VISION_PROVIDER || "auto").toLowerCase();
   return p === "codex" || p === "claude" || p === "anthropic" ? p : "auto";
 }
-// Round-robin cursor across the two free subscription lanes (Codex + Claude CLI).
-let _visionLane = 0;
+// In-flight counters for the two free lanes (Codex + Claude CLI). The dispatcher
+// sends each call to the lane with FEWER calls in flight (ties → Claude, our
+// validated Sonnet), so both lanes stay busy and the idler/faster one naturally
+// takes more work — better than a fixed round-robin when the lanes differ in speed.
+let _codexInflight = 0;
+let _claudeInflight = 0;
 
 async function fetchB64(url: string): Promise<string | null> {
   try {
@@ -66,14 +70,17 @@ async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: s
     try {
       const b64s = (await Promise.all(imageUrls.map(fetchB64))).filter((b): b is string => !!b);
       if (b64s.length === imageUrls.length && b64s.length > 0) {
-        const codex = () => identifyImageViaCodex(b64s, prompt);
-        const claude = () => identifyImageViaClaudeCli(b64s, prompt);
+        const codex = async () => { _codexInflight++; try { return await identifyImageViaCodex(b64s, prompt); } finally { _codexInflight--; } };
+        const claude = async () => { _claudeInflight++; try { return await identifyImageViaClaudeCli(b64s, prompt); } finally { _claudeInflight--; } };
         let r: Record<string, unknown> | null = null;
         if (provider === "claude") r = await claude();
         else if (provider === "codex") r = await codex();
         else {
-          const claudeFirst = b64s.length <= 2 && (_visionLane++ & 1) === 1;
-          const [first, second] = claudeFirst ? [claude, codex] : [codex, claude];
+          // Load-balance: send to the lane with fewer in-flight calls (tie → Claude).
+          // Multi-image (>2) → Codex (native multi-image in one turn; Claude reads
+          // each image serially). On a miss, the other lane covers it.
+          const preferClaude = b64s.length <= 2 && _claudeInflight <= _codexInflight;
+          const [first, second] = preferClaude ? [claude, codex] : [codex, claude];
           r = await first();
           if (!r) r = await second();
         }
