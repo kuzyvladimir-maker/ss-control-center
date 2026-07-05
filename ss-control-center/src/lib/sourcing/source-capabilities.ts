@@ -21,7 +21,32 @@
 //  • Google Shopping = last-resort estimate, MIX of 1P + 3P resellers → take the
 //    first-party merchant only, never a reseller price.
 
-export type DataField = "price" | "images" | "nutrition" | "ingredients" | "upc" | "description";
+// The FULL enrichment field set we harvest per product (not just price/photos).
+// A listing needs everything here. Grouped: identity, pricing, text, GRAPHICS,
+// structured ATTRIBUTES, nutrition/compliance, variations, social.
+export type DataField =
+  // identity
+  | "upc" | "brand" | "model" | "category"
+  // pricing
+  | "price"
+  // text content
+  | "title" | "description" | "bullets"
+  // graphics — the full gallery (main + angles + infographics + lifestyle + label
+  // images are all inside the images[] array) + product videos
+  | "images" | "video"
+  // structured attributes — the FULL spec array: size, weight, dimensions, flavor,
+  // color, material, form, container, count, prep, shelf-life, texture, etc.
+  | "attributes"
+  | "variations"
+  // nutrition / compliance (grocery)
+  | "nutrition" | "ingredients" | "allergens"
+  // social proof
+  | "reviews";
+
+// NOTE: A+/Enhanced brand-content imagery (Amazon A+, Walmart Rich Media) is NOT
+// returned by any product API — we GENERATE it (Bundle Factory / A+ Content Factory),
+// not harvest it. So "graphics" here = the standard gallery + videos; A+ is a separate
+// generation pipeline.
 
 export type SourceKey =
   | "oxylabs:walmart" | "oxylabs:amazon" | "oxylabs:google"
@@ -40,8 +65,8 @@ export interface SourceCapability {
 
 // What each concrete source objectively returns.
 export const SOURCE_CAPS: Record<SourceKey, SourceCapability> = {
-  "oxylabs:walmart":   { key: "oxylabs:walmart",   service: "oxylabs",   structured: true,  provides: ["price", "images", "description"], creditCost: null, firstParty: "clean", note: "walmart_search=1P price+main img; walmart_product=price+7img gallery+desc+specs. NO UPC, nutrition/ingredients only as label-image URLs." },
-  "oxylabs:amazon":    { key: "oxylabs:amazon",    service: "oxylabs",   structured: true,  provides: ["price", "images", "ingredients", "upc", "description"], creditCost: null, firstParty: "clean", note: "amazon_product = COMPLETE: 8-img gallery + bullets + desc + UPC + TEXT ingredients + buybox 1P/3P. No structured nutrition. Amazon needs nothing else." },
+  "oxylabs:walmart":   { key: "oxylabs:walmart",   service: "oxylabs",   structured: true,  provides: ["price", "images", "title", "description", "bullets", "category", "attributes", "variations", "brand"], creditCost: null, firstParty: "clean", note: "walmart_product = price + 7-img gallery + desc + category(breadcrumbs) + 19-field specifications (size/weight/flavor/material/form/container/prep/shelf-life/texture…) + variations. NO UPC; nutrition/ingredients only as label-image URLs (in specs)." },
+  "oxylabs:amazon":    { key: "oxylabs:amazon",    service: "oxylabs",   structured: true,  provides: ["price", "images", "video", "title", "description", "bullets", "category", "attributes", "variations", "ingredients", "upc", "brand", "model", "reviews"], creditCost: null, firstParty: "clean", note: "amazon_product = RICHEST: 8-img gallery + videos(flag) + bullets + desc + category + product_details(brand/model/dimensions/UPC) + variations + TEXT ingredients + reviews + 1P/3P buybox. Missing only: structured nutrition + A+ enhanced imagery (A+ = we GENERATE)." },
   "oxylabs:google":    { key: "oxylabs:google",    service: "oxylabs",   structured: true,  provides: ["price"], creditCost: null, firstParty: "mixed", note: "google_shopping_search: cross-retailer price, MIX of 1P + 3P resellers in one feed. Last resort; take first-party merchant only." },
   "unwrangle:walmart": { key: "unwrangle:walmart", service: "unwrangle", structured: true,  provides: ["price", "images", "nutrition", "ingredients", "upc", "description"], creditCost: 2.5, firstParty: "clean", note: "walmart_detail = richest grocery content: structured nutrition_facts + ingredients + UPC + all photos + desc + 1P seller. THE Walmart content source." },
   "unwrangle:target":  { key: "unwrangle:target",  service: "unwrangle", structured: true,  provides: ["price", "images", "upc", "description"], creditCost: 1, firstParty: "clean", note: "target_detail: price + full gallery + desc + highlights + UPC + brand. No nutrition/ingredients. Only structured Target path." },
@@ -89,3 +114,20 @@ export const PRICE_TIERS: SourceKey[] = [
 export function routingFor(retailer: string): RetailerRouting | undefined {
   return RETAILER_ROUTING.find((r) => r.retailer === retailer.toLowerCase());
 }
+
+// ── FREE content sources that FILL the gaps (attributes / graphics / nutrition) ──
+// The paid retailer APIs give gallery+attributes+variations, but for the FULL scope
+// (all graphics + every attribute + structured nutrition) we layer FREE sources on
+// top — cheaper and often richer for grocery. See reference_sourcing_strategy_2026-07.
+export const FREE_ENRICHMENT_SOURCES = [
+  { key: "openfoodfacts", for: ["nutrition", "ingredients", "allergens", "attributes", "images", "brand", "category"] as DataField[],
+    note: "Open Food Facts — free open DB by UPC/barcode: structured nutrition + ingredients + allergens + food attributes + product images. Fills the grocery nutrition/attribute gap the paid APIs leave. ADOPT." },
+  { key: "google-cse", for: ["images"] as DataField[],
+    note: "Google Programmable Search (CSE) — free image/content DISCOVERY (find more product photos across the web). Old-client keys live to 2027." },
+  { key: "gemini-vision", for: ["attributes", "nutrition", "ingredients"] as DataField[],
+    note: "Gemini Flash vision (free lane) — EXTRACT attributes/nutrition/ingredients from label images (e.g. Walmart's nutrition-facts-label-image → structured text). Also a 3rd vision lane for identify." },
+] as const;
+
+// A+/Enhanced brand-content imagery is GENERATED, not harvested:
+//   Amazon A+ → project_aplus_content_factory ; Bundle Factory image-gen (Codex, $0).
+export const APLUS_IS_GENERATED = true;
