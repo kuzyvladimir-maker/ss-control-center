@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, type Client } from "@libsql/client";
 import { computeCatalogStats, readSnapshotSeries, writeCatalogSnapshot } from "@/lib/catalog/catalog-stats";
+import { getPaidServiceHealth, probePaidServices } from "@/lib/sourcing/service-health";
 import { randomUUID } from "node:crypto";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +30,10 @@ export async function GET(_request: NextRequest) {
       await writeCatalogSnapshot(conn, current, randomUUID(), new Date().toISOString());
       series = await readSnapshotSeries(conn, 120);
     }
-    return NextResponse.json({ ok: true, current, series });
+    // Paid-service health: use the cached snapshot; probe live if we've never checked.
+    let serviceHealth = await getPaidServiceHealth(conn);
+    if (!serviceHealth) serviceHealth = await probePaidServices(conn).catch(() => null);
+    return NextResponse.json({ ok: true, current, series, serviceHealth });
   } catch (e) {
     return NextResponse.json({ ok: false, error: String(e instanceof Error ? e.message : e) }, { status: 500 });
   }

@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, type Client } from "@libsql/client";
 import { computeCatalogStats, writeCatalogSnapshot } from "@/lib/catalog/catalog-stats";
+import { probePaidServices } from "@/lib/sourcing/service-health";
 import { randomUUID } from "node:crypto";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +36,9 @@ export async function GET(request: NextRequest) {
     const conn = db();
     const stats = await computeCatalogStats(conn);
     await writeCatalogSnapshot(conn, stats, randomUUID(), new Date().toISOString());
-    return NextResponse.json({ ok: true, ...stats });
+    // Also refresh paid-service health so a provider can't silently run dry unnoticed.
+    const health = await probePaidServices(conn).catch(() => null);
+    return NextResponse.json({ ok: true, ...stats, serviceHealth: health });
   } catch (e) {
     return NextResponse.json({ ok: false, error: String(e instanceof Error ? e.message : e) }, { status: 500 });
   }

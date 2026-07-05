@@ -21,7 +21,9 @@ type Stats = {
   donorProducts: number; donorOffers: number; withBom: number;
 };
 type Point = Stats & { capturedAt: string };
-type Resp = { ok: boolean; error?: string; current: Stats; series: Point[] };
+type Svc = { key: string; name: string; status: string; remaining: number | null; note?: string };
+type ServiceHealth = { at: string; services: Svc[]; anyDry: boolean; anyLow: boolean };
+type Resp = { ok: boolean; error?: string; current: Stats; series: Point[]; serviceHealth?: ServiceHealth | null };
 
 const fmt = (n: number) => (n ?? 0).toLocaleString("en-US");
 
@@ -71,6 +73,30 @@ export default function CatalogStatusPage() {
         actions={<Btn variant="default" icon={<RefreshCw size={13} />} onClick={load} loading={loading}>Refresh</Btn>}
       />
       <CatalogTabs />
+
+      {/* PAID-SERVICE ALERT — loud when a data provider runs dry/low, so we never
+          silently degrade to Google-estimates again. */}
+      {data?.serviceHealth && (data.serviceHealth.anyDry || data.serviceHealth.anyLow) && (
+        <div className={cn(
+          "flex flex-wrap items-start gap-2 rounded-lg border px-3 py-2.5 text-[13px]",
+          data.serviceHealth.anyDry ? "border-danger/30 bg-danger-tint text-danger" : "border-warn/30 bg-warn-tint text-warn-strong",
+        )}>
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+          <div className="min-w-0">
+            <div className="font-semibold">
+              {data.serviceHealth.anyDry ? "A paid data service is OUT OF CREDITS — cost results are degrading to estimates." : "A paid data service is running low."}
+            </div>
+            <div className="mt-0.5 text-ink-2">
+              {data.serviceHealth.services.filter((s) => s.status === "dry" || s.status === "low").map((s) => (
+                <span key={s.key} className="mr-3 inline-block">
+                  <b>{s.name}</b>: {s.status === "dry" ? "0 credits" : `${fmt(s.remaining ?? 0)} left`}{s.note ? ` — ${s.note}` : ""}
+                </span>
+              ))}
+              <span className="text-ink-3">Top up to restore Target/Sam's/Costco/Publix sourcing; until then items fall to Google (flagged).</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* HERO — overall COGS coverage of the live catalog */}
       <HeroGreenCard>
