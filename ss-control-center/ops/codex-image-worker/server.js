@@ -61,6 +61,17 @@ function enqueue(fn) {
   return run;
 }
 
+// --- SECOND lane: Claude CLI vision (its own serial queue) ---------------------
+// The Claude Max-subscription worker runs on a SEPARATE chain so it executes
+// CONCURRENTLY with the Codex lane — two subscriptions = two parallel vision
+// workers (~2x throughput on a big backlog sweep). Both are $0/call.
+let claudeChain = Promise.resolve();
+function enqueueClaude(fn) {
+  const run = claudeChain.then(fn, fn);
+  claudeChain = run.then(() => {}, () => {});
+  return run;
+}
+
 // --- list every generated PNG with its mtime ----------------------------------
 function listPngs() {
   const out = [];
@@ -328,6 +339,63 @@ async function handleAnalyze(body) {
   return { status: 200, json: { ok: true, result } };
 }
 
+// --- VISION via the Claude Code CLI (SECOND subscription worker) ----------------
+// Mirrors the Codex analyze path but on the Claude Max subscription ($0/call).
+// Claude Code READS the attached image files (its Read tool renders images
+// visually) and answers with JSON. `--output-format json` wraps the answer as
+// { result: "<text>", ... }; we unwrap then extract the JSON object from the text.
+// Uses a STRONG model (sonnet) — cheap tiers mis-identify products. ANTHROPIC_API_KEY
+// is stripped so it uses the subscription OAuth (in ~/.claude/.credentials.json),
+// never the paid API.
+const CLAUDE_BIN = process.env.CLAUDE_BIN || "claude";
+const CLAUDE_VISION_MODEL = process.env.CLAUDE_VISION_MODEL || "sonnet";
+function runClaudeVision(imgFiles, prompt) {
+  return new Promise((resolve) => {
+    const env = { ...process.env };
+    delete env.ANTHROPIC_API_KEY; // subscription OAuth only, never the paid API
+    const args = [
+      "-p", prompt, "--output-format", "json",
+      "--allowedTools", "Read", "--permission-mode", "bypassPermissions",
+      "--model", CLAUDE_VISION_MODEL, "--max-turns", "6",
+    ];
+    const child = spawn(CLAUDE_BIN, args, { env, cwd: os.tmpdir(), stdio: ["ignore", "pipe", "pipe"] });
+    let stdout = "", stderr = "";
+    const cap = (s, d) => { s += d.toString(); return s.length > 400000 ? s.slice(-400000) : s; };
+    child.stdout.on("data", (d) => { stdout = cap(stdout, d); });
+    child.stderr.on("data", (d) => { stderr = cap(stderr, d); });
+    const timer = setTimeout(() => { try { child.kill("SIGKILL"); } catch {} resolve({ code: -1, stdout, stderr: stderr + "\n[worker] claude vision timed out" }); }, VISION_TIMEOUT_MS);
+    child.on("error", (e) => { clearTimeout(timer); resolve({ code: -1, stdout, stderr: stderr + "\n[worker] claude spawn error: " + e.message }); });
+    child.on("close", (code) => { clearTimeout(timer); resolve({ code, stdout, stderr }); });
+  });
+}
+
+async function handleAnalyzeClaude(body) {
+  const prompt = String((body && body.prompt) || "").trim();
+  if (!prompt) return { status: 400, json: { error: "missing prompt" } };
+  const runDir = await fsp.mkdtemp(path.join(os.tmpdir(), "claude-vis-"));
+  let imgFiles = [];
+  try { imgFiles = await writeRefs(body && (body.images || body.reference_images), body && (body.image_urls || body.reference_urls), runDir); } catch { /* best-effort */ }
+  if (!imgFiles.length) { try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {} return { status: 400, json: { error: "no images" } }; }
+
+  const wrapped =
+    `${prompt}\n\n` +
+    `Use the Read tool to view the image file(s): ${imgFiles.join(", ")}. ` +
+    `Then respond with ONLY a single JSON object — no markdown, no code fences, no prose. ` +
+    `Do NOT create, edit, or write any file; only read the image(s) and answer.`;
+
+  const { code, stdout, stderr } = await runClaudeVision(imgFiles, wrapped);
+  try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {}
+
+  // Unwrap the Claude Code JSON envelope, then pull the JSON object out of .result.
+  let text = stdout;
+  try { const envlp = JSON.parse(stdout); if (envlp && typeof envlp.result === "string") text = envlp.result; } catch { /* not the envelope — scan raw */ }
+  const result = extractLastJson(text) || extractLastJson(stdout);
+  if (!result) {
+    return { status: 502, json: { error: "claude produced no json", code, stderr: stderr.slice(-1500), stdout: stdout.slice(-1500) } };
+  }
+  return { status: 200, json: { ok: true, result } };
+}
+
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, "http://localhost");
 
@@ -339,7 +407,8 @@ const server = http.createServer((req, res) => {
 
   const isGenerate = req.method === "POST" && url.pathname === "/generate";
   const isAnalyze = req.method === "POST" && url.pathname === "/analyze";
-  if (!isGenerate && !isAnalyze) {
+  const isAnalyzeClaude = req.method === "POST" && url.pathname === "/analyze-claude";
+  if (!isGenerate && !isAnalyze && !isAnalyzeClaude) {
     res.writeHead(404, { "content-type": "application/json" });
     res.end(JSON.stringify({ error: "not found" }));
     return;
@@ -366,7 +435,9 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({ error: "bad json" }));
       return;
     }
-    enqueue(() => (isAnalyze ? handleAnalyze(body) : handleGenerate(body)))
+    (isAnalyzeClaude
+      ? enqueueClaude(() => handleAnalyzeClaude(body))
+      : enqueue(() => (isAnalyze ? handleAnalyze(body) : handleGenerate(body))))
       .then((result) => {
         if (result.png) {
           res.writeHead(200, { "content-type": "image/png", "content-length": result.png.length });

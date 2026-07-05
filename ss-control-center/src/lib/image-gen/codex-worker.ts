@@ -197,3 +197,32 @@ export async function identifyImageViaCodex(
     return null;
   }
 }
+
+// ── VISION via the Claude Code CLI (SECOND free subscription worker) ──────────
+// Same contract as identifyImageViaCodex, but hits the worker's /analyze-claude
+// endpoint (Claude Max subscription, $0). Lets the vision layer run TWO parallel
+// free lanes (Codex + Claude) for ~2x throughput on big sweeps. URL derived from
+// CODEX_IMAGE_WORKER_URL (…/generate → …/analyze-claude), so no new env var.
+export async function identifyImageViaClaudeCli(
+  b64Images: string[],
+  prompt: string,
+  opts?: { timeoutMs?: number },
+): Promise<Record<string, unknown> | null> {
+  const genUrl = process.env.CODEX_IMAGE_WORKER_URL;
+  const token = process.env.CODEX_IMAGE_WORKER_TOKEN;
+  if (!genUrl || !token || !b64Images.length) return null;
+  const url = genUrl.replace(/\/generate\/?$/, "/analyze-claude");
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+      body: JSON.stringify({ prompt, images: b64Images }),
+      signal: AbortSignal.timeout(opts?.timeoutMs ?? 200_000),
+    });
+    if (!res.ok) return null;
+    const j = (await res.json()) as { ok?: boolean; result?: Record<string, unknown> };
+    return j?.result ?? null;
+  } catch {
+    return null;
+  }
+}

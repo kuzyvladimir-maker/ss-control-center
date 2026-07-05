@@ -11,7 +11,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { CLAUDE } from "@/lib/ai-models";
-import { identifyImageViaCodex } from "@/lib/image-gen/codex-worker";
+import { identifyImageViaCodex, identifyImageViaClaudeCli } from "@/lib/image-gen/codex-worker";
 
 const MODEL = CLAUDE.cheap; // cheap + vision-capable (legacy pickers)
 // Quality-critical selection/verification uses a stronger model: Haiku could not
@@ -38,10 +38,12 @@ function getClient(): Anthropic | null {
 // default "auto" = Codex-first, Sonnet-reserve. NOTE the Codex worker is a SERIAL
 // ~23s/call queue shared with Bundle Factory image gen, so a large sweep must keep
 // per-SKU calls low (batch multi-image where possible).
-function visionProvider(): "codex" | "anthropic" | "auto" {
+function visionProvider(): "codex" | "claude" | "anthropic" | "auto" {
   const p = (process.env.SS_VISION_PROVIDER || "auto").toLowerCase();
-  return p === "codex" || p === "anthropic" ? p : "auto";
+  return p === "codex" || p === "claude" || p === "anthropic" ? p : "auto";
 }
+// Round-robin cursor across the two free subscription lanes (Codex + Claude CLI).
+let _visionLane = 0;
 
 async function fetchB64(url: string): Promise<string | null> {
   try {
@@ -53,19 +55,32 @@ async function fetchB64(url: string): Promise<string | null> {
 
 async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: string = MODEL): Promise<string> {
   const provider = visionProvider();
-  // TIER 1 — FREE subscription vision (GPT-5.4 high) via the Codex worker, $0/call.
-  // Codex needs base64 (not URLs). If ALL images fetch and the worker answers with a
-  // JSON object, use it; the object is re-stringified so every caller's parseJson()
-  // works unchanged. Any miss → drop to the paid reserve (unless forced to codex).
+  // TIER 1 — FREE subscription vision. TWO lanes, both $0: the Codex worker
+  // (GPT-5.4) and the Claude CLI worker (Sonnet). Both need base64 (not URLs).
+  // "auto" round-robins single-image calls across the two lanes (≈2x on a batch)
+  // with cross-fallback; multi-image calls prefer Codex (native multi-image in one
+  // turn — Claude reads each image serially). The returned object is re-stringified
+  // so every caller's parseJson() works unchanged. On a miss: a forced provider
+  // throws; "auto" drops to the paid Sonnet reserve below.
   if (provider !== "anthropic") {
     try {
       const b64s = (await Promise.all(imageUrls.map(fetchB64))).filter((b): b is string => !!b);
       if (b64s.length === imageUrls.length && b64s.length > 0) {
-        const r = await identifyImageViaCodex(b64s, prompt);
+        const codex = () => identifyImageViaCodex(b64s, prompt);
+        const claude = () => identifyImageViaClaudeCli(b64s, prompt);
+        let r: Record<string, unknown> | null = null;
+        if (provider === "claude") r = await claude();
+        else if (provider === "codex") r = await codex();
+        else {
+          const claudeFirst = b64s.length <= 2 && (_visionLane++ & 1) === 1;
+          const [first, second] = claudeFirst ? [claude, codex] : [codex, claude];
+          r = await first();
+          if (!r) r = await second();
+        }
         if (r && typeof r === "object") return JSON.stringify(r);
       }
     } catch { /* fall through to paid reserve unless forced */ }
-    if (provider === "codex") throw new Error("codex vision unavailable");
+    if (provider !== "auto") throw new Error(`${provider} vision unavailable`);
   }
   // TIER 2 — paid Anthropic reserve (Sonnet). Sends image URLs directly.
   const c = getClient();
