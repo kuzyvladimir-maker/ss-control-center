@@ -101,25 +101,20 @@ export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: 
     if (r) return r;
   } catch { /* next tier */ }
 
-  // T2: OTHER STORES first (owner rule: exhaust real retailers before Google — a
-  // product missing from walmart.com is usually stocked cleanly elsewhere).
-  //   Unwrangle: Sam's Club, Target, Costco.  OpenClaw browser: Publix, BJ's, Aldi.
   const storeImgs = (offers: any[]): string[] => offers
     .filter((o) => o.imageUrls?.[0])
     .map((o) => ({ u: o.imageUrls[0] as string, s: overlap(listingTitle, o.title || "") }))
     .filter((o) => o.s >= 0.4).sort((a, b) => b.s - a.s).map((o) => o.u);
+
+  // T2: fast API stores (Unwrangle — now paid): Sam's Club, Target, Costco.
   for (const ret of ["samsclub", "target", "costco"] as const) {
     try { const rr = await unwrangleSearch(ret, q); const r = await tryPool(storeImgs(rr.offers), ret); if (r) return r; } catch { /* next retailer */ }
   }
-  if (openClawEnabled()) {
-    for (const ret of ["publix", "bjs", "aldi"] as const) {
-      try { const rr = await openClawSearch(ret, q); const r = await tryPool(storeImgs(rr.offers), ret); if (r) return r; } catch { /* next retailer */ }
-    }
-  }
 
-  // T3 (LAST RESORT before generation): Google Images — broad, whole-web. Real
-  // retailer 1P photos above are preferred; Google is the catch-all when no store
-  // we can read carries the product cleanly.
+  // T3: Google Images (fast, whole-web) — real retailer photos indexed across the
+  // web; catches most generic products a store search missed. Ordered BEFORE the
+  // slow browser stores so a common product never has to wait on a 90s BJ's/Publix
+  // browser scrape (owner observed the browser hammering BJ's on every miss).
   try {
     const raw = (await googleImages(q + " package")).slice(0, 14);
     const picks: string[] = [];
@@ -129,7 +124,18 @@ export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: 
     if (pool && !picks.includes(pool)) picks.push(pool);
     const r = await tryPool(picks, "Google Images");
     if (r) return r;
-  } catch { /* fall through → caller sends to generation */ }
+  } catch { /* next tier */ }
+
+  // T4 (SLOW, LAST before generation): login-gated stores via the OpenClaw browser
+  // (~90s each, and it shares the box with Vladimir's OpenClaw agents). Reached ONLY
+  // when everything above missed — mainly PRIVATE LABELS sold only here (Wellsley
+  // Farms → BJ's, store brands → Publix). Kept last so a generic product a fast
+  // source already covers never wastes the slow browser.
+  if (openClawEnabled()) {
+    for (const ret of ["publix", "bjs", "aldi"] as const) {
+      try { const rr = await openClawSearch(ret, q); const r = await tryPool(storeImgs(rr.offers), ret); if (r) return r; } catch { /* next retailer */ }
+    }
+  }
 
   return null;
 }
