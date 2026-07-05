@@ -25,7 +25,11 @@ import { costOneSku, nextUncostedWalmartSkus, amazonSkus, walmartSweepRemaining 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-const TIME_BUDGET_MS = 250_000; // < the 300s function cap, leaves room to flush + respond
+// < the 300s function cap with margin for in-flight SKUs to finish. NOTE: the Codex
+// vision worker SERIALIZES runs (~20-25s each, shared with Bundle-Factory image gen),
+// so a tick realistically identifies ~8-10 uncached SKUs before this budget stops it;
+// cached SKUs (identity already stored) skip vision and fly through much faster.
+const TIME_BUDGET_MS = 215_000;
 
 function requireCronAuth(request: NextRequest): NextResponse | null {
   const secret = process.env.CRON_SECRET;

@@ -264,11 +264,14 @@ function runCodexVision(imgFiles, prompt, cwd) {
     delete env.CODEX_API_KEY;
     env.CODEX_HOME = CODEX_HOME;
 
+    // `-i, --image <FILE>...` is VARIADIC — a trailing positional prompt would be
+    // swallowed as another image file. So we pass images via -i and feed the PROMPT
+    // on STDIN (codex exec reads the prompt from stdin when no positional is given).
     const args = ["exec", "--skip-git-repo-check"];
-    for (const f of imgFiles) { args.push("-i", f); } // attach each image as vision input
-    args.push(prompt);
+    for (const f of imgFiles) { args.push("-i", f); }
 
-    const child = spawn(CODEX_BIN, args, { env, cwd: cwd || os.tmpdir(), stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn(CODEX_BIN, args, { env, cwd: cwd || os.tmpdir(), stdio: ["pipe", "pipe", "pipe"] });
+    try { child.stdin.write(prompt); child.stdin.end(); } catch { /* child may have exited */ }
     let stdout = "", stderr = "";
     const cap = (s, d) => { s += d.toString(); return s.length > 200000 ? s.slice(-200000) : s; };
     child.stdout.on("data", (d) => { stdout = cap(stdout, d); });
