@@ -12,6 +12,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { CLAUDE } from "@/lib/ai-models";
 import { identifyImageViaCodex, identifyImageViaClaudeCli } from "@/lib/image-gen/codex-worker";
+import { identifyImageViaGemini } from "./gemini-vision";
 
 const MODEL = CLAUDE.cheap; // cheap + vision-capable (legacy pickers)
 // Quality-critical selection/verification uses a stronger model: Haiku could not
@@ -38,16 +39,17 @@ function getClient(): Anthropic | null {
 // default "auto" = Codex-first, Sonnet-reserve. NOTE the Codex worker is a SERIAL
 // ~23s/call queue shared with Bundle Factory image gen, so a large sweep must keep
 // per-SKU calls low (batch multi-image where possible).
-function visionProvider(): "codex" | "claude" | "anthropic" | "auto" {
+function visionProvider(): "codex" | "claude" | "gemini" | "anthropic" | "auto" {
   const p = (process.env.SS_VISION_PROVIDER || "auto").toLowerCase();
-  return p === "codex" || p === "claude" || p === "anthropic" ? p : "auto";
+  return p === "codex" || p === "claude" || p === "gemini" || p === "anthropic" ? p : "auto";
 }
-// In-flight counters for the two free lanes (Codex + Claude CLI). The dispatcher
-// sends each call to the lane with FEWER calls in flight (ties → Claude, our
-// validated Sonnet), so both lanes stay busy and the idler/faster one naturally
-// takes more work — better than a fixed round-robin when the lanes differ in speed.
+// In-flight counters for the THREE free lanes (Codex + Claude CLI + Gemini API).
+// The dispatcher sends each call to the lane with FEWER calls in flight (load-
+// balance), so the idler/faster lane naturally takes more work and a rate-limited
+// lane sheds to the others — better than a fixed round-robin.
 let _codexInflight = 0;
 let _claudeInflight = 0;
+let _geminiInflight = 0;
 
 async function fetchB64(url: string): Promise<string | null> {
   try {
@@ -72,17 +74,21 @@ async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: s
       if (b64s.length === imageUrls.length && b64s.length > 0) {
         const codex = async () => { _codexInflight++; try { return await identifyImageViaCodex(b64s, prompt); } finally { _codexInflight--; } };
         const claude = async () => { _claudeInflight++; try { return await identifyImageViaClaudeCli(b64s, prompt); } finally { _claudeInflight--; } };
+        const gemini = async () => { _geminiInflight++; try { return await identifyImageViaGemini(b64s, prompt); } finally { _geminiInflight--; } };
         let r: Record<string, unknown> | null = null;
         if (provider === "claude") r = await claude();
         else if (provider === "codex") r = await codex();
+        else if (provider === "gemini") r = await gemini();
         else {
-          // Load-balance: send to the lane with fewer in-flight calls (tie → Claude).
-          // Multi-image (>2) → Codex (native multi-image in one turn; Claude reads
-          // each image serially). On a miss, the other lane covers it.
-          const preferClaude = b64s.length <= 2 && _claudeInflight <= _codexInflight;
-          const [first, second] = preferClaude ? [claude, codex] : [codex, claude];
-          r = await first();
-          if (!r) r = await second();
+          // THREE free lanes: try them least-in-flight first (load-balance), falling
+          // to the next on a null (rate-limit/miss). Claude reads multi-images
+          // serially, so multi-image (>2) uses only the native-multi lanes (Gemini/Codex).
+          const lanes: Array<[number, () => Promise<Record<string, unknown> | null>]> =
+            b64s.length <= 2
+              ? [[_geminiInflight, gemini], [_claudeInflight, claude], [_codexInflight, codex]]
+              : [[_geminiInflight, gemini], [_codexInflight, codex]];
+          lanes.sort((a, b) => a[0] - b[0]);
+          for (const [, fn] of lanes) { r = await fn(); if (r) break; }
         }
         if (r && typeof r === "object") return JSON.stringify(r);
       }
