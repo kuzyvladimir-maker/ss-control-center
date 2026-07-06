@@ -82,10 +82,17 @@ async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: s
         if (provider === "claude") return claude();
         if (provider === "codex") return codex();
         if (provider === "gemini") return gemini();
+        // WEIGHTED load-balance (owner rule): Claude first (biggest subscription =
+        // most headroom), Gemini as free parallel overflow, Codex last (weak $20 plan
+        // — spare it). Score = (in-flight+1)×weight; lower wins → Claude picked most,
+        // others only when Claude is busy. Multi-image skips serial-read Claude.
+        const W_CLAUDE = Number(process.env.SS_W_CLAUDE ?? 1);
+        const W_GEMINI = Number(process.env.SS_W_GEMINI ?? 2);
+        const W_CODEX = Number(process.env.SS_W_CODEX ?? 5);
         const lanes: Array<[number, () => Promise<Record<string, unknown> | null>]> =
           b64s.length <= 2
-            ? [[_geminiInflight, gemini], [_claudeInflight, claude], [_codexInflight, codex]]
-            : [[_geminiInflight, gemini], [_codexInflight, codex]];
+            ? [[(_claudeInflight + 1) * W_CLAUDE, claude], [(_geminiInflight + 1) * W_GEMINI, gemini], [(_codexInflight + 1) * W_CODEX, codex]]
+            : [[(_geminiInflight + 1) * W_GEMINI, gemini], [(_codexInflight + 1) * W_CODEX, codex]];
         lanes.sort((a, b) => a[0] - b[0]);
         let r: Record<string, unknown> | null = null;
         for (const [, fn] of lanes) { r = await fn(); if (r) break; }
@@ -498,7 +505,7 @@ Judge each point strictly and INDEPENDENTLY. Return JSON only:
 - "identity": the product shown is the SAME brand + type + flavor/variant as the listing title.
 - "eachCellSingle": EACH repeated tile shows EXACTLY ONE single retail unit. Answer FALSE if any single tile itself depicts MULTIPLE units — a "12 pack"/"8 count" box, a shrink-wrapped bundle of bottles, a case, a caddy/tray of several boxes, or a printed multi-pack graphic. (This is the critical error we must catch: a tile that is itself a multipack multiplies the true quantity.)
 - "countOk": the total number of repeated units visible in the grid is about ${packCount}.
-- "front": every unit is the upright FRONT (brand label to camera) — not back/barcode/nutrition/lying/serving/infographic.
+- "front": every unit is shown FACE-ON — its WIDE FRONT PANEL with the full brand + product name toward the camera, clearly readable. For a SOFT package (bread loaf, bun/bagel bag) this is the long printed FACE; it is FALSE if the loaf stands on its END/heel or is angled so you see mainly the narrow top/side with only a sliver of label (a common bad case — the wide front must face the camera). Also FALSE for back/side/barcode, Nutrition-Facts panel, a package lying down, a serving/prepared food, or an infographic.
 - "whiteBg": plain white background.`;
   try {
     const j = parseJson(await ask([url], prompt, 140, STRONG_MODEL));
