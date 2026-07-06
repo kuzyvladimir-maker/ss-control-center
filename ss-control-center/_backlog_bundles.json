@@ -1,0 +1,92 @@
+[
+  {
+    "sku": "RizwanX-4382",
+    "title": "Pringles Original Potato Chips (5.2 oz) + Orville R",
+    "components": [
+      {
+        "product": "Pringles Original Potato Chips",
+        "flavor": "Original",
+        "size": "5.2 oz",
+        "qty": 1
+      },
+      {
+        "product": "Orville Redenbacher's Microwave Popcorn",
+        "flavor": "Butter (assumed)",
+        "size": "3.29 oz bag (assumed standard microwave pack)",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "sku": "RizwanX-4224",
+    "title": "Progresso Soup Assortment – The Ultimate Collection of Sa",
+    "components": [
+      {
+        "product": "Progresso Chicken Noodle Soup",
+        "flavor": "Chicken Noodle",
+        "size": "18.5 oz",
+        "qty": 1
+      },
+      {
+        "product": "Progresso Vegetable Soup",
+        "flavor": "Vegetable",
+        "size": "18.5 oz",
+        "qty": 1
+      },
+      {
+        "product": "Progresso Minestrone Soup",
+        "flavor": "Minestrone",
+        "size": "18.5 oz",
+        "qty": 1
+      },
+      {
+        "product": "Progresso Chicken and Wild Rice Soup",
+        "flavor": "Chicken & Wild Rice",
+        "size": "18.5 oz",
+        "qty": 1
+      },
+      {
+        "product": "Progresso Beef Barley Soup",
+        "flavor": "Beef Barley",
+        "size": "18.5 oz",
+        "qty": 1
+      },
+      {
+        "product": "Progresso Clam Chowder Soup",
+        "flavor": "New England Clam Chowder",
+        "size": "18.5 oz",
+        "qty": 1
+      }
+    ]
+  },
+  {
+    "sku": "RizwanX-4304",
+    "title": "Campbell’s Chunky – Ultimate Comfort Soups for All",
+    "components": [
+      {
+        "product": "Campbell's Chunky Soup - Chicken Noodle",
+        "flavor": "Chicken Noodle",
+        "size": "18.8 oz",
+        "qty": 1
+      },
+      {
+        "product": "Campbell's Chunky Soup - Beef with Vegetables",
+        "flavor": "Beef & Vegetables",
+        "size": "18.8 oz",
+        "qty": 1
+      },
+      {
+        "product": "Campbell's Chunky Soup - Sirloin Burger with Vegetables",
+        "flavor": "Sirloin Burger",
+        "size": "18.8 oz",
+        "qty": 1
+      },
+      {
+        "product": "Campbell's Chunky Soup - New England Clam Chowder",
+        "flavor": "Clam Chowder",
+        "size": "18.8 oz",
+        "qty": 1
+      }
+    ]
+  }
+]
