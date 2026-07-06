@@ -61,41 +61,45 @@ async function fetchB64(url: string): Promise<string | null> {
 
 async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: string = MODEL): Promise<string> {
   const provider = visionProvider();
-  // TIER 1 — FREE subscription vision. TWO lanes, both $0: the Codex worker
-  // (GPT-5.4) and the Claude CLI worker (Sonnet). Both need base64 (not URLs).
-  // "auto" round-robins single-image calls across the two lanes (≈2x on a batch)
-  // with cross-fallback; multi-image calls prefer Codex (native multi-image in one
-  // turn — Claude reads each image serially). The returned object is re-stringified
-  // so every caller's parseJson() works unchanged. On a miss: a forced provider
-  // throws; "auto" drops to the paid Sonnet reserve below.
+  // Retry budget for the FREE lanes: rate-limits are transient, so on an all-lanes
+  // miss we WAIT (backoff — which also self-throttles and eases the limit) and retry
+  // before giving up. This is the fix for the "found the donor but the tile-check
+  // errored on a throttle → marked FAIL" undercount (branch B). Tune via env.
+  const RETRIES = Math.max(0, Number(process.env.SS_VISION_RETRIES ?? 3));
+  // TIER 1 — FREE lanes, $0: Codex (GPT-5.4) + Claude CLI (Sonnet) + Gemini API.
+  // "auto" load-balances least-in-flight-first with cross-fallback; multi-image uses
+  // the native-multi lanes (Gemini/Codex). The object is re-stringified so callers'
+  // parseJson works. After RETRIES: a forced free provider gives up (do-no-harm);
+  // "auto" drops to the paid Sonnet reserve below.
   if (provider !== "anthropic") {
-    try {
-      const b64s = (await Promise.all(imageUrls.map(fetchB64))).filter((b): b is string => !!b);
-      if (b64s.length === imageUrls.length && b64s.length > 0) {
-        const codex = async () => { _codexInflight++; try { return await identifyImageViaCodex(b64s, prompt); } finally { _codexInflight--; } };
-        const claude = async () => { _claudeInflight++; try { return await identifyImageViaClaudeCli(b64s, prompt); } finally { _claudeInflight--; } };
-        const gemini = async () => { _geminiInflight++; try { return await identifyImageViaGemini(b64s, prompt); } finally { _geminiInflight--; } };
+    let b64s: string[] = [];
+    try { b64s = (await Promise.all(imageUrls.map(fetchB64))).filter((b): b is string => !!b); } catch { /* fetch fail → paid reserve */ }
+    if (b64s.length === imageUrls.length && b64s.length > 0) {
+      const codex = async () => { _codexInflight++; try { return await identifyImageViaCodex(b64s, prompt); } finally { _codexInflight--; } };
+      const claude = async () => { _claudeInflight++; try { return await identifyImageViaClaudeCli(b64s, prompt); } finally { _claudeInflight--; } };
+      const gemini = async () => { _geminiInflight++; try { return await identifyImageViaGemini(b64s, prompt); } finally { _geminiInflight--; } };
+      const once = async (): Promise<Record<string, unknown> | null> => {
+        if (provider === "claude") return claude();
+        if (provider === "codex") return codex();
+        if (provider === "gemini") return gemini();
+        const lanes: Array<[number, () => Promise<Record<string, unknown> | null>]> =
+          b64s.length <= 2
+            ? [[_geminiInflight, gemini], [_claudeInflight, claude], [_codexInflight, codex]]
+            : [[_geminiInflight, gemini], [_codexInflight, codex]];
+        lanes.sort((a, b) => a[0] - b[0]);
         let r: Record<string, unknown> | null = null;
-        if (provider === "claude") r = await claude();
-        else if (provider === "codex") r = await codex();
-        else if (provider === "gemini") r = await gemini();
-        else {
-          // THREE free lanes: try them least-in-flight first (load-balance), falling
-          // to the next on a null (rate-limit/miss). Claude reads multi-images
-          // serially, so multi-image (>2) uses only the native-multi lanes (Gemini/Codex).
-          const lanes: Array<[number, () => Promise<Record<string, unknown> | null>]> =
-            b64s.length <= 2
-              ? [[_geminiInflight, gemini], [_claudeInflight, claude], [_codexInflight, codex]]
-              : [[_geminiInflight, gemini], [_codexInflight, codex]];
-          lanes.sort((a, b) => a[0] - b[0]);
-          for (const [, fn] of lanes) { r = await fn(); if (r) break; }
-        }
-        if (r && typeof r === "object") return JSON.stringify(r);
+        for (const [, fn] of lanes) { r = await fn(); if (r) break; }
+        return r;
+      };
+      for (let a = 0; a <= RETRIES; a++) {
+        try { const r = await once(); if (r && typeof r === "object") return JSON.stringify(r); } catch { /* transient */ }
+        if (a < RETRIES) await new Promise((res) => setTimeout(res, 2500 * (a + 1) * (a + 1))); // 2.5s, 10s, 22.5s …
       }
-    } catch { /* fall through to paid reserve unless forced */ }
-    if (provider !== "auto") throw new Error(`${provider} vision unavailable`);
+    }
+    if (provider !== "auto") throw new Error(`${provider} vision unavailable after ${RETRIES} retries`);
   }
-  // TIER 2 — paid Anthropic reserve (Sonnet). Sends image URLs directly.
+  // TIER 2 — paid Anthropic reserve (Sonnet). Only for "auto" (after free retries) or
+  // forced "anthropic". Sends image URLs directly.
   const c = getClient();
   if (!c) throw new Error("ANTHROPIC_API_KEY missing");
   const content: any[] = imageUrls.map((u) => ({ type: "image", source: { type: "url", url: u } }));
