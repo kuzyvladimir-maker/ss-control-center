@@ -75,15 +75,19 @@ async function googleImages(query: string): Promise<string[]> {
  * correct identity, upright front on white) — the caller still tiles it and runs
  * the final per-listing qualifyTiledMain gate.
  */
-export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: string) => void } = {}): Promise<DonorPhoto | null> {
+export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: string) => void; searchQuery?: string; identityTitle?: string } = {}): Promise<DonorPhoto | null> {
   const log = opts.log ?? (() => {});
-  const q = cleanQuery(listingTitle);
+  // searchQuery / identityTitle come from the IDENTIFY step (step 2): a CLEAN query to
+  // search by + a CLEAN single-unit identity for the gates, instead of the raw
+  // multipack title. Falls back to string-cleaning the title when identify isn't given.
+  const q = (opts.searchQuery || cleanQuery(listingTitle)).trim();
+  const idTitle = opts.identityTitle || listingTitle;
   const unit = unitSizeFromTitle(listingTitle);
   if (!q) return null;
 
   const tryPool = async (imgs: string[], src: string): Promise<DonorPhoto | null> => {
     for (const u of imgs.slice(0, MAX_CAND)) {
-      const v = await qualifyDonorFront(highResImageUrl(u), listingTitle, unit);
+      const v = await qualifyDonorFront(highResImageUrl(u), idTitle, unit);
       log(`  ${src} cand ${v.pass ? "PASS" : "rej"} [b${+v.brand} t${+v.type} v${+v.variant} s${+v.singleUnit} f${+v.front} w${+v.whiteBg}] ${v.reason}`);
       if (v.pass) return { url: u, src, reason: v.reason };
     }
@@ -95,7 +99,7 @@ export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: 
     const { offers } = await oxylabsWalmartSearch(q);
     const imgs = offers
       .filter((o) => o.isMarketplaceItem !== true && o.imageUrls[0])
-      .map((o) => ({ u: o.imageUrls[0], s: overlap(listingTitle, o.title || "") }))
+      .map((o) => ({ u: o.imageUrls[0], s: overlap(idTitle, o.title || "") }))
       .filter((o) => o.s >= 0.45).sort((a, b) => b.s - a.s).map((o) => o.u);
     const r = await tryPool(imgs, "Walmart 1P");
     if (r) return r;
@@ -103,7 +107,7 @@ export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: 
 
   const storeImgs = (offers: any[]): string[] => offers
     .filter((o) => o.imageUrls?.[0])
-    .map((o) => ({ u: o.imageUrls[0] as string, s: overlap(listingTitle, o.title || "") }))
+    .map((o) => ({ u: o.imageUrls[0] as string, s: overlap(idTitle, o.title || "") }))
     .filter((o) => o.s >= 0.4).sort((a, b) => b.s - a.s).map((o) => o.u);
 
   // T2: fast API stores (Unwrangle — now paid): Sam's Club, Target, Costco.
@@ -118,9 +122,9 @@ export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: 
   try {
     const raw = (await googleImages(q + " package")).slice(0, 14);
     const picks: string[] = [];
-    const best = (await pickBestFront(raw, { listingTitle }))?.url;
+    const best = (await pickBestFront(raw, { listingTitle: idTitle }))?.url;
     if (best) picks.push(best);
-    const pool = await pickBestFrontFromPool(raw, listingTitle);
+    const pool = await pickBestFrontFromPool(raw, idTitle);
     if (pool && !picks.includes(pool)) picks.push(pool);
     const r = await tryPool(picks, "Google Images");
     if (r) return r;
