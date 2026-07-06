@@ -50,6 +50,13 @@ function visionProvider(): "codex" | "claude" | "gemini" | "anthropic" | "auto" 
 let _codexInflight = 0;
 let _claudeInflight = 0;
 let _geminiInflight = 0;
+// Per-lane cooldown (circuit breaker): when a lane errors (hits its subscription/
+// free-tier limit) we mark it "down" for a cooldown window and stop routing to it,
+// so the load converges onto the healthy lane (Claude, biggest headroom). Retried
+// automatically once the window passes. Owner's "use all 3, then coast on Claude".
+let _codexDownUntil = 0;
+let _claudeDownUntil = 0;
+let _geminiDownUntil = 0;
 
 async function fetchB64(url: string): Promise<string | null> {
   try {
@@ -82,20 +89,26 @@ async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: s
         if (provider === "claude") return claude();
         if (provider === "codex") return codex();
         if (provider === "gemini") return gemini();
-        // WEIGHTED load-balance (owner rule): Claude first (biggest subscription =
-        // most headroom), Gemini as free parallel overflow, Codex last (weak $20 plan
-        // — spare it). Score = (in-flight+1)×weight; lower wins → Claude picked most,
-        // others only when Claude is busy. Multi-image skips serial-read Claude.
+        // Use ALL THREE lanes in parallel while healthy; when a lane errors (hits its
+        // limit) COOL IT DOWN and skip it, so the load coasts onto Claude (biggest
+        // subscription). Score = (in-flight+1)×weight (Claude cheapest → preferred);
+        // Codex last (weak $20). Multi-image skips serial-read Claude.
         const W_CLAUDE = Number(process.env.SS_W_CLAUDE ?? 1);
         const W_GEMINI = Number(process.env.SS_W_GEMINI ?? 2);
         const W_CODEX = Number(process.env.SS_W_CODEX ?? 5);
-        const lanes: Array<[number, () => Promise<Record<string, unknown> | null>]> =
-          b64s.length <= 2
-            ? [[(_claudeInflight + 1) * W_CLAUDE, claude], [(_geminiInflight + 1) * W_GEMINI, gemini], [(_codexInflight + 1) * W_CODEX, codex]]
-            : [[(_geminiInflight + 1) * W_GEMINI, gemini], [(_codexInflight + 1) * W_CODEX, codex]];
-        lanes.sort((a, b) => a[0] - b[0]);
+        const COOLDOWN = Number(process.env.SS_LANE_COOLDOWN_MS ?? 45000);
+        const now = Date.now();
+        type Lane = { fn: () => Promise<Record<string, unknown> | null>; score: number; down: number; cool: () => void; clear: () => void };
+        const all: Lane[] = [
+          { fn: claude, score: (_claudeInflight + 1) * W_CLAUDE, down: _claudeDownUntil, cool: () => { _claudeDownUntil = Date.now() + COOLDOWN; }, clear: () => { _claudeDownUntil = 0; } },
+          { fn: gemini, score: (_geminiInflight + 1) * W_GEMINI, down: _geminiDownUntil, cool: () => { _geminiDownUntil = Date.now() + COOLDOWN; }, clear: () => { _geminiDownUntil = 0; } },
+          { fn: codex, score: (_codexInflight + 1) * W_CODEX, down: _codexDownUntil, cool: () => { _codexDownUntil = Date.now() + COOLDOWN; }, clear: () => { _codexDownUntil = 0; } },
+        ].filter((_, i) => b64s.length <= 2 || i !== 0); // multi-image: drop serial Claude (index 0)
+        let avail = all.filter((l) => now >= l.down);
+        if (!avail.length) avail = all; // all cooling → try anyway (may have recovered)
+        avail.sort((a, b) => a.score - b.score);
         let r: Record<string, unknown> | null = null;
-        for (const [, fn] of lanes) { r = await fn(); if (r) break; }
+        for (const l of avail) { r = await l.fn(); if (r) { l.clear(); break; } l.cool(); }
         return r;
       };
       for (let a = 0; a <= RETRIES; a++) {
