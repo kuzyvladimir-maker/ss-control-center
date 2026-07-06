@@ -59,11 +59,19 @@ let _claudeDownUntil = 0;
 let _geminiDownUntil = 0;
 
 async function fetchB64(url: string): Promise<string | null> {
-  try {
-    const r = await fetch(url, { signal: AbortSignal.timeout(15000) });
-    if (!r.ok) return null;
-    return Buffer.from(await r.arrayBuffer()).toString("base64");
-  } catch { return null; }
+  // Retry transient failures. The R2 public dev endpoint (pub-*.r2.dev) intermittently
+  // returns a Cloudflare 5xx "Internal Error" HTML page under load, and a single-shot
+  // fetch would return null → the caller skips the free lanes → the whole qualify call
+  // fails with "tile qualify error" on a perfectly good image. A few backoff retries
+  // make image qualification robust to that flakiness (2xx eventually wins).
+  for (let a = 0; a < 4; a++) {
+    try {
+      const r = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      if (r.ok) return Buffer.from(await r.arrayBuffer()).toString("base64");
+    } catch { /* transient — retry */ }
+    if (a < 3) await new Promise((res) => setTimeout(res, 600 * (a + 1)));
+  }
+  return null;
 }
 
 async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: string = MODEL): Promise<string> {
