@@ -123,6 +123,15 @@ async function runIdentify(b64s: string[], prompt: string): Promise<any> {
     } catch { /* try the next lane */ }
   }
 
+  // COOPERATIVE mode (background sweeps sharing the box with another chat's run):
+  // when all free lanes are busy/down, SKIP this SKU — throw so the caller records
+  // nothing and the resumable sweep retries it later, instead of burning the paid
+  // APIs (dead anyway) or writing a junk identity. The box's own serial queues are
+  // what make the two chats take turns; we just decline to pile on.
+  if (process.env.SS_VISION_FREE_ONLY === "1") {
+    throw new Error("free vision lanes busy — skipped (cooperative mode, will retry later)");
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (apiKey && apiKey !== "<api_key>") {
     try {
