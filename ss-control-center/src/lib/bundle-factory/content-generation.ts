@@ -35,6 +35,7 @@ import {
 import { isOwnBrandPassthrough } from "./own-brand";
 import type { Variant, VariantComponent } from "./variation-matrix";
 import { CLAUDE } from "@/lib/ai-models";
+import { claudeWorkerClient } from "@/lib/text-gen/claude-text-worker";
 
 const MODEL = CLAUDE.balanced;
 const MAX_TOKENS = 2000;
@@ -342,9 +343,28 @@ interface AnthropicLike {
 export async function generateContent(
   input: ContentGenerationInput,
 ): Promise<ContentGenerationOutput> {
+  // Subscription FIRST (Vladimir 2026-07-07, same architecture as images +
+  // vision): the Claude worker on the OpenClaw box writes the copy at $0 on
+  // the Max subscription. The paid Anthropic API is only the INFRASTRUCTURE
+  // fallback — a transport/worker failure falls through to it; model-quality
+  // failures (JSON/validation) do NOT, the compliance retry loop handles those.
+  const stub = (globalThis as { __BUNDLE_FACTORY_CLAUDE_STUB__?: AnthropicLike })
+    .__BUNDLE_FACTORY_CLAUDE_STUB__;
+  const worker = stub ? null : claudeWorkerClient();
+  if (worker) {
+    const viaWorker = await generateContentWithClient(worker, input);
+    const infraFailure = viaWorker.error?.startsWith("Claude API call failed");
+    if (!infraFailure) return viaWorker;
+    console.error(`[content-gen] subscription worker failed, falling back to paid API: ${viaWorker.error}`);
+  }
   const client = getClient();
   if (!client) {
-    return { ...EMPTY_OUTPUT, error: "ANTHROPIC_API_KEY not set" };
+    return {
+      ...EMPTY_OUTPUT,
+      error: worker
+        ? "subscription worker failed and ANTHROPIC_API_KEY not set"
+        : "ANTHROPIC_API_KEY not set (and claude text worker not configured)",
+    };
   }
   return generateContentWithClient(client, input);
 }
