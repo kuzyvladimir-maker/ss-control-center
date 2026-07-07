@@ -146,12 +146,21 @@ async function cheapestCostForTarget(
   const exact: any = (await db.execute({
     sql: `SELECT dp.id AS dpid, dp.title AS title, o.retailer AS retailer, o.pricePerUnit AS perUnit, dp.unitAmount AS ua, dp.unitMeasure AS um
           FROM "DonorOffer" o JOIN "DonorProduct" dp ON dp.id = o.donorProductId
-          WHERE o.isFirstParty=1 AND o.via='direct' AND o.pricePerUnit IS NOT NULL
+          WHERE o.isFirstParty=1 AND o.via IN ('direct','instacart') AND o.pricePerUnit IS NOT NULL
             AND o.updatedAt >= ?${whereTok}
           ORDER BY ${sizeSel}, o.pricePerUnit ASC LIMIT 1`,
     args,
   })).rows[0];
-  if (exact) return { perUnit: exact.perUnit, retailer: exact.retailer, title: (exact.title as string) || "", size: `${exact.ua ?? ""}${exact.um ?? ""}`, linePrice: false, donorProductId: (exact.dpid as string) || null };
+  if (exact) {
+    let perUnit = exact.perUnit as number;
+    const ua = Number(exact.ua);
+    // Cross-size normalize: if the matched 1P offer is a DIFFERENT size than our unit
+    // (e.g. a 56oz Coffee-mate for our 22oz), convert by $/measure — otherwise we'd book
+    // the bigger jar's price as our unit cost. Flagged as an estimate when sizes differ.
+    const sizeDiffers = !!(m.sizeAmount && ua && Math.abs(ua - m.sizeAmount) / m.sizeAmount > 0.05);
+    if (sizeDiffers) perUnit = Math.round((exact.perUnit / ua) * m.sizeAmount! * 100) / 100;
+    return { perUnit, retailer: exact.retailer, title: (exact.title as string) || "", size: `${exact.ua ?? ""}${exact.um ?? ""}`, linePrice: sizeDiffers, donorProductId: (exact.dpid as string) || null };
+  }
 
   // 2) LINE-PRICE fallback: exact flavor not sold 1P, but a same-brand + same-SIZE 1P
   // sibling exists (flavors in a line are ~one price). Requires a known size.
@@ -159,7 +168,7 @@ async function cheapestCostForTarget(
     const sib: any = (await db.execute({
       sql: `SELECT dp.id AS dpid, dp.title AS title, o.retailer AS retailer, o.pricePerUnit AS perUnit, dp.unitAmount AS ua, dp.unitMeasure AS um
             FROM "DonorOffer" o JOIN "DonorProduct" dp ON dp.id = o.donorProductId
-            WHERE o.isFirstParty=1 AND o.via='direct' AND o.pricePerUnit IS NOT NULL
+            WHERE o.isFirstParty=1 AND o.via IN ('direct','instacart') AND o.pricePerUnit IS NOT NULL
               AND o.updatedAt >= ? AND lower(dp.title) LIKE ? AND dp.unitAmount = ?
             ORDER BY o.pricePerUnit ASC LIMIT 1`,
       args: [sinceIso, `%${m.brandTok}%`, m.sizeAmount],

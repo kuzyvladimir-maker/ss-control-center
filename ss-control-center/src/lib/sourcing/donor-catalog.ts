@@ -515,40 +515,53 @@ export async function enrichTarget(
   let walmartCovered = false;
   try {
     const ox = await oxylabsWalmartSearch(opts.target);
-    if (!ox.trialExhausted && ox.offers.length) { retailersHit.push("walmart"); batches.push({ offers: ox.offers.map((o) => scoreOffer(o, cp)) }); walmartCovered = true; }
-  } catch { /* Oxylabs unavailable — Unwrangle walmart fallback below */ }
+    if (!ox.trialExhausted && ox.offers.length) {
+      const scored = ox.offers.map((o) => scoreOffer(o, cp));
+      retailersHit.push("walmart");
+      batches.push({ offers: scored });
+      // Covered ONLY if Walmart returned a USABLE (accepted, clean 1P) offer. If Walmart
+      // lists it only via 3P resellers (incl our own STARFITSTORE), we are NOT covered →
+      // escalate to Target/Publix where the real shelf price is.
+      if (scored.some((o) => o.accepted)) walmartCovered = true;
+    }
+  } catch { /* Oxylabs unavailable — escalation below */ }
   // ESCALATION — only when Walmart 1P MISSED (cheapest-first, stop-on-hit). This is
   // what stops us fanning out to every paid service on every SKU (the fan-out that
   // burned 100k Unwrangle credits). Route order follows source-capabilities PRICE_TIERS.
   if (!walmartCovered) {
     let escalationHit = false;
-    // Unwrangle: Target (1cr) first; Sam's/Costco (10cr each) only if nothing cheaper hit.
-    for (const r of opts.unwrangleRetailers ?? []) {
-      if (r === "walmart") continue; // Oxylabs owns Walmart 1P; UW-walmart = inflated 3P
-      if (escalationHit && (r === "samsclub" || r === "costco")) continue; // don't spend 10cr once a cheaper tier hit
+    const uwList = (opts.unwrangleRetailers ?? []).filter((r) => r !== "walmart"); // Oxylabs owns Walmart 1P
+    // "hit" = a retailer returned a USABLE (accepted, 1P) offer. A tier returning only
+    // 3P junk must NOT block the next tier (Target 3P must not skip Publix).
+    const runUnwrangle = async (r: "target" | "samsclub" | "costco") => {
       try {
         const uw = await unwrangleSearch(r, opts.target);
         if (!uw.trialExhausted) {
           if (uw.creditsRemaining != null) creditsRemaining = uw.creditsRemaining;
           if (uw.offers.length) {
+            const scored = uw.offers.map((o) => scoreOffer(o, cp));
             if (!retailersHit.includes(r)) retailersHit.push(r);
-            batches.push({ offers: uw.offers.map((o) => scoreOffer(o, cp)) });
-            escalationHit = true;
+            batches.push({ offers: scored });
+            if (scored.some((o) => o.accepted)) escalationHit = true;
           }
         }
       } catch { /* skip this retailer on error */ }
-    }
-    // Browser → Instacart (Publix / BJ's) — local grocers no paid API reaches. Only if
-    // no paid tier hit. Inert unless OPENCLAW_GROCERY_URL/TOKEN + box are up.
+    };
+    // CHEAPEST-FIRST tiers. Tier 2: Target (Unwrangle, 1 credit).
+    if (uwList.includes("target")) await runUnwrangle("target");
+    // Tier 3: Publix / BJ's (browser → Instacart, ~free) — local grocers, BEFORE the
+    // expensive clubs. Where much of the not-online-1P grocery actually lives.
     if (!escalationHit && openClawEnabled()) {
       for (const r of opts.openClawRetailers ?? []) {
         try {
           const oc = await openClawSearch(r, opts.target, opts.zip ?? "33765");
-          if (!oc.trialExhausted && oc.offers.length) { if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: oc.offers.map((o) => scoreOffer(o, cp)) }); escalationHit = true; }
+          if (!oc.trialExhausted && oc.offers.length) { const scored = oc.offers.map((o) => scoreOffer(o, cp)); if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: scored }); if (scored.some((o) => o.accepted)) escalationHit = true; }
         } catch { /* skip this source on error */ }
       }
     }
-    // Oxylabs open-site retailers (rarely wired) — last, only if nothing hit.
+    // Tier 4: Sam's / Costco (Unwrangle, 10 credits EACH) — only if nothing cheaper hit.
+    if (!escalationHit) for (const r of uwList) { if (!escalationHit && (r === "samsclub" || r === "costco")) await runUnwrangle(r); }
+    // Tier 5: Oxylabs open-site retailers (rarely wired) — last.
     if (!escalationHit && oxylabsEnabled()) {
       for (const r of opts.oxylabsRetailers ?? []) {
         try {
