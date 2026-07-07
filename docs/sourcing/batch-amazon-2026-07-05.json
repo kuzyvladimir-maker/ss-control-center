@@ -1,0 +1,88 @@
+[
+  {
+    "sku": "743269740156",
+    "status": "costed",
+    "total": 29.97,
+    "methods": [
+      "google"
+    ],
+    "note": "google $9.99/u ×3 [google est]",
+    "identity": {
+      "brand": "Taste Republic",
+      "product_line": "Gluten-Free",
+      "flavor": "Four Cheese",
+      "size": "16 oz",
+      "container_type": "bag",
+      "base_unit": "Taste Republic Gluten-Free Four Cheese Tortelloni 16 oz bag",
+      "units_in_listing": 3,
+      "unit_basis": "bag",
+      "is_bundle": false,
+      "components": [],
+      "retail_search_query": "Taste Republic Gluten-Free Four Cheese Tortelloni 16 oz",
+      "confidence": 0.95,
+      "notes": "Photos show the retail item is Taste Republic Gluten-Free Four Cheese Tortelloni in a resealable 16 oz bag. Listing is a 3-pack of the same item curated/shipped by Salutem Solutions; insulated box and ice packs appear to be shipping materials, not separate retail components. Text says tortellini, but package front/back clearly say tortelloni.",
+      "imagesUsed": 6
+    },
+    "parts": [
+      {
+        "idx": 0,
+        "label": "Taste Republic Gluten-Free Four Cheese Tortelloni 16 oz bag",
+        "product": "Gluten-Free",
+        "flavor": "Four Cheese",
+        "size": "16 oz",
+        "qty": 3,
+        "isBundleComp": false,
+        "perUnit": 9.99,
+        "retailer": "google",
+        "matched": "Taste Republic Gluten-Free Four Cheese Raviolini",
+        "method": "google",
+        "linePrice": false,
+        "google": true,
+        "donorProductId": null
+      }
+    ]
+  },
+  {
+    "sku": "VC-ASV1-378P",
+    "status": "costed",
+    "total": 14.4,
+    "methods": [
+      "google"
+    ],
+    "note": "google $3.60/u ×4 [google est]",
+    "identity": {
+      "brand": "Smucker's",
+      "product_line": "Uncrustables",
+      "flavor": "Peanut Butter & Strawberry Jam",
+      "size": "8 oz (4 x 2 oz sandwiches)",
+      "container_type": "box",
+      "base_unit": "Smucker's Uncrustables Peanut Butter & Strawberry Jam Frozen Sandwiches 4 count 8 oz box",
+      "units_in_listing": 4,
+      "unit_basis": "box",
+      "is_bundle": false,
+      "components": [],
+      "retail_search_query": "Smucker's Uncrustables Peanut Butter Strawberry Jam 4 count 8 oz box",
+      "confidence": 0.78,
+      "notes": "Photos show the retail shelf unit as the 4-count box (8 oz total) and the main image shows 4 identical boxes. Title/description claiming 90 individually wrapped sandwiches conflicts with the images and is likely incorrect.",
+      "imagesUsed": 6
+    },
+    "parts": [
+      {
+        "idx": 0,
+        "label": "Smucker's Uncrustables Peanut Butter & Strawberry Jam Frozen Sandwiches 4 count 8 oz box",
+        "product": "Uncrustables",
+        "flavor": "Peanut Butter & Strawberry Jam",
+        "size": "8 oz (4 x 2 oz sandwiches)",
+        "qty": 4,
+        "isBundleComp": false,
+        "perUnit": 3.6,
+        "retailer": "google",
+        "matched": "Smucker's Uncrustables Peanut Butter Strawberry Jam Sandwich",
+        "method": "google",
+        "linePrice": false,
+        "google": true,
+        "donorProductId": null
+      }
+    ]
+  }
+]

@@ -1,0 +1,153 @@
+[
+  {
+    "sku": "SKIP-ROPE-2",
+    "status": "costed",
+    "total": 0.8,
+    "methods": [
+      "own-brand"
+    ],
+    "note": "own-brand $0.80/u ×1 [own-brand]",
+    "identity": {
+      "imagesUsed": 0,
+      "components": [],
+      "brand": "Starfit",
+      "product_line": "Weighted Jump Rope",
+      "flavor": "",
+      "size": "9.8 ft",
+      "container_type": "",
+      "base_unit": "Starfit Weighted Jump Rope 9.8 ft",
+      "units_in_listing": 1,
+      "unit_basis": "rope",
+      "is_bundle": false,
+      "retail_search_query": "Starfit weighted jump rope",
+      "confidence": 0.95
+    },
+    "parts": [
+      {
+        "idx": 0,
+        "label": "Starfit Weighted Jump Rope 9.8 ft",
+        "product": "Weighted Jump Rope",
+        "flavor": null,
+        "size": "9.8 ft",
+        "qty": 1,
+        "isBundleComp": false,
+        "perUnit": 0.8,
+        "retailer": "own-brand",
+        "matched": "starfit-jump-rope",
+        "method": "own-brand",
+        "ownBrand": true,
+        "donorProductId": null
+      }
+    ]
+  },
+  {
+    "sku": "FaisalX-1421",
+    "status": "costed",
+    "total": 8.3,
+    "methods": [
+      "own-brand"
+    ],
+    "note": "bundle: 1×$7.50 + 1×$0.80 [own-brand]",
+    "identity": {
+      "imagesUsed": 0,
+      "components": [
+        {
+          "product": "Starfit Nicotinamide Riboside NAD+ Supplement",
+          "flavor": "",
+          "size": "",
+          "qty": 1
+        },
+        {
+          "product": "Starfit Adjustable Jump Rope",
+          "flavor": "",
+          "size": "9.8 ft",
+          "qty": 1
+        }
+      ],
+      "brand": "Starfit",
+      "product_line": "Nicotinamide Riboside + Jump Rope Bundle",
+      "flavor": "variety",
+      "size": "",
+      "container_type": "",
+      "base_unit": "",
+      "units_in_listing": 2,
+      "unit_basis": "item",
+      "is_bundle": true,
+      "retail_search_query": "Starfit nicotinamide riboside",
+      "confidence": 0.9
+    },
+    "parts": [
+      {
+        "idx": 0,
+        "label": "1× Starfit Nicotinamide Riboside NAD+ Supplement",
+        "product": "Starfit Nicotinamide Riboside NAD+ Supplement",
+        "flavor": null,
+        "size": null,
+        "qty": 1,
+        "isBundleComp": true,
+        "perUnit": 7.5,
+        "retailer": "own-brand",
+        "matched": "starfit-nicotinamide",
+        "method": "own-brand",
+        "ownBrand": true,
+        "donorProductId": null
+      },
+      {
+        "idx": 1,
+        "label": "1× Starfit Adjustable Jump Rope",
+        "product": "Starfit Adjustable Jump Rope",
+        "flavor": null,
+        "size": "9.8 ft",
+        "qty": 1,
+        "isBundleComp": true,
+        "perUnit": 0.8,
+        "retailer": "own-brand",
+        "matched": "starfit-jump-rope",
+        "method": "own-brand",
+        "ownBrand": true,
+        "donorProductId": null
+      }
+    ]
+  },
+  {
+    "sku": "RizwanX-215",
+    "status": "costed",
+    "total": 19.92,
+    "methods": [
+      "exact"
+    ],
+    "note": "walmart $4.98/u ×4",
+    "identity": {
+      "imagesUsed": 0,
+      "components": [],
+      "brand": "Kellogg's",
+      "product_line": "Raisin Bran Crunch",
+      "flavor": "",
+      "size": "20.7 oz",
+      "container_type": "box",
+      "base_unit": "Kellogg's Raisin Bran Crunch 20.7 oz box",
+      "units_in_listing": 4,
+      "unit_basis": "box",
+      "is_bundle": false,
+      "retail_search_query": "Kellogg's Raisin Bran Crunch cereal 20.7 oz",
+      "confidence": 0.95
+    },
+    "parts": [
+      {
+        "idx": 0,
+        "label": "Kellogg's Raisin Bran Crunch 20.7 oz box",
+        "product": "Raisin Bran Crunch",
+        "flavor": null,
+        "size": "20.7 oz",
+        "qty": 4,
+        "isBundleComp": false,
+        "perUnit": 4.98,
+        "retailer": "walmart",
+        "matched": "Kellogg's Raisin Bran Crunch Crunch Breakfast Cereal, Good Source of Fiber, Family Size, 20.7  oz",
+        "method": "exact",
+        "linePrice": false,
+        "donorProductId": "ad206a22-1903-4559-ace7-5479dda37a02"
+      }
+    ]
+  }
+]
