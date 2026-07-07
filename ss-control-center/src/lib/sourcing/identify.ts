@@ -12,8 +12,15 @@
 
 import type { Client } from "@libsql/client";
 import { analyzeImagesWithFallback } from "@/lib/ai-vision";
-import { identifyImageViaCodex } from "@/lib/image-gen/codex-worker";
+import { identifyImageViaCodex, identifyImageViaClaudeCli } from "@/lib/image-gen/codex-worker";
+import { identifyImageViaGemini } from "@/lib/sourcing/gemini-vision";
 import { CLAUDE } from "@/lib/ai-models";
+
+// THREE free subscription vision lanes — Codex (ChatGPT), Claude CLI (Claude Max),
+// Gemini (API). Round-robin across them so concurrent SKUs SPREAD over lanes instead
+// of all queuing on Codex (the ~10/hour bottleneck). Each returns the same JSON or null.
+const VISION_LANES = [identifyImageViaCodex, identifyImageViaClaudeCli, identifyImageViaGemini];
+let _laneRR = 0;
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { getListing, flattenListing } from "@/lib/amazon-sp-api/listings";
 import { fetchVeeqoDetailBySku } from "@/lib/veeqo/product-image";
@@ -104,12 +111,17 @@ function mediaType(b64: string): string {
 // them out of identification entirely, even as a fallback.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function runIdentify(b64s: string[], prompt: string): Promise<any> {
-  // TIER 1 — subscription vision (GPT-5.4, high reasoning, $0). Returns null if the
-  // worker is unconfigured or errors → drop through to the strong paid fallback.
-  try {
-    const viaCodex = await identifyImageViaCodex(b64s, prompt);
-    if (viaCodex && (viaCodex as any).brand !== undefined) return viaCodex;
-  } catch { /* fall through to paid vision */ }
+  // TIER 1 — free subscription vision, LOAD-BALANCED across the 3 lanes ($0). Start at
+  // a rotating lane so parallel SKUs use different lanes; fall through the others if one
+  // is down/unconfigured. Only if ALL three fail do we hit the paid fallback below.
+  const start = _laneRR++ % VISION_LANES.length;
+  for (let i = 0; i < VISION_LANES.length; i++) {
+    const lane = VISION_LANES[(start + i) % VISION_LANES.length];
+    try {
+      const r = await lane(b64s, prompt);
+      if (r && (r as any).brand !== undefined) return r;
+    } catch { /* try the next lane */ }
+  }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (apiKey && apiKey !== "<api_key>") {
