@@ -1,118 +1,94 @@
 [
   {
-    "sku": "FaisalX-1253",
+    "sku": "RizwanX-2471",
     "identity": {
-      "imagesUsed": 0,
-      "components": [],
-      "brand": "Arnold",
-      "product_line": "Country",
-      "flavor": "Sourdough",
-      "size": "24 oz",
-      "container_type": "loaf",
-      "base_unit": "Arnold Country Sourdough Bread 24 oz loaf",
-      "units_in_listing": 2,
-      "unit_basis": "loaf",
+      "brand": "Mueller's",
+      "product_line": "Linguine",
+      "flavor": "",
+      "size": "16 oz",
+      "container_type": "box",
+      "base_unit": "Mueller's Linguine 16 oz box",
+      "units_in_listing": 6,
+      "unit_basis": "box",
       "is_bundle": false,
-      "retail_search_query": "Arnold Country Sourdough Bread 24 oz loaf",
+      "components": [],
+      "retail_search_query": "Mueller's Linguine 16 oz",
       "confidence": 0.92,
-      "notes": "Pack of 2 of the same Arnold Country Sourdough Bread loaf, each 24 oz. Photo shows the single loaf packaging consistent with the title."
-    },
-    "parts": [
-      {
-        "label": "Arnold Country Sourdough Bread 24 oz loaf",
-        "qty": 2,
-        "perUnit": null
-      }
-    ],
-    "costable": false,
-    "lowConf": false
-  },
-  {
-    "sku": "RizwanX-3263",
-    "identity": {
-      "brand": "Green Giant",
-      "product_line": "Sweet Peas",
-      "flavor": "Sweet Peas",
-      "size": "15 oz",
-      "container_type": "can",
-      "base_unit": "Green Giant Sweet Peas 15 oz can",
-      "units_in_listing": 4,
-      "unit_basis": "can",
-      "is_bundle": false,
-      "components": [],
-      "retail_search_query": "Green Giant Sweet Peas 15 oz can",
-      "confidence": 0.85,
-      "notes": "Pack of 4 cans. No photo provided to visually confirm, but title clearly states product name, size, and count. Standard Green Giant vegetable can product.",
+      "notes": "Standard pasta multipack (6 boxes of the same product). No photo provided to visually confirm, but title is clear and consistent with typical Mueller's linguine packaging. Confidence slightly reduced due to lack of visual confirmation.",
       "imagesUsed": 0
     },
     "parts": [
       {
-        "label": "Green Giant Sweet Peas 15 oz can",
-        "qty": 4,
-        "perUnit": 1.59,
-        "retailer": "target",
-        "matched": "Green Giant Sweet Peas - 15oz"
+        "label": "Mueller's Linguine 16 oz box",
+        "qty": 6,
+        "perUnit": 1.5,
+        "retailer": "google",
+        "matched": "Mueller's Linguine Pasta",
+        "linePrice": false,
+        "google": true
       }
     ],
     "costable": true,
     "lowConf": false
   },
   {
-    "sku": "RizwanX-3669",
+    "sku": "RizwanX-2331",
     "identity": {
-      "brand": "Klass",
-      "product_line": "Aguas Frescas",
-      "flavor": "Melon",
-      "size": "14.1 oz",
-      "container_type": "pouch",
-      "base_unit": "Klass Aguas Frescas Melon Powdered Drink Mix 14.1 oz pouch",
+      "brand": "Barilla",
+      "product_line": "Al Bronzo",
+      "flavor": "Bucatini",
+      "size": "13.25 oz",
+      "container_type": "box",
+      "base_unit": "Barilla Al Bronzo Bucatini Pasta 13.25 oz box",
       "units_in_listing": 6,
-      "unit_basis": "pouch",
+      "unit_basis": "box",
       "is_bundle": false,
       "components": [],
-      "retail_search_query": "Klass Aguas Frescas Melon Powdered Drink Mix 14.1 oz",
-      "confidence": 0.85,
-      "notes": "Pack of 6 identical pouches. Klass is a well-known Mexican brand of powdered drink mixes (aguas frescas). The 14.1 oz size is typical for their multiserve packets. Confidence slightly reduced due to inability to see pouch details in photo, but title and brand are clear.",
+      "retail_search_query": "Barilla Al Bronzo Bucatini Pasta 13.25 oz",
+      "confidence": 0.75,
+      "notes": "Standard Barilla Al Bronzo Bucatini size is 13.25 oz per box; 6-pack listed. No photo provided to visually confirm, so confidence is moderate. Title explicitly states 'Pack of 6' so units_in_listing=6 is reliable even without image confirmation.",
       "imagesUsed": 0
     },
     "parts": [
       {
-        "label": "Klass Aguas Frescas Melon Powdered Drink Mix 14.1 oz pouch",
+        "label": "Barilla Al Bronzo Bucatini Pasta 13.25 oz box",
+        "qty": 6,
+        "perUnit": 3.49,
+        "retailer": "google",
+        "matched": "Barilla Al Bronzo Bucatini Pasta",
+        "linePrice": false,
+        "google": true
+      }
+    ],
+    "costable": true,
+    "lowConf": false
+  },
+  {
+    "sku": "FaisalX-5516",
+    "identity": {
+      "brand": "Dove",
+      "product_line": "Promises",
+      "flavor": "variety",
+      "size": "6.74 oz",
+      "container_type": "bag",
+      "base_unit": "Dove Promises Milk Chocolate Tiramisu Caramel Candy 6.74 oz bag",
+      "units_in_listing": 6,
+      "unit_basis": "bag",
+      "is_bundle": false,
+      "components": [],
+      "retail_search_query": "Dove Promises Milk Chocolate Tiramisu Caramel 6.74 oz",
+      "confidence": 0.85,
+      "notes": "Title indicates 'Pack of 6' which means 6 individual 6.74 oz bags of the same product (variety of flavors within ONE bag type, not a bundle of different products). Photo 0 not provided, so confidence reduced slightly; however, title clearly specifies pack quantity and size.",
+      "imagesUsed": 0
+    },
+    "parts": [
+      {
+        "label": "Dove Promises Milk Chocolate Tiramisu Caramel Candy 6.74 oz bag",
         "qty": 6,
         "perUnit": null
       }
     ],
     "costable": false,
-    "lowConf": false
-  },
-  {
-    "sku": "RizwanX-215",
-    "identity": {
-      "brand": "Kellogg's",
-      "product_line": "Raisin Bran Crunch",
-      "flavor": "Raisin Bran Crunch",
-      "size": "20.7 oz",
-      "container_type": "box",
-      "base_unit": "Kellogg's Raisin Bran Crunch Breakfast Cereal 20.7 oz box",
-      "units_in_listing": 4,
-      "unit_basis": "box",
-      "is_bundle": false,
-      "components": [],
-      "retail_search_query": "Kellogg's Raisin Bran Crunch 20.7 oz box",
-      "confidence": 0.95,
-      "notes": "Pack of 4 boxes of the same product. Title clearly indicates '20.7oz (Pack 4)' meaning 4 individual family-size boxes. No photo provided to visually confirm, but text is unambiguous.",
-      "imagesUsed": 0
-    },
-    "parts": [
-      {
-        "label": "Kellogg's Raisin Bran Crunch Breakfast Cereal 20.7 oz box",
-        "qty": 4,
-        "perUnit": 4.98,
-        "retailer": "walmart",
-        "matched": "Kellogg's Raisin Bran Crunch Crunch Breakfast Cereal, Good Source of Fiber, Family Size, 20.7  oz"
-      }
-    ],
-    "costable": true,
     "lowConf": false
   }
 ]
