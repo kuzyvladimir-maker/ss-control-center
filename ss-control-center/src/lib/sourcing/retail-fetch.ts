@@ -84,6 +84,9 @@ export function extractPackSize(title?: string | null): number {
     // 12x overcount (Mueller's Egg Noodles).
     /(\d+)\s*units\b/,
     /(\d+)\s*x\s*[\d.]+\s*(?:oz|lb|lbs|fl|ml|g|kg|ct|count|pcs)\b/,
+    /\blot of\s*(\d+)/,              // "Lot of 3" = 3 packages
+    /\b(\d+)\s*x\s+[a-z]/,           // "2x Reeses" / "3 x Oreo" = N packages (number then x then a word)
+    /\bset of\s*(\d+)/,
   ];
   for (const re of pats) {
     const m = t.match(re);
