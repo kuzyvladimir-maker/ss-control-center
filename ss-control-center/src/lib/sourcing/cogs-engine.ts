@@ -312,8 +312,11 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         target: t.query,
         brand: t.brandTok || null,
         zip: "33765",
-        unwrangleRetailers: ["walmart", "target", "samsclub", "costco"],
-        openClawRetailers: opts.openclaw ? (opts.openClawRetailers || ["bjs", "publix", "aldi"]) : [],
+        // Oxylabs owns Walmart 1P → Unwrangle only for the Walmart-miss escalation
+        // (Target 1cr, Sam's/Costco 10cr). Publix/BJ's via OpenClaw→Instacart (Aldi
+        // skipped — Vladimir doesn't buy there). All run ONLY on a Walmart miss now.
+        unwrangleRetailers: ["target", "samsclub", "costco"],
+        openClawRetailers: opts.openClawRetailers || ["publix", "bjs"],
         allowNonGrocery: true, // COGS engine costs ANY resale product (food + household)
       });
       for (const pid of res.createdProductIds.slice(0, 1)) { try { await harvestDonorDetail(db, pid); } catch { /* best-effort */ } }

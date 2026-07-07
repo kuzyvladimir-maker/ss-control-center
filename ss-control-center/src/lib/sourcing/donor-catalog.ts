@@ -517,45 +517,45 @@ export async function enrichTarget(
     const ox = await oxylabsWalmartSearch(opts.target);
     if (!ox.trialExhausted && ox.offers.length) { retailersHit.push("walmart"); batches.push({ offers: ox.offers.map((o) => scoreOffer(o, cp)) }); walmartCovered = true; }
   } catch { /* Oxylabs unavailable — Unwrangle walmart fallback below */ }
-  for (const r of opts.unwrangleRetailers ?? []) {
-    if (r === "walmart" && walmartCovered) continue; // Oxylabs already gave clean 1P Walmart
-    try {
-      const uw = await unwrangleSearch(r, opts.target);
-      if (!uw.trialExhausted) {
-        if (uw.creditsRemaining != null) creditsRemaining = uw.creditsRemaining;
-        if (!retailersHit.includes(r)) retailersHit.push(r);
-        batches.push({ offers: uw.offers.map((o) => scoreOffer(o, cp)) });
-        if (r === "walmart" && uw.offers.length) walmartCovered = true;
-      }
-    } catch { /* skip this retailer on error */ }
-  }
-  if (!walmartCovered && process.env.BLUECART_API_KEY) {
-    try {
-      const bc = await bluecartWalmartSearch(opts.target);
-      if (bc.creditsRemaining != null) creditsRemaining = bc.creditsRemaining;
-      if (!bc.trialExhausted && bc.offers.length) { if (!retailersHit.includes("walmart")) retailersHit.push("walmart"); batches.push({ offers: bc.offers.map((o) => scoreOffer(o, cp)) }); }
-    } catch { /* BlueCart unavailable */ }
-  }
-
-  // Oxylabs retailers (open sites: Aldi, + Instacart fallback). Inert until
-  // OXYLABS_USERNAME/PASSWORD exist, so this is safe before the sub is paid.
-  if (oxylabsEnabled()) {
-    for (const r of opts.oxylabsRetailers ?? []) {
+  // ESCALATION — only when Walmart 1P MISSED (cheapest-first, stop-on-hit). This is
+  // what stops us fanning out to every paid service on every SKU (the fan-out that
+  // burned 100k Unwrangle credits). Route order follows source-capabilities PRICE_TIERS.
+  if (!walmartCovered) {
+    let escalationHit = false;
+    // Unwrangle: Target (1cr) first; Sam's/Costco (10cr each) only if nothing cheaper hit.
+    for (const r of opts.unwrangleRetailers ?? []) {
+      if (r === "walmart") continue; // Oxylabs owns Walmart 1P; UW-walmart = inflated 3P
+      if (escalationHit && (r === "samsclub" || r === "costco")) continue; // don't spend 10cr once a cheaper tier hit
       try {
-        const ox = await oxylabsSearch(r, opts.target);
-        if (!ox.trialExhausted && ox.offers.length) { if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: ox.offers.map((o) => scoreOffer(o, cp)) }); }
-      } catch { /* skip this source on error */ }
+        const uw = await unwrangleSearch(r, opts.target);
+        if (!uw.trialExhausted) {
+          if (uw.creditsRemaining != null) creditsRemaining = uw.creditsRemaining;
+          if (uw.offers.length) {
+            if (!retailersHit.includes(r)) retailersHit.push(r);
+            batches.push({ offers: uw.offers.map((o) => scoreOffer(o, cp)) });
+            escalationHit = true;
+          }
+        }
+      } catch { /* skip this retailer on error */ }
     }
-  }
-
-  // OpenClaw retailers (member-gated: BJ's club, Publix store) — a logged-in browser
-  // on the OpenClaw box does the search. Inert until OPENCLAW_GROCERY_URL/TOKEN exist.
-  if (openClawEnabled()) {
-    for (const r of opts.openClawRetailers ?? []) {
-      try {
-        const oc = await openClawSearch(r, opts.target, opts.zip ?? "33765");
-        if (!oc.trialExhausted && oc.offers.length) { if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: oc.offers.map((o) => scoreOffer(o, cp)) }); }
-      } catch { /* skip this source on error */ }
+    // Browser → Instacart (Publix / BJ's) — local grocers no paid API reaches. Only if
+    // no paid tier hit. Inert unless OPENCLAW_GROCERY_URL/TOKEN + box are up.
+    if (!escalationHit && openClawEnabled()) {
+      for (const r of opts.openClawRetailers ?? []) {
+        try {
+          const oc = await openClawSearch(r, opts.target, opts.zip ?? "33765");
+          if (!oc.trialExhausted && oc.offers.length) { if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: oc.offers.map((o) => scoreOffer(o, cp)) }); escalationHit = true; }
+        } catch { /* skip this source on error */ }
+      }
+    }
+    // Oxylabs open-site retailers (rarely wired) — last, only if nothing hit.
+    if (!escalationHit && oxylabsEnabled()) {
+      for (const r of opts.oxylabsRetailers ?? []) {
+        try {
+          const ox = await oxylabsSearch(r, opts.target);
+          if (!ox.trialExhausted && ox.offers.length) { if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: ox.offers.map((o) => scoreOffer(o, cp)) }); }
+        } catch { /* skip this source on error */ }
+      }
     }
   }
 
