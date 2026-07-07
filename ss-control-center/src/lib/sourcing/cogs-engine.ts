@@ -373,10 +373,16 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
           "USD", "retail:batch", identity.confidence ?? null, needsReview, noteParts.slice(0, 180), now, now,
         ],
       });
+      // Keep ONE current row per SKU — drop stale rows from earlier days so the UI /
+      // economics never show an out-of-date cost alongside the fresh one.
+      await db.execute({ sql: `DELETE FROM "SkuCost" WHERE sku=? AND source='retail:batch' AND effectiveDate != ?`, args: [sku, eff] });
       log(`  → COGS $${total.toFixed(2)} (listing)${identity.is_bundle ? ` = ${parts.length} components summed` : ""}${anyGoogle ? "  [google est]" : ""}${anyLine ? "  [line-price est]" : ""}${needsReview ? "  [needsReview]" : ""}`);
       result = { sku, status: "costed", cached, total, perUnit: perUnitStore, packSize, needsReview: !!needsReview, methods: Array.from(new Set(parts.map((p) => p.method))), note: noteParts, logs, identity, parts };
     } else {
       log(`  → UNSOURCEABLE: no first-party price at Walmart/Target/Publix — candidate to delist (can't buy it 1P/locally)`);
+      // Clear any stale cost (e.g. an old google row) so an unsourceable item never
+      // keeps showing a fake number — it becomes honestly uncosted.
+      await db.execute({ sql: `DELETE FROM "SkuCost" WHERE sku=? AND source='retail:batch'`, args: [sku] });
       result = { sku, status: "no-price", cached, logs, identity, parts };
     }
 
