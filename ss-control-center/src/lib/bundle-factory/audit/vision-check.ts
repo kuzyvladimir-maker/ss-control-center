@@ -24,6 +24,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { CLAUDE } from "@/lib/ai-models";
+import { identifyImageViaClaudeCli } from "@/lib/image-gen/codex-worker";
 
 /**
  * Names that may appear in Vision detections but are NOT foreign
@@ -153,6 +154,52 @@ function getVisionStub(): VisionStub | null {
   return typeof stub === "function" ? stub : null;
 }
 
+function visionPrompt(ownBrand: string): string {
+  return (
+    `You are a compliance reviewer for Amazon product listings. ` +
+    `Identify ALL brand logos and packaging visible in this image.\n\n` +
+    `Own brand: "${ownBrand}" — OK to appear.\n\n` +
+    `Identify any OTHER brands clearly visible (logos, branded ` +
+    `packaging, brand text). Common brands to watch for: Kraft, ` +
+    `Goya, Ore-Ida, El Monterey, Oh Snap!, Lunchables, ` +
+    `Uncrustables, Jimmy Dean, Hormel, Tyson, Hershey's, ` +
+    `Ghirardelli, Coca-Cola, Pepsi, Starbucks, Pringles, ` +
+    `Cheez-It, Goldfish, Cheetos, Doritos, Pop-Tarts.\n\n` +
+    `Respond ONLY with valid JSON, no preamble:\n` +
+    `{"detected_logos": ["Brand1", "Brand2"], "has_foreign_logos": true_or_false}`
+  );
+}
+
+/** Subscription-first vision (Claude Max via the box worker, $0) — fetches the
+ *  image and asks /analyze-claude. Returns null on ANY failure so the caller
+ *  falls back to the paid API. Same architecture as content-gen + identify. */
+async function detectViaSubscription(
+  imageUrl: string,
+  ownBrand: string,
+  allowedBrands: string[],
+): Promise<VisionCheckResult | null> {
+  try {
+    const imgRes = await fetch(imageUrl, { signal: AbortSignal.timeout(30_000) });
+    if (!imgRes.ok) return null;
+    const b64 = Buffer.from(await imgRes.arrayBuffer()).toString("base64");
+    const parsed = await identifyImageViaClaudeCli([b64], visionPrompt(ownBrand), {
+      timeoutMs: 200_000,
+    });
+    if (!parsed || typeof parsed !== "object") return null;
+    const rawLogos: string[] = Array.isArray(parsed.detected_logos)
+      ? (parsed.detected_logos as unknown[]).filter((s): s is string => typeof s === "string")
+      : [];
+    const realLogos = filterRealLogos(rawLogos, allowedBrands);
+    return {
+      has_foreign_logos: realLogos.length > 0,
+      detected_logos: realLogos,
+      cost_cents: 0, // Max subscription — no metered spend
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function detectForeignLogosInImage(
   imageUrl: string,
   ownBrand: string,
@@ -172,9 +219,16 @@ export async function detectForeignLogosInImage(
   if (process.env.BUNDLE_FACTORY_VISION_SKIP === "1") {
     return SAFE_EMPTY;
   }
+
+  // Subscription FIRST (Vladimir 2026-07-07): the paid-API credit exhaustion
+  // silently blocked EVERY generated image via this gate — the generation ran
+  // fine, then rule-6 failed each attempt. $0 on the Max subscription.
+  const viaSub = await detectViaSubscription(imageUrl, ownBrand, allowedBrands);
+  if (viaSub) return viaSub;
+
   const client = getClient();
   if (!client) {
-    return { ...SAFE_EMPTY, error: "ANTHROPIC_API_KEY not set" };
+    return { ...SAFE_EMPTY, error: "vision worker failed and ANTHROPIC_API_KEY not set" };
   }
 
   try {
@@ -187,21 +241,7 @@ export async function detectForeignLogosInImage(
           role: "user",
           content: [
             { type: "image", source: { type: "url", url: imageUrl } },
-            {
-              type: "text",
-              text:
-                `You are a compliance reviewer for Amazon product listings. ` +
-                `Identify ALL brand logos and packaging visible in this image.\n\n` +
-                `Own brand: "${ownBrand}" — OK to appear.\n\n` +
-                `Identify any OTHER brands clearly visible (logos, branded ` +
-                `packaging, brand text). Common brands to watch for: Kraft, ` +
-                `Goya, Ore-Ida, El Monterey, Oh Snap!, Lunchables, ` +
-                `Uncrustables, Jimmy Dean, Hormel, Tyson, Hershey's, ` +
-                `Ghirardelli, Coca-Cola, Pepsi, Starbucks, Pringles, ` +
-                `Cheez-It, Goldfish, Cheetos, Doritos, Pop-Tarts.\n\n` +
-                `Respond ONLY with valid JSON, no preamble:\n` +
-                `{"detected_logos": ["Brand1", "Brand2"], "has_foreign_logos": true_or_false}`,
-            },
+            { type: "text", text: visionPrompt(ownBrand) },
           ],
         },
       ],
