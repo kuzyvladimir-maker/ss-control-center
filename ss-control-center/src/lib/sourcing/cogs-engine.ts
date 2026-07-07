@@ -321,9 +321,12 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
       });
       for (const pid of res.createdProductIds.slice(0, 1)) { try { await harvestDonorDetail(db, pid); } catch { /* best-effort */ } }
 
-      let cost = await cheapestCostForTarget(db, { brandTok: t.brandTok, tokens: t.tokens, sizeAmount: t.sizeAmount }, runStart);
-      if (cost == null) cost = await googleShoppingCost(t.query, { brandTok: t.brandTok, tokens: t.tokens });
-      if (cost == null) { costable = false; parts.push({ ...base, perUnit: null, method: "none" }); }
+      // ONLY a clean first-party price counts as cost. Google is NOT used — it returns
+      // 3P/reseller prices (often our OWN STARFITSTORE resale), which is not our cost.
+      // No clean 1P at any local retailer → the target is UNSOURCEABLE (honest, actionable),
+      // never a fake estimate. (Vladimir's rule: can't buy it 1P/locally → don't list it.)
+      const cost = await cheapestCostForTarget(db, { brandTok: t.brandTok, tokens: t.tokens, sizeAmount: t.sizeAmount }, runStart);
+      if (cost == null) { costable = false; parts.push({ ...base, perUnit: null, method: "unsourceable" }); }
       else parts.push({ ...base, perUnit: cost.perUnit, retailer: cost.retailer, matched: cost.title, method: cost.google ? "google" : cost.linePrice ? "line-price" : "exact", linePrice: cost.linePrice, google: cost.google, donorProductId: cost.donorProductId ?? null });
       log(`  · ${t.label}  →  ${cost ? `$${cost.perUnit.toFixed(2)}/u @ ${cost.retailer}${cost.google ? " (google est)" : cost.linePrice ? " (line-price est)" : ""}  «${(cost.title || "").slice(0, 46)}» ${cost.size}` : "no price anywhere"}  (hit ${res.retailersHit.join(",") || "none"}, rej ${res.rejected})`);
     }));
@@ -364,7 +367,7 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
       log(`  → COGS $${total.toFixed(2)} (listing)${identity.is_bundle ? ` = ${parts.length} components summed` : ""}${anyGoogle ? "  [google est]" : ""}${anyLine ? "  [line-price est]" : ""}${needsReview ? "  [needsReview]" : ""}`);
       result = { sku, status: "costed", cached, total, perUnit: perUnitStore, packSize, needsReview: !!needsReview, methods: Array.from(new Set(parts.map((p) => p.method))), note: noteParts, logs, identity, parts };
     } else {
-      log(`  → NO clean COGS (some target lacked a 1P price) — flagged for review`);
+      log(`  → UNSOURCEABLE: no first-party price at Walmart/Target/Publix — candidate to delist (can't buy it 1P/locally)`);
       result = { sku, status: "no-price", cached, logs, identity, parts };
     }
 
