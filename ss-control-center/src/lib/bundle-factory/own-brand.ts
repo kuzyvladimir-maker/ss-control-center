@@ -38,15 +38,28 @@ export function isOwnBrandPassthrough(brand: string | null | undefined): boolean
   return ALLOWLIST_LOWER.some((x) => b.includes(x) || x.includes(b));
 }
 
+/** Canonical display spelling per allowlist entry — catalog rows carry the
+ *  brand in unreliable casing ("Smucker'S", "SMUCKERS") that would otherwise
+ *  leak straight into listing titles. */
+const CANONICAL_DISPLAY: Record<(typeof OWN_BRAND_PASSTHROUGH_BRANDS)[number], string> = {
+  "Smucker's": "Smucker's",
+  "Smuckers": "Smucker's",
+  "Uncrustables": "Uncrustables",
+};
+
 /** The brand the listing publishes under: the donor's own brand for an
- *  allowlisted donor, otherwise the Salutem house brand. */
+ *  allowlisted donor (in its CANONICAL spelling — never the raw donor casing),
+ *  otherwise the Salutem house brand. */
 export function resolveListingBrand(
   donorBrand: string | null | undefined,
   houseBrand: string,
 ): string {
-  if (isOwnBrandPassthrough(donorBrand)) {
-    const b = (donorBrand ?? "").trim();
-    if (b) return b;
+  const b = (donorBrand ?? "").trim().toLowerCase();
+  if (b) {
+    for (const entry of OWN_BRAND_PASSTHROUGH_BRANDS) {
+      const x = entry.toLowerCase();
+      if (b.includes(x) || x.includes(b)) return CANONICAL_DISPLAY[entry];
+    }
   }
   return houseBrand;
 }
