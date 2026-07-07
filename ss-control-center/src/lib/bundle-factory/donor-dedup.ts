@@ -1,0 +1,143 @@
+/**
+ * Donor flavor dedup + per-unit cost — pre-planner normalisation for the mass
+ * generator.
+ *
+ * The Reference Catalog holds the SAME flavor many times (different retailers /
+ * pack sizes: "PB & Strawberry 4ct $3.97", "PB & Strawberry 10 Count $9.84"…).
+ * Feeding raw donors into planVariations() would (a) produce nonsense mixes
+ * ("Strawberry + Strawberry") and (b) price COGS off the PACK price as if it
+ * were the UNIT price ($9.84/sandwich instead of $0.98). This module:
+ *
+ *   1. parsePackUnits(title)     — units in the retail pack, from the title.
+ *   2. canonicalFlavorKey(title) — normalised flavor identity (brand/size/count
+ *      words stripped; "Whole Wheat"/"Morning Protein" variants stay distinct).
+ *   3. dedupeDonorFlavors(donors) — one entry per flavor: the donor with the
+ *      CHEAPEST per-unit cost wins; donors whose pack size can't be parsed
+ *      can't be costed and only win when a flavor has no costable sibling
+ *      (flagged `costable:false` so the engine can exclude them from planning).
+ *
+ * Pure + deterministic → unit-tested (donor-dedup.test.ts).
+ */
+
+export interface DedupableDonor {
+  id: string;
+  title: string | null;
+  brand: string | null;
+  productLine: string | null;
+  flavor: string | null;
+  bestPrice: number | null; // retail price of the whole pack, dollars
+}
+
+export interface FlavorEntry<T extends DedupableDonor = DedupableDonor> {
+  key: string;
+  label: string;
+  donor: T;
+  /** Cheapest per-unit cost across the flavor's donors, cents. null = unknown. */
+  unit_price_cents: number | null;
+  costable: boolean;
+}
+
+/** Units in the retail pack, parsed from the title ("10 Count", "8oz/4ct",
+ *  "2ct/30oz" → 10 / 4 / 2). null when the title carries no count. */
+export function parsePackUnits(title: string | null | undefined): number | null {
+  const t = (title ?? "").toLowerCase();
+  const m = t.match(/(\d{1,3})\s*(?:ct\b|count\b)/);
+  if (m) {
+    const n = parseInt(m[1], 10);
+    if (Number.isFinite(n) && n >= 1 && n <= 200) return n;
+  }
+  return null;
+}
+
+// Words that never distinguish one flavor from another.
+const STOP_WORDS = new Set([
+  "frozen", "refrigerated", "sandwich", "sandwiches", "snack", "snacks",
+  "multipack", "pack", "packs", "bag", "bags", "box", "boxes", "tray", "case",
+  "each", "size", "family", "value", "bulk", "wrapped", "individually",
+]);
+
+/** Normalised flavor identity from a donor title: lowercase, sizes/counts and
+ *  brand/product-line tokens removed, filler words dropped. Distinct product
+ *  variants ("Whole Wheat …", "Morning Protein …") keep their qualifier. */
+export function canonicalFlavorKey(
+  title: string | null | undefined,
+  opts: { brand?: string | null; productLine?: string | null } = {},
+): string {
+  let s = (title ?? "").toLowerCase().replace(/[''`’]/g, "");
+  // Sizes + counts + loose numbers.
+  s = s
+    .replace(/\d+(?:\.\d+)?\s*(?:oz|lb|lbs|g|kg|ml|fl)\b/g, " ")
+    .replace(/\d+\s*(?:ct|count)\b/g, " ")
+    .replace(/pack of\s*\d+/g, " ")
+    .replace(/\b\d+(?:\.\d+)?\b/g, " ");
+  // Punctuation → spaces (keep & — it separates flavor halves).
+  s = s.replace(/[^a-z&\s]/g, " ");
+  // Brand + product-line tokens (e.g. "smuckers", "uncrustables").
+  const skip = new Set<string>();
+  for (const src of [opts.brand, opts.productLine]) {
+    for (const tok of (src ?? "").toLowerCase().replace(/[''`’]/g, "").split(/[^a-z]+/)) {
+      if (tok.length >= 3) {
+        skip.add(tok);
+        skip.add(tok.endsWith("s") ? tok.slice(0, -1) : `${tok}s`);
+      }
+    }
+  }
+  const words = s
+    .split(/\s+/)
+    .filter((w) => w.length > 0 && w !== "s" && !skip.has(w) && !STOP_WORDS.has(w));
+  return words.join(" ").trim();
+}
+
+/** Title-case a canonical key for use as the planner/display label. */
+function labelFor(key: string): string {
+  return key
+    .split(" ")
+    .map((w) => (w === "&" ? "&" : w.charAt(0).toUpperCase() + w.slice(1)))
+    .join(" ");
+}
+
+/** Per-unit cost in cents for one donor, or null when un-costable. */
+export function donorUnitPriceCents(d: DedupableDonor): number | null {
+  if (typeof d.bestPrice !== "number" || !(d.bestPrice > 0)) return null;
+  const units = parsePackUnits(d.title);
+  if (units == null) return null;
+  return Math.round((d.bestPrice / units) * 100);
+}
+
+/**
+ * Collapse donors into one entry per flavor. Winner = cheapest per-unit donor.
+ * Entries with `costable:false` (no donor in the group had a parseable pack)
+ * should be excluded from automatic planning — a listing can't be priced off
+ * an unknown unit cost.
+ */
+export function dedupeDonorFlavors<T extends DedupableDonor>(
+  donors: T[],
+): FlavorEntry<T>[] {
+  const groups = new Map<string, FlavorEntry<T>>();
+  for (const d of donors) {
+    const key =
+      (d.flavor ?? "").trim().toLowerCase() ||
+      canonicalFlavorKey(d.title, { brand: d.brand, productLine: d.productLine });
+    if (!key) continue;
+    const unit = donorUnitPriceCents(d);
+    const existing = groups.get(key);
+    if (!existing) {
+      groups.set(key, {
+        key,
+        label: labelFor(key).slice(0, 40),
+        donor: d,
+        unit_price_cents: unit,
+        costable: unit != null,
+      });
+      continue;
+    }
+    // A costable donor always beats an un-costable one; among costable donors
+    // the cheaper per-unit price wins.
+    if (unit != null && (existing.unit_price_cents == null || unit < existing.unit_price_cents)) {
+      existing.donor = d;
+      existing.unit_price_cents = unit;
+      existing.costable = true;
+    }
+  }
+  return Array.from(groups.values());
+}

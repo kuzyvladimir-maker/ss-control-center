@@ -202,3 +202,53 @@ test("fba/closing fees add to total cost and raise the price", () => {
   );
   assert.ok(withFees.selling_price_cents > base.selling_price_cents);
 });
+
+// ── ROI floor price (minimum_seller_allowed_price at publish) ────────────────
+
+test("floor price — 30ct S frozen, shipping-out: $74.53 (ROI 70% full P&L)", () => {
+  const r = computeBundlePrice(
+    { cogs_cents: 3000, unit_count: 30, weight_lb: null, category: "FROZEN_GROCERY" },
+    model({ mode: "markup", markup: 2.3, shipping_in_price: false }),
+  );
+  // base = 3000 goods + 750 S packaging = 3750; label S $20; charge = 9+1.5×10lb = $24
+  // floor = ceil((3750×1.7 + 2000)/0.85) − 2400 = 9853 − 2400 = 7453
+  assert.equal(r.selling_price_cents, 8625); // markup 2.3 target
+  assert.equal(r.floor_price_cents, 7453);
+  assert.ok(r.floor_price_cents < r.selling_price_cents);
+});
+
+test("floor price — 24ct S frozen: $62.53", () => {
+  const r = computeBundlePrice(
+    { cogs_cents: 2400, unit_count: 24, weight_lb: null, category: "FROZEN_GROCERY" },
+    model({ mode: "markup", markup: 2.3, shipping_in_price: false }),
+  );
+  assert.equal(r.cooler_size, "S");
+  assert.equal(r.selling_price_cents, 7245); // 3150 × 2.3
+  assert.equal(r.floor_price_cents, 6253);
+});
+
+test("floor price — never above the selling price, never below min_price", () => {
+  // Markup so thin the ROI floor would exceed the target → clamps to selling.
+  const thin = computeBundlePrice(
+    { cogs_cents: 3000, unit_count: 30, weight_lb: null, category: "FROZEN_GROCERY" },
+    model({ mode: "markup", markup: 1.2, shipping_in_price: false }),
+  );
+  assert.equal(thin.floor_price_cents, thin.selling_price_cents);
+  // Tiny COGS → floor respects the global min price.
+  const tiny = computeBundlePrice(
+    { cogs_cents: 10, weight_lb: null, category: null },
+    model({ mode: "markup", markup: 2.3 }),
+  );
+  assert.ok(tiny.floor_price_cents >= 999);
+  assert.ok(tiny.floor_price_cents <= tiny.selling_price_cents);
+});
+
+test("floor price — dry listing uses the no-charge formula", () => {
+  const r = computeBundlePrice(
+    { cogs_cents: 4000, weight_lb: 2, category: "SHELF_STABLE" },
+    model({ mode: "markup", markup: 2.3, shipping_in_price: false }),
+  );
+  const base = r.cost.goods_cents + r.cost.packaging_cents;
+  const expected = Math.ceil((r.cost.total_cost_cents + 0.7 * base) / 0.85);
+  assert.equal(r.floor_price_cents, Math.min(expected, r.selling_price_cents));
+});

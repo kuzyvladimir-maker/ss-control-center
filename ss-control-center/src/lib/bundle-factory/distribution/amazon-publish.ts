@@ -216,11 +216,33 @@ export function buildAmazonAttributes(
     attrs.list_price = [
       { value: priceUsd, currency: "USD", marketplace_id: MARKETPLACE_ID },
     ];
+    // Keep the min/max price band promote-draft stored in the rich attributes
+    // (min = ROI-floor, max = target — the band ChannelMAX imports at birth),
+    // and set our_price from the SKU's computed price. Guard the band so a
+    // stale min/max can never contradict the actual price.
+    const richOffer =
+      Array.isArray(attrs.purchasable_offer) && attrs.purchasable_offer[0] &&
+      typeof attrs.purchasable_offer[0] === "object"
+        ? (attrs.purchasable_offer[0] as Record<string, unknown>)
+        : {};
+    const bandVal = (k: string): number | null => {
+      const v = (richOffer[k] as Array<{ schedule?: Array<{ value_with_tax?: number }> }>)?.[0]
+        ?.schedule?.[0]?.value_with_tax;
+      return typeof v === "number" && Number.isFinite(v) ? v : null;
+    };
+    const minBand = bandVal("minimum_seller_allowed_price");
+    const maxBand = bandVal("maximum_seller_allowed_price");
     attrs.purchasable_offer = [
       {
         currency: "USD",
         marketplace_id: MARKETPLACE_ID,
         our_price: [{ schedule: [{ value_with_tax: priceUsd }] }],
+        ...(minBand != null && minBand <= priceUsd
+          ? { minimum_seller_allowed_price: [{ schedule: [{ value_with_tax: minBand }] }] }
+          : {}),
+        ...(maxBand != null && maxBand >= priceUsd
+          ? { maximum_seller_allowed_price: [{ schedule: [{ value_with_tax: maxBand }] }] }
+          : {}),
       },
     ];
   }

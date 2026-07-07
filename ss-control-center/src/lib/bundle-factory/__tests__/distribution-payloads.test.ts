@@ -226,3 +226,49 @@ test("channelTarget — EBAY + TIKTOK report 'not implemented'", () => {
     assert.match(t.skipReason ?? "", /not implemented/i);
   }
 });
+
+// ── Price band (min = ROI floor, max = target) merged into purchasable_offer ──
+
+test("buildAmazonAttributes — rich-attr price band survives with our_price set", () => {
+  const band = {
+    purchasable_offer: [{
+      marketplace_id: "ATVPDKIKX0DER", currency: "USD",
+      minimum_seller_allowed_price: [{ schedule: [{ value_with_tax: 74.53 }] }],
+      maximum_seller_allowed_price: [{ schedule: [{ value_with_tax: 86.25 }] }],
+    }],
+  };
+  const attrs = buildAmazonAttributes(
+    mkSku({ attributes: JSON.stringify(band), price_cents: 8625 }),
+  );
+  const po = (attrs.purchasable_offer as Array<Record<string, any>>)[0];
+  assert.equal(po.our_price[0].schedule[0].value_with_tax, 86.25);
+  assert.equal(po.minimum_seller_allowed_price[0].schedule[0].value_with_tax, 74.53);
+  assert.equal(po.maximum_seller_allowed_price[0].schedule[0].value_with_tax, 86.25);
+});
+
+test("buildAmazonAttributes — contradictory band parts are dropped, not sent", () => {
+  const band = {
+    purchasable_offer: [{
+      marketplace_id: "ATVPDKIKX0DER", currency: "USD",
+      minimum_seller_allowed_price: [{ schedule: [{ value_with_tax: 74.53 }] }],
+      maximum_seller_allowed_price: [{ schedule: [{ value_with_tax: 86.25 }] }],
+    }],
+  };
+  // Operator dropped the price to $50 → stale min ($74.53) would break the
+  // listing (min > price). It must be omitted; max ($86.25 ≥ $50) stays.
+  const attrs = buildAmazonAttributes(
+    mkSku({ attributes: JSON.stringify(band), price_cents: 5000 }),
+  );
+  const po = (attrs.purchasable_offer as Array<Record<string, any>>)[0];
+  assert.equal(po.our_price[0].schedule[0].value_with_tax, 50);
+  assert.equal(po.minimum_seller_allowed_price, undefined);
+  assert.equal(po.maximum_seller_allowed_price[0].schedule[0].value_with_tax, 86.25);
+});
+
+test("buildAmazonAttributes — no band in rich attrs -> plain our_price only", () => {
+  const attrs = buildAmazonAttributes(mkSku({ price_cents: 8625 }));
+  const po = (attrs.purchasable_offer as Array<Record<string, any>>)[0];
+  assert.equal(po.our_price[0].schedule[0].value_with_tax, 86.25);
+  assert.equal(po.minimum_seller_allowed_price, undefined);
+  assert.equal(po.maximum_seller_allowed_price, undefined);
+});

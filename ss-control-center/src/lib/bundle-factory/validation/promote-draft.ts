@@ -354,6 +354,31 @@ export async function promoteDraftToChannelSkus(
     }
   }
 
+  // Price band born WITH the listing (Vladimir 2026-07-07): min = the ROI-floor
+  // price (target ROI on goods+packaging survives), max = the target price.
+  // ChannelMAX auto-imports these bounds from the listing, so a listing born
+  // with a correct band never needs a manual ChannelMAX fix — the repricer can
+  // neither raise it above our target nor drop it below the ROI minimum.
+  // amazon-publish merges our_price into this same purchasable_offer entry.
+  try {
+    const rich = JSON.parse(richAttributesJson) as Record<string, unknown>;
+    rich.purchasable_offer = [
+      {
+        marketplace_id: MARKETPLACE_ID,
+        currency: "USD",
+        minimum_seller_allowed_price: [
+          { schedule: [{ value_with_tax: autoPrice.floor_price_cents / 100 }] },
+        ],
+        maximum_seller_allowed_price: [
+          { schedule: [{ value_with_tax: autoPriceCents / 100 }] },
+        ],
+      },
+    ];
+    richAttributesJson = JSON.stringify(rich);
+  } catch {
+    /* band is best-effort — publish still sets our_price */
+  }
+
   // Browse node depends on the bundle's brand mix, not the channel.
   // Pull the MasterBundle's BundleComponents once and compute the
   // distinct-brand count so resolveAmazonBrowseNode can decide.

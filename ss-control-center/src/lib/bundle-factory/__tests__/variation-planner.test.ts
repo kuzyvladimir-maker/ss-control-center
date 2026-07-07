@@ -19,14 +19,14 @@ test("splitCount distributes evenly with remainder to the front", () => {
 
 test("own-brand: singles first (flavors × counts), then mixes", () => {
   const specs = planVariations(flavors(2), { targetCount: 100, ownBrand: true });
-  // 2 flavors × 4 counts = 8 singles, then C(2,2)=1 combo × 4 counts = 4 mixes.
-  assert.equal(specs.length, 12);
+  // 2 flavors × 5 counts = 10 singles, then C(2,2)=1 combo × 5 counts = 5 mixes.
+  assert.equal(specs.length, 15);
   const singles = specs.filter((s) => s.composition_type === "SINGLE_FLAVOR");
   const mixes = specs.filter((s) => s.composition_type === "MIXED_FLAVOR");
-  assert.equal(singles.length, 8);
-  assert.equal(mixes.length, 4);
+  assert.equal(singles.length, 10);
+  assert.equal(mixes.length, 5);
   // singles come before mixes
-  assert.ok(specs.findIndex((s) => s.composition_type === "MIXED_FLAVOR") >= 8);
+  assert.ok(specs.findIndex((s) => s.composition_type === "MIXED_FLAVOR") >= 10);
 });
 
 test("quantities always sum to unit_count", () => {
@@ -42,13 +42,14 @@ test("targetCount is a hard cap", () => {
   assert.equal(specs.length, 5);
 });
 
-test("counts default to 30/45/90/120 for own-brand", () => {
+test("counts default to 24/30/45/90/120 for own-brand", () => {
   const specs = planVariations(flavors(1), { targetCount: 100, ownBrand: true });
-  // 1 flavor, no mixes possible → 4 singles at the 4 counts
-  assert.equal(specs.length, 4);
+  // 1 flavor, no mixes possible → 5 singles at the 5 counts (24 + 30 are the
+  // owner's proven catalog sizes, Vladimir 2026-07-07)
+  assert.equal(specs.length, 5);
   assert.deepEqual(
     specs.map((s) => s.unit_count).sort((a, b) => a - b),
-    [30, 45, 90, 120],
+    [24, 30, 45, 90, 120],
   );
 });
 

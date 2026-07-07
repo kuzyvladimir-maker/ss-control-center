@@ -5,7 +5,7 @@
  * concrete, ORDERED list of listing specs:
  *
  *   Mode A (own-brand, e.g. Uncrustables): every flavor × every piece count
- *     (30/45/90/120), THEN flavor mixes of 2, 3, 4 flavors × counts. Owner:
+ *     (24/30/45/90/120), THEN flavor mixes of 2, 3, 4 flavors × counts. Owner:
  *     "single flavors, then all sorts of mixes with 2, 3, 4 flavors."
  *   Mode B (gift-set): one variation per product (+ light mixes) at the pack size.
  *
@@ -38,7 +38,8 @@ export interface PlanOpts {
   targetCount: number;
   /** Own-brand (Uncrustables-style flavors×counts+mixes) vs gift-set. */
   ownBrand: boolean;
-  /** Piece counts per listing. Default: own-brand [30,45,90,120]; gift-set [pack]. */
+  /** Piece counts per listing. Default: own-brand [24,30,45,90,120]
+   *  (24 + 30 are the owner's proven catalog sizes); gift-set [pack]. */
   counts?: number[];
   /** Gift-set pack size when counts not given. Default 6. */
   defaultPack?: number;
@@ -80,7 +81,7 @@ export function planVariations(
     opts.counts && opts.counts.length > 0
       ? opts.counts
       : opts.ownBrand
-        ? [30, 45, 90, 120]
+        ? [24, 30, 45, 90, 120]
         : [Math.max(2, opts.defaultPack ?? 6)];
 
   const specs: VariationSpec[] = [];

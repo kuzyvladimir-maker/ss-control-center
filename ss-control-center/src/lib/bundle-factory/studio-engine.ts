@@ -20,6 +20,7 @@ import { runContentGeneration } from "./content-pipeline";
 import { resolveListingBrand, isOwnBrandPassthrough } from "./own-brand";
 import type { Variant, VariantComponent } from "./variation-matrix";
 import { planVariations, type VariationSpec } from "./variation-planner";
+import { dedupeDonorFlavors, donorUnitPriceCents } from "./donor-dedup";
 
 export interface BatchProgress {
   status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
@@ -180,8 +181,12 @@ async function buildOneListing(args: {
   spec.donor_ids.forEach((id, i) => {
     const d = donorsById.get(id);
     if (!d) return;
+    // COGS per SANDWICH/unit — the donor's bestPrice is the RETAIL PACK price
+    // ("10 Count $9.84" → $0.98/unit). Never treat a pack price as a unit price:
+    // that inflates a 30-piece listing's COGS 10× and births an absurd price.
     const unitPriceCents =
-      typeof d.bestPrice === "number" && d.bestPrice > 0 ? Math.round(d.bestPrice * 100) : 0;
+      donorUnitPriceCents(d) ??
+      (typeof d.bestPrice === "number" && d.bestPrice > 0 ? Math.round(d.bestPrice * 100) : 0);
     components.push({
       research_pool_id: d.id,
       product_name: donorName(d),
@@ -342,14 +347,31 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
       return progress;
     }
 
+    // Collapse duplicate flavors first (the catalog carries the same flavor in
+    // several pack sizes / retailers) — otherwise the matrix pairs a flavor
+    // with itself ("Strawberry + Strawberry") and COGS gets priced off a PACK
+    // price. One entry per flavor, cheapest per-unit donor wins; flavors whose
+    // unit cost can't be parsed are excluded (can't price → can't list).
+    const entries = dedupeDonorFlavors(donors);
+    const costable = entries.filter((e) => e.costable);
+    if (costable.length === 0) {
+      const progress: BatchProgress = {
+        status: "FAILED", phase: "error",
+        step: `Found ${donors.length} products for "${parsed.theme}", but none carry a parseable pack size (count) — cannot derive a per-unit cost.`,
+        total: parsed.count, done: 0, failed: 0, done_flag: true,
+      };
+      await prisma.generationJob.update({
+        where: { id: batchId },
+        data: { status: "FAILED", bundles_target: parsed.count, notes: JSON.stringify({ progress }) },
+      });
+      return progress;
+    }
+
     // Build the combinatorial matrix (flavors × counts + mixes). Own-brand
-    // (Uncrustables) → single flavors then 2/3/4-flavor mixes at 30/45/90/120;
+    // (Uncrustables) → single flavors then 2/3/4-flavor mixes at 24/30/45/90/120;
     // gift-set → variations at the pack size. Capped at the requested count.
     const ownBrand = donors.some((d) => isOwnBrandPassthrough(d.brand));
-    const flavors = donors.map((d) => ({
-      id: d.id,
-      label: (d.flavor || d.productLine || donorName(d)).slice(0, 40),
-    }));
+    const flavors = costable.map((e) => ({ id: e.donor.id, label: e.label }));
     const specs = planVariations(flavors, {
       targetCount: parsed.count,
       ownBrand,
@@ -363,9 +385,10 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
       donor_ids: usedIds,
       specs,
     };
+    const skipped = entries.length - costable.length;
     const progress: BatchProgress = {
       status: "RUNNING", phase: "sourcing",
-      step: `Found ${donors.length} products — building ${specs.length} listings`,
+      step: `Found ${donors.length} products → ${costable.length} distinct flavors${skipped ? ` (${skipped} skipped: no parseable pack size)` : ""} — building ${specs.length} listings`,
       total: specs.length, done: 0, failed: 0, done_flag: false,
     };
     await prisma.generationJob.update({

@@ -48,6 +48,7 @@ import {
   coolerForWeight,
 } from "@/lib/economics/packaging";
 import { referralFee } from "@/lib/economics/fee-tables";
+import { frozenShippingChargeCents } from "@/lib/bundle-factory/distribution/shipping-templates";
 
 export type PricingMode = "margin" | "markup" | "roi";
 
@@ -248,6 +249,11 @@ export interface BundlePriceResult {
   profit_cents: number;
   margin_pct: number; // profit / selling_price
   roi_pct: number; // profit / (goods + packaging) — shipping excluded from base
+  /** The ROI-floor item price (Vladimir: ROI ≥ target_roi_pct on goods+packaging,
+   *  full P&L: customer's shipping charge in revenue, our label + referral-on-
+   *  everything in costs). Written to minimum_seller_allowed_price at publish so
+   *  no repricer (ChannelMAX) can ever drop the listing below the ROI minimum. */
+  floor_price_cents: number;
 }
 
 function isColdCategory(category: string | null | undefined): boolean {
@@ -372,6 +378,35 @@ export function computeBundlePrice(
   // from the base). Shown regardless of the mode used to solve the price.
   const roi_pct = roi_base_cents > 0 ? profit_cents / roi_base_cents : 0;
 
+  // ── ROI floor price (Vladimir 2026-07-07) ─────────────────────────────────
+  // The minimum item price that still yields target_roi_pct on the invested
+  // money (goods + packaging). Full P&L for cold shipping-out listings:
+  //   (P + charge)·(1−r) = base·(1+roi) + fba + closing + label
+  // where charge = what the customer pays via the frozen template (9 + 1.5/lb
+  // on the declared cooler weight) and label = what we pay Amazon Buy Shipping.
+  // Dry (or shipping-in-price): P·(1−r) = total_cost + roi·base.
+  const denomFloor = Math.max(0.05, 1 - solveReferral);
+  let floorCents: number;
+  if (cold && cooler != null && !model.shipping_in_price) {
+    const chargeCents = frozenShippingChargeCents(cooler);
+    floorCents =
+      Math.ceil(
+        (roi_base_cents * (1 + model.target_roi_pct) + fba_cents + closing_cents + own_shipping_cents) /
+          denomFloor,
+      ) - chargeCents;
+  } else {
+    floorCents = Math.ceil(
+      (total_cost_cents + roi_base_cents * model.target_roi_pct) / denomFloor,
+    );
+  }
+  // Sane bounds: at least the global min price, never above the selling price
+  // (Amazon rejects min > our_price; if the target somehow sits below the ROI
+  // floor, the floor clamps to it and the margin validator flags the listing).
+  const floor_price_cents = Math.min(
+    Math.max(model.min_price_cents, floorCents),
+    selling_price_cents,
+  );
+
   return {
     selling_price_cents,
     mode: model.mode,
@@ -394,6 +429,7 @@ export function computeBundlePrice(
     profit_cents,
     margin_pct,
     roi_pct,
+    floor_price_cents,
   };
 }
 
