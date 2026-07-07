@@ -25,8 +25,8 @@ export async function computeCatalogStats(db: Client): Promise<CatalogStats> {
   const [wTot, wPub, cTot, cPub, rev, donP, donO, bom, methods] = await Promise.all([
     db.execute(`SELECT COUNT(*) n FROM WalmartCatalogItem`),
     db.execute(`SELECT COUNT(*) n FROM WalmartCatalogItem WHERE publishedStatus='PUBLISHED'`),
-    db.execute(`SELECT COUNT(*) n FROM "SkuCost" WHERE source='retail:batch'`),
-    db.execute(`SELECT COUNT(*) n FROM WalmartCatalogItem w JOIN "SkuCost" c ON c.sku=w.sku AND c.source='retail:batch' WHERE w.publishedStatus='PUBLISHED'`),
+    db.execute(`SELECT COUNT(*) n FROM "SkuCost" WHERE source='retail:batch' AND totalCost IS NOT NULL`),
+    db.execute(`SELECT COUNT(*) n FROM WalmartCatalogItem w JOIN "SkuCost" c ON c.sku=w.sku AND c.source='retail:batch' WHERE w.publishedStatus='PUBLISHED' AND c.totalCost IS NOT NULL`),
     db.execute(`SELECT COUNT(*) n FROM "SkuCost" WHERE source='retail:batch' AND needsReview=1`),
     db.execute(`SELECT COUNT(*) n FROM "DonorProduct"`).catch(() => ({ rows: [{ n: 0 }] })),
     db.execute(`SELECT COUNT(*) n FROM "DonorOffer"`).catch(() => ({ rows: [{ n: 0 }] })),

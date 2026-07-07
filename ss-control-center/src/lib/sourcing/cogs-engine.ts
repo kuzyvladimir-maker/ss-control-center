@@ -380,9 +380,17 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
       result = { sku, status: "costed", cached, total, perUnit: perUnitStore, packSize, needsReview: !!needsReview, methods: Array.from(new Set(parts.map((p) => p.method))), note: noteParts, logs, identity, parts };
     } else {
       log(`  → UNSOURCEABLE: no first-party price at Walmart/Target/Publix — candidate to delist (can't buy it 1P/locally)`);
-      // Clear any stale cost (e.g. an old google row) so an unsourceable item never
-      // keeps showing a fake number — it becomes honestly uncosted.
-      await db.execute({ sql: `DELETE FROM "SkuCost" WHERE sku=? AND source='retail:batch'`, args: [sku] });
+      // Write an UNSOURCEABLE marker (totalCost NULL, needsReview) instead of a fake
+      // number: it's honestly "no cost", visible in /cogs, and — having a SkuCost row —
+      // is skipped by the resumable sweep so we don't re-probe it forever. Coverage
+      // counts require totalCost IS NOT NULL, so it never inflates "costed".
+      await db.execute({
+        sql: `INSERT INTO "SkuCost" (id, sku, effectiveDate, totalCost, costPerUnit, packSize, includesPackaging, currency, source, confidence, needsReview, notes, createdAt, updatedAt)
+              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+              ON CONFLICT(sku, source, effectiveDate) DO UPDATE SET totalCost=NULL, costPerUnit=NULL, needsReview=1, notes=excluded.notes, updatedAt=excluded.updatedAt`,
+        args: [`retail:${sku}:batch:${eff}`, sku, eff, null, null, null, 0, "USD", "retail:batch", identity.confidence ?? null, 1, "UNSOURCEABLE: no first-party price at Walmart/Target/Publix — candidate to delist", now, now],
+      });
+      await db.execute({ sql: `DELETE FROM "SkuCost" WHERE sku=? AND source='retail:batch' AND effectiveDate != ?`, args: [sku, eff] });
       result = { sku, status: "no-price", cached, logs, identity, parts };
     }
 
