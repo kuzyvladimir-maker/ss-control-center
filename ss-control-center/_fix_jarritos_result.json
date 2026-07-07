@@ -1,0 +1,76 @@
+{
+  "donor": {
+    "url": "https://i5.walmartimages.com/seo/Jarritos-Mineragua-Sparkling-Water-1-58-Qt-1-5-Liter-1-Count_190e3c25-4df1-49fa-b8b0-f81f6adad898.9ab56ee59b68e54b821217bba1e7e2af.jpeg",
+    "src": "Walmart 1P",
+    "reason": "Single 1.5L Jarritos Mineragua Sparkling Water bottle, upright front label visible, plain white back"
+  },
+  "id": {
+    "brand": "Jarritos",
+    "product_line": "Mineragua",
+    "flavor": "original/plain",
+    "size": "1.5 Liter",
+    "container_type": "bottle",
+    "base_unit": "Jarritos Mineragua Sparkling Mineral Water 1.5 Liter bottle",
+    "units_in_listing": 1,
+    "unit_basis": "bottle",
+    "is_bundle": false,
+    "components": [],
+    "retail_search_query": "Jarritos Mineragua Sparkling Water 1.5 Liter Bottle",
+    "confidence": 0.85,
+    "notes": "No photos provided; relying on title text. Assumed single bottle per '1 Count' designation.",
+    "imagesUsed": 0
+  },
+  "results": [
+    {
+      "sku": "FaisalX-1856",
+      "pack": 2,
+      "wasUrl": "",
+      "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1856/main-jarritosfix.png",
+      "verdict": {
+        "identity": true,
+        "eachCellSingle": true,
+        "countOk": true,
+        "front": true,
+        "whiteBg": true,
+        "pass": true,
+        "reason": "Two Jarritos Mineragua Sparkling Water 1.5L bottles shown side by side, each is a single retail unit"
+      },
+      "status": "PASS",
+      "donorSrc": "Walmart 1P"
+    },
+    {
+      "sku": "FaisalX-1857",
+      "pack": 4,
+      "wasUrl": "",
+      "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1857/main-jarritosfix.png",
+      "verdict": {
+        "identity": true,
+        "eachCellSingle": true,
+        "countOk": true,
+        "front": true,
+        "whiteBg": true,
+        "pass": true,
+        "reason": "Four identical single bottles of Mineragua Sparkling Water, each face-on, on white background."
+      },
+      "status": "PASS",
+      "donorSrc": "Walmart 1P"
+    },
+    {
+      "sku": "FaisalX-1858",
+      "pack": 6,
+      "wasUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1858/main-20260617-67970.png",
+      "nowUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1858/main-jarritosfix.png",
+      "verdict": {
+        "identity": false,
+        "eachCellSingle": false,
+        "countOk": false,
+        "front": false,
+        "whiteBg": false,
+        "pass": false,
+        "reason": "tile qualify error"
+      },
+      "status": "FAIL",
+      "donorSrc": "Walmart 1P"
+    }
+  ]
+}

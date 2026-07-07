@@ -1,0 +1,187 @@
+[
+  {
+    "sku": "FaisalX-1119",
+    "title": "Thomas' Whole Wheat English Muffins, 6 count, Soft English Muffins, 12 oz Tray (Pack of 4)",
+    "pack": 4,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1119/main-20260701-f50.png",
+    "status": "ALREADY_OK"
+  },
+  {
+    "sku": "FaisalX-4972",
+    "title": "Bigelow Salted Caramel, Black Tea Bags, 18 Count (Pack of 4)",
+    "pack": 4,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4972/main-20260615-73603.png",
+    "status": "ALREADY_OK"
+  },
+  {
+    "sku": "FaisalX-4158",
+    "title": "Mission Yellow Corn Rounds Tortilla Chips, 11 oz, 1 Count (Pack of 8)",
+    "pack": 8,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4158/main-20260615-52037.png",
+    "status": "ALREADY_OK"
+  },
+  {
+    "sku": "FaisalX-1156",
+    "title": "Pepperidge Farm Sweet Hawaiian Slider Buns, 12-Ct Bag (Pack of 6)",
+    "pack": 6,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1156/main-20260701-f50.png",
+    "liveFail": "Product shown is Pepperidge Farm Soft White Hamburger Buns (8-ct bag), not Sweet Hawaiian Slider Bun",
+    "baseUnit": "Pepperidge Farm Sweet Hawaiian Slider Buns, 12-Ct Bag (Pack of 6)",
+    "donorSrc": "Walmart 1P",
+    "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1156/main-pipeline.png",
+    "newReason": "6 tiles in a 3x2 grid, each showing one Pepperidge Farm Sweet Hawaiian Slider Buns 12-ct bag face-on",
+    "status": "REBUILT_OK"
+  },
+  {
+    "sku": "FaisalX-1158",
+    "title": "",
+    "pack": 4,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1158/main-20260701-f50.png",
+    "status": "SKIP",
+    "why": "missing title/pack/image"
+  },
+  {
+    "sku": "FaisalX-1159",
+    "title": "Pepperidge Farm Butter Slider Buns, 12-Ct Bag (Pack of 6)",
+    "pack": 6,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1159/main-20260701-f50.png",
+    "liveFail": "Product shown is Pepperidge Farm 8 Soft White Hamburger Buns, not Butter Slider Buns — wrong variant",
+    "baseUnit": "Pepperidge Farm Butter Slider Buns, 12-Ct Bag (Pack of 6)",
+    "donorSrc": "target",
+    "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1159/main-pipeline.png",
+    "newReason": "Six tiles arranged in a 3×2 grid; each tile shows one sealed Pepperidge Farm Butter Sliders 12-ct ba",
+    "status": "REBUILT_OK"
+  },
+  {
+    "sku": "FaisalX-1170",
+    "title": "Pepperidge Farm Soft White Slider Buns, 12-Ct Bag (Pack of 4)",
+    "pack": 4,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1170/main-20260615-63361.png",
+    "status": "ALREADY_OK"
+  },
+  {
+    "sku": "FaisalX-1171",
+    "title": "Pepperidge Farm Soft White Slider Buns, 12-Ct Bag (Pack of 6)",
+    "pack": 6,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1171/main-20260701-f50.png",
+    "liveFail": "Product in image is 'Hamburger Buns' (8-count), but listing is 'Slider Buns' (12-count).",
+    "baseUnit": "Pepperidge Farm Soft White Slider Buns, 12-Ct Bag (Pack of 6)",
+    "donorSrc": "Google Images",
+    "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1171/main-pipeline.png",
+    "newReason": "All 6 tiles show Pepperidge Farm Soft White Slider Buns 12-ct bags matching the listing; each tile i",
+    "status": "REBUILT_OK"
+  },
+  {
+    "sku": "FaisalX-1182",
+    "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 4)",
+    "pack": 4,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1182/main-20260701-f50.png",
+    "liveFail": "Product mismatch: listing specifies Butter Hot Dog Buns (Top Sliced) but image shows Soft White Hamb",
+    "baseUnit": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 4)",
+    "donorSrc": "Walmart 1P",
+    "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1182/main-pipeline.png",
+    "newReason": "All 4 tiles show the same Pepperidge Farm Top Sliced Butter Hot Dog Buns 8-ct bag, each is one seale",
+    "status": "REBUILT_OK"
+  },
+  {
+    "sku": "FaisalX-1148",
+    "title": "",
+    "pack": 8,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1148/main-20260701-f50.png",
+    "status": "SKIP",
+    "why": "missing title/pack/image"
+  },
+  {
+    "sku": "FaisalX-1155",
+    "title": "",
+    "pack": 4,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1155/main-20260701-f50.png",
+    "status": "SKIP",
+    "why": "missing title/pack/image"
+  },
+  {
+    "sku": "FaisalX-1207",
+    "title": "Sara Lee Artesano Brioche Hot Dog Buns, 8 count, Soft Hot Dog Buns, 16 oz Bag (Pack of 6)",
+    "pack": 6,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1207/main-20260701-bare.png",
+    "liveFail": "Wrong product: image shows Sara Lee Delightful Healthy Multi-Grain Bread (sliced loaf), not Sara Lee",
+    "baseUnit": "Sara Lee Artesano Brioche Hot Dog Buns, 8 count, Soft Hot Dog Buns, 16 oz Bag (Pack of 6)",
+    "donorSrc": "Google Images",
+    "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1207/main-pipeline.png",
+    "newReason": "Six tiles in a 3x2 grid, each showing one Sara Lee Artesano Brioche hot dog bun bag face-on with ful",
+    "status": "REBUILT_OK"
+  },
+  {
+    "sku": "FaisalX-1209",
+    "title": "",
+    "pack": 4,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1209/main-20260701-f50r.png",
+    "status": "SKIP",
+    "why": "missing title/pack/image"
+  },
+  {
+    "sku": "FaisalX-1210",
+    "title": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 6)",
+    "pack": 6,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1210/main-20260701-f50.png",
+    "liveFail": "Product shown is Pepperidge Farm Bakery Classics 8 Soft White Hamburger Buns, not Sara Lee Artesano ",
+    "baseUnit": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 6)",
+    "donorSrc": "Google Images",
+    "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1210/main-pipeline.png",
+    "newReason": "6 tiles in a 3x2 grid, each showing one Sara Lee Artesano Bakery Buns bag face-on with full label vi",
+    "status": "REBUILT_OK"
+  },
+  {
+    "sku": "FaisalX-1272",
+    "title": "Arnold Premium Sub Rolls, 6 Count, 15 oz Box (Pack of 4)",
+    "pack": 4,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1272/main-20260701-f50.png",
+    "status": "ALREADY_OK"
+  },
+  {
+    "sku": "FaisalX-1288",
+    "title": "Arnold Potato Buns, 8 count, Soft Hamburger Buns, 16 oz Bag (Pack of 6)",
+    "pack": 6,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1288/main-20260701-f50.png",
+    "status": "ALREADY_OK"
+  },
+  {
+    "sku": "FaisalX-1666",
+    "title": "Dave's Killer Bread® Plain Awesome® Organic Bagels, 16.75 oz (Pack of 7) – Non-GMO, USDA Organic, High Protein & Whole Grains",
+    "pack": 7,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1666/main-20260615-37919.png",
+    "status": "ALREADY_OK"
+  },
+  {
+    "sku": "FaisalX-4397",
+    "title": "Lance Sandwich Cookies, Nekot Fudge, 10 Individually",
+    "pack": 8,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4397/main-20260701-az3.png",
+    "liveFail": "Product shown is Oreo Minis 10 Packs multipack box, not Lance Nekot Fudge sandwich cookies. Each til",
+    "baseUnit": "Lance Sandwich Cookies, Nekot Fudge, 10 Individually",
+    "donorSrc": "Google Images",
+    "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4397/main-pipeline.png",
+    "newReason": "8 Lance Nekot Fudge Sandwich Cookies boxes arranged 3-3-2 grid, each a single retail box shown face-",
+    "status": "REBUILT_OK"
+  },
+  {
+    "sku": "RizwanX-2253",
+    "title": "Maruchan Ramen Noodle Soup Chicken Flavor Souper 6 Count (Pack of 8)",
+    "pack": 8,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2253/main-20260615-93293.png",
+    "liveFail": "Product shown is Maruchan Bowl (cup/bowl format), not Maruchan Ramen Noodle Soup Chicken Flavor Soup",
+    "baseUnit": "Maruchan Ramen Noodle Soup Chicken Flavor Souper 6 Count (Pack of 8)",
+    "donorSrc": "target",
+    "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2253/main-pipeline.png",
+    "newReason": "Each tile shows a Maruchan Souper 6 Pack bag, which is itself a multi-pack of 6 individually-wrapped",
+    "status": "REBUILT_FAIL"
+  },
+  {
+    "sku": "RizwanX-3543",
+    "title": "",
+    "pack": 8,
+    "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3543/main-20260701-az3.png",
+    "status": "SKIP",
+    "why": "missing title/pack/image"
+  }
+]

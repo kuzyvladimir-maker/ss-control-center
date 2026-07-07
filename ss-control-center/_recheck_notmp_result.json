@@ -1,0 +1,162 @@
+[
+  {
+    "sku": "FaisalX-1155",
+    "pack": 4,
+    "live": "SAFE",
+    "now": "multipack-in-cell",
+    "title": "Pepperidge Farm Sweet Hawaiian Slider Buns, 12-Ct Bag",
+    "reason": "Each tile shows a bag labeled '12 Sliders Sweet Hawaiian Mini Buns' — a 12-count multipack — not a s"
+  },
+  {
+    "sku": "FaisalX-1119",
+    "pack": 4,
+    "live": "LIVE",
+    "now": "multipack-in-cell",
+    "title": "Thomas' Whole Wheat English Muffins, 6 count, Soft English Muffins, 12 oz Tray (Pack of 4)",
+    "reason": "Each tile shows a tray/caddy of 6 English Muffins (a multi-unit retail package), not a single retail"
+  },
+  {
+    "sku": "FaisalX-1156",
+    "pack": 6,
+    "live": "SAFE",
+    "now": "wrong-product",
+    "title": "Pepperidge Farm Sweet Hawaiian Slider Buns, 12-Ct Bag (Pack of 6)",
+    "reason": "Product shown is Pepperidge Farm Soft White Hamburger Buns (8-ct bag), not Sweet Hawaiian Slider Bun"
+  },
+  {
+    "sku": "FaisalX-1148",
+    "pack": 8,
+    "live": "SAFE",
+    "now": "wrong-product",
+    "title": "2x-Pepperidge Farm White Hot Dog Buns Top Sliced 8 Count",
+    "reason": "Each tile shows Pepperidge Farm Soft White HAMBURGER Buns (8 count bag), not Top Sliced White HOT DO"
+  },
+  {
+    "sku": "FaisalX-1159",
+    "pack": 6,
+    "live": "SAFE",
+    "now": "wrong-product",
+    "title": "Pepperidge Farm Butter Slider Buns, 12-Ct Bag (Pack of 6)",
+    "reason": "Wrong product: image shows Pepperidge Farm 8 Soft White Hamburger Buns, not Butter Slider Buns. Addi"
+  },
+  {
+    "sku": "FaisalX-1171",
+    "pack": 6,
+    "live": "SAFE",
+    "now": "wrong-product",
+    "title": "Pepperidge Farm Soft White Slider Buns, 12-Ct Bag (Pack of 6)",
+    "reason": "Product shown is Pepperidge Farm Soft White Hamburger Buns (8-ct bags) but listing specifies Slider "
+  },
+  {
+    "sku": "FaisalX-1158",
+    "pack": 4,
+    "live": "LIVE",
+    "now": "wrong-product",
+    "title": "Pepperidge Farm Butter Sliders Mini Buns 12 Count Bags",
+    "reason": "Wrong product: each tile shows Pepperidge Farm 8-Count Soft White Hamburger Buns, not Butter Sliders"
+  },
+  {
+    "sku": "FaisalX-1170",
+    "pack": 4,
+    "live": "SAFE",
+    "now": "OK",
+    "title": "Pepperidge Farm Soft White Slider Buns, 12-Ct Bag (Pack of 4)",
+    "reason": "All 4 tiles show a single Pepperidge Farm Soft White Sliders 12-Ct bag, face-on with the wide front "
+  },
+  {
+    "sku": "FaisalX-1182",
+    "pack": 4,
+    "live": "LIVE",
+    "now": "wrong-product",
+    "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 4)",
+    "reason": "Product in image is 'Hamburger Buns, Soft White' but listing title is 'Hot Dog Buns, Butter'."
+  },
+  {
+    "sku": "FaisalX-1207",
+    "pack": 6,
+    "live": "LIVE",
+    "now": "wrong-product",
+    "title": "Sara Lee Artesano Brioche Hot Dog Buns, 8 count, Soft Hot Dog Buns, 16 oz Bag (Pack of 6)",
+    "reason": "Wrong product: image shows Sara Lee Delightful Healthy Multi-Grain Bread (sliced sandwich loaf), not"
+  },
+  {
+    "sku": "FaisalX-1210",
+    "pack": 6,
+    "live": "LIVE",
+    "now": "wrong-product",
+    "title": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 6)",
+    "reason": "Wrong brand and product: image shows Pepperidge Farm Bakery Classics 8 Soft White Hamburger Buns, no"
+  },
+  {
+    "sku": "FaisalX-1209",
+    "pack": 4,
+    "live": "LIVE",
+    "now": "wrong-product",
+    "title": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hambur",
+    "reason": "Product shown is Sara Lee Artesano Brioche HOT DOG Buns, but listing specifies White Bakery (Hamburg"
+  },
+  {
+    "sku": "FaisalX-1666",
+    "pack": 7,
+    "live": "LIVE",
+    "now": "OK",
+    "title": "Dave's Killer Bread® Plain Awesome® Organic Bagels, 16.75 oz (Pack of 7) – Non-GMO, USDA Organic, High Protein & Whole Grains",
+    "reason": "All 7 tiles show a single Dave's Killer Bread Plain Awesome Organic Bagels bag; each bag is shown fa"
+  },
+  {
+    "sku": "FaisalX-1288",
+    "pack": 6,
+    "live": "SAFE",
+    "now": "multipack-in-cell",
+    "title": "Arnold Potato Buns, 8 count, Soft Hamburger Buns, 16 oz Bag (Pack of 6)",
+    "reason": "Each tile shows an Arnold Potato 8 Buns bag — a retail pack containing 8 buns — not a single unit. T"
+  },
+  {
+    "sku": "FaisalX-4158",
+    "pack": 8,
+    "live": "LIVE",
+    "now": "OK",
+    "title": "Mission Yellow Corn Rounds Tortilla Chips, 11 oz, 1 Count (Pack of 8)",
+    "reason": "8 individual Mission Tortilla Rounds 11oz bags arranged in a 4x2 grid, each showing the front panel "
+  },
+  {
+    "sku": "FaisalX-1272",
+    "pack": 4,
+    "live": "LIVE",
+    "now": "multipack-in-cell",
+    "title": "Arnold Premium Sub Rolls, 6 Count, 15 oz Box (Pack of 4)",
+    "reason": "Each tile shows a bag labeled '6 Sandwich Rolls,' making each tile itself a 6-count pack rather than"
+  },
+  {
+    "sku": "RizwanX-3543",
+    "pack": 8,
+    "live": "SAFE",
+    "now": "OK",
+    "title": "Crush Orange Powder Drink Mix Sugar Free 6 Count",
+    "reason": "All criteria are met."
+  },
+  {
+    "sku": "RizwanX-2253",
+    "pack": 8,
+    "live": "SAFE",
+    "now": "wrong-product",
+    "title": "Maruchan Ramen Noodle Soup Chicken Flavor Souper 6 Count (Pack of 8)",
+    "reason": "Product shown is Maruchan Bowl (a cup/bowl format), not the Ramen Noodle Soup Chicken Flavor Souper "
+  },
+  {
+    "sku": "FaisalX-4397",
+    "pack": 8,
+    "live": "LIVE",
+    "now": "wrong-product",
+    "title": "Lance Sandwich Cookies, Nekot Fudge, 10 Individually",
+    "reason": "Product is Oreo Minis 10-pack box, not Lance Nekot Fudge sandwich cookies. Each tile is itself a mul"
+  },
+  {
+    "sku": "FaisalX-4972",
+    "pack": 4,
+    "live": "LIVE",
+    "now": "OK",
+    "title": "Bigelow Salted Caramel, Black Tea Bags, 18 Count (Pack of 4)",
+    "reason": "Four tiles in a 2x2 grid, each showing one Bigelow Salted Caramel Black Tea 18-count box face-on wit"
+  }
+]
