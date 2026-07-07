@@ -4,14 +4,19 @@
 // How the two runs take turns: the box worker already serializes each lane (Codex
 // queue, Claude queue), so requests naturally queue behind the other chat's. This
 // runner adds politeness on top:
+//   • cached-identity SKUs FIRST (they need no vision at all — pure retail-API work)
 //   • concurrency 2 (one per usable lane via identify's round-robin), never more
 //   • SS_VISION_FREE_ONLY=1 — if all free lanes are busy, the SKU is SKIPPED (no row
 //     written, retried later), never a paid call and never a junk identity
-//   • adaptive backoff — a failure/slow call doubles the pause (box is busy → back
-//     off), a success halves it (box is free → speed up)
-//   • nightly CAP protects paid retail credits (Oxylabs/Unwrangle)
+//   • skip-list — an attempted SKU is not re-picked this run (no spinning on the
+//     same head-of-list); when the whole list is attempted, nap 15 min and reset
+//     (lanes may have recovered, e.g. Codex quota reset)
+//   • adaptive backoff — busy doubles the pause (up to 5 min), success halves it;
+//     8 busy in a row → yield the box 10 min to the other run
+//   • CAP counts only WRITTEN results (skips are free — no retail credits burned)
+//   • hard wall-clock stop after MAX_HOURS
 //
-//   CAP=450 npx tsx scripts/cogs-sweep-cooperative.ts
+//   CAP=400 npx tsx scripts/cogs-sweep-cooperative.ts
 import { config } from "dotenv";
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -20,51 +25,62 @@ process.env.SS_VISION_FREE_ONLY = "1";
 import { createClient } from "@libsql/client";
 import { costOneSku } from "@/lib/sourcing/cogs-engine";
 
-const CAP = Math.max(1, parseInt(process.env.CAP || "450", 10));
+const CAP = Math.max(1, parseInt(process.env.CAP || "400", 10));
+const MAX_HOURS = parseFloat(process.env.MAX_HOURS || "8");
 const CONC = 2;
 const PAUSE_MIN = 3_000, PAUSE_MAX = 300_000;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 (async () => {
   const db = createClient({ url: process.env.TURSO_DATABASE_URL!, authToken: process.env.TURSO_AUTH_TOKEN! });
-  let total = 0, real = 0, uns = 0, skipped = 0;
+  const startedAt = Date.now();
+  let written = 0, real = 0, uns = 0, skipped = 0;
   let pause = PAUSE_MIN;
   let consecutiveSkips = 0;
+  const attempted = new Set<string>();
 
-  while (total < CAP) {
-    // sku ASC ordering (the hourly cron picks syncedAt DESC) → the two rarely collide.
+  while (written < CAP && Date.now() - startedAt < MAX_HOURS * 3_600_000) {
+    // Cached-identity SKUs first (no vision → immune to lane congestion), then the
+    // rest by sku ASC (the hourly cron picks syncedAt DESC → rarely collide).
     const r = await db.execute({
-      sql: `SELECT w.sku FROM WalmartCatalogItem w
+      sql: `SELECT w.sku, (s.sku IS NOT NULL) AS hasCache
+            FROM WalmartCatalogItem w
+            LEFT JOIN SkuShippingData s ON s.sku = w.sku AND s.productIdentity IS NOT NULL
             LEFT JOIN "SkuCost" c ON c.sku = w.sku AND c.source='retail:batch'
             WHERE w.publishedStatus='PUBLISHED' AND c.sku IS NULL
-            ORDER BY w.sku ASC LIMIT 30`,
+            ORDER BY hasCache DESC, w.sku ASC LIMIT 400`,
       args: [],
     });
-    const skus = r.rows.map((x: any) => x.sku as string).filter(Boolean);
-    if (!skus.length) { console.log("no more uncosted — catalog swept, DONE"); break; }
+    const skus = r.rows.map((x: any) => x.sku as string).filter((s) => s && !attempted.has(s)).slice(0, 30);
+    if (!skus.length) {
+      const anyLeft = r.rows.length > 0;
+      if (!anyLeft) { console.log("no more uncosted — catalog swept, DONE"); break; }
+      console.log(`all ${r.rows.length}+ visible SKUs attempted this round — napping 15 min, then retrying (lanes may be back)`);
+      await sleep(900_000);
+      attempted.clear();
+      pause = PAUSE_MIN;
+      continue;
+    }
 
     let idx = 0;
     await Promise.all(Array.from({ length: CONC }, async () => {
       while (true) {
         const i = idx++;
-        if (i >= skus.length || total >= CAP) break;
+        if (i >= skus.length || written >= CAP || Date.now() - startedAt > MAX_HOURS * 3_600_000) break;
+        const sku = skus[i];
+        attempted.add(sku);
         try {
-          const res = await costOneSku(db, { sku: skus[i], channel: "walmart" });
-          total++;
-          if (res.status === "costed") { real++; consecutiveSkips = 0; pause = Math.max(PAUSE_MIN, pause / 2); }
-          else if (res.status === "no-price") { uns++; consecutiveSkips = 0; pause = Math.max(PAUSE_MIN, pause / 2); }
-          else { // error = vision lanes busy → back off, SKU will be retried later
-            skipped++; consecutiveSkips++;
-            pause = Math.min(PAUSE_MAX, pause * 2);
-          }
-        } catch { total++; skipped++; consecutiveSkips++; pause = Math.min(PAUSE_MAX, pause * 2); }
+          const res = await costOneSku(db, { sku, channel: "walmart" });
+          if (res.status === "costed") { written++; real++; consecutiveSkips = 0; pause = Math.max(PAUSE_MIN, pause / 2); }
+          else if (res.status === "no-price") { written++; uns++; consecutiveSkips = 0; pause = Math.max(PAUSE_MIN, pause / 2); }
+          else { skipped++; consecutiveSkips++; pause = Math.min(PAUSE_MAX, pause * 2); } // lanes busy → retried later
+        } catch { skipped++; consecutiveSkips++; pause = Math.min(PAUSE_MAX, pause * 2); }
         if ((real + uns + skipped) % 15 === 0) console.log(`progress: costed ${real} | unsourceable ${uns} | skipped(busy) ${skipped} | pause ${(pause / 1000).toFixed(0)}s`);
-        // Long streak of busy lanes = the other chat is hammering → step aside 10 min.
         if (consecutiveSkips >= 8) { console.log("lanes busy 8x in a row — yielding 10 min to the other run"); await sleep(600_000); consecutiveSkips = 0; pause = PAUSE_MIN; }
         else await sleep(pause);
       }
     }));
   }
-  console.log(`\nCOOPERATIVE SWEEP DONE. costed ${real} | unsourceable ${uns} | skipped-for-later ${skipped}`);
+  console.log(`\nCOOPERATIVE SWEEP DONE. costed ${real} | unsourceable ${uns} | skipped-for-later ${skipped} | hours ${(((Date.now() - startedAt) / 3_600_000)).toFixed(1)}`);
   process.exit(0);
 })();
