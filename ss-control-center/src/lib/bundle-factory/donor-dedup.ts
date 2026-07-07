@@ -59,9 +59,32 @@ const STOP_WORDS = new Set([
 /** Normalised flavor identity from a donor title: lowercase, sizes/counts and
  *  brand/product-line tokens removed, filler words dropped. Distinct product
  *  variants ("Whole Wheat …", "Morning Protein …") keep their qualifier. */
+/** Tokens (≥3 chars, + singular/plural twin) from a brand / product-line
+ *  string — the words to strip from titles when deriving flavor identity. */
+export function brandTokens(...sources: Array<string | null | undefined>): Set<string> {
+  const out = new Set<string>();
+  for (const src of sources) {
+    for (const tok of (src ?? "").toLowerCase().replace(/[''`’]/g, "").split(/[^a-z]+/)) {
+      if (tok.length >= 3) {
+        out.add(tok);
+        out.add(tok.endsWith("s") ? tok.slice(0, -1) : `${tok}s`);
+      }
+    }
+  }
+  return out;
+}
+
 export function canonicalFlavorKey(
   title: string | null | undefined,
-  opts: { brand?: string | null; productLine?: string | null } = {},
+  opts: {
+    brand?: string | null;
+    productLine?: string | null;
+    /** Extra tokens to strip — pass the UNION of brand tokens across the whole
+     *  donor set: catalog rows carry the brand inconsistently ("Uncrustables" /
+     *  "Smucker'S" / null), so per-donor stripping alone leaks brand words into
+     *  some keys and the same flavor splits into several entries. */
+    extraTokens?: Iterable<string>;
+  } = {},
 ): string {
   let s = (title ?? "").toLowerCase().replace(/[''`’]/g, "");
   // Sizes + counts + loose numbers.
@@ -73,15 +96,8 @@ export function canonicalFlavorKey(
   // Punctuation → spaces (keep & — it separates flavor halves).
   s = s.replace(/[^a-z&\s]/g, " ");
   // Brand + product-line tokens (e.g. "smuckers", "uncrustables").
-  const skip = new Set<string>();
-  for (const src of [opts.brand, opts.productLine]) {
-    for (const tok of (src ?? "").toLowerCase().replace(/[''`’]/g, "").split(/[^a-z]+/)) {
-      if (tok.length >= 3) {
-        skip.add(tok);
-        skip.add(tok.endsWith("s") ? tok.slice(0, -1) : `${tok}s`);
-      }
-    }
-  }
+  const skip = brandTokens(opts.brand, opts.productLine);
+  for (const tok of opts.extraTokens ?? []) skip.add(tok);
   const words = s
     .split(/\s+/)
     .filter((w) => w.length > 0 && w !== "s" && !skip.has(w) && !STOP_WORDS.has(w));
@@ -113,18 +129,26 @@ export function donorUnitPriceCents(d: DedupableDonor): number | null {
 export function dedupeDonorFlavors<T extends DedupableDonor>(
   donors: T[],
 ): FlavorEntry<T>[] {
+  // Union of brand/product-line tokens across the WHOLE set — catalog rows
+  // carry the brand inconsistently, so every title is stripped with the same
+  // vocabulary ("Smuckers X" ≡ "Uncrustables X" ≡ "X").
+  const shared = brandTokens(...donors.flatMap((d) => [d.brand, d.productLine]));
   const groups = new Map<string, FlavorEntry<T>>();
   for (const d of donors) {
     const key =
       (d.flavor ?? "").trim().toLowerCase() ||
-      canonicalFlavorKey(d.title, { brand: d.brand, productLine: d.productLine });
+      canonicalFlavorKey(d.title, {
+        brand: d.brand,
+        productLine: d.productLine,
+        extraTokens: shared,
+      });
     if (!key) continue;
     const unit = donorUnitPriceCents(d);
     const existing = groups.get(key);
     if (!existing) {
       groups.set(key, {
         key,
-        label: labelFor(key).slice(0, 40),
+        label: labelFor(key).slice(0, 40).trim(),
         donor: d,
         unit_price_cents: unit,
         costable: unit != null,

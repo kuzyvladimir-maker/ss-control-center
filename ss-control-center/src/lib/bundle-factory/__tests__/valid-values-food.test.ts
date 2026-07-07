@@ -60,11 +60,12 @@ test("is_heat_sensitive is 'No' for dry, 'Yes' when containsLiquid drink", () =>
 });
 
 test("allergen canonicals match Amazon FOOD valid values (not FDA labels)", () => {
-  // shrimp → 'Crustacean' (not 'Shellfish')
-  assert.deepEqual(extractAllergens("Shrimp, salt."), ["Crustacean"]);
-  // soy → 'Soy' (not 'Soybeans'); sesame → 'Sesame Seeds' (not 'Sesame')
+  // Amazon FOOD enum is LOWERCASE underscore-joined (Title-Case rejected with
+  // 90244 — verified live 2026-07-01): shrimp → 'crustacean' (not 'Shellfish'),
+  // soy → 'soy' (not 'Soybeans'), sesame → 'sesame_seeds' (not 'Sesame').
+  assert.deepEqual(extractAllergens("Shrimp, salt."), ["crustacean"]);
   assert.deepEqual(extractAllergens("Soy lecithin, sesame oil."), [
-    "Soy",
-    "Sesame Seeds",
+    "soy",
+    "sesame_seeds",
   ]);
 });

@@ -222,9 +222,11 @@ async function buildOneListing(args: {
   // mode from it). Everything else stays the Salutem gift-set model.
   const listingBrand = resolveListingBrand(primary.brand, houseBrand);
   const ownBrand = isOwnBrandPassthrough(listingBrand);
-  const flavorNames = components.map((c) => c.product_name).join(" & ");
+  // Own-brand: spec.label carries the CLEAN deduped flavor names + count
+  // ("Peanut Butter & Strawberry Jam — 24 ct") — never the raw donor titles,
+  // which drag retail pack sizes ("8oz/4ct") into a 24-piece listing's name.
   const draftName = ownBrand
-    ? `${flavorNames} — ${spec.unit_count} ct`.slice(0, 120)
+    ? spec.label.slice(0, 120)
     : `${houseBrand} ${spec.label} Gift Set`.slice(0, 120);
 
   // ── Bridge to the canonical pipeline ───────────────────────────────────────

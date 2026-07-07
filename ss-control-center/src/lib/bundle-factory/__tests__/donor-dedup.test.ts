@@ -103,3 +103,19 @@ test("dedupeDonorFlavors — explicit flavor column wins over title parsing", ()
   assert.equal(entries.length, 1);
   assert.equal(entries[0].donor.id, "x2"); // cheaper per unit
 });
+
+test("dedupeDonorFlavors — inconsistent brand fields don't split a flavor (prod leak 2026-07-07)", () => {
+  // Catalog reality: same flavor, brand recorded three different ways.
+  const donors = [
+    mk({ id: "a", brand: "Uncrustables", productLine: null,
+      title: "Smuckers Uncrustables Peanut Butter & Strawberry Jam Sandwiches, 10 Count, 2 oz", bestPrice: 9.84 }),
+    mk({ id: "b", brand: "Smucker'S", productLine: null,
+      title: "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct", bestPrice: 3.89 }),
+    mk({ id: "c", brand: null, productLine: null,
+      title: "Smuckers Uncrustables Peanut Butter & Strawberry Jam Sandwiches, 4 Count", bestPrice: 3.97 }),
+  ];
+  const entries = dedupeDonorFlavors(donors);
+  assert.equal(entries.length, 1); // ONE strawberry flavor, not three
+  assert.equal(entries[0].donor.id, "b"); // $0.97/unit is cheapest
+  assert.ok(!/smucker|uncrustable/i.test(entries[0].label), entries[0].label);
+});

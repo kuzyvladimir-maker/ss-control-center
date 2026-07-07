@@ -46,14 +46,19 @@ test("appendColdChainBrandCard is a no-op when url is empty", () => {
   assert.equal(a.other_product_image_locator_1, undefined);
 });
 
-test("appendColdChainBrandCard lands AFTER existing secondary photos", () => {
+test("appendColdChainBrandCard is SLOT #1 — existing donor photos shift down", () => {
+  // Vladimir's rule (P0b, 2026-07-02): the info/brand card is the FIRST image
+  // after MAIN; donor photos follow it.
   const a: Record<string, unknown> = {
     ...frozen(),
     other_product_image_locator_1: [{ media_location: "https://img/donor-1.png" }],
     other_product_image_locator_2: [{ media_location: "https://img/donor-2.png" }],
   };
   appendColdChainBrandCard(a, M, URL);
-  const loc = a.other_product_image_locator_3 as Array<{ media_location: string }>;
-  assert.ok(Array.isArray(loc));
-  assert.equal(loc[0].media_location, URL); // brand card is last
+  const slot = (n: number) =>
+    (a[`other_product_image_locator_${n}`] as Array<{ media_location: string }>)[0]
+      .media_location;
+  assert.equal(slot(1), URL); // brand card first
+  assert.equal(slot(2), "https://img/donor-1.png");
+  assert.equal(slot(3), "https://img/donor-2.png");
 });
