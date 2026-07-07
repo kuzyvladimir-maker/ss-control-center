@@ -14,7 +14,11 @@ import { withErrorHandler } from "@/lib/bundle-factory/api-utils";
 import { tickBatch } from "@/lib/bundle-factory/studio-engine";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+// One tick = one listing build = one content generation. Via the subscription
+// worker (Claude CLI on the box) a generation takes 30-90s and can queue behind
+// other box jobs — 60s used to kill slow ticks mid-build and LOSE the claimed
+// slot (bundles_generated advanced, no draft). 300 = the platform ceiling.
+export const maxDuration = 300;
 
 export const POST = withErrorHandler(
   "studio-tick",

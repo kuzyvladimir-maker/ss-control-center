@@ -30,7 +30,11 @@ export async function GET(request: NextRequest) {
   }
 
   // Stay comfortably within maxDuration; each tick is one Claude content call.
-  const deadline = Date.now() + 250_000;
+  // Reserve headroom for the tick IN FLIGHT: a subscription-worker generation
+  // runs 30-90s (worse behind the box queue). Claiming a listing at 249s and
+  // dying at 300s LOSES the claimed slot (bundles_generated advanced, no
+  // draft) — so stop claiming once ~150s remain and let the last tick finish.
+  const deadline = Date.now() + 150_000;
 
   const jobs = await prisma.generationJob.findMany({
     where: { status: "IN_PROGRESS" },
