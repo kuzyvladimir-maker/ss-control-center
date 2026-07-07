@@ -3047,5 +3047,109 @@
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3637/main-20260617-22059.png",
   "live": "LIVE",
   "status": "ALREADY_OK"
+ },
+ "FaisalX-3625": {
+  "sku": "FaisalX-3625",
+  "title": "Doritos Minis, Cool Ranch Flavored Snack Chips Canister, 5.125 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3625/main-20260617-84174.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Doritos Minis Nacho Cheese, but the listing title specifies Cool Ranch flavor — fla",
+  "baseUnit": "Doritos Minis, Cool Ranch Flavored Snack Chips Canister, 5.125 oz (Pack of 4)",
+  "donorSrc": "target",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3625/main-pipeline.png",
+  "newReason": "Four Doritos Minis Cool Ranch canisters tiled in a 2x2 grid, each showing a single canister face-on ",
+  "status": "REBUILT_OK"
+ },
+ "FaisalX-3654": {
+  "sku": "FaisalX-3654",
+  "title": "Progresso Traditional, Hearty Chicken & Rotini Canned Soup, 19 oz. (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3654/main-20260617-05105.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-3655": {
+  "sku": "FaisalX-3655",
+  "title": "Progresso Traditional, Creamy Chicken Noodle Canned Soup, 18.5 oz. (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3655/main-20260615-17694.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-367": {
+  "sku": "FaisalX-367",
+  "title": "Nature's Own Life Sugar-Free 100% Whole Grain Bread Loaf, 16 oz, (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-367/main-20260617-65195.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-368": {
+  "sku": "FaisalX-368",
+  "title": "Nature's Own Life Sugar-Free 100% Whole Grain Bread Loaf, 16 oz, (Pack of 9)",
+  "pack": 9,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-368/main-20260617-45282.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-3675": {
+  "sku": "FaisalX-3675",
+  "titleSrc": "getItem",
+  "title": "Progresso Traditional, Chicken & Sausage Gumbo Canned Soup, Gluten Free, 19 oz. (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3675/main-20260701-nm.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-3678": {
+  "sku": "FaisalX-3678",
+  "title": "Progresso Traditional, Broccoli Cheese Canned Soup, Gluten Free, 18 oz. (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3678/main-20260701-deepe.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Progresso Chicken & Homestyle Noodles (19 oz), not Broccoli Cheese (18 oz) as liste",
+  "baseUnit": "Progresso Traditional, Broccoli Cheese Canned Soup, Gluten Free, 18 oz. (Pack of 8)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3678/main-pipeline.png",
+  "newReason": "8 individual Progresso Traditional Broccoli Cheese 18 oz cans arranged in a 3+3+2 grid, each shown f",
+  "status": "REBUILT_OK"
+ },
+ "FaisalX-3682": {
+  "sku": "FaisalX-3682",
+  "title": "Progresso Traditional, Chicken & Herb Dumplings Canned Soup, 18.5 oz. (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3682/main-20260615-27257.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-3691": {
+  "sku": "FaisalX-3691",
+  "title": "Progresso Traditional Creamy Tomato with Penne Soup - 18.5oz pack of 4",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3691/main-20260618-72894.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-3694": {
+  "sku": "FaisalX-3694",
+  "title": "Progresso Italian-Style Wedding Soup, Traditional Canned Soup, 18.5 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3694/main-20260616-07537.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Progresso Italian-Style Wedding Soup, Traditional Canned Soup, 18.5 oz (Pack of 4)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3694/main-pipeline.png",
+  "newReason": "Four individual Progresso Traditional Italian-Style Wedding Soup 18.5 oz cans arranged in a 2x2 grid",
+  "status": "REBUILT_OK"
+ },
+ "FaisalX-3709": {
+  "sku": "FaisalX-3709",
+  "title": "Progresso Beef Pot Roast with Country Vegetables Canned Soup, 18.5 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3709/main-20260618-10527-7.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
  }
 }
