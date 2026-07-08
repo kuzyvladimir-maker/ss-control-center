@@ -224,12 +224,32 @@ OUTPUT FORMAT — return ONLY valid JSON, no markdown fences, no prose:
   };
 }
 
-function formatComposition(components: VariantComponent[]): string {
+/** Strip retail pack-size fragments ("- 8oz/4ct", "10 Count", "Pack of 6")
+ *  from a donor title. Own-brand listings count INDIVIDUAL units — a raw
+ *  "45× …7.2oz/4ct" line led the model to write "45 boxes … totaling 180
+ *  sandwiches" on a 45-sandwich listing (owner caught it 2026-07-07). */
+function stripPackFragments(name: string): string {
+  return name
+    .replace(/[-–—]?\s*\d+(?:\.\d+)?\s*oz\s*\/\s*\d+\s*ct\b/gi, "")
+    .replace(/[-–—]?\s*\d+\s*ct\s*\/\s*\d+(?:\.\d+)?\s*oz\b/gi, "")
+    .replace(/,?\s*\d+\s*(?:count|ct)\b/gi, "")
+    .replace(/,?\s*pack of\s*\d+/gi, "")
+    .replace(/,?\s*\d+(?:\.\d+)?\s*oz\b(?:\s*each)?/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/[\s,–—-]+$/g, "")
+    .trim();
+}
+
+function formatComposition(
+  components: VariantComponent[],
+  opts: { unitSemantics?: boolean } = {},
+): string {
   return components
-    .map(
-      (c) =>
-        `  - ${c.qty}× ${c.product_name} (${c.brand}, $${(c.unit_price_cents / 100).toFixed(2)} each)`,
-    )
+    .map((c) => {
+      const name = opts.unitSemantics ? stripPackFragments(c.product_name) : c.product_name;
+      const unitWord = opts.unitSemantics ? " individual sandwiches/pieces of" : "×";
+      return `  - ${c.qty}${unitWord} ${name} (${c.brand}, $${(c.unit_price_cents / 100).toFixed(2)} per piece)`;
+    })
     .join("\n");
 }
 
@@ -254,10 +274,19 @@ function buildUserMessage(input: ContentGenerationInput): string {
   lines.push(`Pack count: ${input.pack_count} total units`);
   lines.push(`Suggested retail price: $${(variant.suggested_price_cents / 100).toFixed(2)}`);
   lines.push("");
+  if (ownBrand) {
+    lines.push(
+      `COUNT SEMANTICS (CRITICAL): this listing contains exactly ${input.pack_count} INDIVIDUAL sandwiches/pieces in total. ` +
+        `Quantities below are single pieces, NEVER retail boxes or cases. The donor's retail pack size ` +
+        `(e.g. "4ct box") describes only how the manufacturer sells it in stores — do NOT multiply by it, ` +
+        `do NOT describe this listing as boxes/cases, and never state a total other than ${input.pack_count}.`,
+    );
+    lines.push("");
+  }
   lines.push(ownBrand
     ? `Product contents (what is included — describe factually):`
     : `Bundle contents (inventory the listing must describe):`);
-  lines.push(formatComposition(variant.composition));
+  lines.push(formatComposition(variant.composition, { unitSemantics: ownBrand }));
   lines.push("");
   lines.push(`Selected variant rationale: ${variant.notes}`);
 
