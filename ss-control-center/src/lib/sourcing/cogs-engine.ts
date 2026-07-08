@@ -377,7 +377,9 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         // ⛔ BJ'S DISABLED 2026-07-07: bjs.com's Akamai anti-bot tripped ("Access
         // Denied") after our sweep hammered /search — Vladimir's order. Do NOT
         // re-enable without a slow rate-limit + his explicit OK.
-        unwrangleRetailers: ["target", "samsclub", "costco"],
+        // SS_SKIP_CLUBS=1 drops Sam's/Costco (10cr each) — the credit drain, mostly on
+        // items that still end unsourceable. Club-only tail becomes a targeted pass.
+        unwrangleRetailers: process.env.SS_SKIP_CLUBS === "1" ? ["target"] : ["target", "samsclub", "costco"],
         openClawRetailers: opts.openClawRetailers || ["publix"],
         allowNonGrocery: true, // COGS engine costs ANY resale product (food + household)
       });

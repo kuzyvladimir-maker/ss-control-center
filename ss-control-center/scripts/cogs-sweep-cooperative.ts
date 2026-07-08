@@ -32,6 +32,13 @@ const CONC = 2;
 const PAUSE_MIN = 3_000, PAUSE_MAX = 300_000;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+const CREDIT_FLOOR = Math.max(0, parseInt(process.env.CREDIT_FLOOR || "3000", 10));
+async function unwrangleCredits(): Promise<number> {
+  const KEY = (process.env.UNWRANGLE_API_KEY || "").trim().replace(/^['"]|['"]$/g, "");
+  return fetch(`https://data.unwrangle.com/api/getter/?platform=target_search&search=water&api_key=${KEY}`, { signal: AbortSignal.timeout(20000) })
+    .then((r) => r.json()).then((j: any) => Number(j?.remaining_credits ?? 0)).catch(() => Infinity);
+}
+
 (async () => {
   const db = createClient({ url: process.env.TURSO_DATABASE_URL!, authToken: process.env.TURSO_AUTH_TOKEN! });
   const startedAt = Date.now();
@@ -40,7 +47,16 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
   let consecutiveSkips = 0;
   const attempted = new Set<string>();
 
+  // HARD credit guard (the omission that let a run drain past the floor 2026-07-08):
+  // check real Unwrangle balance before every batch; stop cleanly below CREDIT_FLOOR.
+  {
+    const c0 = await unwrangleCredits();
+    console.log(`starting Unwrangle credits: ${c0} (floor ${CREDIT_FLOOR})`);
+    if (c0 < CREDIT_FLOOR) { console.log("below credit floor — not starting"); process.exit(0); }
+  }
+
   while (written < CAP && Date.now() - startedAt < MAX_HOURS * 3_600_000) {
+    if (await unwrangleCredits() < CREDIT_FLOOR) { console.log(`Unwrangle credits below floor ${CREDIT_FLOOR} — stopping to preserve reserve`); break; }
     // Cached-identity SKUs first (no vision → immune to lane congestion), then the
     // rest by sku ASC (the hourly cron picks syncedAt DESC → rarely collide).
     const r = await db.execute({
