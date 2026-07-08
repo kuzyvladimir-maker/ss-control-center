@@ -419,7 +419,10 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         sql: `INSERT INTO "SkuCost" (id, sku, effectiveDate, totalCost, costPerUnit, packSize, includesPackaging, currency, source, confidence, needsReview, notes, createdAt, updatedAt)
               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
               ON CONFLICT(sku, source, effectiveDate) DO UPDATE SET totalCost=NULL, costPerUnit=NULL, needsReview=1, notes=excluded.notes, updatedAt=excluded.updatedAt`,
-        args: [`retail:${sku}:batch:${eff}`, sku, eff, null, null, null, 0, "USD", "retail:batch", identity.confidence ?? null, 1, "UNSOURCEABLE: no first-party price at Walmart/Target/Publix — candidate to delist", now, now],
+        // [bjs-pending] — BJ's is temporarily disabled (Akamai block 2026-07-07), so
+        // these misses never got their BJ's shot. When BJ's cools down, re-run JUST
+        // this pool: SELECT sku FROM SkuCost WHERE notes LIKE '%bjs-pending%'.
+        args: [`retail:${sku}:batch:${eff}`, sku, eff, null, null, null, 0, "USD", "retail:batch", identity.confidence ?? null, 1, "UNSOURCEABLE: no 1P at Walmart/Target/Publix [bjs-pending: retry when BJ's cools]", now, now],
       });
       await db.execute({ sql: `DELETE FROM "SkuCost" WHERE sku=? AND source='retail:batch' AND effectiveDate != ?`, args: [sku, eff] });
       result = { sku, status: "no-price", cached, logs, identity, parts };
