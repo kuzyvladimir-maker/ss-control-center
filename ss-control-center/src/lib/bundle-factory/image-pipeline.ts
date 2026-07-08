@@ -43,21 +43,54 @@ import type { Variant } from "./variation-matrix";
 import { logLifecycle } from "./lifecycle-log";
 import { NotFoundError, PreconditionError } from "./errors";
 import { isOwnBrandPassthrough } from "./own-brand";
+import { parsePackUnits } from "./donor-dedup";
 
-/** Break a total unit count into realistic Uncrustables retail boxes (4/10/15),
- *  largest-first, so the main image shows a count-accurate number of boxes. */
-function describeRetailBoxes(total: number): string {
-  let rem = Math.max(0, Math.round(total));
-  const parts: string[] = [];
-  for (const p of [15, 10, 4]) {
-    const n = Math.floor(rem / p);
-    if (n > 0) {
-      parts.push(`${n} box${n > 1 ? "es" : ""} of ${p}`);
-      rem -= n * p;
+/** Standard Uncrustables retail lineup — used when a component's own pack size
+ *  can't be read from its donor title. */
+const DEFAULT_RETAIL_SIZES = [15, 10, 4];
+
+/** EXACT retail-box decomposition (owner's rule 2026-07-07): the main image may
+ *  show boxes ONLY when the piece count splits into real retail boxes with NO
+ *  remainder (45 = 3×15; 24 with {10,4} = 10+10+4). Returns the box sizes used
+ *  (fewest boxes, larger first), or null when impossible — the caller then
+ *  renders loose individually-wrapped sandwiches instead. Coin-change DP. */
+export function composeRetailBoxes(total: number, sizes: number[]): number[] | null {
+  const t = Math.round(total);
+  const uniq = Array.from(new Set(sizes.filter((s) => Number.isInteger(s) && s >= 2))).sort((a, b) => b - a);
+  if (t <= 0 || uniq.length === 0) return null;
+  // best[v] = fewest boxes summing exactly to v (prefer larger boxes on ties).
+  const best: Array<number[] | null> = Array.from({ length: t + 1 }, () => null);
+  best[0] = [];
+  for (let v = 1; v <= t; v++) {
+    for (const s of uniq) {
+      const prev = v >= s ? best[v - s] : null;
+      if (prev && (best[v] === null || prev.length + 1 < best[v]!.length)) {
+        best[v] = [...prev, s];
+      }
     }
   }
-  if (rem > 0) parts.push(`${rem} individually-wrapped`);
-  return parts.join(" + ") || `boxes totalling ${total}`;
+  return best[t] ? best[t]!.sort((a, b) => b - a) : null;
+}
+
+/** "3 boxes of 15" / "2 boxes of 10 + 1 box of 4" from a decomposition. */
+function describeBoxes(decomp: number[]): string {
+  const bySize = new Map<number, number>();
+  for (const s of decomp) bySize.set(s, (bySize.get(s) ?? 0) + 1);
+  return Array.from(bySize.entries())
+    .sort((a, b) => b[0] - a[0])
+    .map(([size, n]) => `${n} box${n > 1 ? "es" : ""} of ${size}`)
+    .join(" + ");
+}
+
+/** Retail box sizes available for a component: explicit field → donor-title
+ *  parse ("…22.4oz/8ct" → [8]) → the standard lineup. */
+function componentRetailSizes(c: { product_name: string; retail_pack_sizes?: unknown }): number[] {
+  const explicit = c.retail_pack_sizes;
+  if (Array.isArray(explicit) && explicit.length > 0) {
+    return explicit.filter((n): n is number => typeof n === "number");
+  }
+  const parsed = parsePackUnits(c.product_name);
+  return parsed != null ? [parsed] : DEFAULT_RETAIL_SIZES;
 }
 
 // Per spec: 2 retries on top of the initial attempt = 3 total tries.
@@ -154,15 +187,31 @@ export function buildImagePrompt(args: {
     const ownBrand =
       isOwnBrandPassthrough(args.brand) ||
       args.variant.composition.some((c) => isOwnBrandPassthrough(c.brand));
-    // Own-brand image style: count-accurate retail BOXES (default) or the
-    // individual flavor-coloured WRAPPERS. Only applies to own-brand; a real
-    // gift set always shows the donor cartons.
-    const wraps = ownBrand && args.uncrustables_image_mode === "individual_wraps";
     const totalUnits = args.variant.composition.reduce((s, c) => s + c.qty, 0);
+    // Own-brand box rule (Vladimir 2026-07-07): boxes may appear ONLY when every
+    // flavor's piece count decomposes into its real retail box sizes with NO
+    // remainder (45 → 3×15). A 4ct-only flavor at 30/45 pieces is NOT divisible
+    // → no boxes at all; render loose individually-wrapped sandwiches instead.
+    let boxPlan: string | null = null;
+    if (ownBrand && args.uncrustables_image_mode !== "individual_wraps") {
+      const parts: string[] = [];
+      let allComposable = args.variant.composition.length > 0;
+      for (const c of args.variant.composition) {
+        const decomp = composeRetailBoxes(c.qty, componentRetailSizes(c));
+        if (!decomp) { allComposable = false; break; }
+        parts.push(
+          args.variant.composition.length > 1
+            ? `${describeBoxes(decomp)} (${c.product_name.slice(0, 60)})`
+            : describeBoxes(decomp),
+        );
+      }
+      if (allComposable) boxPlan = parts.join("; ");
+    }
+    const wraps = ownBrand && boxPlan === null; // manual wraps mode OR not box-composable
     const boxLine = wraps
-      ? `Fill the cooler with individually-wrapped sandwiches — each a round, crimped-sealed sandwich in its OWN printed flavor wrapper (no retail cartons in this style). Show a count-accurate quantity reflecting ${totalUnits} sandwiches: neat stacked rows, and for large counts a dense tidy arrangement that clearly totals about ${totalUnits}. The WRAPPER COLOUR signals the flavor (e.g. a blue wrapper for peanut butter & grape, red for peanut butter & strawberry).`
+      ? `Fill the cooler with individually-wrapped sandwiches — each a round, crimped-sealed sandwich in its OWN printed flavor wrapper (NO retail cartons anywhere in this image). Show a count-accurate quantity reflecting ${totalUnits} sandwiches: neat stacked rows, and for large counts a dense tidy arrangement that clearly totals about ${totalUnits}. The WRAPPER COLOUR signals the flavor (e.g. a blue wrapper for peanut butter & grape, red for peanut butter & strawberry).`
       : ownBrand
-        ? `Place real retail product boxes inside the cooler whose piece count EXACTLY matches ${totalUnits} total pieces — use realistic retail pack sizes (boxes of 4, 10 or 15): ${describeRetailBoxes(totalUnits)}. The number of boxes must visibly reflect this count, never a generic "a few boxes".`
+        ? `Place real retail product boxes inside the cooler: EXACTLY ${boxPlan}. The box count and sizes must match this plan precisely — never a generic "a few boxes", never loose sandwiches mixed with boxes.`
         : `Place several of the real product boxes inside the cooler, arranged as a gift set.`;
     const productRefLine = wraps
       ? `The SECOND reference image is the DONOR PRODUCT PHOTO of ${products} — match its BRAND identity exactly (same brand name, logo wordmark, flavor and colour language) but render the product as the individual flavor-coloured wrappers described above, NOT as the retail carton. Do NOT rebrand or invent a look-alike brand.`
