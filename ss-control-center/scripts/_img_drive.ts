@@ -29,10 +29,15 @@ async function main() {
       const r = await runImageGeneration({ bundle_draft_id: draft.id, actor: "day-driver" });
       const o = r.outcomes[0];
       const ok = o?.compliance_status === "CAN_PUBLISH" && !!o?.image_url;
-      if (ok) { okTotal++; failStreak = 0; } else { failStreak++; }
+      const err = o?.error ?? "";
+      // Quota exhaustion → real stop. 504/timeout/aborted → transient box-queue
+      // congestion (Pro 5x quota confirmed), NOT quota: sleep and keep going.
+      const quotaDead = /usage limit|credit balance|quota/i.test(err);
+      const transient = /504|gateway|timeout|aborted|no image/i.test(err);
+      if (ok) { okTotal++; failStreak = 0; } else { failStreak += quotaDead ? 3 : transient ? 0 : 1; }
       console.log(new Date().toISOString(), ok ? "OK" : "FAIL", `[${okTotal} ok]`,
         draft.draft_name.slice(0, 45), `${Math.round((Date.now()-t0)/1000)}s`,
-        o?.error ? "err=" + o.error.slice(0, 150) : "");
+        err ? "err=" + err.slice(0, 150) : "");
       if (!ok) {
         // un-block immediately so a later round can retry this draft
         await prisma.generatedContent.updateMany({
@@ -40,8 +45,9 @@ async function main() {
           data: { compliance_status: "CAN_PUBLISH", manual_review_required: false },
         });
         await prisma.bundleDraft.update({ where: { id: draft.id }, data: { status: "GENERATED" } }).catch(() => {});
+        if (transient) await new Promise((r) => setTimeout(r, 45_000)); // let the box queue drain
       }
-      if (failStreak >= 3) { console.log(new Date().toISOString(), "FUSE: 3 consecutive fails — stopping"); break; }
+      if (failStreak >= 3) { console.log(new Date().toISOString(), "FUSE: quota likely dead — stopping"); break; }
     } catch (e) {
       console.log(new Date().toISOString(), "ERR", draft.draft_name.slice(0, 45), (e as Error).message.slice(0, 200));
       if (++failStreak >= 3) { console.log("FUSE"); break; }
