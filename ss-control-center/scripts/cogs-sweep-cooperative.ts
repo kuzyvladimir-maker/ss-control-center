@@ -24,6 +24,7 @@ process.env.SS_VISION_FREE_ONLY = "1";
 
 import { createClient } from "@libsql/client";
 import { costOneSku, enrichPrioritySkus } from "@/lib/sourcing/cogs-engine";
+import { harvestDonorDetail } from "@/lib/sourcing/donor-catalog";
 
 const CAP = Math.max(1, parseInt(process.env.CAP || "400", 10));
 const MAX_HOURS = parseFloat(process.env.MAX_HOURS || "8");
@@ -58,6 +59,16 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
     for (const s of prio.slice(0, 30)) {
       const c = await db.execute({ sql: `SELECT 1 FROM "SkuCost" WHERE sku=? AND source='retail:batch' LIMIT 1`, args: [s] });
       if (!c.rows.length) prioUncosted.push(s);
+      else {
+        // Already costed but the neighbor still asked for it → its donor probably has
+        // no image gallery yet. Harvest detail (full gallery) so it lands in
+        // EnrichedReadySku; mark attempted so we do this once per run.
+        attempted.add(s);
+        try {
+          const d = await db.execute({ sql: `SELECT DISTINCT sc.donorProductId AS id FROM "SkuComponent" sc JOIN "DonorProduct" dp ON dp.id=sc.donorProductId WHERE sc.sku=? AND (dp.imageUrls IS NULL OR dp.imageUrls='[]')`, args: [s] });
+          for (const row of d.rows) { try { await harvestDonorDetail(db, String((row as any).id)); } catch { /* best-effort */ } }
+        } catch { /* best-effort */ }
+      }
     }
     const skus = [...prioUncosted, ...r.rows.map((x: any) => x.sku as string).filter((s) => s && !attempted.has(s) && !prioUncosted.includes(s))].slice(0, 30);
     if (!skus.length) {
