@@ -19,6 +19,9 @@
 export interface PlannerFlavor {
   id: string;
   label: string;
+  /** Retail pack sizes this flavor really ships in (union across the catalog,
+   *  e.g. strawberry [15,10,4]) — flows into the MAIN-image exact-box rule. */
+  pack_sizes?: number[];
 }
 
 export interface VariationSpec {
@@ -26,6 +29,8 @@ export interface VariationSpec {
   donor_ids: string[];
   /** Pieces per flavor, in donor_ids order — sums to unit_count. */
   quantities: number[];
+  /** Retail pack sizes per flavor, aligned with donor_ids. */
+  donor_pack_sizes?: number[][];
   /** Total pieces in the listing. */
   unit_count: number;
   composition_type: "SINGLE_FLAVOR" | "MIXED_FLAVOR";
@@ -95,6 +100,7 @@ export function planVariations(
     specs.push({
       donor_ids: chosen.map((f) => f.id),
       quantities,
+      donor_pack_sizes: chosen.map((f) => f.pack_sizes ?? []),
       unit_count: unitCount,
       composition_type: n === 1 ? "SINGLE_FLAVOR" : "MIXED_FLAVOR",
       label: `${names} — ${unitCount} ct`,

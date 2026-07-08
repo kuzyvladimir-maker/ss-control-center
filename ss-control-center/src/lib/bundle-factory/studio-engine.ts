@@ -194,6 +194,11 @@ async function buildOneListing(args: {
       brand: d.brand ?? "Unknown",
       qty: spec.quantities[i] ?? 0,
       unit_price_cents: unitPriceCents,
+      // Flavor's real retail lineup (union across catalog donors) — the image
+      // exact-box rule reads this; falls back to donor-title parsing when absent.
+      ...(spec.donor_pack_sizes?.[i]?.length
+        ? { retail_pack_sizes: spec.donor_pack_sizes[i] }
+        : {}),
     });
   });
   if (components.length === 0) return { ok: false, title: "(no donors for spec)" };
@@ -381,7 +386,11 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
     // (Uncrustables) → single flavors then 2/3/4-flavor mixes at 24/30/45/90/120;
     // gift-set → variations at the pack size. Capped at the requested count.
     const ownBrand = donors.some((d) => isOwnBrandPassthrough(d.brand));
-    const flavors = costable.map((e) => ({ id: e.donor.id, label: e.label }));
+    const flavors = costable.map((e) => ({
+      id: e.donor.id,
+      label: e.label,
+      pack_sizes: e.pack_sizes,
+    }));
     const specs = planVariations(flavors, {
       targetCount: parsed.count,
       ownBrand,

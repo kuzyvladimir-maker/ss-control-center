@@ -35,6 +35,10 @@ export interface FlavorEntry<T extends DedupableDonor = DedupableDonor> {
   /** Cheapest per-unit cost across the flavor's donors, cents. null = unknown. */
   unit_price_cents: number | null;
   costable: boolean;
+  /** ALL retail pack sizes seen for this flavor across the catalog (union over
+   *  the group's donors, e.g. strawberry {4,10,15}). Drives the exact-box rule
+   *  on the MAIN image: boxes only when the count splits into REAL sizes. */
+  pack_sizes: number[];
 }
 
 /** Units in the retail pack, parsed from the title ("10 Count", "8oz/4ct",
@@ -153,6 +157,7 @@ export function dedupeDonorFlavors<T extends DedupableDonor>(
       });
     if (!key) continue;
     const unit = donorUnitPriceCents(d);
+    const units = parsePackUnits(d.title);
     const existing = groups.get(key);
     if (!existing) {
       groups.set(key, {
@@ -161,9 +166,11 @@ export function dedupeDonorFlavors<T extends DedupableDonor>(
         donor: d,
         unit_price_cents: unit,
         costable: unit != null,
+        pack_sizes: units != null ? [units] : [],
       });
       continue;
     }
+    if (units != null && !existing.pack_sizes.includes(units)) existing.pack_sizes.push(units);
     // A costable donor always beats an un-costable one; among costable donors
     // the cheaper per-unit price wins.
     if (unit != null && (existing.unit_price_cents == null || unit < existing.unit_price_cents)) {
@@ -172,5 +179,6 @@ export function dedupeDonorFlavors<T extends DedupableDonor>(
       existing.costable = true;
     }
   }
+  for (const e of groups.values()) e.pack_sizes.sort((a, b) => b - a);
   return Array.from(groups.values());
 }

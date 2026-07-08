@@ -47,6 +47,10 @@ export interface VariantComponent {
   brand: string;
   qty: number;
   unit_price_cents: number;
+  /** Retail pack sizes this flavor really ships in (e.g. [15,10,4]) — drives
+   *  the MAIN-image exact-box rule (boxes only when qty splits with no
+   *  remainder; otherwise loose individually-wrapped pieces). */
+  retail_pack_sizes?: number[];
 }
 
 export interface Variant {
