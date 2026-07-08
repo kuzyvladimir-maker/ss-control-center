@@ -510,6 +510,12 @@ The image above is ONE candidate photo we may TILE to build the multipack main i
   }
 }
 
+/** Generic JSON vision question over image URLs — for one-off qualification passes
+ *  (e.g. the promo-banner sweep) so scripts don't re-implement lane dispatch. */
+export async function askVisionJson(imageUrls: string[], prompt: string, maxTokens = 140): Promise<any> {
+  try { return parseJson(await ask(imageUrls, prompt, maxTokens, STRONG_MODEL)); } catch { return null; }
+}
+
 export interface TileVerdict {
   identity: boolean; eachCellSingle: boolean; countOk: boolean;
   front: boolean; whiteBg: boolean;

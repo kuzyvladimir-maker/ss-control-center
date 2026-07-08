@@ -75,7 +75,7 @@ async function googleImages(query: string): Promise<string[]> {
  * correct identity, upright front on white) — the caller still tiles it and runs
  * the final per-listing qualifyTiledMain gate.
  */
-export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: string) => void; searchQuery?: string; identityTitle?: string } = {}): Promise<DonorPhoto | null> {
+export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: string) => void; searchQuery?: string; identityTitle?: string; excludeUrls?: string[] } = {}): Promise<DonorPhoto | null> {
   const log = opts.log ?? (() => {});
   // searchQuery / identityTitle come from the IDENTIFY step (step 2): a CLEAN query to
   // search by + a CLEAN single-unit identity for the gates, instead of the raw
@@ -84,8 +84,15 @@ export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: 
   const idTitle = opts.identityTitle || listingTitle;
   const unit = unitSizeFromTitle(listingTitle);
   if (!q) return null;
+  // excludeUrls — donors already tried and REJECTED downstream (e.g. the finished tile
+  // failed qualifyTiledMain on format/size, or carried a promo banner). Without this a
+  // retry finds the SAME first-passing donor and fails identically (the Maruchan-bowl
+  // loop). The caller accumulates rejects; we skip them so the waterfall reaches the
+  // NEXT candidate.
+  const excluded = new Set((opts.excludeUrls || []).map((u) => u.split("?")[0]));
 
-  const tryPool = async (imgs: string[], src: string): Promise<DonorPhoto | null> => {
+  const tryPool = async (imgsRaw: string[], src: string): Promise<DonorPhoto | null> => {
+    const imgs = imgsRaw.filter((u) => !excluded.has(u.split("?")[0]));
     for (const u of imgs.slice(0, MAX_CAND)) {
       const v = await qualifyDonorFront(highResImageUrl(u), idTitle, unit);
       log(`  ${src} cand ${v.pass ? "PASS" : "rej"} [b${+v.brand} t${+v.type} v${+v.variant} s${+v.singleUnit} f${+v.front} w${+v.whiteBg}] ${v.reason}`);
