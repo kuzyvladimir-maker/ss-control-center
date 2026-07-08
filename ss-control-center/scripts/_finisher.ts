@@ -16,6 +16,7 @@ async function main() {
   const skip = new Set<string>();      // drafts that failed validation this run
   let infraStreak = 0, published = 0;
   for (let round = 0; round < 400; round++) {
+   try {
     const candidates = await prisma.bundleDraft.findMany({
       where: {
         generation_job_id: JOB,
@@ -74,6 +75,12 @@ async function main() {
     } catch (e) { infraStreak++; say("  ERR", (e as Error).message.slice(0, 200)); }
     if (infraStreak >= 5) { say("FUSE: 5 consecutive infra errors — stopping"); break; }
     await new Promise((r) => setTimeout(r, 12_000));
+   } catch (loopErr) {
+    // Transient DB/network blip (e.g. Turso ETIMEDOUT) in the candidate query
+    // outside the inner try — never crash the whole run; pause and retry.
+    say("  LOOP-ERR (transient, retrying in 30s)", (loopErr as Error).message.slice(0, 160));
+    await new Promise((r) => setTimeout(r, 30_000));
+   }
   }
   say(`finisher done: ${published} published this run, ${skip.size} skipped`);
   await prisma.$disconnect();
