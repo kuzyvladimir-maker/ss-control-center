@@ -240,14 +240,14 @@ export async function unwrangleSearch(
     const imgs: string[] = dedupImages(
       (Array.isArray(x.images) && x.images.length ? x.images : [x.image_url, x.thumbnail, x.main_image])
     );
-    // Target/Sam's/Costco results ARE that retailer's own catalog → first-party.
-    // Walmart-via-Unwrangle: the primary search result is Walmart's OWN catalog card
-    // (1P); 3P/reseller offers carry an explicit non-Walmart seller_name. So a MISSING
-    // seller_name means first-party (Walmart's own item) — only a named non-Walmart
-    // seller is 3P. (We used to reject null-seller items, which discarded legitimate 1P
-    // products like Klass Aguas Frescas / Arnold bread that ARE sold 1P on walmart.com.)
-    const isMkt: boolean | null = retailer === "walmart"
-      ? (x.seller_name ? !/^walmart/i.test(x.seller_name) : false)
+    // A missing seller_name = the retailer's own catalog card (1P). A named seller
+    // that ISN'T the retailer itself = 3P marketplace (Walmart Marketplace, Target
+    // Plus "Sold & shipped by …", etc). Audit 2026-07-07 caught a Target Plus office-
+    // supply reseller ($15.83 gouged 20ct box) leaking as 1P because everything
+    // non-Walmart was hardcoded first-party.
+    const SELF_SELLER: Record<string, RegExp> = { walmart: /^walmart/i, target: /^target/i, samsclub: /^sam'?s/i, costco: /^costco/i };
+    const isMkt: boolean | null = x.seller_name
+      ? !(SELF_SELLER[retailer] || /$^/).test(String(x.seller_name).trim())
       : false;
     return {
       retailer,

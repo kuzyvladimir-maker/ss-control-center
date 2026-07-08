@@ -121,9 +121,18 @@ function brandTokens(...parts: (string | undefined)[]): string[] {
   return words.filter((w) => w.length > 2 && !FILLER.has(w)).slice(0, 2);
 }
 
+// FORM/CATEGORY guard for sibling matches: a donor that introduces a form the target
+// never mentioned is a DIFFERENT product category — Dove Promises candy must not be
+// priced off Dove ICE-CREAM bars just because brand+size matched (audit error).
+const FORM_MARKERS = ["frozen", "ice cream", "dessert", "gelato", "sorbet", "popsicle", "drink mix", "powder", "liquid", "k-cup", "pods", "dog", "cat", "shampoo", "detergent"];
+function formMismatch(ourText: string, donorTitle: string): boolean {
+  const a = ourText.toLowerCase(), b = (donorTitle || "").toLowerCase();
+  return FORM_MARKERS.some((mk) => b.includes(mk) && !a.includes(mk));
+}
+
 async function cheapestCostForTarget(
   db: Client,
-  m: { brandToks: string[]; tokens: string[]; sizeAmount: number | null },
+  m: { brandToks: string[]; tokens: string[]; sizeAmount: number | null; ourText: string },
   sinceIso: string,
 ): Promise<CostHit | null> {
   if (!m.brandToks.length && !m.tokens.length) return null;
@@ -135,52 +144,47 @@ async function cheapestCostForTarget(
   for (const b of m.brandToks) { like.push("lower(dp.title) LIKE ?"); baseArgs.push(`%${b}%`); }
   for (const t of m.tokens) { like.push("lower(dp.title) LIKE ?"); baseArgs.push(`%${t}%`); }
   const whereTok = like.length ? " AND " + like.join(" AND ") : "";
-  const pick = async (sizeClause: string, extraArgs: any[]): Promise<any> => (await db.execute({
-    sql: `SELECT dp.id AS dpid, dp.title AS title, o.retailer AS retailer, o.pricePerUnit AS perUnit, dp.unitAmount AS ua, dp.unitMeasure AS um
+  // Shared row shape. OOS offers excluded — Walmart/Target swap in 3P/clearance prices
+  // exactly when the 1P card is out of stock (audit: $3.97 pack recorded off an OOS card).
+  const SELECT = `SELECT dp.id AS dpid, dp.title AS title, o.retailer AS retailer, o.pricePerUnit AS perUnit, dp.unitAmount AS ua, dp.unitMeasure AS um
           FROM "DonorOffer" o JOIN "DonorProduct" dp ON dp.id = o.donorProductId
           WHERE o.isFirstParty=1 AND o.via IN ('direct','instacart') AND o.pricePerUnit IS NOT NULL
-            AND o.updatedAt >= ?${whereTok}${sizeClause}
-          ORDER BY o.pricePerUnit ASC LIMIT 1`,
-    args: [...baseArgs, ...extraArgs],
-  })).rows[0];
+            AND (o.inStock IS NULL OR o.inStock=1)
+            AND o.updatedAt >= ?`;
+  // Every pick takes the top 5 and drops form-mismatched donors (see FORM_MARKERS).
+  const pickOk = (rows: any[]): any => rows.find((r) => !formMismatch(m.ourText, r.title));
+  const pick = async (sizeClause: string, extraArgs: any[], order = "o.pricePerUnit ASC"): Promise<any> =>
+    pickOk((await db.execute({ sql: `${SELECT}${whereTok}${sizeClause} ORDER BY ${order} LIMIT 5`, args: [...baseArgs, ...extraArgs] })).rows as any[]);
   const hit = (r: any, est: boolean, perUnit?: number): CostHit => ({
     perUnit: perUnit ?? (r.perUnit as number), retailer: r.retailer, title: (r.title as string) || "",
     size: `${r.ua ?? ""}${r.um ?? ""}`, linePrice: est, donorProductId: (r.dpid as string) || null,
   });
 
   if (m.sizeAmount != null) {
-    // TIER 1 — EXACT-STRICT: same product AND same size (±10%). This is the only
-    // "clean" class. (Audit: 4.2oz Skittles Gummies were booked for a 12oz Sharing
-    // bag because size was only a PREFERENCE in the old ORDER BY, not a filter.)
+    // TIER 1 — EXACT-STRICT: same product AND same size (±10%). The only "clean" class.
     const strict = await pick(` AND dp.unitAmount BETWEEN ? AND ?`, [m.sizeAmount * 0.9, m.sizeAmount * 1.1]);
     if (strict) return hit(strict, false);
 
     // TIER 2 — CROSS-SIZE estimate: same product, size within 0.25x–4x, converted by
     // $/measure, CLOSEST size first (not cheapest — a 5x jumbo's $/oz misleads).
-    const cands = (await db.execute({
-      sql: `SELECT dp.id AS dpid, dp.title AS title, o.retailer AS retailer, o.pricePerUnit AS perUnit, dp.unitAmount AS ua, dp.unitMeasure AS um
-            FROM "DonorOffer" o JOIN "DonorProduct" dp ON dp.id = o.donorProductId
-            WHERE o.isFirstParty=1 AND o.via IN ('direct','instacart') AND o.pricePerUnit IS NOT NULL
-              AND o.updatedAt >= ?${whereTok} AND dp.unitAmount BETWEEN ? AND ?
-            ORDER BY ABS(dp.unitAmount - ?) ASC, o.pricePerUnit ASC LIMIT 1`,
-      args: [...baseArgs, m.sizeAmount / 4, m.sizeAmount * 4, m.sizeAmount],
-    })).rows[0] as any;
-    if (cands && Number(cands.ua)) {
-      const perUnit = Math.round((cands.perUnit / Number(cands.ua)) * m.sizeAmount * 100) / 100;
-      return hit(cands, true, perUnit);
+    const cs = await pick(` AND dp.unitAmount BETWEEN ? AND ?`, [m.sizeAmount / 4, m.sizeAmount * 4], `ABS(dp.unitAmount - ${Number(m.sizeAmount)}) ASC, o.pricePerUnit ASC`);
+    if (cs && Number(cs.ua)) {
+      const perUnit = Math.round((cs.perUnit / Number(cs.ua)) * m.sizeAmount * 100) / 100;
+      return hit(cs, true, perUnit);
     }
 
     // TIER 3 — LINE-PRICE sibling: same brand (phrase) + SAME size, different flavor.
     if (m.brandToks.length) {
       const brandLike = m.brandToks.map(() => "lower(dp.title) LIKE ?").join(" AND ");
-      const sib: any = (await db.execute({
+      const sib = pickOk((await db.execute({
         sql: `SELECT dp.id AS dpid, dp.title AS title, o.retailer AS retailer, o.pricePerUnit AS perUnit, dp.unitAmount AS ua, dp.unitMeasure AS um
               FROM "DonorOffer" o JOIN "DonorProduct" dp ON dp.id = o.donorProductId
               WHERE o.isFirstParty=1 AND o.via IN ('direct','instacart') AND o.pricePerUnit IS NOT NULL
+                AND (o.inStock IS NULL OR o.inStock=1)
                 AND o.updatedAt >= ? AND ${brandLike} AND dp.unitAmount BETWEEN ? AND ?
-              ORDER BY o.pricePerUnit ASC LIMIT 1`,
+              ORDER BY o.pricePerUnit ASC LIMIT 5`,
         args: [sinceIso, ...m.brandToks.map((b) => `%${b}%`), m.sizeAmount * 0.9, m.sizeAmount * 1.1],
-      })).rows[0];
+      })).rows as any[]);
       if (sib) return hit(sib, true);
     }
     return null;
@@ -357,7 +361,7 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
       // 3P/reseller prices (often our OWN STARFITSTORE resale), which is not our cost.
       // No clean 1P at any local retailer → the target is UNSOURCEABLE (honest, actionable),
       // never a fake estimate. (Vladimir's rule: can't buy it 1P/locally → don't list it.)
-      const cost = await cheapestCostForTarget(db, { brandToks: t.brandToks?.length ? t.brandToks : (t.brandTok ? [t.brandTok] : []), tokens: t.tokens, sizeAmount: t.sizeAmount }, runStart);
+      const cost = await cheapestCostForTarget(db, { brandToks: t.brandToks?.length ? t.brandToks : (t.brandTok ? [t.brandTok] : []), tokens: t.tokens, sizeAmount: t.sizeAmount, ourText: `${t.query} ${identity.container_type || ""}` }, runStart);
       if (cost == null) { costable = false; parts.push({ ...base, perUnit: null, method: "unsourceable" }); }
       else parts.push({ ...base, perUnit: cost.perUnit, retailer: cost.retailer, matched: cost.title, method: cost.google ? "google" : cost.linePrice ? "line-price" : "exact", linePrice: cost.linePrice, google: cost.google, donorProductId: cost.donorProductId ?? null });
       log(`  · ${t.label}  →  ${cost ? `$${cost.perUnit.toFixed(2)}/u @ ${cost.retailer}${cost.google ? " (google est)" : cost.linePrice ? " (line-price est)" : ""}  «${(cost.title || "").slice(0, 46)}» ${cost.size}` : "no price anywhere"}  (hit ${res.retailersHit.join(",") || "none"}, rej ${res.rejected})`);
