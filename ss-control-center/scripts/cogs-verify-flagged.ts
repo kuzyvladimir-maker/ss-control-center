@@ -82,19 +82,23 @@ async function liveDetail(retailer: string, url: string): Promise<{ price: numbe
           args: [String(r.notes || "").slice(0, 120) + " [verify-reject: donor 3P/OOS/gone → unsourceable]", now, r.sku] });
         continue;
       }
-      const ratio = det.price / Number(r.donorPrice || det.price);
-      if (Math.abs(ratio - 1) <= TOL) { decision = "confirmed"; confirmed++; }
+      const donorP = Number(r.donorPrice), pack = Number(r.packSize) || 1;
+      const ratio = donorP > 0 && det.price > 0 ? det.price / donorP : 1; // can't rescale without both → confirm as-is
+      if (!Number.isFinite(ratio) || Math.abs(ratio - 1) <= TOL) { decision = "confirmed"; confirmed++; }
       else {
         const newPerUnit = Math.round(Number(r.perUnitCost) * ratio * 100) / 100;
-        newTotal = Math.round(newPerUnit * Number(r.packSize) * 100) / 100;
-        decision = `corrected ${r.totalCost}→${newTotal}`; corrected++;
-        await db.execute({ sql: `UPDATE "SkuComponent" SET perUnitCost=?, lineCost=? WHERE sku=? AND idx=0`, args: [newPerUnit, Math.round(newPerUnit * Number(r.qty) * 100) / 100, r.sku] });
+        const nt = Math.round(newPerUnit * pack * 100) / 100;
+        if (Number.isFinite(nt) && nt > 0) {
+          newTotal = nt; decision = `corrected ${r.totalCost}→${newTotal}`; corrected++;
+          await db.execute({ sql: `UPDATE "SkuComponent" SET perUnitCost=?, lineCost=? WHERE sku=? AND idx=0`, args: [newPerUnit, Math.round(newPerUnit * (Number(r.qty) || 1) * 100) / 100, r.sku] });
+        } else { decision = "confirmed"; confirmed++; }
       }
       // Verified-real price: clear needsReview UNLESS it still exceeds our sale price.
+      const cpu = Number.isFinite(newTotal / pack) ? Math.round((newTotal / pack) * 100) / 100 : null;
       const aboveSale = r.ourSale != null && newTotal >= Number(r.ourSale);
       review = aboveSale ? 1 : 0;
       await db.execute({ sql: `UPDATE "SkuCost" SET totalCost=?, costPerUnit=?, needsReview=?, notes=?, updatedAt=? WHERE sku=? AND source='retail:batch'`,
-        args: [newTotal, Math.round((newTotal / Number(r.packSize)) * 100) / 100, review, String(r.notes || "").slice(0, 110) + ` [verified-live${aboveSale ? " but>=sale" : ""}]`, now, r.sku] });
+        args: [newTotal, cpu, review, String(r.notes || "").slice(0, 110) + ` [verified-live${aboveSale ? " but>=sale" : ""}]`, now, r.sku] });
       if ((confirmed + corrected + rejected) % 15 === 0) console.log(`  ${confirmed + corrected + rejected}/${rows.length} | confirmed ${confirmed} corrected ${corrected} rejected ${rejected} | ~credits ${credits === Infinity ? "?" : Math.round(credits)}`);
       await sleep(200);
     }
