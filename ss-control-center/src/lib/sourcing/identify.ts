@@ -16,10 +16,14 @@ import { identifyImageViaCodex, identifyImageViaClaudeCli } from "@/lib/image-ge
 import { identifyImageViaGemini } from "@/lib/sourcing/gemini-vision";
 import { CLAUDE } from "@/lib/ai-models";
 
-// THREE free subscription vision lanes — Codex (ChatGPT), Claude CLI (Claude Max),
-// Gemini (API). Round-robin across them so concurrent SKUs SPREAD over lanes instead
-// of all queuing on Codex (the ~10/hour bottleneck). Each returns the same JSON or null.
-const VISION_LANES = [identifyImageViaCodex, identifyImageViaClaudeCli, identifyImageViaGemini];
+// THREE free subscription vision lanes, ordered per the 2026-07-07 lane policy
+// (reference_llm_subscription_limits): Gemini (free tier, own quota) and Codex
+// (ChatGPT Pro 5x — upgraded, high limits) are the PRIMARY pair, round-robined so
+// concurrent SKUs spread; Claude CLI (Max 20x, SHARED with OpenClaw agents + all
+// chats) is strictly LAST-RESORT — a day of Claude-first bulk vision ate half the
+// weekly cap. Each lane returns the same JSON shape or null.
+const PRIMARY_LANES = [identifyImageViaGemini, identifyImageViaCodex];
+const RESERVE_LANE = identifyImageViaClaudeCli;
 let _laneRR = 0;
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { getListing, flattenListing } from "@/lib/amazon-sp-api/listings";
@@ -111,12 +115,11 @@ function mediaType(b64: string): string {
 // them out of identification entirely, even as a fallback.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function runIdentify(b64s: string[], prompt: string): Promise<any> {
-  // TIER 1 — free subscription vision, LOAD-BALANCED across the 3 lanes ($0). Start at
-  // a rotating lane so parallel SKUs use different lanes; fall through the others if one
-  // is down/unconfigured. Only if ALL three fail do we hit the paid fallback below.
-  const start = _laneRR++ % VISION_LANES.length;
-  for (let i = 0; i < VISION_LANES.length; i++) {
-    const lane = VISION_LANES[(start + i) % VISION_LANES.length];
+  // TIER 1 — free subscription vision ($0): round-robin the PRIMARY pair
+  // (Gemini/Codex) so parallel SKUs spread; Claude only if both primaries fail.
+  const start = _laneRR++ % PRIMARY_LANES.length;
+  const lanes = [PRIMARY_LANES[start], PRIMARY_LANES[(start + 1) % PRIMARY_LANES.length], RESERVE_LANE];
+  for (const lane of lanes) {
     try {
       const r = await lane(b64s, prompt);
       if (r && (r as any).brand !== undefined) return r;
