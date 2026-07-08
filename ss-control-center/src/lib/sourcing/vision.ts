@@ -101,9 +101,14 @@ async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: s
         // limit) COOL IT DOWN and skip it, so the load coasts onto Claude (biggest
         // subscription). Score = (in-flight+1)×weight (Claude cheapest → preferred);
         // Codex last (weak $20). Multi-image skips serial-read Claude.
-        const W_CLAUDE = Number(process.env.SS_W_CLAUDE ?? 1);
-        const W_GEMINI = Number(process.env.SS_W_GEMINI ?? 2);
-        const W_CODEX = Number(process.env.SS_W_CODEX ?? 5);
+        // Lane priority (lower weight = preferred). FLIPPED 2026-07-07: the Claude
+        // lane burns the owner's Max 20x subscription, which is shared with the
+        // OpenClaw agents and all Claude Code chats — a day of bulk vision runs ate
+        // ~half the weekly cap. Gemini (free tier, own quota) goes first, Codex
+        // (ChatGPT sub, upgrading to Pro) second, Claude LAST-RESORT reserve.
+        const W_CLAUDE = Number(process.env.SS_W_CLAUDE ?? 5);
+        const W_GEMINI = Number(process.env.SS_W_GEMINI ?? 1);
+        const W_CODEX = Number(process.env.SS_W_CODEX ?? 2);
         const COOLDOWN = Number(process.env.SS_LANE_COOLDOWN_MS ?? 45000);
         const now = Date.now();
         type Lane = { fn: () => Promise<Record<string, unknown> | null>; score: number; down: number; cool: () => void; clear: () => void };
