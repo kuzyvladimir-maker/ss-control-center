@@ -326,7 +326,7 @@
   "baseUnit": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
   "donorSrc": "Google Images",
   "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1140/main-pipeline.png",
-  "newReason": "Each bread loaf is standing upright on its heel/end with the twisted tie at the top. The wide printe",
+  "newReason": "Each tile is one Pepperidge Farm White Sandwich Bread loaf and count is 4 on a white background, but",
   "status": "REBUILT_FAIL"
  },
  "FaisalX-1147": {
@@ -456,10 +456,10 @@
   "live": "LIVE",
   "liveFail": "our feed never ingested — old image still live",
   "baseUnit": "Pepperidge Farm Farmhouse Potato Bread, 22 oz (Pack of 6)",
-  "donorSrc": "Walmart 1P",
+  "donorSrc": "target",
   "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1174/main-pipeline.png",
-  "newReason": "Each tile shows one Pepperidge Farm Farmhouse Potato Bread loaf, 6 total on white background, but th",
-  "status": "REBUILT_FAIL"
+  "newReason": "6 tiles in a 3x2 grid, each showing one Pepperidge Farm Farmhouse Potato Bread loaf face-on with ful",
+  "status": "REBUILT_OK"
  },
  "FaisalX-1176": {
   "sku": "FaisalX-1176",
@@ -514,25 +514,24 @@
   "pack": 4,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1194/main-20260618-13837.png",
   "live": "LIVE",
-  "liveFail": "Each tile shows one Sara Lee Delightful Healthy Multi-Grain bread bag (correct brand/variant, single",
+  "liveFail": "Each tile shows one Sara Lee Delightful Healthy Multi-Grain bread bag (correct product, single packa",
   "baseUnit": "Sara Lee Delightful Multi-Grain Bread, 20 oz, Soft Multigrain Bread, Bag (Pack of 4)",
   "donorSrc": "Walmart 1P",
   "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1194/main-pipeline.png",
-  "newReason": "Each loaf is shown standing on its end/heel with the narrow top facing the camera rather than the wi",
-  "status": "REBUILT_FAIL"
+  "newReason": "2x2 grid of 4 Sara Lee Delightful Healthy Multi-Grain 20oz bread bags; each tile is one single seale",
+  "status": "REBUILT_OK"
  },
  "FaisalX-1191": {
   "sku": "FaisalX-1191",
-  "titleSrc": "getItem",
   "title": "Sara Lee Honey Wheat Bread, 20 oz, Soft Pre-sliced Wheat Bread, Bag (Pack of 4)",
   "pack": 4,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1191/main-20260701-f50.png",
   "live": "LIVE",
-  "liveFail": "Product shown is Sara Lee Delightful Healthy Multi-Grain bread, not Honey Wheat as listed. Each tile",
+  "liveFail": "Wrong variant: image shows Sara Lee Delightful Healthy Multi-Grain bread, but listing specifies Hone",
   "baseUnit": "Sara Lee Honey Wheat Bread, 20 oz, Soft Pre-sliced Wheat Bread, Bag (Pack of 4)",
   "donorSrc": "Walmart 1P",
   "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1191/main-pipeline.png",
-  "newReason": "Each loaf is shown standing on its end/heel with the narrow side facing the camera — the wide printe",
+  "newReason": "Each tile shows one Sara Lee Honey Wheat bread bag (correct brand/variant, white background, 4 units",
   "status": "REBUILT_FAIL"
  },
  "FaisalX-1192": {
@@ -550,15 +549,16 @@
  },
  "FaisalX-1204": {
   "sku": "FaisalX-1204",
+  "titleSrc": "getItem",
   "title": "Sara Lee Butter Bread, 20 oz, Soft White Bread, Bag (Pack of 6)",
   "pack": 6,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1204/main-20260701-f50e.png",
   "live": "LIVE",
-  "liveFail": "Product shown is Sara Lee Delightful Healthy Multi-Grain bread, but the listing title specifies Sara",
+  "liveFail": "Product shown is Sara Lee Delightful Healthy Multi-Grain bread, not Butter Bread (Soft White). Loave",
   "baseUnit": "Sara Lee Butter Bread, 20 oz, Soft White Bread, Bag (Pack of 6)",
-  "donorSrc": "Walmart 1P",
+  "donorSrc": "Google Images",
   "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1204/main-pipeline.png",
-  "newReason": "All 6 Sara Lee Butter Bread 20 oz bags match the listing, but each loaf is standing upright on its e",
+  "newReason": "6 Sara Lee Butter Bread bags match the listing and background is white. However, each bag is standin",
   "status": "REBUILT_FAIL"
  },
  "FaisalX-1198": {
@@ -639,17 +639,16 @@
  },
  "FaisalX-1215": {
   "sku": "FaisalX-1215",
-  "titleSrc": "getItem",
   "title": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Soft Brioche Bread, Bag (Pack of 4)",
   "pack": 4,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1215/main-20260701-f50.png",
   "live": "LIVE",
   "liveFail": "Wrong product: image shows Sara Lee Delightful Healthy Multi-Grain bread, not Artesano Brioche Baker",
   "baseUnit": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Soft Brioche Bread, Bag (Pack of 4)",
-  "donorSrc": "Walmart 1P",
+  "donorSrc": "Google Images",
   "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1215/main-pipeline.png",
-  "newReason": "Each tile shows one Sara Lee Artesano Brioche Bakery Bread bag, count is 4, white background — but t",
-  "status": "REBUILT_FAIL"
+  "newReason": "4 tiles of Sara Lee Artesano Brioche bread bags, each showing one retail bag face-on with brand and ",
+  "status": "REBUILT_OK"
  },
  "FaisalX-1227": {
   "sku": "FaisalX-1227",
@@ -944,11 +943,12 @@
  },
  "FaisalX-1328": {
   "sku": "FaisalX-1328",
+  "titleSrc": "getItem",
   "title": "Snyder's of Hanover Pretzel Pieces, Cheddar Cheese, 3.25 oz, 6 Ct",
   "pack": 6,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1328/main-20260701-az3.png",
   "live": "LIVE",
-  "liveFail": "Bags shown are 8 oz each, but the listing specifies 3.25 oz — wrong size variant for the SKU",
+  "liveFail": "Brand, type, and flavor match, but each bag shown is labeled 8 oz whereas the listing specifies 3.25",
   "baseUnit": "Snyder's of Hanover Pretzel Pieces, Cheddar Cheese, 3.25 oz, 6 Ct",
   "status": "NEEDS_DONOR"
  },
@@ -1103,12 +1103,12 @@
   "pack": 5,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1638/main-20260616-05866.png",
   "live": "LIVE",
-  "liveFail": "Product shown is Sara Lee Delightful (45 Calories Per Slice) — a different product line from the lis",
+  "liveFail": "Product shown is Sara Lee Delightful 45 Calories bread, not Sara Lee Whole Wheat Bread as listed. Ea",
   "baseUnit": "Sara Lee Whole Wheat Bread, 16 oz, Soft Wheat Bread, Bag -Pack Of 5",
   "donorSrc": "Walmart 1P",
   "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1638/main-pipeline.png",
-  "newReason": "Each loaf is standing on its end/heel showing the narrow top side with the twist tie visible; the wi",
-  "status": "REBUILT_FAIL"
+  "newReason": "5 Sara Lee 100% Whole Wheat 16 oz bread bags tiled 3+2; each tile is one single retail bag with wide",
+  "status": "REBUILT_OK"
  },
  "FaisalX-1683": {
   "sku": "FaisalX-1683",
@@ -1741,12 +1741,12 @@
   "pack": 6,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2515/main-20260617-42770.png",
   "live": "LIVE",
-  "liveFail": "Wrong flavor: image shows Hormel Compleats Tender Beef with Mashed Potatoes & Gravy, but listing is ",
+  "liveFail": "Product shown is HORMEL Compleats Tender Beef with Mashed Potatoes & Gravy (9 oz), not Beefy Macaron",
   "baseUnit": "HORMEL COMPLEATS Beefy Macaroni & Cheese, 7.5 oz Plastic Tray, (Pack of 6)",
-  "donorSrc": "Walmart 1P",
+  "donorSrc": "Google Images",
   "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2515/main-pipeline.png",
-  "newReason": "Each tile shows one Hormel Compleats Macaroni & Cheese tray face-on against white background, 6 unit",
-  "status": "REBUILT_FAIL"
+  "newReason": "All 6 tiles show a single Hormel Compleats Beefy Mac tray face-on with full label visible; grid has ",
+  "status": "REBUILT_OK"
  },
  "FaisalX-257": {
   "sku": "FaisalX-257",
@@ -1781,7 +1781,7 @@
   "pack": 6,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2554/main-20260618-10556-0.png",
   "live": "LIVE",
-  "liveFail": "Wrong flavor/variant: image shows Campbell's Chunky Hearty Chicken with Vegetables, but listing spec",
+  "liveFail": "Wrong flavor: image shows Campbell's Chunky Hearty Chicken with Vegetables, but listing specifies Ch",
   "baseUnit": "Campbell's Chunky Soup, Ready to Serve Chicken Broccoli Cheese Soup, 18.8 oz Can, (Pack of 6)",
   "status": "NEEDS_DONOR"
  },
@@ -1877,7 +1877,7 @@
   "pack": 6,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2626/main-20260617-26888.png",
   "live": "LIVE",
-  "liveFail": "Wrong brand and product: image shows Progresso Rich & Hearty Loaded Potato with Bacon 18.5 oz, but l",
+  "liveFail": "Product shown is Progresso Loaded Potato with Bacon 18.5 oz, but the listing specifies Campbell's Ch",
   "baseUnit": "Campbell’s Chunky Soup, Loaded Potato Seasoned with Bacon, 15.25 oz, (Pack of 6)",
   "status": "NEEDS_DONOR"
  },
@@ -1928,12 +1928,9 @@
   "pack": 8,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2668/main-20260617-67838.png",
   "live": "LIVE",
-  "liveFail": "Background is white only outside the grid border; each tile shows a wood/brown surface background, n",
+  "liveFail": "Background is a dark wood-texture surface, not white. All other criteria met: correct Knorr Vegetabl",
   "baseUnit": "Knorr No Artificial Flavors Ready-to-Eat in 20 Minutes Vegetable Soup Mix, 1.4 oz (Pack of 8)",
-  "donorSrc": "publix",
-  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2668/main-pipeline.png",
-  "newReason": "Product shown is Knorr Vegetable Recipe Mix, not the listed Vegetable Soup Mix; the listing specifie",
-  "status": "REBUILT_FAIL"
+  "status": "NEEDS_DONOR"
  },
  "FaisalX-2685": {
   "sku": "FaisalX-2685",
@@ -1943,7 +1940,10 @@
   "live": "SAFE",
   "liveFail": "our feed never ingested — old image still live",
   "baseUnit": "Knorr No Artificial Flavors Creamy Pesto Rotini Pasta Cooks in 12 Minutes, 4.1 oz Regular Pouch (Pack of 6)",
-  "status": "NEEDS_DONOR"
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2685/main-pipeline.png",
+  "newReason": "6 tiles in a 3x2 grid, each showing one Knorr Italian Sides Creamy Pesto Rotini pouch face-on with f",
+  "status": "REBUILT_OK"
  },
  "FaisalX-2684": {
   "sku": "FaisalX-2684",
@@ -1951,9 +1951,12 @@
   "pack": 4,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2684/main-20260617-64689.png",
   "live": "LIVE",
-  "liveFail": "Wrong variant: image shows Knorr Pasta Sides Butter & Herb (Fettuccine), but listing specifies Cream",
+  "liveFail": "Wrong variant: image shows Knorr Pasta Sides Butter & Herb Fettuccine, but listing specifies Creamy ",
   "baseUnit": "Knorr No Artificial Flavors Creamy Pesto Rotini Pasta Cooks in 12 Minutes, 4.1 oz Regular Pouch (Pack of 4)",
-  "status": "NEEDS_DONOR"
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2684/main-pipeline.png",
+  "newReason": "Four Knorr Italian Sides Creamy Pesto Rotini pouches tiled in a 2x2 grid, each showing a single reta",
+  "status": "REBUILT_OK"
  },
  "FaisalX-2686": {
   "sku": "FaisalX-2686",
@@ -1992,7 +1995,7 @@
   "pack": 6,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2703/main-20260615-55338.png",
   "live": "LIVE",
-  "liveFail": "Product shown is Knorr Pasta Sides Butter & Herb (fettuccine), not Creamy Garlic Spiral Pasta as spe",
+  "liveFail": "Product shown is Knorr Pasta Sides Butter & Herb (fettuccine), not the Creamy Garlic Spiral Pasta va",
   "baseUnit": "Knorr No Artificial Flavors Creamy Garlic Spiral Pasta Cooks in 8 Minutes , 4.4 oz (Pack of 6)",
   "status": "NEEDS_DONOR"
  },
@@ -2188,7 +2191,7 @@
   "pack": 10,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3091/main-20260618-69989-0.png",
   "live": "LIVE",
-  "liveFail": "Wrong flavor/variant: image shows Fancy Feast Chicken Feast in Gravy (Grilled), not Soft Beef. Each ",
+  "liveFail": "Wrong variant: image shows Fancy Feast Chicken Feast in Gravy (Grilled), but listing specifies Gravy",
   "baseUnit": "Purina Fancy Feast Gravy Lovers Grilled Gourmet Wet Cat Food, Soft Beef, 3 oz Cans (Pack of 10)",
   "status": "NEEDS_DONOR"
  },
@@ -2249,9 +2252,12 @@
   "pack": 6,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3274/main-20260615-20247.png",
   "live": "LIVE",
-  "liveFail": "Wrong product: image shows Sheba Cuts in Gravy with Sustainable Salmon, but listing specifies Sheba ",
+  "liveFail": "",
   "baseUnit": "Sheba Gravy Indulgence Chicken Entee In Extra Gravy Cat Food, 2.6 Oz Twin-Pack Tray (Pack of 6)",
-  "status": "NEEDS_DONOR"
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3274/main-pipeline.png",
+  "newReason": "All 6 tiles show one Sheba Gravy Indulgence Chicken Entrée In Extra Gravy twin-pack tray each (the t",
+  "status": "REBUILT_OK"
  },
  "FaisalX-3289": {
   "sku": "FaisalX-3289",
@@ -2259,12 +2265,12 @@
   "pack": 6,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3289/main-20260616-90741.png",
   "live": "LIVE",
-  "liveFail": "Grid shows 6 Sheba Perfect Portions double-tray units (correct count, one retail package per cell, w",
+  "liveFail": "",
   "baseUnit": "Sheba Perfect Portions Wet Kitten Food Paté Chicken Entree, Single 2.64 Oz (Pack of 6)",
   "donorSrc": "target",
   "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3289/main-pipeline.png",
-  "newReason": "Each tile shows a Sheba Perfect Portions twin-tray pack (two connected compartments), which is itsel",
-  "status": "REBUILT_FAIL"
+  "newReason": "6 Sheba Perfect Portions Kitten Soft Paté Savory Chicken Entrée trays arranged in a 3×2 grid; each t",
+  "status": "REBUILT_OK"
  },
  "FaisalX-3297": {
   "sku": "FaisalX-3297",
@@ -2274,7 +2280,10 @@
   "live": "UNKNOWN",
   "liveFail": "our feed never ingested — old image still live",
   "baseUnit": "SHEBA Wet Cat Food Cuts in Gravy Delicate White Fish & Tuna Entree, (Pack of 10)",
-  "status": "NEEDS_DONOR"
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3297/main-pipeline.png",
+  "newReason": "All 10 Sheba Perfect Portions Delicate White Fish & Tuna Entree twin-packs shown face-on with full b",
+  "status": "REBUILT_OK"
  },
  "FaisalX-3277": {
   "sku": "FaisalX-3277",
@@ -2283,9 +2292,12 @@
   "pack": 6,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3277/main-20260615-94114.png",
   "live": "LIVE",
-  "liveFail": "Wrong product: image shows Sheba Pate in Natural Juices Variety Pack (6 Twin-Packs, 12 Servings), no",
+  "liveFail": "",
   "baseUnit": "Sheba Perfect Portions Wet Cat Food Cuts in Gravy Tender Trout Entree, 2.6 oz. (Pack of 6)",
-  "status": "NEEDS_DONOR"
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3277/main-pipeline.png",
+  "newReason": "6 tiles in a 3×2 grid, each showing one Sheba Perfect Portions twin-pack (the standard 2.6 oz retail",
+  "status": "REBUILT_OK"
  },
  "FaisalX-3308": {
   "sku": "FaisalX-3308",
@@ -2319,9 +2331,12 @@
   "pack": 6,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3305/main-20260618-49870-2.png",
   "live": "LIVE",
-  "liveFail": "Cans show 'Classic Ground in Sauce' (Classic Ground texture), but the listing title specifies 'Pate'",
+  "liveFail": "Listing specifies 'Pate' formulation; cans shown are 'Classic Ground' / 'in Sauce' variant — differe",
   "baseUnit": "Iams Proactive Health Senior Soft Wet Dog Food Pate With Slow Cooked Chicken & Rice, 13 Oz Can (Pack of 6)",
-  "status": "NEEDS_DONOR"
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3305/main-pipeline.png",
+  "newReason": "Six individual Iams Proactive Health Senior Pate with Slow Cooked Chicken & Rice 13 oz cans arranged",
+  "status": "REBUILT_OK"
  },
  "FaisalX-332": {
   "sku": "FaisalX-332",
@@ -3486,9 +3501,12 @@
   "pack": 8,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3825/main-20260617-64848.png",
   "live": "LIVE",
-  "liveFail": "Product shown is College Inn Beef Broth (100% Natural), not Unsalted Beef Stock as specified in the ",
+  "liveFail": "Product shown is College Inn Beef Broth (regular, not labeled unsalted), but the listing specifies U",
   "baseUnit": "College Inn Unsalted Beef Stock, 32 oz Carton (Pack of 8)",
-  "status": "NEEDS_DONOR"
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3825/main-pipeline.png",
+  "newReason": "8 College Inn Unsalted Beef Stock 32oz cartons arranged in a 3x2+2 grid; each tile shows one single ",
+  "status": "REBUILT_OK"
  },
  "FaisalX-3851": {
   "sku": "FaisalX-3851",
@@ -3518,7 +3536,7 @@
   "pack": 4,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3853/main-20260616-27061.png",
   "live": "LIVE",
-  "liveFail": "Each of the 4 tiles in the 2x2 grid shows a cluster of multiple individual cans (approx. 4-5 cans gr",
+  "liveFail": "Each of the 4 grid tiles shows a cluster of ~4 individual cans arranged in a perspective stack, not ",
   "baseUnit": "(4 pack) Swanson 100% Natural, Gluten-Free Beef Broth, 14.5 oz Can",
   "status": "NEEDS_DONOR"
  },
@@ -3638,7 +3656,10 @@
   "live": "SAFE",
   "liveFail": "our feed never ingested — old image still live",
   "baseUnit": "Sahale Snacks Naturally Pomegranate Flavored Pistachios Glazed Mix, 4 Ounces (Pack of 8)",
-  "status": "NEEDS_DONOR"
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3933/main-pipeline.png",
+  "newReason": "8 Sahale Snacks Pomegranate Pistachios Glazed Mix bags arranged in a 3-3-2 grid, each showing the fr",
+  "status": "REBUILT_OK"
  },
  "FaisalX-3930": {
   "sku": "FaisalX-3930",
@@ -3648,7 +3669,10 @@
   "live": "UNKNOWN",
   "liveFail": "our feed never ingested — old image still live",
   "baseUnit": "Sahale Snacks Maple Pecans Glazed Mix, 1.5 Ounces (Pack of 8)",
-  "status": "NEEDS_DONOR"
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3930/main-pipeline.png",
+  "newReason": "8 individual Sahale Snacks Maple Pecans Glazed Mix bags arranged in a 3-3-2 grid; each tile shows ex",
+  "status": "REBUILT_OK"
  },
  "FaisalX-3943": {
   "sku": "FaisalX-3943",
@@ -3698,12 +3722,9 @@
   "pack": 6,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3962/main-20260616-91437.png",
   "live": "LIVE",
-  "liveFail": "Product shown is Reese's Peanut Butter Cups Miniatures 9.92 oz, not the listed Snack Size Jumbo Bag ",
+  "liveFail": "Product shown is Reese's Peanut Butter Cups Miniatures 9.92 oz, but listing specifies Snack Size Jum",
   "baseUnit": "Reese's Milk Chocolate Snack Size Peanut Butter Cups Halloween Candy, Jumbo Bag 19.5 oz (Pack of 6)",
-  "donorSrc": "publix",
-  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3962/main-pipeline.png",
-  "newReason": "Each tile shows two separate packages — the 19.5 oz jumbo bag plus a distinct individual snack-size ",
-  "status": "REBUILT_FAIL"
+  "status": "NEEDS_DONOR"
  },
  "FaisalX-3966": {
   "sku": "FaisalX-3966",
@@ -3760,7 +3781,7 @@
   "pack": 4,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3976/main-20260618-92213-1.png",
   "live": "LIVE",
-  "liveFail": "Wrong variant: packages show 'Reese's Pieces Eggs' (seasonal Easter egg-shaped candy, 10.8 oz) not t",
+  "liveFail": "Product shown is Reese's Pieces Eggs (Easter seasonal variant in yellow bags with pastel egg graphic",
   "baseUnit": "Reese's Pieces Peanut Butter In a Crunchy Shell Candy, Bag 5.3 oz (Pack of 4)",
   "status": "NEEDS_DONOR"
  },
@@ -5229,6 +5250,2040 @@
   "title": "Dove Promises Milk Chocolate Tiramisu Caramel Candy - 6.74 oz Bag (Pack of 4)",
   "pack": 4,
   "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5515/main-20260615-85402.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-5440": {
+  "sku": "FaisalX-5440",
+  "title": "Airheads Xtremes Belts Sweetly Sour Candy, Rainbow Berry, Nut Free, 3 oz Bag (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5440/main-20260617-24471.png",
+  "live": "LIVE",
+  "liveFail": "Product mismatch: listing specifies Airheads Xtremes Belts Rainbow Berry, but image shows Airheads X",
+  "baseUnit": "Airheads Xtremes Belts Sweetly Sour Candy, Rainbow Berry, Nut Free, 3 oz Bag (Pack of 4)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5440/main-pipeline.png",
+  "newReason": "Four Airheads Xtremes Rainbow Berry 3oz bags tiled in a 2x2 grid, each showing the wide front panel ",
+  "status": "REBUILT_OK"
+ },
+ "FaisalX-5525": {
+  "sku": "FaisalX-5525",
+  "title": "SmartSweets Sweet Fish Gummy Candy, 3.5 oz Pouch (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5525/main-20260618-51253.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-5527": {
+  "sku": "FaisalX-5527",
+  "title": "Spark Organics Classic Blend Flavored Fruit Chews, Dye Free Candy, 4 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5527/main-20260701-az3.png",
+  "live": "SAFE",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Spark Organics Classic Blend Flavored Fruit Chews, Dye Free Candy, 4 oz (Pack of 4)",
+  "status": "NEEDS_DONOR"
+ },
+ "FaisalX-5516": {
+  "sku": "FaisalX-5516",
+  "title": "Dove Promises Milk Chocolate Tiramisu Caramel Candy - 6.74 oz Bag (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5516/main-20260701-az3.png",
+  "live": "LIVE",
+  "liveFail": "Listing title specifies 'Tiramisu Caramel' flavor but image shows 'Milk Chocolate & Caramel' bags — ",
+  "baseUnit": "Dove Promises Milk Chocolate Tiramisu Caramel Candy - 6.74 oz Bag (Pack of 6)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5516/main-pipeline.png",
+  "newReason": "6 tiles of Dove Promises Milk Chocolate Tiramisu Caramel Flavored 6.74oz bags arranged in a 3x2 grid",
+  "status": "REBUILT_OK"
+ },
+ "FaisalX-5555": {
+  "sku": "FaisalX-5555",
+  "title": "Wiley Wallaby Minis, Watermelon Flavored Licorice Candy, 3.5 oz. Bag, Contains Wheat & Soy (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5555/main-20260617-06123.png",
+  "live": "LIVE",
+  "liveFail": "Each tile shows exactly one Wiley Wallaby bag and count is 6 on a white background, but all 6 bags a",
+  "baseUnit": "Wiley Wallaby Minis, Watermelon Flavored Licorice Candy, 3.5 oz. Bag, Contains Wheat & Soy (Pack of 6)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5555/main-pipeline.png",
+  "newReason": "6 Wiley Wallaby Minis Watermelon bags arranged in a 3x2 grid, each showing a single sealed bag face-",
+  "status": "REBUILT_OK"
+ },
+ "FaisalX-5528": {
+  "sku": "FaisalX-5528",
+  "title": "Spark Organics Classic Blend Flavored Fruit Chews, Dye Free Candy, 4 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5528/main-20260701-az3.png",
+  "live": "SAFE",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Spark Organics Classic Blend Flavored Fruit Chews, Dye Free Candy, 4 oz (Pack of 6)",
+  "status": "NEEDS_DONOR"
+ },
+ "FaisalX-5548": {
+  "sku": "FaisalX-5548",
+  "title": "Mentos Chewy Mint Candy Roll, Fresh Mint Flavor, Peanut and Tree Nut Free, Regular Size, 1.32 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5548/main-20260618-51043-0.png",
+  "live": "LIVE",
+  "liveFail": "Each tile shows TWO rolls of Mentos stacked together, not one single retail roll; a single tile must",
+  "baseUnit": "Mentos Chewy Mint Candy Roll, Fresh Mint Flavor, Peanut and Tree Nut Free, Regular Size, 1.32 oz (Pack of 4)",
+  "status": "NEEDS_DONOR"
+ },
+ "FaisalX-5575": {
+  "sku": "FaisalX-5575",
+  "titleSrc": "getItem",
+  "title": "HOT TAMALES Fierce Cinnamon Flavored Chewy Candy, 3.5 Ounce, 1 Pouch (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5575/main-20260616-67716.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "HOT TAMALES Fierce Cinnamon Flavored Chewy Candy, 3.5 Ounce, 1 Pouch (Pack of 4)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5575/main-pipeline.png",
+  "newReason": "Four HOT TAMALES Fierce Cinnamon boxes arranged in a 2x2 grid; each tile shows exactly one sealed re",
+  "status": "REBUILT_OK"
+ },
+ "FaisalX-5576": {
+  "sku": "FaisalX-5576",
+  "title": "HOT TAMALES Fierce Cinnamon Flavored Chewy Candy, 3.5 Ounce, 1 Pouch (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5576/main-20260616-47386.png",
+  "live": "LIVE",
+  "liveFail": "Each tile shows the BACK panel of the Hot Tamales pouch (Nutrition Facts, barcode, hottamales.com UR",
+  "baseUnit": "HOT TAMALES Fierce Cinnamon Flavored Chewy Candy, 3.5 Ounce, 1 Pouch (Pack of 6)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5576/main-pipeline.png",
+  "newReason": "Six Hot Tamales Fierce Cinnamon theater-style boxes arranged in a 3x2 grid, each showing the full fr",
+  "status": "REBUILT_OK"
+ },
+ "FaisalX-5582": {
+  "sku": "FaisalX-5582",
+  "title": "Nerds Rope Very Berry, Crunchy and Gummy Candy, .92 oz, Individually Wrapped (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5582/main-20260616-10332.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Nerds Rope Very Berry, Crunchy and Gummy Candy, .92 oz, Individually Wrapped (Pack of 6)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5582/main-pipeline.png",
+  "newReason": "6 individually-wrapped Nerds Rope Very Berry packages arranged in a 3x2 grid, each showing the front",
+  "status": "REBUILT_OK"
+ },
+ "FaisalX-757": {
+  "sku": "FaisalX-757",
+  "title": "Barilla Protein+ Penne Pasta, Plant Based Pasta, 14.5oz, Pack of 10",
+  "pack": 10,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-757/main-20260617-44702.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-764": {
+  "sku": "FaisalX-764",
+  "title": "Barilla Protein+ Spaghetti Pasta, Plant Based Pasta, 14.5oz, Pack of 10",
+  "pack": 10,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-764/main-20260618-88847-6.png",
+  "live": "LIVE",
+  "liveFail": "Each repeated tile shows a cluster of 4–5 individual Barilla Protein+ boxes rather than a single uni",
+  "baseUnit": "Barilla Protein+ Spaghetti Pasta, Plant Based Pasta, 14.5oz, Pack of 10",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-764/main-pipeline.png",
+  "newReason": "10 Barilla Protein+ Spaghetti 14.5oz boxes tiled in a 4+3+3 grid; each tile shows one single retail ",
+  "status": "REBUILT_OK"
+ },
+ "FaisalX-5591": {
+  "sku": "FaisalX-5591",
+  "title": "De La Rosa Pulparindo Tamarind Candy, Original Hot and Salted Mexican Candy, 20 Count (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5591/main-20260701-az3.png",
+  "live": "SAFE",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "De La Rosa Pulparindo Tamarind Candy, Original Hot and Salted Mexican Candy, 20 Count (Pack of 6)",
+  "status": "NEEDS_DONOR"
+ },
+ "FaisalX-777": {
+  "sku": "FaisalX-777",
+  "titleSrc": "getItem",
+  "title": "Barilla Gluten Free Spaghetti Pasta, 12 oz, Pack of 8",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-777/main-20260617-87114.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-771": {
+  "sku": "FaisalX-771",
+  "title": "Barilla Gluten Free Penne Pasta, 12 oz, Pack of 10",
+  "pack": 10,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-771/main-20260616-28149.png",
+  "live": "LIVE",
+  "liveFail": "Each tile shows the Barilla Gluten Free Penne box from the front face, but the box is rotated roughl",
+  "baseUnit": "Barilla Gluten Free Penne Pasta, 12 oz, Pack of 10",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-771/main-pipeline.png",
+  "newReason": "All 10 tiles show the same Barilla Gluten Free Penne 12 oz box face-on with full front label visible",
+  "status": "REBUILT_OK"
+ },
+ "FaisalX-778": {
+  "sku": "FaisalX-778",
+  "title": "Barilla Gluten Free Spaghetti Pasta, 12 oz, Pack of 10",
+  "pack": 10,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-778/main-20260616-26204.png",
+  "live": "LIVE",
+  "liveFail": "Each tile shows the front panel of what appears to be the Barilla Gluten Free Spaghetti box, but the",
+  "baseUnit": "Barilla Gluten Free Spaghetti Pasta, 12 oz, Pack of 10",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-778/main-pipeline.png",
+  "newReason": "All 10 tiles show a single Barilla Gluten Free Spaghetti 12 oz box face-on with full brand and produ",
+  "status": "REBUILT_OK"
+ },
+ "FaisalX-793": {
+  "sku": "FaisalX-793",
+  "title": "Lay's Wavy Original Potato Snack Chips,Party Size, 13 oz Bag (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-793/main-20260618-92996.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-797": {
+  "sku": "FaisalX-797",
+  "title": "Lay's Cheddar & Sour Cream Flavored Potato Chips, Party Size, 12.5 oz Bag (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-797/main-20260618-35083-1.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-790": {
+  "sku": "FaisalX-790",
+  "title": "Lay's Barbeque Potato Snack Chips,Party Size, 12.5 oz.Bag (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-790/main-20260618-29355-3.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-810": {
+  "sku": "FaisalX-810",
+  "title": "Lay's Kettle Cooked Jalapeno Flavor Potato Snack Chips, 12.5 Ounce Bag (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-810/main-20260616-92763.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-811": {
+  "sku": "FaisalX-811",
+  "title": "Lay's Kettle Cooked Jalapeno Flavor Potato Snack Chips, 12.5 Ounce Bag (Pack of 10)",
+  "pack": 10,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-811/main-20260616-99529.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-807": {
+  "sku": "FaisalX-807",
+  "titleSrc": "getItem",
+  "title": "Lay's Lightly Salted Classic Potato Snack Chips,Party Size, 12.5 oz Bag (Pack of 10)",
+  "pack": 10,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-807/main-20260617-04323.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-813": {
+  "sku": "FaisalX-813",
+  "title": "Lay's Dill Pickle Flavored Potato Chips, Party Size, 12.5 oz Bag (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-813/main-20260617-13080.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "FaisalX-814": {
+  "sku": "FaisalX-814",
+  "title": "Lay's Dill Pickle Flavored Potato Chips, Party Size, 12.5 oz Bag (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-814/main-20260617-04974.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Morena Pure Cane Sugar bags, not Lay's Dill Pickle Flavored Potato Chips. Grid show",
+  "baseUnit": "Lay's Dill Pickle Flavored Potato Chips, Party Size, 12.5 oz Bag (Pack of 8)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-814/main-pipeline.png",
+  "newReason": "8 Lay's Dill Pickle Party Size 12.5 oz bags arranged in a 3-3-2 grid, each showing the front label f",
+  "status": "REBUILT_OK"
+ },
+ "Mine-12": {
+  "sku": "Mine-12",
+  "titleSrc": "getItem",
+  "title": "Fancy Feast Gravy Lovers Chicken Feast in Gravy 3 oz (Pack of 32)",
+  "pack": 32,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Mine-12/main-20260616-33988.png",
+  "live": "LIVE",
+  "liveFail": "Each tile is a 12-count multipack carton of Fancy Feast cans (the number '12' is clearly printed on ",
+  "baseUnit": "Fancy Feast Gravy Lovers Chicken Feast in Gravy 3 oz (Pack of 32)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Mine-12/main-pipeline.png",
+  "newReason": "Grid shows 32 individual Fancy Feast Gravy Lovers Chicken Feast in Gravy 3 oz cans arranged in 6 row",
+  "status": "REBUILT_OK"
+ },
+ "Mine-18": {
+  "sku": "Mine-18",
+  "titleSrc": "getItem",
+  "title": "Hellow Pet Fancy Feast Chicken Feast Classic Grain Free Wet Cat Food Pate - 3 oz. Can (Pack of 10)",
+  "pack": 10,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Mine-18/main-20260617-32322.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "Mine-22": {
+  "sku": "Mine-22",
+  "titleSrc": "getItem",
+  "title": "Fancy Feast Delights With Cheddar Grilled Chicken & Cheddar Cheese Feast in Gravy Wet Cat Food, 3 OZ (Pack of 24)",
+  "pack": 24,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Mine-22/main-20260616-10304.png",
+  "live": "LIVE",
+  "liveFail": "Each tile correctly shows one individual Fancy Feast 3 oz can face-on with white background, but the",
+  "baseUnit": "Fancy Feast Delights With Cheddar Grilled Chicken & Cheddar Cheese Feast in Gravy Wet Cat Food, 3 OZ (Pack of 24)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Mine-22/main-pipeline.png",
+  "newReason": "24 individual Fancy Feast Delights Grilled Chicken & Cheddar Cheese cans shown face-on in a grid on ",
+  "status": "REBUILT_OK"
+ },
+ "Mine-21": {
+  "sku": "Mine-21",
+  "title": "Purina Fancy Feast Delights with Cheddar Wet Cat Food, Grilled Chicken, 3 oz Cans (24 Pack)",
+  "pack": 24,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Mine-21/main-20260614-52348.png",
+  "live": "LIVE",
+  "liveFail": "Each tile appears to show a Fancy Feast Delights multi-can variety/box pack rather than a single 3 o",
+  "baseUnit": "Purina Fancy Feast Delights with Cheddar Wet Cat Food, Grilled Chicken, 3 oz Cans (24 Pack)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/Mine-21/main-pipeline.png",
+  "newReason": "24 individual Purina Fancy Feast Delights with Cheddar Grilled Chicken 3oz cans arranged in a 5×4+4 ",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-111": {
+  "sku": "RizwanX-111",
+  "title": "ROTEL Hot Diced Tomatoes With Habaneros, 10 oz. (Pack of 12)",
+  "pack": 12,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-111/main-20260616-39931.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-12": {
+  "sku": "RizwanX-12",
+  "title": "Tabasco Sriracha Sauce, 11 oz Regular Bottle (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-12/main-20260618-35113.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-119": {
+  "sku": "RizwanX-119",
+  "title": "RO*TEL Xtra Hot Diced Tomatoes With Ghost Peppers, 10 oz. (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-119/main-20260616-40071.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is RO*TEL Diced Tomatoes With Habaneros (Hot), but listing title specifies 'Xtra Hot D",
+  "baseUnit": "RO*TEL Xtra Hot Diced Tomatoes With Ghost Peppers, 10 oz. (Pack of 6)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-119/main-pipeline.png",
+  "newReason": "Six RO*TEL Xtra Hot Diced Tomatoes With Ghost Peppers 10 oz cans arranged in a 3x2 grid; each tile s",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-128": {
+  "sku": "RizwanX-128",
+  "title": "Margaret Holmes Seasoned Italian Green Beans, 27 oz Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-128/main-20260618-52710.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-120": {
+  "sku": "RizwanX-120",
+  "title": "RO*TEL Xtra Hot Diced Tomatoes With Ghost Peppers, 10 oz. (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-120/main-20260616-40666.png",
+  "live": "LIVE",
+  "liveFail": "Wrong variant: cans show RO-TEL Chunky Diced Tomatoes & Green Chilies, not Xtra Hot Diced Tomatoes W",
+  "baseUnit": "RO*TEL Xtra Hot Diced Tomatoes With Ghost Peppers, 10 oz. (Pack of 8)",
+  "donorSrc": "target",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-120/main-pipeline.png",
+  "newReason": "8 individual RO*TEL Xtra Hot Diced Tomatoes With Ghost Peppers 10 oz cans arranged in a 3-3-2 grid, ",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-126": {
+  "sku": "RizwanX-126",
+  "title": "Margaret Holmes Seasoned Green Lima Beans, Canned Beans, 15 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-126/main-20260616-06879.png",
+  "live": "LIVE",
+  "liveFail": "All 8 tiles show the back/nutrition-facts panel of the can, not the front brand label panel.",
+  "baseUnit": "Margaret Holmes Seasoned Green Lima Beans, Canned Beans, 15 oz (Pack of 8)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-126/main-pipeline.png",
+  "newReason": "8 individual Margaret Holmes Seasoned Green Lima Beans 15oz cans arranged in a 3-3-2 grid, all face-",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-134": {
+  "sku": "RizwanX-134",
+  "title": "Margaret Holmes Canned Seasoned Collard Greens, 27 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-134/main-20260618-30965-0.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-137": {
+  "sku": "RizwanX-137",
+  "title": "Margaret Holmes Seasoned Cabbage, 15 oz Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-137/main-20260618-30381-5.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-138": {
+  "sku": "RizwanX-138",
+  "title": "Margaret Holmes Seasoned Cabbage, 15 oz Can (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-138/main-20260617-31506.png",
+  "live": "LIVE",
+  "liveFail": "Each tile shows the back/side of the can with the Nutrition Facts panel facing the camera, not the w",
+  "baseUnit": "Margaret Holmes Seasoned Cabbage, 15 oz Can (Pack of 8)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-138/main-pipeline.png",
+  "newReason": "8 Margaret Holmes Seasoned Cabbage 15oz cans arranged in a 3-3-2 grid, each showing the front label ",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-144": {
+  "sku": "RizwanX-144",
+  "title": "Margaret Holmes Field Peas and Snaps, Canned Vegetables, 15 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-144/main-20260617-45037.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-140": {
+  "sku": "RizwanX-140",
+  "titleSrc": "getItem",
+  "title": "Margaret Holmes Canned Seasoned Butter Beans, 15 oz Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-140/main-20260617-42605.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-142": {
+  "sku": "RizwanX-142",
+  "title": "Margaret Holmes Field Peas and Snaps, Canned Vegetables, 15 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-142/main-20260618-14203.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is 'Seasoned Field Peas & Snaps' but listing title specifies plain 'Field Peas and Sna",
+  "baseUnit": "Margaret Holmes Field Peas and Snaps, Canned Vegetables, 15 oz (Pack of 4)",
+  "status": "NEEDS_DONOR"
+ },
+ "RizwanX-146": {
+  "sku": "RizwanX-146",
+  "title": "Margaret Holmes Squash with Vidalia Onions, 14.5 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-146/main-20260618-88965-1.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-154": {
+  "sku": "RizwanX-154",
+  "title": "Margaret Holmes Canned Tomatoes, Okra and Corn, 14.5 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-154/main-20260618-35122-1.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-152": {
+  "sku": "RizwanX-152",
+  "title": "Margaret Holmes Canned Seasoned Blackeye Peas, 15 oz, Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-152/main-20260618-70178-4.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-159": {
+  "sku": "RizwanX-159",
+  "title": "Veg-All Homestyle Large Cut Vegetables, 29 oz., Can (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-159/main-20260617-65037.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-157": {
+  "sku": "RizwanX-157",
+  "titleSrc": "getItem",
+  "title": "Veg-All Homestyle Large Cut Vegetables, 29 oz., Can (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-157/main-20260618-86026.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-156": {
+  "sku": "RizwanX-156",
+  "title": "Margaret Holmes Canned Tomatoes, Okra and Corn, 14.5 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-156/main-20260618-07669-7.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Margaret Holmes Canned Tomatoes, Okra and Corn, 14.5 oz (Pack of 8)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-156/main-pipeline.png",
+  "newReason": "8 individual Margaret Holmes Tomatoes Okra & Corn 14.5oz cans arranged in a 3-3-2 grid, each showing",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-162": {
+  "sku": "RizwanX-162",
+  "title": "Veg-All Original Mixed Vegetables, 15 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-162/main-20260617-01831.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-161": {
+  "sku": "RizwanX-161",
+  "title": "Veg-All Original Mixed Vegetables, 15 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-161/main-20260617-25036.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-165": {
+  "sku": "RizwanX-165",
+  "title": "Del Monte Canned Sweet Peas, Canned Vegetables, 8.5 oz Aluminum Can (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-165/main-20260701-nm.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Del Monte Mixed Vegetables, not Sweet Peas as listed. Each tile shows a multi-can c",
+  "baseUnit": "Del Monte Canned Sweet Peas, Canned Vegetables, 8.5 oz Aluminum Can (Pack of 8)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-165/main-pipeline.png",
+  "newReason": "8 Del Monte Fresh Cut Sweet Peas 8.5 oz cans arranged in a 3-3-2 grid, each showing a single can fac",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-176": {
+  "sku": "RizwanX-176",
+  "title": "Del Monte Sweet White Whole Kernel Corn, 15.25 oz Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-176/main-20260617-22332.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-167": {
+  "sku": "RizwanX-167",
+  "title": "Del Monte Harvest Selects Peas & Carrots, 8.5 oz Aluminum Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-167/main-20260618-08155-5.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Del Monte Fresh Cut Sweet Peas (4 Can Value Pack), not Peas & Carrots as listed. Ad",
+  "baseUnit": "Del Monte Harvest Selects Peas & Carrots, 8.5 oz Aluminum Can (Pack of 6)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-167/main-pipeline.png",
+  "newReason": "6 individual Del Monte Harvest Selects Peas & Carrots 8.5 oz cans arranged in a 3x2 grid, each shown",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-179": {
+  "sku": "RizwanX-179",
+  "title": "Del Monte Cut Green Beans Canned Vegetables, 14.5 oz Aluminum Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-179/main-20260618-48821-0.png",
+  "live": "LIVE",
+  "liveFail": "Wrong variant: listing is 'Cut Green Beans' but image shows 'French Style Green Beans'. Additionally",
+  "baseUnit": "Del Monte Cut Green Beans Canned Vegetables, 14.5 oz Aluminum Can (Pack of 6)",
+  "donorSrc": "samsclub",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-179/main-pipeline.png",
+  "newReason": "Six Del Monte Cut Green Beans 14.5 oz aluminum cans arranged in a 3x2 grid, each showing a single ca",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-183": {
+  "sku": "RizwanX-183",
+  "title": "Del Monte Canned Beets Sliced Canned Vegetables, 14.5 oz Can (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-183/main-20260617-04397.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-186": {
+  "sku": "RizwanX-186",
+  "title": "Del Monte Golden Sweet Whole Kernel Corn, 8.75 oz Aluminum Can (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-186/main-20260617-04082.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-184": {
+  "sku": "RizwanX-184",
+  "title": "Del Monte Golden Sweet Whole Kernel Corn, 8.75 oz Aluminum Can (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-184/main-20260617-24622.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-191": {
+  "sku": "RizwanX-191",
+  "title": "Del Monte Stewed Tomatoes Original Recipe, 14.5 Oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-191/main-20260617-65923.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-199": {
+  "sku": "RizwanX-199",
+  "title": "Del Monte Tender Petites Very Young Small Sweet Peas, No Salt Added, 15.25 oz. Can (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-199/main-20260617-04812.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-194": {
+  "sku": "RizwanX-194",
+  "title": "DEL MONTE Canned Diced Tomatoes Zesty Chili Style, 14.5 oz Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-194/main-20260617-65541.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-200": {
+  "sku": "RizwanX-200",
+  "title": "Del Monte Tender Petites Very Young Small Sweet Peas, No Salt Added, 15.25 oz. Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-200/main-20260618-54812.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-204": {
+  "sku": "RizwanX-204",
+  "title": "Allens Popeye Spinach, Chopped, 13.5 Oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-204/main-20260617-62711.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2168": {
+  "sku": "RizwanX-2168",
+  "title": "Chef Woo Roasted Chicken Ramen Cup Noodles 20g Protein (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2168/main-20260616-40765.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2174": {
+  "sku": "RizwanX-2174",
+  "title": "Snapdragon Chicken Ramen Cup 2.2 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2174/main-20260617-25689.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2176": {
+  "sku": "RizwanX-2176",
+  "titleSrc": "getItem",
+  "title": "Nissin Cup Noodles Stir Fry Japanese Teriyaki Chicken Flavor Rice with Noodles 2.75 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2176/main-20260615-74176.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2179": {
+  "sku": "RizwanX-2179",
+  "title": "Nissin Cup Noodles Stir Fry Korean Spicy Beef Flavor Rice with Noodles 2.68 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2179/main-20260617-05243.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Nissin Cup Noodles Stir Fry Rice General Tso's Chicken flavor, not Korean Spicy Bee",
+  "baseUnit": "Nissin Cup Noodles Stir Fry Korean Spicy Beef Flavor Rice with Noodles 2.68 oz (Pack of 4)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2179/main-pipeline.png",
+  "newReason": "Four individual Nissin Cup Noodles Stir Fry Rice Korean Spicy Beef cups arranged in a 2x2 grid, each",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2186": {
+  "sku": "RizwanX-2186",
+  "titleSrc": "getItem",
+  "title": "Snapdragon Miso Ramen Cup 2.2 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2186/main-20260701-az3.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2181": {
+  "sku": "RizwanX-2181",
+  "title": "Nissin Cup Noodles Stir Fry Korean Spicy Beef Flavor Rice with Noodles 2.68 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2181/main-20260701-nm.png",
+  "live": "SAFE",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Nissin Cup Noodles Stir Fry Korean Spicy Beef Flavor Rice with Noodles 2.68 oz (Pack of 8)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2181/main-pipeline.png",
+  "newReason": "8 individual Nissin Cup Noodles Stir Fry Rice Korean Spicy Beef cups arranged in a 3-3-2 grid, each ",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2183": {
+  "sku": "RizwanX-2183",
+  "title": "Nissin Teriyaki Beef Flavor Noodles 4 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2183/main-20260616-07779.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Nissin Chow Mein Teriyaki Beef flavor (a bowl format), not 'Nissin Teriyaki Beef Fl",
+  "baseUnit": "Nissin Teriyaki Beef Flavor Noodles 4 oz (Pack of 6)",
+  "status": "NEEDS_DONOR"
+ },
+ "RizwanX-2196": {
+  "sku": "RizwanX-2196",
+  "titleSrc": "none",
+  "title": "",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2196/main-20260618-72371-0.png",
+  "live": "LIVE",
+  "status": "SKIP",
+  "why": "no title anywhere"
+ },
+ "RizwanX-2198": {
+  "sku": "RizwanX-2198",
+  "title": "Annie Chun's Shoyu Ramen Soup Bowl 5.4 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2198/main-20260701-az3.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2192": {
+  "sku": "RizwanX-2192",
+  "titleSrc": "getItem",
+  "title": "Nissin Teriyaki Chicken Noodles 4 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2192/main-20260616-68281.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Nissin Teriyaki Chicken Noodles 4 oz (Pack of 6)",
+  "status": "NEEDS_DONOR"
+ },
+ "RizwanX-2218": {
+  "sku": "RizwanX-2218",
+  "titleSrc": "getItem",
+  "title": "Mike's Mighty Good Ramen Soup Chicken Flavor 1.6 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2218/main-20260616-88110.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2211": {
+  "sku": "RizwanX-2211",
+  "title": "Nissin Asian Noodles in Sauce, Sweet Chili Flavor Stir Fry Style (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2211/main-20260616-67878.png",
+  "live": "LIVE",
+  "liveFail": "All 8 cups show the back/side panel with Nutrition Facts and barcode visible, not the front face wit",
+  "baseUnit": "Nissin Asian Noodles in Sauce, Sweet Chili Flavor Stir Fry Style (Pack of 8)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2211/main-pipeline.png",
+  "newReason": "8 Nissin Cup Noodles Stir Fry Sweet Chili cups tiled on white background; each tile shows one indivi",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2227": {
+  "sku": "RizwanX-2227",
+  "titleSrc": "getItem",
+  "title": "Chef Woo Braised Beef Ramen Cup Noodle 20g Protein 2.5 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2227/main-20260616-87122.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Chef Woo Black Garlic Beef Ramen Noodles by Chef Ramsay, not 'Chef Woo Braised Beef",
+  "baseUnit": "Chef Woo Braised Beef Ramen Cup Noodle 20g Protein 2.5 oz (Pack of 4)",
+  "donorSrc": "publix",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2227/main-pipeline.png",
+  "newReason": "Four Chef Woo Braised Beef Flavor Ramen cups arranged in a 2x2 grid, each tile shows exactly one cup",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2282": {
+  "sku": "RizwanX-2282",
+  "title": "Rummo Spaghetti 12 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2282/main-20260617-48904.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2253": {
+  "sku": "RizwanX-2253",
+  "titleSrc": "getItem",
+  "title": "Maruchan Ramen Noodle Soup Chicken Flavor Souper 6 Count (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2253/main-20260615-93293.png",
+  "live": "SAFE",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Maruchan Ramen Noodle Soup Chicken Flavor Souper 6 Count (Pack of 8)",
+  "donorSrc": "target",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2253/main-pipeline.png",
+  "newReason": "Each tile shows a 'Souper 6 Pack' bag — a bundled multipack of 6 individually-sold ramen packets, no",
+  "status": "REBUILT_FAIL"
+ },
+ "RizwanX-2285": {
+  "sku": "RizwanX-2285",
+  "title": "Mueller's Spaghetti 16 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2285/main-20260616-07993.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Mueller's Pot-Sized Thin Spaghetti, not Mueller's Spaghetti 16 oz as listed — diffe",
+  "baseUnit": "Mueller's Spaghetti 16 oz (Pack of 6)",
+  "donorSrc": "publix",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2285/main-pipeline.png",
+  "newReason": "All 6 tiles show one Mueller's Spaghetti 16 oz box each, front panel facing camera, on a plain white",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2286": {
+  "sku": "RizwanX-2286",
+  "title": "Mueller's Spaghetti 16 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2286/main-20260618-73099.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2294": {
+  "sku": "RizwanX-2294",
+  "title": "Mueller's Spaghetti Thin 16 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2294/main-20260617-45092.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Mueller's Pot-Sized Thin Spaghetti (half-length cut variant), not the standard Thin",
+  "baseUnit": "Mueller's Spaghetti Thin 16 oz (Pack of 6)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2294/main-pipeline.png",
+  "newReason": "Six Mueller's Thin Spaghetti 16oz boxes tiled in a 3x2 grid; each tile shows exactly one retail box ",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2310": {
+  "sku": "RizwanX-2310",
+  "titleSrc": "getItem",
+  "title": "Mueller's Angel Hair 16 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2310/main-20260616-28189.png",
+  "live": "LIVE",
+  "liveFail": "Each tile shows a Mueller's case/multipack box labeled '20x13.25 Oz' — a bulk case of 20 individuall",
+  "baseUnit": "Mueller's Angel Hair 16 oz (Pack of 8)",
+  "donorSrc": "publix",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2310/main-pipeline.png",
+  "newReason": "8 individual Mueller's Angel Hair 16oz boxes shown face-on in a tiled grid on white background; each",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2343": {
+  "sku": "RizwanX-2343",
+  "title": "Banza Linguine Pasta Gluten Free, High Protein Lower Carb (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2343/main-20260618-12299.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2334": {
+  "sku": "RizwanX-2334",
+  "titleSrc": "getItem",
+  "title": "Ronzoni Angel Hair Pasta 16 oz Quick Cook Non-GMO Capelli D'Angelo (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2334/main-20260618-86026.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2330": {
+  "sku": "RizwanX-2330",
+  "title": "Barilla Al Bronzo Bucatini Pasta Bronze Cut Pasta Non",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2330/main-20260616-27197.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Barilla Al Bronzo Bucatini Pasta Bronze Cut Pasta Non",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2330/main-pipeline.png",
+  "newReason": "Four Barilla Al Bronzo Bucatini 16oz packages tiled in a 2x2 grid, each showing the wide front label",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2345": {
+  "sku": "RizwanX-2345",
+  "title": "Ronzoni Small Rigatoni 16 oz Ribbed Tubular Pasta Non GMO (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2345/main-20260618-71903.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2344": {
+  "sku": "RizwanX-2344",
+  "title": "Ronzoni Small Rigatoni 16 oz Ribbed Tubular Pasta Non GMO (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2344/main-20260617-07451.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2351": {
+  "sku": "RizwanX-2351",
+  "titleSrc": "getItem",
+  "title": "Pasta Zara Spaghetti Organic (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2351/main-20260617-25148.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2378": {
+  "sku": "RizwanX-2378",
+  "title": "Banza Spaghetti Pasta - Gluten Free, High Protein Lower Carb (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2378/main-20260615-15141.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2397": {
+  "sku": "RizwanX-2397",
+  "title": "Ronzoni Elbows 16 oz Non-GMO Macaroni Pasta for Mac and Cheese (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2397/main-20260615-71735.png",
+  "live": "LIVE",
+  "liveFail": "Listing specifies 'Elbows 16 oz' but image shows Ronzoni Large Elbows No. 74 at 1 lb (454g) — same w",
+  "baseUnit": "Ronzoni Elbows 16 oz Non-GMO Macaroni Pasta for Mac and Cheese (Pack of 8)",
+  "donorSrc": "publix",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2397/main-pipeline.png",
+  "newReason": "8 Ronzoni Large Elbows No. 74 1 lb boxes arranged 3-3-2, each a single retail package shown face-on ",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2352": {
+  "sku": "RizwanX-2352",
+  "titleSrc": "getItem",
+  "title": "Pasta Zara Spaghetti Organic (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2352/main-20260616-69792.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Pasta Zara Spaghetti Organic (Pack of 6)",
+  "status": "NEEDS_DONOR"
+ },
+ "RizwanX-2406": {
+  "sku": "RizwanX-2406",
+  "title": "Ronzoni Rigatoni Pasta 16 oz Large Ribbed Tubes Non-GMO (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2406/main-20260618-91244-0.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Ronzoni No. 73 Small Rigatoni, but listing title specifies Rigatoni Large Ribbed Tu",
+  "baseUnit": "Ronzoni Rigatoni Pasta 16 oz Large Ribbed Tubes Non-GMO (Pack of 8)",
+  "donorSrc": "publix",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2406/main-pipeline.png",
+  "newReason": "8 individual Ronzoni Rigatoni 16oz boxes shown face-on in a 3-3-2 grid on white background, matching",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2404": {
+  "sku": "RizwanX-2404",
+  "titleSrc": "getItem",
+  "title": "Ronzoni Rigatoni Pasta 16 oz Large Ribbed Tubes Non-G",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2404/main-20260615-75474.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Ronzoni Small Rigatoni No. 73 (1 lb box), but listing specifies 'Rigatoni Pasta 16 ",
+  "baseUnit": "Ronzoni Rigatoni Pasta 16 oz Large Ribbed Tubes Non-G",
+  "donorSrc": "publix",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2404/main-pipeline.png",
+  "newReason": "Four Ronzoni Rigatoni No. 27 16 oz boxes arranged in a 2x2 grid, each showing the wide front panel f",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2412": {
+  "sku": "RizwanX-2412",
+  "title": "Ronzoni Rotini 16 oz Non-GMO Spiral Corkscrew Pasta (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2412/main-20260616-07360.png",
+  "live": "LIVE",
+  "liveFail": "All 8 tiles show the BACK panel of the Ronzoni Rotini box (cooking instructions, nutrition facts, ba",
+  "baseUnit": "Ronzoni Rotini 16 oz Non-GMO Spiral Corkscrew Pasta (Pack of 8)",
+  "donorSrc": "publix",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2412/main-pipeline.png",
+  "newReason": "8 Ronzoni Rotini 16 oz boxes arranged in a 3-3-2 grid; each tile shows one individual box face-on wi",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2425": {
+  "sku": "RizwanX-2425",
+  "title": "Mueller's Penne 16 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2425/main-20260618-91121-0.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2417": {
+  "sku": "RizwanX-2417",
+  "title": "Ronzoni Fettuccine 16 oz Non-GMO Pasta for Alfredo Sauce and (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2417/main-20260618-88792-2.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2423": {
+  "sku": "RizwanX-2423",
+  "title": "Ronzoni Oven Ready Lasagna No Boil Pasta for Baking (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2423/main-20260617-65643.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2431": {
+  "sku": "RizwanX-2431",
+  "title": "Mueller's Corkscrews 16 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2431/main-20260616-08723.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2435": {
+  "sku": "RizwanX-2435",
+  "title": "Mueller's Fettuccine 16 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2435/main-20260615-22504.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2436": {
+  "sku": "RizwanX-2436",
+  "title": "Mueller's Fettuccine 16 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2436/main-20260616-06992.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Mueller's Fettuccine 16 oz (Pack of 8)",
+  "donorSrc": "publix",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2436/main-pipeline.png",
+  "newReason": "8 individual Mueller's Fettuccine boxes shown face-on with full front label visible on a plain white",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2447": {
+  "sku": "RizwanX-2447",
+  "title": "Mueller's Elbows Large 16 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2447/main-20260618-29163-1.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2454": {
+  "sku": "RizwanX-2454",
+  "title": "Mueller's Ziti 16 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2454/main-20260617-46700.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2456": {
+  "sku": "RizwanX-2456",
+  "title": "Mueller's Spaghetti 12 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2456/main-20260618-32419-4.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Mueller's Thick Spaghetti, but listing title specifies Mueller's Spaghetti (standar",
+  "baseUnit": "Mueller's Spaghetti 12 oz (Pack of 4)",
+  "donorSrc": "publix",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2456/main-pipeline.png",
+  "newReason": "Four Mueller's Spaghetti 12 oz boxes arranged in a 2x2 grid, each showing the front panel with brand",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2475": {
+  "sku": "RizwanX-2475",
+  "title": "Mueller's Elbows Ridged Jumbo 16 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2475/main-20260616-00685.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2471": {
+  "sku": "RizwanX-2471",
+  "title": "Mueller's Linguine 16 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2471/main-20260616-81077.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2466": {
+  "sku": "RizwanX-2466",
+  "titleSrc": "getItem",
+  "title": "Mueller's Thin Spaghetti 12 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2466/main-20260617-45354.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Mueller's Thin Spaghetti 12 oz (Pack of 6)",
+  "donorSrc": "publix",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2466/main-pipeline.png",
+  "newReason": "6 tiles in a 3x2 grid, each showing one Mueller's Thin Spaghetti box face-on with full brand and pro",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2490": {
+  "sku": "RizwanX-2490",
+  "title": "Rummo Fusilli 16 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2490/main-20260617-43802.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2487": {
+  "sku": "RizwanX-2487",
+  "title": "Rummo Rigatoni 16 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2487/main-20260618-90560-1.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2691": {
+  "sku": "RizwanX-2691",
+  "titleSrc": "getItem",
+  "title": "Del Monte Very Cherry Mixed Fruit in Extra Light Syrup Canned Fruit 15 oz Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2691/main-20260618-51525.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2705": {
+  "sku": "RizwanX-2705",
+  "title": "Del Monte Lite Apricot Halves Canned Fruit 15 oz Can (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2705/main-20260701-az3.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2694": {
+  "sku": "RizwanX-2694",
+  "titleSrc": "getItem",
+  "title": "Del Monte Diced Mango in Extra Light Syrup, 15 oz Cans (Pack of 6) – Ripe Mango Chunks in Light Syrup, Non-GMO, Perfect for Snacking, Baking & Recipes",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2694/main-20260617-84406.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2711": {
+  "sku": "RizwanX-2711",
+  "title": "Del Monte Very Cherry No Sugar Added Mixed Fruit Canned Fruit 14.5 oz Can (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2711/main-20260618-93475-0.png",
+  "live": "LIVE",
+  "liveFail": "Background is light gray/off-white, not plain white.",
+  "baseUnit": "Del Monte Very Cherry No Sugar Added Mixed Fruit Canned Fruit 14.5 oz Can (Pack of 4)",
+  "donorSrc": "target",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2711/main-pipeline.png",
+  "newReason": "Four Del Monte Very Cherry mixed fruit cans arranged in a 2x2 grid; each tile shows one single retai",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2727": {
+  "sku": "RizwanX-2727",
+  "title": "Del Monte Pear Halves 15.25 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2727/main-20260617-23791.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2723": {
+  "sku": "RizwanX-2723",
+  "title": "Del Monte No Sugar Added Yellow Cling Sliced Peaches Canned Fruit 14.5 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2723/main-20260618-92810-0.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Del Monte No Sugar Added Yellow Cling Sliced Peaches Canned Fruit 14.5 oz (Pack of 4)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2723/main-pipeline.png",
+  "newReason": "Four Del Monte No Sugar Added Sliced Peaches 14.5 oz cans arranged in a 2x2 grid, each tile showing ",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2726": {
+  "sku": "RizwanX-2726",
+  "title": "Del Monte Pear Halves 15.25 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2726/main-20260616-67166.png",
+  "live": "LIVE",
+  "liveFail": "Product matches Del Monte Pear Halves; each tile shows one single can; 4 units total in a 2x2 grid; ",
+  "baseUnit": "Del Monte Pear Halves 15.25 oz (Pack of 4)",
+  "donorSrc": "publix",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2726/main-pipeline.png",
+  "newReason": "4 individual Del Monte Pear Halves cans arranged in a 2x2 grid, each shown face-on with full label v",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2736": {
+  "sku": "RizwanX-2736",
+  "title": "Del Monte Pear Halves in 100% Juice Canned Fruit 15 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2736/main-20260616-28894.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2735": {
+  "sku": "RizwanX-2735",
+  "title": "Del Monte Pear Halves in 100% Juice Canned Fruit 15 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2735/main-20260617-68501.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2748": {
+  "sku": "RizwanX-2748",
+  "title": "Del Monte Peaches Sliced 8.5 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2748/main-20260616-09258.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Del Monte Peaches Sliced 8.5 oz (Pack of 8)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2748/main-pipeline.png",
+  "newReason": "8 individual Del Monte Sliced Peaches 8.5 oz cans arranged in a 3-3-2 grid, each showing the front l",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2777": {
+  "sku": "RizwanX-2777",
+  "title": "Dole Pineapple Crushed 8 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2777/main-20260618-30669-5.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2774": {
+  "sku": "RizwanX-2774",
+  "titleSrc": "getItem",
+  "title": "Dole Pineapple Chunks 8 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2774/main-20260617-23276.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2759": {
+  "sku": "RizwanX-2759",
+  "titleSrc": "getItem",
+  "title": "Dole Mandarin Oranges 15 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2759/main-20260617-24350.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2967": {
+  "sku": "RizwanX-2967",
+  "titleSrc": "getItem",
+  "title": "Hunt's 100% Natural Basil Garlic & Oregano Diced Tomatoes 14.5oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2967/main-20260616-62039.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2964": {
+  "sku": "RizwanX-2964",
+  "title": "Hunt's 100% Natural Tomato Paste 6oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2964/main-20260701-az3.png",
+  "live": "SAFE",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Hunt's 100% Natural Tomato Paste 6oz (Pack of 8)",
+  "donorSrc": "target",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2964/main-pipeline.png",
+  "newReason": "8 individual Hunt's 100% Natural Tomato Paste 6oz cans arranged in a 3-3-2 grid, each shown face-on ",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-2968": {
+  "sku": "RizwanX-2968",
+  "title": "Hunt's 100% Natural Tomato Sauce 15oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2968/main-20260617-70635.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Hunt's Fire Roasted Tomato Sauce, but the listing title specifies Hunt's 100% Natur",
+  "baseUnit": "Hunt's 100% Natural Tomato Sauce 15oz (Pack of 4)",
+  "status": "NEEDS_DONOR"
+ },
+ "RizwanX-2981": {
+  "sku": "RizwanX-2981",
+  "title": "Hunt's Petite Diced Tomatoes 14.5 oz Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2981/main-20260618-08353-4.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2982": {
+  "sku": "RizwanX-2982",
+  "title": "Hunt's Petite Diced Tomatoes 14.5 oz Can (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2982/main-20260618-10669-4.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2974": {
+  "sku": "RizwanX-2974",
+  "titleSrc": "getItem",
+  "title": "(4 pack) Hunt's Garlic Fire Roasted Diced Tomatoes, 14.5 oz Can",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2974/main-20260701-rscr.png",
+  "live": "LIVE",
+  "liveFail": "Each tile shows a Hunt's Fire Roasted Diced can being poured — correct brand/variant and one unit pe",
+  "baseUnit": "(4 pack) Hunt's Garlic Fire Roasted Diced Tomatoes, 14.5 oz Can",
+  "donorSrc": "target",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2974/main-pipeline.png",
+  "newReason": "Four Hunt's Garlic Fire Roasted Diced Tomatoes 14.5 oz cans arranged in a 2x2 grid, each showing a s",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3000": {
+  "sku": "RizwanX-3000",
+  "titleSrc": "getItem",
+  "title": "Contadina Tomato Sauce 15 oz Can (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3000/main-20260617-25480.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-2985": {
+  "sku": "RizwanX-2985",
+  "title": "Hunt's No Salt Added Petite Diced Tomatoes 14.5 oz Can (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2985/main-20260618-30514-3.png",
+  "live": "LIVE",
+  "liveFail": "Each grid tile shows two separate Hunt's No Salt Added Petite Diced Tomatoes cans (one large, one sm",
+  "baseUnit": "Hunt's No Salt Added Petite Diced Tomatoes 14.5 oz Can (Pack of 8)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2985/main-pipeline.png",
+  "newReason": "8 individual Hunt's No Salt Added Diced Tomatoes 14.5 oz cans arranged in a 3-3-2 grid; each tile sh",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3009": {
+  "sku": "RizwanX-3009",
+  "title": "Contadina Tomato Paste with Roasted Garlic 6 oz Can (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3009/main-20260701-nm.png",
+  "live": "LIVE",
+  "liveFail": "Background is red (Contadina branded red), not white.",
+  "baseUnit": "Contadina Tomato Paste with Roasted Garlic 6 oz Can (Pack of 8)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3009/main-pipeline.png",
+  "newReason": "8 individual Contadina Tomato Paste with Roasted Garlic 6oz cans shown face-on in a 3-3-2 grid on a ",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3011": {
+  "sku": "RizwanX-3011",
+  "title": "Contadina Canned Tomato Paste with Italian Herbs 6 oz Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3011/main-20260616-49587.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3012": {
+  "sku": "RizwanX-3012",
+  "titleSrc": "getItem",
+  "title": "Contadina Canned Tomato Paste with Italian Herbs 6 oz Can (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3012/main-20260615-44073.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3020": {
+  "sku": "RizwanX-3020",
+  "title": "Contadina Fire Roasted Diced Tomatoes 14.5 oz Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3020/main-20260616-46328.png",
+  "live": "LIVE",
+  "liveFail": "Each of the 6 tiles shows one Contadina Diced Tomatoes can face-on matching the listing, but the bac",
+  "baseUnit": "Contadina Fire Roasted Diced Tomatoes 14.5 oz Can (Pack of 6)",
+  "status": "NEEDS_DONOR"
+ },
+ "RizwanX-3024": {
+  "sku": "RizwanX-3024",
+  "title": "Reese Quartered Artichoke Hearts 14oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3024/main-20260617-24786.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3036": {
+  "sku": "RizwanX-3036",
+  "titleSrc": "getItem",
+  "title": "Muir Glen Crushed Tomatoes Fire Roasted - 14.5oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3036/main-20260701-bare.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3026": {
+  "sku": "RizwanX-3026",
+  "title": "Reese Sliced Water Chestnuts 8oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3026/main-20260617-69279.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Reese Sliced Water Chestnuts 8oz (Pack of 6)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3026/main-pipeline.png",
+  "newReason": "6 cans of Reese Sliced Water Chestnuts arranged in a 3x2 grid on white background; each tile shows e",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3084": {
+  "sku": "RizwanX-3084",
+  "title": "Rosarita Spicy Jalapeño Refried Beans 16oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3084/main-20260617-84698.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3061": {
+  "sku": "RizwanX-3061",
+  "title": "Vigo Seasoned Italian Style Breadcrumbs 8 oz About 8 Servings per Container (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3061/main-20260618-33204.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3050": {
+  "sku": "RizwanX-3050",
+  "title": "Glory Foods Seasoned Southern Style Honey Carrots Canned Vegetables 15.5 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3050/main-20260617-84769.png",
+  "live": "LIVE",
+  "liveFail": "Each tile displays a 2-pack bundle (two cans plus an explicit '2 pack' badge), not a single unit; th",
+  "baseUnit": "Glory Foods Seasoned Southern Style Honey Carrots Canned Vegetables 15.5 oz (Pack of 6)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3050/main-pipeline.png",
+  "newReason": "Six individual Glory Foods Seasoned Southern Style Honey Carrots 15.5oz cans arranged in a 3x2 grid,",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3102": {
+  "sku": "RizwanX-3102",
+  "title": "Bush's Dark Red Kidney Beans 16oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3102/main-20260615-52641.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3088": {
+  "sku": "RizwanX-3088",
+  "title": "Rosarita Refried Beans 16 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3088/main-20260618-70494-1.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3098": {
+  "sku": "RizwanX-3098",
+  "title": "Bush's Black Beans, Canned Beans, 15 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3098/main-20260617-65849.png",
+  "live": "LIVE",
+  "liveFail": "Listing says 'Black Beans' (standard), but all four cans shown are 'Reduced Sodium Black Beans' — di",
+  "baseUnit": "Bush's Black Beans, Canned Beans, 15 oz (Pack of 4)",
+  "donorSrc": "target",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3098/main-pipeline.png",
+  "newReason": "Four Bush's Best Black Beans 15 oz cans arranged in a 2x2 grid, each showing the front label face-on",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3104": {
+  "sku": "RizwanX-3104",
+  "titleSrc": "getItem",
+  "title": "Bush's Great Northern Beans 15.8oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3104/main-20260617-04811.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3152": {
+  "sku": "RizwanX-3152",
+  "title": "Bush's Reduced Sodium Pinto Beans 16oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3152/main-20260614-75083.png",
+  "live": "LIVE",
+  "liveFail": "Cans show standard Bush's Best Pinto Beans label with no 'Reduced Sodium' designation visible; listi",
+  "baseUnit": "Bush's Reduced Sodium Pinto Beans 16oz (Pack of 4)",
+  "donorSrc": "target",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3152/main-pipeline.png",
+  "newReason": "All 4 tiles show a single Bush's Best Reduced Sodium Pinto Beans 16oz can face-on with full label vi",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3105": {
+  "sku": "RizwanX-3105",
+  "titleSrc": "getItem",
+  "title": "Bush's Great Northern Beans 15.8oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3105/main-20260618-09460-6.png",
+  "live": "LIVE",
+  "liveFail": "Each tile shows a single can of Bush's Great Northern Beans alongside a yellow '12 Pack' case/box of",
+  "baseUnit": "Bush's Great Northern Beans 15.8oz (Pack of 6)",
+  "donorSrc": "target",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3105/main-pipeline.png",
+  "newReason": "6 individual Bush's Best Great Northern Beans 15.8oz cans arranged in a 3x2 grid, each showing the f",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3167": {
+  "sku": "RizwanX-3167",
+  "titleSrc": "getItem",
+  "title": "Bush's Maple Cured Bacon Baked Beans 16oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3167/main-20260617-84594.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3168": {
+  "sku": "RizwanX-3168",
+  "titleSrc": "getItem",
+  "title": "Bush's Maple Cured Bacon Baked Beans 16oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3168/main-20260616-27121.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3165": {
+  "sku": "RizwanX-3165",
+  "titleSrc": "getItem",
+  "title": "Bush's Brown Sugar Hickory Baked Beans 16oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3165/main-20260618-94066.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3171": {
+  "sku": "RizwanX-3171",
+  "title": "Bush's Vegetarian Baked Beans 8.3oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3171/main-20260616-30559.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3180": {
+  "sku": "RizwanX-3180",
+  "title": "Bush's Grillin' Hot Honey Baked Bean 21.7oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3180/main-20260618-69374-4.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3169": {
+  "sku": "RizwanX-3169",
+  "title": "Bush's Vegetarian Baked Beans 8.3oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3169/main-20260616-70275.png",
+  "live": "LIVE",
+  "liveFail": "Image shows approximately 32 individual Bush's Vegetarian Baked Beans cans tiled in a large grid (ro",
+  "baseUnit": "Bush's Vegetarian Baked Beans 8.3oz (Pack of 4)",
+  "donorSrc": "target",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3169/main-pipeline.png",
+  "newReason": "Four Bush's Best Vegetarian Baked Beans 8.3oz cans arranged in a 2x2 grid, each showing its front la",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3209": {
+  "sku": "RizwanX-3209",
+  "title": "Muir Glen Fire Roasted Crushed 28oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3209/main-20260618-90339-0.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3215": {
+  "sku": "RizwanX-3215",
+  "titleSrc": "getItem",
+  "title": "Muir Glen Organic Diced Fire Roasted Tomatoes 28oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3215/main-20260615-56160.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3210": {
+  "sku": "RizwanX-3210",
+  "titleSrc": "getItem",
+  "title": "Muir Glen Fire Roasted Crushed 28oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3210/main-20260701-bare.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Muir Glen Organic Fire Roasted DICED Tomatoes 28oz, but listing title specifies Fir",
+  "baseUnit": "Muir Glen Fire Roasted Crushed 28oz (Pack of 6)",
+  "donorSrc": "target",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3210/main-pipeline.png",
+  "newReason": "6 individual Muir Glen Organic Fire Roasted Crushed Tomatoes 28oz cans arranged in a 3x2 grid, each ",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3228": {
+  "sku": "RizwanX-3228",
+  "title": "Glory Foods Canned Seasoned Collard Greens 27 oz Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3228/main-20260618-50996-5.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3245": {
+  "sku": "RizwanX-3245",
+  "title": "Contadina Roma Tomato Style Tomato Sauce 29 oz Can (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3245/main-20260617-84477.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3234": {
+  "sku": "RizwanX-3234",
+  "title": "Glory Foods Seasoned Southern Style Green Beans With Potatoes 27 oz Can (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3234/main-20260617-12208.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Glory Foods Seasoned Southern Style Green Beans With Potatoes 27 oz Can (Pack of 6)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3234/main-pipeline.png",
+  "newReason": "6 Glory Foods Seasoned Southern Style Green Beans With Potatoes cans arranged in a 3x2 grid, each sh",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3254": {
+  "sku": "RizwanX-3254",
+  "title": "Contadina Diced Canned Tomatoes 28 oz Can (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3254/main-20260617-04182.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3251": {
+  "sku": "RizwanX-3251",
+  "titleSrc": "getItem",
+  "title": "Contadina Whole Peeled Tomatoes 28 oz Can",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3251/main-20260701-rscr.png",
+  "live": "LIVE",
+  "liveFail": "The image shows 4 blue placeholder rectangles with tiny unreadable text — no actual product photo of",
+  "baseUnit": "Contadina Whole Peeled Tomatoes 28 oz Can",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3251/main-pipeline.png",
+  "newReason": "Four Contadina Whole Peeled Tomatoes 28 oz cans arranged in a 2x2 grid, each showing the front label",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3260": {
+  "sku": "RizwanX-3260",
+  "title": "Green Giant Sweet Corn Whole Kernel 15.25 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3260/main-20260617-65387.png",
+  "live": "LIVE",
+  "liveFail": "Each of the 4 tiles shows one Green Giant Sweet Corn can (correct brand/variant/count/white bg), but",
+  "baseUnit": "Green Giant Sweet Corn Whole Kernel 15.25 oz (Pack of 4)",
+  "donorSrc": "target",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3260/main-pipeline.png",
+  "newReason": "All 4 tiles show a single Green Giant Whole Kernel Sweet Corn 15.25 oz can face-on with full label v",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3281": {
+  "sku": "RizwanX-3281",
+  "title": "Green Giant Green Beans Cut No Salt Added 14.5 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3281/main-20260618-91185-0.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3272": {
+  "sku": "RizwanX-3272",
+  "title": "Green Giant Vegetable Blend 15 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3272/main-20260618-72772-1.png",
+  "live": "LIVE",
+  "liveFail": "Each tile shows one Green Giant Vegetable Blend can (correct brand/variant, single unit, 4 total, wh",
+  "baseUnit": "Green Giant Vegetable Blend 15 oz (Pack of 4)",
+  "donorSrc": "publix",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3272/main-pipeline.png",
+  "newReason": "Four Green Giant Vegetable Blend 15 oz cans arranged in a 2x2 grid, each showing a single can face-o",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3273": {
+  "sku": "RizwanX-3273",
+  "titleSrc": "getItem",
+  "title": "Green Giant Vegetable Blend 15 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3273/main-20260616-86963.png",
+  "live": "LIVE",
+  "liveFail": "Background is white but each cell contains large blue rectangular blocks (likely placeholder price/l",
+  "baseUnit": "Green Giant Vegetable Blend 15 oz (Pack of 6)",
+  "donorSrc": "publix",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3273/main-pipeline.png",
+  "newReason": "6-tile grid of Green Giant Vegetable Blend cans; each tile is one individual 15 oz can shown face-on",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3299": {
+  "sku": "RizwanX-3299",
+  "title": "Green Giant Green Beans Cut Family Size 20 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3299/main-20260615-12020.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3284": {
+  "sku": "RizwanX-3284",
+  "title": "Green Giant Beets Sliced Seasoned with Sea Salt 15 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3284/main-20260615-91413.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-33": {
+  "sku": "RizwanX-33",
+  "title": "Kinder's Creamy Horseradish Dipping Sauce (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-33/main-20260618-11455-0.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Bookbinder's Sassy Creamy Horseradish Sauce, not Kinder's Creamy Horseradish Dippin",
+  "baseUnit": "Kinder's Creamy Horseradish Dipping Sauce (Pack of 6)",
+  "status": "NEEDS_DONOR"
+ },
+ "RizwanX-3306": {
+  "sku": "RizwanX-3306",
+  "title": "Green Giant Sweet Corn Whole Kernel Family Size 29 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3306/main-20260617-88034.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3320": {
+  "sku": "RizwanX-3320",
+  "title": "GreenWise Organic Sweet Peas 15 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3320/main-20260615-84521.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3311": {
+  "sku": "RizwanX-3311",
+  "title": "Pack of 4 Green Giant Steam Crisp White Shoepeg Whole Kernel Corn - 11 oz - Package may vary",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3311/main-20260618-70195-4.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3321": {
+  "sku": "RizwanX-3321",
+  "title": "GreenWise Organic Sweet Peas 15 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3321/main-20260617-85813.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3477": {
+  "sku": "RizwanX-3477",
+  "titleSrc": "getItem",
+  "title": "Hanover Garbanzo Beans 15.5 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3477/main-20260701-az3.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3442": {
+  "sku": "RizwanX-3442",
+  "titleSrc": "getItem",
+  "title": "Joan of Arc Spicy Chili Beans 15 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3442/main-20260616-67630.png",
+  "live": "LIVE",
+  "liveFail": "Each tile shows TWO cans side by side, not one single unit; the total visible count is 8 cans across",
+  "baseUnit": "Joan of Arc Spicy Chili Beans 15 oz (Pack of 4)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3442/main-pipeline.png",
+  "newReason": "Four individual Joan of Arc Spicy Chili Beans 15 oz cans arranged in a 2x2 grid, each shown face-on ",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3480": {
+  "sku": "RizwanX-3480",
+  "title": "Hanover Black Beans 15.5 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3480/main-20260617-24613.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3497": {
+  "sku": "RizwanX-3497",
+  "titleSrc": "getItem",
+  "title": "GOYA Premium Chick Peas 15.5 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3497/main-20260616-52711.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3500": {
+  "sku": "RizwanX-3500",
+  "title": "GOYA Pinto Beans 15.5 Oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3500/main-20260617-84804.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3503": {
+  "sku": "RizwanX-3503",
+  "title": "Goya Canned Cannellini 15.50 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3503/main-20260617-70248.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3506": {
+  "sku": "RizwanX-3506",
+  "title": "Goya Red Kidney Beans 15.5 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3506/main-20260618-29163-7.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3509": {
+  "sku": "RizwanX-3509",
+  "title": "Goya Pinto Beans 29 Oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3509/main-20260617-65611.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3542": {
+  "sku": "RizwanX-3542",
+  "title": "Crush Orange Powder Drink Mix Sugar Free 6 Count (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3542/main-20260616-88940.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3510": {
+  "sku": "RizwanX-3510",
+  "titleSrc": "getItem",
+  "title": "Goya Pinto Beans (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3510/main-20260701-nm.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3543": {
+  "sku": "RizwanX-3543",
+  "titleSrc": "getItem",
+  "title": "Crush Orange Powder Drink Mix Sugar Free 6 Count (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3543/main-20260701-az3.png",
+  "live": "SAFE",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Crush Orange Powder Drink Mix Sugar Free 6 Count (Pack of 8)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3543/main-pipeline.png",
+  "newReason": "8 tiles of Crush Orange Sugar Free powder drink mix boxes shown face-on in a 3-3-2 grid on white bac",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3576": {
+  "sku": "RizwanX-3576",
+  "title": "Cirkul Sabrocita Strawberry Flavor Cartridge Drink Mix (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3576/main-20260616-05388.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3579": {
+  "sku": "RizwanX-3579",
+  "title": "Cirkul GoSip Strawberry Dream Flavor Cartridge Drink Mix (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3579/main-20260616-26399.png",
+  "live": "LIVE",
+  "liveFail": "Each tile shows only a barcode/back panel — the brand name, product name, and front label are not vi",
+  "baseUnit": "Cirkul GoSip Strawberry Dream Flavor Cartridge Drink Mix (Pack of 6)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3579/main-pipeline.png",
+  "newReason": "6 tiles in a 3x2 grid, each showing one Cirkul GoSip Strawberry Dream flavor cartridge package face-",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3584": {
+  "sku": "RizwanX-3584",
+  "title": "Cirkul FitSip Blackberry Burst Flavor Cartridge Drink Mix (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3584/main-20260618-31486-0.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Cirkul FitSip Mixed Berry, not Blackberry Burst as required by the listing title.",
+  "baseUnit": "Cirkul FitSip Blackberry Burst Flavor Cartridge Drink Mix (Pack of 4)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3584/main-pipeline.png",
+  "newReason": "All 4 tiles show one Cirkul FitSip Blackberry Burst cartridge package face-on with full brand and fl",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3588": {
+  "sku": "RizwanX-3588",
+  "title": "Cirkul Wild Splash Gecko Grape Flavor Cartridge Drink Mix (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3588/main-20260618-89734-0.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Cirkul Wild Splash Gecko Grape Flavor Cartridge Drink Mix (Pack of 6)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3588/main-pipeline.png",
+  "newReason": "All 6 tiles show the Cirkul Wild Splash Gecko Grape flavor cartridge in its individual retail box, f",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3680": {
+  "sku": "RizwanX-3680",
+  "title": "Klass Aguas Frescas Tamarind with Vitamin C Multiserve Powdered Drink Mix 14.1oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3680/main-20260616-78649.png",
+  "live": "LIVE",
+  "liveFail": "Wrong flavor/variant: image shows Klass Sandia (Watermelon) flavored drink mix, but listing title sp",
+  "baseUnit": "Klass Aguas Frescas Tamarind with Vitamin C Multiserve Powdered Drink Mix 14.1oz (Pack of 4)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3680/main-pipeline.png",
+  "newReason": "Four Klass Aguas Frescas Tamarind stand-up pouches arranged in a 2x2 grid, each showing the front fa",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3585": {
+  "sku": "RizwanX-3585",
+  "title": "Cirkul FitSip Blackberry Burst Flavor Cartridge Drink Mix (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3585/main-20260616-49273.png",
+  "live": "LIVE",
+  "liveFail": "Image shows a Cirkul water bottle (not a FitSip Blackberry Burst flavor cartridge); background is pu",
+  "baseUnit": "Cirkul FitSip Blackberry Burst Flavor Cartridge Drink Mix (Pack of 6)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3585/main-pipeline.png",
+  "newReason": "All 6 tiles show the same Cirkul FitSip Blackberry Burst cartridge box face-on with the full brand a",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3695": {
+  "sku": "RizwanX-3695",
+  "title": "Gatorade G Zero Sugar Glacier Freeze Thirst Quencher Drink Mix Powder 10 Packets (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3695/main-20260618-62491.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3684": {
+  "sku": "RizwanX-3684",
+  "titleSrc": "getItem",
+  "title": "Ovaltine Chocolate Malt Powdered Drink Mix for Hot and Cold Milk Canister 12 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3684/main-20260616-50026.png",
+  "live": "LIVE",
+  "liveFail": "Tiles show a prepared-drink marketing graphic, not the Ovaltine canister front; 6 tiles are present ",
+  "baseUnit": "Ovaltine Chocolate Malt Powdered Drink Mix for Hot and Cold Milk Canister 12 oz (Pack of 6)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3684/main-pipeline.png",
+  "newReason": "Six single Ovaltine Chocolate Malt canisters shown face-on in a 2x3 grid on white.",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3699": {
+  "sku": "RizwanX-3699",
+  "title": "Gatorade Zero Zero Sugar Thirst Quencher Powder Lemon Lime 0.10 Oz 10 Count (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3699/main-20260616-27913.png",
+  "live": "LIVE",
+  "liveFail": "Image shows 6 single Gatorade Zero Grape 10-pack boxes on white; listing flavor is Lemon Lime.",
+  "baseUnit": "Gatorade Zero Zero Sugar Thirst Quencher Powder Lemon Lime 0.10 Oz 10 Count (Pack of 6)",
+  "status": "NEEDS_DONOR"
+ },
+ "RizwanX-3702": {
+  "sku": "RizwanX-3702",
+  "title": "Swiss Miss No Sugar Added Milk Chocolate Flavored Hot Cocoa Mix 8 Count Hot Cocoa Mix (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3702/main-20260617-24337.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3711": {
+  "sku": "RizwanX-3711",
+  "title": "Swiss Miss Milk Chocolate Flavored Hot Cocoa Mix 8 Count Hot Cocoa Mix (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3711/main-20260616-20609.png",
+  "live": "LIVE",
+  "liveFail": "Product is Swiss Miss Salted Caramel, not Milk Chocolate Flavored — wrong flavor/variant. Each tile ",
+  "baseUnit": "Swiss Miss Milk Chocolate Flavored Hot Cocoa Mix 8 Count Hot Cocoa Mix (Pack of 6)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3711/main-pipeline.png",
+  "newReason": "6 tiles in a 3x2 grid, each showing one Swiss Miss Milk Chocolate 8-envelope box face-on with full b",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3704": {
+  "sku": "RizwanX-3704",
+  "title": "Swiss Miss Chocolate Flavored Hot Cocoa Mix with Lucky Charms Marshmallows 6 Count Hot Cocoa Mix (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3704/main-20260615-12423.png",
+  "live": "SAFE",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Swiss Miss Chocolate Flavored Hot Cocoa Mix with Lucky Charms Marshmallows 6 Count Hot Cocoa Mix (Pack of 4)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3704/main-pipeline.png",
+  "newReason": "Four face-on single Swiss Miss Lucky Charms cocoa boxes on a plain white background; matches a pack ",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3717": {
+  "sku": "RizwanX-3717",
+  "title": "Cocoa Classics® Caramel & Chocolate Instant Hot Cocoa Mix 1.25 oz Serving Size 1 (35g) (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3717/main-20260616-01687.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3722": {
+  "sku": "RizwanX-3722",
+  "title": "Cocoa Classics® Arctic White Hot Instant Cocoa Mix 1.25 oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3722/main-20260618-53533-5.png",
+  "live": "LIVE",
+  "liveFail": "12 single front-facing cocoa pouches on white; product appears chocolate/brown variant, not Arctic W",
+  "baseUnit": "Cocoa Classics® Arctic White Hot Instant Cocoa Mix 1.25 oz (Pack of 6)",
+  "donorSrc": "Walmart 1P",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3722/main-pipeline.png",
+  "newReason": "Six single front-facing Cocoa Classics Arctic White sachets on a plain white background; matches the",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3721": {
+  "sku": "RizwanX-3721",
+  "title": "Cocoa Classics® Arctic White Hot Instant Cocoa Mix 1.25 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3721/main-20260616-59158.png",
+  "live": "UNKNOWN",
+  "liveFail": "our feed never ingested — old image still live",
+  "baseUnit": "Cocoa Classics® Arctic White Hot Instant Cocoa Mix 1.25 oz (Pack of 4)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3721/main-pipeline.png",
+  "newReason": "",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3729": {
+  "sku": "RizwanX-3729",
+  "titleSrc": "getItem",
+  "title": "Cocoa Classics® Chocolate Supreme Instant Hot Cocoa Mix 1.25 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3729/main-20260617-70862.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3727": {
+  "sku": "RizwanX-3727",
+  "title": "Cocoa Classics® Chocolate Supreme Instant Hot Cocoa Mix 1.25 oz (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3727/main-20260617-04788.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3732": {
+  "sku": "RizwanX-3732",
+  "title": "Cocoa Classics® Mint & Chocolate Instant Cocoa Mix 1.25 oz (Pack of 8)",
+  "pack": 8,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3732/main-20260617-23720.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3794": {
+  "sku": "RizwanX-3794",
+  "title": "Stur Drinks Peach Mango Liquid Water Enhancer (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3794/main-20260618-30254-0.png",
+  "live": "LIVE",
+  "liveFail": "Product shown is Stur Blue & Blackberry Liquid Water Enhancer, but the listing specifies Peach Mango",
+  "baseUnit": "Stur Drinks Peach Mango Liquid Water Enhancer (Pack of 4)",
+  "status": "NEEDS_DONOR"
+ },
+ "RizwanX-3789": {
+  "sku": "RizwanX-3789",
+  "title": "Crush Liquid Water Enhancer Orange (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3789/main-20260618-81637-0.png",
+  "live": "LIVE",
+  "liveFail": "Each tile shows a single Crush Orange liquid water enhancer bottle — correct product. Count is 6. Wh",
+  "baseUnit": "Crush Liquid Water Enhancer Orange (Pack of 6)",
+  "donorSrc": "Google Images",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3789/main-pipeline.png",
+  "newReason": "Six individual Crush Orange Liquid Water Enhancer bottles arranged in a 3x2 grid, each showing the f",
+  "status": "REBUILT_OK"
+ },
+ "RizwanX-3783": {
+  "sku": "RizwanX-3783",
+  "title": "Stur Drinks Blue Raspberry, Electrolytes Liquid Water Enhancer 1.62 fl oz (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3783/main-20260618-67622-1.png",
+  "live": "LIVE",
+  "liveFail": "Flavor mismatch: listing specifies 'Blue Raspberry' but the product shown is 'Blue & Blackberry'.",
+  "baseUnit": "Stur Drinks Blue Raspberry, Electrolytes Liquid Water Enhancer 1.62 fl oz (Pack of 6)",
+  "status": "NEEDS_DONOR"
+ },
+ "RizwanX-3797": {
+  "sku": "RizwanX-3797",
+  "title": "Stur Drinks Coconut Pineapple Liquid Water Enhancer (Pack of 4)",
+  "pack": 4,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3797/main-20260617-05497.png",
+  "live": "LIVE",
+  "status": "ALREADY_OK"
+ },
+ "RizwanX-3795": {
+  "sku": "RizwanX-3795",
+  "titleSrc": "getItem",
+  "title": "Stur Drinks Peach Mango Liquid Water Enhancer (Pack of 6)",
+  "pack": 6,
+  "liveUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3795/main-20260618-49513-3.png",
   "live": "LIVE",
   "status": "ALREADY_OK"
  }

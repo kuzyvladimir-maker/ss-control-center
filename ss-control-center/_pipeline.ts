@@ -17,9 +17,19 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 for (const f of [".env", ".env.local"]) { let t = ""; try { t = readFileSync(f, "utf8"); } catch { continue; } for (const l of t.split("\n")) { const m = l.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/); if (m) process.env[m[1]] = m[2].trim().replace(/^['"]|['"]$/g, ""); } }
 process.env.SS_VISION_PROVIDER = "auto";
+// PIPE_NO_BROWSER=1 — hard kill-switch for the browser-store donor tier (Publix/BJ's/
+// Aldi). Must run AFTER the .env loader above (which overwrites shell env), because
+// 2026-07-07 the bulk run's ~250 browser hits tripped BJ's Akamai antibot on the
+// owner's own Chrome. The browser tier is for the slow manual tail ONLY, never bulk.
+if (process.env.PIPE_NO_BROWSER === "1") { delete process.env.OPENCLAW_GROCERY_URL; delete process.env.OPENCLAW_GROCERY_TOKEN; }
 const CONC = 3;
 const STATE_FILE = "_pipeline_state.json";
-const DONE = new Set(["ALREADY_OK", "REBUILT_OK", "PUBLISHED", "BUNDLE"]);
+// On resume, treat NEEDS_DONOR/BUNDLE as settled too (PIPE_SKIP_SETTLED=1): NEEDS_DONOR
+// exhausted every API tier — re-running it just burns slow Oxylabs/Unwrangle calls and
+// stays NEEDS_DONOR (it needs the separate browser tail pass). Lets a resume finish the
+// truly-new SKUs fast instead of re-grinding the hopeless ones.
+const DONE = new Set(["ALREADY_OK", "REBUILT_OK", "PUBLISHED", "BUNDLE",
+  ...(process.env.PIPE_SKIP_SETTLED === "1" ? ["NEEDS_DONOR", "REBUILT_FAIL"] : [])]);
 async function main() {
   const { createClient } = await import("@libsql/client");
   const vision = await import("./src/lib/sourcing/vision.ts");
