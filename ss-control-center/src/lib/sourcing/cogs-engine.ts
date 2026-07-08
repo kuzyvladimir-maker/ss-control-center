@@ -158,8 +158,15 @@ async function cheapestCostForTarget(
     // (e.g. a 56oz Coffee-mate for our 22oz), convert by $/measure — otherwise we'd book
     // the bigger jar's price as our unit cost. Flagged as an estimate when sizes differ.
     const sizeDiffers = !!(m.sizeAmount && ua && Math.abs(ua - m.sizeAmount) / m.sizeAmount > 0.05);
-    if (sizeDiffers) perUnit = Math.round((exact.perUnit / ua) * m.sizeAmount! * 100) / 100;
-    return { perUnit, retailer: exact.retailer, title: (exact.title as string) || "", size: `${exact.ua ?? ""}${exact.um ?? ""}`, linePrice: sizeDiffers, donorProductId: (exact.dpid as string) || null };
+    // GUARD: $/measure only scales sanely within ~a factor of 4. Converting a tiny
+    // single-serve (1.1oz Jif cup) to a 13oz pouch books single-serve $/oz → 6x-inflated
+    // COGS ($202 vs $57 sale). Outside the band → don't trust this match at all; fall
+    // to line-price (same-size only) or honest unsourceable.
+    const ratio = sizeDiffers && ua ? m.sizeAmount! / ua : 1;
+    if (!sizeDiffers || (ratio >= 0.25 && ratio <= 4)) {
+      if (sizeDiffers) perUnit = Math.round((exact.perUnit / ua) * m.sizeAmount! * 100) / 100;
+      return { perUnit, retailer: exact.retailer, title: (exact.title as string) || "", size: `${exact.ua ?? ""}${exact.um ?? ""}`, linePrice: sizeDiffers, donorProductId: (exact.dpid as string) || null };
+    }
   }
 
   // 2) LINE-PRICE fallback: exact flavor not sold 1P, but a same-brand + same-SIZE 1P
@@ -355,10 +362,18 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
       const anyLine = parts.some((p) => p.linePrice);
       const anyGoogle = parts.some((p) => p.google);
       const anyOwnBrand = parts.some((p) => p.ownBrand);
-      const needsReview = (lowConf || anyGoogle) ? 1 : 0;
+      // SANITY GUARDRAIL: we never buy above our own sale price. COGS >= sale means
+      // either a bad match (flag it) or a genuinely unprofitable listing (flag it too —
+      // both need human eyes). Sale price from the Buy Box report when we have it.
+      let aboveSale = false;
+      try {
+        const bb: any = (await db.execute({ sql: `SELECT sellerItemPrice p FROM WalmartBuyBoxItem WHERE sku=? AND sellerItemPrice IS NOT NULL LIMIT 1`, args: [sku] })).rows[0];
+        if (bb?.p != null && total >= Number(bb.p)) aboveSale = true;
+      } catch { /* no buy-box data — skip the check */ }
+      const needsReview = (lowConf || anyGoogle || aboveSale) ? 1 : 0;
       const noteParts = (identity.is_bundle
         ? `bundle: ${parts.map((p) => `${p.qty}×$${(p.perUnit || 0).toFixed(2)}`).join(" + ")}`
-        : `${parts[0].retailer} $${(parts[0].perUnit || 0).toFixed(2)}/u ×${identity.units_in_listing}`) + (anyGoogle ? " [google est]" : "") + (anyLine ? " [line-price est]" : "") + (anyOwnBrand ? " [own-brand]" : "");
+        : `${parts[0].retailer} $${(parts[0].perUnit || 0).toFixed(2)}/u ×${identity.units_in_listing}`) + (anyGoogle ? " [google est]" : "") + (anyLine ? " [line-price est]" : "") + (anyOwnBrand ? " [own-brand]" : "") + (aboveSale ? " [COGS>=sale — check match or margin]" : "");
       await db.execute({
         sql: `INSERT INTO "SkuCost"
           (id, sku, effectiveDate, productCost, totalCost, costPerUnit, packSize, includesPackaging,
