@@ -15,10 +15,10 @@ test("isOwnBrandPassthrough — allowlist matches loosely, others don't", () => 
 });
 
 test("resolveListingBrand — CANONICAL spelling, never raw donor casing (prod leak: Smucker'S)", () => {
-  assert.equal(resolveListingBrand("Smucker'S", "Salutem Vita"), "Smucker's");
-  assert.equal(resolveListingBrand("SMUCKERS", "Salutem Vita"), "Smucker's");
+  assert.equal(resolveListingBrand("Smucker'S", "Salutem Vita"), "Uncrustables");
+  assert.equal(resolveListingBrand("SMUCKERS", "Salutem Vita"), "Uncrustables");
   assert.equal(resolveListingBrand("Uncrustables", "Salutem Vita"), "Uncrustables");
-  assert.equal(resolveListingBrand("smucker's uncrustables", "Salutem Vita"), "Smucker's");
+  assert.equal(resolveListingBrand("smucker's uncrustables", "Salutem Vita"), "Uncrustables");
 });
 
 test("resolveListingBrand — non-allowlisted donor falls back to the house brand", () => {

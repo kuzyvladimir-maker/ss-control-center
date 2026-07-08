@@ -41,9 +41,13 @@ export function isOwnBrandPassthrough(brand: string | null | undefined): boolean
 /** Canonical display spelling per allowlist entry — catalog rows carry the
  *  brand in unreliable casing ("Smucker'S", "SMUCKERS") that would otherwise
  *  leak straight into listing titles. */
+// Owner 2026-07-08: the listing brand FIELD is always "Uncrustables" for the
+// whole Smucker's/Uncrustables family (titles may still factually say
+// "Smucker's Uncrustables" — that's the real product name; the BRAND attribute
+// is what he standardises on).
 const CANONICAL_DISPLAY: Record<(typeof OWN_BRAND_PASSTHROUGH_BRANDS)[number], string> = {
-  "Smucker's": "Smucker's",
-  "Smuckers": "Smucker's",
+  "Smucker's": "Uncrustables",
+  "Smuckers": "Uncrustables",
   "Uncrustables": "Uncrustables",
 };
 
