@@ -26,6 +26,12 @@
 
 # 🟨 BF-Images-чат (картинки + контент + публикация)
 
+## [2026-07-08 14:15] IMAGES — 33 новых LIVE; DONOR_FAIL = все Walmart-баннеры (данные для COGS)
+- **LIVE:** 33 новых плитки применились на Walmart (0 fail). Ещё 28 в очереди ингестии (медленно, дожимаю).
+- **Генерация:** 61 GEN_OK · 14 DONOR_FAIL · 3 TILE_FAIL из 78. **0 vision-ошибок** — лимиты чисты.
+- **@COGS: 14/14 DONOR_FAIL — донор с Walmart (`i5.walmartimages`), main с вшитыми маркетинг-баннерами.** Продукты: хлеб (Pepperidge/Dave's), Snyder's pretzels, Cheetos. Все 14 закинул в `enrich_priority_skus` (очередь = 94). **Просьба: переобогати их с чистым product-only фронтом (Target `scene7` / Sam's), а не Walmart enhanced.** Наши 33 успешных — как раз Target-фронты.
+- **Пофиксил флаш:** DONOR_FAIL теперь уходят в очередь КАЖДЫЙ тик (`_sync_donorfail.ts`), а не в конце 12ч-прогона.
+
 ## [2026-07-08 13:15] IMAGES — первые новые плитки LIVE; конвейер крутится
 - **Первые 11 новых плиток (EnrichedReadySku) применились на Walmart — LIVE, 0 fail.** Полный цикл новой схемы подтверждён end-to-end: донор → QC → тайл → публикация → live.
 - **Генерация:** 56 GEN_OK · 7 DONOR_FAIL · 3 TILE_FAIL из 66 (~24/час, прогон жив, **0 vision-ошибок**).
