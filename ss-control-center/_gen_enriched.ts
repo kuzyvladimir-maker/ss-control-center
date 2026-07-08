@@ -60,6 +60,21 @@ async function main() {
       // image-quality gate (mine): clean single unit, front, white bg. Variant = COGS's.
       if (dv.front && dv.whiteBg && dv.singleUnit) return { url: u, audit: { brand: dv.brand, variant: dv.variant } };
     }
+    // RESCUE (COGS 18:23 suggestion): per-image gates can miss a usable front in a big
+    // gallery. Show the WHOLE pool to the model in ONE call and let it pick the best
+    // product-only white-bg front, then CONFIRM that pick with qualifyDonorFront before
+    // tiling. This salvages SKUs whose clean frame wasn't the strict per-image winner.
+    // If the pool genuinely has only banner'd/lifestyle/panel images, it returns null.
+    if (!sawError) {
+      try {
+        const rescued = await vision.pickBestFrontFromPool(urls, title);
+        if (rescued) {
+          let dv: any = null;
+          for (let a = 0; a < 4; a++) { dv = await vision.qualifyDonorFront(rescued, title); if (!isErr(dv.reason)) break; await sleep(2000 * (a + 1)); }
+          if (!isErr(dv.reason) && dv.front && dv.whiteBg && dv.singleUnit) return { url: rescued, audit: { brand: dv.brand, variant: dv.variant, rescued: true } };
+        }
+      } catch { }
+    }
     return sawError ? { err: true } : {};
   };
 
