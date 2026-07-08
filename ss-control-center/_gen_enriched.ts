@@ -36,8 +36,11 @@ async function main() {
   const { createClient } = await import("@libsql/client");
   const db = createClient({ url: process.env.TURSO_DATABASE_URL!, authToken: process.env.TURSO_AUTH_TOKEN });
 
-  // re-do only SKUs not yet GEN_OK (retry ERR/DONOR_FAIL/TILE_FAIL on re-run)
-  const todoSkus = newwork.filter((w) => !state[w.sku] || state[w.sku].status !== "GEN_OK").map((w) => w.sku).slice(0, LIMIT === Infinity ? undefined : LIMIT);
+  // Process NEVER-SEEN SKUs + prior vision-ERRors only. Do NOT re-chew settled
+  // DONOR_FAIL/TILE_FAIL here — each re-does the full gallery + rescue (~16 vision
+  // calls) and mostly re-fails (banner'd donors pending COGS's Target fix), which
+  // starves throughput. Reprocess those in a dedicated pass after COGS re-sources.
+  const todoSkus = newwork.filter((w) => !state[w.sku] || state[w.sku].status === "ERR").map((w) => w.sku).slice(0, LIMIT === Infinity ? undefined : LIMIT);
   const rowBySku = new Map<string, any>();
   for (let i = 0; i < todoSkus.length; i += 200) {
     const chunk = todoSkus.slice(i, i + 200);
