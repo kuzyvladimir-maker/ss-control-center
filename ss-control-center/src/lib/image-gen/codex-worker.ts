@@ -39,7 +39,11 @@ export interface CodexImageResult {
 // just under the Vercel route maxDuration (300s) + nginx proxy_read_timeout so a
 // slow-but-successful generation isn't aborted client-side (240s clipped a 241s
 // run). 290s leaves ~10s for the response to travel back.
-const DEFAULT_TIMEOUT_MS = 290_000;
+// Overridable for LOCAL drivers (no serverless ceiling): the timer covers
+// QUEUE WAIT + the run, and the box's serial codex queue can hold a COGS
+// analyze batch in front of an image job. Vercel routes keep the 290s default
+// (their maxDuration is 300s anyway).
+const DEFAULT_TIMEOUT_MS = parseInt(process.env.CODEX_IMAGE_TIMEOUT_MS || "290000", 10);
 
 function parseSize(size?: string): { w: number; h: number } | null {
   if (!size) return null;
