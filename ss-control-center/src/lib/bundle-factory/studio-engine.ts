@@ -21,6 +21,7 @@ import { resolveListingBrand, isOwnBrandPassthrough } from "./own-brand";
 import type { Variant, VariantComponent } from "./variation-matrix";
 import { planVariations, type VariationSpec } from "./variation-planner";
 import { dedupeDonorFlavors, donorUnitPriceCents } from "./donor-dedup";
+import { getPricingModel, computeBundlePrice } from "./pricing-config";
 
 export interface BatchProgress {
   status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
@@ -202,17 +203,24 @@ async function buildOneListing(args: {
   const packCount = spec.unit_count;
   const costCents = components.reduce((s, c) => s + c.qty * c.unit_price_cents, 0);
 
+  // Real engine economics in the variant block (owner review 2026-07-07: the
+  // old cost×2 placeholder + 0% margin + 1/100 feasibility read as broken).
+  // promote-draft still recomputes at promotion — this is the SAME engine, so
+  // the review page and the published price agree.
+  const model = await getPricingModel();
+  const priced = computeBundlePrice(
+    { cogs_cents: costCents, unit_count: packCount, weight_lb: null, category },
+    model,
+  );
   const variant: Variant = {
     idx: index,
     name: spec.label,
     composition: components,
     cost_cents: costCents,
-    // Placeholder for the content prompt only — the real selling price comes
-    // from the economics module, the margin validator gates it before publish.
-    suggested_price_cents: costCents > 0 ? Math.round(costCents * 2) : 0,
-    margin_cents: 0,
-    margin_pct: 0,
-    feasibility_score: 1,
+    suggested_price_cents: priced.selling_price_cents,
+    margin_cents: priced.profit_cents,
+    margin_pct: Math.round(priced.margin_pct * 100),
+    feasibility_score: 90, // deduped, costable donor — planner-vetted
     notes: spec.label,
   };
 

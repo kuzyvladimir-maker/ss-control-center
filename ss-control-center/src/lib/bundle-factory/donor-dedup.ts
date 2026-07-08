@@ -112,6 +112,15 @@ function labelFor(key: string): string {
     .join(" ");
 }
 
+/** Truncate at a WORD boundary (a mid-word cut turned "…Jelly Protein" into
+ *  "…Jelly Pro" on the owner's review screen). */
+function truncateAtWord(s: string, max: number): string {
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max + 1);
+  const lastSpace = cut.lastIndexOf(" ");
+  return (lastSpace > 0 ? cut.slice(0, lastSpace) : s.slice(0, max)).trim();
+}
+
 /** Per-unit cost in cents for one donor, or null when un-costable. */
 export function donorUnitPriceCents(d: DedupableDonor): number | null {
   if (typeof d.bestPrice !== "number" || !(d.bestPrice > 0)) return null;
@@ -148,7 +157,7 @@ export function dedupeDonorFlavors<T extends DedupableDonor>(
     if (!existing) {
       groups.set(key, {
         key,
-        label: labelFor(key).slice(0, 40).trim(),
+        label: truncateAtWord(labelFor(key), 60),
         donor: d,
         unit_price_cents: unit,
         costable: unit != null,
