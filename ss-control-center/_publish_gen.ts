@@ -19,7 +19,8 @@ async function main() {
   const gen: Record<string, any> = JSON.parse(readFileSync(GEN, "utf8"));
   const state: Record<string, any> = existsSync(STATE) ? JSON.parse(readFileSync(STATE, "utf8")) : {};
   const save = () => writeFileSync(STATE, JSON.stringify(state, null, 1));
-  const done = (s?: string) => s === "applied" || s === "qarth";
+  // skip applied/qarth (terminal) AND submitted (feed in flight — _repoll_gen.ts resolves those)
+  const done = (s?: string) => s === "applied" || s === "qarth" || s === "submitted";
 
   const ready = Object.values(gen).filter((g: any) => g.status === "GEN_OK" && g.newUrl && !done(state[g.sku]?.status));
   const pool = ready.slice(0, LIMIT === Infinity ? undefined : LIMIT);
