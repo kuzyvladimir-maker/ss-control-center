@@ -23,7 +23,7 @@ config({ path: ".env" });
 process.env.SS_VISION_FREE_ONLY = "1";
 
 import { createClient } from "@libsql/client";
-import { costOneSku } from "@/lib/sourcing/cogs-engine";
+import { costOneSku, enrichPrioritySkus } from "@/lib/sourcing/cogs-engine";
 
 const CAP = Math.max(1, parseInt(process.env.CAP || "400", 10));
 const MAX_HOURS = parseFloat(process.env.MAX_HOURS || "8");
@@ -51,7 +51,15 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
             ORDER BY hasCache DESC, w.sku ASC LIMIT 400`,
       args: [],
     });
-    const skus = r.rows.map((x: any) => x.sku as string).filter((s) => s && !attempted.has(s)).slice(0, 30);
+    // Neighbor-chat priority list first (division-of-labor contract): SKUs the image
+    // chat needs enriched next, from Setting 'enrich_priority_skus'.
+    const prio = (await enrichPrioritySkus(db)).filter((s) => !attempted.has(s));
+    const prioUncosted: string[] = [];
+    for (const s of prio.slice(0, 30)) {
+      const c = await db.execute({ sql: `SELECT 1 FROM "SkuCost" WHERE sku=? AND source='retail:batch' LIMIT 1`, args: [s] });
+      if (!c.rows.length) prioUncosted.push(s);
+    }
+    const skus = [...prioUncosted, ...r.rows.map((x: any) => x.sku as string).filter((s) => s && !attempted.has(s) && !prioUncosted.includes(s))].slice(0, 30);
     if (!skus.length) {
       const anyLeft = r.rows.length > 0;
       if (!anyLeft) { console.log("no more uncosted — catalog swept, DONE"); break; }

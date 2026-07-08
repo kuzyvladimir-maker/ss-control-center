@@ -11,20 +11,13 @@
 // Walmart resolve identically.
 
 import type { Client } from "@libsql/client";
-import { analyzeImagesWithFallback } from "@/lib/ai-vision";
-import { identifyImageViaCodex, identifyImageViaClaudeCli } from "@/lib/image-gen/codex-worker";
-import { identifyImageViaGemini } from "@/lib/sourcing/gemini-vision";
-import { CLAUDE } from "@/lib/ai-models";
-
-// THREE free subscription vision lanes, ordered per the 2026-07-07 lane policy
-// (reference_llm_subscription_limits): Gemini (free tier, own quota) and Codex
-// (ChatGPT Pro 5x — upgraded, high limits) are the PRIMARY pair, round-robined so
-// concurrent SKUs spread; Claude CLI (Max 20x, SHARED with OpenClaw agents + all
-// chats) is strictly LAST-RESORT — a day of Claude-first bulk vision ate half the
-// weekly cap. Each lane returns the same JSON shape or null.
-const PRIMARY_LANES = [identifyImageViaGemini, identifyImageViaCodex];
-const RESERVE_LANE = identifyImageViaClaudeCli;
-let _laneRR = 0;
+// UNIFIED VISION ROUTER (2026-07-08, owner-approved division of labor): identify goes
+// through the SHARED scheduler in sourcing/vision.ts (askVisionJson) — the SAME
+// weighted, in-flight-aware, circuit-breaker dispatcher the image chat uses. One
+// scheduler for both chats = no more two blind round-robins saturating each other's
+// lanes on the box. Lane policy (Gemini→Codex→Claude-reserve + paid-Sonnet thin
+// spillover) lives THERE now, not here.
+import { askVisionJson } from "@/lib/sourcing/vision";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { getListing, flattenListing } from "@/lib/amazon-sp-api/listings";
 import { fetchVeeqoDetailBySku } from "@/lib/veeqo/product-image";
@@ -93,65 +86,28 @@ or ambiguous. Be precise about size and container (can vs cup vs pouch is a diff
 For a gift set / kit, EVERY distinct item must appear in components[] with its own size and
 quantity so each can be priced separately.`;
 
-async function toBase64(url: string): Promise<string | null> {
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
-    if (!res.ok) return null;
-    return Buffer.from(await res.arrayBuffer()).toString("base64");
-  } catch {
-    return null;
-  }
-}
-
-function mediaType(b64: string): string {
-  return b64.startsWith("/9j/") ? "image/jpeg" : b64.startsWith("iVBOR") ? "image/png" : b64.startsWith("R0lG") ? "image/gif" : b64.startsWith("UklG") ? "image/webp" : "image/jpeg";
-}
-
-// Identify a product from its images + text. ONE strong-model pass, no cheap tier.
-// PRIMARY: FREE ChatGPT-subscription vision — GPT-5.4 with high reasoning effort via
-// the Codex worker on the box, $0 per call. This is the only path used in normal
-// operation. FALLBACK (only if the box/worker is unreachable): a STRONG paid model
-// (Sonnet), NEVER the cheap tier — cheap models mis-identified products, so we keep
-// them out of identification entirely, even as a fallback.
+// Identify a product from its images + text — ONE pass through the SHARED vision
+// router (askVisionJson): weighted lanes Gemini→Codex→Claude-reserve with in-flight
+// load-balancing + per-lane circuit breaker + backoff retries, and vision.ts's own
+// thin paid-Sonnet spillover at the end (owner-endorsed). It swallows errors → null.
+// No result = throw, so the caller records NOTHING (the resumable sweep retries the
+// SKU later) instead of writing a junk identity.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function runIdentify(b64s: string[], prompt: string): Promise<any> {
-  // TIER 1 — free subscription vision ($0): round-robin the PRIMARY pair
-  // (Gemini/Codex) so parallel SKUs spread; Claude only if both primaries fail.
-  const start = _laneRR++ % PRIMARY_LANES.length;
-  const lanes = [PRIMARY_LANES[start], PRIMARY_LANES[(start + 1) % PRIMARY_LANES.length], RESERVE_LANE];
-  for (const lane of lanes) {
-    try {
-      const r = await lane(b64s, prompt);
-      if (r && (r as any).brand !== undefined) return r;
-    } catch { /* try the next lane */ }
+async function runIdentify(urls: string[], prompt: string): Promise<any> {
+  if (urls.length) {
+    const r = await askVisionJson(urls, prompt, 900);
+    if (r && typeof r === "object" && (r as any).brand !== undefined) return r;
+    throw new Error("vision unavailable (shared router exhausted) — SKU skipped, will retry later");
   }
-
-  // COOPERATIVE mode (background sweeps sharing the box with another chat's run):
-  // when all free lanes are busy/down, SKIP this SKU — throw so the caller records
-  // nothing and the resumable sweep retries it later, instead of burning the paid
-  // APIs (dead anyway) or writing a junk identity. The box's own serial queues are
-  // what make the two chats take turns; we just decline to pile on.
-  if (process.env.SS_VISION_FREE_ONLY === "1") {
-    throw new Error("free vision lanes busy — skipped (cooperative mode, will retry later)");
-  }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (apiKey && apiKey !== "<api_key>") {
-    try {
-      const Anthropic = (await import("@anthropic-ai/sdk")).default;
-      const client = new Anthropic({ apiKey });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const content: any[] = b64s.map((b) => ({ type: "image", source: { type: "base64", media_type: mediaType(b), data: b } }));
-      content.push({ type: "text", text: prompt });
-      // Strong model only (CLAUDE.balanced = Sonnet). Never CLAUDE.cheap.
-      const r = await client.messages.create({ model: CLAUDE.balanced, max_tokens: 900, messages: [{ role: "user", content }] });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const tb: any = r.content.find((b: any) => b.type === "text");
-      const m = tb?.text?.match(/\{[\s\S]*\}/);
-      if (m) return JSON.parse(m[0]);
-    } catch { /* fall through to the shared vision helper */ }
-  }
-  return analyzeImagesWithFallback(b64s, prompt);
+  // NO photos → text-only identify from title/description via the box's Claude-text
+  // lane ($0, its own queue) — the shared vision router requires ≥1 image.
+  try {
+    const { generateTextViaClaudeWorker } = await import("@/lib/text-gen/claude-text-worker");
+    const { text } = await generateTextViaClaudeWorker({ prompt, model: "sonnet", timeoutMs: 120_000 });
+    const m = text.match(/\{[\s\S]*\}/);
+    if (m) { const r = JSON.parse(m[0]); if (r && r.brand !== undefined) return r; }
+  } catch { /* worker busy/down — skip, retried later */ }
+  throw new Error("text-only identify unavailable — SKU skipped, will retry later");
 }
 
 // Normalize a raw model output into a trustworthy ProductIdentity (defaults, sane
@@ -192,22 +148,17 @@ function normalizeIdentity(raw: any, inp: IdentifyInputs): ProductIdentity {
 // escalation call — the provider is a single strong model, so re-running it wouldn't
 // improve the read and would only burn a slot in the box's serial Codex queue.
 export async function identifyProduct(inp: IdentifyInputs): Promise<ProductIdentity & { imagesUsed: number }> {
+  // URLs go straight to the shared router — it downloads (with retries) itself.
   const urls = (inp.imageUrls ?? []).filter((u) => typeof u === "string" && u.startsWith("http")).slice(0, MAX_IMAGES);
-  const b64s: string[] = [];
-  for (const u of urls) {
-    const b = await toBase64(u);
-    if (b) b64s.push(b);
-  }
 
   const ctx =
     `${PROMPT}\n\nLISTING TITLE: ${inp.title || "(none)"}` +
     (inp.description ? `\nDESCRIPTION: ${String(inp.description).slice(0, 1500)}` : "") +
     (inp.bullets?.length ? `\nBULLET POINTS:\n- ${inp.bullets.slice(0, 8).join("\n- ")}` : "") +
-    `\nPHOTOS PROVIDED: ${b64s.length}`;
+    `\nPHOTOS PROVIDED: ${urls.length}`;
 
-  // ONE strong-model pass (GPT-5.4 via Codex subscription, or Sonnet fallback).
-  const id = normalizeIdentity(await runIdentify(b64s, ctx), inp);
-  return { ...id, imagesUsed: b64s.length };
+  const id = normalizeIdentity(await runIdentify(urls, ctx), inp);
+  return { ...id, imagesUsed: urls.length };
 }
 
 // --- per-channel input gathering -------------------------------------------

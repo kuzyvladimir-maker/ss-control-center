@@ -74,15 +74,37 @@ function parseSizeNum(size?: string | null): number | null {
 // SkuCost source='retail:batch' IS NULL). Each run advances through the catalog; a
 // re-run continues where the last left off, and flagged/no-price SKUs (no SkuCost)
 // get retried — which recovers the flaky niche items on a later pass.
+// PRIORITY QUEUE (division-of-labor contract, 2026-07-08): the image/content chat
+// consumes enriched SKUs and never identifies/searches itself. When it needs specific
+// SKUs next, it writes them to Setting key 'enrich_priority_skus' (JSON array) and
+// every enrichment driver here serves those FIRST.
+export async function enrichPrioritySkus(db: Client): Promise<string[]> {
+  try {
+    const r = await db.execute(`SELECT value FROM "Setting" WHERE key='enrich_priority_skus' LIMIT 1`);
+    const v = JSON.parse(String((r.rows[0] as any)?.value || "[]"));
+    return Array.isArray(v) ? v.filter((x) => typeof x === "string" && x) : [];
+  } catch { return []; }
+}
+
 export async function nextUncostedWalmartSkus(db: Client, n: number): Promise<string[]> {
-  const r = await db.execute({
-    sql: `SELECT w.sku FROM WalmartCatalogItem w
-          LEFT JOIN "SkuCost" c ON c.sku = w.sku AND c.source='retail:batch'
-          WHERE w.publishedStatus='PUBLISHED' AND c.sku IS NULL
-          ORDER BY w.syncedAt DESC LIMIT ?`,
-    args: [n],
-  });
-  return r.rows.map((x: any) => x.sku as string).filter(Boolean);
+  // Neighbor-chat priority list first (only those still uncosted).
+  const out: string[] = [];
+  for (const sku of await enrichPrioritySkus(db)) {
+    if (out.length >= n) break;
+    const c = await db.execute({ sql: `SELECT 1 FROM "SkuCost" WHERE sku=? AND source='retail:batch' LIMIT 1`, args: [sku] });
+    if (!c.rows.length) out.push(sku);
+  }
+  if (out.length < n) {
+    const r = await db.execute({
+      sql: `SELECT w.sku FROM WalmartCatalogItem w
+            LEFT JOIN "SkuCost" c ON c.sku = w.sku AND c.source='retail:batch'
+            WHERE w.publishedStatus='PUBLISHED' AND c.sku IS NULL
+            ORDER BY w.syncedAt DESC LIMIT ?`,
+      args: [n],
+    });
+    for (const x of r.rows) { const s = (x as any).sku as string; if (s && !out.includes(s)) out.push(s); if (out.length >= n) break; }
+  }
+  return out;
 }
 // How many PUBLISHED Walmart SKUs still lack a cost (sweep progress denominator).
 export async function walmartSweepRemaining(db: Client): Promise<{ remaining: number; total: number }> {
