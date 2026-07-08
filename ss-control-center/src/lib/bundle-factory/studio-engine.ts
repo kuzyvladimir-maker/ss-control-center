@@ -242,6 +242,16 @@ async function buildOneListing(args: {
     ? spec.label.slice(0, 120)
     : `${houseBrand} ${spec.label} Gift Set`.slice(0, 120);
 
+  // Wave dedup: the planner is deterministic, so a follow-up batch ("150
+  // Uncrustables" after the 50-pilot) re-emits the same flavor×count combos
+  // first. Never mint the same listing twice — skip combos that already have a
+  // draft from ANY batch and let the tick spend its slot on the next spec.
+  const dupe = await prisma.bundleDraft.findFirst({
+    where: { draft_name: draftName, generation_job_id: { not: jobId } },
+    select: { id: true },
+  });
+  if (dupe) return { ok: true, title: `${draftName} (exists — skipped)` };
+
   // ── Bridge to the canonical pipeline ───────────────────────────────────────
   // Earlier this engine baked content straight onto the BundleDraft and
   // stopped — but the draft-detail UI, compliance gate, validation and the

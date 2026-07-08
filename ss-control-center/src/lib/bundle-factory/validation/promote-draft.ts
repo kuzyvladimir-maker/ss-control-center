@@ -35,6 +35,7 @@ import {
 } from "../attributes/gallery-images";
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import { frozenShippingGroupGuid, packageWeightOz } from "../distribution/shipping-templates";
+import { BOX_PRESETS } from "@/lib/shipping/box-presets";
 
 export interface PromoteOutcome {
   master_bundle_id: string | null;
@@ -337,9 +338,12 @@ export async function promoteDraftToChannelSkus(
   }
 
   // Frozen shipping: attach the Amazon shipping template (weight-based) + set the
-  // full package weight so the customer pays delivery separately (not baked into
-  // the item price). Cooler is the count-based one from the price calc above.
+  // full package weight AND the cooler's box dimensions so the customer pays
+  // delivery separately and the weight/dims validators pass WITHOUT manual
+  // ship-specs entry (owner 2026-07-07: 50 manual entries is a non-starter).
+  // Cooler is the count-based one from the price calc above.
   let coldPackageWeightOz: number | null = null;
+  let coldDims: { l: number; w: number; h: number } | null = null;
   const isCold = /FROZEN|REFRIGERATED|COLD/i.test(draft.category ?? "");
   if (isCold && autoPrice.cooler_size) {
     try {
@@ -349,6 +353,8 @@ export async function promoteDraftToChannelSkus(
       ];
       richAttributesJson = JSON.stringify(rich);
       coldPackageWeightOz = packageWeightOz(autoPrice.cooler_size);
+      const preset = BOX_PRESETS.find((p) => p.label === autoPrice.cooler_size);
+      if (preset) coldDims = { l: preset.l, w: preset.w, h: preset.h };
     } catch {
       /* leave attributes as-is if JSON parse fails */
     }
@@ -422,6 +428,13 @@ export async function promoteDraftToChannelSkus(
           description: row.description,
           attributes: richAttributesJson,
           ...(coldPackageWeightOz != null ? { package_weight_oz: coldPackageWeightOz } : {}),
+          ...(coldDims != null
+            ? {
+                package_length_in: coldDims.l,
+                package_width_in: coldDims.w,
+                package_height_in: coldDims.h,
+              }
+            : {}),
           channel_browse_node: resolveAmazonBrowseNode({
             channel: row.channel,
             distinct_brands: distinctBrands,
