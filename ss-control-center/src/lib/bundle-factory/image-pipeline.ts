@@ -231,6 +231,10 @@ export function buildImagePrompt(args: {
       `Include 2 to 4 white branded gel packs reading "FROZEN GEL PACK", "KEEP FROZEN", "FOR FROZEN SHIPMENTS" with the Salutem Solutions logo — some inside the cooler next to the product, 1-2 in front.`,
       `Apply SALUTEM SOLUTIONS branding ONLY to the cooler and the gel packs — NEVER onto the third-party product packaging.`,
       `Subtle frost and cold condensation on the cooler and packs; NO loose ice, NO crushed ice, NO ice cubes.`,
+      // The donor photo is often scraped from a retailer site and carries a store
+      // badge/watermark; the vision compliance gate (rule 6) rejects any retailer
+      // logo. Reproduce ONLY the product packaging, never the store's marks.
+      `Reproduce ONLY the product's own packaging. Do NOT copy any retailer logo, store badge, price sticker, "roll-back", corner ribbon, or watermark from the reference photo — no Target, Walmart, Amazon, Costco, Sam's Club or any store branding anywhere in the image.`,
       `No people, no hands, no lifestyle background, no extra props, no overlaid text, no watermarks.`,
     ].join("\n");
   }
