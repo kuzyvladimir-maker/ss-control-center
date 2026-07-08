@@ -173,10 +173,14 @@ async function cheapestCostForTarget(
       return hit(cs, true, perUnit);
     }
 
-    // TIER 3 — LINE-PRICE sibling: same brand (phrase) + SAME size, different flavor.
+    // TIER 3 — LINE-PRICE sibling: same brand (phrase) + SAME size, different flavor,
+    // AND sharing ≥1 product-line token — a sibling is a FLAVOR variant of the same
+    // line, not any same-brand can (audit: Del Monte canned PEAS priced Del Monte
+    // canned FRUIT — different line, different price tier).
+    const sharesLine = (r: any) => !m.tokens.length || m.tokens.some((t) => String(r.title || "").toLowerCase().includes(t));
     if (m.brandToks.length) {
       const brandLike = m.brandToks.map(() => "lower(dp.title) LIKE ?").join(" AND ");
-      const sib = pickOk((await db.execute({
+      const sib = ((rows: any[]) => rows.find((r) => !formMismatch(m.ourText, r.title) && sharesLine(r)))((await db.execute({
         sql: `SELECT dp.id AS dpid, dp.title AS title, o.retailer AS retailer, o.pricePerUnit AS perUnit, dp.unitAmount AS ua, dp.unitMeasure AS um
               FROM "DonorOffer" o JOIN "DonorProduct" dp ON dp.id = o.donorProductId
               WHERE o.isFirstParty=1 AND o.via IN ('direct','instacart') AND o.pricePerUnit IS NOT NULL
@@ -325,7 +329,7 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
     // in the donor DB from a prior run (audit: Hormel $2.48, Nissin $0.50 were there
     // but filtered out by the this-run-only window), and a week-old shelf price is
     // still the shelf price.
-    const runStart = new Date(Date.now() - 7 * 86_400_000).toISOString();
+    const runStart = new Date(Date.now() - 2 * 86_400_000).toISOString(); // 48h: stale/poisoned captures age out fast
     type Part = { idx: number; label: string; product: string; flavor: string | null; size: string | null; qty: number; isBundleComp: boolean; perUnit: number | null; retailer?: string; matched?: string; method: string; linePrice?: boolean; google?: boolean; ownBrand?: boolean; donorProductId?: string | null };
     const parts: Part[] = [];
     let costable = true;
@@ -390,7 +394,10 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         const bb: any = (await db.execute({ sql: `SELECT sellerItemPrice p FROM WalmartBuyBoxItem WHERE sku=? AND sellerItemPrice IS NOT NULL LIMIT 1`, args: [sku] })).rows[0];
         if (bb?.p != null && total >= Number(bb.p)) aboveSale = true;
       } catch { /* no buy-box data — skip the check */ }
-      const needsReview = (lowConf || anyGoogle || aboveSale) ? 1 : 0;
+      // TRUTH POLICY: only exact-strict 1P rows are "clean". EVERY estimate (cross-size /
+      // line-price / size-unknown) is needsReview — audits #2/#3 showed the estimate
+      // classes carry 25-35% error and must never be presented as fact.
+      const needsReview = (lowConf || anyGoogle || aboveSale || anyLine) ? 1 : 0;
       const noteParts = (identity.is_bundle
         ? `bundle: ${parts.map((p) => `${p.qty}×$${(p.perUnit || 0).toFixed(2)}`).join(" + ")}`
         : `${parts[0].retailer} $${(parts[0].perUnit || 0).toFixed(2)}/u ×${identity.units_in_listing}`) + (anyGoogle ? " [google est]" : "") + (anyLine ? " [line-price est]" : "") + (anyOwnBrand ? " [own-brand]" : "") + (aboveSale ? " [COGS>=sale — check match or margin]" : "");
