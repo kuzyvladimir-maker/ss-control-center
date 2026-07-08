@@ -136,7 +136,7 @@ export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: 
   // Farms → BJ's, store brands → Publix). Kept last so a generic product a fast
   // source already covers never wastes the slow browser.
   if (openClawEnabled()) {
-    for (const ret of ["publix", "bjs", "aldi"] as const) {
+    for (const ret of ["publix"] as const) { // bjs+aldi disabled: bjs Akamai tripped 2026-07-07; aldi not a buying source
       try { const rr = await openClawSearch(ret, q); const r = await tryPool(storeImgs(rr.offers), ret); if (r) return r; } catch { /* next retailer */ }
     }
   }

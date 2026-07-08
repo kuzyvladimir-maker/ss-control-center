@@ -33,7 +33,9 @@ const UNWRANGLE_RETAILERS: ("walmart" | "target" | "samsclub" | "costco")[] = ["
 // nets — BJ's, Publix, Aldi. Oxylabs grocery targets are gated/empty, so it's not
 // called per-enrichment for now (kept wired for future Amazon/Walmart use).
 const OXYLABS_RETAILERS = [] as const;
-const OPENCLAW_RETAILERS = ["bjs", "publix", "aldi"] as const;
+// ⛔ BJ'S DISABLED 2026-07-07: bjs.com Akamai anti-bot tripped after our sweeps
+// hammered /search (Vladimir's order). Re-enable only with a slow rate-limit + his OK.
+const OPENCLAW_RETAILERS = ["publix"] as const;
 const ZIP = "33765"; // Clearwater, FL — our buying zone
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
