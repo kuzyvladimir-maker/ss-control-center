@@ -1,0 +1,2084 @@
+[
+ {
+  "sku": "Athar-1591",
+  "qty": 2,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "Athar-1592",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "Athar-1594",
+  "qty": 5,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "Athar-164",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "Comm-03",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "Comm-06",
+  "qty": 2,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "Comm-07",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FBM-05",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1109",
+  "qty": 2,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1112",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1113",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1121",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1130",
+  "qty": 2,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1133",
+  "qty": 2,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1135",
+  "qty": 6,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1139",
+  "qty": 2,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1142",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1145",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1146",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1150",
+  "qty": 6,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1157",
+  "qty": 2,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1160",
+  "qty": 2,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1166",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1167",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1172",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1175",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1178",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1181",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1183",
+  "qty": 6,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1185",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1196",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1199",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1202",
+  "qty": 2,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1203",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1208",
+  "qty": 2,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1211",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1218",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1220",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1226",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1232",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1240",
+  "qty": 6,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1241",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1244",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1250",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1251",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1253",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1265",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1274",
+  "qty": 2,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1283",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1290",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1297",
+  "qty": 3,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1298",
+  "qty": 6,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1305",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1308",
+  "qty": 6,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1309",
+  "qty": 3,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1310",
+  "qty": 6,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1312",
+  "qty": 6,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1315",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1319",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1320",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1321",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1322",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1330",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1331",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1334",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1335",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1338",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1342",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1343",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1344",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1348",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1351",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1353",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1357",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1360",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1366",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1374",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1433",
+  "qty": 24,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1535",
+  "qty": 2,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1626",
+  "qty": 5,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1632",
+  "qty": 5,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1633",
+  "qty": 7,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1686",
+  "qty": 5,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-169",
+  "qty": 8,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1732",
+  "qty": 7,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1739",
+  "qty": 64,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1755",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1760",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1796",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1819",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1833",
+  "qty": 4,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1839",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1846",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1855",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1881",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-191",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1956",
+  "qty": 5,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1961",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1970",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1984",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-1988",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2003",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2008",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2014",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2016",
+  "qty": 5,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2032",
+  "qty": 1,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2054",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2150",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2151",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2229",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-223",
+  "qty": 7,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2239",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2249",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2259",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2269",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2288",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2297",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-232",
+  "qty": 5,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-237",
+  "qty": 10,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-241",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2434",
+  "qty": 6,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2447",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2495",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-251",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2516",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-254",
+  "qty": 5,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2565",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2581",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2589",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2602",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2610",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2657",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2660",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2702",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2767",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2773",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2793",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-2803",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-286",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-288",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-302",
+  "qty": 1,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-307",
+  "qty": 3,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-310",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-313",
+  "qty": 9,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3351",
+  "qty": 10,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3378",
+  "qty": 10,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3401",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3420",
+  "qty": 10,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3425",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3434",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3441",
+  "qty": 10,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3462",
+  "qty": 10,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3472",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3484",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3492",
+  "qty": 10,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3548",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-355",
+  "qty": 7,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3583",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3586",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3590",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3595",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3627",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3711",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3715",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3749",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3762",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3799",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-381",
+  "qty": 11,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3843",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3846",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3893",
+  "qty": 6,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3942",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3952",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-3993",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4005",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4040",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4052",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4086",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4105",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4137",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4152",
+  "qty": 8,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4165",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4200",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4213",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4243",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4314",
+  "qty": 4,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4322",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4323",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4379",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4391",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4475",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4490",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4495",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4506",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4512",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4527",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "pipe:REBUILT_FAIL"
+ },
+ {
+  "sku": "FaisalX-4534",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4557",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4566",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4605",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4613",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4709",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4721",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4726",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4738",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4739",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4740",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4746",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4764",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4766",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4773",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4780",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4791",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4797",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4799",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4859",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-4877",
+  "qty": 1,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5059",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5263",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5292",
+  "qty": 1,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5297",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5328",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5338",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5354",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5365",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5395",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5416",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5435",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5468",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5483",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5487",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5530",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5552",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5559",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5560",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-5562",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-798",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "FaisalX-821",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-03",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-108",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-112",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-118",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-141",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-145",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-150",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-209",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-215",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2182",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2206",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-225",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-227",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2304",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2321",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2322",
+  "qty": 6,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-233",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2332",
+  "qty": 4,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2342",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2374",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2379",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2413",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2430",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2438",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2446",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2449",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2451",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2461",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2464",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2488",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2492",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2677",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2678",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2689",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2758",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2766",
+  "qty": 6,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2767",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2970",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2971",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-2973",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3005",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3007",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3030",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3034",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3059",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3086",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3109",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-312",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3172",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3217",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3219",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3225",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3236",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3237",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3242",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3249",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3266",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3269",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3274",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3280",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3307",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3475",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3481",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3482",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3492",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-350",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3504",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-353",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-359",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3707",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3728",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-377",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-381",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3872",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-3919",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-400",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-404",
+  "qty": 1,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-408",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-410",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-428",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-443",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-459",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-462",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-485",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-539",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-541",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-546",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-547",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-549",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-550",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-555",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-566",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-567",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-584",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-585",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-610",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-621",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-63",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-647",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-653",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-665",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-68",
+  "qty": 4,
+  "cs": "estimate",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-69",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-752",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-78",
+  "qty": 6,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-782",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-812",
+  "qty": 8,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-83",
+  "qty": 4,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ },
+ {
+  "sku": "RizwanX-841",
+  "qty": 2,
+  "cs": "clean",
+  "prov": "never-in-pipeline"
+ }
+]
