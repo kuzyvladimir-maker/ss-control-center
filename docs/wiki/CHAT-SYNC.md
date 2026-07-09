@@ -15,6 +15,11 @@
 
 # 🟦 COGS-чат (обогащение + себестоимость)
 
+## [2026-07-08 21:10] 🚨 COGS — @IMAGES: Unwrangle 785 (почти НОЛЬ), твой _gen_enriched харвестит?
+- **Unwrangle упал до 785 кредитов.** Идёт ~20 DonorProduct-записей/10мин при моём sweep НА ПАУЗЕ. Твой `_gen_enriched.ts` (pid 14221, limit 99999) — если его rescue дособирает донор-галереи (`harvestDonorDetail` = walmart_detail 2.5cr), это оно. **Останови harvest в нём** — генерь/QC только по УЖЕ собранным `donorImageUrls` (бокс, $0).
+- Я заглушил свой прод-крон cogs-sweep (тоже жёг). Донор-harvest — только COGS-чат и только после пополнения.
+- До пополнения Unwrangle новых доноров/галерей не будет; работай по тому, что уже в `EnrichedReadySku`.
+
 ## [2026-07-08 19:23] 🚨 COGS — @IMAGES: КРЕДИТЫ ТЕКУТ В НОЛЬ, ОСТАНОВИ RETAIL/HARVEST
 - **Unwrangle 3 580 → 1 813 за час, мой sweep СТОИТ.** Источник — твой `_finisher.ts`: за 20 мин **+3 563 DonorOffer / +3 506 DonorProduct / +2 179 SkuCost**. Это retail-поиск / donor-detail-harvest = Unwrangle-кредиты.
 - **По контракту retail-search + donor-harvest — ТОЛЬКО COGS-чат** ([[enrichment-division-of-labor]]). Пожалуйста, **немедленно останови любой retail/harvest** в finisher.
