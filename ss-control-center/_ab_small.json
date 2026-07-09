@@ -1,0 +1,66 @@
+[
+ {
+  "sku": "FaisalX-1166",
+  "qty": 2,
+  "expect": "FAIL",
+  "verdict": "FAIL",
+  "ok": true,
+  "reason": "Listing title is blank, so identity cannot be verified; image shows 2 single bread package"
+ },
+ {
+  "sku": "FaisalX-1197",
+  "qty": 4,
+  "expect": "FAIL",
+  "verdict": "FAIL",
+  "ok": true,
+  "reason": "No listing title provided; image shows four single front-facing bread packages on white."
+ },
+ {
+  "sku": "FaisalX-197",
+  "qty": 3,
+  "expect": "FAIL",
+  "verdict": "FAIL",
+  "ok": true,
+  "reason": "Listing title is empty, and the tiled unit appears to show package graphics/panels rather "
+ },
+ {
+  "sku": "FaisalX-3406",
+  "qty": 6,
+  "expect": "PASS",
+  "verdict": "PASS",
+  "ok": true,
+  "reason": "Six face-on single bags of the correct Nissin Fire Wok Screamin' Sichuan Beef product on a"
+ },
+ {
+  "sku": "FaisalX-3428",
+  "qty": 8,
+  "expect": "PASS",
+  "verdict": "PASS",
+  "ok": true,
+  "reason": "8 single Cup Noodles Stir Fry Teriyaki Beef cups shown face-on on a white background."
+ },
+ {
+  "sku": "FaisalX-3410",
+  "qty": 8,
+  "expect": "PASS",
+  "verdict": "PASS",
+  "ok": true,
+  "reason": "Matches listing; 8 single cups tiled on white, front panels visible."
+ },
+ {
+  "sku": "FaisalX-1320",
+  "qty": 8,
+  "expect": "PASS",
+  "verdict": "PASS",
+  "ok": true,
+  "reason": "Eight single front-facing Fritos Honey BBQ bags on a plain white background."
+ },
+ {
+  "sku": "FaisalX-1433",
+  "qty": 24,
+  "expect": "PASS",
+  "verdict": "PASS",
+  "ok": true,
+  "reason": "24 single Maruchan Instant Lunch Chicken Flavor units on a plain white background, all sho"
+ }
+]

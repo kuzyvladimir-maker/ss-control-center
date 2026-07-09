@@ -449,154 +449,5686 @@
  },
  "FaisalX-1342": {
   "sku": "FaisalX-1342",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0635383585B7FACCCBEEFAFB77F8E@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T18:32:49.975Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T20:11:56.422Z"
  },
  "FaisalX-1360": {
   "sku": "FaisalX-1360",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0635383585B7FACCCBEEFAFB77F8E@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T18:32:50.309Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T20:11:56.631Z"
  },
  "FaisalX-1357": {
   "sku": "FaisalX-1357",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0635383585B7FACCCBEEFAFB77F8E@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T18:32:50.389Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T20:11:56.731Z"
  },
  "FaisalX-1374": {
   "sku": "FaisalX-1374",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0635383585B7FACCCBEEFAFB77F8E@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T18:32:50.496Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T20:11:56.806Z"
  },
  "FaisalX-1535": {
   "sku": "FaisalX-1535",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0635383585B7FACCCBEEFAFB77F8E@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T18:32:50.589Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T20:11:56.888Z"
  },
  "FaisalX-1433": {
   "sku": "FaisalX-1433",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:17.012Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:45.609Z"
  },
  "FaisalX-1632": {
   "sku": "FaisalX-1632",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:17.251Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:45.847Z"
  },
  "FaisalX-1626": {
   "sku": "FaisalX-1626",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:17.319Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:45.957Z"
  },
  "FaisalX-1633": {
   "sku": "FaisalX-1633",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:17.388Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:46.088Z"
  },
  "FaisalX-1686": {
   "sku": "FaisalX-1686",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:17.456Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:46.148Z"
  },
  "FaisalX-169": {
   "sku": "FaisalX-169",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:17.512Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:46.346Z"
  },
  "FaisalX-1732": {
   "sku": "FaisalX-1732",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:17.568Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:46.497Z"
  },
  "FaisalX-1755": {
   "sku": "FaisalX-1755",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:17.651Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:46.666Z"
  },
  "FaisalX-1796": {
   "sku": "FaisalX-1796",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:17.742Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:46.765Z"
  },
  "FaisalX-1760": {
   "sku": "FaisalX-1760",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:17.808Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:46.927Z"
  },
  "FaisalX-1833": {
   "sku": "FaisalX-1833",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:17.890Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:47.032Z"
  },
  "FaisalX-1819": {
   "sku": "FaisalX-1819",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:17.954Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:47.273Z"
  },
  "FaisalX-1846": {
   "sku": "FaisalX-1846",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:18.016Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:47.357Z"
  },
  "FaisalX-1839": {
   "sku": "FaisalX-1839",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C06659CBE852BABBA5F1E16FF8CBEB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T21:11:47.844Z"
+ },
+ "FaisalX-191": {
+  "sku": "FaisalX-191",
+  "status": "applied",
+  "feedId": "18C0699580575A9E8C920A6ACEFC2F08@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:36.954Z"
+ },
+ "FaisalX-1961": {
+  "sku": "FaisalX-1961",
+  "status": "applied",
+  "feedId": "18C0699580575A9E8C920A6ACEFC2F08@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:37.124Z"
+ },
+ "FaisalX-2003": {
+  "sku": "FaisalX-2003",
+  "status": "applied",
+  "feedId": "18C0699580575A9E8C920A6ACEFC2F08@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:37.206Z"
+ },
+ "FaisalX-2032": {
+  "sku": "FaisalX-2032",
+  "status": "applied",
+  "feedId": "18C0699580575A9E8C920A6ACEFC2F08@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:37.285Z"
+ },
+ "FaisalX-2229": {
+  "sku": "FaisalX-2229",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:37.738Z"
+ },
+ "FaisalX-223": {
+  "sku": "FaisalX-223",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:37.993Z"
+ },
+ "FaisalX-2239": {
+  "sku": "FaisalX-2239",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:38.072Z"
+ },
+ "FaisalX-2249": {
+  "sku": "FaisalX-2249",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:38.142Z"
+ },
+ "FaisalX-2259": {
+  "sku": "FaisalX-2259",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:38.290Z"
+ },
+ "FaisalX-2269": {
+  "sku": "FaisalX-2269",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:38.366Z"
+ },
+ "FaisalX-2288": {
+  "sku": "FaisalX-2288",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:38.457Z"
+ },
+ "FaisalX-237": {
+  "sku": "FaisalX-237",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:38.562Z"
+ },
+ "FaisalX-2434": {
+  "sku": "FaisalX-2434",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:38.646Z"
+ },
+ "FaisalX-241": {
+  "sku": "FaisalX-241",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:38.711Z"
+ },
+ "FaisalX-2495": {
+  "sku": "FaisalX-2495",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:38.775Z"
+ },
+ "FaisalX-2447": {
+  "sku": "FaisalX-2447",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:38.860Z"
+ },
+ "FaisalX-251": {
+  "sku": "FaisalX-251",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:38.927Z"
+ },
+ "FaisalX-2516": {
+  "sku": "FaisalX-2516",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:39.001Z"
+ },
+ "FaisalX-2565": {
+  "sku": "FaisalX-2565",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:39.083Z"
+ },
+ "FaisalX-254": {
+  "sku": "FaisalX-254",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:39.150Z"
+ },
+ "FaisalX-2610": {
+  "sku": "FaisalX-2610",
+  "status": "applied",
+  "feedId": "18C06CD99DFC535BBB960D3E3D00A810@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-08T23:12:39.210Z"
+ },
+ "FaisalX-2793": {
+  "sku": "FaisalX-2793",
+  "status": "applied",
+  "feedId": "18C0701C93D35EFFA85F2EBFDD25D3FF@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T00:14:04.184Z"
+ },
+ "FaisalX-286": {
+  "sku": "FaisalX-286",
+  "status": "applied",
+  "feedId": "18C0701C93D35EFFA85F2EBFDD25D3FF@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T00:14:04.369Z"
+ },
+ "FaisalX-302": {
+  "sku": "FaisalX-302",
+  "status": "applied",
+  "feedId": "18C0701C93D35EFFA85F2EBFDD25D3FF@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T00:14:04.450Z"
+ },
+ "FaisalX-288": {
+  "sku": "FaisalX-288",
+  "status": "applied",
+  "feedId": "18C0701C93D35EFFA85F2EBFDD25D3FF@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T00:14:04.519Z"
+ },
+ "FaisalX-310": {
+  "sku": "FaisalX-310",
+  "status": "applied",
+  "feedId": "18C0701C93D35EFFA85F2EBFDD25D3FF@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T00:14:04.578Z"
+ },
+ "FaisalX-307": {
+  "sku": "FaisalX-307",
+  "status": "applied",
+  "feedId": "18C0701C93D35EFFA85F2EBFDD25D3FF@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T00:14:04.647Z"
+ },
+ "FaisalX-313": {
+  "sku": "FaisalX-313",
+  "status": "applied",
+  "feedId": "18C0701C93D35EFFA85F2EBFDD25D3FF@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T00:14:04.717Z"
+ },
+ "FaisalX-3351": {
+  "sku": "FaisalX-3351",
+  "status": "applied",
+  "feedId": "18C0701C93D35EFFA85F2EBFDD25D3FF@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T00:14:04.783Z"
+ },
+ "FaisalX-3401": {
+  "sku": "FaisalX-3401",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
   "ok": false,
   "detail": "poll budget exhausted",
-  "at": "2026-07-08T19:28:18.072Z"
+  "at": "2026-07-08T23:28:13.839Z"
+ },
+ "FaisalX-3425": {
+  "sku": "FaisalX-3425",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:14.072Z"
+ },
+ "FaisalX-3420": {
+  "sku": "FaisalX-3420",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:14.156Z"
+ },
+ "FaisalX-3434": {
+  "sku": "FaisalX-3434",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:14.218Z"
+ },
+ "FaisalX-3441": {
+  "sku": "FaisalX-3441",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:14.278Z"
+ },
+ "FaisalX-3472": {
+  "sku": "FaisalX-3472",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:14.336Z"
+ },
+ "FaisalX-3462": {
+  "sku": "FaisalX-3462",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:14.391Z"
+ },
+ "FaisalX-3484": {
+  "sku": "FaisalX-3484",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:14.446Z"
+ },
+ "FaisalX-3492": {
+  "sku": "FaisalX-3492",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:14.500Z"
+ },
+ "FaisalX-3548": {
+  "sku": "FaisalX-3548",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:14.555Z"
+ },
+ "FaisalX-3586": {
+  "sku": "FaisalX-3586",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:14.610Z"
+ },
+ "FaisalX-3583": {
+  "sku": "FaisalX-3583",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:14.663Z"
+ },
+ "FaisalX-3590": {
+  "sku": "FaisalX-3590",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:14.717Z"
+ },
+ "FaisalX-3595": {
+  "sku": "FaisalX-3595",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:14.772Z"
+ },
+ "FaisalX-3627": {
+  "sku": "FaisalX-3627",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:15.194Z"
+ },
+ "FaisalX-3711": {
+  "sku": "FaisalX-3711",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:15.252Z"
+ },
+ "FaisalX-3749": {
+  "sku": "FaisalX-3749",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:15.308Z"
+ },
+ "FaisalX-3762": {
+  "sku": "FaisalX-3762",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:15.363Z"
+ },
+ "FaisalX-381": {
+  "sku": "FaisalX-381",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:15.418Z"
+ },
+ "FaisalX-3843": {
+  "sku": "FaisalX-3843",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:15.477Z"
+ },
+ "FaisalX-3893": {
+  "sku": "FaisalX-3893",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:15.533Z"
+ },
+ "FaisalX-3952": {
+  "sku": "FaisalX-3952",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:15.587Z"
+ },
+ "FaisalX-3942": {
+  "sku": "FaisalX-3942",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:15.694Z"
+ },
+ "FaisalX-3993": {
+  "sku": "FaisalX-3993",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:15.749Z"
+ },
+ "FaisalX-4005": {
+  "sku": "FaisalX-4005",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:15.806Z"
+ },
+ "FaisalX-4040": {
+  "sku": "FaisalX-4040",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:15.866Z"
+ },
+ "FaisalX-4052": {
+  "sku": "FaisalX-4052",
+  "status": "submitted",
+  "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-08T23:28:15.921Z"
+ },
+ "FaisalX-1413": {
+  "sku": "FaisalX-1413",
+  "status": "build_skip",
+  "err": "no upc/productType",
+  "at": "2026-07-09T18:21:04.271Z"
+ },
+ "FaisalX-1149": {
+  "sku": "FaisalX-1149",
+  "status": "applied",
+  "feedId": "18C076CB4D2F5BFCB6DCEA26681164D0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T02:19:38.404Z"
+ },
+ "FaisalX-1213": {
+  "sku": "FaisalX-1213",
+  "status": "applied",
+  "feedId": "18C076CB4D2F5BFCB6DCEA26681164D0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T02:19:38.597Z"
+ },
+ "FaisalX-1434": {
+  "sku": "FaisalX-1434",
+  "status": "applied",
+  "feedId": "18C076CB4D2F5BFCB6DCEA26681164D0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T02:19:38.658Z"
+ },
+ "FaisalX-1435": {
+  "sku": "FaisalX-1435",
+  "status": "applied",
+  "feedId": "18C076CB4D2F5BFCB6DCEA26681164D0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T02:19:38.721Z"
+ },
+ "FaisalX-1437": {
+  "sku": "FaisalX-1437",
+  "status": "applied",
+  "feedId": "18C076CB4D2F5BFCB6DCEA26681164D0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T02:19:38.784Z"
+ },
+ "FaisalX-150": {
+  "sku": "FaisalX-150",
+  "status": "applied",
+  "feedId": "18C076CB4D2F5BFCB6DCEA26681164D0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T02:19:38.844Z"
+ },
+ "FaisalX-1439": {
+  "sku": "FaisalX-1439",
+  "status": "applied",
+  "feedId": "18C076CB4D2F5BFCB6DCEA26681164D0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T02:19:38.910Z"
+ },
+ "FaisalX-1614": {
+  "sku": "FaisalX-1614",
+  "status": "applied",
+  "feedId": "18C076CB4D2F5BFCB6DCEA26681164D0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T02:19:39.032Z"
+ },
+ "FaisalX-1615": {
+  "sku": "FaisalX-1615",
+  "status": "applied",
+  "feedId": "18C076CB4D2F5BFCB6DCEA26681164D0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T02:19:39.091Z"
+ },
+ "FaisalX-1616": {
+  "sku": "FaisalX-1616",
+  "status": "applied",
+  "feedId": "18C076CB4D2F5BFCB6DCEA26681164D0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T02:19:39.157Z"
+ },
+ "FaisalX-1619": {
+  "sku": "FaisalX-1619",
+  "status": "applied",
+  "feedId": "18C076CB4D2F5BFCB6DCEA26681164D0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T02:19:39.223Z"
+ },
+ "FaisalX-1622": {
+  "sku": "FaisalX-1622",
+  "status": "applied",
+  "feedId": "18C076CB4D2F5BFCB6DCEA26681164D0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T02:19:39.290Z"
+ },
+ "FaisalX-1634": {
+  "sku": "FaisalX-1634",
+  "status": "applied",
+  "feedId": "18C076CB4D2F5BFCB6DCEA26681164D0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T02:19:39.351Z"
+ },
+ "FaisalX-1737": {
+  "sku": "FaisalX-1737",
+  "status": "build_skip",
+  "err": "no upc/productType",
+  "at": "2026-07-09T18:21:04.702Z"
+ },
+ "FaisalX-1631": {
+  "sku": "FaisalX-1631",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:53.847Z"
+ },
+ "FaisalX-1624": {
+  "sku": "FaisalX-1624",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.032Z"
+ },
+ "FaisalX-1637": {
+  "sku": "FaisalX-1637",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.091Z"
+ },
+ "FaisalX-1645": {
+  "sku": "FaisalX-1645",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.156Z"
+ },
+ "FaisalX-1647": {
+  "sku": "FaisalX-1647",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.235Z"
+ },
+ "FaisalX-165": {
+  "sku": "FaisalX-165",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.295Z"
+ },
+ "FaisalX-1658": {
+  "sku": "FaisalX-1658",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.363Z"
+ },
+ "FaisalX-1684": {
+  "sku": "FaisalX-1684",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.436Z"
+ },
+ "FaisalX-1667": {
+  "sku": "FaisalX-1667",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.493Z"
+ },
+ "FaisalX-1681": {
+  "sku": "FaisalX-1681",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.610Z"
+ },
+ "FaisalX-1660": {
+  "sku": "FaisalX-1660",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.679Z"
+ },
+ "FaisalX-1711": {
+  "sku": "FaisalX-1711",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.769Z"
+ },
+ "FaisalX-1716": {
+  "sku": "FaisalX-1716",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.860Z"
+ },
+ "FaisalX-1670": {
+  "sku": "FaisalX-1670",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.927Z"
+ },
+ "FaisalX-1707": {
+  "sku": "FaisalX-1707",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:54.988Z"
+ },
+ "FaisalX-171": {
+  "sku": "FaisalX-171",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:55.065Z"
+ },
+ "FaisalX-166": {
+  "sku": "FaisalX-166",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:55.119Z"
+ },
+ "FaisalX-1685": {
+  "sku": "FaisalX-1685",
+  "status": "applied",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T01:20:55.180Z"
+ },
+ "FaisalX-1749": {
+  "sku": "FaisalX-1749",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:55.252Z"
+ },
+ "FaisalX-1757": {
+  "sku": "FaisalX-1757",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:55.725Z"
+ },
+ "FaisalX-1727": {
+  "sku": "FaisalX-1727",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:55.824Z"
+ },
+ "FaisalX-1724": {
+  "sku": "FaisalX-1724",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:55.897Z"
+ },
+ "FaisalX-1729": {
+  "sku": "FaisalX-1729",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:55.954Z"
+ },
+ "FaisalX-1803": {
+  "sku": "FaisalX-1803",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:56.023Z"
+ },
+ "FaisalX-176": {
+  "sku": "FaisalX-176",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:56.091Z"
+ },
+ "FaisalX-1758": {
+  "sku": "FaisalX-1758",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:56.150Z"
+ },
+ "FaisalX-1791": {
+  "sku": "FaisalX-1791",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:56.235Z"
+ },
+ "FaisalX-1804": {
+  "sku": "FaisalX-1804",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:56.306Z"
+ },
+ "FaisalX-1725": {
+  "sku": "FaisalX-1725",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:56.414Z"
+ },
+ "FaisalX-1777": {
+  "sku": "FaisalX-1777",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:56.494Z"
+ },
+ "FaisalX-1790": {
+  "sku": "FaisalX-1790",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:56.611Z"
+ },
+ "FaisalX-1717": {
+  "sku": "FaisalX-1717",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:56.695Z"
+ },
+ "FaisalX-1828": {
+  "sku": "FaisalX-1828",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:56.769Z"
+ },
+ "FaisalX-1823": {
+  "sku": "FaisalX-1823",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:56.847Z"
+ },
+ "FaisalX-1832": {
+  "sku": "FaisalX-1832",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:56.913Z"
+ },
+ "FaisalX-1808": {
+  "sku": "FaisalX-1808",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.037Z"
+ },
+ "FaisalX-1835": {
+  "sku": "FaisalX-1835",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.102Z"
+ },
+ "FaisalX-1821": {
+  "sku": "FaisalX-1821",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.209Z"
+ },
+ "FaisalX-1820": {
+  "sku": "FaisalX-1820",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.271Z"
+ },
+ "FaisalX-1878": {
+  "sku": "FaisalX-1878",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.335Z"
+ },
+ "FaisalX-1902": {
+  "sku": "FaisalX-1902",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.395Z"
+ },
+ "FaisalX-1853": {
+  "sku": "FaisalX-1853",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.473Z"
+ },
+ "FaisalX-186": {
+  "sku": "FaisalX-186",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.548Z"
+ },
+ "FaisalX-1901": {
+  "sku": "FaisalX-1901",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.607Z"
+ },
+ "FaisalX-1895": {
+  "sku": "FaisalX-1895",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.669Z"
+ },
+ "FaisalX-1903": {
+  "sku": "FaisalX-1903",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.771Z"
+ },
+ "FaisalX-1905": {
+  "sku": "FaisalX-1905",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.835Z"
+ },
+ "FaisalX-1960": {
+  "sku": "FaisalX-1960",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.897Z"
+ },
+ "FaisalX-195": {
+  "sku": "FaisalX-195",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:57.959Z"
+ },
+ "FaisalX-1955": {
+  "sku": "FaisalX-1955",
+  "status": "qarth",
+  "feedId": "18C07A55ACDB5EA186D0742C17687E7F@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T01:20:58.401Z"
+ },
+ "FaisalX-1999": {
+  "sku": "FaisalX-1999",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:51.297Z"
+ },
+ "FaisalX-1975": {
+  "sku": "FaisalX-1975",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:51.468Z"
+ },
+ "FaisalX-1994": {
+  "sku": "FaisalX-1994",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:51.767Z"
+ },
+ "FaisalX-2000": {
+  "sku": "FaisalX-2000",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:51.856Z"
+ },
+ "FaisalX-2005": {
+  "sku": "FaisalX-2005",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:51.920Z"
+ },
+ "FaisalX-2006": {
+  "sku": "FaisalX-2006",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:51.977Z"
+ },
+ "FaisalX-2001": {
+  "sku": "FaisalX-2001",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:52.033Z"
+ },
+ "FaisalX-2004": {
+  "sku": "FaisalX-2004",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:52.111Z"
+ },
+ "FaisalX-2012": {
+  "sku": "FaisalX-2012",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:52.171Z"
+ },
+ "FaisalX-2034": {
+  "sku": "FaisalX-2034",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:52.238Z"
+ },
+ "FaisalX-2028": {
+  "sku": "FaisalX-2028",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:52.312Z"
+ },
+ "FaisalX-2045": {
+  "sku": "FaisalX-2045",
+  "status": "submitted",
+  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T17:44:39.223Z"
+ },
+ "FaisalX-2046": {
+  "sku": "FaisalX-2046",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:52.453Z"
+ },
+ "FaisalX-208": {
+  "sku": "FaisalX-208",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:52.552Z"
+ },
+ "FaisalX-2081": {
+  "sku": "FaisalX-2081",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:52.617Z"
+ },
+ "FaisalX-2073": {
+  "sku": "FaisalX-2073",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:52.687Z"
+ },
+ "FaisalX-2080": {
+  "sku": "FaisalX-2080",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:52.745Z"
+ },
+ "FaisalX-2075": {
+  "sku": "FaisalX-2075",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:52.847Z"
+ },
+ "FaisalX-2084": {
+  "sku": "FaisalX-2084",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:52.918Z"
+ },
+ "FaisalX-2067": {
+  "sku": "FaisalX-2067",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:52.980Z"
+ },
+ "FaisalX-212": {
+  "sku": "FaisalX-212",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:53.043Z"
+ },
+ "FaisalX-210": {
+  "sku": "FaisalX-210",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:53.102Z"
+ },
+ "FaisalX-2127": {
+  "sku": "FaisalX-2127",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:53.159Z"
+ },
+ "FaisalX-209": {
+  "sku": "FaisalX-209",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:53.214Z"
+ },
+ "FaisalX-213": {
+  "sku": "FaisalX-213",
+  "status": "applied",
+  "feedId": "18C07A6C9F0C5328AD1B9026AA2AA0AB@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:53.279Z"
+ },
+ "FaisalX-2135": {
+  "sku": "FaisalX-2135",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:53.589Z"
+ },
+ "FaisalX-2090": {
+  "sku": "FaisalX-2090",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:53.657Z"
+ },
+ "FaisalX-2085": {
+  "sku": "FaisalX-2085",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:53.724Z"
+ },
+ "FaisalX-214": {
+  "sku": "FaisalX-214",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:53.783Z"
+ },
+ "FaisalX-2146": {
+  "sku": "FaisalX-2146",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:53.840Z"
+ },
+ "FaisalX-216": {
+  "sku": "FaisalX-216",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:53.898Z"
+ },
+ "FaisalX-2137": {
+  "sku": "FaisalX-2137",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:53.960Z"
+ },
+ "FaisalX-2136": {
+  "sku": "FaisalX-2136",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:54.029Z"
+ },
+ "FaisalX-219": {
+  "sku": "FaisalX-219",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:54.092Z"
+ },
+ "FaisalX-2196": {
+  "sku": "FaisalX-2196",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:54.154Z"
+ },
+ "FaisalX-2228": {
+  "sku": "FaisalX-2228",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:54.218Z"
+ },
+ "FaisalX-2223": {
+  "sku": "FaisalX-2223",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:54.282Z"
+ },
+ "FaisalX-220": {
+  "sku": "FaisalX-220",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:54.364Z"
+ },
+ "FaisalX-2226": {
+  "sku": "FaisalX-2226",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:54.422Z"
+ },
+ "FaisalX-2224": {
+  "sku": "FaisalX-2224",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:54.517Z"
+ },
+ "FaisalX-2207": {
+  "sku": "FaisalX-2207",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:54.704Z"
+ },
+ "FaisalX-2246": {
+  "sku": "FaisalX-2246",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:54.764Z"
+ },
+ "FaisalX-2255": {
+  "sku": "FaisalX-2255",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:54.823Z"
+ },
+ "FaisalX-2256": {
+  "sku": "FaisalX-2256",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:54.880Z"
+ },
+ "FaisalX-2237": {
+  "sku": "FaisalX-2237",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:55.208Z"
+ },
+ "FaisalX-2258": {
+  "sku": "FaisalX-2258",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:55.323Z"
+ },
+ "FaisalX-2245": {
+  "sku": "FaisalX-2245",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:55.387Z"
+ },
+ "FaisalX-2230": {
+  "sku": "FaisalX-2230",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:55.449Z"
+ },
+ "FaisalX-2234": {
+  "sku": "FaisalX-2234",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:55.508Z"
+ },
+ "FaisalX-2262": {
+  "sku": "FaisalX-2262",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:55.565Z"
+ },
+ "FaisalX-227": {
+  "sku": "FaisalX-227",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:55.623Z"
+ },
+ "FaisalX-2275": {
+  "sku": "FaisalX-2275",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:55.679Z"
+ },
+ "FaisalX-2283": {
+  "sku": "FaisalX-2283",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:55.737Z"
+ },
+ "FaisalX-2270": {
+  "sku": "FaisalX-2270",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:55.849Z"
+ },
+ "FaisalX-2266": {
+  "sku": "FaisalX-2266",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:55.918Z"
+ },
+ "FaisalX-2282": {
+  "sku": "FaisalX-2282",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:55.983Z"
+ },
+ "FaisalX-2273": {
+  "sku": "FaisalX-2273",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:56.047Z"
+ },
+ "FaisalX-2284": {
+  "sku": "FaisalX-2284",
+  "status": "qarth",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-09T04:19:56.117Z"
+ },
+ "FaisalX-240": {
+  "sku": "FaisalX-240",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:56.175Z"
+ },
+ "FaisalX-242": {
+  "sku": "FaisalX-242",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:56.235Z"
+ },
+ "FaisalX-2430": {
+  "sku": "FaisalX-2430",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:56.297Z"
+ },
+ "FaisalX-2432": {
+  "sku": "FaisalX-2432",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:56.355Z"
+ },
+ "FaisalX-246": {
+  "sku": "FaisalX-246",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:56.419Z"
+ },
+ "FaisalX-248": {
+  "sku": "FaisalX-248",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:56.478Z"
+ },
+ "FaisalX-2486": {
+  "sku": "FaisalX-2486",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:56.535Z"
+ },
+ "FaisalX-2505": {
+  "sku": "FaisalX-2505",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:56.590Z"
+ },
+ "FaisalX-2489": {
+  "sku": "FaisalX-2489",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:56.648Z"
+ },
+ "FaisalX-2450": {
+  "sku": "FaisalX-2450",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:56.707Z"
+ },
+ "FaisalX-2501": {
+  "sku": "FaisalX-2501",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:56.768Z"
+ },
+ "FaisalX-2517": {
+  "sku": "FaisalX-2517",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:56.848Z"
+ },
+ "FaisalX-2514": {
+  "sku": "FaisalX-2514",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:56.922Z"
+ },
+ "FaisalX-2513": {
+  "sku": "FaisalX-2513",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:56.997Z"
+ },
+ "FaisalX-2511": {
+  "sku": "FaisalX-2511",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T04:19:57.054Z"
+ },
+ "FaisalX-2526": {
+  "sku": "FaisalX-2526",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:57.114Z"
+ },
+ "FaisalX-2520": {
+  "sku": "FaisalX-2520",
+  "status": "applied",
+  "feedId": "18C07E105B1E5E0D9AEC5516F2A82D47@AX8BBgA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T04:19:57.172Z"
+ },
+ "FaisalX-2506": {
+  "sku": "FaisalX-2506",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:50.868Z"
+ },
+ "FaisalX-2509": {
+  "sku": "FaisalX-2509",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:51.051Z"
+ },
+ "FaisalX-255": {
+  "sku": "FaisalX-255",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:51.118Z"
+ },
+ "FaisalX-2545": {
+  "sku": "FaisalX-2545",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:51.202Z"
+ },
+ "FaisalX-2541": {
+  "sku": "FaisalX-2541",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:51.282Z"
+ },
+ "FaisalX-2534": {
+  "sku": "FaisalX-2534",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:51.342Z"
+ },
+ "FaisalX-2530": {
+  "sku": "FaisalX-2530",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:51.410Z"
+ },
+ "FaisalX-2544": {
+  "sku": "FaisalX-2544",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:51.478Z"
+ },
+ "FaisalX-2543": {
+  "sku": "FaisalX-2543",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T05:17:51.564Z"
+ },
+ "FaisalX-2559": {
+  "sku": "FaisalX-2559",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:51.635Z"
+ },
+ "FaisalX-2560": {
+  "sku": "FaisalX-2560",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:51.733Z"
+ },
+ "FaisalX-2562": {
+  "sku": "FaisalX-2562",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:51.804Z"
+ },
+ "FaisalX-2557": {
+  "sku": "FaisalX-2557",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:51.898Z"
+ },
+ "FaisalX-2551": {
+  "sku": "FaisalX-2551",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:51.983Z"
+ },
+ "FaisalX-2596": {
+  "sku": "FaisalX-2596",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:52.053Z"
+ },
+ "FaisalX-2603": {
+  "sku": "FaisalX-2603",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:52.147Z"
+ },
+ "FaisalX-2611": {
+  "sku": "FaisalX-2611",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:52.869Z"
+ },
+ "FaisalX-259": {
+  "sku": "FaisalX-259",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:52.932Z"
+ },
+ "FaisalX-2612": {
+  "sku": "FaisalX-2612",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:53.004Z"
+ },
+ "FaisalX-2631": {
+  "sku": "FaisalX-2631",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:53.063Z"
+ },
+ "FaisalX-2617": {
+  "sku": "FaisalX-2617",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:53.123Z"
+ },
+ "FaisalX-2620": {
+  "sku": "FaisalX-2620",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-09T05:17:53.181Z"
+ },
+ "FaisalX-2613": {
+  "sku": "FaisalX-2613",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T05:17:53.238Z"
+ },
+ "FaisalX-2664": {
+  "sku": "FaisalX-2664",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T05:17:53.300Z"
+ },
+ "FaisalX-2673": {
+  "sku": "FaisalX-2673",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T05:17:53.368Z"
+ },
+ "FaisalX-2674": {
+  "sku": "FaisalX-2674",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T05:17:53.424Z"
+ },
+ "FaisalX-2670": {
+  "sku": "FaisalX-2670",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T05:17:53.484Z"
+ },
+ "FaisalX-2672": {
+  "sku": "FaisalX-2672",
+  "status": "applied",
+  "feedId": "18C07EE588FD50C0969E4B35637BCF05@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T05:17:53.545Z"
+ },
+ "FaisalX-2737": {
+  "sku": "FaisalX-2737",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:55.367Z"
+ },
+ "FaisalX-2745": {
+  "sku": "FaisalX-2745",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:55.461Z"
+ },
+ "FaisalX-2760": {
+  "sku": "FaisalX-2760",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:55.543Z"
+ },
+ "FaisalX-2754": {
+  "sku": "FaisalX-2754",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:55.633Z"
+ },
+ "FaisalX-2755": {
+  "sku": "FaisalX-2755",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:55.710Z"
+ },
+ "FaisalX-2749": {
+  "sku": "FaisalX-2749",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:55.809Z"
+ },
+ "FaisalX-2757": {
+  "sku": "FaisalX-2757",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:55.943Z"
+ },
+ "FaisalX-2768": {
+  "sku": "FaisalX-2768",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:56.036Z"
+ },
+ "FaisalX-2775": {
+  "sku": "FaisalX-2775",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:56.106Z"
+ },
+ "FaisalX-2776": {
+  "sku": "FaisalX-2776",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:56.180Z"
+ },
+ "FaisalX-2769": {
+  "sku": "FaisalX-2769",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:56.251Z"
+ },
+ "FaisalX-2770": {
+  "sku": "FaisalX-2770",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:56.321Z"
+ },
+ "FaisalX-2827": {
+  "sku": "FaisalX-2827",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:56.410Z"
+ },
+ "FaisalX-2822": {
+  "sku": "FaisalX-2822",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:56.508Z"
+ },
+ "FaisalX-2824": {
+  "sku": "FaisalX-2824",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:56.569Z"
+ },
+ "FaisalX-2820": {
+  "sku": "FaisalX-2820",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:56.690Z"
+ },
+ "FaisalX-2817": {
+  "sku": "FaisalX-2817",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:56.754Z"
+ },
+ "FaisalX-297": {
+  "sku": "FaisalX-297",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:56.817Z"
+ },
+ "FaisalX-293": {
+  "sku": "FaisalX-293",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:56.896Z"
+ },
+ "FaisalX-287": {
+  "sku": "FaisalX-287",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:56.994Z"
+ },
+ "FaisalX-285": {
+  "sku": "FaisalX-285",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:57.066Z"
+ },
+ "FaisalX-295": {
+  "sku": "FaisalX-295",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:57.146Z"
+ },
+ "FaisalX-289": {
+  "sku": "FaisalX-289",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:57.222Z"
+ },
+ "FaisalX-284": {
+  "sku": "FaisalX-284",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:57.305Z"
+ },
+ "FaisalX-294": {
+  "sku": "FaisalX-294",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:57.371Z"
+ },
+ "FaisalX-306": {
+  "sku": "FaisalX-306",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:57.431Z"
+ },
+ "FaisalX-325": {
+  "sku": "FaisalX-325",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:57.494Z"
+ },
+ "FaisalX-318": {
+  "sku": "FaisalX-318",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:57.571Z"
+ },
+ "FaisalX-324": {
+  "sku": "FaisalX-324",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:57.644Z"
+ },
+ "FaisalX-321": {
+  "sku": "FaisalX-321",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:57.739Z"
+ },
+ "FaisalX-3323": {
+  "sku": "FaisalX-3323",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:57.806Z"
+ },
+ "FaisalX-3333": {
+  "sku": "FaisalX-3333",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:57.878Z"
+ },
+ "FaisalX-3327": {
+  "sku": "FaisalX-3327",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:57.962Z"
+ },
+ "FaisalX-3329": {
+  "sku": "FaisalX-3329",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:58.062Z"
+ },
+ "FaisalX-3330": {
+  "sku": "FaisalX-3330",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:58.126Z"
+ },
+ "FaisalX-3345": {
+  "sku": "FaisalX-3345",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:58.202Z"
+ },
+ "FaisalX-3346": {
+  "sku": "FaisalX-3346",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:58.268Z"
+ },
+ "FaisalX-3352": {
+  "sku": "FaisalX-3352",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:58.355Z"
+ },
+ "FaisalX-3357": {
+  "sku": "FaisalX-3357",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:58.455Z"
+ },
+ "FaisalX-3356": {
+  "sku": "FaisalX-3356",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:58.593Z"
+ },
+ "FaisalX-3350": {
+  "sku": "FaisalX-3350",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:58.685Z"
+ },
+ "FaisalX-336": {
+  "sku": "FaisalX-336",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:58.781Z"
+ },
+ "FaisalX-3353": {
+  "sku": "FaisalX-3353",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:58.867Z"
+ },
+ "FaisalX-3387": {
+  "sku": "FaisalX-3387",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:59.322Z"
+ },
+ "FaisalX-3390": {
+  "sku": "FaisalX-3390",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:59.414Z"
+ },
+ "FaisalX-339": {
+  "sku": "FaisalX-339",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:59.500Z"
+ },
+ "FaisalX-3375": {
+  "sku": "FaisalX-3375",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:59.573Z"
+ },
+ "FaisalX-3381": {
+  "sku": "FaisalX-3381",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:59.659Z"
+ },
+ "FaisalX-3399": {
+  "sku": "FaisalX-3399",
+  "status": "applied",
+  "feedId": "18C084474AB750099AB2447FBC466C39@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:17:59.727Z"
+ },
+ "FaisalX-3402": {
+  "sku": "FaisalX-3402",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:52.788Z"
+ },
+ "FaisalX-340": {
+  "sku": "FaisalX-340",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.000Z"
+ },
+ "FaisalX-3396": {
+  "sku": "FaisalX-3396",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.067Z"
+ },
+ "FaisalX-3395": {
+  "sku": "FaisalX-3395",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.122Z"
+ },
+ "FaisalX-3398": {
+  "sku": "FaisalX-3398",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.177Z"
+ },
+ "FaisalX-3392": {
+  "sku": "FaisalX-3392",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.232Z"
+ },
+ "FaisalX-3405": {
+  "sku": "FaisalX-3405",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.291Z"
+ },
+ "FaisalX-3414": {
+  "sku": "FaisalX-3414",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.353Z"
+ },
+ "FaisalX-3426": {
+  "sku": "FaisalX-3426",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.420Z"
+ },
+ "FaisalX-3432": {
+  "sku": "FaisalX-3432",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.474Z"
+ },
+ "FaisalX-3422": {
+  "sku": "FaisalX-3422",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.530Z"
+ },
+ "FaisalX-3411": {
+  "sku": "FaisalX-3411",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.586Z"
+ },
+ "FaisalX-3431": {
+  "sku": "FaisalX-3431",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.646Z"
+ },
+ "FaisalX-3407": {
+  "sku": "FaisalX-3407",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.700Z"
+ },
+ "FaisalX-344": {
+  "sku": "FaisalX-344",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.756Z"
+ },
+ "FaisalX-3449": {
+  "sku": "FaisalX-3449",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.816Z"
+ },
+ "FaisalX-3435": {
+  "sku": "FaisalX-3435",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.871Z"
+ },
+ "FaisalX-3440": {
+  "sku": "FaisalX-3440",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.926Z"
+ },
+ "FaisalX-3442": {
+  "sku": "FaisalX-3442",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:53.981Z"
+ },
+ "FaisalX-3438": {
+  "sku": "FaisalX-3438",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:54.037Z"
+ },
+ "FaisalX-3450": {
+  "sku": "FaisalX-3450",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:54.092Z"
+ },
+ "FaisalX-3443": {
+  "sku": "FaisalX-3443",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:54.411Z"
+ },
+ "FaisalX-3451": {
+  "sku": "FaisalX-3451",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:54.471Z"
+ },
+ "FaisalX-3469": {
+  "sku": "FaisalX-3469",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:54.526Z"
+ },
+ "FaisalX-347": {
+  "sku": "FaisalX-347",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:54.591Z"
+ },
+ "FaisalX-3463": {
+  "sku": "FaisalX-3463",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:54.680Z"
+ },
+ "FaisalX-3468": {
+  "sku": "FaisalX-3468",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:54.738Z"
+ },
+ "FaisalX-3465": {
+  "sku": "FaisalX-3465",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:54.828Z"
+ },
+ "FaisalX-3460": {
+  "sku": "FaisalX-3460",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:54.883Z"
+ },
+ "FaisalX-3456": {
+  "sku": "FaisalX-3456",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:54.957Z"
+ },
+ "FaisalX-348": {
+  "sku": "FaisalX-348",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.011Z"
+ },
+ "FaisalX-3473": {
+  "sku": "FaisalX-3473",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.069Z"
+ },
+ "FaisalX-3480": {
+  "sku": "FaisalX-3480",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.130Z"
+ },
+ "FaisalX-3478": {
+  "sku": "FaisalX-3478",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.185Z"
+ },
+ "FaisalX-3470": {
+  "sku": "FaisalX-3470",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.241Z"
+ },
+ "FaisalX-3474": {
+  "sku": "FaisalX-3474",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.296Z"
+ },
+ "FaisalX-3486": {
+  "sku": "FaisalX-3486",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.357Z"
+ },
+ "FaisalX-349": {
+  "sku": "FaisalX-349",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.412Z"
+ },
+ "FaisalX-3495": {
+  "sku": "FaisalX-3495",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.466Z"
+ },
+ "FaisalX-3494": {
+  "sku": "FaisalX-3494",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.530Z"
+ },
+ "FaisalX-3499": {
+  "sku": "FaisalX-3499",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.586Z"
+ },
+ "FaisalX-3500": {
+  "sku": "FaisalX-3500",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.650Z"
+ },
+ "FaisalX-3491": {
+  "sku": "FaisalX-3491",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.709Z"
+ },
+ "FaisalX-3497": {
+  "sku": "FaisalX-3497",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.789Z"
+ },
+ "FaisalX-3487": {
+  "sku": "FaisalX-3487",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.859Z"
+ },
+ "FaisalX-3534": {
+  "sku": "FaisalX-3534",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:55.944Z"
+ },
+ "FaisalX-3505": {
+  "sku": "FaisalX-3505",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:56.008Z"
+ },
+ "FaisalX-3508": {
+  "sku": "FaisalX-3508",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:56.064Z"
+ },
+ "FaisalX-3507": {
+  "sku": "FaisalX-3507",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:56.135Z"
+ },
+ "FaisalX-3502": {
+  "sku": "FaisalX-3502",
+  "status": "submitted",
+  "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T04:51:56.192Z"
+ },
+ "FaisalX-3528": {
+  "sku": "FaisalX-3528",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:00.617Z"
+ },
+ "FaisalX-3501": {
+  "sku": "FaisalX-3501",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:00.730Z"
+ },
+ "FaisalX-3535": {
+  "sku": "FaisalX-3535",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:00.837Z"
+ },
+ "FaisalX-3545": {
+  "sku": "FaisalX-3545",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:00.917Z"
+ },
+ "FaisalX-3543": {
+  "sku": "FaisalX-3543",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:00.994Z"
+ },
+ "FaisalX-3551": {
+  "sku": "FaisalX-3551",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:01.070Z"
+ },
+ "FaisalX-3556": {
+  "sku": "FaisalX-3556",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:01.154Z"
+ },
+ "FaisalX-3547": {
+  "sku": "FaisalX-3547",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:01.253Z"
+ },
+ "FaisalX-3540": {
+  "sku": "FaisalX-3540",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:01.364Z"
+ },
+ "FaisalX-3563": {
+  "sku": "FaisalX-3563",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:01.441Z"
+ },
+ "FaisalX-3557": {
+  "sku": "FaisalX-3557",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:01.510Z"
+ },
+ "FaisalX-3561": {
+  "sku": "FaisalX-3561",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:01.613Z"
+ },
+ "FaisalX-3570": {
+  "sku": "FaisalX-3570",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:01.693Z"
+ },
+ "FaisalX-3558": {
+  "sku": "FaisalX-3558",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:01.757Z"
+ },
+ "FaisalX-3560": {
+  "sku": "FaisalX-3560",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:01.867Z"
+ },
+ "FaisalX-3568": {
+  "sku": "FaisalX-3568",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:01.949Z"
+ },
+ "FaisalX-3567": {
+  "sku": "FaisalX-3567",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.043Z"
+ },
+ "FaisalX-3581": {
+  "sku": "FaisalX-3581",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.142Z"
+ },
+ "FaisalX-3580": {
+  "sku": "FaisalX-3580",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.211Z"
+ },
+ "FaisalX-3576": {
+  "sku": "FaisalX-3576",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.296Z"
+ },
+ "FaisalX-3587": {
+  "sku": "FaisalX-3587",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.361Z"
+ },
+ "FaisalX-3575": {
+  "sku": "FaisalX-3575",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.435Z"
+ },
+ "FaisalX-3582": {
+  "sku": "FaisalX-3582",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.516Z"
+ },
+ "FaisalX-3584": {
+  "sku": "FaisalX-3584",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.578Z"
+ },
+ "FaisalX-3589": {
+  "sku": "FaisalX-3589",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.633Z"
+ },
+ "FaisalX-3599": {
+  "sku": "FaisalX-3599",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.695Z"
+ },
+ "FaisalX-3591": {
+  "sku": "FaisalX-3591",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.762Z"
+ },
+ "FaisalX-3597": {
+  "sku": "FaisalX-3597",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.840Z"
+ },
+ "FaisalX-3601": {
+  "sku": "FaisalX-3601",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.906Z"
+ },
+ "FaisalX-3594": {
+  "sku": "FaisalX-3594",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:02.980Z"
+ },
+ "FaisalX-3592": {
+  "sku": "FaisalX-3592",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:03.066Z"
+ },
+ "FaisalX-359": {
+  "sku": "FaisalX-359",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:03.524Z"
+ },
+ "FaisalX-3612": {
+  "sku": "FaisalX-3612",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:03.587Z"
+ },
+ "FaisalX-361": {
+  "sku": "FaisalX-361",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:03.688Z"
+ },
+ "FaisalX-3602": {
+  "sku": "FaisalX-3602",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:03.806Z"
+ },
+ "FaisalX-3617": {
+  "sku": "FaisalX-3617",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:03.887Z"
+ },
+ "FaisalX-3614": {
+  "sku": "FaisalX-3614",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:03.985Z"
+ },
+ "FaisalX-3610": {
+  "sku": "FaisalX-3610",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:04.095Z"
+ },
+ "FaisalX-3608": {
+  "sku": "FaisalX-3608",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:04.172Z"
+ },
+ "FaisalX-3609": {
+  "sku": "FaisalX-3609",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:04.245Z"
+ },
+ "FaisalX-3631": {
+  "sku": "FaisalX-3631",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:04.313Z"
+ },
+ "FaisalX-3635": {
+  "sku": "FaisalX-3635",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:04.375Z"
+ },
+ "FaisalX-3620": {
+  "sku": "FaisalX-3620",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:04.442Z"
+ },
+ "FaisalX-3623": {
+  "sku": "FaisalX-3623",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:04.526Z"
+ },
+ "FaisalX-3633": {
+  "sku": "FaisalX-3633",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:04.599Z"
+ },
+ "FaisalX-362": {
+  "sku": "FaisalX-362",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:04.672Z"
+ },
+ "FaisalX-3636": {
+  "sku": "FaisalX-3636",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:04.789Z"
+ },
+ "FaisalX-3650": {
+  "sku": "FaisalX-3650",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:04.888Z"
+ },
+ "FaisalX-3642": {
+  "sku": "FaisalX-3642",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:04.954Z"
+ },
+ "FaisalX-3644": {
+  "sku": "FaisalX-3644",
+  "status": "applied",
+  "feedId": "18C085EFAE775C4487D07723E18B92E0@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T06:18:05.019Z"
+ },
+ "FaisalX-3649": {
+  "sku": "FaisalX-3649",
+  "status": "applied",
+  "feedId": "18C086C4246C5AF79328FE84F5DC1D9D@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T05:12:48.764Z"
+ },
+ "FaisalX-1265": {
+  "sku": "FaisalX-1265",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:52.384Z"
+ },
+ "FBM-05": {
+  "sku": "FBM-05",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:52.567Z"
+ },
+ "FaisalX-1121": {
+  "sku": "FaisalX-1121",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:52.632Z"
+ },
+ "FaisalX-1113": {
+  "sku": "FaisalX-1113",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:52.721Z"
+ },
+ "FaisalX-1112": {
+  "sku": "FaisalX-1112",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:52.829Z"
+ },
+ "FaisalX-1338": {
+  "sku": "FaisalX-1338",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:52.892Z"
+ },
+ "FaisalX-1351": {
+  "sku": "FaisalX-1351",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:52.958Z"
+ },
+ "FaisalX-1348": {
+  "sku": "FaisalX-1348",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:53.018Z"
+ },
+ "FaisalX-1334": {
+  "sku": "FaisalX-1334",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:53.084Z"
+ },
+ "FaisalX-1655": {
+  "sku": "FaisalX-1655",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:53.167Z"
+ },
+ "FaisalX-1639": {
+  "sku": "FaisalX-1639",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:53.232Z"
+ },
+ "FaisalX-1855": {
+  "sku": "FaisalX-1855",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:53.297Z"
+ },
+ "FaisalX-1834": {
+  "sku": "FaisalX-1834",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:53.354Z"
+ },
+ "FaisalX-192": {
+  "sku": "FaisalX-192",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:53.416Z"
+ },
+ "FaisalX-1964": {
+  "sku": "FaisalX-1964",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:53.874Z"
+ },
+ "FaisalX-1956": {
+  "sku": "FaisalX-1956",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:53.934Z"
+ },
+ "FaisalX-1854": {
+  "sku": "FaisalX-1854",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:53.991Z"
+ },
+ "FaisalX-1970": {
+  "sku": "FaisalX-1970",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.053Z"
+ },
+ "FaisalX-198": {
+  "sku": "FaisalX-198",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.112Z"
+ },
+ "FaisalX-201": {
+  "sku": "FaisalX-201",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.190Z"
+ },
+ "FaisalX-203": {
+  "sku": "FaisalX-203",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.261Z"
+ },
+ "FaisalX-204": {
+  "sku": "FaisalX-204",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.341Z"
+ },
+ "FaisalX-2150": {
+  "sku": "FaisalX-2150",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.401Z"
+ },
+ "FaisalX-2151": {
+  "sku": "FaisalX-2151",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.465Z"
+ },
+ "FaisalX-229": {
+  "sku": "FaisalX-229",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.519Z"
+ },
+ "FaisalX-2295": {
+  "sku": "FaisalX-2295",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.583Z"
+ },
+ "FaisalX-2291": {
+  "sku": "FaisalX-2291",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.668Z"
+ },
+ "FaisalX-230": {
+  "sku": "FaisalX-230",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.736Z"
+ },
+ "FaisalX-2285": {
+  "sku": "FaisalX-2285",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.801Z"
+ },
+ "FaisalX-2296": {
+  "sku": "FaisalX-2296",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.871Z"
+ },
+ "FaisalX-235": {
+  "sku": "FaisalX-235",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:54.937Z"
+ },
+ "FaisalX-233": {
+  "sku": "FaisalX-233",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:55.020Z"
+ },
+ "FaisalX-232": {
+  "sku": "FaisalX-232",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:55.087Z"
+ },
+ "FaisalX-231": {
+  "sku": "FaisalX-231",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:55.153Z"
+ },
+ "FaisalX-234": {
+  "sku": "FaisalX-234",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:55.232Z"
+ },
+ "FaisalX-2492": {
+  "sku": "FaisalX-2492",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:55.285Z"
+ },
+ "FaisalX-2594": {
+  "sku": "FaisalX-2594",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:55.351Z"
+ },
+ "FaisalX-2575": {
+  "sku": "FaisalX-2575",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:55.417Z"
+ },
+ "FaisalX-2581": {
+  "sku": "FaisalX-2581",
+  "status": "applied",
+  "feedId": "18C087641A8D5DC190C4CF3481D7FC4B@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T07:17:55.477Z"
+ },
+ "FaisalX-2766": {
+  "sku": "FaisalX-2766",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:27.801Z"
+ },
+ "FaisalX-2773": {
+  "sku": "FaisalX-2773",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:27.979Z"
+ },
+ "FaisalX-2734": {
+  "sku": "FaisalX-2734",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:28.216Z"
+ },
+ "FaisalX-2767": {
+  "sku": "FaisalX-2767",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:28.432Z"
+ },
+ "FaisalX-2788": {
+  "sku": "FaisalX-2788",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:28.690Z"
+ },
+ "FaisalX-2728": {
+  "sku": "FaisalX-2728",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:28.922Z"
+ },
+ "FaisalX-2802": {
+  "sku": "FaisalX-2802",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:29.175Z"
+ },
+ "FaisalX-2803": {
+  "sku": "FaisalX-2803",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:29.393Z"
+ },
+ "FaisalX-329": {
+  "sku": "FaisalX-329",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:29.611Z"
+ },
+ "FaisalX-317": {
+  "sku": "FaisalX-317",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:29.831Z"
+ },
+ "FaisalX-3365": {
+  "sku": "FaisalX-3365",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:30.044Z"
+ },
+ "FaisalX-3429": {
+  "sku": "FaisalX-3429",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:30.239Z"
+ },
+ "FaisalX-3362": {
+  "sku": "FaisalX-3362",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:30.413Z"
+ },
+ "FaisalX-365": {
+  "sku": "FaisalX-365",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:30.664Z"
+ },
+ "FaisalX-3471": {
+  "sku": "FaisalX-3471",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:30.855Z"
+ },
+ "FaisalX-3539": {
+  "sku": "FaisalX-3539",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:31.017Z"
+ },
+ "FaisalX-3504": {
+  "sku": "FaisalX-3504",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:31.209Z"
+ },
+ "FaisalX-358": {
+  "sku": "FaisalX-358",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:31.347Z"
+ },
+ "FaisalX-3638": {
+  "sku": "FaisalX-3638",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:31.534Z"
+ },
+ "FaisalX-3639": {
+  "sku": "FaisalX-3639",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:31.673Z"
+ },
+ "FaisalX-3670": {
+  "sku": "FaisalX-3670",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:31.920Z"
+ },
+ "FaisalX-3686": {
+  "sku": "FaisalX-3686",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:32.135Z"
+ },
+ "FaisalX-3683": {
+  "sku": "FaisalX-3683",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:32.285Z"
+ },
+ "FaisalX-3677": {
+  "sku": "FaisalX-3677",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:32.486Z"
+ },
+ "FaisalX-3665": {
+  "sku": "FaisalX-3665",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:32.662Z"
+ },
+ "FaisalX-366": {
+  "sku": "FaisalX-366",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:34.155Z"
+ },
+ "FaisalX-3663": {
+  "sku": "FaisalX-3663",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:34.328Z"
+ },
+ "FaisalX-3714": {
+  "sku": "FaisalX-3714",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:34.489Z"
+ },
+ "FaisalX-3694": {
+  "sku": "FaisalX-3694",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:34.697Z"
+ },
+ "FaisalX-3712": {
+  "sku": "FaisalX-3712",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:34.835Z"
+ },
+ "FaisalX-370": {
+  "sku": "FaisalX-370",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:35.018Z"
+ },
+ "FaisalX-371": {
+  "sku": "FaisalX-371",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:35.143Z"
+ },
+ "FaisalX-369": {
+  "sku": "FaisalX-369",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:35.255Z"
+ },
+ "FaisalX-3690": {
+  "sku": "FaisalX-3690",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:35.516Z"
+ },
+ "FaisalX-3688": {
+  "sku": "FaisalX-3688",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:35.737Z"
+ },
+ "FaisalX-3740": {
+  "sku": "FaisalX-3740",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:35.987Z"
+ },
+ "FaisalX-3737": {
+  "sku": "FaisalX-3737",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:36.170Z"
+ },
+ "FaisalX-3720": {
+  "sku": "FaisalX-3720",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:36.435Z"
+ },
+ "FaisalX-3719": {
+  "sku": "FaisalX-3719",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:36.620Z"
+ },
+ "FaisalX-3736": {
+  "sku": "FaisalX-3736",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:36.772Z"
+ },
+ "FaisalX-3760": {
+  "sku": "FaisalX-3760",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:36.892Z"
+ },
+ "FaisalX-3747": {
+  "sku": "FaisalX-3747",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:37.021Z"
+ },
+ "FaisalX-3745": {
+  "sku": "FaisalX-3745",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:37.186Z"
+ },
+ "FaisalX-3764": {
+  "sku": "FaisalX-3764",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:37.319Z"
+ },
+ "FaisalX-3773": {
+  "sku": "FaisalX-3773",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:37.438Z"
+ },
+ "FaisalX-3741": {
+  "sku": "FaisalX-3741",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:37.567Z"
+ },
+ "FaisalX-3790": {
+  "sku": "FaisalX-3790",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:37.729Z"
+ },
+ "FaisalX-3794": {
+  "sku": "FaisalX-3794",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:37.891Z"
+ },
+ "FaisalX-3779": {
+  "sku": "FaisalX-3779",
+  "status": "applied",
+  "feedId": "18C08AB01E43565DB615514457C1971F@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:38.080Z"
+ },
+ "FaisalX-3784": {
+  "sku": "FaisalX-3784",
+  "status": "applied",
+  "feedId": "18C08B84A5F4559480A21833CC7D8387@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:39.131Z"
+ },
+ "FaisalX-3777": {
+  "sku": "FaisalX-3777",
+  "status": "applied",
+  "feedId": "18C08B84A5F4559480A21833CC7D8387@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:39.293Z"
+ },
+ "FaisalX-3786": {
+  "sku": "FaisalX-3786",
+  "status": "applied",
+  "feedId": "18C08B84A5F4559480A21833CC7D8387@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:39.424Z"
+ },
+ "FaisalX-3791": {
+  "sku": "FaisalX-3791",
+  "status": "applied",
+  "feedId": "18C08B84A5F4559480A21833CC7D8387@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:00:39.528Z"
+ },
+ "FaisalX-3807": {
+  "sku": "FaisalX-3807",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:53.032Z"
+ },
+ "FaisalX-3803": {
+  "sku": "FaisalX-3803",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:53.094Z"
+ },
+ "FaisalX-3802": {
+  "sku": "FaisalX-3802",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:53.158Z"
+ },
+ "FaisalX-380": {
+  "sku": "FaisalX-380",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:53.215Z"
+ },
+ "FaisalX-3824": {
+  "sku": "FaisalX-3824",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:53.673Z"
+ },
+ "FaisalX-383": {
+  "sku": "FaisalX-383",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:53.736Z"
+ },
+ "FaisalX-3814": {
+  "sku": "FaisalX-3814",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:53.798Z"
+ },
+ "FaisalX-3820": {
+  "sku": "FaisalX-3820",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:53.872Z"
+ },
+ "FaisalX-385": {
+  "sku": "FaisalX-385",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:53.931Z"
+ },
+ "FaisalX-3864": {
+  "sku": "FaisalX-3864",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:53.990Z"
+ },
+ "FaisalX-3858": {
+  "sku": "FaisalX-3858",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.050Z"
+ },
+ "FaisalX-3839": {
+  "sku": "FaisalX-3839",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.119Z"
+ },
+ "FaisalX-3865": {
+  "sku": "FaisalX-3865",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.186Z"
+ },
+ "FaisalX-3875": {
+  "sku": "FaisalX-3875",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.255Z"
+ },
+ "FaisalX-3884": {
+  "sku": "FaisalX-3884",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.317Z"
+ },
+ "FaisalX-3886": {
+  "sku": "FaisalX-3886",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.382Z"
+ },
+ "FaisalX-3880": {
+  "sku": "FaisalX-3880",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.447Z"
+ },
+ "FaisalX-3885": {
+  "sku": "FaisalX-3885",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.507Z"
+ },
+ "FaisalX-3872": {
+  "sku": "FaisalX-3872",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.577Z"
+ },
+ "FaisalX-3892": {
+  "sku": "FaisalX-3892",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.647Z"
+ },
+ "FaisalX-3881": {
+  "sku": "FaisalX-3881",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.704Z"
+ },
+ "FaisalX-3897": {
+  "sku": "FaisalX-3897",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.798Z"
+ },
+ "FaisalX-391": {
+  "sku": "FaisalX-391",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.868Z"
+ },
+ "FaisalX-3945": {
+  "sku": "FaisalX-3945",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.929Z"
+ },
+ "FaisalX-3973": {
+  "sku": "FaisalX-3973",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:54.989Z"
+ },
+ "FaisalX-3894": {
+  "sku": "FaisalX-3894",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.064Z"
+ },
+ "FaisalX-3939": {
+  "sku": "FaisalX-3939",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.128Z"
+ },
+ "FaisalX-4006": {
+  "sku": "FaisalX-4006",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.192Z"
+ },
+ "FaisalX-3974": {
+  "sku": "FaisalX-3974",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.255Z"
+ },
+ "FaisalX-3983": {
+  "sku": "FaisalX-3983",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.331Z"
+ },
+ "FaisalX-4004": {
+  "sku": "FaisalX-4004",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.397Z"
+ },
+ "FaisalX-3991": {
+  "sku": "FaisalX-3991",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.461Z"
+ },
+ "FaisalX-3978": {
+  "sku": "FaisalX-3978",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.523Z"
+ },
+ "FaisalX-3992": {
+  "sku": "FaisalX-3992",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.588Z"
+ },
+ "FaisalX-4019": {
+  "sku": "FaisalX-4019",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.657Z"
+ },
+ "FaisalX-4007": {
+  "sku": "FaisalX-4007",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.717Z"
+ },
+ "FaisalX-4008": {
+  "sku": "FaisalX-4008",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.781Z"
+ },
+ "FaisalX-4025": {
+  "sku": "FaisalX-4025",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.866Z"
+ },
+ "FaisalX-4026": {
+  "sku": "FaisalX-4026",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:55.950Z"
+ },
+ "FaisalX-4050": {
+  "sku": "FaisalX-4050",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:56.013Z"
+ },
+ "FaisalX-4058": {
+  "sku": "FaisalX-4058",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:56.076Z"
+ },
+ "FaisalX-4043": {
+  "sku": "FaisalX-4043",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:56.141Z"
+ },
+ "FaisalX-4051": {
+  "sku": "FaisalX-4051",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:56.201Z"
+ },
+ "FaisalX-4054": {
+  "sku": "FaisalX-4054",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:56.259Z"
+ },
+ "FaisalX-4042": {
+  "sku": "FaisalX-4042",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:56.337Z"
+ },
+ "FaisalX-4064": {
+  "sku": "FaisalX-4064",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:56.401Z"
+ },
+ "FaisalX-4059": {
+  "sku": "FaisalX-4059",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:56.486Z"
+ },
+ "FaisalX-4060": {
+  "sku": "FaisalX-4060",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:56.550Z"
+ },
+ "FaisalX-4065": {
+  "sku": "FaisalX-4065",
+  "status": "applied",
+  "feedId": "18C09D64F08554B99F0CB4D110311959@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T12:03:56.614Z"
+ },
+ "FaisalX-4071": {
+  "sku": "FaisalX-4071",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:23.547Z"
+ },
+ "FaisalX-4062": {
+  "sku": "FaisalX-4062",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:23.755Z"
+ },
+ "FaisalX-4068": {
+  "sku": "FaisalX-4068",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:23.858Z"
+ },
+ "FaisalX-4070": {
+  "sku": "FaisalX-4070",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:23.973Z"
+ },
+ "FaisalX-4080": {
+  "sku": "FaisalX-4080",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:24.074Z"
+ },
+ "FaisalX-4072": {
+  "sku": "FaisalX-4072",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:24.179Z"
+ },
+ "FaisalX-4073": {
+  "sku": "FaisalX-4073",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:25.276Z"
+ },
+ "FaisalX-4112": {
+  "sku": "FaisalX-4112",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:25.393Z"
+ },
+ "FaisalX-4121": {
+  "sku": "FaisalX-4121",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:25.608Z"
+ },
+ "FaisalX-4142": {
+  "sku": "FaisalX-4142",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:25.722Z"
+ },
+ "FaisalX-4122": {
+  "sku": "FaisalX-4122",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:25.869Z"
+ },
+ "FaisalX-4137": {
+  "sku": "FaisalX-4137",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:26.026Z"
+ },
+ "FaisalX-4167": {
+  "sku": "FaisalX-4167",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:26.163Z"
+ },
+ "FaisalX-4154": {
+  "sku": "FaisalX-4154",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:26.328Z"
+ },
+ "FaisalX-4165": {
+  "sku": "FaisalX-4165",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:26.468Z"
+ },
+ "FaisalX-4155": {
+  "sku": "FaisalX-4155",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:26.596Z"
+ },
+ "FaisalX-4215": {
+  "sku": "FaisalX-4215",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:26.697Z"
+ },
+ "FaisalX-4244": {
+  "sku": "FaisalX-4244",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:26.804Z"
+ },
+ "FaisalX-4257": {
+  "sku": "FaisalX-4257",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:26.990Z"
+ },
+ "FaisalX-4254": {
+  "sku": "FaisalX-4254",
+  "status": "applied",
+  "feedId": "18C09D82CC995CBBBA6A65BF42A65EE9@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:27.106Z"
+ },
+ "FaisalX-4279": {
+  "sku": "FaisalX-4279",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:35.113Z"
+ },
+ "FaisalX-4379": {
+  "sku": "FaisalX-4379",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:35.255Z"
+ },
+ "FaisalX-4391": {
+  "sku": "FaisalX-4391",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:35.316Z"
+ },
+ "FaisalX-4389": {
+  "sku": "FaisalX-4389",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:35.391Z"
+ },
+ "FaisalX-4447": {
+  "sku": "FaisalX-4447",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:35.460Z"
+ },
+ "FaisalX-4448": {
+  "sku": "FaisalX-4448",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:35.522Z"
+ },
+ "FaisalX-4452": {
+  "sku": "FaisalX-4452",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:35.581Z"
+ },
+ "FaisalX-4453": {
+  "sku": "FaisalX-4453",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:35.640Z"
+ },
+ "FaisalX-4469": {
+  "sku": "FaisalX-4469",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:35.697Z"
+ },
+ "FaisalX-4459": {
+  "sku": "FaisalX-4459",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:36.163Z"
+ },
+ "FaisalX-4475": {
+  "sku": "FaisalX-4475",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:36.222Z"
+ },
+ "FaisalX-4476": {
+  "sku": "FaisalX-4476",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:36.281Z"
+ },
+ "FaisalX-4480": {
+  "sku": "FaisalX-4480",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:36.335Z"
+ },
+ "FaisalX-4477": {
+  "sku": "FaisalX-4477",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:36.391Z"
+ },
+ "FaisalX-4508": {
+  "sku": "FaisalX-4508",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:36.448Z"
+ },
+ "FaisalX-4497": {
+  "sku": "FaisalX-4497",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:36.502Z"
+ },
+ "FaisalX-4525": {
+  "sku": "FaisalX-4525",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:36.572Z"
+ },
+ "FaisalX-4526": {
+  "sku": "FaisalX-4526",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:36.637Z"
+ },
+ "FaisalX-4520": {
+  "sku": "FaisalX-4520",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:36.698Z"
+ },
+ "FaisalX-4516": {
+  "sku": "FaisalX-4516",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:36.808Z"
+ },
+ "FaisalX-4521": {
+  "sku": "FaisalX-4521",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:36.867Z"
+ },
+ "FaisalX-4524": {
+  "sku": "FaisalX-4524",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:36.936Z"
+ },
+ "FaisalX-4514": {
+  "sku": "FaisalX-4514",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.005Z"
+ },
+ "FaisalX-4534": {
+  "sku": "FaisalX-4534",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.063Z"
+ },
+ "FaisalX-4535": {
+  "sku": "FaisalX-4535",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.125Z"
+ },
+ "FaisalX-4544": {
+  "sku": "FaisalX-4544",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.184Z"
+ },
+ "FaisalX-4597": {
+  "sku": "FaisalX-4597",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.249Z"
+ },
+ "FaisalX-4571": {
+  "sku": "FaisalX-4571",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.328Z"
+ },
+ "FaisalX-4580": {
+  "sku": "FaisalX-4580",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.406Z"
+ },
+ "FaisalX-4589": {
+  "sku": "FaisalX-4589",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.467Z"
+ },
+ "FaisalX-4592": {
+  "sku": "FaisalX-4592",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.547Z"
+ },
+ "FaisalX-4616": {
+  "sku": "FaisalX-4616",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.615Z"
+ },
+ "FaisalX-4604": {
+  "sku": "FaisalX-4604",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.681Z"
+ },
+ "FaisalX-4601": {
+  "sku": "FaisalX-4601",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.742Z"
+ },
+ "FaisalX-4622": {
+  "sku": "FaisalX-4622",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.816Z"
+ },
+ "FaisalX-4625": {
+  "sku": "FaisalX-4625",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:37.929Z"
+ },
+ "FaisalX-4602": {
+  "sku": "FaisalX-4602",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:38.332Z"
+ },
+ "FaisalX-4605": {
+  "sku": "FaisalX-4605",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:38.457Z"
+ },
+ "FaisalX-4613": {
+  "sku": "FaisalX-4613",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:38.528Z"
+ },
+ "FaisalX-4626": {
+  "sku": "FaisalX-4626",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:38.602Z"
+ },
+ "FaisalX-4641": {
+  "sku": "FaisalX-4641",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:38.675Z"
+ },
+ "FaisalX-4644": {
+  "sku": "FaisalX-4644",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:38.758Z"
+ },
+ "FaisalX-4647": {
+  "sku": "FaisalX-4647",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:38.821Z"
+ },
+ "FaisalX-4627": {
+  "sku": "FaisalX-4627",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:38.895Z"
+ },
+ "FaisalX-4628": {
+  "sku": "FaisalX-4628",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:38.965Z"
+ },
+ "FaisalX-4715": {
+  "sku": "FaisalX-4715",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:39.031Z"
+ },
+ "FaisalX-4719": {
+  "sku": "FaisalX-4719",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:39.099Z"
+ },
+ "FaisalX-4713": {
+  "sku": "FaisalX-4713",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:39.175Z"
+ },
+ "FaisalX-4678": {
+  "sku": "FaisalX-4678",
+  "status": "applied",
+  "feedId": "18C0A1AEC5025BE5AAF12FBFAA56F5A1@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T16:18:39.229Z"
+ },
+ "FaisalX-4684": {
+  "sku": "FaisalX-4684",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:27.650Z"
+ },
+ "FaisalX-4759": {
+  "sku": "FaisalX-4759",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:27.781Z"
+ },
+ "FaisalX-4738": {
+  "sku": "FaisalX-4738",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:27.946Z"
+ },
+ "FaisalX-4739": {
+  "sku": "FaisalX-4739",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:28.113Z"
+ },
+ "FaisalX-4755": {
+  "sku": "FaisalX-4755",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:28.313Z"
+ },
+ "FaisalX-4722": {
+  "sku": "FaisalX-4722",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:28.420Z"
+ },
+ "FaisalX-4750": {
+  "sku": "FaisalX-4750",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:28.543Z"
+ },
+ "FaisalX-4746": {
+  "sku": "FaisalX-4746",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:28.648Z"
+ },
+ "FaisalX-4734": {
+  "sku": "FaisalX-4734",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:28.839Z"
+ },
+ "FaisalX-4765": {
+  "sku": "FaisalX-4765",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:28.970Z"
+ },
+ "FaisalX-4762": {
+  "sku": "FaisalX-4762",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:29.096Z"
+ },
+ "FaisalX-4771": {
+  "sku": "FaisalX-4771",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:29.257Z"
+ },
+ "FaisalX-4766": {
+  "sku": "FaisalX-4766",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:29.383Z"
+ },
+ "FaisalX-4764": {
+  "sku": "FaisalX-4764",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:29.564Z"
+ },
+ "FaisalX-4760": {
+  "sku": "FaisalX-4760",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:29.727Z"
+ },
+ "FaisalX-4769": {
+  "sku": "FaisalX-4769",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:29.897Z"
+ },
+ "FaisalX-4770": {
+  "sku": "FaisalX-4770",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:30.041Z"
+ },
+ "FaisalX-4773": {
+  "sku": "FaisalX-4773",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:30.143Z"
+ },
+ "FaisalX-4775": {
+  "sku": "FaisalX-4775",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:30.258Z"
+ },
+ "FaisalX-4785": {
+  "sku": "FaisalX-4785",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:30.391Z"
+ },
+ "FaisalX-4791": {
+  "sku": "FaisalX-4791",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:30.571Z"
+ },
+ "FaisalX-4779": {
+  "sku": "FaisalX-4779",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:30.777Z"
+ },
+ "FaisalX-4777": {
+  "sku": "FaisalX-4777",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:30.911Z"
+ },
+ "FaisalX-4780": {
+  "sku": "FaisalX-4780",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:31.089Z"
+ },
+ "FaisalX-4774": {
+  "sku": "FaisalX-4774",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:31.227Z"
+ },
+ "FaisalX-4798": {
+  "sku": "FaisalX-4798",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:31.353Z"
+ },
+ "FaisalX-4799": {
+  "sku": "FaisalX-4799",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:31.427Z"
+ },
+ "FaisalX-4802": {
+  "sku": "FaisalX-4802",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:31.514Z"
+ },
+ "FaisalX-4796": {
+  "sku": "FaisalX-4796",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:31.623Z"
+ },
+ "FaisalX-4797": {
+  "sku": "FaisalX-4797",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:31.712Z"
+ },
+ "FaisalX-4800": {
+  "sku": "FaisalX-4800",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:31.856Z"
+ },
+ "FaisalX-4877": {
+  "sku": "FaisalX-4877",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:31.991Z"
+ },
+ "FaisalX-4863": {
+  "sku": "FaisalX-4863",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:32.071Z"
+ },
+ "FaisalX-4864": {
+  "sku": "FaisalX-4864",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:32.156Z"
+ },
+ "FaisalX-4859": {
+  "sku": "FaisalX-4859",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:32.234Z"
+ },
+ "FaisalX-4874": {
+  "sku": "FaisalX-4874",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:32.345Z"
+ },
+ "FaisalX-4880": {
+  "sku": "FaisalX-4880",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:32.481Z"
+ },
+ "FaisalX-4861": {
+  "sku": "FaisalX-4861",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:32.578Z"
+ },
+ "FaisalX-4883": {
+  "sku": "FaisalX-4883",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:32.709Z"
+ },
+ "FaisalX-4882": {
+  "sku": "FaisalX-4882",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:32.894Z"
+ },
+ "FaisalX-4962": {
+  "sku": "FaisalX-4962",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:33.008Z"
+ },
+ "FaisalX-4881": {
+  "sku": "FaisalX-4881",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:33.113Z"
+ },
+ "FaisalX-4963": {
+  "sku": "FaisalX-4963",
+  "status": "applied",
+  "feedId": "18C0A283BAD55B979806D9563A6093E9@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T15:04:33.232Z"
+ },
+ "FaisalX-1245": {
+  "sku": "FaisalX-1245",
+  "status": "applied",
+  "feedId": "18C0A7D70C115B4E9D48198B5DAAFA9E@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T17:26:01.098Z"
+ },
+ "FaisalX-1311": {
+  "sku": "FaisalX-1311",
+  "status": "applied",
+  "feedId": "18C0A7D70C115B4E9D48198B5DAAFA9E@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T17:26:01.738Z"
+ },
+ "FaisalX-1286": {
+  "sku": "FaisalX-1286",
+  "status": "applied",
+  "feedId": "18C0A7D70C115B4E9D48198B5DAAFA9E@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T17:26:01.806Z"
+ },
+ "FaisalX-1330": {
+  "sku": "FaisalX-1330",
+  "status": "applied",
+  "feedId": "18C0A7D70C115B4E9D48198B5DAAFA9E@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T17:26:01.899Z"
+ },
+ "FaisalX-1613": {
+  "sku": "FaisalX-1613",
+  "status": "applied",
+  "feedId": "18C0A7D70C115B4E9D48198B5DAAFA9E@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T17:26:01.968Z"
+ },
+ "FaisalX-1641": {
+  "sku": "FaisalX-1641",
+  "status": "applied",
+  "feedId": "18C0A7D70C115B4E9D48198B5DAAFA9E@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-09T17:26:02.083Z"
+ },
+ "FaisalX-1217": {
+  "sku": "FaisalX-1217",
+  "status": "submitted",
+  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T17:44:39.428Z"
+ },
+ "FaisalX-1173": {
+  "sku": "FaisalX-1173",
+  "status": "submitted",
+  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T17:44:39.510Z"
+ },
+ "FaisalX-1154": {
+  "sku": "FaisalX-1154",
+  "status": "submitted",
+  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T17:44:39.572Z"
+ },
+ "FaisalX-1129": {
+  "sku": "FaisalX-1129",
+  "status": "submitted",
+  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T17:44:39.633Z"
+ },
+ "Comm-05": {
+  "sku": "Comm-05",
+  "status": "submitted",
+  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T17:44:39.702Z"
+ },
+ "FaisalX-1200": {
+  "sku": "FaisalX-1200",
+  "status": "submitted",
+  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T17:44:39.807Z"
+ },
+ "FaisalX-1277": {
+  "sku": "FaisalX-1277",
+  "status": "submitted",
+  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T17:44:39.909Z"
+ },
+ "FaisalX-1238": {
+  "sku": "FaisalX-1238",
+  "status": "submitted",
+  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T17:44:39.978Z"
+ },
+ "FaisalX-1301": {
+  "sku": "FaisalX-1301",
+  "status": "submitted",
+  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T17:44:40.053Z"
+ },
+ "FaisalX-1331": {
+  "sku": "FaisalX-1331",
+  "status": "submitted",
+  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T17:44:40.127Z"
+ },
+ "FaisalX-1706": {
+  "sku": "FaisalX-1706",
+  "status": "submitted",
+  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T17:44:40.200Z"
+ },
+ "FaisalX-1669": {
+  "sku": "FaisalX-1669",
+  "status": "submitted",
+  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T17:44:40.263Z"
+ },
+ "FaisalX-1623": {
+  "sku": "FaisalX-1623",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:38.739Z"
+ },
+ "FaisalX-1649": {
+  "sku": "FaisalX-1649",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:39.019Z"
+ },
+ "FaisalX-1759": {
+  "sku": "FaisalX-1759",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:39.114Z"
+ },
+ "FaisalX-1679": {
+  "sku": "FaisalX-1679",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:39.209Z"
+ },
+ "FaisalX-1680": {
+  "sku": "FaisalX-1680",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:39.275Z"
+ },
+ "FaisalX-1726": {
+  "sku": "FaisalX-1726",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:39.362Z"
+ },
+ "FaisalX-1719": {
+  "sku": "FaisalX-1719",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:39.426Z"
+ },
+ "FaisalX-183": {
+  "sku": "FaisalX-183",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:39.486Z"
+ },
+ "FaisalX-1776": {
+  "sku": "FaisalX-1776",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:39.573Z"
+ },
+ "FaisalX-179": {
+  "sku": "FaisalX-179",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:39.651Z"
+ },
+ "FaisalX-1831": {
+  "sku": "FaisalX-1831",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:39.718Z"
+ },
+ "FaisalX-1840": {
+  "sku": "FaisalX-1840",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:39.856Z"
+ },
+ "FaisalX-1985": {
+  "sku": "FaisalX-1985",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:39.942Z"
+ },
+ "FaisalX-2015": {
+  "sku": "FaisalX-2015",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:40.045Z"
+ },
+ "FaisalX-2014": {
+  "sku": "FaisalX-2014",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:40.107Z"
+ },
+ "FaisalX-2008": {
+  "sku": "FaisalX-2008",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:40.175Z"
+ },
+ "FaisalX-2007": {
+  "sku": "FaisalX-2007",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:40.598Z"
+ },
+ "FaisalX-2036": {
+  "sku": "FaisalX-2036",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:40.683Z"
+ },
+ "FaisalX-2043": {
+  "sku": "FaisalX-2043",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:40.746Z"
+ },
+ "FaisalX-2041": {
+  "sku": "FaisalX-2041",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:40.828Z"
+ },
+ "FaisalX-207": {
+  "sku": "FaisalX-207",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:40.959Z"
+ },
+ "FaisalX-2065": {
+  "sku": "FaisalX-2065",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:41.083Z"
+ },
+ "FaisalX-2094": {
+  "sku": "FaisalX-2094",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:41.184Z"
+ },
+ "FaisalX-217": {
+  "sku": "FaisalX-217",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:41.269Z"
+ },
+ "FaisalX-2250": {
+  "sku": "FaisalX-2250",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:41.336Z"
+ },
+ "FaisalX-2209": {
+  "sku": "FaisalX-2209",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:41.484Z"
+ },
+ "FaisalX-2222": {
+  "sku": "FaisalX-2222",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:41.541Z"
+ },
+ "FaisalX-2227": {
+  "sku": "FaisalX-2227",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:41.597Z"
+ },
+ "FaisalX-221": {
+  "sku": "FaisalX-221",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:41.656Z"
+ },
+ "FaisalX-2232": {
+  "sku": "FaisalX-2232",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:41.710Z"
+ },
+ "FaisalX-2252": {
+  "sku": "FaisalX-2252",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:41.770Z"
+ },
+ "FaisalX-2260": {
+  "sku": "FaisalX-2260",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:41.827Z"
+ },
+ "FaisalX-2261": {
+  "sku": "FaisalX-2261",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:41.899Z"
+ },
+ "FaisalX-2263": {
+  "sku": "FaisalX-2263",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:41.992Z"
+ },
+ "FaisalX-2293": {
+  "sku": "FaisalX-2293",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:42.059Z"
+ },
+ "FaisalX-236": {
+  "sku": "FaisalX-236",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:42.168Z"
+ },
+ "FaisalX-2267": {
+  "sku": "FaisalX-2267",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:42.252Z"
+ },
+ "FaisalX-2536": {
+  "sku": "FaisalX-2536",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:42.332Z"
+ },
+ "FaisalX-244": {
+  "sku": "FaisalX-244",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:42.895Z"
+ },
+ "FaisalX-2498": {
+  "sku": "FaisalX-2498",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:42.976Z"
+ },
+ "FaisalX-2499": {
+  "sku": "FaisalX-2499",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:43.095Z"
+ },
+ "FaisalX-2589": {
+  "sku": "FaisalX-2589",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:43.175Z"
+ },
+ "FaisalX-2436": {
+  "sku": "FaisalX-2436",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:43.270Z"
+ },
+ "FaisalX-2608": {
+  "sku": "FaisalX-2608",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:43.339Z"
+ },
+ "FaisalX-2602": {
+  "sku": "FaisalX-2602",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:43.438Z"
+ },
+ "FaisalX-2657": {
+  "sku": "FaisalX-2657",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:43.503Z"
+ },
+ "FaisalX-2796": {
+  "sku": "FaisalX-2796",
+  "status": "submitted",
+  "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-09T18:36:43.575Z"
  }
 }

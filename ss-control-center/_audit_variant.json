@@ -1,0 +1,5740 @@
+[
+ {
+  "sku": "Athar-1592",
+  "listing": "Lay's Party Size Barbecue Potato Chips 15.25 oz. 3 Pack",
+  "donorTitle": "Lay's Barbecue Flavor Party Size Potato Chips - 12.5oz",
+  "missingInDonor": [],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "12.5",
+  "listingSize": "15.25",
+  "score": 1
+ },
+ {
+  "sku": "Athar-1594",
+  "listing": "Lay's Party Size Barbecue Potato Chips 15.25 oz.5 Pack",
+  "donorTitle": "Lay's Barbecue Flavor Party Size Potato Chips - 12.5oz",
+  "missingInDonor": [],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "12.5",
+  "listingSize": "15.25",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1196",
+  "listing": "Sara Lee Whole Wheat Bread 20 oz Soft Pre-Sliced Loaf (Pack of 2)",
+  "donorTitle": "Sara Lee Honey Whole Wheat Bread - 20oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "honey"
+  ],
+  "sizeBad": false,
+  "donorSize": "20",
+  "listingSize": "20",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1274",
+  "listing": "Martin's Hoagie Rolls, 6-Ct Bag (Pack of 2)",
+  "donorTitle": "Martin's Plain Hoagie Rolls - 20oz/6ct",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "plain"
+  ],
+  "sizeBad": false,
+  "donorSize": "20",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1305",
+  "listing": "Fritos Bean Dip, Original, 9 oz Jar (Pack of 3)",
+  "donorTitle": "Fritos Original Flavor Bean Dip, 9 fl oz",
+  "missingInDonor": [
+   "jar"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "9",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1755",
+  "listing": "Dr Pepper Soda Pop, 2 L, Bottle (Pack of 4)",
+  "donorTitle": "Diet Dr Pepper Soda Pop, 2 L, Bottle",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "diet"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1760",
+  "listing": "Pack of 2 - Diet Coke Soda Bottle 2 liter",
+  "donorTitle": "Diet Coke Soda - 2 L Bottle",
+  "missingInDonor": [
+   "liter"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1819",
+  "listing": "7UP Caffeine Free Zero Sugar Lemon Lime Soda Pop, 2 Liter Bottle (Pack of 6)",
+  "donorTitle": "7UP Caffeine Free Zero Sugar Lemon Lime Soda Pop, 2 L, Bottle",
+  "missingInDonor": [
+   "liter"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1846",
+  "listing": "Schweppes Caffeine Free Ginger Ale Soda Pop, 2 Liter Bottle (Pack of 6)",
+  "donorTitle": "Schweppes Caffeine Free Ginger Ale Soda Pop, 2 L, Bottle",
+  "missingInDonor": [
+   "liter"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1839",
+  "listing": "Sidral Mundet Apple Soda, 1.5 Liter Bottle (Pack of 4)",
+  "donorTitle": "Sidral Mundet Apple Soda, 1.58 qt (1.5 Liter), 1 Count",
+  "missingInDonor": [
+   "bottle"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2565",
+  "listing": "Campbell’s Chunky Soup, Jazzy Jambalaya with Chicken, Sausage and Ham Soup, 18.6 oz Can, (Pack of 4)",
+  "donorTitle": "Campbell's Chunky Jazzy Jambalaya with Chicken, Sausage & Ham Soup - 18.6oz",
+  "missingInDonor": [
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "18.6",
+  "listingSize": "18.6",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-150",
+  "listing": "Sara Lee Honey Wheat Bread, 20 oz, Soft Pre-sliced Wheat Bread, Bag (Pack of 2)",
+  "donorTitle": "Sara Lee Honey Whole Wheat Bread - 20oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "whole"
+  ],
+  "sizeBad": false,
+  "donorSize": "20",
+  "listingSize": "20",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1614",
+  "listing": "Thomas' Plain Mini Bagels, 10 ct (Pack of 4)",
+  "donorTitle": "Thomas' Plain Mini Bagels, 10 count, Kosher Mini Bagels, 15 oz Bag",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "kosher"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1615",
+  "listing": "Thomas' Plain Mini Bagels, 10 ct (Pack of 6)",
+  "donorTitle": "Thomas' Plain Mini Bagels, 10 count, Kosher Mini Bagels, 15 oz Bag",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "kosher"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1622",
+  "listing": "Thomas Everything Mini Bagels, 10 ct (Pack of 2)",
+  "donorTitle": "Thomas' Everything Bagels, 10 count, Kosher Mini Bagels, 15 oz Bag",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "kosher"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1634",
+  "listing": "Sara Lee Delightful Multi-Grain Bread, 20 oz, Soft Multigrain Bread, Bag -Pack Of 3",
+  "donorTitle": "Sara Lee Delightful Multi-Grain Bread - 20oz",
+  "missingInDonor": [
+   "multigrain"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "20",
+  "listingSize": "20",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2081",
+  "listing": "Chef Boyardee Rice with Chicken and Vegetables, Microwavable Bowl, 7.25 oz (Pack of 6)",
+  "donorTitle": "Chef Boyardee Rice with Chicken & Vegetables, Microwavable Meal, 7.25 oz. Bowl",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "meal"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.25",
+  "listingSize": "7.25",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2080",
+  "listing": "Chef Boyardee Rice with Chicken and Vegetables, Microwavable Bowl, 7.25 oz (Pack of 4)",
+  "donorTitle": "Chef Boyardee Rice with Chicken & Vegetables, Microwavable Meal, 7.25 oz. Bowl",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "meal"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.25",
+  "listingSize": "7.25",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2745",
+  "listing": "Campbell’s Condensed Homestyle Chicken Noodle Soup, 10.5 Ounce Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed Homestyle Chicken Noodle Soup - 10.5oz",
+  "missingInDonor": [
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "10.5",
+  "listingSize": "10.5",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2754",
+  "listing": "Campbell's Condensed Cheddar Cheese Soup, 10.5 oz Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed Cheddar Cheese Soup - 10.5oz",
+  "missingInDonor": [
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "10.5",
+  "listingSize": "10.5",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2755",
+  "listing": "Campbell's Condensed Cheddar Cheese Soup, 10.5 oz Can (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Cheddar Cheese Soup - 10.5oz",
+  "missingInDonor": [
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "10.5",
+  "listingSize": "10.5",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2749",
+  "listing": "Campbell's Condensed Cream of Mushroom Soup, 22.6 oz Family Size Can (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Family Size Cream of Mushroom Soup - 22.6oz",
+  "missingInDonor": [
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "22.6",
+  "listingSize": "22.6",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2768",
+  "listing": "Campbell's Condensed Golden Mushroom Soup, 10.5 Ounce Can, Quantity of 4",
+  "donorTitle": "Campbell's Condensed Golden Mushroom Soup, 10.5 oz Can",
+  "missingInDonor": [
+   "quantity"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "10.5",
+  "listingSize": "10.5",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2817",
+  "listing": "Campbell's Condensed 98% Fat Free Cream of Chicken Soup, 10.5 oz Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed 98% Fat Free Cream of Chicken Soup - 10.5oz",
+  "missingInDonor": [
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "10.5",
+  "listingSize": "10.5",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3329",
+  "listing": "Maruchan Instant Lunch Hot & Spicy Chicken Flavor Ramen Noodles, 2.25 oz (Pack 8)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Hot & Spicy Chicken Flavor, 2.25 oz Cup",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "cup"
+  ],
+  "sizeBad": false,
+  "donorSize": "2.25",
+  "listingSize": "2.25",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3545",
+  "listing": "Hamburger Helper Four Cheese Lasagna, 8.8 oz Value Size Box (Pack of 8)",
+  "donorTitle": "Hamburger Helper Four Cheese Lasagna - 5.5oz",
+  "missingInDonor": [],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "5.5",
+  "listingSize": "8.8",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1834",
+  "listing": "Jarritos Pineapple Soda, 1.5 Liter Bottle (Pack of 6)",
+  "donorTitle": "Jarritos Pineapple Soda, 1.58 qt (1 Liter), 1 Count",
+  "missingInDonor": [
+   "bottle"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-230",
+  "listing": "Pepperidge Farm Cinnamon Swirl Bread, 3-Pack 16 oz. Loaves 7061",
+  "donorTitle": "Pepperidge Farm Swirl Cinnamon Breakfast Bread, 16 oz. Loaf",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "breakfast"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2581",
+  "listing": "Campbell's Chunky Soup, Ready to Serve Hearty Beef and Barley Soup, 18.8 Oz Can, Quantity of 6",
+  "donorTitle": "Campbell's Chunky Soup, Ready to Serve Hearty Beef and Barley Soup, 18.8 oz Can",
+  "missingInDonor": [
+   "quantity"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "18.8",
+  "listingSize": "18.8",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2766",
+  "listing": "Campbell's Condensed Cream of Chicken Soup with Herbs, 10.5 oz Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed Cream of Chicken Soup, 10.5 oz Can",
+  "missingInDonor": [
+   "herbs"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "10.5",
+  "listingSize": "10.5",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-2767",
+  "listing": "Campbell's Condensed Cream of Chicken Soup with Herbs, 10.5 oz Can (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Cream of Chicken Soup, 10.5 oz Can",
+  "missingInDonor": [
+   "herbs"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "10.5",
+  "listingSize": "10.5",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3694",
+  "listing": "Progresso Italian-Style Wedding Soup, Traditional Canned Soup, 18.5 oz (Pack of 4)",
+  "donorTitle": "Progresso Traditional Italian-Style Wedding Soup - 18.5oz",
+  "missingInDonor": [
+   "canned"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "18.5",
+  "listingSize": "18.5",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3764",
+  "listing": "Progresso Light, Chicken & Dumpling Soup, 18.5 oz. (Pack of 6)",
+  "donorTitle": "Progresso Light Canned Soup, Chicken and Dumpling Soup, 18.5 oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "canned"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.5",
+  "listingSize": "18.5",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3773",
+  "listing": "Progresso Creamy Tomato With Basil Soup, Reduced Sodium Canned Soup, Gluten Free, 19 oz (Pack of 6)",
+  "donorTitle": "Progresso Reduced Sodium, Creamy Tomato with Basil Soup, Gluten Free, 19 oz",
+  "missingInDonor": [
+   "canned"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "19",
+  "listingSize": "19",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-3741",
+  "listing": "Progresso Vegetable Soup, Vegetable Classics Canned Soup, 19 oz (Pack of 8)",
+  "donorTitle": "Progresso Vegetable Classics Vegetable Soup - 19oz",
+  "missingInDonor": [
+   "canned"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "19",
+  "listingSize": "19",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4064",
+  "listing": "Dot's Homestyle Honey Mustard Pretzels 16 oz (Pack of 6)",
+  "donorTitle": "Dot's Homestyle Pretzels Honey Mustard Twists - 16oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "twists"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4525",
+  "listing": "Cheez-It White Cheddar Baked Snack Crackers, Cheese Crackers, 12 Count (Pack of 6)",
+  "donorTitle": "Cheez-It White Cheddar Baked Snack Crackers - 12.4oz",
+  "missingInDonor": [
+   "cheese"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "12.4",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4526",
+  "listing": "Cheez-It White Cheddar Baked Snack Crackers, Cheese Crackers, 12 Count (Pack of 8)",
+  "donorTitle": "Cheez-It White Cheddar Baked Snack Crackers - 12.4oz",
+  "missingInDonor": [
+   "cheese"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "12.4",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4524",
+  "listing": "Cheez-It White Cheddar Baked Snack Crackers, Cheese Crackers, 12 Count (Pack of 4)",
+  "donorTitle": "Cheez-It White Cheddar Baked Snack Crackers - 12.4oz",
+  "missingInDonor": [
+   "cheese"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "12.4",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4597",
+  "listing": "Triscuit Reduced Fat Whole Grain Wheat Crackers, Vegan Crackers, Family Size, 11.5 oz (Pack of 6)",
+  "donorTitle": "Triscuit Reduced Fat Whole Grain Wheat Crackers, Vegan Snack Crackers, Family Size, 11.5 oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "snack"
+  ],
+  "sizeBad": false,
+  "donorSize": "11.5",
+  "listingSize": "11.5",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4746",
+  "listing": "SKIPPY Natural Creamy Peanut Butter Spread with Honey, 6 G Protein per Serving, 15 oz Plastic Jar (Pack of 2)",
+  "donorTitle": "SKIPPY Natural Peanut Butter Spread, Creamy, 7 G Protein per Serving, 15 oz Plastic Jar",
+  "missingInDonor": [
+   "honey"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "7/15",
+  "listingSize": "6/15",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4798",
+  "listing": "OREO Birthday Cake Chocolate Sandwich Cookies, Family Size, 17 oz (Pack of 6)",
+  "donorTitle": "Oreo Birthday Cake Creme Chocolate Sandwich Cookies Family Size - 17oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "creme"
+  ],
+  "sizeBad": false,
+  "donorSize": "17",
+  "listingSize": "17",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-4799",
+  "listing": "OREO Birthday Cake Chocolate Sandwich Cookies, Family Size, 17 oz (Pack of 8)",
+  "donorTitle": "Oreo Birthday Cake Creme Chocolate Sandwich Cookies Family Size - 17oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "creme"
+  ],
+  "sizeBad": false,
+  "donorSize": "17",
+  "listingSize": "17",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1311",
+  "listing": "Fritos Flavor Twists Honey BBQ Corn Snacks 9.25 oz (Pack of 3)",
+  "donorTitle": "Fritos Flavor Twists Corn Snacks Honey BBQ Flavored, 3.375 oz Bag",
+  "missingInDonor": [],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "3.375",
+  "listingSize": "9.25",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1613",
+  "listing": "Thomas' Plain Mini Bagels, 10 ct (Pack of 2)",
+  "donorTitle": "Thomas' Plain Mini Bagels, 10 count, Kosher Mini Bagels, 15 oz Bag",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "kosher"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "",
+  "score": 1
+ },
+ {
+  "sku": "FaisalX-1150",
+  "listing": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 6)",
+  "donorTitle": "Pepperidge Farm Bakery Classics Top Sliced White Hot Dog Buns - 14oz/8ct",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "bakery",
+   "classics"
+  ],
+  "sizeBad": false,
+  "donorSize": "14",
+  "listingSize": "",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-1686",
+  "listing": "Nature's Own Life Keto Soft White Bread, Net 1 Carb Sliced White Keto Bread, 16 oz Loaf-Pack Of 5",
+  "donorTitle": "Nature's Own Life Keto Soft White Bread, Net 1 Carb Sliced White Non-GMO Keto Bread, 16 oz Loaf",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "non",
+   "gmo"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-223",
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Hamburger Buns, 8 Count, 18 Ounce (Pack of 7)",
+  "donorTitle": "Nature's Own Perfectly Crafted Brioche Hamburger Bun - 18oz",
+  "missingInDonor": [
+   "buns"
+  ],
+  "extraInDonor": [
+   "bun"
+  ],
+  "sizeBad": false,
+  "donorSize": "18",
+  "listingSize": "18",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2269",
+  "listing": "BODYARMOR Tropical Punch Bottled Electrolyte Sports Drink, 16 fl oz, (Pack of 8)",
+  "donorTitle": "BODYARMOR Tropical Punch Electrolyte Sports Drink Bottle, 16 fl oz",
+  "missingInDonor": [
+   "bottled"
+  ],
+  "extraInDonor": [
+   "bottle"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-251",
+  "listing": "Martin's Old-Fashioned Real Butter Bread, 18 oz (Pack of 2)",
+  "donorTitle": "Martin's Old Fashioned White Butter Bread - 18oz",
+  "missingInDonor": [
+   "real"
+  ],
+  "extraInDonor": [
+   "white"
+  ],
+  "sizeBad": false,
+  "donorSize": "18",
+  "listingSize": "18",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2516",
+  "listing": "HORMEL COMPLEATS Tender Beef Tips with Mashed Potatoes & Gravy, 9 oz Plastic Tray, (Pack of 2)",
+  "donorTitle": "HORMEL COMPLEATS Tender Beef Tips with Mashed Potatoes and Gravy, Shelf Stable, 9 oz Plastic Tray",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": false,
+  "donorSize": "9",
+  "listingSize": "9",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-254",
+  "listing": "Martin's Old-Fashioned Real Butter Bread, 18 oz (Pack of 5)",
+  "donorTitle": "Martin's Old Fashioned White Butter Bread - 18oz",
+  "missingInDonor": [
+   "real"
+  ],
+  "extraInDonor": [
+   "white"
+  ],
+  "sizeBad": false,
+  "donorSize": "18",
+  "listingSize": "18",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2610",
+  "listing": "Campbell's Chunky Chili with Beans, 16.5 oz Can, (Pack of 4)",
+  "donorTitle": "Campbell's Chunky Chili with Beans - 19oz",
+  "missingInDonor": [
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "19",
+  "listingSize": "16.5",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2793",
+  "listing": "Campbell's Condensed Heart Healthy Cream of Chicken Soup, 10.5 oz Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed Heart Healthy Cream of Mushroom Soup, 10.5 oz Can",
+  "missingInDonor": [
+   "chicken"
+  ],
+  "extraInDonor": [
+   "mushroom"
+  ],
+  "sizeBad": false,
+  "donorSize": "10.5",
+  "listingSize": "10.5",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-286",
+  "listing": "Wonder Bread Classic Extra Soft White Bread Hamburger Buns, 15 oz, 8 Count (Pack of 4)",
+  "donorTitle": "Wonder Bread Classic Extra Soft White Bread Hamburger Buns, 15 oz, 8 Ct, Shelf-Stable",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "15",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-302",
+  "listing": "Pepperidge Farm Sesame Topped Hamburger Buns, (Pack of 9)",
+  "donorTitle": "Pepperidge Farm Bakery Classics Sesame Topped Hamburger Buns - 15oz/8ct",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "bakery",
+   "classics"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-1149",
+  "listing": "Pepperidge Farm White Hot Dog Buns, Top Sliced, (Pack of 4)",
+  "donorTitle": "Pepperidge Farm Bakery Classics Top Sliced White Hot Dog Buns - 14oz/8ct",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "bakery",
+   "classics"
+  ],
+  "sizeBad": false,
+  "donorSize": "14",
+  "listingSize": "",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-1685",
+  "listing": "Nature's Own Life Keto Soft White Bread, Net 1 Carb Sliced White Keto Bread, 16 oz Loaf-Pack Of 3",
+  "donorTitle": "Nature's Own Life Keto Soft White Bread, Net 1 Carb Sliced White Non-GMO Keto Bread, 16 oz Loaf",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "non",
+   "gmo"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2004",
+  "listing": "Chester's Fries Corn Snacks Flamin' Hot Flavored, 8.625 oz Party Size Bag-Pack Of 5",
+  "donorTitle": "Chester's Fries Flamin' Hot Flavored Corn Snacks, 5.25 oz Bag",
+  "missingInDonor": [
+   "party"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "5.25",
+  "listingSize": "8.625",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2127",
+  "listing": "Iberia Original Aloe Vera Drink, 16.9 fl oz Liquid (Pack of 6)",
+  "donorTitle": "IBERIA aloe Original Aloe Vera Drink - 16.9 fl oz Bottle",
+  "missingInDonor": [
+   "liquid"
+  ],
+  "extraInDonor": [
+   "bottle"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-219",
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Hamburger Buns, 8 Count, 18 Ounce (Pack of 3)",
+  "donorTitle": "Nature's Own Perfectly Crafted Brioche Hamburger Bun - 18oz",
+  "missingInDonor": [
+   "buns"
+  ],
+  "extraInDonor": [
+   "bun"
+  ],
+  "sizeBad": false,
+  "donorSize": "18",
+  "listingSize": "18",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-220",
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Hamburger Buns, 8 Count, 18 Ounce (Pack of 4)",
+  "donorTitle": "Nature's Own Perfectly Crafted Brioche Hamburger Bun - 18oz",
+  "missingInDonor": [
+   "buns"
+  ],
+  "extraInDonor": [
+   "bun"
+  ],
+  "sizeBad": false,
+  "donorSize": "18",
+  "listingSize": "18",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-227",
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Hamburger Buns, 8 Count, 18 Ounce (Pack of 11)",
+  "donorTitle": "Nature's Own Perfectly Crafted Brioche Hamburger Bun - 18oz",
+  "missingInDonor": [
+   "buns"
+  ],
+  "extraInDonor": [
+   "bun"
+  ],
+  "sizeBad": false,
+  "donorSize": "18",
+  "listingSize": "18",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2270",
+  "listing": "BODYARMOR LYTE Sports Drink Peach Mango 16 fl oz, (Pack of 4)",
+  "donorTitle": "BODYARMOR Lyte Peach Mango Electrolyte Sports Drink Bottle, 16 fl oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "electrolyte",
+   "bottle"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2501",
+  "listing": "HORMEL COMPLEATS Beef Pot Roast, 9 oz Plastic Tray, (Pack of 2)",
+  "donorTitle": "HORMEL COMPLEATS Beef Pot Roast, Shelf Stable 9 oz Plastic Tray",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": false,
+  "donorSize": "9",
+  "listingSize": "9",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2514",
+  "listing": "HORMEL COMPLEATS Beefy Macaroni & Cheese, 7.5 oz Plastic Tray, (Pack of 4)",
+  "donorTitle": "HORMEL COMPLEATS Beefy Macaroni and Cheese, Shelf Stable 7.5 oz Plastic Tray",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.5",
+  "listingSize": "7.5",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2513",
+  "listing": "HORMEL COMPLEATS Beefy Macaroni & Cheese, 7.5 oz Plastic Tray, (Pack of 2)",
+  "donorTitle": "HORMEL COMPLEATS Beefy Macaroni and Cheese, Shelf Stable 7.5 oz Plastic Tray",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.5",
+  "listingSize": "7.5",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2520",
+  "listing": "HORMEL COMPLEATS Meatloaf & Gravy with Mashed Potatoes, 9 oz Plastic Tray, (Pack of 4)",
+  "donorTitle": "HORMEL COMPLEATS Meatloaf and Gravy with Mashed Potatoes, Shelf Stable 9 oz Plastic Tray",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": false,
+  "donorSize": "9",
+  "listingSize": "9",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-255",
+  "listing": "Martin's Old-Fashioned Real Butter Bread, 18 oz (Pack of 6)",
+  "donorTitle": "Martin's Old Fashioned White Butter Bread - 18oz",
+  "missingInDonor": [
+   "real"
+  ],
+  "extraInDonor": [
+   "white"
+  ],
+  "sizeBad": false,
+  "donorSize": "18",
+  "listingSize": "18",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2559",
+  "listing": "( 3 Pack ) Campbell's Chunky Chili Mac Soup, 18.6 oz, Can",
+  "donorTitle": "Campbell's Chunky Chili Mac Soup - 18.8oz",
+  "missingInDonor": [
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "18.8",
+  "listingSize": "18.6",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2562",
+  "listing": "Campbell's Chunky Soup, Ready to Serve New England Clam Chowder, 18.8 oz Can, (Pack of 4)",
+  "donorTitle": "Campbell's Chunky Soup, Ready to Serve Healthy Request New England Clam Chowder Soup, 18.8 oz Can",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "healthy",
+   "request"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.8",
+  "listingSize": "18.8",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2596",
+  "listing": "Campbell's Soup, Sirloin Steak with Hearty Vegetables, 18.8 oz, Quantity of 6",
+  "donorTitle": "Campbell's Chunky Sirloin Steak With Hearty Vegetables Soup - 18.8oz",
+  "missingInDonor": [
+   "quantity"
+  ],
+  "extraInDonor": [
+   "chunky"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.8",
+  "listingSize": "18.8",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-259",
+  "listing": "Martin's Old-Fashioned Real Butter Bread, 18 oz (Pack of 10)",
+  "donorTitle": "Martin's Old Fashioned White Butter Bread - 18oz",
+  "missingInDonor": [
+   "real"
+  ],
+  "extraInDonor": [
+   "white"
+  ],
+  "sizeBad": false,
+  "donorSize": "18",
+  "listingSize": "18",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2612",
+  "listing": "Campbell's Chunky Soup, Classic Chicken Noodle Soup, 15.25 oz, (Pack of 2)",
+  "donorTitle": "Campbell's Chunky Classic Chicken Noodle Soup Microwaveable Bowl - 15.25oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "microwaveable",
+   "bowl"
+  ],
+  "sizeBad": false,
+  "donorSize": "15.25",
+  "listingSize": "15.25",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2613",
+  "listing": "Campbell's Chunky Soup, Classic Chicken Noodle Soup, 15.25 oz, (Pack of 4)",
+  "donorTitle": "Campbell's Chunky Classic Chicken Noodle Soup Microwaveable Bowl - 15.25oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "microwaveable",
+   "bowl"
+  ],
+  "sizeBad": false,
+  "donorSize": "15.25",
+  "listingSize": "15.25",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-297",
+  "listing": "Pepperidge Farm Sesame Topped Hamburger Buns, (Pack of 4)",
+  "donorTitle": "Pepperidge Farm Bakery Classics Sesame Topped Hamburger Buns - 15oz/8ct",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "bakery",
+   "classics"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-293",
+  "listing": "Wonder Bread Classic Extra Soft White Bread Hamburger Buns, 15 oz, 8 Count (Pack of 11)",
+  "donorTitle": "Wonder Bread Classic Extra Soft White Bread Hamburger Buns, 15 oz, 8 Ct, Shelf-Stable",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "15",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-285",
+  "listing": "Wonder Bread Classic Extra Soft White Bread Hamburger Buns, 15 oz, 8 Count (Pack of 3)",
+  "donorTitle": "Wonder Bread Classic Extra Soft White Bread Hamburger Buns, 15 oz, 8 Ct, Shelf-Stable",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "15",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-284",
+  "listing": "Wonder Bread Classic Extra Soft White Bread Hamburger Buns, 15 oz, 8 Count (Pack of 2)",
+  "donorTitle": "Wonder Bread Classic Extra Soft White Bread Hamburger Buns, 15 oz, 8 Ct, Shelf-Stable",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "15",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-3345",
+  "listing": "Maruchan Ramen Noodle Pork Flavor Soup, 3 Oz (Pack of 10)",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "missingInDonor": [
+   "pork"
+  ],
+  "extraInDonor": [
+   "chicken"
+  ],
+  "sizeBad": false,
+  "donorSize": "3",
+  "listingSize": "3",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-3346",
+  "listing": "Maruchan Ramen Noodle Chili Flavor Soup, 3 oz (Pack of 6)",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "missingInDonor": [
+   "chili"
+  ],
+  "extraInDonor": [
+   "chicken"
+  ],
+  "sizeBad": false,
+  "donorSize": "3",
+  "listingSize": "3",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-339",
+  "listing": "Pepperidge Farm Farmhouse Butter Hamburger Buns, (Pack of 2)",
+  "donorTitle": "Pepperidge Farm Farmhouse Butter Bread, 22 oz Loaf",
+  "missingInDonor": [
+   "hamburger",
+   "buns"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "22",
+  "listingSize": "",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-3551",
+  "listing": "Hamburger Helper Cheeseburger Macaroni, 10.6 oz Value Size Box (Pack of 8)",
+  "donorTitle": "Hamburger Helper Double Cheeseburger Macaroni, 9.6 oz Value Size Box",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "double"
+  ],
+  "sizeBad": true,
+  "donorSize": "9.6",
+  "listingSize": "10.6",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-3591",
+  "listing": "Pringles Salt and Vinegar Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Salt & Vinegar Potato Crisps Chips - 5.5oz",
+  "missingInDonor": [
+   "lunch",
+   "snacks"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-3597",
+  "listing": "Lay's Stax Original Potato Chips, 5.5 oz Canister (Pack of 8)",
+  "donorTitle": "Lay's Stax Original Potato Chips, 5.75 oz, Plastic Canister",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "plastic"
+  ],
+  "sizeBad": true,
+  "donorSize": "5.75",
+  "listingSize": "5.5",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-359",
+  "listing": "Dave's Killer Bread 21 Whole Grains and Seeds Organic Bread Loaf, 27 oz. (Pack of 11)",
+  "donorTitle": "Dave's Killer Bread Organic Thin Sliced 21 Whole Grains and Seeds Bread, 20.5 oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "thin"
+  ],
+  "sizeBad": true,
+  "donorSize": "20.5",
+  "listingSize": "27",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-3602",
+  "listing": "Lay's Stax Mesquite Barbecue Potato Chips, 5.5 oz Canister (Pack of 6)",
+  "donorTitle": "Lay's Stax Potato Crisps Mesquite Barbecue Flavored 5.5 Oz, Canister",
+  "missingInDonor": [
+   "chips"
+  ],
+  "extraInDonor": [
+   "crisps"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-3623",
+  "listing": "The Good Crisp Company Gluten Free Sea Salt and Vinegar Snack Chips, 5.6 oz (Pack of 6)",
+  "donorTitle": "The Good Crisp Company Gluten-Free Sea Salt and Vinegar Snack Chips in Resealable Canister, 5.6 oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "resealable",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.6",
+  "listingSize": "5.6",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-3649",
+  "listing": "Progresso Traditional Soup, Chicken & Wild Rice 19 oz Can (Pack of 4)",
+  "donorTitle": "Progresso Gluten Free Traditional Chicken & Wild Rice Soup - 19oz",
+  "missingInDonor": [
+   "can"
+  ],
+  "extraInDonor": [
+   "gluten"
+  ],
+  "sizeBad": false,
+  "donorSize": "19",
+  "listingSize": "19",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2575",
+  "listing": "Campbell's Chunky Soup, Ready to Serve Creamy Chicken Noodle Soup, 18.8 oz Can, (Pack of 6)",
+  "donorTitle": "Campbell's Chunky Soup, Ready to Serve Creamy Chicken and Dumplings Soup, 18.8 oz Can",
+  "missingInDonor": [
+   "noodle"
+  ],
+  "extraInDonor": [
+   "dumplings"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.8",
+  "listingSize": "18.8",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2773",
+  "listing": "Campbell's Condensed Cream of Potato Soup, 10.5 oz Can (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Cream of Chicken Soup, 10.5 oz Can",
+  "missingInDonor": [
+   "potato"
+  ],
+  "extraInDonor": [
+   "chicken"
+  ],
+  "sizeBad": false,
+  "donorSize": "10.5",
+  "listingSize": "10.5",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-2802",
+  "listing": "Campbell's Condensed Chicken Gumbo Soup, 10.5 oz Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed Cream of Chicken Soup, 10.5 oz Can",
+  "missingInDonor": [
+   "gumbo"
+  ],
+  "extraInDonor": [
+   "cream"
+  ],
+  "sizeBad": false,
+  "donorSize": "10.5",
+  "listingSize": "10.5",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-3790",
+  "listing": "Progresso Reduced Sodium, Roasted Chicken Noodle Soup, 19 oz. (Pack of 4)",
+  "donorTitle": "Progresso Reduced Sodium Canned Soup, Roasted Chicken Noodle Soup, 18.5 oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "canned"
+  ],
+  "sizeBad": true,
+  "donorSize": "18.5",
+  "listingSize": "19",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-3858",
+  "listing": "Swanson 100% Natural, Gluten Free Vegetable Stock, 32 oz Carton (Pack of 8)",
+  "donorTitle": "Swanson 100% Natural Gluten Free Vegetable Cooking Stock - 32 fl oz",
+  "missingInDonor": [
+   "carton"
+  ],
+  "extraInDonor": [
+   "cooking"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "32",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-3839",
+  "listing": "Swanson Chicken Broth 100% Natural (Pack of 6)",
+  "donorTitle": "Swanson Natural Goodness Chicken Broth, 48 oz Carton",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "goodness",
+   "carton"
+  ],
+  "sizeBad": false,
+  "donorSize": "48",
+  "listingSize": "",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-3884",
+  "listing": "Jack Link’s Beef Jerky, Peppered, 100% Beef, 11g of Protein per Serving, 2.85 oz (Pack of 6)",
+  "donorTitle": "Jack Links Beef Jerky, Peppered, 100% Beef, 9g of Protein per Serving, 2.85 oz Bag",
+  "missingInDonor": [
+   "link"
+  ],
+  "extraInDonor": [
+   "links"
+  ],
+  "sizeBad": false,
+  "donorSize": "9/2.85",
+  "listingSize": "11/2.85",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-4007",
+  "listing": "Hershey's Kisses Milk Chocolate with Almonds Candy, Bag 4.48 oz (Pack of 6)",
+  "donorTitle": "Hershey's Kisses Milk Chocolate Candy, Bag 4.84 oz",
+  "missingInDonor": [
+   "almonds"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "4.84",
+  "listingSize": "4.48",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-4008",
+  "listing": "Hershey's Kisses Milk Chocolate with Almonds Candy, Bag 4.48 oz (Pack of 8)",
+  "donorTitle": "Hershey's Kisses Milk Chocolate Candy, Bag 4.84 oz",
+  "missingInDonor": [
+   "almonds"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "4.84",
+  "listingSize": "4.48",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-4050",
+  "listing": "Glutino Gluten Free Pretzel Twists, Gluten Free Snacks, 14.1 oz (Pack of 8)",
+  "donorTitle": "Glutino Gluten Free Pretzel Sticks, Gluten Free Snacks, 14.1 oz",
+  "missingInDonor": [
+   "twists"
+  ],
+  "extraInDonor": [
+   "sticks"
+  ],
+  "sizeBad": false,
+  "donorSize": "14.1",
+  "listingSize": "14.1",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-4054",
+  "listing": "Dot's Homestyle Pretzels Parmesan Garlic Seasoned Pretzel Twists, 16 oz (Pack of 4)",
+  "donorTitle": "Dot's Homestyle Pretzels Parmesan Garlic Twists - 16oz",
+  "missingInDonor": [
+   "seasoned",
+   "pretzel"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-4060",
+  "listing": "Dot's Homestyle Pretzels, Original Seasoned Pretzel Twists, 16 oz Family Size Bag (Pack of 4)",
+  "donorTitle": "Dot's Homestyle Pretzels Original Seasoned Pretzel Twists Snack, 16 oz",
+  "missingInDonor": [
+   "family"
+  ],
+  "extraInDonor": [
+   "snack"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-4062",
+  "listing": "Dot's Homestyle Pretzels, Original Seasoned Pretzel Twists, 16 oz Family Size Bag (Pack of 8)",
+  "donorTitle": "Dot's Homestyle Pretzels Original Seasoned Pretzel Twists Snack, 16 oz",
+  "missingInDonor": [
+   "family"
+  ],
+  "extraInDonor": [
+   "snack"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-4379",
+  "listing": "Town House Pita Crackers Everything Flavor Oven Baked Crackers, Party Snacks, 9.5 oz (Pack of 8)",
+  "donorTitle": "Town House Pita Everything Flavor Oven Baked Crackers, Salty Snacks, 9.5 oz",
+  "missingInDonor": [
+   "party"
+  ],
+  "extraInDonor": [
+   "salty"
+  ],
+  "sizeBad": false,
+  "donorSize": "9.5",
+  "listingSize": "9.5",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-4389",
+  "listing": "Town House Original Oven Baked Crackers, Party Snacks, 13.8 oz (Pack of 4)",
+  "donorTitle": "Town House Original Oven Baked Crackers, Salty Snacks, 13.8 oz",
+  "missingInDonor": [
+   "party"
+  ],
+  "extraInDonor": [
+   "salty"
+  ],
+  "sizeBad": false,
+  "donorSize": "13.8",
+  "listingSize": "13.8",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-4715",
+  "listing": "Jif Natural Crunchy Peanut Butter Spread Contains 90% Peanuts, 16 Ounces (Pack of 6)",
+  "donorTitle": "Jif Natural Crunchy Peanut Butter Spread - 16oz",
+  "missingInDonor": [
+   "contains",
+   "peanuts"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-4713",
+  "listing": "Jif Natural Crunchy Peanut Butter Spread Contains 90% Peanuts, 16 Ounces (Pack of 2)",
+  "donorTitle": "Jif Natural Crunchy Peanut Butter Spread - 16oz",
+  "missingInDonor": [
+   "contains",
+   "peanuts"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-4769",
+  "listing": "OREO Chocolate Sandwich Cookies, Family Size, Halloween Snacks, 18.12 oz (Pack of 8)",
+  "donorTitle": "OREO Chocolate Sandwich Cookies, Family Size, 18.12 oz",
+  "missingInDonor": [
+   "halloween",
+   "snacks"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "18.12",
+  "listingSize": "18.12",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-4775",
+  "listing": "OREO GOLDEN DOUBLE STUF COOKIES 18.71 OZ (Pack of 8)",
+  "donorTitle": "OREO Double Stuf Golden Sandwich Cookies, Family Size, 18.71 oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "sandwich",
+   "family"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.71",
+  "listingSize": "18.71",
+  "score": 2
+ },
+ {
+  "sku": "FaisalX-4774",
+  "listing": "OREO GOLDEN DOUBLE STUF COOKIES 18.71 OZ (Pack of 6)",
+  "donorTitle": "OREO Double Stuf Golden Sandwich Cookies, Family Size, 18.71 oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "sandwich",
+   "family"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.71",
+  "listingSize": "18.71",
+  "score": 2
+ },
+ {
+  "sku": "Comm-06",
+  "listing": "Thomas Original English Muffins 18 count,2.25 pound each, 2pack, Total 6 Pound",
+  "donorTitle": "Thomas' Regular English Muffins - 13oz/6ct",
+  "missingInDonor": [
+   "original",
+   "pound"
+  ],
+  "extraInDonor": [
+   "regular"
+  ],
+  "sizeBad": false,
+  "donorSize": "13",
+  "listingSize": "",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1130",
+  "listing": "Pepperidge Farm Whole Grain Thin Sliced 15 Grain Bread, 22 oz (Pack of 2)",
+  "donorTitle": "Pepperidge Farm Whole Grain Oatmeal Bread, 24 oz Loaf",
+  "missingInDonor": [
+   "thin"
+  ],
+  "extraInDonor": [
+   "oatmeal"
+  ],
+  "sizeBad": true,
+  "donorSize": "24",
+  "listingSize": "22",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1160",
+  "listing": "Pepperidge Farm Farmhouse Multigrain Bread, 24 oz (Pack of 2)",
+  "donorTitle": "Pepperidge Farm Farmhouse Homestyle Oat Bread, 24 oz Loaf",
+  "missingInDonor": [
+   "multigrain"
+  ],
+  "extraInDonor": [
+   "homestyle",
+   "oat"
+  ],
+  "sizeBad": false,
+  "donorSize": "24",
+  "listingSize": "24",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1202",
+  "listing": "Sara Lee Butter Bread, 20 oz, Soft White Bread, Bag (Pack of 2)",
+  "donorTitle": "Sara Lee Classic Bread, 20 oz, Plain White Bread, Bag",
+  "missingInDonor": [
+   "butter"
+  ],
+  "extraInDonor": [
+   "classic",
+   "plain"
+  ],
+  "sizeBad": false,
+  "donorSize": "20",
+  "listingSize": "20",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1240",
+  "listing": "Arnold Whole Grains Small Slice Oatnut Bread Loaf, 18 oz (Pack of 6)",
+  "donorTitle": "Arnold Small Slice Whole Wheat Bread, 18 oz, Wheat Bread, Bag",
+  "missingInDonor": [
+   "grains",
+   "oatnut"
+  ],
+  "extraInDonor": [
+   "wheat"
+  ],
+  "sizeBad": false,
+  "donorSize": "18",
+  "listingSize": "18",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1253",
+  "listing": "Arnold Country Sourdough Bread, Rustic with Rich, Deep Flavor, 24 oz (Pack of 2)",
+  "donorTitle": "Arnold Country Style Sourdough Bread, 24 oz, Sourdough Bread, Bag",
+  "missingInDonor": [
+   "rustic",
+   "rich",
+   "deep"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "24",
+  "listingSize": "24",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1283",
+  "listing": "Arnold Potato Buns, 8 count, Hot Dog Buns, 16 oz Bag (Pack of 2)",
+  "donorTitle": "Arnold Potato Hamburger Buns - 16oz/8ct",
+  "missingInDonor": [
+   "hot",
+   "dog"
+  ],
+  "extraInDonor": [
+   "hamburger"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1290",
+  "listing": "Fruit Roll-Ups Fruit Flavored Snacks, Variety Pack, Pouches, 10 ct (Pack of 6)",
+  "donorTitle": "Betty Crocker Fruit Roll-Ups Variety Fruit Flavored Snacks - 10ct/5oz",
+  "missingInDonor": [
+   "pouches"
+  ],
+  "extraInDonor": [
+   "betty",
+   "crocker"
+  ],
+  "sizeBad": false,
+  "donorSize": "5",
+  "listingSize": "",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1298",
+  "listing": "SunChips; French Onion Flavored Whole Grain Snacks, 7 oz. Bag (Pack of 6)",
+  "donorTitle": "SunChips 100% Whole Grain French Onion Snack Chips Bag, 7 oz​",
+  "missingInDonor": [
+   "snacks"
+  ],
+  "extraInDonor": [
+   "snack",
+   "chips"
+  ],
+  "sizeBad": false,
+  "donorSize": "7",
+  "listingSize": "7",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1319",
+  "listing": "Fritos Flavor Twists Corn Snacks Honey BBQ Flavored Snack Chips, 3.5 oz (Pack of 4)",
+  "donorTitle": "Fritos Flavor Twists Corn Snacks Honey BBQ Flavored, 3.375 oz Bag",
+  "missingInDonor": [
+   "snack",
+   "chips"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "3.375",
+  "listingSize": "3.5",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1315",
+  "listing": "Fritos Flamin' Hot Flavored Corn Chips, 9.25 oz (Pack of 3)",
+  "donorTitle": "Fritos Flamin' Hot Flavored Corn Chips, 9.25 oz Bag (Packaging May Vary)",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "packaging",
+   "may",
+   "vary"
+  ],
+  "sizeBad": false,
+  "donorSize": "9.25",
+  "listingSize": "9.25",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1320",
+  "listing": "Fritos Flavor Twists Corn Snacks Honey BBQ Flavored Snack Chips, 3.5 oz (Pack of 8)",
+  "donorTitle": "Fritos Flavor Twists Corn Snacks Honey BBQ Flavored, 3.375 oz Bag",
+  "missingInDonor": [
+   "snack",
+   "chips"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "3.375",
+  "listingSize": "3.5",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1374",
+  "listing": "Cheetos Puffs Flamin' Hot Cheese Flavored Snacks, 8 oz (Pack of 6)",
+  "donorTitle": "Cheetos Puffs Flamin' Hot Cheese Flavored Snacks, 8 oz (Packaging may vary)",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "packaging",
+   "may",
+   "vary"
+  ],
+  "sizeBad": false,
+  "donorSize": "8",
+  "listingSize": "8",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-169",
+  "listing": "Thomas' Everything Bagels, 6 count, Soft Pre-sliced Bagels, 20 oz Bag (Pack of 8)",
+  "donorTitle": "Thomas' Everything Bagels, 10 count, Kosher Mini Bagels, 15 oz Bag",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "kosher",
+   "mini"
+  ],
+  "sizeBad": true,
+  "donorSize": "15",
+  "listingSize": "20",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1619",
+  "listing": "Thomas' Blueberry Bagels (Pack of 2)",
+  "donorTitle": "Thomas' Blueberry Bagels, 6 count, 8g Protein, Kosher Fruit Bagels, 18 oz Bag",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "protein",
+   "kosher",
+   "fruit"
+  ],
+  "sizeBad": false,
+  "donorSize": "8/18",
+  "listingSize": "",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1975",
+  "listing": "Cheetos Puffs Flamin' Hot Cheese Flavored Snacks, 8 oz-Pack Of 2",
+  "donorTitle": "Cheetos Puffs Flamin' Hot Cheese Flavored Snacks, 8 oz (Packaging may vary)",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "packaging",
+   "may",
+   "vary"
+  ],
+  "sizeBad": false,
+  "donorSize": "8",
+  "listingSize": "8",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1994",
+  "listing": "Cheetos Crunchy XXTRA Flamin' Hot Cheese Flavored Snack Chips, 8.5 oz Bag-Pack Of 3",
+  "donorTitle": "Cheetos XXTRA Flamin' Hot Crunchy Cheese Flavored Snacks - 8.5oz",
+  "missingInDonor": [
+   "snack",
+   "chips"
+  ],
+  "extraInDonor": [
+   "snacks"
+  ],
+  "sizeBad": false,
+  "donorSize": "8.5",
+  "listingSize": "8.5",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-2012",
+  "listing": "Cheetos Oven Baked Flamin Hot Cheese Flavored Snack 7.63 oz. Bag-Pack Of 3",
+  "donorTitle": "Cheetos Oven Baked Flamin' Hot Cheese Flavored Snacks - 7.625oz",
+  "missingInDonor": [
+   "snack"
+  ],
+  "extraInDonor": [
+   "snacks"
+  ],
+  "sizeBad": true,
+  "donorSize": "7.625",
+  "listingSize": "7.63",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-2028",
+  "listing": "Cheetos Crunchy XXTRA Flamin' Hot Cheese Flavored Snack Chips, 8.5 oz Bag-Pack Of 5",
+  "donorTitle": "Cheetos XXTRA Flamin' Hot Crunchy Cheese Flavored Snacks - 8.5oz",
+  "missingInDonor": [
+   "snack",
+   "chips"
+  ],
+  "extraInDonor": [
+   "snacks"
+  ],
+  "sizeBad": false,
+  "donorSize": "8.5",
+  "listingSize": "8.5",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-2511",
+  "listing": "HORMEL COMPLEATS Swedish Meatballs with Pasta in Cream Sauce, 9 oz Plastic Tray, (Pack of 4)",
+  "donorTitle": "HORMEL COMPLEATS Swedish Meatballs with Pasta in Cream Sauce, Shelf-Stable, 9 oz Plastic Microwaveable Tray",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "shelf",
+   "stable",
+   "microwaveable"
+  ],
+  "sizeBad": false,
+  "donorSize": "9",
+  "listingSize": "9",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-2545",
+  "listing": "Campbell’s Chunky Soup, Ready to Serve Steak and Potato Soup, 18.8 oz Can, (Pack of 6)",
+  "donorTitle": "Campbell's Chunky Steak and Potato Soup - 18.8oz",
+  "missingInDonor": [
+   "ready",
+   "serve",
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "18.8",
+  "listingSize": "18.8",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-2544",
+  "listing": "Campbell’s Chunky Soup, Ready to Serve Steak and Potato Soup, 18.8 oz Can, (Pack of 4)",
+  "donorTitle": "Campbell's Chunky Steak and Potato Soup - 18.8oz",
+  "missingInDonor": [
+   "ready",
+   "serve",
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "18.8",
+  "listingSize": "18.8",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-2543",
+  "listing": "Campbell’s Chunky Soup, Ready to Serve Steak and Potato Soup, 18.8 oz Can, (Pack of 2)",
+  "donorTitle": "Campbell's Chunky Steak and Potato Soup - 18.8oz",
+  "missingInDonor": [
+   "ready",
+   "serve",
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "18.8",
+  "listingSize": "18.8",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-2560",
+  "listing": "Campbell's Chunky Soup, Ready to Serve Chili Mac, 18.8 oz Can, (Pack of 6)",
+  "donorTitle": "Campbell's Chunky Chili Mac Soup - 18.8oz",
+  "missingInDonor": [
+   "ready",
+   "serve",
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "18.8",
+  "listingSize": "18.8",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-2551",
+  "listing": "Campbell’s Chunky Soup, Ready to Serve Old Fashioned Vegetable Beef Soup, 18.8 oz Can, (Pack of 6)",
+  "donorTitle": "Campbell's Chunky Old Fashioned Vegetable Beef Soup - 18.8oz",
+  "missingInDonor": [
+   "ready",
+   "serve",
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "18.8",
+  "listingSize": "18.8",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-2664",
+  "listing": "Knorr Pasta Sides Buffalo Chicken Flavor Pasta No Artificial Flavors or Preservatives, 4.2 oz (Pack of 6)",
+  "donorTitle": "Knorr Pasta Sides Buffalo Chicken Flavor Spiral Pasta Made with No Artificial Flavors, 4.2 Oz Pouch",
+  "missingInDonor": [
+   "preservatives"
+  ],
+  "extraInDonor": [
+   "spiral",
+   "pouch"
+  ],
+  "sizeBad": false,
+  "donorSize": "4.2",
+  "listingSize": "4.2",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-2670",
+  "listing": "Knorr Pasta Sides Marinara Pasta No Artificial Flavors or Preservatives, 4.4 oz (Pack of 6)",
+  "donorTitle": "Knorr Pasta Sides Marinara Penne Made with No Artificial Flavors, 4.4 Oz Pouch",
+  "missingInDonor": [
+   "preservatives"
+  ],
+  "extraInDonor": [
+   "penne",
+   "pouch"
+  ],
+  "sizeBad": false,
+  "donorSize": "4.4",
+  "listingSize": "4.4",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-2822",
+  "listing": "Campbell's Condensed Family Size Vegetable Beef Soup, 23 Ounce Can (Pack of 4)",
+  "donorTitle": "Campbell's Condensed Vegetable Beef Soup - 10.5oz",
+  "missingInDonor": [
+   "family",
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "10.5",
+  "listingSize": "23",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-2824",
+  "listing": "Campbell's Condensed Family Size Vegetable Beef Soup, 23 Ounce Can (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Vegetable Beef Soup - 10.5oz",
+  "missingInDonor": [
+   "family",
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "10.5",
+  "listingSize": "23",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-325",
+  "listing": "Nature's Own White Hamburger Butter Buns, 16 oz, (Pack of 10)",
+  "donorTitle": "Nature's Own Butter Buns Hamburger Buns, Non-GMO Hamburger Buns, 8 Count",
+  "missingInDonor": [
+   "white"
+  ],
+  "extraInDonor": [
+   "non",
+   "gmo"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "16",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3330",
+  "listing": "Maruchan Instant Lunch Hot & Spicy Chicken Flavor Instant Lunch, 2.25 oz (Pack of 10)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Hot & Spicy Chicken Flavor, 2.25 oz Cup",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "ramen",
+   "noodles",
+   "cup"
+  ],
+  "sizeBad": false,
+  "donorSize": "2.25",
+  "listingSize": "2.25",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3381",
+  "listing": "Maruchan Yakisoba Teriyaki Beef Flavor Noodles, 4 oz. (Pack of 10)",
+  "donorTitle": "Maruchan Yakisoba Teriyaki Beef Flavor Noodles, 4 oz Shelf Stable Package",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "shelf",
+   "stable",
+   "package"
+  ],
+  "sizeBad": false,
+  "donorSize": "4",
+  "listingSize": "4",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3557",
+  "listing": "Pringles BBQ Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 6)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "missingInDonor": [
+   "bbq"
+  ],
+  "extraInDonor": [
+   "ranch",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3558",
+  "listing": "Pringles BBQ Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "missingInDonor": [
+   "bbq"
+  ],
+  "extraInDonor": [
+   "ranch",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3589",
+  "listing": "Pringles Salt and Vinegar Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister, Pack of 4",
+  "donorTitle": "Pringles Salt & Vinegar Potato Crisps Chips - 5.5oz",
+  "missingInDonor": [
+   "lunch",
+   "snacks",
+   "canister"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3599",
+  "listing": "Lay's Stax Sour Cream & Onion Potato Crisps, 5.5 oz Bag (Pack of 6)",
+  "donorTitle": "Lay's Stax Sour Cream & Onion Flavored Potato Chips, 5.5 oz Canister",
+  "missingInDonor": [
+   "crisps"
+  ],
+  "extraInDonor": [
+   "chips",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3635",
+  "listing": "Cheetos Mac 'N Cheese, Flamin' Hot Flavor, 2.32 oz Cup (Pack of 6)",
+  "donorTitle": "Cheetos Flamin' Hot Mac'N Cheese Pasta with Flavored Sauce, 2.11 oz Cup",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "pasta",
+   "sauce"
+  ],
+  "sizeBad": true,
+  "donorSize": "2.11",
+  "listingSize": "2.32",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3636",
+  "listing": "Cheetos Mac 'N Cheese, Flamin' Hot Flavor, 2.32 oz Cup (Pack of 8)",
+  "donorTitle": "Cheetos Flamin' Hot Mac'N Cheese Pasta with Flavored Sauce, 2.11 oz Cup",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "pasta",
+   "sauce"
+  ],
+  "sizeBad": true,
+  "donorSize": "2.11",
+  "listingSize": "2.32",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1338",
+  "listing": "Snyder's of Hanover Pretzel Snaps, Family Size, 16 oz (Pack of 6)",
+  "donorTitle": "Snyder's of Hanover Snaps Pretzels, 16 oz Bag",
+  "missingInDonor": [
+   "pretzel",
+   "family"
+  ],
+  "extraInDonor": [
+   "pretzels"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1351",
+  "listing": "Cheetos Crunchy Cheese Puff Chips, 15 oz Bag (Pack of 3)",
+  "donorTitle": "Cheetos Crunchy Cheese Flavored Snacks, 15 oz Bag",
+  "missingInDonor": [
+   "puff",
+   "chips"
+  ],
+  "extraInDonor": [
+   "snacks"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "15",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1334",
+  "listing": "Snyder's of Hanover Pretzel Sticks, Family Size 16 oz (Pack of 6)",
+  "donorTitle": "Snyder's of Hanover Sticks Pretzels, 16 oz Bag",
+  "missingInDonor": [
+   "pretzel",
+   "family"
+  ],
+  "extraInDonor": [
+   "pretzels"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1639",
+  "listing": "Sara Lee Whole Wheat Bread, 16 oz, Soft Wheat Bread, Bag -Pack Of 7",
+  "donorTitle": "Sara Lee Delightful Soft & Smooth Wheat Bread, 15 oz, Whole Wheat Bread Wheat Bread, Bag",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "delightful",
+   "smooth"
+  ],
+  "sizeBad": true,
+  "donorSize": "15",
+  "listingSize": "16",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-2728",
+  "listing": "Campbell's Condensed Chicken with Rice Soup 10.5 oz (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Cream of Chicken Soup, 10.5 oz Can",
+  "missingInDonor": [
+   "rice"
+  ],
+  "extraInDonor": [
+   "cream",
+   "can"
+  ],
+  "sizeBad": false,
+  "donorSize": "10.5",
+  "listingSize": "10.5",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3683",
+  "listing": "Progresso Traditional, Chicken & Herb Dumplings Canned Soup, 18.5 oz. (Pack of 6)",
+  "donorTitle": "Progresso Traditional Chicken & Herb Dumpling Soup - 18.5oz",
+  "missingInDonor": [
+   "dumplings",
+   "canned"
+  ],
+  "extraInDonor": [
+   "dumpling"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.5",
+  "listingSize": "18.5",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3714",
+  "listing": "Progresso Rich & Hearty, Italian Sausage & Potato Canned Soup, Gluten Free, 18.5 oz. (Pack of 8)",
+  "donorTitle": "Progresso Rich & Hearty, Lasagna-Style Soup With Italian Sausage, Canned Soup, 18.5 oz.",
+  "missingInDonor": [
+   "potato",
+   "gluten"
+  ],
+  "extraInDonor": [
+   "lasagna"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.5",
+  "listingSize": "18.5",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3712",
+  "listing": "Progresso Rich & Hearty, Italian Sausage & Potato Canned Soup, Gluten Free, 18.5 oz. (Pack of 4)",
+  "donorTitle": "Progresso Rich & Hearty, Lasagna-Style Soup With Italian Sausage, Canned Soup, 18.5 oz.",
+  "missingInDonor": [
+   "potato",
+   "gluten"
+  ],
+  "extraInDonor": [
+   "lasagna"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.5",
+  "listingSize": "18.5",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3740",
+  "listing": "Progresso Vegetable Soup, Vegetable Classics Canned Soup, 19 oz (Pack of 6)",
+  "donorTitle": "Progresso Gluten Free Vegetable Classics Lentil Soup - 19oz",
+  "missingInDonor": [
+   "canned"
+  ],
+  "extraInDonor": [
+   "gluten",
+   "lentil"
+  ],
+  "sizeBad": false,
+  "donorSize": "19",
+  "listingSize": "19",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3779",
+  "listing": "Progresso Mediterranean-Style Lentil Protein Soup, Vegetarian, 19 oz. (Pack of 6)",
+  "donorTitle": "Progresso High Protein Mediterranean Style Lentil - 19oz",
+  "missingInDonor": [
+   "soup",
+   "vegetarian"
+  ],
+  "extraInDonor": [
+   "high"
+  ],
+  "sizeBad": false,
+  "donorSize": "19",
+  "listingSize": "19",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-3978",
+  "listing": "Reese's Pieces Peanut Butter In a Crunchy Shell Candy, Bag 5.3 oz (Pack of 8)",
+  "donorTitle": "Reese's Pieces Peanut Butter in a Crunchy Shell Candy, Movie Theater Box Candy, 4 oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "movie",
+   "theater"
+  ],
+  "sizeBad": true,
+  "donorSize": "4",
+  "listingSize": "5.3",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-4068",
+  "listing": "Dot's Pretzels Cinnamon Sugar Seasoned Pretzel Twists 16 oz (Pack of 8)",
+  "donorTitle": "Dot's Homestyle Pretzels Cinnamon Sugar Twists - 16oz",
+  "missingInDonor": [
+   "seasoned",
+   "pretzel"
+  ],
+  "extraInDonor": [
+   "homestyle"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-4520",
+  "listing": "Cheez-It Grooves Sharp White Cheddar Crunchy Cheese Crackers, Snack Crackers, 9 oz (Pack of 8)",
+  "donorTitle": "Cheez-It Grooves Sharp White Cheddar Crackers - 9oz",
+  "missingInDonor": [
+   "crunchy",
+   "cheese",
+   "snack"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "9",
+  "listingSize": "9",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-4779",
+  "listing": "OREO Golden Sandwich Cookies, Family Size, 18.12 oz (Pack of 4)",
+  "donorTitle": "OREO Double Stuf Golden Sandwich Cookies, Family Size, 18.71 oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "double",
+   "stuf"
+  ],
+  "sizeBad": true,
+  "donorSize": "18.71",
+  "listingSize": "18.12",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-4797",
+  "listing": "OREO Birthday Cake Chocolate Sandwich Cookies, Family Size, 17 oz (Pack of 4)",
+  "donorTitle": "OREO Chocolate Sandwich Cookies, Family Size, 18.12 oz",
+  "missingInDonor": [
+   "birthday",
+   "cake"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "18.12",
+  "listingSize": "17",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1245",
+  "listing": "Arnold Seedless Jewish Rye Bread 16 oz Classic Rye Loaf (Pack of 4)",
+  "donorTitle": "Arnold Seeded Jewish Rye Bread - 16oz",
+  "missingInDonor": [
+   "seedless",
+   "classic"
+  ],
+  "extraInDonor": [
+   "seeded"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 3
+ },
+ {
+  "sku": "FaisalX-1135",
+  "listing": "Pepperidge Farm Whole Grain Thin Sliced 100% Whole Wheat Bread, 22 oz (Pack of 6)",
+  "donorTitle": "Pepperidge Farm Whole Grain Oatmeal Bread, 24 oz Loaf",
+  "missingInDonor": [
+   "thin",
+   "wheat"
+  ],
+  "extraInDonor": [
+   "oatmeal"
+  ],
+  "sizeBad": true,
+  "donorSize": "24",
+  "listingSize": "22",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-1322",
+  "listing": "Fritos Scoops! Corn Snacks, Party Size, 15.5 oz (Pack of 6)",
+  "donorTitle": "Fritos® Scoops!® Corn Chips, 9.25 oz. Bag",
+  "missingInDonor": [
+   "snacks",
+   "party"
+  ],
+  "extraInDonor": [
+   "chips"
+  ],
+  "sizeBad": true,
+  "donorSize": "9.25",
+  "listingSize": "15.5",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-1632",
+  "listing": "Sara Lee Artesano Original Bread, 20 oz, Soft White Pre-sliced White Bread, Bag -Pack Of 5",
+  "donorTitle": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Brioche Bread, Bag",
+  "missingInDonor": [
+   "original",
+   "white"
+  ],
+  "extraInDonor": [
+   "brioche",
+   "bakery"
+  ],
+  "sizeBad": false,
+  "donorSize": "20",
+  "listingSize": "20",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-1633",
+  "listing": "Sara Lee Artesano Original Bread, 20 oz, Soft White Pre-sliced White Bread, Bag (Pack of 7)",
+  "donorTitle": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Brioche Bread, Bag",
+  "missingInDonor": [
+   "original",
+   "white"
+  ],
+  "extraInDonor": [
+   "brioche",
+   "bakery"
+  ],
+  "sizeBad": false,
+  "donorSize": "20",
+  "listingSize": "20",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-1833",
+  "listing": "Jarritos Pineapple Soda, 1.5 Liter Bottle (Pack of 4)",
+  "donorTitle": "Jarritos Mandarin Zero Soda, 1.5L Bottle",
+  "missingInDonor": [
+   "pineapple",
+   "liter"
+  ],
+  "extraInDonor": [
+   "mandarin",
+   "zero"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-2288",
+  "listing": "Prime Hydration Drink Ice Pop 16.9 fl oz, (Pack of 4)",
+  "donorTitle": "Prime Ice Hydration Sports Drink, Orange, 16.9 fl oz, Bottle",
+  "missingInDonor": [
+   "pop"
+  ],
+  "extraInDonor": [
+   "sports",
+   "orange",
+   "bottle"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-1434",
+  "listing": "Maruchan Instant Lunch. Chicken - Chicken - Cup - 12 / Carton | Bundle of 5",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Chicken Flavor, 2.25 oz Cup",
+  "missingInDonor": [
+   "carton",
+   "bundle"
+  ],
+  "extraInDonor": [
+   "ramen",
+   "noodles"
+  ],
+  "sizeBad": false,
+  "donorSize": "2.25",
+  "listingSize": "",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-1437",
+  "listing": "Maruchan Instant Lunch Lime Flavor with Shrimp Soup (Pack of 48)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Lime Flavor with Shrimp, 2.25 oz Cup",
+  "missingInDonor": [
+   "soup"
+  ],
+  "extraInDonor": [
+   "ramen",
+   "noodles",
+   "cup"
+  ],
+  "sizeBad": false,
+  "donorSize": "2.25",
+  "listingSize": "",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-2005",
+  "listing": "Pack of 2 - Cheetos Cheese Flavored Puffs 2.63 oz",
+  "donorTitle": "Cheetos Puffs Cheese Flavored Snacks Flamin' Hot Flavored, 2.5 oz Bag",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "snacks",
+   "flamin",
+   "hot"
+  ],
+  "sizeBad": true,
+  "donorSize": "2.5",
+  "listingSize": "2.63",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-240",
+  "listing": "Sara Lee Classic Bread, 20 oz, Soft Plain White Bread, (Pack of 2)",
+  "donorTitle": "Sara Lee Whole Grain Soft White Bread - 20oz",
+  "missingInDonor": [
+   "classic",
+   "plain"
+  ],
+  "extraInDonor": [
+   "whole",
+   "grain"
+  ],
+  "sizeBad": false,
+  "donorSize": "20",
+  "listingSize": "20",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-2557",
+  "listing": "Campbell’s Chunky Soup, Ready to Serve Beef Soup with Country Vegetables, 18.8 oz Can, (Pack of 6)",
+  "donorTitle": "Campbell's Chunky Soup, Ready to Serve Hearty Beef and Barley Soup, 18.8 oz Can",
+  "missingInDonor": [
+   "country",
+   "vegetables"
+  ],
+  "extraInDonor": [
+   "hearty",
+   "barley"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.8",
+  "listingSize": "18.8",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-2611",
+  "listing": "Campbell's Chunky Chili with Beans, 16.5 oz Can, (Pack of 6)",
+  "donorTitle": "Campbell's Chunky Chili with Beans Microwaveable Bowl - 15.25oz",
+  "missingInDonor": [
+   "can"
+  ],
+  "extraInDonor": [
+   "microwaveable",
+   "bowl"
+  ],
+  "sizeBad": true,
+  "donorSize": "15.25",
+  "listingSize": "16.5",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-2760",
+  "listing": "Campbell's Condensed Chicken and Rice Soup, 22.4 oz Family Size Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed Family Size Cream of Chicken Soup - 22.6oz",
+  "missingInDonor": [
+   "rice",
+   "can"
+  ],
+  "extraInDonor": [
+   "cream"
+  ],
+  "sizeBad": true,
+  "donorSize": "22.6",
+  "listingSize": "22.4",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-3333",
+  "listing": "Maruchan Instant Lunch Lime Chili Flavor w/Shrimp Instant Lunch, 2.25 oz (Pack of 10)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Lime Flavor with Shrimp, 2.25 oz Cup",
+  "missingInDonor": [
+   "chili"
+  ],
+  "extraInDonor": [
+   "ramen",
+   "noodles",
+   "cup"
+  ],
+  "sizeBad": false,
+  "donorSize": "2.25",
+  "listingSize": "2.25",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-3327",
+  "listing": "Maruchan Instant Lunch w/Shrimp Instant Lunch, 2.25 oz (Pack of 10)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Lime Flavor with Shrimp, 2.25 oz Cup",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "ramen",
+   "noodles",
+   "lime",
+   "cup"
+  ],
+  "sizeBad": false,
+  "donorSize": "2.25",
+  "listingSize": "2.25",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-3352",
+  "listing": "(6 pack) Maruchan Ramen Noodle Creamy Chicken Flavor Soup, 3 oz Shelf Stable Package",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "missingInDonor": [
+   "creamy",
+   "shelf",
+   "stable",
+   "package"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "3",
+  "listingSize": "3",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-3357",
+  "listing": "Maruchan Ramen Noodle Soup Picante Chicken Flavor, 3 oz Shelf Stable Package (Pack of 10)",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "missingInDonor": [
+   "picante",
+   "shelf",
+   "stable",
+   "package"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "3",
+  "listingSize": "3",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-3356",
+  "listing": "Maruchan Ramen Noodle Soup Picante Chicken Flavor, 3 oz Shelf Stable Package (Pack of 8)",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "missingInDonor": [
+   "picante",
+   "shelf",
+   "stable",
+   "package"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "3",
+  "listingSize": "3",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-3353",
+  "listing": "Maruchan Creamy Chicken Ramen Noodles, 3 oz Packaged Soup, Pack of 8",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "missingInDonor": [
+   "creamy",
+   "noodles",
+   "packaged"
+  ],
+  "extraInDonor": [
+   "noodle"
+  ],
+  "sizeBad": false,
+  "donorSize": "3",
+  "listingSize": "3",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-3567",
+  "listing": "Pringles Philly Cheesesteak Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "missingInDonor": [
+   "philly",
+   "cheesesteak"
+  ],
+  "extraInDonor": [
+   "ranch",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-3580",
+  "listing": "Pringles Lightly Salted Original Flavor Potato Crisps 5.2 oz. (Pack of 4)",
+  "donorTitle": "Pringles Lightly Salted Original Potato Crisps Chips, Lunch Snacks, 5.2 oz Canister",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "chips",
+   "lunch",
+   "snacks",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.2",
+  "listingSize": "5.2",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-3582",
+  "listing": "Pringles Lightly Salted Original Flavor Potato Crisps 5.2 oz. (Pack of 8)",
+  "donorTitle": "Pringles Lightly Salted Original Potato Crisps Chips, Lunch Snacks, 5.2 oz Canister",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "chips",
+   "lunch",
+   "snacks",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.2",
+  "listingSize": "5.2",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-362",
+  "listing": "Nature's Own Life Sugar-Free 100% Whole Grain Bread Loaf, 16 oz, (Pack of 3)",
+  "donorTitle": "Nature's Own Life 100% Whole Grain Bread, Sugar Free Bread, Non-GMO Keto Friendly, 16 oz Loaf",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "non",
+   "gmo",
+   "keto",
+   "friendly"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-1956",
+  "listing": "Cheetos Crunchy Cheese Buffalo Flavored Snack Chips, 8.5 oz Bag-Pack Of 5",
+  "donorTitle": "Cheetos Crunchy Buffalo Flavored Snacks - 8.5oz",
+  "missingInDonor": [
+   "cheese",
+   "snack",
+   "chips"
+  ],
+  "extraInDonor": [
+   "snacks"
+  ],
+  "sizeBad": false,
+  "donorSize": "8.5",
+  "listingSize": "8.5",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-1970",
+  "listing": "Cheetos Crunchy Flamin' Hot Cheese Puff Chips, 15oz Bag-Pack Of 3",
+  "donorTitle": "Cheetos Crunchy Cheese Flavored Snacks Flamin Hot Party Size 15 oz Bag",
+  "missingInDonor": [
+   "puff",
+   "chips"
+  ],
+  "extraInDonor": [
+   "snacks",
+   "party"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "15",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-2492",
+  "listing": "HORMEL COMPLEATS Spaghetti & Meat Sauce, 7.5 oz Plastic Tray, (Pack of 2)",
+  "donorTitle": "HORMEL COMPLEATS Spaghetti & Meat Sauce, Shelf-Stable, 11 grams Protein, 7.5 oz Plastic Microwaveable Tray",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "shelf",
+   "stable",
+   "protein",
+   "microwaveable"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.5",
+  "listingSize": "7.5",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-2788",
+  "listing": "Campbell's Condensed Chicken and Rice Soup with White and Wild Rice, 10.5 oz Can (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Cream of Chicken Soup, 10.5 oz Can",
+  "missingInDonor": [
+   "rice",
+   "white",
+   "wild"
+  ],
+  "extraInDonor": [
+   "cream"
+  ],
+  "sizeBad": false,
+  "donorSize": "10.5",
+  "listingSize": "10.5",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-365",
+  "listing": "Nature's Own Life Sugar-Free 100% Whole Grain Bread Loaf, 16 oz, (Pack of 6)",
+  "donorTitle": "Nature's Own Life 100% Whole Grain Bread, Sugar Free Bread, Non-GMO Keto Friendly, 16 oz Loaf",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "non",
+   "gmo",
+   "keto",
+   "friendly"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-366",
+  "listing": "Nature's Own Life Sugar-Free 100% Whole Grain Bread Loaf, 16 oz, (Pack of 7)",
+  "donorTitle": "Nature's Own Life 100% Whole Grain Bread, Sugar Free Bread, Non-GMO Keto Friendly, 16 oz Loaf",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "non",
+   "gmo",
+   "keto",
+   "friendly"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-371",
+  "listing": "Nature's Own Life Sugar-Free 100% Whole Grain Bread Loaf, 16 oz, (Pack of 12)",
+  "donorTitle": "Nature's Own Life 100% Whole Grain Bread, Sugar Free Bread, Non-GMO Keto Friendly, 16 oz Loaf",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "non",
+   "gmo",
+   "keto",
+   "friendly"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-369",
+  "listing": "Nature's Own Life Sugar-Free 100% Whole Grain Bread Loaf, 16 oz, (Pack of 10)",
+  "donorTitle": "Nature's Own Life 100% Whole Grain Bread, Sugar Free Bread, Non-GMO Keto Friendly, 16 oz Loaf",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "non",
+   "gmo",
+   "keto",
+   "friendly"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-3737",
+  "listing": "Progresso Vegetable Classics Soup, Hearty Tomato, 19 oz (Pack of 6)",
+  "donorTitle": "Progresso Gluten Free Vegetable Classics Lentil Soup - 19oz",
+  "missingInDonor": [
+   "hearty",
+   "tomato"
+  ],
+  "extraInDonor": [
+   "gluten",
+   "lentil"
+  ],
+  "sizeBad": false,
+  "donorSize": "19",
+  "listingSize": "19",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-380",
+  "listing": "Nature's Own Perfectly Crafted Multi Grain Bread Loaf, 22 oz, (Pack of 10)",
+  "donorTitle": "Nature's Own Perfectly Crafted Multigrain Sandwich Bread - 22oz",
+  "missingInDonor": [
+   "multi",
+   "grain"
+  ],
+  "extraInDonor": [
+   "multigrain",
+   "sandwich"
+  ],
+  "sizeBad": false,
+  "donorSize": "22",
+  "listingSize": "22",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-4065",
+  "listing": "Dot's Homestyle Honey Mustard Pretzels 16 oz (Pack of 8)",
+  "donorTitle": "Dot's Homestyle Pretzels BBQ Twists - 16oz",
+  "missingInDonor": [
+   "honey",
+   "mustard"
+  ],
+  "extraInDonor": [
+   "bbq",
+   "twists"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-4167",
+  "listing": "La Banderita Carb Counter Zero Net Carbs Soft Taco Tortillas Pack of 8)",
+  "donorTitle": "La Banderita Carb Counter Zero Net Carb Soft Taco Tortilla Wraps - 11.8oz",
+  "missingInDonor": [
+   "carbs",
+   "tortillas"
+  ],
+  "extraInDonor": [
+   "tortilla",
+   "wraps"
+  ],
+  "sizeBad": false,
+  "donorSize": "11.8",
+  "listingSize": "",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-4215",
+  "listing": "Old El Paso Stand 'N Stuff Taco Shells, Gluten Free, Family Size, 20-count (Pack of 4)",
+  "donorTitle": "Old El Paso Stand 'N Stuff Crunchy Taco Shells, Zesty Ranch, Gluten Free, 10 Count, 5.4 oz",
+  "missingInDonor": [
+   "family"
+  ],
+  "extraInDonor": [
+   "crunchy",
+   "zesty",
+   "ranch"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.4",
+  "listingSize": "",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-4279",
+  "listing": "RITZ Fresh Stacks Whole Wheat Crackers, 11.6 oz (8 Stacks) (Pack of 6)",
+  "donorTitle": "RITZ Fresh Stacks Whole Wheat Crackers, Travel Snacks, 11.6 oz (8 Multi Snack Packs)",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "travel",
+   "snacks",
+   "multi",
+   "snack"
+  ],
+  "sizeBad": false,
+  "donorSize": "11.6",
+  "listingSize": "11.6",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-4459",
+  "listing": "Cheez-It Variety Pack Cheese Crackers, Baked Snack Crackers, 12 Count (Pack of 6)",
+  "donorTitle": "Cheez-It White Cheddar Baked Snack Crackers - 12.4oz",
+  "missingInDonor": [
+   "variety",
+   "cheese"
+  ],
+  "extraInDonor": [
+   "white",
+   "cheddar"
+  ],
+  "sizeBad": false,
+  "donorSize": "12.4",
+  "listingSize": "",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-4514",
+  "listing": "Cheez-It Original Cheese Crackers, Baked Snack Crackers, 21 oz (Pack of 8)",
+  "donorTitle": "Cheez-It White Cheddar Baked Snack Crackers - 21oz",
+  "missingInDonor": [
+   "original",
+   "cheese"
+  ],
+  "extraInDonor": [
+   "white",
+   "cheddar"
+  ],
+  "sizeBad": false,
+  "donorSize": "21",
+  "listingSize": "21",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-4802",
+  "listing": "OREO Mini Chocolate Sandwich Cookies, Go-Paks, 3.5 oz Cup (Pack of 8)",
+  "donorTitle": "OREO Minis Chocolate Sandwich Cookies, 3.5 oz Snack Cup",
+  "missingInDonor": [
+   "mini",
+   "paks"
+  ],
+  "extraInDonor": [
+   "minis",
+   "snack"
+  ],
+  "sizeBad": false,
+  "donorSize": "3.5",
+  "listingSize": "3.5",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-4796",
+  "listing": "OREO Peanut Butter Creme Chocolate Sandwich Cookies, Family Size, 17 oz (Pack of 8)",
+  "donorTitle": "OREO Chocolate Sandwich Cookies, Family Size, 18.12 oz",
+  "missingInDonor": [
+   "peanut",
+   "butter",
+   "creme"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "18.12",
+  "listingSize": "17",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-4874",
+  "listing": "Pocky Strawberry Covered Biscuit Sticks Share Pack 190 gram / 6.7 oz (Pack of 8)",
+  "donorTitle": "Glico Pocky Crunchy Strawberry Covered Biscuit Sticks, 1.79 oz",
+  "missingInDonor": [
+   "share"
+  ],
+  "extraInDonor": [
+   "glico",
+   "crunchy"
+  ],
+  "sizeBad": true,
+  "donorSize": "1.79",
+  "listingSize": "6.7",
+  "score": 4
+ },
+ {
+  "sku": "FaisalX-1167",
+  "listing": "Pepperidge Farm Jewish Pumpernickel Dark Pump Bread, 16 oz (Pack of 4)",
+  "donorTitle": "Pepperidge Farm Jewish Rye Seedless Bread, 16 oz. Bag",
+  "missingInDonor": [
+   "pumpernickel",
+   "dark",
+   "pump"
+  ],
+  "extraInDonor": [
+   "rye",
+   "seedless"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-1218",
+  "listing": "Sara Lee Artesano Brioche Hot Dog Buns, 8 count, Soft Hot Dog Buns, 16 oz Bag (Pack of 4)",
+  "donorTitle": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Brioche Bread, Bag",
+  "missingInDonor": [
+   "hot",
+   "dog",
+   "buns"
+  ],
+  "extraInDonor": [
+   "bakery"
+  ],
+  "sizeBad": true,
+  "donorSize": "20",
+  "listingSize": "16",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-1308",
+  "listing": "Fritos Mild Cheddar Flavored Cheese Dip, 9 oz (Pack of 6)",
+  "donorTitle": "Fritos Original Flavor Bean Dip, 9 fl oz",
+  "missingInDonor": [
+   "mild",
+   "cheddar",
+   "cheese"
+  ],
+  "extraInDonor": [
+   "original",
+   "bean"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "9",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-1433",
+  "listing": "Maruchan Instant Lunch. Chicken - Chicken - Cup - 12 / Carton | Bundle of 2 Cartons",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Chicken Flavor, 2.25 oz Cup",
+  "missingInDonor": [
+   "carton",
+   "bundle",
+   "cartons"
+  ],
+  "extraInDonor": [
+   "ramen",
+   "noodles"
+  ],
+  "sizeBad": false,
+  "donorSize": "2.25",
+  "listingSize": "",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-2495",
+  "listing": "HORMEL COMPLEATS Roast Beef & Mashed Potatoes, 9 oz Plastic Tray, (Pack of 2)",
+  "donorTitle": "HORMEL COMPLEATS Beef Pot Roast, Shelf Stable 9 oz Plastic Tray",
+  "missingInDonor": [
+   "mashed",
+   "potatoes"
+  ],
+  "extraInDonor": [
+   "pot",
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": false,
+  "donorSize": "9",
+  "listingSize": "9",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-2067",
+  "listing": "Chef Boyardee Beefaroni, Pasta in Meat Sauce, 14.25 oz (Pack of 8)",
+  "donorTitle": "Chef Boyardee Beefaroni, Pasta in Tomato and Meat Sauce, Microwavable Meal, 7.5 oz. Bowl",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "tomato",
+   "microwavable",
+   "meal",
+   "bowl"
+  ],
+  "sizeBad": true,
+  "donorSize": "7.5",
+  "listingSize": "14.25",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-2430",
+  "listing": "Coffee Mate Chocolate Crème Powder Coffee Creamer, 15 oz, (Pack of 4)",
+  "donorTitle": "Coffee mate Hazelnut Zero Sugar Powder Coffee Creamer, 10.2 oz",
+  "missingInDonor": [
+   "chocolate"
+  ],
+  "extraInDonor": [
+   "hazelnut",
+   "zero",
+   "sugar"
+  ],
+  "sizeBad": true,
+  "donorSize": "10.2",
+  "listingSize": "15",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-2757",
+  "listing": "Campbell’s Condensed 25% Less Sodium Chicken Noodle Soup 10.75 oz (Pack of 6)",
+  "donorTitle": "Campbell's Condensed 25% Less Sodium Cream of Mushroom Soup - 10.5oz",
+  "missingInDonor": [
+   "chicken",
+   "noodle"
+  ],
+  "extraInDonor": [
+   "cream",
+   "mushroom"
+  ],
+  "sizeBad": true,
+  "donorSize": "10.5",
+  "listingSize": "10.75",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-3350",
+  "listing": "Maruchan Ramen Noodle Beef Flavor Soup, 3 oz Shelf Stable Package (Pack of 8)",
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "missingInDonor": [
+   "beef",
+   "shelf",
+   "stable",
+   "package"
+  ],
+  "extraInDonor": [
+   "chicken"
+  ],
+  "sizeBad": false,
+  "donorSize": "3",
+  "listingSize": "3",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-3561",
+  "listing": "Pringles Sour Cream and Onion Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "missingInDonor": [
+   "sour",
+   "cream",
+   "onion"
+  ],
+  "extraInDonor": [
+   "ranch",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-3570",
+  "listing": "Pringles Chili Cheese Fries Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "missingInDonor": [
+   "chili",
+   "cheese",
+   "fries"
+  ],
+  "extraInDonor": [
+   "ranch",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-3560",
+  "listing": "Pringles Sour Cream and Onion Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 6)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "missingInDonor": [
+   "sour",
+   "cream",
+   "onion"
+  ],
+  "extraInDonor": [
+   "ranch",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-3568",
+  "listing": "Pringles Chili Cheese Fries Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 4)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "missingInDonor": [
+   "chili",
+   "cheese",
+   "fries"
+  ],
+  "extraInDonor": [
+   "ranch",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-3587",
+  "listing": "Pringles, Potato Crisps Chips, Cheddar & Sour Cream, 5.5 Oz (Pack of 6)",
+  "donorTitle": "Pringles Salt & Vinegar Potato Crisps Chips - 5.5oz",
+  "missingInDonor": [
+   "cheddar",
+   "sour",
+   "cream"
+  ],
+  "extraInDonor": [
+   "salt",
+   "vinegar"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-3594",
+  "listing": "Pringles Pizza Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Salt & Vinegar Potato Crisps Chips - 5.5oz",
+  "missingInDonor": [
+   "pizza",
+   "lunch",
+   "snacks"
+  ],
+  "extraInDonor": [
+   "salt",
+   "vinegar"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-192",
+  "listing": "Nature's Own Butterbread Sliced White Bread Loaf, 20 oz (Pack of 9)",
+  "donorTitle": "Nature's Own WhiteWheat Healthy White Bread, Non-GMO Sliced White Bread, 20 oz Loaf",
+  "missingInDonor": [
+   "butterbread"
+  ],
+  "extraInDonor": [
+   "whitewheat",
+   "healthy",
+   "non",
+   "gmo"
+  ],
+  "sizeBad": false,
+  "donorSize": "20",
+  "listingSize": "20",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-198",
+  "listing": "Wonder Bread Classic White Sandwich Bread, Sliced White Bread, 20 oz (Pack of 4)",
+  "donorTitle": "Wonder Bread Giant White Sandwich Bread, Sliced Loaf Bread, 24 oz, Shelf-Stable",
+  "missingInDonor": [
+   "classic"
+  ],
+  "extraInDonor": [
+   "giant",
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": true,
+  "donorSize": "24",
+  "listingSize": "20",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-201",
+  "listing": "Wonder Bread Classic White Sandwich Bread, Sliced White Bread, 20 oz (Pack of 7)",
+  "donorTitle": "Wonder Bread Giant White Sandwich Bread, Sliced Loaf Bread, 24 oz, Shelf-Stable",
+  "missingInDonor": [
+   "classic"
+  ],
+  "extraInDonor": [
+   "giant",
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": true,
+  "donorSize": "24",
+  "listingSize": "20",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-203",
+  "listing": "Wonder Bread Classic White Sandwich Bread, Sliced White Bread, 20 oz (Pack of 9)",
+  "donorTitle": "Wonder Bread Giant White Sandwich Bread, Sliced Loaf Bread, 24 oz, Shelf-Stable",
+  "missingInDonor": [
+   "classic"
+  ],
+  "extraInDonor": [
+   "giant",
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": true,
+  "donorSize": "24",
+  "listingSize": "20",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-204",
+  "listing": "Wonder Bread Classic White Sandwich Bread, Sliced White Bread, 20 oz (Pack of 10)",
+  "donorTitle": "Wonder Bread Giant White Sandwich Bread, Sliced Loaf Bread, 24 oz, Shelf-Stable",
+  "missingInDonor": [
+   "classic"
+  ],
+  "extraInDonor": [
+   "giant",
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": true,
+  "donorSize": "24",
+  "listingSize": "20",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-2150",
+  "listing": "Vita Coco Pressed Coconut Water, Nutrients & Electrolytes Rich, Original, 33.8 fl oz (Pack of 2)",
+  "donorTitle": "Vita Coco Coconut Water with Pressed Coconut - 33.8 fl oz Carton",
+  "missingInDonor": [
+   "nutrients",
+   "electrolytes",
+   "rich",
+   "original"
+  ],
+  "extraInDonor": [
+   "carton"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-3865",
+  "listing": "Jack Link’s Beef Jerky, Teriyaki, 100% Beef, 11g of Protein per Serving, 2.85 oz (Pack of 4)",
+  "donorTitle": "Jack Link's DUOS Original and Teriyaki Beef Jerky, 2.85oz",
+  "missingInDonor": [
+   "protein",
+   "per",
+   "serving"
+  ],
+  "extraInDonor": [
+   "duos",
+   "original"
+  ],
+  "sizeBad": false,
+  "donorSize": "2.85",
+  "listingSize": "11/2.85",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-4071",
+  "listing": "Orville Redenbacher's Cinnabon Cinmn Roll Flvr Popcorn Seasoning 3.3oz (Pack of 8)",
+  "donorTitle": "Orville Redenbacher's Cinnabon Bakery Inspired Cinnamon Roll Flavored Popcorn Seasoning, 3.3 oz.",
+  "missingInDonor": [
+   "cinmn",
+   "flvr"
+  ],
+  "extraInDonor": [
+   "bakery",
+   "inspired",
+   "cinnamon"
+  ],
+  "sizeBad": false,
+  "donorSize": "3.3",
+  "listingSize": "3.3",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-4070",
+  "listing": "Orville Redenbacher's Cinnabon Cinmn Roll Flvr Popcorn Seasoning 3.3oz (Pack of 6)",
+  "donorTitle": "Orville Redenbacher's Cinnabon Bakery Inspired Cinnamon Roll Flavored Popcorn Seasoning, 3.3 oz.",
+  "missingInDonor": [
+   "cinmn",
+   "flvr"
+  ],
+  "extraInDonor": [
+   "bakery",
+   "inspired",
+   "cinnamon"
+  ],
+  "sizeBad": false,
+  "donorSize": "3.3",
+  "listingSize": "3.3",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-4244",
+  "listing": "RITZ Hint of Salt Crackers, 13.7 oz (Pack of 8)",
+  "donorTitle": "RITZ Hint of Salt Crackers, Snacks for Kids and Adults, Lunch Snacks, 13.7 oz",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "snacks",
+   "for",
+   "kids",
+   "adults",
+   "lunch"
+  ],
+  "sizeBad": false,
+  "donorSize": "13.7",
+  "listingSize": "13.7",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-4589",
+  "listing": "Triscuit Original Whole Grain Wheat Crackers, Vegan Crackers, Family Size, 12.5 oz (Pack of 8)",
+  "donorTitle": "Triscuit Reduced Fat Whole Grain Wheat Crackers, Vegan Snack Crackers, Family Size, 11.5 oz",
+  "missingInDonor": [
+   "original"
+  ],
+  "extraInDonor": [
+   "reduced",
+   "fat",
+   "snack"
+  ],
+  "sizeBad": true,
+  "donorSize": "11.5",
+  "listingSize": "12.5",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-4719",
+  "listing": "Jif 13 Ounce Natural Squeeze Pouch (Pack of 2)",
+  "donorTitle": "Jif Natural Squeeze Creamy Peanut Butter Spread - 13oz",
+  "missingInDonor": [
+   "pouch"
+  ],
+  "extraInDonor": [
+   "creamy",
+   "peanut",
+   "butter",
+   "spread"
+  ],
+  "sizeBad": false,
+  "donorSize": "13",
+  "listingSize": "13",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-4684",
+  "listing": "KIND Breakfast Gluten Free Dark Chocolate Cocoa Protein Snack Bars, 1.76 oz, 12 Count (Pack of 4)",
+  "donorTitle": "KIND Breakfast Peanut Butter Banana Dark Chocolate Gluten Free Protein Snack Bars, 1.76 oz, 6 Count One box",
+  "missingInDonor": [
+   "cocoa"
+  ],
+  "extraInDonor": [
+   "peanut",
+   "butter",
+   "banana",
+   "one"
+  ],
+  "sizeBad": false,
+  "donorSize": "1.76",
+  "listingSize": "1.76",
+  "score": 5
+ },
+ {
+  "sku": "FaisalX-1360",
+  "listing": "Simply Cheetos Puffs Cheese Flavored Snacks, White Cheddar, 8 oz (Pack of 6)",
+  "donorTitle": "Cheetos Simply NKD, No Dyes No Artificial Flavors Puffs Cheese Flavored Snacks Bag, 8 oz",
+  "missingInDonor": [
+   "white",
+   "cheddar"
+  ],
+  "extraInDonor": [
+   "nkd",
+   "dyes",
+   "artificial",
+   "flavors"
+  ],
+  "sizeBad": false,
+  "donorSize": "8",
+  "listingSize": "8",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-1535",
+  "listing": "SkinnyPop Original Popcorn, 14 oz.Pack of 2",
+  "donorTitle": "Skinnypop Gluten Free Original Popcorn, 8.0 oz Family Size Bag, Skinny Pop, Popcorn Snacks",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "gluten",
+   "family",
+   "skinny",
+   "pop",
+   "snacks"
+  ],
+  "sizeBad": true,
+  "donorSize": "8.0",
+  "listingSize": "14",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2032",
+  "listing": "2 PACK, Doritos Tortilla Chips Cool Ranch Flavor Snack Chips",
+  "donorTitle": "Doritos Simply NKD, No Dyes No Artificial Flavors Cool Ranch Tortilla Chips Bag, 9.25 oz",
+  "missingInDonor": [
+   "snack"
+  ],
+  "extraInDonor": [
+   "simply",
+   "nkd",
+   "dyes",
+   "artificial",
+   "flavors"
+  ],
+  "sizeBad": false,
+  "donorSize": "9.25",
+  "listingSize": "",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2434",
+  "listing": "Coffee mate Original Powdered Coffee Creamer, 22 oz, (Pack of 6)",
+  "donorTitle": "Nestlé Coffee-mate Coffee Creamer, Hazelnut, Pump Bottle, 50.7 fl oz",
+  "missingInDonor": [
+   "original",
+   "powdered"
+  ],
+  "extraInDonor": [
+   "nestl",
+   "hazelnut",
+   "pump",
+   "bottle"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "22",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-307",
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Hot Dog Buns, 16 oz, (Pack of 3)",
+  "donorTitle": "Nature's Own Perfectly Crafted Brioche Hamburger Bun - 18oz",
+  "missingInDonor": [
+   "hot",
+   "dog",
+   "buns"
+  ],
+  "extraInDonor": [
+   "hamburger",
+   "bun"
+  ],
+  "sizeBad": true,
+  "donorSize": "18",
+  "listingSize": "16",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-313",
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Hot Dog Buns, 16 oz, (Pack of 9)",
+  "donorTitle": "Nature's Own Perfectly Crafted Brioche Hamburger Bun - 18oz",
+  "missingInDonor": [
+   "hot",
+   "dog",
+   "buns"
+  ],
+  "extraInDonor": [
+   "hamburger",
+   "bun"
+  ],
+  "sizeBad": true,
+  "donorSize": "18",
+  "listingSize": "16",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2006",
+  "listing": "Cheetos Puffs Cheese Flavored Snack Chips, 2.625 oz Bag-Pack Of 3",
+  "donorTitle": "Cheetos Puffs Cheese Flavored Snacks Flamin' Hot Flavored, 2.5 oz Bag",
+  "missingInDonor": [
+   "snack",
+   "chips"
+  ],
+  "extraInDonor": [
+   "snacks",
+   "flamin",
+   "hot"
+  ],
+  "sizeBad": true,
+  "donorSize": "2.5",
+  "listingSize": "2.625",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2034",
+  "listing": "Doritos Tortilla Chips Cool Ranch Flavor Snack Chips, 9.25 oz Bag-Pack Of 5",
+  "donorTitle": "Doritos Simply NKD, No Dyes No Artificial Flavors Cool Ranch Tortilla Chips Bag, 9.25 oz",
+  "missingInDonor": [
+   "snack"
+  ],
+  "extraInDonor": [
+   "simply",
+   "nkd",
+   "dyes",
+   "artificial",
+   "flavors"
+  ],
+  "sizeBad": false,
+  "donorSize": "9.25",
+  "listingSize": "9.25",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2046",
+  "listing": "Doritos Nacho Cheese Flavored Tortilla Chips Snacks Chips, 9.25 oz-Pack Of 5",
+  "donorTitle": "Doritos Simply NKD No Dyes No Artificial Flavors Nacho Cheese Tortilla Chips Bag, 9.25 oz​",
+  "missingInDonor": [
+   "snacks"
+  ],
+  "extraInDonor": [
+   "simply",
+   "nkd",
+   "dyes",
+   "artificial",
+   "flavors"
+  ],
+  "sizeBad": false,
+  "donorSize": "9.25",
+  "listingSize": "9.25",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2073",
+  "listing": "Chef Boyardee Mini ABC's and 123's with Meatballs, 15 oz (Pack of 8)",
+  "donorTitle": "Chef Boyardee Mini ABC's and 123's with Meatballs in Tomato Sauce, Ready-to-Eat Meal, 15 oz. Can",
+  "missingInDonor": [],
+  "extraInDonor": [
+   "tomato",
+   "sauce",
+   "ready",
+   "eat",
+   "meal",
+   "can"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "15",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2275",
+  "listing": "BODYARMOR SuperDrink Orange Mango Sports Drink, 16 fl oz, (Pack of 8)",
+  "donorTitle": "BODYARMOR Lyte Peach Mango Electrolyte Sports Drink Bottle, 16 fl oz",
+  "missingInDonor": [
+   "superdrink",
+   "orange"
+  ],
+  "extraInDonor": [
+   "lyte",
+   "peach",
+   "electrolyte",
+   "bottle"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2432",
+  "listing": "Coffee mate Original Powdered Coffee Creamer, 22 oz, (Pack of 2)",
+  "donorTitle": "Nestle Coffee Mate, Chocolate Crème Zero-Sugar Powdered Coffee Creamer, 10.2 oz",
+  "missingInDonor": [
+   "original"
+  ],
+  "extraInDonor": [
+   "nestle",
+   "chocolate",
+   "zero",
+   "sugar"
+  ],
+  "sizeBad": true,
+  "donorSize": "10.2",
+  "listingSize": "22",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2775",
+  "listing": "Campbell's Condensed Bean with Bacon Soup, Natural Smoke Flavoring Added, 11.25 oz Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed Bean with Bacon Soup - 11.5oz",
+  "missingInDonor": [
+   "natural",
+   "smoke",
+   "flavoring",
+   "added",
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "11.5",
+  "listingSize": "11.25",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2776",
+  "listing": "Campbell's Condensed Bean with Bacon Soup, Natural Smoke Flavoring Added, 11.25 oz Can (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Bean with Bacon Soup - 11.5oz",
+  "missingInDonor": [
+   "natural",
+   "smoke",
+   "flavoring",
+   "added",
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "11.5",
+  "listingSize": "11.25",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2827",
+  "listing": "Campbell’s Condensed Chicken Noodle Soup Dry Egg Noodle Recipe, 22.4 oz Family Size Can (Pack of 8)",
+  "donorTitle": "Campbell's Condensed Chicken Noodle Soup - 10.75oz",
+  "missingInDonor": [
+   "dry",
+   "egg",
+   "recipe",
+   "family",
+   "can"
+  ],
+  "extraInDonor": [],
+  "sizeBad": true,
+  "donorSize": "10.75",
+  "listingSize": "22.4",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-306",
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Hot Dog Buns, 16 oz, (Pack of 2)",
+  "donorTitle": "Nature's Own Perfectly Crafted Brioche Hamburger Bun - 18oz",
+  "missingInDonor": [
+   "hot",
+   "dog",
+   "buns"
+  ],
+  "extraInDonor": [
+   "hamburger",
+   "bun"
+  ],
+  "sizeBad": true,
+  "donorSize": "18",
+  "listingSize": "16",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-3528",
+  "listing": "Hamburger Helper Three Cheese Pasta, 6 oz Box (Pack of 10)",
+  "donorTitle": "Hamburger Helper Deluxe Beef Stroganoff Pasta, 5.5 oz Box",
+  "missingInDonor": [
+   "three",
+   "cheese"
+  ],
+  "extraInDonor": [
+   "deluxe",
+   "beef",
+   "stroganoff"
+  ],
+  "sizeBad": true,
+  "donorSize": "5.5",
+  "listingSize": "6",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-3540",
+  "listing": "Hamburger Helper Cheesy Italian Pasta Shells, 9.9 oz Value Size Box (Pack of 10)",
+  "donorTitle": "Hamburger Helper Cheesy Enchilada Rice, 7.5 oz Box",
+  "missingInDonor": [
+   "italian",
+   "pasta",
+   "shells"
+  ],
+  "extraInDonor": [
+   "enchilada",
+   "rice"
+  ],
+  "sizeBad": true,
+  "donorSize": "7.5",
+  "listingSize": "9.9",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-3563",
+  "listing": "Pringles, Potato Crisps Chips, Original, 5.2 Oz (Pack of 6)",
+  "donorTitle": "Pringles Ranch Potato Crisps Chips, Lunch Snacks, 5.5 oz Canister",
+  "missingInDonor": [
+   "original"
+  ],
+  "extraInDonor": [
+   "ranch",
+   "lunch",
+   "snacks",
+   "canister"
+  ],
+  "sizeBad": true,
+  "donorSize": "5.5",
+  "listingSize": "5.2",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-3612",
+  "listing": "Pringles Everything Bagel Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Salt & Vinegar Potato Crisps Chips - 5.5oz",
+  "missingInDonor": [
+   "everything",
+   "bagel",
+   "lunch",
+   "snacks"
+  ],
+  "extraInDonor": [
+   "salt",
+   "vinegar"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-3610",
+  "listing": "Pringles Everything Bagel Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 4)",
+  "donorTitle": "Pringles Salt & Vinegar Potato Crisps Chips - 5.5oz",
+  "missingInDonor": [
+   "everything",
+   "bagel",
+   "lunch",
+   "snacks"
+  ],
+  "extraInDonor": [
+   "salt",
+   "vinegar"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-3620",
+  "listing": "The Good Crisp Company Gluten Free Original Snack Chips, 5.6 oz (Pack of 6)",
+  "donorTitle": "The Good Crisp Company Gluten-Free Sea Salt and Vinegar Snack Chips in Resealable Canister, 5.6 oz",
+  "missingInDonor": [
+   "original"
+  ],
+  "extraInDonor": [
+   "sea",
+   "salt",
+   "vinegar",
+   "resealable",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.6",
+  "listingSize": "5.6",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2295",
+  "listing": "Prime Hydration Drink, Cherry Freeze, 16.9 fl oz, (Pack of 6)",
+  "donorTitle": "Prime Ice Hydration Sports Drink, Orange, 16.9 fl oz, Bottle",
+  "missingInDonor": [
+   "cherry",
+   "freeze"
+  ],
+  "extraInDonor": [
+   "ice",
+   "sports",
+   "orange",
+   "bottle"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2291",
+  "listing": "Prime Hydration Drink Meta Moon 16.9 fl oz, (Pack of 4)",
+  "donorTitle": "Prime Ice Hydration Sports Drink, Orange, 16.9 fl oz, Bottle",
+  "missingInDonor": [
+   "meta",
+   "moon"
+  ],
+  "extraInDonor": [
+   "ice",
+   "sports",
+   "orange",
+   "bottle"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2285",
+  "listing": "Prime Hydration Drink Blue Raspberry, 16.9 fl oz, (Pack of 4)",
+  "donorTitle": "Prime Ice Hydration Sports Drink, Orange, 16.9 fl oz, Bottle",
+  "missingInDonor": [
+   "blue",
+   "raspberry"
+  ],
+  "extraInDonor": [
+   "ice",
+   "sports",
+   "orange",
+   "bottle"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-2296",
+  "listing": "Prime Hydration Drink, Cherry Freeze, 16.9 fl oz, (Pack of 8)",
+  "donorTitle": "Prime Ice Hydration Sports Drink, Orange, 16.9 fl oz, Bottle",
+  "missingInDonor": [
+   "cherry",
+   "freeze"
+  ],
+  "extraInDonor": [
+   "ice",
+   "sports",
+   "orange",
+   "bottle"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-3362",
+  "listing": "Maruchan Instant Lunch Roast Chicken Flavor Soup, 2.25 oz Shelf Stable Cup (Pack of 8)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Chicken Flavor, 2.25 oz Cup",
+  "missingInDonor": [
+   "roast",
+   "soup",
+   "shelf",
+   "stable"
+  ],
+  "extraInDonor": [
+   "ramen",
+   "noodles"
+  ],
+  "sizeBad": false,
+  "donorSize": "2.25",
+  "listingSize": "2.25",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-3539",
+  "listing": "Hamburger Helper Cheesy Italian Pasta Shells, 9.9 oz Value Size Box (Pack of 8)",
+  "donorTitle": "Hamburger Helper Cheesy Enchilada Rice, 7.5 oz Box",
+  "missingInDonor": [
+   "italian",
+   "pasta",
+   "shells"
+  ],
+  "extraInDonor": [
+   "enchilada",
+   "rice"
+  ],
+  "sizeBad": true,
+  "donorSize": "7.5",
+  "listingSize": "9.9",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-3820",
+  "listing": "College Inn Beef Broth, 32 oz Resealable Carton, Ready to Serve, Shelf Stable/Ambient (Pack of 4)",
+  "donorTitle": "College Inn Beef Broth, 32 oz Carton",
+  "missingInDonor": [
+   "resealable",
+   "ready",
+   "serve",
+   "shelf",
+   "stable",
+   "ambient"
+  ],
+  "extraInDonor": [],
+  "sizeBad": false,
+  "donorSize": "32",
+  "listingSize": "32",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-4025",
+  "listing": "Hershey's Kisses Rainbow Brownie Flavored Candy, Bag 4.2 oz (Pack of 6)",
+  "donorTitle": "Hershey's Kisses Milk Chocolate with Almonds Candy, Bag 4.48 oz",
+  "missingInDonor": [
+   "rainbow",
+   "brownie"
+  ],
+  "extraInDonor": [
+   "milk",
+   "chocolate",
+   "almonds"
+  ],
+  "sizeBad": true,
+  "donorSize": "4.48",
+  "listingSize": "4.2",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-4592",
+  "listing": "Triscuit Cracked Pepper & Olive Oil Whole Grain Wheat Crackers, 8.5 oz (Pack of 8)",
+  "donorTitle": "Triscuit Rosemary & Olive Oil Whole Grain Wheat Crackers, Lunch Snacks, Snack Crackers, 8.5 oz",
+  "missingInDonor": [
+   "cracked",
+   "pepper"
+  ],
+  "extraInDonor": [
+   "rosemary",
+   "lunch",
+   "snacks",
+   "snack"
+  ],
+  "sizeBad": false,
+  "donorSize": "8.5",
+  "listingSize": "8.5",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-4601",
+  "listing": "Triscuit Thin Crisps Zesty Jalapeno Whole Grain Wheat Crackers, 7.1 oz (Pack of 8)",
+  "donorTitle": "Triscuit Thin Crisps Original Whole Grain Wheat Crackers, Vegan Snacks, Snack Crackers, 7.1 oz",
+  "missingInDonor": [
+   "zesty",
+   "jalapeno"
+  ],
+  "extraInDonor": [
+   "original",
+   "vegan",
+   "snacks",
+   "snack"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.1",
+  "listingSize": "7.1",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-4626",
+  "listing": "Triscuit Thin Crisps Applewood Barbecue Whole Grain Wheat Crackers, 7.1 oz (Pack of 4)",
+  "donorTitle": "Triscuit Thin Crisps Original Whole Grain Wheat Crackers, Vegan Snacks, Snack Crackers, 7.1 oz",
+  "missingInDonor": [
+   "applewood",
+   "barbecue"
+  ],
+  "extraInDonor": [
+   "original",
+   "vegan",
+   "snacks",
+   "snack"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.1",
+  "listingSize": "7.1",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-4627",
+  "listing": "Triscuit Thin Crisps Applewood Barbecue Whole Grain Wheat Crackers, 7.1 oz (Pack of 6)",
+  "donorTitle": "Triscuit Thin Crisps Original Whole Grain Wheat Crackers, Vegan Snacks, Snack Crackers, 7.1 oz",
+  "missingInDonor": [
+   "applewood",
+   "barbecue"
+  ],
+  "extraInDonor": [
+   "original",
+   "vegan",
+   "snacks",
+   "snack"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.1",
+  "listingSize": "7.1",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-4877",
+  "listing": "Pocky Chocolate Covered Biscuit Sticks Share Pack 210 gram / 7.4 oz (Pack of 8)",
+  "donorTitle": "Glico Pocky Crunchy Strawberry Covered Biscuit Sticks, 1.79 oz",
+  "missingInDonor": [
+   "chocolate",
+   "share"
+  ],
+  "extraInDonor": [
+   "glico",
+   "crunchy",
+   "strawberry"
+  ],
+  "sizeBad": true,
+  "donorSize": "1.79",
+  "listingSize": "7.4",
+  "score": 6
+ },
+ {
+  "sku": "FaisalX-1208",
+  "listing": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag (Pack of 2)",
+  "donorTitle": "Sara Lee Classic Bread, 20 oz, Plain White Bread, Bag",
+  "missingInDonor": [
+   "artesano",
+   "bakery",
+   "buns",
+   "hamburger"
+  ],
+  "extraInDonor": [
+   "classic",
+   "plain"
+  ],
+  "sizeBad": true,
+  "donorSize": "20",
+  "listingSize": "19",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-1310",
+  "listing": "Fritos Chili Cheese Corn Chips, 9.25 Oz (Pack of 6)",
+  "donorTitle": "Fritos Spicy Dill Pickle Twists Corn Snack Chips, 9.25 oz",
+  "missingInDonor": [
+   "chili",
+   "cheese"
+  ],
+  "extraInDonor": [
+   "spicy",
+   "dill",
+   "pickle",
+   "twists",
+   "snack"
+  ],
+  "sizeBad": false,
+  "donorSize": "9.25",
+  "listingSize": "9.25",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-2229",
+  "listing": "Gatorade Lemon Lime, Sports Drink, 28 oz Bottle, Quantity of 6",
+  "donorTitle": "Gatorade Zero Sugar Thirst Quencher, Lemon Lime Sports Drinks, 28 fl oz Bottle",
+  "missingInDonor": [
+   "drink",
+   "quantity"
+  ],
+  "extraInDonor": [
+   "zero",
+   "sugar",
+   "thirst",
+   "quencher",
+   "drinks"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "28",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-288",
+  "listing": "Wonder Bread Classic Extra Soft White Bread Hamburger Buns, 15 oz, 8 Count (Pack of 6)",
+  "donorTitle": "Wonder Round Top White Sliced Bread - 20oz",
+  "missingInDonor": [
+   "classic",
+   "extra",
+   "hamburger",
+   "buns"
+  ],
+  "extraInDonor": [
+   "round",
+   "top"
+  ],
+  "sizeBad": true,
+  "donorSize": "20",
+  "listingSize": "15",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-2228",
+  "listing": "Gatorade Lemon Lime, Sports Drink, 28 oz Bottle, Quantity of 4",
+  "donorTitle": "Gatorade Zero Sugar Thirst Quencher, Lemon Lime Sports Drinks, 28 fl oz Bottle",
+  "missingInDonor": [
+   "drink",
+   "quantity"
+  ],
+  "extraInDonor": [
+   "zero",
+   "sugar",
+   "thirst",
+   "quencher",
+   "drinks"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "28",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-2256",
+  "listing": "POWERADE Electrolyte Enhanced Grape Sport Drink, 28 fl oz, (Pack of 6)",
+  "donorTitle": "POWERADE Fruit Punch Electrolyte Sports Drink Bottle, 28 fl oz",
+  "missingInDonor": [
+   "enhanced",
+   "grape",
+   "sport"
+  ],
+  "extraInDonor": [
+   "fruit",
+   "punch",
+   "sports",
+   "bottle"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-2530",
+  "listing": "Campbell’s Chunky Soup, Savory Pot Roast Soup, 18.8 oz Can, (Pack of 6)",
+  "donorTitle": "Campbell's Chunky Savory Chicken with White & Wild Rice Soup - 18.8oz",
+  "missingInDonor": [
+   "pot",
+   "roast",
+   "can"
+  ],
+  "extraInDonor": [
+   "chicken",
+   "white",
+   "wild",
+   "rice"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.8",
+  "listingSize": "18.8",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-3387",
+  "listing": "Nissin Bowl Noodles Hot & Spicy Beef Flavor Ramen Noodle Soup, 3.28 Oz (Pack of 10)",
+  "donorTitle": "Nissin Foods Hot & Spicy Chicken Bowl Noodles 3.32oz",
+  "missingInDonor": [
+   "beef",
+   "ramen",
+   "noodle",
+   "soup"
+  ],
+  "extraInDonor": [
+   "foods",
+   "chicken"
+  ],
+  "sizeBad": true,
+  "donorSize": "3.32",
+  "listingSize": "3.28",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-3501",
+  "listing": "Hamburger Helper Four Cheese Lasagna, 5.5 oz Box (Pack of 10)",
+  "donorTitle": "Hamburger Helper Double Cheeseburger Macaroni, 6 oz Box",
+  "missingInDonor": [
+   "four",
+   "cheese",
+   "lasagna"
+  ],
+  "extraInDonor": [
+   "double",
+   "cheeseburger",
+   "macaroni"
+  ],
+  "sizeBad": true,
+  "donorSize": "6",
+  "listingSize": "5.5",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-3535",
+  "listing": "Hamburger Helper Pasta & Sauce Mix, Deluxe Cheesesteak, 4.8 oz Box, Quantity of 6",
+  "donorTitle": "Hamburger Helper Deluxe Beef Stroganoff Pasta, 5.5 oz Box",
+  "missingInDonor": [
+   "sauce",
+   "mix",
+   "cheesesteak",
+   "quantity"
+  ],
+  "extraInDonor": [
+   "beef",
+   "stroganoff"
+  ],
+  "sizeBad": true,
+  "donorSize": "5.5",
+  "listingSize": "4.8",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-3614",
+  "listing": "The Good Crisp Company Gluten Free Outback BBQ Snack Chips, 5.6 oz (Pack of 6)",
+  "donorTitle": "The Good Crisp Company Gluten-Free Sea Salt and Vinegar Snack Chips in Resealable Canister, 5.6 oz",
+  "missingInDonor": [
+   "outback",
+   "bbq"
+  ],
+  "extraInDonor": [
+   "sea",
+   "salt",
+   "vinegar",
+   "resealable",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.6",
+  "listingSize": "5.6",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-3365",
+  "listing": "Maruchan Instant Lunch Beef Flavor Noodle Soup, 2.25 oz (Pack of 8)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Chicken Flavor, 2.25 oz Cup",
+  "missingInDonor": [
+   "beef",
+   "noodle",
+   "soup"
+  ],
+  "extraInDonor": [
+   "ramen",
+   "noodles",
+   "chicken",
+   "cup"
+  ],
+  "sizeBad": false,
+  "donorSize": "2.25",
+  "listingSize": "2.25",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-3720",
+  "listing": "Progresso Creamy Chicken & Homestyle Noodles Soup, Rich & Hearty Canned Soup, 18.5 oz (Pack of 8)",
+  "donorTitle": "Progresso Gluten Free Rich & Hearty Creamy Roasted Chicken Wild Rice Soup - 18.5oz",
+  "missingInDonor": [
+   "homestyle",
+   "noodles",
+   "canned"
+  ],
+  "extraInDonor": [
+   "gluten",
+   "roasted",
+   "wild",
+   "rice"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.5",
+  "listingSize": "18.5",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-4137",
+  "listing": "Mission Zero Net Carbs Sundried Tomato Basil Street Taco Tortillas, 8.89 oz, 14 Count (Pack of 8)",
+  "donorTitle": "Mission Zero Net Carbs Original Flour Tortillas, Street Tacos Size, 14 Count",
+  "missingInDonor": [
+   "sundried",
+   "tomato",
+   "basil",
+   "taco"
+  ],
+  "extraInDonor": [
+   "original",
+   "flour",
+   "tacos"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "8.89",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-4516",
+  "listing": "Cheez-It Snap'd Double Cheese Cracker Chips, Thin Crisps, 12 oz (Pack of 6)",
+  "donorTitle": "Cheez-It Snap'd Double Cheese Cheesy Baked Chips, Lunch Snacks, 12 oz",
+  "missingInDonor": [
+   "cracker",
+   "thin",
+   "crisps"
+  ],
+  "extraInDonor": [
+   "cheesy",
+   "baked",
+   "lunch",
+   "snacks"
+  ],
+  "sizeBad": false,
+  "donorSize": "12",
+  "listingSize": "12",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-4521",
+  "listing": "Cheez-It Snap'd Double Cheese Cracker Chips, Thin Crisps, 7.5 oz (Pack of 4)",
+  "donorTitle": "Cheez-It Snap'd Double Cheese Cheesy Baked Chips, Lunch Snacks, 7.5 oz",
+  "missingInDonor": [
+   "cracker",
+   "thin",
+   "crisps"
+  ],
+  "extraInDonor": [
+   "cheesy",
+   "baked",
+   "lunch",
+   "snacks"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.5",
+  "listingSize": "7.5",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-4580",
+  "listing": "Triscuit Roasted Garlic Whole Grain Wheat Crackers, 8.5 oz (Pack of 8)",
+  "donorTitle": "Triscuit Hint of Sea Salt Whole Grain Wheat Crackers, Vegan Crackers, Vegan Snacks, 8.5 oz",
+  "missingInDonor": [
+   "roasted",
+   "garlic"
+  ],
+  "extraInDonor": [
+   "hint",
+   "sea",
+   "salt",
+   "vegan",
+   "snacks"
+  ],
+  "sizeBad": false,
+  "donorSize": "8.5",
+  "listingSize": "8.5",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-4604",
+  "listing": "Triscuit Fire Roasted Tomato & Olive Oil Whole Grain Wheat Crackers, 8.5 oz (Pack of 8)",
+  "donorTitle": "Triscuit Rosemary & Olive Oil Whole Grain Wheat Crackers, Lunch Snacks, Snack Crackers, 8.5 oz",
+  "missingInDonor": [
+   "fire",
+   "roasted",
+   "tomato"
+  ],
+  "extraInDonor": [
+   "rosemary",
+   "lunch",
+   "snacks",
+   "snack"
+  ],
+  "sizeBad": false,
+  "donorSize": "8.5",
+  "listingSize": "8.5",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-4602",
+  "listing": "Triscuit Fire Roasted Tomato & Olive Oil Whole Grain Wheat Crackers, 8.5 oz (Pack of 4)",
+  "donorTitle": "Triscuit Rosemary & Olive Oil Whole Grain Wheat Crackers, Lunch Snacks, Snack Crackers, 8.5 oz",
+  "missingInDonor": [
+   "fire",
+   "roasted",
+   "tomato"
+  ],
+  "extraInDonor": [
+   "rosemary",
+   "lunch",
+   "snacks",
+   "snack"
+  ],
+  "sizeBad": false,
+  "donorSize": "8.5",
+  "listingSize": "8.5",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-1641",
+  "listing": "Sara Lee Artesano White Bakery Buns, 8 count, Soft Hamburger Buns, 19 oz Bag -Pack Of 5",
+  "donorTitle": "Sara Lee Classic Bread, 20 oz, Plain White Bread, Bag",
+  "missingInDonor": [
+   "artesano",
+   "bakery",
+   "buns",
+   "hamburger"
+  ],
+  "extraInDonor": [
+   "classic",
+   "plain"
+  ],
+  "sizeBad": true,
+  "donorSize": "20",
+  "listingSize": "19",
+  "score": 7
+ },
+ {
+  "sku": "FaisalX-1220",
+  "listing": "Sara Lee Artesano Bakery Bread Plain Sausage Rolls, 6 count, Soft Hot Dog Buns, 15 oz Bag (Pack of 2)",
+  "donorTitle": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Brioche Bread, Bag",
+  "missingInDonor": [
+   "plain",
+   "sausage",
+   "rolls",
+   "hot",
+   "dog",
+   "buns"
+  ],
+  "extraInDonor": [
+   "brioche"
+  ],
+  "sizeBad": true,
+  "donorSize": "20",
+  "listingSize": "15",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-2603",
+  "listing": "Campbell's Chunky Soup, Healthy Request New England Clam Chowder, 18.8 Oz Can",
+  "donorTitle": "Campbell's Chunky Healthy Request Grilled Chicken & Sausage Gumbo Soup - 18.8oz",
+  "missingInDonor": [
+   "england",
+   "clam",
+   "chowder",
+   "can"
+  ],
+  "extraInDonor": [
+   "grilled",
+   "chicken",
+   "sausage",
+   "gumbo"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.8",
+  "listingSize": "18.8",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-318",
+  "listing": "Nature's Own White Hamburger Butter Buns, 16 oz, (Pack of 3)",
+  "donorTitle": "Nature's Own Life Keto Soft White Bread, Net 1 Carb Sliced White Non-GMO Keto Bread, 16 oz Loaf",
+  "missingInDonor": [
+   "hamburger",
+   "butter",
+   "buns"
+  ],
+  "extraInDonor": [
+   "life",
+   "keto",
+   "carb",
+   "non",
+   "gmo"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-324",
+  "listing": "Nature's Own White Hamburger Butter Buns, 16 oz, (Pack of 9)",
+  "donorTitle": "Nature's Own Life Keto Soft White Bread, Net 1 Carb Sliced White Non-GMO Keto Bread, 16 oz Loaf",
+  "missingInDonor": [
+   "hamburger",
+   "butter",
+   "buns"
+  ],
+  "extraInDonor": [
+   "life",
+   "keto",
+   "carb",
+   "non",
+   "gmo"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-321",
+  "listing": "Nature's Own White Hamburger Butter Buns, 16 oz, (Pack of 6)",
+  "donorTitle": "Nature's Own Life Keto Soft White Bread, Net 1 Carb Sliced White Non-GMO Keto Bread, 16 oz Loaf",
+  "missingInDonor": [
+   "hamburger",
+   "butter",
+   "buns"
+  ],
+  "extraInDonor": [
+   "life",
+   "keto",
+   "carb",
+   "non",
+   "gmo"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-3323",
+  "listing": "Maruchan Instant Lunch Hot & Spicy Shrimp Flavor Noodle Soup, 2.25 oz Shelf Stable Cup (Pack of 8)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Hot & Spicy Chicken Flavor, 2.25 oz Cup",
+  "missingInDonor": [
+   "shrimp",
+   "noodle",
+   "soup",
+   "shelf",
+   "stable"
+  ],
+  "extraInDonor": [
+   "ramen",
+   "noodles",
+   "chicken"
+  ],
+  "sizeBad": false,
+  "donorSize": "2.25",
+  "listingSize": "2.25",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-3576",
+  "listing": "Pringles Elote Mexican Street Corn Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 8)",
+  "donorTitle": "Pringles Salt & Vinegar Potato Crisps Chips - 5.5oz",
+  "missingInDonor": [
+   "elote",
+   "mexican",
+   "street",
+   "corn",
+   "lunch",
+   "snacks"
+  ],
+  "extraInDonor": [
+   "salt",
+   "vinegar"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.5",
+  "listingSize": "5.5",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-3617",
+  "listing": "The Good Crisp Company Gluten Free Sour Cream and Onion Snack Chips, 5.6 oz (Pack of 6)",
+  "donorTitle": "The Good Crisp Company Gluten-Free Sea Salt and Vinegar Snack Chips in Resealable Canister, 5.6 oz",
+  "missingInDonor": [
+   "sour",
+   "cream",
+   "onion"
+  ],
+  "extraInDonor": [
+   "sea",
+   "salt",
+   "vinegar",
+   "resealable",
+   "canister"
+  ],
+  "sizeBad": false,
+  "donorSize": "5.6",
+  "listingSize": "5.6",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-3608",
+  "listing": "Pringles Original Potato Crisps Chips, Lunch Snacks, 2.3 oz (Pack of 6)",
+  "donorTitle": "Pringles Potato Crisps Chips, Lunch Snacks, Office and Kids Snacks, Grab N' Go Pack, Cheddar Cheese, 2.5oz Can (1 Can)",
+  "missingInDonor": [
+   "original"
+  ],
+  "extraInDonor": [
+   "office",
+   "kids",
+   "grab",
+   "cheddar",
+   "cheese",
+   "can"
+  ],
+  "sizeBad": true,
+  "donorSize": "2.5",
+  "listingSize": "2.3",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-1121",
+  "listing": "Nature’s Own Life Honey Wheat, 40 Calories per Slice Keto Friendly Sandwich Bread, 16 oz (Pack of 2)",
+  "donorTitle": "Nature's Own Life Protein Bread Loaf - 16oz",
+  "missingInDonor": [
+   "honey",
+   "wheat",
+   "calories",
+   "per",
+   "keto",
+   "friendly",
+   "sandwich"
+  ],
+  "extraInDonor": [
+   "protein"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-317",
+  "listing": "Nature's Own White Hamburger Butter Buns, 16 oz, (Pack of 2)",
+  "donorTitle": "Nature's Own Life Keto Soft White Bread, Net 1 Carb Sliced White Non-GMO Keto Bread, 16 oz Loaf",
+  "missingInDonor": [
+   "hamburger",
+   "butter",
+   "buns"
+  ],
+  "extraInDonor": [
+   "life",
+   "keto",
+   "carb",
+   "non",
+   "gmo"
+  ],
+  "sizeBad": false,
+  "donorSize": "16",
+  "listingSize": "16",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-3875",
+  "listing": "2.85oz Jack Link's Spicy Dill Pickle Pork Jerky (Pack of 6)",
+  "donorTitle": "Jack Link's DUOS Original and Teriyaki Beef Jerky, 2.85oz",
+  "missingInDonor": [
+   "spicy",
+   "dill",
+   "pickle",
+   "pork"
+  ],
+  "extraInDonor": [
+   "duos",
+   "original",
+   "teriyaki",
+   "beef"
+  ],
+  "sizeBad": false,
+  "donorSize": "2.85",
+  "listingSize": "2.85",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-3886",
+  "listing": "2.85oz Jack Link's Spicy Red Pepper Beef Jerky (Pack of 4)",
+  "donorTitle": "Jack Links Doritos Spicy Sweet Chili Flavored Beef Jerky, 2.65 oz",
+  "missingInDonor": [
+   "link",
+   "red",
+   "pepper"
+  ],
+  "extraInDonor": [
+   "links",
+   "doritos",
+   "sweet",
+   "chili"
+  ],
+  "sizeBad": true,
+  "donorSize": "2.65",
+  "listingSize": "2.85",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-3894",
+  "listing": "Jack Link’s Beef Jerky, Inspired by the flavors of Dr Pepper, Made with 100% Beef, 9g of protein, 2.85 oz (Pack of 8)",
+  "donorTitle": "Jack Links Beef Jerky, Peppered, 100% Beef, 9g of Protein per Serving, 2.85 oz Bag",
+  "missingInDonor": [
+   "link",
+   "inspired",
+   "flavors",
+   "pepper"
+  ],
+  "extraInDonor": [
+   "links",
+   "peppered",
+   "per",
+   "serving"
+  ],
+  "sizeBad": false,
+  "donorSize": "9/2.85",
+  "listingSize": "9/2.85",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-4254",
+  "listing": "RITZ Original Crackers, 13.7 oz (Pack of 4)",
+  "donorTitle": "RITZ Hint of Salt Crackers, Snacks for Kids and Adults, Lunch Snacks, 13.7 oz",
+  "missingInDonor": [
+   "original"
+  ],
+  "extraInDonor": [
+   "hint",
+   "salt",
+   "snacks",
+   "for",
+   "kids",
+   "adults",
+   "lunch"
+  ],
+  "sizeBad": false,
+  "donorSize": "13.7",
+  "listingSize": "13.7",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-4508",
+  "listing": "Cheez-It Snap'd Cheddar Sour Cream and Onion Cheese Cracker Chips, Thin Crisps, 7.5 oz (Pack of 8)",
+  "donorTitle": "Cheez-It Snap'd Cheddar Sour Cream and Onion Cheesy Baked Chips, Lunch Snacks, 7.5 oz",
+  "missingInDonor": [
+   "cheese",
+   "cracker",
+   "thin",
+   "crisps"
+  ],
+  "extraInDonor": [
+   "cheesy",
+   "baked",
+   "lunch",
+   "snacks"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.5",
+  "listingSize": "7.5",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-4622",
+  "listing": "Triscuit Rosemary & Olive Oil Whole Grain Wheat Crackers, Family Size, 12.5 oz (Pack of 8)",
+  "donorTitle": "Triscuit Reduced Fat Whole Grain Wheat Crackers, Vegan Snack Crackers, Family Size, 11.5 oz",
+  "missingInDonor": [
+   "rosemary",
+   "olive",
+   "oil"
+  ],
+  "extraInDonor": [
+   "reduced",
+   "fat",
+   "vegan",
+   "snack"
+  ],
+  "sizeBad": true,
+  "donorSize": "11.5",
+  "listingSize": "12.5",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-4759",
+  "listing": "SKIPPY Peanut Butter, Creamy, 7 G Protein per Serving, 40 oz Plastic Jar (Pack of 4)",
+  "donorTitle": "SKIPPY Reduced Fat Creamy Peanut Butter Spread, Shelf-Stable, 40 oz Plastic Jar",
+  "missingInDonor": [
+   "protein",
+   "per",
+   "serving"
+  ],
+  "extraInDonor": [
+   "reduced",
+   "fat",
+   "spread",
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": false,
+  "donorSize": "40",
+  "listingSize": "7/40",
+  "score": 8
+ },
+ {
+  "sku": "FaisalX-1183",
+  "listing": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)",
+  "donorTitle": "Pepperidge Farm Chessmen Butter Cookies - 7.25oz (Packaging May Vary)",
+  "missingInDonor": [
+   "hot",
+   "dog",
+   "buns",
+   "top"
+  ],
+  "extraInDonor": [
+   "chessmen",
+   "cookies",
+   "packaging",
+   "may",
+   "vary"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.25",
+  "listingSize": "",
+  "score": 9
+ },
+ {
+  "sku": "FaisalX-1181",
+  "listing": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 2)",
+  "donorTitle": "Pepperidge Farm Bakery Classics Sesame Topped Hamburger Buns - 15oz/8ct",
+  "missingInDonor": [
+   "butter",
+   "hot",
+   "dog",
+   "top"
+  ],
+  "extraInDonor": [
+   "bakery",
+   "classics",
+   "sesame",
+   "topped",
+   "hamburger"
+  ],
+  "sizeBad": false,
+  "donorSize": "15",
+  "listingSize": "",
+  "score": 9
+ },
+ {
+  "sku": "FaisalX-2509",
+  "listing": "Hormel Compleats Dumplings & Chicken, 7.5 Oz Plastic Tray, (Pack of 6)",
+  "donorTitle": "HORMEL COMPLEATS Spaghetti & Meat Sauce, Shelf-Stable, 11 grams Protein, 7.5 oz Plastic Microwaveable Tray",
+  "missingInDonor": [
+   "dumplings",
+   "chicken"
+  ],
+  "extraInDonor": [
+   "spaghetti",
+   "meat",
+   "sauce",
+   "shelf",
+   "stable",
+   "protein",
+   "microwaveable"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.5",
+  "listingSize": "7.5",
+  "score": 9
+ },
+ {
+  "sku": "FaisalX-2673",
+  "listing": "Knorr Chicken Long Grain Rice and Vermicelli Pasta Blend Rice Sides No Artificial Flavors, 5.6 oz (Pack of 6)",
+  "donorTitle": "Knorr No Artificial Flavors Cajun Chicken Flavor Rice Sides, 5.8 oz Regular Pouch",
+  "missingInDonor": [
+   "long",
+   "grain",
+   "vermicelli",
+   "pasta",
+   "blend"
+  ],
+  "extraInDonor": [
+   "cajun",
+   "regular",
+   "pouch"
+  ],
+  "sizeBad": true,
+  "donorSize": "5.8",
+  "listingSize": "5.6",
+  "score": 9
+ },
+ {
+  "sku": "FaisalX-2674",
+  "listing": "Knorr Chicken Long Grain Rice and Vermicelli Pasta Blend Rice Sides No Artificial Flavors, 5.6 oz (Pack of 8)",
+  "donorTitle": "Knorr No Artificial Flavors Cajun Chicken Flavor Rice Sides, 5.8 oz Regular Pouch",
+  "missingInDonor": [
+   "long",
+   "grain",
+   "vermicelli",
+   "pasta",
+   "blend"
+  ],
+  "extraInDonor": [
+   "cajun",
+   "regular",
+   "pouch"
+  ],
+  "sizeBad": true,
+  "donorSize": "5.8",
+  "listingSize": "5.6",
+  "score": 9
+ },
+ {
+  "sku": "FaisalX-2672",
+  "listing": "Knorr Chicken Long Grain Rice and Vermicelli Pasta Blend Rice Sides No Artificial Flavors, 5.6 oz (Pack of 4)",
+  "donorTitle": "Knorr No Artificial Flavors Cajun Chicken Flavor Rice Sides, 5.8 oz Regular Pouch",
+  "missingInDonor": [
+   "long",
+   "grain",
+   "vermicelli",
+   "pasta",
+   "blend"
+  ],
+  "extraInDonor": [
+   "cajun",
+   "regular",
+   "pouch"
+  ],
+  "sizeBad": true,
+  "donorSize": "5.8",
+  "listingSize": "5.6",
+  "score": 9
+ },
+ {
+  "sku": "FaisalX-2820",
+  "listing": "Campbell’s Condensed Kids Soup, Paw Patrol Awesome Shapes Pasta with Chicken in Chicken Broth, 10.5 oz Can (Pack of 6)",
+  "donorTitle": "Campbell's Condensed Kids' Creamy Chicken and Twists Soup - 10.5oz",
+  "missingInDonor": [
+   "paw",
+   "patrol",
+   "awesome",
+   "shapes",
+   "pasta",
+   "broth",
+   "can"
+  ],
+  "extraInDonor": [
+   "creamy",
+   "twists"
+  ],
+  "sizeBad": false,
+  "donorSize": "10.5",
+  "listingSize": "10.5",
+  "score": 9
+ },
+ {
+  "sku": "FaisalX-3864",
+  "listing": "Swanson 100% Natural Beef Stock, 32 oz Carton (Pack of 8)",
+  "donorTitle": "Swanson Natural Goodness Gluten Free 33% Less Sodium Chicken Broth - 32oz",
+  "missingInDonor": [
+   "beef",
+   "stock",
+   "carton"
+  ],
+  "extraInDonor": [
+   "goodness",
+   "gluten",
+   "less",
+   "sodium",
+   "chicken",
+   "broth"
+  ],
+  "sizeBad": false,
+  "donorSize": "32",
+  "listingSize": "32",
+  "score": 9
+ },
+ {
+  "sku": "FaisalX-3973",
+  "listing": "Reese's Milk Chocolate Snack Size Peanut Butter Cups Halloween Candy, Bag 10.5 oz (Pack of 4)",
+  "donorTitle": "Reese's Fast Break Milk Chocolate, Peanut Butter, Nougat King Size Candy Bar - 3.5oz",
+  "missingInDonor": [
+   "snack",
+   "cups",
+   "halloween"
+  ],
+  "extraInDonor": [
+   "fast",
+   "break",
+   "nougat",
+   "king",
+   "bar"
+  ],
+  "sizeBad": true,
+  "donorSize": "3.5",
+  "listingSize": "10.5",
+  "score": 9
+ },
+ {
+  "sku": "FaisalX-3974",
+  "listing": "Reese's Milk Chocolate Snack Size Peanut Butter Cups Halloween Candy, Bag 10.5 oz (Pack of 6)",
+  "donorTitle": "Reese's Fast Break Peanut Butter Nougat Snack Size Candy Bars - 2.68oz/4ct",
+  "missingInDonor": [
+   "milk",
+   "chocolate",
+   "cups",
+   "halloween"
+  ],
+  "extraInDonor": [
+   "fast",
+   "break",
+   "nougat",
+   "bars"
+  ],
+  "sizeBad": true,
+  "donorSize": "2.68",
+  "listingSize": "10.5",
+  "score": 9
+ },
+ {
+  "sku": "FaisalX-3983",
+  "listing": "Reese's Minis Milk Chocolate Unwrapped Peanut Butter Cups Candy, Bag 7.6 oz (Pack of 6)",
+  "donorTitle": "Reese's Chocolate Peanut Butter Shell Topping, Bottle 7.25 oz",
+  "missingInDonor": [
+   "minis",
+   "milk",
+   "unwrapped",
+   "cups",
+   "candy"
+  ],
+  "extraInDonor": [
+   "shell",
+   "topping",
+   "bottle"
+  ],
+  "sizeBad": true,
+  "donorSize": "7.25",
+  "listingSize": "7.6",
+  "score": 9
+ },
+ {
+  "sku": "FaisalX-4625",
+  "listing": "Triscuit Cracked Pepper & Olive Oil Whole Grain Wheat Crackers, Family Size, 12.5 oz (Pack of 8)",
+  "donorTitle": "Triscuit Reduced Fat Whole Grain Wheat Crackers, Vegan Snack Crackers, Family Size, 11.5 oz",
+  "missingInDonor": [
+   "cracked",
+   "pepper",
+   "olive",
+   "oil"
+  ],
+  "extraInDonor": [
+   "reduced",
+   "fat",
+   "vegan",
+   "snack"
+  ],
+  "sizeBad": true,
+  "donorSize": "11.5",
+  "listingSize": "12.5",
+  "score": 9
+ },
+ {
+  "sku": "FaisalX-1357",
+  "listing": "Cheetos Puff Cheese Flavored Snack Chips, 8 oz (Pack of 3)",
+  "donorTitle": "Cheetos Puffs Flamin' Hot Cheese Flavored Snacks, 8 oz (Packaging may vary)",
+  "missingInDonor": [
+   "puff",
+   "snack",
+   "chips"
+  ],
+  "extraInDonor": [
+   "puffs",
+   "flamin",
+   "hot",
+   "snacks",
+   "packaging",
+   "may",
+   "vary"
+  ],
+  "sizeBad": false,
+  "donorSize": "8",
+  "listingSize": "8",
+  "score": 10
+ },
+ {
+  "sku": "FaisalX-1961",
+  "listing": "Cheetos Puff Cheese Flavored Snack Chips, 8 oz-Pack Of 3",
+  "donorTitle": "Cheetos Puffs Flamin' Hot Cheese Flavored Snacks, 8 oz (Packaging may vary)",
+  "missingInDonor": [
+   "puff",
+   "snack",
+   "chips"
+  ],
+  "extraInDonor": [
+   "puffs",
+   "flamin",
+   "hot",
+   "snacks",
+   "packaging",
+   "may",
+   "vary"
+  ],
+  "sizeBad": false,
+  "donorSize": "8",
+  "listingSize": "8",
+  "score": 10
+ },
+ {
+  "sku": "FaisalX-2090",
+  "listing": "Chef Boyardee Macaroni and Cheese, Microwave Pasta, 7.5 oz (Pack of 6)",
+  "donorTitle": "Chef Boyardee Beefaroni, Pasta in Tomato and Meat Sauce, Microwavable Meal, 7.5 oz. Bowl",
+  "missingInDonor": [
+   "macaroni",
+   "cheese",
+   "microwave"
+  ],
+  "extraInDonor": [
+   "beefaroni",
+   "tomato",
+   "meat",
+   "sauce",
+   "microwavable",
+   "meal",
+   "bowl"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.5",
+  "listingSize": "7.5",
+  "score": 10
+ },
+ {
+  "sku": "FaisalX-2283",
+  "listing": "BODYARMOR SuperDrink Fruit Punch Electrolyte Beverage, 16 fl oz, (Pack of 6)",
+  "donorTitle": "BODYARMOR Lyte Dragonfruit Berry Electrolyte Sports Drink Bottle, 16 fl oz",
+  "missingInDonor": [
+   "superdrink",
+   "fruit",
+   "punch",
+   "beverage"
+  ],
+  "extraInDonor": [
+   "lyte",
+   "dragonfruit",
+   "berry",
+   "sports",
+   "drink",
+   "bottle"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 10
+ },
+ {
+  "sku": "FaisalX-3880",
+  "listing": "Jack Link’s Beef Jerky, Sweet & Hot, 100% Beef, 9g of Protein per Serving, 2.85 oz Bag (Pack of 4)",
+  "donorTitle": "Jack Links Doritos Spicy Sweet Chili Flavored Beef Jerky, 2.65 oz",
+  "missingInDonor": [
+   "link",
+   "hot",
+   "protein",
+   "per",
+   "serving"
+  ],
+  "extraInDonor": [
+   "links",
+   "doritos",
+   "spicy",
+   "chili"
+  ],
+  "sizeBad": true,
+  "donorSize": "2.65",
+  "listingSize": "9/2.85",
+  "score": 10
+ },
+ {
+  "sku": "FaisalX-3872",
+  "listing": "Jack Links Bacon Jerky, Hickory Smoked, 2.5 oz (Pack of 6)",
+  "donorTitle": "Jack Link's Original Beef Jerky Zero Sugar, 2.3 oz., 5 pk.",
+  "missingInDonor": [
+   "links",
+   "bacon",
+   "hickory",
+   "smoked"
+  ],
+  "extraInDonor": [
+   "link",
+   "original",
+   "beef",
+   "zero",
+   "sugar"
+  ],
+  "sizeBad": true,
+  "donorSize": "2.3",
+  "listingSize": "2.5",
+  "score": 10
+ },
+ {
+  "sku": "FaisalX-3881",
+  "listing": "Jack Link’s Beef Jerky, Sweet & Hot, 100% Beef, 9g of Protein per Serving, 2.85 oz Bag (Pack of 6)",
+  "donorTitle": "Jack Links Doritos Spicy Sweet Chili Flavored Beef Jerky, 2.65 oz",
+  "missingInDonor": [
+   "link",
+   "hot",
+   "protein",
+   "per",
+   "serving"
+  ],
+  "extraInDonor": [
+   "links",
+   "doritos",
+   "spicy",
+   "chili"
+  ],
+  "sizeBad": true,
+  "donorSize": "2.65",
+  "listingSize": "9/2.85",
+  "score": 10
+ },
+ {
+  "sku": "FaisalX-3991",
+  "listing": "Reese's Take 5 Pretzel, Peanut and Chocolate Snack Size Candy, Bag 11.25 oz (Pack of 4)",
+  "donorTitle": "Oreo Reese's Peanut Buttery Creme Chocolate Sandwich Cookies - 12.35oz",
+  "missingInDonor": [
+   "take",
+   "pretzel",
+   "snack",
+   "candy"
+  ],
+  "extraInDonor": [
+   "oreo",
+   "buttery",
+   "creme",
+   "sandwich",
+   "cookies"
+  ],
+  "sizeBad": true,
+  "donorSize": "12.35",
+  "listingSize": "11.25",
+  "score": 10
+ },
+ {
+  "sku": "FaisalX-3992",
+  "listing": "Reese's Take 5 Pretzel, Peanut and Chocolate Snack Size Candy, Bag 11.25 oz pack of 6",
+  "donorTitle": "Oreo Reese's Peanut Buttery Creme Chocolate Sandwich Cookies - 12.35oz",
+  "missingInDonor": [
+   "take",
+   "pretzel",
+   "snack",
+   "candy"
+  ],
+  "extraInDonor": [
+   "oreo",
+   "buttery",
+   "creme",
+   "sandwich",
+   "cookies"
+  ],
+  "sizeBad": true,
+  "donorSize": "12.35",
+  "listingSize": "11.25",
+  "score": 10
+ },
+ {
+  "sku": "FaisalX-4750",
+  "listing": "SKIPPY Squeeze Natural Creamy Peanut Butter, 6 oz (Pack of 4)",
+  "donorTitle": "SKIPPY Natural Creamy Peanut Butter Spread with Honey, 6 g Protein Per Serving, Shelf-Stable, 40 oz Plastic Jar",
+  "missingInDonor": [
+   "squeeze"
+  ],
+  "extraInDonor": [
+   "spread",
+   "honey",
+   "protein",
+   "per",
+   "serving",
+   "shelf",
+   "stable",
+   "plastic",
+   "jar"
+  ],
+  "sizeBad": false,
+  "donorSize": "6/40",
+  "listingSize": "6",
+  "score": 10
+ },
+ {
+  "sku": "FaisalX-4863",
+  "listing": "Nonni's, Cioccolati Biscotti, Dark Chocolate Almond Cookie, 6.8 oz (195g), 8 Count, Ready to Eat (Pack of 4)",
+  "donorTitle": "Nonni's Bakery Limoncello Biscotti - 6.88oz",
+  "missingInDonor": [
+   "cioccolati",
+   "dark",
+   "chocolate",
+   "almond",
+   "cookie",
+   "ready",
+   "eat"
+  ],
+  "extraInDonor": [
+   "bakery",
+   "limoncello"
+  ],
+  "sizeBad": true,
+  "donorSize": "6.88",
+  "listingSize": "6.8/195",
+  "score": 10
+ },
+ {
+  "sku": "FaisalX-1439",
+  "listing": "NISSIN FOODS Top Ramen Chicken Flavor Cup Noodles - Chicken - 2.25 oz - 12 / Carton | Bundle of 5",
+  "donorTitle": "Nissin Foods Cup Noodle Ramen Noodle Soup Original, 2.4 oz Cup, Shelf-Stable",
+  "missingInDonor": [
+   "top",
+   "chicken",
+   "noodles",
+   "carton",
+   "bundle"
+  ],
+  "extraInDonor": [
+   "noodle",
+   "soup",
+   "original",
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": true,
+  "donorSize": "2.4",
+  "listingSize": "2.25",
+  "score": 11
+ },
+ {
+  "sku": "FaisalX-2631",
+  "listing": "Campbell’s Chunky OLD BAY Seasoned Clam Chowder, 15.25 oz, (Pack of 4)",
+  "donorTitle": "Campbell's Chunky Soup, Beef Soup with Country Vegetables, 15.25 oz Microwavable Bowl",
+  "missingInDonor": [
+   "old",
+   "bay",
+   "seasoned",
+   "clam",
+   "chowder"
+  ],
+  "extraInDonor": [
+   "soup",
+   "beef",
+   "country",
+   "vegetables",
+   "microwavable",
+   "bowl"
+  ],
+  "sizeBad": false,
+  "donorSize": "15.25",
+  "listingSize": "15.25",
+  "score": 11
+ },
+ {
+  "sku": "FaisalX-3399",
+  "listing": "Nissin Cup Noodles Stir Fry Sweet Chili Flavor Asian Noodles in Sauce 2.89 oz. Cup (Pack of 10)",
+  "donorTitle": "Nissin Foods Cup Noodles Stir Fry Ramen Noodles, Teriyaki Beef Flavor, 3.0 oz Cup, Shelf-Stable",
+  "missingInDonor": [
+   "sweet",
+   "chili",
+   "asian",
+   "sauce"
+  ],
+  "extraInDonor": [
+   "foods",
+   "ramen",
+   "teriyaki",
+   "beef",
+   "shelf",
+   "stable"
+  ],
+  "sizeBad": true,
+  "donorSize": "3.0",
+  "listingSize": "2.89",
+  "score": 11
+ },
+ {
+  "sku": "FaisalX-4641",
+  "listing": "CLIF BAR - Chocolate Brownie Flavor - Made with Organic Oats - 10g Protein - Non-GMO - Plant Based - Energy Bars - 2.4 oz (Pack of 2)",
+  "donorTitle": "CLIF BAR Energy Protein Bars, Blueberry Almond Crisp, 5ct",
+  "missingInDonor": [
+   "chocolate",
+   "brownie",
+   "organic",
+   "oats",
+   "non",
+   "gmo",
+   "plant",
+   "based"
+  ],
+  "extraInDonor": [
+   "blueberry",
+   "almond",
+   "crisp"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "10/2.4",
+  "score": 11
+ },
+ {
+  "sku": "FaisalX-4647",
+  "listing": "CLIF BAR - Chocolate Chip - Made with Organic Oats - 10g Protein - Non-GMO - Plant Based - Energy Bars - 2.4 oz. (Pack of 2)",
+  "donorTitle": "CLIF BAR Energy Protein Bars, Blueberry Almond Crisp, 5ct",
+  "missingInDonor": [
+   "chocolate",
+   "chip",
+   "organic",
+   "oats",
+   "non",
+   "gmo",
+   "plant",
+   "based"
+  ],
+  "extraInDonor": [
+   "blueberry",
+   "almond",
+   "crisp"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "10/2.4",
+  "score": 11
+ },
+ {
+  "sku": "FaisalX-4861",
+  "listing": "Nonni's Salted Caramel Biscotti Italian Cookies - 6 Boxes - Biscotti Individually Wrapped Cookies - Italian Biscotti Cookies w/Rich Milk Chocolate & Sea Salt - Kosher - 6.72 oz",
+  "donorTitle": "Nonni's Bakery, Salted Caramel Biscotti, Individually Wrapped, 10.08oz, 12ct Value Pack",
+  "missingInDonor": [
+   "italian",
+   "cookies",
+   "boxes",
+   "rich",
+   "milk",
+   "chocolate",
+   "sea",
+   "salt",
+   "kosher"
+  ],
+  "extraInDonor": [
+   "bakery"
+  ],
+  "sizeBad": true,
+  "donorSize": "10.08",
+  "listingSize": "6.72",
+  "score": 11
+ },
+ {
+  "sku": "FaisalX-2223",
+  "listing": "Gatorade Cool Blue Sports Drink, 28 Fl Oz Bottle, Quantity of 6",
+  "donorTitle": "Gatorade G Zero Sugar Thirst Quencher, Glacier Cherry, Bottle Gluten-Free 28 fl oz",
+  "missingInDonor": [
+   "cool",
+   "blue",
+   "sports",
+   "drink",
+   "quantity"
+  ],
+  "extraInDonor": [
+   "zero",
+   "sugar",
+   "thirst",
+   "quencher",
+   "glacier",
+   "cherry",
+   "gluten"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "",
+  "score": 12
+ },
+ {
+  "sku": "FaisalX-3665",
+  "listing": "Progresso Traditional Soup, New England Clam Chowder (Pack of 6)",
+  "donorTitle": "Progresso Gluten Free Rich & Hearty Creamy Roasted Chicken Wild Rice Soup - 18.5oz",
+  "missingInDonor": [
+   "traditional",
+   "england",
+   "clam",
+   "chowder"
+  ],
+  "extraInDonor": [
+   "gluten",
+   "rich",
+   "hearty",
+   "creamy",
+   "roasted",
+   "chicken",
+   "wild",
+   "rice"
+  ],
+  "sizeBad": false,
+  "donorSize": "18.5",
+  "listingSize": "",
+  "score": 12
+ },
+ {
+  "sku": "FaisalX-4644",
+  "listing": "CLIF BAR - Crunchy Peanut Butter - Made with Organic Oats - 11g Protein - Non-GMO - Plant Based - Energy Bars - 2.4 oz. (Pack of 2)",
+  "donorTitle": "CLIF BAR Energy Protein Bars, Blueberry Almond Crisp, 5ct",
+  "missingInDonor": [
+   "crunchy",
+   "peanut",
+   "butter",
+   "organic",
+   "oats",
+   "non",
+   "gmo",
+   "plant",
+   "based"
+  ],
+  "extraInDonor": [
+   "blueberry",
+   "almond",
+   "crisp"
+  ],
+  "sizeBad": false,
+  "donorSize": "",
+  "listingSize": "11/2.4",
+  "score": 12
+ },
+ {
+  "sku": "FaisalX-2085",
+  "listing": "Chef Boyardee Mini-Bites ABC's & 123's Pasta with Meatballs, 7.5 oz (Pack of 8)",
+  "donorTitle": "Chef Boyardee Mini Micro Beef Ravioli in Tomato and Meat Sauce, Microwavable Meal, 7.5 oz. Bowl",
+  "missingInDonor": [
+   "bites",
+   "abc",
+   "pasta",
+   "meatballs"
+  ],
+  "extraInDonor": [
+   "micro",
+   "beef",
+   "ravioli",
+   "tomato",
+   "meat",
+   "sauce",
+   "microwavable",
+   "meal",
+   "bowl"
+  ],
+  "sizeBad": false,
+  "donorSize": "7.5",
+  "listingSize": "7.5",
+  "score": 13
+ },
+ {
+  "sku": "FaisalX-4791",
+  "listing": "OREO Toffee Crunch Creme with Sugar Crystals Chocolate Sandwich Cookies, Family Size, 17 oz (Pack of 4)",
+  "donorTitle": "Post Oreo Puffs Cereal - 16.5oz",
+  "missingInDonor": [
+   "toffee",
+   "crunch",
+   "creme",
+   "sugar",
+   "crystals",
+   "chocolate",
+   "sandwich",
+   "cookies",
+   "family"
+  ],
+  "extraInDonor": [
+   "post",
+   "puffs",
+   "cereal"
+  ],
+  "sizeBad": true,
+  "donorSize": "16.5",
+  "listingSize": "17",
+  "score": 13
+ },
+ {
+  "sku": "FaisalX-3939",
+  "listing": "Sahale Snacks Maple Pecans Glazed Mix, Gluten-Free Snack, 4-Ounce (Pack of 8)",
+  "donorTitle": "Sahale Snacks Glazed Mix of Naturally Pomegranate Vanilla Flavored Cashews, 4oz Pouch – Sweet & Savory Nut Blend, Gluten-Free, Non-GMO",
+  "missingInDonor": [
+   "maple",
+   "pecans",
+   "snack"
+  ],
+  "extraInDonor": [
+   "naturally",
+   "pomegranate",
+   "vanilla",
+   "cashews",
+   "pouch",
+   "sweet",
+   "savory",
+   "nut",
+   "blend",
+   "non",
+   "gmo"
+  ],
+  "sizeBad": false,
+  "donorSize": "4",
+  "listingSize": "",
+  "score": 14
+ },
+ {
+  "sku": "FaisalX-3885",
+  "listing": "Jack Link's Beef Jerky, Peppered Flavor, Flavorful Meat Snack, 9g of Protein and 80 Calories, Made with Premium Beef - 95 Percent Fat Free, No Added MSG** or Nitrates/Nitrites -2.85 oz (Case of 8)",
+  "donorTitle": "Jack Links Beef Jerky, Peppered, 100% Beef, 9g of Protein per Serving, 2.85 oz Bag",
+  "missingInDonor": [
+   "link",
+   "flavorful",
+   "meat",
+   "snack",
+   "calories",
+   "premium",
+   "percent",
+   "fat",
+   "added",
+   "msg",
+   "nitrates",
+   "nitrites"
+  ],
+  "extraInDonor": [
+   "links",
+   "per",
+   "serving"
+  ],
+  "sizeBad": false,
+  "donorSize": "9/2.85",
+  "listingSize": "9/2.85",
+  "score": 15
+ }
+]
