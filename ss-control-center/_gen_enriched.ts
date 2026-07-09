@@ -38,6 +38,21 @@ function modifierMismatch(listing: string, donor: string): string {
   return "";
 }
 
+/** The listing title minus its multipack phrasing. The DONOR front is a SINGLE unit, so
+ *  handing "…(Pack of 2)" to the single-unit gate makes it reject perfectly good fronts.
+ *  qualifyTiledMain still gets the full title (it takes packCount separately). */
+function baseListingTitle(listing: string): string {
+  return (listing || "")
+    .replace(/\(?\s*pack\s+of\s+\d+\s*\)?/gi, " ")
+    .replace(/\b\d+\s*[-\s]?\s*pack\b/gi, " ")
+    .replace(/\bquantity\s+of\s+\d+\b/gi, " ")
+    .replace(/\b\d+\s*[-\s]?\s*ct\b/gi, " ")
+    .replace(/\b\d+\s*x\b/gi, " ")
+    .replace(/\s{2,}/g, " ")
+    .replace(/^[\s\-–,.]+|[\s\-–,]+$/g, "") // "2x-Foo" would leave a stray leading dash
+    .trim();
+}
+
 async function main() {
   const newwork: any[] = JSON.parse(readFileSync("_newwork.json", "utf8"));
   const state: Record<string, any> = existsSync(STATE) ? JSON.parse(readFileSync(STATE, "utf8")) : {};
@@ -130,7 +145,9 @@ async function main() {
       const urls = [...new Set([main, ...gallery].filter(Boolean))];
       if (!urls.length) { state[sku] = { sku, status: "DONOR_FAIL", reason: "empty gallery" }; needEnrich.push(sku); donorFail++; return; }
 
-      const fr = await pickFront(urls, title);
+      // Check the donor front against the LISTING (pack phrasing stripped) — a wrong donor
+      // is rejected here, before we waste a tile + upload on it.
+      const fr = await pickFront(urls, baseListingTitle(listing));
       if (fr.err) { state[sku] = { sku, status: "ERR", reason: "vision errors during front-pick (retry later)" }; err++; return; }
       if (!fr.url) { state[sku] = { sku, status: "DONOR_FAIL", reason: "no clean single-unit white-bg front in gallery" }; needEnrich.push(sku); donorFail++; return; }
 
