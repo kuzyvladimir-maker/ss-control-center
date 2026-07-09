@@ -15,6 +15,8 @@
 import {
   PROMOTIONAL_BANNED,
   PROMOTIONAL_BANNED_LOWER,
+  SALE_SHIPPING_CLAIM_BANNED,
+  SALE_SHIPPING_CLAIM_BANNED_LOWER,
   HEALTH_CLAIM_BANNED,
   HEALTH_CLAIM_BANNED_LOWER,
   findBannedSubstrings,
@@ -35,20 +37,29 @@ export function rulePromotionalLanguage(input: ComplianceInput): RuleResult {
     PROMOTIONAL_BANNED,
     PROMOTIONAL_BANNED_LOWER,
   );
+  // Sale/shipping/availability claims are the other half of Amazon's 99300.
+  const saleShipping = findBannedSubstrings(
+    haystack,
+    SALE_SHIPPING_CLAIM_BANNED,
+    SALE_SHIPPING_CLAIM_BANNED_LOWER,
+  );
   const health = findBannedSubstrings(
     haystack,
     HEALTH_CLAIM_BANNED,
     HEALTH_CLAIM_BANNED_LOWER,
   );
 
-  if (promotional.length === 0 && health.length === 0) {
+  if (promotional.length === 0 && saleShipping.length === 0 && health.length === 0) {
     return { rule_id: "rule-8-promotional-language", passed: true };
   }
 
-  const reason = promotional.length > 0 && health.length > 0
+  const claims = promotional.length > 0 || saleShipping.length > 0;
+  const reason = claims && health.length > 0
     ? "promotional_and_health_claims"
-    : promotional.length > 0
-      ? "promotional_language"
+    : claims
+      ? (saleShipping.length > 0 && promotional.length === 0
+          ? "sale_shipping_claims"
+          : "promotional_language")
       : "health_claim_language";
 
   return {
@@ -57,6 +68,7 @@ export function rulePromotionalLanguage(input: ComplianceInput): RuleResult {
     reason,
     details: {
       promotional_words: promotional,
+      sale_shipping_claims: saleShipping,
       health_claim_words: health,
     },
   };

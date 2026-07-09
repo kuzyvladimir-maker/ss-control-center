@@ -109,6 +109,25 @@ test("buildAmazonAttributes — omits image block when main_image_url is null", 
   assert.equal(attrs.main_product_image_locator, undefined);
 });
 
+// Owner's standing rule: an own-brand passthrough listing ALWAYS publishes as
+// "Uncrustables". A stale MasterBundle.brand of "Smucker's" once leaked through
+// and Amazon rejected the listing with 8572 (UPC doesn't match brand records),
+// so the publish boundary canonicalizes rather than trusting upstream data.
+test("buildAmazonAttributes — Smucker's brand canonicalizes to Uncrustables", () => {
+  for (const raw of ["Smucker's", "Smuckers", "Uncrustables"]) {
+    const attrs = buildAmazonAttributes(mkSku(), raw);
+    const brand = (attrs.brand as Array<{ value: string }>)[0].value;
+    assert.equal(brand, "Uncrustables", `${raw} should publish as Uncrustables`);
+    // manufacturer must agree with brand
+    assert.equal((attrs.manufacturer as Array<{ value: string }>)[0].value, "Uncrustables");
+  }
+});
+
+test("buildAmazonAttributes — a non-passthrough house brand is left alone", () => {
+  const attrs = buildAmazonAttributes(mkSku(), "Salutem Vita");
+  assert.equal((attrs.brand as Array<{ value: string }>)[0].value, "Salutem Vita");
+});
+
 test("buildAmazonAttributes — omits dimensions when any side is null", () => {
   const attrs = buildAmazonAttributes(mkSku({ package_length_in: null }));
   assert.equal(attrs.item_package_dimensions, undefined);

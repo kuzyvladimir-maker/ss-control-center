@@ -255,6 +255,40 @@ export const PROMOTIONAL_BANNED = [
 ] as const;
 
 /**
+ * Sale / shipping / availability claims. Amazon's Product detail page policy
+ * forbids these in title, bullets and description — they are the "false
+ * claims" half of error 99300.
+ *
+ * Empirically confirmed 2026-07-09: the bullet "…each 2.8 oz, sold and shipped
+ * frozen." made SP-API VALIDATION_PREVIEW return 99300 on HU-ASMI-DN3X, and
+ * dropping just that phrase flipped the listing to VALID (leave-one-out bisect
+ * over the 5 bullets). Note the classifier is inconsistent — sibling listings
+ * with "Ships frozen…" were accepted — so we ban the phrasing proactively
+ * rather than trusting Amazon to catch it every time.
+ *
+ * Say "Keep frozen" (a storage instruction) instead of "Ships frozen" (a
+ * shipping claim). Case-insensitive substring scan in Rule 8.
+ */
+export const SALE_SHIPPING_CLAIM_BANNED = [
+  "sold and shipped",
+  "ships frozen",
+  "ship frozen",
+  "ships fast",
+  "ships free",
+  "ships today",
+  "free shipping",
+  "fast shipping",
+  "on sale",
+  "best price",
+  "lowest price",
+  "buy now",
+  "limited time",
+  "while supplies last",
+  "money-back",
+  "money back",
+] as const;
+
+/**
  * Health / medical claims. Even for food bundles, mentioning these
  * lands in FDA-claims territory and triggers Amazon suppression.
  *
@@ -293,6 +327,9 @@ export const FOREIGN_BRANDS_HARD_BLOCK_LOWER = FOREIGN_BRANDS_HARD_BLOCK.map(
 export const OWN_BRANDS_LOWER = OWN_BRANDS.map((s) => s.toLowerCase());
 export const PROMOTIONAL_BANNED_LOWER = PROMOTIONAL_BANNED.map((s) =>
   s.toLowerCase(),
+);
+export const SALE_SHIPPING_CLAIM_BANNED_LOWER = SALE_SHIPPING_CLAIM_BANNED.map(
+  (s) => s.toLowerCase(),
 );
 export const HEALTH_CLAIM_BANNED_LOWER = HEALTH_CLAIM_BANNED.map((s) =>
   s.toLowerCase(),

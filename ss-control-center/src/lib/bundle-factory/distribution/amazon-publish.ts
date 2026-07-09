@@ -26,6 +26,7 @@
 
 import { spApiPut, MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
+import { resolveListingBrand } from "../own-brand";
 import { appendColdChainBrandCard } from "../attributes/brand-assets";
 import { buildSearchTerms } from "../attributes/search-terms";
 import type { ChannelSKU } from "@/generated/prisma/client";
@@ -102,7 +103,13 @@ export function buildAmazonAttributes(
     marketplace_id: MARKETPLACE_ID,
   });
 
-  const listingBrand = (brand ?? "").trim() || "Salutem Vita";
+  // Canonicalize at the PUBLISH boundary (owner's standing rule: an own-brand
+  // passthrough listing always publishes as "Uncrustables", never "Smucker's").
+  // A stale MasterBundle.brand must not leak the wrong brand to Amazon — beyond
+  // the brand-voice rule, Amazon cross-checks the UPC against its brand records
+  // and rejects the listing with error 8572 when they disagree.
+  const rawBrand = (brand ?? "").trim() || "Salutem Vita";
+  const listingBrand = resolveListingBrand(rawBrand, rawBrand);
 
   const attrs: Record<string, unknown> = {
     item_name: [lt(sku.title)],

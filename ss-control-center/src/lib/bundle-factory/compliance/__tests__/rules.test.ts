@@ -294,6 +294,42 @@ test("rule-8 — 'ultimate' in title fails with promotional_language", () => {
   assert.equal(r.reason, "promotional_language");
 });
 
+// Amazon 99300 has two halves: promotional adjectives AND sale/shipping claims.
+// "sold and shipped frozen" in a bullet was empirically confirmed (2026-07-09)
+// to make SP-API VALIDATION_PREVIEW return 99300; dropping just that phrase
+// flipped the listing to VALID.
+test("rule-8 — 'sold and shipped' bullet fails with sale_shipping_claims", () => {
+  const input = baseInput();
+  input.bullets = [
+    "Contains 30 individually wrapped sandwiches, 2.8 oz each, sold and shipped frozen.",
+  ];
+  const r = rulePromotionalLanguage(input);
+  assert.equal(r.passed, false);
+  assert.equal(r.reason, "sale_shipping_claims");
+  assert.ok(
+    (r.details as { sale_shipping_claims: string[] }).sale_shipping_claims.some(
+      (s) => /sold and shipped/i.test(s),
+    ),
+  );
+});
+
+test("rule-8 — 'Ships frozen' and 'limited time' are caught too", () => {
+  for (const bad of [
+    "Ships frozen in an insulated cooler.",
+    "Available for a limited time only.",
+  ]) {
+    const input = baseInput();
+    input.bullets = [bad];
+    assert.equal(rulePromotionalLanguage(input).passed, false, bad);
+  }
+});
+
+test("rule-8 — 'Keep frozen' storage instruction still passes", () => {
+  const input = baseInput();
+  input.bullets = ["Keep frozen until ready to eat. Do not refreeze."];
+  assert.equal(rulePromotionalLanguage(input).passed, true);
+});
+
 test("rule-8 — health claim 'boost immune' fails", () => {
   const input = baseInput();
   input.description = input.description + " Boost immune health daily.";
