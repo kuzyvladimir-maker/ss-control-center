@@ -203,6 +203,20 @@ async function buildOneListing(args: {
   });
   if (components.length === 0) return { ok: false, title: "(no donors for spec)" };
 
+  // Integrity guard (Vladimir 2026-07-08): a donor id can VANISH from
+  // DonorProduct between the sourcing tick and this building tick (a parallel
+  // enrichment chat re-writes rows → ids churn). When that happens the flavor is
+  // silently dropped above, leaving a mix that CLAIMS N flavors × pack_count but
+  // holds fewer — e.g. "Honey + Mixed Berry, 24 ct" built as 12× Honey only.
+  // NEVER birth such a listing: fail the draft so it's not promoted/published.
+  const qtySum = components.reduce((s, c) => s + c.qty, 0);
+  if (components.length !== spec.donor_ids.length || qtySum !== spec.unit_count) {
+    return {
+      ok: false,
+      title: `${spec.label} (SKIPPED — composition incomplete: ${components.length}/${spec.donor_ids.length} flavors, ${qtySum}/${spec.unit_count} pcs; a donor vanished mid-run)`,
+    };
+  }
+
   const primary = donorsById.get(spec.donor_ids[0]) ?? donorsById.get(components[0].research_pool_id)!;
   const category = mapCategory(primary.category);
   const packCount = spec.unit_count;

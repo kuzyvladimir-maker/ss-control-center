@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 
 import { buildImagePrompt, composeRetailBoxes, isColdCategory } from "../image-pipeline";
 
-// Composable sample: 15 + 15 → one 15-box per flavor (owner's exact-box rule).
+// MIX sample (2 flavors) → always wraps + variety (owner 2026-07-08).
 const SAMPLE_VARIANT = {
   idx: 0,
   name: "Uncrustables variety x 30",
@@ -21,11 +21,19 @@ const SAMPLE_VARIANT = {
   feasibility_score: 92,
 } as unknown as Parameters<typeof buildImagePrompt>[0]["variant"];
 
+// SINGLE composable sample (30 = 3×10 boxes).
+const SINGLE_VARIANT = {
+  idx: 0,
+  name: "Uncrustables PB & Grape x 30",
+  composition: [{ qty: 30, product_name: "Smuckers Uncrustables PB & Grape, 10 Count", brand: "Smucker's" }],
+  feasibility_score: 92,
+} as unknown as Parameters<typeof buildImagePrompt>[0]["variant"];
+
 function cold() {
   return buildImagePrompt({
     brand: "Salutem Vita",
-    variant: SAMPLE_VARIANT,
-    composition_type: "MULTI_FLAVOR",
+    variant: SINGLE_VARIANT,
+    composition_type: "SINGLE_FLAVOR",
     category: "FROZEN_GROCERY",
   });
 }
@@ -47,65 +55,59 @@ test("composeRetailBoxes — exact decompositions only (owner rule 2026-07-07)",
   assert.deepEqual(composeRetailBoxes(90, [15, 10, 4]), [15, 15, 15, 15, 15, 15]);
 });
 
-test("buildImagePrompt (cold) — frozen hero: real product + Salutem cooler + gel packs", () => {
+test("buildImagePrompt (cold single) — frozen hero: real product + Salutem cooler + gel packs", () => {
   const out = cold();
-  assert.match(out, /15× Smucker's Uncrustables PB & Grape Jelly/);
   assert.match(out, /SALUTEM SOLUTIONS/);
   assert.match(out, /cooler/i);
   assert.match(out, /FROZEN GEL PACK/);
-  // Salutem branding goes ONLY on cooler/gel packs, never the third-party product.
   assert.match(out, /ONLY to the cooler and the gel packs/i);
   assert.match(out, /NEVER onto the third-party product/i);
-  // Real packaging reproduced exactly, NOT the old "generic unbranded" approach.
-  assert.match(out, /reproduce that packaging exactly/i);
-  assert.ok(!/generic, unbranded/i.test(out), "must not ask for generic unbranded packaging");
-  // No loose ice.
   assert.match(out, /NO loose ice/i);
 });
 
-test("buildImagePrompt (own-brand) — composable count → EXACT box plan", () => {
+test("buildImagePrompt (single) — composable count → box COUNT, NO printed numbers", () => {
   const out = buildImagePrompt({
     brand: "Smucker's",
-    variant: {
-      ...SAMPLE_VARIANT,
-      composition: [{ qty: 30, product_name: "Smuckers Uncrustables PB & Grape, 10 Count", brand: "Smucker's" }],
-    } as typeof SAMPLE_VARIANT,
+    variant: SINGLE_VARIANT, // 30 = 3×10
     composition_type: "SINGLE_FLAVOR",
     category: "FROZEN_GROCERY",
   });
-  assert.match(out, /EXACTLY 3 boxes of 10/);
+  assert.match(out, /EXACTLY 3 real Uncrustables retail boxes/);
   assert.match(out, /never loose sandwiches mixed with boxes/i);
+  assert.match(out, /NO printed quantity numbers or count badges/i); // the no-numbers rule
   assert.ok(!/individually-wrapped sandwiches/i.test(out));
 });
 
-test("buildImagePrompt (own-brand) — NON-composable count auto-falls back to WRAPS", () => {
-  // 4ct-only flavor at 30 pieces: 30 % 4 ≠ 0 → no boxes allowed at all.
+test("buildImagePrompt (single) — NON-composable count auto-falls back to WRAPS", () => {
   const out = buildImagePrompt({
     brand: "Smucker's",
     variant: {
-      ...SAMPLE_VARIANT,
+      ...SINGLE_VARIANT,
       composition: [{ qty: 30, product_name: "Smucker's Uncrustables Frozen PB Sandwich - 7.2oz/4ct", brand: "Smucker's" }],
-    } as typeof SAMPLE_VARIANT,
+    } as typeof SINGLE_VARIANT,
     composition_type: "SINGLE_FLAVOR",
     category: "FROZEN_GROCERY",
   });
-  assert.match(out, /individually-wrapped sandwiches/i);
+  assert.match(out, /individually-wrapped sandwiches|sealed round sandwich/i);
   assert.match(out, /NO retail cartons/i);
   assert.match(out, /30 sandwiches/);
 });
 
-test("buildImagePrompt (own-brand) — manual individual_wraps mode always wraps", () => {
+test("buildImagePrompt (MIX) — always wraps, lists EVERY flavor, per-flavor refs, no numbers", () => {
   const out = buildImagePrompt({
     brand: "Smucker's",
-    variant: SAMPLE_VARIANT,
-    composition_type: "MULTI_FLAVOR",
+    variant: SAMPLE_VARIANT, // PB&Grape + PB&Strawberry
+    composition_type: "MIXED_FLAVOR",
     category: "FROZEN_GROCERY",
-    uncrustables_image_mode: "individual_wraps",
   });
-  assert.match(out, /individually-wrapped sandwiches/i);
-  assert.match(out, /WRAPPER COLOUR signals the flavor/i);
-  assert.ok(!/EXACTLY .* box/i.test(out));
-  assert.match(out, /match its BRAND identity exactly/i);
+  // Both flavors named + a variety, never single-flavor boxes.
+  assert.match(out, /PB & Grape Jelly/);
+  assert.match(out, /PB & Strawberry/);
+  assert.match(out, /variety|mix of all of them/i);
+  assert.match(out, /Reference images #2\.\.#3 are the flavors/); // per-flavor references
+  assert.match(out, /do NOT show only one flavor/i);
+  assert.match(out, /NO printed quantity numbers/i);
+  assert.ok(!/EXACTLY \d+ real Uncrustables retail boxes/i.test(out)); // mixes never box-mode
 });
 
 test("buildImagePrompt — wraps mode is IGNORED for a real gift set (non-own-brand)", () => {

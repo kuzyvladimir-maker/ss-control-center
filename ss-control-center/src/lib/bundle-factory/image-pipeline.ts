@@ -187,35 +187,37 @@ export function buildImagePrompt(args: {
     const ownBrand =
       isOwnBrandPassthrough(args.brand) ||
       args.variant.composition.some((c) => isOwnBrandPassthrough(c.brand));
-    const totalUnits = args.variant.composition.reduce((s, c) => s + c.qty, 0);
-    // Own-brand box rule (Vladimir 2026-07-07): boxes may appear ONLY when every
-    // flavor's piece count decomposes into its real retail box sizes with NO
-    // remainder (45 → 3×15). A 4ct-only flavor at 30/45 pieces is NOT divisible
-    // → no boxes at all; render loose individually-wrapped sandwiches instead.
-    let boxPlan: string | null = null;
-    if (ownBrand && args.uncrustables_image_mode !== "individual_wraps") {
-      const parts: string[] = [];
-      let allComposable = args.variant.composition.length > 0;
-      for (const c of args.variant.composition) {
-        const decomp = composeRetailBoxes(c.qty, componentRetailSizes(c));
-        if (!decomp) { allComposable = false; break; }
-        parts.push(
-          args.variant.composition.length > 1
-            ? `${describeBoxes(decomp)} (${c.product_name.slice(0, 60)})`
-            : describeBoxes(decomp),
-        );
-      }
-      if (allComposable) boxPlan = parts.join("; ");
+    const comp = args.variant.composition;
+    const totalUnits = comp.reduce((s, c) => s + c.qty, 0);
+    const isMix = comp.length > 1;
+    // Style (Vladimir 2026-07-08):
+    //  • SINGLE flavor → count-accurate retail BOXES (box COUNT decomposes with
+    //    no remainder — 45 → 3×15). If not box-composable → wraps.
+    //  • MIX (2+ flavors) → ALWAYS individual flavor-coloured wraps (rendering
+    //    exact multi-brand boxes is unreliable; a colour variety reads honestly).
+    //  • NO printed numbers/count badges anywhere (boxes or wraps) — the model
+    //    can't print correct counts, and a wrong "4" on a single wrapper is worse
+    //    than none. Quantity is carried by the box COUNT / arrangement + title.
+    let boxPlan: number[] | null = null;
+    if (ownBrand && !isMix && args.uncrustables_image_mode !== "individual_wraps") {
+      boxPlan = composeRetailBoxes(comp[0].qty, componentRetailSizes(comp[0]));
     }
-    const wraps = ownBrand && boxPlan === null; // manual wraps mode OR not box-composable
+    const wraps = ownBrand && boxPlan === null; // mix, manual wraps, or not composable
+    const NO_NUMBERS =
+      `CRITICAL: the product packaging must show NO printed quantity numbers or count badges — no "4", "8", "10", "15", no "ct"/"count", no digit in any corner. Reproduce ONLY the brand wordmark, flavor name and colours.`;
+    const boxCount = boxPlan ? boxPlan.length : 0;
     const boxLine = wraps
-      ? `Fill the cooler with individually-wrapped sandwiches — each a round, crimped-sealed sandwich in its OWN printed flavor wrapper (NO retail cartons anywhere in this image). Show a count-accurate quantity reflecting ${totalUnits} sandwiches: neat stacked rows, and for large counts a dense tidy arrangement that clearly totals about ${totalUnits}. The WRAPPER COLOUR signals the flavor (e.g. a blue wrapper for peanut butter & grape, red for peanut butter & strawberry).`
+      ? (isMix
+          ? `Fill the cooler with individually-wrapped sandwiches — each ONE sealed round sandwich in a plain flavor-coloured wrapper (one wrapper = one sandwich; NO retail cartons, NO numbers on wrappers). Show a VARIETY: roughly ${comp.map((c) => `${c.qty}× ${c.product_name.replace(/\s*[-–—].*$/, "").slice(0, 40)}`).join(", ")}, mixed together in tidy rows, each flavor in its OWN brand colour. Total should read as about ${totalUnits} sandwiches.`
+          : `Fill the cooler with individually-wrapped sandwiches — each ONE sealed round sandwich in a plain flavor-coloured wrapper (one wrapper = one sandwich; NO retail cartons, NO numbers). Neat stacked rows totalling about ${totalUnits} sandwiches; the wrapper colour signals the flavor.`)
       : ownBrand
-        ? `Place real retail product boxes inside the cooler: EXACTLY ${boxPlan}. The box count and sizes must match this plan precisely — never a generic "a few boxes", never loose sandwiches mixed with boxes.`
+        ? `Place EXACTLY ${boxCount} real Uncrustables retail boxes inside the cooler (sizes vary — ${describeBoxes(boxPlan!)} worth of sandwiches, so the box COUNT visibly totals ${totalUnits}), arranged as a neat stack. NEVER a generic "a few boxes", never loose sandwiches mixed with boxes, and NO printed count number on any box.`
         : `Place several of the real product boxes inside the cooler, arranged as a gift set.`;
-    const productRefLine = wraps
-      ? `The SECOND reference image is the DONOR PRODUCT PHOTO of ${products} — match its BRAND identity exactly (same brand name, logo wordmark, flavor and colour language) but render the product as the individual flavor-coloured wrappers described above, NOT as the retail carton. Do NOT rebrand or invent a look-alike brand.`
-      : `The SECOND reference image is the DONOR PRODUCT PHOTO — the real retail box of ${products}. Reproduce that packaging EXACTLY as shown: same brand name, same logo, same box art, same colors and text. Do NOT rebrand, redesign, simplify, or substitute a look-alike package. The boxes inside the cooler must be visibly the same product as the second reference.`;
+    const productRefLine = isMix
+      ? `Reference images #2..#${comp.length + 1} are the flavors of this variety pack, in order: ${comp.map((c, i) => `#${i + 2} = "${c.product_name.replace(/\s*[-–—].*$/, "").slice(0, 45)}"`).join(", ")}. Match EACH flavor's real Uncrustables brand colours and wrapper look from ITS reference photo — render a genuine mix of all of them. Do NOT invent look-alike flavors and do NOT show only one flavor.`
+      : wraps
+        ? `The SECOND reference image is the DONOR PRODUCT PHOTO of ${products} — match its brand identity and colours exactly, but render the product as individual flavor-coloured wrappers (NOT the retail carton, NO numbers). Do NOT rebrand.`
+        : `The SECOND reference image is the DONOR PRODUCT PHOTO — the real retail box of ${products}. Reproduce its brand name, logo and colours exactly; do NOT rebrand or substitute a look-alike. ${NO_NUMBERS}`;
     const coolerLine = ownBrand
       ? `The cooler is a white EPS styrofoam insulated shipping cooler carrying the SALUTEM SOLUTIONS logo (realistic 3/4 front angle, lid leaning behind the cooler).`
       : `The cooler is a white EPS styrofoam insulated shipping cooler carrying the SALUTEM SOLUTIONS logo AND the printed words "GIFT SET" (realistic 3/4 front angle, lid leaning behind the cooler).`;
@@ -228,6 +230,7 @@ export function buildImagePrompt(args: {
       `The FIRST reference image is the KIT ANCHOR — copy from it the styrofoam cooler look, the gel-pack style, and the overall layout only (NOT the product).`,
       coolerLine,
       boxLine,
+      NO_NUMBERS,
       `Include 2 to 4 white branded gel packs reading "FROZEN GEL PACK", "KEEP FROZEN", "FOR FROZEN SHIPMENTS" with the Salutem Solutions logo — some inside the cooler next to the product, 1-2 in front.`,
       `Apply SALUTEM SOLUTIONS branding ONLY to the cooler and the gel packs — NEVER onto the third-party product packaging.`,
       `Subtle frost and cold condensation on the cooler and packs; NO loose ice, NO crushed ice, NO ice cubes.`,
@@ -393,13 +396,30 @@ export async function runImageGeneration(
 
   // Phase 3 references passed to the image worker — ORDER MATTERS. The worker
   // role-labels them by position: ref-1 = the KIT ANCHOR (Salutem cooler +
-  // gel-pack look/layout), ref-2 = the DONOR PRODUCT PHOTO (the REAL retail
-  // packaging to reproduce exactly). Anchor FIRST, product SECOND — the reverse
-  // let Codex treat the donor photo as a mere style guide and invent a lookalike
-  // (wrong-brand) box instead of cloning the real one. The worker fetches these.
+  // gel-pack look/layout), refs 2..N = the DONOR PHOTO of EACH flavor in
+  // composition order (a mix needs every flavor's real colours, or the model
+  // renders only the first — Vladimir 2026-07-08). Anchor FIRST so Codex treats
+  // it as layout, not product. The worker fetches these URLs.
   const referenceUrls: string[] = [];
   if (isColdCategory(draft.category)) referenceUrls.push(frozenAnchorUrls()[0]);
-  if (draft.draft_main_image_url) referenceUrls.push(draft.draft_main_image_url);
+  // One donor photo per flavor, in the SAME order buildImagePrompt lists them
+  // (composition order). Look each donor up by its research_pool_id.
+  const donorIds = selected.composition.map((c) => c.research_pool_id).filter(Boolean);
+  if (donorIds.length > 0) {
+    const donorRows = await prisma.donorProduct.findMany({
+      where: { id: { in: donorIds } },
+      select: { id: true, mainImageUrl: true },
+    });
+    const byId = new Map(donorRows.map((d) => [d.id, d.mainImageUrl]));
+    for (const c of selected.composition) {
+      const url = byId.get(c.research_pool_id);
+      if (url) referenceUrls.push(url);
+    }
+  }
+  // Fallback to the draft's primary photo if no component donor resolved.
+  if (referenceUrls.length <= 1 && draft.draft_main_image_url) {
+    referenceUrls.push(draft.draft_main_image_url);
+  }
 
   const outcomes: ChannelImageOutcome[] = [];
   let totalCost = 0;
