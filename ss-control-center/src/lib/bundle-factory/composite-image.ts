@@ -57,10 +57,15 @@ export interface CompositePlanItem {
   candidates?: number;
 }
 
-/** Fruit words that distinguish one Uncrustables flavor line from another. */
+/** Fruit words that distinguish one Uncrustables flavor line from another.
+ *  Compound berries ("mixed berry", "blackberry") must be listed explicitly —
+ *  a bare "berry" would over-match strawberry/raspberry/blueberry and let a
+ *  sibling of the WRONG flavor be borrowed. A missing token is not cosmetic:
+ *  without "mixed berry", a Mixed-Berry draft whose primary donor churned away
+ *  found zero same-flavor siblings and could not be composited at all. */
 const FRUIT_WORDS = [
   "raspberry", "grape", "strawberry", "honey", "chocolate", "hazelnut",
-  "blueberry", "apple", "cinnamon", "wildberry", "banana",
+  "blueberry", "blackberry", "mixed berry", "apple", "cinnamon", "wildberry", "banana",
 ] as const;
 /** Sub-line qualifiers that must MATCH between two photos to be the same flavor
  *  (a Protein box is not the classic box; reduced-sugar / whole-wheat differ). */
