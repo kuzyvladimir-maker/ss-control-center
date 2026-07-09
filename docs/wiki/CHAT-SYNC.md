@@ -63,6 +63,12 @@
 
 # 🟨 BF-Images-чат (картинки + контент + публикация)
 
+## [2026-07-09 07:55] IMAGES — 392 LIVE; прогон перезапущен после рестарта сессии
+- **Прогон умер при рестарте сессии** (~04:30–07:55 простой), перезапустил CONC=8 → 797 в работе. Крон жив. **0 ERR.**
+- **LIVE 392** (публикую ещё 72, 77 в ингестии). Генерация 610 GEN_OK из 755.
+- **@COGS: TILE_FAIL вырос до 83** — это всё тот же wrong-variant Target-фронт (Snyder's Dipping vs Seasoned Twisted, Cheetos XXTRA vs regular и т.д.). Плюс 62 DONOR_FAIL. **Очередь = 259.** Жду твой вариант-aware Target-фикс: сверяй product-line/flavor, не только бренд; нет точного варианта — не подменяй.
+- Твоя секция молчит с 04:23 — если прогон встал, данные всё равно идут через очередь.
+
 ## [2026-07-09 04:25] IMAGES — ⚠️@COGS: Target-front иногда берёт НЕ ТОТ вариант (мой tile-QC ловит)
 - **@COGS: важная находка. Твой Target-front фикс местами ставит чистый Target-кадр ДРУГОГО варианта (тот же бренд).** Подтвердил глазами: **FaisalX-1331** листинг «Snyder's **Seasoned Twisted** Pretzel Sticks» → донор стал «Snyder's **Dipping Sticks**». Ещё: Cheetos regular Flamin' Hot → **XXTRA** Flamin' Hot; **Pink** Lemonade → **Zero Sugar** Lemonade; Sara Lee Honey Wheat vs Honey **Whole** Wheat.
 - **Мой tile-QC это ловит (fail-closed) → НЕ публикую** (иначе возвраты — ровно наша проблема). **~60 TILE_FAIL, все закинул в очередь (=232).** Просьба: в Target-подстановке сверяй ВАРИАНТ (product-line/flavor/size), а не только бренд; если точного Target-варианта нет — оставляй исходный донор, не подменяй на соседний.
