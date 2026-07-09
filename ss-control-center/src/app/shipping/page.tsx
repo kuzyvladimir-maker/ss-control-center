@@ -1400,7 +1400,17 @@ export default function ShippingLabelsPage() {
         } else if (awaiting) {
           return false;
         }
-        if (bucketFilter && o.timeBucket !== bucketFilter) return false;
+        if (bucketFilter) {
+          // "Today" swallows "Overdue": an order whose ship-by already passed
+          // is still due today (more so than today's own), and operators were
+          // losing them by living on the Today tab. The Overdue tab remains
+          // for isolating them.
+          const inBucket =
+            bucketFilter === "today"
+              ? o.timeBucket === "today" || o.timeBucket === "overdue"
+              : o.timeBucket === bucketFilter;
+          if (!inBucket) return false;
+        }
         if (storeFilter && o.storeId !== storeFilter) return false;
         if (stateFilter !== "all" && o.state !== stateFilter) return false;
         if (typeFilter !== "all") {
@@ -2687,7 +2697,18 @@ export default function ShippingLabelsPage() {
             ...BUCKET_TABS.map((b) => ({
               id: b.id,
               label: b.label,
-              count: bucketCounts[b.id] ?? 0,
+              // "Today" also serves the overdue rows (see filteredOrders), so
+              // its count includes them — the badge always equals the number
+              // of rows the tab actually shows.
+              count:
+                b.id === "today"
+                  ? bucketCounts.today + bucketCounts.overdue
+                  : (bucketCounts[b.id] ?? 0),
+              // Overdue only turns red when there is something to act on.
+              tone:
+                b.id === "overdue" && bucketCounts.overdue > 0
+                  ? ("danger" as const)
+                  : undefined,
             })),
           ]}
           active={bucketFilter ?? ("all" as const)}

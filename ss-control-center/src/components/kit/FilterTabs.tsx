@@ -9,6 +9,8 @@ export interface FilterTab<T extends string> {
   id: T;
   label: string;
   count?: number;
+  /** "danger" paints the tab red — for tabs that demand action (e.g. Overdue). */
+  tone?: "danger";
 }
 
 interface FilterTabsProps<T extends string> {
@@ -36,6 +38,7 @@ export function FilterTabs<T extends string>({
       <div className="flex flex-wrap items-center gap-1">
         {tabs.map((t) => {
           const isActive = t.id === active;
+          const danger = t.tone === "danger";
           return (
             <button
               key={t.id}
@@ -43,9 +46,13 @@ export function FilterTabs<T extends string>({
               onClick={() => onChange(t.id)}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12.5px] font-medium transition-colors",
-                isActive
-                  ? "bg-green-soft text-green-ink"
-                  : "text-ink-2 hover:bg-bg-elev hover:text-ink"
+                danger
+                  ? isActive
+                    ? "bg-danger text-white"
+                    : "bg-danger-tint text-danger hover:bg-danger hover:text-white"
+                  : isActive
+                    ? "bg-green-soft text-green-ink"
+                    : "text-ink-2 hover:bg-bg-elev hover:text-ink"
               )}
             >
               {t.label}
@@ -53,9 +60,13 @@ export function FilterTabs<T extends string>({
                 <span
                   className={cn(
                     "inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular",
-                    isActive
-                      ? "bg-green text-green-cream"
-                      : "bg-bg-elev text-ink-3"
+                    danger
+                      ? isActive
+                        ? "bg-white/25 text-white"
+                        : "bg-danger text-white"
+                      : isActive
+                        ? "bg-green text-green-cream"
+                        : "bg-bg-elev text-ink-3"
                   )}
                 >
                   {t.count}
