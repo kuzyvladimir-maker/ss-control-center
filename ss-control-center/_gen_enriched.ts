@@ -25,6 +25,19 @@ const CONC = process.argv[3] ? Number(process.argv[3]) : 2;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const isErr = (s: string) => /error/i.test(s || "");
 
+// Words whose presence flips the product into a DIFFERENT one. If a listing says "Dr
+// Pepper" and the donor says "Diet Dr Pepper", they are not the same drink — no vision
+// call needed to know that. Asymmetric presence of ANY of these = wrong donor. Kept
+// deliberately small: only words that are never mere decoration.
+const MODIFIERS = ["diet", "zero", "decaf", "decaffeinated", "caffeine", "whole", "honey", "xxtra", "flamin", "unsweetened", "sugarfree", "lite", "reduced", "gluten", "organic", "spicy", "original", "classic", "smoked", "toasted"];
+const words = (s: string) => new Set((s || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean));
+/** Returns the offending modifier, or "" when listing and donor agree on all of them. */
+function modifierMismatch(listing: string, donor: string): string {
+  const L = words(listing), D = words(donor);
+  for (const m of MODIFIERS) if (L.has(m) !== D.has(m)) return m;
+  return "";
+}
+
 async function main() {
   const newwork: any[] = JSON.parse(readFileSync("_newwork.json", "utf8"));
   const state: Record<string, any> = existsSync(STATE) ? JSON.parse(readFileSync(STATE, "utf8")) : {};
@@ -47,7 +60,20 @@ async function main() {
     const rows = (await db.execute({ sql: `SELECT sku, qty, donorTitle, donorImageUrls, donorMainImage FROM EnrichedReadySku WHERE sku IN (${chunk.map(() => "?").join(",")})`, args: chunk })).rows;
     for (const r of rows) rowBySku.set(String(r.sku), r);
   }
-  console.log(`generating ${todoSkus.length} new-scheme tiles (CONC ${CONC})\n`);
+
+  // THE LISTING TITLE IS THE ONLY GROUND TRUTH. (2026-07-09)
+  // We used to tile-QC against donorTitle, so a wrong-variant donor matched its own
+  // label and sailed through: listing "Dr Pepper 2L (Pack of 4)" got a main image of
+  // four DIET Dr Pepper bottles, because the donor was titled "Diet Dr Pepper" and its
+  // image agreed with itself. The customer-facing title was never consulted. From now
+  // on the identity gate compares the tile to what the buyer actually sees.
+  const listingTitle = new Map<string, string>();
+  for (let i = 0; i < todoSkus.length; i += 200) {
+    const chunk = todoSkus.slice(i, i + 200);
+    const rows = (await db.execute({ sql: `SELECT sku,title FROM WalmartCatalogItem WHERE sku IN (${chunk.map(() => "?").join(",")})`, args: chunk })).rows;
+    for (const r of rows) if (r.title) listingTitle.set(String(r.sku), String(r.title));
+  }
+  console.log(`generating ${todoSkus.length} tiles (CONC ${CONC}) · listing titles: ${listingTitle.size}/${todoSkus.length}\n`);
 
   const needEnrich: string[] = [];
   let ok = 0, donorFail = 0, tileFail = 0, err = 0, done = 0;
@@ -87,6 +113,18 @@ async function main() {
       if (!r) { state[sku] = { sku, status: "ERR", reason: "not in EnrichedReadySku" }; err++; return; }
       const qty = Number(r.qty) || 0;
       const title = String(r.donorTitle || "");
+      const listing = listingTitle.get(sku) || "";
+      if (!listing) { state[sku] = { sku, status: "ERR", reason: "no listing title in WalmartCatalogItem (cannot verify identity)" }; err++; return; }
+
+      // CHEAP GUARD before we spend any vision: a modifier word that appears on one side
+      // and not the other means the donor is a DIFFERENT product (Diet vs regular,
+      // Whole vs plain, Zero Sugar vs sugared). Bounce to COGS instead of tiling it.
+      const mism = modifierMismatch(listing, title);
+      if (mism) {
+        state[sku] = { sku, status: "VARIANT_MISMATCH", reason: `donor≠listing on "${mism}"`, listing, donorTitle: title };
+        needEnrich.push(sku); donorFail++; return;
+      }
+
       let gallery: string[] = []; try { gallery = JSON.parse(String(r.donorImageUrls || "[]")); } catch { }
       const main = String(r.donorMainImage || "");
       const urls = [...new Set([main, ...gallery].filter(Boolean))];
@@ -101,13 +139,15 @@ async function main() {
       const url = await uploadToR2(buf, multipackImageKey(sku, "main", "enriched"));
 
       if (qty >= 2) {
+        // Identity gate against the LISTING title (not the donor's own label) — this is
+        // what the buyer sees, and the only reference that can catch a wrong-variant donor.
         let tv: any = null;
-        for (let a = 0; a < 4; a++) { tv = await vision.qualifyTiledMain(url, title, qty); if (!isErr(tv.reason)) break; await sleep(2000 * (a + 1)); }
+        for (let a = 0; a < 4; a++) { tv = await vision.qualifyTiledMain(url, listing, qty); if (!isErr(tv.reason)) break; await sleep(2000 * (a + 1)); }
         if (isErr(tv.reason)) { state[sku] = { sku, status: "ERR", reason: "vision errors during tile-QC (retry later)", newUrl: url, qty }; err++; return; }
-        if (!tv.pass) { state[sku] = { sku, status: "TILE_FAIL", reason: tv.reason, newUrl: url, qty, front: fr.url }; tileFail++; return; }
-        state[sku] = { sku, status: "GEN_OK", newUrl: url, qty, donorTitle: title, front: fr.url, audit: fr.audit, tileReason: tv.reason };
+        if (!tv.pass) { state[sku] = { sku, status: "TILE_FAIL", reason: tv.reason, newUrl: url, qty, front: fr.url, listing }; tileFail++; return; }
+        state[sku] = { sku, status: "GEN_OK", newUrl: url, qty, donorTitle: title, listing, front: fr.url, audit: fr.audit, tileReason: tv.reason };
       } else {
-        state[sku] = { sku, status: "GEN_OK", newUrl: url, qty, donorTitle: title, front: fr.url, audit: fr.audit, note: "single-unit" };
+        state[sku] = { sku, status: "GEN_OK", newUrl: url, qty, donorTitle: title, listing, front: fr.url, audit: fr.audit, note: "single-unit" };
       }
       ok++;
     } catch (e: any) { state[sku] = { sku, status: "ERR", reason: String(e?.message || e).slice(0, 90) }; err++; }
