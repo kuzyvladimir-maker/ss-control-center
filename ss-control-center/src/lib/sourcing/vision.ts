@@ -74,6 +74,7 @@ const VISION_MAX_PX = Number(process.env.SS_VISION_MAX_PX ?? 1536);
 const VISION_JPEG_Q = Number(process.env.SS_VISION_JPEG_Q ?? 85);
 
 async function downscaleForVision(raw: Buffer): Promise<Buffer> {
+  if (VISION_MAX_PX <= 0) return raw; // escape hatch / A-B control: send the original bytes
   try {
     const sharp = (await import("sharp")).default;
     return await sharp(raw)
