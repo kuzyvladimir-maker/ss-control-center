@@ -27,6 +27,7 @@
 import { spApiPut, MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { resolveListingBrand } from "../own-brand";
+import { isColdCategory } from "../category";
 import { appendColdChainBrandCard } from "../attributes/brand-assets";
 import { buildSearchTerms } from "../attributes/search-terms";
 import type { ChannelSKU } from "@/generated/prisma/client";
@@ -48,6 +49,8 @@ export interface AmazonPublishInput {
   /** Listing brand from the MasterBundle. Drives the Amazon `brand` attribute
    *  (own-brand carve-out publishes under the donor brand, not Salutem). */
   brand?: string | null;
+  /** MasterBundle.category — drives the required `is_heat_sensitive` attribute. */
+  category?: string | null;
 }
 
 export interface AmazonPublishResult {
@@ -86,6 +89,9 @@ export function buildAmazonAttributes(
    *  for the Uncrustables own-brand carve-out — "Smucker's"). Falls back to
    *  "Salutem Vita" only when not supplied (legacy callers / tests). */
   brand?: string | null,
+  /** MasterBundle.category — drives `is_heat_sensitive`. Optional so legacy
+   *  callers/tests keep working (they get the shelf-stable default). */
+  category?: string | null,
 ): Record<string, unknown> {
   let bullets: string[] = [];
   try {
@@ -183,6 +189,22 @@ export function buildAmazonAttributes(
   ];
   attrs.supplier_declared_dg_hz_regulation = [
     { value: "not_applicable", marketplace_id: MARKETPLACE_ID },
+  ];
+
+  // Amazon's LIVE GROCERY schema requires these two, even though our cached copy
+  // in attributes/schemas/GROCERY.json still marks them optional. Omitting them
+  // makes SP-API reject the submission with 90220 ("required but missing") — it
+  // only bites listings that must CREATE an ASIN, which is why it surfaced on a
+  // single stale draft rather than the whole catalog. Set them from facts:
+  //   • our bundles are sandwiches/snacks — no liquid contents;
+  //   • frozen/refrigerated goods ARE heat sensitive, shelf-stable ones are not.
+  // Declared in the base block so a richer per-SKU value (sku.attributes) still
+  // overrides them in the merge below.
+  attrs.contains_liquid_contents = [
+    { value: false, marketplace_id: MARKETPLACE_ID },
+  ];
+  attrs.is_heat_sensitive = [
+    { value: isColdCategory(category), marketplace_id: MARKETPLACE_ID },
   ];
 
   // Merge the rich attribute set the filler stored on the SKU (Phase 2.1) —
@@ -311,11 +333,12 @@ export function buildAmazonPayload(
   sku: ChannelSKU,
   productType: string,
   brand?: string | null,
+  category?: string | null,
 ): Record<string, unknown> {
   return {
     productType,
     requirements: "LISTING",
-    attributes: buildAmazonAttributes(sku, brand),
+    attributes: buildAmazonAttributes(sku, brand, category),
   };
 }
 
@@ -323,7 +346,7 @@ export async function submitToAmazon(
   input: AmazonPublishInput,
 ): Promise<AmazonPublishResult> {
   const productType = input.productType ?? "PRODUCT";
-  const payload = buildAmazonPayload(input.sku, productType, input.brand);
+  const payload = buildAmazonPayload(input.sku, productType, input.brand, input.category);
 
   if (input.dryRun) {
     return {

@@ -226,7 +226,7 @@ export interface HealResult {
  */
 export async function healUpcConflict(
   sku: ChannelSKU,
-  opts: { storeIndex: number; brand?: string | null; productType: string },
+  opts: { storeIndex: number; brand?: string | null; productType: string; category?: string | null },
 ): Promise<HealResult> {
   // 1) Remove the collided contribution (fresh PUT with a new UPC won't clear it).
   const del = await deleteAmazonListing(sku, opts.storeIndex);
@@ -255,6 +255,7 @@ export async function healUpcConflict(
     storeIndex: opts.storeIndex,
     productType: opts.productType,
     brand: opts.brand,
+    category: opts.category,
     dryRun: false,
     validatePreviewFirst: false,
   });

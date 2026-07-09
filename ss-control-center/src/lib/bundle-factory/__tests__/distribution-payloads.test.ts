@@ -128,6 +128,31 @@ test("buildAmazonAttributes — a non-passthrough house brand is left alone", ()
   assert.equal((attrs.brand as Array<{ value: string }>)[0].value, "Salutem Vita");
 });
 
+// Amazon's live GROCERY schema requires these two even though our cached schema
+// copy marks them optional; omitting them fails the PUT with 90220. Only bites
+// listings that must CREATE an ASIN, so it surfaced on one stale draft.
+test("buildAmazonAttributes — always emits the required liquid/heat attributes", () => {
+  const attrs = buildAmazonAttributes(mkSku());
+  assert.ok(Array.isArray(attrs.contains_liquid_contents));
+  assert.ok(Array.isArray(attrs.is_heat_sensitive));
+  assert.equal((attrs.contains_liquid_contents as Array<{ value: boolean }>)[0].value, false);
+});
+
+test("buildAmazonAttributes — is_heat_sensitive follows the bundle category", () => {
+  const cold = buildAmazonAttributes(mkSku(), "Uncrustables", "FROZEN_GROCERY");
+  assert.equal((cold.is_heat_sensitive as Array<{ value: boolean }>)[0].value, true);
+
+  const chilled = buildAmazonAttributes(mkSku(), "Salutem Vita", "REFRIGERATED");
+  assert.equal((chilled.is_heat_sensitive as Array<{ value: boolean }>)[0].value, true);
+
+  const dry = buildAmazonAttributes(mkSku(), "Salutem Vita", "SHELF_STABLE");
+  assert.equal((dry.is_heat_sensitive as Array<{ value: boolean }>)[0].value, false);
+
+  // no category supplied (legacy callers) → shelf-stable default
+  const legacy = buildAmazonAttributes(mkSku(), "Salutem Vita");
+  assert.equal((legacy.is_heat_sensitive as Array<{ value: boolean }>)[0].value, false);
+});
+
 test("buildAmazonAttributes — omits dimensions when any side is null", () => {
   const attrs = buildAmazonAttributes(mkSku({ package_length_in: null }));
   assert.equal(attrs.item_package_dimensions, undefined);

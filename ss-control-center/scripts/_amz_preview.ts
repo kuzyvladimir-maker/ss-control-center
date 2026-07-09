@@ -31,10 +31,10 @@ async function main() {
     const row = await prisma.channelSKU.findFirst({ where: { sku } });
     if (!row) { console.log(`${sku}: NOT FOUND`); continue; }
     const mb = row.master_bundle_id
-      ? await prisma.masterBundle.findUnique({ where: { id: row.master_bundle_id }, select: { brand: true } })
+      ? await prisma.masterBundle.findUnique({ where: { id: row.master_bundle_id }, select: { brand: true, category: true } })
       : null;
     const storeIndex = (channelTarget(row.channel) as { storeIndex: number }).storeIndex;
-    const payload = buildAmazonPayload(row as never, productTypeForBundle(), mb?.brand);
+    const payload = buildAmazonPayload(row as never, productTypeForBundle(), mb?.brand, mb?.category);
 
     console.log(`\n=== ${sku} | ${row.channel} store${storeIndex} | db=${row.listing_status} | brand=${mb?.brand} ===`);
     console.log(`    ${row.title?.slice(0, 72)}`);

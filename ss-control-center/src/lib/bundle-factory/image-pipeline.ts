@@ -45,6 +45,7 @@ import { NotFoundError, PreconditionError } from "./errors";
 import { isOwnBrandPassthrough } from "./own-brand";
 import { parsePackUnits } from "./donor-dedup";
 import { compositeEligible, buildCompositeWithQA } from "./composite-image";
+import { isColdCategory } from "./category";
 
 /** Standard Uncrustables retail lineup — used when a component's own pack size
  *  can't be read from its donor title. */
@@ -133,11 +134,10 @@ export interface RunImageGenerationResult {
   note?: string;
 }
 
-/** Frozen/refrigerated → cold-chain (needs the Salutem cooler + gel packs). */
-export function isColdCategory(category: string): boolean {
-  const c = (category || "").toUpperCase();
-  return c.includes("FROZEN") || c.includes("REFRIGERATED");
-}
+/** Frozen/refrigerated → cold-chain (needs the Salutem cooler + gel packs).
+ *  Defined in ./category (pure) so the Amazon publish path can share it without
+ *  importing this whole module; re-exported here for existing callers/tests. */
+export { isColdCategory };
 
 /** Approved frozen-hero style anchors. R2-hosted in prod (the worker fetches
  *  them); falls back to the app's public copies when R2 isn't configured. */

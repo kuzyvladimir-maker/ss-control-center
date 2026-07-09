@@ -72,12 +72,13 @@ export async function runPollPending(opts: {
         const mb = sku.master_bundle_id
           ? await prisma.masterBundle.findUnique({
               where: { id: sku.master_bundle_id },
-              select: { brand: true },
+              select: { brand: true, category: true },
             })
           : null;
         const heal = await healUpcConflict(sku, {
           storeIndex: target.storeIndex,
           brand: mb?.brand,
+          category: mb?.category,
           productType: productTypeForBundle(),
         });
         results.push({

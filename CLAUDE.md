@@ -72,6 +72,10 @@ Walmart — 1 аккаунт (API ключ пока отсутствует).
 - **Manual bullet characters** (`•`, `●`, `►`, `▪`, `○`) — Amazon рендерит bullets автоматически, ручные маркеры избыточны.
 - **HTML в product_description** для grocery/food — Amazon strict валидирует HTML для этих категорий. Plain text с paragraph breaks (`\n\n`) предпочтительнее.
 - **Health/medical claims** без FDA approval — `cure`, `treat`, `prevent`, `boost`, `weight loss`, `detox`, `heal`. Все Salutem Vita / Starfit gift sets — это food bundles, не supplements.
+- **Заявления о продаже / доставке / срочности** (подтверждено на живом Amazon 2026-07-09, код **99300**) — `sold and shipped`, `ships frozen`, `free shipping`, `fast shipping`, `on sale`, `best price`, `buy now`, `limited time`, `while supplies last`, `money back`. Amazon-овский код 99300 — это «false/**promotional claims** or external links», и запрещённые прилагательные — только ПОЛОВИНА правила; вторая половина именно про продажу/доставку/наличие.
+  - **Пиши инструкцию хранения, а не заявление о доставке:** `Keep frozen` ✅ — `Ships frozen` ❌.
+  - Название вкуса с коробки (`Limited-edition Berry Burst`) — это факт и **можно**; `available for a limited time` — заявление о наличии и **нельзя**.
+  - Классификатор Amazon **непоследователен**: часть листингов с `Ships frozen` он пропустил, а один с `sold and shipped frozen` отбил. Поэтому баним проактивно — `SALE_SHIPPING_CLAIM_BANNED` в `compliance/banned-words.ts`, Rule 8. Подробности и диагностика: `docs/wiki/amazon-listing-rejections.md`.
 
 **ОБЯЗАТЕЛЬНО в product listings:**
 

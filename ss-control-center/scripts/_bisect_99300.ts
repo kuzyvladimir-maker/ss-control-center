@@ -16,13 +16,13 @@ async function main() {
 
   const row = await prisma.channelSKU.findFirstOrThrow({ where: { sku: SKU } });
   const mb = row.master_bundle_id
-    ? await prisma.masterBundle.findUnique({ where: { id: row.master_bundle_id }, select: { brand: true } })
+    ? await prisma.masterBundle.findUnique({ where: { id: row.master_bundle_id }, select: { brand: true, category: true } })
     : null;
   const storeIndex = (channelTarget(row.channel) as any).storeIndex;
   const sellerId = await getMerchantToken(storeIndex);
   const url = `/listings/2021-08-01/items/${encodeURIComponent(sellerId)}/${encodeURIComponent(SKU)}`;
 
-  const basePayload: any = buildAmazonPayload(row as any, productTypeForBundle(), mb?.brand);
+  const basePayload: any = buildAmazonPayload(row as any, productTypeForBundle(), mb?.brand, (mb as any)?.category);
   const allBullets: any[] = basePayload.attributes.bullet_point;
 
   async function preview(bullets: any[]): Promise<{ status: string; codes: string[] }> {

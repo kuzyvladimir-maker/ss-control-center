@@ -361,6 +361,7 @@ export async function runDistribution(
           storeIndex: target.storeIndex,
           productType: input.amazonProductType ?? productTypeForBundle(),
           brand: masterBundle?.brand,
+          category: masterBundle?.category,
           dryRun: !apply,
           // On the very first attempt of a SKU we ALWAYS validation-preview
           // first; on retries we trust the operator already saw the
