@@ -336,6 +336,29 @@ async function fetchBluecartDetail(key: string, itemId: string): Promise<DetailC
 // (gallery ≥5 incl the nutrition-label image, bullets, description, ingredients,
 // specs, UPC) onto DonorProduct, then runs image-QC. Prefers Unwrangle (richer +
 // 100k-credit plan); falls back to BlueCart. Selective by design.
+// Open Food Facts — FREE structured grocery record by UPC/barcode. walmart_detail
+// returns nutrition only as a label IMAGE (no structured text), so we already pay the
+// 2.5cr detail credit but can't book nutrition/ingredients from it. OFF fills that gap
+// at $0: ingredients_text + full nutriments + allergens. Every detail credit thus
+// yields the COMPLETE record (Vladimir: "each SKU collects ALL data, not just price").
+async function fetchOpenFoodFacts(upc: string): Promise<{ ingredients: string | null; nutrition: string | null } | null> {
+  const code = String(upc).replace(/\D/g, "");
+  if (code.length < 8) return null;
+  const decode = (s: string) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').trim();
+  try {
+    const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=ingredients_text,nutriments,allergens_tags`, { signal: AbortSignal.timeout(12000) });
+    if (!r.ok) return null;
+    const j: any = await r.json();
+    if (j?.status !== 1 || !j.product) return null;
+    const p = j.product;
+    const ing = typeof p.ingredients_text === "string" && p.ingredients_text.trim() ? decode(p.ingredients_text).slice(0, 2000) : null;
+    const allg = Array.isArray(p.allergens_tags) && p.allergens_tags.length ? p.allergens_tags.map((a: string) => a.replace(/^en:/, "")) : [];
+    const nutObj = p.nutriments && Object.keys(p.nutriments).length ? { ...p.nutriments, ...(allg.length ? { allergens: allg } : {}) } : null;
+    if (!ing && !nutObj) return null;
+    return { ingredients: ing, nutrition: nutObj ? JSON.stringify(nutObj).slice(0, 6000) : null };
+  } catch { return null; }
+}
+
 export async function harvestDonorDetail(db: Client, productId: string): Promise<HarvestResult> {
   // Detail ANY retailer Unwrangle supports, preferring the richest source
   // (Walmart > Target > Sam's > Costco). Pick that retailer's offer that has a URL.
@@ -360,14 +383,20 @@ export async function harvestDonorDetail(db: Client, productId: string): Promise
   if (!c && bcKey && itemId && retailer === "walmart") c = await fetchBluecartDetail(bcKey, itemId);
   if (!c) return { ok: false, productId, images: 0, upc: null, hasIngredients: false, merged: 0, reason: "detail fetch failed" };
 
-  // nutrition: no structured field anywhere (it's a gallery image) — keep nutrition-ish specs as the textual record.
-  const nutrition = c.specifications ? JSON.stringify(c.specifications.filter((s: any) => /nutri|serving|calorie|sodium|fat|protein|carb/i.test(JSON.stringify(s)))) : null;
-
   // Storage class (Frozen | Dry) from the full harvested content — LLM cold-chain
   // classifier (refrigerated/perishable ≡ Frozen for us), now that we have the
   // retailer aisle + bullets. Falls back to deterministic on any LLM hiccup.
-  const cur = await db.execute({ sql: `SELECT title, imageUrls, bullets FROM "DonorProduct" WHERE id=? LIMIT 1`, args: [productId] });
+  const cur = await db.execute({ sql: `SELECT title, imageUrls, bullets, upc FROM "DonorProduct" WHERE id=? LIMIT 1`, args: [productId] });
   const [temperature] = await classifyTemperatureLLM([{ title: cur.rows[0]?.title as string | null, category: c.category, bullets: c.bullets }]);
+
+  // nutrition/ingredients: walmart_detail gives them only as a label image, so pull
+  // the STRUCTURED record from Open Food Facts by UPC ($0). Fall back to nutrition-ish
+  // specs as a textual record when OFF has nothing.
+  const upcForOff = c.upc || ((cur.rows[0] as any)?.upc as string | undefined);
+  const offFacts = upcForOff ? await fetchOpenFoodFacts(String(upcForOff)) : null;
+  const specNutri = c.specifications ? JSON.stringify(c.specifications.filter((s: any) => /nutri|serving|calorie|sodium|fat|protein|carb/i.test(JSON.stringify(s)))) : null;
+  const nutrition = offFacts?.nutrition || (specNutri && specNutri !== "[]" ? specNutri : null);
+  const ingredients = c.ingredients || offFacts?.ingredients || null;
 
   // MERGE images (union, detail first) rather than overwrite — some retailers'
   // detail returns fewer photos than their search gallery (Target), so a plain
@@ -383,7 +412,7 @@ export async function harvestDonorDetail(db: Client, productId: string): Promise
             description=COALESCE(NULLIF(?,''), description), ingredients=COALESCE(?, ingredients),
             nutritionFacts=COALESCE(NULLIF(?,'[]'), nutritionFacts), attributes=?, upc=COALESCE(?, upc),
             category=?, needsReview=0, updatedAt=? WHERE id=?`,
-    args: [mergedImgs[0] ?? null, JSON.stringify(mergedImgs), bulletsJson, c.description, c.ingredients, nutrition,
+    args: [mergedImgs[0] ?? null, JSON.stringify(mergedImgs), bulletsJson, c.description, ingredients, nutrition,
       c.specifications ? JSON.stringify(c.specifications) : null, c.upc, temperature, now, productId],
   });
 
