@@ -51,23 +51,72 @@ export interface CompositeQaResult {
 }
 
 function qaPrompt(expectedFlavors: string[]): string {
+  const n = expectedFlavors.length;
   return (
     `You are a strict Amazon main-image QA reviewer. This should be a clean ` +
     `product photo of real Smucker's Uncrustables frozen sandwich RETAIL BOXES ` +
     `on a pure white background — nothing else.\n\n` +
-    `The pack is supposed to contain these flavor(s): ${expectedFlavors.map((f) => `"${f}"`).join(", ")}.\n\n` +
+    (n > 1
+      ? `This is a VARIETY pack of ${n} different Uncrustables flavors. Two boxes ` +
+        `count as DIFFERENT designs if their artwork/colour/flavor text differ AT ALL ` +
+        `(e.g. a yellow "Bright-Eyed Berry" protein box vs a red "Reduced Sugar" box ` +
+        `are two distinct designs even though both are strawberry).\n\n`
+      : `This is a single-flavor pack — all boxes should look identical.\n\n`) +
     `Look carefully and answer. Respond ONLY with valid JSON, no preamble:\n` +
     `{\n` +
-    `  "is_uncrustables_retail_boxes": true or false,   // real Smucker's Uncrustables cartons (not single sandwiches, not lifestyle)\n` +
-    `  "background_is_white": true or false,\n` +
+    `  "is_uncrustables_retail_boxes": true or false,   // real Smucker's Uncrustables cartons (not single sandwiches, not lifestyle scenes)\n` +
+    `  "background_is_white": true or false,            // the area around the boxes — TRUE unless there is a clearly coloured backdrop\n` +
     `  "visible_box_count": <integer>,                  // how many separate boxes you can count\n` +
+    `  "distinct_box_designs": <integer>,               // how many VISUALLY DIFFERENT box designs are present (identical boxes count once)\n` +
     `  "flavors_seen": ["...", "..."],                  // flavor names / colours you can read on the boxes\n` +
-    `  "all_expected_flavors_present": true or false,   // is EVERY expected flavor visibly represented\n` +
-    `  "fabricated_or_garbled_text": true or false,     // any nonsense / made-up flavor / unreadable printed text\n` +
-    `  "retailer_or_foreign_logo": true or false,       // any Target/Walmart/Amazon/Costco/Sam's badge, price sticker, watermark, or non-Uncrustables brand\n` +
+    `  "fabricated_or_garbled_text": true or false,     // any nonsense / MADE-UP flavor that is not a real Uncrustables product, or unreadable printed text\n` +
+    `  "retailer_or_foreign_logo": true or false,       // any Target/Walmart/Amazon/Costco/Sam's badge, price sticker, watermark, or NON-Uncrustables brand\n` +
     `  "notes": "one short sentence"\n` +
     `}`
   );
+}
+
+/** One vision pass → a normalized verdict. Runs on the Claude Max box worker ($0).
+ *  Returns null when vision is unavailable (network/worker down). */
+async function runOneQaPass(input: CompositeQaInput): Promise<
+  { hard_fails: string[]; warnings: string[]; observed: Record<string, unknown> } | null
+> {
+  let parsed: Record<string, unknown> | null = null;
+  try {
+    const buf = await fetchImageBuffer(input.image_url);
+    const b64 = buf.toString("base64");
+    parsed = await identifyImageViaClaudeCli([b64], qaPrompt(input.expected_flavors), { timeoutMs: 200_000 });
+  } catch {
+    parsed = null;
+  }
+  if (!parsed || typeof parsed !== "object") return null;
+
+  const b = (k: string) => parsed![k] === true;
+  const hard_fails: string[] = [];
+  const warnings: string[] = [];
+
+  if (parsed.is_uncrustables_retail_boxes === false) hard_fails.push("not real Uncrustables retail boxes");
+  if (parsed.background_is_white === false) hard_fails.push("background is not pure white");
+  if (b("retailer_or_foreign_logo")) hard_fails.push("retailer/foreign logo or watermark visible");
+  if (b("fabricated_or_garbled_text")) hard_fails.push("fabricated or garbled flavor text");
+
+  // VARIETY check for a mix: rely on the count of visually-DISTINCT box designs,
+  // not brittle name-matching (near-duplicate names like "Strawberry Jam" vs
+  // "Whole Wheat Strawberry Jam" fool a name match). Pass when the model sees at
+  // least as many distinct designs as expected flavors.
+  const n = input.expected_flavors.length;
+  if (n > 1) {
+    const distinct = typeof parsed.distinct_box_designs === "number" ? parsed.distinct_box_designs : null;
+    if (distinct != null && distinct < n) {
+      hard_fails.push(`only ${distinct} distinct box design(s) visible, expected ${n} flavors`);
+    }
+  }
+
+  const seen = typeof parsed.visible_box_count === "number" ? parsed.visible_box_count : null;
+  if (seen != null && seen !== input.expected_boxes) {
+    warnings.push(`vision counted ${seen} boxes, composite placed ${input.expected_boxes}`);
+  }
+  return { hard_fails, warnings, observed: parsed };
 }
 
 export async function qaCompositeImage(
@@ -76,60 +125,48 @@ export async function qaCompositeImage(
   const base: CompositeQaResult = {
     pass: true, verified: false, hard_fails: [], warnings: [], cost_cents: 0,
   };
-  if (!input.image_url) {
-    return { ...base, pass: false, hard_fails: ["no image url"] };
-  }
+  if (!input.image_url) return { ...base, pass: false, hard_fails: ["no image url"] };
 
-  let parsed: Record<string, unknown> | null = null;
-  try {
-    const buf = await fetchImageBuffer(input.image_url);
-    const b64 = buf.toString("base64");
-    parsed = await identifyImageViaClaudeCli([b64], qaPrompt(input.expected_flavors), {
-      timeoutMs: 200_000,
-    });
-  } catch {
-    parsed = null;
-  }
-
-  // Vision unavailable → don't block a real-photo image; flag unverified.
-  if (!parsed || typeof parsed !== "object") {
+  // First pass. On a clean pass we trust it (happy path = 1 vision call).
+  const first = await runOneQaPass(input);
+  if (!first) {
+    // Vision unavailable → don't block a real-photo image; flag unverified.
     return { ...base, pass: true, verified: false, warnings: ["vision unavailable — image not QA-verified (Rule 6 still applies)"] };
   }
-
-  const b = (k: string) => parsed![k] === true;
-  const hard_fails: string[] = [];
-  const warnings: string[] = [];
-
-  if (parsed.is_uncrustables_retail_boxes === false) {
-    hard_fails.push("not real Uncrustables retail boxes");
-  }
-  if (parsed.background_is_white === false) {
-    hard_fails.push("background is not pure white");
-  }
-  if (b("retailer_or_foreign_logo")) {
-    hard_fails.push("retailer/foreign logo or watermark visible");
-  }
-  if (b("fabricated_or_garbled_text")) {
-    hard_fails.push("fabricated or garbled flavor text");
-  }
-  // Missing flavor only matters for a MIX (>1 expected).
-  if (input.expected_flavors.length > 1 && parsed.all_expected_flavors_present === false) {
-    hard_fails.push(`not every expected flavor visible (${input.expected_flavors.join(" + ")})`);
+  if (first.hard_fails.length === 0) {
+    return { ...base, pass: true, verified: true, warnings: first.warnings, observed: first.observed };
   }
 
-  // Box count: we TRUST our own deterministic math; a vision miscount is only a
-  // warning (models routinely miscount tiled grids).
-  const seen = typeof parsed.visible_box_count === "number" ? parsed.visible_box_count : null;
-  if (seen != null && seen !== input.expected_boxes) {
-    warnings.push(`vision counted ${seen} boxes, composite placed ${input.expected_boxes}`);
+  // A FAIL might be a vision false-negative (the check is noisy on variety mixes
+  // and near-duplicate flavor names). Re-roll twice and take a MAJORITY vote so a
+  // single flaky "not every flavor visible" can't block a genuinely-good image —
+  // while a truly bad image (fabricated text, retailer logo, one design) fails
+  // consistently across all three. Only failing images pay the extra 2 calls.
+  const votes = [first, await runOneQaPass(input), await runOneQaPass(input)].filter(
+    (v): v is NonNullable<typeof v> => v != null,
+  );
+  const passCount = votes.filter((v) => v.hard_fails.length === 0).length;
+  const majorityPass = passCount >= Math.ceil(votes.length / 2);
+  if (majorityPass) {
+    const passingVote = votes.find((v) => v.hard_fails.length === 0)!;
+    return {
+      ...base, pass: true, verified: true, observed: passingVote.observed,
+      warnings: [...passingVote.warnings, `QA majority-pass (${passCount}/${votes.length})`],
+    };
   }
 
+  // Majority failed → block. Report the hard_fails that a MAJORITY of the failing
+  // votes agree on (filters one-off noise out of the reason).
+  const failVotes = votes.filter((v) => v.hard_fails.length > 0);
+  const tally = new Map<string, number>();
+  for (const v of failVotes) for (const f of new Set(v.hard_fails)) tally.set(f, (tally.get(f) ?? 0) + 1);
+  const agreed = [...tally.entries()].filter(([, c]) => c >= Math.ceil(votes.length / 2)).map(([f]) => f);
   return {
-    pass: hard_fails.length === 0,
+    ...base,
+    pass: false,
     verified: true,
-    hard_fails,
-    warnings,
-    observed: parsed,
-    cost_cents: 0,
+    hard_fails: agreed.length ? agreed : (failVotes[0]?.hard_fails ?? ["QA failed"]),
+    warnings: [`QA majority-fail (${votes.length - passCount}/${votes.length})`],
+    observed: (failVotes[0] ?? votes[0])?.observed,
   };
 }

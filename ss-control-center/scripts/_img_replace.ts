@@ -34,6 +34,7 @@ async function main() {
   const LIMIT = process.env.BF_LIMIT ? parseInt(process.env.BF_LIMIT, 10) : Infinity;
   const ONLY = process.env.BF_ONLY_DRAFT || ""; // process exactly one draft id
   const APPLY = process.env.BF_DRY !== "1"; // BF_DRY=1 → dry run (no Amazon PUT), inspect payload only
+  const ONLY_BLOCKED = process.env.BF_ONLY_BLOCKED === "1"; // re-run: skip drafts already on a good composite
   const say = (...a: unknown[]) => console.log(new Date().toISOString(), ...a);
   const skip = new Set<string>();
   let infraStreak = 0, replaced = 0, finished = 0, blocked = 0, done = 0;
@@ -46,6 +47,7 @@ async function main() {
       select: {
         id: true, draft_name: true, brand: true, category: true, master_bundle_id: true, status: true,
         variation_matrix: { select: { selected_variant_idx: true, variants_json: true } },
+        generated_content: { select: { compliance_status: true, main_image_url: true } },
       },
       orderBy: { created_at: "asc" },
     });
@@ -63,6 +65,12 @@ async function main() {
       if (!variant || !isColdCategory(d.category)) { skip.add(d.id); continue; }
       const elig = compositeEligible({ brand: d.brand, variant });
       if (!elig.eligible) { say("  SKIP (not composite-eligible):", d.draft_name.slice(0, 45), "—", elig.reason); skip.add(d.id); continue; }
+      // Re-run mode: skip drafts already on a good composite (only retry blocked).
+      if (ONLY_BLOCKED) {
+        const gc = (d as any).generated_content?.[0];
+        const alreadyGood = (gc?.main_image_url ?? "").includes("bf-composite") && gc?.compliance_status === "CAN_PUBLISH";
+        if (alreadyGood) { skip.add(d.id); continue; }
+      }
       done++;
 
       try {
