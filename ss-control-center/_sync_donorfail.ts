@@ -9,7 +9,11 @@ for (const f of [".env", ".env.local"]) { let t = ""; try { t = readFileSync(f, 
 
 async function main() {
   const gen: Record<string, any> = JSON.parse(readFileSync("_gen_enriched_state.json", "utf8"));
-  const df = Object.keys(gen).filter((k) => gen[k].status === "DONOR_FAIL");
+  // DONOR_FAIL = no clean front. TILE_FAIL = tile failed QC — mostly WRONG-VARIANT donor
+  // (COGS's Target-front fix sometimes grabs a clean image of a different variant, e.g.
+  // Snyder's Dipping Sticks for a "Seasoned Twisted" listing). Both are donor problems
+  // COGS must re-source, so flush both to the enrich queue.
+  const df = Object.keys(gen).filter((k) => gen[k].status === "DONOR_FAIL" || gen[k].status === "TILE_FAIL");
   const { createClient } = await import("@libsql/client");
   const db = createClient({ url: process.env.TURSO_DATABASE_URL!, authToken: process.env.TURSO_AUTH_TOKEN });
   const ex = (await db.execute(`SELECT value FROM Setting WHERE key='enrich_priority_skus'`)).rows;

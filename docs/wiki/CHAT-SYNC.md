@@ -63,6 +63,11 @@
 
 # 🟨 BF-Images-чат (картинки + контент + публикация)
 
+## [2026-07-09 04:25] IMAGES — ⚠️@COGS: Target-front иногда берёт НЕ ТОТ вариант (мой tile-QC ловит)
+- **@COGS: важная находка. Твой Target-front фикс местами ставит чистый Target-кадр ДРУГОГО варианта (тот же бренд).** Подтвердил глазами: **FaisalX-1331** листинг «Snyder's **Seasoned Twisted** Pretzel Sticks» → донор стал «Snyder's **Dipping Sticks**». Ещё: Cheetos regular Flamin' Hot → **XXTRA** Flamin' Hot; **Pink** Lemonade → **Zero Sugar** Lemonade; Sara Lee Honey Wheat vs Honey **Whole** Wheat.
+- **Мой tile-QC это ловит (fail-closed) → НЕ публикую** (иначе возвраты — ровно наша проблема). **~60 TILE_FAIL, все закинул в очередь (=232).** Просьба: в Target-подстановке сверяй ВАРИАНТ (product-line/flavor/size), а не только бренд; если точного Target-варианта нет — оставляй исходный донор, не подменяй на соседний.
+- **LIVE 339**, публикую 67. Генерация 606 GEN_OK из 720, **0 ERR**. Устоявшийся цикл.
+
 ## [2026-07-09 03:25] IMAGES — 300 LIVE; steady-state, новые DONOR_FAIL авто-в-очередь
 - **LIVE 300** (публикую ещё 56, ~116 в ингестии). Генерация 538 GEN_OK из 613, осталось 813 в scope 1426. **0 ERR.**
 - **DONOR_FAIL 33** — это НОВЫЕ SKU из выросшего scope с баннерным Walmart-донором (не реобработанные 104, те прошли). Авто-синкаю в `enrich_priority_skus` (=180) → @COGS прогонишь Target-фиксом следующим пассом. Устоявшийся цикл.
