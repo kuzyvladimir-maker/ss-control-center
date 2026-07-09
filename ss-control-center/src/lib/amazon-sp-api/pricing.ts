@@ -12,7 +12,7 @@
 // SKUs per call. Callers pace batches; see reprice-engine.ts.
 
 import { spApiGet, spApiPost, MARKETPLACE_ID } from "./client";
-import { patchListing } from "./listings";
+import { patchListing, getListing } from "./listings";
 
 // ─── getListingOffersBatch ──────────────────────────────────────────────
 // Returns, per requested SKU, the parsed offers payload. Up to 20 SKUs.
@@ -115,11 +115,66 @@ export async function getListingOffersBatch(
   });
 }
 
+// ─── purchasable_offer helpers ──────────────────────────────────────────
+//
+// `purchasable_offer` is ONE attribute holding EVERY offer entry: the consumer
+// offer (`audience: "ALL"`), the business offer (`audience: "B2B"`), and the
+// `minimum/maximum_seller_allowed_price` bounds that repricers (ChannelMAX,
+// Amazon Automate Pricing) read. A JSON-Patch `replace` overwrites the WHOLE
+// array — so a patch carrying only `our_price` silently DELETES the B2B offer
+// and the price bounds.
+//
+// This bit us in practice: the Bundle Factory deliberately publishes a price
+// band (see promote-draft) so ChannelMAX imports the bounds, and the first
+// SP-API reprice wiped it. Always merge into the live offer.
+
+/** Amazon price fields are `[{ schedule: [{ value_with_tax: N }] }]`. */
+export function priceSchedule(value: number) {
+  return [{ schedule: [{ value_with_tax: value }] }];
+}
+
+/** Amazon returns open-ended offers as `end_at: { value: null }`; echoing a null
+ *  back fails validation, so drop any `{ value: null }` wrapper before re-sending. */
+export function sanitizeOfferEntry(entry: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(entry)) {
+    if (v && typeof v === "object" && !Array.isArray(v) && (v as { value?: unknown }).value === null) continue;
+    out[k] = v;
+  }
+  return out;
+}
+
+/** Rewrite ONLY the requested fields on the consumer (`audience: "ALL"`) offer,
+ *  leaving every sibling entry — notably the B2B offer — untouched. */
+export function mergePurchasableOffer(
+  existing: unknown,
+  next: { price?: number | null; minPrice?: number | null; maxPrice?: number | null; currency?: string },
+): Record<string, unknown>[] {
+  const entries: Record<string, unknown>[] = Array.isArray(existing)
+    ? (existing as Record<string, unknown>[]).map(sanitizeOfferEntry)
+    : [];
+  let idx = entries.findIndex((e) => e.audience === "ALL" || e.audience == null);
+  if (idx < 0) {
+    entries.push({ marketplace_id: MARKETPLACE_ID, currency: next.currency ?? "USD", audience: "ALL" });
+    idx = entries.length - 1;
+  }
+  const target = { ...entries[idx] };
+  if (next.currency) target.currency = next.currency;
+  if (next.price != null) target.our_price = priceSchedule(next.price);
+  if (next.minPrice != null) target.minimum_seller_allowed_price = priceSchedule(next.minPrice);
+  if (next.maxPrice != null) target.maximum_seller_allowed_price = priceSchedule(next.maxPrice);
+  entries[idx] = target;
+  return entries;
+}
+
 // ─── setListingPrice ────────────────────────────────────────────────────
 // Sets our standard ("our_price") listing price via the Listings Items API
 // purchasable_offer attribute. productType must match the listing's existing
 // product type (read it from the listing summary). value is the price of the
 // item itself (NOT landed — shipping stays as configured on the offer).
+//
+// Reads the live offer first and MERGES, so repricing never destroys the price
+// band or a B2B offer. Pass minPrice/maxPrice to move the band deliberately.
 
 export async function setListingPrice(
   storeIndex: number,
@@ -127,20 +182,29 @@ export async function setListingPrice(
   sku: string,
   productType: string,
   price: number,
-  opts: { validationPreview?: boolean } = {},
+  opts: { validationPreview?: boolean; minPrice?: number; maxPrice?: number } = {},
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
+  let existing: unknown;
+  try {
+    const live = (await getListing(storeIndex, sellerId, sku)) as {
+      attributes?: Record<string, unknown>;
+    };
+    existing = live?.attributes?.purchasable_offer;
+  } catch {
+    // Listing read failed — fall back to a fresh consumer offer rather than
+    // aborting the reprice. (Bounds can't be preserved if we can't read them.)
+    existing = undefined;
+  }
   const patches = [
     {
       op: "replace" as const,
       path: "/attributes/purchasable_offer",
-      value: [
-        {
-          marketplace_id: MARKETPLACE_ID,
-          currency: "USD",
-          our_price: [{ schedule: [{ value_with_tax: price }] }],
-        },
-      ],
+      value: mergePurchasableOffer(existing, {
+        price,
+        minPrice: opts.minPrice ?? null,
+        maxPrice: opts.maxPrice ?? null,
+      }),
     },
   ];
   return patchListing(storeIndex, sellerId, sku, productType, patches, {
