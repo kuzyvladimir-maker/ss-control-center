@@ -545,6 +545,9 @@ export default function ShippingLabelsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [bucketFilter, setBucketFilter] = useState<ShipByBucket | null>(null);
+  // "Ships later" — narrow the list to orders whose label prints today but
+  // whose package physically leaves on a later business day (Ship Date Trick).
+  const [deferredOnly, setDeferredOnly] = useState(false);
   // Separate scope for Walmart label-bought-but-not-shipped orders.
   // When "awaiting", everything else is hidden; when "active", these
   // are hidden so they don't crowd the buy-flow list.
@@ -1362,6 +1365,61 @@ export default function ShippingLabelsPage() {
     return { frozen, dry, untyped };
   }, [scopedOrders]);
 
+  // Index plan rows by orderNumber so the OrderRow can pick up carrier /
+  // price / EDD without an extra lookup at render time. Plan keys on
+  // orderNumber (Amazon-format), same as dashboard, so the merge is clean.
+  const planByOrderNumber = useMemo(() => {
+    // In the default "api" mode, a Walmart row must reflect the WALMART quote
+    // ONLY — never the Veeqo plan rate. The plan route quotes Walmart orders
+    // through Veeqo too (a different carrier pool, against an UNVERIFIED
+    // package), and that phantom rate (a) showed a misleading "Rate ready —
+    // confirm to buy" on rows whose Walmart quote actually failed for missing
+    // dimensions, (b) MASKED the real "set the box/weight" error (it only
+    // renders when the plan isn't pending), and (c) isn't even buyable
+    // (Walmart buy needs dims; the Veeqo buy path is blocked for Walmart). So
+    // skip the Veeqo plan for Walmart rows here. When the operator has flipped
+    // the toggle to "veeqo", Walmart DOES buy through Veeqo, so keep it.
+    const skipVeeqoForWalmart = walmartBuySource === "api";
+    const walmartNums = skipVeeqoForWalmart
+      ? new Set(orders.filter((o) => o.isWalmart).map((o) => o.orderNumber))
+      : new Set<string>();
+    const m = new Map<string, PlanItem>();
+    if (plan)
+      for (const p of plan.orders) {
+        if (walmartNums.has(p.orderNumber)) continue;
+        m.set(p.orderNumber, p);
+      }
+    // Walmart rate entries overlay/extend the plan so Walmart rows show
+    // carrier / cost / EDD / package through the same rendering path.
+    for (const [num, p] of Object.entries(walmartRates)) m.set(num, p);
+    return m;
+  }, [plan, walmartRates, orders, walmartBuySource]);
+
+  // Orders whose label is printed today but whose package physically leaves on
+  // a LATER day (Frozen Ship Date Trick — typically the next business day, e.g.
+  // Monday for a Friday label). Same predicate the row's Label/Physical chip
+  // uses, hoisted here so the "Ships later" filter and the chip can never
+  // disagree: a manual ship-date override wins over the batch plan's flag.
+  const deferredShipNums = useMemo(() => {
+    const s = new Set<string>();
+    for (const o of orders) {
+      const p = planByOrderNumber.get(o.orderNumber);
+      if (!p) continue;
+      const labelDate = p.labelDate ?? p.actualShipDay;
+      const overridePhysical = rateOverrides[o.orderId]?.physicalShipDate ?? null;
+      const deferred = overridePhysical
+        ? overridePhysical !== labelDate
+        : p.shipDateTrickApplied === true;
+      if (deferred) s.add(o.orderNumber);
+    }
+    return s;
+  }, [orders, planByOrderNumber, rateOverrides]);
+
+  const deferredCount = useMemo(
+    () => scopedOrders.filter((o) => deferredShipNums.has(o.orderNumber)).length,
+    [scopedOrders, deferredShipNums],
+  );
+
   const filteredOrders = useMemo(() => {
     // Sort by actionability: ready_to_buy → need_attention → waiting_placed
     // → bought. Inside each state, sort by time bucket (overdue first) so the
@@ -1411,6 +1469,7 @@ export default function ShippingLabelsPage() {
               : o.timeBucket === bucketFilter;
           if (!inBucket) return false;
         }
+        if (deferredOnly && !deferredShipNums.has(o.orderNumber)) return false;
         if (storeFilter && o.storeId !== storeFilter) return false;
         if (stateFilter !== "all" && o.state !== stateFilter) return false;
         if (typeFilter !== "all") {
@@ -1460,6 +1519,8 @@ export default function ShippingLabelsPage() {
   }, [
     channelOrders,
     bucketFilter,
+    deferredOnly,
+    deferredShipNums,
     storeFilter,
     stateFilter,
     typeFilter,
@@ -1512,36 +1573,6 @@ export default function ShippingLabelsPage() {
     ).length;
     return { all, ready, attention, waiting };
   }, [scopedOrders]);
-
-  // Index plan rows by orderNumber so the OrderRow can pick up carrier /
-  // price / EDD without an extra lookup at render time. Plan keys on
-  // orderNumber (Amazon-format), same as dashboard, so the merge is clean.
-  const planByOrderNumber = useMemo(() => {
-    // In the default "api" mode, a Walmart row must reflect the WALMART quote
-    // ONLY — never the Veeqo plan rate. The plan route quotes Walmart orders
-    // through Veeqo too (a different carrier pool, against an UNVERIFIED
-    // package), and that phantom rate (a) showed a misleading "Rate ready —
-    // confirm to buy" on rows whose Walmart quote actually failed for missing
-    // dimensions, (b) MASKED the real "set the box/weight" error (it only
-    // renders when the plan isn't pending), and (c) isn't even buyable
-    // (Walmart buy needs dims; the Veeqo buy path is blocked for Walmart). So
-    // skip the Veeqo plan for Walmart rows here. When the operator has flipped
-    // the toggle to "veeqo", Walmart DOES buy through Veeqo, so keep it.
-    const skipVeeqoForWalmart = walmartBuySource === "api";
-    const walmartNums = skipVeeqoForWalmart
-      ? new Set(orders.filter((o) => o.isWalmart).map((o) => o.orderNumber))
-      : new Set<string>();
-    const m = new Map<string, PlanItem>();
-    if (plan)
-      for (const p of plan.orders) {
-        if (walmartNums.has(p.orderNumber)) continue;
-        m.set(p.orderNumber, p);
-      }
-    // Walmart rate entries overlay/extend the plan so Walmart rows show
-    // carrier / cost / EDD / package through the same rendering path.
-    for (const [num, p] of Object.entries(walmartRates)) m.set(num, p);
-    return m;
-  }, [plan, walmartRates, orders, walmartBuySource]);
 
   // Final display order. "urgency" keeps filteredOrders' actionability sort;
   // the others re-sort by data that lives in the plan map (cost / EDD) or on
@@ -2751,6 +2782,38 @@ export default function ShippingLabelsPage() {
           ]}
           active={typeFilter}
           onChange={(id) => setTypeFilter(id)}
+          rightSlot={
+            // Isolates the Ship-Date-Trick rows: label bought today, package
+            // handed to the carrier on a later business day. These are the
+            // ones the warehouse must HOLD, so the operator needs to see them
+            // as their own worklist.
+            <label
+              className={cn(
+                "flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-[12.5px] font-medium transition-colors",
+                deferredOnly
+                  ? "bg-warn-tint text-warn-strong"
+                  : "text-ink-2 hover:bg-bg-elev hover:text-ink",
+              )}
+              title="Show only orders whose label prints today but which physically ship on a later business day (Frozen Ship Date Trick)"
+            >
+              <input
+                type="checkbox"
+                checked={deferredOnly}
+                onChange={(e) => setDeferredOnly(e.target.checked)}
+              />
+              📦 Ships later
+              <span
+                className={cn(
+                  "inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular",
+                  deferredOnly
+                    ? "bg-warn-strong text-white"
+                    : "bg-bg-elev text-ink-3",
+                )}
+              >
+                {deferredCount}
+              </span>
+            </label>
+          }
         />
       )}
 
@@ -3601,9 +3664,12 @@ function OrderRow({
                         : "Ship date — re-derives the transit estimate (the 'N days' next to EDD). Veeqo's price/EDD are a fixed quote that doesn't change by date; Amazon buys on its ship-by date."
                     }
                     className={cn(
-                      "rounded border bg-surface px-1.5 py-0.5 text-[12px] leading-none focus:border-[#0071dc] focus:outline-none",
+                      // Ship date is the thing the operator scans for on every
+                      // row — keep it a notch bigger and bolder than the rest
+                      // of the meta line.
+                      "rounded border bg-surface px-1.5 py-0.5 text-[13.5px] font-medium leading-none focus:border-[#0071dc] focus:outline-none",
                       shipDateOverridden
-                        ? "border-[#0071dc] font-medium text-[#0071dc]"
+                        ? "border-[#0071dc] text-[#0071dc]"
                         : "border-rule text-ink",
                     )}
                   />
@@ -3651,7 +3717,7 @@ function OrderRow({
               if (!trickApplied) {
                 return (
                   <span
-                    className="text-[12px] text-ink-3"
+                    className="text-[13.5px] font-medium text-ink-2"
                     title="Label date and physical ship date are the same"
                   >
                     · 📦 Ship {fmtDate(physicalShipDate ?? labelDate ?? "")}
@@ -3662,13 +3728,13 @@ function OrderRow({
               return (
                 <>
                   <span
-                    className="text-[12px] text-ink-3"
+                    className="text-[13.5px] font-medium text-ink-2"
                     title="Date Amazon sees on the label (drives Late Shipment Rate)"
                   >
                     · Label {fmtDate(labelDate ?? "")}
                   </span>
                   <span
-                    className="rounded bg-warn-tint px-1.5 py-px text-[12px] font-medium text-warn-strong"
+                    className="rounded bg-warn-tint px-1.5 py-px text-[13.5px] font-semibold text-warn-strong"
                     title="Physical ship date pushed by Frozen Ship Date Trick — hand to carrier on this date, not today"
                   >
                     · 📦 Physical {fmtDate(physicalShipDate ?? "")}
