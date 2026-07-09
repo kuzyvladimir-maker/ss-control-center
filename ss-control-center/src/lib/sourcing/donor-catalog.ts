@@ -345,18 +345,24 @@ async function fetchOpenFoodFacts(upc: string): Promise<{ ingredients: string | 
   const code = String(upc).replace(/\D/g, "");
   if (code.length < 8) return null;
   const decode = (s: string) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').trim();
-  try {
-    const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=ingredients_text,nutriments,allergens_tags`, { signal: AbortSignal.timeout(12000) });
-    if (!r.ok) return null;
-    const j: any = await r.json();
-    if (j?.status !== 1 || !j.product) return null;
-    const p = j.product;
-    const ing = typeof p.ingredients_text === "string" && p.ingredients_text.trim() ? decode(p.ingredients_text).slice(0, 2000) : null;
-    const allg = Array.isArray(p.allergens_tags) && p.allergens_tags.length ? p.allergens_tags.map((a: string) => a.replace(/^en:/, "")) : [];
-    const nutObj = p.nutriments && Object.keys(p.nutriments).length ? { ...p.nutriments, ...(allg.length ? { allergens: allg } : {}) } : null;
-    if (!ing && !nutObj) return null;
-    return { ingredients: ing, nutrition: nutObj ? JSON.stringify(nutObj).slice(0, 6000) : null };
-  } catch { return null; }
+  // OFF's free read API rate-limits (~100/min) — retry a couple times on error/timeout
+  // so a transient 429/timeout doesn't drop a product that IS in the DB.
+  for (let a = 0; a < 3; a++) {
+    try {
+      const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=ingredients_text,nutriments,allergens_tags`, { signal: AbortSignal.timeout(12000) });
+      if (r.status === 429 || r.status >= 500) { await new Promise((res) => setTimeout(res, 800 * (a + 1))); continue; }
+      if (!r.ok) return null;
+      const j: any = await r.json();
+      if (j?.status !== 1 || !j.product) return null;
+      const p = j.product;
+      const ing = typeof p.ingredients_text === "string" && p.ingredients_text.trim() ? decode(p.ingredients_text).slice(0, 2000) : null;
+      const allg = Array.isArray(p.allergens_tags) && p.allergens_tags.length ? p.allergens_tags.map((a2: string) => a2.replace(/^en:/, "")) : [];
+      const nutObj = p.nutriments && Object.keys(p.nutriments).length ? { ...p.nutriments, ...(allg.length ? { allergens: allg } : {}) } : null;
+      if (!ing && !nutObj) return null;
+      return { ingredients: ing, nutrition: nutObj ? JSON.stringify(nutObj).slice(0, 6000) : null };
+    } catch { await new Promise((res) => setTimeout(res, 800 * (a + 1))); }
+  }
+  return null;
 }
 
 export async function harvestDonorDetail(db: Client, productId: string): Promise<HarvestResult> {
