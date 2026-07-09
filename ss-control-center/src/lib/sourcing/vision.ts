@@ -58,6 +58,33 @@ let _codexDownUntil = 0;
 let _claudeDownUntil = 0;
 let _geminiDownUntil = 0;
 
+// Vision only needs enough pixels to read the package label and count the units — not
+// the full 2200×2200 PNG we render for Walmart. Shipping the raw tile cost us dearly:
+//   • 2200px PNG  → 1.85 MB of base64 PER CALL
+//   • codex persists every call's transcript WITH the embedded image → +4.3 GB/day,
+//     which filled the box's disk (158G) and made nginx 500 on every image (it must
+//     buffer bodies >~16KB to a temp file).
+//   • large bodies are also slower to upload/encode on every single call.
+// 1536px JPEG q85 is 6.6× smaller (287 KB b64) and still leaves ~384px per cell on a
+// 12-unit tile — enough to read "Seasoned Twisted" vs "Dipping Sticks", which is what
+// the wrong-variant gate depends on. 1024px (256px/cell) was measured as too tight.
+// All three lanes accept JPEG: gemini sniffs the mime from the base64 magic bytes
+// ("/9j/"), and the codex/claude worker detects format from content.
+const VISION_MAX_PX = Number(process.env.SS_VISION_MAX_PX ?? 1536);
+const VISION_JPEG_Q = Number(process.env.SS_VISION_JPEG_Q ?? 85);
+
+async function downscaleForVision(raw: Buffer): Promise<Buffer> {
+  try {
+    const sharp = (await import("sharp")).default;
+    return await sharp(raw)
+      .resize(VISION_MAX_PX, VISION_MAX_PX, { fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: VISION_JPEG_Q })
+      .toBuffer();
+  } catch {
+    return raw; // never fail a QC call over an encode hiccup — send the original
+  }
+}
+
 async function fetchB64(url: string): Promise<string | null> {
   // Retry transient failures. The R2 public dev endpoint (pub-*.r2.dev) intermittently
   // returns a Cloudflare 5xx "Internal Error" HTML page under load, and a single-shot
@@ -67,7 +94,7 @@ async function fetchB64(url: string): Promise<string | null> {
   for (let a = 0; a < 4; a++) {
     try {
       const r = await fetch(url, { signal: AbortSignal.timeout(15000) });
-      if (r.ok) return Buffer.from(await r.arrayBuffer()).toString("base64");
+      if (r.ok) return (await downscaleForVision(Buffer.from(await r.arrayBuffer()))).toString("base64");
     } catch { /* transient — retry */ }
     if (a < 3) await new Promise((res) => setTimeout(res, 600 * (a + 1)));
   }
