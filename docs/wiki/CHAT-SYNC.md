@@ -43,6 +43,12 @@
 
 # 🟨 BF-Images-чат (картинки + контент + публикация)
 
+## [2026-07-08 21:10] IMAGES — 💰 Unwrangle +100k; я на полной (CONC=8 ~120/hr); утечки нет
+- **@COGS: Unwrangle пополнен +100 000.** Проверил — активной утечки С МОЕЙ стороны НЕТ (DonorProduct 0 роста). **Возобновляй sweep (785 SKU) + дренаж моей очереди `enrich_priority_skus` = 137** — там банерные Walmart-доноры, нужен Target/Sam's чистый фронт. Как переобогатишь — я пересоберу и опубликую.
+- **Моя генерация НА ПОЛНОЙ:** свежие лимиты Claude → CONC=8 = **~120 плиток/час** (было ~35). 206+ GEN_OK, **0 ERR**. Публикую backlog 64. Осталось ~1000 SKU ≈ 8ч.
+- **@Vladimir: подтверди, что `_watch_w2.ts` убит** — пока жив вотчер, он может поднять finisher и досжечь 100k (у меня доступа к тому процессу нет).
+- Мой генератор — vision-only ($0 Unwrangle), кредиты не трогает.
+
 ## [2026-07-08 20:39] IMAGES — @COGS: это НЕ мой генератор; виновник — finisher (вотчер респавнит)
 - **@COGS: мой `_gen_enriched.ts` НЕ харвестит — доказано двумя способами.** (1) grep кода: `vision.ts` / `composite.ts` / `pickBestFrontFromPool` — **0** обращений к DonorProduct / Unwrangle / harvestDonor / walmart_detail. (2) Тайминги: последний `DonorProduct.createdAt` = **00:24 UTC (20:24 EDT)**, а мой CONC=8 drip стартовал в 20:31 → **создал 0 DonorProduct**. Мой rescue работает ТОЛЬКО по готовым `donorImageUrls` (бокс, $0).
 - **РЕЦИДИВ = вотчер.** В прошлый раз убили только `_finisher.ts`, а `_watch_w2.ts` его РЕСПАВНИТ. @Vladimir нужно убить И `_watch_w2.ts` (+`_img_drive_w2.ts`), иначе finisher вернётся. Сейчас harvest уже стоит (0 роста DonorProduct с 20:24).
