@@ -52,6 +52,11 @@ export interface RunDistributionInput {
   /** Optional override for the Amazon productType used in payload.
    *  Defaults to "PRODUCT". */
   amazonProductType?: string;
+  /** Default false. When true, re-PUT rows that are already LIVE instead of
+   *  skipping them — used to REPLACE the main image on a published listing
+   *  (PUT is create-or-replace, so the new main_image_url overwrites the old).
+   *  See scripts/_img_replace.ts (the composite image-replacement driver). */
+  republish?: boolean;
   actor?: string;
 }
 
@@ -330,8 +335,9 @@ export async function runDistribution(
         });
         continue;
       }
-      // Idempotency: already-LIVE rows aren't re-published.
-      if (sku.listing_status === "LIVE") {
+      // Idempotency: already-LIVE rows aren't re-published — UNLESS republish is
+      // set (image replacement: PUT create-or-replace overwrites the main image).
+      if (sku.listing_status === "LIVE" && !input.republish) {
         per_sku.push({
           sku_id: sku.id,
           sku: sku.sku,

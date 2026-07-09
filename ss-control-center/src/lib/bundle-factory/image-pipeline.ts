@@ -44,6 +44,7 @@ import { logLifecycle } from "./lifecycle-log";
 import { NotFoundError, PreconditionError } from "./errors";
 import { isOwnBrandPassthrough } from "./own-brand";
 import { parsePackUnits } from "./donor-dedup";
+import { compositeEligible, buildCompositeWithQA } from "./composite-image";
 
 /** Standard Uncrustables retail lineup — used when a component's own pack size
  *  can't be read from its donor title. */
@@ -363,82 +364,145 @@ export async function runImageGeneration(
     });
   }
 
-  const bundleComponents = parseBundleComponents(
-    draft.draft_components,
-    selected,
-  );
-
-  // Resolve the batch's Uncrustables image style (retail boxes vs individual
-  // flavor-coloured wraps) from the parent GenerationJob brief. Default: boxes.
-  let uncrustablesImageMode: UncrustablesImageMode = "retail_boxes";
-  if (draft.generation_job_id) {
-    const job = await prisma.generationJob.findUnique({
-      where: { id: draft.generation_job_id },
-      select: { brief: true },
-    });
-    try {
-      const brief = JSON.parse(job?.brief ?? "{}") as { uncrustables_image_mode?: string };
-      if (brief?.uncrustables_image_mode === "individual_wraps") {
-        uncrustablesImageMode = "individual_wraps";
-      }
-    } catch {
-      /* keep default */
-    }
-  }
-
-  const basePrompt = buildImagePrompt({
-    brand: draft.brand,
-    variant: selected,
-    composition_type: draft.composition_type,
-    category: draft.category,
-    uncrustables_image_mode: uncrustablesImageMode,
-  });
-
-  // Phase 3 references passed to the image worker — ORDER MATTERS. The worker
-  // role-labels them by position: ref-1 = the KIT ANCHOR (Salutem cooler +
-  // gel-pack look/layout), refs 2..N = the DONOR PHOTO of EACH flavor in
-  // composition order (a mix needs every flavor's real colours, or the model
-  // renders only the first — Vladimir 2026-07-08). Anchor FIRST so Codex treats
-  // it as layout, not product. The worker fetches these URLs.
-  const referenceUrls: string[] = [];
-  if (isColdCategory(draft.category)) referenceUrls.push(frozenAnchorUrls()[0]);
-  // One donor photo per flavor, in the SAME order buildImagePrompt lists them
-  // (composition order). Look each donor up by its research_pool_id.
-  const donorIds = selected.composition.map((c) => c.research_pool_id).filter(Boolean);
-  if (donorIds.length > 0) {
-    const donorRows = await prisma.donorProduct.findMany({
-      where: { id: { in: donorIds } },
-      select: { id: true, mainImageUrl: true },
-    });
-    const byId = new Map(donorRows.map((d) => [d.id, d.mainImageUrl]));
-    for (const c of selected.composition) {
-      const url = byId.get(c.research_pool_id);
-      if (url) referenceUrls.push(url);
-    }
-  }
-  // Fallback to the draft's primary photo if no component donor resolved.
-  if (referenceUrls.length <= 1 && draft.draft_main_image_url) {
-    referenceUrls.push(draft.draft_main_image_url);
-  }
-
   const outcomes: ChannelImageOutcome[] = [];
   let totalCost = 0;
 
-  for (const row of rowsToProcess) {
-    const outcome = await processOneRow({
-      row,
-      draft_id: draft.id,
-      brand: draft.brand,
-      title: row.title,
-      bullets: safeJsonStringArray(row.bullets_json),
-      description: row.description,
-      basePrompt,
-      bundleComponents,
-      referenceUrls,
-      actor: input.actor ?? "system",
+  // Real-photo composite path (Vladimir 2026-07-08 — IP mandate): own-brand
+  // Uncrustables/Smucker's cold multipacks get a deterministic composite of the
+  // REAL donor box photos (never AI-generated packaging), vetted by the QA
+  // officer, instead of the AI image path. One image per draft → every channel
+  // row. See composite-image.ts + audit/composite-qa.ts.
+  const compositePath =
+    isColdCategory(draft.category) &&
+    compositeEligible({ brand: draft.brand, variant: selected }).eligible;
+
+  if (compositePath) {
+    const stamp = Date.now().toString(36);
+    const built = await buildCompositeWithQA({
+      variant: selected,
+      r2Slug: `draft-${draft.id}`,
+      stamp,
     });
-    outcomes.push(outcome);
-    totalCost += outcome.cost_cents;
+    const passed = built.ok && !!built.image_url && !!built.qa?.pass;
+    for (const row of rowsToProcess) {
+      if (passed && built.image_url) {
+        await prisma.generatedContent.update({
+          where: { id: row.id },
+          data: {
+            main_image_url: built.image_url,
+            compliance_status: "CAN_PUBLISH",
+            manual_review_required: false,
+            image_generated_at: new Date(),
+            image_retry_count: built.attempts,
+          },
+        });
+        outcomes.push({
+          channel: row.channel,
+          generated_content_id: row.id,
+          compliance_status: "CAN_PUBLISH",
+          attempts: built.attempts,
+          image_url: built.image_url,
+          cost_cents: 0,
+          manual_review_required: false,
+          detected_logos: [],
+        });
+      } else {
+        await prisma.generatedContent.update({
+          where: { id: row.id },
+          data: {
+            compliance_status: "BLOCKED",
+            manual_review_required: true,
+            ...(built.image_url ? { main_image_url: built.image_url } : {}),
+          },
+        });
+        outcomes.push({
+          channel: row.channel,
+          generated_content_id: row.id,
+          compliance_status: "BLOCKED",
+          attempts: built.attempts,
+          image_url: built.image_url ?? null,
+          cost_cents: 0,
+          manual_review_required: true,
+          detected_logos: [],
+          error: built.qa?.hard_fails?.join("; ") || built.error || "composite QA failed",
+        });
+      }
+    }
+  } else {
+    const bundleComponents = parseBundleComponents(
+      draft.draft_components,
+      selected,
+    );
+
+    // Resolve the batch's Uncrustables image style (retail boxes vs individual
+    // flavor-coloured wraps) from the parent GenerationJob brief. Default: boxes.
+    let uncrustablesImageMode: UncrustablesImageMode = "retail_boxes";
+    if (draft.generation_job_id) {
+      const job = await prisma.generationJob.findUnique({
+        where: { id: draft.generation_job_id },
+        select: { brief: true },
+      });
+      try {
+        const brief = JSON.parse(job?.brief ?? "{}") as { uncrustables_image_mode?: string };
+        if (brief?.uncrustables_image_mode === "individual_wraps") {
+          uncrustablesImageMode = "individual_wraps";
+        }
+      } catch {
+        /* keep default */
+      }
+    }
+
+    const basePrompt = buildImagePrompt({
+      brand: draft.brand,
+      variant: selected,
+      composition_type: draft.composition_type,
+      category: draft.category,
+      uncrustables_image_mode: uncrustablesImageMode,
+    });
+
+    // Phase 3 references passed to the image worker — ORDER MATTERS. The worker
+    // role-labels them by position: ref-1 = the KIT ANCHOR (Salutem cooler +
+    // gel-pack look/layout), refs 2..N = the DONOR PHOTO of EACH flavor in
+    // composition order (a mix needs every flavor's real colours, or the model
+    // renders only the first — Vladimir 2026-07-08). Anchor FIRST so Codex treats
+    // it as layout, not product. The worker fetches these URLs.
+    const referenceUrls: string[] = [];
+    if (isColdCategory(draft.category)) referenceUrls.push(frozenAnchorUrls()[0]);
+    // One donor photo per flavor, in the SAME order buildImagePrompt lists them
+    // (composition order). Look each donor up by its research_pool_id.
+    const donorIds = selected.composition.map((c) => c.research_pool_id).filter(Boolean);
+    if (donorIds.length > 0) {
+      const donorRows = await prisma.donorProduct.findMany({
+        where: { id: { in: donorIds } },
+        select: { id: true, mainImageUrl: true },
+      });
+      const byId = new Map(donorRows.map((d) => [d.id, d.mainImageUrl]));
+      for (const c of selected.composition) {
+        const url = byId.get(c.research_pool_id);
+        if (url) referenceUrls.push(url);
+      }
+    }
+    // Fallback to the draft's primary photo if no component donor resolved.
+    if (referenceUrls.length <= 1 && draft.draft_main_image_url) {
+      referenceUrls.push(draft.draft_main_image_url);
+    }
+
+    for (const row of rowsToProcess) {
+      const outcome = await processOneRow({
+        row,
+        draft_id: draft.id,
+        brand: draft.brand,
+        title: row.title,
+        bullets: safeJsonStringArray(row.bullets_json),
+        description: row.description,
+        basePrompt,
+        bundleComponents,
+        referenceUrls,
+        actor: input.actor ?? "system",
+      });
+      outcomes.push(outcome);
+      totalCost += outcome.cost_cents;
+    }
   }
 
   // Final draft-level status transition.
@@ -447,7 +511,11 @@ export async function runImageGeneration(
   ).length;
   const allDone = await everyCanPublishRowHasImage(draft.id);
   let nextStatus = draft.status;
-  if (allDone) {
+  // Only advance to IMAGE_GENERATED from an image-stage status. A draft that is
+  // already past imaging (VALIDATED/PUBLISHING/PUBLISHED) is being re-imaged for
+  // an image REPLACEMENT — never regress its lifecycle back to IMAGE_GENERATED.
+  const IMAGE_STAGE = ["GENERATED", "IMAGE_GENERATING", "IMAGE_GENERATED", "ERROR"];
+  if (allDone && IMAGE_STAGE.includes(draft.status)) {
     nextStatus = "IMAGE_GENERATED";
   } else if (successCount === 0 && fromStatus === "GENERATED") {
     // Rolled into IMAGE_GENERATING but nothing succeeded → move to ERROR

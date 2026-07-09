@@ -223,6 +223,97 @@ export async function composeTiledMainImage(
     .toBuffer();
 }
 
+/**
+ * PRIMARY image from a LIST of DIFFERENT real product photos (Bundle Factory
+ * frozen composite). Unlike composeTiledMainImage (one unit repeated), this
+ * lays out N possibly-distinct units — e.g. a variety pack: 3 real boxes of
+ * flavor A + 3 real boxes of flavor B — in a near-square grid on pure white.
+ *
+ * Each unit is fit INSIDE its equal cell preserving its own aspect ratio and
+ * centred, so boxes of slightly different proportions are never distorted or
+ * cropped (the mix-prototype cut-off bug came from a cover-crop; this fixes it).
+ *
+ * Units are placed in the given order, so pass them flavor-grouped
+ * (A,A,A,B,B,B) and a clean count → one flavor per row.
+ */
+export async function composeUnitGrid(
+  rawUnits: Buffer[],
+  opts: { gap?: number; fill?: number; preExtracted?: boolean } = {},
+): Promise<Buffer> {
+  const fill = opts.fill ?? 0.95;
+  const gapFrac = opts.gap ?? 0.08;
+  const target = CANVAS * fill;
+
+  const units = opts.preExtracted
+    ? rawUnits
+    : await Promise.all(rawUnits.map((b) => extractProduct(b)));
+  if (units.length === 1) {
+    // Single box — centre it large on white (no grid math needed).
+    const only = await sharp(units[0])
+      .resize(Math.round(target), Math.round(target), { fit: "inside", background: WHITE })
+      .png()
+      .toBuffer();
+    const m = await sharp(only).metadata();
+    return sharp({ create: { width: CANVAS, height: CANVAS, channels: 4, background: WHITE } })
+      .composite([{ input: only, left: Math.floor((CANVAS - (m.width ?? 0)) / 2), top: Math.floor((CANVAS - (m.height ?? 0)) / 2) }])
+      .png()
+      .toBuffer();
+  }
+
+  const metas = await Promise.all(units.map((u) => sharp(u).metadata()));
+  const aspects = metas.map((m) => (m.width ?? 1) / (m.height ?? 1));
+  const avgAspect = aspects.reduce((s, a) => s + a, 0) / aspects.length;
+
+  const n = units.length;
+  const counts = rowSplit(n);
+  const rows = counts.length;
+  const maxPerRow = Math.max(...counts);
+
+  const gridDims = (h: number) => {
+    const w = h * avgAspect;
+    const gridW = maxPerRow * w + (maxPerRow - 1) * w * gapFrac;
+    const gridH = rows * h + (rows - 1) * h * gapFrac;
+    return { gridW, gridH };
+  };
+  const d = gridDims(1000);
+  const scale = Math.min(target / d.gridW, target / d.gridH);
+  const cellH = Math.floor(1000 * scale);
+  const cellW = Math.floor(cellH * avgAspect);
+  const gapX = Math.floor(cellW * gapFrac);
+  const gapY = Math.floor(cellH * gapFrac);
+
+  // Fit each unit inside its cell (preserve aspect, never crop), then centre it.
+  const tiles = await Promise.all(
+    units.map((u) => sharp(u).resize(cellW, cellH, { fit: "inside", background: WHITE }).png().toBuffer()),
+  );
+  const tileMetas = await Promise.all(tiles.map((t) => sharp(t).metadata()));
+
+  const gridH = rows * cellH + (rows - 1) * gapY;
+  const gridTop = Math.floor((CANVAS - gridH) / 2);
+
+  const composites: sharp.OverlayOptions[] = [];
+  let idx = 0;
+  for (let r = 0; r < rows; r++) {
+    const count = counts[r];
+    const rowW = count * cellW + (count - 1) * gapX;
+    const xStart = Math.floor((CANVAS - rowW) / 2);
+    const top = gridTop + r * (cellH + gapY);
+    for (let c = 0; c < count && idx < tiles.length; c++) {
+      const tm = tileMetas[idx];
+      const cellLeft = xStart + c * (cellW + gapX);
+      const offX = Math.floor((cellW - (tm.width ?? cellW)) / 2);
+      const offY = Math.floor((cellH - (tm.height ?? cellH)) / 2);
+      composites.push({ input: tiles[idx], left: cellLeft + offX, top: top + offY });
+      idx++;
+    }
+  }
+
+  return sharp({ create: { width: CANVAS, height: CANVAS, channels: 4, background: WHITE } })
+    .composite(composites)
+    .png()
+    .toBuffer();
+}
+
 function escapeXml(s: string): string {
   return s.replace(/[<>&'"]/g, (ch) =>
     ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[ch]!),
