@@ -2,10 +2,21 @@
 // _publish_gen_state.json — does NOT resubmit, just reads the real per-item outcome and
 // records it. Cheap (feed GETs only). Safe to run from the hourly cron.
 import { readFileSync, writeFileSync } from "node:fs";
+import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 for (const f of [".env", ".env.local"]) { let t = ""; try { t = readFileSync(f, "utf8"); } catch { continue; } for (const l of t.split("\n")) { const m = l.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/); if (m) process.env[m[1]] = m[2].trim().replace(/^['"]|['"]$/g, ""); } }
 
+/** Both this script and _publish_gen.ts do read→mutate→writeFileSync on the SAME state
+ *  file, so running them together silently loses whichever write lands first. The cron
+ *  fires re-poll and publish in the same tick, and a publish of 5 feeds outlives the
+ *  tick — so this is not hypothetical. Bail rather than corrupt; the next tick re-polls. */
+function publisherRunning(script: string): boolean {
+  try { return execSync(`pgrep -f "${script}" || true`, { encoding: "utf8" }).trim().length > 0; }
+  catch { return false; }
+}
+
 async function main() {
+  if (publisherRunning("_publish_gen.ts")) { console.log("_publish_gen.ts ещё пишет _publish_gen_state.json — пропускаю тик (гонка за файл состояния)"); return; }
   const st: Record<string, any> = JSON.parse(readFileSync("_publish_gen_state.json", "utf8"));
   const gen: Record<string, any> = JSON.parse(readFileSync("_gen_enriched_state.json", "utf8"));
   const { getWalmartClient } = await import("./src/lib/walmart/client.ts");
