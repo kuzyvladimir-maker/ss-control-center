@@ -13,10 +13,15 @@ function publisherRunning(script: string): boolean {
   catch { return false; }
 }
 
+// Mirrors _publish_fix.ts: same env overrides so a one-off fix (_fix_sku_state.json /
+// _publish_sku_state.json) is re-polled by the same tooling as the batch remediation.
+const GEN = process.env.SS_FIX_STATE || "_fix_gen_state.json";
+const PUB = process.env.SS_PUB_STATE || "_publish_fix_state.json";
+
 async function main() {
-  if (publisherRunning("_publish_fix.ts")) { console.log("_publish_fix.ts ещё пишет _publish_fix_state.json — пропускаю тик (гонка за файл состояния)"); return; }
-  const st: Record<string, any> = JSON.parse(readFileSync("_publish_fix_state.json", "utf8"));
-  const gen: Record<string, any> = JSON.parse(readFileSync("_fix_gen_state.json", "utf8"));
+  if (publisherRunning("_publish_fix.ts")) { console.log(`_publish_fix.ts ещё пишет ${PUB} — пропускаю тик (гонка за файл состояния)`); return; }
+  const st: Record<string, any> = JSON.parse(readFileSync(PUB, "utf8"));
+  const gen: Record<string, any> = JSON.parse(readFileSync(GEN, "utf8"));
   const { getWalmartClient } = await import("./src/lib/walmart/client.ts");
   const { checkFeedItemsPartial } = await import("./src/lib/walmart/multipack/remediate.ts");
   const { createClient } = await import("@libsql/client");
@@ -42,7 +47,7 @@ async function main() {
     }
     console.log(`  ${fid.slice(0, 14)} [${res.feedStatus}] → applied ${a} qarth ${q} fail ${f}${waiting ? ` · ещё в обработке ${waiting}` : ""}`);
   }
-  writeFileSync("_publish_fix_state.json", JSON.stringify(st, null, 1));
+  writeFileSync(PUB, JSON.stringify(st, null, 1));
   const c: Record<string, number> = {}; for (const k in st) c[st[k].status] = (c[st[k].status] || 0) + 1;
   console.log(`publish_fix state now: ${JSON.stringify(c)}`);
 }

@@ -10,8 +10,10 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 for (const f of [".env", ".env.local"]) { let t = ""; try { t = readFileSync(f, "utf8"); } catch { continue; } for (const l of t.split("\n")) { const m = l.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/); if (m) process.env[m[1]] = m[2].trim().replace(/^['"]|['"]$/g, ""); } }
 
-const GEN = "_fix_gen_state.json";
-const STATE = "_publish_fix_state.json";
+// Defaults publish the batch remediation; SS_FIX_STATE / SS_PUB_STATE point it at a
+// different pair (e.g. the one-off owner-reported fixes in _fix_sku_state.json).
+const GEN = process.env.SS_FIX_STATE || "_fix_gen_state.json";
+const STATE = process.env.SS_PUB_STATE || "_publish_fix_state.json";
 const BATCH = 50;
 const POLL_BUDGET_MS = 15 * 60 * 1000;
 const ONLY = (process.argv[2] || "").split(",").filter(Boolean); // optional explicit SKU allow-list (pilot)
