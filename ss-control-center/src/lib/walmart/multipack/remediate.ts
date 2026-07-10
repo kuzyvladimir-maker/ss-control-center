@@ -679,3 +679,31 @@ export async function checkFeedItems(client: any, feedId: string): Promise<{ sta
   });
   return { status: st, items };
 }
+
+/** Item-level truth WITHOUT waiting for the feed to finish.
+ *
+ *  A batched feed keeps `feedStatus: INPROGRESS` until its LAST item settles, but Walmart
+ *  populates `itemDetails.itemIngestionStatus` per item as each one lands. Observed live
+ *  on feed 18C0B21C… : `INPROGRESS, itemsReceived 47, itemsSucceeded 45, itemsProcessing 2`
+ *  with 45 SUCCESS rows already readable. `checkFeedItems` throws all of that away and
+ *  returns null, so a single slow item strands 46 others as "submitted" for hours.
+ *
+ *  Use this in re-pollers: settle the items that are done, leave the rest for next tick.
+ *  `done` tells you whether the feed itself is terminal (nothing left to re-poll). */
+export async function checkFeedItemsPartial(client: any, feedId: string): Promise<{ feedStatus: string; done: boolean; items: Array<{ sku: string; ok: boolean; settled: boolean; ingestionStatus: string; errors: string[] }> }> {
+  const d: any = (await client.requestRaw("GET", `/feeds/${encodeURIComponent(feedId)}`, { params: { includeDetails: "true" } })).body;
+  const feedStatus = String(d?.feedStatus || "?");
+  const arr = d?.itemDetails?.itemIngestionStatus ?? [];
+  const items = (Array.isArray(arr) ? arr : []).map((it: any) => {
+    const errs = it?.ingestionErrors?.ingestionError ?? [];
+    const ingestionStatus = String(it?.ingestionStatus || "?");
+    return {
+      sku: it?.sku || it?.martItemId || "?",
+      ingestionStatus,
+      ok: ingestionStatus === "SUCCESS",
+      settled: ingestionStatus !== "INPROGRESS", // anything else is a final per-item verdict
+      errors: errs.map((e: any) => `${e?.field || e?.type || "?"}: ${String(e?.description || "").slice(0, 90)}`),
+    };
+  });
+  return { feedStatus, done: feedStatus === "PROCESSED" || feedStatus === "ERROR", items };
+}

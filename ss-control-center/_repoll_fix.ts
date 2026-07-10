@@ -9,7 +9,7 @@ async function main() {
   const st: Record<string, any> = JSON.parse(readFileSync("_publish_fix_state.json", "utf8"));
   const gen: Record<string, any> = JSON.parse(readFileSync("_fix_gen_state.json", "utf8"));
   const { getWalmartClient } = await import("./src/lib/walmart/client.ts");
-  const { checkFeedItems } = await import("./src/lib/walmart/multipack/remediate.ts");
+  const { checkFeedItemsPartial } = await import("./src/lib/walmart/multipack/remediate.ts");
   const { createClient } = await import("@libsql/client");
   const db = createClient({ url: process.env.TURSO_DATABASE_URL!, authToken: process.env.TURSO_AUTH_TOKEN });
   const client = getWalmartClient(1);
@@ -19,18 +19,19 @@ async function main() {
   console.log(`re-polling ${feeds.size} submitted remediation feeds`);
 
   for (const [fid, skus] of feeds) {
-    const res = await checkFeedItems(client, fid);
-    if (!res) { console.log(`  ${fid.slice(0, 14)} still INPROGRESS`); continue; }
-    let a = 0, q = 0, f = 0;
+    // Partial settle: record the items Walmart already decided, keep waiting on the rest.
+    const res = await checkFeedItemsPartial(client, fid);
+    let a = 0, q = 0, f = 0, waiting = 0;
     for (const it of res.items) {
       if (!skus.includes(it.sku)) continue;
+      if (!it.settled) { waiting++; continue; }
       const status = it.ok ? "applied" : (it.errors.some((e) => /0101119|QARTH|different details/i.test(e)) ? "qarth" : "failed");
       if (it.ok) a++; else if (status === "qarth") q++; else f++;
       st[it.sku] = { sku: it.sku, status, feedId: fid, ok: it.ok, detail: (it.errors[0] || "ok").slice(0, 80), at: new Date().toISOString() };
       const g = gen[it.sku] || {};
       await db.execute({ sql: `INSERT INTO WalmartListingRemediation (id,storeIndex,sku,runAt,changeType,feedId,feedType,feedStatus,ok,packCount,mainImageUrl,notes,createdAt) VALUES (?,1,?,datetime('now'),'multipack',?,'MP_MAINTENANCE',?,?,?,?,?,datetime('now'))`, args: [randomUUID(), it.sku, fid, status.toUpperCase(), it.ok ? 1 : 0, g.qty || 0, g.newUrl || "", "REMEDIATION repoll 2026-07-09"] });
     }
-    console.log(`  ${fid.slice(0, 14)} resolved → applied ${a} qarth ${q} fail ${f}`);
+    console.log(`  ${fid.slice(0, 14)} [${res.feedStatus}] → applied ${a} qarth ${q} fail ${f}${waiting ? ` · ещё в обработке ${waiting}` : ""}`);
   }
   writeFileSync("_publish_fix_state.json", JSON.stringify(st, null, 1));
   const c: Record<string, number> = {}; for (const k in st) c[st[k].status] = (c[st[k].status] || 0) + 1;

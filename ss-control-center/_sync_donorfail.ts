@@ -9,11 +9,16 @@ for (const f of [".env", ".env.local"]) { let t = ""; try { t = readFileSync(f, 
 
 async function main() {
   const gen: Record<string, any> = JSON.parse(readFileSync("_gen_enriched_state.json", "utf8"));
-  // DONOR_FAIL = no clean front. TILE_FAIL = tile failed QC — mostly WRONG-VARIANT donor
-  // (COGS's Target-front fix sometimes grabs a clean image of a different variant, e.g.
-  // Snyder's Dipping Sticks for a "Seasoned Twisted" listing). Both are donor problems
-  // COGS must re-source, so flush both to the enrich queue.
-  const df = Object.keys(gen).filter((k) => gen[k].status === "DONOR_FAIL" || gen[k].status === "TILE_FAIL");
+  // Three donor problems, all COGS's to re-source, all flushed to the enrich queue:
+  //   DONOR_FAIL       — gallery had no clean single-unit white-bg front (banner'd images)
+  //   TILE_FAIL        — the tile failed identity QC against the listing title
+  //   VARIANT_MISMATCH — the free modifier guard caught the donor before any vision call
+  //                      (listing says "Dr Pepper", donor says "Diet Dr Pepper")
+  // VARIANT_MISMATCH was added to the generator on 2026-07-09 and this flusher did not
+  // know about it, so 54 wrong-donor SKUs sat outside the queue until the drip's own
+  // end-of-run flush ~12h later. Keep this list in sync with _gen_enriched.ts statuses.
+  const FAIL_STATUSES = ["DONOR_FAIL", "TILE_FAIL", "VARIANT_MISMATCH"];
+  const df = Object.keys(gen).filter((k) => FAIL_STATUSES.includes(gen[k].status));
   const { createClient } = await import("@libsql/client");
   const db = createClient({ url: process.env.TURSO_DATABASE_URL!, authToken: process.env.TURSO_AUTH_TOKEN });
   const ex = (await db.execute(`SELECT value FROM Setting WHERE key='enrich_priority_skus'`)).rows;
