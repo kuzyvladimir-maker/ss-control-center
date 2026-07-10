@@ -833,219 +833,219 @@
  },
  "FaisalX-3401": {
   "sku": "FaisalX-3401",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:13.839Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:17.319Z"
  },
  "FaisalX-3425": {
   "sku": "FaisalX-3425",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:14.072Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:17.501Z"
  },
  "FaisalX-3420": {
   "sku": "FaisalX-3420",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:14.156Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:17.562Z"
  },
  "FaisalX-3434": {
   "sku": "FaisalX-3434",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:14.218Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:17.619Z"
  },
  "FaisalX-3441": {
   "sku": "FaisalX-3441",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:14.278Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:18.159Z"
  },
  "FaisalX-3472": {
   "sku": "FaisalX-3472",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:14.336Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:18.235Z"
  },
  "FaisalX-3462": {
   "sku": "FaisalX-3462",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:14.391Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:18.310Z"
  },
  "FaisalX-3484": {
   "sku": "FaisalX-3484",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:14.446Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:18.385Z"
  },
  "FaisalX-3492": {
   "sku": "FaisalX-3492",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:14.500Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:18.443Z"
  },
  "FaisalX-3548": {
   "sku": "FaisalX-3548",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:14.555Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:18.499Z"
  },
  "FaisalX-3586": {
   "sku": "FaisalX-3586",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:14.610Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:18.557Z"
  },
  "FaisalX-3583": {
   "sku": "FaisalX-3583",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:14.663Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:18.618Z"
  },
  "FaisalX-3590": {
   "sku": "FaisalX-3590",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:14.717Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:18.675Z"
  },
  "FaisalX-3595": {
   "sku": "FaisalX-3595",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:14.772Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:18.778Z"
  },
  "FaisalX-3627": {
   "sku": "FaisalX-3627",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:15.194Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:18.835Z"
  },
  "FaisalX-3711": {
   "sku": "FaisalX-3711",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:15.252Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:18.893Z"
  },
  "FaisalX-3749": {
   "sku": "FaisalX-3749",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:15.308Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:18.949Z"
  },
  "FaisalX-3762": {
   "sku": "FaisalX-3762",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:15.363Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:19.008Z"
  },
  "FaisalX-381": {
   "sku": "FaisalX-381",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:15.418Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:19.070Z"
  },
  "FaisalX-3843": {
   "sku": "FaisalX-3843",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:15.477Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:19.132Z"
  },
  "FaisalX-3893": {
   "sku": "FaisalX-3893",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:15.533Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:19.190Z"
  },
  "FaisalX-3952": {
   "sku": "FaisalX-3952",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:15.587Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:19.252Z"
  },
  "FaisalX-3942": {
   "sku": "FaisalX-3942",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:15.694Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:19.307Z"
  },
  "FaisalX-3993": {
   "sku": "FaisalX-3993",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:15.749Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:19.363Z"
  },
  "FaisalX-4005": {
   "sku": "FaisalX-4005",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:15.806Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:19.424Z"
  },
  "FaisalX-4040": {
   "sku": "FaisalX-4040",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:15.866Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:19.483Z"
  },
  "FaisalX-4052": {
   "sku": "FaisalX-4052",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C07371A7C95059BB69B4E377F58B93@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-08T23:28:15.921Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:19.540Z"
  },
  "FaisalX-1413": {
   "sku": "FaisalX-1413",
@@ -1653,11 +1653,11 @@
  },
  "FaisalX-2045": {
   "sku": "FaisalX-2045",
-  "status": "submitted",
-  "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
+  "status": "failed",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
   "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T17:44:39.223Z"
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T07:17:52.710Z"
  },
  "FaisalX-2046": {
   "sku": "FaisalX-2046",
@@ -2781,403 +2781,403 @@
  },
  "FaisalX-3402": {
   "sku": "FaisalX-3402",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:52.788Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:21.736Z"
  },
  "FaisalX-340": {
   "sku": "FaisalX-340",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.000Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:21.805Z"
  },
  "FaisalX-3396": {
   "sku": "FaisalX-3396",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.067Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:21.863Z"
  },
  "FaisalX-3395": {
   "sku": "FaisalX-3395",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.122Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:21.931Z"
  },
  "FaisalX-3398": {
   "sku": "FaisalX-3398",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.177Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.001Z"
  },
  "FaisalX-3392": {
   "sku": "FaisalX-3392",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.232Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.063Z"
  },
  "FaisalX-3405": {
   "sku": "FaisalX-3405",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.291Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.129Z"
  },
  "FaisalX-3414": {
   "sku": "FaisalX-3414",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.353Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.185Z"
  },
  "FaisalX-3426": {
   "sku": "FaisalX-3426",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.420Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.241Z"
  },
  "FaisalX-3432": {
   "sku": "FaisalX-3432",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.474Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.355Z"
  },
  "FaisalX-3422": {
   "sku": "FaisalX-3422",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.530Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.414Z"
  },
  "FaisalX-3411": {
   "sku": "FaisalX-3411",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.586Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.473Z"
  },
  "FaisalX-3431": {
   "sku": "FaisalX-3431",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.646Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.536Z"
  },
  "FaisalX-3407": {
   "sku": "FaisalX-3407",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.700Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.592Z"
  },
  "FaisalX-344": {
   "sku": "FaisalX-344",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.756Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.657Z"
  },
  "FaisalX-3449": {
   "sku": "FaisalX-3449",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.816Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.721Z"
  },
  "FaisalX-3435": {
   "sku": "FaisalX-3435",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.871Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.787Z"
  },
  "FaisalX-3440": {
   "sku": "FaisalX-3440",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.926Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.882Z"
  },
  "FaisalX-3442": {
   "sku": "FaisalX-3442",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:53.981Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.936Z"
  },
  "FaisalX-3438": {
   "sku": "FaisalX-3438",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:54.037Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:22.991Z"
  },
  "FaisalX-3450": {
   "sku": "FaisalX-3450",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:54.092Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.058Z"
  },
  "FaisalX-3443": {
   "sku": "FaisalX-3443",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:54.411Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.117Z"
  },
  "FaisalX-3451": {
   "sku": "FaisalX-3451",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:54.471Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.173Z"
  },
  "FaisalX-3469": {
   "sku": "FaisalX-3469",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:54.526Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.232Z"
  },
  "FaisalX-347": {
   "sku": "FaisalX-347",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:54.591Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.291Z"
  },
  "FaisalX-3463": {
   "sku": "FaisalX-3463",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:54.680Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.361Z"
  },
  "FaisalX-3468": {
   "sku": "FaisalX-3468",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:54.738Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.435Z"
  },
  "FaisalX-3465": {
   "sku": "FaisalX-3465",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:54.828Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.492Z"
  },
  "FaisalX-3460": {
   "sku": "FaisalX-3460",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:54.883Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.548Z"
  },
  "FaisalX-3456": {
   "sku": "FaisalX-3456",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:54.957Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.604Z"
  },
  "FaisalX-348": {
   "sku": "FaisalX-348",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.011Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.663Z"
  },
  "FaisalX-3473": {
   "sku": "FaisalX-3473",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.069Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.721Z"
  },
  "FaisalX-3480": {
   "sku": "FaisalX-3480",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.130Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.779Z"
  },
  "FaisalX-3478": {
   "sku": "FaisalX-3478",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.185Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.857Z"
  },
  "FaisalX-3470": {
   "sku": "FaisalX-3470",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.241Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.917Z"
  },
  "FaisalX-3474": {
   "sku": "FaisalX-3474",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.296Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:23.979Z"
  },
  "FaisalX-3486": {
   "sku": "FaisalX-3486",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.357Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:24.034Z"
  },
  "FaisalX-349": {
   "sku": "FaisalX-349",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.412Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:24.090Z"
  },
  "FaisalX-3495": {
   "sku": "FaisalX-3495",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.466Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:24.498Z"
  },
  "FaisalX-3494": {
   "sku": "FaisalX-3494",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.530Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:24.557Z"
  },
  "FaisalX-3499": {
   "sku": "FaisalX-3499",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.586Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:24.611Z"
  },
  "FaisalX-3500": {
   "sku": "FaisalX-3500",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.650Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:24.666Z"
  },
  "FaisalX-3491": {
   "sku": "FaisalX-3491",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.709Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:24.765Z"
  },
  "FaisalX-3497": {
   "sku": "FaisalX-3497",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.789Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:24.823Z"
  },
  "FaisalX-3487": {
   "sku": "FaisalX-3487",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.859Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:24.881Z"
  },
  "FaisalX-3534": {
   "sku": "FaisalX-3534",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:55.944Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:24.938Z"
  },
  "FaisalX-3505": {
   "sku": "FaisalX-3505",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:56.008Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:24.994Z"
  },
  "FaisalX-3508": {
   "sku": "FaisalX-3508",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:56.064Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:25.048Z"
  },
  "FaisalX-3507": {
   "sku": "FaisalX-3507",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:56.135Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:25.104Z"
  },
  "FaisalX-3502": {
   "sku": "FaisalX-3502",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0851B4C985D5E9D71691C1FE8376D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T04:51:56.192Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:25.159Z"
  },
  "FaisalX-3528": {
   "sku": "FaisalX-3528",
@@ -5661,411 +5661,411 @@
  },
  "FaisalX-1217": {
   "sku": "FaisalX-1217",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T17:44:39.428Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:20.131Z"
  },
  "FaisalX-1173": {
   "sku": "FaisalX-1173",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T17:44:39.510Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:20.187Z"
  },
  "FaisalX-1154": {
   "sku": "FaisalX-1154",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T17:44:39.572Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:20.240Z"
  },
  "FaisalX-1129": {
   "sku": "FaisalX-1129",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T17:44:39.633Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:20.298Z"
  },
  "Comm-05": {
   "sku": "Comm-05",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T17:44:39.702Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:20.357Z"
  },
  "FaisalX-1200": {
   "sku": "FaisalX-1200",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T17:44:39.807Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:20.415Z"
  },
  "FaisalX-1277": {
   "sku": "FaisalX-1277",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T17:44:39.909Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:20.492Z"
  },
  "FaisalX-1238": {
   "sku": "FaisalX-1238",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T17:44:39.978Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:20.548Z"
  },
  "FaisalX-1301": {
   "sku": "FaisalX-1301",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T17:44:40.053Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:20.607Z"
  },
  "FaisalX-1331": {
   "sku": "FaisalX-1331",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T17:44:40.127Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:21.141Z"
  },
  "FaisalX-1706": {
   "sku": "FaisalX-1706",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T17:44:40.200Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:21.193Z"
  },
  "FaisalX-1669": {
   "sku": "FaisalX-1669",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0AF461C505C6385B55B74EF21F97D@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T17:44:40.263Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T00:19:21.252Z"
  },
  "FaisalX-1623": {
   "sku": "FaisalX-1623",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:38.739Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:14.047Z"
  },
  "FaisalX-1649": {
   "sku": "FaisalX-1649",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:39.019Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:14.109Z"
  },
  "FaisalX-1759": {
   "sku": "FaisalX-1759",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:39.114Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:14.175Z"
  },
  "FaisalX-1679": {
   "sku": "FaisalX-1679",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:39.209Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:14.231Z"
  },
  "FaisalX-1680": {
   "sku": "FaisalX-1680",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:39.275Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:14.292Z"
  },
  "FaisalX-1726": {
   "sku": "FaisalX-1726",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:39.362Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:14.354Z"
  },
  "FaisalX-1719": {
   "sku": "FaisalX-1719",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:39.426Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:14.414Z"
  },
  "FaisalX-183": {
   "sku": "FaisalX-183",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:39.486Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:14.475Z"
  },
  "FaisalX-1776": {
   "sku": "FaisalX-1776",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:39.573Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:14.534Z"
  },
  "FaisalX-179": {
   "sku": "FaisalX-179",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:39.651Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:14.590Z"
  },
  "FaisalX-1831": {
   "sku": "FaisalX-1831",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:39.718Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:14.650Z"
  },
  "FaisalX-1840": {
   "sku": "FaisalX-1840",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:39.856Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:15.298Z"
  },
  "FaisalX-1985": {
   "sku": "FaisalX-1985",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:39.942Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:15.360Z"
  },
  "FaisalX-2015": {
   "sku": "FaisalX-2015",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:40.045Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:15.417Z"
  },
  "FaisalX-2014": {
   "sku": "FaisalX-2014",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:40.107Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:15.472Z"
  },
  "FaisalX-2008": {
   "sku": "FaisalX-2008",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:40.175Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:15.527Z"
  },
  "FaisalX-2007": {
   "sku": "FaisalX-2007",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:40.598Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:15.584Z"
  },
  "FaisalX-2036": {
   "sku": "FaisalX-2036",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:40.683Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:15.640Z"
  },
  "FaisalX-2043": {
   "sku": "FaisalX-2043",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:40.746Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:15.694Z"
  },
  "FaisalX-2041": {
   "sku": "FaisalX-2041",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:40.828Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:15.749Z"
  },
  "FaisalX-207": {
   "sku": "FaisalX-207",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:40.959Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:15.805Z"
  },
  "FaisalX-2065": {
   "sku": "FaisalX-2065",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:41.083Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:15.862Z"
  },
  "FaisalX-2094": {
   "sku": "FaisalX-2094",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:41.184Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:15.953Z"
  },
  "FaisalX-217": {
   "sku": "FaisalX-217",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:41.269Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.008Z"
  },
  "FaisalX-2250": {
   "sku": "FaisalX-2250",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:41.336Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.063Z"
  },
  "FaisalX-2209": {
   "sku": "FaisalX-2209",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:41.484Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.124Z"
  },
  "FaisalX-2222": {
   "sku": "FaisalX-2222",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:41.541Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.184Z"
  },
  "FaisalX-2227": {
   "sku": "FaisalX-2227",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:41.597Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.239Z"
  },
  "FaisalX-221": {
   "sku": "FaisalX-221",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:41.656Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.298Z"
  },
  "FaisalX-2232": {
   "sku": "FaisalX-2232",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:41.710Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.354Z"
  },
  "FaisalX-2252": {
   "sku": "FaisalX-2252",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:41.770Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.412Z"
  },
  "FaisalX-2260": {
   "sku": "FaisalX-2260",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:41.827Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.465Z"
  },
  "FaisalX-2261": {
   "sku": "FaisalX-2261",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:41.899Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.517Z"
  },
  "FaisalX-2263": {
   "sku": "FaisalX-2263",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:41.992Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.577Z"
  },
  "FaisalX-2293": {
   "sku": "FaisalX-2293",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:42.059Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.635Z"
  },
  "FaisalX-236": {
   "sku": "FaisalX-236",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:42.168Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.694Z"
  },
  "FaisalX-2267": {
   "sku": "FaisalX-2267",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:42.252Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.747Z"
  },
  "FaisalX-2536": {
   "sku": "FaisalX-2536",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:42.332Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.804Z"
  },
  "FaisalX-244": {
   "sku": "FaisalX-244",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:42.895Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.860Z"
  },
  "FaisalX-2498": {
   "sku": "FaisalX-2498",
@@ -6085,50 +6085,1434 @@
  },
  "FaisalX-2589": {
   "sku": "FaisalX-2589",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:43.175Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.916Z"
  },
  "FaisalX-2436": {
   "sku": "FaisalX-2436",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:43.270Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:16.974Z"
  },
  "FaisalX-2608": {
   "sku": "FaisalX-2608",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:43.339Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:17.028Z"
  },
  "FaisalX-2602": {
   "sku": "FaisalX-2602",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:43.438Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:17.084Z"
  },
  "FaisalX-2657": {
   "sku": "FaisalX-2657",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:43.503Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:17.139Z"
  },
  "FaisalX-2796": {
   "sku": "FaisalX-2796",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0B21CCFC951EFA5A6592DA6F16E32@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:17.198Z"
+ },
+ "FaisalX-337": {
+  "sku": "FaisalX-337",
+  "status": "applied",
+  "feedId": "18C0CD2576BB5CF8ACE021D50CDC93C1@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:51.498Z"
+ },
+ "FaisalX-3448": {
+  "sku": "FaisalX-3448",
+  "status": "applied",
+  "feedId": "18C0CD2576BB5CF8ACE021D50CDC93C1@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:51.672Z"
+ },
+ "FaisalX-3393": {
+  "sku": "FaisalX-3393",
+  "status": "applied",
+  "feedId": "18C0CD2576BB5CF8ACE021D50CDC93C1@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:51.728Z"
+ },
+ "FaisalX-3447": {
+  "sku": "FaisalX-3447",
+  "status": "applied",
+  "feedId": "18C0CD2576BB5CF8ACE021D50CDC93C1@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T05:21:13.702Z"
+ },
+ "FaisalX-3485": {
+  "sku": "FaisalX-3485",
+  "status": "applied",
+  "feedId": "18C0CD2576BB5CF8ACE021D50CDC93C1@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:51.807Z"
+ },
+ "FaisalX-3479": {
+  "sku": "FaisalX-3479",
+  "status": "applied",
+  "feedId": "18C0CD2576BB5CF8ACE021D50CDC93C1@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:51.872Z"
+ },
+ "FaisalX-3483": {
+  "sku": "FaisalX-3483",
+  "status": "applied",
+  "feedId": "18C0CD2576BB5CF8ACE021D50CDC93C1@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:51.933Z"
+ },
+ "FaisalX-3490": {
+  "sku": "FaisalX-3490",
+  "status": "applied",
+  "feedId": "18C0CD2576BB5CF8ACE021D50CDC93C1@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:51.992Z"
+ },
+ "FaisalX-3542": {
+  "sku": "FaisalX-3542",
+  "status": "applied",
+  "feedId": "18C0CD2576BB5CF8ACE021D50CDC93C1@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:52.049Z"
+ },
+ "FaisalX-3596": {
+  "sku": "FaisalX-3596",
+  "status": "applied",
+  "feedId": "18C0CD2576BB5CF8ACE021D50CDC93C1@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:52.105Z"
+ },
+ "FaisalX-363": {
+  "sku": "FaisalX-363",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:52.463Z"
+ },
+ "FaisalX-3645": {
+  "sku": "FaisalX-3645",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:52.514Z"
+ },
+ "FaisalX-3676": {
+  "sku": "FaisalX-3676",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:52.570Z"
+ },
+ "FaisalX-3667": {
+  "sku": "FaisalX-3667",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:52.625Z"
+ },
+ "FaisalX-3668": {
+  "sku": "FaisalX-3668",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:52.680Z"
+ },
+ "FaisalX-364": {
+  "sku": "FaisalX-364",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:52.731Z"
+ },
+ "FaisalX-3684": {
+  "sku": "FaisalX-3684",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:52.786Z"
+ },
+ "FaisalX-3746": {
+  "sku": "FaisalX-3746",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:52.845Z"
+ },
+ "FaisalX-3693": {
+  "sku": "FaisalX-3693",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:52.902Z"
+ },
+ "FaisalX-3708": {
+  "sku": "FaisalX-3708",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:52.960Z"
+ },
+ "FaisalX-3787": {
+  "sku": "FaisalX-3787",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:53.341Z"
+ },
+ "FaisalX-375": {
+  "sku": "FaisalX-375",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:53.395Z"
+ },
+ "FaisalX-3769": {
+  "sku": "FaisalX-3769",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:53.465Z"
+ },
+ "FaisalX-3782": {
+  "sku": "FaisalX-3782",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:53.521Z"
+ },
+ "FaisalX-3750": {
+  "sku": "FaisalX-3750",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:53.578Z"
+ },
+ "FaisalX-3789": {
+  "sku": "FaisalX-3789",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:53.642Z"
+ },
+ "FaisalX-3797": {
+  "sku": "FaisalX-3797",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:53.697Z"
+ },
+ "FaisalX-3788": {
+  "sku": "FaisalX-3788",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:53.752Z"
+ },
+ "FaisalX-387": {
+  "sku": "FaisalX-387",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:53.818Z"
+ },
+ "FaisalX-3891": {
+  "sku": "FaisalX-3891",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:53.869Z"
+ },
+ "FaisalX-3896": {
+  "sku": "FaisalX-3896",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:53.968Z"
+ },
+ "FaisalX-392": {
+  "sku": "FaisalX-392",
+  "status": "applied",
+  "feedId": "18C0D2B7CA515BA2802360D9C1B16EBA@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T06:17:54.021Z"
+ },
+ "FaisalX-4368": {
+  "sku": "FaisalX-4368",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
   "ok": false,
   "detail": "poll budget exhausted",
-  "at": "2026-07-09T18:36:43.575Z"
+  "at": "2026-07-10T06:35:08.447Z"
+ },
+ "FaisalX-5010": {
+  "sku": "FaisalX-5010",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:08.575Z"
+ },
+ "FaisalX-4039": {
+  "sku": "FaisalX-4039",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:08.713Z"
+ },
+ "FaisalX-4041": {
+  "sku": "FaisalX-4041",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:08.824Z"
+ },
+ "FaisalX-4056": {
+  "sku": "FaisalX-4056",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:08.928Z"
+ },
+ "FaisalX-4077": {
+  "sku": "FaisalX-4077",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:09.058Z"
+ },
+ "FaisalX-4075": {
+  "sku": "FaisalX-4075",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:09.229Z"
+ },
+ "FaisalX-4117": {
+  "sku": "FaisalX-4117",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:09.319Z"
+ },
+ "FaisalX-4136": {
+  "sku": "FaisalX-4136",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:09.430Z"
+ },
+ "FaisalX-4131": {
+  "sku": "FaisalX-4131",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:09.518Z"
+ },
+ "FaisalX-4115": {
+  "sku": "FaisalX-4115",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:09.606Z"
+ },
+ "FaisalX-4126": {
+  "sku": "FaisalX-4126",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:09.721Z"
+ },
+ "FaisalX-4127": {
+  "sku": "FaisalX-4127",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:09.815Z"
+ },
+ "FaisalX-4144": {
+  "sku": "FaisalX-4144",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:09.969Z"
+ },
+ "FaisalX-4153": {
+  "sku": "FaisalX-4153",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:10.053Z"
+ },
+ "FaisalX-4149": {
+  "sku": "FaisalX-4149",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:10.146Z"
+ },
+ "FaisalX-4166": {
+  "sku": "FaisalX-4166",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:10.248Z"
+ },
+ "FaisalX-4176": {
+  "sku": "FaisalX-4176",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:10.320Z"
+ },
+ "FaisalX-4206": {
+  "sku": "FaisalX-4206",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:10.404Z"
+ },
+ "FaisalX-4260": {
+  "sku": "FaisalX-4260",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:10.489Z"
+ },
+ "FaisalX-4253": {
+  "sku": "FaisalX-4253",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:10.556Z"
+ },
+ "FaisalX-4251": {
+  "sku": "FaisalX-4251",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:10.646Z"
+ },
+ "FaisalX-4243": {
+  "sku": "FaisalX-4243",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:10.716Z"
+ },
+ "FaisalX-4262": {
+  "sku": "FaisalX-4262",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:10.784Z"
+ },
+ "FaisalX-4280": {
+  "sku": "FaisalX-4280",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:10.880Z"
+ },
+ "FaisalX-4297": {
+  "sku": "FaisalX-4297",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:10.971Z"
+ },
+ "FaisalX-4278": {
+  "sku": "FaisalX-4278",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:12.444Z"
+ },
+ "FaisalX-4277": {
+  "sku": "FaisalX-4277",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:12.541Z"
+ },
+ "FaisalX-4323": {
+  "sku": "FaisalX-4323",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:12.638Z"
+ },
+ "FaisalX-4321": {
+  "sku": "FaisalX-4321",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:12.754Z"
+ },
+ "FaisalX-4322": {
+  "sku": "FaisalX-4322",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:12.870Z"
+ },
+ "FaisalX-4345": {
+  "sku": "FaisalX-4345",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:12.995Z"
+ },
+ "FaisalX-4328": {
+  "sku": "FaisalX-4328",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:13.089Z"
+ },
+ "FaisalX-4381": {
+  "sku": "FaisalX-4381",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:13.212Z"
+ },
+ "FaisalX-4378": {
+  "sku": "FaisalX-4378",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:13.320Z"
+ },
+ "FaisalX-4373": {
+  "sku": "FaisalX-4373",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:13.444Z"
+ },
+ "FaisalX-4450": {
+  "sku": "FaisalX-4450",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:13.547Z"
+ },
+ "FaisalX-4451": {
+  "sku": "FaisalX-4451",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:13.629Z"
+ },
+ "FaisalX-4457": {
+  "sku": "FaisalX-4457",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:13.764Z"
+ },
+ "FaisalX-4466": {
+  "sku": "FaisalX-4466",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:13.855Z"
+ },
+ "FaisalX-4485": {
+  "sku": "FaisalX-4485",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:13.934Z"
+ },
+ "FaisalX-4486": {
+  "sku": "FaisalX-4486",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:14.014Z"
+ },
+ "FaisalX-4489": {
+  "sku": "FaisalX-4489",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:14.103Z"
+ },
+ "FaisalX-4488": {
+  "sku": "FaisalX-4488",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:14.192Z"
+ },
+ "FaisalX-4487": {
+  "sku": "FaisalX-4487",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:14.302Z"
+ },
+ "FaisalX-4483": {
+  "sku": "FaisalX-4483",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:14.386Z"
+ },
+ "FaisalX-4491": {
+  "sku": "FaisalX-4491",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:14.497Z"
+ },
+ "FaisalX-4490": {
+  "sku": "FaisalX-4490",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:14.598Z"
+ },
+ "FaisalX-4493": {
+  "sku": "FaisalX-4493",
+  "status": "submitted",
+  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:35:14.714Z"
+ },
+ "FaisalX-4499": {
+  "sku": "FaisalX-4499",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:23.176Z"
+ },
+ "FaisalX-4523": {
+  "sku": "FaisalX-4523",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:23.334Z"
+ },
+ "FaisalX-4515": {
+  "sku": "FaisalX-4515",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:23.406Z"
+ },
+ "FaisalX-4506": {
+  "sku": "FaisalX-4506",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:23.522Z"
+ },
+ "FaisalX-4517": {
+  "sku": "FaisalX-4517",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:23.591Z"
+ },
+ "FaisalX-4505": {
+  "sku": "FaisalX-4505",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:23.673Z"
+ },
+ "FaisalX-4552": {
+  "sku": "FaisalX-4552",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:23.742Z"
+ },
+ "FaisalX-4538": {
+  "sku": "FaisalX-4538",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:23.831Z"
+ },
+ "FaisalX-4530": {
+  "sku": "FaisalX-4530",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:23.912Z"
+ },
+ "FaisalX-4557": {
+  "sku": "FaisalX-4557",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:24.071Z"
+ },
+ "FaisalX-4537": {
+  "sku": "FaisalX-4537",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:24.133Z"
+ },
+ "FaisalX-4531": {
+  "sku": "FaisalX-4531",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:24.192Z"
+ },
+ "FaisalX-4559": {
+  "sku": "FaisalX-4559",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:24.257Z"
+ },
+ "FaisalX-4566": {
+  "sku": "FaisalX-4566",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:24.328Z"
+ },
+ "FaisalX-4583": {
+  "sku": "FaisalX-4583",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:24.385Z"
+ },
+ "FaisalX-4574": {
+  "sku": "FaisalX-4574",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:24.900Z"
+ },
+ "FaisalX-4570": {
+  "sku": "FaisalX-4570",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.026Z"
+ },
+ "FaisalX-4558": {
+  "sku": "FaisalX-4558",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.113Z"
+ },
+ "FaisalX-4617": {
+  "sku": "FaisalX-4617",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.171Z"
+ },
+ "FaisalX-4718": {
+  "sku": "FaisalX-4718",
+  "status": "applied",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T07:17:53.560Z"
+ },
+ "FaisalX-4735": {
+  "sku": "FaisalX-4735",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.294Z"
+ },
+ "FaisalX-4697": {
+  "sku": "FaisalX-4697",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.354Z"
+ },
+ "FaisalX-4786": {
+  "sku": "FaisalX-4786",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.414Z"
+ },
+ "FaisalX-4849": {
+  "sku": "FaisalX-4849",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.474Z"
+ },
+ "FaisalX-4788": {
+  "sku": "FaisalX-4788",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.538Z"
+ },
+ "FaisalX-4854": {
+  "sku": "FaisalX-4854",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.602Z"
+ },
+ "FaisalX-5029": {
+  "sku": "FaisalX-5029",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.666Z"
+ },
+ "FaisalX-5007": {
+  "sku": "FaisalX-5007",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.728Z"
+ },
+ "FaisalX-5028": {
+  "sku": "FaisalX-5028",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.791Z"
+ },
+ "FaisalX-5032": {
+  "sku": "FaisalX-5032",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.879Z"
+ },
+ "FaisalX-5020": {
+  "sku": "FaisalX-5020",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:25.949Z"
+ },
+ "FaisalX-5017": {
+  "sku": "FaisalX-5017",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.038Z"
+ },
+ "FaisalX-5031": {
+  "sku": "FaisalX-5031",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.103Z"
+ },
+ "FaisalX-5038": {
+  "sku": "FaisalX-5038",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.170Z"
+ },
+ "FaisalX-5059": {
+  "sku": "FaisalX-5059",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.241Z"
+ },
+ "FaisalX-5117": {
+  "sku": "FaisalX-5117",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.307Z"
+ },
+ "FaisalX-5116": {
+  "sku": "FaisalX-5116",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.373Z"
+ },
+ "FaisalX-5194": {
+  "sku": "FaisalX-5194",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.435Z"
+ },
+ "FaisalX-5195": {
+  "sku": "FaisalX-5195",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.501Z"
+ },
+ "FaisalX-5210": {
+  "sku": "FaisalX-5210",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.568Z"
+ },
+ "FaisalX-5227": {
+  "sku": "FaisalX-5227",
+  "status": "applied",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T07:17:53.652Z"
+ },
+ "FaisalX-5212": {
+  "sku": "FaisalX-5212",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.687Z"
+ },
+ "FaisalX-5241": {
+  "sku": "FaisalX-5241",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.749Z"
+ },
+ "FaisalX-5243": {
+  "sku": "FaisalX-5243",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.809Z"
+ },
+ "FaisalX-5213": {
+  "sku": "FaisalX-5213",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.870Z"
+ },
+ "FaisalX-5261": {
+  "sku": "FaisalX-5261",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:26.928Z"
+ },
+ "FaisalX-5263": {
+  "sku": "FaisalX-5263",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:27.024Z"
+ },
+ "FaisalX-5292": {
+  "sku": "FaisalX-5292",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:27.130Z"
+ },
+ "FaisalX-5291": {
+  "sku": "FaisalX-5291",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:27.241Z"
+ },
+ "FaisalX-5283": {
+  "sku": "FaisalX-5283",
+  "status": "submitted",
+  "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T06:50:27.331Z"
+ },
+ "FaisalX-5290": {
+  "sku": "FaisalX-5290",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:35.532Z"
+ },
+ "FaisalX-5289": {
+  "sku": "FaisalX-5289",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:35.774Z"
+ },
+ "FaisalX-5274": {
+  "sku": "FaisalX-5274",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:35.852Z"
+ },
+ "FaisalX-5304": {
+  "sku": "FaisalX-5304",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:35.912Z"
+ },
+ "FaisalX-5306": {
+  "sku": "FaisalX-5306",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.053Z"
+ },
+ "FaisalX-5305": {
+  "sku": "FaisalX-5305",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.120Z"
+ },
+ "FaisalX-5297": {
+  "sku": "FaisalX-5297",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.184Z"
+ },
+ "FaisalX-5302": {
+  "sku": "FaisalX-5302",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.249Z"
+ },
+ "FaisalX-5324": {
+  "sku": "FaisalX-5324",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.314Z"
+ },
+ "FaisalX-5314": {
+  "sku": "FaisalX-5314",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.386Z"
+ },
+ "FaisalX-5320": {
+  "sku": "FaisalX-5320",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.451Z"
+ },
+ "FaisalX-5322": {
+  "sku": "FaisalX-5322",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.527Z"
+ },
+ "FaisalX-5323": {
+  "sku": "FaisalX-5323",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.588Z"
+ },
+ "FaisalX-5353": {
+  "sku": "FaisalX-5353",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.651Z"
+ },
+ "FaisalX-5354": {
+  "sku": "FaisalX-5354",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.710Z"
+ },
+ "FaisalX-5358": {
+  "sku": "FaisalX-5358",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.778Z"
+ },
+ "FaisalX-5377": {
+  "sku": "FaisalX-5377",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.844Z"
+ },
+ "FaisalX-5388": {
+  "sku": "FaisalX-5388",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.933Z"
+ },
+ "FaisalX-5369": {
+  "sku": "FaisalX-5369",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:36.997Z"
+ },
+ "FaisalX-5395": {
+  "sku": "FaisalX-5395",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.072Z"
+ },
+ "FaisalX-5390": {
+  "sku": "FaisalX-5390",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.147Z"
+ },
+ "FaisalX-5445": {
+  "sku": "FaisalX-5445",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.219Z"
+ },
+ "FaisalX-5441": {
+  "sku": "FaisalX-5441",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.285Z"
+ },
+ "FaisalX-5423": {
+  "sku": "FaisalX-5423",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.360Z"
+ },
+ "FaisalX-5447": {
+  "sku": "FaisalX-5447",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.417Z"
+ },
+ "FaisalX-5467": {
+  "sku": "FaisalX-5467",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.481Z"
+ },
+ "FaisalX-5466": {
+  "sku": "FaisalX-5466",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.554Z"
+ },
+ "FaisalX-5449": {
+  "sku": "FaisalX-5449",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.611Z"
+ },
+ "FaisalX-5450": {
+  "sku": "FaisalX-5450",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.673Z"
+ },
+ "FaisalX-5468": {
+  "sku": "FaisalX-5468",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.737Z"
+ },
+ "FaisalX-5489": {
+  "sku": "FaisalX-5489",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.814Z"
+ },
+ "FaisalX-756": {
+  "sku": "FaisalX-756",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.882Z"
+ },
+ "FaisalX-5577": {
+  "sku": "FaisalX-5577",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:37.943Z"
+ },
+ "FaisalX-808": {
+  "sku": "FaisalX-808",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:38.003Z"
+ },
+ "FaisalX-774": {
+  "sku": "FaisalX-774",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:38.072Z"
+ },
+ "FaisalX-794": {
+  "sku": "FaisalX-794",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:38.131Z"
+ },
+ "FaisalX-776": {
+  "sku": "FaisalX-776",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:38.194Z"
+ },
+ "FaisalX-820": {
+  "sku": "FaisalX-820",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:38.257Z"
+ },
+ "FaisalX-821": {
+  "sku": "FaisalX-821",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:38.327Z"
+ },
+ "FaisalX-809": {
+  "sku": "FaisalX-809",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:38.387Z"
+ },
+ "FaisalX-825": {
+  "sku": "FaisalX-825",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:38.464Z"
+ },
+ "FaisalX-822": {
+  "sku": "FaisalX-822",
+  "status": "submitted",
+  "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": false,
+  "detail": "poll budget exhausted",
+  "at": "2026-07-10T07:05:39.467Z"
  }
 }

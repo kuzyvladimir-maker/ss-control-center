@@ -1,0 +1,968 @@
+[
+  {
+    "draft_id": "cmra8yy7u000110fz81sgjm2w",
+    "name": "Peanut Butter & Strawberry Jam Protein — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra8yy7u000110fz81sgjm2w/main-mrcxpqsk-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra8yy7u000110fz81sgjm2w-amazon_salutem/main-retry2.png"
+  },
+  {
+    "draft_id": "cmra927we000004lbd6vwys9j",
+    "name": "Peanut Butter & Raspberry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra927we000004lbd6vwys9j/main-mrcxqwc8-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra927we000004lbd6vwys9j-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmra931ii000204lbc3zava4h",
+    "name": "Peanut Butter & Honey Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra931ii000204lbc3zava4h/main-mrcxsk60-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra931ii000204lbc3zava4h-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra93wh3000804lbbgyeib0j",
+    "name": "Whole Wheat Peanut Butter & Strawberry J — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra93wh3000804lbbgyeib0j/main-mrcxtmj8-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra93wh3000804lbbgyeib0j-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra96glo000004l7s8ii18af",
+    "name": "Peanut Butter — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra96glo000004l7s8ii18af/main-mrcxuh6q-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra96glo000004l7s8ii18af-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra98n8f000i04lbmjn83689",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Pro — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra98n8f000i04lbmjn83689/main-mrcxv7v0-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra98n8f000i04lbmjn83689-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9a07u000604l7klqj156x",
+    "name": "Chocolate Flavored Hazelnut Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9a07u000604l7klqj156x/main-mrcxwfnr-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9a07u000604l7klqj156x-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9asnc00mw04lbwuw9596b",
+    "name": "Peanut Butter & Blackberry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9asnc00mw04lbwuw9596b/main-mrcxxo7s-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9asnc00mw04lbwuw9596b-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9e5xm000004l85d3x8cq1",
+    "name": "Morning Protein Peanut Butter & Mixed Be — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9e5xm000004l85d3x8cq1/main-mrd6avmb-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9e5xm000004l85d3x8cq1-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9frr9000004jvurzaiceq",
+    "name": "Peanut Butter & Strawberry Jam — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9frr9000004jvurzaiceq/main-mrcy2cfe-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9frr9000004jvurzaiceq-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9h3pa000004le3pzqilbm",
+    "name": "Whole Wheat Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9h3pa000004le3pzqilbm/main-mrcy3in4-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9h3pa000004le3pzqilbm-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9ijk4000604jvzp4ku6br",
+    "name": "Peanut Butter & Blueberry — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9ijk4000604jvzp4ku6br/main-mrcy4nvi-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9ijk4000604jvzp4ku6br-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9kuam000604lei0328s1p",
+    "name": "Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9kuam000604lei0328s1p/main-mrcy5pvo-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9kuam000604lei0328s1p-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9m7aj000804lesekwb1sd",
+    "name": "Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9m7aj000804lesekwb1sd/main-mrdn586f-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9m7aj000804lesekwb1sd-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9pphw000004jv3pj99jcv",
+    "name": "Peanut Butter & Chocolate Flavored Sprea — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9pphw000004jv3pj99jcv/main-mrcy6h7x-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9pphw000004jv3pj99jcv-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9sn4q000j04le01fi5f79",
+    "name": "Peanut Butter & Strawberry Jam Protein — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9sn4q000j04le01fi5f79/main-mrcy7gqx-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9sn4q000j04le01fi5f79-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9t818000l04le95quyqq1",
+    "name": "Peanut Butter & Raspberry Spread — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9t818000l04le95quyqq1/main-mrcy8jnk-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9t818000l04le95quyqq1-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9u928000r04le630q8mzj",
+    "name": "Peanut Butter & Honey Spread — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9u928000r04le630q8mzj/main-mrcya2n6-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9u928000r04le630q8mzj-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9x0yo000604jvos2z822c",
+    "name": "Whole Wheat Peanut Butter & Strawberry J — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9x0yo000604jvos2z822c/main-mrcybfvw-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9x0yo000604jvos2z822c-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmra9z294008904leaum5i40r",
+    "name": "Peanut Butter — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmra9z294008904leaum5i40r/main-mrcychbj-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmra9z294008904leaum5i40r-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraa027q00q304le4brslc5f",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Pro — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraa027q00q304le4brslc5f/main-mrcydhtk-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraa027q00q304le4brslc5f-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraa1cqi018304lexe3rnrnc",
+    "name": "Chocolate Flavored Hazelnut Spread — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraa1cqi018304lexe3rnrnc/main-mrcyeflq-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraa1cqi018304lexe3rnrnc-amazon_salutem/main-retry2.png"
+  },
+  {
+    "draft_id": "cmraa2xxo000c04jv73w5vqx6",
+    "name": "Peanut Butter & Blackberry Spread — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraa2xxo000c04jv73w5vqx6/main-mrcyfnqe-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraa2xxo000c04jv73w5vqx6-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraa5hvv000004leqazids64",
+    "name": "Morning Protein Peanut Butter & Mixed Be — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraa5hvv000004leqazids64/main-mrd6b6y3-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraa5hvv000004leqazids64-amazon_salutem/main-retry2.png"
+  },
+  {
+    "draft_id": "cmraa6yax000i04jvt5a0d8wp",
+    "name": "Peanut Butter & Strawberry Jam — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraa6yax000i04jvt5a0d8wp/main-mrcyjcfm-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraa6yax000i04jvt5a0d8wp-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraa8m9z000604le5hnk1blp",
+    "name": "Whole Wheat Peanut Butter & Grape Jelly — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraa8m9z000604le5hnk1blp/main-mrcyld0r-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraa8m9z000604le5hnk1blp-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraab326000o04jv3cjiammi",
+    "name": "Peanut Butter & Blueberry — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraab326000o04jv3cjiammi/main-mrcympw5-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraab326000o04jv3cjiammi-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraabxay000r04jvxaj79v8w",
+    "name": "Peanut Butter & Grape Jelly — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraabxay000r04jvxaj79v8w/main-mrcyo0fq-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraabxay000r04jvxaj79v8w-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraaeu1e000004lew4r5r291",
+    "name": "Peanut Butter & Mixed Berry Spread — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraaeu1e000004lew4r5r291/main-mrdn5hsy-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraaeu1e000004lew4r5r291-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraaicrm000604le2gu653j9",
+    "name": "Peanut Butter & Chocolate Flavored Sprea — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraaicrm000604le2gu653j9/main-mrcypa4x-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraaicrm000604le2gu653j9-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraaidy8000804lemp5yq1vd",
+    "name": "Peanut Butter & Strawberry Jam Protein — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraaidy8000804lemp5yq1vd/main-mrcyqh0r-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraaidy8000804lemp5yq1vd-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraajhgu000e04lexcl7r7k1",
+    "name": "Peanut Butter & Raspberry Spread — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraajhgu000e04lexcl7r7k1/main-mrcyr669-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraajhgu000e04lexcl7r7k1-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraaless002w04jvtfzwpruc",
+    "name": "Peanut Butter & Honey Spread — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraaless002w04jvtfzwpruc/main-mrcysryy-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraaless002w04jvtfzwpruc-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraaog9k003204jv8zj0fl7x",
+    "name": "Whole Wheat Peanut Butter & Strawberry J — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraaog9k003204jv8zj0fl7x/main-mrcyurn6-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraaog9k003204jv8zj0fl7x-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraaos9v003404jvbd5vghq8",
+    "name": "Peanut Butter — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraaos9v003404jvbd5vghq8/main-mrcyvwgb-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraaos9v003404jvbd5vghq8-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraar3cu000o04leyjrc4jck",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Pro — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraar3cu000o04leyjrc4jck/main-mrcywuq1-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraar3cu000o04leyjrc4jck-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraauqr0000u04lel747unqe",
+    "name": "Chocolate Flavored Hazelnut Spread — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraauqr0000u04lel747unqe/main-mrcyykb1-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraauqr0000u04lel747unqe-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraav7ru000x04ledblydwkl",
+    "name": "Peanut Butter & Blackberry Spread — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraav7ru000x04ledblydwkl/main-mrcyzq7s-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraav7ru000x04ledblydwkl-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmraax5jr003e04jvndsfaceu",
+    "name": "Morning Protein Peanut Butter & Mixed Be — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmraax5jr003e04jvndsfaceu/main-mrd6bxeh-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmraax5jr003e04jvndsfaceu-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrab1n86003k04jvtpcutz1a",
+    "name": "Peanut Butter & Strawberry Jam — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrab1n86003k04jvtpcutz1a/main-mrcz67t3-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrab1n86003k04jvtpcutz1a-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrab1syd003m04jvkqbmj847",
+    "name": "Whole Wheat Peanut Butter & Grape Jelly — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrab1syd003m04jvkqbmj847/main-mrcz7xgy-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrab1syd003m04jvkqbmj847-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrab4f8g003s04jvfd1u7t8w",
+    "name": "Peanut Butter & Blueberry — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrab4f8g003s04jvfd1u7t8w/main-mrcz9mx4-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrab4f8g003s04jvfd1u7t8w-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrab6uln001704lecuyi6ao8",
+    "name": "Peanut Butter & Grape Jelly — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrab6uln001704lecuyi6ao8/main-mrczbkty-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrab6uln001704lecuyi6ao8-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrab82rd000004l2f5zaondw",
+    "name": "Peanut Butter & Mixed Berry Spread — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrab82rd000004l2f5zaondw/main-mrdn5qhj-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrab82rd000004l2f5zaondw-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrabamzb001d04le6vi8089k",
+    "name": "Peanut Butter & Chocolate Flavored Sprea — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrabamzb001d04le6vi8089k/main-mrczd264-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrabamzb001d04le6vi8089k-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrabe5nj001j04ledpkdn2ax",
+    "name": "Peanut Butter & Strawberry Jam Protein — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrabe5nj001j04ledpkdn2ax/main-mrczep7r-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrabe5nj001j04ledpkdn2ax-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrabei4t001l04lea7uhmycd",
+    "name": "Peanut Butter & Raspberry Spread — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrabei4t001l04lea7uhmycd/main-mrczg7nk-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrabei4t001l04lea7uhmycd-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrabgasb001r04lefspxv19j",
+    "name": "Peanut Butter & Honey Spread — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrabgasb001r04lefspxv19j/main-mrczhnch-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrabgasb001r04lefspxv19j-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrabh3vu001x04le0w3a05p7",
+    "name": "Whole Wheat Peanut Butter & Strawberry J — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrabh3vu001x04le0w3a05p7/main-mrczjcha-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrabh3vu001x04le0w3a05p7-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrabk7r7000604l2aadssm2r",
+    "name": "Peanut Butter — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrabk7r7000604l2aadssm2r/main-mrczl4n9-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrabk7r7000604l2aadssm2r-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbdllmg000004l70ki1liac",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbdllmg000004l70ki1liac/main-mrczmxlq-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbdllmg000004l70ki1liac-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbdn51y000604l790isbdv9",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbdn51y000604l790isbdv9/main-mrczom8c-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbdn51y000604l790isbdv9-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbds0i4000c04l7ie9speew",
+    "name": "Morning Protein Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbds0i4000c04l7ie9speew/main-mrd6c7sl-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbds0i4000c04l7ie9speew-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbdte9a000i04l7f4rrwn4j",
+    "name": "Peanut Butter & Chocolate Flavored Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbdte9a000i04l7f4rrwn4j/main-mrczta8x-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbdte9a000i04l7f4rrwn4j-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbduq9b000o04l7ygvw61y2",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbduq9b000o04l7ygvw61y2/main-mrczv2xb-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbduq9b000o04l7ygvw61y2-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbdyfr5000u04l7w60k7dh5",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbdyfr5000u04l7w60k7dh5/main-mrczwr93-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbdyfr5000u04l7w60k7dh5-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbe06hp001004l7k9pyxpz9",
+    "name": "Morning Protein Peanut Butter & Mixed Berry Spread — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbe06hp001004l7k9pyxpz9/main-mrd6corb-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbe06hp001004l7k9pyxpz9-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbe4vup001604l7rrzapo8a",
+    "name": "Peanut Butter & Chocolate Flavored Spread — 30 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbe4vup001604l7rrzapo8a/main-mrd032jm-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbe4vup001604l7rrzapo8a-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbe64gg001c04l75l5lwxg1",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbe64gg001c04l75l5lwxg1/main-mrd04lgf-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbe64gg001c04l75l5lwxg1-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbe7r54001i04l7x0x68wdz",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbe7r54001i04l7x0x68wdz/main-mrd06umk-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbe7r54001i04l7x0x68wdz-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbebt4t000004l0i0v79cr9",
+    "name": "Morning Protein Peanut Butter & Mixed Berry Spread — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbebt4t000004l0i0v79cr9/main-mrd6cyvw-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbebt4t000004l0i0v79cr9-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbee4h4000604l0uuju66qt",
+    "name": "Peanut Butter & Chocolate Flavored Spread — 45 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbee4h4000604l0uuju66qt/main-mrd0bpo2-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbee4h4000604l0uuju66qt-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbei8wm000d04l0k2jg9xla",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbei8wm000d04l0k2jg9xla/main-mrd0d3x5-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbei8wm000d04l0k2jg9xla-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbej7hm000j04l0ek8qjgeq",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbej7hm000j04l0ek8qjgeq/main-mrd0f84y-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbej7hm000j04l0ek8qjgeq-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbejzr7000p04l0atwj3es6",
+    "name": "Chocolate Flavored Hazelnut Spread — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbejzr7000p04l0atwj3es6/main-mrd0ga5i-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbejzr7000p04l0atwj3es6-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbeonxk000v04l0jll0hjc4",
+    "name": "Peanut Butter & Blackberry Spread — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbeonxk000v04l0jll0hjc4/main-mrd0hcrl-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbeonxk000v04l0jll0hjc4-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbeq615001104l0bgksx95j",
+    "name": "Morning Protein Peanut Butter & Mixed Berry Spread — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbeq615001104l0bgksx95j/main-mrd0ir9u-a2.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbeq615001104l0bgksx95j-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbev3hy001704l0xqdwruuo",
+    "name": "Peanut Butter & Strawberry Jam — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbev3hy001704l0xqdwruuo/main-mrd0lk5s-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbev3hy001704l0xqdwruuo-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbewdw5001d04l0h4m63om7",
+    "name": "Whole Wheat Peanut Butter & Grape Jelly — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbewdw5001d04l0h4m63om7/main-mrd0mqnx-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbewdw5001d04l0h4m63om7-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbf1j0s001j04l0njbopnyc",
+    "name": "Peanut Butter & Blueberry — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbf1j0s001j04l0njbopnyc/main-mrd0or7z-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbf1j0s001j04l0njbopnyc-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbf2yv0001p04l0bzehdlf0",
+    "name": "Peanut Butter & Grape Jelly — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbf2yv0001p04l0bzehdlf0/main-mrd0qvrm-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbf2yv0001p04l0bzehdlf0-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbf4q9y001v04l0grx8c61i",
+    "name": "Peanut Butter & Chocolate Flavored Spread — 90 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbf4q9y001v04l0grx8c61i/main-mrd0shqt-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbf4q9y001v04l0grx8c61i-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbf7n5i000004jpacsk7i5n",
+    "name": "Peanut Butter & Strawberry Jam Protein — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbf7n5i000004jpacsk7i5n/main-mrd0ua4d-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbf7n5i000004jpacsk7i5n-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbfaaez000604jp32k5nbvy",
+    "name": "Peanut Butter & Raspberry Spread — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbfaaez000604jp32k5nbvy/main-mrd0wme0-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbfaaez000604jp32k5nbvy-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbfdu7w000004kz0rjk8g33",
+    "name": "Peanut Butter & Honey Spread — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbfdu7w000004kz0rjk8g33/main-mrd0xlzj-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbfdu7w000004kz0rjk8g33-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbff9ne000604kzkgdx295f",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbff9ne000604kzkgdx295f/main-mrd0z1kw-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbff9ne000604kzkgdx295f-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbfgi49000c04kz8mz7earz",
+    "name": "Peanut Butter — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbfgi49000c04kz8mz7earz/main-mrd10y03-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbfgi49000c04kz8mz7earz-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbfkbiz000j04kzank27iz4",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbfkbiz000j04kzank27iz4/main-mrd11vze-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbfkbiz000j04kzank27iz4-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbflrd8000q04kzgg7d1m3d",
+    "name": "Chocolate Flavored Hazelnut Spread — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbflrd8000q04kzgg7d1m3d/main-mrd13i5k-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbflrd8000q04kzgg7d1m3d-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbfnaj3000w04kz68dn617p",
+    "name": "Peanut Butter & Blackberry Spread — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbfnaj3000w04kz68dn617p/main-mrd14vt8-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbfnaj3000w04kz68dn617p-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbfroox000004jpyg1paxc0",
+    "name": "Morning Protein Peanut Butter & Mixed Berry Spread — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbfroox000004jpyg1paxc0/main-mrd16tib-a2.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbfroox000004jpyg1paxc0-amazon_salutem/main-retry2.png"
+  },
+  {
+    "draft_id": "cmrbftb5h000604jpnab4kndc",
+    "name": "Peanut Butter & Strawberry Jam — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbftb5h000604jpnab4kndc/main-mrd1a1ms-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbftb5h000604jpnab4kndc-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbfxto5000004js6gfl6dx2",
+    "name": "Whole Wheat Peanut Butter & Grape Jelly — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbfxto5000004js6gfl6dx2/main-mrd1bipp-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbfxto5000004js6gfl6dx2-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbg0j3t000604js619v2h5p",
+    "name": "Peanut Butter & Blueberry — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbg0j3t000604js619v2h5p/main-mrd1d9uz-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbg0j3t000604js619v2h5p-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbg49e3005g04l62tik7nkd",
+    "name": "Peanut Butter & Grape Jelly — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbg49e3005g04l62tik7nkd/main-mrd1evjr-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbg49e3005g04l62tik7nkd-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbg544500bb04l6imviq0g6",
+    "name": "Peanut Butter & Chocolate Flavored Spread — 120 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbg544500bb04l6imviq0g6/main-mrd1gc5t-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbg544500bb04l6imviq0g6-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbg6m3000s504l6vk4gllyz",
+    "name": "Peanut Butter & Strawberry Jam Protein + Peanut Butter & Raspberry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbg6m3000s504l6vk4gllyz/main-mrd1hsvy-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbg6m3000s504l6vk4gllyz-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbgablh000004lavzu40hc3",
+    "name": "Peanut Butter & Strawberry Jam Protein + Peanut Butter & Honey Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbgablh000004lavzu40hc3/main-mrd1io3o-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbgablh000004lavzu40hc3-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbgc3xz000604latofie3pl",
+    "name": "Peanut Butter & Strawberry Jam Protein + Whole Wheat Peanut Butter & Strawberry Jam — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbgc3xz000604latofie3pl/main-mrd6da4y-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbgc3xz000604latofie3pl-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbgglld000004l6ay6wkpq6",
+    "name": "Peanut Butter & Strawberry Jam Protein + Peanut Butter — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbgglld000004l6ay6wkpq6/main-mrd1p01h-a3.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbgglld000004l6ay6wkpq6-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbgi500000604l6yc8wzrtj",
+    "name": "Peanut Butter & Strawberry Jam Protein + Peanut Butter & Apple Cinnamon Jelly Protein — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbgi500000604l6yc8wzrtj/main-mrd1rzfp-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbgi500000604l6yc8wzrtj-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbgn0z4000004l4dmfsrl4a",
+    "name": "Peanut Butter & Strawberry Jam Protein + Chocolate Flavored Hazelnut Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbgn0z4000004l4dmfsrl4a/main-mrd1tgev-a2.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbgn0z4000004l4dmfsrl4a-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbgook2000604l46g4v58tn",
+    "name": "Peanut Butter & Strawberry Jam Protein + Peanut Butter & Blackberry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbgook2000604l46g4v58tn/main-mrd1w6il-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbgook2000604l46g4v58tn-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbgtrtc000004l715c37d7e",
+    "name": "Peanut Butter & Strawberry Jam Protein + Morning Protein Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbgtrtc000004l715c37d7e/main-mrd6dndm-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbgtrtc000004l715c37d7e-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbgwplg000604l77rowrz87",
+    "name": "Peanut Butter & Strawberry Jam Protein + Peanut Butter & Strawberry Jam — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbgwplg000604l77rowrz87/main-mrd218rl-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbgwplg000604l77rowrz87-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbh06rw000c04l7r5es7yue",
+    "name": "Peanut Butter & Strawberry Jam Protein + Whole Wheat Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbh06rw000c04l7r5es7yue/main-mrd6e180-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbh06rw000c04l7r5es7yue-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbh3bvd000i04l72gmhyrgk",
+    "name": "Peanut Butter & Strawberry Jam Protein + Peanut Butter & Blueberry — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbh3bvd000i04l72gmhyrgk/main-mrd247dh-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbh3bvd000i04l72gmhyrgk-amazon_salutem/main-retry2.png"
+  },
+  {
+    "draft_id": "cmrbh6mcj000q04l7dt1dn9o0",
+    "name": "Peanut Butter & Strawberry Jam Protein + Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbh6mcj000q04l7dt1dn9o0/main-mrd25nzs-a3.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbh6mcj000q04l7dt1dn9o0-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbh7yra001504l7xfclfn12",
+    "name": "Peanut Butter & Strawberry Jam Protein + Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbh7yra001504l7xfclfn12/main-mrd29kp9-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbh7yra001504l7xfclfn12-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhd2lv000004jubrr4mtil",
+    "name": "Peanut Butter & Strawberry Jam Protein + Peanut Butter & Chocolate Flavored Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhd2lv000004jubrr4mtil/main-mrd6eck2-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhd2lv000004jubrr4mtil-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhg8xe000604juchukx2mo",
+    "name": "Peanut Butter & Raspberry Spread + Peanut Butter & Honey Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhg8xe000604juchukx2mo/main-mrd2ds6d-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhg8xe000604juchukx2mo-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhjh8e000a04juaxuo4k23",
+    "name": "Peanut Butter & Raspberry Spread + Whole Wheat Peanut Butter & Strawberry Jam — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhjh8e000a04juaxuo4k23/main-mrd6emmn-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhjh8e000a04juaxuo4k23-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhjn7b000e04jubobzfk97",
+    "name": "Peanut Butter & Raspberry Spread + Peanut Butter — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhjn7b000e04jubobzfk97/main-mrd2i4jc-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhjn7b000e04jubobzfk97-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhjtix000i04ju82pjsipw",
+    "name": "Peanut Butter & Raspberry Spread + Peanut Butter & Apple Cinnamon Jelly Protein — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhjtix000i04ju82pjsipw/main-mrd2j6bd-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhjtix000i04ju82pjsipw-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhjyyv000m04jur8nqwx6d",
+    "name": "Peanut Butter & Raspberry Spread + Chocolate Flavored Hazelnut Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhjyyv000m04jur8nqwx6d/main-mrd2jz39-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhjyyv000m04jur8nqwx6d-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhk3q1000q04jux1pgssa6",
+    "name": "Peanut Butter & Raspberry Spread + Peanut Butter & Blackberry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhk3q1000q04jux1pgssa6/main-mrd2lr5t-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhk3q1000q04jux1pgssa6-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhk9wy000u04ju1qepcrrb",
+    "name": "Peanut Butter & Raspberry Spread + Morning Protein Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhk9wy000u04ju1qepcrrb/main-mrd6ewfp-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhk9wy000u04ju1qepcrrb-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhkfzt000y04ju17hpqo7x",
+    "name": "Peanut Butter & Raspberry Spread + Peanut Butter & Strawberry Jam — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhkfzt000y04ju17hpqo7x/main-mrd2q03x-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhkfzt000y04ju17hpqo7x-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhkmeu001204juj2uyeum0",
+    "name": "Peanut Butter & Raspberry Spread + Whole Wheat Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhkmeu001204juj2uyeum0/main-mrd6f72k-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhkmeu001204juj2uyeum0-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhkugv001604jux3ouiwrk",
+    "name": "Peanut Butter & Raspberry Spread + Peanut Butter & Blueberry — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhkugv001604jux3ouiwrk/main-mrd2sw52-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhkugv001604jux3ouiwrk-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhl12i001a04jull2x7tlb",
+    "name": "Peanut Butter & Raspberry Spread + Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhl12i001a04jull2x7tlb/main-mrd2ujeu-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhl12i001a04jull2x7tlb-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhl6u9001e04jug3r1qet2",
+    "name": "Peanut Butter & Raspberry Spread + Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhl6u9001e04jug3r1qet2/main-mrd2vyqd-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhl6u9001e04jug3r1qet2-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhlc25001i04juo00p4n32",
+    "name": "Peanut Butter & Raspberry Spread + Peanut Butter & Chocolate Flavored Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhlc25001i04juo00p4n32/main-mrd6fhdj-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhlc25001i04juo00p4n32-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhlhlr001m04ju8zrw2ngh",
+    "name": "Peanut Butter & Honey Spread + Whole Wheat Peanut Butter & Strawberry Jam — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhlhlr001m04ju8zrw2ngh/main-mrd6fr2y-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhlhlr001m04ju8zrw2ngh-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhlouz001q04ju1y85xbsi",
+    "name": "Peanut Butter & Honey Spread + Peanut Butter — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhlouz001q04ju1y85xbsi/main-mrd38ws0-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhlouz001q04ju1y85xbsi-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhlu9z001u04jupk1vb70l",
+    "name": "Peanut Butter & Honey Spread + Peanut Butter & Apple Cinnamon Jelly Protein — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhlu9z001u04jupk1vb70l/main-mrd3apl7-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhlu9z001u04jupk1vb70l-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhlzcx001y04ju6ek7rswa",
+    "name": "Peanut Butter & Honey Spread + Chocolate Flavored Hazelnut Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhlzcx001y04ju6ek7rswa/main-mrd3ce7w-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhlzcx001y04ju6ek7rswa-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhm7n6002204jund89zm7h",
+    "name": "Peanut Butter & Honey Spread + Peanut Butter & Blackberry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhm7n6002204jund89zm7h/main-mrd3e66r-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhm7n6002204jund89zm7h-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhmgjv002604juhqpn13o3",
+    "name": "Peanut Butter & Honey Spread + Morning Protein Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhmgjv002604juhqpn13o3/main-mrd6gbxd-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhmgjv002604juhqpn13o3-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhmneu002a04juewfad4kv",
+    "name": "Peanut Butter & Honey Spread + Peanut Butter & Strawberry Jam — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhmneu002a04juewfad4kv/main-mrd3kwbf-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhmneu002a04juewfad4kv-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhr54u002g04juxu9g3nsb",
+    "name": "Peanut Butter & Honey Spread + Whole Wheat Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhr54u002g04juxu9g3nsb/main-mrd6glpf-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhr54u002g04juxu9g3nsb-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhrb45002k04ju0fqwdtxk",
+    "name": "Peanut Butter & Honey Spread + Peanut Butter & Blueberry — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhrb45002k04ju0fqwdtxk/main-mrd3ru4k-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhrb45002k04ju0fqwdtxk-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhrh3b002o04juneoneyyo",
+    "name": "Peanut Butter & Honey Spread + Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhrh3b002o04juneoneyyo/main-mrd3t1ny-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhrh3b002o04juneoneyyo-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhrmu1002s04jutzzxgtdx",
+    "name": "Peanut Butter & Honey Spread + Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhrmu1002s04jutzzxgtdx/main-mrd3tyke-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhrmu1002s04jutzzxgtdx-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhrs2y002w04judp0mzut8",
+    "name": "Peanut Butter & Honey Spread + Peanut Butter & Chocolate Flavored Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhrs2y002w04judp0mzut8/main-mrd6gvup-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhrs2y002w04judp0mzut8-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhrxyh003004jun4uxd8pd",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam + Peanut Butter — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhrxyh003004jun4uxd8pd/main-mrd3z610-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhrxyh003004jun4uxd8pd-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhs5a6003404jursei7aad",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam + Peanut Butter & Apple Cinnamon Jelly Protein — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhs5a6003404jursei7aad/main-mrd6h6mv-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhs5a6003404jursei7aad-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhsadu003804juf9z7w1yo",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam + Chocolate Flavored Hazelnut Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhsadu003804juf9z7w1yo/main-mrd6hhxf-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhsadu003804juf9z7w1yo-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhsh4p003c04jum5nd4j5z",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam + Peanut Butter & Blackberry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhsh4p003c04jum5nd4j5z/main-mrd6hsii-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhsh4p003c04jum5nd4j5z-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhsmu4003g04juqqw7yqjd",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam + Morning Protein Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhsmu4003g04juqqw7yqjd/main-mrd6i2y3-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhsmu4003g04juqqw7yqjd-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhsvfg003k04ju0ampc3qu",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam + Peanut Butter & Strawberry Jam — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhsvfg003k04ju0ampc3qu/main-mrd6icr5-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhsvfg003k04ju0ampc3qu-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbht1bo003o04ju61jq9pyc",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam + Whole Wheat Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbht1bo003o04ju61jq9pyc/main-mrd6insb-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbht1bo003o04ju61jq9pyc-amazon_salutem/main-retry2.png"
+  },
+  {
+    "draft_id": "cmrbht6d6003s04ju6vf0v5ps",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam + Peanut Butter & Blueberry — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbht6d6003s04ju6vf0v5ps/main-mrd6iyjz-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbht6d6003s04ju6vf0v5ps-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhtccl003w04jum0wiyq5b",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam + Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhtccl003w04jum0wiyq5b/main-mrd6j80l-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhtccl003w04jum0wiyq5b-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhth8n004004ju7r8tgchz",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam + Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhth8n004004ju7r8tgchz/main-mrd4o5ht-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhth8n004004ju7r8tgchz-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhtm5d004404juy8xsji51",
+    "name": "Whole Wheat Peanut Butter & Strawberry Jam + Peanut Butter & Chocolate Flavored Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhtm5d004404juy8xsji51/main-mrd6ji8m-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhtm5d004404juy8xsji51-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhtruw004804juhph1q7th",
+    "name": "Peanut Butter + Peanut Butter & Apple Cinnamon Jelly Protein — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhtruw004804juhph1q7th/main-mrd4s73w-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhtruw004804juhph1q7th-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhtxs2004c04juhmca4p6q",
+    "name": "Peanut Butter + Chocolate Flavored Hazelnut Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhtxs2004c04juhmca4p6q/main-mrd4tgyx-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhtxs2004c04juhmca4p6q-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhu43o004g04ju71ltmch6",
+    "name": "Peanut Butter + Peanut Butter & Blackberry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhu43o004g04ju71ltmch6/main-mrd4ujz0-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhu43o004g04ju71ltmch6-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhu9dl004k04juek5qtz78",
+    "name": "Peanut Butter + Morning Protein Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhu9dl004k04juek5qtz78/main-mrd6jsea-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhu9dl004k04juek5qtz78-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhwc4f004o04ju1dy1hna1",
+    "name": "Peanut Butter + Peanut Butter & Strawberry Jam — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhwc4f004o04ju1dy1hna1/main-mrd4xnnz-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhwc4f004o04ju1dy1hna1-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhwh5f004s04juxhxsq3vm",
+    "name": "Peanut Butter + Whole Wheat Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhwh5f004s04juxhxsq3vm/main-mrd6k3ih-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhwh5f004s04juxhxsq3vm-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhwmsm004w04juv3z3ivqk",
+    "name": "Peanut Butter + Peanut Butter & Blueberry — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhwmsm004w04juv3z3ivqk/main-mrd53kgu-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhwmsm004w04juv3z3ivqk-amazon_salutem/main-retry2.png"
+  },
+  {
+    "draft_id": "cmrbhwrm2005004ju2m1iabk0",
+    "name": "Peanut Butter + Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhwrm2005004ju2m1iabk0/main-mrd55jog-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhwrm2005004ju2m1iabk0-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhwwn4005404ju6wq4lc5w",
+    "name": "Peanut Butter + Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhwwn4005404ju6wq4lc5w/main-mrd56ekj-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhwwn4005404ju6wq4lc5w-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhx1oz005804juvhq6zk7q",
+    "name": "Peanut Butter + Peanut Butter & Chocolate Flavored Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhx1oz005804juvhq6zk7q/main-mrd6kf62-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhx1oz005804juvhq6zk7q-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhx7vg005c04ju3i2mqtr5",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein + Chocolate Flavored Hazelnut Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhx7vg005c04ju3i2mqtr5/main-mrd5a6qu-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhx7vg005c04ju3i2mqtr5-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhxctr005g04jukrvlr3m4",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein + Peanut Butter & Blackberry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhxctr005g04jukrvlr3m4/main-mrd5b1cm-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhxctr005g04jukrvlr3m4-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhxhjv005k04jucvzqizth",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein + Morning Protein Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhxhjv005k04jucvzqizth/main-mrd6krqo-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhxhjv005k04jucvzqizth-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhxmlb005o04jutndj6ivo",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein + Peanut Butter & Strawberry Jam — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhxmlb005o04jutndj6ivo/main-mrd5firo-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhxmlb005o04jutndj6ivo-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhxtcy005s04judxsbxys4",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein + Whole Wheat Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhxtcy005s04judxsbxys4/main-mrd6l2j9-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhxtcy005s04judxsbxys4-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhxyju005w04juz2ye8vh8",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein + Peanut Butter & Blueberry — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhxyju005w04juz2ye8vh8/main-mrd5julf-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhxyju005w04juz2ye8vh8-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhy459006004jug0p8nz8p",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein + Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhy459006004jug0p8nz8p/main-mrd5l69p-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhy459006004jug0p8nz8p-amazon_salutem/main-retry3.png"
+  },
+  {
+    "draft_id": "cmrbhy9sv006404ju35bjwlok",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein + Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhy9sv006404ju35bjwlok/main-mrd5mdqe-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhy9sv006404ju35bjwlok-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhyeyu006804juwowvy8cr",
+    "name": "Peanut Butter & Apple Cinnamon Jelly Protein + Peanut Butter & Chocolate Flavored Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhyeyu006804juwowvy8cr/main-mrd6lcpk-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhyeyu006804juwowvy8cr-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhyjmd006c04juvxqde326",
+    "name": "Chocolate Flavored Hazelnut Spread + Peanut Butter & Blackberry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhyjmd006c04juvxqde326/main-mrd5qzgu-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhyjmd006c04juvxqde326-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhyood006g04ju4cqerjhn",
+    "name": "Chocolate Flavored Hazelnut Spread + Morning Protein Peanut Butter & Mixed Berry Spread — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhyood006g04ju4cqerjhn/main-mrd5s1fd-a3.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhyood006g04ju4cqerjhn-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhytx0006k04juywpc1quw",
+    "name": "Chocolate Flavored Hazelnut Spread + Peanut Butter & Strawberry Jam — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhytx0006k04juywpc1quw/main-mrd5v0aa-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhytx0006k04juywpc1quw-amazon_salutem/main-retry2.png"
+  },
+  {
+    "draft_id": "cmrbhyymr006o04jurn6s8w86",
+    "name": "Chocolate Flavored Hazelnut Spread + Whole Wheat Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhyymr006o04jurn6s8w86/main-mrd5vcmt-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhyymr006o04jurn6s8w86-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhz446006s04ju0s48j3um",
+    "name": "Chocolate Flavored Hazelnut Spread + Peanut Butter & Blueberry — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhz446006s04ju0s48j3um/main-mrd5vo9e-a1.png",
+    "cooler": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/draft-cmrbhz446006s04ju0s48j3um-amazon_salutem/main.png"
+  },
+  {
+    "draft_id": "cmrbhzcea006w04ju01t9ub47",
+    "name": "Chocolate Flavored Hazelnut Spread + Peanut Butter & Grape Jelly — 24 ct",
+    "composite": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bf-composite/draft-cmrbhzcea006w04ju01t9ub47/main-mrd5w8s2-a1.png",
+    "cooler": null
+  }
+]

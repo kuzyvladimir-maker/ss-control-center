@@ -1,0 +1,104 @@
+к перегенерации: 97 · доноров-замен: 76 (CONC 4)
+
+  [5/97] ok 5 · donorFail 0 · tileFail 0 · err 0
+  [10/97] ok 9 · donorFail 1 · tileFail 0 · err 0
+  [15/97] ok 13 · donorFail 2 · tileFail 0 · err 0
+  [20/97] ok 16 · donorFail 4 · tileFail 0 · err 0
+  [25/97] ok 20 · donorFail 5 · tileFail 0 · err 0
+  [30/97] ok 25 · donorFail 5 · tileFail 0 · err 0
+  [35/97] ok 29 · donorFail 5 · tileFail 1 · err 0
+  [40/97] ok 32 · donorFail 6 · tileFail 2 · err 0
+  [45/97] ok 37 · donorFail 6 · tileFail 2 · err 0
+  [50/97] ok 41 · donorFail 7 · tileFail 2 · err 0
+  [55/97] ok 46 · donorFail 7 · tileFail 2 · err 0
+  [60/97] ok 49 · donorFail 8 · tileFail 3 · err 0
+  [65/97] ok 54 · donorFail 8 · tileFail 3 · err 0
+  [70/97] ok 57 · donorFail 9 · tileFail 4 · err 0
+  [75/97] ok 62 · donorFail 9 · tileFail 4 · err 0
+  [80/97] ok 67 · donorFail 9 · tileFail 4 · err 0
+  [85/97] ok 69 · donorFail 12 · tileFail 4 · err 0
+  [90/97] ok 74 · donorFail 12 · tileFail 4 · err 0
+  [95/97] ok 77 · donorFail 14 · tileFail 4 · err 0
+  [97/97] ok 78 · donorFail 14 · tileFail 5 · err 0
+
+=== FIX-GEN === GEN_OK 80 · SUGGEST_BAD 0 · DONOR_FAIL 15 · TILE_FAIL 5 · ERR 0
+  ✓ FaisalX-1160 q2  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1160/main-fix1.png
+  ✓ FaisalX-1130 q2  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1130/main-fix1.png
+  ✓ FaisalX-1181 q2  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1181/main-fix1.png
+  ✓ FaisalX-1196 q2  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1196/main-fix1.png
+  ✓ FaisalX-1208 q2  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1208/main-fix1.png
+  ✓ FaisalX-1202 q2  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1202/main-fix1.png
+  ✓ FaisalX-1283 q2  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1283/main-fix1.png
+  ✓ FaisalX-1183 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1183/main-fix1.png
+  ✓ FaisalX-1310 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1310/main-fix1.png
+  ✓ FaisalX-1961 q3  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1961/main-fix1.png
+  ✓ FaisalX-1755 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1755/main-fix1.png
+  ✓ FaisalX-1833 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1833/main-fix1.png
+  ✓ FaisalX-1357 q3  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1357/main-fix1.png
+  ✓ FaisalX-2495 q2  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2495/main-fix1.png
+  ✓ FaisalX-307 q3  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-307/main-fix1.png
+  ✓ FaisalX-288 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-288/main-fix1.png
+  ✓ FaisalX-220 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-220/main-fix1.png
+  ✓ FaisalX-313 q9  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-313/main-fix1.png
+  ✓ FaisalX-2223 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2223/main-fix1.png
+  ✓ FaisalX-246 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-246/main-fix1.png
+  ✓ FaisalX-240 q2  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-240/main-fix1.png
+  ✓ FaisalX-2596 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2596/main-fix1.png
+  ✓ FaisalX-2534 q2  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2534/main-fix1.png
+  ✓ FaisalX-2530 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2530/main-fix1.png
+  ✓ FaisalX-2509 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2509/main-fix1.png
+  ✓ FaisalX-3327 q10  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3327/main-fix1.png
+  ✓ FaisalX-3501 q10  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3501/main-fix1.png
+  ✓ FaisalX-3528 q10  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3528/main-fix1.png
+  ✓ FaisalX-306 q2  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-306/main-fix1.png
+  ✓ FaisalX-3551 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3551/main-fix1.png
+  ✓ FaisalX-3540 q10  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3540/main-fix1.png
+  ✓ FaisalX-3545 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3545/main-fix1.png
+  ✓ FaisalX-3561 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3561/main-fix1.png
+  ✓ FaisalX-3563 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3563/main-fix1.png
+  ✓ FaisalX-3587 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3587/main-fix1.png
+  ✓ FaisalX-3568 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3568/main-fix1.png
+  ✓ FaisalX-3560 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3560/main-fix1.png
+  ✓ FaisalX-3576 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3576/main-fix1.png
+  ✓ FaisalX-3617 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3617/main-fix1.png
+  ✓ FaisalX-3614 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3614/main-fix1.png
+  ✓ FaisalX-3620 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3620/main-fix1.png
+  ✓ FaisalX-201 q7  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-201/main-fix1.png
+  ✓ FaisalX-198 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-198/main-fix1.png
+  ✓ FaisalX-1639 q7  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1639/main-fix1.png
+  ✓ FaisalX-2295 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2295/main-fix1.png
+  ✓ FaisalX-2773 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2773/main-fix1.png
+  ✓ FaisalX-2296 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2296/main-fix1.png
+  ✓ FaisalX-2285 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2285/main-fix1.png
+  ✓ FaisalX-2766 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2766/main-fix1.png
+  ✓ FaisalX-2728 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2728/main-fix1.png
+  ✓ FaisalX-2767 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2767/main-fix1.png
+  ✓ FaisalX-3714 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3714/main-fix1.png
+  ✓ FaisalX-3539 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3539/main-fix1.png
+  ✓ FaisalX-3665 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3665/main-fix1.png
+  ✓ FaisalX-3712 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3712/main-fix1.png
+  ✓ FaisalX-3740 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3740/main-fix1.png
+  ✓ FaisalX-3720 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3720/main-fix1.png
+  ✓ FaisalX-3880 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3880/main-fix1.png
+  ✓ FaisalX-3872 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3872/main-fix1.png
+  ✓ FaisalX-3881 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3881/main-fix1.png
+  ✓ FaisalX-3865 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3865/main-fix1.png
+  ✓ FaisalX-4008 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4008/main-fix1.png
+  ✓ FaisalX-4007 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4007/main-fix1.png
+  ✓ FaisalX-4050 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4050/main-fix1.png
+  ✓ FaisalX-4025 q6  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4025/main-fix1.png
+  ✓ FaisalX-4137 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4137/main-fix1.png
+  ✓ FaisalX-4254 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4254/main-fix1.png
+  ✓ FaisalX-4215 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4215/main-fix1.png
+  ✓ FaisalX-4065 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4065/main-fix1.png
+  ✓ FaisalX-4526 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4526/main-fix1.png
+  ✓ FaisalX-4622 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4622/main-fix1.png
+  ✓ FaisalX-4592 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4592/main-fix1.png
+  ✓ FaisalX-4580 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4580/main-fix1.png
+  ✓ FaisalX-4604 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4604/main-fix1.png
+  ✓ FaisalX-4589 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4589/main-fix1.png
+  ✓ FaisalX-4625 q8  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4625/main-fix1.png
+  ✓ FaisalX-4602 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4602/main-fix1.png
+  ✓ FaisalX-4797 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4797/main-fix1.png
+  ✓ FaisalX-4779 q4  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4779/main-fix1.png
+  ✓ FaisalX-1641 q5  https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1641/main-fix1.png
