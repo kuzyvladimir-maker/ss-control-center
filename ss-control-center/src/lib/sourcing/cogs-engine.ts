@@ -146,7 +146,12 @@ function brandTokens(...parts: (string | undefined)[]): string[] {
 // FORM/CATEGORY guard for sibling matches: a donor that introduces a form the target
 // never mentioned is a DIFFERENT product category — Dove Promises candy must not be
 // priced off Dove ICE-CREAM bars just because brand+size matched (audit error).
-const FORM_MARKERS = ["frozen", "ice cream", "dessert", "gelato", "sorbet", "popsicle", "drink mix", "powder", "liquid", "k-cup", "pods", "dog", "cat", "shampoo", "detergent"];
+// NOTE: "frozen"/"refrigerated" are STORAGE words, not different products — a donor
+// titled "Jimmy Dean FROZEN Breakfast Sandwiches" is the same item as our "Jimmy Dean
+// Breakfast Sandwiches". Listing them here rejected every legitimate frozen donor
+// (Publix, the only retailer that stocks frozen) → the whole frozen catalog fell to a
+// false UNSOURCEABLE. Only keep markers that change WHAT the product is.
+const FORM_MARKERS = ["ice cream", "gelato", "sorbet", "popsicle", "drink mix", "powder", "k-cup", "pods", "dog", "cat", "shampoo", "detergent"];
 function formMismatch(ourText: string, donorTitle: string): boolean {
   const a = ourText.toLowerCase(), b = (donorTitle || "").toLowerCase();
   return FORM_MARKERS.some((mk) => b.includes(mk) && !a.includes(mk));
@@ -213,6 +218,15 @@ async function cheapestCostForTarget(
       })).rows as any[]);
       if (sib) return hit(sib, true);
     }
+
+    // TIER 4 — DONOR size unknown. Publix/Instacart titles routinely omit the size
+    // ("Jimmy Dean English Muffin Breakfast Sandwiches with Sausage" — no "36.8 oz"),
+    // so dp.unitAmount is NULL and every size-gated tier above rejects them. That
+    // silently condemned FROZEN — which is sold in-store only, i.e. ONLY Publix has it —
+    // to a false UNSOURCEABLE. An exact brand+variant match with a real 1P shelf price
+    // is worth far more than nothing: take it as a flagged ESTIMATE.
+    const noSize = await pick(` AND dp.unitAmount IS NULL`, []);
+    if (noSize) return hit(noSize, true);
     return null;
   }
 
@@ -379,6 +393,9 @@ export async function costOneSku(db: Client, opts: CostOptions): Promise<CostRes
         // re-enable without a slow rate-limit + his explicit OK.
         // SS_SKIP_CLUBS=1 drops Sam's/Costco (10cr each) — the credit drain, mostly on
         // items that still end unsourceable. Club-only tail becomes a targeted pass.
+        // Tier "hit" = TIGHT brand+variant match (same test as the cost readback), so a
+        // near-miss at Target can't short-circuit Publix (which carries frozen).
+        matchSpec: { brandToks: t.brandToks?.length ? t.brandToks : (t.brandTok ? [t.brandTok] : []), tokens: t.tokens, sizeAmount: t.sizeAmount },
         unwrangleRetailers: process.env.SS_SKIP_CLUBS === "1" ? ["target"] : ["target", "samsclub", "costco"],
         openClawRetailers: opts.openClawRetailers || ["publix"],
         allowNonGrocery: true, // COGS engine costs ANY resale product (food + household)

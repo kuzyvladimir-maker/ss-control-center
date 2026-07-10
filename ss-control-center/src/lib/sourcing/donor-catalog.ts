@@ -530,9 +530,44 @@ export interface EnrichTargetResult {
 // run only when `unwrangleRetailers` is passed (i.e. when that sub is paid).
 export async function enrichTarget(
   db: Client,
-  opts: { target: string; brand?: string | null; zip?: string | null; unwrangleRetailers?: ("walmart" | "target" | "samsclub" | "costco")[]; oxylabsRetailers?: OxylabsRetailer[]; openClawRetailers?: OpenClawRetailer[]; allowNonGrocery?: boolean },
+  opts: { target: string; brand?: string | null; zip?: string | null; unwrangleRetailers?: ("walmart" | "target" | "samsclub" | "costco")[]; oxylabsRetailers?: OxylabsRetailer[]; openClawRetailers?: OpenClawRetailer[]; allowNonGrocery?: boolean; matchSpec?: { brandToks: string[]; tokens: string[]; sizeAmount?: number | null } },
 ): Promise<EnrichTargetResult> {
   const cp: CanonicalProduct = { brand: (opts.brand || opts.target.split(/\s+/).slice(0, 2).join(" ")) || undefined };
+
+  // A tier "hits" ONLY when it returns an offer that TIGHTLY matches the product —
+  // the same brand+variant test the cost readback (cheapestCostForTarget) applies.
+  // Before this, a loose QA-accepted near-miss (Target's "Jimmy Dean DELIGHTS Turkey
+  // Sausage" for our "English Muffin Sausage Egg & Cheese") short-circuited the
+  // escalation, so Publix — which HAS the frozen item at $7.75 — was never asked, and
+  // the strict cost match then rejected the near-miss → a false UNSOURCEABLE. Frozen
+  // (never sold 1P online) was the biggest victim.
+  // The predicate MUST mirror what the cost readback will accept, or a tier "hits" on
+  // an offer the cost step later rejects → escalation stopped for nothing → false
+  // UNSOURCEABLE. Cost needs: accepted + FIRST-PARTY + brand + variant tokens + a size
+  // within the cross-size band (0.25x–4x). Frozen was the biggest victim: a same-brand
+  // Walmart near-miss stopped the walk before Publix (which stocks it).
+  const strictHit = (scored: ScoredOffer[]): boolean => {
+    const ms = opts.matchSpec;
+    return scored.some((o) => {
+      if (!o.accepted) return false;
+      if (o.isMarketplaceItem !== false) return false; // must be EXPLICIT 1P (cost needs isFirstParty=1)
+      if (o.inStock === false) return false;   // cost readback excludes OOS. Frozen shows on
+      if (o.price == null) return false;       // walmart.com as 1P-but-not-shippable → it must
+      //                                          NOT stop the walk before Publix (which stocks it).
+      if (!ms || (!ms.brandToks.length && !ms.tokens.length)) return true;
+      const t = String(o.title || "").toLowerCase();
+      if (!ms.brandToks.every((b) => t.includes(b))) return false;
+      if (!ms.tokens.every((k) => t.includes(k))) return false;
+      // Size must be COSTABLE, not necessarily exact: the readback prices anything in
+      // the 0.25x–4x cross-size band, and a size-less donor (Publix omits sizes) via
+      // TIER-4. Demanding ±10% here sent every near-miss down to the 10-credit clubs.
+      if (ms.sizeAmount) {
+        const os = parseSize(o.title).unitAmount;
+        if (os && (os / ms.sizeAmount < 0.25 || os / ms.sizeAmount > 4)) return false;
+      }
+      return true;
+    });
+  };
   const now = new Date().toISOString();
   const retailersHit: string[] = [];
   const createdProductIds: string[] = [];
@@ -554,10 +589,10 @@ export async function enrichTarget(
       const scored = ox.offers.map((o) => scoreOffer(o, cp));
       retailersHit.push("walmart");
       batches.push({ offers: scored });
-      // Covered ONLY if Walmart returned a USABLE (accepted, clean 1P) offer. If Walmart
-      // lists it only via 3P resellers (incl our own STARFITSTORE), we are NOT covered →
+      // Covered ONLY if Walmart returned a TIGHTLY-MATCHING accepted 1P offer. A 3P-only
+      // listing (incl our own STARFITSTORE) or a near-miss variant → NOT covered →
       // escalate to Target/Publix where the real shelf price is.
-      if (scored.some((o) => o.accepted)) walmartCovered = true;
+      if (strictHit(scored)) walmartCovered = true;
     }
   } catch { /* Oxylabs unavailable — escalation below */ }
   // ESCALATION — only when Walmart 1P MISSED (cheapest-first, stop-on-hit). This is
@@ -577,7 +612,7 @@ export async function enrichTarget(
             const scored = uw.offers.map((o) => scoreOffer(o, cp));
             if (!retailersHit.includes(r)) retailersHit.push(r);
             batches.push({ offers: scored });
-            if (scored.some((o) => o.accepted)) escalationHit = true;
+            if (strictHit(scored)) escalationHit = true;
           }
         }
       } catch { /* skip this retailer on error */ }
@@ -590,7 +625,7 @@ export async function enrichTarget(
       for (const r of opts.openClawRetailers ?? []) {
         try {
           const oc = await openClawSearch(r, opts.target, opts.zip ?? "33765");
-          if (!oc.trialExhausted && oc.offers.length) { const scored = oc.offers.map((o) => scoreOffer(o, cp)); if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: scored }); if (scored.some((o) => o.accepted)) escalationHit = true; }
+          if (!oc.trialExhausted && oc.offers.length) { const scored = oc.offers.map((o) => scoreOffer(o, cp)); if (!retailersHit.includes(r)) retailersHit.push(r); batches.push({ offers: scored }); if (strictHit(scored)) escalationHit = true; }
         } catch { /* skip this source on error */ }
       }
     }
