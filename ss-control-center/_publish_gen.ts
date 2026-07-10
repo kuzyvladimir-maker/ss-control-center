@@ -6,6 +6,7 @@
 // from the hourly cron) as the drip produces more GEN_OK tiles — non-destructive.
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { randomUUID } from "node:crypto";
+import { acquireStateLock } from "./_statelock.ts";
 for (const f of [".env", ".env.local"]) { let t = ""; try { t = readFileSync(f, "utf8"); } catch { continue; } for (const l of t.split("\n")) { const m = l.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/); if (m) process.env[m[1]] = m[2].trim().replace(/^['"]|['"]$/g, ""); } }
 
 const GEN = "_gen_enriched_state.json";
@@ -16,6 +17,15 @@ const LIMIT = process.argv[2] ? Number(process.argv[2]) : Infinity;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
+  // Hold the state file for the whole run — _repoll_gen.ts mutates the same JSON and the
+  // cron fires both in one tick. It skips while we hold; we never start on top of it.
+  let release: () => void;
+  try { release = acquireStateLock(STATE); }
+  catch { console.log(`${STATE} занят (идёт re-poll или другой публикатор) — выхожу`); return; }
+  try { await run(); } finally { release(); }
+}
+
+async function run() {
   const gen: Record<string, any> = JSON.parse(readFileSync(GEN, "utf8"));
   const state: Record<string, any> = existsSync(STATE) ? JSON.parse(readFileSync(STATE, "utf8")) : {};
   const save = () => writeFileSync(STATE, JSON.stringify(state, null, 1));

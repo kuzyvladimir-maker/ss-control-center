@@ -8,6 +8,7 @@
 // things worse. Resumable: skips applied/qarth/submitted.
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { randomUUID } from "node:crypto";
+import { acquireStateLock } from "./_statelock.ts";
 for (const f of [".env", ".env.local"]) { let t = ""; try { t = readFileSync(f, "utf8"); } catch { continue; } for (const l of t.split("\n")) { const m = l.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/); if (m) process.env[m[1]] = m[2].trim().replace(/^['"]|['"]$/g, ""); } }
 
 // Defaults publish the batch remediation; SS_FIX_STATE / SS_PUB_STATE point it at a
@@ -20,6 +21,13 @@ const ONLY = (process.argv[2] || "").split(",").filter(Boolean); // optional exp
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
+  let release: () => void;
+  try { release = acquireStateLock(STATE); }
+  catch { console.log(`${STATE} занят (идёт re-poll или другой публикатор) — выхожу`); return; }
+  try { await run(); } finally { release(); }
+}
+
+async function run() {
   const gen: Record<string, any> = JSON.parse(readFileSync(GEN, "utf8"));
   const state: Record<string, any> = existsSync(STATE) ? JSON.parse(readFileSync(STATE, "utf8")) : {};
   const save = () => writeFileSync(STATE, JSON.stringify(state, null, 1));

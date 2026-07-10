@@ -2,16 +2,9 @@
 // ingestion routinely outruns the 15-min poll budget; this reads the real per-item
 // outcome without resubmitting anything. Cheap (feed GETs only), safe on the cron.
 import { readFileSync, writeFileSync } from "node:fs";
-import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { acquireStateLock } from "./_statelock.ts";
 for (const f of [".env", ".env.local"]) { let t = ""; try { t = readFileSync(f, "utf8"); } catch { continue; } for (const l of t.split("\n")) { const m = l.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/); if (m) process.env[m[1]] = m[2].trim().replace(/^['"]|['"]$/g, ""); } }
-
-/** See _repoll_gen.ts: publisher and re-poller share one state file; concurrent
- *  read→mutate→write loses updates. Skip the tick instead of corrupting it. */
-function publisherRunning(script: string): boolean {
-  try { return execSync(`pgrep -f "${script}" || true`, { encoding: "utf8" }).trim().length > 0; }
-  catch { return false; }
-}
 
 // Mirrors _publish_fix.ts: same env overrides so a one-off fix (_fix_sku_state.json /
 // _publish_sku_state.json) is re-polled by the same tooling as the batch remediation.
@@ -19,7 +12,13 @@ const GEN = process.env.SS_FIX_STATE || "_fix_gen_state.json";
 const PUB = process.env.SS_PUB_STATE || "_publish_fix_state.json";
 
 async function main() {
-  if (publisherRunning("_publish_fix.ts")) { console.log(`_publish_fix.ts ещё пишет ${PUB} — пропускаю тик (гонка за файл состояния)`); return; }
+  let release: () => void;
+  try { release = acquireStateLock(PUB); }
+  catch { console.log(`${PUB} занят публикатором — пропускаю тик, феды подберёт следующий`); return; }
+  try { await run(); } finally { release(); }
+}
+
+async function run() {
   const st: Record<string, any> = JSON.parse(readFileSync(PUB, "utf8"));
   const gen: Record<string, any> = JSON.parse(readFileSync(GEN, "utf8"));
   const { getWalmartClient } = await import("./src/lib/walmart/client.ts");
