@@ -28,6 +28,14 @@ function modifierMismatch(listing: string, donor: string): string {
   for (const m of MODIFIERS) if (L.has(m) !== D.has(m)) return m;
   return "";
 }
+/** Owner's rule (2026-07-10): no frozen goods on Walmart — frozen is Amazon-only. 0 of 4243
+ *  Walmart listings say "frozen", so a frozen donor here is a different product, not a storage
+ *  note. See _gen_enriched.ts for the full rationale; deliberately NOT a MODIFIERS entry. */
+const frozen = (s: string) => /\bfrozen\b/i.test(s || "");
+function frozenDonorMismatch(listing: string, donor: string): boolean {
+  return frozen(donor) && !frozen(listing);
+}
+
 /** The donor front is a SINGLE unit, so the multipack phrasing must go before we ask
  *  the single-unit gate whether the photo matches. qualifyTiledMain gets the full title. */
 function baseListingTitle(listing: string): string {
@@ -106,6 +114,7 @@ async function main() {
       // can never reach the tiler: "Whole Wheat" must not be replaced by "Honey Wheat".
       const mism = modifierMismatch(listing, d.title);
       if (mism) { state[sku] = { sku, status: "SUGGEST_BAD", reason: `replacement≠listing on "${mism}"`, listing, newDonorTitle: d.title }; donorFail++; return; }
+      if (frozenDonorMismatch(listing, d.title)) { state[sku] = { sku, status: "SUGGEST_BAD", reason: "frozen replacement donor for a Walmart listing", listing, newDonorTitle: d.title }; donorFail++; return; }
 
       const urls = [...new Set([d.main, ...d.gallery].filter(Boolean))];
       if (!urls.length) { state[sku] = { sku, status: "DONOR_FAIL", reason: "replacement donor has empty gallery" }; donorFail++; return; }

@@ -38,6 +38,21 @@ function modifierMismatch(listing: string, donor: string): string {
   return "";
 }
 
+/** Owner's rule (2026-07-10): **we sell no frozen goods on Walmart** — frozen is an Amazon-only
+ *  line (the Uncrustables cooler bundles). Confirmed in the catalog: 0 of 4243 Walmart listings
+ *  mention "frozen". So a frozen donor behind a Walmart listing is not a storage note, it is a
+ *  DIFFERENT PRODUCT. This fired the moment COGS's frozen fix (which correctly stopped discarding
+ *  frozen donors, for Amazon's sake) reached the Walmart catalog: a "Vegetable Blend 15 oz"
+ *  listing drew "Corn Cob Bites 16 oz (Frozen)", and "Carrots Sliced" drew "Veggie Tots".
+ *
+ *  Directional on purpose: reject a frozen donor unless the listing itself says frozen. Kept as
+ *  its own check rather than a MODIFIERS entry, because the reason is a channel policy, not a
+ *  word — pointing this generator at Amazon must NOT inherit it. */
+const frozen = (s: string) => /\bfrozen\b/i.test(s || "");
+function frozenDonorMismatch(listing: string, donor: string): boolean {
+  return frozen(donor) && !frozen(listing);
+}
+
 /** The listing title minus its multipack phrasing. The DONOR front is a SINGLE unit, so
  *  handing "…(Pack of 2)" to the single-unit gate makes it reject perfectly good fronts.
  *  qualifyTiledMain still gets the full title (it takes packCount separately). */
@@ -161,6 +176,10 @@ async function main() {
       const mism = modifierMismatch(listing, title);
       if (mism) {
         state[sku] = { sku, status: "VARIANT_MISMATCH", reason: `donor≠listing on "${mism}"`, listing, donorTitle: title };
+        needEnrich.push(sku); donorFail++; return;
+      }
+      if (frozenDonorMismatch(listing, title)) {
+        state[sku] = { sku, status: "VARIANT_MISMATCH", reason: "frozen donor for a Walmart listing (we sell no frozen on Walmart)", listing, donorTitle: title };
         needEnrich.push(sku); donorFail++; return;
       }
 
