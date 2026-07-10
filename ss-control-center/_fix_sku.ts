@@ -20,15 +20,8 @@ const PACK_ARG = process.argv[4] ? Number(process.argv[4]) : 0;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const isErr = (s: string) => /error/i.test(s || "");
 
-const MODIFIERS = ["diet", "zero", "decaf", "decaffeinated", "caffeine", "whole", "honey", "xxtra", "flamin", "unsweetened", "sugarfree", "lite", "reduced", "gluten", "organic", "spicy", "original", "classic", "smoked", "toasted"];
-const words = (s: string) => new Set((s || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean));
-const modifierMismatch = (l: string, d: string) => { const L = words(l), D = words(d); for (const m of MODIFIERS) if (L.has(m) !== D.has(m)) return m; return ""; };
-const frozen = (s: string) => /\bfrozen\b/i.test(s || "");
-const frozenDonorMismatch = (l: string, d: string) => frozen(d) && !frozen(l);
-const baseListingTitle = (l: string) => (l || "")
-  .replace(/\(?\s*pack\s+of\s+\d+\s*\)?/gi, " ").replace(/\b\d+\s*[-\s]?\s*pack\b/gi, " ")
-  .replace(/\bquantity\s+of\s+\d+\b/gi, " ").replace(/\b\d+\s*[-\s]?\s*ct\b/gi, " ")
-  .replace(/\b\d+\s*x\b/gi, " ").replace(/\s{2,}/g, " ").replace(/^[\s\-–,.]+|[\s\-–,]+$/g, "").trim();
+import { modifierMismatch, frozenDonorMismatch, baseListingTitle } from "./_gatewords.ts";
+
 /** "(Pack of 6)" / "6-Pack" / "Quantity of 6" — the number of RETAIL UNITS on the tile. */
 function packFromListing(l: string): number {
   const m = (l || "").match(/pack\s+of\s+(\d+)|(\d+)\s*[-\s]?pack\b|quantity\s+of\s+(\d+)/i);

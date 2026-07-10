@@ -21,34 +21,7 @@ const CONC = process.argv[3] ? Number(process.argv[3]) : 4;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const isErr = (s: string) => /error/i.test(s || "");
 
-const MODIFIERS = ["diet", "zero", "decaf", "decaffeinated", "caffeine", "whole", "honey", "xxtra", "flamin", "unsweetened", "sugarfree", "lite", "reduced", "gluten", "organic", "spicy", "original", "classic", "smoked", "toasted"];
-const words = (s: string) => new Set((s || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean));
-function modifierMismatch(listing: string, donor: string): string {
-  const L = words(listing), D = words(donor);
-  for (const m of MODIFIERS) if (L.has(m) !== D.has(m)) return m;
-  return "";
-}
-/** Owner's rule (2026-07-10): no frozen goods on Walmart — frozen is Amazon-only. 0 of 4243
- *  Walmart listings say "frozen", so a frozen donor here is a different product, not a storage
- *  note. See _gen_enriched.ts for the full rationale; deliberately NOT a MODIFIERS entry. */
-const frozen = (s: string) => /\bfrozen\b/i.test(s || "");
-function frozenDonorMismatch(listing: string, donor: string): boolean {
-  return frozen(donor) && !frozen(listing);
-}
-
-/** The donor front is a SINGLE unit, so the multipack phrasing must go before we ask
- *  the single-unit gate whether the photo matches. qualifyTiledMain gets the full title. */
-function baseListingTitle(listing: string): string {
-  return (listing || "")
-    .replace(/\(?\s*pack\s+of\s+\d+\s*\)?/gi, " ")
-    .replace(/\b\d+\s*[-\s]?\s*pack\b/gi, " ")
-    .replace(/\bquantity\s+of\s+\d+\b/gi, " ")
-    .replace(/\b\d+\s*[-\s]?\s*ct\b/gi, " ")
-    .replace(/\b\d+\s*x\b/gi, " ")
-    .replace(/\s{2,}/g, " ")
-    .replace(/^[\s\-–,.]+|[\s\-–,]+$/g, "")
-    .trim();
-}
+import { modifierMismatch, frozenDonorMismatch, baseListingTitle } from "./_gatewords.ts";
 
 async function main() {
   const sugg: any[] = JSON.parse(readFileSync("_suggested_donors.json", "utf8")).filter((x: any) => x.suggestions.length);

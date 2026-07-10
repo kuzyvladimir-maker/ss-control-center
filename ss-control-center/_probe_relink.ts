@@ -12,13 +12,7 @@
 import { readFileSync } from "node:fs";
 for (const f of [".env", ".env.local"]) { let t = ""; try { t = readFileSync(f, "utf8"); } catch { continue; } for (const l of t.split("\n")) { const m = l.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/); if (m) process.env[m[1]] = m[2].trim().replace(/^['"]|['"]$/g, ""); } }
 
-const MODIFIERS = ["diet", "zero", "decaf", "decaffeinated", "caffeine", "whole", "honey", "xxtra", "flamin", "unsweetened", "sugarfree", "lite", "reduced", "gluten", "organic", "spicy", "original", "classic", "smoked", "toasted"];
-const words = (s: string) => new Set((s || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean));
-function modifierMismatch(listing: string, donor: string): string {
-  const L = words(listing), D = words(donor);
-  for (const m of MODIFIERS) if (L.has(m) !== D.has(m)) return m;
-  return "";
-}
+import { modifierMismatch } from "./_gatewords.ts";
 
 async function main() {
   const gen: Record<string, any> = JSON.parse(readFileSync("_gen_enriched_state.json", "utf8"));

@@ -29,44 +29,9 @@ const isErr = (s: string) => /error/i.test(s || "");
 // Pepper" and the donor says "Diet Dr Pepper", they are not the same drink — no vision
 // call needed to know that. Asymmetric presence of ANY of these = wrong donor. Kept
 // deliberately small: only words that are never mere decoration.
-const MODIFIERS = ["diet", "zero", "decaf", "decaffeinated", "caffeine", "whole", "honey", "xxtra", "flamin", "unsweetened", "sugarfree", "lite", "reduced", "gluten", "organic", "spicy", "original", "classic", "smoked", "toasted"];
-const words = (s: string) => new Set((s || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean));
-/** Returns the offending modifier, or "" when listing and donor agree on all of them. */
-function modifierMismatch(listing: string, donor: string): string {
-  const L = words(listing), D = words(donor);
-  for (const m of MODIFIERS) if (L.has(m) !== D.has(m)) return m;
-  return "";
-}
-
-/** Owner's rule (2026-07-10): **we sell no frozen goods on Walmart** — frozen is an Amazon-only
- *  line (the Uncrustables cooler bundles). Confirmed in the catalog: 0 of 4243 Walmart listings
- *  mention "frozen". So a frozen donor behind a Walmart listing is not a storage note, it is a
- *  DIFFERENT PRODUCT. This fired the moment COGS's frozen fix (which correctly stopped discarding
- *  frozen donors, for Amazon's sake) reached the Walmart catalog: a "Vegetable Blend 15 oz"
- *  listing drew "Corn Cob Bites 16 oz (Frozen)", and "Carrots Sliced" drew "Veggie Tots".
- *
- *  Directional on purpose: reject a frozen donor unless the listing itself says frozen. Kept as
- *  its own check rather than a MODIFIERS entry, because the reason is a channel policy, not a
- *  word — pointing this generator at Amazon must NOT inherit it. */
-const frozen = (s: string) => /\bfrozen\b/i.test(s || "");
-function frozenDonorMismatch(listing: string, donor: string): boolean {
-  return frozen(donor) && !frozen(listing);
-}
-
-/** The listing title minus its multipack phrasing. The DONOR front is a SINGLE unit, so
- *  handing "…(Pack of 2)" to the single-unit gate makes it reject perfectly good fronts.
- *  qualifyTiledMain still gets the full title (it takes packCount separately). */
-function baseListingTitle(listing: string): string {
-  return (listing || "")
-    .replace(/\(?\s*pack\s+of\s+\d+\s*\)?/gi, " ")
-    .replace(/\b\d+\s*[-\s]?\s*pack\b/gi, " ")
-    .replace(/\bquantity\s+of\s+\d+\b/gi, " ")
-    .replace(/\b\d+\s*[-\s]?\s*ct\b/gi, " ")
-    .replace(/\b\d+\s*x\b/gi, " ")
-    .replace(/\s{2,}/g, " ")
-    .replace(/^[\s\-–,.]+|[\s\-–,]+$/g, "") // "2x-Foo" would leave a stray leading dash
-    .trim();
-}
+// Word-level gate lives in _gatewords.ts — one copy, so a fix (e.g. "Wholegrain" vs
+// "Whole Grain") lands everywhere at once instead of drifting between scripts.
+import { modifierMismatch, frozenDonorMismatch, baseListingTitle } from "./_gatewords.ts";
 
 async function main() {
   const newwork: any[] = JSON.parse(readFileSync("_newwork.json", "utf8"));
