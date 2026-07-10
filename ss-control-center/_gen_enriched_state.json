@@ -2699,7 +2699,7 @@
  },
  "FaisalX-2045": {
   "sku": "FaisalX-2045",
-  "status": "PUB_BLOCKED",
+  "status": "GEN_OK",
   "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2045/main-enriched.png",
   "qty": 3,
   "donorTitle": "Doritos Simply NKD No Dyes No Artificial Flavors Nacho Cheese Tortilla Chips Bag, 9.25 oz​",
@@ -2709,8 +2709,7 @@
    "variant": true
   },
   "tileReason": "Three front-facing single Doritos Simply NKD Nacho Cheese bags on a plain white background; matches ",
-  "listing": "Nacho Cheese Tortilla Chips, 9.25 oz- Pack of 3",
-  "reason": "Walmart rejects ingestion 3/3 with \"glitch on our end\"; item PUBLISHED/ACTIVE, image HTTP 200 — their side"
+  "listing": "Nacho Cheese Tortilla Chips, 9.25 oz- Pack of 3"
  },
  "FaisalX-2046": {
   "sku": "FaisalX-2046",

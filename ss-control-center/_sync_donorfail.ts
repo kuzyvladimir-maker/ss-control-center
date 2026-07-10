@@ -19,6 +19,13 @@ async function main() {
   // end-of-run flush ~12h later. Keep this list in sync with _gen_enriched.ts statuses.
   const FAIL_STATUSES = ["DONOR_FAIL", "TILE_FAIL", "VARIANT_MISMATCH"];
   const df = Object.keys(gen).filter((k) => FAIL_STATUSES.includes(gen[k].status));
+
+  // A fourth donor problem hiding inside ERR: the SKU has no row in EnrichedReadySku at
+  // all (COGS's donor was deleted, or its gallery went empty). Retrying the generator on
+  // these does nothing — only a re-harvest helps — so they belong in the queue as well.
+  // Other ERRs (vision retries) are genuinely transient; leave them for the next drip.
+  const noDonor = Object.keys(gen).filter((k) => gen[k].status === "ERR" && /not in EnrichedReadySku/.test(gen[k].reason || ""));
+  df.push(...noDonor);
   const { createClient } = await import("@libsql/client");
   const db = createClient({ url: process.env.TURSO_DATABASE_URL!, authToken: process.env.TURSO_AUTH_TOKEN });
   const ex = (await db.execute(`SELECT value FROM Setting WHERE key='enrich_priority_skus'`)).rows;
