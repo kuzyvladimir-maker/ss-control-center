@@ -61,8 +61,10 @@ async function main() {
   const vision = await import("./src/lib/sourcing/vision.ts");
   const { composeTiledMainImage, fetchImageBuffer, highResImageUrl } = await import("./src/lib/walmart/multipack/composite.ts");
   const { uploadToR2, multipackImageKey } = await import("./src/lib/walmart/multipack/r2.ts");
+  const { getWalmartClient } = await import("./src/lib/walmart/client.ts");
   const { createClient } = await import("@libsql/client");
   const db = createClient({ url: process.env.TURSO_DATABASE_URL!, authToken: process.env.TURSO_AUTH_TOKEN });
+  const wm = getWalmartClient(1);
 
   // Process NEVER-SEEN SKUs + prior vision-ERRors only. Do NOT re-chew settled
   // DONOR_FAIL/TILE_FAIL here — each re-does the full gallery + rescue (~16 vision
@@ -89,6 +91,28 @@ async function main() {
     for (const r of rows) if (r.title) listingTitle.set(String(r.sku), String(r.title));
   }
   console.log(`generating ${todoSkus.length} tiles (CONC ${CONC}) · listing titles: ${listingTitle.size}/${todoSkus.length}\n`);
+
+  // WalmartCatalogItem is a nightly mirror and lags: 232 of the 1191 SKUs in scope are
+  // PUBLISHED+ACTIVE on Walmart yet carry no title here. Failing closed on those would
+  // strand a fifth of the catalog in ERR forever, so fall back to the live Items API —
+  // still OUR listing data (productName), not a retail search. Memoised per SKU.
+  const fetching = new Map<string, Promise<string>>();
+  const resolveListingTitle = async (sku: string): Promise<string> => {
+    const cached = listingTitle.get(sku);
+    if (cached) return cached;
+    if (!fetching.has(sku)) {
+      fetching.set(sku, (async () => {
+        try {
+          const body = (await wm.requestRaw("GET", `/items/${encodeURIComponent(sku)}`)).body as any;
+          const it: any = body?.ItemResponse?.[0];
+          const name = String(it?.productName || "").trim();
+          if (name) listingTitle.set(sku, name);
+          return name;
+        } catch { return ""; }
+      })());
+    }
+    return fetching.get(sku)!;
+  };
 
   const needEnrich: string[] = [];
   let ok = 0, donorFail = 0, tileFail = 0, err = 0, done = 0;
@@ -128,8 +152,8 @@ async function main() {
       if (!r) { state[sku] = { sku, status: "ERR", reason: "not in EnrichedReadySku" }; err++; return; }
       const qty = Number(r.qty) || 0;
       const title = String(r.donorTitle || "");
-      const listing = listingTitle.get(sku) || "";
-      if (!listing) { state[sku] = { sku, status: "ERR", reason: "no listing title in WalmartCatalogItem (cannot verify identity)" }; err++; return; }
+      const listing = await resolveListingTitle(sku);
+      if (!listing) { state[sku] = { sku, status: "ERR", reason: "no listing title in mirror nor Walmart Items API (cannot verify identity)" }; err++; return; }
 
       // CHEAP GUARD before we spend any vision: a modifier word that appears on one side
       // and not the other means the donor is a DIFFERENT product (Diet vs regular,
