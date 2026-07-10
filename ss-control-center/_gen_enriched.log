@@ -269,3 +269,140 @@ generating 1188 tiles (CONC 8) · listing titles: 956/1188
   [730/1188] ok 343 · donorFail 261 · tileFail 125 · err 1
 [WALMART][STORE1] GET /v3/items/RizwanX-3253 → 200 (tokens: 149, 494ms, cid=8f54f6cc-8f9d-4ff3-b62d-2c752e1d5c8c)
 [WALMART][STORE1] GET /v3/items/RizwanX-3256 → 200 (tokens: 148, 566ms, cid=8ed07b7f-8744-4237-8207-b5355ca60503)
+  [740/1188] ok 350 · donorFail 261 · tileFail 128 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-3266 → 200 (tokens: 149, 556ms, cid=b15c4f62-22b5-4c7b-bc46-bce03fc1a920)
+  [750/1188] ok 356 · donorFail 263 · tileFail 130 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-3280 → 200 (tokens: 149, 544ms, cid=35218637-f568-455c-9d77-dfb482536e87)
+  [760/1188] ok 356 · donorFail 270 · tileFail 133 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-3302 → 200 (tokens: 149, 552ms, cid=50c3ad75-55b6-4ca6-a442-32d03a2a153d)
+[WALMART][STORE1] token issued, expires at 2026-07-10T08:18:59.162Z
+[WALMART][STORE1] token issued, expires at 2026-07-10T08:18:59.257Z
+[WALMART][STORE1] token issued, expires at 2026-07-10T08:18:59.484Z
+[WALMART][STORE1] GET /v3/items/RizwanX-3309 → 200 (tokens: 148, 528ms, cid=24feca56-7735-4a2f-92fa-d98d2efa5497)
+[WALMART][STORE1] GET /v3/items/RizwanX-3314 → 200 (tokens: 149, 453ms, cid=c79834c0-e98d-46d2-bbc2-bd6f09fc5317)
+[WALMART][STORE1] GET /v3/items/RizwanX-333 → 200 (tokens: 149, 423ms, cid=932e5a42-7f50-4118-a885-13896cab8549)
+  [770/1188] ok 358 · donorFail 272 · tileFail 139 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-341 → 200 (tokens: 149, 909ms, cid=41a061cd-af60-48fa-855c-1fd09646e25a)
+  [780/1188] ok 362 · donorFail 274 · tileFail 143 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-3471 → 200 (tokens: 147, 573ms, cid=afb85464-ab6e-47f3-9b55-59027fe81291)
+[WALMART][STORE1] GET /v3/items/RizwanX-3474 → 200 (tokens: 149, 570ms, cid=ed722efd-76a9-4513-8ce1-dc00024f16db)
+[WALMART][STORE1] GET /v3/items/RizwanX-3479 → 200 (tokens: 148, 624ms, cid=4680147f-49a1-4a6b-9b48-176a240f48a4)
+  [790/1188] ok 365 · donorFail 277 · tileFail 147 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-3484 → 200 (tokens: 148, 938ms, cid=be7ed60d-473d-4193-8f9b-6568d0abb155)
+[WALMART][STORE1] GET /v3/items/RizwanX-3483 → 200 (tokens: 149, 1202ms, cid=88e29923-6353-45fd-829d-5267f350ce1e)
+  [800/1188] ok 370 · donorFail 280 · tileFail 149 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-356 → 200 (tokens: 149, 532ms, cid=a71231f9-b40f-40a1-9f50-88699c1f0c01)
+[WALMART][STORE1] GET /v3/items/RizwanX-3523 → 200 (tokens: 149, 970ms, cid=132e5adb-5823-402f-8c86-15e5c61b1599)
+  [810/1188] ok 377 · donorFail 281 · tileFail 151 · err 1
+[WALMART][STORE1] token issued, expires at 2026-07-10T08:34:28.865Z
+[WALMART][STORE1] token issued, expires at 2026-07-10T08:34:28.962Z
+[WALMART][STORE1] GET /v3/items/RizwanX-359 → 200 (tokens: 149, 543ms, cid=2498c462-e1eb-47f5-ae73-e2aef921cb4f)
+[WALMART][STORE1] GET /v3/items/RizwanX-3608 → 200 (tokens: 149, 783ms, cid=8ad20370-3cfa-4d32-b15d-810f9e285cfc)
+  [820/1188] ok 381 · donorFail 285 · tileFail 153 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-3614 → 200 (tokens: 149, 455ms, cid=e6d85bb0-9bd6-4d41-b832-ce75fc64aeee)
+[WALMART][STORE1] GET /v3/items/RizwanX-3617 → 200 (tokens: 146, 605ms, cid=64d10ff6-8882-4798-b36e-9422c7972c22)
+[WALMART][STORE1] GET /v3/items/RizwanX-3618 → 200 (tokens: 148, 627ms, cid=9e9b1be2-dfeb-432b-a90a-540cc34a5b64)
+  [830/1188] ok 385 · donorFail 286 · tileFail 158 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-3651 → 200 (tokens: 149, 525ms, cid=b19e007d-ba10-4e69-9970-517f327e5d4c)
+[WALMART][STORE1] GET /v3/items/RizwanX-3696 → 200 (tokens: 148, 527ms, cid=8a2e3f65-c7ac-4543-8cde-9b73909ae5a0)
+[WALMART][STORE1] GET /v3/items/RizwanX-3707 → 200 (tokens: 149, 1160ms, cid=e0469c31-38db-4ac2-a6ae-0466b1aec275)
+  [840/1188] ok 387 · donorFail 292 · tileFail 160 · err 1
+  [850/1188] ok 389 · donorFail 297 · tileFail 163 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-3720 → 200 (tokens: 149, 641ms, cid=e91e9e66-fcbe-4a07-9966-15e27050758d)
+[WALMART][STORE1] GET /v3/items/RizwanX-3731 → 200 (tokens: 149, 1025ms, cid=bf53e243-fe9b-4b4f-a3ed-674e83b525bf)
+[WALMART][STORE1] GET /v3/items/RizwanX-3730 → 200 (tokens: 149, 1115ms, cid=64e975ab-d854-4ae3-ac77-a2c90679c273)
+[WALMART][STORE1] GET /v3/items/RizwanX-381 → 200 (tokens: 149, 862ms, cid=bb1d4465-4153-4d24-b232-db485937f155)
+  [860/1188] ok 390 · donorFail 305 · tileFail 164 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-3845 → 200 (tokens: 149, 855ms, cid=749cbb2c-5e9d-4535-85cf-c701aa9566b1)
+[WALMART][STORE1] GET /v3/items/RizwanX-3848 → 200 (tokens: 149, 1071ms, cid=8775b041-4af8-45f2-9b3e-330f2fe9eeed)
+  [870/1188] ok 396 · donorFail 308 · tileFail 165 · err 1
+[WALMART][STORE1] token issued, expires at 2026-07-10T08:47:30.806Z
+[WALMART][STORE1] token issued, expires at 2026-07-10T08:47:30.903Z
+[WALMART][STORE1] GET /v3/items/RizwanX-3849 → 200 (tokens: 148, 775ms, cid=f2d3f67e-4326-4d95-8f11-da44d2a5c123)
+[WALMART][STORE1] GET /v3/items/RizwanX-3876 → 200 (tokens: 149, 1091ms, cid=9e3050c4-6bea-4b03-8632-621ceee06978)
+  [880/1188] ok 401 · donorFail 311 · tileFail 167 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-3886 → 200 (tokens: 149, 530ms, cid=6b6a480b-2682-4bca-8c05-1427f72dddd4)
+[WALMART][STORE1] GET /v3/items/RizwanX-3882 → 200 (tokens: 148, 537ms, cid=8005583a-b57a-4a18-8410-9ff2cf5e1704)
+[WALMART][STORE1] GET /v3/items/RizwanX-3891 → 200 (tokens: 148, 538ms, cid=9f79df96-df8b-4439-bff5-1901314e397d)
+[WALMART][STORE1] GET /v3/items/RizwanX-3897 → 200 (tokens: 148, 666ms, cid=2a2439dc-949c-4421-8769-db7bbb984506)
+[WALMART][STORE1] GET /v3/items/RizwanX-3910 → 200 (tokens: 147, 708ms, cid=6318e6f1-0bb3-4838-ac90-11ab30803482)
+[WALMART][STORE1] GET /v3/items/RizwanX-3919 → 200 (tokens: 149, 776ms, cid=cd6b9207-8263-44fc-a279-24142819fc49)
+  [890/1188] ok 405 · donorFail 317 · tileFail 167 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-401 → 200 (tokens: 148, 541ms, cid=b6d69a1e-beb7-4011-8812-ec1b002897be)
+[WALMART][STORE1] GET /v3/items/RizwanX-403 → 200 (tokens: 149, 858ms, cid=15df1b77-cab0-4e2f-9741-74c986438a88)
+  [900/1188] ok 408 · donorFail 323 · tileFail 168 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-409 → 200 (tokens: 149, 897ms, cid=c84ac534-53bd-419f-83b6-078e71bc1ff6)
+  [910/1188] ok 416 · donorFail 324 · tileFail 169 · err 1
+[WALMART][STORE1] token issued, expires at 2026-07-10T09:02:26.440Z
+[WALMART][STORE1] token issued, expires at 2026-07-10T09:02:26.456Z
+[WALMART][STORE1] GET /v3/items/RizwanX-4207 → 200 (tokens: 149, 434ms, cid=8542cc5a-ffda-4d86-a525-823f73dcfe02)
+[WALMART][STORE1] GET /v3/items/RizwanX-4194 → 200 (tokens: 149, 853ms, cid=9c2d760f-865c-435b-a90c-355a96565f56)
+  [920/1188] ok 417 · donorFail 330 · tileFail 172 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-422 → 200 (tokens: 149, 573ms, cid=2fbff7b3-e07d-48da-a021-9a5d6505b86e)
+[WALMART][STORE1] GET /v3/items/RizwanX-4221 → 200 (tokens: 148, 671ms, cid=f795e3a6-2e9f-4974-a37f-5a079673b80d)
+[WALMART][STORE1] GET /v3/items/RizwanX-4223 → 200 (tokens: 148, 807ms, cid=73f00a3b-99aa-4131-abcb-4f8333db99c7)
+  [930/1188] ok 417 · donorFail 340 · tileFail 172 · err 1
+  [940/1188] ok 417 · donorFail 347 · tileFail 175 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-4259 → 200 (tokens: 149, 578ms, cid=e98090b5-7b9e-42da-bbdc-46c25b4bcbf5)
+[WALMART][STORE1] GET /v3/items/RizwanX-4276 → 200 (tokens: 149, 473ms, cid=dd618059-765c-446a-b084-528d5c33e487)
+[WALMART][STORE1] GET /v3/items/RizwanX-4265 → 200 (tokens: 148, 573ms, cid=34417919-9a1c-4d8e-b249-ed54bf63e10d)
+[WALMART][STORE1] GET /v3/items/RizwanX-4269 → 200 (tokens: 148, 702ms, cid=a88d7be1-98bf-411f-a169-a34175b22ac9)
+  [950/1188] ok 417 · donorFail 353 · tileFail 179 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-4277 → 200 (tokens: 149, 871ms, cid=1401df9d-666c-47ce-aea5-64d60501cb6d)
+  [960/1188] ok 418 · donorFail 362 · tileFail 179 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-4291 → 200 (tokens: 149, 522ms, cid=796b8859-7c8e-4280-8f3f-f1050c19a549)
+[WALMART][STORE1] GET /v3/items/RizwanX-430 → 200 (tokens: 149, 526ms, cid=ae066a9e-9db4-4146-b829-f5b77b36e4da)
+  [970/1188] ok 419 · donorFail 371 · tileFail 179 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-4300 → 200 (tokens: 149, 501ms, cid=e4ea85eb-a0ee-4ca9-949a-f08325a869ed)
+[WALMART][STORE1] GET /v3/items/RizwanX-4305 → 200 (tokens: 149, 503ms, cid=c9b2dd64-42d3-406e-9c47-912c47baa25d)
+[WALMART][STORE1] GET /v3/items/RizwanX-4302 → 200 (tokens: 149, 972ms, cid=1b1c1980-7d1b-4d1b-8ec9-e56e600e607a)
+  [980/1188] ok 421 · donorFail 377 · tileFail 181 · err 1
+  [990/1188] ok 422 · donorFail 378 · tileFail 189 · err 1
+[WALMART][STORE1] token issued, expires at 2026-07-10T09:20:37.302Z
+[WALMART][STORE1] token issued, expires at 2026-07-10T09:20:37.305Z
+[WALMART][STORE1] token issued, expires at 2026-07-10T09:20:37.462Z
+[WALMART][STORE1] GET /v3/items/RizwanX-4439 → 200 (tokens: 148, 479ms, cid=b125f04a-40ed-497f-9fbf-45b41f16eaa7)
+[WALMART][STORE1] GET /v3/items/RizwanX-443 → 200 (tokens: 148, 493ms, cid=f681f83b-dd7e-46f9-a45d-04e05fe519e3)
+[WALMART][STORE1] GET /v3/items/RizwanX-4456 → 200 (tokens: 149, 540ms, cid=4feb22d3-98ff-4a39-bb6d-961da24d67f3)
+  [1000/1188] ok 426 · donorFail 379 · tileFail 194 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-4477 → 200 (tokens: 148, 532ms, cid=76101348-636c-47ed-9b17-a25bef512ce3)
+[WALMART][STORE1] GET /v3/items/RizwanX-4493 → 200 (tokens: 149, 527ms, cid=889ed9f4-0007-43de-bb4e-24b6ab16ac03)
+[WALMART][STORE1] GET /v3/items/RizwanX-447 → 200 (tokens: 148, 551ms, cid=0063e0d7-2ff1-4554-864c-d6d2c8369ac8)
+  [1010/1188] ok 429 · donorFail 382 · tileFail 198 · err 1
+  [1020/1188] ok 433 · donorFail 383 · tileFail 203 · err 1
+  [1030/1188] ok 435 · donorFail 386 · tileFail 208 · err 1
+[WALMART][STORE1] token issued, expires at 2026-07-10T09:39:53.767Z
+[WALMART][STORE1] GET /v3/items/RizwanX-485 → 200 (tokens: 149, 588ms, cid=499be16c-b26b-4827-b5ea-464847b2e12e)
+  [1040/1188] ok 442 · donorFail 388 · tileFail 209 · err 1
+  [1050/1188] ok 447 · donorFail 392 · tileFail 210 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-547 → 200 (tokens: 149, 573ms, cid=c1d448cd-fd3a-4103-b198-8dd887001261)
+[WALMART][STORE1] GET /v3/items/RizwanX-541 → 200 (tokens: 148, 626ms, cid=fac0cb71-389f-4704-917a-c2761d1376f6)
+  [1060/1188] ok 457 · donorFail 392 · tileFail 210 · err 1
+  [1070/1188] ok 462 · donorFail 397 · tileFail 210 · err 1
+  [1080/1188] ok 465 · donorFail 402 · tileFail 212 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-584 → 200 (tokens: 149, 989ms, cid=9935308f-4bbb-498a-b071-0a7e9d7bc10a)
+[WALMART][STORE1] GET /v3/items/RizwanX-585 → 200 (tokens: 149, 1040ms, cid=6d7f1901-206a-4425-bf72-1f14a4d4a340)
+  [1090/1188] ok 472 · donorFail 405 · tileFail 212 · err 1
+  [1100/1188] ok 479 · donorFail 408 · tileFail 212 · err 1
+  [1110/1188] ok 483 · donorFail 414 · tileFail 212 · err 1
+[WALMART][STORE1] token issued, expires at 2026-07-10T10:00:50.054Z
+[WALMART][STORE1] GET /v3/items/RizwanX-653 → 200 (tokens: 148, 523ms, cid=bf629de0-801c-45e4-80d0-8f78df0d3403)
+  [1120/1188] ok 488 · donorFail 417 · tileFail 214 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-68 → 200 (tokens: 149, 599ms, cid=7d25c50d-018a-4feb-b18f-4f7dc448ee5a)
+  [1130/1188] ok 489 · donorFail 426 · tileFail 214 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-69 → 200 (tokens: 148, 988ms, cid=2cbd284c-e744-4882-afb6-2241a1cdafb4)
+  [1140/1188] ok 489 · donorFail 436 · tileFail 214 · err 1
+[WALMART][STORE1] GET /v3/items/RizwanX-752 → 200 (tokens: 148, 517ms, cid=b318ebaf-cc95-4872-a34d-c1ae5b7b77eb)
+  [1150/1188] ok 491 · donorFail 441 · tileFail 217 · err 1
+[WALMART][STORE1] token issued, expires at 2026-07-10T10:17:24.819Z
+[WALMART][STORE1] token issued, expires at 2026-07-10T10:17:24.965Z
+[WALMART][STORE1] GET /v3/items/RizwanX-782 → 200 (tokens: 149, 882ms, cid=d2005446-da8a-4d41-855a-63de045c9049)
+[WALMART][STORE1] GET /v3/items/RizwanX-78 → 200 (tokens: 148, 1133ms, cid=c1b7316d-4f72-46bd-88c3-2fd93d1d7f11)
+  [1160/1188] ok 494 · donorFail 445 · tileFail 218 · err 3
+  [1170/1188] ok 496 · donorFail 447 · tileFail 218 · err 9
+  [1180/1188] ok 501 · donorFail 448 · tileFail 218 · err 13
+  [1188/1188] ok 502 · donorFail 452 · tileFail 221 · err 13
+
+452 genuine donor-failures → enrich_priority_skus (now 1060)
+
+=== GEN cumulative === GEN_OK 1278 · DONOR_FAIL 244 · TILE_FAIL 266 · ERR 14

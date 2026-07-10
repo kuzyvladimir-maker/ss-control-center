@@ -13,12 +13,15 @@ async function main() {
   const img = (listing as any).attributes?.main_product_image_locator;
   const loc = img?.[0]?.media_location ?? "";
   console.log("LIVE image:", loc);
-  // fetch dims to tell composite (2200) from old AI (2048)
+  // Dimensions identify which hero is live:
+  //   2048 = the AI cooler hero (image-generation.ts normalizes to 2048x2048)
+  //   2200 = the real-photo box composite (composeUnitGrid canvas)
   if (loc) {
     const buf = Buffer.from(await (await fetch(loc)).arrayBuffer());
     const sharp = (await import("sharp")).default;
     const meta = await sharp(buf).metadata();
-    console.log("LIVE image dims:", `${meta.width}x${meta.height}`, meta.width === 2200 ? "→ COMPOSITE ✓" : meta.width === 2048 ? "→ still OLD AI (ingesting)" : "→ ?");
+    const kind = meta.width === 2048 ? "→ COOLER HERO" : meta.width === 2200 ? "→ box composite" : "→ ?";
+    console.log("LIVE image dims:", `${meta.width}x${meta.height}`, kind);
   }
   await prisma.$disconnect();
 }

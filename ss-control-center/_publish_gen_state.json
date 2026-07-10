@@ -1654,10 +1654,10 @@
  "FaisalX-2045": {
   "sku": "FaisalX-2045",
   "status": "failed",
-  "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
   "ok": false,
   "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
-  "at": "2026-07-10T07:17:52.710Z"
+  "at": "2026-07-10T12:18:16.773Z"
  },
  "FaisalX-2046": {
   "sku": "FaisalX-2046",
@@ -6389,443 +6389,443 @@
  },
  "FaisalX-4368": {
   "sku": "FaisalX-4368",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:08.447Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:48.846Z"
  },
  "FaisalX-5010": {
   "sku": "FaisalX-5010",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:08.575Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:49.023Z"
  },
  "FaisalX-4039": {
   "sku": "FaisalX-4039",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:08.713Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:49.082Z"
  },
  "FaisalX-4041": {
   "sku": "FaisalX-4041",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:08.824Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:49.777Z"
  },
  "FaisalX-4056": {
   "sku": "FaisalX-4056",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:08.928Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:49.862Z"
  },
  "FaisalX-4077": {
   "sku": "FaisalX-4077",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:09.058Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:49.951Z"
  },
  "FaisalX-4075": {
   "sku": "FaisalX-4075",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:09.229Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.032Z"
  },
  "FaisalX-4117": {
   "sku": "FaisalX-4117",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:09.319Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.115Z"
  },
  "FaisalX-4136": {
   "sku": "FaisalX-4136",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:09.430Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.219Z"
  },
  "FaisalX-4131": {
   "sku": "FaisalX-4131",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:09.518Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.274Z"
  },
  "FaisalX-4115": {
   "sku": "FaisalX-4115",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:09.606Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.331Z"
  },
  "FaisalX-4126": {
   "sku": "FaisalX-4126",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:09.721Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.390Z"
  },
  "FaisalX-4127": {
   "sku": "FaisalX-4127",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:09.815Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.446Z"
  },
  "FaisalX-4144": {
   "sku": "FaisalX-4144",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:09.969Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.500Z"
  },
  "FaisalX-4153": {
   "sku": "FaisalX-4153",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:10.053Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.556Z"
  },
  "FaisalX-4149": {
   "sku": "FaisalX-4149",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:10.146Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.610Z"
  },
  "FaisalX-4166": {
   "sku": "FaisalX-4166",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:10.248Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.664Z"
  },
  "FaisalX-4176": {
   "sku": "FaisalX-4176",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:10.320Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.725Z"
  },
  "FaisalX-4206": {
   "sku": "FaisalX-4206",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:10.404Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.782Z"
  },
  "FaisalX-4260": {
   "sku": "FaisalX-4260",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:10.489Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.839Z"
  },
  "FaisalX-4253": {
   "sku": "FaisalX-4253",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:10.556Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.905Z"
  },
  "FaisalX-4251": {
   "sku": "FaisalX-4251",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:10.646Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:50.994Z"
  },
  "FaisalX-4243": {
   "sku": "FaisalX-4243",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:10.716Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.048Z"
  },
  "FaisalX-4262": {
   "sku": "FaisalX-4262",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:10.784Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.100Z"
  },
  "FaisalX-4280": {
   "sku": "FaisalX-4280",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:10.880Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.150Z"
  },
  "FaisalX-4297": {
   "sku": "FaisalX-4297",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:10.971Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.204Z"
  },
  "FaisalX-4278": {
   "sku": "FaisalX-4278",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:12.444Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.258Z"
  },
  "FaisalX-4277": {
   "sku": "FaisalX-4277",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:12.541Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.310Z"
  },
  "FaisalX-4323": {
   "sku": "FaisalX-4323",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:12.638Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.364Z"
  },
  "FaisalX-4321": {
   "sku": "FaisalX-4321",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:12.754Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.420Z"
  },
  "FaisalX-4322": {
   "sku": "FaisalX-4322",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:12.870Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.476Z"
  },
  "FaisalX-4345": {
   "sku": "FaisalX-4345",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:12.995Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.531Z"
  },
  "FaisalX-4328": {
   "sku": "FaisalX-4328",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:13.089Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.588Z"
  },
  "FaisalX-4381": {
   "sku": "FaisalX-4381",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:13.212Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.644Z"
  },
  "FaisalX-4378": {
   "sku": "FaisalX-4378",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:13.320Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.726Z"
  },
  "FaisalX-4373": {
   "sku": "FaisalX-4373",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:13.444Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.789Z"
  },
  "FaisalX-4450": {
   "sku": "FaisalX-4450",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:13.547Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.886Z"
  },
  "FaisalX-4451": {
   "sku": "FaisalX-4451",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:13.629Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:51.953Z"
  },
  "FaisalX-4457": {
   "sku": "FaisalX-4457",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:13.764Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:52.010Z"
  },
  "FaisalX-4466": {
   "sku": "FaisalX-4466",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:13.855Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:52.069Z"
  },
  "FaisalX-4485": {
   "sku": "FaisalX-4485",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:13.934Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:52.135Z"
  },
  "FaisalX-4486": {
   "sku": "FaisalX-4486",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:14.014Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:52.192Z"
  },
  "FaisalX-4489": {
   "sku": "FaisalX-4489",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:14.103Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:52.252Z"
  },
  "FaisalX-4488": {
   "sku": "FaisalX-4488",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:14.192Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:52.338Z"
  },
  "FaisalX-4487": {
   "sku": "FaisalX-4487",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:14.302Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:52.738Z"
  },
  "FaisalX-4483": {
   "sku": "FaisalX-4483",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:14.386Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:52.804Z"
  },
  "FaisalX-4491": {
   "sku": "FaisalX-4491",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:14.497Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:52.865Z"
  },
  "FaisalX-4490": {
   "sku": "FaisalX-4490",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:14.598Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:52.923Z"
  },
  "FaisalX-4493": {
   "sku": "FaisalX-4493",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0D951989C5DD1AACEF81DBAE5D8A2@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:35:14.714Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:52.979Z"
  },
  "FaisalX-4499": {
   "sku": "FaisalX-4499",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:23.176Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:53.473Z"
  },
  "FaisalX-4523": {
   "sku": "FaisalX-4523",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:23.334Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:53.596Z"
  },
  "FaisalX-4515": {
   "sku": "FaisalX-4515",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:23.406Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:53.649Z"
  },
  "FaisalX-4506": {
   "sku": "FaisalX-4506",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:23.522Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:53.707Z"
  },
  "FaisalX-4517": {
   "sku": "FaisalX-4517",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:23.591Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:53.760Z"
  },
  "FaisalX-4505": {
   "sku": "FaisalX-4505",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:23.673Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:53.826Z"
  },
  "FaisalX-4552": {
   "sku": "FaisalX-4552",
@@ -6837,99 +6837,99 @@
  },
  "FaisalX-4538": {
   "sku": "FaisalX-4538",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:23.831Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:53.879Z"
  },
  "FaisalX-4530": {
   "sku": "FaisalX-4530",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:23.912Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:53.977Z"
  },
  "FaisalX-4557": {
   "sku": "FaisalX-4557",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:24.071Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.028Z"
  },
  "FaisalX-4537": {
   "sku": "FaisalX-4537",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:24.133Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.087Z"
  },
  "FaisalX-4531": {
   "sku": "FaisalX-4531",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:24.192Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.140Z"
  },
  "FaisalX-4559": {
   "sku": "FaisalX-4559",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:24.257Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.195Z"
  },
  "FaisalX-4566": {
   "sku": "FaisalX-4566",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:24.328Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.246Z"
  },
  "FaisalX-4583": {
   "sku": "FaisalX-4583",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:24.385Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.303Z"
  },
  "FaisalX-4574": {
   "sku": "FaisalX-4574",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:24.900Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.359Z"
  },
  "FaisalX-4570": {
   "sku": "FaisalX-4570",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.026Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.415Z"
  },
  "FaisalX-4558": {
   "sku": "FaisalX-4558",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.113Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.468Z"
  },
  "FaisalX-4617": {
   "sku": "FaisalX-4617",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.171Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.522Z"
  },
  "FaisalX-4718": {
   "sku": "FaisalX-4718",
@@ -6941,163 +6941,163 @@
  },
  "FaisalX-4735": {
   "sku": "FaisalX-4735",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.294Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.574Z"
  },
  "FaisalX-4697": {
   "sku": "FaisalX-4697",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.354Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.646Z"
  },
  "FaisalX-4786": {
   "sku": "FaisalX-4786",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.414Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.738Z"
  },
  "FaisalX-4849": {
   "sku": "FaisalX-4849",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.474Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.813Z"
  },
  "FaisalX-4788": {
   "sku": "FaisalX-4788",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.538Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.891Z"
  },
  "FaisalX-4854": {
   "sku": "FaisalX-4854",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.602Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:54.947Z"
  },
  "FaisalX-5029": {
   "sku": "FaisalX-5029",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.666Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.002Z"
  },
  "FaisalX-5007": {
   "sku": "FaisalX-5007",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.728Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.056Z"
  },
  "FaisalX-5028": {
   "sku": "FaisalX-5028",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.791Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.112Z"
  },
  "FaisalX-5032": {
   "sku": "FaisalX-5032",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.879Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.165Z"
  },
  "FaisalX-5020": {
   "sku": "FaisalX-5020",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:25.949Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.218Z"
  },
  "FaisalX-5017": {
   "sku": "FaisalX-5017",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.038Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.269Z"
  },
  "FaisalX-5031": {
   "sku": "FaisalX-5031",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.103Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.323Z"
  },
  "FaisalX-5038": {
   "sku": "FaisalX-5038",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.170Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.378Z"
  },
  "FaisalX-5059": {
   "sku": "FaisalX-5059",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.241Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.450Z"
  },
  "FaisalX-5117": {
   "sku": "FaisalX-5117",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.307Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.503Z"
  },
  "FaisalX-5116": {
   "sku": "FaisalX-5116",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.373Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.560Z"
  },
  "FaisalX-5194": {
   "sku": "FaisalX-5194",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.435Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.617Z"
  },
  "FaisalX-5195": {
   "sku": "FaisalX-5195",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.501Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.674Z"
  },
  "FaisalX-5210": {
   "sku": "FaisalX-5210",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.568Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.738Z"
  },
  "FaisalX-5227": {
   "sku": "FaisalX-5227",
@@ -7109,410 +7109,3130 @@
  },
  "FaisalX-5212": {
   "sku": "FaisalX-5212",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.687Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.794Z"
  },
  "FaisalX-5241": {
   "sku": "FaisalX-5241",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.749Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:55.848Z"
  },
  "FaisalX-5243": {
   "sku": "FaisalX-5243",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.809Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:56.183Z"
  },
  "FaisalX-5213": {
   "sku": "FaisalX-5213",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.870Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:56.241Z"
  },
  "FaisalX-5261": {
   "sku": "FaisalX-5261",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:26.928Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:56.298Z"
  },
  "FaisalX-5263": {
   "sku": "FaisalX-5263",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:27.024Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:56.359Z"
  },
  "FaisalX-5292": {
   "sku": "FaisalX-5292",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:27.130Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:56.414Z"
  },
  "FaisalX-5291": {
   "sku": "FaisalX-5291",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:27.241Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:56.521Z"
  },
  "FaisalX-5283": {
   "sku": "FaisalX-5283",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:27.331Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T08:17:56.577Z"
  },
  "FaisalX-5290": {
   "sku": "FaisalX-5290",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:35.532Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:21.978Z"
  },
  "FaisalX-5289": {
   "sku": "FaisalX-5289",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:35.774Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:23.104Z"
  },
  "FaisalX-5274": {
   "sku": "FaisalX-5274",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:35.852Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:23.204Z"
  },
  "FaisalX-5304": {
   "sku": "FaisalX-5304",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:35.912Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:23.321Z"
  },
  "FaisalX-5306": {
   "sku": "FaisalX-5306",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.053Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:23.460Z"
  },
  "FaisalX-5305": {
   "sku": "FaisalX-5305",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.120Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:23.589Z"
  },
  "FaisalX-5297": {
   "sku": "FaisalX-5297",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.184Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:23.688Z"
  },
  "FaisalX-5302": {
   "sku": "FaisalX-5302",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.249Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:23.783Z"
  },
  "FaisalX-5324": {
   "sku": "FaisalX-5324",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.314Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:23.968Z"
  },
  "FaisalX-5314": {
   "sku": "FaisalX-5314",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.386Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:24.175Z"
  },
  "FaisalX-5320": {
   "sku": "FaisalX-5320",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.451Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:24.280Z"
  },
  "FaisalX-5322": {
   "sku": "FaisalX-5322",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.527Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:24.445Z"
  },
  "FaisalX-5323": {
   "sku": "FaisalX-5323",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.588Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:24.528Z"
  },
  "FaisalX-5353": {
   "sku": "FaisalX-5353",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.651Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:24.679Z"
  },
  "FaisalX-5354": {
   "sku": "FaisalX-5354",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.710Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:24.806Z"
  },
  "FaisalX-5358": {
   "sku": "FaisalX-5358",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.778Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:25.010Z"
  },
  "FaisalX-5377": {
   "sku": "FaisalX-5377",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.844Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:25.153Z"
  },
  "FaisalX-5388": {
   "sku": "FaisalX-5388",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.933Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:25.313Z"
  },
  "FaisalX-5369": {
   "sku": "FaisalX-5369",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:36.997Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:25.412Z"
  },
  "FaisalX-5395": {
   "sku": "FaisalX-5395",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.072Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:25.597Z"
  },
  "FaisalX-5390": {
   "sku": "FaisalX-5390",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.147Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:25.695Z"
  },
  "FaisalX-5445": {
   "sku": "FaisalX-5445",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.219Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:25.792Z"
  },
  "FaisalX-5441": {
   "sku": "FaisalX-5441",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.285Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:25.915Z"
  },
  "FaisalX-5423": {
   "sku": "FaisalX-5423",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.360Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:26.072Z"
  },
  "FaisalX-5447": {
   "sku": "FaisalX-5447",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.417Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:26.244Z"
  },
  "FaisalX-5467": {
   "sku": "FaisalX-5467",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.481Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:26.378Z"
  },
  "FaisalX-5466": {
   "sku": "FaisalX-5466",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.554Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:26.503Z"
  },
  "FaisalX-5449": {
   "sku": "FaisalX-5449",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.611Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:26.625Z"
  },
  "FaisalX-5450": {
   "sku": "FaisalX-5450",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.673Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:26.719Z"
  },
  "FaisalX-5468": {
   "sku": "FaisalX-5468",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.737Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:26.892Z"
  },
  "FaisalX-5489": {
   "sku": "FaisalX-5489",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.814Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:27.005Z"
  },
  "FaisalX-756": {
   "sku": "FaisalX-756",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.882Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:27.140Z"
  },
  "FaisalX-5577": {
   "sku": "FaisalX-5577",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:37.943Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:27.209Z"
  },
  "FaisalX-808": {
   "sku": "FaisalX-808",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:38.003Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:27.295Z"
  },
  "FaisalX-774": {
   "sku": "FaisalX-774",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:38.072Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:27.382Z"
  },
  "FaisalX-794": {
   "sku": "FaisalX-794",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:38.131Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:27.465Z"
  },
  "FaisalX-776": {
   "sku": "FaisalX-776",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:38.194Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:28.610Z"
  },
  "FaisalX-820": {
   "sku": "FaisalX-820",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:38.257Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:28.770Z"
  },
  "FaisalX-821": {
   "sku": "FaisalX-821",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:38.327Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:28.842Z"
  },
  "FaisalX-809": {
   "sku": "FaisalX-809",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:38.387Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:28.915Z"
  },
  "FaisalX-825": {
   "sku": "FaisalX-825",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:38.464Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:28.974Z"
  },
  "FaisalX-822": {
   "sku": "FaisalX-822",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DAFBEC52510CA61EB3409EA0D388@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:29.053Z"
+ },
+ "FaisalX-831": {
+  "sku": "FaisalX-831",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:12.679Z"
+ },
+ "RizwanX-11": {
+  "sku": "RizwanX-11",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:12.851Z"
+ },
+ "RizwanX-10": {
+  "sku": "RizwanX-10",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:13.014Z"
+ },
+ "RizwanX-102": {
+  "sku": "RizwanX-102",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:13.204Z"
+ },
+ "RizwanX-125": {
+  "sku": "RizwanX-125",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:13.449Z"
+ },
+ "RizwanX-133": {
+  "sku": "RizwanX-133",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:13.668Z"
+ },
+ "RizwanX-118": {
+  "sku": "RizwanX-118",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:13.821Z"
+ },
+ "RizwanX-139": {
+  "sku": "RizwanX-139",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:14.062Z"
+ },
+ "RizwanX-141": {
+  "sku": "RizwanX-141",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:14.250Z"
+ },
+ "RizwanX-124": {
+  "sku": "RizwanX-124",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:14.474Z"
+ },
+ "RizwanX-147": {
+  "sku": "RizwanX-147",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:14.692Z"
+ },
+ "RizwanX-150": {
+  "sku": "RizwanX-150",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:14.936Z"
+ },
+ "RizwanX-160": {
+  "sku": "RizwanX-160",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:15.233Z"
+ },
+ "RizwanX-148": {
+  "sku": "RizwanX-148",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:15.449Z"
+ },
+ "RizwanX-145": {
+  "sku": "RizwanX-145",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:15.592Z"
+ },
+ "RizwanX-163": {
+  "sku": "RizwanX-163",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:16.478Z"
+ },
+ "RizwanX-164": {
+  "sku": "RizwanX-164",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:16.627Z"
+ },
+ "RizwanX-182": {
+  "sku": "RizwanX-182",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:16.822Z"
+ },
+ "RizwanX-195": {
+  "sku": "RizwanX-195",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:16.924Z"
+ },
+ "RizwanX-197": {
+  "sku": "RizwanX-197",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:17.068Z"
+ },
+ "RizwanX-168": {
+  "sku": "RizwanX-168",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:17.181Z"
+ },
+ "RizwanX-187": {
+  "sku": "RizwanX-187",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:17.307Z"
+ },
+ "RizwanX-166": {
+  "sku": "RizwanX-166",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:17.393Z"
+ },
+ "RizwanX-202": {
+  "sku": "RizwanX-202",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:17.557Z"
+ },
+ "RizwanX-216": {
+  "sku": "RizwanX-216",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:17.685Z"
+ },
+ "RizwanX-207": {
+  "sku": "RizwanX-207",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:17.854Z"
+ },
+ "RizwanX-215": {
+  "sku": "RizwanX-215",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:18.014Z"
+ },
+ "RizwanX-203": {
+  "sku": "RizwanX-203",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:18.131Z"
+ },
+ "RizwanX-201": {
+  "sku": "RizwanX-201",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:18.248Z"
+ },
+ "RizwanX-209": {
+  "sku": "RizwanX-209",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:18.399Z"
+ },
+ "RizwanX-210": {
+  "sku": "RizwanX-210",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:18.549Z"
+ },
+ "RizwanX-217": {
+  "sku": "RizwanX-217",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:18.712Z"
+ },
+ "RizwanX-2191": {
+  "sku": "RizwanX-2191",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:18.835Z"
+ },
+ "RizwanX-2182": {
+  "sku": "RizwanX-2182",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:19.072Z"
+ },
+ "RizwanX-2197": {
+  "sku": "RizwanX-2197",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:19.215Z"
+ },
+ "RizwanX-219": {
+  "sku": "RizwanX-219",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:19.347Z"
+ },
+ "RizwanX-2192": {
+  "sku": "RizwanX-2192",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:19.475Z"
+ },
+ "RizwanX-222": {
+  "sku": "RizwanX-222",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:19.614Z"
+ },
+ "RizwanX-225": {
+  "sku": "RizwanX-225",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:19.782Z"
+ },
+ "RizwanX-226": {
+  "sku": "RizwanX-226",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:19.899Z"
+ },
+ "RizwanX-2295": {
+  "sku": "RizwanX-2295",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:19.996Z"
+ },
+ "RizwanX-2284": {
+  "sku": "RizwanX-2284",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:20.102Z"
+ },
+ "RizwanX-2296": {
+  "sku": "RizwanX-2296",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:20.220Z"
+ },
+ "RizwanX-228": {
+  "sku": "RizwanX-228",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:20.322Z"
+ },
+ "RizwanX-227": {
+  "sku": "RizwanX-227",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:20.429Z"
+ },
+ "RizwanX-2277": {
+  "sku": "RizwanX-2277",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:20.585Z"
+ },
+ "RizwanX-2321": {
+  "sku": "RizwanX-2321",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:20.686Z"
+ },
+ "RizwanX-2309": {
+  "sku": "RizwanX-2309",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:20.784Z"
+ },
+ "RizwanX-2308": {
+  "sku": "RizwanX-2308",
+  "status": "applied",
+  "feedId": "18C0DFE8B6C25FD6A05C286F6F2E2CFC@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:20.883Z"
+ },
+ "RizwanX-2323": {
+  "sku": "RizwanX-2323",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:29.376Z"
+ },
+ "RizwanX-2333": {
+  "sku": "RizwanX-2333",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:29.458Z"
+ },
+ "RizwanX-239": {
+  "sku": "RizwanX-239",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:29.537Z"
+ },
+ "RizwanX-2396": {
+  "sku": "RizwanX-2396",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:29.647Z"
+ },
+ "RizwanX-2407": {
+  "sku": "RizwanX-2407",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:29.715Z"
+ },
+ "RizwanX-2398": {
+  "sku": "RizwanX-2398",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:29.805Z"
+ },
+ "RizwanX-2409": {
+  "sku": "RizwanX-2409",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:29.877Z"
+ },
+ "RizwanX-2410": {
+  "sku": "RizwanX-2410",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:29.941Z"
+ },
+ "RizwanX-2411": {
+  "sku": "RizwanX-2411",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:30.042Z"
+ },
+ "RizwanX-2408": {
+  "sku": "RizwanX-2408",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:30.109Z"
+ },
+ "RizwanX-2403": {
+  "sku": "RizwanX-2403",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:30.175Z"
+ },
+ "RizwanX-2421": {
+  "sku": "RizwanX-2421",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:30.241Z"
+ },
+ "RizwanX-2419": {
+  "sku": "RizwanX-2419",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:30.303Z"
+ },
+ "RizwanX-2426": {
+  "sku": "RizwanX-2426",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:30.396Z"
+ },
+ "RizwanX-2432": {
+  "sku": "RizwanX-2432",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:30.980Z"
+ },
+ "RizwanX-2430": {
+  "sku": "RizwanX-2430",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.065Z"
+ },
+ "RizwanX-2413": {
+  "sku": "RizwanX-2413",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.142Z"
+ },
+ "RizwanX-2440": {
+  "sku": "RizwanX-2440",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.207Z"
+ },
+ "RizwanX-2448": {
+  "sku": "RizwanX-2448",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.280Z"
+ },
+ "RizwanX-244": {
+  "sku": "RizwanX-244",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.345Z"
+ },
+ "RizwanX-2441": {
+  "sku": "RizwanX-2441",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.417Z"
+ },
+ "RizwanX-2446": {
+  "sku": "RizwanX-2446",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.483Z"
+ },
+ "RizwanX-2444": {
+  "sku": "RizwanX-2444",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.547Z"
+ },
+ "RizwanX-2449": {
+  "sku": "RizwanX-2449",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.617Z"
+ },
+ "RizwanX-2442": {
+  "sku": "RizwanX-2442",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.685Z"
+ },
+ "RizwanX-2460": {
+  "sku": "RizwanX-2460",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.754Z"
+ },
+ "RizwanX-2459": {
+  "sku": "RizwanX-2459",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.839Z"
+ },
+ "RizwanX-245": {
+  "sku": "RizwanX-245",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.924Z"
+ },
+ "RizwanX-2458": {
+  "sku": "RizwanX-2458",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:31.995Z"
+ },
+ "RizwanX-2451": {
+  "sku": "RizwanX-2451",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:32.073Z"
+ },
+ "RizwanX-2461": {
+  "sku": "RizwanX-2461",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:32.147Z"
+ },
+ "RizwanX-2470": {
+  "sku": "RizwanX-2470",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:32.217Z"
+ },
+ "RizwanX-2463": {
+  "sku": "RizwanX-2463",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:32.298Z"
+ },
+ "RizwanX-2462": {
+  "sku": "RizwanX-2462",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:32.365Z"
+ },
+ "RizwanX-2472": {
+  "sku": "RizwanX-2472",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:32.440Z"
+ },
+ "RizwanX-2473": {
+  "sku": "RizwanX-2473",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:32.497Z"
+ },
+ "RizwanX-2481": {
+  "sku": "RizwanX-2481",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:32.562Z"
+ },
+ "RizwanX-2486": {
+  "sku": "RizwanX-2486",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:32.631Z"
+ },
+ "RizwanX-2479": {
+  "sku": "RizwanX-2479",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:32.699Z"
+ },
+ "RizwanX-2482": {
+  "sku": "RizwanX-2482",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:32.766Z"
+ },
+ "RizwanX-2488": {
+  "sku": "RizwanX-2488",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:32.837Z"
+ },
+ "RizwanX-253": {
+  "sku": "RizwanX-253",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:32.918Z"
+ },
+ "RizwanX-2492": {
+  "sku": "RizwanX-2492",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:33.006Z"
+ },
+ "RizwanX-252": {
+  "sku": "RizwanX-252",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:33.075Z"
+ },
+ "RizwanX-267": {
+  "sku": "RizwanX-267",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:33.149Z"
+ },
+ "RizwanX-2677": {
+  "sku": "RizwanX-2677",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:33.216Z"
+ },
+ "RizwanX-257": {
+  "sku": "RizwanX-257",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:33.330Z"
+ },
+ "RizwanX-262": {
+  "sku": "RizwanX-262",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:33.395Z"
+ },
+ "RizwanX-266": {
+  "sku": "RizwanX-266",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:33.460Z"
+ },
+ "RizwanX-258": {
+  "sku": "RizwanX-258",
+  "status": "applied",
+  "feedId": "18C0E0BDE1B35C5DAFC12F63E942FD50@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:33.530Z"
+ },
+ "RizwanX-269": {
+  "sku": "RizwanX-269",
+  "status": "failed",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
   "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T07:05:39.467Z"
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:16.956Z"
+ },
+ "RizwanX-2679": {
+  "sku": "RizwanX-2679",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:17.017Z"
+ },
+ "RizwanX-2683": {
+  "sku": "RizwanX-2683",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:17.084Z"
+ },
+ "RizwanX-2709": {
+  "sku": "RizwanX-2709",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:02.808Z"
+ },
+ "RizwanX-270": {
+  "sku": "RizwanX-270",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:03.316Z"
+ },
+ "RizwanX-2708": {
+  "sku": "RizwanX-2708",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:17.150Z"
+ },
+ "RizwanX-2707": {
+  "sku": "RizwanX-2707",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:17.236Z"
+ },
+ "RizwanX-2702": {
+  "sku": "RizwanX-2702",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:04.783Z"
+ },
+ "RizwanX-2725": {
+  "sku": "RizwanX-2725",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:05.206Z"
+ },
+ "RizwanX-2720": {
+  "sku": "RizwanX-2720",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:17.310Z"
+ },
+ "RizwanX-2713": {
+  "sku": "RizwanX-2713",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:17.871Z"
+ },
+ "RizwanX-2744": {
+  "sku": "RizwanX-2744",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:17.937Z"
+ },
+ "RizwanX-2738": {
+  "sku": "RizwanX-2738",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:18.026Z"
+ },
+ "RizwanX-2747": {
+  "sku": "RizwanX-2747",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:18.101Z"
+ },
+ "RizwanX-2746": {
+  "sku": "RizwanX-2746",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:07.806Z"
+ },
+ "RizwanX-2758": {
+  "sku": "RizwanX-2758",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:18.203Z"
+ },
+ "RizwanX-2762": {
+  "sku": "RizwanX-2762",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:18.274Z"
+ },
+ "RizwanX-2764": {
+  "sku": "RizwanX-2764",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:18.371Z"
+ },
+ "RizwanX-276": {
+  "sku": "RizwanX-276",
+  "status": "failed",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:18.471Z"
+ },
+ "RizwanX-2756": {
+  "sku": "RizwanX-2756",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:10.078Z"
+ },
+ "RizwanX-2770": {
+  "sku": "RizwanX-2770",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:18.571Z"
+ },
+ "RizwanX-2781": {
+  "sku": "RizwanX-2781",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:10.892Z"
+ },
+ "RizwanX-2780": {
+  "sku": "RizwanX-2780",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:18.678Z"
+ },
+ "RizwanX-290": {
+  "sku": "RizwanX-290",
+  "status": "failed",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:18.770Z"
+ },
+ "RizwanX-291": {
+  "sku": "RizwanX-291",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:18.842Z"
+ },
+ "RizwanX-2872": {
+  "sku": "RizwanX-2872",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:18.959Z"
+ },
+ "RizwanX-2960": {
+  "sku": "RizwanX-2960",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:34.147Z"
+ },
+ "RizwanX-2961": {
+  "sku": "RizwanX-2961",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:34.214Z"
+ },
+ "RizwanX-2965": {
+  "sku": "RizwanX-2965",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:34.303Z"
+ },
+ "RizwanX-2962": {
+  "sku": "RizwanX-2962",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:13.083Z"
+ },
+ "RizwanX-299": {
+  "sku": "RizwanX-299",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:19.018Z"
+ },
+ "RizwanX-300": {
+  "sku": "RizwanX-300",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:14.085Z"
+ },
+ "RizwanX-3002": {
+  "sku": "RizwanX-3002",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:19.081Z"
+ },
+ "RizwanX-3003": {
+  "sku": "RizwanX-3003",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:19.180Z"
+ },
+ "RizwanX-3006": {
+  "sku": "RizwanX-3006",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:19.247Z"
+ },
+ "RizwanX-3005": {
+  "sku": "RizwanX-3005",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:19.316Z"
+ },
+ "RizwanX-3001": {
+  "sku": "RizwanX-3001",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:16.601Z"
+ },
+ "RizwanX-3004": {
+  "sku": "RizwanX-3004",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:17.263Z"
+ },
+ "RizwanX-3028": {
+  "sku": "RizwanX-3028",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:22.395Z"
+ },
+ "RizwanX-302": {
+  "sku": "RizwanX-302",
+  "status": "failed",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:19.397Z"
+ },
+ "RizwanX-3023": {
+  "sku": "RizwanX-3023",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:19.457Z"
+ },
+ "RizwanX-3029": {
+  "sku": "RizwanX-3029",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:19.522Z"
+ },
+ "RizwanX-3021": {
+  "sku": "RizwanX-3021",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:19.586Z"
+ },
+ "RizwanX-3030": {
+  "sku": "RizwanX-3030",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:19.651Z"
+ },
+ "RizwanX-303": {
+  "sku": "RizwanX-303",
+  "status": "failed",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:19.717Z"
+ },
+ "RizwanX-3054": {
+  "sku": "RizwanX-3054",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:19.780Z"
+ },
+ "RizwanX-3060": {
+  "sku": "RizwanX-3060",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:19.842Z"
+ },
+ "RizwanX-3053": {
+  "sku": "RizwanX-3053",
+  "status": "applied",
+  "feedId": "18C0E19277495DF8A0F201E133C6E765@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:28.673Z"
+ },
+ "RizwanX-3058": {
+  "sku": "RizwanX-3058",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:19.915Z"
+ },
+ "RizwanX-3059": {
+  "sku": "RizwanX-3059",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:19.973Z"
+ },
+ "RizwanX-3074": {
+  "sku": "RizwanX-3074",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:31.458Z"
+ },
+ "RizwanX-3075": {
+  "sku": "RizwanX-3075",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:20.035Z"
+ },
+ "RizwanX-3081": {
+  "sku": "RizwanX-3081",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:32.832Z"
+ },
+ "RizwanX-3085": {
+  "sku": "RizwanX-3085",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:33.274Z"
+ },
+ "RizwanX-3082": {
+  "sku": "RizwanX-3082",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:34.684Z"
+ },
+ "RizwanX-312": {
+  "sku": "RizwanX-312",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:33.984Z"
+ },
+ "RizwanX-3118": {
+  "sku": "RizwanX-3118",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:20.093Z"
+ },
+ "RizwanX-3158": {
+  "sku": "RizwanX-3158",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:35.471Z"
+ },
+ "RizwanX-317": {
+  "sku": "RizwanX-317",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:36.183Z"
+ },
+ "RizwanX-3196": {
+  "sku": "RizwanX-3196",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:20.151Z"
+ },
+ "RizwanX-3173": {
+  "sku": "RizwanX-3173",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:20.208Z"
+ },
+ "RizwanX-3172": {
+  "sku": "RizwanX-3172",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:34.766Z"
+ },
+ "RizwanX-3212": {
+  "sku": "RizwanX-3212",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:20.275Z"
+ },
+ "RizwanX-3203": {
+  "sku": "RizwanX-3203",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:38.718Z"
+ },
+ "RizwanX-3202": {
+  "sku": "RizwanX-3202",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:39.475Z"
+ },
+ "RizwanX-3208": {
+  "sku": "RizwanX-3208",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:20.388Z"
+ },
+ "RizwanX-321": {
+  "sku": "RizwanX-321",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:40.792Z"
+ },
+ "RizwanX-3211": {
+  "sku": "RizwanX-3211",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:41.444Z"
+ },
+ "RizwanX-3205": {
+  "sku": "RizwanX-3205",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:42.091Z"
+ },
+ "RizwanX-3218": {
+  "sku": "RizwanX-3218",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:20.451Z"
+ },
+ "RizwanX-3214": {
+  "sku": "RizwanX-3214",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:20.512Z"
+ },
+ "RizwanX-3220": {
+  "sku": "RizwanX-3220",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:44.046Z"
+ },
+ "RizwanX-3219": {
+  "sku": "RizwanX-3219",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:44.759Z"
+ },
+ "RizwanX-3216": {
+  "sku": "RizwanX-3216",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:20.948Z"
+ },
+ "RizwanX-3217": {
+  "sku": "RizwanX-3217",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:21.056Z"
+ },
+ "RizwanX-3225": {
+  "sku": "RizwanX-3225",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:46.924Z"
+ },
+ "RizwanX-3224": {
+  "sku": "RizwanX-3224",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:21.119Z"
+ },
+ "RizwanX-3230": {
+  "sku": "RizwanX-3230",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:34.839Z"
+ },
+ "RizwanX-3231": {
+  "sku": "RizwanX-3231",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:47.952Z"
+ },
+ "RizwanX-3229": {
+  "sku": "RizwanX-3229",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:34.914Z"
+ },
+ "RizwanX-3223": {
+  "sku": "RizwanX-3223",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:48.478Z"
+ },
+ "RizwanX-3242": {
+  "sku": "RizwanX-3242",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:48.946Z"
+ },
+ "RizwanX-3247": {
+  "sku": "RizwanX-3247",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:49.362Z"
+ },
+ "RizwanX-3237": {
+  "sku": "RizwanX-3237",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:21.180Z"
+ },
+ "RizwanX-3236": {
+  "sku": "RizwanX-3236",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:21.239Z"
+ },
+ "RizwanX-3248": {
+  "sku": "RizwanX-3248",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:21.297Z"
+ },
+ "RizwanX-3253": {
+  "sku": "RizwanX-3253",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:51.589Z"
+ },
+ "RizwanX-3256": {
+  "sku": "RizwanX-3256",
+  "status": "applied",
+  "feedId": "18C0E9C9ED9B5879846C07BAE0C40176@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:21.357Z"
+ },
+ "RizwanX-3264": {
+  "sku": "RizwanX-3264",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:52.543Z"
+ },
+ "RizwanX-3258": {
+  "sku": "RizwanX-3258",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:53.009Z"
+ },
+ "RizwanX-3257": {
+  "sku": "RizwanX-3257",
+  "status": "applied",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:23.184Z"
+ },
+ "RizwanX-3250": {
+  "sku": "RizwanX-3250",
+  "status": "applied",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:23.270Z"
+ },
+ "RizwanX-3270": {
+  "sku": "RizwanX-3270",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:54.350Z"
+ },
+ "RizwanX-3268": {
+  "sku": "RizwanX-3268",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:54.901Z"
+ },
+ "RizwanX-3269": {
+  "sku": "RizwanX-3269",
+  "status": "applied",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:23.351Z"
+ },
+ "RizwanX-3302": {
+  "sku": "RizwanX-3302",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:55.937Z"
+ },
+ "RizwanX-3295": {
+  "sku": "RizwanX-3295",
+  "status": "applied",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:23.432Z"
+ },
+ "RizwanX-332": {
+  "sku": "RizwanX-332",
+  "status": "failed",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:05.992Z"
+ },
+ "RizwanX-333": {
+  "sku": "RizwanX-333",
+  "status": "applied",
+  "feedId": "18C0E266D5525B99B84DC290A940D965@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:18:57.388Z"
+ },
+ "RizwanX-341": {
+  "sku": "RizwanX-341",
+  "status": "failed",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:23.503Z"
+ },
+ "RizwanX-340": {
+  "sku": "RizwanX-340",
+  "status": "failed",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:06.168Z"
+ },
+ "RizwanX-342": {
+  "sku": "RizwanX-342",
+  "status": "failed",
+  "feedId": "18C0E33B4E1753CCB2916F80D56100FD@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:24.649Z"
+ },
+ "RizwanX-3475": {
+  "sku": "RizwanX-3475",
+  "status": "applied",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:23.585Z"
+ },
+ "RizwanX-3476": {
+  "sku": "RizwanX-3476",
+  "status": "applied",
+  "feedId": "18C0E33B4E1753CCB2916F80D56100FD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:19:06.404Z"
+ },
+ "RizwanX-3486": {
+  "sku": "RizwanX-3486",
+  "status": "applied",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:23.658Z"
+ },
+ "RizwanX-3487": {
+  "sku": "RizwanX-3487",
+  "status": "applied",
+  "feedId": "18C0E33B4E1753CCB2916F80D56100FD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T10:18:35.567Z"
+ },
+ "RizwanX-3482": {
+  "sku": "RizwanX-3482",
+  "status": "applied",
+  "feedId": "18C0E33B4E1753CCB2916F80D56100FD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:19:07.084Z"
+ },
+ "RizwanX-3483": {
+  "sku": "RizwanX-3483",
+  "status": "applied",
+  "feedId": "18C0E33B4E1753CCB2916F80D56100FD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:19:07.414Z"
+ },
+ "RizwanX-3481": {
+  "sku": "RizwanX-3481",
+  "status": "applied",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:23.717Z"
+ },
+ "RizwanX-3492": {
+  "sku": "RizwanX-3492",
+  "status": "applied",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:23.774Z"
+ },
+ "RizwanX-3499": {
+  "sku": "RizwanX-3499",
+  "status": "failed",
+  "feedId": "18C0E33B4E1753CCB2916F80D56100FD@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:24.708Z"
+ },
+ "RizwanX-3494": {
+  "sku": "RizwanX-3494",
+  "status": "applied",
+  "feedId": "18C0E33B4E1753CCB2916F80D56100FD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:19:08.508Z"
+ },
+ "RizwanX-3501": {
+  "sku": "RizwanX-3501",
+  "status": "applied",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:23.829Z"
+ },
+ "RizwanX-3495": {
+  "sku": "RizwanX-3495",
+  "status": "applied",
+  "feedId": "18C0E33B4E1753CCB2916F80D56100FD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:19:09.239Z"
+ },
+ "RizwanX-350": {
+  "sku": "RizwanX-350",
+  "status": "applied",
+  "feedId": "18C0E33B4E1753CCB2916F80D56100FD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:19:09.584Z"
+ },
+ "RizwanX-3533": {
+  "sku": "RizwanX-3533",
+  "status": "applied",
+  "feedId": "18C0E33B4E1753CCB2916F80D56100FD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:19:09.974Z"
+ },
+ "RizwanX-356": {
+  "sku": "RizwanX-356",
+  "status": "applied",
+  "feedId": "18C0E33B4E1753CCB2916F80D56100FD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T11:19:10.274Z"
+ },
+ "RizwanX-3523": {
+  "sku": "RizwanX-3523",
+  "status": "failed",
+  "feedId": "18C0E33B4E1753CCB2916F80D56100FD@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:24.762Z"
+ },
+ "RizwanX-3610": {
+  "sku": "RizwanX-3610",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:07.229Z"
+ },
+ "RizwanX-359": {
+  "sku": "RizwanX-359",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:25.244Z"
+ },
+ "RizwanX-360": {
+  "sku": "RizwanX-360",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:07.288Z"
+ },
+ "RizwanX-3603": {
+  "sku": "RizwanX-3603",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:07.361Z"
+ },
+ "RizwanX-3604": {
+  "sku": "RizwanX-3604",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:07.423Z"
+ },
+ "RizwanX-3614": {
+  "sku": "RizwanX-3614",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:07.494Z"
+ },
+ "RizwanX-3611": {
+  "sku": "RizwanX-3611",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:07.552Z"
+ },
+ "RizwanX-3708": {
+  "sku": "RizwanX-3708",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:07.619Z"
+ },
+ "RizwanX-372": {
+  "sku": "RizwanX-372",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:07.695Z"
+ },
+ "RizwanX-371": {
+  "sku": "RizwanX-371",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:07.767Z"
+ },
+ "RizwanX-374": {
+  "sku": "RizwanX-374",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:07.827Z"
+ },
+ "RizwanX-384": {
+  "sku": "RizwanX-384",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:08.627Z"
+ },
+ "RizwanX-380": {
+  "sku": "RizwanX-380",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:08.722Z"
+ },
+ "RizwanX-381": {
+  "sku": "RizwanX-381",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:08.786Z"
+ },
+ "RizwanX-3843": {
+  "sku": "RizwanX-3843",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:08.846Z"
+ },
+ "RizwanX-3841": {
+  "sku": "RizwanX-3841",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:08.936Z"
+ },
+ "RizwanX-3842": {
+  "sku": "RizwanX-3842",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.033Z"
+ },
+ "RizwanX-3852": {
+  "sku": "RizwanX-3852",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.105Z"
+ },
+ "RizwanX-3851": {
+  "sku": "RizwanX-3851",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.161Z"
+ },
+ "RizwanX-3875": {
+  "sku": "RizwanX-3875",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.234Z"
+ },
+ "RizwanX-3872": {
+  "sku": "RizwanX-3872",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.301Z"
+ },
+ "RizwanX-3871": {
+  "sku": "RizwanX-3871",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.359Z"
+ },
+ "RizwanX-3883": {
+  "sku": "RizwanX-3883",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:25.302Z"
+ },
+ "RizwanX-3881": {
+  "sku": "RizwanX-3881",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.419Z"
+ },
+ "RizwanX-3921": {
+  "sku": "RizwanX-3921",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.479Z"
+ },
+ "RizwanX-3919": {
+  "sku": "RizwanX-3919",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.545Z"
+ },
+ "RizwanX-3908": {
+  "sku": "RizwanX-3908",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.612Z"
+ },
+ "RizwanX-3920": {
+  "sku": "RizwanX-3920",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.685Z"
+ },
+ "RizwanX-404": {
+  "sku": "RizwanX-404",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.740Z"
+ },
+ "RizwanX-396": {
+  "sku": "RizwanX-396",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.800Z"
+ },
+ "RizwanX-405": {
+  "sku": "RizwanX-405",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.903Z"
+ },
+ "RizwanX-403": {
+  "sku": "RizwanX-403",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:09.967Z"
+ },
+ "RizwanX-410": {
+  "sku": "RizwanX-410",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.029Z"
+ },
+ "RizwanX-411": {
+  "sku": "RizwanX-411",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.083Z"
+ },
+ "RizwanX-4107": {
+  "sku": "RizwanX-4107",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.140Z"
+ },
+ "RizwanX-417": {
+  "sku": "RizwanX-417",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:25.360Z"
+ },
+ "RizwanX-409": {
+  "sku": "RizwanX-409",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.213Z"
+ },
+ "RizwanX-416": {
+  "sku": "RizwanX-416",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:25.441Z"
+ },
+ "RizwanX-428": {
+  "sku": "RizwanX-428",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.269Z"
+ },
+ "RizwanX-430": {
+  "sku": "RizwanX-430",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.340Z"
+ },
+ "RizwanX-432": {
+  "sku": "RizwanX-432",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.419Z"
+ },
+ "RizwanX-436": {
+  "sku": "RizwanX-436",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.488Z"
+ },
+ "RizwanX-438": {
+  "sku": "RizwanX-438",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.552Z"
+ },
+ "RizwanX-443": {
+  "sku": "RizwanX-443",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.621Z"
+ },
+ "RizwanX-444": {
+  "sku": "RizwanX-444",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.677Z"
+ },
+ "RizwanX-445": {
+  "sku": "RizwanX-445",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.731Z"
+ },
+ "RizwanX-446": {
+  "sku": "RizwanX-446",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.788Z"
+ },
+ "RizwanX-449": {
+  "sku": "RizwanX-449",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.846Z"
+ },
+ "RizwanX-447": {
+  "sku": "RizwanX-447",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.929Z"
+ },
+ "RizwanX-4532": {
+  "sku": "RizwanX-4532",
+  "status": "failed",
+  "feedId": "18C0E67197A75C92AD5A2D9586A92B8A@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:10.982Z"
+ },
+ "RizwanX-4530": {
+  "sku": "RizwanX-4530",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:26.434Z"
+ },
+ "RizwanX-4526": {
+  "sku": "RizwanX-4526",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:26.491Z"
+ },
+ "RizwanX-4538": {
+  "sku": "RizwanX-4538",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:26.566Z"
+ },
+ "RizwanX-4539": {
+  "sku": "RizwanX-4539",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:26.627Z"
+ },
+ "RizwanX-473": {
+  "sku": "RizwanX-473",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:26.689Z"
+ },
+ "RizwanX-472": {
+  "sku": "RizwanX-472",
+  "status": "failed",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:23.888Z"
+ },
+ "RizwanX-486": {
+  "sku": "RizwanX-486",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:26.753Z"
+ },
+ "RizwanX-49": {
+  "sku": "RizwanX-49",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:27.196Z"
+ },
+ "RizwanX-477": {
+  "sku": "RizwanX-477",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:27.266Z"
+ },
+ "RizwanX-475": {
+  "sku": "RizwanX-475",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:27.347Z"
+ },
+ "RizwanX-488": {
+  "sku": "RizwanX-488",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:27.404Z"
+ },
+ "RizwanX-476": {
+  "sku": "RizwanX-476",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:27.471Z"
+ },
+ "RizwanX-485": {
+  "sku": "RizwanX-485",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:27.574Z"
+ },
+ "RizwanX-497": {
+  "sku": "RizwanX-497",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:27.644Z"
+ },
+ "RizwanX-507": {
+  "sku": "RizwanX-507",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:27.719Z"
+ },
+ "RizwanX-505": {
+  "sku": "RizwanX-505",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:27.855Z"
+ },
+ "RizwanX-498": {
+  "sku": "RizwanX-498",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:27.984Z"
+ },
+ "RizwanX-538": {
+  "sku": "RizwanX-538",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:28.092Z"
+ },
+ "RizwanX-537": {
+  "sku": "RizwanX-537",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:28.195Z"
+ },
+ "RizwanX-53": {
+  "sku": "RizwanX-53",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:28.264Z"
+ },
+ "RizwanX-52": {
+  "sku": "RizwanX-52",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:28.324Z"
+ },
+ "RizwanX-536": {
+  "sku": "RizwanX-536",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:28.417Z"
+ },
+ "RizwanX-515": {
+  "sku": "RizwanX-515",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:28.480Z"
+ },
+ "RizwanX-520": {
+  "sku": "RizwanX-520",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:28.567Z"
+ },
+ "RizwanX-541": {
+  "sku": "RizwanX-541",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:28.653Z"
+ },
+ "RizwanX-547": {
+  "sku": "RizwanX-547",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:28.727Z"
+ },
+ "RizwanX-539": {
+  "sku": "RizwanX-539",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:28.786Z"
+ },
+ "RizwanX-546": {
+  "sku": "RizwanX-546",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:28.859Z"
+ },
+ "RizwanX-540": {
+  "sku": "RizwanX-540",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:28.916Z"
+ },
+ "RizwanX-549": {
+  "sku": "RizwanX-549",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:28.975Z"
+ },
+ "RizwanX-543": {
+  "sku": "RizwanX-543",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:29.033Z"
+ },
+ "RizwanX-552": {
+  "sku": "RizwanX-552",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:29.091Z"
+ },
+ "RizwanX-56": {
+  "sku": "RizwanX-56",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:29.160Z"
+ },
+ "RizwanX-550": {
+  "sku": "RizwanX-550",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:29.215Z"
+ },
+ "RizwanX-57": {
+  "sku": "RizwanX-57",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:29.276Z"
+ },
+ "RizwanX-570": {
+  "sku": "RizwanX-570",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:29.340Z"
+ },
+ "RizwanX-587": {
+  "sku": "RizwanX-587",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:29.423Z"
+ },
+ "RizwanX-586": {
+  "sku": "RizwanX-586",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:29.882Z"
+ },
+ "RizwanX-584": {
+  "sku": "RizwanX-584",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:29.995Z"
+ },
+ "RizwanX-585": {
+  "sku": "RizwanX-585",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:30.089Z"
+ },
+ "RizwanX-588": {
+  "sku": "RizwanX-588",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:30.151Z"
+ },
+ "RizwanX-621": {
+  "sku": "RizwanX-621",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:30.208Z"
+ },
+ "RizwanX-614": {
+  "sku": "RizwanX-614",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:30.288Z"
+ },
+ "RizwanX-611": {
+  "sku": "RizwanX-611",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:30.382Z"
+ },
+ "RizwanX-617": {
+  "sku": "RizwanX-617",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:30.438Z"
+ },
+ "RizwanX-610": {
+  "sku": "RizwanX-610",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:30.529Z"
+ },
+ "RizwanX-618": {
+  "sku": "RizwanX-618",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:30.595Z"
+ },
+ "RizwanX-602": {
+  "sku": "RizwanX-602",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:30.656Z"
+ },
+ "RizwanX-620": {
+  "sku": "RizwanX-620",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:30.720Z"
+ },
+ "RizwanX-625": {
+  "sku": "RizwanX-625",
+  "status": "failed",
+  "feedId": "18C0E746308A5816B820BD260622D666@AX8BBgA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T12:18:30.787Z"
+ },
+ "RizwanX-626": {
+  "sku": "RizwanX-626",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.136Z"
+ },
+ "RizwanX-648": {
+  "sku": "RizwanX-648",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.191Z"
+ },
+ "RizwanX-642": {
+  "sku": "RizwanX-642",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.249Z"
+ },
+ "RizwanX-647": {
+  "sku": "RizwanX-647",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.310Z"
+ },
+ "RizwanX-640": {
+  "sku": "RizwanX-640",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.365Z"
+ },
+ "RizwanX-653": {
+  "sku": "RizwanX-653",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.422Z"
+ },
+ "RizwanX-650": {
+  "sku": "RizwanX-650",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.479Z"
+ },
+ "RizwanX-652": {
+  "sku": "RizwanX-652",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.542Z"
+ },
+ "RizwanX-651": {
+  "sku": "RizwanX-651",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.600Z"
+ },
+ "RizwanX-672": {
+  "sku": "RizwanX-672",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.658Z"
+ },
+ "RizwanX-775": {
+  "sku": "RizwanX-775",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.717Z"
+ },
+ "RizwanX-777": {
+  "sku": "RizwanX-777",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.780Z"
+ },
+ "RizwanX-781": {
+  "sku": "RizwanX-781",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.840Z"
+ },
+ "RizwanX-783": {
+  "sku": "RizwanX-783",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.936Z"
+ },
+ "RizwanX-782": {
+  "sku": "RizwanX-782",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:12.996Z"
+ },
+ "RizwanX-806": {
+  "sku": "RizwanX-806",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:13.074Z"
+ },
+ "RizwanX-810": {
+  "sku": "RizwanX-810",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:13.132Z"
+ },
+ "RizwanX-825": {
+  "sku": "RizwanX-825",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:13.191Z"
+ },
+ "RizwanX-83": {
+  "sku": "RizwanX-83",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:13.256Z"
+ },
+ "Sami-Barila": {
+  "sku": "Sami-Barila",
+  "status": "applied",
+  "feedId": "18C0EAA051FE553BA6A859E7DB3DB706@AX8BBwA",
+  "ok": true,
+  "detail": "sku: This is a stale update request.The last update for this exact request was s",
+  "at": "2026-07-10T12:18:23.948Z"
+ },
+ "RizwanX-93": {
+  "sku": "RizwanX-93",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:13.327Z"
+ },
+ "RizwanX-92": {
+  "sku": "RizwanX-92",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:13.421Z"
+ },
+ "RizwanX-841": {
+  "sku": "RizwanX-841",
+  "status": "failed",
+  "feedId": "18C0E81AEAD753B9A4FCF5879018CAAE@AX8BBwA",
+  "ok": false,
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-10T13:21:13.488Z"
  }
 }
