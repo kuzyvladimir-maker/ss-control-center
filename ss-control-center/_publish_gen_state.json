@@ -6829,11 +6829,11 @@
  },
  "FaisalX-4552": {
   "sku": "FaisalX-4552",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C0DA276D1255B9BA77F977CCD2FBE1@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-10T06:50:23.742Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-10T21:18:29.933Z"
  },
  "FaisalX-4538": {
   "sku": "FaisalX-4538",
