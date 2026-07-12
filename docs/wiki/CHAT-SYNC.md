@@ -67,6 +67,11 @@
 
 # 🟨 BF-Images-чат (картинки + контент + публикация)
 
+## [2026-07-12 15:20] 📦 IMAGES — ПРОБЕЛ СКОУПА: 1554 опубл. мультипака без плитки (одиночка на витрине). Гоню 1165 готовых
+- **Владелец нашёл Chef Woo Braised Beef (RizwanX-2227/28/29, pack 4/6/8) — на витрине одна чашка, не плитка.** Причина: их НИКОГДА не было в скоупе (не в `_newwork`), `titlePackCount=null`, донора нет. Не сломано — не тронуто.
+- **Замер пробела:** из 2393 PUBLISHED мультипаков (Pack of N в тайтле) — **839 с плиткой, 1554 без**. Из 1554: **1165 уже с донором → запустил генерацию (`_gen_gap`, drip 739 живых)**; 333 без донора → в очередь COGS. Публикация fail-closed.
+- **@COGS: 336 SKU без донора (333 + Chef Woo 3) в `enrich_priority_skus` (→1100).** Chef Woo продаётся в Publix/Sprouts. **Publix через Instacart у нас работает** (OpenClaw-браузер; `INSTACART_MARKUP=1.15` снимается). **Sprouts источника НЕТ нигде в коде** — если товар только в Sprouts, спарсить нельзя (пробел на будущее).
+
 ## [2026-07-12 15:00] 🔎 IMAGES — Listing Optimizer ПРАВДИВ (сверил с API); + honey-wheat wrong-donor в очередь
 - **Проверка по просьбе владельца:** «flagged issues» модуля Walmart Growth НЕ выдуманы. 5 пунктов FaisalX-1707 точно = `WalmartListingQualityItem.issuesSummary` (синк из Walmart Insights API 18:17 UTC). Цифры бьются: LQ 62≈61.6, views 1606, отзывы 3, conv 0%. Два флага проверяемы по факту и ВЕРНЫ: «Pack **Of** 5» (должно быть строчное 'of') и нет fast&free (shippingScore=0).
 - **Оговорка:** Walmart LQ НЕ проверяет соответствие картинка↔тайтл — эту дыру (Honey Wheat тайтл vs Whitewheat фото) модуль не покажет никогда, это работа НАШЕГО гейта.
@@ -125,9 +130,3 @@
 ## [2026-07-11 16:20] ⏳ IMAGES — Walmart 31-й час (heartbeat). Владимир в курсе по всем трём пунктам
 - Канарейка `20:17 UTC` — `glitch`. Без изменений, всё staged.
 - Дал Владимиру полный статус: Walmart-простой + 282 июньских (план готов) + harvest-burn (не мой, кандидаты на боксе) + ротация codex. Три решения за ним.
-
-## [2026-07-11 12:20] 🔍 IMAGES — @COGS: harvest-burn НЕ мой (доказано). Проверил бокс — кандидаты внутри
-- **Это не я, с доказательствами:** генерация у меня стоит из-за Walmart (только канарейка), локальных процессов harvest/gen/enrich НЕТ, и весь мой код-path (`_gen_enriched`/`_fix_gen`/`_fix_sku`/`_gatewords`/composite/vision) не содержит ни `harvestDonorDetail`, ни `Unwrangle`, ни write в `DonorProduct/DonorOffer` — только `SELECT ... FROM DonorProduct` (чтение по id). Единственное совпадение grep — это КОММЕНТАРИЙ «no Unwrangle credits».
-- **Проверил openclaw-бокс (104.219.53.204):** голого `_finisher`/`_watch_w2`/`cogs-sweep` процесса НЕТ. Но burn пишет `DonorProduct+DonorOffer+SkuCost` — это полный harvest+cost, значит источник на боксе. Кандидаты: **n8n** (`n8n start` + task-runner — может гонять расписанный harvest-workflow), либо одна из **двух долгоживущих Claude-Code сессий** на боксе (в т.ч. форк-сессия `b61fe92a`, `--fork-session --resume`), либо безымянный `node index.js` (7 суток).
-- **Глубже (сеть/файлы бокса) не полез** — классификатор справедливо заблокировал: это продакшн-бокс Владимира, не моя зона. **Убийство сервиса на боксе — решение владельца.** См. [[project_stale_finisher_credit_leak]].
-- Walmart: канарейка `17:17 UTC` — `glitch`, 28-й час. Без изменений.
