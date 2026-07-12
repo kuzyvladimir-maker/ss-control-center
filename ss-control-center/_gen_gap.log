@@ -1,0 +1,22 @@
+generating 739 tiles (CONC 8) · listing titles: 699/739
+
+[WALMART][STORE1] token issued, expires at 2026-07-12T19:20:45.994Z
+[WALMART][STORE1] token issued, expires at 2026-07-12T19:20:46.007Z
+[WALMART][STORE1] token issued, expires at 2026-07-12T19:20:46.045Z
+[WALMART][STORE1] token issued, expires at 2026-07-12T19:20:46.055Z
+[WALMART][STORE1] GET /v3/items/RizwanX-812 → 200 (tokens: 149, 503ms, cid=7bc71354-00f2-4656-8086-8881b5303034)
+[WALMART][STORE1] GET /v3/items/RizwanX-813 → 200 (tokens: 148, 461ms, cid=d1cf53fa-0d3f-452c-8991-c5be8609e798)
+[WALMART][STORE1] GET /v3/items/RizwanX-802 → 200 (tokens: 149, 626ms, cid=6aa48bb3-10a5-4c37-9c8a-a42dfddab4fb)
+[WALMART][STORE1] GET /v3/items/RizwanX-790 → 200 (tokens: 148, 677ms, cid=115e3d3f-3d9f-4766-88ae-971370677108)
+[WALMART][STORE1] GET /v3/items/RizwanX-821 → 200 (tokens: 149, 846ms, cid=b22d6e29-bf55-4e3f-a8f6-d8584b321268)
+  [10/739] ok 1 · donorFail 7 · tileFail 2 · err 0
+  [20/739] ok 5 · donorFail 10 · tileFail 5 · err 0
+  [30/739] ok 8 · donorFail 12 · tileFail 10 · err 0
+  [40/739] ok 13 · donorFail 17 · tileFail 10 · err 0
+  [50/739] ok 16 · donorFail 22 · tileFail 12 · err 0
+  [60/739] ok 24 · donorFail 23 · tileFail 13 · err 0
+  [70/739] ok 30 · donorFail 24 · tileFail 16 · err 0
+  [80/739] ok 30 · donorFail 26 · tileFail 24 · err 0
+  [90/739] ok 31 · donorFail 34 · tileFail 25 · err 0
+  [100/739] ok 36 · donorFail 35 · tileFail 29 · err 0
+  [110/739] ok 39 · donorFail 38 · tileFail 33 · err 0

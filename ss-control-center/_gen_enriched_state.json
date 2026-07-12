@@ -17063,8 +17063,17 @@
  },
  "RizwanX-2873": {
   "sku": "RizwanX-2873",
-  "status": "ERR",
-  "reason": "not in EnrichedReadySku"
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2873/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "Ocean Spray® Whole Cranberry Sauce, Canned Side Dish, 14 oz Can",
+  "listing": "Pack of 4 Ocean Spray Whole Cranberry Sauce, Canned Side Dish, 14 Oz Can",
+  "front": "https://i5.walmartimages.com/seo/Ocean-Spray-Whole-Cranberry-Sauce-Canned-Side-Dish-14-oz-Can_7154a45c-3cfe-4a49-911b-c3378b5f24a9.443cbb1f83aef0c818c435ba7e31c56a.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "All conditions are met."
  },
  "RizwanX-279": {
   "sku": "RizwanX-279",
@@ -22529,13 +22538,17 @@
  },
  "RizwanX-790": {
   "sku": "RizwanX-790",
-  "status": "ERR",
-  "reason": "not in EnrichedReadySku"
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"original\"",
+  "listing": "Quaker Original Instant Oatmeal 9.8 oz (Pack 2)",
+  "donorTitle": "Quaker Low Sugar Instant Oatmeal Maple Brown Sugar - 9.5oz/8ct"
  },
  "RizwanX-792": {
   "sku": "RizwanX-792",
-  "status": "ERR",
-  "reason": "not in EnrichedReadySku"
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"original\"",
+  "listing": "Quaker Original Instant Oatmeal 9.8 oz (Pack 6)",
+  "donorTitle": "Quaker Low Sugar Instant Oatmeal Maple Brown Sugar - 9.5oz/8ct"
  },
  "RizwanX-781": {
   "sku": "RizwanX-781",
@@ -22601,23 +22614,27 @@
  },
  "RizwanX-796": {
   "sku": "RizwanX-796",
-  "status": "ERR",
-  "reason": "not in EnrichedReadySku"
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
  },
  "RizwanX-797": {
   "sku": "RizwanX-797",
-  "status": "ERR",
-  "reason": "not in EnrichedReadySku"
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
  },
  "RizwanX-802": {
   "sku": "RizwanX-802",
-  "status": "ERR",
-  "reason": "not in EnrichedReadySku"
+  "status": "TILE_FAIL",
+  "reason": "Image shows 4 single boxes on white, but product appears to be Quaker Fiber Instant Oatmeal Apples &",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-802/main-enriched.png",
+  "qty": 4,
+  "front": "https://target.scene7.com/is/image/Target/GUEST_1734c7f1-3406-4cf9-a407-5bb566ffa488",
+  "listing": "Quaker Instant Oatmeal, Apple & Cinnamon, 12.1 oz (Pack 4)"
  },
  "RizwanX-812": {
   "sku": "RizwanX-812",
-  "status": "ERR",
-  "reason": "not in EnrichedReadySku"
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
  },
  "RizwanX-806": {
   "sku": "RizwanX-806",
@@ -22659,33 +22676,59 @@
  },
  "RizwanX-813": {
   "sku": "RizwanX-813",
-  "status": "ERR",
-  "reason": "not in EnrichedReadySku"
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
  },
  "RizwanX-814": {
   "sku": "RizwanX-814",
-  "status": "ERR",
-  "reason": "not in EnrichedReadySku"
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-814/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "Quaker Instant Oatmeal, Variety, 12.1 oz, 8 Count",
+  "listing": "Quaker Instant Oatmeal, Variety, 12.1 oz (Pack 4)",
+  "front": "https://i5.walmartimages.com/asr/bba71003-2316-447b-8d9f-72db008d4804.34b79597c28066827ebeae95c88943cf.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "All 4 tiles show the same Quaker Instant Oatmeal Flavor Variety 12.1 oz box face-on with full brandi"
  },
  "RizwanX-820": {
   "sku": "RizwanX-820",
-  "status": "ERR",
-  "reason": "not in EnrichedReadySku"
+  "status": "TILE_FAIL",
+  "reason": "Product size (12.8 oz) does not match listing title (12.1 oz).",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-820/main-enriched.png",
+  "qty": 4,
+  "front": "https://target.scene7.com/is/image/Target/GUEST_a862208b-9822-4af4-890b-cdc0b6b4f09b",
+  "listing": "Quaker Instant Oatmeal, Maple Brown Sugar, 12.1 oz (Pack 4)"
  },
  "RizwanX-821": {
   "sku": "RizwanX-821",
-  "status": "ERR",
-  "reason": "not in EnrichedReadySku"
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-821/main-enriched.png",
+  "qty": 6,
+  "donorTitle": "Quaker Fiber Boost Maple and Brown Sugar Flavored Instant Oatmeal - 12.6oz/8ct",
+  "listing": "Quaker Instant Oatmeal, Maple Brown Sugar, 12.1 oz (Pack 6)",
+  "front": "https://target.scene7.com/is/image/Target/GUEST_a862208b-9822-4af4-890b-cdc0b6b4f09b",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "All 6 tiles show a single Quaker Fiber Instant Oatmeal Maple & Brown Sugar box face-on with full bra"
  },
  "RizwanX-829": {
   "sku": "RizwanX-829",
-  "status": "ERR",
-  "reason": "not in EnrichedReadySku"
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
  },
  "RizwanX-830": {
   "sku": "RizwanX-830",
-  "status": "ERR",
-  "reason": "not in EnrichedReadySku"
+  "status": "TILE_FAIL",
+  "reason": "Product shown is Quaker Instant Oatmeal Lower Sugar Maple & Brown Sugar (single flavor, all 4 tiles ",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-830/main-enriched.png",
+  "qty": 4,
+  "front": "https://target.scene7.com/is/image/Target/GUEST_ec25688f-f98b-461c-92b4-36632a40ffcc",
+  "listing": "Quaker Essentials Instant Oatmeal, Variety Pack 10.28 oz (Pack 4)"
  },
  "RizwanX-825": {
   "sku": "RizwanX-825",
@@ -22828,5 +22871,919 @@
   "sku": "Testing-04",
   "status": "DONOR_FAIL",
   "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "FaisalX-1177": {
+  "sku": "FaisalX-1177",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "FaisalX-1134": {
+  "sku": "FaisalX-1134",
+  "status": "TILE_FAIL",
+  "reason": "Product flavor/variant in image (Oatmeal) does not match listing title (100% Whole Wheat).",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1134/main-enriched.png",
+  "qty": 4,
+  "front": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Whole-Grain-Oatmeal-Bread-24-oz-Loaf_7acf2513-f512-4fb1-ae08-69ef050044a2.7eaff61bf4223bc0d7b1329444ed57c2.jpeg",
+  "listing": "Pepperidge Farm Whole Grain Thin Sliced 100% Whole Wheat Bread, 22 oz (Pack of 4)"
+ },
+ "FaisalX-1140": {
+  "sku": "FaisalX-1140",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1140/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "Pepperidge Farm White Sandwich Bread, 16 oz Loaf",
+  "listing": "Pepperidge Farm White Sandwich Bread, 16 oz (Pack of 4)",
+  "front": "https://i5.walmartimages.com/seo/Pepperidge-Farm-White-Sandwich-Bread-16-oz-Loaf_c8c2e386-8b76-4b7d-8b55-28429aaa06e4.29ab81468f4de9348f072f5b809b703f.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Four single Pepperidge Farm White Sandwich Bread loaves, front-facing, on a plain white background."
+ },
+ "FaisalX-1666": {
+  "sku": "FaisalX-1666",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"whole\"",
+  "listing": "Dave's Killer Bread® Plain Awesome® Organic Bagels, 16.75 oz (Pack of 7) – Non-GMO, USDA Organic, High Protein & Whole Grains",
+  "donorTitle": "Dave's Killer Bread Plain Awesome Organic Bagels - 16.75oz"
+ },
+ "FaisalX-1806": {
+  "sku": "FaisalX-1806",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"caffeine\"",
+  "listing": "Sprite Zero Sugar Lemon Lime Soda Pop, 2 Liter Bottle (Pack of 4)",
+  "donorTitle": "Sprite Zero Sugar Lemon-Lime Caffeine Free Soda Pop Bottle, 2 Liters"
+ },
+ "FaisalX-1215": {
+  "sku": "FaisalX-1215",
+  "status": "TILE_FAIL",
+  "reason": "Each tile shows one Sara Lee Artesano Brioche bread bag (correct identity, single package, white bac",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1215/main-enriched.png",
+  "qty": 4,
+  "front": "https://i5.walmartimages.com/asr/3d7f56b0-e823-4566-abff-9036ec67a579.0488996a58b091893d7fe24cb2301317.jpeg",
+  "listing": "Sara Lee Artesano Brioche Bakery Bread, 20 oz, Soft Brioche Bread, Bag (Pack of 4)"
+ },
+ "FaisalX-1180": {
+  "sku": "FaisalX-1180",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1180/main-enriched.png",
+  "qty": 6,
+  "donorTitle": "Pepperidge Farm Whole Grain Oatmeal Bread, 24 oz Loaf",
+  "listing": "Pepperidge Farm Whole Grain Oatmeal Bread, 24 oz (Pack of 6)",
+  "front": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Whole-Grain-Oatmeal-Bread-24-oz-Loaf_7acf2513-f512-4fb1-ae08-69ef050044a2.7eaff61bf4223bc0d7b1329444ed57c2.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Six face-on single bread loaves matching Pepperidge Farm Whole Grain Oatmeal on white background."
+ },
+ "FaisalX-1892": {
+  "sku": "FaisalX-1892",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1892/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "Minute Maid Watermelon Juice Drink Carton, 59 fl oz",
+  "listing": "Minute Maid Premium Watermelon Fruit Juice, 59 fl oz Carton (Pack of 4)",
+  "front": "https://i5.walmartimages.com/asr/751cae18-9136-472a-8f5e-f53c705eab00.acab84bae5995320e6c37bb7ba4db70f.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "4 Minute Maid Watermelon cartons in a 2×2 grid; each tile is one individual carton shown face-on wit"
+ },
+ "FaisalX-1270": {
+  "sku": "FaisalX-1270",
+  "status": "TILE_FAIL",
+  "reason": "Image shows Arnold Country Style Sourdough loaves, not the listed Country Oatmeal bread; 6 single fa",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1270/main-enriched.png",
+  "qty": 6,
+  "front": "https://i5.walmartimages.com/seo/Arnold-Country-Style-Sourdough-Bread-24-oz-Sourdough-Bread-Bag_4a56f7ac-7dc5-44f8-affd-8747563fcce7.8c239e324b939101667f0cc34396cb0f.jpeg",
+  "listing": "Arnold Country Oatmeal Bread, Hearty Texture & Flavor, 24 oz (Pack of 6)"
+ },
+ "FaisalX-1206": {
+  "sku": "FaisalX-1206",
+  "status": "TILE_FAIL",
+  "reason": "Shows 4 single Sara Lee Artesano bread loaves, not brioche hamburger buns, and the packages are show",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1206/main-enriched.png",
+  "qty": 4,
+  "front": "https://i5.walmartimages.com/asr/f2956de9-36a5-42ba-ba56-a8cf544c23de.083f6102cab60ec8eba63f28600701af.jpeg",
+  "listing": "Sara Lee Artesano Brioche Buns 8 ct 16 oz Hamburger Buns (Pack of 4)"
+ },
+ "FaisalX-2066": {
+  "sku": "FaisalX-2066",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "FaisalX-3335": {
+  "sku": "FaisalX-3335",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"flamin\"",
+  "listing": "Maruchan Instant Lunch Chicken Flavor Instant Lunch, 2.25 oz (Pack of 8)",
+  "donorTitle": "Maruchan Instant Lunch Ramen Noodles, Flamin Hot Flavored Chicken Flavor, 2.25 oz Cup"
+ },
+ "FaisalX-368": {
+  "sku": "FaisalX-368",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-368/main-enriched.png",
+  "qty": 9,
+  "donorTitle": "Nature's Own Life 100% Whole Grain Bread, Sugar Free Bread, Non-GMO Keto Friendly, 16 oz Loaf",
+  "listing": "Nature's Own Life Sugar-Free 100% Whole Grain Bread Loaf, 16 oz, (Pack of 9)",
+  "front": "https://i5.walmartimages.com/seo/Nature-s-Own-Life-Sugar-Free-100-Whole-Grain-Bread-Loaf-Sugar-Free-Whole-Grain-Bread-16-oz-1-Count_5014ab4e-4a85-46ae-940d-51f2027c572c.f24e09ddb1980240fc7f1dfbdf1c64fc.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "3x3 grid of 9 Nature's Own Life Sugar-Free 100% Whole Grain bread loaves, each shown face-on with wi"
+ },
+ "FaisalX-3531": {
+  "sku": "FaisalX-3531",
+  "status": "TILE_FAIL",
+  "reason": "Product shown is Hamburger Helper Cheesy Enchilada, not Tomato Basil Penne as specified in the listi",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3531/main-enriched.png",
+  "qty": 10,
+  "front": "https://i5.walmartimages.com/seo/Hamburger-Helper-Cheesy-Enchilada-Rice-7-5-oz-Box_6242ebfd-bb38-45d3-add2-d5d0f1d34294.c32d86f90d51eb413ce2170730beba57.jpeg",
+  "listing": "Hamburger Helper Tomato Basil Penne, 7.4 oz Box (Pack of 10)"
+ },
+ "FaisalX-2508": {
+  "sku": "FaisalX-2508",
+  "status": "TILE_FAIL",
+  "reason": "Image shows Hormel Compleats Beefy Mac trays, not Dumplings & Chicken, and the packages are shown to",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2508/main-enriched.png",
+  "qty": 4,
+  "front": "https://i5.walmartimages.com/seo/HORMEL-COMPLEATS-Beefy-Macaroni-Cheese-Shelf-Stable-12-grams-Protein-7-5-oz-Plastic-Microwaaveable-Tray_885ac21e-8de3-4115-93e9-f553b144f402.25ce34d2d7ccd45cc836b0eec8aa2a81.jpeg",
+  "listing": "Hormel Compleats Dumplings & Chicken, 7.5 Oz Plastic Tray, (Pack of 4)"
+ },
+ "FaisalX-3533": {
+  "sku": "FaisalX-3533",
+  "status": "TILE_FAIL",
+  "reason": "Image shows 8 single front-facing Hamburger Helper boxes on white, but the box reads Deluxe Beef Str",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3533/main-enriched.png",
+  "qty": 8,
+  "front": "https://i5.walmartimages.com/seo/Hamburger-Helper-Deluxe-Beef-Stroganoff-Pasta-5-5-oz-Box_1d60f143-429a-4dea-92f1-95374a60b002.1c30f16207a867cec441804538e377ed.jpeg",
+  "listing": "Hamburger Helper Pasta Stroganoff, 6.4 oz Box (Pack of 8)"
+ },
+ "FaisalX-3339": {
+  "sku": "FaisalX-3339",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3339/main-enriched.png",
+  "qty": 10,
+  "donorTitle": "Maruchan Chicken Ramen Noodle Soup - 3oz / 12ct",
+  "listing": "Maruchan Ramen Noodle Soup Chicken Flavor, 3 oz Shelf Stable Package (Pack of 10)",
+  "front": "https://target.scene7.com/is/image/Target/GUEST_3c09204e-4702-4093-b320-49d8a0738197",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "10 individual Maruchan Ramen Noodle Soup Chicken Flavor 3oz packages shown face-on in a grid on whit"
+ },
+ "FaisalX-2651": {
+  "sku": "FaisalX-2651",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "FaisalX-2264": {
+  "sku": "FaisalX-2264",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2264/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "BODYARMOR Lyte Dragonfruit Berry Electrolyte Sports Drink Bottle, 16 fl oz",
+  "listing": "BODYARMOR Lyte Dragonfruit Berry Sports Drink, 16 fl oz, (Pack of 4)",
+  "front": "https://i5.walmartimages.com/asr/6a2bf0ad-29f4-4e2c-8370-37e23fbc3658.4337303b31583f3ff6af24b89f963a7a.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Four single BODYARMOR Lyte Dragonfruit Berry bottles shown face-on on a plain white background."
+ },
+ "FaisalX-4220": {
+  "sku": "FaisalX-4220",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"gluten\"",
+  "listing": "Old El Paso Crunchy Taco Shells, Gluten-Free, 18 Ct., 6.89 oz. (Pack of 8)",
+  "donorTitle": "Old El Paso Carb Advantage Nacho Cheese Flavored Crunchy Taco Shells - 3.95oz/8ct"
+ },
+ "FaisalX-4227": {
+  "sku": "FaisalX-4227",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"gluten\"",
+  "listing": "Old El Paso Stand ‘N Stuff Crunchy Taco Shells, Hint of Lime Flavored, 10 Count, 5.4 oz (Pack of 4)",
+  "donorTitle": "Old El Paso Stand 'N Stuff Taco Shells, Hint of Lime Flavored, Gluten Free, 10 Count, 5.4 oz"
+ },
+ "FaisalX-3804": {
+  "sku": "FaisalX-3804",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3804/main-enriched.png",
+  "qty": 8,
+  "donorTitle": "Progresso Chicken Broth, Reduced Sodium, Gluten Free, 32 oz",
+  "listing": "Progresso Chicken Broth, Reduced Sodium, Gluten Free, 32 oz. (Pack of 8)",
+  "front": "https://i5.walmartimages.com/seo/Progresso-Chicken-Broth-Reduced-Sodium-Gluten-Free-32-oz_eaf37ad1-30da-48f2-8698-0c08476d7523.d8bb275292b38d20c781a772c3b84c18.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "All 8 tiles show a single Progresso Chicken Broth Reduced Sodium 32 oz carton face-on with full fron"
+ },
+ "FaisalX-3682": {
+  "sku": "FaisalX-3682",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3682/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "Progresso Traditional Chicken & Herb Dumpling Soup - 18.5oz",
+  "listing": "Progresso Traditional, Chicken & Herb Dumplings Canned Soup, 18.5 oz. (Pack of 4)",
+  "front": "https://target.scene7.com/is/image/Target/GUEST_bc8f3ecc-e18f-47d0-8bd7-1532ab6a1510",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Four Progresso Traditional Chicken & Herb Dumplings 18.5 oz cans arranged in a 2x2 grid, each showin"
+ },
+ "FaisalX-4210": {
+  "sku": "FaisalX-4210",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4210/main-enriched.png",
+  "qty": 6,
+  "donorTitle": "Taco Bell Mild Taco Shells - 4.8oz",
+  "listing": "Taco Bell Mild Seasoned Flavor Crunchy Taco Shells, 12 ct, 4.8 oz (Pack of 6)",
+  "front": "https://target.scene7.com/is/image/Target/GUEST_b1e8f031-6c19-4e61-8e54-f5908062df5c",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "6 face-on single Taco Bell Mild Taco Shells packages on a plain white background."
+ },
+ "FaisalX-3925": {
+  "sku": "FaisalX-3925",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3925/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "Sahale Snacks Glazed Mix, Honey Almonds, 9 Packs, 1.5 oz (42.5 g) Each",
+  "listing": "Sahale Snacks Honey Almonds Glazed Mix, 1.5 Ounces (Pack of 4)",
+  "front": "https://target.scene7.com/is/image/Target/GUEST_a00200f4-4362-42ad-a7f4-0b0ad5cd7f00",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "4 face-on single Sahale Honey Almonds packages tiled on a white background."
+ },
+ "FaisalX-4016": {
+  "sku": "FaisalX-4016",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "FaisalX-4093": {
+  "sku": "FaisalX-4093",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "FaisalX-4468": {
+  "sku": "FaisalX-4468",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"original\"",
+  "listing": "Cheez-It Original Cheese Crackers, Baked Snack Crackers, 12.4 oz (Pack of 6)",
+  "donorTitle": "Cheez-It White Cheddar Baked Snack Crackers - 12.4oz"
+ },
+ "FaisalX-4519": {
+  "sku": "FaisalX-4519",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4519/main-enriched.png",
+  "qty": 6,
+  "donorTitle": "Cheez-It Grooves Sharp White Cheddar Crackers - 9oz",
+  "listing": "Cheez-It Grooves Sharp White Cheddar Crunchy Cheese Crackers, Snack Crackers, 9 oz (Pack of 6)",
+  "front": "https://target.scene7.com/is/image/Target/GUEST_47b7cc2a-282a-483d-86a1-34d18b5ae31c",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "6 individual Cheez-It Grooves Sharp White Cheddar 9oz boxes arranged in a 3x2 grid, each shown face-"
+ },
+ "FaisalX-4681": {
+  "sku": "FaisalX-4681",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "FaisalX-5231": {
+  "sku": "FaisalX-5231",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5231/main-enriched.png",
+  "qty": 6,
+  "donorTitle": "SOUR PATCH KIDS Soft & Chewy Gummy Candy, 3.5 oz",
+  "listing": "Sour Patch Kids, Soft & Chewy Candy, 3.5 oz — 6-Pack (6 packages)",
+  "front": "https://i5.walmartimages.com/seo/SOUR-PATCH-KIDS-Soft-Chewy-Candy-3-5-oz_21a86fb1-fd89-4bdc-b96b-d9e96264313d.f375eb5efaa96225dc93a1b6e125e62f.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Six single Sour Patch Kids boxes shown face-on on a plain white background."
+ },
+ "FaisalX-5245": {
+  "sku": "FaisalX-5245",
+  "status": "TILE_FAIL",
+  "reason": "Image shows Trolli Sour Brite Crawlers Very Berry 14 oz, not the mixed-flavor variant in the title.",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-5245/main-enriched.png",
+  "qty": 4,
+  "front": "https://i5.walmartimages.com/seo/Trolli-Sour-Brite-Crawlers-Candy-Very-Berry-Sweet-and-Sour-Gummy-Worms-14-oz_d53a3f4f-b8d3-4b26-97d2-23f0d76c2ee1.d0e6f7a817eb40ad7840b63af5ea9fe5.jpeg",
+  "listing": "4 Pack - Trolli Sour Brite Crawlers, Candy, Cherry-Lemon, Strawberry-Grape & Orange-Lime, Sweet and Sour, Gummy Worms, 14 oz"
+ },
+ "FaisalX-4324": {
+  "sku": "FaisalX-4324",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4324/main-enriched.png",
+  "qty": 6,
+  "donorTitle": "Toasteds Flatbreads Italian Herb Crackers, Party Snacks, 8.7 oz",
+  "listing": "Toasteds Flatbreads Italian Herb Crackers, Party Snacks, 8.7 oz (Pack of 6)",
+  "front": "https://i5.walmartimages.com/seo/Toasteds-Flatbreads-Italian-Herb-Crackers-Party-Snacks-8-7-oz_fdd6e617-f364-4bf5-abf0-f7d25e547264.ce981a88cd2a48da59476fa25422819c.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Six single front-facing Toasteds Italian Herb 8.7 oz boxes on a white background."
+ },
+ "FaisalX-4529": {
+  "sku": "FaisalX-4529",
+  "status": "TILE_FAIL",
+  "reason": "Boxes show Extra Toasty Original, not Cheddar Jack; 8 single front-facing boxes on white.",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4529/main-enriched.png",
+  "qty": 8,
+  "front": "https://i5.walmartimages.com/seo/Cheez-It-Extra-Toasty-Cheese-Crackers-Baked-Snack-Crackers-12-4-oz_031b62d0-f5d0-405e-b589-f1798b0460c3.37cbda7b1851e1036e474c044f19bcd0.jpeg",
+  "listing": "Cheez-It Extra Toasty Cheddar Jack Cheese Crackers, Baked Snack Crackers, 12.4 oz (Pack of 8)"
+ },
+ "FaisalX-4542": {
+  "sku": "FaisalX-4542",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "RizwanX-2375": {
+  "sku": "RizwanX-2375",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"gluten\"",
+  "listing": "Banza Elbows Pasta Gluten Free High Protein Lower Carb (Pack of 4)",
+  "donorTitle": "Banza Spaghetti Pasta from Chickpeas - Made In Italy, High Protein, High Fiber, Lower Carb Italian Chickpea Noodles, 8oz"
+ },
+ "RizwanX-2378": {
+  "sku": "RizwanX-2378",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"classic\"",
+  "listing": "Banza Spaghetti Pasta - Gluten Free, High Protein Lower Carb (Pack of 6)",
+  "donorTitle": "Banza Brown Rice Spaghetti, Gluten-Free Pasta Made in Italy, Non-GMO, 8oz, Classic Texture"
+ },
+ "RizwanX-151": {
+  "sku": "RizwanX-151",
+  "status": "TILE_FAIL",
+  "reason": "Product shown is Margaret Holmes Seasoned Butter Beans, but the listing title specifies Seasoned Bla",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-151/main-enriched.png",
+  "qty": 4,
+  "front": "https://i5.walmartimages.com/seo/Margaret-Holmes-Seasoned-Butter-Beans-Canned-Beans-15-oz_e8fd09d1-a351-44b8-bf8f-3edaaf7dc5ce.6a384a0258075b37851d4411c8431165.jpeg",
+  "listing": "Margaret Holmes Canned Seasoned Blackeye Peas, 15 oz, Can (Pack of 4)"
+ },
+ "RizwanX-120": {
+  "sku": "RizwanX-120",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-120/main-enriched.png",
+  "qty": 8,
+  "donorTitle": "Rotel Xtra Hot Diced Tomatoes with Ghost Peppers - 10oz",
+  "listing": "RO*TEL Xtra Hot Diced Tomatoes With Ghost Peppers, 10 oz. (Pack of 8)",
+  "front": "https://target.scene7.com/is/image/Target/GUEST_d6047255-7c0d-48f5-bb94-a756092199ef",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "8 individual RO*TEL Xtra Hot Diced Tomatoes With Ghost Peppers 10 oz cans arranged in a 3-3-2 grid; "
+ },
+ "FaisalX-810": {
+  "sku": "FaisalX-810",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "RizwanX-109": {
+  "sku": "RizwanX-109",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-109/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "ROTEL Hot Diced Tomatoes with Habaneros, 10 oz",
+  "listing": "ROTEL Hot Diced Tomatoes with Habaneros, 10 oz (Pack of 4)",
+  "front": "https://i5.walmartimages.com/seo/ROTEL-Hot-Diced-Tomatoes-with-Habaneros-10-oz_d45dac3b-ddca-4121-8b6b-3de96484990e.196eb67c8430ba13e258b268f75d1298.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "All 4 tiles show a single RO-TEL Hot Diced Tomatoes with Habaneros 10 oz can face-on with full label"
+ },
+ "RizwanX-2404": {
+  "sku": "RizwanX-2404",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2404/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "Ronzoni Rigatoni Pasta, 16 oz, Large, Ribbed Tubes, Non-GMO",
+  "listing": "Ronzoni Rigatoni Pasta 16 oz Large Ribbed Tubes Non-G — 4-Pack (4 packages)",
+  "front": "https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_73ccb3ff-ea94-4f79-920b-dd58067a0ac2.JPG",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "4 tiled front-facing single Ronzoni Rigatoni boxes on a plain white background."
+ },
+ "RizwanX-119": {
+  "sku": "RizwanX-119",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-119/main-enriched.png",
+  "qty": 6,
+  "donorTitle": "Rotel Xtra Hot Diced Tomatoes with Ghost Peppers - 10oz",
+  "listing": "RO*TEL Xtra Hot Diced Tomatoes With Ghost Peppers, 10 oz. (Pack of 6)",
+  "front": "https://target.scene7.com/is/image/Target/GUEST_d6047255-7c0d-48f5-bb94-a756092199ef",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Six single 10 oz RO*TEL Xtra Hot cans shown front-facing on a plain white background."
+ },
+ "RizwanX-2439": {
+  "sku": "RizwanX-2439",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2439/main-enriched.png",
+  "qty": 8,
+  "donorTitle": "Mueller's Bowties",
+  "listing": "Mueller's Bowties 12 oz (Pack of 8)",
+  "front": "https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_3df47337-8d80-46a3-99c2-1b3383fc5d20.JPG",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "8 Mueller's Bowties 12 oz boxes arranged 3-3-2, each showing the front panel face-on with brand and "
+ },
+ "RizwanX-2722": {
+  "sku": "RizwanX-2722",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2722/main-enriched.png",
+  "qty": 2,
+  "donorTitle": "Del Monte No Sugar Added Yellow Cling Sliced Peaches, Canned Fruit",
+  "listing": "Del Monte No Sugar Added Yellow Cling Sliced Peaches Canned Fruit 14.5 oz (Pack of 2)",
+  "front": "https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_e1659030-e064-44fc-aedf-8d48c6c60548.JPG",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Two Del Monte No Sugar Added Sliced Peaches 14.5oz cans shown face-on on white background; each tile"
+ },
+ "RizwanX-2475": {
+  "sku": "RizwanX-2475",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2475/main-enriched.png",
+  "qty": 8,
+  "donorTitle": "Mueller's Ridged Jumbo Elbows, 16 oz",
+  "listing": "Mueller's Elbows Ridged Jumbo 16 oz (Pack of 8)",
+  "front": "https://i5.walmartimages.com/seo/Mueller-s-Ridged-Jumbo-Elbows-16-oz_a94f5720-2a2d-4cad-a4f2-97da42914c83.c41096da6d4585a650d1c30508a1c77e.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "8 Mueller's Ridged Jumbo Elbows 16oz boxes arranged 3+3+2; each tile is one single retail box shown "
+ },
+ "RizwanX-2428": {
+  "sku": "RizwanX-2428",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2428/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "Mueller's Elbows, 16 oz",
+  "listing": "Mueller's Elbows 16 oz (Pack of 4)",
+  "front": "https://i5.walmartimages.com/seo/Mueller-s-Elbows-16-oz_391f659e-4db6-48ec-a553-3e1c828693eb.1bd510118339a3cd0a956fd14b4d77c0.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Four Mueller's Elbows 16 oz boxes arranged in a 2x2 grid, each showing the wide front panel face-on "
+ },
+ "RizwanX-2435": {
+  "sku": "RizwanX-2435",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2435/main-enriched.png",
+  "qty": 6,
+  "donorTitle": "Mueller's Fettuccine",
+  "listing": "Mueller's Fettuccine 16 oz (Pack of 6)",
+  "front": "https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_99cc163a-f1c8-4cd2-a30d-83f525966af7.JPG",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Six front-facing single Mueller's Fettuccine boxes on a plain white background."
+ },
+ "RizwanX-2749": {
+  "sku": "RizwanX-2749",
+  "status": "TILE_FAIL",
+  "reason": "Product shown is Del Monte Crushed Pineapple in its own juice, but listing specifies Pineapple Chunk",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2749/main-enriched.png",
+  "qty": 2,
+  "front": "https://target.scene7.com/is/image/Target/GUEST_0628c5fd-de2e-4a24-b9e5-d397bd1017d3",
+  "listing": "Del Monte Pineapple Chunks in 100% Pineapple Juice 20 oz (Pack of 2)"
+ },
+ "RizwanX-2984": {
+  "sku": "RizwanX-2984",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2984/main-enriched.png",
+  "qty": 6,
+  "donorTitle": "Hunt's Petite Diced Tomatoes No Salt Added",
+  "listing": "Hunt's No Salt Added Petite Diced Tomatoes 14.5 oz Can (Pack of 6)",
+  "front": "https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_8550094c-7361-43b1-a8e2-232f39bcb023.jpg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Six single Hunt's No Salt Added Petite Diced 14.5 oz cans, shown front-facing on a white background."
+ },
+ "RizwanX-2964": {
+  "sku": "RizwanX-2964",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-2964/main-enriched.png",
+  "qty": 8,
+  "donorTitle": "Hunt's 100% Natural Tomato Paste - 6oz",
+  "listing": "Hunt's 100% Natural Tomato Paste 6oz (Pack of 8)",
+  "front": "https://target.scene7.com/is/image/Target/GUEST_01ddd1ac-9bc9-46f4-be93-82333ecfa4e4",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "8 single Hunt's Tomato Paste 6 oz cans shown front-on on a white background; matches the pack-of-8 l"
+ },
+ "RizwanX-3171": {
+  "sku": "RizwanX-3171",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"original\"",
+  "listing": "Bush's Vegetarian Baked Beans 8.3oz (Pack of 8)",
+  "donorTitle": "Bush's Original Baked Beans, Canned Beans, 8.3 oz Can"
+ },
+ "RizwanX-3698": {
+  "sku": "RizwanX-3698",
+  "status": "TILE_FAIL",
+  "reason": "Product shown is Gatorade Zero liquid bottles; listing title specifies a Powder (0.10 Oz 10 Count) p",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3698/main-enriched.png",
+  "qty": 4,
+  "front": "https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_f2838cd8-9531-4a52-ba35-2061bf2093d2.png",
+  "listing": "Gatorade Zero Zero Sugar Thirst Quencher Powder Lemon Lime 0.10 Oz 10 Count (Pack of 4)"
+ },
+ "RizwanX-3779": {
+  "sku": "RizwanX-3779",
+  "status": "TILE_FAIL",
+  "reason": "Product shown is Stur Electrolytes Ice Pop flavor, but listing title specifies Strawberry Watermelon",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3779/main-enriched.png",
+  "qty": 4,
+  "front": "https://target.scene7.com/is/image/Target/GUEST_4c472ab8-2ffa-4e83-a812-e8e15ee0b1bd",
+  "listing": "Stur Strawberry Watermelon Liquid Water Enhancer 1.62 fl oz (Pack of 4)"
+ },
+ "RizwanX-3316": {
+  "sku": "RizwanX-3316",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3316/main-enriched.png",
+  "qty": 2,
+  "donorTitle": "GreenWise Organic Cut Green Beans",
+  "listing": "GreenWise Organic Cut Green Beans 14.5 oz (Pack of 2)",
+  "front": "https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_0a950b7c-b304-4e84-b89f-0f0fee462659.JPG",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Two GreenWise Organic Cut Green Beans 14.5 oz cans shown side by side on white background, each tile"
+ },
+ "RizwanX-3569": {
+  "sku": "RizwanX-3569",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3569/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "Cirkul LifeSip Passionfruit Orange Guava Flavor Cartridge",
+  "listing": "Cirkul LifeSip Passion Orange Guava Flavor Cartridge Drink Mix (Pack of 4)",
+  "front": "https://target.scene7.com/is/image/Target/GUEST_ad33c400-4852-42b4-ad3d-033a75aca65f",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "All 4 tiles show the same Cirkul LifeSip Passion Orange Guava SIP cartridge box, each tile is one si"
+ },
+ "RizwanX-3320": {
+  "sku": "RizwanX-3320",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-3320/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "GreenWise Organic Sweet Peas",
+  "listing": "GreenWise Organic Sweet Peas 15 oz (Pack of 4)",
+  "front": "https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_fd3dbcc8-d659-4508-a923-92dd607327a1.JPG",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Four single front-facing GreenWise Organic Sweet Peas cans on white background."
+ },
+ "RizwanX-3012": {
+  "sku": "RizwanX-3012",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "RizwanX-3591": {
+  "sku": "RizwanX-3591",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "RizwanX-4196": {
+  "sku": "RizwanX-4196",
+  "status": "TILE_FAIL",
+  "reason": "Shows 3 single Campbell’s Cream of Chicken cans on white; listing is a 12-pack assorted soup feast, ",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-4196/main-enriched.png",
+  "qty": 3,
+  "front": "https://target.scene7.com/is/image/Target/GUEST_c5c6ed92-bb5e-4a53-a9f1-46f9f484fced",
+  "listing": "Campbell’s Soup Feast 12-Pack – A Flavorful Assortment of Creamy, Hearty, and Savory Soups"
+ },
+ "RizwanX-4273": {
+  "sku": "RizwanX-4273",
+  "status": "TILE_FAIL",
+  "reason": "Title says 8-pack, but image shows two single Progresso Beef Barley cans on white.",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/RizwanX-4273/main-enriched.png",
+  "qty": 2,
+  "front": "https://i5.walmartimages.com/seo/Progresso-Traditional-Ready-to-Serve-Beef-Barley-Soup-19-oz_2235204e-d71d-47dd-87df-83e8400f395b.3d927e73ac0e04341e6c38926daa1301.jpeg",
+  "listing": "Progresso 8-Pack Soup Delight – Tasty & Wholesome Soups for the Entire Family"
+ },
+ "RizwanX-4308": {
+  "sku": "RizwanX-4308",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "RizwanX-4369": {
+  "sku": "RizwanX-4369",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"classic\"",
+  "listing": "Chef Boyardee Classic Pasta Bowls – 12-Pack Variety of 7.5 oz Ready Meals",
+  "donorTitle": "Chef Boyardee Mini Micro Beef Ravioli in Tomato and Meat Sauce, Microwavable Meal, 7.5 oz. Bowl"
+ },
+ "Athar-1593": {
+  "sku": "Athar-1593",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"classic\"",
+  "listing": "Lay's Party Size Barbecue Potato Chips 15.25 oz.4 pack",
+  "donorTitle": "Lay's Classic Potato Chips, Party Size, 13 oz Bag"
+ },
+ "Extra-01": {
+  "sku": "Extra-01",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "FaisalX-1264": {
+  "sku": "FaisalX-1264",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"organic\"",
+  "listing": "Arnold Organic 22 Whole Grains & Seeds Bread 20 oz Thin Sliced Multigrain Loaf (Pack of 6)",
+  "donorTitle": "Arnold Small Slice Whole Wheat Bread, 18 oz, Wheat Bread, Bag"
+ },
+ "FaisalX-1194": {
+  "sku": "FaisalX-1194",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1194/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "Sara Lee Delightful Multi-Grain Bread - 20oz",
+  "listing": "Sara Lee Delightful Multi-Grain Bread, 20 oz, Soft Multigrain Bread, Bag (Pack of 4)",
+  "front": "https://target.scene7.com/is/image/Target/GUEST_59d8e38c-7416-4adf-ac72-fc8607a1acde",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Four single front-facing Sara Lee Delightful Healthy Multi-Grain bread bags on a plain white backgro"
+ },
+ "FaisalX-1119": {
+  "sku": "FaisalX-1119",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1119/main-enriched.png",
+  "qty": 4,
+  "donorTitle": "Thomas' Whole Wheat English Muffins - 12oz/6ct",
+  "listing": "Thomas' Whole Wheat English Muffins, 6 count, Soft English Muffins, 12 oz Tray (Pack of 4)",
+  "front": "https://target.scene7.com/is/image/Target/GUEST_cd440155-0dc1-472d-a705-87dc70780e4d",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "Shows four single Thomas' 100% Whole Wheat 6-count English Muffin trays, face-on on a plain white ba"
+ },
+ "FaisalX-188": {
+  "sku": "FaisalX-188",
+  "status": "TILE_FAIL",
+  "reason": "Shows Nature's Own Whitewheat Healthy White, not Butterbread; five single face-on loaves on white.",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-188/main-enriched.png",
+  "qty": 5,
+  "front": "https://i5.walmartimages.com/seo/Nature-s-Own-WhiteWheat-Healthy-White-Bread-Sliced-White-Bread-Loaf-20-Oz-Shelf-Stable_5281f160-3df8-4f1e-a9c8-7a1589980552.7f7d146dc6578ff9abca2895fbe4d786.jpeg",
+  "listing": "Nature's Own Butterbread Sliced White Bread Loaf, 20 oz — 5-Pack (5 loaves)"
+ },
+ "FaisalX-1682": {
+  "sku": "FaisalX-1682",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1682/main-enriched.png",
+  "qty": 3,
+  "donorTitle": "Arnold Superior Keto Bread, 20 oz, 1g Net Carb, Plain Keto Bread, Bag",
+  "listing": "Arnold Keto Bread Loaf, 20 oz -Pack Of 3",
+  "front": "https://i5.walmartimages.com/seo/Arnold-Superior-Keto-Bread-20-oz-Plain-White-Bread-Bag_5757ef44-9f5f-4651-8f2a-43d03b153ffa.c8b321a310f1a3a66de312c5e8be09ea.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": false
+  },
+  "tileReason": "Three face-on single Arnold Keto Bread White 20 oz loaves on a plain white background."
+ },
+ "FaisalX-1441": {
+  "sku": "FaisalX-1441",
+  "status": "TILE_FAIL",
+  "reason": "Image shows Nissin Cup Noodles Stir Fry Teriyaki Beef cups, not Cup O'Noodles Beef soup; grid appear",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1441/main-enriched.png",
+  "qty": 60,
+  "front": "https://i5.walmartimages.com/seo/Nissin-Foods-Cup-Noodles-Stir-Fry-Ramen-Noodles-Teriyaki-Beef-Flavor-3-0-oz-Cup-Shelf-Stable_baba4693-5c5f-4140-b3bd-a2d60c15a21c.5a786cf8dda58ad0366576d8534b34f2.jpeg",
+  "listing": "Nissin Cup O'Noodles Ramen Noodle Soup, Beef Flavor 2.25oz (60 Pack)"
+ },
+ "FaisalX-148": {
+  "sku": "FaisalX-148",
+  "status": "TILE_FAIL",
+  "reason": "Product shown is Thomas' Mini Bagels (10-count, 15 oz) Cinnamon Raisin, but the listing specifies Th",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-148/main-enriched.png",
+  "qty": 2,
+  "front": "https://target.scene7.com/is/image/Target/GUEST_0acdb7ca-96b6-4811-8020-60839e64563d",
+  "listing": "Thomas' Cinnamon Raisin Bagels, 6 count, Soft Pre-sliced Bagels, 20 oz Bag (Pack of 2)"
+ },
+ "FaisalX-164": {
+  "sku": "FaisalX-164",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "FaisalX-3524": {
+  "sku": "FaisalX-3524",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3524/main-enriched.png",
+  "qty": 8,
+  "donorTitle": "Chicken Helper Chicken Fried Rice Made with Real Vegetables, 7 Ounces Box",
+  "listing": "Chicken Helper Fried Rice Made with Real Vegetables, 7 oz Box (Pack of 8)",
+  "front": "https://i5.walmartimages.com/seo/Chicken-Helper-Chicken-Fried-Rice-Made-with-Real-Vegetables-7-Ounces-Box_8d88f62d-93e6-4bb0-998b-4c6f7bc1441b.82ba1f59c75e37895c3532e02001452c.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "8 individual Chicken Helper Fried Rice boxes tiled in a 3-3-2 grid; each tile shows exactly one sing"
+ },
+ "FaisalX-3476": {
+  "sku": "FaisalX-3476",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3476/main-enriched.png",
+  "qty": 8,
+  "donorTitle": "Kraft Stove Top Low Sodium Stuffing Mix for Chicken with 25% Less Sodium",
+  "listing": "Kraft Stove Top Lower Sodium Stuffing for Chicken Mix, 6 oz Box (Pack of 8)",
+  "front": "https://www.instacart.com/image-server/197x197/filters:fill(FFFFFF,true):format(jpg)/d2lnr5mha7bycj.cloudfront.net/product-image/file/large_1c387a72-5cd0-40d4-b36b-615d683199dd.jpg",
+  "audit": {
+   "brand": false,
+   "variant": true
+  },
+  "tileReason": "8 individual Stove Top Lower Sodium Chicken Stuffing Mix 6oz boxes shown face-on in a 3-3-2 grid on "
+ },
+ "FaisalX-2089": {
+  "sku": "FaisalX-2089",
+  "status": "TILE_FAIL",
+  "reason": "Product shown is Chef Boyardee Beef Ravioli in Pasta Sauce, not Macaroni and Cheese as stated in the",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2089/main-enriched.png",
+  "qty": 4,
+  "front": "https://i5.walmartimages.com/asr/920ed424-288e-4340-b54f-9efe36704e8e.0ae2d4b4b3acd599d766032da2a3addd.jpeg",
+  "listing": "Chef Boyardee Macaroni and Cheese, Microwave Pasta, 7.5 oz (Pack of 4)"
+ },
+ "FaisalX-2533": {
+  "sku": "FaisalX-2533",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-2533/main-enriched.png",
+  "qty": 6,
+  "donorTitle": "Campbell's Chunky Soup, Ready to Serve Creamy Chicken and Dumplings Soup, 18.8 oz Can",
+  "listing": "Campbell's Chunky Soup, Ready to Serve Creamy Chicken and Dumplings Soup, 18.8 oz Can, (Pack of 6)",
+  "front": "https://i5.walmartimages.com/seo/Campbell-s-Chunky-Soup-Ready-to-Serve-Creamy-Chicken-and-Dumplings-Soup-18-8-oz-Can_516b7a2e-3180-4a36-80fb-8fdd2afd9e52.1b324ff0a3865826b7296ba1cfaf2c9c.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "6 individual Campbell's Chunky Creamy Chicken & Dumplings cans tiled in a 3x2 grid, each shown face-"
+ },
+ "FaisalX-3419": {
+  "sku": "FaisalX-3419",
+  "status": "TILE_FAIL",
+  "reason": "Product shown is Cup Noodles Stir Fry Fiery Korean Chicken flavor, not the Seafood flavor specified ",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3419/main-enriched.png",
+  "qty": 8,
+  "front": "https://i5.walmartimages.com/seo/Nissin-Foods-Cup-Noodles-Stir-Fry-Ramen-Noodles-Fiery-Korean-Chicken-Flavor-2-36-oz-Cup-Shelf-Stable_1fc91c0b-e4af-45a5-9b57-dac49a57ee36.3820c10acbb972556976edb33e8bea9a.jpeg",
+  "listing": "Cup Noodles Ramen Noodle Soup Seafood (Pack of 8)"
+ },
+ "FaisalX-243": {
+  "sku": "FaisalX-243",
+  "status": "TILE_FAIL",
+  "reason": "Loaves are standing upright on their end/heel showing the narrow profile; the wide printed front fac",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-243/main-enriched.png",
+  "qty": 5,
+  "front": "https://i5.walmartimages.com/seo/Sara-Lee-Classic-Bread-20-oz-Plain-White-Bread-Bag_3057eb4e-6941-4e69-917c-0b6d60afd4d8.918979eb1369cfa27a9a165e8750deb5.jpeg",
+  "listing": "Sara Lee Classic Bread, 20 oz, Soft Plain White Bread — 5-Pack (5 loaves)"
+ },
+ "FaisalX-2703": {
+  "sku": "FaisalX-2703",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "FaisalX-2022": {
+  "sku": "FaisalX-2022",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "FaisalX-3870": {
+  "sku": "FaisalX-3870",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"original\"",
+  "listing": "Jack Link’s Beef Jerky, 100% Beef, Original, 2.85 oz, 10g of Protein per Serving (Pack of 8)",
+  "donorTitle": "Jack Link's Teriyaki Beef Jerky - 2.6oz"
+ },
+ "FaisalX-3755": {
+  "sku": "FaisalX-3755",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3755/main-enriched.png",
+  "qty": 6,
+  "donorTitle": "Progresso Light, Creamy Potato With Bacon & Cheese Canned Soup, Gluten Free, 18.5 oz.",
+  "listing": "Progresso Light, Creamy Potato With Bacon & Cheese Canned Soup, Gluten Free, 18.5 oz. (Pack of 6)",
+  "front": "https://i5.walmartimages.com/seo/Progresso-Light-Creamy-Potato-With-Bacon-Cheese-Canned-Soup-Gluten-Free-18-5-oz_94822f43-ef20-487d-8d31-bbf2cc558a9d.54a8418ceda0093e96f56145cba62579.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "All 6 tiles show a single Progresso Light Creamy Potato with Bacon & Cheese 18.5 oz can face-on with"
+ },
+ "FaisalX-3600": {
+  "sku": "FaisalX-3600",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3600/main-enriched.png",
+  "qty": 8,
+  "donorTitle": "Lay's Stax Sour Cream & Onion Flavored Potato Chips, 5.5 oz Canister",
+  "listing": "Lay's Stax Sour Cream & Onion Potato Crisps, 5.5 oz Bag (Pack of 8)",
+  "front": "https://i5.walmartimages.com/seo/Lay-s-Stax-Sour-Cream-Onion-Flavored-Potato-Chips-5-5-oz-Canister_6c1ced1f-49e8-4197-93c4-613d572f9033_1.3057508badd83a8fc40eefd779c4c212.jpeg",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "8 Lay's Stax Sour Cream & Onion canisters arranged in a 3-3-2 grid on white background; each tile sh"
+ },
+ "FaisalX-390": {
+  "sku": "FaisalX-390",
+  "status": "GEN_OK",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-390/main-enriched.png",
+  "qty": 9,
+  "donorTitle": "Nature's Own Perfectly crafted Brioche Bread - 22oz",
+  "listing": "Nature's Own Perfectly Crafted Brioche Style Bread Loaf, 22 oz, (Pack of 9)",
+  "front": "https://target.scene7.com/is/image/Target/GUEST_cc808bde-e67b-4473-84a5-e79f533f4242",
+  "audit": {
+   "brand": true,
+   "variant": true
+  },
+  "tileReason": "9 tiles in a 3x3 grid, each showing one Nature's Own Perfectly Crafted Brioche Style bread loaf bag "
+ },
+ "FaisalX-3554": {
+  "sku": "FaisalX-3554",
+  "status": "TILE_FAIL",
+  "reason": "Flavor mismatch: image shows Pringles Cheddar & Sour Cream, but listing specifies Cheddar Cheese fla",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3554/main-enriched.png",
+  "qty": 6,
+  "front": "https://i5.walmartimages.com/seo/Pringles-Cheddar-and-Sour-Cream-Potato-Crisps-Chips-Lunch-Snacks-5-5-oz-Canister_f0603778-8b40-4ac1-9201-6ed9ee8f1bba.5bd98a2454d404c6531496392b85da23.jpeg",
+  "listing": "Pringles Cheddar Cheese Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 6)"
+ },
+ "FaisalX-3588": {
+  "sku": "FaisalX-3588",
+  "status": "TILE_FAIL",
+  "reason": "Wrong flavor: image shows Pringles Salt & Vinegar 5.5 oz, but listing specifies Cheddar & Sour Cream",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3588/main-enriched.png",
+  "qty": 8,
+  "front": "https://target.scene7.com/is/image/Target/GUEST_fb882511-2787-4560-9199-d460925820b0",
+  "listing": "Pringles, Potato Crisps Chips, Cheddar & Sour Cream, 5.5 Oz (Pack of 8)"
+ },
+ "FaisalX-3569": {
+  "sku": "FaisalX-3569",
+  "status": "TILE_FAIL",
+  "reason": "Product shown is Pringles Salt & Vinegar, but listing title specifies Chili Cheese Fries flavor — wr",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-3569/main-enriched.png",
+  "qty": 6,
+  "front": "https://target.scene7.com/is/image/Target/GUEST_fb882511-2787-4560-9199-d460925820b0",
+  "listing": "Pringles Chili Cheese Fries Potato Crisps Chips, Lunch Snacks, 5.5 oz (Pack of 6)"
+ },
+ "FaisalX-3977": {
+  "sku": "FaisalX-3977",
+  "status": "DONOR_FAIL",
+  "reason": "no clean single-unit white-bg front in gallery"
+ },
+ "FaisalX-4066": {
+  "sku": "FaisalX-4066",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"original\"",
+  "listing": "Dot's Homestyle Cinnamon Sugar Seasoned Pretzel Twists, 16 oz (Pack of 4)",
+  "donorTitle": "Dot's Homestyle Pretzels Original Seasoned Pretzel Twists Snack, 16 oz"
+ },
+ "FaisalX-4293": {
+  "sku": "FaisalX-4293",
+  "status": "VARIANT_MISMATCH",
+  "reason": "donor≠listing on \"original\"",
+  "listing": "RITZ Toasted Chips Original Crackers, 8.1 oz (Pack of 4)",
+  "donorTitle": "RITZ Toasted Chips Roasted Garlic Crackers, Party Snacks, 8.1 oz"
+ },
+ "FaisalX-4161": {
+  "sku": "FaisalX-4161",
+  "status": "TILE_FAIL",
+  "reason": "Wrong flavor/variant: image shows Mission Zero Net Carbs 'Sundried Tomato Basil' tortillas, not 'Sri",
+  "newUrl": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-4161/main-enriched.png",
+  "qty": 8,
+  "front": "https://target.scene7.com/is/image/Target/GUEST_38205066-00fe-4191-82dc-17be229e55a2",
+  "listing": "Mission Zero Net Carbs Sriracha Ranch Street Taco Tortillas, 8.89 oz, 14 Count (Pack of 8)"
  }
 }
