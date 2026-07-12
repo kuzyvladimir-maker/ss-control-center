@@ -7,6 +7,8 @@ import {
   parseProcurementBlock,
   type LineItemStatus,
 } from "./procurement-notes-parser";
+import { getListing, flattenListing } from "@/lib/amazon-sp-api/listings";
+import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 
 export interface ProcurementCard {
   // Stable per-line key
@@ -170,6 +172,110 @@ function pickCustomerName(order: VeeqoOrder): string | null {
   return parts.length > 0 ? parts.join(" ") : null;
 }
 
+// ── Anchor Amazon cards on the LIVE listing ────────────────────────────────
+// Veeqo's cached `sellable` can drift to a stale/wrong product for a SKU (we
+// hit a "…16 count White Castle Beef Hamburgers" cached title on an order whose
+// real listing was "Gourmet Kitchn Cheese Sliders — 2 Boxes … 64"). For Amazon
+// orders the marketplace itself is the source of truth, so we override the
+// card's title + image from the live Listings API. Any failure (suspended
+// account, no US marketplace, SKU 404, rate limit, network) silently keeps the
+// Veeqo values — enrichment is best-effort and never blocks the page.
+
+/** Map a Veeqo Amazon channel to our SP-API store index (1..5). Returns null
+ *  for non-Amazon channels or Amazon accounts we can't confidently identify —
+ *  the caller then keeps Veeqo's cached title/image. */
+function veeqoAmazonStoreIndex(order: VeeqoOrder): number | null {
+  const type = (order.channel?.type_code ?? "").toLowerCase();
+  const name = (order.channel?.name ?? "").toLowerCase();
+  const looksAmazon =
+    type.includes("amazon") ||
+    /salutem|amz|commerce|sirius|retailer|distributor|personal/.test(name);
+  if (!looksAmazon) return null;
+  if (name.includes("salutem")) return 1;
+  if (name.includes("amz") || name.includes("commerce")) return 3;
+  if (name.includes("personal") || name.includes("vladimir")) return 2;
+  if (name.includes("sirius")) return 4;
+  if (name.includes("retailer") || name.includes("distributor")) return 5;
+  return null;
+}
+
+type LiveListing = { title: string | null; image: string | null; at: number };
+
+// Best-effort per-instance cache so we don't re-query SP-API for the same SKU
+// on every procurement page load. Hits are kept longer than misses so a
+// suspended account or transient error can recover on the next load.
+const liveListingCache = new Map<string, LiveListing>();
+const LIVE_HIT_TTL_MS = 6 * 60 * 60 * 1000; // 6h
+const LIVE_MISS_TTL_MS = 20 * 60 * 1000; // 20m
+
+async function fetchLiveListing(
+  storeIndex: number,
+  sku: string,
+): Promise<LiveListing> {
+  const key = `${storeIndex}:${sku}`;
+  const cached = liveListingCache.get(key);
+  if (cached) {
+    const hit = cached.title || cached.image;
+    const ttl = hit ? LIVE_HIT_TTL_MS : LIVE_MISS_TTL_MS;
+    if (Date.now() - cached.at < ttl) return cached;
+  }
+  let result: LiveListing = { title: null, image: null, at: Date.now() };
+  try {
+    const sellerId = await getMerchantToken(storeIndex);
+    const flat = flattenListing(await getListing(storeIndex, sellerId, sku));
+    result = {
+      title: flat.title?.trim() || null,
+      image: flat.main_image_url || null,
+      at: Date.now(),
+    };
+  } catch {
+    // keep the empty (miss) result → caller no-ops → Veeqo values stay
+  }
+  liveListingCache.set(key, result);
+  return result;
+}
+
+/** Override title + image on Amazon cards from their live listing. Runs a
+ *  small concurrency pool (SP-API allows 5 req/s) and dedupes by store+SKU. */
+async function anchorAmazonCardsOnLiveListing(
+  items: Array<{ card: ProcurementCard; storeIndex: number }>,
+): Promise<void> {
+  const bySku = new Map<
+    string,
+    { storeIndex: number; sku: string; cards: ProcurementCard[] }
+  >();
+  for (const { card, storeIndex } of items) {
+    if (!card.sku) continue;
+    const key = `${storeIndex}:${card.sku}`;
+    const entry = bySku.get(key) ?? { storeIndex, sku: card.sku, cards: [] };
+    entry.cards.push(card);
+    bySku.set(key, entry);
+  }
+
+  const entries = [...bySku.values()];
+  if (entries.length === 0) return;
+
+  let cursor = 0;
+  const CONCURRENCY = 5;
+  const worker = async () => {
+    while (cursor < entries.length) {
+      const e = entries[cursor++];
+      const live = await fetchLiveListing(e.storeIndex, e.sku);
+      if (!live.title && !live.image) continue;
+      for (const c of e.cards) {
+        if (live.title) c.productTitle = live.title;
+        if (live.image) c.productImageUrl = live.image;
+        // The Veeqo-drift warning compared two Veeqo titles; now that we trust
+        // the live listing it's no longer meaningful.
+        if (live.title) c.packSizeWarning = null;
+      }
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(CONCURRENCY, entries.length) }, worker),
+  );
+}
+
 /**
  * Top-level fetcher for the Procurement page.
  *   1. Page through all `awaiting_fulfillment` orders
@@ -177,6 +283,7 @@ function pickCustomerName(order: VeeqoOrder): string | null {
  *   3. Expand into per-line-item cards
  *   4. Apply the [PROCUREMENT] note block (skip already-bought lines,
  *      adjust `remaining` for partial buys)
+ *   5. Anchor Amazon cards' title + image on the live marketplace listing
  */
 export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
   const allOrders: VeeqoOrder[] = [];
@@ -194,6 +301,7 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
   }
 
   const cards: ProcurementCard[] = [];
+  const enrichable: Array<{ card: ProcurementCard; storeIndex: number }> = [];
 
   for (const order of allOrders) {
     if (!shouldIncludeOrderInProcurement(order)) continue;
@@ -201,6 +309,7 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
     const notes = getInternalNotes(order);
     const block = parseProcurementBlock(notes);
     const fromMike = hasTag(order as never, PROCUREMENT_TAGS.ORDERED_BY_MIKE);
+    const amazonStoreIndex = veeqoAmazonStoreIndex(order);
 
     for (const li of order.line_items ?? []) {
       const lineItemId = String(li.id ?? "");
@@ -240,7 +349,7 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
         }
       }
 
-      cards.push({
+      const card: ProcurementCard = {
         lineItemId,
         orderId: String(order.id ?? ""),
         orderNumber: order.number ?? String(order.id ?? ""),
@@ -267,9 +376,17 @@ export async function fetchProcurementCards(): Promise<ProcurementCard[]> {
         shippingMethod: order.delivery_method?.name ?? null,
         orderTotal: pickOrderTotal(order),
         currency: pickCurrency(order),
-      });
+      };
+
+      cards.push(card);
+      if (amazonStoreIndex !== null && card.sku) {
+        enrichable.push({ card, storeIndex: amazonStoreIndex });
+      }
     }
   }
+
+  // Override title + image on Amazon cards from the live listing (best-effort).
+  await anchorAmazonCardsOnLiveListing(enrichable);
 
   return cards;
 }

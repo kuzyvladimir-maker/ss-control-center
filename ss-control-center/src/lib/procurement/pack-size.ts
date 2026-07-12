@@ -18,8 +18,15 @@
  *   "Quantity of 4"                               → { size: 4, label: "Quantity of 4" }
  *   "24 Cans, Cheese & Gravy"                     → { size: 24, label: "24 Cans" }
  *   "8-Can Everyday Veggie Essentials"            → { size: 8, label: "8-Can" }
- *   "12 Count, ..."                               → { size: 12, label: "12 Count" }
  *   "Family Pack, 6 Pieces"                       → { size: 6, label: "6 Pieces" }
+ *
+ * NOT a multiplier — "N count" / "N ct" is how many pieces sit INSIDE one
+ * retail unit, never how many units to buy (owner rule: count = contents):
+ *   "White Castle Sliders, 16 count"              → null  (buy 1 box, not 16)
+ *   "... 2 Boxes (32 ct. Each) Total 64"          → { size: 2, label: "2 Boxes" }
+ *     (the "32 ct" and "64" are contents; you buy 2 boxes, so qty × 2)
+ * A count only ever narrows the buy quantity via an explicit "Pack of N"
+ * (handled in the first pass), never on its own.
  *
  * Returns null when no recognised pattern is found — the caller (UI) then
  * either falls back to plain "qty шт" display or hits the AI endpoint
@@ -70,8 +77,11 @@ const N_UNIT_PATTERNS: Array<{ regex: RegExp; unitLabel: string }> = [
   { regex: /(?:^|[^.\d])(\d+)[\s\-]*packs?\b/i, unitLabel: "Pack" },
   // "N Pouches"
   { regex: /(?:^|[^.\d])(\d+)[\s\-]*pouch(?:es)?\b/i, unitLabel: "Pouches" },
-  // "N Count" / "N-Count" / "N ct" / "N Ct"
-  { regex: /(?:^|[^.\d])(\d+)[\s\-]*(?:count|ct)\b/i, unitLabel: "Count" },
+  // NB: "N Count" / "N ct" is deliberately NOT here. Those describe the pieces
+  // INSIDE one retail unit (16 sliders in a box, 32 ct per box), not how many
+  // units to buy — treating them as a multiplier caused the "16 шт" over-buy on
+  // a "…16 count" title and let "32 ct" out-vote a real "2 Boxes" pack noun.
+  // A count still counts toward a pack ONLY via "Pack of N" (first pass above).
   // "N Pieces" / "N pcs"
   { regex: /(?:^|[^.\d])(\d+)[\s\-]*(?:pieces?|pcs)\b/i, unitLabel: "Pieces" },
   // "N Cartons" — NB compound "12 / Carton" requires AI

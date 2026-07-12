@@ -36,6 +36,26 @@ test("no pack pattern → null", () => {
   assert.equal(parsePackSize("Salutem Vita Pork Loin Roast 4.2 lb"), null);
 });
 
+test("standalone 'N count' is contents, NOT a buy multiplier → null", () => {
+  // The live bug: a "…16 count" title made the card say "Купить: 16 шт" when
+  // the order was for ONE unit. A bare count with no pack noun must not
+  // multiply the buy quantity.
+  assert.equal(
+    parsePackSize("White Castle Beef Hamburgers, The Original Sliders, (16 count., 25.28 oz.)"),
+    null,
+  );
+});
+
+test("a real pack noun wins even when a larger 'ct' is present", () => {
+  // "32 ct" is per-box contents; the buy unit is the 2 boxes. Must be 2, not 32.
+  const p = parsePackSize(
+    "Gourmet Kitchn White Castle Cheese Sliders - 2 Boxes (3.66oz. 32 ct. Each) Total 64 Cheese Sliders",
+  );
+  assert.equal(p?.size, 2);
+  assert.equal(p?.label, "2 Boxes");
+  assert.equal(p?.ambiguous ?? false, false);
+});
+
 test("genuine second package count still flags ambiguous", () => {
   // Two distinct package-level counts (not a 'ct' contents token) → ambiguous,
   // so the UI asks the AI endpoint to multiply the compound expression.
