@@ -199,25 +199,38 @@ export function buildImagePrompt(args: {
     //  • NO printed numbers/count badges anywhere (boxes or wraps) — the model
     //    can't print correct counts, and a wrong "4" on a single wrapper is worse
     //    than none. Quantity is carried by the box COUNT / arrangement + title.
+    // retail_boxes (default) → real cartons: SINGLE flavor = count-accurate;
+    // MIX = a variety of boxes, one+ per flavor (like the ref-uncrustables anchor).
+    // Boxes are preferred even for mixes because the "Uncrustables" wordmark renders
+    // legibly at box scale, where small wraps come out blank/fabricated.
+    // individual_wraps → wrappers (opt-in only).
+    const useBoxes = ownBrand && args.uncrustables_image_mode !== "individual_wraps";
     let boxPlan: number[] | null = null;
-    if (ownBrand && !isMix && args.uncrustables_image_mode !== "individual_wraps") {
+    if (useBoxes && !isMix) {
       boxPlan = composeRetailBoxes(comp[0].qty, componentRetailSizes(comp[0]));
     }
-    const wraps = ownBrand && boxPlan === null; // mix, manual wraps, or not composable
+    const wraps = ownBrand && !useBoxes;
     const NO_NUMBERS =
       `CRITICAL: the product packaging must show NO printed quantity numbers or count badges — no "4", "8", "10", "15", no "ct"/"count", no digit in any corner. Reproduce ONLY the brand wordmark, flavor name and colours.`;
+    // Anti-fabrication (the "Bright-Eyed Berry" failure): the model must never
+    // invent a flavor name, sub-name, tagline or box colour.
+    const NO_INVENT =
+      `CRITICAL: use ONLY the real Smucker's Uncrustables flavor name(s) exactly as printed on the reference product photo(s). Do NOT invent any flavor name, sub-name, tagline, or box colour (for example, never a made-up name like "Bright-Eyed Berry"). Copy the reference packaging faithfully; if unsure, reproduce it verbatim rather than guessing.`;
     const boxCount = boxPlan ? boxPlan.length : 0;
-    const boxLine = wraps
+    const flavorList = comp.map((c) => c.product_name.replace(/\s*[-–—].*$/, "").slice(0, 45)).join(", ");
+    const boxLine = useBoxes
       ? (isMix
-          ? `Fill the cooler with individually-wrapped sandwiches — each ONE sealed round sandwich in a plain flavor-coloured wrapper (one wrapper = one sandwich; NO retail cartons, NO numbers on wrappers). Show a VARIETY: roughly ${comp.map((c) => `${c.qty}× ${c.product_name.replace(/\s*[-–—].*$/, "").slice(0, 40)}`).join(", ")}, mixed together in tidy rows, each flavor in its OWN brand colour. Total should read as about ${totalUnits} sandwiches.`
-          : `Fill the cooler with individually-wrapped sandwiches — each ONE sealed round sandwich in a plain flavor-coloured wrapper (one wrapper = one sandwich; NO retail cartons, NO numbers). Neat stacked rows totalling about ${totalUnits} sandwiches; the wrapper colour signals the flavor.`)
-      : ownBrand
-        ? `Place EXACTLY ${boxCount} real Uncrustables retail boxes inside the cooler (sizes vary — ${describeBoxes(boxPlan!)} worth of sandwiches, so the box COUNT visibly totals ${totalUnits}), arranged as a neat stack. NEVER a generic "a few boxes", never loose sandwiches mixed with boxes, and NO printed count number on any box.`
+          ? `Fill the cooler with a VARIETY of real Smucker's Uncrustables retail boxes — a few boxes of EACH flavor of this variety pack (${flavorList}), reproducing each flavor's genuine Uncrustables box exactly: the real "Smucker's Uncrustables" wordmark, the correct REAL flavor name, and that flavor's real box colours copied from its reference photo. Arrange them as a neat stack like the anchor image. Show ALL of the flavors (never only one), never loose sandwiches, and NO printed count number on any box.`
+          : `Place EXACTLY ${boxCount} real Uncrustables retail boxes inside the cooler (sizes vary — ${describeBoxes(boxPlan!)} worth of sandwiches, so the box COUNT visibly totals ${totalUnits}), arranged as a neat stack. NEVER a generic "a few boxes", never loose sandwiches mixed with boxes, and NO printed count number on any box.`)
+      : wraps
+        ? (isMix
+            ? `Fill the cooler with individually-wrapped Smucker's Uncrustables sandwiches — each ONE sealed round sandwich in its REAL clear Uncrustables wrapper that shows the genuine "Smucker's Uncrustables" wordmark and that flavor's artwork, reproduced faithfully from the reference photos (one wrapper = one sandwich; NOT a plain or generic wrapper, NO retail cartons, NO numbers on wrappers). Show a VARIETY: roughly ${comp.map((c) => `${c.qty}× ${c.product_name.replace(/\s*[-–—].*$/, "").slice(0, 40)}`).join(", ")}, mixed together in tidy rows — each flavor's own real Uncrustables wrapper. Total should read as about ${totalUnits} sandwiches.`
+            : `Fill the cooler with individually-wrapped Smucker's Uncrustables sandwiches — each ONE sealed round sandwich in its REAL clear Uncrustables wrapper showing the genuine "Smucker's Uncrustables" wordmark and the flavor's artwork, reproduced faithfully from the reference (one wrapper = one sandwich; NOT a plain or generic wrapper, NO retail cartons, NO numbers). Neat stacked rows totalling about ${totalUnits} sandwiches.`)
         : `Place several of the real product boxes inside the cooler, arranged as a gift set.`;
     const productRefLine = isMix
       ? `Reference images #2..#${comp.length + 1} are the flavors of this variety pack, in order: ${comp.map((c, i) => `#${i + 2} = "${c.product_name.replace(/\s*[-–—].*$/, "").slice(0, 45)}"`).join(", ")}. Match EACH flavor's real Uncrustables brand colours and wrapper look from ITS reference photo — render a genuine mix of all of them. Do NOT invent look-alike flavors and do NOT show only one flavor.`
       : wraps
-        ? `The SECOND reference image is the DONOR PRODUCT PHOTO of ${products} — match its brand identity and colours exactly, but render the product as individual flavor-coloured wrappers (NOT the retail carton, NO numbers). Do NOT rebrand.`
+        ? `The SECOND reference image is the DONOR PRODUCT PHOTO of ${products} — reproduce its real Smucker's Uncrustables wrapper design (the "Uncrustables" wordmark, flavor name and artwork) EXACTLY, rendered as individual sealed round-sandwich wrappers (NOT the retail carton, NO numbers). Do NOT make a plain or generic wrapper and do NOT rebrand.`
         : `The SECOND reference image is the DONOR PRODUCT PHOTO — the real retail box of ${products}. Reproduce its brand name, logo and colours exactly; do NOT rebrand or substitute a look-alike. ${NO_NUMBERS}`;
     const coolerLine = ownBrand
       ? `The cooler is a white EPS styrofoam insulated shipping cooler carrying the SALUTEM SOLUTIONS logo (realistic 3/4 front angle, lid leaning behind the cooler).`
@@ -232,6 +245,7 @@ export function buildImagePrompt(args: {
       coolerLine,
       boxLine,
       NO_NUMBERS,
+      NO_INVENT,
       `Include 2 to 4 white branded gel packs reading "FROZEN GEL PACK", "KEEP FROZEN", "FOR FROZEN SHIPMENTS" with the Salutem Solutions logo — some inside the cooler next to the product, 1-2 in front.`,
       `Apply SALUTEM SOLUTIONS branding ONLY to the cooler and the gel packs — NEVER onto the third-party product packaging.`,
       `Subtle frost and cold condensation on the cooler and packs; NO loose ice, NO crushed ice, NO ice cubes.`,
@@ -372,7 +386,12 @@ export async function runImageGeneration(
   // REAL donor box photos (never AI-generated packaging), vetted by the QA
   // officer, instead of the AI image path. One image per draft → every channel
   // row. See composite-image.ts + audit/composite-qa.ts.
+  // BF_FORCE_HERO=1 forces the AI cooler-hero path (owner's preferred look — the
+  // Salutem cooler filled with the real product, e.g. B0H85P9F3R) instead of the
+  // box-on-white composite, so we can regenerate the fabricated listings in the
+  // exact original style. Default behaviour is unchanged.
   const compositePath =
+    process.env.BF_FORCE_HERO !== "1" &&
     isColdCategory(draft.category) &&
     compositeEligible({ brand: draft.brand, variant: selected }).eligible;
 
@@ -451,6 +470,9 @@ export async function runImageGeneration(
         /* keep default */
       }
     }
+    // Per-run override (regeneration fixes): BF_UNCR_MODE forces the style.
+    if (process.env.BF_UNCR_MODE === "individual_wraps") uncrustablesImageMode = "individual_wraps";
+    else if (process.env.BF_UNCR_MODE === "retail_boxes") uncrustablesImageMode = "retail_boxes";
 
     const basePrompt = buildImagePrompt({
       brand: draft.brand,
