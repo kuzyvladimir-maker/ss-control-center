@@ -8,6 +8,15 @@
  * 1 cheap Haiku vision call per product. Credit-floor guarded so it never drains
  * the monthly allotment. Self-terminating: a harvested product drops out of the
  * queue. Same Bearer CRON_SECRET gate as the other crons.
+ *
+ * ⛔ CRON PAUSED 2026-07-12 (removed from vercel.json). Root cause of the slow
+ * Unwrangle drain (~500 cr/hr): the eligibility query re-selects any product still
+ * missing a description, and ~1,185 Target-only donors STRUCTURALLY never get one
+ * (Target detail returns no bullets/description/UPC). The 1h time-gate only delays
+ * them — after 1h they re-qualify and get re-harvested forever, 2.5 cr each. Do NOT
+ * re-add the cron until the query excludes un-completable rows (e.g. a harvest-
+ * attempts cap, or "skip if the only offer is Target and description already tried").
+ * The route still works for a deliberate one-shot completion run.
  */
 
 import { NextRequest, NextResponse } from "next/server";
