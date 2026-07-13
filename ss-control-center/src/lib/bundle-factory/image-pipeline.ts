@@ -218,9 +218,16 @@ export function buildImagePrompt(args: {
       `CRITICAL: use ONLY the real Smucker's Uncrustables flavor name(s) exactly as printed on the reference product photo(s). Do NOT invent any flavor name, sub-name, tagline, or box colour (for example, never a made-up name like "Bright-Eyed Berry"). Copy the reference packaging faithfully; if unsure, reproduce it verbatim rather than guessing.`;
     const boxCount = boxPlan ? boxPlan.length : 0;
     const flavorList = comp.map((c) => c.product_name.replace(/\s*[-–—].*$/, "").slice(0, 45)).join(", ");
+    // Quantity logic (owner 2026-07-12): show ~qty/pack real boxes per flavor so the
+    // amount of product in the cooler reads roughly right for the listing's count.
+    const mixBoxSpec = comp.map((c) => {
+      const plan = composeRetailBoxes(c.qty, componentRetailSizes(c));
+      const n = plan && plan.length ? plan.length : Math.max(1, Math.round(c.qty / 8));
+      return `${n} box${n > 1 ? "es" : ""} of ${c.product_name.replace(/\s*[-–—].*$/, "").slice(0, 40)}`;
+    }).join(", ");
     const boxLine = useBoxes
       ? (isMix
-          ? `Fill the cooler with a VARIETY of real Smucker's Uncrustables retail boxes — a few boxes of EACH flavor of this variety pack (${flavorList}), reproducing each flavor's genuine Uncrustables box exactly: the real "Smucker's Uncrustables" wordmark, the correct REAL flavor name, and that flavor's real box colours copied from its reference photo. Arrange them as a neat stack like the anchor image. Show ALL of the flavors (never only one), never loose sandwiches, and NO printed count number on any box.`
+          ? `Fill the cooler with real Smucker's Uncrustables retail boxes in ABOUT this quantity so the amount looks right: ${mixBoxSpec} (each box holds several sandwiches; together they should read as roughly ${totalUnits} sandwiches). Reproduce each flavor's genuine Uncrustables box EXACTLY as printed on ITS reference photo — the real "Smucker's Uncrustables" wordmark and the exact real flavor name shown on that reference; do NOT invent a name or tagline. Arrange as a neat stack like the anchor image. Show ALL of the flavors (never only one), never loose sandwiches, and NO printed count number on any box.`
           : `Place EXACTLY ${boxCount} real Uncrustables retail boxes inside the cooler (sizes vary — ${describeBoxes(boxPlan!)} worth of sandwiches, so the box COUNT visibly totals ${totalUnits}), arranged as a neat stack. NEVER a generic "a few boxes", never loose sandwiches mixed with boxes, and NO printed count number on any box.`)
       : wraps
         ? (isMix

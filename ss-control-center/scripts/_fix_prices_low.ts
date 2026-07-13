@@ -20,10 +20,15 @@ async function main() {
   const wanted = (s: string) => STATUS === "ALL" ? s !== "OK" : STATUS.split(",").includes(s);
   let skus: string[];
   if (process.env.SKUS) skus = process.env.SKUS.split(",").map((s) => s.trim()).filter(Boolean);
-  else if (process.env.BF_AUTO === "1") {
+  else if (process.env.BF_BELOW_TARGET === "1") {
+    // Raise any listing whose price sits BELOW the target item price (landed×1.5)
+    // up to target — the flagged M-size margin gap. Only raises, never lowers.
+    const rows = await prisma.channelSKU.findMany({ where: { title: { contains: "Uncrustables" }, listing_status: { in: ["LIVE", "SUBMITTED"] } }, select: { sku: true, title: true, price_cents: true } });
+    skus = rows.filter((r) => { const m = priceFor(r.title ?? ""); return m && (r.price_cents ?? 0) / 100 < m.suggested - 1; }).map((r) => r.sku);
+  } else if (process.env.BF_AUTO === "1") {
     const rows = await prisma.channelSKU.findMany({ where: { title: { contains: "Uncrustables" }, listing_status: { in: ["LIVE", "SUBMITTED"] } }, select: { sku: true, title: true, price_cents: true } });
     skus = rows.filter((r) => wanted(classify((r.price_cents ?? 0) / 100, priceFor(r.title ?? "")))).map((r) => r.sku);
-  } else { console.error("set SKUS or BF_AUTO=1"); process.exit(1); }
+  } else { console.error("set SKUS, BF_AUTO=1, or BF_BELOW_TARGET=1"); process.exit(1); }
   const exclude = new Set((process.env.BF_EXCLUDE || "").split(",").map((s) => s.trim()).filter(Boolean));
   if (exclude.size) skus = skus.filter((s) => !exclude.has(s));
   console.log(`fixing ${skus.length} SKUs | apply=${!DRY}${exclude.size ? ` | excluded ${exclude.size}` : ""}\n`);

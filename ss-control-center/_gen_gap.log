@@ -20,3 +20,70 @@ generating 739 tiles (CONC 8) · listing titles: 699/739
   [90/739] ok 31 · donorFail 34 · tileFail 25 · err 0
   [100/739] ok 36 · donorFail 35 · tileFail 29 · err 0
   [110/739] ok 39 · donorFail 38 · tileFail 33 · err 0
+  [120/739] ok 39 · donorFail 46 · tileFail 35 · err 0
+  [130/739] ok 46 · donorFail 47 · tileFail 37 · err 0
+  [140/739] ok 48 · donorFail 52 · tileFail 40 · err 0
+  [150/739] ok 52 · donorFail 56 · tileFail 42 · err 0
+  [160/739] ok 54 · donorFail 62 · tileFail 44 · err 0
+  [170/739] ok 55 · donorFail 64 · tileFail 51 · err 0
+  [180/739] ok 57 · donorFail 68 · tileFail 55 · err 0
+  [190/739] ok 59 · donorFail 72 · tileFail 59 · err 0
+  [200/739] ok 62 · donorFail 75 · tileFail 63 · err 0
+  [210/739] ok 65 · donorFail 80 · tileFail 65 · err 0
+  [220/739] ok 69 · donorFail 86 · tileFail 65 · err 0
+  [230/739] ok 75 · donorFail 88 · tileFail 67 · err 0
+  [240/739] ok 79 · donorFail 91 · tileFail 70 · err 0
+  [250/739] ok 84 · donorFail 94 · tileFail 72 · err 0
+  [260/739] ok 88 · donorFail 98 · tileFail 74 · err 0
+  [270/739] ok 94 · donorFail 100 · tileFail 76 · err 0
+  [280/739] ok 99 · donorFail 104 · tileFail 77 · err 0
+  [290/739] ok 103 · donorFail 108 · tileFail 79 · err 0
+  [300/739] ok 108 · donorFail 111 · tileFail 81 · err 0
+  [310/739] ok 114 · donorFail 115 · tileFail 81 · err 0
+  [320/739] ok 118 · donorFail 120 · tileFail 82 · err 0
+  [330/739] ok 120 · donorFail 124 · tileFail 86 · err 0
+  [340/739] ok 125 · donorFail 126 · tileFail 89 · err 0
+  [350/739] ok 130 · donorFail 130 · tileFail 90 · err 0
+  [360/739] ok 136 · donorFail 133 · tileFail 91 · err 0
+  [370/739] ok 141 · donorFail 137 · tileFail 92 · err 0
+  [380/739] ok 146 · donorFail 139 · tileFail 95 · err 0
+  [390/739] ok 149 · donorFail 140 · tileFail 101 · err 0
+  [400/739] ok 154 · donorFail 143 · tileFail 103 · err 0
+  [410/739] ok 157 · donorFail 149 · tileFail 104 · err 0
+  [420/739] ok 163 · donorFail 152 · tileFail 105 · err 0
+  [430/739] ok 167 · donorFail 156 · tileFail 107 · err 0
+  [440/739] ok 172 · donorFail 160 · tileFail 108 · err 0
+  [450/739] ok 177 · donorFail 164 · tileFail 109 · err 0
+  [460/739] ok 180 · donorFail 166 · tileFail 114 · err 0
+  [470/739] ok 185 · donorFail 168 · tileFail 117 · err 0
+  [480/739] ok 189 · donorFail 169 · tileFail 122 · err 0
+  [490/739] ok 193 · donorFail 171 · tileFail 126 · err 0
+  [500/739] ok 197 · donorFail 174 · tileFail 129 · err 0
+  [510/739] ok 201 · donorFail 178 · tileFail 131 · err 0
+  [520/739] ok 203 · donorFail 185 · tileFail 132 · err 0
+  [530/739] ok 211 · donorFail 186 · tileFail 133 · err 0
+  [540/739] ok 216 · donorFail 190 · tileFail 134 · err 0
+  [550/739] ok 223 · donorFail 191 · tileFail 136 · err 0
+  [560/739] ok 227 · donorFail 194 · tileFail 139 · err 0
+  [570/739] ok 230 · donorFail 200 · tileFail 140 · err 0
+  [580/739] ok 234 · donorFail 201 · tileFail 145 · err 0
+  [590/739] ok 236 · donorFail 203 · tileFail 151 · err 0
+  [600/739] ok 242 · donorFail 204 · tileFail 154 · err 0
+  [610/739] ok 245 · donorFail 210 · tileFail 155 · err 0
+  [620/739] ok 249 · donorFail 212 · tileFail 159 · err 0
+  [630/739] ok 253 · donorFail 217 · tileFail 160 · err 0
+  [640/739] ok 260 · donorFail 217 · tileFail 163 · err 0
+  [650/739] ok 265 · donorFail 220 · tileFail 165 · err 0
+  [660/739] ok 269 · donorFail 226 · tileFail 165 · err 0
+  [670/739] ok 272 · donorFail 228 · tileFail 170 · err 0
+  [680/739] ok 278 · donorFail 230 · tileFail 172 · err 0
+  [690/739] ok 280 · donorFail 235 · tileFail 175 · err 0
+  [700/739] ok 287 · donorFail 236 · tileFail 177 · err 0
+  [710/739] ok 291 · donorFail 242 · tileFail 177 · err 0
+  [720/739] ok 295 · donorFail 246 · tileFail 179 · err 0
+  [730/739] ok 298 · donorFail 252 · tileFail 180 · err 0
+  [739/739] ok 301 · donorFail 257 · tileFail 181 · err 0
+
+257 genuine donor-failures → enrich_priority_skus (now 1316)
+
+=== GEN cumulative === GEN_OK 1578 · DONOR_FAIL 367 · TILE_FAIL 431 · ERR 1

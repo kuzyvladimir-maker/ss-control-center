@@ -48,6 +48,10 @@ export function parseTotal(title: string): number {
   const t = (title ?? "").toLowerCase();
   const totalMatch = t.match(/total\s*(\d{1,3})/);
   if (totalMatch) return Number(totalMatch[1]);
+  // "10 Count – Pack of 6" / "4 ct - Pack of 45" → box size × pack count = TRUE total.
+  const packMatch = t.match(/(\d{1,3})\s*(?:ct\b|count).{0,20}?pack of (\d{1,3})/) ||
+                    t.match(/pack of (\d{1,3}).{0,20}?(\d{1,3})\s*(?:ct\b|count)/);
+  if (packMatch) return Number(packMatch[1]) * Number(packMatch[2]);
   const hits: number[] = [];
   let m: RegExpExecArray | null;
   const kw = /(\d{1,3})\s*(?:count|ct\b|pieces|pcs|pack|sandwich|units)/g;
