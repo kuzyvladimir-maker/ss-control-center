@@ -1653,11 +1653,11 @@
  },
  "FaisalX-2045": {
   "sku": "FaisalX-2045",
-  "status": "submitted",
-  "feedId": "18C1A0F9D831554982B84EE6D702F125@AX8BBgA",
+  "status": "failed",
+  "feedId": "18C1BE6818CA5021B84CC84773741329@AX8BBwA",
   "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-12T19:33:51.184Z"
+  "detail": "It looks like there was a glitch on our end. Please try again. If the problem pe",
+  "at": "2026-07-13T04:18:17.164Z"
  },
  "FaisalX-2046": {
   "sku": "FaisalX-2046",
@@ -10237,58 +10237,2402 @@
  },
  "RizwanX-2873": {
   "sku": "RizwanX-2873",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C1A0F9D831554982B84EE6D702F125@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-12T19:33:51.356Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:01.890Z"
  },
  "RizwanX-814": {
   "sku": "RizwanX-814",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C1A0F9D831554982B84EE6D702F125@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-12T19:33:51.419Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:02.004Z"
  },
  "RizwanX-821": {
   "sku": "RizwanX-821",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C1A0F9D831554982B84EE6D702F125@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-12T19:33:51.480Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:02.070Z"
  },
  "FaisalX-1140": {
   "sku": "FaisalX-1140",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C1A0F9D831554982B84EE6D702F125@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-12T19:33:51.561Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:02.156Z"
  },
  "FaisalX-1180": {
   "sku": "FaisalX-1180",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C1A0F9D831554982B84EE6D702F125@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-12T19:33:51.628Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:02.229Z"
  },
  "FaisalX-1892": {
   "sku": "FaisalX-1892",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C1A0F9D831554982B84EE6D702F125@AX8BBgA",
-  "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-12T19:33:51.689Z"
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:02.295Z"
  },
  "FaisalX-368": {
   "sku": "FaisalX-368",
-  "status": "submitted",
+  "status": "applied",
   "feedId": "18C1A0F9D831554982B84EE6D702F125@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:02.365Z"
+ },
+ "FaisalX-3339": {
+  "sku": "FaisalX-3339",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
   "ok": false,
-  "detail": "poll budget exhausted",
-  "at": "2026-07-12T19:33:51.750Z"
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:41.674Z"
+ },
+ "FaisalX-2264": {
+  "sku": "FaisalX-2264",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:42.309Z"
+ },
+ "FaisalX-3804": {
+  "sku": "FaisalX-3804",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:42.381Z"
+ },
+ "FaisalX-3682": {
+  "sku": "FaisalX-3682",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:42.457Z"
+ },
+ "FaisalX-4210": {
+  "sku": "FaisalX-4210",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:42.535Z"
+ },
+ "FaisalX-3925": {
+  "sku": "FaisalX-3925",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:42.612Z"
+ },
+ "FaisalX-4519": {
+  "sku": "FaisalX-4519",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:42.685Z"
+ },
+ "FaisalX-5231": {
+  "sku": "FaisalX-5231",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:42.757Z"
+ },
+ "FaisalX-4324": {
+  "sku": "FaisalX-4324",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:42.821Z"
+ },
+ "RizwanX-120": {
+  "sku": "RizwanX-120",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:42.885Z"
+ },
+ "RizwanX-109": {
+  "sku": "RizwanX-109",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:42.949Z"
+ },
+ "RizwanX-2404": {
+  "sku": "RizwanX-2404",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:43.010Z"
+ },
+ "RizwanX-119": {
+  "sku": "RizwanX-119",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:43.108Z"
+ },
+ "RizwanX-2439": {
+  "sku": "RizwanX-2439",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:43.287Z"
+ },
+ "RizwanX-2722": {
+  "sku": "RizwanX-2722",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:43.383Z"
+ },
+ "RizwanX-2475": {
+  "sku": "RizwanX-2475",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:43.454Z"
+ },
+ "RizwanX-2428": {
+  "sku": "RizwanX-2428",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:43.519Z"
+ },
+ "RizwanX-2435": {
+  "sku": "RizwanX-2435",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:43.586Z"
+ },
+ "RizwanX-2984": {
+  "sku": "RizwanX-2984",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:44.069Z"
+ },
+ "RizwanX-2964": {
+  "sku": "RizwanX-2964",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:44.135Z"
+ },
+ "RizwanX-3316": {
+  "sku": "RizwanX-3316",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:44.198Z"
+ },
+ "RizwanX-3569": {
+  "sku": "RizwanX-3569",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:44.262Z"
+ },
+ "RizwanX-3320": {
+  "sku": "RizwanX-3320",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:44.361Z"
+ },
+ "FaisalX-1194": {
+  "sku": "FaisalX-1194",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:44.446Z"
+ },
+ "FaisalX-1119": {
+  "sku": "FaisalX-1119",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:44.515Z"
+ },
+ "FaisalX-1682": {
+  "sku": "FaisalX-1682",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:44.576Z"
+ },
+ "FaisalX-3524": {
+  "sku": "FaisalX-3524",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:44.651Z"
+ },
+ "FaisalX-3476": {
+  "sku": "FaisalX-3476",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:44.713Z"
+ },
+ "FaisalX-2533": {
+  "sku": "FaisalX-2533",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:44.773Z"
+ },
+ "FaisalX-3755": {
+  "sku": "FaisalX-3755",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:44.844Z"
+ },
+ "FaisalX-3600": {
+  "sku": "FaisalX-3600",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:44.914Z"
+ },
+ "FaisalX-390": {
+  "sku": "FaisalX-390",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:44.978Z"
+ },
+ "FaisalX-5351": {
+  "sku": "FaisalX-5351",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:45.041Z"
+ },
+ "FaisalX-4723": {
+  "sku": "FaisalX-4723",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:45.103Z"
+ },
+ "FaisalX-4454": {
+  "sku": "FaisalX-4454",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:45.165Z"
+ },
+ "FaisalX-5206": {
+  "sku": "FaisalX-5206",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:45.227Z"
+ },
+ "FaisalX-5193": {
+  "sku": "FaisalX-5193",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:45.287Z"
+ },
+ "FaisalX-5191": {
+  "sku": "FaisalX-5191",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:45.347Z"
+ },
+ "RizwanX-2291": {
+  "sku": "RizwanX-2291",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:45.406Z"
+ },
+ "RizwanX-2294": {
+  "sku": "RizwanX-2294",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:45.467Z"
+ },
+ "RizwanX-3127": {
+  "sku": "RizwanX-3127",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:45.530Z"
+ },
+ "RizwanX-3155": {
+  "sku": "RizwanX-3155",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:45.602Z"
+ },
+ "RizwanX-2394": {
+  "sku": "RizwanX-2394",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:45.699Z"
+ },
+ "RizwanX-3807": {
+  "sku": "RizwanX-3807",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:45.771Z"
+ },
+ "RizwanX-3806": {
+  "sku": "RizwanX-3806",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:45.842Z"
+ },
+ "RizwanX-3324": {
+  "sku": "RizwanX-3324",
+  "status": "applied",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-12T23:59:45.904Z"
+ },
+ "RizwanX-3613": {
+  "sku": "RizwanX-3613",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:45.967Z"
+ },
+ "FaisalX-1767": {
+  "sku": "FaisalX-1767",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:46.030Z"
+ },
+ "FaisalX-1114": {
+  "sku": "FaisalX-1114",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:46.089Z"
+ },
+ "FaisalX-1204": {
+  "sku": "FaisalX-1204",
+  "status": "qarth",
+  "feedId": "18C1AFC015995D62AABE5E34E01002B0@AX8BBwA",
+  "ok": false,
+  "detail": "QARTH: This item is currently under compliance review from your previous submiss",
+  "at": "2026-07-12T23:59:46.151Z"
+ },
+ "FaisalX-1768": {
+  "sku": "FaisalX-1768",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:02.772Z"
+ },
+ "FaisalX-2487": {
+  "sku": "FaisalX-2487",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:02.830Z"
+ },
+ "FaisalX-2279": {
+  "sku": "FaisalX-2279",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:02.890Z"
+ },
+ "FaisalX-299": {
+  "sku": "FaisalX-299",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:02.950Z"
+ },
+ "FaisalX-2785": {
+  "sku": "FaisalX-2785",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:03.008Z"
+ },
+ "FaisalX-379": {
+  "sku": "FaisalX-379",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:03.072Z"
+ },
+ "FaisalX-378": {
+  "sku": "FaisalX-378",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:03.163Z"
+ },
+ "FaisalX-3775": {
+  "sku": "FaisalX-3775",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:03.228Z"
+ },
+ "FaisalX-4239": {
+  "sku": "FaisalX-4239",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:03.290Z"
+ },
+ "FaisalX-389": {
+  "sku": "FaisalX-389",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:03.353Z"
+ },
+ "FaisalX-3827": {
+  "sku": "FaisalX-3827",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:03.416Z"
+ },
+ "FaisalX-5285": {
+  "sku": "FaisalX-5285",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:36.966Z"
+ },
+ "FaisalX-4869": {
+  "sku": "FaisalX-4869",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:37.357Z"
+ },
+ "FaisalX-5303": {
+  "sku": "FaisalX-5303",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:37.423Z"
+ },
+ "RizwanX-171": {
+  "sku": "RizwanX-171",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:37.492Z"
+ },
+ "FaisalX-777": {
+  "sku": "FaisalX-777",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:37.551Z"
+ },
+ "FaisalX-811": {
+  "sku": "FaisalX-811",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:37.606Z"
+ },
+ "FaisalX-757": {
+  "sku": "FaisalX-757",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:37.664Z"
+ },
+ "RizwanX-183": {
+  "sku": "RizwanX-183",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:37.739Z"
+ },
+ "RizwanX-2298": {
+  "sku": "RizwanX-2298",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:37.799Z"
+ },
+ "RizwanX-2334": {
+  "sku": "RizwanX-2334",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:37.856Z"
+ },
+ "RizwanX-204": {
+  "sku": "RizwanX-204",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:37.915Z"
+ },
+ "RizwanX-2726": {
+  "sku": "RizwanX-2726",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:37.981Z"
+ },
+ "RizwanX-2415": {
+  "sku": "RizwanX-2415",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.040Z"
+ },
+ "RizwanX-3135": {
+  "sku": "RizwanX-3135",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.098Z"
+ },
+ "RizwanX-3115": {
+  "sku": "RizwanX-3115",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.154Z"
+ },
+ "RizwanX-2487": {
+  "sku": "RizwanX-2487",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.217Z"
+ },
+ "RizwanX-3284": {
+  "sku": "RizwanX-3284",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.271Z"
+ },
+ "RizwanX-3318": {
+  "sku": "RizwanX-3318",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.328Z"
+ },
+ "RizwanX-3169": {
+  "sku": "RizwanX-3169",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.388Z"
+ },
+ "FaisalX-1179": {
+  "sku": "FaisalX-1179",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.449Z"
+ },
+ "RizwanX-44": {
+  "sku": "RizwanX-44",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:03.473Z"
+ },
+ "FaisalX-1237": {
+  "sku": "FaisalX-1237",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.503Z"
+ },
+ "FaisalX-238": {
+  "sku": "FaisalX-238",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.560Z"
+ },
+ "FaisalX-1771": {
+  "sku": "FaisalX-1771",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.618Z"
+ },
+ "FaisalX-2013": {
+  "sku": "FaisalX-2013",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.681Z"
+ },
+ "FaisalX-1911": {
+  "sku": "FaisalX-1911",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.746Z"
+ },
+ "FaisalX-2751": {
+  "sku": "FaisalX-2751",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.803Z"
+ },
+ "FaisalX-3331": {
+  "sku": "FaisalX-3331",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.862Z"
+ },
+ "FaisalX-245": {
+  "sku": "FaisalX-245",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.915Z"
+ },
+ "FaisalX-2587": {
+  "sku": "FaisalX-2587",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:38.975Z"
+ },
+ "FaisalX-247": {
+  "sku": "FaisalX-247",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:39.038Z"
+ },
+ "FaisalX-3506": {
+  "sku": "FaisalX-3506",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:39.474Z"
+ },
+ "FaisalX-3489": {
+  "sku": "FaisalX-3489",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:39.530Z"
+ },
+ "FaisalX-3466": {
+  "sku": "FaisalX-3466",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:39.585Z"
+ },
+ "FaisalX-3675": {
+  "sku": "FaisalX-3675",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:39.648Z"
+ },
+ "FaisalX-3883": {
+  "sku": "FaisalX-3883",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:39.703Z"
+ },
+ "FaisalX-3759": {
+  "sku": "FaisalX-3759",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:39.757Z"
+ },
+ "FaisalX-373": {
+  "sku": "FaisalX-373",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:39.812Z"
+ },
+ "FaisalX-3965": {
+  "sku": "FaisalX-3965",
+  "status": "applied",
+  "feedId": "18C1B05087A75A14B1C72C88C4DE4058@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:39.870Z"
+ },
+ "FaisalX-3927": {
+  "sku": "FaisalX-3927",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:51.562Z"
+ },
+ "FaisalX-4003": {
+  "sku": "FaisalX-4003",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:51.983Z"
+ },
+ "FaisalX-3890": {
+  "sku": "FaisalX-3890",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.042Z"
+ },
+ "FaisalX-394": {
+  "sku": "FaisalX-394",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.100Z"
+ },
+ "FaisalX-4245": {
+  "sku": "FaisalX-4245",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.156Z"
+ },
+ "FaisalX-4120": {
+  "sku": "FaisalX-4120",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.214Z"
+ },
+ "FaisalX-4533": {
+  "sku": "FaisalX-4533",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.317Z"
+ },
+ "FaisalX-4698": {
+  "sku": "FaisalX-4698",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.399Z"
+ },
+ "FaisalX-4767": {
+  "sku": "FaisalX-4767",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:40.125Z"
+ },
+ "FaisalX-4714": {
+  "sku": "FaisalX-4714",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:40.182Z"
+ },
+ "FaisalX-4838": {
+  "sku": "FaisalX-4838",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:40.271Z"
+ },
+ "FaisalX-4879": {
+  "sku": "FaisalX-4879",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.457Z"
+ },
+ "FaisalX-4978": {
+  "sku": "FaisalX-4978",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:40.370Z"
+ },
+ "RizwanX-2412": {
+  "sku": "RizwanX-2412",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.526Z"
+ },
+ "RizwanX-2397": {
+  "sku": "RizwanX-2397",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.584Z"
+ },
+ "RizwanX-129": {
+  "sku": "RizwanX-129",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.640Z"
+ },
+ "RizwanX-155": {
+  "sku": "RizwanX-155",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.696Z"
+ },
+ "RizwanX-3134": {
+  "sku": "RizwanX-3134",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.753Z"
+ },
+ "RizwanX-3128": {
+  "sku": "RizwanX-3128",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.817Z"
+ },
+ "RizwanX-2983": {
+  "sku": "RizwanX-2983",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.873Z"
+ },
+ "RizwanX-2684": {
+  "sku": "RizwanX-2684",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.932Z"
+ },
+ "RizwanX-3215": {
+  "sku": "RizwanX-3215",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:52.997Z"
+ },
+ "RizwanX-3311": {
+  "sku": "RizwanX-3311",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:53.059Z"
+ },
+ "FaisalX-1128": {
+  "sku": "FaisalX-1128",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:40.426Z"
+ },
+ "FaisalX-1174": {
+  "sku": "FaisalX-1174",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:53.478Z"
+ },
+ "FaisalX-1159": {
+  "sku": "FaisalX-1159",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:53.537Z"
+ },
+ "FaisalX-1227": {
+  "sku": "FaisalX-1227",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:53.595Z"
+ },
+ "FaisalX-1201": {
+  "sku": "FaisalX-1201",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:03.915Z"
+ },
+ "FaisalX-1216": {
+  "sku": "FaisalX-1216",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:40.483Z"
+ },
+ "FaisalX-1683": {
+  "sku": "FaisalX-1683",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:53.665Z"
+ },
+ "FaisalX-1233": {
+  "sku": "FaisalX-1233",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:40.538Z"
+ },
+ "FaisalX-1236": {
+  "sku": "FaisalX-1236",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:40.597Z"
+ },
+ "FaisalX-1801": {
+  "sku": "FaisalX-1801",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:40.654Z"
+ },
+ "FaisalX-2126": {
+  "sku": "FaisalX-2126",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:53.724Z"
+ },
+ "FaisalX-2163": {
+  "sku": "FaisalX-2163",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:53.788Z"
+ },
+ "FaisalX-2040": {
+  "sku": "FaisalX-2040",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:53.850Z"
+ },
+ "FaisalX-2082": {
+  "sku": "FaisalX-2082",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:53.907Z"
+ },
+ "FaisalX-2254": {
+  "sku": "FaisalX-2254",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:53.979Z"
+ },
+ "FaisalX-292": {
+  "sku": "FaisalX-292",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:54.038Z"
+ },
+ "FaisalX-3691": {
+  "sku": "FaisalX-3691",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:40.711Z"
+ },
+ "FaisalX-3464": {
+  "sku": "FaisalX-3464",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:54.098Z"
+ },
+ "FaisalX-3603": {
+  "sku": "FaisalX-3603",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:54.180Z"
+ },
+ "FaisalX-3798": {
+  "sku": "FaisalX-3798",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:54.246Z"
+ },
+ "FaisalX-4359": {
+  "sku": "FaisalX-4359",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:54.307Z"
+ },
+ "FaisalX-4320": {
+  "sku": "FaisalX-4320",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:54.364Z"
+ },
+ "FaisalX-388": {
+  "sku": "FaisalX-388",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:54.420Z"
+ },
+ "FaisalX-4371": {
+  "sku": "FaisalX-4371",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:54.504Z"
+ },
+ "FaisalX-4549": {
+  "sku": "FaisalX-4549",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:54.563Z"
+ },
+ "FaisalX-4532": {
+  "sku": "FaisalX-4532",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:54.619Z"
+ },
+ "FaisalX-4456": {
+  "sku": "FaisalX-4456",
+  "status": "applied",
+  "feedId": "18C1B124D9F45539BE9D7220E0DCF5DD@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:54.674Z"
+ },
+ "FaisalX-4730": {
+  "sku": "FaisalX-4730",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:40.981Z"
+ },
+ "FaisalX-5284": {
+  "sku": "FaisalX-5284",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.041Z"
+ },
+ "RizwanX-02": {
+  "sku": "RizwanX-02",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.099Z"
+ },
+ "FaisalX-793": {
+  "sku": "FaisalX-793",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.153Z"
+ },
+ "RizwanX-12": {
+  "sku": "RizwanX-12",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.234Z"
+ },
+ "RizwanX-156": {
+  "sku": "RizwanX-156",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.292Z"
+ },
+ "RizwanX-138": {
+  "sku": "RizwanX-138",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.348Z"
+ },
+ "RizwanX-2286": {
+  "sku": "RizwanX-2286",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.403Z"
+ },
+ "RizwanX-2292": {
+  "sku": "RizwanX-2292",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.462Z"
+ },
+ "RizwanX-2401": {
+  "sku": "RizwanX-2401",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.518Z"
+ },
+ "RizwanX-3117": {
+  "sku": "RizwanX-3117",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.575Z"
+ },
+ "RizwanX-3477": {
+  "sku": "RizwanX-3477",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.633Z"
+ },
+ "RizwanX-3319": {
+  "sku": "RizwanX-3319",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.691Z"
+ },
+ "RizwanX-3179": {
+  "sku": "RizwanX-3179",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.747Z"
+ },
+ "RizwanX-3209": {
+  "sku": "RizwanX-3209",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.806Z"
+ },
+ "RizwanX-3510": {
+  "sku": "RizwanX-3510",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.866Z"
+ },
+ "RizwanX-3684": {
+  "sku": "RizwanX-3684",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.926Z"
+ },
+ "RizwanX-3496": {
+  "sku": "RizwanX-3496",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:41.982Z"
+ },
+ "RizwanX-3869": {
+  "sku": "RizwanX-3869",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:42.040Z"
+ },
+ "RizwanX-3804": {
+  "sku": "RizwanX-3804",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:42.094Z"
+ },
+ "FaisalX-1156": {
+  "sku": "FaisalX-1156",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:42.154Z"
+ },
+ "RizwanX-59": {
+  "sku": "RizwanX-59",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:42.209Z"
+ },
+ "RizwanX-47": {
+  "sku": "RizwanX-47",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:42.281Z"
+ },
+ "FaisalX-1147": {
+  "sku": "FaisalX-1147",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:42.340Z"
+ },
+ "FaisalX-2214": {
+  "sku": "FaisalX-2214",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:42.395Z"
+ },
+ "FaisalX-2195": {
+  "sku": "FaisalX-2195",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:42.453Z"
+ },
+ "FaisalX-1287": {
+  "sku": "FaisalX-1287",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:42.912Z"
+ },
+ "FaisalX-1800": {
+  "sku": "FaisalX-1800",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:42.987Z"
+ },
+ "FaisalX-2586": {
+  "sku": "FaisalX-2586",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.045Z"
+ },
+ "FaisalX-2563": {
+  "sku": "FaisalX-2563",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.113Z"
+ },
+ "FaisalX-2808": {
+  "sku": "FaisalX-2808",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.170Z"
+ },
+ "FaisalX-3453": {
+  "sku": "FaisalX-3453",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.253Z"
+ },
+ "FaisalX-319": {
+  "sku": "FaisalX-319",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.372Z"
+ },
+ "FaisalX-3454": {
+  "sku": "FaisalX-3454",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.433Z"
+ },
+ "FaisalX-3654": {
+  "sku": "FaisalX-3654",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.490Z"
+ },
+ "FaisalX-3724": {
+  "sku": "FaisalX-3724",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.551Z"
+ },
+ "FaisalX-3637": {
+  "sku": "FaisalX-3637",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.608Z"
+ },
+ "FaisalX-367": {
+  "sku": "FaisalX-367",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.666Z"
+ },
+ "FaisalX-3785": {
+  "sku": "FaisalX-3785",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.724Z"
+ },
+ "FaisalX-402": {
+  "sku": "FaisalX-402",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.782Z"
+ },
+ "FaisalX-5192": {
+  "sku": "FaisalX-5192",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.846Z"
+ },
+ "FaisalX-5190": {
+  "sku": "FaisalX-5190",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.903Z"
+ },
+ "FaisalX-4498": {
+  "sku": "FaisalX-4498",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:43.961Z"
+ },
+ "FaisalX-5619": {
+  "sku": "FaisalX-5619",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:44.018Z"
+ },
+ "FaisalX-5315": {
+  "sku": "FaisalX-5315",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:44.074Z"
+ },
+ "RizwanX-140": {
+  "sku": "RizwanX-140",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:44.132Z"
+ },
+ "RizwanX-220": {
+  "sku": "RizwanX-220",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:44.189Z"
+ },
+ "RizwanX-2205": {
+  "sku": "RizwanX-2205",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:44.242Z"
+ },
+ "RizwanX-2194": {
+  "sku": "RizwanX-2194",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:44.298Z"
+ },
+ "RizwanX-2275": {
+  "sku": "RizwanX-2275",
+  "status": "applied",
+  "feedId": "18C1B1F9B719520D902B5EBA49143A79@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:44.359Z"
+ },
+ "RizwanX-2293": {
+  "sku": "RizwanX-2293",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:44.697Z"
+ },
+ "RizwanX-2285": {
+  "sku": "RizwanX-2285",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:44.753Z"
+ },
+ "RizwanX-2325": {
+  "sku": "RizwanX-2325",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:44.807Z"
+ },
+ "RizwanX-2406": {
+  "sku": "RizwanX-2406",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:44.863Z"
+ },
+ "RizwanX-2450": {
+  "sku": "RizwanX-2450",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:44.921Z"
+ },
+ "RizwanX-2705": {
+  "sku": "RizwanX-2705",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:44.981Z"
+ },
+ "RizwanX-2956": {
+  "sku": "RizwanX-2956",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:45.040Z"
+ },
+ "RizwanX-3026": {
+  "sku": "RizwanX-3026",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:45.099Z"
+ },
+ "RizwanX-3178": {
+  "sku": "RizwanX-3178",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:45.155Z"
+ },
+ "RizwanX-3088": {
+  "sku": "RizwanX-3088",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:04.704Z"
+ },
+ "RizwanX-2985": {
+  "sku": "RizwanX-2985",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:45.210Z"
+ },
+ "RizwanX-2748": {
+  "sku": "RizwanX-2748",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:45.264Z"
+ },
+ "FaisalX-1155": {
+  "sku": "FaisalX-1155",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:45.320Z"
+ },
+ "FaisalX-1143": {
+  "sku": "FaisalX-1143",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:45.382Z"
+ },
+ "RizwanX-3260": {
+  "sku": "RizwanX-3260",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:45.440Z"
+ },
+ "FaisalX-1247": {
+  "sku": "FaisalX-1247",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:45.775Z"
+ },
+ "FaisalX-1228": {
+  "sku": "FaisalX-1228",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:45.835Z"
+ },
+ "FaisalX-1212": {
+  "sku": "FaisalX-1212",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:45.900Z"
+ },
+ "FaisalX-1214": {
+  "sku": "FaisalX-1214",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:45.957Z"
+ },
+ "FaisalX-1845": {
+  "sku": "FaisalX-1845",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.014Z"
+ },
+ "FaisalX-2011": {
+  "sku": "FaisalX-2011",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.069Z"
+ },
+ "FaisalX-2658": {
+  "sku": "FaisalX-2658",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.124Z"
+ },
+ "FaisalX-2535": {
+  "sku": "FaisalX-2535",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.186Z"
+ },
+ "FaisalX-2225": {
+  "sku": "FaisalX-2225",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.315Z"
+ },
+ "FaisalX-2731": {
+  "sku": "FaisalX-2731",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.385Z"
+ },
+ "FaisalX-303": {
+  "sku": "FaisalX-303",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.448Z"
+ },
+ "FaisalX-3446": {
+  "sku": "FaisalX-3446",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:04.766Z"
+ },
+ "FaisalX-3488": {
+  "sku": "FaisalX-3488",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.505Z"
+ },
+ "FaisalX-3692": {
+  "sku": "FaisalX-3692",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.565Z"
+ },
+ "FaisalX-3678": {
+  "sku": "FaisalX-3678",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.627Z"
+ },
+ "FaisalX-3776": {
+  "sku": "FaisalX-3776",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.681Z"
+ },
+ "FaisalX-384": {
+  "sku": "FaisalX-384",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.740Z"
+ },
+ "FaisalX-3793": {
+  "sku": "FaisalX-3793",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.798Z"
+ },
+ "FaisalX-3748": {
+  "sku": "FaisalX-3748",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.858Z"
+ },
+ "FaisalX-401": {
+  "sku": "FaisalX-401",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:46.941Z"
+ },
+ "FaisalX-4235": {
+  "sku": "FaisalX-4235",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.026Z"
+ },
+ "FaisalX-4301": {
+  "sku": "FaisalX-4301",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.082Z"
+ },
+ "FaisalX-4736": {
+  "sku": "FaisalX-4736",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.139Z"
+ },
+ "FaisalX-4494": {
+  "sku": "FaisalX-4494",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.194Z"
+ },
+ "FaisalX-5422": {
+  "sku": "FaisalX-5422",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.249Z"
+ },
+ "FaisalX-5614": {
+  "sku": "FaisalX-5614",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.306Z"
+ },
+ "FaisalX-5342": {
+  "sku": "FaisalX-5342",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.361Z"
+ },
+ "RizwanX-134": {
+  "sku": "RizwanX-134",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.419Z"
+ },
+ "RizwanX-167": {
+  "sku": "RizwanX-167",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.473Z"
+ },
+ "RizwanX-136": {
+  "sku": "RizwanX-136",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.534Z"
+ },
+ "RizwanX-198": {
+  "sku": "RizwanX-198",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.590Z"
+ },
+ "RizwanX-126": {
+  "sku": "RizwanX-126",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.646Z"
+ },
+ "RizwanX-2416": {
+  "sku": "RizwanX-2416",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.699Z"
+ },
+ "RizwanX-2393": {
+  "sku": "RizwanX-2393",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.754Z"
+ },
+ "RizwanX-2694": {
+  "sku": "RizwanX-2694",
+  "status": "applied",
+  "feedId": "18C1B2CEAFAE51E5A09D97F90074A417@AX8BBgA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T02:17:47.810Z"
+ },
+ "RizwanX-2695": {
+  "sku": "RizwanX-2695",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:43.783Z"
+ },
+ "RizwanX-2685": {
+  "sku": "RizwanX-2685",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:44.362Z"
+ },
+ "RizwanX-3100": {
+  "sku": "RizwanX-3100",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:44.427Z"
+ },
+ "RizwanX-2783": {
+  "sku": "RizwanX-2783",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:44.485Z"
+ },
+ "RizwanX-3151": {
+  "sku": "RizwanX-3151",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:44.550Z"
+ },
+ "RizwanX-3067": {
+  "sku": "RizwanX-3067",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:44.608Z"
+ },
+ "RizwanX-3321": {
+  "sku": "RizwanX-3321",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:44.667Z"
+ },
+ "RizwanX-3153": {
+  "sku": "RizwanX-3153",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:44.726Z"
+ },
+ "RizwanX-3210": {
+  "sku": "RizwanX-3210",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:44.786Z"
+ },
+ "RizwanX-3322": {
+  "sku": "RizwanX-3322",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:44.847Z"
+ },
+ "RizwanX-3285": {
+  "sku": "RizwanX-3285",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:44.901Z"
+ },
+ "RizwanX-3805": {
+  "sku": "RizwanX-3805",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:44.962Z"
+ },
+ "RizwanX-50": {
+  "sku": "RizwanX-50",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.022Z"
+ },
+ "FaisalX-1138": {
+  "sku": "FaisalX-1138",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.083Z"
+ },
+ "FaisalX-257": {
+  "sku": "FaisalX-257",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.143Z"
+ },
+ "FaisalX-2515": {
+  "sku": "FaisalX-2515",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.205Z"
+ },
+ "FaisalX-249": {
+  "sku": "FaisalX-249",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.264Z"
+ },
+ "FaisalX-1770": {
+  "sku": "FaisalX-1770",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.326Z"
+ },
+ "FaisalX-1635": {
+  "sku": "FaisalX-1635",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.398Z"
+ },
+ "FaisalX-1810": {
+  "sku": "FaisalX-1810",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.461Z"
+ },
+ "FaisalX-2607": {
+  "sku": "FaisalX-2607",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.548Z"
+ },
+ "FaisalX-298": {
+  "sku": "FaisalX-298",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.614Z"
+ },
+ "FaisalX-3758": {
+  "sku": "FaisalX-3758",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.673Z"
+ },
+ "FaisalX-3727": {
+  "sku": "FaisalX-3727",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.733Z"
+ },
+ "FaisalX-3467": {
+  "sku": "FaisalX-3467",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.790Z"
+ },
+ "FaisalX-3374": {
+  "sku": "FaisalX-3374",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:45.854Z"
+ },
+ "FaisalX-3503": {
+  "sku": "FaisalX-3503",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:46.367Z"
+ },
+ "FaisalX-4044": {
+  "sku": "FaisalX-4044",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:05.122Z"
+ },
+ "FaisalX-3943": {
+  "sku": "FaisalX-3943",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:46.435Z"
+ },
+ "FaisalX-4124": {
+  "sku": "FaisalX-4124",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T01:17:05.180Z"
+ },
+ "FaisalX-393": {
+  "sku": "FaisalX-393",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:46.491Z"
+ },
+ "FaisalX-4481": {
+  "sku": "FaisalX-4481",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:46.565Z"
+ },
+ "FaisalX-4761": {
+  "sku": "FaisalX-4761",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:46.624Z"
+ },
+ "FaisalX-5360": {
+  "sku": "FaisalX-5360",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:46.680Z"
+ },
+ "RizwanX-179": {
+  "sku": "RizwanX-179",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:46.740Z"
+ },
+ "RizwanX-137": {
+  "sku": "RizwanX-137",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:46.799Z"
+ },
+ "RizwanX-161": {
+  "sku": "RizwanX-161",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:46.858Z"
+ },
+ "RizwanX-2198": {
+  "sku": "RizwanX-2198",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:46.925Z"
+ },
+ "RizwanX-2366": {
+  "sku": "RizwanX-2366",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:46.980Z"
+ },
+ "RizwanX-2425": {
+  "sku": "RizwanX-2425",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:47.041Z"
+ },
+ "RizwanX-3509": {
+  "sku": "RizwanX-3509",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:47.098Z"
+ },
+ "RizwanX-3317": {
+  "sku": "RizwanX-3317",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:47.159Z"
+ },
+ "RizwanX-2784": {
+  "sku": "RizwanX-2784",
+  "status": "applied",
+  "feedId": "18C1B3A530DC582687E8392C7F1351F5@AX8BBwA",
+  "ok": true,
+  "detail": "ok",
+  "at": "2026-07-13T03:17:47.216Z"
  }
 }
