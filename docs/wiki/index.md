@@ -86,6 +86,7 @@
 - [A-to-Z & Chargeback](atoz-chargeback.md) — защита от претензий
 - [Feedback Manager](feedback-manager.md) — отзывы, классификация удаляемости
 - [Pricing Module](pricing-module.md) — модуль ценообразования: floor/ceiling guardrails, классификация по cost-модели, sync cron (старт с Uncrustables, store1)
+- [Pricing & New-Listing Launch SOP](pricing-launch-sop.md) — **канон (Vladimir 2026-07-13, с Джеки):** Layer A = формула 70% net ROI (item = landed×1.5); Layer B = запуск через КУПОН вниз (макс ~13% до floor), база-цена НЕ двигается никогда, купон сужается к нулю; no fake strikethrough / no list-low-and-raise; репрайсер min=floor max=item
 - [COGS / Pricing Engine Roadmap](cogs-pricing-engine-roadmap.md) — roadmap: единый каталог SKU с себестоимостью ритейлеров → динамическое ценообразование (6 фаз)
 - [Reference Catalog Engine](reference-catalog-engine.md) — архитектура справочной базы товаров от доноров (ритейлеров) для COGS и обогащения контента
 - [Amazon Growth Roadmap](amazon-growth-roadmap.md) — стратегия роста Amazon: источники данных, Listing Health Score, план модуля `/amazon-growth`
