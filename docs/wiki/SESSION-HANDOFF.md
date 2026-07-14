@@ -58,6 +58,22 @@
 
 ---
 
+## 🆕 СЕССИЯ 2026-07-14 (MacBook-Claude) — Amazon launch: цены 164 Uncrustables → Layer A + A/B купоны-vs-sale-price
+
+**Контекст:** владелец увидел в Seller Central дикий разброс цен на 164 июльских Uncrustables (24-ct и по $46, и по $96, Max $116.99). Причина: Arm A (82) без min/max → ChannelMax-дефолт-модель гоняла базу свободно.
+
+**Что сделано (SP-API, store1):**
+1. **Нормализовал ВСЕ 163 на Layer A:** `our_price=ITEM`, `min=floor(×1.3)`, **`max=ITEM`** (жёсткий потолок Amazon — репрайсер выше НЕ поднимет). health-check: база 163/163, границы 163/163. Разброс убит. Мерж сохранил Arm-B sale price 81/81. Скрипт `_normalize-all-prices.ts`.
+2. **A/B-эксперимент запущен** (по политике [[pricing-launch-sop]], принята 2026-07-13): 163 ASIN пополам, сбалансировано по count-тиру. **Arm A = купоны ГРУППАМИ** (5 купонов по тиру, 13%, бюджет $1150) — Джеки грузит через Manage Coupons in bulk. **Arm B = sale price** (81 ASIN, 13% через SP-API `discounted_price`, окно 14.07→13.08) — СДЕЛАНО, 81/81 ACCEPTED. Карта плеч: `public/launch-experiment-assignments.csv`. Вики: [[pricing-launch-experiment]], память `project_amazon_launch_experiment`.
+3. **Файлы для Джеки — на публичном R2** (`https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/prod/launch/…`): `channelmax-uncrustables-launch.txt` + `coupons-uncrustables-launch.csv`. Причина: middleware приложения гейтит `/public` → /login, curl/бот файл не забирал; R2-бакет публичный.
+
+**Находки / предупреждения:**
+- **`maximum_seller_allowed_price` = ЖЁСТКИЙ потолок Amazon** — самый надёжный guardrail от дрейфа (надёжнее, чем ждать ChannelMax). Теперь стоит всем 163.
+- **ChannelMax активно репрайсит:** одну Arm-B базу увёл на $70.88 (в пределах [floor,max]) сразу после патча — я переставил. CM двигает базу ВНУТРИ коридора, но выше max не может. Чтобы уконтестованные парковались РОВНО на ITEM — Джеки всё же грузит ChannelMax-файл (его модель → сидеть на Max). Потолок держит и без файла.
+- **Метрики через ~30 дней:** Amazon Sales&Traffic по child-ASIN ⋈ assignments-карта → какое плечо (купон/sale) даёт первые продажи и больше units. Атрибуция купонов — из coupon/statement отчёта.
+- **Хвосты владельцу:** `B0H82PKK18` — мутный count «4 ct - Pack of 45» (45 или 180 сэндвичей?), исключён из свипа, нужен вердикт; 10 листингов с ERROR-issue у Amazon; 5 FAILED + 1 PENDING в нашей БД.
+
+
 ## 🆕 СЕССИЯ 2026-07-06→07 (мультипак-чат ba0c998a, MacBook, Opus 4.8 → Fable 5) — ложный «REVERT» пойман владельцем; каноничный пайплайн; первые 9 в проде
 
 **Контекст:** после ночного финального аудита (336 чистых / 315 живых дефектных) владелец попросил «починить штук 20 и показать было→стало». В процессе он же поймал системную ошибку моего анализа — и это перевернуло план.

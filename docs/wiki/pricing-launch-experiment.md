@@ -52,6 +52,12 @@ Winning lever stays; narrow the discount in steps (**13→10→7→4→0**, one 
 3–5 days while velocity holds) back to the permanent Layer A ITEM PRICE. Base list
 price never moves — only the coupon/sale overlay.
 
+## Status / execution log
+- **2026-07-13:** experiment designed; Arm B sale prices set on 81 ASINs via SP-API (81/81 ACCEPTED). Files in `public/` + on public R2 (`pub-*.r2.dev/prod/launch/…`) because the app middleware gates `/public` → /login. ChannelMax + coupon uploads handed to Jackie.
+- **2026-07-14 — normalized ALL 163 to Layer A.** Owner saw a wild price spread (24-ct listings at $46…$96, a Max at $116.99). Root cause: **Arm A (82) had no min/max**, so ChannelMax's default model drifted their base freely. Fix: SP-API set `our_price=ITEM`, `min=floor`, **`max=ITEM` on all 163** — `maximum_seller_allowed_price` is an Amazon HARD ceiling no repricer can exceed. Result (health-check): base==ITEM 163/163, guardrail 163/163, **Arm B sale price preserved 81/81** (the merge keeps `discounted_price`). The insane spread is gone.
+- **⚠️ ChannelMax is actively repricing:** one Arm-B base was nudged to $70.88 (in-band) right after the patch → CM moves base WITHIN [floor, max] but can't breach max. To PARK uncontested listings exactly at ITEM (not below), still upload the ChannelMax file (its model → sit at Max). Hard ceiling already holds regardless.
+- Scripts (scratch, not committed): `_normalize-all-prices.ts` (base+bounds all), `_set-arm-b-saleprice.ts` (Arm B sale), `_launch-healthcheck.ts` (verify), `_upload-launch-r2.ts` (public files).
+
 ## Связано с
 - [[pricing-launch-sop]] — Layer A price model + Layer B launch rules
 - [[channelmax-guide]] — how the min/max file feeds the repricer
