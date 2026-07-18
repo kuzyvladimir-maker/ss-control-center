@@ -1,0 +1,617 @@
+{
+  "schema_version": "bundle-factory.uncrustables-donor-enrichment/v2",
+  "immutable": true,
+  "brand": "Uncrustables",
+  "reviewed_at": "2026-07-17",
+  "ledger": {
+    "path": "data/audits/uncrustables-ledger-20260717T232140568Z-offline.json",
+    "sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f"
+  },
+  "selected_donor_ids": [
+    "03eba512-c138-4942-bd34-177fae87c91b",
+    "23385267-8262-4bf4-9c44-36aabd4c47fe",
+    "2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34",
+    "281b4a71-92e7-4300-821c-a9ef54461312",
+    "2865b6ba-d471-412b-9f47-2141f2d12faa",
+    "2904ec27-a8ed-4af5-95e7-6e3e6959c653",
+    "41763717-b5c0-4523-be7d-7f119eadfe76",
+    "4de79cf2-d5e5-4630-b269-68ba8c480e90",
+    "609242d9-b463-4994-9ea7-a8a4a0ea9ecf",
+    "858a6915-7970-4bd5-83a3-9ba5913bf5b5",
+    "93263f2e-bff8-45f1-b50a-b1946a1da424",
+    "95457d4e-3b3b-46bb-9dd4-0c64bbd83c88",
+    "ac93b63d-54f6-4ba3-bb43-0160023d554c",
+    "b0ce034d-3bbb-49bf-af02-39588a4da3f7",
+    "fef5e600-7e4e-4918-84ee-22e52524b3ef",
+    "ffa55546-d03c-4a11-b2e6-8c2a4d2e1465"
+  ],
+  "donors": [
+    {
+      "donor_id": "03eba512-c138-4942-bd34-177fae87c91b",
+      "expected_title": "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500924495", "checksum_valid": true },
+        "ingredients": { "action": "fill_if_missing", "value": null, "sha256": null },
+        "target_offer": {
+          "retailer": "target",
+          "retailer_product_id": "95127421",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-blackberry-spread-sandwich-8oz-4ct/-/A-95127421",
+          "fetched_at": "2026-07-11T11:46:01.998Z"
+        }
+      },
+      "reviewed": {
+        "upc": "051500924495",
+        "ingredients": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Salt, Molasses. Blackberry Spread: Sugar, Blackberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Natural Flavor, Potassium Sorbate (Preservative).",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-blackberry",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-95127421",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 95127421 > UPC 051500924495"
+        }
+      }
+    },
+    {
+      "donor_id": "23385267-8262-4bf4-9c44-36aabd4c47fe",
+      "expected_title": "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct",
+      "catalog_snapshot": {
+        "upc": { "action": "fill_if_missing", "value": null, "checksum_valid": null },
+        "ingredients": { "action": "fill_if_missing", "value": null, "sha256": null },
+        "target_offer": {
+          "retailer": "target",
+          "retailer_product_id": "13234506",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-grape-jelly-sandwich-8oz-4ct/-/A-13234506",
+          "fetched_at": "2026-07-10T15:50:17.851Z"
+        }
+      },
+      "reviewed": {
+        "upc": "051500048153",
+        "ingredients": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Salt, Molasses. Grape Jelly: Sugar, Grape Juice, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative).",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-grape-jelly",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-13234506",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 13234506 > UPC 051500048153"
+        }
+      }
+    },
+    {
+      "donor_id": "2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34",
+      "expected_title": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500029909", "checksum_valid": true },
+        "ingredients": { "action": "fill_if_missing", "value": null, "sha256": null },
+        "target_offer": {
+          "retailer": "target",
+          "retailer_product_id": "93859949",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-chocolate-flavored-hazelnut-spread-frozen-sandwich-18oz-10ct/-/A-93859949",
+          "fetched_at": "2026-07-11T11:46:01.998Z"
+        }
+      },
+      "reviewed": {
+        "upc": "051500029909",
+        "ingredients": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Chocolate Flavored Hazelnut Spread: Sugar, Vegetable Oils (Palm And Canola), Hazelnuts, Cocoa Processed With Alkali And Cocoa, Skim Milk, Whey, Canola Lecithin, Natural Flavor.",
+        "allergens": {
+          "contains": ["Hazelnut", "Milk", "Wheat"],
+          "may_contain": ["Peanut"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/hazelnut-spread-sandwich",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-93859949",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 93859949 > UPC 051500029909"
+        }
+      }
+    },
+    {
+      "donor_id": "2865b6ba-d471-412b-9f47-2141f2d12faa",
+      "expected_title": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500041383", "checksum_valid": true },
+        "ingredients": { "action": "fill_if_missing", "value": null, "sha256": null },
+        "target_offer": {
+          "retailer": "target",
+          "retailer_product_id": "13234508",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-whole-wheat-peanut-butter-38-strawberry-jam-sandwich-8oz-4ct/-/A-13234508",
+          "fetched_at": "2026-07-11T11:46:01.998Z"
+        }
+      },
+      "reviewed": {
+        "upc": "051500041383",
+        "ingredients": "Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Contains 2% Or Less Of: Wheat Gluten, Soybean Oil, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Molasses, Sugar, Salt. Strawberry Spread: Sugar, Strawberries, Water, Contains 2% Or Less Of: Fruit Pectin, Citric Acid, Locust Bean Gum, Potassium Sorbate (Preservative), Calcium Chloride.",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-strawberry-jam-on-wheat",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-13234508",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 13234508 > UPC 051500041383"
+        }
+      }
+    },
+    {
+      "donor_id": "2904ec27-a8ed-4af5-95e7-6e3e6959c653",
+      "expected_title": "Smuckers Uncrustables Peanut Butter & Strawberry Jam Sandwiches, 4 Count, 2 oz Each, Frozen",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500048160", "checksum_valid": true },
+        "ingredients": {
+          "action": "replace_exact",
+          "value": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% or Less of: Salt, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% or Less of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed and Soybean), Mono and Diglycerides, Salt. Strawberry Jam: Sugar, Strawberries, Contains 2% or Less of: Pectin, Citric Acid, Potassium Sorbate (Preservative). | Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Salt, Molasses. Strawberry Jam: Sugar, Strawberries, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative).",
+          "sha256": "2bb0bf96d2c8b2d3a58eacc6192ee36c311f35492800dd87b72fd82cc2ce9934"
+        },
+        "target_offer": null
+      },
+      "reviewed": {
+        "upc": "051500048160",
+        "ingredients": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Salt, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Salt. Strawberry Jam: Sugar, Strawberries, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative).",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-strawberry-jam-sandwich",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-13234505",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 13234505 > UPC 051500048160"
+        }
+      }
+    },
+    {
+      "donor_id": "41763717-b5c0-4523-be7d-7f119eadfe76",
+      "expected_title": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500018453", "checksum_valid": true },
+        "ingredients": { "action": "fill_if_missing", "value": null, "sha256": null },
+        "target_offer": {
+          "retailer": "target",
+          "retailer_product_id": "94884225",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-up-38-apple-peanut-butter-38-apple-cinnamon-jelly-sandwich-22-4oz-8ct/-/A-94884225",
+          "fetched_at": "2026-07-11T11:46:01.998Z"
+        }
+      },
+      "reviewed": {
+        "upc": "051500018453",
+        "ingredients": "Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Molasses, Sugar, Salt. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Apple Cinnamon Jelly: Sugar, Apple Juice, Contains 2% Or Less Of: Pectin, Citric Acid, Cinnamon, Potassium Sorbate (Preservative).",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-apple-cinnamon-protein",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-94884225",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 94884225 > UPC 051500018453"
+        }
+      }
+    },
+    {
+      "donor_id": "4de79cf2-d5e5-4630-b269-68ba8c480e90",
+      "expected_title": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500549469", "checksum_valid": true },
+        "ingredients": { "action": "fill_if_missing", "value": null, "sha256": null },
+        "target_offer": {
+          "retailer": "target",
+          "retailer_product_id": "95294391",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-blueberry-sandwich-22-4oz-8ct/-/A-95294391",
+          "fetched_at": "2026-07-11T11:46:01.998Z"
+        }
+      },
+      "reviewed": {
+        "upc": "051500549469",
+        "ingredients": "Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Sugar, Salt, Molasses. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Blueberry Spread: Sugar, Blueberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative), Natural Flavor.",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-blueberry-protein",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-95294391",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 95294391 > UPC 051500549469"
+        }
+      }
+    },
+    {
+      "donor_id": "609242d9-b463-4994-9ea7-a8a4a0ea9ecf",
+      "expected_title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500516508", "checksum_valid": true },
+        "ingredients": { "action": "fill_if_missing", "value": null, "sha256": null },
+        "target_offer": {
+          "retailer": "target",
+          "retailer_product_id": "94884226",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-bright-eyed-berry-peanut-butter-38-strawberry-jam-sandwich-22-4oz-8ct/-/A-94884226",
+          "fetched_at": "2026-07-11T11:46:01.998Z"
+        }
+      },
+      "reviewed": {
+        "upc": "051500516508",
+        "ingredients": "Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Molasses, Sugar, Salt. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Strawberry Jam: Sugar, Strawberries, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative).",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-strawberry-protein",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-94884226",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 94884226 > UPC 051500516508"
+        }
+      }
+    },
+    {
+      "donor_id": "858a6915-7970-4bd5-83a3-9ba5913bf5b5",
+      "expected_title": "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500862988", "checksum_valid": true },
+        "ingredients": {
+          "action": "verify_exact_no_write",
+          "value": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Salt, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Salt. Chocolate Flavored Spread: Corn Syrup, Sugar, Water, Cocoa Processed With Alkali, Contains 2% Or Less Of: Pectin, Potassium Sorbate (Preservative), Calcium Chloride, Artificial Flavor.",
+          "sha256": "6be6505ec9beaf1b2b9dd7a104c7194180f0d814c07e562c5ed7949292944470"
+        },
+        "target_offer": null
+      },
+      "reviewed": {
+        "upc": "051500862988",
+        "ingredients": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Salt, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Salt. Chocolate Flavored Spread: Corn Syrup, Sugar, Water, Cocoa Processed With Alkali, Contains 2% Or Less Of: Pectin, Potassium Sorbate (Preservative), Calcium Chloride, Artificial Flavor.",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-chocolate",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens; 10 Count Carton"
+        },
+        "upc_source": {
+          "kind": "catalog_snapshot",
+          "url": null,
+          "source_field": "DonorProduct.upc",
+          "retrieved_at": "2026-07-17",
+          "locator": "Existing exact catalog value 051500862988; GTIN check digit is valid. No manufacturer, GS1, SmartLabel, or retailer page reviewed here publishes this UPC, so this evidence is verification-only and authorizes no UPC write."
+        }
+      }
+    },
+    {
+      "donor_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+      "expected_title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+      "catalog_snapshot": {
+        "upc": { "action": "fill_if_missing", "value": null, "checksum_valid": null },
+        "ingredients": { "action": "fill_if_missing", "value": null, "sha256": null },
+        "target_offer": {
+          "retailer": "target",
+          "retailer_product_id": "13234505",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-strawberry-jam-sandwich-8oz-4ct/-/A-13234505",
+          "fetched_at": "2026-07-10T15:46:06.143Z"
+        }
+      },
+      "reviewed": {
+        "upc": "051500048160",
+        "ingredients": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Salt, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Salt. Strawberry Jam: Sugar, Strawberries, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative).",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-strawberry-jam-sandwich",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-13234505",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 13234505 > UPC 051500048160"
+        }
+      }
+    },
+    {
+      "donor_id": "95457d4e-3b3b-46bb-9dd4-0c64bbd83c88",
+      "expected_title": "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500041369", "checksum_valid": true },
+        "ingredients": { "action": "fill_if_missing", "value": null, "sha256": null },
+        "target_offer": {
+          "retailer": "target",
+          "retailer_product_id": "13234507",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-whole-wheat-peanut-butter-38-grape-jelly-sandwiches-8oz-4ct/-/A-13234507",
+          "fetched_at": "2026-07-11T11:46:01.998Z"
+        }
+      },
+      "reviewed": {
+        "upc": "051500041369",
+        "ingredients": "Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Contains 2% Or Less Of: Wheat Gluten, Soybean Oil, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Molasses, Sugar, Salt. Grape Spread: Grapes, Sugar, Water, Fruit Pectin, Citric Acid, Locust Bean Gum, Potassium Sorbate (Preservative), Calcium Chloride.",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-grape-jelly-on-wheat",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-13234507",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 13234507 > UPC 051500041369"
+        }
+      }
+    },
+    {
+      "donor_id": "ac93b63d-54f6-4ba3-bb43-0160023d554c",
+      "expected_title": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500241738", "checksum_valid": true },
+        "ingredients": {
+          "action": "replace_exact",
+          "value": "UNBLEACHED WHOLE WHEAT FLOUR, ENRICHED UNBLEACHED FLOUR (WHEAT FLOUR, MALTED BARLEY FLOUR, NIACIN, FERROUS SULFATE, THIAMIN MONONITRATE, RIBOFLAVIN, FOLIC ACID), WATER, SUGAR, YEAST, WHEAT GLUTEN, SOYBEAN OIL, SALT, DOUGH CONDITIONER (MONO AND DIGLYCERIDES, SODIUM STEAROYL LACTYLATE, DATEM, ENZYMES, ASCORBIC ACID, CALCIUM PEROXIDE), PEANUTS, MOLASSES, FULLY HYDROGENATED VEGETABLE OILS (RAPESEED AND SOYBEAN), HONEY, PECTIN, CITRIC ACID, POTASSIUM SORBATE, NATURAL FLAVOR, CALCIUM CHLORIDE.",
+          "sha256": "c772907106bf390cd66a9f25d0c92e07bac95b97cca1d7851d5a6ab2d6365f1f"
+        },
+        "target_offer": {
+          "retailer": "target",
+          "retailer_product_id": "93859950",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-honey-spread-sandwich-20oz-10ct/-/A-93859950",
+          "fetched_at": "2026-07-11T11:46:01.998Z"
+        }
+      },
+      "reviewed": {
+        "upc": "051500241738",
+        "ingredients": "Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Contains 2% Or Less Of: Wheat Gluten, Soybean Oil, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Salt. Honey Spread: Sugar, Water, Honey, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative), Natural Flavor, Calcium Chloride.",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-honey-sandwich",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-93859950",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 93859950 > UPC 051500241738"
+        }
+      }
+    },
+    {
+      "donor_id": "b0ce034d-3bbb-49bf-af02-39588a4da3f7",
+      "expected_title": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500615720", "checksum_valid": true },
+        "ingredients": { "action": "fill_if_missing", "value": null, "sha256": null },
+        "target_offer": {
+          "retailer": "target",
+          "retailer_product_id": "95048118",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-morning-protein-peanut-butter-38-mixed-berry-spread-sandwich-22-4oz-8ct/-/A-95048118",
+          "fetched_at": "2026-07-11T11:46:01.998Z"
+        }
+      },
+      "reviewed": {
+        "upc": "051500615720",
+        "ingredients": "Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Sugar, Salt, Molasses. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Mixed Berry Spread: Sugar, Strawberries, Blueberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative).",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-mixed-berry-protein",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-95048118",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 95048118 > UPC 051500615720"
+        }
+      }
+    },
+    {
+      "donor_id": "fef5e600-7e4e-4918-84ee-22e52524b3ef",
+      "expected_title": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500829905", "checksum_valid": true },
+        "ingredients": { "action": "fill_if_missing", "value": null, "sha256": null },
+        "target_offer": {
+          "retailer": "target",
+          "retailer_product_id": "91951520",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-sandwich-7-2oz-4ct/-/A-91951520",
+          "fetched_at": "2026-07-11T11:46:01.998Z"
+        }
+      },
+      "reviewed": {
+        "upc": "051500829905",
+        "ingredients": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Salt, Molasses.",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-only",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-91951520",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 91951520 > UPC 051500829905"
+        }
+      }
+    },
+    {
+      "donor_id": "ffa55546-d03c-4a11-b2e6-8c2a4d2e1465",
+      "expected_title": "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500261248", "checksum_valid": true },
+        "ingredients": {
+          "action": "replace_exact",
+          "value": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% or Less of: Salt, Dough Conditioners (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% or Less of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed and Soybean), Mono and Diglycerides, Salt, Raspberry Spread: Sugar, Raspberries, Water, Contains 2% or Less of: Fruit Pectin, Natural Flavors, Potassium Sorbate (Preservative), Citric Acid. | Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Salt, Molasses. Raspberry Spread: Sugar, Raspberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Natural Flavors, Potassium Sorbate (Preservative).",
+          "sha256": "0971f73cbe668aef72d4dae2bc33bddf3fde59e199697adaa9aa7e90011315e7"
+        },
+        "target_offer": null
+      },
+      "reviewed": {
+        "upc": "051500261248",
+        "ingredients": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Salt, Molasses. Raspberry Spread: Sugar, Raspberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Natural Flavors, Potassium Sorbate (Preservative).",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "manufacturer_product_page",
+          "url": "https://www.smuckersuncrustables.com/sandwiches/peanut-butter-and-raspberry",
+          "retrieved_at": "2026-07-17",
+          "locator": "Nutrition Information > Ingredients and Allergens; 10 Count Carton"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-94685775",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 94685775 > UPC 051500261248"
+        }
+      }
+    },
+    {
+      "donor_id": "20d65340-4c9f-4361-a997-e839e26747ca",
+      "expected_title": "Smucker's Uncrustables Frozen Peanut Butter & Mixed Berry Spread Sandwich - 8oz/4ct",
+      "catalog_snapshot": {
+        "upc": { "action": "verify_exact_no_write", "value": "051500319543", "checksum_valid": true },
+        "ingredients": { "action": "fill_if_missing", "value": null, "sha256": null },
+        "target_offer": {
+          "retailer": "target",
+          "retailer_product_id": "93860822",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-mixed-berry-spread-sandwich-8oz-4ct/-/A-93860822",
+          "fetched_at": "2026-07-07T04:20:24.619Z"
+        }
+      },
+      "reviewed": {
+        "upc": "051500319543",
+        "ingredients": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Salt, Molasses. Mixed Berry Spread: Sugar, Strawberries, Blueberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative).",
+        "allergens": {
+          "contains": ["Peanut", "Wheat"],
+          "may_contain": ["Hazelnut", "Milk"]
+        },
+        "ingredients_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-93860822",
+          "retrieved_at": "2026-07-17",
+          "locator": "Label info > Ingredients and Allergens & Warnings"
+        },
+        "upc_source": {
+          "kind": "target_label_page",
+          "url": "https://www.target.com/p/-/A-93860822",
+          "retrieved_at": "2026-07-17",
+          "locator": "Specifications > TCIN 93860822 > UPC 051500319543"
+        }
+      }
+    }
+  ],
+  "aliases": [
+    {
+      "from_donor_id": "281b4a71-92e7-4300-821c-a9ef54461312",
+      "expected_selected_product_name": "Smuckers Uncrustables Peanut Butter & Mixed Berry Spread Sandwiches, 2 oz, 4 Count (Frozen)",
+      "to_donor_id": "20d65340-4c9f-4361-a997-e839e26747ca",
+      "expected_occurrences": 3,
+      "targets": [
+        {
+          "variation_matrix_id": "cmra9m7b4000904ler9rg0izw",
+          "bundle_draft_id": "cmra9m7aj000804lesekwb1sd",
+          "selected_variant_idx": 0,
+          "expected_variant_idx": 13,
+          "expected_qty": 24,
+          "expected_occurrences": 1,
+          "pre_variants_sha256": "4c510fed4534529cc08bc690c40f7f12963b53e5534aa64ebcaa38035c1838e2",
+          "post_variants_sha256": "1448b020816b59ba1b968a7bc3e0dbe2f65f086476f3de7a729e211def677773"
+        },
+        {
+          "variation_matrix_id": "cmraaeu1r000104lelall9ika",
+          "bundle_draft_id": "cmraaeu1e000004lew4r5r291",
+          "selected_variant_idx": 0,
+          "expected_variant_idx": 28,
+          "expected_qty": 30,
+          "expected_occurrences": 1,
+          "pre_variants_sha256": "b1e1904a16b02b3ae9db68f4c2a01e739d682202df2bafe86594b71c86e56b0e",
+          "post_variants_sha256": "f331f24b0bf96a8f41eb9de176de16b697b2d0256607e5dd5092f5cc67d73ff2"
+        },
+        {
+          "variation_matrix_id": "cmrab82rm000104l2cll5c6g6",
+          "bundle_draft_id": "cmrab82rd000004l2f5zaondw",
+          "selected_variant_idx": 0,
+          "expected_variant_idx": 43,
+          "expected_qty": 45,
+          "expected_occurrences": 1,
+          "pre_variants_sha256": "f85b7f49114a896b53d1e5971ec3d1534910408adf6225bb094e4a6c335f362d",
+          "post_variants_sha256": "4b613249ead7b7f532107da5536f700585510aa0b7cc910035fc5a01a9b634f9"
+        }
+      ],
+      "reason": "The selected legacy donor was deleted. The reviewed replacement is the exact 4-count, 2-oz Peanut Butter & Mixed Berry product, confirmed by Target TCIN 93860822 and UPC 051500319543."
+    }
+  ]
+}

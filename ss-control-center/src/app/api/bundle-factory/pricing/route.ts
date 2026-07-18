@@ -21,10 +21,12 @@ import {
   PRICING_MIN_PRICE_SETTING_KEY,
   PRICING_MODE_SETTING_KEY,
   PRICING_TARGET_MARGIN_SETTING_KEY,
+  PRICING_TARGET_ROI_SETTING_KEY,
   PRICING_FBA_FEE_SETTING_KEY,
   PRICING_CLOSING_FEE_SETTING_KEY,
   PRICING_OWN_SHIPPING_SETTING_KEY,
   PRICING_REFERRAL_PCT_SETTING_KEY,
+  PRICING_SHIPPING_IN_PRICE_SETTING_KEY,
 } from "@/lib/bundle-factory/pricing-config";
 
 export const dynamic = "force-dynamic";
@@ -33,11 +35,13 @@ interface Body {
   mode?: unknown;
   markup?: unknown;
   target_margin_pct?: unknown;
+  target_roi_pct?: unknown;
   min_price_cents?: unknown;
   fba_fee_cents?: unknown;
   closing_fee_cents?: unknown;
   own_shipping_cents?: unknown;
   referral_pct?: unknown;
+  shipping_in_price?: unknown;
 }
 
 export const GET = withErrorHandler("bundle-factory/pricing[GET]", async () => {
@@ -52,10 +56,10 @@ export const POST = withErrorHandler(
 
     const writes: Array<{ key: string; value: string }> = [];
 
-    // mode — "margin" | "markup".
+    // mode — all modes supported by the canonical pricing calculator.
     if (body.mode != null) {
-      if (body.mode !== "margin" && body.mode !== "markup") {
-        return badRequest('mode must be "margin" or "markup".');
+      if (body.mode !== "margin" && body.mode !== "markup" && body.mode !== "roi") {
+        return badRequest('mode must be "margin", "markup", or "roi".');
       }
       writes.push({ key: PRICING_MODE_SETTING_KEY, value: body.mode });
     }
@@ -78,13 +82,33 @@ export const POST = withErrorHandler(
       writes.push({ key: PRICING_TARGET_MARGIN_SETTING_KEY, value: String(Math.round(n * 10000) / 10000) });
     }
 
+    if (body.target_roi_pct != null) {
+      const n = num(body.target_roi_pct);
+      if (!Number.isFinite(n) || n < 0 || n >= 0.95) {
+        return badRequest("target_roi_pct must be a fraction between 0 and 0.95 (e.g. 0.70 = 70%).");
+      }
+      writes.push({ key: PRICING_TARGET_ROI_SETTING_KEY, value: String(Math.round(n * 10000) / 10000) });
+    }
+
     // referral override — a fraction in [0, 0.95); empty string clears it.
-    if (body.referral_pct != null) {
+    if (body.referral_pct === null || body.referral_pct === "") {
+      writes.push({ key: PRICING_REFERRAL_PCT_SETTING_KEY, value: "" });
+    } else if (body.referral_pct != null) {
       const n = num(body.referral_pct);
       if (!Number.isFinite(n) || n < 0 || n >= 0.95) {
         return badRequest("referral_pct must be a fraction between 0 and 0.95 (e.g. 0.15 = 15%).");
       }
       writes.push({ key: PRICING_REFERRAL_PCT_SETTING_KEY, value: String(Math.round(n * 10000) / 10000) });
+    }
+
+    if (body.shipping_in_price != null) {
+      if (typeof body.shipping_in_price !== "boolean") {
+        return badRequest("shipping_in_price must be a boolean.");
+      }
+      writes.push({
+        key: PRICING_SHIPPING_IN_PRICE_SETTING_KEY,
+        value: String(body.shipping_in_price),
+      });
     }
 
     // cents fields — non-negative.
@@ -107,13 +131,13 @@ export const POST = withErrorHandler(
       return badRequest("provide at least one pricing field to update.");
     }
 
-    for (const w of writes) {
-      await prisma.setting.upsert({
+    await prisma.$transaction(
+      writes.map((w) => prisma.setting.upsert({
         where: { key: w.key },
         create: { key: w.key, value: w.value },
         update: { value: w.value },
-      });
-    }
+      })),
+    );
 
     const model = await getPricingModel();
     return NextResponse.json({ ok: true, model });

@@ -42,6 +42,10 @@ export interface RewriteFeedback {
   detected_logos?: string[];
   /** Free-text reason from the prior compliance failure (e.g. "main_image_foreign_logos"). */
   failure_reason?: string;
+  /** Genuine marks expected from the recipe donor references plus the approved
+   *  Salutem shipping kit. Vision may report these as logos, but a retry must
+   *  preserve them rather than replacing the real product with generic art. */
+  expected_brand_marks?: string[];
   /** 1-based attempt number — first retry is `attempt: 2`. */
   attempt: number;
 }
@@ -80,6 +84,10 @@ export interface ImageGenerationOutput {
   prompt_used: string;
   /** Set when we used the dev-mock path (worker not configured, no stub). */
   mock_mode: boolean;
+  /** Exact model attested by the image worker. Null for dev placeholders. */
+  model: string | null;
+  /** Ordered references actually staged by the worker. */
+  reference_count: number;
   /** Set on error — the rest of the pipeline treats this as fail-CLOSED. */
   error?: string;
 }
@@ -128,15 +136,42 @@ export function buildFinalPrompt(input: ImageGenerationInput): string {
     return input.prompt;
   }
   const logos = input.retry_context.detected_logos ?? [];
+  const expectedMarks = input.retry_context.expected_brand_marks ?? [];
   const extras: string[] = [];
-  if (logos.length > 0) {
-    const banList = logos.map((l) => `"${l}"`).join(", ");
-    extras.push(
-      `CRITICAL — previous attempt was rejected for showing branded packaging. Do NOT show any of these brand names/logos anywhere in the image: ${banList}. Use entirely generic, unbranded packaging.`,
+
+  const normalizeMark = (value: string) => value
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[’‘`]/g, "'")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+  const expected = expectedMarks.map(normalizeMark).filter(Boolean);
+  const expectedMarkList = expectedMarks.length > 0
+    ? expectedMarks.map((mark) => `"${mark}"`).join(", ")
+    : "the exact brands visible on the reviewed donor references";
+  const isExpectedMark = (logo: string) => {
+    const normalized = normalizeMark(logo);
+    if (!normalized) return false;
+    return expected.some(
+      (mark) => normalized === mark || normalized.includes(mark) || mark.includes(normalized),
     );
+  };
+  const unexpectedLogos = logos.filter((logo) => !isExpectedMark(logo));
+
+  if (logos.length > 0) {
+    if (unexpectedLogos.length > 0) {
+      const banList = unexpectedLogos.map((logo) => `"${logo}"`).join(", ");
+      extras.push(
+        `CRITICAL RETRY CORRECTION: remove ONLY these unexpected foreign, retailer, or watermark marks: ${banList}. Preserve the exact recipe-approved genuine product brands and package art from the donor references; the expected marks are ${expectedMarkList}. Preserve approved SALUTEM SOLUTIONS kit marks only when the base prompt includes the frozen cooler and gel packs. Never erase, redesign, rebrand, or replace genuine donor packaging with plain, fictional, or look-alike packaging.`,
+      );
+    } else {
+      extras.push(
+        `CRITICAL RETRY CORRECTION: the prior detector reported only expected recipe/kit marks. Preserve the exact recipe-approved genuine product brands and package art from the donor references; the expected marks are ${expectedMarkList}. Preserve approved SALUTEM SOLUTIONS kit marks only when the base prompt includes the frozen cooler and gel packs. Do not remove or alter those expected marks. Exclude only unrelated retailer badges, watermarks, and products foreign to the recipe.`,
+      );
+    }
   } else if (input.retry_context.failure_reason) {
     extras.push(
-      `Previous attempt failed compliance review (${input.retry_context.failure_reason}). Show generic, unbranded packaging only.`,
+      `Previous attempt failed compliance review (${input.retry_context.failure_reason}). Correct only that defect while preserving the exact recipe-approved genuine brands and package art from the donor references; the expected marks are ${expectedMarkList}. Preserve SALUTEM SOLUTIONS kit branding only when the base prompt includes the frozen cooler and gel packs. Never replace a genuine product with plain, fictional, or look-alike packaging.`,
     );
   }
   return [input.prompt, ...extras].join("\n\n");
@@ -166,6 +201,8 @@ export async function generateMainImage(
       cost_cents: 0,
       prompt_used: finalPrompt,
       mock_mode: true,
+      model: null,
+      reference_count: 0,
       error: undefined,
     };
   }
@@ -176,6 +213,8 @@ export async function generateMainImage(
       cost_cents: 0,
       prompt_used: finalPrompt,
       mock_mode: false,
+      model: gen.model ?? null,
+      reference_count: gen.reference_count ?? 0,
       error: gen.error ?? "Codex worker returned no image",
     };
   }
@@ -192,6 +231,8 @@ export async function generateMainImage(
       cost_cents: 0,
       prompt_used: finalPrompt,
       mock_mode: false,
+      model: gen.model ?? null,
+      reference_count: gen.reference_count ?? 0,
       error: "R2 not configured — returned data: URL (not for production)",
     };
   }
@@ -224,6 +265,8 @@ export async function generateMainImage(
       cost_cents: 0,
       prompt_used: finalPrompt,
       mock_mode: false,
+      model: gen.model ?? null,
+      reference_count: gen.reference_count ?? 0,
       error: `R2 upload failed: ${e instanceof Error ? e.message : String(e)}`,
     };
   }
@@ -234,6 +277,8 @@ export async function generateMainImage(
     cost_cents: 0,
     prompt_used: finalPrompt,
     mock_mode: false,
+    model: gen.model ?? null,
+    reference_count: gen.reference_count ?? 0,
   };
 }
 

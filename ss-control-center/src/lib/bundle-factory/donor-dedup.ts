@@ -12,9 +12,9 @@
  *   2. canonicalFlavorKey(title) — normalised flavor identity (brand/size/count
  *      words stripped; "Whole Wheat"/"Morning Protein" variants stay distinct).
  *   3. dedupeDonorFlavors(donors) — one entry per flavor: the donor with the
- *      CHEAPEST per-unit cost wins; donors whose pack size can't be parsed
- *      can't be costed and only win when a flavor has no costable sibling
- *      (flagged `costable:false` so the engine can exclude them from planning).
+ *      CHEAPEST per-unit cost wins. DonorProduct.bestPrice is already the
+ *      DonorOffer.pricePerUnit rollup; dividing it by the title's retail count
+ *      again would understate COGS by 4–15x.
  *
  * Pure + deterministic → unit-tested (donor-dedup.test.ts).
  */
@@ -25,7 +25,17 @@ export interface DedupableDonor {
   brand: string | null;
   productLine: string | null;
   flavor: string | null;
-  bestPrice: number | null; // retail price of the whole pack, dollars
+  /** Canonical DonorProduct rollup: per base unit, dollars. */
+  bestPrice: number | null;
+  /** Raw retailer offers, when available. `bestPrice` is historically
+   * ambiguous for warehouse-club rows because their procurement rollup treats
+   * the whole carton as the buy unit. Bundle Factory needs one sandwich/unit,
+   * so raw listing price ÷ observed count is the stronger source. */
+  offers?: ReadonlyArray<{
+    price: number | null;
+    packSizeSeen: number | null;
+    pricePerUnit?: number | null;
+  }>;
 }
 
 export interface FlavorEntry<T extends DedupableDonor = DedupableDonor> {
@@ -125,12 +135,36 @@ function truncateAtWord(s: string, max: number): string {
   return (lastSpace > 0 ? cut.slice(0, lastSpace) : s.slice(0, max)).trim();
 }
 
+/** Per consumer unit from factual raw offers. Null when no raw total price is
+ * available. Title count is a deterministic fallback/cross-check for legacy
+ * offers whose `packSizeSeen` was stored as 1. */
+export function normalizedOfferUnitPriceCents(
+  d: Pick<DedupableDonor, "title" | "offers">,
+): number | null {
+  const titleUnits = parsePackUnits(d.title);
+  const candidates: number[] = [];
+  for (const offer of d.offers ?? []) {
+    if (typeof offer.price !== "number" || !Number.isFinite(offer.price) || offer.price <= 0) {
+      continue;
+    }
+    const observed =
+      typeof offer.packSizeSeen === "number" &&
+      Number.isInteger(offer.packSizeSeen) &&
+      offer.packSizeSeen > 0
+        ? offer.packSizeSeen
+        : 1;
+    const divisor = Math.max(observed, titleUnits ?? 1);
+    candidates.push(Math.round((offer.price / divisor) * 100));
+  }
+  return candidates.length > 0 ? Math.min(...candidates) : null;
+}
+
 /** Per-unit cost in cents for one donor, or null when un-costable. */
 export function donorUnitPriceCents(d: DedupableDonor): number | null {
+  const fromRawOffer = normalizedOfferUnitPriceCents(d);
+  if (fromRawOffer != null && fromRawOffer > 0) return fromRawOffer;
   if (typeof d.bestPrice !== "number" || !(d.bestPrice > 0)) return null;
-  const units = parsePackUnits(d.title);
-  if (units == null) return null;
-  return Math.round((d.bestPrice / units) * 100);
+  return Math.round(d.bestPrice * 100);
 }
 
 /**

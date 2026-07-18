@@ -67,6 +67,7 @@ const FRUIT_WORDS = [
   "raspberry", "grape", "strawberry", "honey", "chocolate", "hazelnut",
   "blueberry", "blackberry", "mixed berry", "apple", "cinnamon", "wildberry", "banana",
 ] as const;
+const FILLING_QUALIFIERS = ["peanut butter"] as const;
 /** Sub-line qualifiers that must MATCH between two photos to be the same flavor
  *  (a Protein box is not the classic box; reduced-sugar / whole-wheat differ). */
 const SUBLINE_QUALIFIERS = ["protein", "reduced sugar", "whole wheat"] as const;
@@ -75,19 +76,26 @@ function fruitsIn(s: string): string[] {
   const l = (s || "").toLowerCase();
   return FRUIT_WORDS.filter((f) => l.includes(f));
 }
+function fillingsIn(s: string): string[] {
+  const l = (s || "").toLowerCase();
+  return FILLING_QUALIFIERS.filter((f) => l.includes(f));
+}
 function qualifiersIn(s: string): string[] {
   const l = (s || "").toLowerCase().replace(/-/g, " ");
   return SUBLINE_QUALIFIERS.filter((q) => l.includes(q));
 }
 
-/** Two product names are the SAME Uncrustables flavor when they share a fruit
- *  AND agree on every sub-line qualifier (protein / reduced-sugar / whole-wheat)
+/** Two product names are the SAME Uncrustables flavor only when their complete
+ *  discriminator sets match AND they agree on every sub-line qualifier
  *  — so a cleaner sibling photo we borrow is truly the same flavor (≥95%
  *  faithful, the owner's IP bar), never a look-alike sub-variant. */
 export function sameFlavor(a: string, b: string): boolean {
-  const fa = fruitsIn(a), fb = fruitsIn(b);
-  if (!fa.length || !fb.length) return false;
-  if (!fa.some((f) => fb.includes(f))) return false;
+  const fa = [...fillingsIn(a), ...fruitsIn(a)];
+  const fb = [...fillingsIn(b), ...fruitsIn(b)];
+  if (fa.length === 0 || fb.length === 0) return false;
+  if (fa.length !== fb.length || fa.some((token) => !fb.includes(token))) {
+    return false;
+  }
   const qa = new Set(qualifiersIn(a)), qb = new Set(qualifiersIn(b));
   for (const q of SUBLINE_QUALIFIERS) if (qa.has(q) !== qb.has(q)) return false;
   return true;
@@ -105,16 +113,6 @@ export function photoScore(url: string): number {
   if (u.includes("walmartimages.com/seo/")) return 3;
   if (u.includes("salsify") || u.includes("/video/")) return 4;
   return 2;
-}
-
-function parseGallery(raw: string | null | undefined): string[] {
-  if (!raw) return [];
-  try {
-    const a = JSON.parse(raw);
-    return Array.isArray(a) ? a.filter((x): x is string => typeof x === "string") : [];
-  } catch {
-    return [];
-  }
 }
 
 export interface CompositeResult {
@@ -206,7 +204,7 @@ export async function buildCompositeMainImage(args: {
         { title: { contains: "Uncrustables" } },
       ],
     },
-    select: { id: true, title: true, mainImageUrl: true, imageUrls: true },
+    select: { id: true, title: true, mainImageUrl: true, needsReview: true },
   });
   const poolById = new Map(pool.map((d) => [d.id, d]));
 
@@ -224,15 +222,14 @@ export async function buildCompositeMainImage(args: {
     const add = (title: string | null | undefined, rps: unknown, u?: string | null) => {
       if (u) raw.push({ url: highResImageUrl(u), pack: packForDonor(title, rps) });
     };
-    if (primary) {
+    if (primary && !primary.needsReview && sameFlavor(c.product_name, primary.title ?? "")) {
       add(primary.title, c.retail_pack_sizes, primary.mainImageUrl);
-      parseGallery(primary.imageUrls).forEach((u) => add(primary.title, c.retail_pack_sizes, u));
     }
     for (const d of pool) {
       if (d.id === c.research_pool_id) continue;
+      if (d.needsReview) continue;
       if (!sameFlavor(c.product_name, d.title ?? "")) continue;
       add(d.title, undefined, d.mainImageUrl);
-      parseGallery(d.imageUrls).forEach((u) => add(d.title, undefined, u));
     }
     const seen = new Set<string>();
     return raw

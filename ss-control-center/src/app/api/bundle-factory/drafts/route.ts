@@ -33,6 +33,15 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const APPROVAL_PROTECTED_STATES = new Set([
+  "APPROVED",
+  "PUBLISHING",
+  "PUBLISHED",
+  "SUBMITTED",
+  "PROCESSING",
+  "LIVE",
+]);
+
 export const GET = withErrorHandler("drafts", async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status");
@@ -111,6 +120,11 @@ export const POST = withErrorHandler(
     if (body.status && !isOneOf(LIFECYCLE_STATES, body.status)) {
       return badRequest(`Invalid status: ${body.status}`);
     }
+    if (body.status && APPROVAL_PROTECTED_STATES.has(body.status)) {
+      return badRequest(
+        `status=${body.status} can only be reached through validation, approval, and distribution workflows.`,
+      );
+    }
     for (const ch of body.target_channels ?? []) {
       if (!isOneOf(SALES_CHANNELS, ch)) {
         return badRequest(`Invalid target_channels entry: ${ch}`);
@@ -163,7 +177,6 @@ const PATCHABLE_FIELDS = new Set([
   "draft_suggested_price_cents",
   "draft_components",
   "target_channels",
-  "status",
   "approval_notes",
   "pack_count",
 ]);
@@ -181,8 +194,18 @@ export const PATCH = withErrorHandler(
     const body = await readJson<PatchPayload>(request);
     if (!body) return badRequest("Body must be JSON");
     if (!body.id) return badRequest("id is required");
-    if (body.status && !isOneOf(LIFECYCLE_STATES, body.status)) {
-      return badRequest(`Invalid status: ${body.status}`);
+    if (body.status !== undefined) {
+      return badRequest(
+        "Draft status is workflow-owned and cannot be changed through the generic PATCH endpoint.",
+      );
+    }
+
+    const current = await prisma.bundleDraft.findUnique({
+      where: { id: body.id },
+      select: { master_bundle_id: true },
+    });
+    if (!current) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
     const data: Record<string, unknown> = {};
@@ -193,6 +216,14 @@ export const PATCH = withErrorHandler(
     }
     if (Object.keys(data).length === 0) {
       return badRequest("No patchable fields supplied");
+    }
+    const materialFields = Object.keys(data).filter(
+      (field) => field !== "approval_notes",
+    );
+    if (current.master_bundle_id && materialFields.length > 0) {
+      return badRequest(
+        `Promoted drafts cannot be materially edited through generic PATCH (${materialFields.join(", ")}); use the content/image regeneration workflow so validation and approval are invalidated safely.`,
+      );
     }
     const updated = await prisma.bundleDraft.update({
       where: { id: body.id },

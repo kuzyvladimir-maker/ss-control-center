@@ -132,12 +132,13 @@ export const OCCASION_VALUES = [
 ] as const;
 
 /**
- * allergen_information — the FDA "core" allergens we auto-extract. Amazon's
+ * allergen_information — the FDA "core" allergens accepted after a reviewed
+ * manufacturer-label declaration. Amazon's
  * accepted values are LOWERCASE, underscore-joined tokens (verified 2026-07-01
  * against the live GROCERY + FOOD productType schema — a shared 184-token enum:
  * "milk", "peanuts", "soy", "wheat", "tree_nuts", "sesame_seeds", plus every
  * "..._free" / "..._may_contain" variant). Title-Case is rejected (error 90244).
- * We only DECLARE positive Big-9 presence (extractAllergens).
+ * Ingredient keyword scans are diagnostic-only and never populate this field.
  */
 export const ALLERGEN_CORE_VALUES = [
   "milk", "eggs", "fish", "crustacean", "tree_nuts", "peanuts", "wheat",

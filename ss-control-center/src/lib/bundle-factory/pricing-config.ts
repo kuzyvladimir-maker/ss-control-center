@@ -165,7 +165,13 @@ export async function getPricingModel(
 
   const modeRaw = get(PRICING_MODE_SETTING_KEY);
   const mode: PricingMode =
-    modeRaw === "markup" ? "markup" : modeRaw === "roi" ? "roi" : DEFAULT_PRICING_MODE;
+    modeRaw === "margin"
+      ? "margin"
+      : modeRaw === "markup"
+        ? "markup"
+        : modeRaw === "roi"
+          ? "roi"
+          : DEFAULT_PRICING_MODE;
 
   const referralOverride = normalizePct(numOrNull(get(PRICING_REFERRAL_PCT_SETTING_KEY)));
 

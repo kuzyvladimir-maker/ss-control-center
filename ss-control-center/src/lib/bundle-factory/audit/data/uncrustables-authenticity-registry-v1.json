@@ -1,0 +1,167 @@
+{
+  "schema_version": "uncrustables-authenticity-registry/v1",
+  "immutable": true,
+  "registry_id": "uncrustables-us-reviewed-package-art-2026-07-18-v1",
+  "reviewed_at": "2026-07-18T02:54:24.000Z",
+  "reviewed_by": "owner",
+  "review_method": "human-visual-with-source-evidence",
+  "brand": {
+    "product_brand": "Uncrustables",
+    "owner": "The J.M. Smucker Company",
+    "market": "US",
+    "allowed_marks": [
+      "Smucker's",
+      "Uncrustables"
+    ]
+  },
+  "flavors": [
+    {
+      "flavor_id": "peanut-butter",
+      "display_name": "Peanut Butter Sandwich",
+      "aliases": [
+        "Peanut Butter",
+        "Smucker's Uncrustables Peanut Butter Sandwich",
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+        "Uncrustables Peanut Butter Sandwiches, 4 Count"
+      ],
+      "art": [
+        {
+          "art_id": "peanut-butter-carton-us-4ct-2026-v1",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 4,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-gpt-image-2-previews-20260718/donor-peanut-butter.jpg",
+              "sha256": "19af7bad5c0f6654fb0a923bbea9cded97e695ce4176514a0b04b32cc422273d"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "flavor_id": "peanut-butter-blackberry",
+      "display_name": "Blackberry Boom Peanut Butter & Blackberry Spread",
+      "aliases": [
+        "Blackberry Boom",
+        "Peanut Butter & Blackberry Spread",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "art": [
+        {
+          "art_id": "peanut-butter-blackberry-carton-us-4ct-2026-v1",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 4,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-approved-reference-qa-20260718/product-blackberry-target.jpg",
+              "sha256": "305a6ffab3b3a330f6cfdd9f82c7a457bf35abc4f6da3cb1fa996bfd8465cfe5"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "flavor_id": "chocolate-hazelnut",
+      "display_name": "Chocolate Flavored Hazelnut Spread",
+      "aliases": [
+        "Chocolate Flavored Hazelnut Spread",
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 7.2oz/4ct",
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct"
+      ],
+      "art": [
+        {
+          "art_id": "chocolate-hazelnut-carton-us-4ct-2026-v1",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 4,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-approved-reference-qa-20260718/product-hazelnut-target.jpg",
+              "sha256": "4d42bd45bb25aa1b3dfb7937590de1db68fcd8aca50502636d05b4c5efe54e27"
+            }
+          ]
+        },
+        {
+          "art_id": "chocolate-hazelnut-wrapper-us-2026-v1",
+          "pack_mode": "individual-wrapper",
+          "retail_pack_size": 1,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-approved-reference-qa-20260718/B0H85P9F3R-live.jpg",
+              "sha256": "846005feea2a43108672aa5d4c65f272511d4332c5f7d449ba2ee437633c4e2b"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "flavor_id": "morning-protein-mixed-berry",
+      "display_name": "Morning Protein Peanut Butter & Mixed Berry Spread",
+      "aliases": [
+        "Beamin' Berry Blend",
+        "Morning Protein Peanut Butter & Mixed Berry Spread",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "art": [
+        {
+          "art_id": "morning-protein-mixed-berry-carton-us-8ct-2026-v1",
+          "pack_mode": "retail-carton",
+          "retail_pack_size": 8,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-approved-reference-qa-20260718/product-morning-protein-mixed-berry-target.jpg",
+              "sha256": "177f2e781d838ff4f7076608ed78f6ec52d46b81efda9754593c6ddd54721f0e"
+            }
+          ]
+        },
+        {
+          "art_id": "morning-protein-mixed-berry-wrapper-us-2026-v1",
+          "pack_mode": "individual-wrapper",
+          "retail_pack_size": 1,
+          "market": "US",
+          "brand_marks": [
+            "Smucker's",
+            "Uncrustables"
+          ],
+          "evidence": [
+            {
+              "kind": "reviewed-artifact",
+              "locator": "data/audits/uncrustables-approved-reference-qa-20260718/B0H85P9F3R-live.jpg",
+              "sha256": "846005feea2a43108672aa5d4c65f272511d4332c5f7d449ba2ee437633c4e2b"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "sha256": "9723d515a110859e54efa8f8bff1b5f7e56f49c28b411834a2d267b68e827157"
+}

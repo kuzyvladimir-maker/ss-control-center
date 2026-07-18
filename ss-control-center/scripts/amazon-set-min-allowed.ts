@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Lower Amazon's minimum_seller_allowed_price to our floor for store1 Uncrustables
  * where it currently sits ABOVE the floor (else ChannelMAX dropping to floor would
@@ -11,6 +12,7 @@ import "dotenv/config";
 import { readFileSync } from "node:fs";
 import { getListing, patchListing } from "@/lib/amazon-sp-api/listings";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
+import { blockLegacyUncrustablesPriceMutation } from "@/lib/pricing/uncrustables-policy";
 
 const DRY = process.argv.includes("--dry");
 const MARKETPLACE_ID = "ATVPDKIKX0DER";
@@ -26,6 +28,7 @@ function val(blk: any, key: string): number | null {
 }
 
 async function main() {
+  blockLegacyUncrustablesPriceMutation("amazon-set-min-allowed.ts");
   const rows = readFileSync("data/channelmax-uncrustables-corrected.txt", "utf8")
     .split(/\r?\n/)
     .filter(Boolean)

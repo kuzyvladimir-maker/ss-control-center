@@ -24,6 +24,7 @@
  */
 
 import type { CompositionType } from "./enums";
+import type { AllergenDeclaration } from "./allergen-declaration";
 
 /**
  * Subset of ResearchPool we need — keeping the input loose so callers
@@ -47,6 +48,18 @@ export interface VariantComponent {
   brand: string;
   qty: number;
   unit_price_cents: number;
+  /** Canonical structured recipe data. Optional only for legacy/brief-built
+   *  variants; Studio always fills it. */
+  flavor?: string | null;
+  manufacturer_upc?: string;
+  ingredients?: string;
+  /** Exact manufacturer-label split. `may_contain` is precautionary and must
+   * never be flattened into the positive Amazon allergen declaration. */
+  allergen_declaration?: AllergenDeclaration;
+  /** Legacy Amazon-token array retained for old variation snapshots. */
+  allergens?: string[];
+  storage_temp?: string;
+  donor_image_urls?: string[];
   /** Retail pack sizes this flavor really ships in (e.g. [15,10,4]) — drives
    *  the MAIN-image exact-box rule (boxes only when qty splits with no
    *  remainder; otherwise loose individually-wrapped pieces). */

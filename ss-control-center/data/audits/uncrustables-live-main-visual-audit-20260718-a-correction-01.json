@@ -1,0 +1,366 @@
+{
+  "schema_version": "uncrustables-live-main-visual-audit-correction/v1.0",
+  "correction_id": "ULMVA-20260718-A-CORRECTION-01",
+  "status": "COMPLETED",
+  "created_at": "2026-07-18T04:06:30.273Z",
+  "correction_type": "INTERPRETATION_ONLY",
+  "immutable_parent_preserved": true,
+  "effective_application": "Apply these six row overrides on top of immutable audit A. All other audit A decisions remain unchanged.",
+  "immutable_parent_artifacts": {
+    "json": {
+      "path": "data/audits/uncrustables-live-main-visual-audit-20260718-a.json",
+      "sha256": "287d74179e6dde4b7aea92d98aae3c629fff12a2fcd2f5ad04f9a2d5d1bb5a0f",
+      "schema_version": "uncrustables-live-main-visual-audit/v1.0",
+      "audit_id": "ULMVA-20260718-A"
+    },
+    "csv": {
+      "path": "data/audits/uncrustables-live-main-visual-audit-20260718-a.csv",
+      "sha256": "6df2bf1a007c527a573e1fa8a8c4779c7e9609b7d59b1d8bfae06625ae619c5f"
+    },
+    "markdown": {
+      "path": "data/audits/uncrustables-live-main-visual-audit-20260718-a.md",
+      "sha256": "b7ee5fa8424a3385b43e00c263985788e0eea4faffbff504c6d30e74614a4c1e"
+    }
+  },
+  "original_source_manifest": {
+    "path": "data/audits/uncrustables-live-main-fetch-20260718-v1/manifest.json",
+    "sha256": "47c2bbbc0c0f7c1cdfcbc52363012b527d3611755d90536a2f80a06ffe2d9f05",
+    "schema_version": "uncrustables-live-main-contact-sheets/v1.0",
+    "body_sha256": "496edff7b110ce9341a5325bb2e51678e90cad582a1d132d6c50a8dd753027db",
+    "run_id": "ULMC-20260718T034106547Z-46a80e727880"
+  },
+  "original_source_ledger": {
+    "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-ledger-20260717T232140568Z-offline.json",
+    "sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f",
+    "schema_version": "uncrustables-ledger/v1.2",
+    "audit_id": "ULR-20260717T232140568Z"
+  },
+  "correction_basis": {
+    "owner_reviewed_registry": {
+      "path": "src/lib/bundle-factory/audit/data/uncrustables-authenticity-registry-v1.json",
+      "file_sha256": "10cc967a28643c86653e713729952cac12aba083d83dd2a2608be120e6aeae11",
+      "registry_id": "uncrustables-us-reviewed-package-art-2026-07-18-v1",
+      "registry_internal_sha256": "9723d515a110859e54efa8f8bff1b5f7e56f49c28b411834a2d267b68e827157",
+      "flavor_id": "morning-protein-mixed-berry",
+      "display_name": "Morning Protein Peanut Butter & Mixed Berry Spread",
+      "approved_alias": "Beamin' Berry Blend"
+    },
+    "approved_product_reference": {
+      "path": "data/audits/uncrustables-approved-reference-qa-20260718/product-morning-protein-mixed-berry-target.jpg",
+      "sha256": "177f2e781d838ff4f7076608ed78f6ec52d46b81efda9754593c6ddd54721f0e",
+      "registry_art_id": "morning-protein-mixed-berry-carton-us-8ct-2026-v1"
+    },
+    "owner_approved_live_example": {
+      "path": "data/audits/uncrustables-approved-reference-qa-20260718/KD-AS12-8HZ3-live.jpg",
+      "sha256": "3504b902388fddb7cc06d67e7cd648c0cd007f7d7ba35bf902a198f89835691f",
+      "sku": "KD-AS12-8HZ3",
+      "identical_to_audited_asset": true
+    },
+    "interpretation": "Beamin' Berry Blend is genuine product packaging/name for the Morning Protein Peanut Butter & Mixed Berry Spread recipe component. It is not a foreign or substituted flavor."
+  },
+  "reinspection": {
+    "scope_ordinals": [
+      16,
+      33,
+      60,
+      71,
+      74,
+      81
+    ],
+    "reviewed_at_original_resolution": true,
+    "result": "No blocking defect remained in any of the six images once the approved alias equivalence was applied."
+  },
+  "previous_summary": {
+    "checked": 84,
+    "KEEP": 62,
+    "REGENERATE": 22,
+    "NEEDS_EVIDENCE": 0
+  },
+  "adjustment": {
+    "KEEP": 6,
+    "REGENERATE": -6,
+    "NEEDS_EVIDENCE": 0
+  },
+  "corrected_effective_summary": {
+    "checked": 84,
+    "KEEP": 68,
+    "REGENERATE": 16,
+    "NEEDS_EVIDENCE": 0
+  },
+  "changed_rows": [
+    {
+      "ordinal": 16,
+      "sheet": 2,
+      "sku": "BM-AS5J-3MQY",
+      "asin": "B0H83LSCQQ",
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz Each, 90 Count",
+      "effective_total_units": 90,
+      "asset_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/016-BM-AS5J-3MQY-B0H83LSCQQ-5f985044fe6b.jpg",
+      "asset_sha256": "5f985044fe6b0f37645fc6f8466da8785a70148e0c8e307784b84c0cba5732d2",
+      "contact_sheet_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-02.png",
+      "contact_sheet_sha256": "9209141000edb464f388a5ce29fc11b4b008de54f95ce89c3dc8c109f9c52218",
+      "previous_decision": "REGENERATE",
+      "previous_reason_codes": [
+        "PRODUCT_VARIANT_MISMATCH"
+      ],
+      "previous_reviewer_note": "Beamin’ Berry Blend is shown instead of the required Morning Protein Peanut Butter & Mixed Berry Spread product.",
+      "corrected_decision": "KEEP",
+      "corrected_reason_codes": [],
+      "correction_code": "APPROVED_ALIAS_EQUIVALENCE",
+      "corrected_reviewer_note": "The owner-reviewed registry confirms Beamin' Berry Blend is an authentic package/name alias for Morning Protein Peanut Butter & Mixed Berry Spread. Reinspection found no other blocking defect."
+    },
+    {
+      "ordinal": 33,
+      "sheet": 3,
+      "sku": "EX-ASC0-5CRL",
+      "asin": "B0H83JJW1F",
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, Wheat Bread, Frozen, 120 Count",
+      "effective_total_units": 120,
+      "asset_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/033-EX-ASC0-5CRL-B0H83JJW1F-18c8f3e1e2c1.jpg",
+      "asset_sha256": "18c8f3e1e2c184e29ad2a930308e82c492b27b8690fbdd9025a684f99c3803c4",
+      "contact_sheet_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-03.png",
+      "contact_sheet_sha256": "afa819aa37ec5b4fd7c3ddd3223c5bf4a8480122e6858a50c77280f45a532a9f",
+      "previous_decision": "REGENERATE",
+      "previous_reason_codes": [
+        "PRODUCT_VARIANT_MISMATCH"
+      ],
+      "previous_reviewer_note": "Beamin’ Berry Blend boxes are shown instead of the required Morning Protein Peanut Butter & Mixed Berry Spread product.",
+      "corrected_decision": "KEEP",
+      "corrected_reason_codes": [],
+      "correction_code": "APPROVED_ALIAS_EQUIVALENCE",
+      "corrected_reviewer_note": "The owner-reviewed registry confirms Beamin' Berry Blend is an authentic package/name alias for Morning Protein Peanut Butter & Mixed Berry Spread. Reinspection found no other blocking defect."
+    },
+    {
+      "ordinal": 60,
+      "sheet": 5,
+      "sku": "KD-AS12-8HZ3",
+      "asin": "B0H845JBM6",
+      "title": "Uncrustables Frozen Crustless Sandwiches, Peanut Butter & Strawberry Jam Protein and Peanut Butter & Mixed Berry, 2.8 oz, 24 Count",
+      "effective_total_units": 24,
+      "asset_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/060-KD-AS12-8HZ3-B0H845JBM6-3504b902388f.jpg",
+      "asset_sha256": "3504b902388fddb7cc06d67e7cd648c0cd007f7d7ba35bf902a198f89835691f",
+      "contact_sheet_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-05.png",
+      "contact_sheet_sha256": "86fe60f6810ee0f271d4155c286a3fd38b0d6deabd9df204c644ecff9d1661c0",
+      "previous_decision": "REGENERATE",
+      "previous_reason_codes": [
+        "PRODUCT_VARIANT_MISMATCH"
+      ],
+      "previous_reviewer_note": "Bright-Eyed Berry is correct, but Beamin’ Berry Blend substitutes for the required Morning Protein Peanut Butter & Mixed Berry Spread component.",
+      "corrected_decision": "KEEP",
+      "corrected_reason_codes": [],
+      "correction_code": "APPROVED_ALIAS_EQUIVALENCE",
+      "corrected_reviewer_note": "Bright-Eyed Berry and Beamin' Berry Blend are both visibly represented. The owner-reviewed registry confirms Beamin' Berry Blend is an authentic package/name alias for Morning Protein Peanut Butter & Mixed Berry Spread; no other blocking defect remains."
+    },
+    {
+      "ordinal": 71,
+      "sheet": 6,
+      "sku": "MP-ASZ9-TKE7",
+      "asin": "B0H837HLKC",
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, Frozen, 30 Count",
+      "effective_total_units": 30,
+      "asset_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/071-MP-ASZ9-TKE7-B0H837HLKC-3398bb472d68.jpg",
+      "asset_sha256": "3398bb472d684a29a8a7f98f976497a32be31eac8dcb908712eceba1ec69f93b",
+      "contact_sheet_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-06.png",
+      "contact_sheet_sha256": "fddb49a4f20c2a3d3af1e6df67148eef9db4a8b928f49f65cbec8dadef95d94c",
+      "previous_decision": "REGENERATE",
+      "previous_reason_codes": [
+        "PRODUCT_VARIANT_MISMATCH"
+      ],
+      "previous_reviewer_note": "Beamin’ Berry Blend is shown instead of the required Morning Protein Peanut Butter & Mixed Berry Spread product.",
+      "corrected_decision": "KEEP",
+      "corrected_reason_codes": [],
+      "correction_code": "APPROVED_ALIAS_EQUIVALENCE",
+      "corrected_reviewer_note": "The owner-reviewed registry confirms Beamin' Berry Blend is an authentic package/name alias for Morning Protein Peanut Butter & Mixed Berry Spread. Reinspection found no other blocking defect."
+    },
+    {
+      "ordinal": 74,
+      "sheet": 7,
+      "sku": "NM-ASEW-S2SK",
+      "asin": "B0H86TVN3C",
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, 24 Count",
+      "effective_total_units": 24,
+      "asset_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/074-NM-ASEW-S2SK-B0H86TVN3C-7062e7027abd.jpg",
+      "asset_sha256": "7062e7027abd90e43f86422a7ec17b95d2ba63f52296a56b90c2d24e59a4df4f",
+      "contact_sheet_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-07.png",
+      "contact_sheet_sha256": "58bc5350510b3f34ba152924cba1f25eba2970be42cea7ac678f4c5710f91b3a",
+      "previous_decision": "REGENERATE",
+      "previous_reason_codes": [
+        "PRODUCT_VARIANT_MISMATCH"
+      ],
+      "previous_reviewer_note": "Beamin’ Berry Blend is shown instead of the required Morning Protein Peanut Butter & Mixed Berry Spread product.",
+      "corrected_decision": "KEEP",
+      "corrected_reason_codes": [],
+      "correction_code": "APPROVED_ALIAS_EQUIVALENCE",
+      "corrected_reviewer_note": "The owner-reviewed registry confirms Beamin' Berry Blend is an authentic package/name alias for Morning Protein Peanut Butter & Mixed Berry Spread. Reinspection found no other blocking defect."
+    },
+    {
+      "ordinal": 81,
+      "sheet": 7,
+      "sku": "PL-ASR9-U94A",
+      "asin": "B0H83RR2XQ",
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, Wheat Bread, 45 Count, Frozen",
+      "effective_total_units": 45,
+      "asset_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/assets/081-PL-ASR9-U94A-B0H83RR2XQ-ee2a2d60a5b6.jpg",
+      "asset_sha256": "ee2a2d60a5b6dc41e92487a4c24eeb7a950f4904c30fc53ab12047ef97a4fb23",
+      "contact_sheet_path": "data/audits/uncrustables-live-main-fetch-20260718-v1/contact-sheets/live-main-contact-sheet-07.png",
+      "contact_sheet_sha256": "58bc5350510b3f34ba152924cba1f25eba2970be42cea7ac678f4c5710f91b3a",
+      "previous_decision": "REGENERATE",
+      "previous_reason_codes": [
+        "PRODUCT_VARIANT_MISMATCH"
+      ],
+      "previous_reviewer_note": "Beamin’ Berry Blend wrappers are shown instead of the required Morning Protein Peanut Butter & Mixed Berry Spread product.",
+      "corrected_decision": "KEEP",
+      "corrected_reason_codes": [],
+      "correction_code": "APPROVED_ALIAS_EQUIVALENCE",
+      "corrected_reviewer_note": "The owner-reviewed registry confirms Beamin' Berry Blend is an authentic package/name alias for Morning Protein Peanut Butter & Mixed Berry Spread. Reinspection found no other blocking defect."
+    }
+  ],
+  "remaining_regenerate_rows": [
+    {
+      "ordinal": 4,
+      "sku": "AJ-ASRB-HKC3",
+      "asin": "B0H84G7DHC",
+      "reason_codes": [
+        "MISSING_RECIPE_COMPONENT"
+      ],
+      "reviewer_note": "Only Raspberry wrappers are visible; the Morning Protein Peanut Butter & Mixed Berry recipe component is absent."
+    },
+    {
+      "ordinal": 5,
+      "sku": "AN-ASUW-49Y5",
+      "asin": "B0H8628LW3",
+      "reason_codes": [
+        "MISSING_OWNER_APPROVED_COOLER_SCENE"
+      ],
+      "reviewer_note": "The products are isolated on white, but the owner-approved Salutem cooler and blue-header gel-pack shipping scene is absent."
+    },
+    {
+      "ordinal": 10,
+      "sku": "BD-AS8P-XAW5",
+      "asin": "B0H85MXFH8",
+      "reason_codes": [
+        "MISSING_OWNER_APPROVED_COOLER_SCENE"
+      ],
+      "reviewer_note": "This is a product-only donor layout; the owner-approved Salutem cooler and blue-header gel-pack shipping scene is absent."
+    },
+    {
+      "ordinal": 13,
+      "sku": "BH-ASTN-S4XJ",
+      "asin": "B0H83ZRNCS",
+      "reason_codes": [
+        "PRODUCT_VARIANT_MISMATCH"
+      ],
+      "reviewer_note": "The image shows ordinary Peanut Butter & Strawberry wrappers with Blackberry; the required 12g Protein Strawberry (Bright-Eyed Berry) component is not shown."
+    },
+    {
+      "ordinal": 17,
+      "sku": "BQ-ASUE-NT37",
+      "asin": "B0H842HL49",
+      "reason_codes": [
+        "GENERIC_OR_UNBRANDED_PACKAGING"
+      ],
+      "reviewer_note": "The red and blue gingham wrapper backs have no readable Smucker’s/Uncrustables identity; the exact Protein Strawberry and Whole Wheat Grape components cannot be authenticated."
+    },
+    {
+      "ordinal": 20,
+      "sku": "CE-ASGK-ZRHM",
+      "asin": "B0H84651LM",
+      "reason_codes": [
+        "GENERIC_OR_UNBRANDED_PACKAGING"
+      ],
+      "reviewer_note": "The red and blue wrapper backs have no readable Smucker’s/Uncrustables identity; the exact Protein Strawberry and Blueberry components cannot be authenticated."
+    },
+    {
+      "ordinal": 29,
+      "sku": "ER-ASRK-TPYQ",
+      "asin": "B0H84JH1WN",
+      "reason_codes": [
+        "MISSING_RECIPE_COMPONENT"
+      ],
+      "reviewer_note": "Only Raspberry wrappers are visible; the Blueberry recipe component is absent."
+    },
+    {
+      "ordinal": 40,
+      "sku": "FX-AS2W-KHZT",
+      "asin": "B0H827J2XZ",
+      "reason_codes": [
+        "GENERIC_OR_UNBRANDED_PACKAGING",
+        "PRODUCT_VARIANT_MISMATCH"
+      ],
+      "reviewer_note": "Generic unbranded “soft bread” cartons are shown; they are not identifiable genuine Uncrustables packaging, and the required Bright-Eyed Berry 12g Protein product is absent."
+    },
+    {
+      "ordinal": 51,
+      "sku": "HZ-ASPS-4L22",
+      "asin": "B0H857K38C",
+      "reason_codes": [
+        "GENERIC_OR_UNBRANDED_PACKAGING"
+      ],
+      "reviewer_note": "Generic red and blue wrapper backs have no readable Smucker’s/Uncrustables or flavor identity; Whole Wheat Strawberry and Blueberry cannot be authenticated."
+    },
+    {
+      "ordinal": 52,
+      "sku": "JC-ASM4-XXW7",
+      "asin": "B0H84ZL156",
+      "reason_codes": [
+        "PACKAGE_TEXT_CONFLICT"
+      ],
+      "reviewer_note": "The Up & Apple wrappers visibly state 6G PROTEIN, conflicting with the exact selected 12g Protein recipe component."
+    },
+    {
+      "ordinal": 58,
+      "sku": "JU-ASYC-SSJD",
+      "asin": "B0H854C7SZ",
+      "reason_codes": [
+        "GENERIC_OR_UNBRANDED_PACKAGING"
+      ],
+      "reviewer_note": "Displayed carton backs/pseudo-panels lack readable Smucker’s/Uncrustables identity; exact Whole Wheat Strawberry and Whole Wheat Grape packaging cannot be authenticated."
+    },
+    {
+      "ordinal": 59,
+      "sku": "JY-ASPW-LB4K",
+      "asin": "B0H84621N6",
+      "reason_codes": [
+        "MISSING_RECIPE_COMPONENT"
+      ],
+      "reviewer_note": "Only Raspberry wrappers are visible; the Up & Apple recipe component is absent."
+    },
+    {
+      "ordinal": 65,
+      "sku": "LK-AS7X-K43B",
+      "asin": "B0H84CGGXL",
+      "reason_codes": [
+        "GENERIC_OR_UNBRANDED_PACKAGING"
+      ],
+      "reviewer_note": "Brandless lookalike Raspberry/Strawberry carton faces have no readable Smucker’s/Uncrustables identity, so the products cannot be authenticated."
+    },
+    {
+      "ordinal": 67,
+      "sku": "LU-ASK0-LSDF",
+      "asin": "B0H84YZDB7",
+      "reason_codes": [
+        "GENERIC_OR_UNBRANDED_PACKAGING"
+      ],
+      "reviewer_note": "Pseudo-carton faces show generic product names but no readable Smucker’s/Uncrustables identity; the exact Peanut Butter and Grape components cannot be authenticated."
+    },
+    {
+      "ordinal": 80,
+      "sku": "PJ-ASDX-E8LW",
+      "asin": "B0H85MGP35",
+      "reason_codes": [
+        "MISSING_RECIPE_COMPONENT"
+      ],
+      "reviewer_note": "Only Peanut Butter & Honey cartons are visible; the Morning Protein Peanut Butter & Mixed Berry recipe component is absent."
+    },
+    {
+      "ordinal": 84,
+      "sku": "PT-AS5B-Z2XH",
+      "asin": "B0H84Z6QWY",
+      "reason_codes": [
+        "GENERIC_OR_UNBRANDED_PACKAGING"
+      ],
+      "reviewer_note": "Generic brandless “soft bread strawberry/grape sandwich” boxes are lookalike packaging with no readable Smucker’s/Uncrustables identity."
+    }
+  ]
+}
+

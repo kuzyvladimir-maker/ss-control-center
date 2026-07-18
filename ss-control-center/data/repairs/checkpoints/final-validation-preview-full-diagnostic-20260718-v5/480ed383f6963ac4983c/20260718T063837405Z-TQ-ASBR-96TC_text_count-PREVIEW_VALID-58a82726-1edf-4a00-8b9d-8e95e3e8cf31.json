@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "58a82726-1edf-4a00-8b9d-8e95e3e8cf31",
+  "created_at": "2026-07-18T06:38:37.405Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "TQ-ASBR-96TC:text_count",
+  "sku": "TQ-ASBR-96TC",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "88655b3e91965095de878e6ed1e2dad991ae9b47caf5c193ba1af81d58049304",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "f317962a6ba441dc81767e85e9b99100",
+    "issues": []
+  },
+  "sha256": "7a7d889ad685c80c5d6862c93272923522fc98df99b5e14dbf63451b19277e8c"
+}

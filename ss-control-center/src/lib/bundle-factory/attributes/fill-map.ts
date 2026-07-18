@@ -31,11 +31,11 @@ export const FILL_MAP: Record<string, { fill: FillSource; source: string }> = {
   item_type_keyword: { fill: "kb", source: "KB per category/product type" },
   recommended_browse_nodes: { fill: "kb", source: "browse-node-resolver (gift-basket positioning)" },
 
-  // ── Food compliance (catalog; allergens via Claude extraction) ────────────
+  // ── Food compliance (reviewed manufacturer facts only) ────────────────────
   ingredients: { fill: "catalog", source: "donor.ingredients" },
-  allergen_information: { fill: "catalog", source: "extracted from donor ingredients (Claude)" },
+  allergen_information: { fill: "review", source: "structured manufacturer-label declaration" },
   nutritional_info: { fill: "catalog", source: "donor.nutritionFacts" },
-  is_expiration_dated_product: { fill: "fixed", source: "true (food)" },
+  is_expiration_dated_product: { fill: "review", source: "manufacturer label or operator verification" },
   fc_shelf_life: { fill: "review", source: "from donor if available" },
 
   // ── Composition / counts (computed) ───────────────────────────────────────
@@ -83,7 +83,7 @@ export const FILL_MAP: Record<string, { fill: FillSource; source: string }> = {
   // Every listing is a brand-new sealed product. Listings-API enum pending the
   // Valid Values tab (standard is `new_new`); until confirmed, review not fixed.
   condition_type: { fill: "review", source: "new (NEEDS valid-value enum, likely new_new)" },
-  product_expiration_type: { fill: "review", source: "Expiration Date Required (from donor)" },
+  product_expiration_type: { fill: "review", source: "reviewed manufacturer-label value" },
   contains_liquid_contents: { fill: "fixed", source: "No (solid food)" },
   each_unit_count: { fill: "review", source: "units per each (from donor size)" },
 };

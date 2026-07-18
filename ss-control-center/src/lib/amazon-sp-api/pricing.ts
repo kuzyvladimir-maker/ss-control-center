@@ -12,7 +12,7 @@
 // SKUs per call. Callers pace batches; see reprice-engine.ts.
 
 import { spApiGet, spApiPost, MARKETPLACE_ID } from "./client";
-import { patchListing, getListing } from "./listings";
+import { patchListing, getListing, type ListingItem } from "./listings";
 
 // ─── getListingOffersBatch ──────────────────────────────────────────────
 // Returns, per requested SKU, the parsed offers payload. Up to 20 SKUs.
@@ -41,6 +41,7 @@ function num(v: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseOffersPayload(sku: string, payload: any): SkuOffers {
   const summary = payload?.Summary ?? {};
   const buyBox = (summary?.BuyBoxPrices ?? [])[0];
@@ -49,6 +50,7 @@ function parseOffersPayload(sku: string, payload: any): SkuOffers {
       ? num(buyBox.LandedPrice.Amount)
       : null;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const offers: ParsedOffer[] = (payload?.Offers ?? []).map((o: any) => {
     const listingPrice = num(o?.ListingPrice?.Amount);
     const shipping = num(o?.Shipping?.Amount);
@@ -95,6 +97,7 @@ export async function getListingOffersBatch(
     { storeId: `store${storeIndex}` },
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const responses: any[] = resp?.responses ?? [];
   // Amazon returns responses in request order; map positionally back to SKUs.
   return skus.map((sku, i) => {
@@ -144,6 +147,29 @@ export function sanitizeOfferEntry(entry: Record<string, unknown>): Record<strin
   return out;
 }
 
+/** True only for the dedicated Uncrustables catalog identity. This intentionally
+ * does not match a generic Smucker's brand: other Smucker products may still use
+ * the shared repricing helper. */
+export function isUncrustablesListingItem(
+  listing: Pick<ListingItem, "summaries" | "attributes">,
+): boolean {
+  const values: string[] = [];
+  for (const summary of listing.summaries ?? []) {
+    if (typeof summary.itemName === "string") values.push(summary.itemName);
+  }
+  for (const key of ["brand", "item_name"] as const) {
+    const rows = listing.attributes?.[key];
+    if (!Array.isArray(rows)) continue;
+    for (const row of rows) {
+      if (row && typeof row === "object") {
+        const value = (row as { value?: unknown }).value;
+        if (typeof value === "string") values.push(value);
+      }
+    }
+  }
+  return values.some((value) => /\buncrustables?\b/i.test(value));
+}
+
 /** Rewrite ONLY the requested fields on the consumer (`audience: "ALL"`) offer,
  *  leaving every sibling entry — notably the B2B offer — untouched. */
 export function mergePurchasableOffer(
@@ -185,17 +211,22 @@ export async function setListingPrice(
   opts: { validationPreview?: boolean; minPrice?: number; maxPrice?: number } = {},
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
-  let existing: unknown;
+  let live: ListingItem;
   try {
-    const live = (await getListing(storeIndex, sellerId, sku)) as {
-      attributes?: Record<string, unknown>;
-    };
-    existing = live?.attributes?.purchasable_offer;
-  } catch {
-    // Listing read failed — fall back to a fresh consumer offer rather than
-    // aborting the reprice. (Bounds can't be preserved if we can't read them.)
-    existing = undefined;
+    live = await getListing(storeIndex, sellerId, sku);
+  } catch (error) {
+    // A blind replace can erase min/max, B2B, or a protected catalog policy.
+    // Fail closed instead of guessing when the prerequisite live read fails.
+    throw new Error(
+      `Cannot safely change ${sku}: live offer read failed (${error instanceof Error ? error.message : String(error)})`,
+    );
   }
+  if (isUncrustablesListingItem(live)) {
+    throw new Error(
+      "Uncrustables base prices are locked to the canonical .99 model; use the sealed surgical repair for corrections and Amazon Coupons for promotions",
+    );
+  }
+  const existing = live.attributes?.purchasable_offer;
   const patches = [
     {
       op: "replace" as const,

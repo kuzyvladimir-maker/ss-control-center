@@ -32,8 +32,14 @@ export interface CodexImageResult {
   png: Buffer | null;
   /** True when neither the worker env nor a stub is set (dev-mock path). */
   not_configured: boolean;
+  /** Exact image model asserted by the worker contract. */
+  model?: string;
+  /** Number of references the worker actually staged for image_gen. */
+  reference_count?: number;
   error?: string;
 }
+
+export const REQUIRED_CODEX_IMAGE_MODEL = "gpt-image-2";
 
 // Codex image_gen with reference images routinely takes ~4 minutes. Keep this
 // just under the Vercel route maxDuration (300s) + nginx proxy_read_timeout so a
@@ -93,7 +99,14 @@ export async function generateImagePngViaCodex(args: {
   if (stub) {
     try {
       const png = await stub({ prompt: args.prompt, size: args.size });
-      return { png, not_configured: false };
+      return {
+        png,
+        not_configured: false,
+        model: REQUIRED_CODEX_IMAGE_MODEL,
+        reference_count:
+          (args.referenceImages?.length ?? 0) +
+          (args.referenceUrls?.length ?? 0),
+      };
     } catch (e) {
       return {
         png: null,
@@ -121,6 +134,7 @@ export async function generateImagePngViaCodex(args: {
       body: JSON.stringify({
         prompt: args.prompt,
         size: args.size,
+        required_model: REQUIRED_CODEX_IMAGE_MODEL,
         ...(args.referenceImages && args.referenceImages.length > 0
           ? { reference_images: args.referenceImages }
           : {}),
@@ -152,6 +166,34 @@ export async function generateImagePngViaCodex(args: {
     };
   }
 
+  const workerModel = res.headers.get("x-image-model")?.trim() ?? "";
+  if (workerModel !== REQUIRED_CODEX_IMAGE_MODEL) {
+    return {
+      png: null,
+      not_configured: false,
+      error:
+        `Codex worker model attestation missing or invalid: expected ` +
+        `${REQUIRED_CODEX_IMAGE_MODEL}, got ${workerModel || "<missing>"}`,
+    };
+  }
+  const expectedReferenceCount =
+    (args.referenceImages?.length ?? 0) +
+    (args.referenceUrls?.length ?? 0);
+  const rawReferenceCount = res.headers.get("x-image-reference-count")?.trim() ?? "";
+  const workerReferenceCount = Number.parseInt(rawReferenceCount, 10);
+  if (
+    !Number.isInteger(workerReferenceCount) ||
+    workerReferenceCount !== expectedReferenceCount
+  ) {
+    return {
+      png: null,
+      not_configured: false,
+      error:
+        `Codex worker reference attestation mismatch: expected ` +
+        `${expectedReferenceCount}, got ${rawReferenceCount || "<missing>"}`,
+    };
+  }
+
   let png: Buffer;
   try {
     png = Buffer.from(await res.arrayBuffer());
@@ -166,7 +208,12 @@ export async function generateImagePngViaCodex(args: {
     return { png: null, not_configured: false, error: "Codex worker returned empty body" };
   }
 
-  return { png: await normalize(png, args.size), not_configured: false };
+  return {
+    png: await normalize(png, args.size),
+    not_configured: false,
+    model: workerModel,
+    reference_count: workerReferenceCount,
+  };
 }
 
 // ── VISION (image understanding) via the same subscription worker ────────────

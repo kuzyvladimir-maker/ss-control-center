@@ -13,6 +13,9 @@
 import "dotenv/config";
 import { readFileSync, writeFileSync } from "node:fs";
 import { priceFor } from "@/lib/pricing/cost-model";
+import { blockLegacyUncrustablesPriceMutation } from "@/lib/pricing/uncrustables-policy";
+
+blockLegacyUncrustablesPriceMutation("channelmax-export-corrected.ts");
 
 const path =
   process.argv[2] ?? "data/cmax_salutem_InventoryDownload_20260615_225846.txt";

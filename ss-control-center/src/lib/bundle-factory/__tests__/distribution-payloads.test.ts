@@ -9,13 +9,30 @@ import assert from "node:assert/strict";
 
 import type { ChannelSKU } from "@/generated/prisma/client";
 import {
+  AMAZON_VALIDATION_PREVIEW_REQUIRED,
   buildAmazonAttributes,
   buildAmazonPayload,
+  submitToAmazon,
 } from "@/lib/bundle-factory/distribution/amazon-publish";
 import {
   buildWalmartPayload,
+  submitToWalmart,
 } from "@/lib/bundle-factory/distribution/walmart-publish";
 import { channelTarget } from "@/lib/bundle-factory/distribution/account-map";
+import {
+  VERIFIED_PHYSICAL_PACKAGE_SCHEMA,
+  type VerifiedPhysicalPackageSpecs,
+} from "@/lib/bundle-factory/physical-package-specs";
+
+const VERIFIED_PHYSICAL: VerifiedPhysicalPackageSpecs = {
+  schema_version: VERIFIED_PHYSICAL_PACKAGE_SCHEMA,
+  source: "OPERATOR_SHIP_SPECS",
+  verified_at: "2026-07-17T12:00:00.000Z",
+  weight_oz: 32,
+  length_in: 14,
+  width_in: 10,
+  height_in: 6,
+};
 
 function mkSku(overrides: Partial<ChannelSKU> = {}): ChannelSKU {
   const now = new Date();
@@ -63,6 +80,8 @@ function mkSku(overrides: Partial<ChannelSKU> = {}): ChannelSKU {
     validated_at: now,
     validation_check_id: null,
     validation_attempt_count: 1,
+    available_quantity: 7,
+    inventory_checked_at: now,
     package_length_in: 14,
     package_width_in: 10,
     package_height_in: 6,
@@ -84,7 +103,12 @@ function mkSku(overrides: Partial<ChannelSKU> = {}): ChannelSKU {
 // ── Amazon attribute builder ──────────────────────────────────────────
 
 test("buildAmazonAttributes — required fields present", () => {
-  const attrs = buildAmazonAttributes(mkSku());
+  const attrs = buildAmazonAttributes(
+    mkSku(),
+    undefined,
+    undefined,
+    VERIFIED_PHYSICAL,
+  );
   assert.ok(Array.isArray(attrs.item_name));
   assert.ok(Array.isArray(attrs.bullet_point));
   assert.equal((attrs.bullet_point as unknown[]).length, 3);
@@ -107,6 +131,107 @@ test("buildAmazonAttributes — UPC carries type=upc + marketplace_id", () => {
 test("buildAmazonAttributes — omits image block when main_image_url is null", () => {
   const attrs = buildAmazonAttributes(mkSku({ main_image_url: null }));
   assert.equal(attrs.main_product_image_locator, undefined);
+});
+
+test("buildAmazonAttributes — structured count wins and inventory is derived", () => {
+  const attrs = buildAmazonAttributes(mkSku({
+    title: "Uncrustables Strawberry, 4 ct, Pack of 45",
+    attributes: JSON.stringify({ number_of_items: [{ value: 45 }] }),
+    available_quantity: 7,
+  }), "Uncrustables", "FROZEN_GROCERY");
+  assert.equal((attrs.unit_count as Array<{ value: number }>)[0].value, 45);
+  assert.equal(attrs.each_unit_count, undefined);
+  assert.equal(
+    (attrs.fulfillment_availability as Array<{ quantity: number }>)[0].quantity,
+    7,
+  );
+});
+
+test("buildAmazonAttributes — Uncrustables ignores stale DB price and seals the canonical offer", () => {
+  const attrs = buildAmazonAttributes(mkSku({
+    price_cents: 999,
+    attributes: JSON.stringify({
+      number_of_items: [{ value: 45 }],
+      list_price: [{ value: 199.99, currency: "USD" }],
+      purchasable_offer: [{
+        discounted_price: [{ schedule: [{ value_with_tax: 9.99 }] }],
+        minimum_seller_allowed_price: [{ schedule: [{ value_with_tax: 1 }] }],
+        maximum_seller_allowed_price: [{ schedule: [{ value_with_tax: 999 }] }],
+      }],
+    }),
+  }), "Uncrustables", "FROZEN_GROCERY");
+  const offer = (attrs.purchasable_offer as Array<Record<string, unknown>>)[0];
+  const scheduled = (key: string) =>
+    ((offer[key] as Array<{ schedule: Array<{ value_with_tax: number }> }>)[0]
+      .schedule[0].value_with_tax);
+  assert.equal(scheduled("our_price"), 130.99);
+  assert.equal(scheduled("minimum_seller_allowed_price"), 114.27);
+  assert.equal(scheduled("maximum_seller_allowed_price"), 130.99);
+  assert.equal(offer.discounted_price, undefined);
+  assert.equal(attrs.list_price, undefined);
+  const business = attrs.business_price as Array<{
+    schedule: Array<{ value_with_tax: number }>;
+  }>;
+  assert.equal(business[0].schedule[0].value_with_tax, 130.99);
+});
+
+test("buildAmazonAttributes — shelf life and melting point are evidence-only", () => {
+  const absent = buildAmazonAttributes(mkSku());
+  assert.equal(absent.fc_shelf_life, undefined);
+  assert.equal(absent.melting_temperature, undefined);
+
+  const reviewed = buildAmazonAttributes(mkSku({
+    attributes: JSON.stringify({
+      fc_shelf_life: [{ value: 180, unit: "days" }],
+      melting_temperature: [{ value: 28, unit: "degrees_fahrenheit" }],
+    }),
+  }));
+  assert.deepEqual(reviewed.fc_shelf_life, [{ value: 180, unit: "days" }]);
+  assert.deepEqual(reviewed.melting_temperature, [{ value: 28, unit: "degrees_fahrenheit" }]);
+});
+
+test("submitToAmazon — Uncrustables without structured count fails before any PUT", async () => {
+  const result = await submitToAmazon({
+    sku: mkSku({
+      attributes: JSON.stringify({
+        purchasable_offer: [{
+          our_price: [{ schedule: [{ value_with_tax: 9.99 }] }],
+        }],
+        business_price: [{ schedule: [{ value_with_tax: 8.99 }] }],
+      }),
+      price_cents: 7699,
+    }),
+    storeIndex: 1,
+    brand: "Uncrustables",
+    category: "FROZEN_GROCERY",
+    physicalPackageSpecs: VERIFIED_PHYSICAL,
+    verifiedAllergens: ["peanuts", "wheat"],
+    dryRun: true,
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.error ?? "", /structured number_of_items/i);
+  const attrs = result.payload.attributes as Record<string, unknown>;
+  assert.equal(attrs.purchasable_offer, undefined);
+  assert.equal(attrs.business_price, undefined);
+});
+
+test("Amazon publishing requires validation preview before every real PUT", () => {
+  assert.equal(AMAZON_VALIDATION_PREVIEW_REQUIRED, true);
+});
+
+test("buildAmazonAttributes — preserves only an explicit each_unit_count", () => {
+  const attrs = buildAmazonAttributes(mkSku({
+    attributes: JSON.stringify({
+      number_of_items: [{ value: 24 }],
+      each_unit_count: [{ value: 4, marketplace_id: "ATVPDKIKX0DER" }],
+    }),
+  }));
+  assert.equal((attrs.each_unit_count as Array<{ value: number }>)[0].value, 4);
+});
+
+test("buildAmazonAttributes — unknown inventory never becomes an invented 100", () => {
+  const attrs = buildAmazonAttributes(mkSku({ available_quantity: null }));
+  assert.equal(attrs.fulfillment_availability, undefined);
 });
 
 // Owner's standing rule: an own-brand passthrough listing ALWAYS publishes as
@@ -153,9 +278,134 @@ test("buildAmazonAttributes — is_heat_sensitive follows the bundle category", 
   assert.equal((legacy.is_heat_sensitive as Array<{ value: boolean }>)[0].value, false);
 });
 
-test("buildAmazonAttributes — omits dimensions when any side is null", () => {
-  const attrs = buildAmazonAttributes(mkSku({ package_length_in: null }));
+test("buildAmazonAttributes — ignores legacy package columns without proof", () => {
+  const attrs = buildAmazonAttributes(mkSku());
   assert.equal(attrs.item_package_dimensions, undefined);
+  assert.equal(attrs.item_package_weight, undefined);
+});
+
+test("buildAmazonAttributes — verified proof overrides stale rich package facts", () => {
+  const attrs = buildAmazonAttributes(
+    mkSku({
+      attributes: JSON.stringify({
+        item_package_dimensions: [{
+          length: { value: 99, unit: "inches" },
+          width: { value: 99, unit: "inches" },
+          height: { value: 99, unit: "inches" },
+        }],
+        item_package_weight: [{ value: 999, unit: "ounces" }],
+      }),
+    }),
+    undefined,
+    undefined,
+    VERIFIED_PHYSICAL,
+  );
+  const dims = (attrs.item_package_dimensions as Array<{
+    length: { value: number };
+    width: { value: number };
+    height: { value: number };
+  }>)[0];
+  assert.equal(dims.length.value, 14);
+  assert.equal(dims.width.value, 10);
+  assert.equal(dims.height.value, 6);
+  assert.equal(
+    (attrs.item_package_weight as Array<{ value: number }>)[0].value,
+    32,
+  );
+});
+
+test("buildAmazonAttributes — compliance facts require explicit reviewed inputs", () => {
+  const sku = mkSku({
+    attributes: JSON.stringify({
+      allergen_information: [{ value: "soy" }],
+      is_expiration_dated_product: [{ value: true }],
+      product_expiration_type: [{ value: "Expiration Date Required" }],
+      item_weight: [{ value: 99, unit: "pounds" }],
+      item_dimensions: [{ value: "99 x 99 x 99" }],
+    }),
+  });
+  const unverified = buildAmazonAttributes(
+    sku,
+    "Uncrustables",
+    "FROZEN_GROCERY",
+    VERIFIED_PHYSICAL,
+  );
+  assert.equal(unverified.allergen_information, undefined);
+  assert.equal(unverified.is_expiration_dated_product, undefined);
+  assert.equal(unverified.product_expiration_type, undefined);
+  assert.equal(unverified.item_weight, undefined);
+  assert.equal(unverified.item_dimensions, undefined);
+
+  const reviewed = buildAmazonAttributes(
+    sku,
+    "Uncrustables",
+    "FROZEN_GROCERY",
+    VERIFIED_PHYSICAL,
+    ["peanuts", "wheat"],
+    {
+      source: "MANUFACTURER_LABEL",
+      is_expiration_dated_product: true,
+      product_expiration_type: "Expiration Date Required",
+    },
+  );
+  assert.deepEqual(
+    (reviewed.allergen_information as Array<{ value: string }>).map(
+      (row) => row.value,
+    ),
+    ["peanuts", "wheat"],
+  );
+  assert.equal(
+    (reviewed.is_expiration_dated_product as Array<{ value: boolean }>)[0].value,
+    true,
+  );
+  assert.equal(
+    (reviewed.product_expiration_type as Array<{ value: string }>)[0].value,
+    "Expiration Date Required",
+  );
+});
+
+test("submitToAmazon — rejects measurement proof that does not match the SKU", async () => {
+  const result = await submitToAmazon({
+    sku: mkSku({ package_length_in: 13 }),
+    storeIndex: 1,
+    physicalPackageSpecs: VERIFIED_PHYSICAL,
+    dryRun: true,
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.error ?? "", /operator-verified package weight and dimensions/i);
+});
+
+test("submitToAmazon — food submission rejects missing reviewed allergens", async () => {
+  const result = await submitToAmazon({
+    sku: mkSku({
+      attributes: JSON.stringify({ number_of_items: [{ value: 24 }] }),
+    }),
+    storeIndex: 1,
+    brand: "Uncrustables",
+    category: "FROZEN_GROCERY",
+    physicalPackageSpecs: VERIFIED_PHYSICAL,
+    dryRun: true,
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.error ?? "", /reviewed structured manufacturer allergen/i);
+});
+
+test("submitToAmazon — Uncrustables blocks without an exact MAIN authenticity permit", async () => {
+  const result = await submitToAmazon({
+    sku: mkSku({
+      sku: "PB-ASAF-G2T6",
+      main_image_url: "https://approved-assets.r2.dev/pb.png",
+      attributes: JSON.stringify({ number_of_items: [{ value: 24 }] }),
+    }),
+    storeIndex: 1,
+    brand: "Uncrustables",
+    category: "FROZEN_GROCERY",
+    physicalPackageSpecs: VERIFIED_PHYSICAL,
+    verifiedAllergens: ["peanuts", "wheat"],
+    dryRun: true,
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.error ?? "", /MAIN authenticity blocked.*permit is missing/i);
 });
 
 test("buildAmazonPayload — wraps attributes + productType + LISTING requirements", () => {
@@ -184,11 +434,31 @@ test("buildWalmartPayload — UPC in productIdentifiers as UPC type", () => {
 });
 
 test("buildWalmartPayload — weight converted oz → lb", () => {
-  const payload = buildWalmartPayload(mkSku({ package_weight_oz: 32 }));
+  const payload = buildWalmartPayload(mkSku(), {
+    physicalPackageSpecs: VERIFIED_PHYSICAL,
+  });
   const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
   const sw = item.shippingWeight as { value: number; unit: string };
   assert.equal(sw.unit, "LB");
   assert.equal(sw.value, 2); // 32 oz / 16 = 2 lb
+});
+
+test("buildWalmartPayload — legacy package columns do not invent shipping facts", () => {
+  const payload = buildWalmartPayload(mkSku());
+  const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
+  assert.equal(item.shippingWeight, undefined);
+  assert.equal(item.assembledProductDimensions, undefined);
+});
+
+test("submitToWalmart — rejects measurement proof that does not match the SKU", async () => {
+  const result = await submitToWalmart({
+    sku: mkSku({ package_weight_oz: 31 }),
+    storeIndex: 1,
+    physicalPackageSpecs: VERIFIED_PHYSICAL,
+    dryRun: true,
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.error ?? "", /operator-verified package weight and dimensions/i);
 });
 
 test("buildWalmartPayload — keyFeatures parsed from bullets_json", () => {
@@ -273,6 +543,16 @@ test("channelTarget — EBAY + TIKTOK report 'not implemented'", () => {
 
 // ── Price band (min = ROI floor, max = target) merged into purchasable_offer ──
 
+type OfferTestShape = {
+  our_price: Array<{ schedule: Array<{ value_with_tax: number }> }>;
+  minimum_seller_allowed_price?: Array<{
+    schedule: Array<{ value_with_tax: number }>;
+  }>;
+  maximum_seller_allowed_price?: Array<{
+    schedule: Array<{ value_with_tax: number }>;
+  }>;
+};
+
 test("buildAmazonAttributes — rich-attr price band survives with our_price set", () => {
   const band = {
     purchasable_offer: [{
@@ -284,10 +564,30 @@ test("buildAmazonAttributes — rich-attr price band survives with our_price set
   const attrs = buildAmazonAttributes(
     mkSku({ attributes: JSON.stringify(band), price_cents: 8625 }),
   );
-  const po = (attrs.purchasable_offer as Array<Record<string, any>>)[0];
+  const po = (attrs.purchasable_offer as OfferTestShape[])[0];
   assert.equal(po.our_price[0].schedule[0].value_with_tax, 86.25);
+  assert.ok(po.minimum_seller_allowed_price);
+  assert.ok(po.maximum_seller_allowed_price);
   assert.equal(po.minimum_seller_allowed_price[0].schedule[0].value_with_tax, 74.53);
   assert.equal(po.maximum_seller_allowed_price[0].schedule[0].value_with_tax, 86.25);
+});
+
+test("buildAmazonAttributes — coupon-only base removes list price and pins B2B to consumer", () => {
+  const attrs = buildAmazonAttributes(mkSku({
+    price_cents: 7699,
+    attributes: JSON.stringify({
+      list_price: [{ value: 99.99, currency: "USD" }],
+      business_price: [{ currency: "USD", schedule: [{ value_with_tax: 66.22 }] }],
+    }),
+  }));
+  assert.equal(attrs.list_price, undefined);
+  const business = attrs.business_price as Array<{
+    currency: string;
+    marketplace_id: string;
+    schedule: Array<{ value_with_tax: number }>;
+  }>;
+  assert.equal(business[0].currency, "USD");
+  assert.equal(business[0].schedule[0].value_with_tax, 76.99);
 });
 
 test("buildAmazonAttributes — contradictory band parts are dropped, not sent", () => {
@@ -303,15 +603,16 @@ test("buildAmazonAttributes — contradictory band parts are dropped, not sent",
   const attrs = buildAmazonAttributes(
     mkSku({ attributes: JSON.stringify(band), price_cents: 5000 }),
   );
-  const po = (attrs.purchasable_offer as Array<Record<string, any>>)[0];
+  const po = (attrs.purchasable_offer as OfferTestShape[])[0];
   assert.equal(po.our_price[0].schedule[0].value_with_tax, 50);
   assert.equal(po.minimum_seller_allowed_price, undefined);
+  assert.ok(po.maximum_seller_allowed_price);
   assert.equal(po.maximum_seller_allowed_price[0].schedule[0].value_with_tax, 86.25);
 });
 
 test("buildAmazonAttributes — no band in rich attrs -> plain our_price only", () => {
   const attrs = buildAmazonAttributes(mkSku({ price_cents: 8625 }));
-  const po = (attrs.purchasable_offer as Array<Record<string, any>>)[0];
+  const po = (attrs.purchasable_offer as OfferTestShape[])[0];
   assert.equal(po.our_price[0].schedule[0].value_with_tax, 86.25);
   assert.equal(po.minimum_seller_allowed_price, undefined);
   assert.equal(po.maximum_seller_allowed_price, undefined);

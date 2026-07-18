@@ -1,0 +1,23 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "2c4589ab-2911-4f8a-bb31-fd2f2bc54640",
+  "created_at": "2026-07-18T07:52:26.672Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "WK-AS7E-M3CE:structured_attributes",
+  "sku": "WK-AS7E-M3CE",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "cf781e4b724bc6af31738f0e582c38b7c7dd85ecded048f1ca0a12cbb471a552",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "status": "VALID",
+    "submission_id": "387db917753a40f08fabf076569658c8",
+    "issues": []
+  },
+  "sha256": "845a2411784c7e5b08d8dcceb626900861a66f623d2f9c736cb214ff6cac0517"
+}

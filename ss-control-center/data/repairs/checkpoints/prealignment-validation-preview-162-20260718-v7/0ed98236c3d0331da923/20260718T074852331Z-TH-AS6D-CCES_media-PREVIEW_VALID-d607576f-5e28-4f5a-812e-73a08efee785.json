@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d607576f-5e28-4f5a-812e-73a08efee785",
+  "created_at": "2026-07-18T07:48:52.331Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "TH-AS6D-CCES:media",
+  "sku": "TH-AS6D-CCES",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "5739787d246b0834fba13bed12ed5245f69f3b0a66d82bdd4b641660e50729ac",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "863cd258ac514aed9e703f691a84d58e",
+    "issues": []
+  },
+  "sha256": "15bdc64cf5da661b46ecabdf88315b94cc92fbfc521a8776fd9117abb9aabc1f"
+}

@@ -1,7 +1,8 @@
 /**
  * Generate a ChannelMAX File-Uploader flat file (tab-delimited .txt) that puts
- * our cost-model guardrails INTO ChannelMAX, so its repricer holds each SKU
- * inside [floor, target] instead of fighting our manual SP-API reprices.
+ * canonical safety bounds INTO ChannelMAX. This does NOT authorize repricing:
+ * the Uncrustables rows must remain disabled in ChannelMAX because launch
+ * promotions are coupon-only.
  *
  * ChannelMAX has no API — you upload this file via:
  *   selling.channelmax.net → Inventory → File Uploader → Analyze New File →
@@ -10,16 +11,15 @@
  * Columns (verbatim ChannelMAX names): SKU, ASIN, SellingVenue,
  * MinSellingPrice, MaxSellingPrice.
  *   - MinSellingPrice = our floor (landed × 1.3) — never reprice below this.
- *   - MaxSellingPrice = our target (landed × 1.5) — never go above; uncontested
- *     listings sit here (≈ our 70% markup).
- * NOTE: ChannelMAX only reprices a SKU once Min is non-zero — this file sets it.
+ *   - MaxSellingPrice = the canonical .99 consumer base — never go above it.
+ * NOTE: uploading bounds alone does not disable ChannelMAX's repricing model.
  *
  * Run: npx tsx scripts/channelmax-export.ts
  * Output: data/channelmax-uncrustables-minmax.txt
  */
 import "dotenv/config";
 import { writeFileSync } from "node:fs";
-import { readSnapshot, syncUncrustables } from "@/lib/pricing/uncrustables";
+import { syncUncrustables } from "@/lib/pricing/uncrustables";
 
 const SELLING_VENUE = "AmazonUS";
 
@@ -28,20 +28,29 @@ function round2(n: number): number {
 }
 
 async function main() {
-  const snap = (await readSnapshot()) ?? (await syncUncrustables());
+  // Never build an upload from the Setting cache: a stale snapshot can restore
+  // pre-repair bounds. A fresh live sync also prefers structured item count over
+  // legacy title arithmetic.
+  const snap = await syncUncrustables();
   const rows = snap.rows;
+  const unverified = rows.filter((row) => !row.liveCountVerified);
+  if (rows.length === 0 || unverified.length > 0) {
+    throw new Error(
+      `Refusing ChannelMAX artifact: ${rows.length === 0 ? "no rows" : `${unverified.length} row(s) lack a fresh structured count`}`,
+    );
+  }
   // Header uses ChannelMAX's exact column names.
   const header = ["SKU", "ASIN", "SellingVenue", "MinSellingPrice", "MaxSellingPrice"];
   const lines = [header.join("\t")];
   for (const r of rows) {
-    if (!Number.isFinite(r.target) || !Number.isFinite(r.floor)) continue;
+    if (!Number.isFinite(r.suggested) || !Number.isFinite(r.floor)) continue;
     lines.push(
       [
         r.sku,
         r.asin || "",
         SELLING_VENUE,
         round2(r.floor).toFixed(2), // Min = floor
-        round2(r.target).toFixed(2), // Max = target
+        round2(r.suggested).toFixed(2), // Max = canonical .99 consumer base
       ].join("\t"),
     );
   }
@@ -50,6 +59,9 @@ async function main() {
   console.log(`Wrote ${rows.length} SKUs → ${out}`);
   console.log("Preview:");
   console.log(lines.slice(0, 6).join("\n"));
+  console.warn(
+    "IMPORTANT: this file sets safety bounds only. ChannelMAX repricing must be disabled for these SKU rows; promotions use Amazon Coupons.",
+  );
 }
 
 main().catch((e) => {

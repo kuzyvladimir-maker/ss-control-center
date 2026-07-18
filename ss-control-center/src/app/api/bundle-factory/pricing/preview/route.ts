@@ -1,11 +1,12 @@
 /**
  * POST /api/bundle-factory/pricing/preview
- *   Body: { cogs_cents, weight_lb, category, model: Partial<PricingModel> }
+ *   Body: { brand, unit_count, cogs_cents, weight_lb, category,
+ *           model: Partial<PricingModel> }
  *
  * Live recompute for the draft-detail pricing calculator. Takes the bundle's
  * cost basis + the operator's IN-PROGRESS model edits and returns the full
  * cost-buildup result WITHOUT persisting anything. This keeps the modal's live
- * numbers on the SAME formula as promote-draft (computeBundlePrice) so there is
+ * numbers on the SAME formula as promote-draft (computeListingPrice) so there is
  * one source of truth — no client-side duplicate. Saving is a separate call to
  * POST /api/bundle-factory/pricing.
  */
@@ -14,9 +15,9 @@ import { NextResponse } from "next/server";
 import { readJson, withErrorHandler } from "@/lib/bundle-factory/api-utils";
 import {
   getPricingModel,
-  computeBundlePrice,
   type PricingModel,
 } from "@/lib/bundle-factory/pricing-config";
+import { computeListingPrice } from "@/lib/bundle-factory/listing-pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,8 @@ interface Body {
   cogs_cents?: unknown;
   weight_lb?: unknown;
   category?: unknown;
+  brand?: unknown;
+  unit_count?: unknown;
   model?: Partial<PricingModel> & Record<string, unknown>;
 }
 
@@ -59,12 +62,17 @@ export const POST = withErrorHandler(
         typeof m.shipping_in_price === "boolean" ? m.shipping_in_price : base.shipping_in_price,
     };
 
-    const result = computeBundlePrice(
+    const result = computeListingPrice(
       {
+        brand: typeof body.brand === "string" ? body.brand : null,
         cogs_cents: Math.max(0, Math.round(n(body.cogs_cents, 0))),
         weight_lb:
           body.weight_lb == null ? null : Math.max(0, n(body.weight_lb, 0)) || null,
         category: typeof body.category === "string" ? body.category : null,
+        unit_count:
+          body.unit_count == null
+            ? null
+            : Math.max(0, Math.round(n(body.unit_count, 0))) || null,
       },
       model,
     );

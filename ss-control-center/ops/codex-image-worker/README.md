@@ -16,9 +16,12 @@ Requests are serialized.
 
 `reference_images` is an array of base64-encoded PNGs (product photos + the
 approved frozen-hero anchors); `reference_urls` an array of image URLs. They are
-written into a per-run working dir and the codex agent is told to pass them to
-`image_gen` as input/reference images (style + accurate third-party packaging).
-Backward compatible: omit them and it behaves exactly as before (text only).
+written into a per-run working dir and the codex agent is told to pass **every**
+ordered reference to `image_gen`: ref-1 is the kit anchor and ref-2..N are exact
+product donors in recipe order. Generation fails closed if any requested
+reference cannot be decoded or fetched; it must never silently generate a mix
+with a missing flavor reference. Backward compatible: omit them and it behaves
+as before (text only).
 ⚠️ Reference support depends on the codex `image_gen` tool accepting input
 images — confirm on the first real run.
 

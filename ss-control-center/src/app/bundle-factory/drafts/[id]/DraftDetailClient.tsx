@@ -130,9 +130,16 @@ interface BundlePriceResultShape {
   profit_cents: number;
   margin_pct: number;
   roi_pct: number;
+  pricing_source?: "UNCRUSTABLES_CANONICAL" | "BUNDLE_FACTORY_CONFIG";
 }
 interface PricingProp {
-  input: { cogs_cents: number; weight_lb: number | null; category: string | null };
+  input: {
+    brand: string | null;
+    cogs_cents: number;
+    weight_lb: number | null;
+    unit_count: number | null;
+    category: string | null;
+  };
   model: PricingModelShape;
   result: BundlePriceResultShape;
 }
@@ -497,7 +504,7 @@ export function DraftDetailClient(props: Props) {
         {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({}),
+          body: JSON.stringify({ approvalConfirmed: apply }),
         },
       );
       const data = await r.json();
@@ -525,6 +532,13 @@ export function DraftDetailClient(props: Props) {
   }
 
   async function republishSku(skuId: string) {
+    if (
+      !window.confirm(
+        "Повторно отправить этот SKU в маркетплейс? Подтвердите, что контент, изображения, цена и остаток заново проверены.",
+      )
+    ) {
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -533,7 +547,7 @@ export function DraftDetailClient(props: Props) {
         {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({}),
+          body: JSON.stringify({ approvalConfirmed: true }),
         },
       );
       const data = await r.json();
@@ -589,11 +603,8 @@ export function DraftDetailClient(props: Props) {
       props.draftStatus === "VALIDATING" ||
       props.draftStatus === "VALIDATED" ||
       props.draftStatus === "ERROR");
-  // Publishable = validation PASSED or NEEDS_REVIEW (warnings only). FAILED is
-  // still blocked. Warnings don't block publish — the operator confirms in the
-  // modal.
-  const isPublishable = (status: string) =>
-    status === "PASSED" || status === "NEEDS_REVIEW";
+  // Fail closed: warnings mean a required fact was not proven.
+  const isPublishable = (status: string) => status === "PASSED";
   const publishPendingCount = rows.filter(
     (r) =>
       isPublishable(r.validation_status) &&
@@ -1038,11 +1049,10 @@ function ChannelCard({
             </Btn>
           )}
           {onRepublishSku &&
-            (row.validation_status === "PASSED" ||
-              row.validation_status === "NEEDS_REVIEW") &&
-            (row.listing_status === "FAILED" || row.listing_status === "PENDING") && (
+            row.validation_status === "PASSED" &&
+            row.listing_status === "FAILED" && (
               <Btn variant="primary" disabled={busy} loading={busy} onClick={onRepublishSku}>
-                {row.listing_status === "FAILED" ? "Re-publish" : "Publish"}
+                Re-publish
               </Btn>
             )}
         </div>
@@ -1407,7 +1417,7 @@ function flattenAttrValue(raw: unknown): string {
  * picks the lever (target MARGIN or a cost MARKUP), adjusts the fee estimates,
  * and Saves — it re-prices every listing (one global model, labelled as such).
  * Live numbers come from the server (POST .../pricing/preview) so the modal and
- * the published price stay on one formula (computeBundlePrice).
+ * the published price stay on one formula (computeListingPrice).
  */
 const dollars = (cents: number) => `$${((cents || 0) / 100).toFixed(2)}`;
 
@@ -1424,6 +1434,7 @@ function PricingModal({
   const [mode, setMode] = useState<"margin" | "markup" | "roi">(m.mode);
   const [markup, setMarkup] = useState(String(m.markup));
   const [marginPct, setMarginPct] = useState(String(Math.round(m.target_margin_pct * 100)));
+  const [roiPct, setRoiPct] = useState(String(Math.round(m.target_roi_pct * 100)));
   const [floor, setFloor] = useState((m.min_price_cents / 100).toFixed(2));
   const [fba, setFba] = useState((m.fba_fee_cents / 100).toFixed(2));
   const [closing, setClosing] = useState((m.closing_fee_cents / 100).toFixed(2));
@@ -1431,6 +1442,7 @@ function PricingModal({
   const [referral, setReferral] = useState(
     m.referral_pct_override == null ? "" : String(Math.round(m.referral_pct_override * 100)),
   );
+  const [shippingInPrice, setShippingInPrice] = useState(m.shipping_in_price);
 
   const [result, setResult] = useState<BundlePriceResultShape>(pricing.result);
   const [saving, setSaving] = useState(false);
@@ -1441,22 +1453,26 @@ function PricingModal({
     mode,
     markup: Number(markup),
     target_margin_pct: Number(marginPct) / 100,
+    target_roi_pct: Number(roiPct) / 100,
     min_price_cents: Math.round(Number(floor) * 100),
     fba_fee_cents: Math.round(Number(fba) * 100),
     closing_fee_cents: Math.round(Number(closing) * 100),
     own_shipping_cents: Math.round(Number(ownShip) * 100),
     referral_pct_override: referral.trim() === "" ? null : Number(referral) / 100,
+    shipping_in_price: shippingInPrice,
   };
 
   const dirty =
     edited.mode !== m.mode ||
     edited.markup !== m.markup ||
     Math.abs(edited.target_margin_pct - m.target_margin_pct) > 1e-9 ||
+    Math.abs(edited.target_roi_pct - m.target_roi_pct) > 1e-9 ||
     edited.min_price_cents !== m.min_price_cents ||
     edited.fba_fee_cents !== m.fba_fee_cents ||
     edited.closing_fee_cents !== m.closing_fee_cents ||
     edited.own_shipping_cents !== m.own_shipping_cents ||
-    edited.referral_pct_override !== m.referral_pct_override;
+    edited.referral_pct_override !== m.referral_pct_override ||
+    edited.shipping_in_price !== m.shipping_in_price;
 
   // Debounced live recompute on the server (single source of truth).
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1471,6 +1487,8 @@ function PricingModal({
             cogs_cents: pricing.input.cogs_cents,
             weight_lb: pricing.input.weight_lb,
             category: pricing.input.category,
+            brand: pricing.input.brand,
+            unit_count: pricing.input.unit_count,
             model: edited,
           }),
         });
@@ -1484,7 +1502,7 @@ function PricingModal({
       if (timer.current) clearTimeout(timer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, markup, marginPct, floor, fba, closing, ownShip, referral]);
+  }, [mode, markup, marginPct, roiPct, floor, fba, closing, ownShip, referral, shippingInPrice]);
 
   async function save() {
     setSaving(true);
@@ -1494,13 +1512,14 @@ function PricingModal({
         mode: edited.mode,
         markup: edited.markup,
         target_margin_pct: edited.target_margin_pct,
+        target_roi_pct: edited.target_roi_pct,
         min_price_cents: edited.min_price_cents,
         fba_fee_cents: edited.fba_fee_cents,
         closing_fee_cents: edited.closing_fee_cents,
         own_shipping_cents: edited.own_shipping_cents,
+        shipping_in_price: edited.shipping_in_price,
       };
-      if (edited.referral_pct_override != null)
-        body.referral_pct = edited.referral_pct_override;
+      body.referral_pct = edited.referral_pct_override ?? "";
       const res = await fetch("/api/bundle-factory/pricing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1597,10 +1616,19 @@ function PricingModal({
               >
                 По маркапу
               </button>
+              <button
+                type="button"
+                onClick={() => setMode("roi")}
+                className={`flex-1 rounded px-2 py-1 ${mode === "roi" ? "bg-green-ink text-white" : "text-ink-2"}`}
+              >
+                По ROI
+              </button>
             </div>
 
             {mode === "margin" ? (
               <PctInput label="Целевая маржа" value={marginPct} onChange={setMarginPct} />
+            ) : mode === "roi" ? (
+              <PctInput label="Целевой ROI" value={roiPct} onChange={setRoiPct} />
             ) : (
               <label className="flex items-center justify-between gap-2 py-0.5 text-[12px] text-ink-2">
                 <span>Маркап (× себестоимости)</span>
@@ -1621,6 +1649,14 @@ function PricingModal({
               placeholder="авто"
             />
             <MoneyInput label="Пол цены (минимум)" value={floor} onChange={setFloor} />
+            <label className="mt-1 flex items-center gap-2 text-[11.5px] text-ink-2">
+              <input
+                type="checkbox"
+                checked={shippingInPrice}
+                onChange={(event) => setShippingInPrice(event.target.checked)}
+              />
+              Включать стоимость лейбла в цену товара
+            </label>
 
             <div className="mt-2 space-y-1 border-t border-rule pt-2 text-[12.5px]">
               <FormulaRow
@@ -1642,7 +1678,9 @@ function PricingModal({
         </div>
 
         <p className="mt-3 text-[11px] text-warn">
-          Изменение применяется ко ВСЕМ листингам фабрики (единая модель цены).
+          {result.pricing_source === "UNCRUSTABLES_CANONICAL"
+            ? "Для Uncrustables действует утверждённая модель по количеству; глобальные настройки применяются к другим листингам."
+            : "Изменение применяется ко ВСЕМ листингам фабрики (единая модель цены)."}
         </p>
         {err && <p className="mt-1 text-[11px] text-danger">{err}</p>}
 

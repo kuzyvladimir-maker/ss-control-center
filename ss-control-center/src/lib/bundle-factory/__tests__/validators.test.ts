@@ -25,6 +25,9 @@ import { validatorCountryOfOrigin } from "@/lib/bundle-factory/validation/valida
 import { validatorImageDimensions } from "@/lib/bundle-factory/validation/validators/validator-image-dimensions";
 import { validatorImageFormat } from "@/lib/bundle-factory/validation/validators/validator-image-format";
 import { validatorMarginFloor } from "@/lib/bundle-factory/validation/validators/validator-margin-floor";
+import { validatorRecipeContent } from "@/lib/bundle-factory/validation/validators/validator-recipe-content";
+import { validatorCanonicalPrice } from "@/lib/bundle-factory/validation/validators/validator-canonical-price";
+import { VERIFIED_PHYSICAL_PACKAGE_SCHEMA } from "@/lib/bundle-factory/physical-package-specs";
 
 // ── Fixture builder ─────────────────────────────────────────────────────
 
@@ -75,6 +78,8 @@ function mkSku(overrides: Partial<ChannelSKU> = {}): ChannelSKU {
     validated_at: null,
     validation_check_id: null,
     validation_attempt_count: 0,
+    available_quantity: null,
+    inventory_checked_at: null,
     package_length_in: 12,
     package_width_in: 8,
     package_height_in: 6,
@@ -101,18 +106,96 @@ function mkInput(sku: ChannelSKU): ValidatorInput {
       id: "mb_test",
       brand: "Salutem Vita",
       category: "REFRIGERATED",
-      packaging_spec: "{}",
+      packaging_spec: JSON.stringify({
+        verified_physical_package: {
+          schema_version: VERIFIED_PHYSICAL_PACKAGE_SCHEMA,
+          source: "OPERATOR_SHIP_SPECS",
+          verified_at: "2026-07-17T12:00:00.000Z",
+          weight_oz: 32,
+          length_in: 12,
+          width_in: 8,
+          height_in: 6,
+        },
+      }),
+      cost_breakdown: JSON.stringify({ goods_cents: 1200, packaging_cents: 300 }),
+      pack_count: 3,
+      suggested_price_cents: 2499,
       total_weight_oz: 32,
       main_image_url: "https://example.com/img.png",
       estimated_cost_cents: 1200,
     },
     bundle_components: [
-      { product_name: "Cheez-It Original", manufacturer_brand: "Cheez-It", manufacturer_upc: "024100109838", qty: 3 },
+      { product_name: "Cheez-It Original", manufacturer_brand: "Cheez-It", manufacturer_upc: "024100109838", flavor: "Original", qty: 3 },
     ],
     draft_brand: "Salutem Vita",
     margin_floor_pct: 0.2,
   };
 }
+
+test("validator-recipe-content rejects title count multiplication", async () => {
+  const sku = mkSku({
+    title: "Uncrustables Peanut Butter Strawberry Jam, 4 ct, Pack of 45",
+    bullets: JSON.stringify(["Peanut butter and strawberry jam sandwiches."]),
+    description: "Frozen peanut butter and strawberry jam sandwiches.",
+    attributes: JSON.stringify({ number_of_items: [{ value: 45 }] }),
+  });
+  const input = mkInput(sku);
+  input.draft_brand = "Uncrustables";
+  input.master_bundle = {
+    ...input.master_bundle!,
+    brand: "Uncrustables",
+    category: "FROZEN_GROCERY",
+    pack_count: 45,
+    suggested_price_cents: 13099,
+  };
+  input.bundle_components = [{
+    product_name: "Uncrustables Peanut Butter & Strawberry Jam",
+    manufacturer_brand: "Uncrustables",
+    manufacturer_upc: "051500123456",
+    flavor: "Peanut Butter & Strawberry Jam",
+    qty: 45,
+  }];
+  const result = await validatorRecipeContent(input);
+  assert.equal(result.passed, false);
+  assert.match(result.message ?? "", /180|multiplies/);
+});
+
+test("validator-canonical-price requires exact .99 price and corridor", async () => {
+  const attributes = JSON.stringify({
+    purchasable_offer: [{
+      minimum_seller_allowed_price: [{ schedule: [{ value_with_tax: 66.95 }] }],
+      maximum_seller_allowed_price: [{ schedule: [{ value_with_tax: 76.99 }] }],
+    }],
+  });
+  const input = mkInput(mkSku({
+    price_cents: 7699,
+    business_price_cents: 7699,
+    attributes,
+  }));
+  input.master_bundle = {
+    ...input.master_bundle!,
+    brand: "Uncrustables",
+    category: "FROZEN_GROCERY",
+    pack_count: 24,
+    suggested_price_cents: 7699,
+  };
+  assert.equal((await validatorCanonicalPrice(input)).passed, true);
+  input.sku = { ...input.sku, price_cents: 7700 };
+  assert.equal((await validatorCanonicalPrice(input)).passed, false);
+  input.sku = {
+    ...input.sku,
+    price_cents: 7699,
+    attributes: JSON.stringify({
+      list_price: [{ value: 99.99 }],
+      purchasable_offer: [{
+        discounted_price: [{ schedule: [{ value_with_tax: 66.95 }] }],
+        minimum_seller_allowed_price: [{ schedule: [{ value_with_tax: 66.95 }] }],
+        maximum_seller_allowed_price: [{ schedule: [{ value_with_tax: 76.99 }] }],
+      }],
+    }),
+  };
+  assert.equal((await validatorCanonicalPrice(input)).passed, false);
+});
 
 // ── validator-title ───────────────────────────────────────────────────
 
@@ -270,8 +353,8 @@ test("validator-amazon-browse-node fails multi-brand without exception node", as
     mkSku({ channel: "AMAZON_SALUTEM", channel_browse_node: "1234567" }),
   );
   input.bundle_components = [
-    { product_name: "A", manufacturer_brand: "Kraft", manufacturer_upc: null, qty: 1 },
-    { product_name: "B", manufacturer_brand: "Hormel", manufacturer_upc: null, qty: 1 },
+    { product_name: "A", manufacturer_brand: "Kraft", manufacturer_upc: null, flavor: null, qty: 1 },
+    { product_name: "B", manufacturer_brand: "Hormel", manufacturer_upc: null, flavor: null, qty: 1 },
   ];
   const out = await validatorAmazonBrowseNode(input);
   assert.equal(out.passed, false);
@@ -283,8 +366,8 @@ test("validator-amazon-browse-node passes multi-brand WITH exception node", asyn
     mkSku({ channel: "AMAZON_SALUTEM", channel_browse_node: "12011207011" }),
   );
   input.bundle_components = [
-    { product_name: "A", manufacturer_brand: "Kraft", manufacturer_upc: null, qty: 1 },
-    { product_name: "B", manufacturer_brand: "Hormel", manufacturer_upc: null, qty: 1 },
+    { product_name: "A", manufacturer_brand: "Kraft", manufacturer_upc: null, flavor: null, qty: 1 },
+    { product_name: "B", manufacturer_brand: "Hormel", manufacturer_upc: null, flavor: null, qty: 1 },
   ];
   const out = await validatorAmazonBrowseNode(input);
   assert.equal(out.passed, true);
@@ -347,6 +430,14 @@ test("validator-packaging-dims warns on oversized", async () => {
   assert.equal(out.severity, "warning");
 });
 
+test("validator-packaging-dims rejects calculated columns without proof", async () => {
+  const input = mkInput(mkSku());
+  input.master_bundle!.packaging_spec = JSON.stringify({ cooler_size: "M" });
+  const out = await validatorPackagingDims(input);
+  assert.equal(out.passed, false);
+  assert.match(out.message ?? "", /operator-verified/i);
+});
+
 // ── validator-weight ──────────────────────────────────────────────────
 
 test("validator-weight passes positive weight", async () => {
@@ -357,6 +448,14 @@ test("validator-weight passes positive weight", async () => {
 test("validator-weight fails on missing", async () => {
   const out = await validatorWeight(mkInput(mkSku({ package_weight_oz: null })));
   assert.equal(out.passed, false);
+});
+
+test("validator-weight rejects a value that drifted from verified proof", async () => {
+  const out = await validatorWeight(
+    mkInput(mkSku({ package_weight_oz: 31 })),
+  );
+  assert.equal(out.passed, false);
+  assert.match(out.message ?? "", /does not match/i);
 });
 
 // ── validator-country-of-origin ──────────────────────────────────────
@@ -456,15 +555,19 @@ test("validator-margin-floor warns when price not set (awaiting economics)", asy
 
 test("validator-margin-floor warns when COGS basis unknown", async () => {
   const input = mkInput(mkSku({ price_cents: 1500 }));
-  input.master_bundle = { ...input.master_bundle!, estimated_cost_cents: null };
+  input.master_bundle = {
+    ...input.master_bundle!,
+    estimated_cost_cents: null,
+    cost_breakdown: "{}",
+  };
   const out = await validatorMarginFloor(input);
   assert.equal(out.passed, false);
   assert.equal(out.severity, "warning");
 });
 
 test("validator-margin-floor errors when margin below 20%", async () => {
-  // price $14.00 vs COGS $12.00 → 14.3% margin < 20% floor.
-  const input = mkInput(mkSku({ price_cents: 1400 }));
+  // $20 price - $15 goods/packaging - $3 referral = $2 (10%) margin.
+  const input = mkInput(mkSku({ price_cents: 2000 }));
   input.master_bundle = { ...input.master_bundle!, estimated_cost_cents: 1200 };
   const out = await validatorMarginFloor(input);
   assert.equal(out.passed, false);
@@ -472,17 +575,16 @@ test("validator-margin-floor errors when margin below 20%", async () => {
 });
 
 test("validator-margin-floor passes at exactly 20% margin", async () => {
-  // price $15.00 vs COGS $12.00 → exactly 20% margin → at the floor.
-  const input = mkInput(mkSku({ price_cents: 1500 }));
+  // $23.08 price - $15 goods/packaging - $3.46 referral = $4.62 (20.02%).
+  const input = mkInput(mkSku({ price_cents: 2308 }));
   input.master_bundle = { ...input.master_bundle!, estimated_cost_cents: 1200 };
   const out = await validatorMarginFloor(input);
   assert.equal(out.passed, true);
 });
 
-test("validator-margin-floor floor is a variable (10% floor passes 14.3% margin)", async () => {
-  // Same $14.00/$12.00 (14.3% margin) that FAILS at the 20% default now PASSES
-  // when the per-run floor is lowered to 10% — proves the floor is a variable.
-  const input = mkInput(mkSku({ price_cents: 1400 }));
+test("validator-margin-floor floor is a variable (10% floor passes 10% margin)", async () => {
+  // The same all-in 10% margin that fails at the 20% default passes at 10%.
+  const input = mkInput(mkSku({ price_cents: 2000 }));
   input.master_bundle = { ...input.master_bundle!, estimated_cost_cents: 1200 };
   input.margin_floor_pct = 0.1;
   const out = await validatorMarginFloor(input);

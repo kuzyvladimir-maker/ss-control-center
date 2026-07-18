@@ -16,12 +16,19 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { createHash } from "node:crypto";
 import { runContentGeneration } from "./content-pipeline";
 import { resolveListingBrand, isOwnBrandPassthrough } from "./own-brand";
 import type { Variant, VariantComponent } from "./variation-matrix";
 import { planVariations, type VariationSpec } from "./variation-planner";
 import { dedupeDonorFlavors, donorUnitPriceCents } from "./donor-dedup";
-import { getPricingModel, computeBundlePrice } from "./pricing-config";
+import { getPricingModel } from "./pricing-config";
+import { computeListingPrice } from "./listing-pricing";
+import {
+  legacyRecipeAliasFingerprint,
+  resolveLegacyRecipeAlias,
+  type RecipeAliasInput,
+} from "./legacy-recipe-dedup";
 
 export interface BatchProgress {
   status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
@@ -30,6 +37,7 @@ export interface BatchProgress {
   total: number; // listings to build
   done: number; // listings built (incl. failed)
   failed: number;
+  skipped?: number;
   done_flag: boolean; // true when nothing more to do
 }
 
@@ -38,6 +46,7 @@ interface EnginePlan {
   theme: string;
   pack_count: number;
   donor_ids: string[];
+  listing_brand?: string;
   /** The combinatorial matrix — one entry per listing to build (P2). */
   specs: VariationSpec[];
 }
@@ -47,6 +56,31 @@ interface EngineState {
   progress: BatchProgress;
 }
 
+const MAX_WORK_ATTEMPTS = 3;
+const STALE_LOCK_MS = 10 * 60_000;
+
+/** Stable logical recipe identity (independent of donor row ids, which catalog
+ * enrichment may replace). Visible for deterministic unit tests. */
+export function recipeFingerprint(
+  brand: string,
+  spec: Pick<VariationSpec, "composition_type" | "unit_count" | "flavor_labels" | "quantities">,
+): string {
+  const components = spec.flavor_labels
+    .map((flavor, i) => ({
+      flavor: flavor.toLowerCase().replace(/\s+/g, " ").trim(),
+      qty: spec.quantities[i] ?? 0,
+    }))
+    .sort((a, b) => a.flavor.localeCompare(b.flavor));
+  return createHash("sha256")
+    .update(JSON.stringify({
+      brand: brand.toLowerCase().trim(),
+      composition_type: spec.composition_type,
+      unit_count: spec.unit_count,
+      components,
+    }))
+    .digest("hex");
+}
+
 // ── Prompt parsing (heuristic — cheap, no LLM) ──────────────────────────────
 
 const STOPWORDS = new Set([
@@ -54,13 +88,26 @@ const STOPWORDS = new Set([
   "multipack", "multipacks", "pack", "packs", "listing", "listings", "new",
   "in", "different", "variation", "variations", "variety", "the", "a", "an",
   "of", "with", "and", "for", "make", "create", "build", "generate",
+  "создай", "создать", "сделай", "сгенерируй", "новых", "новые",
+  "листинг", "листинга", "листингов", "карточки", "товаров", "вариантов",
 ]);
 
 export function parsePrompt(prompt: string): { count: number; theme: string; pack_count: number } {
   const lower = prompt.toLowerCase();
 
-  // Count = first standalone integer (e.g. "50 ..."). Default 5.
-  const countMatch = lower.match(/\b(\d{1,4})\b/);
+  // Listing count is independent from the recipe pack count. Prefer a number
+  // explicitly attached to "listings/ASINs" (including Russian prompts); only
+  // then fall back to the first number after removing pack-size phrases.
+  const countMatch =
+    lower.match(/\b(\d{1,4})\s+(?:[\p{L}'-]+\s+){0,4}(?:listings?|asins?|products?)\b/u) ||
+    lower.match(/(?:listings?|asins?)\s*[:=x-]?\s*(\d{1,4})\b/) ||
+    lower.match(/\b(\d{1,4})\s+(?:[\p{L}'-]+\s+){0,4}(?:листинг(?:а|ов)?|asin(?:ов)?)\b/u) ||
+    lower.match(/(?:листинг(?:а|ов)?|asin(?:ов)?)\s*[:=x-]?\s*(\d{1,4})\b/u) ||
+    lower
+      .replace(/pack of \d{1,2}/g, " ")
+      .replace(/\d{1,2}\s*-?\s*pack/g, " ")
+      .replace(/\d{1,2}\s*(?:count|ct)\b/g, " ")
+      .match(/\b(\d{1,4})\b/);
   let count = countMatch ? parseInt(countMatch[1], 10) : 5;
   count = Math.max(1, Math.min(500, count)); // mass generation: up to 500 listings
 
@@ -75,7 +122,7 @@ export function parsePrompt(prompt: string): { count: number; theme: string; pac
   // Theme = remaining significant tokens (drop the count + stopwords).
   const theme = prompt
     .replace(/\b\d{1,4}\b/g, " ")
-    .split(/[^a-zA-Z0-9'&-]+/)
+    .split(/[^\p{L}\p{N}'&-]+/u)
     .map((t) => t.trim())
     .filter((t) => t.length >= 3 && !STOPWORDS.has(t.toLowerCase()))
     .join(" ")
@@ -100,8 +147,25 @@ async function sourceDonors(theme: string) {
   ]);
 
   return prisma.donorProduct.findMany({
-    where: or.length > 0 ? { OR: or } : {},
-    orderBy: [{ updatedAt: "desc" }],
+    // Automatic listing creation is fail-closed: uncertain catalog rows,
+    // missing identifiers/images, and uncosted products stay in manual review.
+    where: {
+      ...(or.length > 0 ? { OR: or } : {}),
+      needsReview: false,
+      bestPrice: { gt: 0 },
+      upc: { not: null },
+      flavor: { not: null },
+      ingredients: { not: null },
+      mainImageUrl: { not: null },
+      offers: {
+        some: {
+          isFirstParty: true,
+          via: "direct",
+          price: { gt: 0 },
+        },
+      },
+    },
+    orderBy: [{ confidence: "desc" }, { updatedAt: "desc" }],
     take: 60,
     select: {
       id: true,
@@ -110,9 +174,15 @@ async function sourceDonors(theme: string) {
       flavor: true,
       title: true,
       category: true,
+      upc: true,
+      ingredients: true,
       bestPrice: true,
       mainImageUrl: true,
       imageUrls: true,
+      offers: {
+        where: { isFirstParty: true, via: "direct", price: { gt: 0 } },
+        select: { price: true, packSizeSeen: true, pricePerUnit: true },
+      },
     },
   });
 }
@@ -146,16 +216,12 @@ function readState(notes: string | null, fallbackTotal: number): EngineState {
 // ── Per-listing build ───────────────────────────────────────────────────────
 
 function mapCategory(donorCategory: string | null): string {
-  switch ((donorCategory ?? "").toLowerCase()) {
-    case "frozen":
-      return "FROZEN_GROCERY";
-    case "refrigerated":
-      return "REFRIGERATED";
-    case "dry":
-      return "SHELF_STABLE";
-    default:
-      return "SHELF_STABLE";
-  }
+  const category = (donorCategory ?? "").trim().toLowerCase();
+  if (/frozen|freezer/.test(category)) return "FROZEN_GROCERY";
+  if (/refrigerated|chilled|cold/.test(category)) return "REFRIGERATED";
+  if (/dry|ambient|shelf/.test(category)) return "SHELF_STABLE";
+  // Unknown temperature is not safe to silently classify as ambient food.
+  return "OTHER";
 }
 
 function donorName(d: SourcedDonor): string {
@@ -166,69 +232,108 @@ function donorName(d: SourcedDonor): string {
   );
 }
 
-async function buildOneListing(args: {
+interface DraftBuildResult {
+  kind: "CREATED" | "EXISTING" | "SKIPPED" | "FAILED";
+  title: string;
+  draft_id?: string;
+  error?: string;
+}
+
+async function ensureDraftForSpec(args: {
   jobId: string;
   index: number;
   houseBrand: string;
   channel: string;
   spec: VariationSpec;
   donorsById: Map<string, SourcedDonor>;
-}): Promise<{ ok: boolean; title: string }> {
+  fingerprint: string;
+}): Promise<DraftBuildResult> {
   const { jobId, index, houseBrand, channel, spec, donorsById } = args;
-
-  // Build the composition from the variation spec — one component per flavor,
-  // each carrying its share of the total piece count (spec.quantities).
   const components: VariantComponent[] = [];
+
   spec.donor_ids.forEach((id, i) => {
-    const d = donorsById.get(id);
-    if (!d) return;
-    // COGS per SANDWICH/unit — the donor's bestPrice is the RETAIL PACK price
-    // ("10 Count $9.84" → $0.98/unit). Never treat a pack price as a unit price:
-    // that inflates a 30-piece listing's COGS 10× and births an absurd price.
-    const unitPriceCents =
-      donorUnitPriceCents(d) ??
-      (typeof d.bestPrice === "number" && d.bestPrice > 0 ? Math.round(d.bestPrice * 100) : 0);
+    const donor = donorsById.get(id);
+    if (!donor) return;
+    const ingredients = donor.ingredients?.trim() || undefined;
+    const donorImages: string[] = [];
+    if (donor.mainImageUrl) donorImages.push(donor.mainImageUrl);
+    try {
+      const parsed = donor.imageUrls ? JSON.parse(donor.imageUrls) : [];
+      if (Array.isArray(parsed)) {
+        for (const url of parsed) {
+          if (typeof url === "string" && url.trim() && !donorImages.includes(url)) {
+            donorImages.push(url);
+          }
+        }
+      }
+    } catch {
+      // Keep the known main image when the optional gallery JSON is malformed.
+    }
     components.push({
-      research_pool_id: d.id,
-      product_name: donorName(d),
-      brand: d.brand ?? "Unknown",
+      research_pool_id: donor.id,
+      product_name: donorName(donor),
+      brand: donor.brand ?? "Unknown",
       qty: spec.quantities[i] ?? 0,
-      unit_price_cents: unitPriceCents,
-      // Flavor's real retail lineup (union across catalog donors) — the image
-      // exact-box rule reads this; falls back to donor-title parsing when absent.
+      unit_price_cents: donorUnitPriceCents(donor) ?? 0,
+      flavor: spec.flavor_labels[i] ?? donor.flavor ?? undefined,
+      manufacturer_upc: donor.upc ?? undefined,
+      ingredients,
+      storage_temp: donor.category ?? undefined,
+      donor_image_urls: donorImages,
       ...(spec.donor_pack_sizes?.[i]?.length
         ? { retail_pack_sizes: spec.donor_pack_sizes[i] }
         : {}),
     });
   });
-  if (components.length === 0) return { ok: false, title: "(no donors for spec)" };
 
-  // Integrity guard (Vladimir 2026-07-08): a donor id can VANISH from
-  // DonorProduct between the sourcing tick and this building tick (a parallel
-  // enrichment chat re-writes rows → ids churn). When that happens the flavor is
-  // silently dropped above, leaving a mix that CLAIMS N flavors × pack_count but
-  // holds fewer — e.g. "Honey + Mixed Berry, 24 ct" built as 12× Honey only.
-  // NEVER birth such a listing: fail the draft so it's not promoted/published.
-  const qtySum = components.reduce((s, c) => s + c.qty, 0);
-  if (components.length !== spec.donor_ids.length || qtySum !== spec.unit_count) {
+  const qtySum = components.reduce((sum, component) => sum + component.qty, 0);
+  if (
+    components.length !== spec.donor_ids.length ||
+    qtySum !== spec.unit_count ||
+    components.some((component) =>
+      component.qty <= 0 ||
+      component.unit_price_cents <= 0 ||
+      !component.manufacturer_upc?.trim() ||
+      !component.flavor?.trim() ||
+      !component.ingredients?.trim()
+    )
+  ) {
     return {
-      ok: false,
-      title: `${spec.label} (SKIPPED — composition incomplete: ${components.length}/${spec.donor_ids.length} flavors, ${qtySum}/${spec.unit_count} pcs; a donor vanished mid-run)`,
+      kind: "FAILED",
+      title: `${spec.label} (composition invalid)`,
+      error:
+        `Recipe integrity failed: ${components.length}/${spec.donor_ids.length} components, ` +
+        `${qtySum}/${spec.unit_count} units; positive cost, UPC, flavor, and manufacturer ingredients required`,
     };
   }
 
-  const primary = donorsById.get(spec.donor_ids[0]) ?? donorsById.get(components[0].research_pool_id)!;
+  const primary = donorsById.get(spec.donor_ids[0]);
+  if (!primary) {
+    return { kind: "FAILED", title: spec.label, error: "Primary donor missing" };
+  }
   const category = mapCategory(primary.category);
+  if (category === "OTHER") {
+    return {
+      kind: "FAILED",
+      title: spec.label,
+      error: `Donor category is unknown (${primary.category ?? "null"})`,
+    };
+  }
   const packCount = spec.unit_count;
-  const costCents = components.reduce((s, c) => s + c.qty * c.unit_price_cents, 0);
-
-  // Real engine economics in the variant block (owner review 2026-07-07: the
-  // old cost×2 placeholder + 0% margin + 1/100 feasibility read as broken).
-  // promote-draft still recomputes at promotion — this is the SAME engine, so
-  // the review page and the published price agree.
+  const costCents = components.reduce(
+    (sum, component) => sum + component.qty * component.unit_price_cents,
+    0,
+  );
+  const listingBrand = resolveListingBrand(primary.brand, houseBrand);
   const model = await getPricingModel();
-  const priced = computeBundlePrice(
-    { cogs_cents: costCents, unit_count: packCount, weight_lb: null, category },
+  const priced = computeListingPrice(
+    {
+      brand: listingBrand,
+      cogs_cents: costCents,
+      unit_count: packCount,
+      weight_lb: null,
+      category,
+    },
     model,
   );
   const variant: Variant = {
@@ -238,44 +343,97 @@ async function buildOneListing(args: {
     cost_cents: costCents,
     suggested_price_cents: priced.selling_price_cents,
     margin_cents: priced.profit_cents,
-    margin_pct: Math.round(priced.margin_pct * 100),
-    feasibility_score: 90, // deduped, costable donor — planner-vetted
+    margin_pct: priced.margin_pct,
+    feasibility_score: 90,
     notes: spec.label,
   };
 
-  // Own-brand passthrough (Uncrustables carve-out): list the genuine product
-  // UNDER THE DONOR's OWN brand, NOT as a Salutem gift set. The listing brand
-  // drives the whole downstream branch (content-gen + compliance derive the
-  // mode from it). Everything else stays the Salutem gift-set model.
-  const listingBrand = resolveListingBrand(primary.brand, houseBrand);
-  const ownBrand = isOwnBrandPassthrough(listingBrand);
-  // Own-brand: spec.label carries the CLEAN deduped flavor names + count
-  // ("Peanut Butter & Strawberry Jam — 24 ct") — never the raw donor titles,
-  // which drag retail pack sizes ("8oz/4ct") into a 24-piece listing's name.
-  const draftName = ownBrand
+  const draftName = isOwnBrandPassthrough(listingBrand)
     ? spec.label.slice(0, 120)
     : `${houseBrand} ${spec.label} Gift Set`.slice(0, 120);
-
-  // Wave dedup: the planner is deterministic, so a follow-up batch ("150
-  // Uncrustables" after the 50-pilot) re-emits the same flavor×count combos
-  // first. Never mint the same listing twice — skip combos that already have a
-  // draft from ANY batch and let the tick spend its slot on the next spec.
-  const dupe = await prisma.bundleDraft.findFirst({
-    where: { draft_name: draftName, generation_job_id: { not: jobId } },
-    select: { id: true },
+  const exactAliasInput: RecipeAliasInput = {
+    brand: listingBrand,
+    composition_type: spec.composition_type,
+    unit_count: packCount,
+    components: components.map((component) => ({
+      product_name: component.product_name,
+      qty: component.qty,
+    })),
+  };
+  const exactAliasFingerprint = legacyRecipeAliasFingerprint(exactAliasInput);
+  let duplicate = await prisma.bundleDraft.findFirst({
+    where: {
+      OR: [
+        { recipe_fingerprint: args.fingerprint },
+        // A reviewed legacy plan may reserve the exact product/title recipe
+        // instead of the newer flavor-based fingerprint.
+        { recipe_fingerprint: exactAliasFingerprint },
+        { draft_name: draftName },
+      ],
+    },
+    select: { id: true, generation_job_id: true },
   });
-  if (dupe) return { ok: true, title: `${draftName} (exists — skipped)` };
+  if (!duplicate) {
+    // Legacy rows predate recipe_fingerprint. Compare their exact selected
+    // recipes so an alias title cannot mint another logical listing. Any
+    // unreadable candidate blocks creation rather than being silently skipped.
+    const legacyCandidates = await prisma.bundleDraft.findMany({
+      where: {
+        brand: listingBrand,
+        composition_type: spec.composition_type,
+        pack_count: packCount,
+      },
+      orderBy: [{ created_at: "asc" }, { id: "asc" }],
+      take: 501,
+      select: {
+        id: true,
+        generation_job_id: true,
+        brand: true,
+        composition_type: true,
+        pack_count: true,
+        recipe_fingerprint: true,
+        draft_components: true,
+        created_at: true,
+        variation_matrix: {
+          select: {
+            variants_json: true,
+            selected_variant_idx: true,
+          },
+        },
+      },
+    });
+    const legacyResolution = resolveLegacyRecipeAlias(
+      exactAliasInput,
+      legacyCandidates,
+      500,
+    );
+    if (legacyResolution.status === "BLOCKED") {
+      return {
+        kind: "FAILED",
+        title: `${draftName} (legacy dedup blocked)`,
+        error: legacyResolution.blockers.join(" | "),
+      };
+    }
+    if (legacyResolution.status === "MATCH") {
+      duplicate = {
+        id: legacyResolution.canonical.id,
+        generation_job_id: legacyResolution.canonical.generation_job_id,
+      };
+    }
+  }
+  if (duplicate) {
+    return duplicate.generation_job_id === jobId
+      ? { kind: "EXISTING", title: draftName, draft_id: duplicate.id }
+      : { kind: "SKIPPED", title: `${draftName} (exists — skipped)` };
+  }
 
-  // ── Bridge to the canonical pipeline ───────────────────────────────────────
-  // Earlier this engine baked content straight onto the BundleDraft and
-  // stopped — but the draft-detail UI, compliance gate, validation and the
-  // publish path all read GeneratedContent rows + a selected variant, so those
-  // drafts dead-ended with nothing to validate or publish. We now create the
-  // draft exactly like a brief-born one (with a VariationMatrix whose single
-  // variant is pre-selected) and hand it to runContentGeneration — the same
-  // orchestrator the "Generate content" button calls. It writes the per-channel
-  // GeneratedContent, runs the compliance gate (curator disclaimer auto-
-  // injected by rules 3+4) and flips the draft to GENERATED on a clean pass.
+  const secondaryImages = Array.from(
+    new Set(
+      components
+        .flatMap((component) => component.donor_image_urls ?? [])
+        .filter((url) => url !== primary.mainImageUrl),
+    ),
+  );
   const draft = await prisma.bundleDraft.create({
     data: {
       generation_job_id: jobId,
@@ -285,23 +443,11 @@ async function buildOneListing(args: {
       composition_type: spec.composition_type,
       pack_count: packCount,
       draft_components: JSON.stringify(components),
-      draft_main_image_url: primary.mainImageUrl ?? null,
-      // Persist ALL donor photos so the preview + master bundle carry the full
-      // set (only the title image is generated; the rest come from the donor).
-      draft_secondary_images: (() => {
-        try {
-          const arr = primary.imageUrls ? JSON.parse(primary.imageUrls) : [];
-          if (!Array.isArray(arr)) return JSON.stringify([]);
-          const secondary = arr.filter(
-            (u): u is string =>
-              typeof u === "string" && u.trim().length > 0 && u !== primary.mainImageUrl,
-          );
-          return JSON.stringify(secondary);
-        } catch {
-          return JSON.stringify([]);
-        }
-      })(),
+      draft_main_image_url: primary.mainImageUrl,
+      draft_secondary_images: JSON.stringify(secondaryImages),
       draft_cost_cents: costCents,
+      draft_suggested_price_cents: priced.selling_price_cents,
+      recipe_fingerprint: args.fingerprint,
       status: "VARIATION_SELECTED",
       target_channels: JSON.stringify([channel]),
       compliance_status: "PENDING",
@@ -315,28 +461,7 @@ async function buildOneListing(args: {
     },
     select: { id: true },
   });
-
-  let passed = false;
-  try {
-    const result = await runContentGeneration({
-      bundle_draft_id: draft.id,
-      channels: [channel],
-      actor: "studio-engine",
-    });
-    passed = result.outcomes.some((o) => o.compliance_status === "CAN_PUBLISH");
-  } catch {
-    passed = false;
-  }
-
-  // On a clean pass runContentGeneration leaves the draft at GENERATED with
-  // CAN_PUBLISH content and NO image. We deliberately stop here rather than
-  // reusing the donor photo: validator-image-dimensions hard-FAILS Amazon main
-  // images below 2000×2000, and donor thumbnails are smaller — so the operator
-  // generates real bundle images from the draft page ("Generate N images",
-  // free Codex worker), which lifts the draft to IMAGE_GENERATED and unlocks
-  // ship-specs → Validate → Publish. A BLOCKED result leaves the draft at
-  // VARIATION_SELECTED with BLOCKED rows the operator can re-try.
-  return { ok: passed, title: draftName };
+  return { kind: "CREATED", title: draftName, draft_id: draft.id };
 }
 
 // ── Tick ────────────────────────────────────────────────────────────────────
@@ -371,6 +496,42 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
   // ── First tick: parse + source ──
   if (job.status === "PENDING" || !state.plan) {
     const parsed = parsePrompt(prompt);
+    const planningProgress: BatchProgress = {
+      status: "RUNNING",
+      phase: "sourcing",
+      step: `Sourcing verified products for "${parsed.theme}"…`,
+      total: parsed.count,
+      done: 0,
+      failed: 0,
+      done_flag: false,
+    };
+
+    // Planning must be claimed too. Without this compare-and-set, an eager UI
+    // poll and the cron can both observe PENDING/no-plan, independently source
+    // the catalog, then delete/recreate each other's queue. A fresh SOURCING
+    // claim is left alone; a crashed claim can be reclaimed after the same
+    // bounded stale interval used by per-spec work items.
+    const planningIsFresh =
+      job.status !== "PENDING" &&
+      job.current_stage === "SOURCING" &&
+      job.updated_at.getTime() > Date.now() - STALE_LOCK_MS;
+    if (planningIsFresh) return planningProgress;
+
+    const planningClaim = await prisma.generationJob.updateMany({
+      where: {
+        id: batchId,
+        status: job.status,
+        current_stage: job.current_stage,
+        updated_at: job.updated_at,
+      },
+      data: {
+        status: "IN_PROGRESS",
+        current_stage: "SOURCING",
+        notes: JSON.stringify({ progress: planningProgress }),
+      },
+    });
+    if (planningClaim.count === 0) return planningProgress;
+
     const donors = await sourceDonors(parsed.theme);
 
     if (donors.length === 0) {
@@ -406,138 +567,333 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
       return progress;
     }
 
-    // Build the combinatorial matrix (flavors × counts + mixes). Own-brand
-    // (Uncrustables) → single flavors then 2/3/4-flavor mixes at 24/30/45/90/120;
-    // gift-set → variations at the pack size. Capped at the requested count.
-    const ownBrand = donors.some((d) => isOwnBrandPassthrough(d.brand));
+    // Never switch a mixed donor pool into passthrough mode because one row
+    // happened to match the allowlist. Every selected flavor must be eligible.
+    const ownBrand = costable.every((e) => isOwnBrandPassthrough(e.donor.brand));
     const flavors = costable.map((e) => ({
       id: e.donor.id,
       label: e.label,
       pack_sizes: e.pack_sizes,
     }));
-    const specs = planVariations(flavors, {
-      targetCount: parsed.count,
+    const listingBrand = resolveListingBrand(costable[0]?.donor.brand, houseBrand);
+    const existingDrafts = await prisma.bundleDraft.findMany({
+      where: { brand: listingBrand },
+      select: { draft_name: true },
+    });
+    const existingNames = new Set(existingDrafts.map((draft) => draft.draft_name));
+    // Generate enough candidates to replace already-existing deterministic
+    // combinations, then keep exactly the requested number of NEW recipes.
+    const candidates = planVariations(flavors, {
+      targetCount: parsed.count + existingNames.size,
       ownBrand,
       defaultPack: parsed.pack_count,
     });
+    const specs = candidates
+      .filter((spec) => {
+        const name = ownBrand
+          ? spec.label.slice(0, 120)
+          : `${houseBrand} ${spec.label} Gift Set`.slice(0, 120);
+        return !existingNames.has(name);
+      })
+      .slice(0, parsed.count);
+    if (specs.length === 0) {
+      const progress: BatchProgress = {
+        status: "FAILED",
+        phase: "error",
+        step: `No new recipe combinations remain for "${parsed.theme}".`,
+        total: 0,
+        done: 0,
+        failed: 0,
+        done_flag: true,
+      };
+      await prisma.generationJob.update({
+        where: { id: batchId },
+        data: { status: "FAILED", bundles_target: 0, notes: JSON.stringify({ progress }) },
+      });
+      return progress;
+    }
     const usedIds = Array.from(new Set(specs.flatMap((s) => s.donor_ids)));
     const plan: EnginePlan = {
       count: specs.length,
       theme: parsed.theme,
       pack_count: parsed.pack_count,
       donor_ids: usedIds,
+      listing_brand: listingBrand,
       specs,
     };
-    const skipped = entries.length - costable.length;
+    const uncosted = entries.length - costable.length;
     const progress: BatchProgress = {
       status: "RUNNING", phase: "sourcing",
-      step: `Found ${donors.length} products → ${costable.length} distinct flavors${skipped ? ` (${skipped} skipped: no parseable pack size)` : ""} — building ${specs.length} listings`,
+      step: `Found ${donors.length} verified products → ${costable.length} distinct flavors${uncosted ? ` (${uncosted} skipped: no unit cost)` : ""} — queued ${specs.length} new listings`,
       total: specs.length, done: 0, failed: 0, done_flag: false,
+    };
+    await prisma.$transaction(async (tx) => {
+      await tx.generationWorkItem.deleteMany({ where: { generation_job_id: batchId } });
+      await tx.generationWorkItem.createMany({
+        data: specs.map((spec, index) => ({
+          generation_job_id: batchId,
+          spec_index: index,
+          spec_json: JSON.stringify(spec),
+          fingerprint: recipeFingerprint(listingBrand, spec),
+        })),
+      });
+      await tx.generationJob.update({
+        where: { id: batchId },
+        data: {
+          status: "IN_PROGRESS",
+          current_stage: "CONTENT_GENERATION",
+          bundles_target: specs.length,
+          bundles_generated: 0,
+          bundles_error: 0,
+          notes: JSON.stringify({ plan, progress }),
+        },
+      });
+    });
+    return progress;
+  }
+
+  // ── Building tick: one durable work item ──
+  const plan = state.plan;
+  const total = plan.count;
+  let items = await prisma.generationWorkItem.findMany({
+    where: { generation_job_id: batchId },
+    select: { status: true },
+  });
+  // Jobs created before the durable queue migration may already carry a full
+  // plan in notes but have no work-item rows. Rehydrate that plan once instead
+  // of leaving the batch RUNNING forever. Legacy specs get flavor labels only
+  // from their referenced donor rows; missing labels still fail closed later.
+  if (items.length === 0 && plan.specs.length > 0) {
+    const legacyDonors = await prisma.donorProduct.findMany({
+      where: { id: { in: plan.donor_ids } },
+      select: { id: true, brand: true, flavor: true, title: true },
+    });
+    const legacyById = new Map(legacyDonors.map((donor) => [donor.id, donor]));
+    const listingBrand =
+      plan.listing_brand ??
+      resolveListingBrand(legacyDonors[0]?.brand, houseBrand);
+    const normalizedSpecs = plan.specs.map((spec) => ({
+      ...spec,
+      flavor_labels:
+        Array.isArray(spec.flavor_labels) && spec.flavor_labels.length === spec.donor_ids.length
+          ? spec.flavor_labels
+          : spec.donor_ids.map((id) => {
+              const donor = legacyById.get(id);
+              return donor?.flavor?.trim() || donor?.title?.trim() || "";
+            }),
+    }));
+    await prisma.$transaction(async (tx) => {
+      await tx.generationWorkItem.createMany({
+        data: normalizedSpecs.map((spec, index) => ({
+          generation_job_id: batchId,
+          spec_index: index,
+          spec_json: JSON.stringify(spec),
+          fingerprint: recipeFingerprint(listingBrand, spec),
+        })),
+      });
+      await tx.generationJob.update({
+        where: { id: batchId },
+        data: {
+          bundles_target: normalizedSpecs.length,
+          bundles_generated: 0,
+          bundles_error: 0,
+          notes: JSON.stringify({
+            plan: { ...plan, listing_brand: listingBrand, specs: normalizedSpecs },
+            progress: {
+              ...state.progress,
+              total: normalizedSpecs.length,
+              done: 0,
+              failed: 0,
+              skipped: 0,
+              step: `Recovered ${normalizedSpecs.length} durable work item(s) from the legacy plan`,
+            },
+          }),
+        },
+      });
+    });
+    items = normalizedSpecs.map(() => ({ status: "PENDING" }));
+  }
+  const succeeded = items.filter((item) => item.status === "SUCCEEDED").length;
+  const failed = items.filter((item) => item.status === "FAILED").length;
+  const skipped = items.filter((item) => item.status === "SKIPPED").length;
+  const terminal = succeeded + failed + skipped;
+  if (items.length > 0 && terminal === items.length) {
+    // A requested batch is complete only when every planned listing actually
+    // succeeded. Partial output must be visible as a failed batch rather than
+    // a green COMPLETED state with a silently short listing count.
+    const terminalStatus = failed > 0 || skipped > 0 ? "FAILED" : "COMPLETED";
+    const progress: BatchProgress = {
+      status: terminalStatus,
+      phase: terminalStatus === "COMPLETED" ? "done" : "error",
+      step: `${terminalStatus === "COMPLETED" ? "Done" : "Incomplete"} — ${succeeded}/${total} listings generated${failed ? `, ${failed} failed` : ""}${skipped ? `, ${skipped} skipped` : ""}`,
+      total,
+      done: terminal,
+      failed,
+      skipped,
+      done_flag: true,
     };
     await prisma.generationJob.update({
       where: { id: batchId },
       data: {
-        status: "IN_PROGRESS",
-        current_stage: "CONTENT_GENERATION",
-        bundles_target: specs.length,
-        bundles_generated: 0,
+        status: terminalStatus,
+        bundles_generated: succeeded,
+        bundles_error: failed,
+        completed_at: new Date(),
         notes: JSON.stringify({ plan, progress }),
       },
     });
     return progress;
   }
 
-  // ── Building tick: one listing ──
-  const plan = state.plan;
-  const total = plan.count;
-  const done = job.bundles_generated;
-
-  if (done >= total) {
-    const progress: BatchProgress = {
-      status: "COMPLETED", phase: "done",
-      step: `Done — ${total} listings built${job.bundles_error ? `, ${job.bundles_error} failed` : ""}`,
-      total, done, failed: job.bundles_error, done_flag: true,
+  const staleBefore = new Date(Date.now() - STALE_LOCK_MS);
+  const candidate = await prisma.generationWorkItem.findFirst({
+    where: {
+      generation_job_id: batchId,
+      OR: [
+        { status: "PENDING" },
+        { status: "RUNNING", locked_at: { lt: staleBefore } },
+      ],
+    },
+    orderBy: { spec_index: "asc" },
+  });
+  if (!candidate) {
+    return {
+      status: "RUNNING",
+      phase: "building",
+      step: `Building… ${terminal} of ${total} completed`,
+      total,
+      done: terminal,
+      failed,
+      skipped,
+      done_flag: false,
     };
-    await prisma.generationJob.update({
-      where: { id: batchId },
-      data: { status: "COMPLETED", completed_at: new Date(), notes: JSON.stringify({ plan, progress }) },
-    });
-    return progress;
   }
 
-  // Atomically CLAIM slot `done` before any expensive work, so a concurrent
-  // tick (cron backstop + browser polling) can't build the same listing twice
-  // and double the Claude spend. Only the tick that flips bundles_generated
-  // done→done+1 owns this slot.
-  const claim = await prisma.generationJob.updateMany({
-    where: { id: batchId, status: "IN_PROGRESS", bundles_generated: done },
-    data: { bundles_generated: done + 1 },
+  const claimedAt = new Date();
+  const claim = await prisma.generationWorkItem.updateMany({
+    where: {
+      id: candidate.id,
+      status: candidate.status,
+      ...(candidate.status === "RUNNING" ? { locked_at: candidate.locked_at } : {}),
+    },
+    data: {
+      status: "RUNNING",
+      locked_at: claimedAt,
+      attempts: { increment: 1 },
+    },
   });
   if (claim.count === 0) {
-    const fresh = await prisma.generationJob.findUnique({
-      where: { id: batchId },
-      select: { bundles_generated: true, bundles_target: true, bundles_error: true, status: true },
-    });
-    const d = fresh?.bundles_generated ?? done;
-    const t = fresh?.bundles_target ?? total;
     return {
-      status: fresh?.status === "COMPLETED" ? "COMPLETED" : "RUNNING",
-      phase: d >= t ? "done" : "building",
-      step: `Building… ${d} of ${t}`,
-      total: t, done: d, failed: fresh?.bundles_error ?? 0, done_flag: d >= t,
+      status: "RUNNING", phase: "building", step: `Building… ${terminal} of ${total}`,
+      total, done: terminal, failed, skipped, done_flag: false,
     };
   }
 
-  // Re-load the sourced donors (ids → rows) so we have image + price.
-  const donors = await prisma.donorProduct.findMany({
-    where: { id: { in: plan.donor_ids } },
-    select: {
-      id: true, brand: true, productLine: true, flavor: true,
-      title: true, category: true, bestPrice: true, mainImageUrl: true,
-      imageUrls: true,
-    },
-  });
-  if (donors.length === 0) {
-    const progress: BatchProgress = {
-      status: "FAILED", phase: "error", step: "Sourced products vanished from the catalog.",
-      total, done, failed: job.bundles_error, done_flag: true,
-    };
-    await prisma.generationJob.update({
-      where: { id: batchId },
-      data: { status: "FAILED", notes: JSON.stringify({ plan, progress }) },
+  const attempt = candidate.attempts + 1;
+  let title = `spec ${candidate.spec_index + 1}`;
+  let outcome: "SUCCEEDED" | "FAILED" | "SKIPPED" | "RETRY" = "FAILED";
+  let error: string | null = null;
+  let draftId = candidate.bundle_draft_id;
+  try {
+    const spec = JSON.parse(candidate.spec_json) as VariationSpec;
+    title = spec.label;
+    if (!Array.isArray(spec.flavor_labels)) {
+      throw new Error("Work item is missing structured flavor_labels");
+    }
+    if (!draftId) {
+      const donors = await prisma.donorProduct.findMany({
+        where: { id: { in: spec.donor_ids } },
+        select: {
+          id: true, brand: true, productLine: true, flavor: true,
+          title: true, category: true, upc: true, ingredients: true,
+          bestPrice: true, mainImageUrl: true, imageUrls: true,
+          offers: {
+            where: { isFirstParty: true, via: "direct", price: { gt: 0 } },
+            select: { price: true, packSizeSeen: true, pricePerUnit: true },
+          },
+        },
+      });
+      const build = await ensureDraftForSpec({
+        jobId: batchId,
+        index: candidate.spec_index,
+        houseBrand,
+        channel,
+        spec,
+        donorsById: new Map(donors.map((donor) => [donor.id, donor])),
+        fingerprint: candidate.fingerprint,
+      });
+      title = build.title;
+      if (build.kind === "SKIPPED") {
+        outcome = "SKIPPED";
+      } else if (build.kind === "FAILED" || !build.draft_id) {
+        throw new Error(build.error ?? "Draft creation failed");
+      } else {
+        draftId = build.draft_id;
+        await prisma.generationWorkItem.update({
+          where: { id: candidate.id },
+          data: { bundle_draft_id: draftId },
+        });
+      }
+    }
+    if (draftId && outcome !== "SKIPPED") {
+      const content = await runContentGeneration({
+        bundle_draft_id: draftId,
+        channels: [channel],
+        actor: "studio-engine",
+      });
+      const passed =
+        content.outcomes.length > 0 &&
+        content.outcomes.every((row) => row.compliance_status === "CAN_PUBLISH");
+      if (!passed) throw new Error(content.error ?? "Content did not pass every channel gate");
+      outcome = "SUCCEEDED";
+    }
+  } catch (caught) {
+    error = caught instanceof Error ? caught.message : String(caught);
+    outcome = attempt < MAX_WORK_ATTEMPTS ? "RETRY" : "FAILED";
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.generationWorkItem.update({
+      where: { id: candidate.id },
+      data: {
+        status: outcome === "RETRY" ? "PENDING" : outcome,
+        locked_at: null,
+        last_error: error,
+        ...(draftId ? { bundle_draft_id: draftId } : {}),
+      },
     });
-    return progress;
-  }
+    if (outcome === "SUCCEEDED") {
+      await tx.generationJob.update({
+        where: { id: batchId },
+        data: { bundles_generated: { increment: 1 } },
+      });
+    } else if (outcome === "FAILED") {
+      await tx.generationJob.update({
+        where: { id: batchId },
+        data: { bundles_error: { increment: 1 } },
+      });
+    }
+  });
 
-  const donorsById = new Map(donors.map((d) => [d.id, d]));
-  const spec = plan.specs?.[done];
-  const result = spec
-    ? await buildOneListing({ jobId: batchId, index: done, houseBrand, channel, spec, donorsById })
-    : { ok: false, title: "(no variation spec)" };
-
-  const newDone = done + 1;
-  const newFailed = job.bundles_error + (result.ok ? 0 : 1);
-  const isLast = newDone >= total;
-
+  const newDone = terminal + (outcome === "RETRY" ? 0 : 1);
+  const newFailed = failed + (outcome === "FAILED" ? 1 : 0);
+  const newSkipped = skipped + (outcome === "SKIPPED" ? 1 : 0);
   const progress: BatchProgress = {
-    status: isLast ? "COMPLETED" : "RUNNING",
-    phase: isLast ? "done" : "building",
-    step: isLast
-      ? `Done — ${total} listings built${newFailed ? `, ${newFailed} failed` : ""}`
-      : `Built ${newDone} of ${total}: ${result.title}`,
-    total, done: newDone, failed: newFailed, done_flag: isLast,
+    status: "RUNNING",
+    phase: "building",
+    step:
+      outcome === "RETRY"
+        ? `Retrying ${title} (${attempt}/${MAX_WORK_ATTEMPTS}): ${error}`
+        : `${outcome === "SUCCEEDED" ? "Built" : outcome === "SKIPPED" ? "Skipped" : "Failed"} ${newDone} of ${total}: ${title}`,
+    total,
+    done: newDone,
+    failed: newFailed,
+    skipped: newSkipped,
+    done_flag: false,
   };
-
   await prisma.generationJob.update({
     where: { id: batchId },
-    data: {
-      // bundles_generated already advanced by the atomic claim above; only track
-      // errors (increment, race-safe) + terminal status here.
-      ...(result.ok ? {} : { bundles_error: { increment: 1 } }),
-      ...(isLast ? { status: "COMPLETED", completed_at: new Date() } : {}),
-      notes: JSON.stringify({ plan, progress }),
-    },
+    data: { notes: JSON.stringify({ plan, progress }) },
   });
-
   return progress;
 }

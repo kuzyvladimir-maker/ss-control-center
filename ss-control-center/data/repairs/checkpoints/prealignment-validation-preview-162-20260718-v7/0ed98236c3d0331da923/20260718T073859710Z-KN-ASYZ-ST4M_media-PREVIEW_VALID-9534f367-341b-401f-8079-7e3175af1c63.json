@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9534f367-341b-401f-8079-7e3175af1c63",
+  "created_at": "2026-07-18T07:38:59.710Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "KN-ASYZ-ST4M:media",
+  "sku": "KN-ASYZ-ST4M",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "05c3b6692cce7ba8e72e54b6676d4fd92f32f641e546c17e93d5c9c65477268a",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "04cf643b084746c9a56f8560732600a4",
+    "issues": []
+  },
+  "sha256": "ebef50f3ab99a04bc8c794fd12a9ef96f4338164d7d0c26a389a71dd54bddeb2"
+}

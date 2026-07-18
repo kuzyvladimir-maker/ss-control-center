@@ -1,0 +1,25 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "76880a48-9225-4311-ade2-35d9784e8300",
+  "created_at": "2026-07-18T06:38:00.387Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "SZ-ASPI-JFAT:structured_attributes",
+  "sku": "SZ-ASPI-JFAT",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "267f7bcfc67a17c438694b21576a9a3f71278bfd65bc7674b8601d46e1d4c469",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information",
+      "/attributes/is_expiration_dated_product",
+      "/attributes/merchant_shipping_group"
+    ],
+    "status": "VALID",
+    "submission_id": "f970c8e376f04d0f9cdf73f4670b213c",
+    "issues": []
+  },
+  "sha256": "5f4273761217ce8720c457b5f571e098bde3b15e0e09bd53935d6f2478b1f293"
+}

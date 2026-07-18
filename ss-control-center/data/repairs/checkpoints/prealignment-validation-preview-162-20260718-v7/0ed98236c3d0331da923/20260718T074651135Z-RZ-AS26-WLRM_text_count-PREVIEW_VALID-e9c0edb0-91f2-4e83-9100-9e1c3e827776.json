@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "e9c0edb0-91f2-4e83-9100-9e1c3e827776",
+  "created_at": "2026-07-18T07:46:51.135Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "RZ-AS26-WLRM:text_count",
+  "sku": "RZ-AS26-WLRM",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "c02c054620fbe69ebc971a4ce93ba614801b5f9c4ef6d8d9eb04b30886ce6a63",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "eca76d4b8d334fb39f040f990041c9f3",
+    "issues": []
+  },
+  "sha256": "79ad801be7bd52bfe10cf0f27690a4d6f502ae4230796f66f9867d8042d87399"
+}

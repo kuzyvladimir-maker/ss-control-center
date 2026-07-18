@@ -18,6 +18,10 @@
 
 import { getWalmartClient } from "@/lib/walmart/client";
 import type { ChannelSKU } from "@/generated/prisma/client";
+import {
+  physicalPackageSpecsMatchSku,
+  type VerifiedPhysicalPackageSpecs,
+} from "../physical-package-specs";
 
 export interface WalmartPublishInput {
   sku: ChannelSKU;
@@ -30,6 +34,9 @@ export interface WalmartPublishInput {
    *  (multipackQuantity / countPerPack / count) — the #1 lever against Walmart
    *  quantity-confusion returns. */
   packCount?: number | null;
+  /** Exact operator-entered packed measurements. Calculated size-tier values
+   * are not valid marketplace product facts. */
+  physicalPackageSpecs?: VerifiedPhysicalPackageSpecs | null;
   /** Skip the real POST — used by the dryRun=true path. */
   dryRun?: boolean;
 }
@@ -54,7 +61,11 @@ const SPEC_VERSION = "4.7";
  */
 export function buildWalmartPayload(
   sku: ChannelSKU,
-  opts: { brand?: string | null; packCount?: number | null } = {},
+  opts: {
+    brand?: string | null;
+    packCount?: number | null;
+    physicalPackageSpecs?: VerifiedPhysicalPackageSpecs | null;
+  } = {},
 ): Record<string, unknown> {
   let bullets: string[] = [];
   try {
@@ -66,11 +77,11 @@ export function buildWalmartPayload(
     /* leave empty */
   }
 
-  // Walmart wants pounds; ChannelSKU stores ounces.
-  const weightLbs =
-    sku.package_weight_oz != null
-      ? Math.max(0.01, sku.package_weight_oz / 16)
-      : 0.01;
+  // Walmart wants pounds. Only the operator-verified physical proof may feed
+  // this field; the old 0.01-lb fallback was an invented product fact.
+  const weightLbs = opts.physicalPackageSpecs
+    ? opts.physicalPackageSpecs.weight_oz / 16
+    : null;
 
   const productIdentifiers: Array<{ productIdType: string; productId: string }> = [
     { productIdType: "UPC", productId: sku.upc },
@@ -98,13 +109,15 @@ export function buildWalmartPayload(
     keyFeatures: bullets, // Walmart 'keyFeatures' aka bullets
     mainImageUrl,
     productSecondaryImageURL: [],
-    shippingWeight: {
-      value: Number(weightLbs.toFixed(2)),
-      unit: "LB",
-    },
     countryOfOrigin: sku.country_of_origin ?? "US",
     productType: sku.item_type ?? "Gift Baskets",
   };
+  if (weightLbs != null) {
+    item.shippingWeight = {
+      value: Number(weightLbs.toFixed(2)),
+      unit: "LB",
+    };
+  }
 
   // Quantity trio — the multipack signal Walmart indexes and shows on the PDP,
   // and the #1 lever against quantity-confusion returns (a multipack of N
@@ -118,15 +131,11 @@ export function buildWalmartPayload(
     item.count = Math.round(packCount);
   }
 
-  if (
-    sku.package_length_in != null &&
-    sku.package_width_in != null &&
-    sku.package_height_in != null
-  ) {
+  if (opts.physicalPackageSpecs) {
     item.assembledProductDimensions = {
-      length: sku.package_length_in,
-      width: sku.package_width_in,
-      height: sku.package_height_in,
+      length: opts.physicalPackageSpecs.length_in,
+      width: opts.physicalPackageSpecs.width_in,
+      height: opts.physicalPackageSpecs.height_in,
       unit: "IN",
     };
   }
@@ -146,7 +155,24 @@ export async function submitToWalmart(
   const payload = buildWalmartPayload(input.sku, {
     brand: input.brand,
     packCount: input.packCount,
+    physicalPackageSpecs: input.physicalPackageSpecs,
   });
+
+  if (
+    !input.physicalPackageSpecs ||
+    !physicalPackageSpecsMatchSku(input.sku, input.physicalPackageSpecs)
+  ) {
+    return {
+      ok: false,
+      feed_id: null,
+      walmart_status: null,
+      payload,
+      issues: [],
+      error:
+        "Exact operator-verified package weight and dimensions are required before Walmart submission",
+      dry_run: Boolean(input.dryRun),
+    };
+  }
 
   if (input.dryRun) {
     return {

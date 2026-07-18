@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "6b6bac50-9f46-4384-b4d5-8289e89cb6bd",
+  "created_at": "2026-07-18T07:34:31.687Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "FM-AS51-S4MT:text_count",
+  "sku": "FM-AS51-S4MT",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "b19a2cbaccf06d5078cf8c9662f8c1cf93b7a33d2a9b587e229b57f6d82daf27",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "d4bbcada05a74219b65c2b18b62a2a4c",
+    "issues": []
+  },
+  "sha256": "8688201f6daa337579cb3f285d97e1d198d52ae27ce62ba45f8478eb2ddd1f28"
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "2f43777c-8b7f-481d-b4ee-b090af55a7d4",
+  "created_at": "2026-07-18T06:41:57.873Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "WK-AS2R-FJUW:offer",
+  "sku": "WK-AS2R-FJUW",
+  "kind": "OFFER",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "c733fe5943bcfba0c0e15be4e84648bc6c49cba97fcc401c194885ab0049ddae",
+    "patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/business_price",
+      "/attributes/list_price"
+    ],
+    "status": "VALID",
+    "submission_id": "2be74be02a0f45bc93841bf221ca93a9",
+    "issues": [
+      {
+        "code": "90000900",
+        "message": "You submitted an attribute business_price that does not belong or is no longer applicable to the product type you were trying to list. We are ignoring the value and processing your submission to ensure a smoother listing experience.",
+        "severity": "WARNING",
+        "attributeNames": [
+          "business_price"
+        ],
+        "categories": [
+          "INVALID_ATTRIBUTE"
+        ]
+      }
+    ]
+  },
+  "sha256": "c40c2c265e445f1d033a3eb264ecd252340a4d6c5eab8eb963ace62a81ddea38"
+}

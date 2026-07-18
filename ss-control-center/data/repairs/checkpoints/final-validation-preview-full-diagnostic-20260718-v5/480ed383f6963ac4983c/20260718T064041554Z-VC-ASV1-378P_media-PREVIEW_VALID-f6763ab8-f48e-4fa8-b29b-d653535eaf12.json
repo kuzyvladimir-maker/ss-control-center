@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "f6763ab8-f48e-4fa8-b29b-d653535eaf12",
+  "created_at": "2026-07-18T06:40:41.554Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "VC-ASV1-378P:media",
+  "sku": "VC-ASV1-378P",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "7b41327eebc2e0c1a180817d1e7d3a34c07eeee3ce7d3f6a58cef0197f0957ac",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "4ca286f4b68d4fda8c92e9100dad3665",
+    "issues": []
+  },
+  "sha256": "8a5f3d1319113d5fc3ae43b971f603769842172bd9887b144ff84c3ddb618cb8"
+}

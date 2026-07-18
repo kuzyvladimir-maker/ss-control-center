@@ -56,7 +56,6 @@ const money = (n: number | null) =>
 export function PricingDashboard({ storeIndex = 1 }: { storeIndex?: number }) {
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState<string | null>(null);
   const [filter, setFilter] = useState<"ALL" | Status>("ALL");
   const [err, setErr] = useState<string | null>(null);
 
@@ -80,29 +79,6 @@ export function PricingDashboard({ storeIndex = 1 }: { storeIndex?: number }) {
   useEffect(() => {
     void load(false);
   }, [load]);
-
-  const reprice = useCallback(
-    async (items: Array<{ store: number; sku: string; price: number }>) => {
-      if (!items.length) return;
-      setBusy(items.length === 1 ? items[0].sku : "bulk");
-      try {
-        const res = await fetch("/api/pricing/uncrustables", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ items }),
-        });
-        const json = await res.json();
-        if (!json.ok && !json.applied) throw new Error(json.error ?? "reprice failed");
-        if (json.snapshot) setSnap(json.snapshot);
-        else await load(false);
-      } catch (e) {
-        setErr((e as Error).message);
-      } finally {
-        setBusy(null);
-      }
-    },
-    [load],
-  );
 
   const rows = useMemo(
     () => (snap?.rows ?? []).filter((r) => r.store === storeIndex),
@@ -130,25 +106,9 @@ export function PricingDashboard({ storeIndex = 1 }: { storeIndex?: number }) {
             ? `${counts.total} Uncrustables listings · updated ${new Date(snap.updatedAt).toLocaleString()}`
             : "Pricing guardrails — Uncrustables"}
         </div>
-        <div className="flex gap-2">
-          <Btn variant="outline" onClick={() => load(true)} loading={loading}>
-            Refresh from Amazon
-          </Btn>
-          <Btn
-            variant="primary"
-            disabled={!counts.high || busy != null}
-            loading={busy === "bulk"}
-            onClick={() =>
-              reprice(
-                rows
-                  .filter((r) => r.status === "HIGH")
-                  .map((r) => ({ store: r.store, sku: r.sku, price: r.suggested })),
-              )
-            }
-          >
-            Fix all too-high ({counts.high})
-          </Btn>
-        </div>
+        <Btn variant="outline" onClick={() => load(true)} loading={loading}>
+          Refresh from Amazon
+        </Btn>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -198,13 +158,12 @@ export function PricingDashboard({ storeIndex = 1 }: { storeIndex?: number }) {
               <TableHead className="text-right">Floor / Ceiling</TableHead>
               <TableHead className="text-right">Δ vs target</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+              <TableHead className="text-right">Policy</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {shown.map((r) => {
               const chip = STATUS_CHIP[r.status];
-              const actionable = r.status === "HIGH" || r.status === "LOW";
               return (
                 <TableRow key={`${r.store}-${r.sku}`}>
                   <TableCell className="max-w-[320px]">
@@ -229,19 +188,9 @@ export function PricingDashboard({ storeIndex = 1 }: { storeIndex?: number }) {
                     <StatusChip variant={chip.variant}>{chip.label}</StatusChip>
                   </TableCell>
                   <TableCell className="text-right">
-                    {actionable && (
-                      <Btn
-                        size="sm"
-                        variant={r.status === "HIGH" ? "primary" : "outline"}
-                        loading={busy === r.sku}
-                        disabled={busy != null}
-                        onClick={() =>
-                          reprice([{ store: r.store, sku: r.sku, price: r.suggested }])
-                        }
-                      >
-                        Set {money(r.suggested)}
-                      </Btn>
-                    )}
+                    <span className="text-[11px] text-ink-2" title="Base price is canonical; promotions use Amazon Coupons">
+                      Base locked
+                    </span>
                   </TableCell>
                 </TableRow>
               );

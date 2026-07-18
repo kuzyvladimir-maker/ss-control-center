@@ -1,0 +1,3174 @@
+{
+  "schema_version": "uncrustables-product-gallery-source-audit/v1.0",
+  "immutable": true,
+  "created_at": "2026-07-17T23:48:20.821Z",
+  "external_mutations": {
+    "database_writes": 0,
+    "amazon_calls": 0,
+    "r2_uploads": 0
+  },
+  "source_preflight": {
+    "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-hero-preflight-20260717T231622479Z.json",
+    "sha256": "926f6ece79da37da894660b99165875f57929322538ed19426829225628ec618",
+    "schema_version": "uncrustables-hero-preflight/v1.0"
+  },
+  "source_ledger": {
+    "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-ledger-20260717T232140568Z-offline.json",
+    "sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f",
+    "schema_version": "uncrustables-ledger/v1.2",
+    "audit_id": "ULR-20260717T232140568Z"
+  },
+  "selection_policy": {
+    "normalization_version": "uncrustables-gallery-jpeg/v1",
+    "min_width": 1000,
+    "min_height": 1000,
+    "min_images": 4,
+    "max_images": 6,
+    "uniqueness": "normalized_asset_sha256",
+    "balancing": "recipe_component_round_robin"
+  },
+  "donor_evidence": [
+    {
+      "donor_id": "03eba512-c138-4942-bd34-177fae87c91b",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct",
+      "identity_key": "uncrustables|smucker|frozen|peanut|butter|blackberry|spread|8 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "95127421",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-blackberry-spread-sandwich-8oz-4ct/-/A-95127421",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        },
+        {
+          "retailer": "walmart",
+          "retailer_product_id": "18387874102",
+          "product_url": "https://www.walmart.com/ip/Smucker-s-Uncrustables-2-0-Ounce-Peanut-Butter-Blackberry-Sandwich-4-Pack/18387874102?classType=REGULAR",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-10T11:42:04.930Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_87d52aa2-249f-4c95-9f99-2cb9ae4307f9",
+        "https://target.scene7.com/is/image/Target/GUEST_7e4fd4de-1981-4033-b02f-07972ea3b49c",
+        "https://target.scene7.com/is/image/Target/GUEST_b1ca065d-fa0e-41f0-ad39-1a61d564587d",
+        "https://target.scene7.com/is/image/Target/GUEST_049513cd-2fe0-4a49-b6ac-1b4351472af6",
+        "https://target.scene7.com/is/image/Target/GUEST_7c93cd1c-3acf-440a-88c4-8746d0e61f28",
+        "https://target.scene7.com/is/image/Target/GUEST_1e83a389-5e13-4924-9a56-45b2b00c81a0",
+        "https://target.scene7.com/is/image/Target/GUEST_a09b3a19-6973-490e-a766-cae4a6fd075c"
+      ]
+    },
+    {
+      "donor_id": "1a908975-89da-47f3-bb6c-04c87979a059",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Raspberry Spread Sandwich - 8oz/4ct",
+      "identity_key": "uncrustables|smucker|frozen|peanut|butter|raspberry|spread|8 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "91951522",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-raspberry-spread-sandwich-8oz-4ct/-/A-91951522",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_b4282688-eca6-4a63-be15-b0e44e26da96",
+        "https://target.scene7.com/is/image/Target/GUEST_5f29bd44-dd75-4003-863a-5a3cb84b1cce",
+        "https://target.scene7.com/is/image/Target/GUEST_6bf6448d-8a89-4f3c-abb8-d9a9da199b71",
+        "https://target.scene7.com/is/image/Target/GUEST_4747f8b6-bddc-4e91-983d-62dca0f46c8a",
+        "https://target.scene7.com/is/image/Target/GUEST_0df08b1a-bbd6-4ea8-941f-2a1861f16c18",
+        "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64",
+        "https://target.scene7.com/is/image/Target/GUEST_fcd35447-d088-457a-8571-3ebe609a6ec7",
+        "https://target.scene7.com/is/image/Target/GUEST_5078e3c8-8832-4c8f-8b11-a25fce641fcd",
+        "https://target.scene7.com/is/image/Target/GUEST_4efe1463-29c1-4788-b461-382537a9b27c",
+        "https://target.scene7.com/is/image/Target/GUEST_b637a7cd-0226-4432-a7fd-d05642d99bca"
+      ]
+    },
+    {
+      "donor_id": "20d65340-4c9f-4361-a997-e839e26747ca",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Mixed Berry Spread Sandwich - 8oz/4ct",
+      "identity_key": "smucker s|uncrustables|frozen|peanut|butter|mixed|berry|8 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "93860822",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-mixed-berry-spread-sandwich-8oz-4ct/-/A-93860822",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-07T04:20:24.619Z",
+          "first_party": true,
+          "via": "direct"
+        },
+        {
+          "retailer": "walmart",
+          "retailer_product_id": "14859621174",
+          "product_url": "https://www.walmart.com/ip/Smucker-s-Uncrustables-Peanut-Butter-Mixed-Berry-Spread-Sandwiches-2-oz-4-Count-Frozen/14859621174?classType=REGULAR",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-10T05:45:29.779Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_4c0265e7-3e7e-40b7-9e9c-4cb598ecca61",
+        "https://target.scene7.com/is/image/Target/GUEST_6a732b60-3bb9-40cf-b8a4-ca14c8c72ee4",
+        "https://target.scene7.com/is/image/Target/GUEST_8f9398f7-d8fa-4c57-8175-47b46202c041",
+        "https://target.scene7.com/is/image/Target/GUEST_cab17d90-3861-4369-890f-9a1b53218a13",
+        "https://target.scene7.com/is/image/Target/GUEST_41228719-fbce-458c-b8b6-6624520736ba",
+        "https://target.scene7.com/is/image/Target/GUEST_7c786e9f-35be-4946-9e1a-28febe69b6ef",
+        "https://target.scene7.com/is/image/Target/GUEST_a707ddb0-2363-4aae-a2b6-2f7516255813",
+        "https://target.scene7.com/is/image/Target/GUEST_c21fff20-2aa9-4761-b70a-1813acaba733"
+      ]
+    },
+    {
+      "donor_id": "23385267-8262-4bf4-9c44-36aabd4c47fe",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct",
+      "identity_key": "smucker s|uncrustables|frozen|peanut|butter|grape|jelly|8 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "13234506",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-grape-jelly-sandwich-8oz-4ct/-/A-13234506",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-10T15:50:17.851Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_cacbb32a-8095-4b31-83f4-180a6c5420c7",
+        "https://target.scene7.com/is/image/Target/GUEST_4329dc5f-c8ff-4440-9cef-a5377486ffed",
+        "https://target.scene7.com/is/image/Target/GUEST_783bed34-fc08-4e71-8d9f-355df7a36f5a",
+        "https://target.scene7.com/is/image/Target/GUEST_73ccbb0b-8e5b-470d-8285-4f1d26917505",
+        "https://target.scene7.com/is/image/Target/GUEST_ec565fbe-3c9c-4005-abea-9d044500305c",
+        "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64",
+        "https://target.scene7.com/is/image/Target/GUEST_8b3edf57-1996-4169-8d2e-dd0ab11ad7ee"
+      ]
+    },
+    {
+      "donor_id": "2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34",
+      "title": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+      "identity_key": "uncrustables|smucker|chocolate|flavored|hazelnut|spread|frozen|18 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "93859949",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-chocolate-flavored-hazelnut-spread-frozen-sandwich-18oz-10ct/-/A-93859949",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        },
+        {
+          "retailer": "walmart",
+          "retailer_product_id": "971609101",
+          "product_url": "https://www.walmart.com/ip/Smucker-s-Uncrustables-Chocolate-Flavored-Hazelnut-Spread-Sandwiches-1-8-oz-10-Count-Frozen/971609101?classType=REGULAR&athbdg=L1600",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-10T11:42:04.930Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_436234db-9acb-447f-97b2-192d3a6f02da",
+        "https://target.scene7.com/is/image/Target/GUEST_39912483-a8a0-4c7b-80ef-66cd72d8cd27",
+        "https://target.scene7.com/is/image/Target/GUEST_d2066202-bf78-495a-8413-f405e57efc2a",
+        "https://target.scene7.com/is/image/Target/GUEST_5dee0194-56e7-448e-a88d-e410c5d24c47",
+        "https://target.scene7.com/is/image/Target/GUEST_7552d325-b6be-4433-915e-34048b8b557e",
+        "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64",
+        "https://target.scene7.com/is/image/Target/GUEST_d528a0e3-9154-41c5-8a4c-fc0620dd4b66",
+        "https://target.scene7.com/is/image/Target/GUEST_83e184ac-62ad-4d4c-becb-170485095a81",
+        "https://target.scene7.com/is/image/Target/GUEST_5af4dc8c-88e4-4e2e-9dd2-9c90095d3bd0",
+        "https://target.scene7.com/is/image/Target/GUEST_76d36ddc-aef0-4f7e-8e4f-37b509c4fd40",
+        "https://target.scene7.com/is/image/Target/GUEST_812dfdd7-2cf3-40b5-a1a6-fdd4eb93a7d3"
+      ]
+    },
+    {
+      "donor_id": "2865b6ba-d471-412b-9f47-2141f2d12faa",
+      "title": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+      "identity_key": "uncrustables|smucker|frozen|whole|wheat|peanut|butter|8 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "13234508",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-whole-wheat-peanut-butter-38-strawberry-jam-sandwich-8oz-4ct/-/A-13234508",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_24de5b18-68d4-400e-87b8-196657e75d98",
+        "https://target.scene7.com/is/image/Target/GUEST_b5fd7e00-90ad-4104-8e3b-57aaabf5fdd3",
+        "https://target.scene7.com/is/image/Target/GUEST_000ea26b-799e-4f44-9c94-7c386badc2a4",
+        "https://target.scene7.com/is/image/Target/GUEST_e8b3173c-11ed-49cf-925f-537a110409c5",
+        "https://target.scene7.com/is/image/Target/GUEST_e505eae2-421d-4211-923f-f5b2f3b0c560",
+        "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64",
+        "https://target.scene7.com/is/image/Target/GUEST_b7863082-6c74-4ecd-bea3-12beb5e6534d",
+        "https://target.scene7.com/is/image/Target/GUEST_d3d60efd-c774-4b57-89f4-2f9e59c0f2f9",
+        "https://target.scene7.com/is/image/Target/GUEST_9f72596a-25db-4eea-b2df-1b494ae128ff"
+      ]
+    },
+    {
+      "donor_id": "3053c35f-e231-4648-9a02-5b16eff477b5",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich- 30oz/15ct",
+      "identity_key": "uncrustables|smucker|frozen|peanut|butter|strawberry|jam|30 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "13371070",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-strawberry-jam-sandwich-30oz-15ct/-/A-13371070",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_4f61c02a-498e-4f76-b75e-7ebb7cbb0cce",
+        "https://target.scene7.com/is/image/Target/GUEST_09762bf4-2986-4790-b0f0-5be17bcba555",
+        "https://target.scene7.com/is/image/Target/GUEST_126dcc17-72f4-4bfa-9e33-fd9384cc9432",
+        "https://target.scene7.com/is/image/Target/GUEST_5ac9d263-1130-4700-8aa6-ad3137fbf45d",
+        "https://target.scene7.com/is/image/Target/GUEST_0df08b1a-bbd6-4ea8-941f-2a1861f16c18",
+        "https://target.scene7.com/is/image/Target/GUEST_f45b38fb-44a8-4111-b1f4-77a750f253f4",
+        "https://target.scene7.com/is/image/Target/GUEST_82c71f2f-75de-43dc-863c-f2cc0ee666a8"
+      ]
+    },
+    {
+      "donor_id": "41763717-b5c0-4523-be7d-7f119eadfe76",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+      "identity_key": "uncrustables|smucker|frozen|peanut|butter|apple|cinnamon|12 g",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "94884225",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-up-38-apple-peanut-butter-38-apple-cinnamon-jelly-sandwich-22-4oz-8ct/-/A-94884225",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_7ccb918d-ede9-497a-839a-770fd1308b18",
+        "https://target.scene7.com/is/image/Target/GUEST_a93a821c-b1aa-455f-9248-bfa1ab40a267",
+        "https://target.scene7.com/is/image/Target/GUEST_e9449005-7226-4f50-b1e9-9fd2cb2596bc",
+        "https://target.scene7.com/is/image/Target/GUEST_b4c4f4f9-8d3a-4e89-aa6b-2efc815f3fac",
+        "https://target.scene7.com/is/image/Target/GUEST_a3006475-858c-48bc-90bc-2bfb60279cb8",
+        "https://target.scene7.com/is/image/Target/GUEST_2a23ab17-b6ab-4226-9117-bc7f272a1337",
+        "https://target.scene7.com/is/image/Target/GUEST_c46bbd53-b1d7-4d4b-ae06-5cd6e43f30a3",
+        "https://target.scene7.com/is/image/Target/GUEST_29263135-6f46-4f42-a8b9-a3d55c2dfd43"
+      ]
+    },
+    {
+      "donor_id": "4de79cf2-d5e5-4630-b269-68ba8c480e90",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct",
+      "identity_key": "smucker s|uncrustables|frozen|peanut|butter|blueberry|sandwich|22 4 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "95294391",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-blueberry-sandwich-22-4oz-8ct/-/A-95294391",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_6e3d9277-6100-42bb-b325-8884e5a59885",
+        "https://target.scene7.com/is/image/Target/GUEST_a8f8bb9f-de29-4951-a4b6-a8f95c432598",
+        "https://target.scene7.com/is/image/Target/GUEST_b00c8bb2-2cfa-441a-a1ea-b835b3a14358",
+        "https://target.scene7.com/is/image/Target/GUEST_9095e806-bac7-40c8-8e9b-b72198ef1a34",
+        "https://target.scene7.com/is/image/Target/GUEST_09c1d4ec-951a-4f39-9132-96c610f607a2",
+        "https://target.scene7.com/is/image/Target/GUEST_8f334e71-c4b0-4e8b-a91c-5ab66745cafc",
+        "https://target.scene7.com/is/image/Target/GUEST_c5564beb-e103-47b1-8c5e-a9df88c78ea7"
+      ]
+    },
+    {
+      "donor_id": "609242d9-b463-4994-9ea7-a8a4a0ea9ecf",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+      "identity_key": "uncrustables|smucker|frozen|peanut|butter|strawberry|jam|12 g",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "94884226",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-bright-eyed-berry-peanut-butter-38-strawberry-jam-sandwich-22-4oz-8ct/-/A-94884226",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_cbf8c112-3935-44c3-a263-87001ec7ce11",
+        "https://target.scene7.com/is/image/Target/GUEST_70dda263-d08f-411b-8641-624e08dfdd35",
+        "https://target.scene7.com/is/image/Target/GUEST_7283512e-90fe-47a6-a0a2-acc4e17598e7",
+        "https://target.scene7.com/is/image/Target/GUEST_b4c4f4f9-8d3a-4e89-aa6b-2efc815f3fac",
+        "https://target.scene7.com/is/image/Target/GUEST_3ba42e57-9a1c-4314-8426-eefabe447938",
+        "https://target.scene7.com/is/image/Target/GUEST_d6c23467-cd98-4719-85e4-f964ea3b3a13",
+        "https://target.scene7.com/is/image/Target/GUEST_58e74d77-5e32-45b7-a1d2-91dbae65375f",
+        "https://target.scene7.com/is/image/Target/GUEST_3859c499-251a-47f1-81d5-73f0ad1bf29f"
+      ]
+    },
+    {
+      "donor_id": "6b728e69-e62e-4e77-8c64-647450f3c791",
+      "title": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 27oz/15ct",
+      "identity_key": "uncrustables|smucker|chocolate|flavored|hazelnut|spread|frozen|27 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "53214602",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-chocolate-flavored-hazelnut-spread-frozen-sandwich-27oz-15ct/-/A-53214602",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-10T11:37:09.200Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_e3f77a50-6f6c-43f9-b8f5-338fb58f4bb3",
+        "https://target.scene7.com/is/image/Target/GUEST_39912483-a8a0-4c7b-80ef-66cd72d8cd27",
+        "https://target.scene7.com/is/image/Target/GUEST_74afd742-9d7a-4deb-84cc-d662882c72d2",
+        "https://target.scene7.com/is/image/Target/GUEST_5dee0194-56e7-448e-a88d-e410c5d24c47",
+        "https://target.scene7.com/is/image/Target/GUEST_0df08b1a-bbd6-4ea8-941f-2a1861f16c18",
+        "https://target.scene7.com/is/image/Target/GUEST_5ac9d263-1130-4700-8aa6-ad3137fbf45d",
+        "https://target.scene7.com/is/image/Target/GUEST_d55df030-7216-482d-9ed5-48f1d83663d2",
+        "https://target.scene7.com/is/image/Target/GUEST_7fd181d0-0a6c-4a6a-9276-a7ccb5612c88",
+        "https://target.scene7.com/is/image/Target/GUEST_84416ebf-8b5a-4b4f-a27b-7ff7844e3ae5",
+        "https://target.scene7.com/is/image/Target/GUEST_b1c9903d-bdce-4b26-8450-d6850626024d",
+        "https://target.scene7.com/is/image/Target/GUEST_a9f650b5-590f-4e6f-8ab6-e3494bfb6995",
+        "https://target.scene7.com/is/image/Target/GUEST_5af4dc8c-88e4-4e2e-9dd2-9c90095d3bd0",
+        "https://target.scene7.com/is/image/Target/GUEST_ef8aba78-cea8-4bfb-8acd-833e541d6bce"
+      ]
+    },
+    {
+      "donor_id": "71106ce5-408a-4326-84c7-e87afdac0cdc",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 30oz/15ct",
+      "identity_key": "smucker s|uncrustables|frozen|peanut|butter|grape|jelly|30 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "14760224",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-grape-jelly-sandwich-30oz-15ct/-/A-14760224",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_bae1f81a-65ea-4278-8c6a-cbd4d751fb5b",
+        "https://target.scene7.com/is/image/Target/GUEST_4329dc5f-c8ff-4440-9cef-a5377486ffed",
+        "https://target.scene7.com/is/image/Target/GUEST_5feb92a8-e85a-4836-943f-e845cc5541a1",
+        "https://target.scene7.com/is/image/Target/GUEST_5ac9d263-1130-4700-8aa6-ad3137fbf45d",
+        "https://target.scene7.com/is/image/Target/GUEST_ec565fbe-3c9c-4005-abea-9d044500305c",
+        "https://target.scene7.com/is/image/Target/GUEST_0df08b1a-bbd6-4ea8-941f-2a1861f16c18",
+        "https://target.scene7.com/is/image/Target/GUEST_a3825305-396e-499d-8c1d-8332033660e1",
+        "https://target.scene7.com/is/image/Target/GUEST_c51c4bec-7f99-47d0-85a6-19b6ea65b4cb",
+        "https://target.scene7.com/is/image/Target/GUEST_41f9d192-2694-43ce-a270-8feef119573a"
+      ]
+    },
+    {
+      "donor_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+      "identity_key": "smucker s|uncrustables|frozen|peanut|butter|strawberry|jam|8 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "13234505",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-strawberry-jam-sandwich-8oz-4ct/-/A-13234505",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-10T15:46:06.143Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_fbd22400-edbc-4301-bbe1-605950f16c98",
+        "https://target.scene7.com/is/image/Target/GUEST_09762bf4-2986-4790-b0f0-5be17bcba555",
+        "https://target.scene7.com/is/image/Target/GUEST_a5918850-dc02-4b6c-9043-3bf789568f90",
+        "https://target.scene7.com/is/image/Target/GUEST_90f3c6dc-8d7a-4e58-8f04-97523c4aa605",
+        "https://target.scene7.com/is/image/Target/GUEST_4b32e3de-bb1f-4002-9b94-4e7c69e11b62",
+        "https://target.scene7.com/is/image/Target/GUEST_01b00c25-0056-4318-a69b-64a085e5c34c",
+        "https://target.scene7.com/is/image/Target/GUEST_e8b3173c-11ed-49cf-925f-537a110409c5",
+        "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64"
+      ]
+    },
+    {
+      "donor_id": "95457d4e-3b3b-46bb-9dd4-0c64bbd83c88",
+      "title": "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct",
+      "identity_key": "smucker s|uncrustables|frozen|whole|wheat|peanut|butter|8 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "13234507",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-whole-wheat-peanut-butter-38-grape-jelly-sandwiches-8oz-4ct/-/A-13234507",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_74689785-06ab-441f-90d8-5d560d320853",
+        "https://target.scene7.com/is/image/Target/GUEST_6ebf5333-5fb2-447f-9539-27ebc8847402",
+        "https://target.scene7.com/is/image/Target/GUEST_5ac9d263-1130-4700-8aa6-ad3137fbf45d",
+        "https://target.scene7.com/is/image/Target/GUEST_e69daf85-c77d-4e7c-9069-6d4f8898c628",
+        "https://target.scene7.com/is/image/Target/GUEST_948142ca-2d59-4231-b488-14cc74ac0a66",
+        "https://target.scene7.com/is/image/Target/GUEST_f16a3d2f-6f7e-4edd-bbca-4f7230b8dd6b",
+        "https://target.scene7.com/is/image/Target/GUEST_85c71bff-27af-44ae-8bd1-7eb54ce28afd"
+      ]
+    },
+    {
+      "donor_id": "ac93b63d-54f6-4ba3-bb43-0160023d554c",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+      "identity_key": "uncrustables|smucker|frozen|peanut|butter|honey|spread|20 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "93859950",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-honey-spread-sandwich-20oz-10ct/-/A-93859950",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        },
+        {
+          "retailer": "walmart",
+          "retailer_product_id": "5139624129",
+          "product_url": "https://www.walmart.com/ip/Smucker-s-Uncrustables-Peanut-Butter-Honey-Spread-Sandwiches-10-Count-2-Oz-Each-Frozen/5139624129?classType=REGULAR",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-10T11:42:04.930Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_94feaaa2-a28a-42c8-a402-f3cfb065b6be",
+        "https://target.scene7.com/is/image/Target/GUEST_8db5e199-4c4c-4d52-8249-4bab92c86d75",
+        "https://target.scene7.com/is/image/Target/GUEST_c15402e8-aca2-4f6d-b02c-be47519790d8",
+        "https://target.scene7.com/is/image/Target/GUEST_e8b3173c-11ed-49cf-925f-537a110409c5",
+        "https://target.scene7.com/is/image/Target/GUEST_05714ed8-775d-4a20-99c7-75d6753768f4",
+        "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64",
+        "https://target.scene7.com/is/image/Target/GUEST_3bd2ff20-28fe-49ff-be83-488602b7cf47",
+        "https://target.scene7.com/is/image/Target/GUEST_6be892da-d5f7-4d43-93cd-c404fbb28eb8",
+        "https://target.scene7.com/is/image/Target/GUEST_bfb56aec-4175-466c-bd1c-765b7410977f"
+      ]
+    },
+    {
+      "donor_id": "b0ce034d-3bbb-49bf-af02-39588a4da3f7",
+      "title": "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct",
+      "identity_key": "uncrustables|smucker|morning|protein|peanut|butter|mixed|22 4 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "95048118",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-morning-protein-peanut-butter-38-mixed-berry-spread-sandwich-22-4oz-8ct/-/A-95048118",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_3650dac1-255f-43e1-a995-6d76fa29f46b",
+        "https://target.scene7.com/is/image/Target/GUEST_4db09904-ea16-4d72-8f74-84d55670a992",
+        "https://target.scene7.com/is/image/Target/GUEST_96d577ba-e613-41ff-b819-84060a4d8897",
+        "https://target.scene7.com/is/image/Target/GUEST_8348c9a1-0ba4-4d10-a251-20b7852bd022",
+        "https://target.scene7.com/is/image/Target/GUEST_1f95d6fa-4d80-4748-82d8-af4027023b89"
+      ]
+    },
+    {
+      "donor_id": "c0fde861-5932-4ad9-b9f8-04d889f9e162",
+      "title": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 7.2oz/4ct",
+      "identity_key": "smucker s|uncrustables|chocolate|flavored|hazelnut|spread|frozen|7 2 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "17004543",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-chocolate-flavored-hazelnut-spread-frozen-sandwich-7-2oz-4ct/-/A-17004543",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_235a618b-f3a3-46b6-9e9c-4aaf79640f5b",
+        "https://target.scene7.com/is/image/Target/GUEST_39912483-a8a0-4c7b-80ef-66cd72d8cd27",
+        "https://target.scene7.com/is/image/Target/GUEST_3aef9bae-8c34-4133-acc6-051c7a989518",
+        "https://target.scene7.com/is/image/Target/GUEST_5dee0194-56e7-448e-a88d-e410c5d24c47",
+        "https://target.scene7.com/is/image/Target/GUEST_5ac9d263-1130-4700-8aa6-ad3137fbf45d",
+        "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64",
+        "https://target.scene7.com/is/image/Target/GUEST_4e72f9c2-5de7-4a76-abe8-1b4ee0cc243a",
+        "https://target.scene7.com/is/image/Target/GUEST_2e60b89b-f369-40dc-93fd-bc6142ab713b",
+        "https://target.scene7.com/is/image/Target/GUEST_5af4dc8c-88e4-4e2e-9dd2-9c90095d3bd0"
+      ]
+    },
+    {
+      "donor_id": "d83fd2f1-7bc5-49fc-85a0-a49b0a451af3",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Raspberry Spread Sandwich - 30oz/15ct",
+      "identity_key": "uncrustables|smucker|frozen|peanut|butter|raspberry|spread|30 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "91951519",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-raspberry-spread-sandwich-30oz-15ct/-/A-91951519",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_21a4e819-8ba3-4e50-b67b-ea10d81e595c",
+        "https://target.scene7.com/is/image/Target/GUEST_5f29bd44-dd75-4003-863a-5a3cb84b1cce",
+        "https://target.scene7.com/is/image/Target/GUEST_60e5d584-d4b2-4e0c-9a3d-f1d9a5dc150b",
+        "https://target.scene7.com/is/image/Target/GUEST_4747f8b6-bddc-4e91-983d-62dca0f46c8a",
+        "https://target.scene7.com/is/image/Target/GUEST_0df08b1a-bbd6-4ea8-941f-2a1861f16c18",
+        "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64",
+        "https://target.scene7.com/is/image/Target/GUEST_9090733f-037c-49c9-93c9-3d353add9119",
+        "https://target.scene7.com/is/image/Target/GUEST_763c5146-789a-4774-9728-809cbc39ffb9",
+        "https://target.scene7.com/is/image/Target/GUEST_8ef69066-30b1-408e-a954-2bfd54ccbcf7"
+      ]
+    },
+    {
+      "donor_id": "dd70e7a5-d189-4317-ab58-8f430928b6f4",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 8oz/4ct",
+      "identity_key": "uncrustables|smucker|frozen|peanut|butter|honey|spread|8 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "14760215",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-38-honey-spread-sandwich-8oz-4ct/-/A-14760215",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_55b2d495-4463-49a4-858b-9906e03f6565",
+        "https://target.scene7.com/is/image/Target/GUEST_8db5e199-4c4c-4d52-8249-4bab92c86d75",
+        "https://target.scene7.com/is/image/Target/GUEST_96573694-3ded-4cc1-936e-7734d84bc207",
+        "https://target.scene7.com/is/image/Target/GUEST_e8b3173c-11ed-49cf-925f-537a110409c5",
+        "https://target.scene7.com/is/image/Target/GUEST_05714ed8-775d-4a20-99c7-75d6753768f4",
+        "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64",
+        "https://target.scene7.com/is/image/Target/GUEST_11a001e8-a978-4ed2-bcb0-7c467ef91dd4",
+        "https://target.scene7.com/is/image/Target/GUEST_cbeaaf5b-a601-4c19-93c9-d51080fd1d25",
+        "https://target.scene7.com/is/image/Target/GUEST_bfb56aec-4175-466c-bd1c-765b7410977f",
+        "https://target.scene7.com/is/image/Target/GUEST_dab817de-1866-4753-bf9d-3fed65db2d92"
+      ]
+    },
+    {
+      "donor_id": "fef5e600-7e4e-4918-84ee-22e52524b3ef",
+      "title": "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+      "identity_key": "uncrustables|smucker|frozen|peanut|butter|sandwich|2oz|7 2 oz",
+      "needs_review": false,
+      "source_lineage": [
+        {
+          "retailer": "target",
+          "retailer_product_id": "91951520",
+          "product_url": "https://www.target.com/p/smucker-39-s-uncrustables-frozen-peanut-butter-sandwich-7-2oz-4ct/-/A-91951520",
+          "source_api": "unwrangle",
+          "fetched_at": "2026-07-11T11:46:01.998Z",
+          "first_party": true,
+          "via": "direct"
+        }
+      ],
+      "candidate_urls": [
+        "https://target.scene7.com/is/image/Target/GUEST_3eb4682a-27ff-4aa8-a355-072f1de6309a",
+        "https://target.scene7.com/is/image/Target/GUEST_17fae08d-49b1-416e-b439-2f8c002f3a22",
+        "https://target.scene7.com/is/image/Target/GUEST_e00298b6-5ea0-422d-a3ee-d5fa23e9d3de",
+        "https://target.scene7.com/is/image/Target/GUEST_5ac9d263-1130-4700-8aa6-ad3137fbf45d",
+        "https://target.scene7.com/is/image/Target/GUEST_0df08b1a-bbd6-4ea8-941f-2a1861f16c18",
+        "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64",
+        "https://target.scene7.com/is/image/Target/GUEST_831e33cb-5002-47ac-a2f1-0a83daf57bb2",
+        "https://target.scene7.com/is/image/Target/GUEST_dffe6833-f57e-47c0-ad3d-cbeaf18b06d2",
+        "https://target.scene7.com/is/image/Target/GUEST_45843f26-cc82-4eff-919e-51d73e6cdfe3"
+      ]
+    }
+  ],
+  "rejected_candidates": [
+    {
+      "donor_id": "03eba512-c138-4942-bd34-177fae87c91b",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_049513cd-2fe0-4a49-b6ac-1b4351472af6",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "03eba512-c138-4942-bd34-177fae87c91b",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_1e83a389-5e13-4924-9a56-45b2b00c81a0",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "03eba512-c138-4942-bd34-177fae87c91b",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_7c93cd1c-3acf-440a-88c4-8746d0e61f28",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "03eba512-c138-4942-bd34-177fae87c91b",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_7e4fd4de-1981-4033-b02f-07972ea3b49c",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "03eba512-c138-4942-bd34-177fae87c91b",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_87d52aa2-249f-4c95-9f99-2cb9ae4307f9",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "03eba512-c138-4942-bd34-177fae87c91b",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_a09b3a19-6973-490e-a766-cae4a6fd075c",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "03eba512-c138-4942-bd34-177fae87c91b",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_b1ca065d-fa0e-41f0-ad39-1a61d564587d",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "1a908975-89da-47f3-bb6c-04c87979a059",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_0df08b1a-bbd6-4ea8-941f-2a1861f16c18",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "1a908975-89da-47f3-bb6c-04c87979a059",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_4747f8b6-bddc-4e91-983d-62dca0f46c8a",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "1a908975-89da-47f3-bb6c-04c87979a059",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_4efe1463-29c1-4788-b461-382537a9b27c",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "1a908975-89da-47f3-bb6c-04c87979a059",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_5078e3c8-8832-4c8f-8b11-a25fce641fcd",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "1a908975-89da-47f3-bb6c-04c87979a059",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_5f29bd44-dd75-4003-863a-5a3cb84b1cce",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "1a908975-89da-47f3-bb6c-04c87979a059",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_6bf6448d-8a89-4f3c-abb8-d9a9da199b71",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "1a908975-89da-47f3-bb6c-04c87979a059",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_b4282688-eca6-4a63-be15-b0e44e26da96",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "1a908975-89da-47f3-bb6c-04c87979a059",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_b637a7cd-0226-4432-a7fd-d05642d99bca",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "1a908975-89da-47f3-bb6c-04c87979a059",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_fcd35447-d088-457a-8571-3ebe609a6ec7",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "20d65340-4c9f-4361-a997-e839e26747ca",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_41228719-fbce-458c-b8b6-6624520736ba",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "20d65340-4c9f-4361-a997-e839e26747ca",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_4c0265e7-3e7e-40b7-9e9c-4cb598ecca61",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "20d65340-4c9f-4361-a997-e839e26747ca",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_6a732b60-3bb9-40cf-b8a4-ca14c8c72ee4",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "20d65340-4c9f-4361-a997-e839e26747ca",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_7c786e9f-35be-4946-9e1a-28febe69b6ef",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "20d65340-4c9f-4361-a997-e839e26747ca",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_8f9398f7-d8fa-4c57-8175-47b46202c041",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "20d65340-4c9f-4361-a997-e839e26747ca",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_a707ddb0-2363-4aae-a2b6-2f7516255813",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "20d65340-4c9f-4361-a997-e839e26747ca",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_c21fff20-2aa9-4761-b70a-1813acaba733",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "20d65340-4c9f-4361-a997-e839e26747ca",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_cab17d90-3861-4369-890f-9a1b53218a13",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "23385267-8262-4bf4-9c44-36aabd4c47fe",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_4329dc5f-c8ff-4440-9cef-a5377486ffed",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "23385267-8262-4bf4-9c44-36aabd4c47fe",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_73ccbb0b-8e5b-470d-8285-4f1d26917505",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "23385267-8262-4bf4-9c44-36aabd4c47fe",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_783bed34-fc08-4e71-8d9f-355df7a36f5a",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "23385267-8262-4bf4-9c44-36aabd4c47fe",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_8b3edf57-1996-4169-8d2e-dd0ab11ad7ee",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "23385267-8262-4bf4-9c44-36aabd4c47fe",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_cacbb32a-8095-4b31-83f4-180a6c5420c7",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "23385267-8262-4bf4-9c44-36aabd4c47fe",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_ec565fbe-3c9c-4005-abea-9d044500305c",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_436234db-9acb-447f-97b2-192d3a6f02da",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_7552d325-b6be-4433-915e-34048b8b557e",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_76d36ddc-aef0-4f7e-8e4f-37b509c4fd40",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_812dfdd7-2cf3-40b5-a1a6-fdd4eb93a7d3",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_83e184ac-62ad-4d4c-becb-170485095a81",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_d2066202-bf78-495a-8413-f405e57efc2a",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_d528a0e3-9154-41c5-8a4c-fc0620dd4b66",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2865b6ba-d471-412b-9f47-2141f2d12faa",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_000ea26b-799e-4f44-9c94-7c386badc2a4",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2865b6ba-d471-412b-9f47-2141f2d12faa",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_24de5b18-68d4-400e-87b8-196657e75d98",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2865b6ba-d471-412b-9f47-2141f2d12faa",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_9f72596a-25db-4eea-b2df-1b494ae128ff",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2865b6ba-d471-412b-9f47-2141f2d12faa",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_b5fd7e00-90ad-4104-8e3b-57aaabf5fdd3",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2865b6ba-d471-412b-9f47-2141f2d12faa",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_b7863082-6c74-4ecd-bea3-12beb5e6534d",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2865b6ba-d471-412b-9f47-2141f2d12faa",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_d3d60efd-c774-4b57-89f4-2f9e59c0f2f9",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "2865b6ba-d471-412b-9f47-2141f2d12faa",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_e505eae2-421d-4211-923f-f5b2f3b0c560",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "3053c35f-e231-4648-9a02-5b16eff477b5",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_126dcc17-72f4-4bfa-9e33-fd9384cc9432",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "3053c35f-e231-4648-9a02-5b16eff477b5",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_4f61c02a-498e-4f76-b75e-7ebb7cbb0cce",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "3053c35f-e231-4648-9a02-5b16eff477b5",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_82c71f2f-75de-43dc-863c-f2cc0ee666a8",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "3053c35f-e231-4648-9a02-5b16eff477b5",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_f45b38fb-44a8-4111-b1f4-77a750f253f4",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "41763717-b5c0-4523-be7d-7f119eadfe76",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_29263135-6f46-4f42-a8b9-a3d55c2dfd43",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "41763717-b5c0-4523-be7d-7f119eadfe76",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_2a23ab17-b6ab-4226-9117-bc7f272a1337",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "41763717-b5c0-4523-be7d-7f119eadfe76",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_7ccb918d-ede9-497a-839a-770fd1308b18",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "41763717-b5c0-4523-be7d-7f119eadfe76",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_a3006475-858c-48bc-90bc-2bfb60279cb8",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "41763717-b5c0-4523-be7d-7f119eadfe76",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_a93a821c-b1aa-455f-9248-bfa1ab40a267",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "41763717-b5c0-4523-be7d-7f119eadfe76",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_b4c4f4f9-8d3a-4e89-aa6b-2efc815f3fac",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "41763717-b5c0-4523-be7d-7f119eadfe76",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_c46bbd53-b1d7-4d4b-ae06-5cd6e43f30a3",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "41763717-b5c0-4523-be7d-7f119eadfe76",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_e9449005-7226-4f50-b1e9-9fd2cb2596bc",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "4de79cf2-d5e5-4630-b269-68ba8c480e90",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_09c1d4ec-951a-4f39-9132-96c610f607a2",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "4de79cf2-d5e5-4630-b269-68ba8c480e90",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_6e3d9277-6100-42bb-b325-8884e5a59885",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "4de79cf2-d5e5-4630-b269-68ba8c480e90",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_8f334e71-c4b0-4e8b-a91c-5ab66745cafc",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "4de79cf2-d5e5-4630-b269-68ba8c480e90",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_9095e806-bac7-40c8-8e9b-b72198ef1a34",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "4de79cf2-d5e5-4630-b269-68ba8c480e90",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_a8f8bb9f-de29-4951-a4b6-a8f95c432598",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "4de79cf2-d5e5-4630-b269-68ba8c480e90",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_b00c8bb2-2cfa-441a-a1ea-b835b3a14358",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "4de79cf2-d5e5-4630-b269-68ba8c480e90",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_c5564beb-e103-47b1-8c5e-a9df88c78ea7",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "609242d9-b463-4994-9ea7-a8a4a0ea9ecf",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_3859c499-251a-47f1-81d5-73f0ad1bf29f",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "609242d9-b463-4994-9ea7-a8a4a0ea9ecf",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_3ba42e57-9a1c-4314-8426-eefabe447938",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "609242d9-b463-4994-9ea7-a8a4a0ea9ecf",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_58e74d77-5e32-45b7-a1d2-91dbae65375f",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "609242d9-b463-4994-9ea7-a8a4a0ea9ecf",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_70dda263-d08f-411b-8641-624e08dfdd35",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "609242d9-b463-4994-9ea7-a8a4a0ea9ecf",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_7283512e-90fe-47a6-a0a2-acc4e17598e7",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "609242d9-b463-4994-9ea7-a8a4a0ea9ecf",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_cbf8c112-3935-44c3-a263-87001ec7ce11",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "609242d9-b463-4994-9ea7-a8a4a0ea9ecf",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_d6c23467-cd98-4719-85e4-f964ea3b3a13",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "6b728e69-e62e-4e77-8c64-647450f3c791",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_74afd742-9d7a-4deb-84cc-d662882c72d2",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "6b728e69-e62e-4e77-8c64-647450f3c791",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_7fd181d0-0a6c-4a6a-9276-a7ccb5612c88",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "6b728e69-e62e-4e77-8c64-647450f3c791",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_84416ebf-8b5a-4b4f-a27b-7ff7844e3ae5",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "6b728e69-e62e-4e77-8c64-647450f3c791",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_a9f650b5-590f-4e6f-8ab6-e3494bfb6995",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "6b728e69-e62e-4e77-8c64-647450f3c791",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_b1c9903d-bdce-4b26-8450-d6850626024d",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "6b728e69-e62e-4e77-8c64-647450f3c791",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_d55df030-7216-482d-9ed5-48f1d83663d2",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "6b728e69-e62e-4e77-8c64-647450f3c791",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_e3f77a50-6f6c-43f9-b8f5-338fb58f4bb3",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "6b728e69-e62e-4e77-8c64-647450f3c791",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_ef8aba78-cea8-4bfb-8acd-833e541d6bce",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "71106ce5-408a-4326-84c7-e87afdac0cdc",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_41f9d192-2694-43ce-a270-8feef119573a",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "71106ce5-408a-4326-84c7-e87afdac0cdc",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_5feb92a8-e85a-4836-943f-e845cc5541a1",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "71106ce5-408a-4326-84c7-e87afdac0cdc",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_a3825305-396e-499d-8c1d-8332033660e1",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "71106ce5-408a-4326-84c7-e87afdac0cdc",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_bae1f81a-65ea-4278-8c6a-cbd4d751fb5b",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "71106ce5-408a-4326-84c7-e87afdac0cdc",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_c51c4bec-7f99-47d0-85a6-19b6ea65b4cb",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_01b00c25-0056-4318-a69b-64a085e5c34c",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_09762bf4-2986-4790-b0f0-5be17bcba555",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_4b32e3de-bb1f-4002-9b94-4e7c69e11b62",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_90f3c6dc-8d7a-4e58-8f04-97523c4aa605",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_a5918850-dc02-4b6c-9043-3bf789568f90",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "93263f2e-bff8-45f1-b50a-b1946a1da424",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_fbd22400-edbc-4301-bbe1-605950f16c98",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "95457d4e-3b3b-46bb-9dd4-0c64bbd83c88",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_6ebf5333-5fb2-447f-9539-27ebc8847402",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "95457d4e-3b3b-46bb-9dd4-0c64bbd83c88",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_74689785-06ab-441f-90d8-5d560d320853",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "95457d4e-3b3b-46bb-9dd4-0c64bbd83c88",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_85c71bff-27af-44ae-8bd1-7eb54ce28afd",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "95457d4e-3b3b-46bb-9dd4-0c64bbd83c88",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_948142ca-2d59-4231-b488-14cc74ac0a66",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "95457d4e-3b3b-46bb-9dd4-0c64bbd83c88",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_e69daf85-c77d-4e7c-9069-6d4f8898c628",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "95457d4e-3b3b-46bb-9dd4-0c64bbd83c88",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_f16a3d2f-6f7e-4edd-bbca-4f7230b8dd6b",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "ac93b63d-54f6-4ba3-bb43-0160023d554c",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_3bd2ff20-28fe-49ff-be83-488602b7cf47",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "ac93b63d-54f6-4ba3-bb43-0160023d554c",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_6be892da-d5f7-4d43-93cd-c404fbb28eb8",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "ac93b63d-54f6-4ba3-bb43-0160023d554c",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_94feaaa2-a28a-42c8-a402-f3cfb065b6be",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "ac93b63d-54f6-4ba3-bb43-0160023d554c",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_c15402e8-aca2-4f6d-b02c-be47519790d8",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "b0ce034d-3bbb-49bf-af02-39588a4da3f7",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_1f95d6fa-4d80-4748-82d8-af4027023b89",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "b0ce034d-3bbb-49bf-af02-39588a4da3f7",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_3650dac1-255f-43e1-a995-6d76fa29f46b",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "b0ce034d-3bbb-49bf-af02-39588a4da3f7",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_4db09904-ea16-4d72-8f74-84d55670a992",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "b0ce034d-3bbb-49bf-af02-39588a4da3f7",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_8348c9a1-0ba4-4d10-a251-20b7852bd022",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "b0ce034d-3bbb-49bf-af02-39588a4da3f7",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_96d577ba-e613-41ff-b819-84060a4d8897",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "c0fde861-5932-4ad9-b9f8-04d889f9e162",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_235a618b-f3a3-46b6-9e9c-4aaf79640f5b",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "c0fde861-5932-4ad9-b9f8-04d889f9e162",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_2e60b89b-f369-40dc-93fd-bc6142ab713b",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "c0fde861-5932-4ad9-b9f8-04d889f9e162",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_38368b3b-2ce4-4286-b717-59a117ed5d64",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "c0fde861-5932-4ad9-b9f8-04d889f9e162",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_39912483-a8a0-4c7b-80ef-66cd72d8cd27",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "c0fde861-5932-4ad9-b9f8-04d889f9e162",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_3aef9bae-8c34-4133-acc6-051c7a989518",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "c0fde861-5932-4ad9-b9f8-04d889f9e162",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_4e72f9c2-5de7-4a76-abe8-1b4ee0cc243a",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "c0fde861-5932-4ad9-b9f8-04d889f9e162",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_5ac9d263-1130-4700-8aa6-ad3137fbf45d",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "c0fde861-5932-4ad9-b9f8-04d889f9e162",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_5af4dc8c-88e4-4e2e-9dd2-9c90095d3bd0",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "c0fde861-5932-4ad9-b9f8-04d889f9e162",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_5dee0194-56e7-448e-a88d-e410c5d24c47",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "d83fd2f1-7bc5-49fc-85a0-a49b0a451af3",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_21a4e819-8ba3-4e50-b67b-ea10d81e595c",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "d83fd2f1-7bc5-49fc-85a0-a49b0a451af3",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_60e5d584-d4b2-4e0c-9a3d-f1d9a5dc150b",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "d83fd2f1-7bc5-49fc-85a0-a49b0a451af3",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_763c5146-789a-4774-9728-809cbc39ffb9",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "d83fd2f1-7bc5-49fc-85a0-a49b0a451af3",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_8ef69066-30b1-408e-a954-2bfd54ccbcf7",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "d83fd2f1-7bc5-49fc-85a0-a49b0a451af3",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_9090733f-037c-49c9-93c9-3d353add9119",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "dd70e7a5-d189-4317-ab58-8f430928b6f4",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_05714ed8-775d-4a20-99c7-75d6753768f4",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "dd70e7a5-d189-4317-ab58-8f430928b6f4",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_11a001e8-a978-4ed2-bcb0-7c467ef91dd4",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "dd70e7a5-d189-4317-ab58-8f430928b6f4",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_55b2d495-4463-49a4-858b-9906e03f6565",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "dd70e7a5-d189-4317-ab58-8f430928b6f4",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_8db5e199-4c4c-4d52-8249-4bab92c86d75",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "dd70e7a5-d189-4317-ab58-8f430928b6f4",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_96573694-3ded-4cc1-936e-7734d84bc207",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "dd70e7a5-d189-4317-ab58-8f430928b6f4",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_bfb56aec-4175-466c-bd1c-765b7410977f",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "dd70e7a5-d189-4317-ab58-8f430928b6f4",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_cbeaaf5b-a601-4c19-93c9-d51080fd1d25",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "dd70e7a5-d189-4317-ab58-8f430928b6f4",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_dab817de-1866-4753-bf9d-3fed65db2d92",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "dd70e7a5-d189-4317-ab58-8f430928b6f4",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_e8b3173c-11ed-49cf-925f-537a110409c5",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "fef5e600-7e4e-4918-84ee-22e52524b3ef",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_17fae08d-49b1-416e-b439-2f8c002f3a22",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "fef5e600-7e4e-4918-84ee-22e52524b3ef",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_3eb4682a-27ff-4aa8-a355-072f1de6309a",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "fef5e600-7e4e-4918-84ee-22e52524b3ef",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_45843f26-cc82-4eff-919e-51d73e6cdfe3",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "fef5e600-7e4e-4918-84ee-22e52524b3ef",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_831e33cb-5002-47ac-a2f1-0a83daf57bb2",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "fef5e600-7e4e-4918-84ee-22e52524b3ef",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_dffe6833-f57e-47c0-ad3d-cbeaf18b06d2",
+      "reason": "400x400 is below 1000x1000"
+    },
+    {
+      "donor_id": "fef5e600-7e4e-4918-84ee-22e52524b3ef",
+      "source_url": "https://target.scene7.com/is/image/Target/GUEST_e00298b6-5ea0-422d-a3ee-d5fa23e9d3de",
+      "reason": "400x400 is below 1000x1000"
+    }
+  ],
+  "contact_sheets": [],
+  "summary": {
+    "target": 164,
+    "passed": 0,
+    "failed": 164,
+    "donor_ids": 20,
+    "selected_images": 0,
+    "unique_selected_assets": 0
+  },
+  "rows": [
+    {
+      "sku": "AC-AS4J-B64F",
+      "asin": "B0H82ZZS2P",
+      "draft_id": "cmrbdte9a000i04l7f4rrwn4j",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:c0fde861-5932-4ad9-b9f8-04d889f9e162:Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen) has no validated images."
+    },
+    {
+      "sku": "AD-AS4H-QXZD",
+      "asin": "B0H82J6V9T",
+      "draft_id": "cmra931ii000204lbc3zava4h",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:dd70e7a5-d189-4317-ab58-8f430928b6f4:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "AG-ASKV-W9EN",
+      "asin": "B0H85B64V2",
+      "draft_id": "cmrbhmneu002a04juewfad4kv",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:dd70e7a5-d189-4317-ab58-8f430928b6f4:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "AJ-ASRB-HKC3",
+      "asin": "B0H84G7DHC",
+      "draft_id": "cmrbhk9wy000u04ju1qepcrrb",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "AN-ASUW-49Y5",
+      "asin": "B0H8628LW3",
+      "draft_id": "cmrbhytx0006k04juywpc1quw",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:c0fde861-5932-4ad9-b9f8-04d889f9e162:Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct has no validated images."
+    },
+    {
+      "sku": "AU-AS97-USX8",
+      "asin": "B0H843Q9B5",
+      "draft_id": "cmrbhjn7b000e04jubobzfk97",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "AV-AS7X-8EXK",
+      "asin": "B0H82JTY19",
+      "draft_id": "cmraaog9k003204jv8zj0fl7x",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "AY-AS5F-JEY9",
+      "asin": "B0H83MWTM7",
+      "draft_id": "cmrbff9ne000604kzkgdx295f",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "AZ-ASMY-VEQ2",
+      "asin": "B0H788M8WM",
+      "draft_id": "cmr2jxepl00014esbrf3h16my",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Peanut Butter & Strawberry Jam Sandwich (2 oz, individually wrapped, frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:3053c35f-e231-4648-9a02-5b16eff477b5:Smucker's Uncrustables Peanut Butter & Strawberry Jam Sandwich (2 oz, individually wrapped, frozen) has no validated images."
+    },
+    {
+      "sku": "BD-AS8P-XAW5",
+      "asin": "B0H85MXFH8",
+      "draft_id": "cmrbhy459006004jug0p8nz8p",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "BD-ASGH-LREJ",
+      "asin": "B0H86Z59DW",
+      "draft_id": "cmrbhlhlr001m04ju8zrw2ngh",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:dd70e7a5-d189-4317-ab58-8f430928b6f4:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "BH-AS7H-D4FV",
+      "asin": "B0H853MCYZ",
+      "draft_id": "cmrbhm7n6002204jund89zm7h",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:dd70e7a5-d189-4317-ab58-8f430928b6f4:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "BH-ASTN-S4XJ",
+      "asin": "B0H83ZRNCS",
+      "draft_id": "cmrbgook2000604l46g4v58tn",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "BH-ASVY-CR8H",
+      "asin": "B0H83S368B",
+      "draft_id": "cmrbfaaez000604jp32k5nbvy",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen"
+      ],
+      "selected_images": [],
+      "error": "Component 0:d83fd2f1-7bc5-49fc-85a0-a49b0a451af3:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "BK-AS5Z-8UY5",
+      "asin": "B0H85JF1V1",
+      "draft_id": "cmrbhsh4p003c04jum5nd4j5z",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "BM-AS5J-3MQY",
+      "asin": "B0H83LSCQQ",
+      "draft_id": "cmrbeq615001104l0bgksx95j",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:b0ce034d-3bbb-49bf-af02-39588a4da3f7:Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "BQ-ASUE-NT37",
+      "asin": "B0H842HL49",
+      "draft_id": "cmrbh06rw000c04l7r5es7yue",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "BX-AS5P-6WQV",
+      "asin": "B0H83NM5PX",
+      "draft_id": "cmrbg0j3t000604js619v2h5p",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:4de79cf2-d5e5-4630-b269-68ba8c480e90:Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "BY-ASY2-8UJJ",
+      "asin": "B0H83789KC",
+      "draft_id": "cmrbduq9b000o04l7ygvw61y2",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "CE-ASGK-ZRHM",
+      "asin": "B0H84651LM",
+      "draft_id": "cmrbh3bvd000i04l72gmhyrgk",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "CK-ASUM-WT9W",
+      "asin": "B0H86PRTWS",
+      "draft_id": "cmrbhz446006s04ju0s48j3um",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:c0fde861-5932-4ad9-b9f8-04d889f9e162:Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct has no validated images."
+    },
+    {
+      "sku": "CN-ASG6-892G",
+      "asin": "B0H8422DQ1",
+      "draft_id": "cmrbg544500bb04l6imviq0g6",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:6b728e69-e62e-4e77-8c64-647450f3c791:Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen) has no validated images."
+    },
+    {
+      "sku": "DA-ASF0-D7RG",
+      "asin": "B0H83VBTLT",
+      "draft_id": "cmrbf2yv0001p04l0bzehdlf0",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:71106ce5-408a-4326-84c7-e87afdac0cdc:Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "DF-ASQT-BLUQ",
+      "asin": "B0H83FKSN6",
+      "draft_id": "cmrbee4h4000604l0uuju66qt",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:6b728e69-e62e-4e77-8c64-647450f3c791:Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen) has no validated images."
+    },
+    {
+      "sku": "DP-ASQ6-ZPZU",
+      "asin": "B0H83Y8JH7",
+      "draft_id": "cmrbgglld000004l6ay6wkpq6",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "DY-AS8W-6MJG",
+      "asin": "B0H82MKPRJ",
+      "draft_id": "cmrab4f8g003s04jvfd1u7t8w",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:4de79cf2-d5e5-4630-b269-68ba8c480e90:Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "EF-AS4A-JCLU",
+      "asin": "B0H83XB855",
+      "draft_id": "cmrbgn0z4000004l4dmfsrl4a",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "EJ-ASCD-8K87",
+      "asin": "B0H82PXWKS",
+      "draft_id": "cmrabei4t001l04lea7uhmycd",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen"
+      ],
+      "selected_images": [],
+      "error": "Component 0:d83fd2f1-7bc5-49fc-85a0-a49b0a451af3:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "ER-ASRK-TPYQ",
+      "asin": "B0H84JH1WN",
+      "draft_id": "cmrbhkugv001604jux3ouiwrk",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "ES-AS8A-3W3M",
+      "asin": "B0H83D8TFQ",
+      "draft_id": "cmrbe4vup001604l7rrzapo8a",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:6b728e69-e62e-4e77-8c64-647450f3c791:Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen) has no validated images."
+    },
+    {
+      "sku": "EW-ASJ9-E79N",
+      "asin": "B0H82MT74H",
+      "draft_id": "cmraaicrm000604le2gu653j9",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:6b728e69-e62e-4e77-8c64-647450f3c791:Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen) has no validated images."
+    },
+    {
+      "sku": "EW-ASWP-PMZX",
+      "asin": "B0H891WSZ9",
+      "draft_id": "cmraa6yax000i04jvt5a0d8wp",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:3053c35f-e231-4648-9a02-5b16eff477b5:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "EX-ASC0-5CRL",
+      "asin": "B0H83JJW1F",
+      "draft_id": "cmrbfroox000004jpyg1paxc0",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:b0ce034d-3bbb-49bf-af02-39588a4da3f7:Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "EZ-ASLA-Y7MZ",
+      "asin": "B0H83GBJLW",
+      "draft_id": "cmrbei8wm000d04l0k2jg9xla",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "FK-AS6B-6G25",
+      "asin": "B0H8259J9G",
+      "draft_id": "cmra9asnc00mw04lbwuw9596b",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:03eba512-c138-4942-bd34-177fae87c91b:Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "FM-AS51-S4MT",
+      "asin": "B0H853VHRF",
+      "draft_id": "cmrbhtm5d004404juy8xsji51",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "FN-ASVM-UWAG",
+      "asin": "B0H85J88LJ",
+      "draft_id": "cmrbhwh5f004s04juxhxsq3vm",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+        "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "FR-AS6X-5KJY",
+      "asin": "B0H827V9DJ",
+      "draft_id": "cmra9a07u000604l7klqj156x",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:c0fde861-5932-4ad9-b9f8-04d889f9e162:Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct has no validated images."
+    },
+    {
+      "sku": "FV-AS47-EJZW",
+      "asin": "B0H82SZSYJ",
+      "draft_id": "cmrab1syd003m04jvkqbmj847",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:95457d4e-3b3b-46bb-9dd4-0c64bbd83c88:Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "FX-AS2W-KHZT",
+      "asin": "B0H827J2XZ",
+      "draft_id": "cmra8yy7u000110fz81sgjm2w",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "GG-ASNC-C9WA",
+      "asin": "B0H8219Z7T",
+      "draft_id": "cmraa1cqi018304lexe3rnrnc",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34:Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct has no validated images."
+    },
+    {
+      "sku": "GR-AS0R-YPCF",
+      "asin": "B0H82GJ292",
+      "draft_id": "cmra9z294008904leaum5i40r",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "GR-AS1P-DBB2",
+      "asin": "B0H82S7TFG",
+      "draft_id": "cmra9kuam000604lei0328s1p",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:23385267-8262-4bf4-9c44-36aabd4c47fe:Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "GU-ASQ1-S7M6",
+      "asin": "B0H828GQLP",
+      "draft_id": "cmra9t818000l04le95quyqq1",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen"
+      ],
+      "selected_images": [],
+      "error": "Component 0:d83fd2f1-7bc5-49fc-85a0-a49b0a451af3:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "GX-ASTJ-WHV3",
+      "asin": "B0H83XV9WX",
+      "draft_id": "cmrbgi500000604l6yc8wzrtj",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "HA-ASCR-ME3A",
+      "asin": "B0H85V287S",
+      "draft_id": "cmrbhyeyu006804juwowvy8cr",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "HD-ASEQ-MFAY",
+      "asin": "B0H83QW85C",
+      "draft_id": "cmrbej7hm000j04l0ek8qjgeq",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "HR-AS7Q-7ZDF",
+      "asin": "B0H856RRRK",
+      "draft_id": "cmrbhx1oz005804juvhq6zk7q",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "HU-ASMI-DN3X",
+      "asin": "B0H82YMT6K",
+      "draft_id": "cmraab326000o04jv3cjiammi",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:4de79cf2-d5e5-4630-b269-68ba8c480e90:Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "HX-ASO8-XCL2",
+      "asin": "B0H832SD15",
+      "draft_id": "cmrab6uln001704lecuyi6ao8",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:71106ce5-408a-4326-84c7-e87afdac0cdc:Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "HZ-ASPS-4L22",
+      "asin": "B0H857K38C",
+      "draft_id": "cmrbht6d6003s04ju6vf0v5ps",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "JC-ASM4-XXW7",
+      "asin": "B0H84ZL156",
+      "draft_id": "cmrbhxctr005g04jukrvlr3m4",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "JH-ASV9-Z46X",
+      "asin": "B0H8369PMK",
+      "draft_id": "cmrbdn51y000604l790isbdv9",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "JL-ASUC-JUZE",
+      "asin": "B0H831MXGD",
+      "draft_id": "cmraaless002w04jvtfzwpruc",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:ac93b63d-54f6-4ba3-bb43-0160023d554c:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "JS-AS5F-QB8T",
+      "asin": "B0H822TJ7C",
+      "draft_id": "cmraa027q00q304le4brslc5f",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "JT-ASKD-KS8T",
+      "asin": "B0H83Z6S3Q",
+      "draft_id": "cmrbg49e3005g04l62tik7nkd",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:23385267-8262-4bf4-9c44-36aabd4c47fe:Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "JU-ASM0-KV4Z",
+      "asin": "B0H8462L4S",
+      "draft_id": "cmrbhkmeu001204juj2uyeum0",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+        "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "JU-ASYC-SSJD",
+      "asin": "B0H854C7SZ",
+      "draft_id": "cmrbht1bo003o04ju61jq9pyc",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+        "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "JY-ASPW-LB4K",
+      "asin": "B0H84621N6",
+      "draft_id": "cmrbhjtix000i04ju82pjsipw",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "KD-AS12-8HZ3",
+      "asin": "B0H845JBM6",
+      "draft_id": "cmrbh7yra001504l7xfclfn12",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "KN-ASYZ-ST4M",
+      "asin": "B0H83XBXHX",
+      "draft_id": "cmrbg6m3000s504l6vk4gllyz",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "KP-ASYC-RN84",
+      "asin": "B0H83FYZR3",
+      "draft_id": "cmrbf1j0s001j04l0njbopnyc",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:4de79cf2-d5e5-4630-b269-68ba8c480e90:Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "LH-ASP7-KZR4",
+      "asin": "B0H82XNFRW",
+      "draft_id": "cmrabh3vu001x04le0w3a05p7",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "LJ-ASYO-FWJK",
+      "asin": "B0H853SHVC",
+      "draft_id": "cmrbhsadu003804juf9z7w1yo",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "LK-AS7X-K43B",
+      "asin": "B0H84CGGXL",
+      "draft_id": "cmrbhkfzt000y04ju17hpqo7x",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "LP-AS9J-HSVB",
+      "asin": "B0H82B7KK1",
+      "draft_id": "cmra927we000004lbd6vwys9j",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "LU-ASK0-LSDF",
+      "asin": "B0H84YZDB7",
+      "draft_id": "cmrbhwrm2005004ju2m1iabk0",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "ME-AS1I-SEX2",
+      "asin": "B0H83RVHNF",
+      "draft_id": "cmrbf4q9y001v04l0grx8c61i",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:6b728e69-e62e-4e77-8c64-647450f3c791:Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen) has no validated images."
+    },
+    {
+      "sku": "MF-AS0J-YRT4",
+      "asin": "B0H82NHQCL",
+      "draft_id": "cmra93wh3000804lbbgyeib0j",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "MP-ASYO-QNU2",
+      "asin": "B0H84Z9KWL",
+      "draft_id": "cmrbhrh3b002o04juneoneyyo",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:dd70e7a5-d189-4317-ab58-8f430928b6f4:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "MP-ASZ9-TKE7",
+      "asin": "B0H837HLKC",
+      "draft_id": "cmrbe06hp001004l7k9pyxpz9",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:b0ce034d-3bbb-49bf-af02-39588a4da3f7:Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "NC-ASPL-EXE8",
+      "asin": "B0H83QRV43",
+      "draft_id": "cmrbgc3xz000604latofie3pl",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "NJ-ASAC-PTK2",
+      "asin": "B0H82X48CD",
+      "draft_id": "cmrbdllmg000004l70ki1liac",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "NM-ASEW-S2SK",
+      "asin": "B0H86TVN3C",
+      "draft_id": "cmrbds0i4000c04l7ie9speew",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:b0ce034d-3bbb-49bf-af02-39588a4da3f7:Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "NS-ASSD-B3JJ",
+      "asin": "B0H82L945T",
+      "draft_id": "cmra9m7aj000804lesekwb1sd",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Mixed Berry Spread Sandwiches, 2 oz, 4 Count (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:20d65340-4c9f-4361-a997-e839e26747ca:Smuckers Uncrustables Peanut Butter & Mixed Berry Spread Sandwiches, 2 oz, 4 Count (Frozen) has no validated images."
+    },
+    {
+      "sku": "NT-ASIL-V5LK",
+      "asin": "B0H84547PM",
+      "draft_id": "cmrbhd2lv000004jubrr4mtil",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "NV-AS86-HD44",
+      "asin": "B0H85KQJKS",
+      "draft_id": "cmrbhyymr006o04jurn6s8w86",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+        "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:c0fde861-5932-4ad9-b9f8-04d889f9e162:Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct has no validated images."
+    },
+    {
+      "sku": "PB-ASAF-G2T6",
+      "asin": "B0H82K7Y7S",
+      "draft_id": "cmra96glo000004l7s8ii18af",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "PJ-ASAX-6LTG",
+      "asin": "B0H82T12L7",
+      "draft_id": "cmrabe5nj001j04ledpkdn2ax",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "PJ-ASDX-E8LW",
+      "asin": "B0H85MGP35",
+      "draft_id": "cmrbhrmu1002s04jutzzxgtdx",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:dd70e7a5-d189-4317-ab58-8f430928b6f4:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "PL-ASR9-U94A",
+      "asin": "B0H83RR2XQ",
+      "draft_id": "cmrbebt4t000004l0i0v79cr9",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:b0ce034d-3bbb-49bf-af02-39588a4da3f7:Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "PP-AS23-SPLQ",
+      "asin": "B0H84CDNQG",
+      "draft_id": "cmrbhjh8e000a04juaxuo4k23",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "PR-AS79-8SDF",
+      "asin": "B0H82L74PL",
+      "draft_id": "cmra9sn4q000j04le01fi5f79",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "PT-AS5B-Z2XH",
+      "asin": "B0H84Z6QWY",
+      "draft_id": "cmrbhtccl003w04jum0wiyq5b",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "PU-AS3D-SA5Z",
+      "asin": "B0H83H71F8",
+      "draft_id": "cmrbflrd8000q04kzgg7d1m3d",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34:Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct has no validated images."
+    },
+    {
+      "sku": "PW-ASDZ-CSR8",
+      "asin": "B0H839TPC5",
+      "draft_id": "cmrbe7r54001i04l7x0x68wdz",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "PY-ASBM-WX6W",
+      "asin": "B0H82B7GV5",
+      "draft_id": "cmra9h3pa000004le3pzqilbm",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:95457d4e-3b3b-46bb-9dd4-0c64bbd83c88:Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "QC-ASX2-RHPA",
+      "asin": "B0H83TQPJB",
+      "draft_id": "cmrbfxto5000004js6gfl6dx2",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:95457d4e-3b3b-46bb-9dd4-0c64bbd83c88:Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "QE-ASEQ-4YV5",
+      "asin": "B0H82CBLRM",
+      "draft_id": "cmra9frr9000004jvurzaiceq",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:93263f2e-bff8-45f1-b50a-b1946a1da424:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "QP-ASAD-PTLX",
+      "asin": "B0H85DG2JQ",
+      "draft_id": "cmrbhs5a6003404jursei7aad",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "QW-ASRZ-SYKC",
+      "asin": "B0H83MDDBL",
+      "draft_id": "cmrbfgi49000c04kz8mz7earz",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "QX-AS89-H8YC",
+      "asin": "B0H82RQ226",
+      "draft_id": "cmra98n8f000i04lbmjn83689",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "QX-ASS6-4T4F",
+      "asin": "B0H83B6TYP",
+      "draft_id": "cmrbejzr7000p04l0atwj3es6",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2546a2cb-90cf-4d30-a7f0-bc0fc1ea6e34:Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct has no validated images."
+    },
+    {
+      "sku": "RB-ASVO-GYCY",
+      "asin": "B0H859N8VM",
+      "draft_id": "cmrbhxmlb005o04jutndj6ivo",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "RH-ASWA-ER34",
+      "asin": "B0H85JR6WN",
+      "draft_id": "cmrbhlzcx001y04ju6ek7rswa",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:dd70e7a5-d189-4317-ab58-8f430928b6f4:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "RL-AS64-Q8QX",
+      "asin": "B0H82LZLM2",
+      "draft_id": "cmraa5hvv000004leqazids64",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:b0ce034d-3bbb-49bf-af02-39588a4da3f7:Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "RM-ASCV-DVA5",
+      "asin": "B0H822CVVL",
+      "draft_id": "cmra9pphw000004jv3pj99jcv",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:c0fde861-5932-4ad9-b9f8-04d889f9e162:Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen) has no validated images."
+    },
+    {
+      "sku": "RN-ASLP-VH3X",
+      "asin": "B0H82JYZQH",
+      "draft_id": "cmraa8m9z000604le5hnk1blp",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:95457d4e-3b3b-46bb-9dd4-0c64bbd83c88:Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "RQ-AS0L-9B45",
+      "asin": "B0H85MQLHG",
+      "draft_id": "cmrbhlu9z001u04jupk1vb70l",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:dd70e7a5-d189-4317-ab58-8f430928b6f4:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "RQ-AS78-STLZ",
+      "asin": "B0H85GR968",
+      "draft_id": "cmrbhu9dl004k04juek5qtz78",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "RQ-ASM7-T9NN",
+      "asin": "B0H83HNB3B",
+      "draft_id": "cmrbewdw5001d04l0h4m63om7",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:95457d4e-3b3b-46bb-9dd4-0c64bbd83c88:Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "RR-ASG1-JVKV",
+      "asin": "B0H8361PYX",
+      "draft_id": "cmrbe64gg001c04l75l5lwxg1",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "RS-AS47-M3K3",
+      "asin": "B0H87748WJ",
+      "draft_id": "cmrbhzcea006w04ju01t9ub47",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:c0fde861-5932-4ad9-b9f8-04d889f9e162:Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct has no validated images."
+    },
+    {
+      "sku": "RU-ASC3-4TUS",
+      "asin": "B0H83SJFR7",
+      "draft_id": "cmrbgablh000004lavzu40hc3",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "RY-ASMO-6N4F",
+      "asin": "B0H8493HNR",
+      "draft_id": "cmrbhg8xe000604juchukx2mo",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "RY-ASO3-24Q2",
+      "asin": "B0H84XMG42",
+      "draft_id": "cmrbhmgjv002604juhqpn13o3",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:dd70e7a5-d189-4317-ab58-8f430928b6f4:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "RZ-AS26-WLRM",
+      "asin": "B0H85PJ516",
+      "draft_id": "cmrbhyjmd006c04juvxqde326",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:c0fde861-5932-4ad9-b9f8-04d889f9e162:Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct has no validated images."
+    },
+    {
+      "sku": "SA-ASCK-J2B2",
+      "asin": "B0H82XP1MM",
+      "draft_id": "cmraar3cu000o04leyjrc4jck",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "SA-ASDW-SNEW",
+      "asin": "B0H82SMZ2M",
+      "draft_id": "cmrab82rd000004l2f5zaondw",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Mixed Berry Spread Sandwiches, 2 oz, 4 Count (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:20d65340-4c9f-4361-a997-e839e26747ca:Smuckers Uncrustables Peanut Butter & Mixed Berry Spread Sandwiches, 2 oz, 4 Count (Frozen) has no validated images."
+    },
+    {
+      "sku": "SC-ASH8-4RQG",
+      "asin": "B0H856DWVS",
+      "draft_id": "cmrbhxyju005w04juz2ye8vh8",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "SG-AS32-LZ9Y",
+      "asin": "B0H8564C6D",
+      "draft_id": "cmrbhlc25001i04juo00p4n32",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "SG-ASLB-M2DG",
+      "asin": "B0H84PFKYC",
+      "draft_id": "cmrbhl12i001a04jull2x7tlb",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+        "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "SH-ASO0-PW37",
+      "asin": "B0H83ZH3TB",
+      "draft_id": "cmrbh6mcj000q04l7dt1dn9o0",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "SS-AS9K-U9TV",
+      "asin": "B0H831889Q",
+      "draft_id": "cmrabamzb001d04le6vi8089k",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:6b728e69-e62e-4e77-8c64-647450f3c791:Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen) has no validated images."
+    },
+    {
+      "sku": "SU-ASS4-RV6R",
+      "asin": "B0H853HGHC",
+      "draft_id": "cmrbhxtcy005s04judxsbxys4",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "SV-AS87-D6SV",
+      "asin": "B0H83ZGN22",
+      "draft_id": "cmrbgwplg000604l77rowrz87",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "SZ-ASPI-JFAT",
+      "asin": "B0H776M5B5",
+      "draft_id": "cmr1nzi9n000004jv095z5spi",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:03eba512-c138-4942-bd34-177fae87c91b:Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "TH-AS6D-CCES",
+      "asin": "B0H845HSDZ",
+      "draft_id": "cmrbhjyyv000m04jur8nqwx6d",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "TL-ASHN-ZRKG",
+      "asin": "B0H85P9F3R",
+      "draft_id": "cmrbhyood006g04ju4cqerjhn",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:c0fde861-5932-4ad9-b9f8-04d889f9e162:Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct has no validated images."
+    },
+    {
+      "sku": "TP-AS91-8PAZ",
+      "asin": "B0H835T5HN",
+      "draft_id": "cmraaeu1e000004lew4r5r291",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Mixed Berry Spread Sandwiches, 2 oz, 4 Count (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:20d65340-4c9f-4361-a997-e839e26747ca:Smuckers Uncrustables Peanut Butter & Mixed Berry Spread Sandwiches, 2 oz, 4 Count (Frozen) has no validated images."
+    },
+    {
+      "sku": "TQ-ASBR-96TC",
+      "asin": "B0H82BCZ44",
+      "draft_id": "cmra9ijk4000604jvzp4ku6br",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:4de79cf2-d5e5-4630-b269-68ba8c480e90:Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "TQ-ASC4-P2NP",
+      "asin": "B0H839G6RQ",
+      "draft_id": "cmrbeonxk000v04l0jll0hjc4",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:03eba512-c138-4942-bd34-177fae87c91b:Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "TY-AST2-JE9P",
+      "asin": "B0H84WQRXB",
+      "draft_id": "cmrbhl6u9001e04jug3r1qet2",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "UA-ASAO-RE7Q",
+      "asin": "B0H784LMG6",
+      "draft_id": "cmr2k2m64000g4esb2e44ygao",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Peanut Butter & Strawberry Jam Sandwich (2 oz, individually wrapped, frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:3053c35f-e231-4648-9a02-5b16eff477b5:Smucker's Uncrustables Peanut Butter & Strawberry Jam Sandwich (2 oz, individually wrapped, frozen) has no validated images."
+    },
+    {
+      "sku": "UD-AS9J-QNY6",
+      "asin": "B0H834L7P6",
+      "draft_id": "cmrabgasb001r04lefspxv19j",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:ac93b63d-54f6-4ba3-bb43-0160023d554c:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "UE-ASA6-CLLY",
+      "asin": "B0H83ZHZ4S",
+      "draft_id": "cmrbhk3q1000q04jux1pgssa6",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:1a908975-89da-47f3-bb6c-04c87979a059:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "UF-ASA1-GN5P",
+      "asin": "B0H854DM3X",
+      "draft_id": "cmrbhwc4f004o04ju1dy1hna1",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "UG-ASUO-L4D9",
+      "asin": "B0H83FP8WW",
+      "draft_id": "cmrbev3hy001704l0xqdwruuo",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:3053c35f-e231-4648-9a02-5b16eff477b5:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "UJ-ASQ1-9FNR",
+      "asin": "B0H82P651P",
+      "draft_id": "cmra9e5xm000004l85d3x8cq1",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:b0ce034d-3bbb-49bf-af02-39588a4da3f7:Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "UY-AS5N-A2E4",
+      "asin": "B0H83R4M3R",
+      "draft_id": "cmrbf7n5i000004jpacsk7i5n",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "VA-ASOK-QJCA",
+      "asin": "B0H85RZDX5",
+      "draft_id": "cmrbhy9sv006404ju35bjwlok",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "VC-ASQE-L5Z5",
+      "asin": "B0H82QYM85",
+      "draft_id": "cmraauqr0000u04lel747unqe",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:6b728e69-e62e-4e77-8c64-647450f3c791:Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct has no validated images."
+    },
+    {
+      "sku": "VC-ASV1-378P",
+      "asin": "B0H786L5MW",
+      "draft_id": "cmr2kik600001ycsbqert6xv1",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Peanut Butter & Strawberry Jam Sandwich (2 oz, individually wrapped, frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:3053c35f-e231-4648-9a02-5b16eff477b5:Smucker's Uncrustables Peanut Butter & Strawberry Jam Sandwich (2 oz, individually wrapped, frozen) has no validated images."
+    },
+    {
+      "sku": "VH-ASHZ-TJEE",
+      "asin": "B0H856VWD6",
+      "draft_id": "cmrbhth8n004004ju7r8tgchz",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "VK-ASSB-3YFK",
+      "asin": "B0H85FY28F",
+      "draft_id": "cmrbhr54u002g04juxu9g3nsb",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+        "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:dd70e7a5-d189-4317-ab58-8f430928b6f4:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "VN-AS1A-D572",
+      "asin": "B0H82PKK18",
+      "draft_id": "cmrab1n86003k04jvtpcutz1a",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:3053c35f-e231-4648-9a02-5b16eff477b5:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "VN-AS6Q-5AE9",
+      "asin": "B0H8538L32",
+      "draft_id": "cmrbhtxs2004c04juhmca4p6q",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "VT-ASTH-B6LM",
+      "asin": "B0H85CL8JD",
+      "draft_id": "cmrbhtruw004804juhph1q7th",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "WC-ASH5-EFN6",
+      "asin": "B0H833W54L",
+      "draft_id": "cmrbdyfr5000u04l7w60k7dh5",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "WK-AS2R-FJUW",
+      "asin": "B0H82XBNVN",
+      "draft_id": "cmrabk7r7000604l2aadssm2r",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "WK-AS7E-M3CE",
+      "asin": "B0H843R64X",
+      "draft_id": "cmrbgtrtc000004l715c37d7e",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "WK-ASPD-G9HL",
+      "asin": "B0H85CF81Y",
+      "draft_id": "cmrbhrxyh003004jun4uxd8pd",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "WN-AS33-UFEA",
+      "asin": "B0H83RCTVV",
+      "draft_id": "cmrbfdu7w000004kz0rjk8g33",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:ac93b63d-54f6-4ba3-bb43-0160023d554c:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "WR-ASR5-AVWE",
+      "asin": "B0H859VYXH",
+      "draft_id": "cmrbhx7vg005c04ju3i2mqtr5",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwich - 18oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "WR-ASTH-TPXV",
+      "asin": "B0H85DRT93",
+      "draft_id": "cmrbhxhjv005k04jucvzqizth",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "WZ-ASXK-ZFAS",
+      "asin": "B0H85DF1R7",
+      "draft_id": "cmrbhrb45002k04ju0fqwdtxk",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:dd70e7a5-d189-4317-ab58-8f430928b6f4:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "XE-ASK1-BNRB",
+      "asin": "B0H81WMJBP",
+      "draft_id": "cmraajhgu000e04lexcl7r7k1",
+      "pass": false,
+      "expected_flavors": [
+        "Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen"
+      ],
+      "selected_images": [],
+      "error": "Component 0:d83fd2f1-7bc5-49fc-85a0-a49b0a451af3:Smuckers Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 10 Count, 2 oz Each, Frozen has no validated images."
+    },
+    {
+      "sku": "XJ-ASVD-CDMW",
+      "asin": "B0H82MSTD9",
+      "draft_id": "cmraaidy8000804lemp5yq1vd",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:609242d9-b463-4994-9ea7-a8a4a0ea9ecf:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "XV-ASEU-GDUX",
+      "asin": "B0H82YRTS3",
+      "draft_id": "cmraax5jr003e04jvndsfaceu",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:b0ce034d-3bbb-49bf-af02-39588a4da3f7:Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct has no validated images."
+    },
+    {
+      "sku": "XW-ASSI-SZZT",
+      "asin": "B0H858GF4N",
+      "draft_id": "cmrbhlouz001q04ju1y85xbsi",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:dd70e7a5-d189-4317-ab58-8f430928b6f4:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "YA-ASX6-PZE7",
+      "asin": "B0H82YB4PD",
+      "draft_id": "cmraa2xxo000c04jv73w5vqx6",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:03eba512-c138-4942-bd34-177fae87c91b:Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "YF-ASZJ-8BBH",
+      "asin": "B0H822MPKC",
+      "draft_id": "cmra9u928000r04le630q8mzj",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:ac93b63d-54f6-4ba3-bb43-0160023d554c:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "YG-ASH6-BCXX",
+      "asin": "B0H8511Y5G",
+      "draft_id": "cmrbhu43o004g04ju71ltmch6",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "YH-ASQ8-45ED",
+      "asin": "B0H82QPCJL",
+      "draft_id": "cmraaos9v003404jvbd5vghq8",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "YM-AS7P-ZX44",
+      "asin": "B0H83S1LDG",
+      "draft_id": "cmrbfnaj3000w04kz68dn617p",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:03eba512-c138-4942-bd34-177fae87c91b:Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "YV-AST8-LMKN",
+      "asin": "B0H859JMGJ",
+      "draft_id": "cmrbhrs2y002w04judp0mzut8",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+        "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)"
+      ],
+      "selected_images": [],
+      "error": "Component 0:dd70e7a5-d189-4317-ab58-8f430928b6f4:Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct has no validated images."
+    },
+    {
+      "sku": "ZB-ASKL-9W8G",
+      "asin": "B0H82LKBYH",
+      "draft_id": "cmraav7ru000x04ledblydwkl",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:03eba512-c138-4942-bd34-177fae87c91b:Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "ZC-ASDC-3QMV",
+      "asin": "B0H83TSB5J",
+      "draft_id": "cmrbftb5h000604jpnab4kndc",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:93263f2e-bff8-45f1-b50a-b1946a1da424:Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "ZE-AS5W-FKH3",
+      "asin": "B0H8531B8B",
+      "draft_id": "cmrbhwwn4005404ju6wq4lc5w",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:fef5e600-7e4e-4918-84ee-22e52524b3ef:Smucker's Uncrustables Frozen Peanut Butter Sandwich - 7.2oz/4ct has no validated images."
+    },
+    {
+      "sku": "ZH-AS8W-G5MN",
+      "asin": "B0H82LMD9Z",
+      "draft_id": "cmraabxay000r04jvxaj79v8w",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:71106ce5-408a-4326-84c7-e87afdac0cdc:Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "ZP-ASJD-X7ZD",
+      "asin": "B0H85N7X8W",
+      "draft_id": "cmrbhsmu4003g04juqqw7yqjd",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+        "Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich - 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "ZX-AS2C-GT8Q",
+      "asin": "B0H82L3LRT",
+      "draft_id": "cmra9x0yo000604jvos2z822c",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "ZX-ASQU-TKU9",
+      "asin": "B0H84PVG1G",
+      "draft_id": "cmrbhsvfg003k04ju0ampc3qu",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+        "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:2865b6ba-d471-412b-9f47-2141f2d12faa:Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct has no validated images."
+    },
+    {
+      "sku": "ZY-ASZ4-QM5U",
+      "asin": "B0H83T9QZV",
+      "draft_id": "cmrbfkbiz000j04kzank27iz4",
+      "pass": false,
+      "expected_flavors": [
+        "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct"
+      ],
+      "selected_images": [],
+      "error": "Component 0:41763717-b5c0-4523-be7d-7f119eadfe76:Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct has no validated images."
+    }
+  ]
+}

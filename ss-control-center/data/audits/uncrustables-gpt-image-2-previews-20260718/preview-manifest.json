@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-18T02:39:42.719Z",
+  "results": [
+    {
+      "id": "01c-retail-boxes-single-pb-24-four-gel-packs",
+      "sku": "PB-ASAF-G2T6",
+      "asin": "B0H82K7Y7S",
+      "recipe": "24 Peanut Butter sandwiches = six genuine 4-count cartons; four gel packs",
+      "model": "gpt-image-2",
+      "size": "1536x1536",
+      "quality": "high",
+      "prompt_sha256": "852768fed1fb66287fe327d3931694587bfe1daee0949bd6206b486fa09ac3d3",
+      "reference_files": [
+        {
+          "path": "data/audits/uncrustables-gpt-image-2-previews-20260718/01b-retail-boxes-single-pb-24-six-carton-retry.png",
+          "sha256": "cd8b0e3a14fb353f635cc1aedff396696b5c0fbb57dfe5fc8230a5533f6d0af0"
+        },
+        {
+          "path": "public/bundle-factory/frozen-refs/ref-uncrustables.png",
+          "sha256": "9c45164a56e3cda1e9e0c2590e7d75d94e6320af012b841bc9e5b73594a1fd33"
+        }
+      ],
+      "output": "data/audits/uncrustables-gpt-image-2-previews-20260718/01c-retail-boxes-single-pb-24-four-gel-packs.png",
+      "output_sha256": "4cdd7bec9ab5c1d5f97b5746d7569a4ffc891a36b8d1fb159168176f06e19076"
+    },
+    {
+      "id": "02b-retail-boxes-mix-pb-blackberry-24-four-gel-packs",
+      "sku": "YG-ASH6-BCXX",
+      "asin": "B0H8511Y5G",
+      "recipe": "12 Peanut Butter + 12 Blackberry = three genuine 4-count cartons each; four gel packs",
+      "model": "gpt-image-2",
+      "size": "1536x1536",
+      "quality": "high",
+      "prompt_sha256": "d3666af3789b807153e803c60720965638e665f809f3cf4afdea0280074aca2d",
+      "reference_files": [
+        {
+          "path": "data/audits/uncrustables-gpt-image-2-previews-20260718/02-retail-boxes-mix-pb-blackberry-24.png",
+          "sha256": "2c76ae32369998528f0dfc3ba16d2c3d50a47be6bff8314b2df44d41a16ac806"
+        },
+        {
+          "path": "public/bundle-factory/frozen-refs/ref-uncrustables.png",
+          "sha256": "9c45164a56e3cda1e9e0c2590e7d75d94e6320af012b841bc9e5b73594a1fd33"
+        }
+      ],
+      "output": "data/audits/uncrustables-gpt-image-2-previews-20260718/02b-retail-boxes-mix-pb-blackberry-24-four-gel-packs.png",
+      "output_sha256": "9d0294242508529022a0e2b1cdd2df0adce469ef9dbb8bd2dd7d448031ea839d"
+    }
+  ]
+}

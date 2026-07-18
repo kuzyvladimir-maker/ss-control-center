@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9ad76ca8-31ee-4020-b983-43706c80deaa",
+  "created_at": "2026-07-18T06:26:22.574Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "JL-ASUC-JUZE:media",
+  "sku": "JL-ASUC-JUZE",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "51fe86a1daf6d04cad8cf7a03a77606bb04b913c219d9d470ad25fce66f78b0a",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "28331cd50b1049619bda47fe6235d2b6",
+    "issues": []
+  },
+  "sha256": "166db4a90467313fdba7aca4039c0628b818c5e9a758e36c7d3e2b98a883416b"
+}

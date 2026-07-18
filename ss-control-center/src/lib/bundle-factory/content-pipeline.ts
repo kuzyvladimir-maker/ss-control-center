@@ -125,6 +125,58 @@ export async function runContentGeneration(
     );
   }
 
+  // Regenerated copy is a materially new listing revision. An approval of the
+  // previous revision must never authorize it, even if generation later fails.
+  if (draft.approved_at || draft.master_bundle_id) {
+    await prisma.$transaction(async (tx) => {
+      const invalidated = await tx.bundleDraft.updateMany({
+        where: { id: draft.id },
+        data: {
+          status: "VARIATION_SELECTED",
+          approved_at: null,
+          approved_by: null,
+        },
+      });
+      if (invalidated.count === 0) return;
+      if (draft.approved_at) {
+        await tx.generationJob.updateMany({
+          where: {
+            id: draft.generation_job_id,
+            bundles_approved: { gt: 0 },
+          },
+          data: { bundles_approved: { decrement: 1 } },
+        });
+      }
+      if (draft.master_bundle_id) {
+        await tx.masterBundle.update({
+          where: { id: draft.master_bundle_id },
+          data: { lifecycle_status: "GENERATED" },
+        });
+        await tx.channelSKU.updateMany({
+          where: { master_bundle_id: draft.master_bundle_id },
+          data: {
+            lifecycle_status: "GENERATED",
+            validation_status: "PENDING",
+            validation_errors: null,
+            validated_at: null,
+            available_quantity: null,
+            inventory_checked_at: null,
+          },
+        });
+      }
+    });
+    await logLifecycle({
+      entity_type: "BundleDraft",
+      entity_id: draft.id,
+      from_status: draft.status,
+      to_status: "VARIATION_SELECTED",
+      reason: draft.approved_at
+        ? "Content regeneration invalidated the prior operator approval"
+        : "Content regeneration invalidated the promoted listing revision",
+      actor: input.actor ?? "system",
+    });
+  }
+
   const allChannels: string[] = (() => {
     try {
       const parsed = JSON.parse(draft.target_channels) as unknown;
@@ -148,42 +200,46 @@ export async function runContentGeneration(
     (c) => ({ brand: c.brand, product_name: c.product_name }),
   );
 
-  // Phase 1 — pull the primary donor's harvested content so Claude ADAPTS real
-  // catalog data (titles/bullets/description/ingredients/nutrition harvested
-  // from Walmart/Sam's/BJ's/etc.) instead of inventing. A studio-built
-  // component's research_pool_id IS the DonorProduct id; brief-built drafts may
-  // not match — graceful (donor_reference stays undefined → prior behaviour).
-  let donorReference: ContentGenerationInput["donor_reference"];
-  const primaryDonorId = selected.composition[0]?.research_pool_id;
-  if (primaryDonorId) {
-    const donor = await prisma.donorProduct.findUnique({
-      where: { id: primaryDonorId },
-      select: {
-        title: true,
-        bullets: true,
-        description: true,
-        ingredients: true,
-        nutritionFacts: true,
-      },
-    });
-    if (donor) {
-      let bullets: string[] | undefined;
-      try {
-        const b = donor.bullets ? JSON.parse(donor.bullets) : null;
-        if (Array.isArray(b)) {
-          bullets = b.filter((x): x is string => typeof x === "string");
-        }
-      } catch {
-        /* malformed donor.bullets JSON — skip */
+  // Ground mixed listings in every component. The old primary-only lookup
+  // allowed copy and food attributes for non-primary flavors to be invented or
+  // omitted. Brief-built ResearchPool ids simply miss this donor query and keep
+  // the legacy no-reference fallback.
+  const donorIds = selected.composition.map((component) => component.research_pool_id);
+  const donorRows = donorIds.length
+    ? await prisma.donorProduct.findMany({
+        where: { id: { in: donorIds } },
+        select: {
+          id: true,
+          title: true,
+          bullets: true,
+          description: true,
+          ingredients: true,
+          nutritionFacts: true,
+        },
+      })
+    : [];
+  const donorById = new Map(donorRows.map((donor) => [donor.id, donor]));
+  const donorReferences: NonNullable<ContentGenerationInput["donor_references"]> = [];
+  for (const component of selected.composition) {
+    const donor = donorById.get(component.research_pool_id);
+    if (!donor) continue;
+    let bullets: string[] | undefined;
+    try {
+      const parsed = donor.bullets ? JSON.parse(donor.bullets) : null;
+      if (Array.isArray(parsed)) {
+        bullets = parsed.filter((value): value is string => typeof value === "string");
       }
-      donorReference = {
-        title: donor.title ?? undefined,
-        bullets: bullets && bullets.length > 0 ? bullets : undefined,
-        description: donor.description ?? undefined,
-        ingredients: donor.ingredients ?? undefined,
-        nutrition: donor.nutritionFacts ?? undefined,
-      };
+    } catch {
+      // Optional donor bullets do not invalidate the other harvested facts.
     }
+    donorReferences.push({
+      flavor: component.flavor ?? undefined,
+      title: donor.title ?? undefined,
+      bullets: bullets && bullets.length > 0 ? bullets : undefined,
+      description: donor.description ?? undefined,
+      ingredients: donor.ingredients ?? undefined,
+      nutrition: donor.nutritionFacts ?? undefined,
+    });
   }
 
   const generationInputBase = {
@@ -193,7 +249,7 @@ export async function runContentGeneration(
     composition_type: draft.composition_type,
     pack_count: draft.pack_count,
     selected_variant: selected,
-    donor_reference: donorReference,
+    donor_references: donorReferences.length > 0 ? donorReferences : undefined,
   };
 
   // Generate per template (dedup the 5 Amazon channels into one Claude

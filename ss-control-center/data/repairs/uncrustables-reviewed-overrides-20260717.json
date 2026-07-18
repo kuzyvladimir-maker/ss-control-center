@@ -1,0 +1,137 @@
+{
+  "schema_version": "uncrustables-surgical-desired/v1",
+  "immutable": true,
+  "source_ledger_sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f",
+  "reviewed_at": "2026-07-18T01:32:00.000Z",
+  "repairs": [
+    {
+      "sku": "AZ-ASMY-VEQ2",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "This 30-count S-cooler SKU is the legacy outlier still attached to the Migrated template. The owner-approved frozen shipping policy assigns every S cooler to the exact Small Frozen template GUID; package weight and dimensions are deliberately preserved.",
+        "evidence": [
+          "Immutable live ledger reports merchant_shipping_group=legacy-template-id for AZ-ASMY-VEQ2.",
+          "The canonical count-based cooler model classifies the 30-count bundle as cooler S.",
+          "The reviewed shipping-template map assigns cooler S to 27fef112-3cf4-4f8f-b117-7c47254aa16c.",
+          "Live PTD proof confirms merchant_shipping_group is a marketplace-scoped string attribute."
+        ]
+      },
+      "structured_attributes": {
+        "merchant_shipping_group": "27fef112-3cf4-4f8f-b117-7c47254aa16c"
+      }
+    },
+    {
+      "sku": "SZ-ASPI-JFAT",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The intended sellable quantity is 24 individual sandwiches. The MasterBundle pack_count=6 and legacy draft_components qty=6 describe stale retail-carton arithmetic and conflict with the selected recipe and live customer-facing unit identity.",
+        "evidence": [
+          "Selected VariationMatrix composition quantity is 24 individual pieces.",
+          "BundleDraft.pack_count is 24.",
+          "Live title states 24 sandwiches total.",
+          "Live unit_count is 24 Count.",
+          "Live fulfillment quantity is 444; it is not evidence for a six-piece listing.",
+          "Only MasterBundle.pack_count=6 and stale draft_components qty=6 retain the retail-carton interpretation."
+        ]
+      },
+      "offer": {
+        "currency": "USD",
+        "consumer_price": 76.99,
+        "business_price": 76.99,
+        "minimum_seller_allowed_price": 66.95,
+        "maximum_seller_allowed_price": 76.99
+      },
+      "text_count": {
+        "title": "Smucker's Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, Individually Wrapped, 24 Count",
+        "bullets": [
+          "CONTENTS: 24 individually wrapped frozen sandwiches total: 24 Peanut Butter & Blackberry Spread.",
+          "COUNT BASIS: The stated 24 Count refers to 24 individual sandwiches, not retail cartons.",
+          "PRODUCT IDENTITY: Genuine Smucker's Uncrustables sandwiches in the original individual manufacturer wrappers; the assortment contains only the flavors stated above.",
+          "STORAGE: Keep frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "LABEL INFORMATION: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ],
+        "description": "This listing contains 24 individual Smucker's Uncrustables frozen sandwiches: 24 Peanut Butter & Blackberry Spread. The quantity refers to individual sandwiches and is not multiplied by the count printed on a retail carton.\n\nEach sandwich remains in its original individual manufacturer wrapper. Keep frozen until ready to use and follow the handling directions on the wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by flavor or manufacturer update. Review each original wrapper before use.",
+        "unit_count": 24,
+        "unit_count_type": "Count",
+        "number_of_items": 24
+      },
+      "structured_attributes": {
+        "merchant_shipping_group": "27fef112-3cf4-4f8f-b117-7c47254aa16c",
+        "is_expiration_dated_product": true
+      }
+    },
+    {
+      "sku": "KP-ASYC-RN84",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "The listing is a 90-count frozen sandwich SKU, but Amazon auto-classified it as PASTRY, whose current unit_count schema rejects Count. A non-mutating GROCERY preview accepted 90 Count and number_of_items=90 with no issues. The ounce fallback is retained only for a failed post-GET product-type or issue verification.",
+        "evidence": [
+          "Immutable ledger recipe, title, unit_count, and number_of_items all state 90 sandwiches.",
+          "Live issue 90244 rejects Count specifically under productType PASTRY.",
+          "Official PASTRY PTD permits Ounce for unit_count.",
+          "Listings Items VALIDATION_PREVIEW with productType GROCERY, unit_count=90 Count, and number_of_items=90 returned VALID with zero issues.",
+          "Fallback 252 Ounce is 90 sandwiches multiplied by the genuine 2.8 oz per sandwich, while number_of_items remains 90."
+        ]
+      },
+      "text_count": {
+        "unit_count": 90,
+        "unit_count_type": "Count",
+        "number_of_items": 90,
+        "request_product_type": "GROCERY",
+        "expected_product_type": "GROCERY",
+        "must_clear_issue_codes": [
+          "90244"
+        ],
+        "fallback": {
+          "reason": "Use only if post-GET shows productType still PASTRY or issue 90244 remains after the accepted GROCERY strategy.",
+          "unit_count": 252,
+          "unit_count_type": "Ounce",
+          "number_of_items": 90,
+          "request_product_type": "PASTRY",
+          "expected_product_type": "PASTRY",
+          "must_clear_issue_codes": [
+            "90244"
+          ]
+        }
+      }
+    },
+    {
+      "sku": "VN-AS1A-D572",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "This SKU contains 45 individual sandwiches. The legacy title incorrectly treated a 4-count retail carton as the sellable unit and multiplied it by 45, producing a false 180-sandwich unit_count.",
+        "evidence": [
+          "Selected VariationMatrix composition quantity is 45 individual pieces.",
+          "BundleDraft.pack_count and MasterBundle.pack_count are both 45.",
+          "Canonical component quantity sum is 45.",
+          "Legacy title says 4 ct - Pack of 45 and was parsed as 180.",
+          "Legacy live unit_count is 180 while number_of_items is 45."
+        ]
+      },
+      "offer": {
+        "currency": "USD",
+        "consumer_price": 130.99,
+        "business_price": 130.99,
+        "minimum_seller_allowed_price": 114.27,
+        "maximum_seller_allowed_price": 130.99
+      },
+      "text_count": {
+        "title": "Smucker's Uncrustables Peanut Butter & Strawberry Jam Frozen Sandwiches, Individually Wrapped, 45 Count",
+        "bullets": [
+          "CONTENTS: 45 individually wrapped frozen sandwiches total: 45 Peanut Butter & Strawberry Jam.",
+          "COUNT BASIS: The stated 45 Count refers to 45 individual sandwiches, not retail cartons.",
+          "PRODUCT IDENTITY: Genuine Smucker's Uncrustables sandwiches in the original individual manufacturer wrappers; the assortment contains only the flavors stated above.",
+          "STORAGE: Keep frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "LABEL INFORMATION: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ],
+        "description": "This listing contains 45 individual Smucker's Uncrustables frozen sandwiches: 45 Peanut Butter & Strawberry Jam. The quantity refers to individual sandwiches and is not multiplied by the count printed on a retail carton.\n\nEach sandwich remains in its original individual manufacturer wrapper. Keep frozen until ready to use and follow the handling directions on the wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by flavor or manufacturer update. Review each original wrapper before use.",
+        "unit_count": 45,
+        "unit_count_type": "Count",
+        "number_of_items": 45
+      },
+      "structured_attributes": {
+        "each_unit_count_absent": true
+      }
+    }
+  ]
+}

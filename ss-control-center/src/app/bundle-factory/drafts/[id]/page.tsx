@@ -16,8 +16,8 @@ import { prisma } from "@/lib/prisma";
 import { PageHead, Sep } from "@/components/kit";
 import {
   getPricingModel,
-  computeBundlePrice,
 } from "@/lib/bundle-factory/pricing-config";
+import { computeListingPrice } from "@/lib/bundle-factory/listing-pricing";
 import { buildRichAmazonAttributes } from "@/lib/bundle-factory/attributes/build-amazon-attributes";
 import { DraftDetailClient } from "./DraftDetailClient";
 
@@ -138,10 +138,12 @@ export default async function DraftDetailPage({ params }: PageProps) {
   const priceWeightLb = masterForPrice?.total_weight_oz
     ? masterForPrice.total_weight_oz / 16
     : null;
-  const priceCalc = computeBundlePrice(
+  const priceCalc = computeListingPrice(
     {
+      brand: draft.brand,
       cogs_cents: draft.draft_cost_cents ?? 0,
       weight_lb: priceWeightLb,
+      unit_count: draft.pack_count,
       category: draft.category,
     },
     pricingModel,
@@ -219,11 +221,10 @@ export default async function DraftDetailPage({ params }: PageProps) {
   }
 
   // Attribute preview — at GENERATED stage there is no ChannelSKU yet, so the
-  // rich attributes aren't stored anywhere. We compute the SAME donor-derived
-  // attributes promote-draft would write (ingredients → FDA allergens, item
-  // count) plus the fixed food fields, so the operator sees exactly what will
-  // be filled BEFORE publish. Post-promotion the client prefers the real
-  // ChannelSKU.attributes.
+  // rich attributes aren't stored anywhere. We preview only factual donor
+  // ingredients, item count, and category-derived storage fields. Allergens
+  // and expiration stay absent until reviewed manufacturer evidence exists.
+  // Post-promotion the client prefers the real ChannelSKU.attributes.
   const primaryDonor = poolIds.length ? donorById.get(poolIds[0]) : undefined;
   const previewAttributes: Array<{ label: string; value: string }> = [];
   {
@@ -238,9 +239,9 @@ export default async function DraftDetailPage({ params }: PageProps) {
     if (/FROZEN/i.test(draft.category)) push("Storage", "Keep frozen");
     else if (/REFRIGERATED/i.test(draft.category)) push("Storage", "Keep refrigerated");
     push("Country of origin", "United States");
-    push("Expiration dated product", "Yes");
     if (primaryDonor?.upc) push("Donor UPC (reference)", primaryDonor.upc);
-    // Ingredients + allergens straight from the donor statement.
+    // Ingredient keyword scanning is deliberately not used as an authoritative
+    // allergen declaration in either preview or publish.
     const rich = buildRichAmazonAttributes({
       ingredients: primaryDonor?.ingredients ?? null,
       packCount: draft.pack_count,
@@ -342,6 +343,8 @@ export default async function DraftDetailPage({ params }: PageProps) {
             cogs_cents: draft.draft_cost_cents ?? 0,
             weight_lb: priceWeightLb,
             category: draft.category,
+            brand: draft.brand,
+            unit_count: draft.pack_count,
           },
           model: pricingModel,
           result: priceCalc,

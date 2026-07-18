@@ -7,12 +7,14 @@
  *
  * Safety invariants (per spec — non-negotiable):
  *   1. DRY RUN by default. Real submission requires opts.apply=true.
- *   2. NEVER publish a ChannelSKU whose validation_status !== 'PASSED'.
- *   3. Skip channels with skipReason (SIRIUS no app, RETAILER suspended).
- *   4. Skip channels already LIVE (idempotent).
- *   5. Per-marketplace rate limit + sleep.
- *   6. Auto-abort if batch error rate exceeds threshold.
- *   7. PUT is idempotent — re-running on already-submitted SKU is safe.
+ *   2. NEVER publish without explicit recorded human approval.
+ *   3. NEVER publish a ChannelSKU whose validation_status !== 'PASSED' or
+ *      whose derived available_quantity is unknown/zero.
+ *   4. Skip channels with skipReason (SIRIUS no app, RETAILER suspended).
+ *   5. Skip channels already LIVE (idempotent).
+ *   6. Per-marketplace rate limit + sleep.
+ *   7. Auto-abort if batch error rate exceeds threshold.
+ *   8. PUT is idempotent — re-running on already-submitted SKU is safe.
  */
 
 import { prisma } from "@/lib/prisma";
@@ -31,6 +33,17 @@ import {
   submitToWalmart,
   type WalmartPublishResult,
 } from "./walmart-publish";
+import {
+  INVENTORY_MAX_AGE_MS,
+  inventoryIsFresh,
+} from "../inventory-policy";
+import { parseVerifiedPhysicalPackageSpecs } from "../physical-package-specs";
+import { amazonAllergensFromStoredDeclarations } from "../allergen-declaration";
+import { isOwnBrandPassthrough } from "../own-brand";
+import {
+  preflightProductionUncrustablesMain,
+  type UncrustablesMainPublishPermit,
+} from "../audit/uncrustables-main-production-preflight";
 
 // Amazon SP-API Listings PUT: 5 req/sec per store; we use 4 to leave
 // headroom. Walmart: 8 req/sec per store; we use 6.
@@ -108,12 +121,15 @@ async function persistOutcome(
   }
   if (outcome.status === "LIVE") {
     next.listing_status = "LIVE";
+    next.lifecycle_status = "LIVE";
     next.published_at = new Date();
   } else if (outcome.status === "FAILED") {
     next.listing_status = "FAILED";
+    next.lifecycle_status = "ERROR";
     next.last_error_at = new Date();
   } else if (outcome.status === "SUBMITTED") {
     next.listing_status = "SUBMITTED";
+    next.lifecycle_status = "SUBMITTED";
   }
   await prisma.channelSKU.update({
     where: { id: sku.id },
@@ -203,6 +219,7 @@ export async function runDistribution(
     select: {
       id: true,
       status: true,
+      approved_at: true,
       master_bundle_id: true,
     },
   });
@@ -212,25 +229,61 @@ export async function runDistribution(
       `BundleDraft ${draft.id} has no MasterBundle yet — run validate first (which lazy-promotes).`,
     );
   }
+  if (apply && !draft.approved_at) {
+    throw new Error(
+      `BundleDraft ${draft.id} has no recorded operator approval — approve it before real distribution.`,
+    );
+  }
 
   // Phase 5 — Walmart prohibits frozen/perishable cold-chain food, so frozen/
   // refrigerated sets are Amazon-only. Resolve the bundle's category once and
   // skip Walmart SKUs below when it's cold.
   const masterBundle = await prisma.masterBundle.findUnique({
     where: { id: draft.master_bundle_id },
-    select: { category: true, brand: true, pack_count: true },
+    select: {
+      category: true,
+      brand: true,
+      pack_count: true,
+      packaging_spec: true,
+      components: {
+        select: {
+          allergens: true,
+          product_name: true,
+          flavor: true,
+          qty: true,
+        },
+      },
+    },
   });
   const isColdBundle = /FROZEN|REFRIGERATED/i.test(masterBundle?.category ?? "");
+  const isFoodBundle =
+    isOwnBrandPassthrough(masterBundle?.brand) ||
+    /FROZEN|REFRIGERATED|CHILLED|SHELF|GROCERY|FOOD|DRY/i.test(
+      masterBundle?.category ?? "",
+    );
+  const verifiedPhysicalSpecs = parseVerifiedPhysicalPackageSpecs(
+    masterBundle?.packaging_spec,
+  );
+  const verifiedAllergens = isFoodBundle
+    ? amazonAllergensFromStoredDeclarations(
+        masterBundle?.components.map((component) => component.allergens) ?? [],
+      )
+    : null;
+  if (isFoodBundle && (masterBundle?.components.length ?? 0) === 0) {
+    throw new Error(
+      `MasterBundle ${draft.master_bundle_id} has no reviewed component allergen declarations`,
+    );
+  }
 
-  // Load publishable SKUs, optionally filtered by channel set. Publishable =
-  // PASSED or NEEDS_REVIEW (warnings only). Per Vladimir 2026-06-26, advisory
-  // warnings (e.g. Veeqo stock unverifiable for a brand-new bundle) must NOT
-  // block publishing — the operator confirms in the modal. FAILED (a hard
-  // validator error) is still excluded.
+  // Fail closed: only fully PASSED SKUs with component-derived positive stock.
   const skus = await prisma.channelSKU.findMany({
     where: {
       master_bundle_id: draft.master_bundle_id,
-      validation_status: { in: ["PASSED", "NEEDS_REVIEW"] },
+      validation_status: "PASSED",
+      available_quantity: { gt: 0 },
+      inventory_checked_at: {
+        gte: new Date(Date.now() - INVENTORY_MAX_AGE_MS),
+      },
       ...(input.channels && input.channels.length > 0
         ? { channel: { in: input.channels } }
         : {}),
@@ -248,8 +301,88 @@ export async function runDistribution(
     };
   }
 
+  // Fail closed before the first distribution mutation. For Uncrustables, a
+  // generic image QA flag is insufficient: read the exact R2 MAIN bytes and
+  // require a sealed owner approval for this SKU, hash, physical count, exact
+  // flavor quantities, carton/wrapper mode, and retail package size. Already-
+  // LIVE rows not being republished and administratively skipped accounts do
+  // not enter the publish path and therefore do not need a permit.
+  const uncrustablesMainPermits = new Map<string, UncrustablesMainPublishPermit>();
+  if (isOwnBrandPassthrough(masterBundle?.brand)) {
+    const candidates = skus.filter((sku) => {
+      const target = channelTarget(sku.channel);
+      return (
+        target.kind === "amazon" &&
+        !target.skipReason &&
+        (sku.listing_status !== "LIVE" || input.republish === true)
+      );
+    });
+    const checked = await Promise.all(
+      candidates.map(async (sku) => ({
+        sku,
+        result: await preflightProductionUncrustablesMain({
+          sku: sku.sku,
+          main_image_url: sku.main_image_url ?? "",
+          pack_count: masterBundle?.pack_count ?? 0,
+          components:
+            masterBundle?.components.map((component) => ({
+              product_name: component.product_name,
+              flavor: component.flavor,
+              qty: component.qty,
+            })) ?? [],
+        }),
+      })),
+    );
+    const blocked = checked.filter(({ result }) => !result.pass || !result.permit);
+    if (blocked.length > 0) {
+      const blockedById = new Map(blocked.map((item) => [item.sku.id, item.result]));
+      return {
+        ok: false,
+        bundle_draft_id: draft.id,
+        per_sku: candidates.map((sku) => {
+          const result = blockedById.get(sku.id);
+          const error = result
+            ? result.findings
+                .map((item) => `${item.code}: ${item.message}`)
+                .join("; ")
+            : "Batch held because another Uncrustables MAIN failed authenticity preflight";
+          return {
+            sku_id: sku.id,
+            sku: sku.sku,
+            channel: sku.channel,
+            marketplace_kind: "amazon",
+            status: result ? "FAILED" : "SKIPPED",
+            submission_id: null,
+            issues: result
+              ? result.findings.map((item) => ({
+                  code: item.code,
+                  severity: "ERROR",
+                  message: item.message,
+                }))
+              : [],
+            marketplace_status: null,
+            skip_reason: result ? undefined : error,
+            dry_run: !apply,
+            payload: {},
+            error,
+          } satisfies ChannelDistributionOutcome;
+        }),
+        draft_status: draft.status,
+        apply,
+        aborted: true,
+        aborted_reason:
+          "Uncrustables MAIN authenticity preflight blocked before any distribution mutation",
+        duration_ms: Date.now() - startMs,
+      };
+    }
+    for (const { sku, result } of checked) {
+      uncrustablesMainPermits.set(sku.id, result.permit!);
+    }
+  }
+
   // Draft → PUBLISHING (only when real apply; dry-run leaves state).
-  if (apply && draft.status === "VALIDATED") {
+  let workingStatus = draft.status;
+  if (apply && draft.status !== "PUBLISHING") {
     await prisma.bundleDraft.update({
       where: { id: draft.id },
       data: { status: "PUBLISHING" },
@@ -261,6 +394,11 @@ export async function runDistribution(
       to_status: "PUBLISHING",
       reason: `Distribution started for ${skus.length} ChannelSKU(s)`,
       actor: input.actor ?? "system",
+    });
+    workingStatus = "PUBLISHING";
+    await prisma.masterBundle.update({
+      where: { id: draft.master_bundle_id },
+      data: { lifecycle_status: "PUBLISHING" },
     });
   }
 
@@ -295,13 +433,11 @@ export async function runDistribution(
         continue;
       }
 
-      // Hard sanity check: never publish a FAILED SKU. We already filtered to
-      // PASSED / NEEDS_REVIEW above, but a future refactor could break that
-      // filter — this is the safety net. NEEDS_REVIEW (warnings only) is
-      // allowed through by operator decision; FAILED (errors) is not.
+      // Defense in depth against a future query regression.
       if (
-        sku.validation_status !== "PASSED" &&
-        sku.validation_status !== "NEEDS_REVIEW"
+        sku.validation_status !== "PASSED" ||
+        (sku.available_quantity ?? 0) <= 0 ||
+        !inventoryIsFresh(sku.inventory_checked_at)
       ) {
         per_sku.push({
           sku_id: sku.id,
@@ -312,7 +448,7 @@ export async function runDistribution(
           submission_id: null,
           issues: [],
           marketplace_status: null,
-          skip_reason: `validation_status=${sku.validation_status} (must be PASSED or NEEDS_REVIEW)`,
+          skip_reason: `validation_status=${sku.validation_status}, available_quantity=${sku.available_quantity ?? "unknown"}, inventory_checked_at=${sku.inventory_checked_at?.toISOString() ?? "missing"} (must be PASSED with recent positive verified inventory)`,
           dry_run: !apply,
           payload: {},
         });
@@ -362,12 +498,13 @@ export async function runDistribution(
           productType: input.amazonProductType ?? productTypeForBundle(),
           brand: masterBundle?.brand,
           category: masterBundle?.category,
+          physicalPackageSpecs: verifiedPhysicalSpecs,
+          verifiedAllergens,
+          uncrustablesMainPermit: uncrustablesMainPermits.get(sku.id),
           dryRun: !apply,
-          // On the very first attempt of a SKU we ALWAYS validation-preview
-          // first; on retries we trust the operator already saw the
-          // payload pass once.
-          validatePreviewFirst:
-            apply && sku.distribution_attempt_count === 0,
+          // Every real PUT is validation-previewed. submitToAmazon enforces
+          // this independently as a second guard for retry/recovery callers.
+          validatePreviewFirst: apply,
         });
         outcome = {
           sku_id: sku.id,
@@ -393,6 +530,7 @@ export async function runDistribution(
           storeIndex: target.storeIndex,
           brand: masterBundle?.brand,
           packCount: masterBundle?.pack_count,
+          physicalPackageSpecs: verifiedPhysicalSpecs,
           dryRun: !apply,
         });
         outcome = {
@@ -449,24 +587,24 @@ export async function runDistribution(
   }
 
   // Terminal draft transition.
-  let nextStatus = draft.status;
+  let nextStatus = workingStatus;
   if (apply) {
     const live = per_sku.filter((s) => s.status === "LIVE").length;
     const submitted = per_sku.filter((s) => s.status === "SUBMITTED").length;
     const failed = per_sku.filter((s) => s.status === "FAILED").length;
     if (live === per_sku.length && per_sku.length > 0) {
       nextStatus = "PUBLISHED";
-    } else if (failed === per_sku.length && draft.status === "PUBLISHING") {
+    } else if (failed === per_sku.length && workingStatus === "PUBLISHING") {
       nextStatus = "ERROR";
     } else if (
       (live > 0 || submitted > 0) &&
-      draft.status === "PUBLISHING" &&
+      workingStatus === "PUBLISHING" &&
       !aborted
     ) {
       // Leave at PUBLISHING — poller will lift to PUBLISHED later.
       nextStatus = "PUBLISHING";
     }
-    if (nextStatus !== draft.status) {
+    if (nextStatus !== workingStatus) {
       await prisma.bundleDraft.update({
         where: { id: draft.id },
         data: { status: nextStatus },
@@ -474,7 +612,7 @@ export async function runDistribution(
       await logLifecycle({
         entity_type: "BundleDraft",
         entity_id: draft.id,
-        from_status: draft.status,
+        from_status: workingStatus,
         to_status: nextStatus,
         reason: `Distribution finished — ${live} LIVE, ${submitted} SUBMITTED, ${failed} FAILED${aborted ? " (aborted)" : ""}`,
         actor: input.actor ?? "system",

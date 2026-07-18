@@ -36,6 +36,7 @@ import { isOwnBrandPassthrough } from "./own-brand";
 import type { Variant, VariantComponent } from "./variation-matrix";
 import { CLAUDE } from "@/lib/ai-models";
 import { claudeWorkerClient } from "@/lib/text-gen/claude-text-worker";
+import { parseTotal } from "@/lib/pricing/cost-model";
 
 const MODEL = CLAUDE.balanced;
 const MAX_TOKENS = 2000;
@@ -90,12 +91,23 @@ export interface ContentGenerationInput {
    *  donor catalog — Walmart/Sam's/BJ's/etc.). Claude ADAPTS this into
    *  brand-voice copy rather than inventing facts. Phase 1. */
   donor_reference?: {
+    flavor?: string;
     title?: string;
     bullets?: string[];
     description?: string;
     ingredients?: string;
     nutrition?: string;
   };
+  /** Real harvested data for every recipe component. Mixed listings must be
+   * grounded in all flavors, not only composition[0]. */
+  donor_references?: Array<{
+    flavor?: string;
+    title?: string;
+    bullets?: string[];
+    description?: string;
+    ingredients?: string;
+    nutrition?: string;
+  }>;
   /** Additional regeneration context — populated by the feedback loop. */
   prior_failure?: {
     attempt: number;
@@ -230,6 +242,11 @@ OUTPUT FORMAT — return ONLY valid JSON, no markdown fences, no prose:
  *  sandwiches" on a 45-sandwich listing (owner caught it 2026-07-07). */
 function stripPackFragments(name: string): string {
   return name
+    // Nutrition callouts are product facts, not flavor identity or bundle
+    // allocation. Leaving `12g` in the flavor token stream made a genuine
+    // "12 pieces of ... 12g Protein" allocation impossible to match
+    // deterministically.
+    .replace(/\b\d+(?:\.\d+)?\s*g\s+protein\b/gi, " Protein")
     .replace(/[-–—]?\s*\d+(?:\.\d+)?\s*oz\s*\/\s*\d+\s*ct\b/gi, "")
     .replace(/[-–—]?\s*\d+\s*ct\s*\/\s*\d+(?:\.\d+)?\s*oz\b/gi, "")
     .replace(/,?\s*\d+\s*(?:count|ct)\b/gi, "")
@@ -292,22 +309,30 @@ function buildUserMessage(input: ContentGenerationInput): string {
 
   // Real manufacturer reference data (Phase 1) — ground the copy in facts from
   // the donor catalog instead of inventing. Claude ADAPTS, never copies verbatim.
-  const ref = input.donor_reference;
-  if (ref && (ref.title || ref.description || ref.bullets?.length || ref.ingredients || ref.nutrition)) {
+  const references =
+    input.donor_references && input.donor_references.length > 0
+      ? input.donor_references
+      : input.donor_reference
+        ? [input.donor_reference]
+        : [];
+  if (references.length > 0) {
     lines.push("");
     lines.push(
-      "MANUFACTURER REFERENCE DATA (real harvested product info — ADAPT into your own brand-voice copy; do NOT copy verbatim and do NOT invent facts not present here):",
+      "MANUFACTURER REFERENCE DATA FOR EVERY RECIPE COMPONENT (real harvested product info — ADAPT; do NOT copy verbatim and do NOT invent facts not present here):",
     );
-    if (ref.title) lines.push(`  Reference title: ${ref.title}`);
-    if (ref.bullets && ref.bullets.length > 0) {
-      lines.push("  Reference bullets:");
-      for (const b of ref.bullets.slice(0, 8)) lines.push(`    - ${b}`);
+    for (const [index, ref] of references.entries()) {
+      lines.push(`  COMPONENT ${index + 1}${ref.flavor ? ` — ${ref.flavor}` : ""}:`);
+      if (ref.title) lines.push(`    Reference title: ${ref.title}`);
+      if (ref.bullets && ref.bullets.length > 0) {
+        lines.push("    Reference bullets:");
+        for (const bullet of ref.bullets.slice(0, 8)) lines.push(`      - ${bullet}`);
+      }
+      if (ref.description) lines.push(`    Reference description: ${ref.description.slice(0, 1200)}`);
+      if (ref.ingredients) lines.push(`    Ingredients: ${ref.ingredients.slice(0, 800)}`);
+      if (ref.nutrition) lines.push(`    Nutrition facts: ${ref.nutrition.slice(0, 600)}`);
     }
-    if (ref.description) lines.push(`  Reference description: ${ref.description.slice(0, 1200)}`);
-    if (ref.ingredients) lines.push(`  Ingredients: ${ref.ingredients.slice(0, 800)}`);
-    if (ref.nutrition) lines.push(`  Nutrition facts: ${ref.nutrition.slice(0, 600)}`);
     lines.push(
-      "Ground the title, bullets, and description in this real data (flavors, format, preparation, storage, count). Stay strictly factual.",
+      "Ground the title, bullets, and description in ALL component blocks (flavors, format, preparation, storage, count). Stay strictly factual.",
     );
   }
 
@@ -469,7 +494,9 @@ export async function generateContentWithClient(
     return { ...base, error: "JSON parse failed" };
   }
 
-  const validation = validateOutput(parsed, input.template);
+  const validation =
+    validateOutput(parsed, input.template) ??
+    validateSemanticOutput(parsed, input);
   if (validation) {
     return {
       ...base,
@@ -570,6 +597,187 @@ export function validateOutput(
   }
 
   return null;
+}
+
+function semanticTokens(value: string): string[] {
+  const stop = new Set([
+    "smucker", "smuckers", "uncrustables", "frozen", "sandwich",
+    "sandwiches", "flavor", "flavored", "spread", "jam", "jelly", "and",
+    // Product-line/nutrition descriptors are not flavor identity. Exact
+    // nutrition and claim provenance are validated by their own gates.
+    "morning", "protein",
+  ]);
+  return value
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .split(/[^a-z0-9]+/)
+    .filter(
+      (token) =>
+        token.length >= 3 &&
+        !stop.has(token) &&
+        // Counts, weights, protein grams, and pack sizes do not identify a
+        // flavor. Quantity is validated separately against the recipe.
+        !/\d/.test(token),
+    );
+}
+
+/** Detect an explicit retail-carton/case multiplication inside one field.
+ * Fields are intentionally evaluated independently: concatenating the title
+ * (`24 Count`) with a valid first bullet (`Pack of 24 individually wrapped`)
+ * previously manufactured a multiplication claim that the listing never made.
+ */
+function hasRetailCountMultiplication(
+  fields: string[],
+  expectedTotal: number,
+): boolean {
+  const patterns = [
+    /\b(\d{1,3})\s*(?:ct|count)\b.{0,80}\b(?:pack of\s*)?(\d{1,3})\s*(?:boxes|cases|cartons|packs)\b/gi,
+    /\b(\d{1,3})\s*(?:boxes|cases|cartons|packs)\b.{0,80}\b(\d{1,3})\s*(?:ct|count)\b/gi,
+    /\b(\d{1,3})\s*(?:ct|count)\b.{0,30}\bpack of\s*(\d{1,3})\b/gi,
+    /\bpack of\s*(\d{1,3})\b.{0,30}\b(\d{1,3})\s*(?:ct|count)\b/gi,
+  ];
+  return fields.some((field) =>
+    patterns.some((pattern) => {
+      pattern.lastIndex = 0;
+      let match: RegExpExecArray | null;
+      while ((match = pattern.exec(field)) !== null) {
+        const left = Number(match[1]);
+        const right = Number(match[2]);
+        if (
+          Number.isInteger(left) &&
+          Number.isInteger(right) &&
+          left > 1 &&
+          right > 1 &&
+          left * right === expectedTotal
+        ) {
+          return true;
+        }
+      }
+      return false;
+    }),
+  );
+}
+
+/** Product container claims only. Ordinary usage such as "pack in lunch
+ * boxes" must not be confused with selling N retail boxes/cases. */
+function claimsRetailContainers(fields: string[]): boolean {
+  const quantifiedContainer =
+    /\b(?:contains?|includes?|comes? with|pack(?:age)? of|total(?:ing)?)\s+(?:exactly\s+)?\d{1,3}\s+(?:retail\s+)?(?:boxes|cases|cartons)\b/i;
+  const containerOfProduct =
+    /\b\d{1,3}\s+(?:retail\s+)?(?:boxes|cases|cartons)\s+(?:of|each containing|included)\b/i;
+  return fields.some(
+    (field) =>
+      quantifiedContainer.test(field) || containerOfProduct.test(field),
+  );
+}
+
+/** Deterministic recipe-to-copy gate. Format compliance alone cannot catch a
+ *  title that promises 180 sandwiches for a 45-piece recipe or omits a mix
+ *  flavor. This runs before the policy gate, so a failure consumes the normal
+ *  retry budget and is fed back to the text model. */
+export function validateSemanticOutput(
+  parsed: { title: unknown; bullets: unknown; description: unknown },
+  input: Pick<
+    ContentGenerationInput,
+    "brand" | "pack_count" | "selected_variant"
+  >,
+): string | null {
+  if (
+    typeof parsed.title !== "string" ||
+    !Array.isArray(parsed.bullets) ||
+    typeof parsed.description !== "string"
+  ) {
+    return "semantic validation requires structured text fields";
+  }
+
+  const components = input.selected_variant.composition;
+  const recipeTotal = components.reduce((sum, component) => sum + component.qty, 0);
+  if (recipeTotal !== input.pack_count) {
+    return `recipe total ${recipeTotal} does not equal pack_count ${input.pack_count}`;
+  }
+  const titleTotal = parseTotal(parsed.title);
+  if (titleTotal !== input.pack_count) {
+    return `title count ${titleTotal} does not equal recipe count ${input.pack_count}`;
+  }
+  if (isOwnBrandPassthrough(input.brand)) {
+    const explicitCountClaims = [
+      ...parsed.title.matchAll(/\b(\d{1,4})\s*(?:ct|count)\b/gi),
+    ].map((match) => Number(match[1]));
+    // Some already-live, otherwise factual titles use "Pack of 90" or
+    // "24 Individually Wrapped Sandwiches" instead of the literal word
+    // Count. Accept those only when there is no competing retail `4ct`-style
+    // claim, and collapse repeated statements of the same total.
+    const fallbackCountClaims = explicitCountClaims.length === 0
+      ? [
+          ...[...parsed.title.matchAll(/\bpack of\s*(\d{1,4})\b/gi)].map(
+            (match) => Number(match[1]),
+          ),
+          ...[
+            ...parsed.title.matchAll(
+              /\b(\d{1,4})\s+(?:individually\s+wrapped\s+)?(?:frozen\s+)?sandwiches\b/gi,
+            ),
+          ].map((match) => Number(match[1])),
+        ]
+      : [];
+    const countClaims = [
+      ...new Set(
+        (explicitCountClaims.length > 0
+          ? explicitCountClaims
+          : fallbackCountClaims
+        ).filter(Number.isFinite),
+      ),
+    ];
+    if (
+      countClaims.length !== 1 ||
+      countClaims[0] !== input.pack_count
+    ) {
+      return `own-brand title must contain exactly one count claim equal to ${input.pack_count}; found ${countClaims.join(", ") || "none"}`;
+    }
+    if (
+      /\(\s*\)|\(\s*[,;]|[,;]\s*\)|,\s*,/.test(parsed.title)
+    ) {
+      return "own-brand title contains malformed packaging punctuation";
+    }
+  }
+
+  const fields = [parsed.title, ...parsed.bullets, parsed.description];
+  const text = fields.join(" ");
+  const lower = text.toLowerCase();
+  if (
+    isOwnBrandPassthrough(input.brand) &&
+    hasRetailCountMultiplication(fields, input.pack_count)
+  ) {
+    return "own-brand content uses retail-count × pack-of multiplication";
+  }
+  if (
+    isOwnBrandPassthrough(input.brand) &&
+    claimsRetailContainers(fields)
+  ) {
+    return "own-brand recipe contains individual pieces, not retail boxes/cases";
+  }
+
+  for (const component of components) {
+    const flavor = component.flavor ?? stripPackFragments(component.product_name);
+    const tokens = semanticTokens(flavor);
+    if (tokens.length > 0 && !tokens.every((token) => lower.includes(token))) {
+      return `content omits recipe flavor "${flavor}"`;
+    }
+    if (components.length > 1 && tokens.length > 0) {
+      const flavorPattern = tokens.map(escapeRegExp).join(".{0,20}");
+      const qty = String(component.qty);
+      const qtyNearFlavor =
+        new RegExp(`\\b${qty}\\b.{0,80}${flavorPattern}`, "i").test(text) ||
+        new RegExp(`${flavorPattern}.{0,80}\\b${qty}\\b`, "i").test(text);
+      if (!qtyNearFlavor) {
+        return `content does not state ${component.qty} pieces for "${flavor}"`;
+      }
+    }
+  }
+  return null;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function computeCost(usage: {

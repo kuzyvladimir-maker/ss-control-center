@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   syncUncrustables,
   readSnapshot,
-  applyReprice,
-  PRICING_STORES,
-  type RepriceResult,
 } from "@/lib/pricing/uncrustables";
 
 // Refreshing pulls the Merchant Listings report (~60-90s).
@@ -31,46 +28,13 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/pricing/uncrustables
- * body: { items: [{ store, sku, price }], preview?: boolean }
- * Applies a new item price to each SKU. Returns per-SKU results.
+ * Direct offer-price mutations are disabled. The regular Uncrustables base is
+ * canonical and fixed; promotions are implemented with Amazon Coupons.
  */
-export async function POST(request: NextRequest) {
-  let body: {
-    items?: Array<{ store?: number; sku: string; price: number }>;
-    preview?: boolean;
-  };
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ ok: false, error: "bad JSON" }, { status: 400 });
-  }
-  const items = body.items ?? [];
-  if (!items.length)
-    return NextResponse.json({ ok: false, error: "no items" }, { status: 400 });
-
-  const results: RepriceResult[] = [];
-  for (const it of items) {
-    if (!it.sku || !Number.isFinite(it.price) || it.price <= 0) {
-      results.push({ sku: it.sku ?? "?", ok: false, error: "bad item" });
-      continue;
-    }
-    results.push(
-      await applyReprice(it.store ?? PRICING_STORES[0], it.sku, it.price, {
-        preview: body.preview,
-      }),
-    );
-  }
-  // Refresh the snapshot so the UI reflects applied prices (best-effort).
-  if (!body.preview) {
-    try {
-      await syncUncrustables();
-    } catch {
-      /* non-fatal */
-    }
-  }
+export async function POST() {
   return NextResponse.json({
-    ok: results.every((r) => r.ok),
-    applied: results.filter((r) => r.ok).length,
-    results,
-  });
+    ok: false,
+    error:
+      "Uncrustables base prices are policy-locked. Use the sealed surgical repair for canonical corrections and Amazon Coupons for launch promotions.",
+  }, { status: 409 });
 }

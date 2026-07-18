@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Set EVERY price field on the 3 BF Uncrustables to our agreed target, coherently
 // (Vladimir 2026-07-04): regular price = target, maximum_seller_allowed_price =
 // target (cap so ChannelMAX can't raise it), minimum_seller_allowed_price kept,
@@ -16,6 +17,7 @@ config({ path: ".env" });
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { getListing, patchListing } from "@/lib/amazon-sp-api/listings";
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
+import { blockLegacyUncrustablesPriceMutation } from "@/lib/pricing/uncrustables-policy";
 
 const STORE = 1;
 const TARGETS = [
@@ -27,6 +29,7 @@ const TARGETS = [
 const sched = (v: number) => [{ schedule: [{ value_with_tax: v }] }];
 
 async function main() {
+  blockLegacyUncrustablesPriceMutation("set-bf-uncrustables-full-price.ts");
   const apply = process.argv.includes("--apply");
   const sellerId = await getMerchantToken(STORE);
   console.log(`\nMode: ${apply ? "APPLY (live)" : "PREVIEW"}\n`);

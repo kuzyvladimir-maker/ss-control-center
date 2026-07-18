@@ -27,6 +27,9 @@ export interface PlannerFlavor {
 export interface VariationSpec {
   /** Flavor/product ids in this listing (1 = single, 2–4 = mix). */
   donor_ids: string[];
+  /** Canonical flavor labels aligned with donor_ids. Persisted into the recipe
+   *  so content/image/validation do not have to re-parse retailer titles. */
+  flavor_labels: string[];
   /** Pieces per flavor, in donor_ids order — sums to unit_count. */
   quantities: number[];
   /** Retail pack sizes per flavor, aligned with donor_ids. */
@@ -99,6 +102,7 @@ export function planVariations(
     const names = chosen.map((f) => f.label).join(" + ");
     specs.push({
       donor_ids: chosen.map((f) => f.id),
+      flavor_labels: chosen.map((f) => f.label),
       quantities,
       donor_pack_sizes: chosen.map((f) => f.pack_sizes ?? []),
       unit_count: unitCount,

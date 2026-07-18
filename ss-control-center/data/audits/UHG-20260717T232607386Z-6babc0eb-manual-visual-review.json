@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-hero-manual-visual-review/v1.0",
+  "immutable": true,
+  "reviewed_at": "2026-07-18T01:42:21Z",
+  "reviewer": "Codex",
+  "source_contact_sheet_manifest": {
+    "path": "data/audits/UHG-20260717T232607386Z-6babc0eb-contact-sheets/manifest.json",
+    "file_sha256": "d9c268b7b6d907e3f2222ad1e74732eddb71fd069778e94b5977e5c78e4818a6",
+    "hero_manifest_sha256": "8236c3102cfc3ee247f5eecc41f1b4ab8042ac1ab3a33d6fd345c4828e58dce5"
+  },
+  "scope": {
+    "listing_rows": 164,
+    "unique_assets": 103,
+    "contact_sheets_reviewed": 12
+  },
+  "criteria": {
+    "pure_white_background": true,
+    "salutem_cooler_and_gel_packs_present": true,
+    "genuine_uncrustables_cartons_only": true,
+    "expected_flavor_designs_only": true,
+    "no_fabricated_product_or_flavor": true,
+    "no_loose_or_unlisted_product": true,
+    "no_retailer_ui_or_price_overlay": true
+  },
+  "result": "PASS",
+  "failed_assets": [],
+  "notes": "All 103 unique final hero assets were reviewed at original contact-sheet resolution after every referenced R2 URL passed exact SHA-256 verification. Genuine package redesigns and truthful package-printed marks were not treated as fabricated products."
+}

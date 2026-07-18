@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "c6cc6eb9-eae9-4686-8120-16f101c21ca4",
+  "created_at": "2026-07-18T06:20:22.674Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "CE-ASGK-ZRHM:media",
+  "sku": "CE-ASGK-ZRHM",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "48b83c21c94ef5f1c4a746b7ee48065d23d0ee4b24c4b72a654f7adc7d8ddb57",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "db84c31af8ab45909cb297d24fa70ee6",
+    "issues": []
+  },
+  "sha256": "78d829e77031b5d9ed5b1d85b528ad05b242b67752ba9bfd86c750a40e46880e"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1b3554f0-66f9-4665-bef3-4574b3d5fa14",
+  "created_at": "2026-07-18T06:22:11.746Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "ES-AS8A-3W3M:text_count",
+  "sku": "ES-AS8A-3W3M",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "d60abd5885a5e131018613735d3a883425c784ee8b89ea44a0622da5c49f0bf8",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "a3649128e8fc41d4b748ae9dd94205aa",
+    "issues": []
+  },
+  "sha256": "9c300af7650ccf1c33b742e69a36365bbae5c62dda1fa03b56e7facd5b747a38"
+}

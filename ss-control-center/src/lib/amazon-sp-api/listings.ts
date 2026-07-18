@@ -44,12 +44,40 @@ export interface ListingItem {
   sku: string;
   summaries?: ListingSummary[];
   attributes?: ListingAttributes;
+  /** Live validation/suppression findings returned when `issues` is requested. */
+  issues?: Array<{
+    code?: string;
+    message?: string;
+    severity?: string;
+    attributeNames?: string[];
+    categories?: string[];
+    [key: string]: unknown;
+  }>;
+  /** Offer/availability blocks are intentionally open-shape: Amazon varies
+   *  them by product type and fulfillment channel. Audit callers persist the
+   *  normalized fields they need without coupling this shared client to one
+   *  schema revision. */
+  offers?: unknown;
+  fulfillmentAvailability?: unknown;
+  procurement?: unknown;
 }
+
+export type ListingsIncludedData =
+  | "summaries"
+  | "attributes"
+  | "issues"
+  | "offers"
+  | "fulfillmentAvailability"
+  | "procurement";
 
 export interface ListSkusOptions {
   pageSize?: number;
   pageToken?: string;
-  includedData?: Array<"summaries" | "attributes" | "issues" | "offers">;
+  includedData?: ListingsIncludedData[];
+}
+
+export interface GetListingOptions {
+  includedData?: ListingsIncludedData[];
 }
 
 export interface ListSkusResponse {
@@ -86,10 +114,11 @@ export async function getListing(
   storeIndex: number,
   sellerId: string,
   sku: string,
+  opts: GetListingOptions = {},
 ): Promise<ListingItem> {
   const params: Record<string, string> = {
     marketplaceIds: MARKETPLACE_ID,
-    includedData: "summaries,attributes",
+    includedData: (opts.includedData ?? ["summaries", "attributes"]).join(","),
   };
   const resp = await spApiGet(
     `/listings/2021-08-01/items/${encodeURIComponent(sellerId)}/${encodeURIComponent(sku)}`,

@@ -35,6 +35,7 @@ const fs = require("fs");
 const fsp = require("fs/promises");
 const path = require("path");
 const os = require("os");
+const { buildPrompt, REQUIRED_IMAGE_MODEL } = require("./prompt");
 
 const PORT = parseInt(process.env.PORT || "8791", 10);
 const HOST = process.env.HOST || "127.0.0.1";
@@ -108,29 +109,41 @@ function listPngs() {
 // working dir so the codex agent can hand them to image_gen as visual references
 // (style/layout + accurate third-party packaging). Best-effort: a bad entry is
 // skipped, never fatal.
-async function writeRefs(refs, urls, runDir) {
+async function writeRefs(refs, urls, runDir, options = {}) {
   const files = [];
+  const failures = [];
   let i = 0;
-  for (const b64 of Array.isArray(refs) ? refs : []) {
+  const base64Refs = Array.isArray(refs) ? refs : [];
+  const urlRefs = Array.isArray(urls) ? urls : [];
+  for (let index = 0; index < base64Refs.length; index++) {
+    const b64 = base64Refs[index];
     try {
       const clean = String(b64).replace(/^data:image\/\w+;base64,/, "");
       const buf = Buffer.from(clean, "base64");
-      if (buf.length === 0) continue;
+      if (buf.length === 0) throw new Error("decoded image is empty");
       const p = path.join(runDir, `ref-${++i}.png`);
       await fsp.writeFile(p, buf);
       files.push(p);
-    } catch { /* skip bad ref */ }
+    } catch (error) {
+      failures.push(`reference_images[${index}]: ${error && error.message ? error.message : "invalid image"}`);
+    }
   }
-  for (const u of Array.isArray(urls) ? urls : []) {
+  for (let index = 0; index < urlRefs.length; index++) {
+    const u = urlRefs[index];
     try {
       const res = await fetch(String(u));
-      if (!res.ok) continue;
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const buf = Buffer.from(await res.arrayBuffer());
-      if (buf.length === 0) continue;
+      if (buf.length === 0) throw new Error("downloaded image is empty");
       const p = path.join(runDir, `ref-${++i}.png`);
       await fsp.writeFile(p, buf);
       files.push(p);
-    } catch { /* skip unreachable url */ }
+    } catch (error) {
+      failures.push(`reference_urls[${index}]: ${error && error.message ? error.message : "unreachable image"}`);
+    }
+  }
+  if (options.strict && failures.length > 0) {
+    throw new Error(`reference preflight failed: ${failures.join("; ")}`);
   }
   return files;
 }
@@ -177,44 +190,20 @@ function runCodex(prompt, cwd) {
   });
 }
 
-// --- wrap the raw scene prompt into an imagegen instruction --------------------
-function buildPrompt(userPrompt, size, refFiles) {
-  let sizeHint = "";
-  if (size) {
-    const [w, h] = String(size).split("x").map((n) => parseInt(n, 10));
-    if (w && h) {
-      const shape = w === h ? "square" : w > h ? "landscape, wider than tall" : "portrait, taller than wide";
-      sizeHint = ` Compose it as a ${shape} image, roughly ${w}x${h} pixels.`;
-    }
-  }
-  let refHint = "";
-  if (Array.isArray(refFiles) && refFiles.length === 1) {
-    const a = path.basename(refFiles[0]);
-    refHint =
-      ` Reference image ${a} is in the current working directory. Pass it to the ` +
-      `image_gen tool as an input/reference image and match its style, layout, ` +
-      `lighting, and any branded packaging shown.`;
-  } else if (Array.isArray(refFiles) && refFiles.length >= 2) {
-    // ROLE-LABELED references (caller sends anchor first, product second).
-    const anchor = path.basename(refFiles[0]);
-    const product = path.basename(refFiles[1]);
-    refHint =
-      ` Two reference image files are in the current working directory. ` +
-      `${anchor} is the KIT ANCHOR — use it ONLY for the styrofoam cooler look, the gel-pack style, and the overall layout/arrangement. ` +
-      `${product} is the DONOR PRODUCT PHOTO — it shows the REAL retail packaging (real brand name, real logo, real box art and colors). ` +
-      `You MUST reproduce the product packaging from ${product} EXACTLY as shown; do NOT invent, simplify, or substitute a different-looking package, and do NOT copy any product from the anchor image. ` +
-      `Pass BOTH files to the image_gen tool as input/reference images.`;
-  }
-  return (
-    `Generate an image: ${userPrompt}.${sizeHint}${refHint} ` +
-    `Use the imagegen skill with the built-in image_gen tool. ` +
-    `Do not ask any questions and do not request confirmation; just generate and save the image.`
-  );
-}
-
 async function handleGenerate(body) {
   const prompt = String((body && body.prompt) || "").trim();
   if (!prompt) return { status: 400, json: { error: "missing prompt" } };
+  const requiredModel = String(
+    (body && body.required_model) || REQUIRED_IMAGE_MODEL,
+  ).trim();
+  if (requiredModel !== REQUIRED_IMAGE_MODEL) {
+    return {
+      status: 422,
+      json: {
+        error: `unsupported required_model ${requiredModel}; this worker is pinned to ${REQUIRED_IMAGE_MODEL}`,
+      },
+    };
+  }
   const size = body && body.size;
 
   // Per-run working dir so reference images are isolated + auto-cleaned.
@@ -225,8 +214,17 @@ async function handleGenerate(body) {
       body && body.reference_images,
       body && body.reference_urls,
       runDir,
+      { strict: true },
     );
-  } catch { /* refs are best-effort */ }
+  } catch (error) {
+    try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {}
+    return {
+      status: 422,
+      json: {
+        error: error && error.message ? error.message : "reference preflight failed",
+      },
+    };
+  }
 
   const beforePaths = new Set(listPngs().map((x) => x.p));
   const startedAt = Date.now() - 2000; // tolerate small clock skew
@@ -261,7 +259,7 @@ async function handleGenerate(body) {
   const png = await fsp.readFile(picked.p);
   // Keep disk clean: drop the whole session dir we just consumed.
   try { await fsp.rm(picked.dir, { recursive: true, force: true }); } catch {}
-  return { status: 200, png };
+  return { status: 200, png, imageModel: REQUIRED_IMAGE_MODEL, referenceCount: refFiles.length };
 }
 
 // --- VISION: run codex exec with image(s) attached, return the model's text -----
@@ -440,7 +438,12 @@ const server = http.createServer((req, res) => {
       : enqueue(() => (isAnalyze ? handleAnalyze(body) : handleGenerate(body))))
       .then((result) => {
         if (result.png) {
-          res.writeHead(200, { "content-type": "image/png", "content-length": result.png.length });
+          res.writeHead(200, {
+            "content-type": "image/png",
+            "content-length": result.png.length,
+            "x-image-model": result.imageModel || REQUIRED_IMAGE_MODEL,
+            "x-image-reference-count": String(result.referenceCount || 0),
+          });
           res.end(result.png);
         } else {
           res.writeHead(result.status, { "content-type": "application/json" });

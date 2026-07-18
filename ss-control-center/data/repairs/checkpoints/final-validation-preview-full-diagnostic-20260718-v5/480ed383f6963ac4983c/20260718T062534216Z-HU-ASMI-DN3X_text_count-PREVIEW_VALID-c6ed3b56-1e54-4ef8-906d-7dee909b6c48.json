@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "c6ed3b56-1e54-4ef8-906d-7dee909b6c48",
+  "created_at": "2026-07-18T06:25:34.216Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "HU-ASMI-DN3X:text_count",
+  "sku": "HU-ASMI-DN3X",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "3a13b3afe3c9612d75b8ce1a86c369ca5b12bfce64be5e4824154c5731913ce3",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "e99b15be031f469980c10cf00af2d81d",
+    "issues": []
+  },
+  "sha256": "dd0cf49daf495f4af04fdce578174989e157b0819da2b57e7c7267067ad93876"
+}

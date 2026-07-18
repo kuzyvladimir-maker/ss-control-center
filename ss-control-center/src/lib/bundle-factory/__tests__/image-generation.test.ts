@@ -44,19 +44,38 @@ test("buildFinalPrompt — retry with no context returns base prompt", () => {
   assert.equal(out, BASE_INPUT.prompt);
 });
 
-test("buildFinalPrompt — retry with detected_logos appends ban list", () => {
+test("buildFinalPrompt — retry bans only unexpected marks and preserves genuine donor art", () => {
   const out = buildFinalPrompt({
     ...BASE_INPUT,
     retry_context: {
       attempt: 2,
-      detected_logos: ["Oscar Mayer", "Cheez-It"],
+      detected_logos: ["Smucker's", "Uncrustables", "Walmart"],
+      expected_brand_marks: ["Smucker's", "Uncrustables", "SALUTEM SOLUTIONS"],
     },
   });
   assert.ok(out.includes(BASE_INPUT.prompt));
   assert.match(out, /CRITICAL/);
-  assert.match(out, /"Oscar Mayer"/);
-  assert.match(out, /"Cheez-It"/);
-  assert.match(out, /entirely generic, unbranded packaging/i);
+  assert.match(out, /remove ONLY.*"Walmart"/i);
+  assert.match(out, /expected marks are "Smucker's", "Uncrustables", "SALUTEM SOLUTIONS"/i);
+  const removalClause = out.match(/remove ONLY[^.]*\./i)?.[0] ?? "";
+  assert.doesNotMatch(removalClause, /"Smucker's"/i);
+  assert.doesNotMatch(removalClause, /"Uncrustables"/i);
+  assert.doesNotMatch(out, /generic, unbranded|generic packaging/i);
+});
+
+test("buildFinalPrompt — expected product and kit marks are never turned into a ban list", () => {
+  const out = buildFinalPrompt({
+    ...BASE_INPUT,
+    retry_context: {
+      attempt: 2,
+      detected_logos: ["Smucker's Uncrustables", "Salutem Solutions"],
+      expected_brand_marks: ["Smucker's", "Uncrustables", "SALUTEM SOLUTIONS"],
+    },
+  });
+  assert.match(out, /reported only expected recipe\/kit marks/i);
+  assert.match(out, /Do not remove or alter those expected marks/i);
+  assert.doesNotMatch(out, /remove ONLY[^\n]*Smucker/i);
+  assert.doesNotMatch(out, /plain, fictional, or look-alike packaging.*only/i);
 });
 
 test("buildFinalPrompt — retry with failure_reason but no logos still warns", () => {
@@ -69,6 +88,8 @@ test("buildFinalPrompt — retry with failure_reason but no logos still warns", 
   });
   assert.match(out, /Previous attempt failed/i);
   assert.match(out, /image_vision_error/);
+  assert.match(out, /preserving the exact recipe-approved genuine brands/i);
+  assert.doesNotMatch(out, /generic, unbranded|generic packaging/i);
 });
 
 test("buildFinalPrompt — never contains promo language even after augmentation", () => {

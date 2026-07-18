@@ -1,0 +1,15 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "7aa1e846-d891-4ccb-9f48-9874cc49c936",
+  "created_at": "2026-07-18T06:27:55.213Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "KP-ASYC-RN84:structured_attributes",
+  "sku": "KP-ASYC-RN84",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "FAILED",
+  "detail": {
+    "error": "VALIDATION_PREVIEW rejected KP-ASYC-RN84:structured_attributes: {\"status\":\"INVALID\",\"submission_id\":\"4a816261b0a14daeabac99b0abc1f1f2\",\"issues\":[{\"code\":\"90244\",\"message\":\"We can't accept the Count you entered for Unit Count. To fix this, select an approved value from the list for your product category and resubmit.\",\"severity\":\"ERROR\",\"attributeNames\":[\"unit_count\"],\"categories\":[\"INVALID_ATTRIBUTE\"]}]}"
+  },
+  "sha256": "40f68b1b3c7f119e0e77505d1f4af62f75c869ae2641819a87760af30bf6b1f6"
+}

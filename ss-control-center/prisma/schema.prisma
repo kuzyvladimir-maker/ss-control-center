@@ -293,7 +293,7 @@ model ShippingAdjustment {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  externalId String @unique // stable ID for dedup: amazon:<store>:<type>:<postedDate>:<amountCents> or walmart:<recon>:<line>
+  externalId String  @unique // stable ID for dedup: amazon:<store>:<type>:<postedDate>:<amountCents> or walmart:<recon>:<line>
   channel    String // Amazon | Walmart
   storeId    String? // store1..5 (Amazon) or walmart-store1 — null for legacy / manual rows
   currency   String? // ISO 4217 — defaults to USD
@@ -680,7 +680,6 @@ model AmazonOrder {
  * Amazon shipment metadata per order — carrier, service, tracking.
  * Populated by /api/cron/orders-shipments-amazon (Reports API:
  * GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL).
- *
  * Exists so adjustment enrichment can join ShippingAdjustment.amazonOrderId
  * → carrier/service WITHOUT calling SP-API per-row at render time. One
  * row per (amazonOrderId, sku) — Amazon orders can have multiple items
@@ -691,45 +690,45 @@ model AmazonOrderShipment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  amazonOrderId    String
-  sku              String?
-  asin             String?
+  amazonOrderId String
+  sku           String?
+  asin          String?
 
-  storeIndex       Int?
+  storeIndex Int?
 
   // From Veeqo shipment record (was: from Orders Report — but Amazon
   // doesn't expose carrier/tracking for MFN orders, so Veeqo is the
   // source of truth now).
-  carrier            String?  // e.g. "UPS", "FEDEX", "USPS"
-  trackingNumber     String?
-  shipServiceLevel   String?  // e.g. "Standard", "Expedited"
-  shipDate           String?  // YYYY-MM-DD
-  promiseDate        String?
+  carrier          String? // e.g. "UPS", "FEDEX", "USPS"
+  trackingNumber   String?
+  shipServiceLevel String? // e.g. "Standard", "Expedited"
+  shipDate         String? // YYYY-MM-DD
+  promiseDate      String?
 
   // What Vladimir originally paid for the outbound label (Veeqo's
   // outbound_label_charges.value). Copied onto ShippingAdjustment.
   // originalLabelCost during enrichment so the page can show
   // "Original: $X → +adjustment: $Y → effective: $X+Y".
-  outboundLabelCost  Float?
+  outboundLabelCost Float?
 
   // Product context from Veeqo line_items[].sellable. Used to populate
   // ShippingAdjustment.productName + render an image in the expansion.
-  productName        String?
-  productImageUrl    String?
+  productName     String?
+  productImageUrl String?
 
   // Declared package dimensions Vladimir set when buying the label
   // (Veeqo allocation_package). The point of surfacing these on the
   // /adjustments page is so Vladimir can verify whether Amazon's
   // reweigh charge was justified — if declared 16 lbs and Amazon
   // reweighed 16 lbs, the charge is bogus and disputable.
-  packageWeightLbs   Float?
-  packageDimL        Float?  // depth (inches)
-  packageDimW        Float?
-  packageDimH        Float?
-  packageName        String? // e.g. "S", "M", "Custom"
+  packageWeightLbs Float?
+  packageDimL      Float? // depth (inches)
+  packageDimW      Float?
+  packageDimH      Float?
+  packageName      String? // e.g. "S", "M", "Custom"
 
   // Inferred from trackingNumber regex when carrier is "Other" or null.
-  carrierInferred    String?
+  carrierInferred String?
 
   @@unique([amazonOrderId, sku], name: "amazon_order_shipment_dedup")
   @@index([amazonOrderId])
@@ -1087,27 +1086,27 @@ model WalmartItemCompliance {
  * Tracks buyer-initiated cancellation requests detected on Walmart orders
  * (orderLineStatus.intentToCancel === "TRUE"). Populated by the
  * /api/cron/walmart-cancellation-watchdog cron every 30 min. Used to:
- *   * dedupe — don't process the same PO twice across cron runs
- *   * audit — track what action we took (auto-cancel vs Telegram alert)
- *   * SLA visibility — Walmart auto-cancels after 48h if seller doesn't act
+ * * dedupe — don't process the same PO twice across cron runs
+ * * audit — track what action we took (auto-cancel vs Telegram alert)
+ * * SLA visibility — Walmart auto-cancels after 48h if seller doesn't act
  */
 model WalmartCancellationRequest {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  purchaseOrderId String  @unique
-  storeIndex      Int     @default(1)
+  purchaseOrderId String    @unique
+  storeIndex      Int       @default(1)
   customerOrderId String?
   productName     String?
   orderTotal      Float?
   shipBy          DateTime?
 
-  detectedAt DateTime  @default(now())
-  actionedAt DateTime?
+  detectedAt   DateTime  @default(now())
+  actionedAt   DateTime?
   // PENDING | AUTO_CANCELLED | ALERTED_LABEL_BOUGHT | ALERTED_SHIPPED | RESOLVED_MANUALLY | FAILED
-  action     String    @default("PENDING")
-  telegramSent Boolean @default(false)
+  action       String    @default("PENDING")
+  telegramSent Boolean   @default(false)
   notes        String?
 
   @@index([action])
@@ -1133,23 +1132,23 @@ model WalmartCustomerInquiry {
 
   // The Walmart relay address we emailed (4C11…@relay.walmart.com) — also the
   // From address of the buyer's reply, which is how the poll cron matches.
-  relayEmail  String
-  sentByEmail String // info.siriustrading@gmail.com (registered CS mailbox)
+  relayEmail   String
+  sentByEmail  String // info.siriustrading@gmail.com (registered CS mailbox)
   customerName String?
 
   // Snapshot of the line we asked about (for the card chip + audit).
-  sku         String?
+  sku          String?
   productTitle String?
-  orderedQty  Int?
-  packSize    Int?
-  totalUnits  Int?
+  orderedQty   Int?
+  packSize     Int?
+  totalUnits   Int?
 
   subject  String
   bodySent String
 
   sentAt DateTime @default(now())
   // SENT | ANSWERED | TIMEOUT
-  status String @default("SENT")
+  status String   @default("SENT")
 
   replyText String?
   repliedAt DateTime?
@@ -1185,8 +1184,8 @@ model WalmartCatalogItem {
   // So we pull images from Veeqo (which already mirrors our full catalog and
   // serves thumbnails via its own CDN). Looked up lazily on first use via
   // /products?query={sku} and cached here. Refreshed when older than 7 days.
-  mainImageUrl        String?
-  mainImageFetchedAt  DateTime?
+  mainImageUrl       String?
+  mainImageFetchedAt DateTime?
 
   // One row per (account, SKU). Re-sync upserts onto this key.
   @@unique([storeIndex, sku], name: "walmart_catalog_item_dedup")
@@ -1241,12 +1240,12 @@ model WalmartListingQualityItem {
   priority String? // Walmart's own fix-priority: HIGH | MEDIUM | LOW
 
   // Component scores 0-100 (null = N/A for this item)
-  ratingReviewScore    Float?
-  shippingScore        Float?
-  publishScore         Float? // "Published and in stock"
-  contentScore         Float?
-  priceScore           Float?
-  offerScore           Float?
+  ratingReviewScore Float?
+  shippingScore     Float?
+  publishScore      Float? // "Published and in stock"
+  contentScore      Float?
+  priceScore        Float?
+  offerScore        Float?
 
   // Structural levers / quick facts
   isInStock             Boolean @default(false)
@@ -1532,10 +1531,10 @@ model AmazonListingRemediation {
   itemName   String?
   runAt      DateTime @default(now())
 
-  fixKinds    String // JSON array of FixKind, e.g. ["title-scrub","dedupe-attribute"]
-  changeCount Int     @default(0)
+  fixKinds     String // JSON array of FixKind, e.g. ["title-scrub","dedupe-attribute"]
+  changeCount  Int     @default(0)
   submissionId String?
-  ok          Boolean @default(true)
+  ok           Boolean @default(true)
 
   // BEFORE (captured at apply)
   beforeHealthScore     Float?
@@ -1626,26 +1625,26 @@ model AmazonChangeLog {
   asin       String?
   itemName   String?
 
-  source     String // optimizer | advisor | bulk | manual
-  changeType String // attribute-set | dedupe | title-scrub | …
-  field      String? // unit_count | item_name | generic_keyword | …
-  beforeValue String? // JSON snapshot of the field BEFORE (for rollback)
-  afterValue  String? // JSON snapshot AFTER
-  patch       String? // exact JSON-Patch ops sent
+  source       String // optimizer | advisor | bulk | manual
+  changeType   String // attribute-set | dedupe | title-scrub | …
+  field        String? // unit_count | item_name | generic_keyword | …
+  beforeValue  String? // JSON snapshot of the field BEFORE (for rollback)
+  afterValue   String? // JSON snapshot AFTER
+  patch        String? // exact JSON-Patch ops sent
   submissionId String?
   amazonStatus String? // ACCEPTED
 
   // BEFORE metrics (at write time)
-  beforeHealthScore  Float?
-  beforeConversion   Float?
-  beforeOpportunity  Float?
-  beforeErrorCount   Int?
+  beforeHealthScore Float?
+  beforeConversion  Float?
+  beforeOpportunity Float?
+  beforeErrorCount  Int?
 
   // AFTER metrics (filled by a later sweep, after a measurement window)
-  afterMeasuredAt   DateTime?
-  afterHealthScore  Float?
-  afterConversion   Float?
-  afterErrorCount   Int?
+  afterMeasuredAt  DateTime?
+  afterHealthScore Float?
+  afterConversion  Float?
+  afterErrorCount  Int?
 
   outcome String? // useful | neutral | harmful
 
@@ -1706,16 +1705,16 @@ model AmazonListingSnapshot {
   capturedAt DateTime @default(now())
   source     String   @default("cron") // cron | pre-change | manual | backfill
 
-  brand        String?
-  productType  String?
-  title        String?
-  bulletsJson  String? // JSON string[]
-  description  String?
-  mainImageUrl String?
-  imageCount   Int?
-  price        Float?
+  brand          String?
+  productType    String?
+  title          String?
+  bulletsJson    String? // JSON string[]
+  description    String?
+  mainImageUrl   String?
+  imageCount     Int?
+  price          Float?
   attributesJson String? // JSON of the full attributes blob (for exact restore)
-  contentHash  String // hash of the content fields — skip writing if unchanged
+  contentHash    String // hash of the content fields — skip writing if unchanged
 
   // Funnel at capture time (for "was selling well" judgement).
   sessions30d    Int?
@@ -1739,17 +1738,17 @@ model AmazonAplusJob {
 
   // DRAFT (created) | GENERATED (LLM produced doc) | NEEDS_FIX (gate failed) |
   // PENDING_APPROVAL | APPROVED | SUBMITTED (sent to Amazon) | PUBLISHED | REJECTED | FAILED
-  status   String  @default("DRAFT")
-  variant  String  @default("A") // for A/B: A or B
-  concept  String? // ownfood | cooler | coldpack | supplement | giftbasket (drives the template)
+  status  String  @default("DRAFT")
+  variant String  @default("A") // for A/B: A or B
+  concept String? // ownfood | cooler | coldpack | supplement | giftbasket (drives the template)
 
-  documentName   String?
-  contentJson    String? // the full A+ contentDocument JSON (modules, text, image refs)
-  imagePlanJson  String? // per-module image briefs + generated asset URLs (R2)
+  documentName      String?
+  contentJson       String? // the full A+ contentDocument JSON (modules, text, image refs)
+  imagePlanJson     String? // per-module image briefs + generated asset URLs (R2)
   qualificationJson String? // gate result: { pass, violations[] }
-  qualified      Boolean @default(false)
-  comments       String? // operator's per-module comments / notes
-  progressJson   String? // live generation progress: { phase, done, total, label } — polled by the UI
+  qualified         Boolean @default(false)
+  comments          String? // operator's per-module comments / notes
+  progressJson      String? // live generation progress: { phase, done, total, label } — polled by the UI
 
   contentReferenceKey String? // Amazon key after create
   submissionId        String?
@@ -1894,24 +1893,24 @@ model PackingProfile {
 // regular weight because One Rate billable weight ≈ H × 1.25).
 // See docs/wiki/sku-database-migration.md for the migration story.
 model SkuShippingData {
-  id           String   @id @default(cuid())
-  sku          String   @unique
-  productTitle String?
-  marketplace  String? // Amazon | Walmart | Both | Other
-  category     String? // Frozen | Dry
-  length       Float? // inches
-  width        Float? // inches
-  height       Float? // inches
-  weight       Float? // lbs — UPS / USPS / FedEx standard
-  weightFedex  Float? // lbs — FedEx One Rate only
-  sampleCount  Int      @default(0)
-  notes        String?
+  id              String   @id @default(cuid())
+  sku             String   @unique
+  productTitle    String?
+  marketplace     String? // Amazon | Walmart | Both | Other
+  category        String? // Frozen | Dry
+  length          Float? // inches
+  width           Float? // inches
+  height          Float? // inches
+  weight          Float? // lbs — UPS / USPS / FedEx standard
+  weightFedex     Float? // lbs — FedEx One Rate only
+  sampleCount     Int      @default(0)
+  notes           String?
   // Manufacturer UPC/GTIN pulled from our OWN marketplace listing (Stage 0b of
   // the COGS sourcing engine). For straight-resale items this IS the real retail
   // barcode → exact match at Walmart/Target. For our own Salutem/Starfit bundles
   // it's an assigned UPCPool code with no retail equivalent (decompose instead).
-  upc          String? // 12/13/14-digit identifier as a string (keep leading zeros)
-  upcSource    String? // amazon_listing_report | walmart_item | manual
+  upc             String? // 12/13/14-digit identifier as a string (keep leading zeros)
+  upcSource       String? // amazon_listing_report | walmart_item | manual
   // Vision-identified product structure (scripts/cogs-identify.ts): the engine
   // reads the listing photo+title and resolves the EXACT product + how many
   // procurement base units are in this listing (handles packs / variety bundles).
@@ -1919,9 +1918,9 @@ model SkuShippingData {
   unitsInListing  Int? // total procurement base units in this listing
   baseUnitDesc    String? // one shelf unit (drives the retail price lookup)
   // Provenance: google_sheets_migration | manual | veeqo_history
-  source       String   @default("manual")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  source          String   @default("manual")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 // SkuCost — dated true-cost history per SKU (COGS unit-economics engine).
@@ -1995,8 +1994,8 @@ model SkuComponent {
   //   google      — Google Shopping market estimate (universal fallback)
   //   own-brand   — our own product, manual landed cost (own-brand-costs.ts)
   //   none        — no price found (flagged for review)
-  costMethod String?
-  retailer   String? // walmart | target | samsclub | costco | google | own-brand
+  costMethod   String?
+  retailer     String? // walmart | target | samsclub | costco | google | own-brand
   matchedTitle String? // the donor/offer title we priced off
 
   donorProductId    String? // link into DonorProduct for full content
@@ -2048,7 +2047,7 @@ model RetailPrice {
   retailerProductId String // item_id / TCIN / url-slug — cached forever
 
   price       Float?
-  currency    String  @default("USD")
+  currency    String   @default("USD")
   inStock     Boolean?
   productUrl  String?
   title       String?
@@ -2111,7 +2110,7 @@ model DonorProduct {
   bestPrice       Float? // cheapest clean first-party DIRECT per-unit price
   bestRetailer    String?
   pricePerMeasure Float? // bestPrice / unitAmount → $/oz (compare retail vs wholesale)
-  currency        String @default("USD")
+  currency        String  @default("USD")
 
   // Dedup key: normalized brand+line+size+container so 1 real product = 1 row.
   identityKey String  @unique
@@ -2138,7 +2137,7 @@ model DonorOffer {
 
   retailer          String // walmart | target | samsclub | costco | bjs | publix | aldi | winndixie | bravo | amazon
   retailerProductId String // item_id / TCIN / url-slug — cached forever
-  via               String  @default("direct") // direct | instacart (instacart ≈ +15% markup)
+  via               String @default("direct") // direct | instacart (instacart ≈ +15% markup)
 
   price        Float? // price of the matched listing
   packSizeSeen Int? // units in the matched listing (>1 = multipack)
@@ -2346,7 +2345,8 @@ model MasterBundle {
   total_weight_lb  Float?
 
   // Pricing (in cents). cost_breakdown holds the un-summed breakdown:
-  //   { goods_cents, packaging_cents, sourcing_overhead_cents }
+  //   { goods_cents, packaging_cents, fba_cents, closing_cents,
+  //     shipping_label_cents, shipping_in_price, sourcing_overhead_cents }
   cost_breakdown        String // JSON
   estimated_cost_cents  Int
   suggested_price_cents Int
@@ -2366,7 +2366,7 @@ model MasterBundle {
   components            BundleComponent[]
   channel_skus          ChannelSKU[]
   lifecycle_logs        ListingLifecycleLog[]
-  generation_job_id     String?               @unique
+  generation_job_id     String?
   generation_job        GenerationJob?        @relation(fields: [generation_job_id], references: [id])
   research_pool_seed_id String?
   research_pool_seed    ResearchPool?         @relation(fields: [research_pool_seed_id], references: [id])
@@ -2409,7 +2409,7 @@ model BundleComponent {
 
   // Compliance metadata
   ingredients     String?
-  allergens       String? // JSON array
+  allergens       String? // JSON {contains:string[],may_contain:string[]}; legacy rows may be arrays
   storage_temp    String? // "Frozen" | "Refrigerated" | "Shelf-stable"
   expiration_days Int?
 
@@ -2489,27 +2489,33 @@ model ChannelSKU {
   main_image_url String?
 
   // Phase 2.4 Stage 6 — Validation Pipeline. Per-channel pre-publish gate
-  // running 15 validators (universal + image + marketplace + identifier +
+  // running the registered validators (universal + image + marketplace + identifier +
   // operational). Status drives the can-publish-to-Stage-7 decision.
   //   PENDING       — never validated
   //   PASSED        — every validator passed (or warnings only)
   //   NEEDS_REVIEW  — at least one warning, no hard errors
   //   FAILED        — at least one error-severity violation
-  validation_status         String    @default("PENDING")
-  validation_errors         String? // JSON array of { validator_id, severity, message }
-  validated_at              DateTime?
-  validation_check_id       String?
-  validation_attempt_count  Int       @default(0)
+  validation_status        String    @default("PENDING")
+  validation_errors        String? // JSON array of { validator_id, severity, message }
+  validated_at             DateTime?
+  validation_check_id      String?
+  validation_attempt_count Int       @default(0)
+
+  // Sellable bundle quantity derived from component stock during Stage 6.
+  // Null means inventory is unknown and is a hard publish block; the Amazon
+  // payload must never invent an arbitrary quantity.
+  available_quantity   Int?
+  inventory_checked_at DateTime?
 
   // Phase 2.4 Stage 6 — operational fields validators check for presence.
   // Filled by promote-draft (or manually by operator). Defaults so existing
   // ChannelSKU rows don't need a backfill before the migration.
-  package_length_in   Float?
-  package_width_in    Float?
-  package_height_in   Float?
-  package_weight_oz   Float?
-  country_of_origin   String?  @default("US")
-  item_type           String? // Walmart taxonomy or Amazon item_type
+  package_length_in Float?
+  package_width_in  Float?
+  package_height_in Float?
+  package_weight_oz Float?
+  country_of_origin String? @default("US")
+  item_type         String? // Walmart taxonomy or Amazon item_type
 
   // Phase 2.5 Stage 7 — Distribution. Tracks the per-SKU submission to
   // its marketplace (Amazon Listings Items PUT or Walmart MP_ITEM feed).
@@ -2519,12 +2525,12 @@ model ChannelSKU {
   //   LIVE            — marketplace confirmed the listing is published
   //   FAILED          — submission rejected (issues in distribution_errors)
   //   PENDING_REVIEW  — marketplace requires manual seller-side action
-  listing_status              String    @default("PENDING")
-  submission_id               String? // Amazon submissionId or Walmart feedId
-  published_at                DateTime?
-  distribution_errors         String? // JSON array of {code, message, severity}
-  distribution_attempt_count  Int       @default(0)
-  last_status_check_at        DateTime?
+  listing_status             String    @default("PENDING")
+  submission_id              String? // Amazon submissionId or Walmart feedId
+  published_at               DateTime?
+  distribution_errors        String? // JSON array of {code, message, severity}
+  distribution_attempt_count Int       @default(0)
+  last_status_check_at       DateTime?
 
   // Relations
   lifecycle_logs    ListingLifecycleLog[]
@@ -2633,8 +2639,17 @@ model BundleDraft {
   draft_suggested_price_cents Int?
 
   // Status
-  status         String  @default("VARIATION_SELECTED") // LifecycleState
+  status         String    @default("VARIATION_SELECTED") // LifecycleState
   approval_notes String?
+  // Explicit human approval is recorded separately from the mutable lifecycle
+  // status so a later PUBLISHING/PUBLISHED transition does not erase the gate.
+  approved_at    DateTime?
+  approved_by    String?
+  published_at   DateTime?
+
+  // Stable recipe identity used to prevent concurrent/repeated studio runs from
+  // minting the same logical listing twice. Nullable for legacy drafts.
+  recipe_fingerprint String? @unique
 
   // Selected channels for distribution
   target_channels String // JSON array
@@ -2652,6 +2667,7 @@ model BundleDraft {
   compliance_checks ComplianceCheck[]
   variation_matrix  VariationMatrix?
   generated_content GeneratedContent[]
+  generation_work_items GenerationWorkItem[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -2659,6 +2675,7 @@ model BundleDraft {
   @@index([generation_job_id])
   @@index([status])
   @@index([compliance_status])
+  @@index([approved_at])
 }
 
 // StoreRegistry — pre-seeded registry of 37 sourcing stores (Walmart, BJ's,
@@ -2886,6 +2903,7 @@ model GenerationJob {
   research_pool  ResearchPool[]
   bundle_drafts  BundleDraft[]
   master_bundles MasterBundle[]
+  work_items     GenerationWorkItem[]
 
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
@@ -2893,6 +2911,34 @@ model GenerationJob {
 
   @@index([status])
   @@index([current_stage])
+}
+
+// Durable per-spec queue for Studio mass generation. `bundles_generated`
+// counts only SUCCEEDED items; locks and retry attempts live here so a timeout
+// cannot consume a listing slot or silently complete a partial batch.
+model GenerationWorkItem {
+  id                String        @id @default(cuid())
+  generation_job_id String
+  generation_job    GenerationJob @relation(fields: [generation_job_id], references: [id], onDelete: Cascade)
+
+  spec_index      Int
+  spec_json       String
+  fingerprint     String
+  status          String    @default("PENDING") // PENDING | RUNNING | SUCCEEDED | FAILED | SKIPPED
+  attempts        Int       @default(0)
+  locked_at       DateTime?
+  last_error      String?
+  bundle_draft_id String?
+  bundle_draft    BundleDraft? @relation(fields: [bundle_draft_id], references: [id], onDelete: SetNull)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([generation_job_id, spec_index])
+  @@unique([generation_job_id, fingerprint])
+  @@index([generation_job_id, status])
+  @@index([bundle_draft_id])
+  @@index([locked_at])
 }
 
 // GenerationStage — per-stage execution log for a GenerationJob.
@@ -3269,14 +3315,14 @@ model GeneratedContent {
   cache_read_tokens     Int     @default(0)
   cache_write_tokens    Int     @default(0)
 
-  /// Phase 2.3 Stage 5 — main image generated via OpenAI gpt-image-1.
+  /// Phase 2.3 Stage 5 — main image generated via the GPT Image 2 worker.
   /// One image per row (no template-sibling sharing here — each channel
   /// pays its own image cost since main image is the per-channel ASIN-
   /// visible asset). Set to the R2 public URL on success.
-  main_image_url               String?
-  image_generation_cost_cents  Int       @default(0)
-  image_retry_count            Int       @default(0)
-  image_generated_at           DateTime?
+  main_image_url              String?
+  image_generation_cost_cents Int       @default(0)
+  image_retry_count           Int       @default(0)
+  image_generated_at          DateTime?
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -3306,7 +3352,7 @@ model WalmartListingRetirement {
   productTitle  String?
   previousQty   Int?
   reason        String?
-  triggeredFrom String?   // e.g. "procurement:200014888886083"
+  triggeredFrom String? // e.g. "procurement:200014888886083"
   searchQuery   String?
   retiredAt     DateTime  @default(now())
   rolledBackAt  DateTime?
@@ -3348,17 +3394,17 @@ model BoxSizePreset {
 // Starfit) but keeps the real third-party brand + weight, so the operator
 // can paste the result straight into an online-store search.
 model ProductTitleCache {
-  id          String   @id @default(cuid())
+  id         String   @id @default(cuid())
   // Raw title as it came from Veeqo / the marketplace. Keyed verbatim — case
   // matters because a different case usually means a different listing.
-  rawTitle    String   @unique
-  cleanTitle  String
+  rawTitle   String   @unique
+  cleanTitle String
   // Provenance — "ai" when generated by Claude Haiku, "regex" when an
   // operator-side fallback wrote it (we record fallback misses so a later
   // backfill can promote them to AI-quality entries when the API is healthy).
-  source      String   @default("ai")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  source     String   @default("ai")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 // Cache of pack-size extractions from marketplace titles — see the
@@ -3394,10 +3440,10 @@ model ProductPackSizeCache {
 // Payout — one marketplace deposit (Amazon settlement / Walmart recon payment).
 // `netAmount` (already net of marketplace fees) is the cash we distribute.
 model Payout {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   // business = marketplace payouts (Finance Core). personal = personal income
   // (owner's draw from the business + manual). Same waterfall engine, separate pool.
-  scope       String  @default("business")
+  scope       String   @default("business")
   marketplace String // amazon | walmart | personal
   storeIndex  Int? // source store/account (for traceability; pool is global)
   entity      String? // legal entity name (denormalized for later per-entity P&L)
@@ -3408,10 +3454,10 @@ model Payout {
   grossSales  Float? // optional: gross before fees
   feesTotal   Float? // optional: marketplace fees deducted
   netAmount   Float // the distributable cash (net deposit)
-  currency    String  @default("USD")
+  currency    String   @default("USD")
   // Set once this payout has been run through fund distribution.
-  distributed Boolean @default(false)
-  source      String  @default("settlement") // settlement | recon | manual
+  distributed Boolean  @default(false)
+  source      String   @default("settlement") // settlement | recon | manual
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -3425,17 +3471,17 @@ model Payout {
 // allocationType="percent", else an absolute USD amount per run. `balance` is the
 // running accumulated amount. Seed: one RESERVE (priority 0) + one FREE (last).
 model Fund {
-  id             String  @id @default(cuid())
-  scope          String  @default("business") // business | personal
+  id             String   @id @default(cuid())
+  scope          String   @default("business") // business | personal
   name           String
   group          String // RESERVE | FP1 | FP2 | FREE
-  allocationType String  @default("percent") // percent | absolute
-  value          Float   @default(0)
-  priority       Int     @default(100) // lower = filled earlier
+  allocationType String   @default("percent") // percent | absolute
+  value          Float    @default(0)
+  priority       Int      @default(100) // lower = filled earlier
   cap            Float? // optional per-run ceiling (USD)
-  balance        Float   @default(0)
-  active         Boolean @default(true)
-  isSystem       Boolean @default(false) // RESERVE / FREE seeded funds
+  balance        Float    @default(0)
+  active         Boolean  @default(true)
+  isSystem       Boolean  @default(false) // RESERVE / FREE seeded funds
   notes          String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -3463,13 +3509,13 @@ model FundAllocation {
 // one row per (payout, bucket) with the signed summed amount. Powers the
 // Financial Plan statement view (sales / shipping / refunds / fees / ads / ...).
 model PayoutLine {
-  id        String   @id @default(cuid())
-  payoutId  String
+  id          String   @id @default(cuid())
+  payoutId    String
   marketplace String
-  bucket    String // sales | shipping_income | refunds | referral_fee | fba_fee | storage_fee | shipping_cost | ads | promo | fee_other | adjustment | tax_collected | reserve | other
-  amount    Float // signed, summed
-  count     Int    @default(0)
-  createdAt DateTime @default(now())
+  bucket      String // sales | shipping_income | refunds | referral_fee | fba_fee | storage_fee | shipping_cost | ads | promo | fee_other | adjustment | tax_collected | reserve | other
+  amount      Float // signed, summed
+  count       Int      @default(0)
+  createdAt   DateTime @default(now())
 
   @@index([payoutId])
   @@index([bucket])
@@ -3504,33 +3550,33 @@ model FundEntry {
 // drives the monthly obligation per fund (weekly × 52/12). Amounts are editable —
 // Vladimir keeps them current. Optional product/marketplace attribution.
 model RecurringExpense {
-  id          String   @id @default(cuid())
-  scope       String   @default("business") // business | personal
-  name        String
-  category    String // = fund name (FP1)
-  amount      Float
-  frequency   String   @default("monthly") // monthly | weekly | one_time
-  currency    String   @default("USD")
+  id              String   @id @default(cuid())
+  scope           String   @default("business") // business | personal
+  name            String
+  category        String // = fund name (FP1)
+  amount          Float
+  frequency       String   @default("monthly") // monthly | weekly | one_time
+  currency        String   @default("USD")
   // Personal bills: owner = whose bill (Владимир | Анна); dueDay = day of month it's
   // due (drives the personal payment calendar). Null for business OpEx.
-  owner       String?
-  dueDay      Int?
-  marketplace String? // optional channel attribution
-  product     String? // optional product attribution
-  isAdSpend   Boolean  @default(false)
-  active      Boolean  @default(true)
-  source      String   @default("sellerboard") // sellerboard | manual
-  notes       String?
+  owner           String?
+  dueDay          Int?
+  marketplace     String? // optional channel attribution
+  product         String? // optional product attribution
+  isAdSpend       Boolean  @default(false)
+  active          Boolean  @default(true)
+  source          String   @default("sellerboard") // sellerboard | manual
+  notes           String?
   // Accrual ledger: `accrued` = начислено (gross, cumulative). Non-salary grows it
   // daily (monthly cost ÷ 30.44) via the meter; SALARY grows it per worked day via
   // the timesheet (toggle ±perDay). `paid` = выплачено (cumulative, grows when you
   // press Paid). Owed (остаток) = accrued − paid. `lastAccruedDate` = cursor for the
   // daily meter (non-salary only).
-  accrued         Float   @default(0)
-  paid            Float   @default(0)
+  accrued         Float    @default(0)
+  paid            Float    @default(0)
   lastAccruedDate String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([category])
   @@index([active])
@@ -3541,27 +3587,27 @@ model RecurringExpense {
 // vision (merchant/total/tax/date), then turned into a spend (FundEntry debit)
 // against the chosen fund (resale buys → Cost-of-Goods / Restock reserve fund).
 model Receipt {
-  id          String   @id @default(cuid())
-  scope       String   @default("business") // business | personal
-  imageUrl    String
-  merchant    String?
-  total       Float?
-  tax         Float?
-  date        String? // ISO date from the receipt
-  currency    String   @default("USD")
-  status      String   @default("parsed") // parsed | saved | home | review | refund
-  fundId      String?
-  fundEntryId String? // the spend entry created on save
-  notes       String?
-  rawText     String? // raw vision JSON for audit
+  id             String   @id @default(cuid())
+  scope          String   @default("business") // business | personal
+  imageUrl       String
+  merchant       String?
+  total          Float?
+  tax            Float?
+  date           String? // ISO date from the receipt
+  currency       String   @default("USD")
+  status         String   @default("parsed") // parsed | saved | home | review | refund
+  fundId         String?
+  fundEntryId    String? // the spend entry created on save
+  notes          String?
+  rawText        String? // raw vision JSON for audit
   // Email auto-ingest (Jackie spec): online purchase/refund receipts parsed from Gmail.
   channel        String? // walmart_business | walmart_com | target | bjs | samsclub | instacart | doordash | amazon
   orderId        String? // store order number — dedup key with channel
   classification String? // business | home | unknown
   sourceInbox    String?
   emailId        String? // gmail message id
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([fundId])
   @@index([status])
@@ -3586,19 +3632,19 @@ model TimeLog {
 // Listing debts does NOT make the fund negative — debts are a separate ledger; the
 // fund balance is money accumulated toward repaying them.
 model Debt {
-  id           String   @id @default(cuid())
-  scope        String   @default("business") // business | personal
-  fundId       String
-  amount       Float // original amount owed
-  paid         Float    @default(0)
+  id               String   @id @default(cuid())
+  scope            String   @default("business") // business | personal
+  fundId           String
+  amount           Float // original amount owed
+  paid             Float    @default(0)
   // Personal loans (mortgage/auto/personal): owner = whose, dueDay = day of month,
   // apr = annual interest %, termMonths = remaining term, kind = loan type. These
   // power the personal calendar + Phase-2 amortization/payoff. Null for business debts.
-  owner        String?
-  dueDay       Int?
-  apr          Float?
-  termMonths   Int?
-  kind         String? // mortgage | auto | personal | student | sba | other
+  owner            String?
+  dueDay           Int?
+  apr              Float?
+  termMonths       Int?
+  kind             String? // mortgage | auto | personal | student | sba | other
   // For installment/scheduled debts (рассрочка): the per-period installment amount
   // + its frequency. null = a lump/overdue debt with no schedule. The averaged
   // monthly equivalent drives the fund's monthly "need".
@@ -3609,11 +3655,11 @@ model Debt {
   // Installments fund's "Needed". null cursor = not yet ticked.
   accrued          Float    @default(0)
   lastAccruedDate  String?
-  description  String?
-  dateIncurred String? // ISO date the debt first arose (to see how old it is)
-  status       String   @default("open") // open | settled
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  description      String?
+  dateIncurred     String? // ISO date the debt first arose (to see how old it is)
+  status           String   @default("open") // open | settled
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([fundId])
   @@index([scope])
@@ -3621,17 +3667,17 @@ model Debt {
 
 // FinancePlanRun — one weekly (or manual) distribution pass.
 model FinancePlanRun {
-  id               String  @id @default(cuid())
-  scope            String  @default("business") // business | personal
+  id               String   @id @default(cuid())
+  scope            String   @default("business") // business | personal
   runDate          String // ISO date
   periodStart      String?
   periodEnd        String?
-  totalIn          Float   @default(0)
-  totalReserved    Float   @default(0)
-  totalDistributed Float   @default(0)
-  reserveRateUsed  Float   @default(0)
-  payoutCount      Int     @default(0)
-  source           String  @default("manual") // manual | cron
+  totalIn          Float    @default(0)
+  totalReserved    Float    @default(0)
+  totalDistributed Float    @default(0)
+  reserveRateUsed  Float    @default(0)
+  payoutCount      Int      @default(0)
+  source           String   @default("manual") // manual | cron
   notes            String?
   createdAt        DateTime @default(now())
 

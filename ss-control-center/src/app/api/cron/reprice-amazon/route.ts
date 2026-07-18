@@ -46,8 +46,9 @@ function buildSummary(results: RunResult[], dryRun: boolean): string {
         ? ""
         : "";
     const floorNote = r.skippedFloor > 0 ? `, придержано по марже ${r.skippedFloor}` : "";
+    const lockedNote = r.skippedLocked > 0 ? `, фиксированная база ${r.skippedLocked}` : "";
     lines.push(
-      `\n<b>store${r.storeIndex}</b>: проверено ${r.scanned}, изменено ${r.repriced}, на ручную проверку ${r.skippedCap}${floorNote}, ошибок ${r.errors}${note}`,
+      `\n<b>store${r.storeIndex}</b>: проверено ${r.scanned}, изменено ${r.repriced}, на ручную проверку ${r.skippedCap}${floorNote}${lockedNote}, ошибок ${r.errors}${note}`,
     );
     for (const c of r.changes.slice(0, 15)) {
       const title = (c.title ?? c.sku).slice(0, 40);
@@ -91,6 +92,7 @@ export async function GET(request: NextRequest) {
         storeIndex,
         scanned: 0,
         repriced: 0,
+        skippedLocked: 0,
         skippedCap: 0,
         skippedFloor: 0,
         noCompetition: 0,

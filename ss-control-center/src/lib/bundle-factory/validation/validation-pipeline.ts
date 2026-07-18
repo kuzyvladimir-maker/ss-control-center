@@ -1,7 +1,7 @@
 /**
  * Phase 2.4 Stage 6 — Validation pipeline orchestrator.
  *
- * Runs the 15 validators against one ChannelSKU (or every CAN_PUBLISH
+ * Runs the registered validators against one ChannelSKU (or every CAN_PUBLISH
  * ChannelSKU of a BundleDraft) and persists status onto each row.
  *
  * Aggregation rule:
@@ -15,15 +15,14 @@
  *   ChannelSKU.validated_at              = now
  *   ChannelSKU.validation_attempt_count  += 1
  *
- * Validators run sequentially (15 fast checks; the only slow ones —
+ * Validators run sequentially (mostly fast checks; the only slow ones —
  * image fetch, vision check, Veeqo lookup — run async with timeouts).
  * Sequential keeps test determinism and lets us short-circuit on a
  * future revision without rewriting the loop.
  *
  * Draft-level transition:
  *   IMAGE_GENERATED → VALIDATING on entry
- *   → VALIDATED when every CAN_PUBLISH SKU is publishable (PASSED or
- *      NEEDS_REVIEW — warnings don't block publish, per the operator decision)
+ *   → VALIDATED only when every CAN_PUBLISH SKU is PASSED
  *   → ERROR when zero publishable after the run (all FAILED) — operator
  *      handles the manual-review queue.
  *
@@ -57,7 +56,10 @@ import { validatorPackagingDims } from "./validators/validator-packaging-dims";
 import { validatorWeight } from "./validators/validator-weight";
 import { validatorCountryOfOrigin } from "./validators/validator-country-of-origin";
 import { validatorMarginFloor } from "./validators/validator-margin-floor";
+import { validatorRecipeContent } from "./validators/validator-recipe-content";
+import { validatorCanonicalPrice } from "./validators/validator-canonical-price";
 import { getMarginFloorPct } from "../margin-config";
+import { INVENTORY_MAX_AGE_MS } from "../inventory-policy";
 
 /**
  * Public list — exported so tests and the UI can enumerate "which
@@ -68,6 +70,7 @@ export const VALIDATORS: Array<{ id: string; fn: ValidatorFn }> = [
   { id: "validator-bullets",              fn: validatorBullets },
   { id: "validator-description",          fn: validatorDescription },
   { id: "validator-brand-field",          fn: validatorBrandField },
+  { id: "validator-recipe-content",       fn: validatorRecipeContent },
   { id: "validator-compliance-rerun",     fn: validatorComplianceRerun },
   { id: "validator-image-dimensions",     fn: validatorImageDimensions },
   { id: "validator-image-format",         fn: validatorImageFormat },
@@ -80,6 +83,7 @@ export const VALIDATORS: Array<{ id: string; fn: ValidatorFn }> = [
   { id: "validator-weight",               fn: validatorWeight },
   { id: "validator-country-of-origin",    fn: validatorCountryOfOrigin },
   { id: "validator-margin-floor",         fn: validatorMarginFloor },
+  { id: "validator-canonical-price",      fn: validatorCanonicalPrice },
 ];
 
 /**
@@ -99,6 +103,9 @@ export async function runValidation(
       brand: true,
       category: true,
       packaging_spec: true,
+      cost_breakdown: true,
+      pack_count: true,
+      suggested_price_cents: true,
       total_weight_oz: true,
       main_image_url: true,
       estimated_cost_cents: true,
@@ -107,6 +114,7 @@ export async function runValidation(
           product_name: true,
           manufacturer_brand: true,
           manufacturer_upc: true,
+          flavor: true,
           qty: true,
         },
       },
@@ -127,6 +135,9 @@ export async function runValidation(
           brand: masterBundle.brand,
           category: masterBundle.category,
           packaging_spec: masterBundle.packaging_spec,
+          cost_breakdown: masterBundle.cost_breakdown,
+          pack_count: masterBundle.pack_count,
+          suggested_price_cents: masterBundle.suggested_price_cents,
           total_weight_oz: masterBundle.total_weight_oz,
           main_image_url: masterBundle.main_image_url,
           estimated_cost_cents: masterBundle.estimated_cost_cents,
@@ -141,17 +152,14 @@ export async function runValidation(
     try {
       results.push(await v.fn(input));
     } catch (e) {
-      // A validator that throws (Veeqo timeout, R2 fetch error, image
-      // probe failure) gets recorded as severity='warning' instead of
-      // 'error' so an infrastructure blip on one check can't poison
-      // the whole SKU. The error still bubbles up through validation_
-      // errors + the NEEDS_REVIEW status for the operator to inspect.
+      // Fail closed. An unavailable inventory/image/semantic check means the
+      // listing has not been proven correct and cannot publish.
       const message = e instanceof Error ? e.message : String(e);
       console.error(`[validation-pipeline] ${v.id} threw: ${message}`);
       results.push({
         validator_id: v.id,
         passed: false,
-        severity: "warning",
+        severity: "error",
         message: `Validator threw: ${message}`,
       });
     }
@@ -199,6 +207,18 @@ export async function persistValidation(
       message: r.message ?? "",
       details: r.details ?? null,
     }));
+  const inventoryResult = outcome.results.find(
+    (result) => result.validator_id === "validator-inventory",
+  );
+  const inventoryQuantity = Number(
+    inventoryResult?.details?.bundle_available_quantity,
+  );
+  const availableQuantity =
+    inventoryResult?.passed === true &&
+    Number.isInteger(inventoryQuantity) &&
+    inventoryQuantity > 0
+      ? inventoryQuantity
+      : null;
 
   await prisma.channelSKU.update({
     where: { id: sku.id },
@@ -207,14 +227,17 @@ export async function persistValidation(
       validation_errors: errorPayload.length ? JSON.stringify(errorPayload) : null,
       validated_at: new Date(),
       validation_attempt_count: { increment: 1 },
+      available_quantity: availableQuantity,
+      inventory_checked_at: new Date(),
+      lifecycle_status: outcome.status === "PASSED" ? "VALIDATED" : "ERROR",
     },
   });
 
   await logLifecycle({
     entity_type: "ChannelSKU",
     entity_id: sku.id,
-    from_status: sku.validation_status,
-    to_status: outcome.status,
+    from_status: sku.lifecycle_status,
+    to_status: outcome.status === "PASSED" ? "VALIDATED" : "ERROR",
     reason: outcome.status === "PASSED"
       ? "All validators passed"
       : outcome.status === "NEEDS_REVIEW"
@@ -340,18 +363,28 @@ export async function runValidationForDraft(
     });
   }
 
-  // A SKU is publishable when it has no hard error: PASSED or NEEDS_REVIEW
-  // (warnings only). Per Vladimir 2026-06-26 advisory warnings don't block
-  // publish, so the draft reaches VALIDATED when every SKU is publishable.
-  const publishable = per_sku.filter(
-    (s) => s.status === "PASSED" || s.status === "NEEDS_REVIEW",
-  ).length;
+  const publishable = per_sku.filter((s) => s.status === "PASSED").length;
   const failed = per_sku.filter((s) => s.status === "FAILED").length;
+  const [allSkuCount, allReadyCount] = await Promise.all([
+    prisma.channelSKU.count({
+      where: { master_bundle_id: draft.master_bundle_id },
+    }),
+    prisma.channelSKU.count({
+      where: {
+        master_bundle_id: draft.master_bundle_id,
+        validation_status: "PASSED",
+        available_quantity: { gt: 0 },
+        inventory_checked_at: {
+          gte: new Date(Date.now() - INVENTORY_MAX_AGE_MS),
+        },
+      },
+    }),
+  ]);
 
   let next = draft.status;
-  if (publishable === per_sku.length) {
+  if (allSkuCount > 0 && allReadyCount === allSkuCount) {
     next = "VALIDATED";
-  } else if (failed === per_sku.length && fromStatus === "IMAGE_GENERATED") {
+  } else {
     next = "ERROR";
   }
   if (next !== draft.status) {
@@ -366,15 +399,15 @@ export async function runValidationForDraft(
       to_status: next,
       reason:
         next === "VALIDATED"
-          ? `All ${publishable}/${per_sku.length} ChannelSKUs publishable (PASSED or warnings-only)`
-          : `Validation produced no publishable SKUs (${failed}/${per_sku.length} FAILED)`,
+          ? `All ${allReadyCount}/${allSkuCount} ChannelSKUs passed every validator with verified inventory`
+          : `Validation incomplete: ${allReadyCount}/${allSkuCount} total ChannelSKUs are fully ready (${failed}/${per_sku.length} checked SKUs failed)`,
       actor: input.actor ?? "system",
       details: { per_sku: per_sku.map((s) => ({ channel: s.channel, status: s.status })) },
     });
   }
 
   return {
-    ok: publishable > 0,
+    ok: allSkuCount > 0 && allReadyCount === allSkuCount,
     bundle_draft_id: draft.id,
     master_bundle_id: draft.master_bundle_id,
     per_sku,

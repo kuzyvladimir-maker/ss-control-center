@@ -28,6 +28,12 @@ import { spApiDelete, MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { logLifecycle } from "@/lib/bundle-factory/lifecycle-log";
 import { submitToAmazon } from "./amazon-publish";
+import {
+  parseVerifiedPhysicalPackageSpecs,
+  physicalPackageSpecsMatchSku,
+} from "../physical-package-specs";
+import { amazonAllergensFromStoredDeclarations } from "../allergen-declaration";
+import { isOwnBrandPassthrough } from "../own-brand";
 
 /**
  * Return leaked RESERVED barcodes (past their TTL) to AVAILABLE. reserve →
@@ -228,6 +234,54 @@ export async function healUpcConflict(
   sku: ChannelSKU,
   opts: { storeIndex: number; brand?: string | null; productType: string; category?: string | null },
 ): Promise<HealResult> {
+  // Resolve every marketplace-facing physical fact before the destructive
+  // delete/burn sequence. A legacy calculated weight must never cause us to
+  // delete a contribution only to discover that the replacement PUT is gated.
+  const master = await prisma.masterBundle.findUnique({
+    where: { id: sku.master_bundle_id },
+    select: {
+      packaging_spec: true,
+      category: true,
+      components: { select: { allergens: true } },
+    },
+  });
+  const physicalPackageSpecs = parseVerifiedPhysicalPackageSpecs(
+    master?.packaging_spec,
+  );
+  if (
+    !physicalPackageSpecs ||
+    !physicalPackageSpecsMatchSku(sku, physicalPackageSpecs)
+  ) {
+    return {
+      healed: false,
+      republished: false,
+      reason:
+        "verified_physical_package_missing_or_mismatched_before_delete",
+    };
+  }
+  const foodListing =
+    isOwnBrandPassthrough(opts.brand) ||
+    /FROZEN|REFRIGERATED|CHILLED|SHELF|GROCERY|FOOD|DRY/i.test(
+      opts.category ?? master?.category ?? "",
+    );
+  let verifiedAllergens: string[] | null = null;
+  try {
+    if (foodListing) {
+      if (!master?.components.length) {
+        throw new Error("no component declarations");
+      }
+      verifiedAllergens = amazonAllergensFromStoredDeclarations(
+        master.components.map((component) => component.allergens),
+      );
+    }
+  } catch {
+    return {
+      healed: false,
+      republished: false,
+      reason: "verified_allergen_declarations_missing_before_delete",
+    };
+  }
+
   // 1) Remove the collided contribution (fresh PUT with a new UPC won't clear it).
   const del = await deleteAmazonListing(sku, opts.storeIndex);
   if (!del.ok) {
@@ -256,8 +310,10 @@ export async function healUpcConflict(
     productType: opts.productType,
     brand: opts.brand,
     category: opts.category,
+    physicalPackageSpecs,
+    verifiedAllergens,
     dryRun: false,
-    validatePreviewFirst: false,
+    validatePreviewFirst: true,
   });
   await prisma.channelSKU
     .update({

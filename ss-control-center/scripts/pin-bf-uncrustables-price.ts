@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Pin the 3 Bundle-Factory Uncrustables to our target item price AND cap them
 // with maximum_seller_allowed_price = target, so the ChannelMAX repricer (which
 // drives store1 and reverted the plain reprice back up toward list_price within
@@ -15,6 +16,7 @@ config({ path: ".env" });
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { getListing, patchListing } from "@/lib/amazon-sp-api/listings";
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
+import { blockLegacyUncrustablesPriceMutation } from "@/lib/pricing/uncrustables-policy";
 
 const STORE = 1;
 const TARGETS = [
@@ -28,6 +30,7 @@ function scheduleVal(v: number) {
 }
 
 async function main() {
+  blockLegacyUncrustablesPriceMutation("pin-bf-uncrustables-price.ts");
   const apply = process.argv.includes("--apply");
   const sellerId = await getMerchantToken(STORE);
   console.log(`\nMode: ${apply ? "APPLY (live)" : "PREVIEW"}\n`);

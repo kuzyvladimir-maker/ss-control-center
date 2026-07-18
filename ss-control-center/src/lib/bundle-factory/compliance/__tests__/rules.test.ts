@@ -313,6 +313,20 @@ test("rule-8 — 'sold and shipped' bullet fails with sale_shipping_claims", () 
   );
 });
 
+test("rule-8 — inflected frozen-delivery claims fail closed", () => {
+  for (const claim of [
+    "The sandwiches are shipped frozen.",
+    "The sandwiches are delivered frozen.",
+    "The sandwiches arrive frozen.",
+  ]) {
+    const input = baseInput();
+    input.bullets = [claim, "Keep frozen until ready to thaw."];
+    const r = rulePromotionalLanguage(input);
+    assert.equal(r.passed, false, claim);
+    assert.equal(r.reason, "sale_shipping_claims", claim);
+  }
+});
+
 test("rule-8 — 'Ships frozen' and 'limited time' are caught too", () => {
   for (const bad of [
     "Ships frozen in an insulated cooler.",

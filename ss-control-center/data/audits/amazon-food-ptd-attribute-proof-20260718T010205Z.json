@@ -1,0 +1,549 @@
+{
+  "schema_version": "amazon-food-ptd-attribute-proof/v1",
+  "immutable": true,
+  "fetched_at": "2026-07-18T01:02:05.941Z",
+  "completed_at": "2026-07-18T01:03:50Z",
+  "evidence": {
+    "source": "Amazon Selling Partner API Product Type Definitions API live response",
+    "operation": "getDefinitionsProductType",
+    "endpoint_template": "/definitions/2020-09-01/productTypes/{productType}",
+    "store_id": "store1",
+    "marketplace_id": "ATVPDKIKX0DER",
+    "requirements": "LISTING",
+    "requirements_enforced": "ENFORCED",
+    "locale": "en_US",
+    "schema_resource_urls_omitted": true,
+    "schema_resource_urls_omitted_reason": "Amazon returns expiring signed URLs; stable schema IDs and SHA-256 hashes are recorded instead."
+  },
+  "scope": {
+    "ledger_path": "data/audits/uncrustables-ledger-20260717T232140568Z-offline.json",
+    "ledger_sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f",
+    "live_listing_count": 164,
+    "product_type_counts": {
+      "GROCERY": 149,
+      "FOOD": 14,
+      "PASTRY": 1
+    }
+  },
+  "shared_attribute_contract": {
+    "allergen_information": {
+      "type": "array",
+      "min_items": 1,
+      "min_unique_items": 1,
+      "max_unique_items": 20,
+      "selectors": [
+        "marketplace_id"
+      ],
+      "item_required": [
+        "value"
+      ],
+      "value_type": "string",
+      "full_enum_count": 184,
+      "full_enum_sha256": "c000c2b55d9a6bc6ad780b27afba80c3122dcdca0ec774ecb4aacb2aff5d8bb8",
+      "enum_tokens": [
+        "abalone",
+        "abalone_free",
+        "allergen_free",
+        "almonds",
+        "almonds_free",
+        "amberjack",
+        "amberjack_free",
+        "apple",
+        "apple_free",
+        "banana",
+        "banana_free",
+        "barley",
+        "barley_free",
+        "beef",
+        "beef_free",
+        "beef_gelatin",
+        "bpa_free",
+        "brazil_nuts",
+        "brazil_nuts_free",
+        "buckwheat",
+        "buckwheat_free",
+        "buckwheat_may_contain",
+        "butter",
+        "cashew_nut",
+        "cashews",
+        "cashews_free",
+        "celery",
+        "celery_free",
+        "celery_may_contain",
+        "cereals_containing_gluten",
+        "cereals_free_of_gluten",
+        "chicken_meat",
+        "chicken_meat_free",
+        "coconut",
+        "codfish",
+        "codfish_free",
+        "corn_free",
+        "crab",
+        "crab_free",
+        "crab_may_contain",
+        "crustacean",
+        "crustacean_free",
+        "crustaceans",
+        "crustaceans_may_contain",
+        "dairy",
+        "dairy_free",
+        "dairy_may_contain",
+        "drug_free",
+        "egg",
+        "egg_free",
+        "egg_may_contain",
+        "egg_shells",
+        "eggs",
+        "fat_free",
+        "fish",
+        "fish_free",
+        "fish_gelatin",
+        "fish_gelatin_free",
+        "fish_may_contain",
+        "fish_oil",
+        "gelatin",
+        "gelatin_free",
+        "gluten",
+        "gluten_free",
+        "gluten_may_contain",
+        "grain_free",
+        "hazelnut",
+        "hazelnuts",
+        "hazelnuts_free",
+        "hypoallergenic",
+        "kamut",
+        "kamut_free",
+        "kiwi",
+        "kiwi_free",
+        "lactose",
+        "lactose_free",
+        "lactose_may_contain",
+        "latex",
+        "liquorice",
+        "lupin",
+        "lupin_free",
+        "lupin_may_contain",
+        "macadamia",
+        "macadamia_nuts",
+        "macadamia_nuts_free",
+        "mackerel",
+        "mackerel_free",
+        "melon",
+        "melon_free",
+        "milk",
+        "milk_free",
+        "milk_may_contain",
+        "molluscs",
+        "molluscs_free",
+        "molluscs_may_contain",
+        "mushroom",
+        "mushroom_free",
+        "mustard",
+        "mustard_free",
+        "mustard_may_contain",
+        "non_gmo",
+        "nut",
+        "nut_free",
+        "nuts",
+        "oat",
+        "oat_free",
+        "oats",
+        "octopus",
+        "octopus_free",
+        "odor_free",
+        "orange",
+        "orange_free",
+        "other_nuts",
+        "pea_free",
+        "peach",
+        "peach_free",
+        "peanut",
+        "peanut_free",
+        "peanuts",
+        "peanuts_may_contain",
+        "pecan_nuts",
+        "pecan_nuts_free",
+        "pecans",
+        "pine_nut",
+        "pine_nuts",
+        "pistachio_nuts",
+        "pistachio_nuts_free",
+        "pistachios",
+        "pork",
+        "pork_free",
+        "potato_free",
+        "preservative_free",
+        "rawhide_free",
+        "rye",
+        "rye_free",
+        "salmon",
+        "salmon_free",
+        "salmon_roe",
+        "salmon_roe_free",
+        "scad",
+        "scad_free",
+        "scallop",
+        "scallop_free",
+        "seafood",
+        "seafood_free",
+        "sesame",
+        "sesame_may_contain",
+        "sesame_seeds",
+        "sesame_seeds_free",
+        "shellfish",
+        "shellfish_free",
+        "shellfish_may_contain",
+        "shrimp",
+        "shrimp_free",
+        "shrimp_may_contain",
+        "soy",
+        "soy_free",
+        "soy_may_contain",
+        "spelt",
+        "spelt_free",
+        "squid",
+        "squid_free",
+        "sulfites",
+        "sulfites_may_contain",
+        "sulfur_dioxide",
+        "sulphite",
+        "sulphites",
+        "sulphites_free",
+        "sulphur_dioxide",
+        "sulphur_dioxide_free",
+        "sulphur_dioxide_may_contain",
+        "tree_nut_free",
+        "tree_nuts",
+        "tree_nuts_may_contain",
+        "tuna",
+        "tuna_free",
+        "walnut",
+        "walnut_free",
+        "walnuts",
+        "wheat",
+        "wheat_free",
+        "wheat_may_contain",
+        "yam",
+        "yam_free"
+      ],
+      "may_contain_enum_count": 22,
+      "may_contain_enum_sha256": "2077dc3016526eabb50c35b7e2d466761d5fa80dff01cbe2bcb951e66f311275",
+      "may_contain_enum_tokens": [
+        "buckwheat_may_contain",
+        "celery_may_contain",
+        "crab_may_contain",
+        "crustaceans_may_contain",
+        "dairy_may_contain",
+        "egg_may_contain",
+        "fish_may_contain",
+        "gluten_may_contain",
+        "lactose_may_contain",
+        "lupin_may_contain",
+        "milk_may_contain",
+        "molluscs_may_contain",
+        "mustard_may_contain",
+        "peanuts_may_contain",
+        "sesame_may_contain",
+        "shellfish_may_contain",
+        "shrimp_may_contain",
+        "soy_may_contain",
+        "sulfites_may_contain",
+        "sulphur_dioxide_may_contain",
+        "tree_nuts_may_contain",
+        "wheat_may_contain"
+      ],
+      "uncrustables_repair_tokens": {
+        "contains": [
+          "milk",
+          "peanuts",
+          "tree_nuts",
+          "wheat"
+        ],
+        "may_contain": [
+          "milk_may_contain",
+          "peanuts_may_contain",
+          "tree_nuts_may_contain",
+          "wheat_may_contain"
+        ]
+      },
+      "normalization_notes": [
+        "Amazon has no hazelnut_may_contain enum token; an authoritative Hazelnut may-contain declaration maps to tree_nuts_may_contain.",
+        "For the repair contract, an authoritative Hazelnut contains declaration maps to tree_nuts.",
+        "Soy and soy_may_contain are valid schema tokens but must not be inferred from soybean oil; use only an authoritative allergen declaration."
+      ]
+    },
+    "ingredients": {
+      "type": "array",
+      "min_items": 1,
+      "min_unique_items": 1,
+      "max_unique_items": 1000,
+      "selectors": [
+        "marketplace_id",
+        "language_tag"
+      ],
+      "item_required": [
+        "language_tag",
+        "value"
+      ],
+      "value_type": "string",
+      "max_utf8_bytes": 6000
+    },
+    "each_unit_count": {
+      "description": "The number of units in an each; where an each is the smallest component of a product with a UPC and the unit is how the each is measured.",
+      "type": "array",
+      "min_items": 1,
+      "min_unique_items": 1,
+      "max_unique_items": 1,
+      "selectors": [
+        "marketplace_id"
+      ],
+      "item_required": [
+        "value"
+      ],
+      "value_type": "number"
+    },
+    "number_of_items": {
+      "type": "array",
+      "max_unique_items": 1,
+      "selectors": [
+        "marketplace_id"
+      ],
+      "item_required": [
+        "value"
+      ],
+      "value_type": "integer",
+      "minimum": 0,
+      "maximum": 999999999999
+    },
+    "item_package_quantity": {
+      "type": "array",
+      "max_unique_items": 1,
+      "selectors": [
+        "marketplace_id"
+      ],
+      "item_required": [
+        "value"
+      ],
+      "value_type": "integer",
+      "minimum": 1
+    },
+    "is_expiration_dated_product": {
+      "type": "array",
+      "max_unique_items": 1,
+      "selectors": [
+        "marketplace_id"
+      ],
+      "item_required": [
+        "value"
+      ],
+      "value_type": "boolean",
+      "enum": [
+        false,
+        true
+      ]
+    },
+    "product_expiration_type": {
+      "type": "array",
+      "max_unique_items": 1,
+      "selectors": [
+        "marketplace_id",
+        "language_tag"
+      ],
+      "item_required": [
+        "language_tag",
+        "value"
+      ],
+      "value_type": "string",
+      "max_length": 555,
+      "enum": [
+        "Does Not Expire",
+        "Expiration Date Required",
+        "Expiration On Package",
+        "Production Date Required",
+        "Shelf Life"
+      ]
+    },
+    "fc_shelf_life": {
+      "type": "array",
+      "max_unique_items": 1,
+      "selectors": [
+        "marketplace_id"
+      ],
+      "item_required": [
+        "unit",
+        "value"
+      ],
+      "value_type": "number",
+      "minimum": 0,
+      "maximum": 1825,
+      "unit_enum": [
+        "days"
+      ]
+    },
+    "merchant_shipping_group": {
+      "type": "array",
+      "max_unique_items": 1,
+      "selectors": [
+        "marketplace_id"
+      ],
+      "item_required": [
+        "value"
+      ],
+      "value_type": "string",
+      "max_length": 100,
+      "semantic_note": "The PTD validates the string shape, not whether the shipping-template identifier is the intended seller template."
+    }
+  },
+  "product_types": {
+    "GROCERY": {
+      "schema_id": "https://schemas.amazon.com/selling-partners/definitions/product-types/schema/v1/GROCERY",
+      "schema_sha256": "6831273f91de779bb71538f1d9e3f691ed3c3da8657f2815a1fce2e8777d3c7e",
+      "product_type_version": {
+        "version": "UAAAAAAAAAAAAAAAAlYDyvI7xZOGRkmYHfVlQ7G4S",
+        "latest": true,
+        "release_candidate": false
+      },
+      "root_all_of_count": 59,
+      "attributes": {
+        "ingredients": {
+          "contract": "shared_attribute_contract.ingredients"
+        },
+        "allergen_information": {
+          "contract": "shared_attribute_contract.allergen_information"
+        },
+        "each_unit_count": {
+          "contract": "shared_attribute_contract.each_unit_count"
+        },
+        "unit_count": {
+          "max_unique_items": 1,
+          "item_required": [
+            "type",
+            "value"
+          ],
+          "value_type": "number",
+          "type_shape": {
+            "type": "object",
+            "required": [
+              "language_tag",
+              "value"
+            ]
+          },
+          "type_value_enum": [
+            "Count",
+            "Fl Oz",
+            "Foot",
+            "Gram",
+            "Ounce",
+            "Pound",
+            "Sq Ft"
+          ]
+        }
+      },
+      "conditional_paths": {
+        "each_unit_count_and_is_expiration_dated_product_for_non_parent_fba_or_unspecified_fulfillment": "#/allOf/20",
+        "expiration_item_subfields_when_true": "#/allOf/21",
+        "fc_shelf_life_and_product_expiration_type_when_true_non_parent": "#/allOf/22",
+        "unit_count_for_non_parent_sellable_listing": "#/allOf/23/allOf/0"
+      }
+    },
+    "FOOD": {
+      "schema_id": "https://schemas.amazon.com/selling-partners/definitions/product-types/schema/v1/FOOD",
+      "schema_sha256": "1f0dc4b484491c72ba36f52e7f7db0689fe9ff5534d7678cbf260d6026119293",
+      "product_type_version": {
+        "version": "UAAAAAAAAAAAAAAAAlYDyvI7xZOGRkmYHfVlQ7G4S",
+        "latest": true,
+        "release_candidate": false
+      },
+      "root_all_of_count": 75,
+      "attributes": {
+        "ingredients": {
+          "contract": "shared_attribute_contract.ingredients"
+        },
+        "allergen_information": {
+          "contract": "shared_attribute_contract.allergen_information"
+        },
+        "each_unit_count": {
+          "contract": "shared_attribute_contract.each_unit_count"
+        },
+        "unit_count": {
+          "max_unique_items": 1,
+          "item_required": [
+            "type",
+            "value"
+          ],
+          "value_type": "number",
+          "type_shape": {
+            "type": "object",
+            "required": [
+              "language_tag",
+              "value"
+            ]
+          },
+          "type_value_enum": [
+            "Count",
+            "Fl Oz",
+            "Ounce"
+          ]
+        }
+      },
+      "conditional_paths": {
+        "each_unit_count_and_is_expiration_dated_product_for_non_parent_fba_or_unspecified_fulfillment": "#/allOf/30",
+        "expiration_item_subfields_when_true": "#/allOf/31",
+        "fc_shelf_life_and_product_expiration_type_when_true_non_parent": "#/allOf/32",
+        "unit_count_for_non_parent_sellable_listing": "#/allOf/34/allOf/0"
+      }
+    },
+    "PASTRY": {
+      "schema_id": "https://schemas.amazon.com/selling-partners/definitions/product-types/schema/v1/PASTRY",
+      "schema_sha256": "d0d5ecadbdbf681344e555eafa6ded42d119e377ed4b07931e60b098519765fa",
+      "product_type_version": {
+        "version": "UAAAAAAAAAAAAAAAAlYDyvI7xZOGRkmYHfVlQ7G4S",
+        "latest": true,
+        "release_candidate": false
+      },
+      "root_all_of_count": 59,
+      "attributes": {
+        "ingredients": {
+          "contract": "shared_attribute_contract.ingredients"
+        },
+        "allergen_information": {
+          "contract": "shared_attribute_contract.allergen_information"
+        },
+        "each_unit_count": {
+          "contract": "shared_attribute_contract.each_unit_count"
+        },
+        "unit_count": {
+          "max_unique_items": 1,
+          "item_required": [
+            "type",
+            "value"
+          ],
+          "value_type": "number",
+          "type_shape": {
+            "type": "object",
+            "required": [
+              "language_tag",
+              "value"
+            ]
+          },
+          "type_value_enum": [
+            "Ounce"
+          ],
+          "repair_note": "PASTRY does not accept Count for unit_count; do not send a Count-typed unit_count PATCH to the PASTRY fallback listing."
+        }
+      },
+      "conditional_paths": {
+        "each_unit_count_and_is_expiration_dated_product_for_non_parent_fba_or_unspecified_fulfillment": "#/allOf/19",
+        "expiration_item_subfields_when_true": "#/allOf/20",
+        "fc_shelf_life_and_product_expiration_type_when_true_non_parent": "#/allOf/21",
+        "unit_count_for_non_parent_sellable_listing": "#/allOf/22/allOf/0"
+      }
+    }
+  },
+  "fail_closed_findings": [
+    "The schema proves attribute shape and allowed tokens, not the factual shelf-life duration; fc_shelf_life must not be invented from the schema.",
+    "The schema proves merchant_shipping_group accepts a string up to 100 characters, not which seller shipping-template identifier is operationally correct.",
+    "The captured conditional rules require each_unit_count and is_expiration_dated_product for non-parent FBA (AMAZON_NA) listings or when fulfillment_availability is unspecified; the rule does not establish that requirement for a listing whose fulfillment_channel_code is DEFAULT.",
+    "When is_expiration_dated_product is true for a non-parent listing, fc_shelf_life and product_expiration_type become conditionally required."
+  ]
+}

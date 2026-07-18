@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "df57c4f8-3190-4d78-9015-be7699ab7ef8",
+  "created_at": "2026-07-18T06:38:53.913Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "TY-AST2-JE9P:media",
+  "sku": "TY-AST2-JE9P",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "75c3b29669b3a0c8ba92d3fdbe84179682ac1f31335040df4087f2448d058e60",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "5237751e73d6426e9313dc06bb7d887b",
+    "issues": []
+  },
+  "sha256": "86724eabb3f024d48d7863282eabc6a16416b4c78c5b83d6ac146dd050e9c9ec"
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "4a8ef54c-ad9b-4a32-b50f-086a0ad4d384",
+  "created_at": "2026-07-18T07:49:40.375Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "UA-ASAO-RE7Q:media",
+  "sku": "UA-ASAO-RE7Q",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "7b41327eebc2e0c1a180817d1e7d3a34c07eeee3ce7d3f6a58cef0197f0957ac",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "ad8c5d0a8cf84ccca49ada060c2274a9",
+    "issues": []
+  },
+  "sha256": "47534fa5596321e39b531ab2fbe8a8ea31f42d0724f39cebe061c0cfb86dd8b6"
+}

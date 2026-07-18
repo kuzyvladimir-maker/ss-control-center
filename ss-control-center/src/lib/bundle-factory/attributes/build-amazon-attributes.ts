@@ -6,48 +6,51 @@
  * (arrays of `{ value, marketplace_id }`). Stored on ChannelSKU.attributes by
  * promote-draft and merged into the publish payload by amazon-publish.ts.
  *
- * Allergens are derived from the donor ingredient statement with a conservative
- * FDA "Big-9" keyword scan. This is BEST-EFFORT — the authoritative source is
- * the manufacturer label (which the curator disclaimer points buyers to), and
- * the Qualification Officer (Phase 4) verifies before publish.
+ * Ingredient statements are preserved exactly. Marketplace allergen and
+ * expiration declarations are emitted only when an explicit reviewed value is
+ * supplied; ingredient/category heuristics are never promoted as product facts.
  */
 
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import {
   temperatureRatingForCategory,
   CONDITION_TYPE_NEW_LISTINGS_API,
+  PRODUCT_EXPIRATION_TYPE_VALUES,
 } from "./valid-values-food";
 
-/** FDA Big-9 allergens + the ingredient keywords that imply each. Conservative:
- *  "butter"/"cream" are deliberately excluded from Milk to avoid "peanut butter"
- *  false positives — the manufacturer label remains authoritative.
- *  NOTE: `canonical` MUST be the exact Amazon allergen_information valid value —
- *  a LOWERCASE, underscore-joined token ("peanuts", "soy", "wheat", "tree_nuts",
- *  "sesame_seeds", "crustacean"). Verified 2026-07-01 against the live GROCERY +
- *  FOOD productType schema enums (both share the same 184-token lowercase list);
- *  Title-Case values ("Peanuts"/"Soy"/"Wheat") are REJECTED with error 90244. */
-const BIG_9: Array<{ canonical: string; re: RegExp }> = [
-  { canonical: "milk", re: /\b(milk|dairy|whey|casein|lactose|cheese)\b/i },
-  { canonical: "eggs", re: /\b(egg|eggs|albumin)\b/i },
-  { canonical: "fish", re: /\b(fish|cod|salmon|tuna|anchovy|tilapia)\b/i },
-  { canonical: "crustacean", re: /\b(shellfish|shrimp|crab|lobster|prawn|crustacean)\b/i },
-  { canonical: "tree_nuts", re: /\b(almond|walnut|cashew|pecan|pistachio|hazelnut|macadamia|tree ?nut)\b/i },
-  { canonical: "peanuts", re: /\b(peanut|peanuts)\b/i },
-  { canonical: "wheat", re: /\b(wheat|gluten|semolina|farina|durum)\b/i },
-  { canonical: "soy", re: /\b(soy|soya|soybean|soybeans|soy lecithin)\b/i },
-  { canonical: "sesame_seeds", re: /\b(sesame|tahini)\b/i },
-];
+/** Exact positive tokens accepted by Amazon's food PTDs. Values still require
+ * a reviewed manufacturer-label declaration; this allowlist is validation,
+ * not an ingredient-to-allergen inference table. */
+const AMAZON_ALLERGEN_TOKENS = new Set([
+  "milk",
+  "eggs",
+  "fish",
+  "crustacean",
+  "tree_nuts",
+  "peanuts",
+  "wheat",
+  "soy",
+  "sesame_seeds",
+  // Exact authoritative positive label supported by the live food PTDs.
+  "hazelnut",
+]);
 
-/** Conservative FDA Big-9 allergen scan over an ingredient statement. */
-export function extractAllergens(ingredients?: string | null): string[] {
-  if (!ingredients) return [];
-  const out: string[] = [];
-  for (const a of BIG_9) if (a.re.test(ingredients)) out.push(a.canonical);
-  return out;
+export type ProductExpirationType =
+  (typeof PRODUCT_EXPIRATION_TYPE_VALUES)[number];
+
+/** Explicit reviewed evidence. The source is part of the input contract so a
+ * category default cannot accidentally opt a listing into expiration fields. */
+export interface VerifiedExpirationEvidence {
+  source: "MANUFACTURER_LABEL" | "OPERATOR_REVIEW";
+  is_expiration_dated_product: boolean;
+  product_expiration_type?: ProductExpirationType | null;
 }
 
 export interface RichAttrInput {
   ingredients?: string | null;
+  /** Authoritative positive Amazon allergen tokens from a reviewed manufacturer
+   * declaration. Precautionary `may contain` labels must not be passed here. */
+  allergens?: string[] | null;
   packCount?: number | null;
   /** Bundle category enum (FROZEN_* / REFRIGERATED_* / DRY_*). Drives the
    *  Amazon `temperature_rating` + `is_heat_sensitive` attributes. */
@@ -55,6 +58,9 @@ export interface RichAttrInput {
   /** Bundle contains a liquid item (drink/sauce). Defaults false (solid food)
    *  → contains_liquid_contents = "No". Set true for drink bundles. */
   containsLiquid?: boolean;
+  /** Reviewed manufacturer/operator evidence only. Omission means neither
+   * expiration field is emitted. */
+  verifiedExpiration?: VerifiedExpirationEvidence | null;
 }
 
 /** Amazon attribute arrays for the donor-derived fields. Empty object if no
@@ -67,16 +73,27 @@ export function buildRichAmazonAttributes(
 
   const ingredients = input.ingredients?.trim();
   if (ingredients) {
-    attrs.ingredients = [
-      { value: ingredients.slice(0, 5000), language_tag: "en_US", marketplace_id: m },
-    ];
-    const allergens = extractAllergens(ingredients);
-    if (allergens.length > 0) {
-      attrs.allergen_information = allergens.map((a) => ({
-        value: a,
-        marketplace_id: m,
-      }));
+    const utf8Bytes = Buffer.byteLength(ingredients, "utf8");
+    if (utf8Bytes > 6000) {
+      throw new Error(
+        `Manufacturer ingredients require ${utf8Bytes} UTF-8 bytes; Amazon food PTD allows 6000.`,
+      );
     }
+    attrs.ingredients = [
+      { value: ingredients, language_tag: "en_US", marketplace_id: m },
+    ];
+  }
+  const allergens = Array.from(new Set(input.allergens ?? []));
+  for (const allergen of allergens) {
+    if (!AMAZON_ALLERGEN_TOKENS.has(allergen)) {
+      throw new Error(`Unsupported Amazon allergen token: ${JSON.stringify(allergen)}`);
+    }
+  }
+  if (allergens.length > 0) {
+    attrs.allergen_information = allergens.map((a) => ({
+      value: a,
+      marketplace_id: m,
+    }));
   }
 
   if (input.packCount && input.packCount > 0) {
@@ -85,8 +102,51 @@ export function buildRichAmazonAttributes(
     ];
   }
 
-  // Food — always expiration-dated.
-  attrs.is_expiration_dated_product = [{ value: true, marketplace_id: m }];
+  const expiration = input.verifiedExpiration;
+  if (expiration) {
+    if (
+      expiration.source !== "MANUFACTURER_LABEL" &&
+      expiration.source !== "OPERATOR_REVIEW"
+    ) {
+      throw new Error(
+        `Unsupported expiration evidence source: ${JSON.stringify(expiration.source)}`,
+      );
+    }
+    const expirationType = expiration.product_expiration_type ?? null;
+    if (
+      expirationType != null &&
+      !(PRODUCT_EXPIRATION_TYPE_VALUES as readonly string[]).includes(expirationType)
+    ) {
+      throw new Error(
+        `Unsupported Amazon product expiration type: ${JSON.stringify(expirationType)}`,
+      );
+    }
+    if (
+      expiration.is_expiration_dated_product === false &&
+      expirationType != null &&
+      expirationType !== "Does Not Expire"
+    ) {
+      throw new Error(
+        "A non-expiring product cannot use an expiration-required product type.",
+      );
+    }
+    if (
+      expiration.is_expiration_dated_product === true &&
+      expirationType === "Does Not Expire"
+    ) {
+      throw new Error(
+        "An expiration-dated product cannot use the Does Not Expire product type.",
+      );
+    }
+    attrs.is_expiration_dated_product = [
+      { value: expiration.is_expiration_dated_product, marketplace_id: m },
+    ];
+    if (expirationType != null) {
+      attrs.product_expiration_type = [
+        { value: expirationType, marketplace_id: m },
+      ];
+    }
+  }
 
   // Storage temperature — exact Amazon FOOD valid-value string, from category.
   // (frozen → "Frozen: 0 degree", refrigerated → "Chilled: 33 to 38 degrees",
@@ -105,22 +165,17 @@ export function buildRichAmazonAttributes(
     { value: CONDITION_TYPE_NEW_LISTINGS_API, marketplace_id: m },
   ];
 
-  // product_expiration_type — consistent with is_expiration_dated_product above.
-  attrs.product_expiration_type = [
-    { value: "Expiration Date Required", marketplace_id: m },
-  ];
-
   // is_heat_sensitive — cold-chain (frozen/refrigerated) food is heat sensitive;
   // dry/ambient is not. Derived from the same category signal as temperature.
   const c = (input.category ?? "").toUpperCase();
   const coldChain = /FROZEN|REFRIGERATED|CHILLED|COLD/.test(c);
   attrs.is_heat_sensitive = [
-    { value: coldChain ? "Yes" : "No", marketplace_id: m },
+    { value: coldChain, marketplace_id: m },
   ];
 
   // contains_liquid_contents — default "No" (solid food); true only for drinks.
   attrs.contains_liquid_contents = [
-    { value: input.containsLiquid ? "Yes" : "No", marketplace_id: m },
+    { value: Boolean(input.containsLiquid), marketplace_id: m },
   ];
 
   return attrs;

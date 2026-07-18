@@ -9,6 +9,7 @@ import {
   parsePackUnits,
   canonicalFlavorKey,
   donorUnitPriceCents,
+  normalizedOfferUnitPriceCents,
   dedupeDonorFlavors,
   type DedupableDonor,
 } from "@/lib/bundle-factory/donor-dedup";
@@ -57,21 +58,32 @@ test("canonicalFlavorKey — distinct variants stay distinct", () => {
   assert.notEqual(canonicalFlavorKey(T.choc, o), straw);
 });
 
-test("donorUnitPriceCents — pack price ÷ units, null when unparseable", () => {
-  assert.equal(donorUnitPriceCents(mk({ id: "a", title: T.straw10, bestPrice: 9.84 })), 98);
-  assert.equal(donorUnitPriceCents(mk({ id: "b", title: T.straw4, bestPrice: 3.97 })), 99);
-  assert.equal(donorUnitPriceCents(mk({ id: "c", title: T.straw20oz, bestPrice: 9.89 })), null);
+test("donorUnitPriceCents — bestPrice is already the per-unit catalog rollup", () => {
+  assert.equal(donorUnitPriceCents(mk({ id: "a", title: T.straw10, bestPrice: 0.98 })), 98);
+  assert.equal(donorUnitPriceCents(mk({ id: "b", title: T.straw4, bestPrice: 0.99 })), 99);
+  assert.equal(donorUnitPriceCents(mk({ id: "c", title: T.straw20oz, bestPrice: 1.05 })), 105);
   assert.equal(donorUnitPriceCents(mk({ id: "d", title: T.straw10, bestPrice: null })), null);
+});
+
+test("raw offer total is normalized by retail carton count before bestPrice", () => {
+  const row = mk({
+    id: "raw-offer",
+    title: "Uncrustables Peanut Butter & Grape Jelly, 10 Count",
+    bestPrice: 9.84,
+    offers: [{ price: 9.84, packSizeSeen: 10, pricePerUnit: 9.84 }],
+  });
+  assert.equal(normalizedOfferUnitPriceCents(row), 98);
+  assert.equal(donorUnitPriceCents(row), 98);
 });
 
 test("dedupeDonorFlavors — one entry per flavor, cheapest per-unit donor wins", () => {
   const donors = [
-    mk({ id: "s4", title: T.straw4, bestPrice: 3.97 }),   // $0.99/u
-    mk({ id: "s10", title: T.straw10, bestPrice: 9.84 }), // $0.98/u ← winner
-    mk({ id: "s20", title: T.straw20oz, bestPrice: 9.89 }), // un-costable
-    mk({ id: "g10", title: T.grape10, bestPrice: 9.84 }),
-    mk({ id: "ww", title: T.wheat, bestPrice: 3.89 }),
-    mk({ id: "ch", title: T.choc, bestPrice: 3.97 }),
+    mk({ id: "s4", title: T.straw4, bestPrice: 0.99 }),
+    mk({ id: "s10", title: T.straw10, bestPrice: 0.98 }), // winner
+    mk({ id: "s20", title: T.straw20oz, bestPrice: 1.05 }),
+    mk({ id: "g10", title: T.grape10, bestPrice: 0.98 }),
+    mk({ id: "ww", title: T.wheat, bestPrice: 0.97 }),
+    mk({ id: "ch", title: T.choc, bestPrice: 0.99 }),
   ];
   const entries = dedupeDonorFlavors(donors);
   assert.equal(entries.length, 4); // strawberry, grape, whole-wheat straw, chocolate
@@ -81,10 +93,10 @@ test("dedupeDonorFlavors — one entry per flavor, cheapest per-unit donor wins"
   assert.ok(straw.costable);
 });
 
-test("dedupeDonorFlavors — flavor with ONLY unparseable donors is flagged un-costable", () => {
+test("dedupeDonorFlavors — missing bestPrice is un-costable regardless of title count", () => {
   const donors = [
-    mk({ id: "s20", title: T.straw20oz, bestPrice: 9.89 }),
-    mk({ id: "g10", title: T.grape10, bestPrice: 9.84 }),
+    mk({ id: "s20", title: T.straw20oz, bestPrice: null }),
+    mk({ id: "g10", title: T.grape10, bestPrice: 0.98 }),
   ];
   const entries = dedupeDonorFlavors(donors);
   const straw = entries.find((e) => /strawberry/.test(e.key))!;
@@ -96,8 +108,8 @@ test("dedupeDonorFlavors — flavor with ONLY unparseable donors is flagged un-c
 
 test("dedupeDonorFlavors — explicit flavor column wins over title parsing", () => {
   const donors = [
-    mk({ id: "x1", title: T.straw4, flavor: "PB & Strawberry", bestPrice: 3.97 }),
-    mk({ id: "x2", title: T.straw10, flavor: "pb & strawberry", bestPrice: 9.84 }),
+    mk({ id: "x1", title: T.straw4, flavor: "PB & Strawberry", bestPrice: 0.99 }),
+    mk({ id: "x2", title: T.straw10, flavor: "pb & strawberry", bestPrice: 0.98 }),
   ];
   const entries = dedupeDonorFlavors(donors);
   assert.equal(entries.length, 1);
@@ -108,11 +120,11 @@ test("dedupeDonorFlavors — inconsistent brand fields don't split a flavor (pro
   // Catalog reality: same flavor, brand recorded three different ways.
   const donors = [
     mk({ id: "a", brand: "Uncrustables", productLine: null,
-      title: "Smuckers Uncrustables Peanut Butter & Strawberry Jam Sandwiches, 10 Count, 2 oz", bestPrice: 9.84 }),
+      title: "Smuckers Uncrustables Peanut Butter & Strawberry Jam Sandwiches, 10 Count, 2 oz", bestPrice: 0.98 }),
     mk({ id: "b", brand: "Smucker'S", productLine: null,
-      title: "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct", bestPrice: 3.89 }),
+      title: "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct", bestPrice: 0.97 }),
     mk({ id: "c", brand: null, productLine: null,
-      title: "Smuckers Uncrustables Peanut Butter & Strawberry Jam Sandwiches, 4 Count", bestPrice: 3.97 }),
+      title: "Smuckers Uncrustables Peanut Butter & Strawberry Jam Sandwiches, 4 Count", bestPrice: 0.99 }),
   ];
   const entries = dedupeDonorFlavors(donors);
   assert.equal(entries.length, 1); // ONE strawberry flavor, not three

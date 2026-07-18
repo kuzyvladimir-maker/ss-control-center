@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "bcea866c-a328-478d-8904-b6168cd6b85b",
+  "created_at": "2026-07-18T06:44:28.251Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "YH-ASQ8-45ED:media",
+  "sku": "YH-ASQ8-45ED",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "a18157a97037271e6cd22440a06a010db778e582a45ddff800f70fcd29d7349a",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "fb9907c7d8604b44af7407f274d95f1b",
+    "issues": []
+  },
+  "sha256": "6c41699cd5660a3ab4f977fb3b1d91631cd051f8724fbded83e560b472234af1"
+}

@@ -8,7 +8,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { mergePurchasableOffer, priceSchedule, sanitizeOfferEntry } from "../pricing";
+import {
+  isUncrustablesListingItem,
+  mergePurchasableOffer,
+  priceSchedule,
+  sanitizeOfferEntry,
+} from "../pricing";
 
 /** Shape as Amazon actually returns it for a live listing (S1-KJU0-VX88). */
 function liveOffer() {
@@ -85,4 +90,16 @@ test("sanitizeOfferEntry drops only {value:null} wrappers", () => {
   assert.deepEqual(clean.b, { value: "x" });
   assert.equal(clean.c, 1);
   assert.deepEqual(clean.d, [1, 2]);
+});
+
+test("Uncrustables identity lock uses live brand/title but not generic Smucker products", () => {
+  assert.equal(isUncrustablesListingItem({
+    attributes: { brand: [{ value: "Uncrustables" }] },
+  }), true);
+  assert.equal(isUncrustablesListingItem({
+    summaries: [{ marketplaceId: "ATVPDKIKX0DER", itemName: "Uncrustables Strawberry 30 Count" }],
+  }), true);
+  assert.equal(isUncrustablesListingItem({
+    attributes: { brand: [{ value: "Smucker's" }], item_name: [{ value: "Smucker's Jam" }] },
+  }), false);
 });

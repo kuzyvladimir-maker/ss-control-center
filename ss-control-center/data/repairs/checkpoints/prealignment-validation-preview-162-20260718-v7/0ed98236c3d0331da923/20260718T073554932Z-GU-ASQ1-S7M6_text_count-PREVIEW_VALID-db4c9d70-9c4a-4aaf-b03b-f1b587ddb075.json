@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "db4c9d70-9c4a-4aaf-b03b-f1b587ddb075",
+  "created_at": "2026-07-18T07:35:54.932Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "GU-ASQ1-S7M6:text_count",
+  "sku": "GU-ASQ1-S7M6",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "eb4d12670855890173797e89fe0283deef3c036214671bab574420559279f733",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "c2078e19899247738c8df978a39ba8ae",
+    "issues": []
+  },
+  "sha256": "c3370d9a37827ccd11406412b03720d07807cfe14ec901419829f4e22c5e8759"
+}

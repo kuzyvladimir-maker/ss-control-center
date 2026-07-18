@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "eaec2dc1-0c80-4860-83ba-c5002a852cae",
+  "created_at": "2026-07-18T06:28:14.909Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "LJ-ASYO-FWJK:text_count",
+  "sku": "LJ-ASYO-FWJK",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "4fb772d24c60e7396daefa77938f5e5cdf85fc6317a06512688d375f1109d36c",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "4be5505105694ad8b2db7375a6ac7022",
+    "issues": []
+  },
+  "sha256": "c61aa078db573a98688649d887e641507cbbb98f90b7e31370e90ea77091d8c2"
+}

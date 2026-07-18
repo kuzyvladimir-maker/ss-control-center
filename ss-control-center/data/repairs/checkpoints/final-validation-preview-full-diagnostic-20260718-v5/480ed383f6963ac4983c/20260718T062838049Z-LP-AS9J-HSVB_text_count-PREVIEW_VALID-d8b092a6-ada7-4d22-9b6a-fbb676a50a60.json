@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d8b092a6-ada7-4d22-9b6a-fbb676a50a60",
+  "created_at": "2026-07-18T06:28:38.049Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "LP-AS9J-HSVB:text_count",
+  "sku": "LP-AS9J-HSVB",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "b618052c4451d8fa063b7caabf0b620136a3a4dc2c7e7f74b6acda375ed880c6",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "5b77eb3dd5df45ad81280563ec97f279",
+    "issues": []
+  },
+  "sha256": "e1a113e417e035d5705d63c26e9301781e9b1e9b3a9a720735d6c774f364f7f6"
+}

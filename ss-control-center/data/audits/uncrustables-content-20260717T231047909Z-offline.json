@@ -1,0 +1,2590 @@
+{
+  "schema_version": "uncrustables-content-audit/v1.0",
+  "audit_id": "UCA-20260717T231047909Z",
+  "mode": "offline",
+  "immutable": true,
+  "external_mutations": false,
+  "created_at": "2026-07-17T23:10:47.909Z",
+  "marketplace_observed_at": "2026-07-17T22:43:12.080Z",
+  "source_snapshot": {
+    "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-ledger-20260717T230418933Z-offline.json",
+    "sha256": "ba512ed927f9881c287d15899f21a99725e8432a4a2f4a736a15db18e7f16279",
+    "schema_version": "uncrustables-ledger/v1.2",
+    "audit_id": "ULR-20260717T230418933Z"
+  },
+  "scope": {
+    "network_calls": 0,
+    "database_calls": 0
+  },
+  "summary": {
+    "rows_in_source": 167,
+    "checked": 164,
+    "passed": 108,
+    "failed": 56,
+    "skipped": 3,
+    "format_failures": 0,
+    "semantic_failures": 56,
+    "claim_failures": 0
+  },
+  "failed_rows": [
+    {
+      "sku": "AC-AS4J-B64F",
+      "asin": "B0H82ZZS2P",
+      "draft_id": "cmrbdte9a000i04l7f4rrwn4j",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, Frozen, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "AD-AS4H-QXZD",
+      "asin": "B0H82J6V9T",
+      "draft_id": "cmra931ii000204lbc3zava4h",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Honey Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "AU-AS97-USX8",
+      "asin": "B0H843Q9B5",
+      "draft_id": "cmrbhjn7b000e04jubobzfk97",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter Frozen Sandwiches, 2 oz Each, Variety Pack, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "AV-AS7X-8EXK",
+      "asin": "B0H82JTY19",
+      "draft_id": "cmraaog9k003204jv8zj0fl7x",
+      "intended_count": 45,
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Sandwich, Reduced Sugar, Frozen, 2 oz Each, 45 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "AY-AS5F-JEY9",
+      "asin": "B0H83MWTM7",
+      "draft_id": "cmrbff9ne000604kzkgdx295f",
+      "intended_count": 120,
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Sandwiches, 2 oz, Reduced Sugar, Individually Wrapped, 120 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "AZ-ASMY-VEQ2",
+      "asin": "B0H788M8WM",
+      "draft_id": "cmr2jxepl00014esbrf3h16my",
+      "intended_count": 30,
+      "title": "Uncrustables Peanut Butter & Strawberry Jam Sandwiches, 30 Count, 2 oz Each, Frozen Multipack",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "BD-AS8P-XAW5",
+      "asin": "B0H85MXFH8",
+      "draft_id": "cmrbhy459006004jug0p8nz8p",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety Pack, Apple Cinnamon Jelly Protein & Grape Jelly, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "BH-ASTN-S4XJ",
+      "asin": "B0H83ZRNCS",
+      "draft_id": "cmrbgook2000604l46g4v58tn",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Protein and Peanut Butter & Blackberry Spread Sandwiches, Variety Pack, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "BK-AS5Z-8UY5",
+      "asin": "B0H85JF1V1",
+      "draft_id": "cmrbhsh4p003c04jum5nd4j5z",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Whole Wheat Peanut Butter & Strawberry Jam and Peanut Butter & Blackberry Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "CE-ASGK-ZRHM",
+      "asin": "B0H84651LM",
+      "draft_id": "cmrbh3bvd000i04l72gmhyrgk",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Protein and Peanut Butter & Blueberry Sandwich Variety Pack, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "CK-ASUM-WT9W",
+      "asin": "B0H86PRTWS",
+      "draft_id": "cmrbhz446006s04ju0s48j3um",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches, Chocolate Flavored Hazelnut Spread & Peanut Butter Blueberry Variety Pack, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "DP-ASQ6-ZPZU",
+      "asin": "B0H83Y8JH7",
+      "draft_id": "cmrbgglld000004l6ay6wkpq6",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Protein Sandwich and Peanut Butter Sandwich, 24 Count Variety Pack",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "EF-AS4A-JCLU",
+      "asin": "B0H83XB855",
+      "draft_id": "cmrbgn0z4000004l4dmfsrl4a",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Peanut Butter & Strawberry Jam Protein and Chocolate Hazelnut, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "FK-AS6B-6G25",
+      "asin": "B0H8259J9G",
+      "draft_id": "cmra9asnc00mw04lbwuw9596b",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "GU-ASQ1-S7M6",
+      "asin": "B0H828GQLP",
+      "draft_id": "cmra9t818000l04le95quyqq1",
+      "intended_count": 30,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 2 oz Each, Frozen, 30 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "GX-ASTJ-WHV3",
+      "asin": "B0H83XV9WX",
+      "draft_id": "cmrbgi500000604l6yc8wzrtj",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam and Apple Cinnamon Jelly Protein Sandwiches, 2.8 oz, Variety Pack – 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "HA-ASCR-ME3A",
+      "asin": "B0H85V287S",
+      "draft_id": "cmrbhyeyu006804juwowvy8cr",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Peanut Butter & Apple Cinnamon Jelly Protein and Peanut Butter & Chocolate Flavored Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "HU-ASMI-DN3X",
+      "asin": "B0H82YMT6K",
+      "draft_id": "cmraab326000o04jv3cjiammi",
+      "intended_count": 30,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich, 2.8 oz Each, 30 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "HX-ASO8-XCL2",
+      "asin": "B0H832SD15",
+      "draft_id": "cmrab6uln001704lecuyi6ao8",
+      "intended_count": 45,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwiches, 2 oz Each, 45 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "JC-ASM4-XXW7",
+      "asin": "B0H84ZL156",
+      "draft_id": "cmrbhxctr005g04jukrvlr3m4",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, 24 Count – Peanut Butter & Apple Cinnamon Jelly Protein and Peanut Butter & Blackberry Spread",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "JY-ASPW-LB4K",
+      "asin": "B0H84621N6",
+      "draft_id": "cmrbhjtix000i04ju82pjsipw",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwiches Variety Pack – Raspberry Spread and Apple Cinnamon Jelly Protein, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "KD-AS12-8HZ3",
+      "asin": "B0H845JBM6",
+      "draft_id": "cmrbh7yra001504l7xfclfn12",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Crustless Sandwiches, Peanut Butter & Strawberry Jam Protein and Peanut Butter & Mixed Berry, 2.8 oz, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "KN-ASYZ-ST4M",
+      "asin": "B0H83XBXHX",
+      "draft_id": "cmrbg6m3000s504l6vk4gllyz",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety Pack, Strawberry Jam Protein & Raspberry Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "MP-ASZ9-TKE7",
+      "asin": "B0H837HLKC",
+      "draft_id": "cmrbe06hp001004l7k9pyxpz9",
+      "intended_count": 30,
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, Frozen, 30 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "NC-ASPL-EXE8",
+      "asin": "B0H83QRV43",
+      "draft_id": "cmrbgc3xz000604latofie3pl",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, Variety Pack, 24 Count – Protein & Whole Wheat",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "NT-ASIL-V5LK",
+      "asin": "B0H84547PM",
+      "draft_id": "cmrbhd2lv000004jubrr4mtil",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Strawberry Jam Protein and Peanut Butter & Chocolate Flavored Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "PB-ASAF-G2T6",
+      "asin": "B0H82K7Y7S",
+      "draft_id": "cmra96glo000004l7s8ii18af",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwiches, No Crust, Individually Wrapped, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "PJ-ASAX-6LTG",
+      "asin": "B0H82T12L7",
+      "draft_id": "cmrabe5nj001j04ledpkdn2ax",
+      "intended_count": 90,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, 12g Protein, 2.8 oz Each, 90 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "PJ-ASDX-E8LW",
+      "asin": "B0H85MGP35",
+      "draft_id": "cmrbhrmu1002s04jutzzxgtdx",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Honey Spread and Peanut Butter & Mixed Berry Spread Sandwiches, 24 Count Variety Pack",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "QP-ASAD-PTLX",
+      "asin": "B0H85DG2JQ",
+      "draft_id": "cmrbhs5a6003404jursei7aad",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Whole Wheat Peanut Butter & Strawberry Jam and Peanut Butter & Apple Cinnamon Jelly Protein, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "QX-AS89-H8YC",
+      "asin": "B0H82RQ226",
+      "draft_id": "cmra98n8f000i04lbmjn83689",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwiches, 2.8 oz Each, 12g Protein, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "RL-AS64-Q8QX",
+      "asin": "B0H82LZLM2",
+      "draft_id": "cmraa5hvv000004leqazids64",
+      "intended_count": 30,
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread on Wheat Bread, 2.8 oz, 30 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "RQ-AS0L-9B45",
+      "asin": "B0H85MQLHG",
+      "draft_id": "cmrbhlu9z001u04jupk1vb70l",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Honey and Peanut Butter & Apple Cinnamon Jelly Protein, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "RU-ASC3-4TUS",
+      "asin": "B0H83SJFR7",
+      "draft_id": "cmrbgablh000004lavzu40hc3",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety, Strawberry Jam Protein & Honey Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "SC-ASH8-4RQG",
+      "asin": "B0H856DWVS",
+      "draft_id": "cmrbhxyju005w04juz2ye8vh8",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches, Peanut Butter & Apple Cinnamon Jelly and Peanut Butter & Blueberry, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "SH-ASO0-PW37",
+      "asin": "B0H83ZH3TB",
+      "draft_id": "cmrbh6mcj000q04l7dt1dn9o0",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Crustless Sandwiches Variety Pack, Peanut Butter & Strawberry Jam and Peanut Butter & Grape Jelly, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content omits recipe flavor \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "SV-AS87-D6SV",
+      "asin": "B0H83ZGN22",
+      "draft_id": "cmrbgwplg000604l77rowrz87",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, 24 Count – Classic & 12g Protein Varieties, Individually Wrapped",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "SZ-ASPI-JFAT",
+      "asin": "B0H776M5B5",
+      "draft_id": "cmr1nzi9n000004jv095z5spi",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwiches, 8oz/4ct - Pack of 6 (24 Sandwiches Total)",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "TH-AS6D-CCES",
+      "asin": "B0H845HSDZ",
+      "draft_id": "cmrbhjyyv000m04jur8nqwx6d",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Chocolate Hazelnut Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "TP-AS91-8PAZ",
+      "asin": "B0H835T5HN",
+      "draft_id": "cmraaeu1e000004lew4r5r291",
+      "intended_count": 30,
+      "title": "Uncrustables Peanut Butter & Mixed Berry Spread Frozen Crustless Sandwiches, 2 oz, 30 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "TY-AST2-JE9P",
+      "asin": "B0H84WQRXB",
+      "draft_id": "cmrbhl6u9001e04jug3r1qet2",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Mixed Berry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "UY-AS5N-A2E4",
+      "asin": "B0H83R4M3R",
+      "draft_id": "cmrbf7n5i000004jpacsk7i5n",
+      "intended_count": 120,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 12g Protein, 2.8 oz, 120 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "VA-ASOK-QJCA",
+      "asin": "B0H85RZDX5",
+      "draft_id": "cmrbhy9sv006404ju35bjwlok",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Crustless Peanut Butter Sandwiches, Apple Cinnamon Jelly & Mixed Berry Variety Pack, 2.8 oz Each, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "VH-ASHZ-TJEE",
+      "asin": "B0H856VWD6",
+      "draft_id": "cmrbhth8n004004ju7r8tgchz",
+      "intended_count": 24,
+      "title": "Uncrustables Whole Wheat Peanut Butter Sandwich Variety, Strawberry Jam & Mixed Berry Spread, 24 Count, Frozen",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content omits recipe flavor \"Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "VK-ASSB-3YFK",
+      "asin": "B0H85FY28F",
+      "draft_id": "cmrbhr54u002g04juxu9g3nsb",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety Pack, Honey Spread and Whole Wheat Grape Jelly, 24 Individually Wrapped Sandwiches",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "VN-AS1A-D572",
+      "asin": "B0H82PKK18",
+      "draft_id": "cmrab1n86003k04jvtpcutz1a",
+      "intended_count": 45,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 8 oz, 4 ct - Pack of 45",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "title count 180 does not equal recipe count 45"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "VT-ASTH-B6LM",
+      "asin": "B0H85CL8JD",
+      "draft_id": "cmrbhtruw004804juhph1q7th",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Peanut Butter Apple Cinnamon Jelly Protein, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "WK-AS7E-M3CE",
+      "asin": "B0H843R64X",
+      "draft_id": "cmrbgtrtc000004l715c37d7e",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety Pack, 24 Count – Strawberry Jam 12g Protein and Mixed Berry Spread Flavors",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "WR-ASR5-AVWE",
+      "asin": "B0H859VYXH",
+      "draft_id": "cmrbhx7vg005c04ju3i2mqtr5",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Peanut Butter Apple Cinnamon Jelly Protein & Chocolate Hazelnut Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "WR-ASTH-TPXV",
+      "asin": "B0H85DRT93",
+      "draft_id": "cmrbhxhjv005k04jucvzqizth",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, 24 Count – Peanut Butter & Apple Cinnamon Jelly Protein and Morning Protein Peanut Butter & Mixed Berry Spread",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "WZ-ASXK-ZFAS",
+      "asin": "B0H85DF1R7",
+      "draft_id": "cmrbhrb45002k04ju0fqwdtxk",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Honey Spread and Peanut Butter & Blueberry, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "XV-ASEU-GDUX",
+      "asin": "B0H82YRTS3",
+      "draft_id": "cmraax5jr003e04jvndsfaceu",
+      "intended_count": 45,
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwiches, 2.8 oz, Frozen, 45 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "ZB-ASKL-9W8G",
+      "asin": "B0H82LKBYH",
+      "draft_id": "cmraav7ru000x04ledblydwkl",
+      "intended_count": 45,
+      "title": "Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, Individually Wrapped, No Crust, 45 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "ZC-ASDC-3QMV",
+      "asin": "B0H83TSB5J",
+      "draft_id": "cmrbftb5h000604jpnab4kndc",
+      "intended_count": 120,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 2 oz Each, 120 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "ZE-AS5W-FKH3",
+      "asin": "B0H8531B8B",
+      "draft_id": "cmrbhwwn4005404ju6wq4lc5w",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Peanut Butter and Peanut Butter & Mixed Berry Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content omits recipe flavor \"Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "ZP-ASJD-X7ZD",
+      "asin": "B0H85N7X8W",
+      "draft_id": "cmrbhsmu4003g04juqqw7yqjd",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Whole Wheat Peanut Butter & Strawberry Jam and Morning Protein Peanut Butter & Mixed Berry Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    }
+  ],
+  "skipped_rows": [
+    {
+      "sku": "CV-ASQK-4P65",
+      "asin": null,
+      "reason": "no fetched live content"
+    },
+    {
+      "sku": "PV-ASZG-X763",
+      "asin": null,
+      "reason": "no fetched live content"
+    },
+    {
+      "sku": "SV-AS9L-DRRH",
+      "asin": null,
+      "reason": "no fetched live content"
+    }
+  ],
+  "rows": [
+    {
+      "sku": "AC-AS4J-B64F",
+      "asin": "B0H82ZZS2P",
+      "draft_id": "cmrbdte9a000i04l7f4rrwn4j",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, Frozen, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "AD-AS4H-QXZD",
+      "asin": "B0H82J6V9T",
+      "draft_id": "cmra931ii000204lbc3zava4h",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Honey Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "AG-ASKV-W9EN",
+      "asin": "B0H85B64V2",
+      "draft_id": "cmrbhmneu002a04juewfad4kv",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwiches Variety Pack, 24 Count - Honey Spread & Strawberry Jam",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "AJ-ASRB-HKC3",
+      "asin": "B0H84G7DHC",
+      "draft_id": "cmrbhk9wy000u04ju1qepcrrb",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter Sandwiches Variety Pack, Raspberry Spread and Morning Protein Mixed Berry Spread, 2 oz Each, 24 Count, Frozen",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "AN-ASUW-49Y5",
+      "asin": "B0H8628LW3",
+      "draft_id": "cmrbhytx0006k04juywpc1quw",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches, Chocolate Hazelnut Spread & Peanut Butter Strawberry Jam Variety Pack, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "AU-AS97-USX8",
+      "asin": "B0H843Q9B5",
+      "draft_id": "cmrbhjn7b000e04jubobzfk97",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter Frozen Sandwiches, 2 oz Each, Variety Pack, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "AV-AS7X-8EXK",
+      "asin": "B0H82JTY19",
+      "draft_id": "cmraaog9k003204jv8zj0fl7x",
+      "intended_count": 45,
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Sandwich, Reduced Sugar, Frozen, 2 oz Each, 45 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "AY-AS5F-JEY9",
+      "asin": "B0H83MWTM7",
+      "draft_id": "cmrbff9ne000604kzkgdx295f",
+      "intended_count": 120,
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Sandwiches, 2 oz, Reduced Sugar, Individually Wrapped, 120 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "AZ-ASMY-VEQ2",
+      "asin": "B0H788M8WM",
+      "draft_id": "cmr2jxepl00014esbrf3h16my",
+      "intended_count": 30,
+      "title": "Uncrustables Peanut Butter & Strawberry Jam Sandwiches, 30 Count, 2 oz Each, Frozen Multipack",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "BD-AS8P-XAW5",
+      "asin": "B0H85MXFH8",
+      "draft_id": "cmrbhy459006004jug0p8nz8p",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety Pack, Apple Cinnamon Jelly Protein & Grape Jelly, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "BD-ASGH-LREJ",
+      "asin": "B0H86Z59DW",
+      "draft_id": "cmrbhlhlr001m04ju8zrw2ngh",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, 24 Count – Peanut Butter & Honey Spread and Whole Wheat Peanut Butter & Strawberry Jam",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "BH-AS7H-D4FV",
+      "asin": "B0H853MCYZ",
+      "draft_id": "cmrbhm7n6002204jund89zm7h",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Honey and Peanut Butter & Blackberry Spread Sandwiches, Variety Pack, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "BH-ASTN-S4XJ",
+      "asin": "B0H83ZRNCS",
+      "draft_id": "cmrbgook2000604l46g4v58tn",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Protein and Peanut Butter & Blackberry Spread Sandwiches, Variety Pack, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "BH-ASVY-CR8H",
+      "asin": "B0H83S368B",
+      "draft_id": "cmrbfaaez000604jp32k5nbvy",
+      "intended_count": 120,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 2 oz Each, Frozen, 120 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "BK-AS5Z-8UY5",
+      "asin": "B0H85JF1V1",
+      "draft_id": "cmrbhsh4p003c04jum5nd4j5z",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Whole Wheat Peanut Butter & Strawberry Jam and Peanut Butter & Blackberry Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "BM-AS5J-3MQY",
+      "asin": "B0H83LSCQQ",
+      "draft_id": "cmrbeq615001104l0bgksx95j",
+      "intended_count": 90,
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz Each, 90 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "BQ-ASUE-NT37",
+      "asin": "B0H842HL49",
+      "draft_id": "cmrbh06rw000c04l7r5es7yue",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Peanut Butter & Strawberry Jam (12g Protein) and Whole Wheat Peanut Butter & Grape Jelly, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "BX-AS5P-6WQV",
+      "asin": "B0H83NM5PX",
+      "draft_id": "cmrbg0j3t000604js619v2h5p",
+      "intended_count": 120,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich, 2.8 oz Each, 120 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "BY-ASY2-8UJJ",
+      "asin": "B0H83789KC",
+      "draft_id": "cmrbduq9b000o04l7ygvw61y2",
+      "intended_count": 30,
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Frozen Sandwiches, 2 oz Each, 30 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "CE-ASGK-ZRHM",
+      "asin": "B0H84651LM",
+      "draft_id": "cmrbh3bvd000i04l72gmhyrgk",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Protein and Peanut Butter & Blueberry Sandwich Variety Pack, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "CK-ASUM-WT9W",
+      "asin": "B0H86PRTWS",
+      "draft_id": "cmrbhz446006s04ju0s48j3um",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches, Chocolate Flavored Hazelnut Spread & Peanut Butter Blueberry Variety Pack, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "CN-ASG6-892G",
+      "asin": "B0H8422DQ1",
+      "draft_id": "cmrbg544500bb04l6imviq0g6",
+      "intended_count": 120,
+      "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, Frozen, 120 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "DA-ASF0-D7RG",
+      "asin": "B0H83VBTLT",
+      "draft_id": "cmrbf2yv0001p04l0bzehdlf0",
+      "intended_count": 90,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich, 2 oz Each, 90 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "DF-ASQT-BLUQ",
+      "asin": "B0H83FKSN6",
+      "draft_id": "cmrbee4h4000604l0uuju66qt",
+      "intended_count": 45,
+      "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, Frozen, 45 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "DP-ASQ6-ZPZU",
+      "asin": "B0H83Y8JH7",
+      "draft_id": "cmrbgglld000004l6ay6wkpq6",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Protein Sandwich and Peanut Butter Sandwich, 24 Count Variety Pack",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "DY-AS8W-6MJG",
+      "asin": "B0H82MKPRJ",
+      "draft_id": "cmrab4f8g003s04jvfd1u7t8w",
+      "intended_count": 45,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich, 2.8 oz Each, 45 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "EF-AS4A-JCLU",
+      "asin": "B0H83XB855",
+      "draft_id": "cmrbgn0z4000004l4dmfsrl4a",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Peanut Butter & Strawberry Jam Protein and Chocolate Hazelnut, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "EJ-ASCD-8K87",
+      "asin": "B0H82PXWKS",
+      "draft_id": "cmrabei4t001l04lea7uhmycd",
+      "intended_count": 90,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 2 oz Each, Frozen, 90 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "ER-ASRK-TPYQ",
+      "asin": "B0H84JH1WN",
+      "draft_id": "cmrbhkugv001604jux3ouiwrk",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Blueberry Sandwiches, 2 oz Each, Variety Pack, 24 Count, Frozen",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "ES-AS8A-3W3M",
+      "asin": "B0H83D8TFQ",
+      "draft_id": "cmrbe4vup001604l7rrzapo8a",
+      "intended_count": 30,
+      "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, 30 Count, Frozen",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "EW-ASJ9-E79N",
+      "asin": "B0H82MT74H",
+      "draft_id": "cmraaicrm000604le2gu653j9",
+      "intended_count": 30,
+      "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, Frozen, 30 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "EW-ASWP-PMZX",
+      "asin": "B0H891WSZ9",
+      "draft_id": "cmraa6yax000i04jvt5a0d8wp",
+      "intended_count": 30,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, 2 oz Each, 30 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "EX-ASC0-5CRL",
+      "asin": "B0H83JJW1F",
+      "draft_id": "cmrbfroox000004jpyg1paxc0",
+      "intended_count": 120,
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, Wheat Bread, Frozen, 120 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "EZ-ASLA-Y7MZ",
+      "asin": "B0H83GBJLW",
+      "draft_id": "cmrbei8wm000d04l0k2jg9xla",
+      "intended_count": 90,
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Frozen Sandwich, 2 oz, Reduced Sugar, 90 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "FK-AS6B-6G25",
+      "asin": "B0H8259J9G",
+      "draft_id": "cmra9asnc00mw04lbwuw9596b",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "FM-AS51-S4MT",
+      "asin": "B0H853VHRF",
+      "draft_id": "cmrbhtm5d004404juy8xsji51",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Whole Wheat Peanut Butter & Strawberry Jam and Peanut Butter & Chocolate Flavored Spread, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "FN-ASVM-UWAG",
+      "asin": "B0H85J88LJ",
+      "draft_id": "cmrbhwh5f004s04juxhxsq3vm",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, 24 Count - Peanut Butter and Whole Wheat Peanut Butter & Grape Jelly",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "FR-AS6X-5KJY",
+      "asin": "B0H827V9DJ",
+      "draft_id": "cmra9a07u000604l7klqj156x",
+      "intended_count": 24,
+      "title": "Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwiches, Individually Wrapped, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "FV-AS47-EJZW",
+      "asin": "B0H82SZSYJ",
+      "draft_id": "cmrab1syd003m04jvkqbmj847",
+      "intended_count": 45,
+      "title": "Smucker's Uncrustables Whole Wheat Peanut Butter & Grape Jelly Sandwiches, Frozen, 45 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "FX-AS2W-KHZT",
+      "asin": "B0H827J2XZ",
+      "draft_id": "cmra8yy7u000110fz81sgjm2w",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Strawberry Jam Frozen Sandwiches, 12g Protein, 2.8 oz Each, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "GG-ASNC-C9WA",
+      "asin": "B0H8219Z7T",
+      "draft_id": "cmraa1cqi018304lexe3rnrnc",
+      "intended_count": 30,
+      "title": "Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwiches, 1.8 oz Each, 30 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "GR-AS0R-YPCF",
+      "asin": "B0H82GJ292",
+      "draft_id": "cmra9z294008904leaum5i40r",
+      "intended_count": 30,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich, 1.8 oz Each, 30 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "GR-AS1P-DBB2",
+      "asin": "B0H82S7TFG",
+      "draft_id": "cmra9kuam000604lei0328s1p",
+      "intended_count": 24,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwiches, 2 oz Each, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "GU-ASQ1-S7M6",
+      "asin": "B0H828GQLP",
+      "draft_id": "cmra9t818000l04le95quyqq1",
+      "intended_count": 30,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 2 oz Each, Frozen, 30 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "GX-ASTJ-WHV3",
+      "asin": "B0H83XV9WX",
+      "draft_id": "cmrbgi500000604l6yc8wzrtj",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam and Apple Cinnamon Jelly Protein Sandwiches, 2.8 oz, Variety Pack – 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "HA-ASCR-ME3A",
+      "asin": "B0H85V287S",
+      "draft_id": "cmrbhyeyu006804juwowvy8cr",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Peanut Butter & Apple Cinnamon Jelly Protein and Peanut Butter & Chocolate Flavored Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "HD-ASEQ-MFAY",
+      "asin": "B0H83QW85C",
+      "draft_id": "cmrbej7hm000j04l0ek8qjgeq",
+      "intended_count": 90,
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz, 90 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "HR-AS7Q-7ZDF",
+      "asin": "B0H856RRRK",
+      "draft_id": "cmrbhx1oz005804juvhq6zk7q",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter and Peanut Butter & Chocolate Flavored Spread, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "HU-ASMI-DN3X",
+      "asin": "B0H82YMT6K",
+      "draft_id": "cmraab326000o04jv3cjiammi",
+      "intended_count": 30,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich, 2.8 oz Each, 30 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "HX-ASO8-XCL2",
+      "asin": "B0H832SD15",
+      "draft_id": "cmrab6uln001704lecuyi6ao8",
+      "intended_count": 45,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwiches, 2 oz Each, 45 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "HZ-ASPS-4L22",
+      "asin": "B0H857K38C",
+      "draft_id": "cmrbht6d6003s04ju6vf0v5ps",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwiches, Whole Wheat Strawberry Jam & Blueberry Variety, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "JC-ASM4-XXW7",
+      "asin": "B0H84ZL156",
+      "draft_id": "cmrbhxctr005g04jukrvlr3m4",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, 24 Count – Peanut Butter & Apple Cinnamon Jelly Protein and Peanut Butter & Blackberry Spread",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "JH-ASV9-Z46X",
+      "asin": "B0H8369PMK",
+      "draft_id": "cmrbdn51y000604l790isbdv9",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, Crustless, 2.8 oz Each, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "JL-ASUC-JUZE",
+      "asin": "B0H831MXGD",
+      "draft_id": "cmraaless002w04jvtfzwpruc",
+      "intended_count": 45,
+      "title": "Uncrustables Peanut Butter & Honey Spread Frozen Sandwiches, 2 oz Each, 45 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "JS-AS5F-QB8T",
+      "asin": "B0H822TJ7C",
+      "draft_id": "cmraa027q00q304le4brslc5f",
+      "intended_count": 30,
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwiches, 12g Protein, Individually Wrapped, 30 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "JT-ASKD-KS8T",
+      "asin": "B0H83Z6S3Q",
+      "draft_id": "cmrbg49e3005g04l62tik7nkd",
+      "intended_count": 120,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwiches, 2 oz Each, 120 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "JU-ASM0-KV4Z",
+      "asin": "B0H8462L4S",
+      "draft_id": "cmrbhkmeu001204juj2uyeum0",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Raspberry Spread and Whole Wheat Peanut Butter & Grape Jelly, 2 oz Each, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "JU-ASYC-SSJD",
+      "asin": "B0H854C7SZ",
+      "draft_id": "cmrbht1bo003o04ju61jq9pyc",
+      "intended_count": 24,
+      "title": "Uncrustables Whole Wheat Peanut Butter Sandwiches, Strawberry Jam & Grape Jelly Variety, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "JY-ASPW-LB4K",
+      "asin": "B0H84621N6",
+      "draft_id": "cmrbhjtix000i04ju82pjsipw",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwiches Variety Pack – Raspberry Spread and Apple Cinnamon Jelly Protein, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "KD-AS12-8HZ3",
+      "asin": "B0H845JBM6",
+      "draft_id": "cmrbh7yra001504l7xfclfn12",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Crustless Sandwiches, Peanut Butter & Strawberry Jam Protein and Peanut Butter & Mixed Berry, 2.8 oz, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "KN-ASYZ-ST4M",
+      "asin": "B0H83XBXHX",
+      "draft_id": "cmrbg6m3000s504l6vk4gllyz",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety Pack, Strawberry Jam Protein & Raspberry Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "KP-ASYC-RN84",
+      "asin": "B0H83FYZR3",
+      "draft_id": "cmrbf1j0s001j04l0njbopnyc",
+      "intended_count": 90,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich, 2.8 oz Each, 90 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "LH-ASP7-KZR4",
+      "asin": "B0H82XNFRW",
+      "draft_id": "cmrabh3vu001x04le0w3a05p7",
+      "intended_count": 90,
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Sandwich, Reduced Sugar, Individually Wrapped, Frozen, 90 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "LJ-ASYO-FWJK",
+      "asin": "B0H853SHVC",
+      "draft_id": "cmrbhsadu003804juf9z7w1yo",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Whole Wheat Peanut Butter & Strawberry Jam and Chocolate Flavored Hazelnut Spread, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "LK-AS7X-K43B",
+      "asin": "B0H84CGGXL",
+      "draft_id": "cmrbhkfzt000y04ju17hpqo7x",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter Sandwich Variety Pack, 24 Count – 12 Raspberry Spread & 12 Strawberry Jam, 2 oz Each, Frozen",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "LP-AS9J-HSVB",
+      "asin": "B0H82B7KK1",
+      "draft_id": "cmra927we000004lbd6vwys9j",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "LU-ASK0-LSDF",
+      "asin": "B0H84YZDB7",
+      "draft_id": "cmrbhwrm2005004ju2m1iabk0",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter and Peanut Butter & Grape Jelly Sandwich Variety Pack, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "ME-AS1I-SEX2",
+      "asin": "B0H83RVHNF",
+      "draft_id": "cmrbf4q9y001v04l0grx8c61i",
+      "intended_count": 90,
+      "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, Frozen, 2 oz Each, 90 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "MF-AS0J-YRT4",
+      "asin": "B0H82NHQCL",
+      "draft_id": "cmra93wh3000804lbbgyeib0j",
+      "intended_count": 24,
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Sandwich, Reduced Sugar, 2 oz, Frozen, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "MP-ASYO-QNU2",
+      "asin": "B0H84Z9KWL",
+      "draft_id": "cmrbhrh3b002o04juneoneyyo",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety Pack, Honey Spread & Grape Jelly, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "MP-ASZ9-TKE7",
+      "asin": "B0H837HLKC",
+      "draft_id": "cmrbe06hp001004l7k9pyxpz9",
+      "intended_count": 30,
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, Frozen, 30 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "NC-ASPL-EXE8",
+      "asin": "B0H83QRV43",
+      "draft_id": "cmrbgc3xz000604latofie3pl",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, Variety Pack, 24 Count – Protein & Whole Wheat",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "NJ-ASAC-PTK2",
+      "asin": "B0H82X48CD",
+      "draft_id": "cmrbdllmg000004l70ki1liac",
+      "intended_count": 24,
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "NM-ASEW-S2SK",
+      "asin": "B0H86TVN3C",
+      "draft_id": "cmrbds0i4000c04l7ie9speew",
+      "intended_count": 24,
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "NS-ASSD-B3JJ",
+      "asin": "B0H82L945T",
+      "draft_id": "cmra9m7aj000804lesekwb1sd",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Mixed Berry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "NT-ASIL-V5LK",
+      "asin": "B0H84547PM",
+      "draft_id": "cmrbhd2lv000004jubrr4mtil",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Strawberry Jam Protein and Peanut Butter & Chocolate Flavored Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "NV-AS86-HD44",
+      "asin": "B0H85KQJKS",
+      "draft_id": "cmrbhyymr006o04jurn6s8w86",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Chocolate Hazelnut & Whole Wheat Peanut Butter Grape Jelly, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "PB-ASAF-G2T6",
+      "asin": "B0H82K7Y7S",
+      "draft_id": "cmra96glo000004l7s8ii18af",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwiches, No Crust, Individually Wrapped, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "PJ-ASAX-6LTG",
+      "asin": "B0H82T12L7",
+      "draft_id": "cmrabe5nj001j04ledpkdn2ax",
+      "intended_count": 90,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, 12g Protein, 2.8 oz Each, 90 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "PJ-ASDX-E8LW",
+      "asin": "B0H85MGP35",
+      "draft_id": "cmrbhrmu1002s04jutzzxgtdx",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Honey Spread and Peanut Butter & Mixed Berry Spread Sandwiches, 24 Count Variety Pack",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "PL-ASR9-U94A",
+      "asin": "B0H83RR2XQ",
+      "draft_id": "cmrbebt4t000004l0i0v79cr9",
+      "intended_count": 45,
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich, 2.8 oz, Wheat Bread, 45 Count, Frozen",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "PP-AS23-SPLQ",
+      "asin": "B0H84CDNQG",
+      "draft_id": "cmrbhjh8e000a04juaxuo4k23",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter Sandwich Variety Pack, 2 oz Each, 24 Count - Raspberry Spread and Whole Wheat Strawberry Jam",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "PR-AS79-8SDF",
+      "asin": "B0H82L74PL",
+      "draft_id": "cmra9sn4q000j04le01fi5f79",
+      "intended_count": 30,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 12g Protein, 2.8 oz, 30 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "PT-AS5B-Z2XH",
+      "asin": "B0H84Z6QWY",
+      "draft_id": "cmrbhtccl003w04jum0wiyq5b",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Jelly Sandwich Variety Pack, 24 Count — Whole Wheat Strawberry Jam & Grape Jelly, 2 oz Each",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "PU-AS3D-SA5Z",
+      "asin": "B0H83H71F8",
+      "draft_id": "cmrbflrd8000q04kzgg7d1m3d",
+      "intended_count": 120,
+      "title": "Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwiches, Individually Wrapped, 120 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "PW-ASDZ-CSR8",
+      "asin": "B0H839TPC5",
+      "draft_id": "cmrbe7r54001i04l7x0x68wdz",
+      "intended_count": 45,
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz Each, 45 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "PY-ASBM-WX6W",
+      "asin": "B0H82B7GV5",
+      "draft_id": "cmra9h3pa000004le3pzqilbm",
+      "intended_count": 24,
+      "title": "Smucker's Uncrustables Whole Wheat Peanut Butter and Grape Jelly Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "QC-ASX2-RHPA",
+      "asin": "B0H83TQPJB",
+      "draft_id": "cmrbfxto5000004js6gfl6dx2",
+      "intended_count": 120,
+      "title": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Grape Jelly Sandwiches, 2 oz Each, 120 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "QE-ASEQ-4YV5",
+      "asin": "B0H82CBLRM",
+      "draft_id": "cmra9frr9000004jvurzaiceq",
+      "intended_count": 24,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 2 oz Each, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "QP-ASAD-PTLX",
+      "asin": "B0H85DG2JQ",
+      "draft_id": "cmrbhs5a6003404jursei7aad",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Whole Wheat Peanut Butter & Strawberry Jam and Peanut Butter & Apple Cinnamon Jelly Protein, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "QW-ASRZ-SYKC",
+      "asin": "B0H83MDDBL",
+      "draft_id": "cmrbfgi49000c04kz8mz7earz",
+      "intended_count": 120,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich, Individually Wrapped, 120 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "QX-AS89-H8YC",
+      "asin": "B0H82RQ226",
+      "draft_id": "cmra98n8f000i04lbmjn83689",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwiches, 2.8 oz Each, 12g Protein, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "QX-ASS6-4T4F",
+      "asin": "B0H83B6TYP",
+      "draft_id": "cmrbejzr7000p04l0atwj3es6",
+      "intended_count": 90,
+      "title": "Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwiches, Individually Wrapped, 90 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "RB-ASVO-GYCY",
+      "asin": "B0H859N8VM",
+      "draft_id": "cmrbhxmlb005o04jutndj6ivo",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety Pack, Apple Cinnamon Jelly & Strawberry Jam, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "RH-ASWA-ER34",
+      "asin": "B0H85JR6WN",
+      "draft_id": "cmrbhlzcx001y04ju6ek7rswa",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, 24 Count - Peanut Butter & Honey Spread and Chocolate Flavored Hazelnut Spread",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "RL-AS64-Q8QX",
+      "asin": "B0H82LZLM2",
+      "draft_id": "cmraa5hvv000004leqazids64",
+      "intended_count": 30,
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread on Wheat Bread, 2.8 oz, 30 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "RM-ASCV-DVA5",
+      "asin": "B0H822CVVL",
+      "draft_id": "cmra9pphw000004jv3pj99jcv",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, Frozen, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "RN-ASLP-VH3X",
+      "asin": "B0H82JYZQH",
+      "draft_id": "cmraa8m9z000604le5hnk1blp",
+      "intended_count": 30,
+      "title": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Grape Jelly Sandwiches, 2 oz Each, 30 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "RQ-AS0L-9B45",
+      "asin": "B0H85MQLHG",
+      "draft_id": "cmrbhlu9z001u04jupk1vb70l",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Honey and Peanut Butter & Apple Cinnamon Jelly Protein, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "RQ-AS78-STLZ",
+      "asin": "B0H85GR968",
+      "draft_id": "cmrbhu9dl004k04juek5qtz78",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, 24 Count - Peanut Butter and Morning Protein Peanut Butter & Mixed Berry Spread",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "RQ-ASM7-T9NN",
+      "asin": "B0H83HNB3B",
+      "draft_id": "cmrbewdw5001d04l0h4m63om7",
+      "intended_count": 90,
+      "title": "Smucker's Uncrustables Whole Wheat Peanut Butter & Grape Jelly Sandwiches, 2 oz, Frozen, 90 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "RR-ASG1-JVKV",
+      "asin": "B0H8361PYX",
+      "draft_id": "cmrbe64gg001c04l75l5lwxg1",
+      "intended_count": 45,
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Sandwich, 45 Count, Individually Wrapped, Frozen",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "RS-AS47-M3K3",
+      "asin": "B0H87748WJ",
+      "draft_id": "cmrbhzcea006w04ju01t9ub47",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Chocolate Flavored Hazelnut Spread & Peanut Butter Grape Jelly, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "RU-ASC3-4TUS",
+      "asin": "B0H83SJFR7",
+      "draft_id": "cmrbgablh000004lavzu40hc3",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety, Strawberry Jam Protein & Honey Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "RY-ASMO-6N4F",
+      "asin": "B0H8493HNR",
+      "draft_id": "cmrbhg8xe000604juchukx2mo",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Honey Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "RY-ASO3-24Q2",
+      "asin": "B0H84XMG42",
+      "draft_id": "cmrbhmgjv002604juhqpn13o3",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Peanut Butter & Honey and Morning Protein Peanut Butter & Mixed Berry, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "RZ-AS26-WLRM",
+      "asin": "B0H85PJ516",
+      "draft_id": "cmrbhyjmd006c04juvxqde326",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Chocolate Flavored Hazelnut Spread and Peanut Butter Blackberry, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "SA-ASCK-J2B2",
+      "asin": "B0H82XP1MM",
+      "draft_id": "cmraar3cu000o04leyjrc4jck",
+      "intended_count": 45,
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwiches, 12g Protein, 2.8 oz, 45 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "SA-ASDW-SNEW",
+      "asin": "B0H82SMZ2M",
+      "draft_id": "cmrab82rd000004l2f5zaondw",
+      "intended_count": 45,
+      "title": "Uncrustables Peanut Butter & Mixed Berry Spread Sandwiches, 2 oz Each, Frozen, 45 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "SC-ASH8-4RQG",
+      "asin": "B0H856DWVS",
+      "draft_id": "cmrbhxyju005w04juz2ye8vh8",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches, Peanut Butter & Apple Cinnamon Jelly and Peanut Butter & Blueberry, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "SG-AS32-LZ9Y",
+      "asin": "B0H8564C6D",
+      "draft_id": "cmrbhlc25001i04juo00p4n32",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Chocolate Flavored Spread Sandwiches, 24 Count, 2 oz Each, Frozen",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "SG-ASLB-M2DG",
+      "asin": "B0H84PFKYC",
+      "draft_id": "cmrbhl12i001a04jull2x7tlb",
+      "intended_count": 24,
+      "title": "Uncrustables - Peanut Butter Sandwich Variety Pack, Frozen, 2 oz Each, 24 Count, Raspberry Spread & Grape Jelly",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "SH-ASO0-PW37",
+      "asin": "B0H83ZH3TB",
+      "draft_id": "cmrbh6mcj000q04l7dt1dn9o0",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Crustless Sandwiches Variety Pack, Peanut Butter & Strawberry Jam and Peanut Butter & Grape Jelly, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content omits recipe flavor \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "SS-AS9K-U9TV",
+      "asin": "B0H831889Q",
+      "draft_id": "cmrabamzb001d04le6vi8089k",
+      "intended_count": 45,
+      "title": "Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 2 oz Each, Frozen, 45 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "SU-ASS4-RV6R",
+      "asin": "B0H853HGHC",
+      "draft_id": "cmrbhxtcy005s04judxsbxys4",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, 24 Count – Peanut Butter Apple Cinnamon Jelly Protein & Whole Wheat Grape Jelly",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "SV-AS87-D6SV",
+      "asin": "B0H83ZGN22",
+      "draft_id": "cmrbgwplg000604l77rowrz87",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, 24 Count – Classic & 12g Protein Varieties, Individually Wrapped",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "SZ-ASPI-JFAT",
+      "asin": "B0H776M5B5",
+      "draft_id": "cmr1nzi9n000004jv095z5spi",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwiches, 8oz/4ct - Pack of 6 (24 Sandwiches Total)",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "TH-AS6D-CCES",
+      "asin": "B0H845HSDZ",
+      "draft_id": "cmrbhjyyv000m04jur8nqwx6d",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Chocolate Hazelnut Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "TL-ASHN-ZRKG",
+      "asin": "B0H85P9F3R",
+      "draft_id": "cmrbhyood006g04ju4cqerjhn",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Chocolate Flavored Hazelnut Spread & Morning Protein Peanut Butter Mixed Berry, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "TP-AS91-8PAZ",
+      "asin": "B0H835T5HN",
+      "draft_id": "cmraaeu1e000004lew4r5r291",
+      "intended_count": 30,
+      "title": "Uncrustables Peanut Butter & Mixed Berry Spread Frozen Crustless Sandwiches, 2 oz, 30 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "TQ-ASBR-96TC",
+      "asin": "B0H82BCZ44",
+      "draft_id": "cmra9ijk4000604jvzp4ku6br",
+      "intended_count": 24,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich, 2.8 oz Each, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "TQ-ASC4-P2NP",
+      "asin": "B0H839G6RQ",
+      "draft_id": "cmrbeonxk000v04l0jll0hjc4",
+      "intended_count": 90,
+      "title": "Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, 90 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "TY-AST2-JE9P",
+      "asin": "B0H84WQRXB",
+      "draft_id": "cmrbhl6u9001e04jug3r1qet2",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Mixed Berry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "UA-ASAO-RE7Q",
+      "asin": "B0H784LMG6",
+      "draft_id": "cmr2k2m64000g4esb2e44ygao",
+      "intended_count": 45,
+      "title": "Uncrustables Peanut Butter & Strawberry Jam Sandwiches, Frozen, 2 oz Each, 45 Count Multipack",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "UD-AS9J-QNY6",
+      "asin": "B0H834L7P6",
+      "draft_id": "cmrabgasb001r04lefspxv19j",
+      "intended_count": 90,
+      "title": "Uncrustables Peanut Butter & Honey Spread Frozen Sandwiches, Individually Wrapped, 90 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "UE-ASA6-CLLY",
+      "asin": "B0H83ZHZ4S",
+      "draft_id": "cmrbhk3q1000q04jux1pgssa6",
+      "intended_count": 24,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread and Peanut Butter & Blackberry Spread Frozen Sandwiches, 2 oz Each, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "UF-ASA1-GN5P",
+      "asin": "B0H854DM3X",
+      "draft_id": "cmrbhwc4f004o04ju1dy1hna1",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter and Peanut Butter & Strawberry Jam Sandwich Variety Pack, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "UG-ASUO-L4D9",
+      "asin": "B0H83FP8WW",
+      "draft_id": "cmrbev3hy001704l0xqdwruuo",
+      "intended_count": 90,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 2 oz Each, 90 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "UJ-ASQ1-9FNR",
+      "asin": "B0H82P651P",
+      "draft_id": "cmra9e5xm000004l85d3x8cq1",
+      "intended_count": 24,
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwiches, 2.8 oz, Frozen, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "UY-AS5N-A2E4",
+      "asin": "B0H83R4M3R",
+      "draft_id": "cmrbf7n5i000004jpacsk7i5n",
+      "intended_count": 120,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 12g Protein, 2.8 oz, 120 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "VA-ASOK-QJCA",
+      "asin": "B0H85RZDX5",
+      "draft_id": "cmrbhy9sv006404ju35bjwlok",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Crustless Peanut Butter Sandwiches, Apple Cinnamon Jelly & Mixed Berry Variety Pack, 2.8 oz Each, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "VC-ASQE-L5Z5",
+      "asin": "B0H82QYM85",
+      "draft_id": "cmraauqr0000u04lel747unqe",
+      "intended_count": 45,
+      "title": "Uncrustables Chocolate Flavored Hazelnut Spread Frozen Sandwiches, 1.8 oz Each, 45 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "VC-ASV1-378P",
+      "asin": "B0H786L5MW",
+      "draft_id": "cmr2kik600001ycsbqert6xv1",
+      "intended_count": 90,
+      "title": "Uncrustables Peanut Butter & Strawberry Jam Frozen Sandwiches, 2 oz Each, 90 Count Multipack",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "VH-ASHZ-TJEE",
+      "asin": "B0H856VWD6",
+      "draft_id": "cmrbhth8n004004ju7r8tgchz",
+      "intended_count": 24,
+      "title": "Uncrustables Whole Wheat Peanut Butter Sandwich Variety, Strawberry Jam & Mixed Berry Spread, 24 Count, Frozen",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content omits recipe flavor \"Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "VK-ASSB-3YFK",
+      "asin": "B0H85FY28F",
+      "draft_id": "cmrbhr54u002g04juxu9g3nsb",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety Pack, Honey Spread and Whole Wheat Grape Jelly, 24 Individually Wrapped Sandwiches",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "VN-AS1A-D572",
+      "asin": "B0H82PKK18",
+      "draft_id": "cmrab1n86003k04jvtpcutz1a",
+      "intended_count": 45,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 8 oz, 4 ct - Pack of 45",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "title count 180 does not equal recipe count 45"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "VN-AS6Q-5AE9",
+      "asin": "B0H8538L32",
+      "draft_id": "cmrbhtxs2004c04juhmca4p6q",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter and Chocolate Flavored Hazelnut Spread, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "VT-ASTH-B6LM",
+      "asin": "B0H85CL8JD",
+      "draft_id": "cmrbhtruw004804juhph1q7th",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Peanut Butter Apple Cinnamon Jelly Protein, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "WC-ASH5-EFN6",
+      "asin": "B0H833W54L",
+      "draft_id": "cmrbdyfr5000u04l7w60k7dh5",
+      "intended_count": 30,
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz, 30 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "WK-AS2R-FJUW",
+      "asin": "B0H82XBNVN",
+      "draft_id": "cmrabk7r7000604l2aadssm2r",
+      "intended_count": 90,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich, Individually Wrapped, No Crust, 1.8 oz, Pack of 90",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "WK-AS7E-M3CE",
+      "asin": "B0H843R64X",
+      "draft_id": "cmrbgtrtc000004l715c37d7e",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter Sandwich Variety Pack, 24 Count – Strawberry Jam 12g Protein and Mixed Berry Spread Flavors",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "WK-ASPD-G9HL",
+      "asin": "B0H85CF81Y",
+      "draft_id": "cmrbhrxyh003004jun4uxd8pd",
+      "intended_count": 24,
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam and Peanut Butter Frozen Sandwiches, Variety Pack, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "WN-AS33-UFEA",
+      "asin": "B0H83RCTVV",
+      "draft_id": "cmrbfdu7w000004kz0rjk8g33",
+      "intended_count": 120,
+      "title": "Uncrustables Frozen Peanut Butter & Honey Spread Sandwiches, 2 oz Each, Individually Wrapped, 120 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "WR-ASR5-AVWE",
+      "asin": "B0H859VYXH",
+      "draft_id": "cmrbhx7vg005c04ju3i2mqtr5",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Peanut Butter Apple Cinnamon Jelly Protein & Chocolate Hazelnut Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "WR-ASTH-TPXV",
+      "asin": "B0H85DRT93",
+      "draft_id": "cmrbhxhjv005k04jucvzqizth",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, 24 Count – Peanut Butter & Apple Cinnamon Jelly Protein and Morning Protein Peanut Butter & Mixed Berry Spread",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content does not state 12 pieces for \"Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "WZ-ASXK-ZFAS",
+      "asin": "B0H85DF1R7",
+      "draft_id": "cmrbhrb45002k04ju0fqwdtxk",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Honey Spread and Peanut Butter & Blueberry, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "XE-ASK1-BNRB",
+      "asin": "B0H81WMJBP",
+      "draft_id": "cmraajhgu000e04lexcl7r7k1",
+      "intended_count": 45,
+      "title": "Uncrustables Peanut Butter & Raspberry Spread Sandwiches, 2 oz Each, Frozen, 45 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "XJ-ASVD-CDMW",
+      "asin": "B0H82MSTD9",
+      "draft_id": "cmraaidy8000804lemp5yq1vd",
+      "intended_count": 45,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 12g Protein, 2.8 oz, Individually Wrapped - 45 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "XV-ASEU-GDUX",
+      "asin": "B0H82YRTS3",
+      "draft_id": "cmraax5jr003e04jvndsfaceu",
+      "intended_count": 45,
+      "title": "Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwiches, 2.8 oz, Frozen, 45 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "XW-ASSI-SZZT",
+      "asin": "B0H858GF4N",
+      "draft_id": "cmrbhlouz001q04ju1y85xbsi",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Honey Spread and Peanut Butter Sandwiches, Individually Wrapped, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "YA-ASX6-PZE7",
+      "asin": "B0H82YB4PD",
+      "draft_id": "cmraa2xxo000c04jv73w5vqx6",
+      "intended_count": 30,
+      "title": "Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, 2 oz Each, 30 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "YF-ASZJ-8BBH",
+      "asin": "B0H822MPKC",
+      "draft_id": "cmra9u928000r04le630q8mzj",
+      "intended_count": 30,
+      "title": "Uncrustables Frozen Peanut Butter & Honey Spread Sandwiches, Individually Wrapped, 30 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "YG-ASH6-BCXX",
+      "asin": "B0H8511Y5G",
+      "draft_id": "cmrbhu43o004g04ju71ltmch6",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Peanut Butter Blackberry Spread Sandwiches, Variety Pack, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "YH-ASQ8-45ED",
+      "asin": "B0H82QPCJL",
+      "draft_id": "cmraaos9v003404jvbd5vghq8",
+      "intended_count": 45,
+      "title": "Uncrustables Frozen Peanut Butter Sandwiches, Individually Wrapped, No Crust, 45 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "YM-AS7P-ZX44",
+      "asin": "B0H83S1LDG",
+      "draft_id": "cmrbfnaj3000w04kz68dn617p",
+      "intended_count": 120,
+      "title": "Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, Individually Wrapped, 120 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "YV-AST8-LMKN",
+      "asin": "B0H859JMGJ",
+      "draft_id": "cmrbhrs2y002w04judp0mzut8",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Peanut Butter & Honey and Peanut Butter & Chocolate Flavored Spread, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "ZB-ASKL-9W8G",
+      "asin": "B0H82LKBYH",
+      "draft_id": "cmraav7ru000x04ledblydwkl",
+      "intended_count": 45,
+      "title": "Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, Individually Wrapped, No Crust, 45 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "ZC-ASDC-3QMV",
+      "asin": "B0H83TSB5J",
+      "draft_id": "cmrbftb5h000604jpnab4kndc",
+      "intended_count": 120,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich, 2 oz Each, 120 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand recipe contains individual pieces, not retail boxes/cases"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "ZE-AS5W-FKH3",
+      "asin": "B0H8531B8B",
+      "draft_id": "cmrbhwwn4005404ju6wq4lc5w",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwich Variety Pack, Peanut Butter and Peanut Butter & Mixed Berry Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "content omits recipe flavor \"Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Sandwich\""
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "ZH-AS8W-G5MN",
+      "asin": "B0H82LMD9Z",
+      "draft_id": "cmraabxay000r04jvxaj79v8w",
+      "intended_count": 30,
+      "title": "Smucker's Uncrustables Frozen Peanut Butter and Grape Jelly Sandwich, 2 oz Each, 30 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "ZP-ASJD-X7ZD",
+      "asin": "B0H85N7X8W",
+      "draft_id": "cmrbhsmu4003g04juqqw7yqjd",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Sandwiches Variety Pack, Whole Wheat Peanut Butter & Strawberry Jam and Morning Protein Peanut Butter & Mixed Berry Spread, 24 Count",
+      "failures": [
+        {
+          "type": "SEMANTIC",
+          "message": "own-brand content uses retail-count × pack-of multiplication"
+        }
+      ],
+      "pass": false
+    },
+    {
+      "sku": "ZX-AS2C-GT8Q",
+      "asin": "B0H82L3LRT",
+      "draft_id": "cmra9x0yo000604jvos2z822c",
+      "intended_count": 30,
+      "title": "Uncrustables Whole Wheat Peanut Butter & Strawberry Jam Frozen Sandwiches, 2 oz Each, 30 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "ZX-ASQU-TKU9",
+      "asin": "B0H84PVG1G",
+      "draft_id": "cmrbhsvfg003k04ju0ampc3qu",
+      "intended_count": 24,
+      "title": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, Whole Wheat and Classic Variety, Individually Wrapped, 24 Count",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "sku": "ZY-ASZ4-QM5U",
+      "asin": "B0H83T9QZV",
+      "draft_id": "cmrbfkbiz000j04kzank27iz4",
+      "intended_count": 120,
+      "title": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz, Individually Wrapped – 120 Count",
+      "failures": [],
+      "pass": true
+    }
+  ]
+}

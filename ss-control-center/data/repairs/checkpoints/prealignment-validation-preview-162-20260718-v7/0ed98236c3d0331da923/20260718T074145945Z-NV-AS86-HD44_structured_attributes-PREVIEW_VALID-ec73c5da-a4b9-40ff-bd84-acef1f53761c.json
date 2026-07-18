@@ -1,0 +1,23 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "ec73c5da-a4b9-40ff-bd84-acef1f53761c",
+  "created_at": "2026-07-18T07:41:45.945Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "NV-AS86-HD44:structured_attributes",
+  "sku": "NV-AS86-HD44",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "834aaa458159a2990f721eafdd0b2e3ea1222b3d8cfbd97df555777c61b927c7",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "status": "VALID",
+    "submission_id": "250a3cd0ed6a48369e1868ede1aaf910",
+    "issues": []
+  },
+  "sha256": "68ab311e80e4e387cd9a84f97f8e7e581def2f730d6c9ffcd2dc0e34669ba472"
+}

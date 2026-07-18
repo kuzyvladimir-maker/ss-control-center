@@ -9,6 +9,8 @@
 //   new listing price = competitor featured landed − our shipping − $0.01
 //
 // Safety rails:
+//   • Uncrustables is excluded: its canonical base is fixed and promotions use
+//     Amazon Coupons rather than offer-price cuts.
 //   • Only ever LOWER the price, never raise.
 //   • Never drop more than MAX_DROP_PCT (10%) in one run — if winning would
 //     need a bigger cut, skip and flag for manual review (protects against a
@@ -57,6 +59,7 @@ const TIME_BUDGET_MS = 240_000; // stop & save cursor before Vercel's 300s cap
 
 export type RepriceAction =
   | "repriced"
+  | "skipped_price_locked"
   | "skipped_winning"
   | "skipped_raise"
   | "skipped_cap"
@@ -92,6 +95,13 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+/** Dedicated Uncrustables listings use a fixed canonical base; promotions are
+ * coupons, never offer-price cuts. The lower-level SP-API writer independently
+ * verifies the live brand/title so a missing/stale summary still fails closed. */
+export function isUncrustablesPriceLocked(meta: SkuMeta): boolean {
+  return /\buncrustables?\b/i.test(meta.title ?? "");
+}
+
 /**
  * Pure decision: given our parsed offers for one SKU, decide whether (and to
  * what) we should reprice. No side effects — easy to unit test and to run in
@@ -123,6 +133,15 @@ export function decideReprice(
   }
   base.oldPrice = mine.listingPrice;
   base.shipping = mine.shipping;
+
+  if (isUncrustablesPriceLocked(meta)) {
+    return {
+      ...base,
+      action: "skipped_price_locked",
+      newPrice: null,
+      reason: "canonical .99 base is locked; promotions must use Amazon Coupons",
+    };
+  }
 
   // Already winning the Featured Offer — nothing to do.
   if (mine.isBuyBoxWinner) {
@@ -188,6 +207,7 @@ export interface RunResult {
   storeIndex: number;
   scanned: number;
   repriced: number;
+  skippedLocked: number;
   skippedCap: number;
   skippedFloor: number; // held at the margin/$1 floor — would have lost margin
   noCompetition: number;
@@ -240,6 +260,7 @@ export async function repriceStore(
     storeIndex,
     scanned: 0,
     repriced: 0,
+    skippedLocked: 0,
     skippedCap: 0,
     skippedFloor: 0,
     noCompetition: 0,
@@ -335,6 +356,9 @@ export async function repriceStore(
             result.repriced++;
             result.changes.push(decision);
             break;
+          case "skipped_price_locked":
+            result.skippedLocked++;
+            break;
           case "skipped_cap":
             result.skippedCap++;
             result.flagged.push(decision);
@@ -398,6 +422,7 @@ async function logDecision(
   // Only persist actionable rows (changes, flags, errors) to keep the table
   // small — "winning"/"no_competition" are the vast majority and uninteresting.
   if (
+    d.action === "skipped_price_locked" ||
     d.action === "skipped_winning" ||
     d.action === "skipped_raise" ||
     d.action === "no_competition"

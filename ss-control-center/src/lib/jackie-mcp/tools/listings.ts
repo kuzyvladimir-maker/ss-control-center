@@ -13,7 +13,10 @@ import {
   flattenListing,
 } from "@/lib/amazon-sp-api/listings";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
-import { mergePurchasableOffer } from "@/lib/amazon-sp-api/pricing";
+import {
+  isUncrustablesListingItem,
+  mergePurchasableOffer,
+} from "@/lib/amazon-sp-api/pricing";
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import {
   amazonChannelToStoreIndex,
@@ -183,10 +186,15 @@ const listingsUpdate: JackieTool = {
     let liveOffer: unknown = undefined;
     if (needsLiveRead) {
       const sellerId = await getMerchantToken(storeIndex);
-      const live = (await getListing(storeIndex, sellerId, sku)) as {
-        summaries?: Array<{ productType?: string }>;
-        attributes?: Record<string, unknown>;
-      };
+      const live = await getListing(storeIndex, sellerId, sku);
+      if (
+        (price != null || minPrice != null || maxPrice != null) &&
+        isUncrustablesListingItem(live)
+      ) {
+        throw new Error(
+          "Uncrustables offer prices are policy-locked; use the sealed surgical repair for canonical corrections and Amazon Coupons for promotions",
+        );
+      }
       product_type = product_type || live.summaries?.[0]?.productType || "PRODUCT";
       liveOffer = live.attributes?.purchasable_offer;
     }

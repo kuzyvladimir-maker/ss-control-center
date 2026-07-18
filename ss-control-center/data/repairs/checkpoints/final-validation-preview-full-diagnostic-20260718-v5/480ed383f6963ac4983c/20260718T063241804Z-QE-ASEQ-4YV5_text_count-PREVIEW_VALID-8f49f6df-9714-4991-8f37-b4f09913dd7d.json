@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "8f49f6df-9714-4991-8f37-b4f09913dd7d",
+  "created_at": "2026-07-18T06:32:41.804Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "QE-ASEQ-4YV5:text_count",
+  "sku": "QE-ASEQ-4YV5",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "7a73a1ffab7aa611ef20e98d878c0ab0c26f20820c88580dc98712a5d3a4ae97",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "037e9a5ccfa9432aa99514f7ad1b76f8",
+    "issues": []
+  },
+  "sha256": "a1b6696ef4ebaf190e8ddd77b97217927086a17a689732ebb7e976dbab04dfc6"
+}

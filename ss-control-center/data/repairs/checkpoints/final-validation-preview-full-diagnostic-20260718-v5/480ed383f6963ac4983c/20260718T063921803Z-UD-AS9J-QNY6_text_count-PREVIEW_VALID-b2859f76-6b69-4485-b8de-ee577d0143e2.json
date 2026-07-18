@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b2859f76-6b69-4485-b8de-ee577d0143e2",
+  "created_at": "2026-07-18T06:39:21.803Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "UD-AS9J-QNY6:text_count",
+  "sku": "UD-AS9J-QNY6",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "c44a7a7220dddde65b19b815dcbb86cb41fae2325a0d9c7a881af0781dc8ff18",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "1371ab5dc474478dae1ba122343c5e9f",
+    "issues": []
+  },
+  "sha256": "54567a1eaa69b4b97e1bd60d5aa22613789707b161b7d44aa9c0e3d7a396dee5"
+}

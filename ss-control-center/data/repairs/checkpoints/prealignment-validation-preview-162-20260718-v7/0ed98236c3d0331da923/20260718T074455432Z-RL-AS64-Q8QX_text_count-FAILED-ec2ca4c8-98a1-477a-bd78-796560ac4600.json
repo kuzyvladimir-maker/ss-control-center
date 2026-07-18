@@ -1,0 +1,15 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "ec2ca4c8-98a1-477a-bd78-796560ac4600",
+  "created_at": "2026-07-18T07:44:55.432Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "RL-AS64-Q8QX:text_count",
+  "sku": "RL-AS64-Q8QX",
+  "kind": "TEXT_COUNT",
+  "status": "FAILED",
+  "detail": {
+    "error": "VALIDATION_PREVIEW rejected RL-AS64-Q8QX:text_count: {\"status\":\"INVALID\",\"submission_id\":\"a52ede7fd3174fbdb353d11102e1ee8c\",\"issues\":[{\"code\":\"8541\",\"message\":\"The Listing data provided is different from what's already in the Amazon catalog. The standard product ids (such as UPC, ISBN, EAN, or JAN codes) provided matches ASIN B0H82LZLM2, but some of the listing data contradicts what is already in the Amazon catalog. The following listing attribute value(s) conflict with Amazon catalog value(s): 'item_name' (Merchant [en_US: \\\"Smucker's Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread Frozen Sandwiches, Individually Wrapped, 30 Count\\\"] / Amazon [en_US: \\\"Uncrustables Morning Protein Peanut Butter & Mixed Berry Spread on Wheat Bread, 2.8 oz, 30 Count\\\"]). To fix the issue, please follow these steps 1) If the product you are listing is the same as B0H82LZLM2, then update your listing's 'item_name' attribute(s) to match Amazon's catalog value, 2) If it's not the right ASIN, make sure the standard product ids (such as UPC, ISBN, EAN, or JAN codes) provided is correct, or 3) If you disagree with the data in Amazon catalog contact Selling Partner Support to start the appeal process.\",\"severity\":\"ERROR\",\"attributeNames\":[\"item_name\"],\"categories\":[\"INVALID_ATTRIBUTE\"]}]}"
+  },
+  "sha256": "a0eb4b62f156361b344e75802cedfe753988c2e28901ce215b6187a1e34d9578"
+}

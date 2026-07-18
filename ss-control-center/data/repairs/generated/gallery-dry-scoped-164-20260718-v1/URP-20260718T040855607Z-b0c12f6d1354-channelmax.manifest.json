@@ -1,0 +1,20 @@
+{
+  "schema_version": "uncrustables-channelmax-artifact/v1",
+  "immutable": true,
+  "created_at": "2026-07-18T04:50:50.508Z",
+  "source_plan_id": "URP-20260718T040855607Z",
+  "source_plan_sha256": "b0c12f6d135463f41a0cc45b671c32242d967ed0a9dd40f5b22976e92be02a5b",
+  "selling_venue": "AmazonUS",
+  "columns": [
+    "SKU",
+    "ASIN",
+    "SellingVenue",
+    "MinSellingPrice",
+    "MaxSellingPrice"
+  ],
+  "rows": 164,
+  "tsv_file": "URP-20260718T040855607Z-b0c12f6d1354-channelmax.txt",
+  "tsv_sha256": "b42ff6599a3c7e1c44dc1fe5ce0e91693a3d9003f9ad0d747069ce14c4d220cc",
+  "uploaded": false,
+  "sha256": "4a171520e12c5325c98e10a59644c4deea7ab2217947eb10a29be3b638da5b41"
+}

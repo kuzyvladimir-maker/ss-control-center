@@ -10,8 +10,9 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { readJson, withErrorHandler } from "@/lib/bundle-factory/api-utils";
+import { badRequest, readJson, withErrorHandler } from "@/lib/bundle-factory/api-utils";
 import { runDistribution } from "@/lib/bundle-factory/distribution/distribution-pipeline";
+import { approveDraftForDistribution } from "@/lib/bundle-factory/approval";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -21,6 +22,8 @@ type Ctx = { params: Promise<{ id: string }> };
 interface Body {
   actor?: unknown;
   amazonProductType?: unknown;
+  approvalConfirmed?: unknown;
+  approvalNote?: unknown;
 }
 
 export const POST = withErrorHandler(
@@ -56,11 +59,28 @@ export const POST = withErrorHandler(
         ? body.amazonProductType
         : undefined;
 
+    if (apply) {
+      if (body.approvalConfirmed !== true) {
+        return badRequest(
+          "Real re-publish requires approvalConfirmed=true from an explicit operator confirmation.",
+        );
+      }
+      await approveDraftForDistribution({
+        draftId: draft.id,
+        actor,
+        note:
+          typeof body.approvalNote === "string"
+            ? body.approvalNote
+            : "Single-SKU re-publish confirmed",
+      });
+    }
+
     const result = await runDistribution({
       bundle_draft_id: draft.id,
       channels: [sku.channel],
       apply,
       amazonProductType,
+      republish: true,
       actor,
     });
     return NextResponse.json(result);

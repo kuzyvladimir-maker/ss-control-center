@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "819d9654-e77d-4bc3-a7fb-28be945d40eb",
+  "created_at": "2026-07-18T07:43:00.579Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "PT-AS5B-Z2XH:media",
+  "sku": "PT-AS5B-Z2XH",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "dab320e02244f49d6e0c3baa656b163c7555a6656bda6845f69ce92be0541881",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "3a327f79f5a24284a685600d12c64483",
+    "issues": []
+  },
+  "sha256": "6a8c2c491131c218fc82512d044256a069f3a98851eeb374d0e1672e40c69022"
+}

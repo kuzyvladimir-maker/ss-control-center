@@ -19,19 +19,21 @@
  *      leave compliance_status=BLOCKED.
  *
  * Scope:
- *   ONLY rows where compliance_status='CAN_PUBLISH' AND main_image_url
- *   IS NULL get processed. BLOCKED rows (text-level) and rows that
- *   already have an image (idempotent re-run) are left alone.
+ *   By default, only CAN_PUBLISH rows without an image are processed. A forced
+ *   regeneration may also retry rows that were blocked by an earlier image
+ *   attempt; text-blocked rows remain out of scope.
  *
  * Draft transitions:
  *   - Pipeline entry: status='GENERATED' → 'IMAGE_GENERATING'
  *     (only when the caller is acting on a draft that's at GENERATED;
  *      drafts already in IMAGE_GENERATING/IMAGE_GENERATED stay where
  *      they are so re-runs from the UI don't bounce the badge).
- *   - Pipeline exit: 'IMAGE_GENERATED' if every CAN_PUBLISH row now has
- *     an image or is in manual review; 'ERROR' if no row succeeded.
+ *   - Pipeline exit: 'IMAGE_GENERATED' only if every target row has a verified
+ *     image; otherwise 'ERROR'. Any changed image invalidates downstream
+ *     validation and explicit approval before it can be republished.
  */
 
+import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import {
   generateMainImage,
@@ -43,19 +45,28 @@ import type { Variant } from "./variation-matrix";
 import { logLifecycle } from "./lifecycle-log";
 import { NotFoundError, PreconditionError } from "./errors";
 import { isOwnBrandPassthrough } from "./own-brand";
-import { parsePackUnits } from "./donor-dedup";
-import { compositeEligible, buildCompositeWithQA } from "./composite-image";
+import { compositeEligible } from "./composite-image";
+import { buildCoolerHeroWithQA } from "./cooler-hero";
 import { isColdCategory } from "./category";
+import {
+  countDistinctBrands,
+  resolveAmazonBrowseNode,
+} from "./browse-node-resolver";
+import {
+  resolveReviewedUncrustablesPackageArt,
+  type AuthenticityEvidence,
+  type UncrustablesPackMode,
+} from "./audit/uncrustables-main-authenticity";
+import { PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY } from "./audit/uncrustables-main-production-preflight";
 
-/** Standard Uncrustables retail lineup — used when a component's own pack size
- *  can't be read from its donor title. */
-const DEFAULT_RETAIL_SIZES = [15, 10, 4];
+export const UNCRUSTABLES_FROZEN_ANCHOR_SHA256 =
+  "9c45164a56e3cda1e9e0c2590e7d75d94e6320af012b841bc9e5b73594a1fd33";
 
 /** EXACT retail-box decomposition (owner's rule 2026-07-07): the main image may
  *  show boxes ONLY when the piece count splits into real retail boxes with NO
  *  remainder (45 = 3×15; 24 with {10,4} = 10+10+4). Returns the box sizes used
- *  (fewest boxes, larger first), or null when impossible — the caller then
- *  renders loose individually-wrapped sandwiches instead. Coin-change DP. */
+ *  (fewest boxes, larger first), or null when impossible. This generic utility
+ *  does not authorize the sizes; production uses the reviewed art registry. */
 export function composeRetailBoxes(total: number, sizes: number[]): number[] | null {
   const t = Math.round(total);
   const uniq = Array.from(new Set(sizes.filter((s) => Number.isInteger(s) && s >= 2))).sort((a, b) => b - a);
@@ -74,25 +85,153 @@ export function composeRetailBoxes(total: number, sizes: number[]): number[] | n
   return best[t] ? best[t]!.sort((a, b) => b - a) : null;
 }
 
-/** "3 boxes of 15" / "2 boxes of 10 + 1 box of 4" from a decomposition. */
-function describeBoxes(decomp: number[]): string {
-  const bySize = new Map<number, number>();
-  for (const s of decomp) bySize.set(s, (bySize.get(s) ?? 0) + 1);
-  return Array.from(bySize.entries())
-    .sort((a, b) => b[0] - a[0])
-    .map(([size, n]) => `${n} box${n > 1 ? "es" : ""} of ${size}`)
-    .join(" + ");
+export interface ReviewedUncrustablesImagePlanComponent {
+  research_pool_id: string;
+  product_name: string;
+  flavor_id: string;
+  pack_mode: UncrustablesPackMode;
+  retail_pack_size: number;
+  visible_package_count: number;
+  art_id: string;
+  evidence: AuthenticityEvidence[];
 }
 
-/** Retail box sizes available for a component: explicit field → donor-title
- *  parse ("…22.4oz/8ct" → [8]) → the standard lineup. */
-function componentRetailSizes(c: { product_name: string; retail_pack_sizes?: unknown }): number[] {
-  const explicit = c.retail_pack_sizes;
-  if (Array.isArray(explicit) && explicit.length > 0) {
-    return explicit.filter((n): n is number => typeof n === "number");
+export type ReviewedUncrustablesImagePlan =
+  | {
+      ok: true;
+      pack_mode: UncrustablesPackMode;
+      components: ReviewedUncrustablesImagePlanComponent[];
+    }
+  | {
+      ok: false;
+      pack_mode: UncrustablesPackMode;
+      errors: string[];
+    };
+
+/**
+ * Resolve the presentation from immutable reviewed package art. There is no
+ * global fallback size and no approximate carton count: every component must
+ * resolve to one exact flavor/mode, and retail-carton quantities must divide by
+ * that reviewed carton's genuine printed count.
+ */
+export function planReviewedUncrustablesImage(args: {
+  variant: Variant;
+  image_mode: UncrustablesImageMode;
+}): ReviewedUncrustablesImagePlan {
+  const packMode: UncrustablesPackMode =
+    args.image_mode === "individual_wraps"
+      ? "individual-wrapper"
+      : "retail-carton";
+  const components: ReviewedUncrustablesImagePlanComponent[] = [];
+  const errors: string[] = [];
+
+  if (args.variant.composition.length === 0) {
+    return {
+      ok: false,
+      pack_mode: packMode,
+      errors: ["Uncrustables recipe has no components"],
+    };
   }
-  const parsed = parsePackUnits(c.product_name);
-  return parsed != null ? [parsed] : DEFAULT_RETAIL_SIZES;
+
+  for (const component of args.variant.composition) {
+    const labels = Array.from(new Set([
+      component.flavor?.trim(),
+      component.product_name.trim(),
+    ].filter((label): label is string => !!label)));
+    let candidates: Array<
+      NonNullable<ReturnType<typeof resolveReviewedUncrustablesPackageArt>>
+    > = [];
+    try {
+      candidates = labels
+        .map((label) =>
+          resolveReviewedUncrustablesPackageArt(
+            PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
+            label,
+            packMode,
+          ),
+        )
+        .filter((art): art is NonNullable<typeof art> => art !== null);
+    } catch (error) {
+      errors.push(
+        `${component.product_name}: reviewed registry is invalid (${error instanceof Error ? error.message : String(error)})`,
+      );
+      continue;
+    }
+    const unique = Array.from(new Map(candidates.map((art) => [art.art_id, art])).values());
+    if (unique.length !== 1) {
+      errors.push(
+        `${component.product_name}: exact reviewed ${packMode} art is ${unique.length === 0 ? "missing" : "ambiguous"}`,
+      );
+      continue;
+    }
+    const art = unique[0];
+    if (!Number.isInteger(component.qty) || component.qty <= 0) {
+      errors.push(`${component.product_name}: recipe quantity must be a positive integer`);
+      continue;
+    }
+    if (component.qty % art.retail_pack_size !== 0) {
+      errors.push(
+        `${component.product_name}: recipe quantity ${component.qty} is not divisible by reviewed ${art.retail_pack_size}-count carton`,
+      );
+      continue;
+    }
+    components.push({
+      research_pool_id: component.research_pool_id,
+      product_name: component.product_name,
+      flavor_id: art.flavor_id,
+      pack_mode: art.pack_mode,
+      retail_pack_size: art.retail_pack_size,
+      visible_package_count: component.qty / art.retail_pack_size,
+      art_id: art.art_id,
+      evidence: art.evidence,
+    });
+  }
+
+  if (errors.length > 0 || components.length !== args.variant.composition.length) {
+    return { ok: false, pack_mode: packMode, errors };
+  }
+  return { ok: true, pack_mode: packMode, components };
+}
+
+/** Exact byte binding between a candidate donor reference and reviewed art. */
+export function referenceBytesMatchReviewedArt(
+  bytes: Uint8Array,
+  evidence: AuthenticityEvidence[],
+): boolean {
+  const digest = createHash("sha256").update(bytes).digest("hex");
+  return evidence.some((item) => item.sha256.toLowerCase() === digest);
+}
+
+const MAX_REFERENCE_BYTES = 25 * 1024 * 1024;
+const REFERENCE_FETCH_TIMEOUT_MS = 20_000;
+
+async function fetchReferenceBytes(url: string): Promise<Uint8Array> {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error("reference URL is invalid");
+  }
+  if (parsed.protocol !== "https:") {
+    throw new Error("reference URL must use HTTPS");
+  }
+  const response = await fetch(parsed, {
+    cache: "no-store",
+    signal: AbortSignal.timeout(REFERENCE_FETCH_TIMEOUT_MS),
+  });
+  if (!response.ok) {
+    throw new Error(`reference fetch returned HTTP ${response.status}`);
+  }
+  const contentLength = Number(response.headers.get("content-length") ?? "0");
+  if (Number.isFinite(contentLength) && contentLength > MAX_REFERENCE_BYTES) {
+    throw new Error("reference exceeds 25 MiB");
+  }
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (bytes.byteLength === 0) throw new Error("reference is empty");
+  if (bytes.byteLength > MAX_REFERENCE_BYTES) {
+    throw new Error("reference exceeds 25 MiB");
+  }
+  return bytes;
 }
 
 // Per spec: 2 retries on top of the initial attempt = 3 total tries.
@@ -170,6 +309,25 @@ export function frozenAnchorUrls(): string[] {
  *  sandwich wrappers. Vladimir wants both, chosen per batch in the UI. */
 export type UncrustablesImageMode = "retail_boxes" | "individual_wraps";
 
+/**
+ * The empty-cooler deterministic compositor is an experimental recovery tool,
+ * not the production Uncrustables MAIN-image default. Its reusable v1/v2 kit
+ * was generated without the owner-approved frozen reference and can therefore
+ * drift in logo, gel-pack design, and physical product placement.
+ *
+ * Keep the opt-in pure and explicit so a missing/empty env value always routes
+ * production work through the approved GPT Image reference flow below.
+ */
+export function shouldUseExperimentalDeterministicCoolerHero(args: {
+  category: string;
+  composite_eligible: boolean;
+  explicit_opt_in?: string;
+}): boolean {
+  return args.explicit_opt_in === "1"
+    && isColdCategory(args.category)
+    && args.composite_eligible;
+}
+
 export function buildImagePrompt(args: {
   brand: string;
   variant: Variant;
@@ -191,56 +349,63 @@ export function buildImagePrompt(args: {
     const comp = args.variant.composition;
     const totalUnits = comp.reduce((s, c) => s + c.qty, 0);
     const isMix = comp.length > 1;
-    // Style (Vladimir 2026-07-08):
-    //  • SINGLE flavor → count-accurate retail BOXES (box COUNT decomposes with
-    //    no remainder — 45 → 3×15). If not box-composable → wraps.
-    //  • MIX (2+ flavors) → ALWAYS individual flavor-coloured wraps (rendering
-    //    exact multi-brand boxes is unreliable; a colour variety reads honestly).
-    //  • NO printed numbers/count badges anywhere (boxes or wraps) — the model
-    //    can't print correct counts, and a wrong "4" on a single wrapper is worse
-    //    than none. Quantity is carried by the box COUNT / arrangement + title.
-    // retail_boxes (default) → real cartons: SINGLE flavor = count-accurate;
-    // MIX = a variety of boxes, one+ per flavor (like the ref-uncrustables anchor).
-    // Boxes are preferred even for mixes because the "Uncrustables" wordmark renders
-    // legibly at box scale, where small wraps come out blank/fabricated.
-    // individual_wraps → wrappers (opt-in only).
-    const useBoxes = ownBrand && args.uncrustables_image_mode !== "individual_wraps";
-    let boxPlan: number[] | null = null;
-    if (useBoxes && !isMix) {
-      boxPlan = composeRetailBoxes(comp[0].qty, componentRetailSizes(comp[0]));
+    // Use the complete selected donor title in the prompt. Short truncation made
+    // different flavors share the same prefix; internal flavor ids are likewise
+    // not the package text the model must reproduce.
+    const recipeFlavorLabel = (component: Variant["composition"][number]) =>
+      component.product_name.trim();
+    // Frozen MAIN v2 (owner-approved 2026-07-17–18): presentation is explicit,
+    // product art/counts come only from the immutable reviewed registry, and an
+    // impossible carton division is a hard stop. No global size list, rounding,
+    // or carton→wrapper invention is allowed.
+    const imageMode = args.uncrustables_image_mode ?? "retail_boxes";
+    const reviewedPlan = ownBrand
+      ? planReviewedUncrustablesImage({
+          variant: args.variant,
+          image_mode: imageMode,
+        })
+      : null;
+    if (reviewedPlan && !reviewedPlan.ok) {
+      throw new Error(
+        `Uncrustables MAIN image plan blocked: ${reviewedPlan.errors.join("; ")}`,
+      );
     }
-    const wraps = ownBrand && !useBoxes;
-    const NO_NUMBERS =
-      `CRITICAL: the product packaging must show NO printed quantity numbers or count badges — no "4", "8", "10", "15", no "ct"/"count", no digit in any corner. Reproduce ONLY the brand wordmark, flavor name and colours.`;
+    const useBoxes = ownBrand && imageMode === "retail_boxes";
+    const wraps = ownBrand && imageMode === "individual_wraps";
+    const plannedComponents = reviewedPlan?.ok ? reviewedPlan.components : [];
+    const GENUINE_DONOR_COUNTS =
+      `CRITICAL PACK-COUNT RULE: preserve only the genuine retail pack count actually printed on each product's corresponding reviewed donor reference. Copy that donor count exactly; never erase, replace, borrow, or invent it. The aggregate listing quantity is ${totalUnits} sandwiches: NEVER add ${totalUnits} as a carton badge, wrapper badge, cooler label, gel-pack label, or image overlay merely because it is the listing total. It may appear on product packaging only if that exact reviewed donor art genuinely prints the same retail pack count.`;
     // Anti-fabrication (the "Bright-Eyed Berry" failure): the model must never
     // invent a flavor name, sub-name, tagline or box colour.
     const NO_INVENT =
       `CRITICAL: use ONLY the real Smucker's Uncrustables flavor name(s) exactly as printed on the reference product photo(s). Do NOT invent any flavor name, sub-name, tagline, or box colour (for example, never a made-up name like "Bright-Eyed Berry"). Copy the reference packaging faithfully; if unsure, reproduce it verbatim rather than guessing.`;
-    const boxCount = boxPlan ? boxPlan.length : 0;
-    const flavorList = comp.map((c) => c.product_name.replace(/\s*[-–—].*$/, "").slice(0, 45)).join(", ");
-    // Quantity logic (owner 2026-07-12): show ~qty/pack real boxes per flavor so the
-    // amount of product in the cooler reads roughly right for the listing's count.
-    const mixBoxSpec = comp.map((c) => {
-      const plan = composeRetailBoxes(c.qty, componentRetailSizes(c));
-      const n = plan && plan.length ? plan.length : Math.max(1, Math.round(c.qty / 8));
-      return `${n} box${n > 1 ? "es" : ""} of ${c.product_name.replace(/\s*[-–—].*$/, "").slice(0, 40)}`;
+    const mixBoxSpec = plannedComponents.map((planned, index) => {
+      const component = comp[index];
+      return `EXACTLY ${planned.visible_package_count} genuine ${planned.retail_pack_size}-count carton${planned.visible_package_count === 1 ? "" : "s"} of ${recipeFlavorLabel(component)} from reference #${index + 2}`;
     }).join(", ");
+    const singlePlan = plannedComponents[0];
+    const singleBoxLine = singlePlan
+      ? `Place EXACTLY ${singlePlan.visible_package_count} real Uncrustables retail carton${singlePlan.visible_package_count === 1 ? "" : "s"} inside the cooler. Every carton must be an exact copy of reviewed reference #2, including its genuine printed ${singlePlan.retail_pack_size}-count badge; ${singlePlan.visible_package_count} × ${singlePlan.retail_pack_size} reconciles exactly to ${totalUnits} sandwiches. Arrange a neat physically seated stack. Never show a generic carton or loose sandwiches mixed with cartons.`
+      : `Place the exact real recipe products inside the cooler.`;
     const boxLine = useBoxes
       ? (isMix
-          ? `Fill the cooler with real Smucker's Uncrustables retail boxes in ABOUT this quantity so the amount looks right: ${mixBoxSpec} (each box holds several sandwiches; together they should read as roughly ${totalUnits} sandwiches). Reproduce each flavor's genuine Uncrustables box EXACTLY as printed on ITS reference photo — the real "Smucker's Uncrustables" wordmark and the exact real flavor name shown on that reference; do NOT invent a name or tagline. Arrange as a neat stack like the anchor image. Show ALL of the flavors (never only one), never loose sandwiches, and NO printed count number on any box.`
-          : `Place EXACTLY ${boxCount} real Uncrustables retail boxes inside the cooler (sizes vary — ${describeBoxes(boxPlan!)} worth of sandwiches, so the box COUNT visibly totals ${totalUnits}), arranged as a neat stack. NEVER a generic "a few boxes", never loose sandwiches mixed with boxes, and NO printed count number on any box.`)
+          ? `Place this exact reviewed carton plan inside the cooler: ${mixBoxSpec}. The visible carton plan reconciles exactly to ${totalUnits} sandwiches. Reproduce each flavor's genuine Uncrustables carton exactly from ITS reference, including its real wordmark, flavor name, colors, art, and genuine donor count badge. Show every recipe flavor, never merge designs, never add a look-alike flavor, and never show loose sandwiches.`
+          : singleBoxLine)
       : wraps
         ? (isMix
-            ? `Fill the cooler with individually-wrapped Smucker's Uncrustables sandwiches — each ONE sealed round sandwich in its REAL clear Uncrustables wrapper that shows the genuine "Smucker's Uncrustables" wordmark and that flavor's artwork, reproduced faithfully from the reference photos (one wrapper = one sandwich; NOT a plain or generic wrapper, NO retail cartons, NO numbers on wrappers). Show a VARIETY: roughly ${comp.map((c) => `${c.qty}× ${c.product_name.replace(/\s*[-–—].*$/, "").slice(0, 40)}`).join(", ")}, mixed together in tidy rows — each flavor's own real Uncrustables wrapper. Total should read as about ${totalUnits} sandwiches.`
-            : `Fill the cooler with individually-wrapped Smucker's Uncrustables sandwiches — each ONE sealed round sandwich in its REAL clear Uncrustables wrapper showing the genuine "Smucker's Uncrustables" wordmark and the flavor's artwork, reproduced faithfully from the reference (one wrapper = one sandwich; NOT a plain or generic wrapper, NO retail cartons, NO numbers). Neat stacked rows totalling about ${totalUnits} sandwiches.`)
+            ? `Fill the cooler with EXACTLY ${totalUnits} individually wrapped Smucker's Uncrustables sandwiches in tidy rows: ${comp.map((c, index) => `EXACTLY ${c.qty} wrappers of ${recipeFlavorLabel(c)} from reviewed wrapper reference #${index + 2}`).join(", ")}. One genuine sealed wrapper equals one sandwich. Preserve every flavor's exact real wrapper wordmark, flavor text, colors, and artwork. Show no retail cartons, bare sandwiches, plain wrappers, generic wrappers, merged designs, or extra flavors.`
+            : `Fill the cooler with EXACTLY ${totalUnits} individually wrapped Smucker's Uncrustables sandwiches in neat rows. Every unit is one genuine sealed wrapper copied exactly from reviewed wrapper reference #2, including the real wordmark, flavor text, colors, and artwork. Show no retail cartons, bare sandwiches, plain wrappers, generic wrappers, or extra flavors.`)
         : `Place several of the real product boxes inside the cooler, arranged as a gift set.`;
-    const productRefLine = isMix
-      ? `Reference images #2..#${comp.length + 1} are the flavors of this variety pack, in order: ${comp.map((c, i) => `#${i + 2} = "${c.product_name.replace(/\s*[-–—].*$/, "").slice(0, 45)}"`).join(", ")}. Match EACH flavor's real Uncrustables brand colours and wrapper look from ITS reference photo — render a genuine mix of all of them. Do NOT invent look-alike flavors and do NOT show only one flavor.`
-      : wraps
-        ? `The SECOND reference image is the DONOR PRODUCT PHOTO of ${products} — reproduce its real Smucker's Uncrustables wrapper design (the "Uncrustables" wordmark, flavor name and artwork) EXACTLY, rendered as individual sealed round-sandwich wrappers (NOT the retail carton, NO numbers). Do NOT make a plain or generic wrapper and do NOT rebrand.`
-        : `The SECOND reference image is the DONOR PRODUCT PHOTO — the real retail box of ${products}. Reproduce its brand name, logo and colours exactly; do NOT rebrand or substitute a look-alike. ${NO_NUMBERS}`;
+    const presentationLabel = wraps ? "individual-wrapper" : "retail-carton";
+    const productRefLine = ownBrand
+      ? isMix
+        ? `Reference images #2..#${comp.length + 1} are SHA-verified reviewed ${presentationLabel} art for the recipe flavors, in order: ${comp.map((c, i) => `#${i + 2} = "${recipeFlavorLabel(c)}"`).join(", ")}. Copy each flavor only from ITS reference. Do not derive wrapper art from a carton, do not invent look-alike flavors, and do not omit a flavor.`
+        : `The SECOND reference image is SHA-verified reviewed ${presentationLabel} art for ${products}. Copy its genuine Smucker's Uncrustables brand, exact flavor name, colors, artwork, and any genuine donor count verbatim. Do not convert a carton into invented wrapper art, do not rebrand, and do not substitute a look-alike.`
+      : isMix
+        ? `Reference images #2..#${comp.length + 1} are the genuine recipe products in order: ${comp.map((c, i) => `#${i + 2} = "${recipeFlavorLabel(c)}"`).join(", ")}. Copy each product only from its own reference.`
+        : `The SECOND reference image is the genuine donor product photo for ${products}. Reproduce its product packaging accurately; do not rebrand or substitute a look-alike.`;
     const coolerLine = ownBrand
-      ? `The cooler is a white EPS styrofoam insulated shipping cooler carrying the SALUTEM SOLUTIONS logo (realistic 3/4 front angle, lid leaning behind the cooler).`
+      ? `The cooler is the exact white textured EPS insulated shipping cooler from reference #1, at the same realistic 3/4 front angle with its lid leaning behind. Preserve the exact ornate green Salutem emblem, black SALUTEM SOLUTIONS wordmark, and black OUR BEST SOLUTIONS FOR YOU slogan.`
       : `The cooler is a white EPS styrofoam insulated shipping cooler carrying the SALUTEM SOLUTIONS logo AND the printed words "GIFT SET" (realistic 3/4 front angle, lid leaning behind the cooler).`;
     return [
       `A professional e-commerce main listing image on a pure white background, square 1:1.`,
@@ -248,12 +413,12 @@ export function buildImagePrompt(args: {
         ? `This is a frozen multipack assembled and shipped by SALUTEM SOLUTIONS.`
         : `This is a frozen gift set assembled and shipped by SALUTEM SOLUTIONS.`,
       productRefLine,
-      `The FIRST reference image is the KIT ANCHOR — copy from it the styrofoam cooler look, the gel-pack style, and the overall layout only (NOT the product).`,
+      `The FIRST reference image is the immutable KIT ANCHOR — copy its exact styrofoam cooler, ornate green emblem, black wordmark/slogan, four gel packs, camera, lighting, and overall layout only; never copy its third-party products.`,
       coolerLine,
       boxLine,
-      NO_NUMBERS,
-      NO_INVENT,
-      `Include 2 to 4 white branded gel packs reading "FROZEN GEL PACK", "KEEP FROZEN", "FOR FROZEN SHIPMENTS" with the Salutem Solutions logo — some inside the cooler next to the product, 1-2 in front.`,
+      ...(ownBrand ? [GENUINE_DONOR_COUNTS, NO_INVENT] : []),
+      `Show EXACTLY 4 white sealed branded gel packs in the approved layout: two inside the cooler, one on the left and one on the right of the products, plus two standing outside along the front/right presentation area. Every pack keeps the BLUE "FROZEN GEL PACK" header, BLUE "KEEP FROZEN" / "FOR FROZEN SHIPMENTS" wording, ornate green emblem, and black Salutem wordmark/slogan from anchor #1.`,
+      `All cartons or wrappers must be physically seated inside the cooler cavity: lower edges occluded behind the front inner rim, shared perspective and lighting, realistic scale and overlap, believable cavity depth, and contact shadows. No floating products, gaps below products, alpha halos, flat pasted edges, or impossible cooler-wall intersections.`,
       `Apply SALUTEM SOLUTIONS branding ONLY to the cooler and the gel packs — NEVER onto the third-party product packaging.`,
       `Subtle frost and cold condensation on the cooler and packs; NO loose ice, NO crushed ice, NO ice cubes.`,
       // The donor photo is often scraped from a retailer site and carries a store
@@ -350,7 +515,12 @@ export async function runImageGeneration(
 
   const rowsToProcess = allRows.filter((r) => {
     if (candidateChannels && !candidateChannels.has(r.channel)) return false;
-    if (r.compliance_status !== "CAN_PUBLISH") return false;
+    const retryableImageBlock =
+      input.force &&
+      r.compliance_status === "BLOCKED" &&
+      r.manual_review_required &&
+      r.image_retry_count > 0;
+    if (r.compliance_status !== "CAN_PUBLISH" && !retryableImageBlock) return false;
     if (!input.force && r.main_image_url) return false;
     return true;
   });
@@ -388,28 +558,32 @@ export async function runImageGeneration(
   const outcomes: ChannelImageOutcome[] = [];
   let totalCost = 0;
 
-  // Real-photo composite path (Vladimir 2026-07-08 — IP mandate): own-brand
-  // Uncrustables/Smucker's cold multipacks get a deterministic composite of the
-  // REAL donor box photos (never AI-generated packaging), vetted by the QA
-  // officer, instead of the AI image path. One image per draft → every channel
-  // row. See composite-image.ts + audit/composite-qa.ts.
-  // BF_FORCE_HERO=1 forces the AI cooler-hero path (owner's preferred look — the
-  // Salutem cooler filled with the real product, e.g. B0H85P9F3R) instead of the
-  // box-on-white composite, so we can regenerate the fabricated listings in the
-  // exact original style. Default behaviour is unchanged.
-  const compositePath =
-    process.env.BF_FORCE_HERO !== "1" &&
-    isColdCategory(draft.category) &&
-    compositeEligible({ brand: draft.brand, variant: selected }).eligible;
+  // Owner-approved production default: GPT Image receives the reviewed frozen
+  // style anchor first, followed by one genuine donor reference per flavor (see
+  // the referenceUrls construction below). The deterministic empty-cooler v1/v2
+  // compositor is retained only for isolated experiments because its kit and
+  // hard-coded cutout layout were explicitly rejected in visual review.
+  const deterministicCoolerPath = shouldUseExperimentalDeterministicCoolerHero({
+    category: draft.category,
+    composite_eligible: compositeEligible({ brand: draft.brand, variant: selected }).eligible,
+    explicit_opt_in: process.env.BF_EXPERIMENTAL_DETERMINISTIC_COOLER_HERO,
+  });
 
-  if (compositePath) {
+  if (deterministicCoolerPath) {
     const stamp = Date.now().toString(36);
-    const built = await buildCompositeWithQA({
+    const built = await buildCoolerHeroWithQA({
       variant: selected,
-      r2Slug: `draft-${draft.id}`,
+      r2_slug: `draft-${draft.id}`,
       stamp,
+      experimental_opt_in: true,
     });
-    const passed = built.ok && !!built.image_url && !!built.qa?.pass;
+    const passed = built.ok && !!built.image_url && !!built.qa?.pass && !!built.qa?.verified;
+    if (passed && built.image_url) {
+      await prisma.bundleDraft.update({
+        where: { id: draft.id },
+        data: { draft_main_image_url: built.image_url },
+      });
+    }
     for (const row of rowsToProcess) {
       if (passed && built.image_url) {
         await prisma.generatedContent.update({
@@ -450,7 +624,7 @@ export async function runImageGeneration(
           cost_cents: 0,
           manual_review_required: true,
           detected_logos: [],
-          error: built.qa?.hard_fails?.join("; ") || built.error || "composite QA failed",
+          error: built.qa?.hard_fails?.join("; ") || built.error || "deterministic cooler hero QA failed",
         });
       }
     }
@@ -481,13 +655,38 @@ export async function runImageGeneration(
     if (process.env.BF_UNCR_MODE === "individual_wraps") uncrustablesImageMode = "individual_wraps";
     else if (process.env.BF_UNCR_MODE === "retail_boxes") uncrustablesImageMode = "retail_boxes";
 
-    const basePrompt = buildImagePrompt({
-      brand: draft.brand,
-      variant: selected,
-      composition_type: draft.composition_type,
-      category: draft.category,
-      uncrustables_image_mode: uncrustablesImageMode,
-    });
+    const ownBrandUncrustables =
+      isColdCategory(draft.category) &&
+      (isOwnBrandPassthrough(draft.brand) ||
+        selected.composition.some((component) =>
+          isOwnBrandPassthrough(component.brand),
+        ));
+    const reviewedImagePlan = ownBrandUncrustables
+      ? planReviewedUncrustablesImage({
+          variant: selected,
+          image_mode: uncrustablesImageMode,
+        })
+      : null;
+    const referenceErrors: string[] = [];
+    if (reviewedImagePlan && !reviewedImagePlan.ok) {
+      referenceErrors.push(...reviewedImagePlan.errors);
+    }
+    let basePrompt = "";
+    if (referenceErrors.length === 0) {
+      try {
+        basePrompt = buildImagePrompt({
+          brand: draft.brand,
+          variant: selected,
+          composition_type: draft.composition_type,
+          category: draft.category,
+          uncrustables_image_mode: uncrustablesImageMode,
+        });
+      } catch (error) {
+        referenceErrors.push(
+          error instanceof Error ? error.message : String(error),
+        );
+      }
+    }
 
     // Phase 3 references passed to the image worker — ORDER MATTERS. The worker
     // role-labels them by position: ref-1 = the KIT ANCHOR (Salutem cooler +
@@ -500,6 +699,7 @@ export async function runImageGeneration(
     // One donor photo per flavor, in the SAME order buildImagePrompt lists them
     // (composition order). Look each donor up by its research_pool_id.
     const donorIds = selected.composition.map((c) => c.research_pool_id).filter(Boolean);
+    const donorReferenceUrls: string[] = [];
     if (donorIds.length > 0) {
       const donorRows = await prisma.donorProduct.findMany({
         where: { id: { in: donorIds } },
@@ -508,15 +708,104 @@ export async function runImageGeneration(
       const byId = new Map(donorRows.map((d) => [d.id, d.mainImageUrl]));
       for (const c of selected.composition) {
         const url = byId.get(c.research_pool_id);
-        if (url) referenceUrls.push(url);
+        if (url) {
+          referenceUrls.push(url);
+          donorReferenceUrls.push(url);
+        } else {
+          referenceErrors.push(`missing ordered donor reference: ${c.product_name}`);
+        }
       }
+    } else if (selected.composition.length > 0) {
+      referenceErrors.push(
+        ...selected.composition.map(
+          (component) => `missing ordered donor reference: ${component.product_name}`,
+        ),
+      );
     }
     // Fallback to the draft's primary photo if no component donor resolved.
-    if (referenceUrls.length <= 1 && draft.draft_main_image_url) {
+    // Never use it for Uncrustables: its bytes/presentation are not bound to the
+    // reviewed per-flavor registry evidence.
+    if (
+      !ownBrandUncrustables &&
+      referenceUrls.length <= 1 &&
+      draft.draft_main_image_url
+    ) {
       referenceUrls.push(draft.draft_main_image_url);
     }
 
+    // Byte-level preflight: URL labels and product titles are insufficient.
+    // The anchor and every product reference must hash to the exact reviewed
+    // evidence before GPT Image sees them. This also prevents a carton-only
+    // donor URL from authorizing invented individual-wrapper art.
+    if (
+      ownBrandUncrustables &&
+      reviewedImagePlan?.ok &&
+      donorReferenceUrls.length === reviewedImagePlan.components.length
+    ) {
+      const fetchCache = new Map<string, Promise<Uint8Array>>();
+      const bytesFor = (url: string) => {
+        const cached = fetchCache.get(url);
+        if (cached) return cached;
+        const pending = fetchReferenceBytes(url);
+        fetchCache.set(url, pending);
+        return pending;
+      };
+      const checks = [
+        (async (): Promise<string | null> => {
+          const anchorUrl = referenceUrls[0];
+          if (!anchorUrl) return "approved frozen-kit anchor is missing";
+          try {
+            const bytes = await bytesFor(anchorUrl);
+            const digest = createHash("sha256").update(bytes).digest("hex");
+            return digest === UNCRUSTABLES_FROZEN_ANCHOR_SHA256
+              ? null
+              : `frozen-kit anchor SHA-256 mismatch (${digest})`;
+          } catch (error) {
+            return `frozen-kit anchor verification failed: ${error instanceof Error ? error.message : String(error)}`;
+          }
+        })(),
+        ...reviewedImagePlan.components.map(async (planned, index) => {
+          const url = donorReferenceUrls[index];
+          if (!url) return `${planned.product_name}: reviewed donor URL is missing`;
+          try {
+            const bytes = await bytesFor(url);
+            return referenceBytesMatchReviewedArt(bytes, planned.evidence)
+              ? null
+              : `${planned.product_name}: donor reference bytes do not match reviewed ${planned.pack_mode} art ${planned.art_id}`;
+          } catch (error) {
+            return `${planned.product_name}: donor reference verification failed: ${error instanceof Error ? error.message : String(error)}`;
+          }
+        }),
+      ];
+      const findings = await Promise.all(checks);
+      referenceErrors.push(
+        ...findings.filter((finding): finding is string => finding !== null),
+      );
+    }
+
     for (const row of rowsToProcess) {
+      if (referenceErrors.length > 0) {
+        const error = `reference/prompt preflight failed: ${referenceErrors.join("; ")}`;
+        await prisma.generatedContent.update({
+          where: { id: row.id },
+          data: {
+            compliance_status: "BLOCKED",
+            manual_review_required: true,
+          },
+        });
+        outcomes.push({
+          channel: row.channel,
+          generated_content_id: row.id,
+          compliance_status: "BLOCKED",
+          attempts: 0,
+          image_url: row.main_image_url,
+          cost_cents: 0,
+          manual_review_required: true,
+          detected_logos: [],
+          error,
+        });
+        continue;
+      }
       const outcome = await processOneRow({
         row,
         draft_id: draft.id,
@@ -534,44 +823,67 @@ export async function runImageGeneration(
     }
   }
 
-  // Final draft-level status transition.
+  // Final draft-level status transition. A new image is mutable listing
+  // content: once a MasterBundle exists, every prior validation/approval is
+  // stale and must be cleared before another marketplace distribution.
   const successCount = outcomes.filter(
     (o) => o.compliance_status === "CAN_PUBLISH",
   ).length;
-  const allDone = await everyCanPublishRowHasImage(draft.id);
+  const allDone = await everyTargetRowHasVerifiedImage(draft.id);
   let nextStatus = draft.status;
-  // Only advance to IMAGE_GENERATED from an image-stage status. A draft that is
-  // already past imaging (VALIDATED/PUBLISHING/PUBLISHED) is being re-imaged for
-  // an image REPLACEMENT — never regress its lifecycle back to IMAGE_GENERATED.
   const IMAGE_STAGE = ["GENERATED", "IMAGE_GENERATING", "IMAGE_GENERATED", "ERROR"];
-  if (allDone && IMAGE_STAGE.includes(draft.status)) {
-    nextStatus = "IMAGE_GENERATED";
-  } else if (successCount === 0 && fromStatus === "GENERATED") {
-    // Rolled into IMAGE_GENERATING but nothing succeeded → move to ERROR
-    // so the operator sees the run failed at the draft level.
-    nextStatus = "ERROR";
+  const invalidatesDownstream = successCount > 0 && !!draft.master_bundle_id;
+  if (invalidatesDownstream || IMAGE_STAGE.includes(draft.status)) {
+    nextStatus = allDone ? "IMAGE_GENERATED" : "ERROR";
   }
 
-  if (nextStatus !== draft.status) {
-    const updateData: { status: string; image_generated_at?: Date } = {
+  if (nextStatus !== draft.status || invalidatesDownstream) {
+    const updateData: {
+      status: string;
+      image_generated_at?: Date;
+      approved_at?: null;
+      approved_by?: null;
+      approval_notes?: null;
+    } = {
       status: nextStatus,
     };
     if (nextStatus === "IMAGE_GENERATED") {
       updateData.image_generated_at = new Date();
     }
-    await prisma.bundleDraft.update({
-      where: { id: draft.id },
-      data: updateData,
+    if (invalidatesDownstream) {
+      updateData.approved_at = null;
+      updateData.approved_by = null;
+      updateData.approval_notes = null;
+    }
+    await prisma.$transaction(async (tx) => {
+      await tx.bundleDraft.update({
+        where: { id: draft.id },
+        data: updateData,
+      });
+      if (invalidatesDownstream && draft.master_bundle_id) {
+        await tx.channelSKU.updateMany({
+          where: { master_bundle_id: draft.master_bundle_id },
+          data: {
+            validation_status: "PENDING",
+            validation_errors: null,
+            validated_at: null,
+            validation_check_id: null,
+            available_quantity: null,
+            inventory_checked_at: null,
+          },
+        });
+      }
     });
     await logLifecycle({
       entity_type: "BundleDraft",
       entity_id: draft.id,
       from_status: draft.status,
       to_status: nextStatus,
-      reason:
-        nextStatus === "IMAGE_GENERATED"
-          ? `Image pipeline finished — ${successCount}/${outcomes.length} compliant, others in manual review`
-          : `Image pipeline produced no compliant images for ${outcomes.length} row(s)`,
+      reason: invalidatesDownstream
+        ? `Image changed; prior validation and approval invalidated (${successCount}/${outcomes.length} compliant)`
+        : nextStatus === "IMAGE_GENERATED"
+          ? `Image pipeline finished — ${successCount}/${outcomes.length} verified`
+          : `Image pipeline incomplete — ${successCount}/${outcomes.length} verified`,
       actor: input.actor ?? "system",
       details: {
         total_cost_cents: totalCost,
@@ -620,6 +932,19 @@ async function processOneRow(
 ): Promise<ChannelImageOutcome> {
   const { row, draft_id, brand, basePrompt, bundleComponents } = args;
   const r2Slug = `draft-${draft_id}-${row.channel}`.toLowerCase();
+  const isUncrustablesRecipe = bundleComponents.some((component) =>
+    /uncrustables/i.test(component.product_name ?? ""),
+  );
+  const expectedBrandMarks = Array.from(new Set([
+    brand,
+    ...bundleComponents.map((component) => component.brand),
+    ...(isUncrustablesRecipe ? ["Smucker's", "Uncrustables"] : []),
+    // The frozen kit is a real part of the photographed bundle. Vision may
+    // surface its approved packaging mark alongside the donor product marks.
+    ...(/FROZEN GEL PACK|gel packs/i.test(basePrompt)
+      ? ["SALUTEM SOLUTIONS", "Salutem"]
+      : []),
+  ].map((mark) => mark.trim()).filter(Boolean)));
 
   let attempt = 0;
   let totalCost = 0;
@@ -642,9 +967,23 @@ async function processOneRow(
     totalCost += imgResult.cost_cents;
 
     if (imgResult.error && !imgResult.image_url) {
-      // Hard failure — record and bail without compliance check.
+      // Transient worker failures are retryable. Persist every attempt/cost so
+      // a killed process leaves an honest checkpoint instead of a phantom try.
       lastError = imgResult.error;
-      break;
+      priorFailure = {
+        attempt,
+        detected_logos: [],
+        failure_reason: imgResult.error,
+        expected_brand_marks: expectedBrandMarks,
+      };
+      await prisma.generatedContent.update({
+        where: { id: row.id },
+        data: {
+          image_generation_cost_cents: { increment: imgResult.cost_cents },
+          image_retry_count: attempt,
+        },
+      });
+      continue;
     }
     lastImageUrl = imgResult.image_url;
 
@@ -675,7 +1014,10 @@ async function processOneRow(
         brand,
         bullets: args.bullets,
         description: args.description,
-        browse_node: null,
+        browse_node: resolveAmazonBrowseNode({
+          channel: row.channel,
+          distinct_brands: countDistinctBrands(bundleComponents),
+        }),
         main_image_url: lastImageUrl,
         bundle_components: bundleComponents,
         skip_image_check: false,
@@ -714,6 +1056,7 @@ async function processOneRow(
       attempt,
       detected_logos: lastDetectedLogos,
       failure_reason: rule6?.reason ?? "image_compliance_failed",
+      expected_brand_marks: expectedBrandMarks,
     };
   }
 
@@ -742,18 +1085,21 @@ async function processOneRow(
   };
 }
 
-async function everyCanPublishRowHasImage(draftId: string): Promise<boolean> {
-  // True if every CAN_PUBLISH row has either an image URL or is in
-  // manual review (BLOCKED). False only when there are CAN_PUBLISH rows
-  // that haven't been touched yet.
-  const pending = await prisma.generatedContent.count({
+async function everyTargetRowHasVerifiedImage(draftId: string): Promise<boolean> {
+  // A BLOCKED/manual-review row is not "done". The old predicate ignored those
+  // rows and could advance a completely failed draft to IMAGE_GENERATED.
+  const invalid = await prisma.generatedContent.count({
     where: {
       bundle_draft_id: draftId,
-      compliance_status: "CAN_PUBLISH",
-      main_image_url: null,
+      OR: [
+        { compliance_status: { not: "CAN_PUBLISH" } },
+        { main_image_url: null },
+        { manual_review_required: true },
+        { image_generated_at: null },
+      ],
     },
   });
-  return pending === 0;
+  return invalid === 0;
 }
 
 function safeJsonStringArray(raw: string | null | undefined): string[] {

@@ -24,6 +24,7 @@ import {
   withErrorHandler,
 } from "@/lib/bundle-factory/api-utils";
 import { promoteDraftToChannelSkus } from "@/lib/bundle-factory/validation/promote-draft";
+import { withVerifiedPhysicalPackageSpecs } from "@/lib/bundle-factory/physical-package-specs";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -81,29 +82,55 @@ export const POST = withErrorHandler(
         { status: 200 },
       );
     }
-
-    const res = await prisma.channelSKU.updateMany({
-      where: { master_bundle_id: draft.master_bundle_id },
-      data: {
-        package_weight_oz: weight_oz,
-        package_length_in: length_in,
-        package_width_in: width_in,
-        package_height_in: height_in,
-      },
-    });
-
-    // Also mirror the weight onto the MasterBundle so future auto-derivation /
-    // analytics have a single source.
-    await prisma.masterBundle.update({
+    const master = await prisma.masterBundle.findUniqueOrThrow({
       where: { id: draft.master_bundle_id },
-      data: { total_weight_oz: weight_oz },
+      select: { packaging_spec: true },
     });
+
+    // Record the operator-entered measurements as explicit provenance on the
+    // MasterBundle. Future marketplace payloads require this exact proof and
+    // refuse calculated cooler weights/dimensions.
+    const packagingSpec = withVerifiedPhysicalPackageSpecs(
+      master.packaging_spec,
+      {
+        weight_oz,
+        length_in,
+        width_in,
+        height_in,
+      },
+    );
+    const res = await prisma.$transaction(async (tx) => {
+      const updated = await tx.channelSKU.updateMany({
+        where: { master_bundle_id: draft.master_bundle_id! },
+        data: {
+          package_weight_oz: weight_oz,
+          package_length_in: length_in,
+          package_width_in: width_in,
+          package_height_in: height_in,
+        },
+      });
+      await tx.masterBundle.update({
+        where: { id: draft.master_bundle_id! },
+        data: {
+          total_weight_oz: weight_oz,
+          packaging_spec: packagingSpec,
+        },
+      });
+      return updated;
+    });
+
+    // Weight can change cooler size and therefore packaging, label, floor, and
+    // selling price. Re-run the canonical promotion calculation after the
+    // weight write so preview, MasterBundle, ChannelSKU, and price bands stay
+    // on one formula. This also leaves validation PENDING for an honest re-run.
+    const repriced = await promoteDraftToChannelSkus(id);
 
     return NextResponse.json({
       ok: true,
       updated: res.count,
       specs: { weight_oz, length_in, width_in, height_in },
       promote,
+      repriced,
     });
   },
 );

@@ -279,18 +279,141 @@ export async function pollSubmissionStatus(
 }
 
 export async function persistPollResult(result: PollResult): Promise<void> {
-  await prisma.channelSKU.update({
+  const sku = await prisma.channelSKU.findUniqueOrThrow({
     where: { id: result.channel_sku_id },
-    data: {
-      listing_status: result.new_listing_status,
-      distribution_errors: result.issues.length
-        ? JSON.stringify(result.issues)
-        : null,
-      last_status_check_at: new Date(),
-      published_at:
-        result.new_listing_status === "LIVE" ? new Date() : undefined,
-      live_url: result.live_url ?? undefined,
-      asin: result.asin ?? undefined,
+    select: {
+      id: true,
+      master_bundle_id: true,
+      listing_status: true,
+      lifecycle_status: true,
+      published_at: true,
     },
+  });
+  const now = new Date();
+  const lifecycleStatus =
+    result.new_listing_status === "LIVE"
+      ? "LIVE"
+      : result.new_listing_status === "FAILED"
+        ? "ERROR"
+        : result.new_listing_status === "PENDING_REVIEW"
+          ? "PROCESSING"
+          : "SUBMITTED";
+
+  await prisma.$transaction(async (tx) => {
+    await tx.channelSKU.update({
+      where: { id: result.channel_sku_id },
+      data: {
+        listing_status: result.new_listing_status,
+        lifecycle_status: lifecycleStatus,
+        distribution_errors: result.issues.length
+          ? JSON.stringify(result.issues)
+          : null,
+        errors:
+          result.new_listing_status === "FAILED" && result.issues.length
+            ? JSON.stringify(result.issues)
+            : result.new_listing_status === "LIVE"
+              ? null
+              : undefined,
+        last_status_check_at: now,
+        last_error_at:
+          result.new_listing_status === "FAILED" ? now : undefined,
+        live_url: result.live_url ?? undefined,
+        asin: result.asin ?? undefined,
+      },
+    });
+
+    if (
+      sku.lifecycle_status !== lifecycleStatus ||
+      sku.listing_status !== result.new_listing_status
+    ) {
+      await tx.listingLifecycleLog.create({
+        data: {
+          entity_type: "ChannelSKU",
+          entity_id: sku.id,
+          channel_sku_id: sku.id,
+          from_status: sku.lifecycle_status,
+          to_status: lifecycleStatus,
+          trigger: `Marketplace poll: ${result.new_listing_status}`,
+          details: JSON.stringify({
+            prior_listing_status: sku.listing_status,
+            listing_status: result.new_listing_status,
+            issues_count: result.issues.length,
+          }),
+          user_id: "status-poller",
+        },
+      });
+    }
+
+    if (result.new_listing_status !== "LIVE") return;
+
+    // Preserve the original publication timestamp on later refresh polls.
+    await tx.channelSKU.updateMany({
+      where: { id: sku.id, published_at: null },
+      data: { published_at: now },
+    });
+    await tx.channelSKU.updateMany({
+      where: { id: sku.id, live_at: null },
+      data: { live_at: now },
+    });
+
+    const master = await tx.masterBundle.findUniqueOrThrow({
+      where: { id: sku.master_bundle_id },
+      select: { lifecycle_status: true },
+    });
+    if (master.lifecycle_status !== "LIVE") {
+      await tx.masterBundle.update({
+        where: { id: sku.master_bundle_id },
+        data: { lifecycle_status: "LIVE" },
+      });
+      await tx.listingLifecycleLog.create({
+        data: {
+          entity_type: "MasterBundle",
+          entity_id: sku.master_bundle_id,
+          master_bundle_id: sku.master_bundle_id,
+          from_status: master.lifecycle_status,
+          to_status: "LIVE",
+          trigger: "At least one marketplace listing confirmed LIVE",
+          user_id: "status-poller",
+        },
+      });
+    }
+
+    const draft = await tx.bundleDraft.findUnique({
+      where: { master_bundle_id: sku.master_bundle_id },
+      select: {
+        id: true,
+        status: true,
+        published_at: true,
+        generation_job_id: true,
+      },
+    });
+    if (!draft) return;
+
+    const firstPublication = await tx.bundleDraft.updateMany({
+      where: { id: draft.id, published_at: null },
+      data: { status: "PUBLISHED", published_at: now },
+    });
+    if (firstPublication.count > 0) {
+      await tx.generationJob.update({
+        where: { id: draft.generation_job_id },
+        data: { bundles_published: { increment: 1 } },
+      });
+      await tx.listingLifecycleLog.create({
+        data: {
+          entity_type: "BundleDraft",
+          entity_id: draft.id,
+          from_status: draft.status,
+          to_status: "PUBLISHED",
+          trigger: "Marketplace poll confirmed first LIVE ChannelSKU",
+          details: JSON.stringify({ channel_sku_id: sku.id }),
+          user_id: "status-poller",
+        },
+      });
+    } else if (draft.status !== "PUBLISHED") {
+      await tx.bundleDraft.update({
+        where: { id: draft.id },
+        data: { status: "PUBLISHED" },
+      });
+    }
   });
 }

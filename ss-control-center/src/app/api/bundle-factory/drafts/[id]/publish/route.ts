@@ -22,6 +22,7 @@ import {
 } from "@/lib/bundle-factory/api-utils";
 import { runDistribution } from "@/lib/bundle-factory/distribution/distribution-pipeline";
 import { SALES_CHANNELS, isOneOf } from "@/lib/bundle-factory/enums";
+import { approveDraftForDistribution } from "@/lib/bundle-factory/approval";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -31,6 +32,8 @@ type Ctx = { params: Promise<{ id: string }> };
 interface Body {
   channels?: unknown;
   actor?: unknown;
+  approvalConfirmed?: unknown;
+  approvalNote?: unknown;
 }
 
 export const POST = withErrorHandler(
@@ -75,6 +78,19 @@ export const POST = withErrorHandler(
       typeof body.actor === "string" && body.actor.trim().length > 0
         ? body.actor.trim()
         : "user";
+
+    if (apply) {
+      if (body.approvalConfirmed !== true) {
+        return badRequest(
+          "Real publish requires approvalConfirmed=true from the operator confirmation dialog.",
+        );
+      }
+      await approveDraftForDistribution({
+        draftId: id,
+        actor,
+        note: typeof body.approvalNote === "string" ? body.approvalNote : undefined,
+      });
+    }
 
     const result = await runDistribution({
       bundle_draft_id: id,

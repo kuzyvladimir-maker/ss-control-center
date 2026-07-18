@@ -1,0 +1,4828 @@
+{
+  "schema_version": "uncrustables-factual-content-audit/v1.0",
+  "immutable": true,
+  "created_at": "2026-07-18T05:30:00.000Z",
+  "external_mutations": false,
+  "sources": {
+    "ledger": {
+      "path": "data/audits/uncrustables-ledger-20260717T232140568Z-offline.json",
+      "sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f"
+    },
+    "prior_reviewed_overrides": {
+      "path": "data/repairs/uncrustables-reviewed-overrides-20260718-v2.json",
+      "sha256": "07c4a12b11083471096fd88054564146d7ef823c5075f4468eb0cef96f49b885"
+    },
+    "donor_manifest": {
+      "path": "data/repairs/uncrustables-donor-enrichment-20260717.json",
+      "sha256": "999348227982c169477ad13fb806ddba42fb15cb68397308e4289a9cbbcee9f9"
+    },
+    "frozen_cost_model": {
+      "path": "src/lib/pricing/cost-model.ts",
+      "sha256": "394fc8a0c8b11fcad44092092958b6a9ca82cc471c4e4fd93d84633ad3b7c9d9"
+    },
+    "frozen_image_policy": {
+      "path": "src/lib/bundle-factory/image-pipeline.ts",
+      "sha256": "0c7178cba64c87af384263de5a56cd6d252666f96ef1c0a0dc3a6a95035c9a5a"
+    },
+    "renderer": {
+      "path": "src/lib/bundle-factory/repair/uncrustables-content.ts",
+      "sha256": "c444da395f1bc9f8b68909bd659db48bbced3cf68ceac6773e9e1008d5124b1e"
+    }
+  },
+  "policy": {
+    "exact_recipe_and_individual_count_only": true,
+    "cold_pack_claim_requires_frozen_program_evidence": true,
+    "retain_numeric_protein_only_as_exact_manufacturer_subline_identity": true,
+    "own_brand_passthrough": true,
+    "curator_or_gift_disclaimer_required": false,
+    "generated_unsupported_claims_allowed": false
+  },
+  "summary": {
+    "source_rows": 167,
+    "live_rows": 164,
+    "historical_missing_asin_rows": 3,
+    "full_rewrites": 164,
+    "single_flavor_rows": 90,
+    "mixed_flavor_rows": 74,
+    "category_counts": {
+      "PER_ITEM_OR_PACKAGE_WEIGHT": 117,
+      "NUMERIC_PROTEIN_OR_NUTRITION": 47,
+      "HANDLING_DURATION_OR_TEMPERATURE": 157,
+      "FORMULATION_GENERALIZATION": 147,
+      "ALLERGEN_PROSE": 8,
+      "FROZEN_DELIVERY_PROMISE": 8
+    },
+    "retained_12g_subline_rows": 40,
+    "format_failures_after": 0,
+    "semantic_failures_after": 0,
+    "compliance_failures_after": 0,
+    "unsupported_claim_failures_after": 0
+  },
+  "rows": [
+    {
+      "sku": "AC-AS4J-B64F",
+      "asin": "B0H82ZZS2P",
+      "intended_count": 24,
+      "composition_signature": "smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION",
+        "ALLERGEN_PROSE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 114,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 734,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "AD-AS4H-QXZD",
+      "asin": "B0H82J6V9T",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 101,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 721,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "AG-ASKV-W9EN",
+      "asin": "B0H85B64V2",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12|smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 126,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 756,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "AJ-ASRB-HKC3",
+      "asin": "B0H84G7DHC",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 150,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 780,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "AN-ASUW-49Y5",
+      "asin": "B0H8628LW3",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:12|smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 132,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 762,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "AU-AS97-USX8",
+      "asin": "B0H843Q9B5",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 113,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "AV-AS7X-8EXK",
+      "asin": "B0H82JTY19",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 115,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 735,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "AY-AS5F-JEY9",
+      "asin": "B0H83MWTM7",
+      "intended_count": 120,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 116,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 738,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "AZ-ASMY-VEQ2",
+      "asin": "B0H788M8WM",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables peanut butter & strawberry jam sandwich (2 oz, individually wrapped, frozen):30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 103,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 723,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "BD-AS8P-XAW5",
+      "asin": "B0H85MXFH8",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables frozen peanut butter & grape jelly sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 145,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 775,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "BD-ASGH-LREJ",
+      "asin": "B0H86Z59DW",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12|smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 138,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 768,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "BH-AS7H-D4FV",
+      "asin": "B0H853MCYZ",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blackberry spread sandwich - 8oz/4ct:12|smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 129,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 759,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "BH-ASTN-S4XJ",
+      "asin": "B0H83ZRNCS",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blackberry spread sandwich - 8oz/4ct:12|smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 145,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 775,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "BH-ASVY-CR8H",
+      "asin": "B0H83S368B",
+      "intended_count": 120,
+      "composition_signature": "smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION",
+        "ALLERGEN_PROSE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 106,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 728,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "BK-AS5Z-8UY5",
+      "asin": "B0H85JF1V1",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blackberry spread sandwich - 8oz/4ct:12|smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 143,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 773,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "BM-AS5J-3MQY",
+      "asin": "B0H83LSCQQ",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "BQ-ASUE-NT37",
+      "asin": "B0H842HL49",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables frozen whole wheat peanut butter & grape jelly sandwiches - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 151,
+        "bullet_count": 5,
+        "max_bullet_length": 159,
+        "description_length": 781,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "BX-AS5P-6WQV",
+      "asin": "B0H83NM5PX",
+      "intended_count": 120,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blueberry sandwich - 22.4oz/8ct:120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 99,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 721,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "BY-ASY2-8UJJ",
+      "asin": "B0H83789KC",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 115,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 735,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "CE-ASGK-ZRHM",
+      "asin": "B0H84651LM",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blueberry sandwich - 22.4oz/8ct:12|smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 137,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 767,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "CK-ASUM-WT9W",
+      "asin": "B0H86PRTWS",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:12|smucker's uncrustables frozen peanut butter & blueberry sandwich - 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION",
+        "ALLERGEN_PROSE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 127,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 757,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "CN-ASG6-892G",
+      "asin": "B0H8422DQ1",
+      "intended_count": 120,
+      "composition_signature": "smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 115,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 737,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "DA-ASF0-D7RG",
+      "asin": "B0H83VBTLT",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & grape jelly sandwich - 8oz/4ct:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 100,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 720,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "DF-ASQT-BLUQ",
+      "asin": "B0H83FKSN6",
+      "intended_count": 45,
+      "composition_signature": "smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 114,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 734,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "DP-ASQ6-ZPZU",
+      "asin": "B0H83Y8JH7",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION",
+        "FROZEN_DELIVERY_PROMISE"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 125,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 755,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "DY-AS8W-6MJG",
+      "asin": "B0H82MKPRJ",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blueberry sandwich - 22.4oz/8ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "ALLERGEN_PROSE",
+        "FROZEN_DELIVERY_PROMISE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 98,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 718,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "EF-AS4A-JCLU",
+      "asin": "B0H83XB855",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:12|smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 146,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 776,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "EJ-ASCD-8K87",
+      "asin": "B0H82PXWKS",
+      "intended_count": 90,
+      "composition_signature": "smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION",
+        "ALLERGEN_PROSE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 105,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 725,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "ER-ASRK-TPYQ",
+      "asin": "B0H84JH1WN",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blueberry sandwich - 22.4oz/8ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 125,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 755,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "ES-AS8A-3W3M",
+      "asin": "B0H83D8TFQ",
+      "intended_count": 30,
+      "composition_signature": "smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 114,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 734,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "EW-ASJ9-E79N",
+      "asin": "B0H82MT74H",
+      "intended_count": 30,
+      "composition_signature": "smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION",
+        "ALLERGEN_PROSE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 114,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 734,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "EW-ASWP-PMZX",
+      "asin": "B0H891WSZ9",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 103,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 723,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "EX-ASC0-5CRL",
+      "asin": "B0H83JJW1F",
+      "intended_count": 120,
+      "composition_signature": "smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 124,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 746,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "EZ-ASLA-Y7MZ",
+      "asin": "B0H83GBJLW",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 115,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 735,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "FK-AS6B-6G25",
+      "asin": "B0H8259J9G",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blackberry spread sandwich - 8oz/4ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 106,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 726,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "FM-AS51-S4MT",
+      "asin": "B0H853VHRF",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12|smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 151,
+        "bullet_count": 5,
+        "max_bullet_length": 159,
+        "description_length": 781,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "FN-ASVM-UWAG",
+      "asin": "B0H85J88LJ",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:12|smucker's uncrustables frozen whole wheat peanut butter & grape jelly sandwiches - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 120,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 750,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "FR-AS6X-5KJY",
+      "asin": "B0H827V9DJ",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 107,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 727,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "FV-AS47-EJZW",
+      "asin": "B0H82SZSYJ",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & grape jelly sandwiches - 8oz/4ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 112,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 732,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "FX-AS2W-KHZT",
+      "asin": "B0H827J2XZ",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 117,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 737,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "GG-ASNC-C9WA",
+      "asin": "B0H8219Z7T",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 107,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 727,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "GR-AS0R-YPCF",
+      "asin": "B0H82GJ292",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 86,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 706,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "GR-AS1P-DBB2",
+      "asin": "B0H82S7TFG",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & grape jelly sandwich - 8oz/4ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 100,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 720,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "GU-ASQ1-S7M6",
+      "asin": "B0H828GQLP",
+      "intended_count": 30,
+      "composition_signature": "smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 105,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 725,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "GX-ASTJ-WHV3",
+      "asin": "B0H83XV9WX",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 162,
+        "bullet_count": 5,
+        "max_bullet_length": 170,
+        "description_length": 792,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "HA-ASCR-ME3A",
+      "asin": "B0H85V287S",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12|smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 159,
+        "bullet_count": 5,
+        "max_bullet_length": 167,
+        "description_length": 789,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "HD-ASEQ-MFAY",
+      "asin": "B0H83QW85C",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "HR-AS7Q-7ZDF",
+      "asin": "B0H856RRRK",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:12|smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 122,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 752,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "HU-ASMI-DN3X",
+      "asin": "B0H82YMT6K",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blueberry sandwich - 22.4oz/8ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 98,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 718,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "HX-ASO8-XCL2",
+      "asin": "B0H832SD15",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & grape jelly sandwich - 8oz/4ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 100,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 720,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "HZ-ASPS-4L22",
+      "asin": "B0H857K38C",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blueberry sandwich - 22.4oz/8ct:12|smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 135,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 765,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "JC-ASM4-XXW7",
+      "asin": "B0H84ZL156",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables frozen peanut butter & blackberry spread sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 151,
+        "bullet_count": 5,
+        "max_bullet_length": 159,
+        "description_length": 781,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "JH-ASV9-Z46X",
+      "asin": "B0H8369PMK",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "JL-ASUC-JUZE",
+      "asin": "B0H831MXGD",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 101,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 721,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "JS-AS5F-QB8T",
+      "asin": "B0H822TJ7C",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "JT-ASKD-KS8T",
+      "asin": "B0H83Z6S3Q",
+      "intended_count": 120,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & grape jelly sandwich - 8oz/4ct:120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 101,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 723,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "JU-ASM0-KV4Z",
+      "asin": "B0H8462L4S",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & grape jelly sandwiches - 8oz/4ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 139,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 769,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "JU-ASYC-SSJD",
+      "asin": "B0H854C7SZ",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & grape jelly sandwiches - 8oz/4ct:12|smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 149,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 779,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "JY-ASPW-LB4K",
+      "asin": "B0H84621N6",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 150,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 780,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "KD-AS12-8HZ3",
+      "asin": "B0H845JBM6",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 162,
+        "bullet_count": 5,
+        "max_bullet_length": 170,
+        "description_length": 792,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "KN-ASYZ-ST4M",
+      "asin": "B0H83XBXHX",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 144,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 774,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "KP-ASYC-RN84",
+      "asin": "B0H83FYZR3",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blueberry sandwich - 22.4oz/8ct:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FROZEN_DELIVERY_PROMISE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 98,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 718,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "LH-ASP7-KZR4",
+      "asin": "B0H82XNFRW",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 115,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 735,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "LJ-ASYO-FWJK",
+      "asin": "B0H853SHVC",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:12|smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 144,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 774,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "LK-AS7X-K43B",
+      "asin": "B0H84CGGXL",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 130,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 760,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "LP-AS9J-HSVB",
+      "asin": "B0H82B7KK1",
+      "intended_count": 24,
+      "composition_signature": "smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 105,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 725,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "LU-ASK0-LSDF",
+      "asin": "B0H84YZDB7",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & grape jelly sandwich - 8oz/4ct:12|smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 108,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 738,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "ME-AS1I-SEX2",
+      "asin": "B0H83RVHNF",
+      "intended_count": 90,
+      "composition_signature": "smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 114,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 734,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "MF-AS0J-YRT4",
+      "asin": "B0H82NHQCL",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 115,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 735,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "MP-ASYO-QNU2",
+      "asin": "B0H84Z9KWL",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & grape jelly sandwich - 8oz/4ct:12|smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 753,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "MP-ASZ9-TKE7",
+      "asin": "B0H837HLKC",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "NC-ASPL-EXE8",
+      "asin": "B0H83QRV43",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 154,
+        "bullet_count": 5,
+        "max_bullet_length": 162,
+        "description_length": 784,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "NJ-ASAC-PTK2",
+      "asin": "B0H82X48CD",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 115,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 735,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "NM-ASEW-S2SK",
+      "asin": "B0H86TVN3C",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "NS-ASSD-B3JJ",
+      "asin": "B0H82L945T",
+      "intended_count": 24,
+      "composition_signature": "smuckers uncrustables peanut butter & mixed berry spread sandwiches, 2 oz, 4 count (frozen):24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 107,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 727,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "NT-ASIL-V5LK",
+      "asin": "B0H84547PM",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12|smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 153,
+        "bullet_count": 5,
+        "max_bullet_length": 161,
+        "description_length": 783,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "NV-AS86-HD44",
+      "asin": "B0H85KQJKS",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:12|smucker's uncrustables frozen whole wheat peanut butter & grape jelly sandwiches - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 141,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 771,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "PB-ASAF-G2T6",
+      "asin": "B0H82K7Y7S",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 86,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 706,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "PJ-ASAX-6LTG",
+      "asin": "B0H82T12L7",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 117,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 737,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "PJ-ASDX-E8LW",
+      "asin": "B0H85MGP35",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12|smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 146,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 776,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "PL-ASR9-U94A",
+      "asin": "B0H83RR2XQ",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "PP-AS23-SPLQ",
+      "asin": "B0H84CDNQG",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 142,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 772,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "PR-AS79-8SDF",
+      "asin": "B0H82L74PL",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 117,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 737,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "PT-AS5B-Z2XH",
+      "asin": "B0H84Z6QWY",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & grape jelly sandwich - 8oz/4ct:12|smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 137,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 767,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "PU-AS3D-SA5Z",
+      "asin": "B0H83H71F8",
+      "intended_count": 120,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 108,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 730,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "PW-ASDZ-CSR8",
+      "asin": "B0H839TPC5",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "PY-ASBM-WX6W",
+      "asin": "B0H82B7GV5",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & grape jelly sandwiches - 8oz/4ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 112,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 732,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "QC-ASX2-RHPA",
+      "asin": "B0H83TQPJB",
+      "intended_count": 120,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & grape jelly sandwiches - 8oz/4ct:120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 113,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 735,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "QE-ASEQ-4YV5",
+      "asin": "B0H82CBLRM",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "ALLERGEN_PROSE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 103,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 723,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "QP-ASAD-PTLX",
+      "asin": "B0H85DG2JQ",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 160,
+        "bullet_count": 5,
+        "max_bullet_length": 168,
+        "description_length": 790,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "QW-ASRZ-SYKC",
+      "asin": "B0H83MDDBL",
+      "intended_count": 120,
+      "composition_signature": "smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 87,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 709,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "QX-AS89-H8YC",
+      "asin": "B0H82RQ226",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "QX-ASS6-4T4F",
+      "asin": "B0H83B6TYP",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 107,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 727,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RB-ASVO-GYCY",
+      "asin": "B0H859N8VM",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 148,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 778,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RH-ASWA-ER34",
+      "asin": "B0H85JR6WN",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:12|smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 130,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 760,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RL-AS64-Q8QX",
+      "asin": "B0H82LZLM2",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RM-ASCV-DVA5",
+      "asin": "B0H822CVVL",
+      "intended_count": 24,
+      "composition_signature": "smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 114,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 734,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RN-ASLP-VH3X",
+      "asin": "B0H82JYZQH",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & grape jelly sandwiches - 8oz/4ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 112,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 732,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RQ-AS0L-9B45",
+      "asin": "B0H85MQLHG",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 146,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 776,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RQ-AS78-STLZ",
+      "asin": "B0H85GR968",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:12|smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 131,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 761,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RQ-ASM7-T9NN",
+      "asin": "B0H83HNB3B",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & grape jelly sandwiches - 8oz/4ct:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 112,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 732,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RR-ASG1-JVKV",
+      "asin": "B0H8361PYX",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 115,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 735,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RS-AS47-M3K3",
+      "asin": "B0H87748WJ",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:12|smucker's uncrustables frozen peanut butter & grape jelly sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 129,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 759,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RU-ASC3-4TUS",
+      "asin": "B0H83SJFR7",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12|smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 140,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 770,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RY-ASMO-6N4F",
+      "asin": "B0H8493HNR",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 128,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 758,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RY-ASO3-24Q2",
+      "asin": "B0H84XMG42",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12|smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 146,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 776,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "RZ-AS26-WLRM",
+      "asin": "B0H85PJ516",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:12|smucker's uncrustables frozen peanut butter & blackberry spread sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 135,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 765,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "SA-ASCK-J2B2",
+      "asin": "B0H82XP1MM",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "SA-ASDW-SNEW",
+      "asin": "B0H82SMZ2M",
+      "intended_count": 45,
+      "composition_signature": "smuckers uncrustables peanut butter & mixed berry spread sandwiches, 2 oz, 4 count (frozen):45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 107,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 727,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "SC-ASH8-4RQG",
+      "asin": "B0H856DWVS",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables frozen peanut butter & blueberry sandwich - 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION",
+        "FROZEN_DELIVERY_PROMISE"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 143,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 773,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "SG-AS32-LZ9Y",
+      "asin": "B0H8564C6D",
+      "intended_count": 24,
+      "composition_signature": "smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION",
+        "FROZEN_DELIVERY_PROMISE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 141,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 771,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "SG-ASLB-M2DG",
+      "asin": "B0H84PFKYC",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & grape jelly sandwich - 8oz/4ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 127,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 757,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "SH-ASO0-PW37",
+      "asin": "B0H83ZH3TB",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & grape jelly sandwich - 8oz/4ct:12|smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 139,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 769,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "SS-AS9K-U9TV",
+      "asin": "B0H831889Q",
+      "intended_count": 45,
+      "composition_signature": "smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 114,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 734,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "SU-ASS4-RV6R",
+      "asin": "B0H853HGHC",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables frozen whole wheat peanut butter & grape jelly sandwiches - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 157,
+        "bullet_count": 5,
+        "max_bullet_length": 165,
+        "description_length": 787,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "SV-AS87-D6SV",
+      "asin": "B0H83ZGN22",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:12|smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 142,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 772,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "SZ-ASPI-JFAT",
+      "asin": "B0H776M5B5",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blackberry spread sandwich - 8oz/4ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 106,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 726,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "TH-AS6D-CCES",
+      "asin": "B0H845HSDZ",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 134,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 764,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "TL-ASHN-ZRKG",
+      "asin": "B0H85P9F3R",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:12|smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 152,
+        "bullet_count": 5,
+        "max_bullet_length": 160,
+        "description_length": 782,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "TP-AS91-8PAZ",
+      "asin": "B0H835T5HN",
+      "intended_count": 30,
+      "composition_signature": "smuckers uncrustables peanut butter & mixed berry spread sandwiches, 2 oz, 4 count (frozen):30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 107,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 727,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "TQ-ASBR-96TC",
+      "asin": "B0H82BCZ44",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blueberry sandwich - 22.4oz/8ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 98,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 718,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "TQ-ASC4-P2NP",
+      "asin": "B0H839G6RQ",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blackberry spread sandwich - 8oz/4ct:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 106,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 726,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "TY-AST2-JE9P",
+      "asin": "B0H84WQRXB",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 150,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 780,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "UA-ASAO-RE7Q",
+      "asin": "B0H784LMG6",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables peanut butter & strawberry jam sandwich (2 oz, individually wrapped, frozen):45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 103,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 723,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "UD-AS9J-QNY6",
+      "asin": "B0H834L7P6",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 101,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 721,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "UE-ASA6-CLLY",
+      "asin": "B0H83ZHZ4S",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blackberry spread sandwich - 8oz/4ct:12|smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 133,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 763,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "UF-ASA1-GN5P",
+      "asin": "B0H854DM3X",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:12|smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 111,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 741,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "UG-ASUO-L4D9",
+      "asin": "B0H83FP8WW",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FROZEN_DELIVERY_PROMISE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 103,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 723,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "UJ-ASQ1-9FNR",
+      "asin": "B0H82P651P",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:24",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "UY-AS5N-A2E4",
+      "asin": "B0H83R4M3R",
+      "intended_count": 120,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 118,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 740,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "VA-ASOK-QJCA",
+      "asin": "B0H85RZDX5",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 168,
+        "bullet_count": 5,
+        "max_bullet_length": 176,
+        "description_length": 798,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "VC-ASQE-L5Z5",
+      "asin": "B0H82QYM85",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 107,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 727,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "VC-ASV1-378P",
+      "asin": "B0H786L5MW",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables peanut butter & strawberry jam sandwich (2 oz, individually wrapped, frozen):90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 103,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 723,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "VH-ASHZ-TJEE",
+      "asin": "B0H856VWD6",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12|smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 160,
+        "bullet_count": 5,
+        "max_bullet_length": 168,
+        "description_length": 790,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "VK-ASSB-3YFK",
+      "asin": "B0H85FY28F",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12|smucker's uncrustables frozen whole wheat peanut butter & grape jelly sandwiches - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 135,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 765,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "VN-AS1A-D572",
+      "asin": "B0H82PKK18",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FROZEN_DELIVERY_PROMISE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 103,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 723,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "VN-AS6Q-5AE9",
+      "asin": "B0H8538L32",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:12|smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 115,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 745,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "VT-ASTH-B6LM",
+      "asin": "B0H85CL8JD",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 131,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 761,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "WC-ASH5-EFN6",
+      "asin": "B0H833W54L",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "WK-AS2R-FJUW",
+      "asin": "B0H82XBNVN",
+      "intended_count": 90,
+      "composition_signature": "smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:90",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 86,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 706,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "WK-AS7E-M3CE",
+      "asin": "B0H843R64X",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 162,
+        "bullet_count": 5,
+        "max_bullet_length": 170,
+        "description_length": 792,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "WK-ASPD-G9HL",
+      "asin": "B0H85CF81Y",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:12|smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 753,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "WN-AS33-UFEA",
+      "asin": "B0H83RCTVV",
+      "intended_count": 120,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 102,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 724,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "WR-ASR5-AVWE",
+      "asin": "B0H859VYXH",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables chocolate flavored hazelnut spread frozen sandwich - 18oz/10ct:12|smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 152,
+        "bullet_count": 5,
+        "max_bullet_length": 160,
+        "description_length": 782,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "WR-ASTH-TPXV",
+      "asin": "B0H85DRT93",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:12|smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 168,
+        "bullet_count": 5,
+        "max_bullet_length": 176,
+        "description_length": 798,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "WZ-ASXK-ZFAS",
+      "asin": "B0H85DF1R7",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blueberry sandwich - 22.4oz/8ct:12|smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 121,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 751,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "XE-ASK1-BNRB",
+      "asin": "B0H81WMJBP",
+      "intended_count": 45,
+      "composition_signature": "smuckers uncrustables peanut butter & raspberry spread sandwiches, 10 count, 2 oz each, frozen:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 105,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 725,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "XJ-ASVD-CDMW",
+      "asin": "B0H82MSTD9",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich – 12g protein 22.4oz/8ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 117,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 737,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "XV-ASEU-GDUX",
+      "asin": "B0H82YRTS3",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 123,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 743,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "XW-ASSI-SZZT",
+      "asin": "B0H858GF4N",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12|smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 109,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 739,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "YA-ASX6-PZE7",
+      "asin": "B0H82YB4PD",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blackberry spread sandwich - 8oz/4ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 106,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 726,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "YF-ASZJ-8BBH",
+      "asin": "B0H822MPKC",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 101,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 721,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "YG-ASH6-BCXX",
+      "asin": "B0H8511Y5G",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blackberry spread sandwich - 8oz/4ct:12|smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 114,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 744,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "YH-ASQ8-45ED",
+      "asin": "B0H82QPCJL",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 86,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 706,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "YM-AS7P-ZX44",
+      "asin": "B0H83S1LDG",
+      "intended_count": 120,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blackberry spread sandwich - 8oz/4ct:120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 107,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 729,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "YV-AST8-LMKN",
+      "asin": "B0H859JMGJ",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & honey spread sandwich - 20oz/10ct:12|smuckers uncrustables peanut butter & chocolate flavored spread sandwiches, 10 count, 2 oz each (frozen):12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 137,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 767,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "ZB-ASKL-9W8G",
+      "asin": "B0H82LKBYH",
+      "intended_count": 45,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & blackberry spread sandwich - 8oz/4ct:45",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "M",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 106,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 726,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "ZC-ASDC-3QMV",
+      "asin": "B0H83TSB5J",
+      "intended_count": 120,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "ALLERGEN_PROSE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 104,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 726,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "ZE-AS5W-FKH3",
+      "asin": "B0H8531B8B",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter sandwich - 7.2oz/4ct:12|smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 131,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 761,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "ZH-AS8W-G5MN",
+      "asin": "B0H82LMD9Z",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & grape jelly sandwich - 8oz/4ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FROZEN_DELIVERY_PROMISE"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 100,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 720,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "ZP-ASJD-X7ZD",
+      "asin": "B0H85N7X8W",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12|smucker's uncrustables morning protein peanut butter & mixed berry spread sandwich - 22.4oz/8ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 160,
+        "bullet_count": 5,
+        "max_bullet_length": 168,
+        "description_length": 790,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "ZX-AS2C-GT8Q",
+      "asin": "B0H82L3LRT",
+      "intended_count": 30,
+      "composition_signature": "smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:30",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 115,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 735,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "ZX-ASQU-TKU9",
+      "asin": "B0H84PVG1G",
+      "intended_count": 24,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & strawberry jam sandwich - 8oz/4ct:12|smucker's uncrustables frozen whole wheat peanut butter & strawberry jam sandwich - 8oz/4ct:12",
+      "composition_kind": "MIXED_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": false,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "S",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 140,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 770,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    },
+    {
+      "sku": "ZY-ASZ4-QM5U",
+      "asin": "B0H83T9QZV",
+      "intended_count": 120,
+      "composition_signature": "smucker's uncrustables frozen peanut butter & apple cinnamon jelly sandwich – 12g protein 22.4oz/8ct:120",
+      "composition_kind": "SINGLE_FLAVOR",
+      "before_findings": [
+        "PER_ITEM_OR_PACKAGE_WEIGHT",
+        "NUMERIC_PROTEIN_OR_NUTRITION",
+        "HANDLING_DURATION_OR_TEMPERATURE",
+        "FORMULATION_GENERALIZATION"
+      ],
+      "retained_12g_subline_identity": true,
+      "cold_pack_evidence": {
+        "draft_category": "FROZEN_GROCERY",
+        "canonical_cooler": "XL",
+        "merchant_shipping_group_present": true
+      },
+      "disposition": "FULL_DETERMINISTIC_REWRITE",
+      "after": {
+        "title_length": 124,
+        "bullet_count": 5,
+        "max_bullet_length": 158,
+        "description_length": 746,
+        "format_pass": true,
+        "semantic_pass": true,
+        "compliance_pass": true,
+        "unsupported_claim_scan_pass": true
+      }
+    }
+  ],
+  "skipped_rows": [
+    {
+      "sku": "CV-ASQK-4P65",
+      "asin": null,
+      "reason": "HISTORICAL_CREATION_MISSING_ASIN"
+    },
+    {
+      "sku": "PV-ASZG-X763",
+      "asin": null,
+      "reason": "HISTORICAL_CREATION_MISSING_ASIN"
+    },
+    {
+      "sku": "SV-AS9L-DRRH",
+      "asin": null,
+      "reason": "HISTORICAL_CREATION_MISSING_ASIN"
+    }
+  ]
+}

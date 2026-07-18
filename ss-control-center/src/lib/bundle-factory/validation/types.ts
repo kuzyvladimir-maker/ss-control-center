@@ -39,6 +39,9 @@ export interface ValidatorInput {
     brand: string;
     category: string;
     packaging_spec: string;
+    cost_breakdown: string;
+    pack_count: number;
+    suggested_price_cents: number;
     total_weight_oz: number | null;
     main_image_url: string;
     /** COGS basis in cents — what WE pay to source the bundle. Used by
@@ -50,6 +53,7 @@ export interface ValidatorInput {
     product_name: string;
     manufacturer_brand: string;
     manufacturer_upc: string | null;
+    flavor: string | null;
     qty: number;
   }>;
   /** `compliance-rerun` validator needs the parent BundleDraft brand so it

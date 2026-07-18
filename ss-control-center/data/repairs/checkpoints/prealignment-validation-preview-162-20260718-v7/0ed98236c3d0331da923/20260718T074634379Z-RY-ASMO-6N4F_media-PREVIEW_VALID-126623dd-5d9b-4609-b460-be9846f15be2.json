@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "126623dd-5d9b-4609-b460-be9846f15be2",
+  "created_at": "2026-07-18T07:46:34.379Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "RY-ASMO-6N4F:media",
+  "sku": "RY-ASMO-6N4F",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "4a66226f093fd52ed083fe2bcec53d104f081101a8f87713ad6915786c3cb2b1",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "0d9fc1e1496d43cebbb543c0c70f5720",
+    "issues": []
+  },
+  "sha256": "8efda2f3c0d542f377b79a594de54b8fe85190b564d0f4cbec5e7244a2203046"
+}

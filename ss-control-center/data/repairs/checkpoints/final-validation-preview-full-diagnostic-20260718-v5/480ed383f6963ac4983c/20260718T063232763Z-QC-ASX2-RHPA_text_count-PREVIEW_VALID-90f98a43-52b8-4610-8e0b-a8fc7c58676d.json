@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "90f98a43-52b8-4610-8e0b-a8fc7c58676d",
+  "created_at": "2026-07-18T06:32:32.763Z",
+  "plan_sha256": "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
+  "action_id": "QC-ASX2-RHPA:text_count",
+  "sku": "QC-ASX2-RHPA",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "38a362bb912833c8ab1f8e466807fd1767a6d4c7c4c74a6bb9c6de76cf1ee212",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "8d3c3fccc5e4485c8b4ccaebea687ed3",
+    "issues": []
+  },
+  "sha256": "138e1b63644464b7ba91ca127aa29f8c452d5a3218461cbfebf68a61fd834361"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "7a48399f-667e-4dba-9205-2dca7f0d861a",
+  "created_at": "2026-07-18T07:40:09.302Z",
+  "plan_sha256": "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  "action_id": "ME-AS1I-SEX2:text_count",
+  "sku": "ME-AS1I-SEX2",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "69f77d9a5ae25e4a36de019a4dcfdcdc35aa6229b34c258a27244f2dfba24bfe",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "3ca33e71ad934e27810aa2ebf9750395",
+    "issues": []
+  },
+  "sha256": "2595da45fcbe4c7a35541ce6cc3824b2ff80aba2ad5438cf327aaa777908f971"
+}
