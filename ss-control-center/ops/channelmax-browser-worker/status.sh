@@ -100,7 +100,7 @@ if [ "$plist_ok" = "yes" ]; then
 
   if [ -x "$python_bin" ] && [ -f "$cdp_script" ] && \
      "$python_bin" -c 'import websocket' >/dev/null 2>&1 && \
-     CDP_PORT="$CDP_PORT" "$python_bin" "$cdp_script" ping >/dev/null 2>&1; then
+     /usr/bin/env CDP_PORT="$CDP_PORT" "$python_bin" "$cdp_script" ping >/dev/null 2>&1; then
     cdp_ok="yes"
   fi
 fi
