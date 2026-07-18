@@ -21,6 +21,10 @@ Amazon US account:
 - The approved 162-row assignment intentionally differs from the 164-row live
   baseline because the launch-aware plan excludes the two catalog-blocked
   rows (`TY-AST2-JE9P` and `VN-AS1A-D572`).
+- The exact ChannelMAX snapshot also exposes a third, different safety issue:
+  sealed v10 maps `SZ-ASPI-JFAT` to `B0H776M5B5`, while ChannelMAX reports
+  `B0H75VN18Z` for that SKU. Until resolved or excluded by a newly sealed plan,
+  the current 162-row file is not an exact live-identity match.
 - Example: `FK-AS6B-6G25` / `B0H8259J9G` was `Default` with observed floor
   `$64.14`, ceiling `$77.88`, and current `$76.99`, while the sealed launch
   target is `$66.95` / `$76.99`.
@@ -28,6 +32,56 @@ Amazon US account:
 This confirms that a correct-looking current Amazon price is not proof that
 ChannelMAX has the correct model or guardrails. The baseline is diagnostic
 only; no ChannelMAX state was changed.
+
+The offline production preflight further proves that the 162 target rows start
+as 161 `Default` and one `Manual min/max`. Existing operations can upload a
+numeric model ID, but no finite, tested operation restores `Default` (null
+model). Capturing old bounds is therefore insufficient rollback evidence: a
+failed batch could restore numbers while leaving 161 SKUs on the wrong model.
+The mutation lane remains fail-closed.
+
+## Bounded same-model canary
+
+The finite write protocol is implemented only for `VC-ASV1-378P` /
+`B0H786L5MW`, the sole target already on `Manual min/max [59021]`. Forward is
+the exact 103-byte TSV SHA-256 `b3bb356eedc232bca2cd3d92f095e1b31606f3780ec93f6e9af1004b8a9c495a`
+(`$219.57 / $252.99`); rollback is the exact 103-byte TSV SHA-256
+`0a7f74822194fd8f4bd0f5aaec70b549875ba922dd618834aba5117cc4a9d932`
+(`$251.32 / $289.28`). Neither artifact contains another SKU or changes model.
+
+The protocol validates the real-admin approval and exact job digests, requires
+one attempt, verifies the account/site and same-model prewrite state, accepts
+only an exact one-row Analyze preview, records one acknowledged mutation fence,
+submits once, verifies TaskID/counts plus a managed postwrite snapshot, and
+makes ambiguity terminal. Forward and rollback remain separate approvals.
+
+This is not yet a callable production browser worker: the canary release flag
+and global mutation release flag are false, the finite CDP adapter is a
+deterministic disabled skeleton because no reviewed File Uploader DOM evidence
+or selectors are pinned, the protected canary artifact endpoint is implemented
+but not deployed/probed from the worker, and rollback cannot yet be
+pre-approved in a dependency-blocked state. Those gaps must close before the
+owner ceremony; they do not authorize any Default-row or 162-row rollout.
+
+The disabled adapter contract is implemented in
+`uncrustables-same-model-cdp-adapter.ts`. It binds the exact account/site,
+`VC-ASV1-378P` / `B0H786L5MW`, both 103-byte artifact hashes, one-row Analyze
+shape, maximum one Submit, TaskID syntax, and postwrite row identity. Its only
+implemented file operation writes the already verified sealed bytes to a
+fresh 0600 temporary file, reads them back by SHA-256, and always removes the
+workspace. The future file-input step is restricted to the hardened
+`cdp_browser.py upload_file` command with `--allowed-root` and
+`--expected-sha256`. All selector and fixed-expression slots are deliberately
+`null`, and every browser-port method fails with
+`PINNED_DOM_CONTRACT_MISSING` before a process or CDP call.
+
+The artifact wire contract is authenticated `GET` only under
+`/api/openclaw/channelmax/canary-artifacts/<exact-sha256>.txt`. Its allowlist has
+exactly the forward SHA `b3bb356eedc232bca2cd3d92f095e1b31606f3780ec93f6e9af1004b8a9c495a`
+and rollback SHA `0a7f74822194fd8f4bd0f5aaec70b549875ba922dd618834aba5117cc4a9d932`.
+Each response is exactly 103 bytes with media type
+`text/tab-separated-values`; unrecognized names, query variants, missing or
+invalid auth, and all non-GET methods are rejected.
 
 ## Decision
 
@@ -118,6 +172,8 @@ tokens and synthetic identities cannot approve.
 4. Compare all 164 active launch rows with the owner-approved manifest. The
    sealed assignment currently contains 162 rows and must separately account
    for the two intentionally excluded catalog-blocked SKUs.
+   Any SKU/ASIN mismatch, including the current `SZ-ASPI-JFAT` mismatch, blocks
+   the exact batch rather than being silently keyed by SKU alone.
 5. Prepare one small immutable canary assignment.
 6. Owner reviews the rendered diff and re-authenticates in SS Command Center.
 7. Worker uploads exactly the approved bytes once.
@@ -139,6 +195,10 @@ No ChannelMAX upload is allowed until all are true:
 - Success requires a consistent ChannelMAX receipt and exact processed/success
   row counts; contradictory outcomes become `AMBIGUOUS`.
 - A rollback artifact exists and has been independently verified.
+- A one-row round trip has proved that the finite executor can restore both the
+  exact previous bounds and ChannelMAX `Default` model semantics; a blank,
+  omitted, or caller-invented model value is not proof.
+- Every target SKU/ASIN pair matches the fresh exact-account prewrite snapshot.
 
 ## Rollout
 

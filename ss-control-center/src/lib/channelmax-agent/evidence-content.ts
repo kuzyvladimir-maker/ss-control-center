@@ -1,6 +1,14 @@
 import { inflateSync } from "node:zlib";
 
 import type { ChannelMaxManagedEvidenceUploadInput } from "./contracts";
+import {
+  assertChannelMaxVcRowSnapshot,
+  CHANNELMAX_VC_CANARY,
+  CHANNELMAX_VC_CANARY_SNAPSHOT_SCHEMA,
+  ChannelMaxVcCanaryError,
+  type ChannelMaxVcCanaryDirection,
+  type ChannelMaxVcRowSnapshot,
+} from "./uncrustables-same-model-canary";
 
 const PNG_SIGNATURE = Buffer.from([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
@@ -502,6 +510,41 @@ function assertDomSnapshot(
     invalid("DOM snapshot contains a seller identity field.");
   }
   assertCapturedAtBinding(document, input);
+  if (document.schema_version === CHANNELMAX_VC_CANARY_SNAPSHOT_SCHEMA) {
+    const payload = parsePayload(job);
+    const artifact = record(payload.assignment_artifact, "assignment_artifact");
+    const direction: ChannelMaxVcCanaryDirection | null =
+      artifact.sha256 === CHANNELMAX_VC_CANARY.forward.assignment_sha256
+        ? "FORWARD"
+        : artifact.sha256 === CHANNELMAX_VC_CANARY.rollback.assignment_sha256
+          ? "ROLLBACK"
+          : null;
+    if (
+      job.operation !== "UPLOAD_MANUAL_ASSIGNMENT" ||
+      job.accountId !== CHANNELMAX_VC_CANARY.account_id ||
+      payload.account_id !== CHANNELMAX_VC_CANARY.account_id ||
+      payload.expected_active_rows !== 1 ||
+      payload.manual_model_id !== CHANNELMAX_VC_CANARY.manual_model.id ||
+      payload.manual_model_name !== CHANNELMAX_VC_CANARY.manual_model.name ||
+      direction == null ||
+      (document.phase !== "PREWRITE" && document.phase !== "POSTWRITE")
+    ) {
+      invalid("VC canary snapshot is not bound to the exact mutation job.");
+    }
+    try {
+      assertChannelMaxVcRowSnapshot(
+        document as unknown as ChannelMaxVcRowSnapshot,
+        direction,
+        document.phase,
+      );
+    } catch (error) {
+      if (error instanceof ChannelMaxVcCanaryError) {
+        invalid(error.message);
+      }
+      throw error;
+    }
+    return;
+  }
   if (document.schema_version === INVENTORY_SCHEMA) {
     assertInventorySnapshot(document, job);
     return;

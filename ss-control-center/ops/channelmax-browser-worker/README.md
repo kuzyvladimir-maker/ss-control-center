@@ -12,6 +12,109 @@ The only accepted operations are `SNAPSHOT_INVENTORY` and
 `DISCOVER_MANUAL_MODEL`. This lane has no click/fill/navigation or ChannelMAX
 mutation contract. A future write lane must be separate and approval-gated.
 
+## Production mutation preflight (still blocked)
+
+The exact sealed-v10/offline preflight is available without enabling browser
+writes:
+
+```bash
+npm run channelmax:preflight-uncrustables
+npm run channelmax:preflight-uncrustables -- --full
+```
+
+It binds the exact source-plan, TSV, manifest, 164-row prewrite snapshot,
+account, SiteID `300`, selected-site label, and canonical model `59021`; it also
+emits the full 162-row before/desired diff and the one-row same-model canary.
+The command intentionally exits non-zero because production execution is not
+yet reversible:
+
+- 161 target rows currently use ChannelMAX `Default`, but the finite upload
+  contract has no tested mechanism to restore that null/default model after
+  assigning `59021`.
+- The old bounds are captured, but no independently verified rollback artifact
+  restores the exact 161 `Default` / 1 `Manual min/max` target distribution.
+- `SZ-ASPI-JFAT` is `B0H776M5B5` in sealed v10 but the live ChannelMAX row
+  reports `B0H75VN18Z`; the exact 162-row upload therefore has an identity
+  mismatch.
+- The production mutation gate and finite browser-write executor remain off.
+
+No canary or batch may run until a reviewed Default-model round trip restores
+both model and bounds, the SZ identity is resolved or explicitly excluded in a
+new sealed plan, and the complete rollback artifact verifies independently.
+
+### Same-model VC canary executor
+
+A finite state machine now exists for the only target already on canonical
+`Manual min/max [59021]`:
+
+- identity: `VC-ASV1-378P` / `B0H786L5MW`, account/site fixed above;
+- forward bounds: `$219.57 / $252.99`, exact 103-byte TSV SHA-256
+  `b3bb356eedc232bca2cd3d92f095e1b31606f3780ec93f6e9af1004b8a9c495a`;
+- rollback bounds: `$251.32 / $289.28`, exact 103-byte TSV SHA-256
+  `0a7f74822194fd8f4bd0f5aaec70b549875ba922dd618834aba5117cc4a9d932`;
+- each direction is a separate `max_attempts=1` mutation job with its own real
+  admin step-up approval;
+- the state machine requires exact Analyze mapping, posts one acknowledged
+  `MUTATION_STARTED`, calls submit once, verifies TaskID/counts and the exact
+  postwrite row, and turns every uncertain result into terminal `AMBIGUOUS`.
+
+Production execution remains disabled. A protected, content-addressed endpoint
+is implemented for the two exact artifacts, but it has not been deployed and
+probed from the worker. A deterministic finite CDP adapter skeleton now binds
+the exact target, hashes, one-row Analyze contract, maximum one Submit, TaskID,
+and row readback interfaces, but it contains no guessed selectors or DOM
+expressions. Every browser method fails before CDP because the reviewed DOM
+contract is still null. The current queue also cannot pre-arm a separately
+approved rollback job while preventing it from being claimed before its
+forward dependency.
+
+The skeleton prepares only the exact 103-byte forward/rollback bytes in an
+isolated 0600 temporary file and specifies the hardened
+`scripts/cdp_browser.py upload_file` primitive with `--allowed-root` and
+`--expected-sha256`; it always removes the workspace. Focused offline checks:
+
+```bash
+npm run test:channelmax-canary-adapter
+python3 ../scripts/test_cdp_browser.py
+```
+
+The exact adapter blockers are: no pinned File Uploader DOM evidence, no
+reviewed file-input selector, no reviewed Analyze control/parser, no reviewed
+Submit/Task receipt parser, no reviewed postwrite readback, and the independent
+adapter release gate remains false.
+
+The endpoint accepts only authenticated `GET` with the existing
+`JACKIE_API_TOKEN` / `SSCC_API_TOKEN` or a real admin session. It returns exact
+`Content-Length`, `Content-Type`, SHA-256 headers, and bytes; every other digest,
+query variant, or HTTP method fails closed:
+
+- forward: `/api/openclaw/channelmax/canary-artifacts/b3bb356eedc232bca2cd3d92f095e1b31606f3780ec93f6e9af1004b8a9c495a.txt`;
+- rollback: `/api/openclaw/channelmax/canary-artifacts/0a7f74822194fd8f4bd0f5aaec70b549875ba922dd618834aba5117cc4a9d932.txt`.
+
+The exact next ceremony is:
+
+1. Deploy this build and probe both authenticated artifact URLs from the worker;
+   verify the received body SHA-256 and byte size, then verify an unknown digest
+   and an unauthenticated request are rejected.
+2. Read-only inspect the live File Uploader DOM and independently review a
+   finite adapter for its exact file input, Analyze preview, single Submit,
+   TaskID receipt, and postwrite snapshot; no caller-provided selectors or JS.
+3. Add a dependency state that lets the owner step-up approve the rollback job
+   before forward execution while keeping rollback unclaimable until explicitly
+   armed after a confirmed forward result.
+4. In the admin UI, render forward and rollback hashes, both price pairs,
+   account/site/SKU/ASIN, one-attempt policy, prewrite snapshot hash, and the
+   terminal-ambiguity warning before consuming either approval.
+5. Run tests, manually open the exact Salutem File Uploader tab, approve only
+   the forward job, and enable only the canary-specific release flag. Never
+   enable the 162-row lane from this ceremony.
+
+Offline state-machine verification:
+
+```bash
+npm run test:channelmax-canary
+```
+
 ## Fixed production identity
 
 - SSCC: `https://ss-control-center.vercel.app`

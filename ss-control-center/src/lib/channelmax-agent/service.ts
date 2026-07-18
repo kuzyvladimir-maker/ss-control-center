@@ -28,6 +28,11 @@ import {
   stableJson,
 } from "./contracts";
 import {
+  CHANNELMAX_VC_CANARY,
+  CHANNELMAX_VC_CANARY_PRODUCTION_READY,
+  CHANNELMAX_VC_CANARY_SCHEMA,
+} from "./uncrustables-same-model-canary";
+import {
   assertChannelMaxManagedEvidenceContent,
   ChannelMaxEvidenceContentError,
 } from "./evidence-content";
@@ -2622,6 +2627,32 @@ export function channelMaxAgentCapabilities() {
       required_pre_write_event: "MUTATION_STARTED",
       ambiguity_is_terminal: true,
       automatic_retry_after_mutation_started: false,
+    },
+    same_model_canary: {
+      schema_version: CHANNELMAX_VC_CANARY_SCHEMA,
+      production_ready: CHANNELMAX_VC_CANARY_PRODUCTION_READY,
+      state_machine_implemented: true,
+      finite_cdp_adapter_skeleton_implemented: true,
+      finite_cdp_adapter_implemented: false,
+      managed_artifact_endpoint_implemented: true,
+      managed_artifact_endpoint_deployment_verified: false,
+      managed_artifact_endpoint_requires_bearer_or_admin_session: true,
+      account_id: CHANNELMAX_VC_CANARY.account_id,
+      selected_site_id: CHANNELMAX_VC_CANARY.selected_site_id,
+      selected_site_name: CHANNELMAX_VC_CANARY.selected_site_name,
+      sku: CHANNELMAX_VC_CANARY.sku,
+      asin: CHANNELMAX_VC_CANARY.asin,
+      preserved_model: CHANNELMAX_VC_CANARY.manual_model,
+      forward_assignment_sha256:
+        CHANNELMAX_VC_CANARY.forward.assignment_sha256,
+      rollback_assignment_sha256:
+        CHANNELMAX_VC_CANARY.rollback.assignment_sha256,
+      production_blockers: [
+        "FINITE_CDP_UPLOAD_ADAPTER_UNVERIFIED",
+        "MANAGED_CANARY_ARTIFACT_ENDPOINT_DEPLOYMENT_UNVERIFIED",
+        "DEPENDENT_PREARMED_ROLLBACK_APPROVAL_NOT_IMPLEMENTED",
+        "PRODUCTION_MUTATION_RELEASE_GATE_DISABLED",
+      ],
     },
   };
 }

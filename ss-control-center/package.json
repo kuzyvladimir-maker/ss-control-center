@@ -8,7 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "channelmax:worker": "node --import tsx scripts/channelmax-browser-worker.ts",
+    "channelmax:preflight-uncrustables": "node --import tsx scripts/preflight-uncrustables-channelmax-mutation.ts",
     "test:channelmax-worker": "node --import tsx --test src/lib/channelmax-agent/__tests__/browser-worker.test.ts",
+    "test:channelmax-preflight": "node --import tsx --test src/lib/channelmax-agent/__tests__/uncrustables-mutation-preflight.test.ts",
+    "test:channelmax-canary": "node --import tsx --test src/lib/channelmax-agent/__tests__/uncrustables-same-model-canary.test.ts",
+    "test:channelmax-canary-adapter": "node --import tsx --test src/lib/channelmax-agent/__tests__/uncrustables-same-model-cdp-adapter.test.ts",
+    "test:channelmax-canary-artifacts": "node --import tsx --test src/lib/channelmax-agent/__tests__/uncrustables-canary-artifact-route.test.ts",
     "models:check": "npx tsx scripts/check-model-updates.ts",
     "postinstall": "prisma generate"
   },

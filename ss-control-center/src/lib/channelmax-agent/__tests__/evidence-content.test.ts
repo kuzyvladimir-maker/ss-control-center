@@ -7,6 +7,12 @@ import {
   assertChannelMaxManagedEvidenceContent,
   type ChannelMaxEvidenceJobBinding,
 } from "../evidence-content";
+import {
+  buildChannelMaxVcCanaryJobRequest,
+  channelMaxVcCanaryArtifact,
+  CHANNELMAX_VC_CANARY,
+  CHANNELMAX_VC_CANARY_SNAPSHOT_SCHEMA,
+} from "../uncrustables-same-model-canary";
 import { testPng, testPngChunk } from "./png-fixture";
 
 const ACCOUNT_ID = "channelmax:amznus:salutem-solutions";
@@ -298,5 +304,67 @@ test("manual-model DOM snapshot must identify model 59021 on the exact site", as
       job("DISCOVER_MANUAL_MODEL"),
     ),
     /selected ChannelMAX site/i,
+  );
+});
+
+test("VC mutation DOM evidence accepts only the exact same-model pre/post state", async () => {
+  const request = buildChannelMaxVcCanaryJobRequest("FORWARD");
+  const mutationJob: ChannelMaxEvidenceJobBinding = {
+    operation: "UPLOAD_MANUAL_ASSIGNMENT",
+    accountId: CHANNELMAX_VC_CANARY.account_id,
+    payloadJson: JSON.stringify(request.payload),
+  };
+  const document = {
+    schema_version: CHANNELMAX_VC_CANARY_SNAPSHOT_SCHEMA,
+    captured_at: CAPTURED_AT,
+    phase: "PREWRITE",
+    direction: "FORWARD",
+    account_id: CHANNELMAX_VC_CANARY.account_id,
+    selected_site_id: CHANNELMAX_VC_CANARY.selected_site_id,
+    selected_site_name: CHANNELMAX_VC_CANARY.selected_site_name,
+    assignment_sha256: channelMaxVcCanaryArtifact("FORWARD").sha256,
+    baseline_inventory_snapshot_sha256:
+      CHANNELMAX_VC_CANARY.prewrite_snapshot_sha256,
+    upload_task_id: null,
+    row: {
+      sku: CHANNELMAX_VC_CANARY.sku,
+      asin: CHANNELMAX_VC_CANARY.asin,
+      repricing_model_id: CHANNELMAX_VC_CANARY.manual_model.id,
+      repricing_model_name: CHANNELMAX_VC_CANARY.manual_model.name,
+      minimum_price: CHANNELMAX_VC_CANARY.rollback.minimum_price,
+      maximum_price: CHANNELMAX_VC_CANARY.rollback.maximum_price,
+    },
+  };
+  await assertChannelMaxManagedEvidenceContent(
+    uploadInput("DOM_SNAPSHOT", "application/json"),
+    Buffer.from(JSON.stringify(document)),
+    mutationJob,
+  );
+
+  await assert.rejects(
+    assertChannelMaxManagedEvidenceContent(
+      uploadInput("DOM_SNAPSHOT", "application/json"),
+      Buffer.from(
+        JSON.stringify({
+          ...document,
+          row: { ...document.row, repricing_model_id: null },
+        }),
+      ),
+      mutationJob,
+    ),
+    /exact expected VC state/i,
+  );
+  await assert.rejects(
+    assertChannelMaxManagedEvidenceContent(
+      uploadInput("DOM_SNAPSHOT", "application/json"),
+      Buffer.from(
+        JSON.stringify({
+          ...document,
+          row: { ...document.row, sku: "SZ-ASPI-JFAT" },
+        }),
+      ),
+      mutationJob,
+    ),
+    /exact expected VC state/i,
   );
 });
