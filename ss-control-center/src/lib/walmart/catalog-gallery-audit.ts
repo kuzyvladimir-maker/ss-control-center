@@ -572,10 +572,12 @@ export function galleryDhashDistance(left: string, right: string): number {
     throw new Error("dHash values must be exactly 16 hexadecimal characters");
   }
   let difference = BigInt(`0x${left}`) ^ BigInt(`0x${right}`);
+  const zero = BigInt(0);
+  const one = BigInt(1);
   let count = 0;
-  while (difference > 0n) {
-    count += Number(difference & 1n);
-    difference >>= 1n;
+  while (difference > zero) {
+    count += Number(difference & one);
+    difference >>= one;
   }
   return count;
 }
