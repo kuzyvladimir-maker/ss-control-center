@@ -408,6 +408,7 @@ export function auditGallerySlot(input: GalleryAuditInput): GalleryAuditDecision
     });
   }
 
+  const observation = input.source.observation;
   const ocrText = trustedOcrText(input.source.auxiliary_ocr);
   const identities: Array<{ component_id: string | null; identity: AuditIdentityTruth }> =
     composition.kind === "same_product"
@@ -426,7 +427,7 @@ export function auditGallerySlot(input: GalleryAuditInput): GalleryAuditDecision
 
   const identityResults = identities.map((entry) => ({
     ...entry,
-    result: assessIdentity(entry.identity, input.source.observation, ocrText),
+    result: assessIdentity(entry.identity, observation, ocrText),
   }));
   const matched = identityResults.find((entry) => entry.result.status === "MATCH");
   let identity: IdentityAssessment;
