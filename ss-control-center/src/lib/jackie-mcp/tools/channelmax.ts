@@ -8,20 +8,16 @@
  */
 
 import {
-  parseChannelMaxHeartbeat,
-  parseChannelMaxWorkerEvent,
-  parseClaimChannelMaxAgentJob,
-  parseCompleteChannelMaxAgentJob,
+  parseCancelChannelMaxAgentJob,
   parseCreateChannelMaxAgentJob,
+  parseCreateChannelMaxReconciliation,
 } from "@/lib/channelmax-agent/contracts";
 import {
-  appendChannelMaxAgentEvent,
+  cancelChannelMaxAgentJob,
   channelMaxAgentCapabilities,
-  claimChannelMaxAgentJob,
-  completeChannelMaxAgentJob,
   createChannelMaxAgentJob,
+  createChannelMaxReconciliationJob,
   getChannelMaxAgentJob,
-  heartbeatChannelMaxAgentJob,
 } from "@/lib/channelmax-agent/service";
 import { requireString } from "../channels";
 import type { JackieTool } from "../registry";
@@ -36,35 +32,6 @@ const createOperationEnum = [
   "EXPORT_INVENTORY",
   "OBSERVE_POST_UPLOAD_HOLD",
 ];
-
-const workerOperationEnum = [
-  ...createOperationEnum,
-  "RECONCILE_MUTATION",
-];
-
-const evidenceSchema = {
-  type: "object",
-  properties: {
-    kind: {
-      type: "string",
-      enum: [
-        "SCREENSHOT",
-        "DOM_SNAPSHOT",
-        "DOWNLOAD",
-        "UPLOAD_SOURCE",
-        "INVENTORY_EXPORT",
-        "RUN_LOG",
-      ],
-    },
-    sha256: { type: "string", pattern: "^[a-f0-9]{64}$" },
-    byte_size: { type: "integer", minimum: 1 },
-    media_type: { type: "string" },
-    captured_at: { type: "string", format: "date-time" },
-    uri: { type: "string", format: "uri" },
-  },
-  required: ["kind", "sha256", "byte_size", "media_type", "captured_at"],
-  additionalProperties: false,
-};
 
 const basePayloadProperties = {
   account_id: { type: "string" },
@@ -226,9 +193,9 @@ const channelMaxJobCreate: JackieTool = {
   },
   handler: async (args, ctx) => {
     const input = parseCreateChannelMaxAgentJob(args);
-    if (input.operation === "RECONCILE_MUTATION") {
+    if (!createOperationEnum.includes(input.operation)) {
       throw new Error(
-        "RECONCILE_MUTATION must be derived with channelmax_job_reconcile so it stays bound to one ambiguous mutation.",
+        `${input.operation} is not directly creatable through Jackie MCP. Use channelmax_job_reconcile for a server-derived reconciliation job.`,
       );
     }
     return createChannelMaxAgentJob(input, ctx.actor);
@@ -249,148 +216,60 @@ const channelMaxJobGet: JackieTool = {
   handler: async (args) => getChannelMaxAgentJob(requireString(args, "job_id")),
 };
 
-const channelMaxJobClaim: JackieTool = {
-  name: "channelmax_job_claim",
+const channelMaxJobCancel: JackieTool = {
+  name: "channelmax_job_cancel",
   description:
-    "Claim the next durable ChannelMAX job using an expiring worker lease.",
+    "Cancel a pending, queued, or leased ChannelMAX job only while it is still before the external-write fence.",
   long_description:
-    "Omitting supported_operations claims read-only work only. Include UPLOAD_MANUAL_ASSIGNMENT only if this worker can follow the mutation fence; the server still refuses unapproved or expired mutation plans.",
-  write: true,
-  input_schema: {
-    type: "object",
-    properties: {
-      worker_id: { type: "string" },
-      supported_operations: {
-        type: "array",
-        items: { type: "string", enum: workerOperationEnum },
-        minItems: 1,
-        uniqueItems: true,
-      },
-      lease_seconds: {
-        type: "integer",
-        minimum: 30,
-        maximum: 300,
-        default: 120,
-      },
-    },
-    required: ["worker_id"],
-    additionalProperties: false,
-  },
-  handler: async (args) =>
-    claimChannelMaxAgentJob(
-      parseClaimChannelMaxAgentJob(args),
-      JACKIE_ACTOR_ID,
-    ),
-};
-
-const channelMaxJobEvent: JackieTool = {
-  name: "channelmax_job_event",
-  description:
-    "Append an idempotent progress, evidence, or mutation-fence event to a leased ChannelMAX job.",
-  long_description:
-    "MUTATION_STARTED is the external-write fence and requires the exact approved upload-source evidence. Outcome events require immutable screenshot or DOM evidence. This records worker evidence; it is not an arbitrary browser command.",
+    "The server refuses cancellation after MUTATION_STARTED. An ambiguous or fenced mutation must be reconciled instead of cancelled or retried.",
   write: true,
   input_schema: {
     type: "object",
     properties: {
       job_id: { type: "string" },
-      event_key: { type: "string", minLength: 8, maxLength: 128 },
-      lease_token: { type: "string", pattern: "^[a-f0-9]{64}$" },
-      type: {
-        type: "string",
-        enum: [
-          "PROGRESS",
-          "AUTH_REQUIRED",
-          "EVIDENCE_CAPTURED",
-          "MUTATION_STARTED",
-          "MUTATION_CONFIRMED",
-          "MUTATION_NOT_APPLIED",
-          "MUTATION_AMBIGUOUS",
-        ],
-      },
-      occurred_at: { type: "string", format: "date-time" },
-      message: { type: "string", maxLength: 2_000 },
-      step: { type: "string" },
-      progress_percent: { type: "integer", minimum: 0, maximum: 100 },
-      evidence: { type: "array", items: evidenceSchema, maxItems: 25 },
+      cancellation_key: { type: "string", minLength: 8, maxLength: 128 },
+      reason: { type: "string", minLength: 1, maxLength: 2_000 },
     },
-    required: ["job_id", "event_key", "lease_token", "type"],
+    required: ["job_id", "cancellation_key", "reason"],
     additionalProperties: false,
   },
   handler: async (args) => {
     const jobId = requireString(args, "job_id");
-    return appendChannelMaxAgentEvent(
+    return cancelChannelMaxAgentJob(
       jobId,
-      parseChannelMaxWorkerEvent(withoutJobId(args)),
+      parseCancelChannelMaxAgentJob(withoutJobId(args)),
       JACKIE_ACTOR_ID,
     );
   },
 };
 
-const channelMaxJobHeartbeat: JackieTool = {
-  name: "channelmax_job_heartbeat",
+const channelMaxJobReconcile: JackieTool = {
+  name: "channelmax_job_reconcile",
   description:
-    "Renew an active ChannelMAX worker lease and report its current phase.",
-  write: true,
-  input_schema: {
-    type: "object",
-    properties: {
-      job_id: { type: "string" },
-      lease_token: { type: "string", pattern: "^[a-f0-9]{64}$" },
-      phase: { type: "string" },
-      progress_percent: { type: "integer", minimum: 0, maximum: 100 },
-    },
-    required: ["job_id", "lease_token", "phase"],
-    additionalProperties: false,
-  },
-  handler: async (args) => {
-    const jobId = requireString(args, "job_id");
-    return heartbeatChannelMaxAgentJob(
-      jobId,
-      parseChannelMaxHeartbeat(withoutJobId(args)),
-      JACKIE_ACTOR_ID,
-    );
-  },
-};
-
-const channelMaxJobComplete: JackieTool = {
-  name: "channelmax_job_complete",
-  description:
-    "Finalize a leased ChannelMAX job with an idempotent terminal result and evidence.",
+    "Derive one read-only reconciliation job from an ambiguous ChannelMAX upload job.",
   long_description:
-    "A successful mutation completion is accepted only after an exact MUTATION_CONFIRMED event and bound immutable evidence. Ambiguous results remain blocked from automatic retry.",
+    "The server binds the reconciliation to the ambiguous job's account, artifact SHA, row count, and manual model. The worker may inspect upload-task history and export inventory but may not repeat the upload.",
   write: true,
   input_schema: {
     type: "object",
     properties: {
-      job_id: { type: "string" },
-      completion_key: { type: "string", minLength: 8, maxLength: 128 },
-      lease_token: { type: "string", pattern: "^[a-f0-9]{64}$" },
-      status: { type: "string", enum: ["SUCCEEDED", "FAILED", "AMBIGUOUS"] },
-      mutation_outcome: {
+      job_id: {
         type: "string",
-        enum: ["CONFIRMED_APPLIED", "CONFIRMED_NOT_APPLIED", "AMBIGUOUS"],
+        description: "The terminal AMBIGUOUS upload job to reconcile.",
       },
-      message: { type: "string", maxLength: 4_000 },
-      result: { type: "object" },
-      evidence: { type: "array", items: evidenceSchema, maxItems: 25 },
+      idempotency_key: { type: "string", minLength: 8, maxLength: 128 },
+      priority: { type: "integer", minimum: -100, maximum: 100, default: 100 },
+      max_attempts: { type: "integer", minimum: 1, maximum: 5, default: 3 },
     },
-    required: [
-      "job_id",
-      "completion_key",
-      "lease_token",
-      "status",
-      "message",
-      "result",
-    ],
+    required: ["job_id", "idempotency_key"],
     additionalProperties: false,
   },
-  handler: async (args) => {
+  handler: async (args, ctx) => {
     const jobId = requireString(args, "job_id");
-    return completeChannelMaxAgentJob(
+    return createChannelMaxReconciliationJob(
       jobId,
-      parseCompleteChannelMaxAgentJob(withoutJobId(args)),
-      JACKIE_ACTOR_ID,
+      parseCreateChannelMaxReconciliation(withoutJobId(args)),
+      ctx.actor,
     );
   },
 };
@@ -399,8 +278,6 @@ export const tools: JackieTool[] = [
   channelMaxCapabilities,
   channelMaxJobCreate,
   channelMaxJobGet,
-  channelMaxJobClaim,
-  channelMaxJobEvent,
-  channelMaxJobHeartbeat,
-  channelMaxJobComplete,
+  channelMaxJobCancel,
+  channelMaxJobReconcile,
 ];

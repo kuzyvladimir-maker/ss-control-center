@@ -1,4 +1,9 @@
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import {
+  createHash,
+  randomBytes,
+  randomUUID,
+  timingSafeEqual,
+} from "node:crypto";
 
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -8,6 +13,7 @@ import {
   type ApproveChannelMaxAgentJobInput,
   type ChannelMaxAgentOperation,
   type ChannelMaxEvidenceRef,
+  type ChannelMaxManagedEvidenceUploadInput,
   type ChannelMaxWorkerEventInput,
   type ClaimChannelMaxAgentJobInput,
   type CancelChannelMaxAgentJobInput,
@@ -21,6 +27,10 @@ import {
   sha256Json,
   stableJson,
 } from "./contracts";
+import {
+  assertChannelMaxManagedEvidenceContent,
+  ChannelMaxEvidenceContentError,
+} from "./evidence-content";
 
 const TERMINAL_STATUSES = new Set([
   "SUCCEEDED",
@@ -29,7 +39,15 @@ const TERMINAL_STATUSES = new Set([
   "CANCELLED",
 ]);
 const CHANNELMAX_BROWSER_LEASE_KEY = "channelmax:imac-primary";
-const MANAGED_MUTATION_EVIDENCE_IMPLEMENTED = false;
+export const CHANNELMAX_MANAGED_EVIDENCE_MAX_BYTES = 5 * 1024 * 1024;
+export const CHANNELMAX_MANAGED_EVIDENCE_MAX_ITEMS_PER_JOB = 25;
+export const CHANNELMAX_MANAGED_EVIDENCE_MAX_TOTAL_BYTES_PER_JOB =
+  25 * 1024 * 1024;
+const MANAGED_MUTATION_EVIDENCE_IMPLEMENTED = true;
+// Deliberate release gate. Managed evidence now makes read-only work
+// verifiable, but production mutation approval remains unavailable until the
+// complete owner-approval ceremony is separately accepted for deployment.
+const MUTATION_APPROVAL_PRODUCTION_READY = false;
 
 export function channelMaxMutationApprovalEnabled(): boolean {
   // Production must remain fail-closed until SSCC owns immutable evidence
@@ -42,9 +60,20 @@ export function channelMaxMutationApprovalEnabled(): boolean {
     return true;
   }
   return (
+    MUTATION_APPROVAL_PRODUCTION_READY &&
     MANAGED_MUTATION_EVIDENCE_IMPLEMENTED &&
     process.env.CHANNELMAX_MUTATION_APPROVAL_ENABLED === "true"
   );
+}
+
+function assertMutationExecutionReleaseGate(): void {
+  if (!channelMaxMutationApprovalEnabled()) {
+    throw new ChannelMaxAgentServiceError(
+      "MUTATION_EXECUTION_DISABLED",
+      "ChannelMAX mutation execution is disabled by the production release gate.",
+      503,
+    );
+  }
 }
 
 export class ChannelMaxAgentServiceError extends Error {
@@ -164,7 +193,6 @@ function publicJob(job: {
   requestSha256: string;
   mutationPlanSha256: string | null;
   mutationPlanLock: string | null;
-  mutationPlanLock: string | null;
   idempotencyKey: string;
   requestedBy: string;
   ownerApproved: boolean;
@@ -195,6 +223,7 @@ function publicJob(job: {
   cancelledBy: string | null;
   cancellationReason: string | null;
   reconcilesJobId: string | null;
+  reconciliationTargetLock: string | null;
   reconciledByJobId: string | null;
   resultJson: string | null;
   resultSha256: string | null;
@@ -278,6 +307,45 @@ function mutationPlanDigest(input: CreateChannelMaxAgentJobInput): string | null
   return sha256Json({ operation: input.operation, payload: input.payload });
 }
 
+async function validateReconciliationRequest(
+  input: CreateChannelMaxAgentJobInput,
+) {
+  if (input.operation !== "RECONCILE_MUTATION") return null;
+  const payload = input.payload as {
+    ambiguous_job_id: string;
+    account_id: string;
+    expected_active_rows: number;
+    assignment_sha256: string;
+    manual_model_id: string;
+    manual_model_name: string;
+  };
+  const original = await prisma.channelMaxAgentJob.findUnique({
+    where: { id: payload.ambiguous_job_id },
+  });
+  if (!original || !original.mutation || original.status !== "AMBIGUOUS") {
+    throw new ChannelMaxAgentServiceError(
+      "RECONCILIATION_TARGET_INVALID",
+      "Reconciliation target must be an existing ambiguous mutation job.",
+      409,
+    );
+  }
+  const binding = uploadBindingFromJob(original);
+  if (
+    payload.account_id !== binding.account_id ||
+    payload.expected_active_rows !== binding.expected_active_rows ||
+    payload.assignment_sha256 !== binding.assignment_sha256 ||
+    payload.manual_model_id !== binding.manual_model_id ||
+    payload.manual_model_name !== binding.manual_model_name
+  ) {
+    throw new ChannelMaxAgentServiceError(
+      "RECONCILIATION_BINDING_MISMATCH",
+      "Reconciliation payload does not exactly match the ambiguous mutation.",
+      409,
+    );
+  }
+  return original;
+}
+
 interface ApprovalBoundJob {
   id: string;
   operation: string;
@@ -287,6 +355,7 @@ interface ApprovalBoundJob {
   payloadSha256: string;
   requestSha256: string;
   mutationPlanSha256: string | null;
+  mutationPlanLock: string | null;
   idempotencyKey: string;
   maxAttempts: number;
   ownerApproved: boolean;
@@ -579,6 +648,19 @@ export async function createChannelMaxAgentJob(
     }
     return { created: false, idempotent_replay: true, job: publicJob(existing) };
   }
+  const reconciliationTarget = await validateReconciliationRequest(input);
+  if (reconciliationTarget) {
+    const existingReconciliation = await prisma.channelMaxAgentJob.findUnique({
+      where: { reconciliationTargetLock: reconciliationTarget.id },
+    });
+    if (existingReconciliation) {
+      throw new ChannelMaxAgentServiceError(
+        "RECONCILIATION_ALREADY_ACTIVE",
+        `Reconciliation job ${existingReconciliation.id} already owns this target.`,
+        409,
+      );
+    }
+  }
   if (planDigest) {
     const duplicatePlan = await prisma.channelMaxAgentJob.findUnique({
       where: { mutationPlanLock: planDigest },
@@ -611,8 +693,27 @@ export async function createChannelMaxAgentJob(
           idempotencyKey: input.idempotency_key,
           requestedBy,
           maxAttempts: input.max_attempts,
+          reconcilesJobId: reconciliationTarget?.id ?? null,
+          reconciliationTargetLock: reconciliationTarget?.id ?? null,
         },
       });
+      if (reconciliationTarget) {
+        const linked = await tx.channelMaxAgentJob.updateMany({
+          where: {
+            id: reconciliationTarget.id,
+            status: "AMBIGUOUS",
+            reconciledByJobId: null,
+          },
+          data: { reconciledByJobId: job.id },
+        });
+        if (linked.count !== 1) {
+          throw new ChannelMaxAgentServiceError(
+            "RECONCILIATION_LINK_RACE",
+            "Ambiguous mutation changed while reconciliation was queued.",
+            409,
+          );
+        }
+      }
       await appendStoredEvent(tx, job.id, {
         eventKey: `system:queued:${job.id}`,
         type: mutation ? "JOB_PENDING_APPROVAL" : "JOB_QUEUED",
@@ -677,6 +778,167 @@ export async function getChannelMaxAgentJob(id: string) {
     );
   }
   return publicJob(job);
+}
+
+export async function createChannelMaxReconciliationJob(
+  ambiguousJobId: string,
+  input: CreateChannelMaxReconciliationInput,
+  requestedBy: string,
+) {
+  const original = await prisma.channelMaxAgentJob.findUnique({
+    where: { id: ambiguousJobId },
+  });
+  if (!original) {
+    throw new ChannelMaxAgentServiceError(
+      "JOB_NOT_FOUND",
+      "Ambiguous ChannelMAX mutation job was not found.",
+      404,
+    );
+  }
+  const binding = uploadBindingFromJob(original);
+  return createChannelMaxAgentJob(
+    {
+      operation: "RECONCILE_MUTATION",
+      idempotency_key: input.idempotency_key,
+      priority: input.priority,
+      max_attempts: input.max_attempts,
+      payload: {
+        account_id: binding.account_id,
+        expected_active_rows: binding.expected_active_rows,
+        ambiguous_job_id: ambiguousJobId,
+        assignment_sha256: binding.assignment_sha256,
+        manual_model_id: binding.manual_model_id,
+        manual_model_name: binding.manual_model_name,
+        strategy: "UPLOAD_TASK_HISTORY_AND_INVENTORY_EXPORT",
+      },
+    },
+    requestedBy,
+  );
+}
+
+export async function cancelChannelMaxAgentJob(
+  id: string,
+  input: CancelChannelMaxAgentJobInput,
+  actorId: string,
+  now = new Date(),
+) {
+  const metadata = {
+    reason: input.reason,
+    cancelled_by: actorId,
+  };
+  const metadataSha = sha256Json(metadata);
+  const existing = await prisma.channelMaxAgentEvent.findUnique({
+    where: { jobId_eventKey: { jobId: id, eventKey: input.cancellation_key } },
+  });
+  if (existing) {
+    const job = await prisma.channelMaxAgentJob.findUnique({ where: { id } });
+    if (
+      !job ||
+      existing.type !== "JOB_CANCELLED" ||
+      existing.metadataSha256 !== metadataSha ||
+      job.status !== "CANCELLED"
+    ) {
+      throw new ChannelMaxAgentServiceError(
+        "CANCELLATION_IDEMPOTENCY_CONFLICT",
+        "cancellation_key is already bound to a different or incomplete action.",
+        409,
+      );
+    }
+    return {
+      ok: true,
+      idempotent_replay: true,
+      job: publicJob(job),
+      event: publicEvent(existing),
+    };
+  }
+
+  const cancelled = await prisma.$transaction(async (tx) => {
+    const job = await tx.channelMaxAgentJob.findUnique({ where: { id } });
+    if (!job) {
+      throw new ChannelMaxAgentServiceError(
+        "JOB_NOT_FOUND",
+        "ChannelMAX agent job was not found.",
+        404,
+      );
+    }
+    if (job.mutationStartedAt) {
+      throw new ChannelMaxAgentServiceError(
+        "CANCEL_AFTER_MUTATION_FENCE_FORBIDDEN",
+        "Mutation already crossed MUTATION_STARTED; cancel is forbidden and reconciliation is required.",
+        409,
+      );
+    }
+    if (!["PENDING_APPROVAL", "QUEUED", "RUNNING"].includes(job.status)) {
+      throw new ChannelMaxAgentServiceError(
+        "CANCELLATION_STATE_INVALID",
+        `Job status ${job.status} cannot be cancelled.`,
+        409,
+      );
+    }
+    const won = await tx.channelMaxAgentJob.updateMany({
+      where: {
+        id,
+        status: { in: ["PENDING_APPROVAL", "QUEUED", "RUNNING"] },
+        mutationStartedAt: null,
+        completedAt: null,
+      },
+      data: {
+        status: "CANCELLED",
+        cancelledAt: now,
+        cancelledBy: actorId,
+        cancellationReason: input.reason,
+        completedAt: now,
+        mutationPlanLock: null,
+        workerId: null,
+        workerActorId: null,
+        accountLeaseKey: null,
+        browserLeaseKey: null,
+        leaseTokenSha256: null,
+        leaseExpiresAt: null,
+        lastHeartbeatAt: null,
+        reconciliationTargetLock: null,
+      },
+    });
+    if (won.count !== 1) {
+      const latest = await tx.channelMaxAgentJob.findUnique({ where: { id } });
+      if (latest?.mutationStartedAt) {
+        throw new ChannelMaxAgentServiceError(
+          "CANCEL_AFTER_MUTATION_FENCE_FORBIDDEN",
+          "Mutation already crossed MUTATION_STARTED; cancel is forbidden and reconciliation is required.",
+          409,
+        );
+      }
+      throw new ChannelMaxAgentServiceError(
+        "CANCELLATION_STATE_INVALID",
+        `Job status ${latest?.status ?? "UNKNOWN"} cannot be cancelled.`,
+        409,
+      );
+    }
+    const updated = await tx.channelMaxAgentJob.findUniqueOrThrow({
+      where: { id },
+    });
+    if (job.reconcilesJobId) {
+      await tx.channelMaxAgentJob.updateMany({
+        where: { id: job.reconcilesJobId, reconciledByJobId: job.id },
+        data: { reconciledByJobId: null },
+      });
+    }
+    const event = await appendStoredEvent(tx, id, {
+      eventKey: input.cancellation_key,
+      type: "JOB_CANCELLED",
+      source: actorId,
+      message: input.reason,
+      metadata,
+      occurredAt: now,
+    });
+    return { updated, event };
+  });
+  return {
+    ok: true,
+    idempotent_replay: false,
+    job: publicJob(cancelled.updated),
+    event: publicEvent(cancelled.event),
+  };
 }
 
 export async function createChannelMaxPasswordStepUp(
@@ -1000,46 +1262,61 @@ async function expireOneJob(id: string, now: Date): Promise<boolean> {
       workerId: null,
       workerActorId: null,
       accountLeaseKey: null,
+      browserLeaseKey: null,
       leaseTokenSha256: null,
       leaseExpiresAt: null,
       lastHeartbeatAt: null,
     };
-    if (decision === "AMBIGUOUS") {
-      await tx.channelMaxAgentJob.update({
-        where: { id: job.id },
-        data: {
-          ...common,
-          status: "AMBIGUOUS",
-          mutationOutcome: "AMBIGUOUS",
-          ambiguityReason:
-            "Worker lease expired after MUTATION_STARTED; external state is unknown and automatic retry is forbidden.",
-          error:
-            "Mutation outcome is ambiguous. Read back ChannelMAX state before any new upload.",
-          completedAt: now,
-        },
-      });
-    } else if (decision === "REQUEUE") {
-      await tx.channelMaxAgentJob.update({
-        where: { id: job.id },
-        data: {
-          ...common,
-          status: "QUEUED",
-          queuedAt: now,
-          error: "Worker lease expired before a mutation fence; safely requeued.",
-        },
-      });
-    } else {
-      await tx.channelMaxAgentJob.update({
-        where: { id: job.id },
-        data: {
-          ...common,
-          status: "FAILED",
-          mutationOutcome: job.mutation
-            ? "CONFIRMED_NOT_APPLIED"
-            : null,
-          error: "Worker lease expired and maximum attempts were exhausted.",
-          completedAt: now,
-        },
+    const updateData =
+      decision === "AMBIGUOUS"
+        ? {
+            ...common,
+            status: "AMBIGUOUS",
+            mutationOutcome: "AMBIGUOUS",
+            ambiguityReason:
+              "Worker lease expired after MUTATION_STARTED; external state is unknown and automatic retry is forbidden.",
+            error:
+              "Mutation outcome is ambiguous. Read back ChannelMAX state before any new upload.",
+            completedAt: now,
+          }
+        : decision === "REQUEUE"
+          ? {
+              ...common,
+              status: "QUEUED",
+              queuedAt: now,
+              error:
+                "Worker lease expired before a mutation fence; safely requeued.",
+            }
+          : {
+              ...common,
+              status: "FAILED",
+              mutationOutcome: job.mutation
+                ? "CONFIRMED_NOT_APPLIED"
+                : null,
+              error: "Worker lease expired and maximum attempts were exhausted.",
+              completedAt: now,
+              mutationPlanLock: job.mutation ? null : job.mutationPlanLock,
+              reconciliationTargetLock: job.reconcilesJobId
+                ? null
+                : job.reconciliationTargetLock,
+            };
+    const won = await tx.channelMaxAgentJob.updateMany({
+      where: {
+        id: job.id,
+        status: "RUNNING",
+        leaseTokenSha256: job.leaseTokenSha256,
+        leaseExpiresAt: job.leaseExpiresAt,
+        attempts: job.attempts,
+        mutationStartedAt: job.mutationStartedAt,
+        mutationOutcome: job.mutationOutcome,
+      },
+      data: updateData,
+    });
+    if (won.count !== 1) return false;
+    if (decision === "FAILED" && job.reconcilesJobId) {
+      await tx.channelMaxAgentJob.updateMany({
+        where: { id: job.reconcilesJobId, reconciledByJobId: job.id },
+        data: { reconciledByJobId: null },
       });
     }
     await appendStoredEvent(tx, job.id, {
@@ -1090,6 +1367,7 @@ async function failJobWithInvalidApproval(id: string, now: Date): Promise<void> 
         error:
           "Independent owner approval is missing, expired, or no longer exactly matches the canonical mutation plan.",
         completedAt: now,
+        mutationPlanLock: null,
       },
     });
     await appendStoredEvent(tx, id, {
@@ -1126,10 +1404,15 @@ export async function claimChannelMaxAgentJob(
     });
     if (!candidate) return { claimed: false, reaped, job: null };
 
+    if (candidate.mutation) assertMutationExecutionReleaseGate();
+
     const accountBusy = await prisma.channelMaxAgentJob.findFirst({
       where: {
         status: "RUNNING",
-        accountLeaseKey: candidate.accountId,
+        OR: [
+          { accountLeaseKey: candidate.accountId },
+          { browserLeaseKey: CHANNELMAX_BROWSER_LEASE_KEY },
+        ],
       },
       select: { id: true },
     });
@@ -1163,6 +1446,7 @@ export async function claimChannelMaxAgentJob(
     let claimed: typeof candidate | null = null;
     try {
       claimed = await prisma.$transaction(async (tx) => {
+        if (candidate.mutation) assertMutationExecutionReleaseGate();
         const won = await tx.channelMaxAgentJob.updateMany({
           where: { id: candidate.id, status: "QUEUED" },
           data: {
@@ -1170,6 +1454,7 @@ export async function claimChannelMaxAgentJob(
             workerId: input.worker_id,
             workerActorId: actorId,
             accountLeaseKey: candidate.accountId,
+            browserLeaseKey: CHANNELMAX_BROWSER_LEASE_KEY,
             leaseTokenSha256: tokenSha256(leaseToken),
             leaseExpiresAt,
             lastHeartbeatAt: now,
@@ -1201,7 +1486,10 @@ export async function claimChannelMaxAgentJob(
       const lockWinner = await prisma.channelMaxAgentJob.findFirst({
         where: {
           status: "RUNNING",
-          accountLeaseKey: candidate.accountId,
+          OR: [
+            { accountLeaseKey: candidate.accountId },
+            { browserLeaseKey: CHANNELMAX_BROWSER_LEASE_KEY },
+          ],
         },
         select: { id: true },
       });
@@ -1287,6 +1575,256 @@ async function requireActiveLease(
     );
   }
   return job;
+}
+
+function managedEvidencePublicRef(evidence: {
+  kind: string;
+  sha256: string;
+  byteSize: number;
+  mediaType: string;
+  capturedAt: Date;
+  uri: string;
+}): ChannelMaxEvidenceRef {
+  return {
+    kind: evidence.kind as ChannelMaxEvidenceRef["kind"],
+    sha256: evidence.sha256,
+    byte_size: evidence.byteSize,
+    media_type: evidence.mediaType,
+    captured_at: evidence.capturedAt.toISOString(),
+    uri: evidence.uri,
+  };
+}
+
+async function assertManagedEvidenceRefs(
+  client: Pick<Prisma.TransactionClient, "channelMaxAgentEvidence">,
+  jobId: string,
+  refs: ChannelMaxEvidenceRef[],
+): Promise<void> {
+  if (refs.length === 0) return;
+  if (refs.some((ref) => !ref.uri)) {
+    throw new ChannelMaxAgentServiceError(
+      "MANAGED_EVIDENCE_REQUIRED",
+      "Every evidence reference must use an SSCC-managed immutable HTTPS URI.",
+      409,
+    );
+  }
+  const uris = refs.map((ref) => ref.uri as string);
+  const rows = await client.channelMaxAgentEvidence.findMany({
+    where: { jobId, uri: { in: uris } },
+  });
+  const byUri = new Map(rows.map((row) => [row.uri, row]));
+  for (const ref of refs) {
+    const row = byUri.get(ref.uri as string);
+    const computedSha = row
+      ? createHash("sha256").update(row.content).digest("hex")
+      : null;
+    if (
+      !row ||
+      row.kind !== ref.kind ||
+      row.sha256 !== ref.sha256 ||
+      computedSha !== ref.sha256 ||
+      row.byteSize !== ref.byte_size ||
+      row.content.byteLength !== ref.byte_size ||
+      row.mediaType !== ref.media_type.toLowerCase() ||
+      row.capturedAt.toISOString() !== ref.captured_at
+    ) {
+      throw new ChannelMaxAgentServiceError(
+        "MANAGED_EVIDENCE_MISMATCH",
+        "Evidence metadata does not exactly match immutable bytes stored by SSCC for this job.",
+        409,
+      );
+    }
+  }
+}
+
+export async function storeChannelMaxAgentEvidence(
+  id: string,
+  input: ChannelMaxManagedEvidenceUploadInput,
+  content: Uint8Array,
+  actorId: string,
+  evidenceBaseUrl: string,
+  now = new Date(),
+) {
+  if (
+    content.byteLength < 1 ||
+    content.byteLength > CHANNELMAX_MANAGED_EVIDENCE_MAX_BYTES
+  ) {
+    throw new ChannelMaxAgentServiceError(
+      "EVIDENCE_SIZE_INVALID",
+      `Managed evidence must contain 1-${CHANNELMAX_MANAGED_EVIDENCE_MAX_BYTES} bytes.`,
+      413,
+    );
+  }
+  let base: URL;
+  try {
+    base = new URL(evidenceBaseUrl);
+  } catch {
+    throw new ChannelMaxAgentServiceError(
+      "EVIDENCE_BASE_URL_INVALID",
+      "Managed evidence storage requires a valid HTTPS SSCC base URL.",
+      503,
+    );
+  }
+  if (base.protocol !== "https:" || base.username || base.password) {
+    throw new ChannelMaxAgentServiceError(
+      "EVIDENCE_BASE_URL_INVALID",
+      "Managed evidence storage requires an HTTPS SSCC base URL without embedded credentials.",
+      503,
+    );
+  }
+
+  const active = await requireActiveLease(
+    id,
+    input.lease_token,
+    actorId,
+    now,
+  );
+  try {
+    await assertChannelMaxManagedEvidenceContent(input, content, active);
+  } catch (error) {
+    if (error instanceof ChannelMaxEvidenceContentError) {
+      throw new ChannelMaxAgentServiceError(error.code, error.message, 400);
+    }
+    throw error;
+  }
+  const sha256 = createHash("sha256").update(content).digest("hex");
+  const capturedAt = new Date(input.captured_at);
+  const existing = await prisma.channelMaxAgentEvidence.findUnique({
+    where: { jobId_kind_sha256: { jobId: id, kind: input.kind, sha256 } },
+  });
+  if (existing) {
+    if (
+      existing.uploadedBy !== actorId ||
+      existing.mediaType !== input.media_type ||
+      existing.byteSize !== content.byteLength ||
+      existing.capturedAt.toISOString() !== input.captured_at ||
+      createHash("sha256").update(existing.content).digest("hex") !== sha256
+    ) {
+      throw new ChannelMaxAgentServiceError(
+        "EVIDENCE_IDEMPOTENCY_CONFLICT",
+        "The same job/kind/digest evidence key already has different immutable metadata.",
+        409,
+      );
+    }
+    return {
+      ok: true,
+      idempotent_replay: true,
+      job_id: id,
+      evidence: managedEvidencePublicRef(existing),
+    };
+  }
+
+  const evidenceId = randomUUID();
+  const uri = new URL(
+    `/api/openclaw/channelmax/jobs/${encodeURIComponent(id)}/evidence/${encodeURIComponent(evidenceId)}`,
+    base.origin,
+  ).toString();
+  try {
+    const stored = await prisma.$transaction(async (tx) => {
+      const current = await tx.channelMaxAgentJob.findUnique({
+        where: { id },
+      });
+      if (
+        !current ||
+        current.status !== "RUNNING" ||
+        current.workerActorId !== actorId ||
+        current.leaseTokenSha256 !== active.leaseTokenSha256 ||
+        !current.leaseExpiresAt ||
+        current.leaseExpiresAt.getTime() <= now.getTime()
+      ) {
+        throw new ChannelMaxAgentServiceError(
+          "LEASE_LOST",
+          "Worker lease changed before managed evidence could be stored.",
+          409,
+        );
+      }
+      const usage = await tx.channelMaxAgentEvidence.aggregate({
+        where: { jobId: id },
+        _count: { _all: true },
+        _sum: { byteSize: true },
+      });
+      if (
+        usage._count._all >=
+          CHANNELMAX_MANAGED_EVIDENCE_MAX_ITEMS_PER_JOB ||
+        (usage._sum.byteSize ?? 0) + content.byteLength >
+          CHANNELMAX_MANAGED_EVIDENCE_MAX_TOTAL_BYTES_PER_JOB
+      ) {
+        throw new ChannelMaxAgentServiceError(
+          "EVIDENCE_JOB_QUOTA_EXCEEDED",
+          "Managed evidence exceeds the per-job item or byte quota.",
+          413,
+        );
+      }
+      return tx.channelMaxAgentEvidence.create({
+        data: {
+          id: evidenceId,
+          jobId: id,
+          kind: input.kind,
+          sha256,
+          byteSize: content.byteLength,
+          mediaType: input.media_type,
+          capturedAt,
+          uri,
+          content: Uint8Array.from(content),
+          uploadedBy: actorId,
+        },
+      });
+    });
+    return {
+      ok: true,
+      idempotent_replay: false,
+      job_id: id,
+      evidence: managedEvidencePublicRef(stored),
+    };
+  } catch (error) {
+    const winner = await prisma.channelMaxAgentEvidence.findUnique({
+      where: { jobId_kind_sha256: { jobId: id, kind: input.kind, sha256 } },
+    });
+    if (
+      winner &&
+      winner.uploadedBy === actorId &&
+      winner.mediaType === input.media_type &&
+      winner.byteSize === content.byteLength &&
+      winner.capturedAt.toISOString() === input.captured_at &&
+      createHash("sha256").update(winner.content).digest("hex") === sha256
+    ) {
+      return {
+        ok: true,
+        idempotent_replay: true,
+        job_id: id,
+        evidence: managedEvidencePublicRef(winner),
+      };
+    }
+    throw error;
+  }
+}
+
+export async function getChannelMaxAgentEvidence(
+  jobId: string,
+  evidenceId: string,
+) {
+  const evidence = await prisma.channelMaxAgentEvidence.findFirst({
+    where: { id: evidenceId, jobId },
+  });
+  if (!evidence) {
+    throw new ChannelMaxAgentServiceError(
+      "EVIDENCE_NOT_FOUND",
+      "Managed ChannelMAX evidence was not found for this job.",
+      404,
+    );
+  }
+  const computedSha = createHash("sha256").update(evidence.content).digest("hex");
+  if (
+    computedSha !== evidence.sha256 ||
+    evidence.content.byteLength !== evidence.byteSize
+  ) {
+    throw new ChannelMaxAgentServiceError(
+      "EVIDENCE_INTEGRITY_FAILURE",
+      "Stored ChannelMAX evidence failed its server-side integrity check.",
+      500,
+    );
+  }
+  return evidence;
 }
 
 export async function heartbeatChannelMaxAgentJob(
@@ -1402,6 +1940,9 @@ export async function appendChannelMaxAgentEvent(
       404,
     );
   }
+  if (input.type === "MUTATION_STARTED") {
+    assertMutationExecutionReleaseGate();
+  }
   const metadata = workerEventMetadata(input, preflight);
   const metadataSha = sha256Json(metadata);
   const evidenceSha = sha256Json(input.evidence);
@@ -1424,6 +1965,7 @@ export async function appendChannelMaxAgentEvent(
     // lease or exact approval has expired, even though ordinary audit-event
     // replays remain readable after a job becomes terminal.
     if (input.type === "MUTATION_STARTED") {
+      assertMutationExecutionReleaseGate();
       const active = await requireActiveLease(
         id,
         input.lease_token,
@@ -1478,6 +2020,10 @@ export async function appendChannelMaxAgentEvent(
         409,
       );
     }
+    if (input.type === "MUTATION_STARTED") {
+      assertMutationExecutionReleaseGate();
+    }
+    await assertManagedEvidenceRefs(tx, id, input.evidence);
     const prior = await tx.channelMaxAgentEvent.findUnique({
       where: { jobId_eventKey: { jobId: id, eventKey: input.event_key } },
     });
@@ -1546,6 +2092,28 @@ export async function appendChannelMaxAgentEvent(
       job.mutationOutcome != null &&
       reportedOutcome !== job.mutationOutcome;
 
+    if (input.type === "MUTATION_STARTED") {
+      const fenced = await tx.channelMaxAgentJob.updateMany({
+        where: {
+          id,
+          status: "RUNNING",
+          leaseTokenSha256: job.leaseTokenSha256,
+          workerActorId: actorId,
+          leaseExpiresAt: job.leaseExpiresAt,
+          mutationStartedAt: null,
+          mutationOutcome: null,
+        },
+        data: { mutationStartedAt: new Date(input.occurred_at) },
+      });
+      if (fenced.count !== 1) {
+        throw new ChannelMaxAgentServiceError(
+          "MUTATION_FENCE_RACE_LOST",
+          "Job state changed before MUTATION_STARTED could be fenced; do not perform the external click.",
+          409,
+        );
+      }
+    }
+
     const event = await appendStoredEvent(tx, id, {
       eventKey: input.event_key,
       type: input.type,
@@ -1557,12 +2125,7 @@ export async function appendChannelMaxAgentEvent(
     });
 
     let status = job.status;
-    if (input.type === "MUTATION_STARTED") {
-      await tx.channelMaxAgentJob.update({
-        where: { id },
-        data: { mutationStartedAt: new Date(input.occurred_at) },
-      });
-    } else if (input.type === "MUTATION_AMBIGUOUS" || conflictingOutcome) {
+    if (input.type === "MUTATION_AMBIGUOUS" || conflictingOutcome) {
       status = "AMBIGUOUS";
       await tx.channelMaxAgentJob.update({
         where: { id },
@@ -1580,6 +2143,7 @@ export async function appendChannelMaxAgentEvent(
           workerId: null,
           workerActorId: null,
           accountLeaseKey: null,
+          browserLeaseKey: null,
           leaseTokenSha256: null,
           leaseExpiresAt: null,
           lastHeartbeatAt: null,
@@ -1688,6 +2252,119 @@ function assertExactSuccessfulUploadResult(
   }
 }
 
+function validateReconciliationCompletion(
+  job: {
+    id: string;
+    operation: string;
+    reconcilesJobId: string | null;
+    payloadJson: string;
+  },
+  input: CompleteChannelMaxAgentJobInput,
+): "CONFIRMED_APPLIED" | "CONFIRMED_NOT_APPLIED" | "STILL_AMBIGUOUS" | null {
+  if (job.operation !== "RECONCILE_MUTATION") return null;
+  const payload = parseStoredJson(job.payloadJson) as {
+    ambiguous_job_id?: unknown;
+    assignment_sha256?: unknown;
+    expected_active_rows?: unknown;
+    manual_model_id?: unknown;
+  } | null;
+  const resolution = input.result.resolution;
+  if (
+    !job.reconcilesJobId ||
+    !payload ||
+    payload.ambiguous_job_id !== job.reconcilesJobId ||
+    input.result.ambiguous_job_id !== job.reconcilesJobId ||
+    input.result.assignment_sha256 !== payload.assignment_sha256 ||
+    input.result.manual_model_id !== payload.manual_model_id ||
+    input.result.rows_expected !== payload.expected_active_rows ||
+    !Number.isInteger(input.result.rows_observed) ||
+    (input.result.rows_observed as number) < 0 ||
+    ![
+      "CONFIRMED_APPLIED",
+      "CONFIRMED_NOT_APPLIED",
+      "STILL_AMBIGUOUS",
+    ].includes(String(resolution))
+  ) {
+    throw new ChannelMaxAgentServiceError(
+      "RECONCILIATION_RESULT_INVALID",
+      "Reconciliation result is not exactly bound to the ambiguous mutation.",
+      409,
+    );
+  }
+  if (
+    !input.evidence.some(
+      (item) =>
+        (item.kind === "SCREENSHOT" || item.kind === "DOM_SNAPSHOT") &&
+        item.uri,
+    ) ||
+    !input.evidence.some(
+      (item) => item.kind === "INVENTORY_EXPORT" && item.uri,
+    )
+  ) {
+    throw new ChannelMaxAgentServiceError(
+      "RECONCILIATION_EVIDENCE_INCOMPLETE",
+      "Reconciliation requires visual and inventory-export evidence references.",
+      409,
+    );
+  }
+  if (
+    resolution === "CONFIRMED_APPLIED" &&
+    input.result.rows_observed !== payload.expected_active_rows
+  ) {
+    throw new ChannelMaxAgentServiceError(
+      "RECONCILIATION_ROW_COUNT_MISMATCH",
+      "Applied reconciliation must observe every approved row.",
+      409,
+    );
+  }
+  if (
+    resolution !== "STILL_AMBIGUOUS" &&
+    !MANAGED_MUTATION_EVIDENCE_IMPLEMENTED
+  ) {
+    throw new ChannelMaxAgentServiceError(
+      "MANAGED_EVIDENCE_REQUIRED",
+      "Metadata-only worker evidence cannot resolve an ambiguous mutation; managed SSCC evidence bytes are required.",
+      409,
+    );
+  }
+  return resolution as
+    | "CONFIRMED_APPLIED"
+    | "CONFIRMED_NOT_APPLIED"
+    | "STILL_AMBIGUOUS";
+}
+
+function assertReadOnlySuccessEvidence(
+  operation: string,
+  input: CompleteChannelMaxAgentJobInput,
+): void {
+  if (input.status !== "SUCCEEDED") return;
+  if (operation === "EXPORT_INVENTORY") {
+    if (!input.evidence.some((item) => item.kind === "INVENTORY_EXPORT")) {
+      throw new ChannelMaxAgentServiceError(
+        "READ_ONLY_EVIDENCE_INCOMPLETE",
+        "A successful inventory export requires managed INVENTORY_EXPORT evidence.",
+        409,
+      );
+    }
+    return;
+  }
+  if (operation === "RECONCILE_MUTATION") return;
+  if (
+    !input.evidence.some(
+      (item) =>
+        item.kind === "SCREENSHOT" ||
+        item.kind === "DOM_SNAPSHOT" ||
+        item.kind === "INVENTORY_EXPORT",
+    )
+  ) {
+    throw new ChannelMaxAgentServiceError(
+      "READ_ONLY_EVIDENCE_INCOMPLETE",
+      "A successful read-only ChannelMAX job requires managed visual or inventory evidence.",
+      409,
+    );
+  }
+}
+
 export async function completeChannelMaxAgentJob(
   id: string,
   input: CompleteChannelMaxAgentJobInput,
@@ -1767,12 +2444,20 @@ export async function completeChannelMaxAgentJob(
       );
     }
 
+    await assertManagedEvidenceRefs(tx, id, input.evidence);
+    if (!job.mutation) assertReadOnlySuccessEvidence(job.operation, input);
+
     const decision = deriveTerminalDecision({
       mutation: job.mutation,
       mutationStarted: job.mutationStartedAt != null,
       operation: job.operation as ChannelMaxAgentOperation,
       completion: input,
     });
+    const reconciliationResolution =
+      job.operation === "RECONCILE_MUTATION" &&
+      decision.status === "SUCCEEDED"
+        ? validateReconciliationCompletion(job, input)
+        : null;
     if (job.mutation && decision.status === "SUCCEEDED") {
       if (!(await hasSealedCurrentApproval(tx, job, now))) {
         throw new ChannelMaxAgentServiceError(
@@ -1816,8 +2501,14 @@ export async function completeChannelMaxAgentJob(
       evidence: input.evidence,
       occurredAt: now,
     });
-    const updated = await tx.channelMaxAgentJob.update({
-      where: { id },
+    const won = await tx.channelMaxAgentJob.updateMany({
+      where: {
+        id,
+        status: "RUNNING",
+        leaseTokenSha256: job.leaseTokenSha256,
+        workerActorId: actorId,
+        leaseExpiresAt: job.leaseExpiresAt,
+      },
       data: {
         status: decision.status,
         mutationOutcome: decision.mutationOutcome,
@@ -1830,11 +2521,70 @@ export async function completeChannelMaxAgentJob(
         workerId: null,
         workerActorId: null,
         accountLeaseKey: null,
+        browserLeaseKey: null,
         leaseTokenSha256: null,
         leaseExpiresAt: null,
         lastHeartbeatAt: null,
+        ...(job.mutation &&
+        decision.mutationOutcome === "CONFIRMED_NOT_APPLIED"
+          ? { mutationPlanLock: null }
+          : {}),
+        ...(job.reconcilesJobId ? { reconciliationTargetLock: null } : {}),
       },
     });
+    if (won.count !== 1) {
+      throw new ChannelMaxAgentServiceError(
+        "COMPLETION_STATE_RACE_LOST",
+        "Job state changed before completion could commit; reload the job before taking any further action.",
+        409,
+      );
+    }
+    const updated = await tx.channelMaxAgentJob.findUniqueOrThrow({
+      where: { id },
+    });
+    if (job.reconcilesJobId) {
+      const resolutionEventKey = `reconciliation:${job.id}:${input.completion_key}`;
+      await appendStoredEvent(tx, job.reconcilesJobId, {
+        eventKey: resolutionEventKey,
+        type: `RECONCILIATION_${reconciliationResolution ?? "FAILED"}`,
+        source: job.workerActorId ?? actorId,
+        message: input.message,
+        metadata: {
+          reconciliation_job_id: job.id,
+          resolution: reconciliationResolution,
+          result: input.result,
+        },
+        evidence: input.evidence,
+        occurredAt: now,
+      });
+      if (
+        decision.status !== "SUCCEEDED" ||
+        reconciliationResolution === "STILL_AMBIGUOUS"
+      ) {
+        await tx.channelMaxAgentJob.updateMany({
+          where: { id: job.reconcilesJobId, reconciledByJobId: job.id },
+          data: { reconciledByJobId: null },
+        });
+      } else if (reconciliationResolution) {
+        const confirmedApplied =
+          reconciliationResolution === "CONFIRMED_APPLIED";
+        await tx.channelMaxAgentJob.update({
+          where: { id: job.reconcilesJobId },
+          data: {
+            status: confirmedApplied ? "SUCCEEDED" : "FAILED",
+            mutationOutcome: confirmedApplied
+              ? "CONFIRMED_APPLIED"
+              : "CONFIRMED_NOT_APPLIED",
+            ambiguityReason: null,
+            error: confirmedApplied
+              ? null
+              : "Durable reconciliation confirmed the mutation was not applied.",
+            completedAt: now,
+            mutationPlanLock: confirmedApplied ? undefined : null,
+          },
+        });
+      }
+    }
     return { updated, event };
   });
   return {
@@ -1850,7 +2600,19 @@ export function channelMaxAgentCapabilities() {
     operations: CHANNELMAX_AGENT_OPERATIONS,
     arbitrary_browser_commands: false,
     arbitrary_javascript: false,
+    managed_evidence: {
+      implemented: MANAGED_MUTATION_EVIDENCE_IMPLEMENTED,
+      max_bytes: CHANNELMAX_MANAGED_EVIDENCE_MAX_BYTES,
+      max_items_per_job: CHANNELMAX_MANAGED_EVIDENCE_MAX_ITEMS_PER_JOB,
+      max_total_bytes_per_job:
+        CHANNELMAX_MANAGED_EVIDENCE_MAX_TOTAL_BYTES_PER_JOB,
+      immutable_server_computed_digest: true,
+      active_worker_lease_required: true,
+      protected_download: true,
+    },
     mutation_approval: {
+      enabled: channelMaxMutationApprovalEnabled(),
+      production_release_gate: MUTATION_APPROVAL_PRODUCTION_READY,
       create_status: "PENDING_APPROVAL",
       approval_endpoint_requires_real_admin_session: true,
       bearer_tokens_can_approve: false,

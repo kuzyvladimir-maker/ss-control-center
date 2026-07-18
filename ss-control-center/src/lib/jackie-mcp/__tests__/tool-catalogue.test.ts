@@ -70,11 +70,16 @@ test("every write tool is flagged write=true; every read tool is write=false", (
     "draft_validate",
     "draft_publish",
     "walmart_return_refund",
+    "walmart_update_price",
+    "walmart_update_item",
+    "walmart_buy_label",
+    "walmart_inventory_update",
+    "walmart_catalog_refresh",
+    "walmart_order_ship",
+    "walmart_order_cancel",
     "channelmax_job_create",
-    "channelmax_job_claim",
-    "channelmax_job_event",
-    "channelmax_job_heartbeat",
-    "channelmax_job_complete",
+    "channelmax_job_cancel",
+    "channelmax_job_reconcile",
   ]);
   for (const t of ALL) {
     if (writeNames.has(t.name)) {
@@ -117,10 +122,8 @@ test("required tool names present", () => {
     "channelmax_capabilities",
     "channelmax_job_create",
     "channelmax_job_get",
-    "channelmax_job_claim",
-    "channelmax_job_event",
-    "channelmax_job_heartbeat",
-    "channelmax_job_complete",
+    "channelmax_job_cancel",
+    "channelmax_job_reconcile",
   ];
   for (const name of required) {
     assert.ok(ALL.some((t) => t.name === name), `missing tool: ${name}`);

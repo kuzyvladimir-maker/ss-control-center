@@ -1346,6 +1346,12 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     ]
   },
   {
+    "path": "/api/openclaw/channelmax/jobs/[id]/cancel",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
     "path": "/api/openclaw/channelmax/jobs/[id]/complete",
     "methods": [
       "POST"
@@ -1358,7 +1364,31 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     ]
   },
   {
+    "path": "/api/openclaw/channelmax/jobs/[id]/evidence",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/openclaw/channelmax/jobs/[id]/evidence/[evidenceId]",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
     "path": "/api/openclaw/channelmax/jobs/[id]/heartbeat",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/openclaw/channelmax/jobs/[id]/reconcile",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/openclaw/channelmax/jobs/[id]/step-up",
     "methods": [
       "POST"
     ]
@@ -1837,4 +1867,4 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
   }
 ];
 
-export const REST_ENDPOINTS_COUNT = 291;
+export const REST_ENDPOINTS_COUNT = 296;

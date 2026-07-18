@@ -182,6 +182,13 @@ export interface ChannelMaxEvidenceRef {
   uri?: string;
 }
 
+export interface ChannelMaxManagedEvidenceUploadInput {
+  lease_token: string;
+  kind: ChannelMaxEvidenceKind;
+  media_type: string;
+  captured_at: string;
+}
+
 export interface ChannelMaxWorkerEventInput {
   event_key: string;
   lease_token: string;
@@ -840,6 +847,38 @@ function leaseToken(value: unknown): string {
     max: 64,
     pattern: /^[a-f0-9]{64}$/,
   });
+}
+
+export function parseChannelMaxManagedEvidenceUpload(
+  value: unknown,
+  now = new Date(),
+): ChannelMaxManagedEvidenceUploadInput {
+  const raw = record(value, "managed evidence metadata");
+  exactKeys(
+    raw,
+    ["lease_token", "kind", "media_type", "captured_at"],
+    "managed evidence metadata",
+  );
+  if (
+    typeof raw.kind !== "string" ||
+    !(CHANNELMAX_EVIDENCE_KINDS as readonly string[]).includes(raw.kind)
+  ) {
+    throw new ChannelMaxContractError(
+      `kind must be one of: ${CHANNELMAX_EVIDENCE_KINDS.join(", ")}.`,
+    );
+  }
+  const capturedAt = canonicalInstant(raw.captured_at, "captured_at");
+  if (Math.abs(Date.parse(capturedAt) - now.getTime()) > 15 * 60_000) {
+    throw new ChannelMaxContractError(
+      "captured_at must be within 15 minutes of the managed upload.",
+    );
+  }
+  return {
+    lease_token: leaseToken(raw.lease_token),
+    kind: raw.kind as ChannelMaxEvidenceKind,
+    media_type: mediaType(raw.media_type, "media_type").toLowerCase(),
+    captured_at: capturedAt,
+  };
 }
 
 export function parseChannelMaxWorkerEvent(

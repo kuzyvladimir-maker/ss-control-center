@@ -2,7 +2,7 @@
  * Secondary navigation for the Bundle Factory section.
  *
  * Phase 7: trimmed to the simple operator path — Overview (create) ·
- * In progress · Published · Settings. The advanced/internal pages
+ * In progress · Published · ChannelMAX · Settings. The advanced/internal pages
  * (Master Bundles, Audit, Compliance, Stores, Briefs) still exist by URL
  * and are linked from the Overview "At a glance" strip; they're kept out
  * of the top nav so the section reads as one straight flow.
@@ -23,6 +23,7 @@ const ITEMS: SubNavItem[] = [
   { href: "/bundle-factory", label: "Overview" },
   { href: "/bundle-factory/drafts", label: "In progress" },
   { href: "/bundle-factory/live", label: "Published" },
+  { href: "/bundle-factory/channelmax", label: "ChannelMAX" },
   { href: "/bundle-factory/settings", label: "Settings" },
 ];
 

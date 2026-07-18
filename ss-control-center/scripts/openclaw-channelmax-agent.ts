@@ -1,24 +1,13 @@
 /**
- * Local, fail-closed bridge to a dedicated OpenClaw ChannelMAX agent.
+ * Retired, fail-closed compatibility CLI for the former direct OpenClaw
+ * ChannelMAX bridge.
  *
- * This script never loads or mutates OpenClaw global config. It only calls the
- * explicitly configured Gateway Responses endpoint. Gateway credentials come
- * from the environment, never from a command-line flag.
+ * This script never loads or mutates OpenClaw global config and no longer
+ * calls the Gateway Responses endpoint. Legacy options remain only so old
+ * callers receive an explicit fail-closed error.
  *
- * Safe default (read-only audit, non-streaming):
- *   OPENCLAW_GATEWAY_TOKEN=... npx tsx scripts/openclaw-channelmax-agent.ts
- *
- * Prepare an exact plan:
- *   npx tsx scripts/openclaw-channelmax-agent.ts prepare \
- *     --job-id=channelmax-20260718-001 --message="Prepare the Manual-model canary"
- *
- * Commit an already sealed plan (approval proof is hashed before transmission):
- *   OPENCLAW_CHANNELMAX_APPROVAL_TOKEN=... npx tsx scripts/openclaw-channelmax-agent.ts commit \
- *     --job-id=channelmax-20260718-001 --plan-sha256=<64 hex>
- *
- * Check the same job without mutation:
- *   npx tsx scripts/openclaw-channelmax-agent.ts status \
- *     --job-id=channelmax-20260718-001
+ * All actions fail before network dispatch. Read-only work and any future
+ * mutations must use the durable SS Command Center ChannelMAX queue.
  */
 
 import { readFile } from "node:fs/promises";
@@ -54,7 +43,8 @@ function usage(): string {
   return [
     "Usage: npx tsx scripts/openclaw-channelmax-agent.ts [audit|prepare|commit|status] [options]",
     "",
-    "No action defaults to the read-only audit action.",
+    "RETIRED: audit, prepare, status, and commit all fail before network dispatch.",
+    "Use the durable SSCC ChannelMAX queue and managed iMac worker instead.",
     "",
     "Options:",
     `  --url=URL                     Gateway URL (default env OPENCLAW_GATEWAY_URL or ${DEFAULT_OPENCLAW_GATEWAY_URL}).`,

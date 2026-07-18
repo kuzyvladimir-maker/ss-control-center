@@ -113,8 +113,10 @@ test("independent approval contract binds the complete canonical plan", () => {
       assignment_sha256: DIGEST,
       payload_sha256: "c".repeat(64),
       request_sha256: "d".repeat(64),
+      mutation_plan_sha256: "e".repeat(64),
       expires_at: "2026-07-18T20:00:00.000Z",
       nonce: "owner-approval-nonce-0001",
+      step_up_assertion_id: "step-up-assertion-0001",
     },
     new Date("2026-07-18T19:00:00.000Z"),
   );

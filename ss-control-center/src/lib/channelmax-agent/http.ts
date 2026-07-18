@@ -42,6 +42,43 @@ export async function readChannelMaxJson(request: Request): Promise<unknown> {
   }
 }
 
+export function channelMaxEvidenceBaseUrl(request: NextRequest): string {
+  const canonicalEvidenceBase = process.env.CHANNELMAX_EVIDENCE_BASE_URL;
+  const configured =
+    canonicalEvidenceBase ??
+    process.env.NEXT_PUBLIC_BASE_URL ??
+    process.env.NEXT_PUBLIC_APP_URL;
+  if (
+    !canonicalEvidenceBase?.trim() &&
+    process.env.NODE_ENV === "production"
+  ) {
+    throw new ChannelMaxAgentServiceError(
+      "EVIDENCE_BASE_URL_NOT_CONFIGURED",
+      "Set CHANNELMAX_EVIDENCE_BASE_URL to the canonical public HTTPS SSCC origin.",
+      503,
+    );
+  }
+  const candidate = configured?.trim() || request.nextUrl.origin;
+  let parsed: URL;
+  try {
+    parsed = new URL(candidate);
+  } catch {
+    throw new ChannelMaxAgentServiceError(
+      "EVIDENCE_BASE_URL_INVALID",
+      "Set CHANNELMAX_EVIDENCE_BASE_URL to the public HTTPS SSCC origin.",
+      503,
+    );
+  }
+  if (parsed.protocol !== "https:" || parsed.username || parsed.password) {
+    throw new ChannelMaxAgentServiceError(
+      "EVIDENCE_BASE_URL_INVALID",
+      "Set CHANNELMAX_EVIDENCE_BASE_URL to the public HTTPS SSCC origin.",
+      503,
+    );
+  }
+  return parsed.origin;
+}
+
 export function channelMaxErrorResponse(error: unknown): NextResponse {
   if (error instanceof ChannelMaxContractError) {
     return NextResponse.json(

@@ -11,10 +11,8 @@ const expectedTools = [
   "channelmax_capabilities",
   "channelmax_job_create",
   "channelmax_job_get",
-  "channelmax_job_claim",
-  "channelmax_job_event",
-  "channelmax_job_heartbeat",
-  "channelmax_job_complete",
+  "channelmax_job_cancel",
+  "channelmax_job_reconcile",
 ];
 
 test("ChannelMAX Jackie surface exposes only the intended durable tools", () => {
@@ -34,6 +32,21 @@ test("ChannelMAX Jackie surface cannot grant mutation approval", () => {
   assert.match(source, /PENDING_APPROVAL/);
 });
 
+test("Jackie MCP exposes no ChannelMAX worker execution primitives", () => {
+  for (const forbidden of [
+    "channelmax_job_claim",
+    "channelmax_job_event",
+    "channelmax_job_heartbeat",
+    "channelmax_job_complete",
+    "claimChannelMaxAgentJob",
+    "appendChannelMaxAgentEvent",
+    "heartbeatChannelMaxAgentJob",
+    "completeChannelMaxAgentJob",
+  ]) {
+    assert.equal(source.includes(forbidden), false, `unexpected ${forbidden}`);
+  }
+});
+
 test("ChannelMAX Jackie surface has no arbitrary browser-command primitive", () => {
   for (const forbiddenField of [
     "browser_command",
@@ -47,4 +60,13 @@ test("ChannelMAX Jackie surface has no arbitrary browser-command primitive", () 
       `unexpected arbitrary browser field: ${forbiddenField}`,
     );
   }
+});
+
+test("reconciliation is derived from an ambiguous job, not freely created", () => {
+  assert.match(
+    source,
+    /!createOperationEnum\.includes\(input\.operation\)/,
+  );
+  assert.match(source, /createChannelMaxReconciliationJob/);
+  assert.match(source, /parseCreateChannelMaxReconciliation/);
 });

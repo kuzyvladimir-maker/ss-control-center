@@ -2195,31 +2195,31 @@ model EnrichmentJob {
 model ChannelMaxAgentJob {
   id String @id @default(cuid())
 
-  operation      String
-  mutation       Boolean @default(false)
-  status         String  @default("QUEUED") // PENDING_APPROVAL | QUEUED | RUNNING | SUCCEEDED | FAILED | AMBIGUOUS
-  priority       Int     @default(0)
-  accountId      String
-  payloadJson    String
-  payloadSha256  String
-  requestSha256  String
+  operation          String
+  mutation           Boolean @default(false)
+  status             String  @default("QUEUED") // PENDING_APPROVAL | QUEUED | RUNNING | SUCCEEDED | FAILED | AMBIGUOUS
+  priority           Int     @default(0)
+  accountId          String
+  payloadJson        String
+  payloadSha256      String
+  requestSha256      String
   mutationPlanSha256 String?
   mutationPlanLock   String? @unique
-  idempotencyKey String  @unique
-  requestedBy    String
+  idempotencyKey     String  @unique
+  requestedBy        String
 
   // Mutation commands are accepted only with an exact owner-approved
   // assignment digest. Read-only commands keep these fields null/false.
-  ownerApproved            Boolean   @default(false)
-  ownerApprovedBy          String?
-  ownerApprovedById        String?
-  ownerApprovedAt          DateTime?
-  assignmentArtifactSha256 String?
-  approvalSubjectJson      String?
-  approvalSha256           String?
-  approvalExpiresAt        DateTime?
-  approvalNonce            String?   @unique
-  approvalStepUpAssertionId String?  @unique
+  ownerApproved             Boolean   @default(false)
+  ownerApprovedBy           String?
+  ownerApprovedById         String?
+  ownerApprovedAt           DateTime?
+  assignmentArtifactSha256  String?
+  approvalSubjectJson       String?
+  approvalSha256            String?
+  approvalExpiresAt         DateTime?
+  approvalNonce             String?   @unique
+  approvalStepUpAssertionId String?   @unique
   approvalStepUpMethod      String?
   approvalStepUpCeremonyId  String?
   approvalStepUpVerifiedAt  DateTime?
@@ -2240,11 +2240,12 @@ model ChannelMaxAgentJob {
   ambiguityReason   String?
   eventSequence     Int       @default(0)
 
-  cancelledAt     DateTime?
-  cancelledBy     String?
-  cancellationReason String?
-  reconcilesJobId   String?
-  reconciledByJobId String?
+  cancelledAt              DateTime?
+  cancelledBy              String?
+  cancellationReason       String?
+  reconcilesJobId          String?
+  reconciliationTargetLock String?   @unique
+  reconciledByJobId        String?
 
   resultJson   String?
   resultSha256 String?
@@ -2256,7 +2257,8 @@ model ChannelMaxAgentJob {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  events ChannelMaxAgentEvent[]
+  events    ChannelMaxAgentEvent[]
+  evidence  ChannelMaxAgentEvidence[]
 
   @@index([status, priority, queuedAt])
   @@index([leaseExpiresAt])
@@ -2291,20 +2293,43 @@ model ChannelMaxAgentEvent {
   @@index([jobId, occurredAt])
 }
 
-// Populated only by a future real WebAuthn/TOTP verifier. There is
-// deliberately no API in this bridge that can mint a verified assertion.
-// Mutation approval stays feature-flagged off until that verifier exists.
+// SSCC-owned immutable evidence bytes. Worker-supplied metadata is never
+// trusted by itself: event/completion references must resolve to one of these
+// rows for the exact job and match the server-computed digest and byte size.
+model ChannelMaxAgentEvidence {
+  id String @id @default(cuid())
+
+  jobId String
+  job   ChannelMaxAgentJob @relation(fields: [jobId], references: [id], onDelete: Restrict)
+
+  kind       String
+  sha256     String
+  byteSize   Int
+  mediaType  String
+  capturedAt DateTime
+  uri        String @unique
+  content    Bytes
+  uploadedBy String
+  createdAt  DateTime @default(now())
+
+  @@unique([jobId, kind, sha256])
+  @@index([jobId, createdAt])
+}
+
+// One-use owner step-up proof, bound to one job and a short expiry. Password
+// re-authentication is implemented; WebAuthn/TOTP remain reserved methods.
+// Production mutation approval remains release-gated independently.
 model ChannelMaxStepUpAssertion {
   id String @id @default(cuid())
 
   userId     String
   method     String // PASSWORD_REAUTH | WEBAUTHN | TOTP
-  ceremonyId String @unique
+  ceremonyId String    @unique
   verifiedAt DateTime
   expiresAt  DateTime
   usedAt     DateTime?
   jobId      String
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 
   @@index([userId, expiresAt])
   @@index([jobId, expiresAt])

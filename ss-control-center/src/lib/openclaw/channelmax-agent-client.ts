@@ -105,6 +105,7 @@ export interface OpenClawChannelMaxAgentClientOptions {
 
 export type OpenClawChannelMaxClientErrorCode =
   | "INVALID_INPUT"
+  | "DIRECT_DISPATCH_DISABLED"
   | "HTTP_ERROR"
   | "INVALID_RESPONSE"
   | "REMOTE_FAILURE"
@@ -130,17 +131,6 @@ export class OpenClawChannelMaxClientError extends Error {
     this.jobId = input.jobId ?? null;
   }
 }
-
-const FIXED_AGENT_INSTRUCTIONS = [
-  "You are the dedicated ChannelMAX browser operator for SS Command Center.",
-  "Treat the JSON task envelope as the complete control contract.",
-  "For READ_ONLY mode, do not click save/apply/upload/submit, do not change any field, and do not invoke any mutating tool.",
-  "For COMMIT_EXACT_PLAN mode, mutate only the exact sealed plan identified by plan_sha256; fail closed if current state, scope, or evidence differs.",
-  "Never retry a mutation after an ambiguous timeout. Reconcile current state by job_id and idempotency_key first.",
-  "Collect before/after evidence for every committed action and stop for login, 2FA, CAPTCHA, or any unclear UI state.",
-  "Never reveal or repeat credentials, bearer tokens, approval proofs, cookies, or secrets.",
-  "Return a concise structured result containing job_id, action, status, summary, evidence, and blockers.",
-].join("\n");
 
 const JOB_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const SHA256_PATTERN = /^[a-fA-F0-9]{64}$/;
@@ -213,6 +203,12 @@ function normalizeGatewayUrl(value: string): string {
   }
   if (url.protocol !== "http:" && url.protocol !== "https:") {
     throw clientError("gatewayUrl must use http:// or https://.");
+  }
+  const loopbackHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
+  if (url.protocol === "http:" && !loopbackHosts.has(url.hostname)) {
+    throw clientError(
+      "gatewayUrl may use plain HTTP only for a loopback host; remote gateways require HTTPS.",
+    );
   }
   if (url.username || url.password) {
     throw clientError("gatewayUrl must not contain credentials.");
@@ -302,24 +298,6 @@ function secretKey(key: string): boolean {
   return /^(authorization|password|secret|gateway_token|approval_token|access_token|refresh_token)$/i.test(
     key,
   );
-}
-
-function findSecretPayloadPath(value: unknown, path = "request"): string | null {
-  if (Array.isArray(value)) {
-    for (let index = 0; index < value.length; index += 1) {
-      const found = findSecretPayloadPath(value[index], `${path}[${index}]`);
-      if (found) return found;
-    }
-    return null;
-  }
-  if (!value || typeof value !== "object") return null;
-  for (const [key, entry] of Object.entries(value)) {
-    const childPath = `${path}.${key}`;
-    if (secretKey(key)) return childPath;
-    const found = findSecretPayloadPath(entry, childPath);
-    if (found) return found;
-  }
-  return null;
 }
 
 function replaceKnownSecrets(value: string, secrets: readonly string[]): string {
@@ -437,373 +415,59 @@ export function extractOpenClawResponseText(response: unknown): string {
   return parts.join("");
 }
 
-function eventDelta(event: OpenClawSseEvent): string {
-  const data = recordOf(event.data);
-  if (!data) return "";
-  if (event.event === "response.output_text.delta" && typeof data.delta === "string") {
-    return data.delta;
-  }
-  return "";
+function directDispatchDisabled(
+  action: ChannelMaxAgentAction,
+  jobId: string,
+): OpenClawChannelMaxClientError {
+  return new OpenClawChannelMaxClientError({
+    code: "DIRECT_DISPATCH_DISABLED",
+    message:
+      `Direct OpenClaw ChannelMAX ${action} dispatch is disabled. ` +
+      "Create a durable SS Command Center ChannelMAX queue job instead.",
+    jobId,
+  });
 }
 
-function responseFromCompletedEvent(event: OpenClawSseEvent): unknown | null {
-  if (event.event !== "response.completed") return null;
-  const data = recordOf(event.data);
-  return data?.response ?? event.data;
-}
-
-function responseIdOf(value: unknown): string | null {
-  const root = recordOf(value);
-  return typeof root?.id === "string" ? root.id : null;
-}
-
-async function readSseEvents(
-  response: Response,
-  onEvent: ((event: OpenClawSseEvent) => void | Promise<void>) | undefined,
-  secrets: readonly string[],
-): Promise<OpenClawSseEvent[]> {
-  if (!response.body) {
-    throw new OpenClawChannelMaxClientError({
-      code: "INVALID_RESPONSE",
-      message: "OpenClaw returned an SSE response without a body.",
-    });
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  const events: OpenClawSseEvent[] = [];
-  let current = createMutableSseEvent();
-  let lineBuffer = "";
-
-  const emitNewEvents = async (before: number): Promise<void> => {
-    if (!onEvent) return;
-    for (let index = before; index < events.length; index += 1) {
-      const safeEvent = redactChannelMaxSecrets(events[index], secrets) as OpenClawSseEvent;
-      await onEvent(safeEvent);
-    }
-  };
-
-  while (true) {
-    const { value, done } = await reader.read();
-    lineBuffer += decoder.decode(value, { stream: !done });
-    const lines = lineBuffer.split("\n");
-    lineBuffer = done ? "" : (lines.pop() ?? "");
-    if (done && lineBuffer) lines.push(lineBuffer);
-
-    for (const line of lines) {
-      const before = events.length;
-      current = consumeSseLine(line, current, events);
-      await emitNewEvents(before);
-    }
-    if (done) break;
-  }
-
-  if (current.dataLines.length > 0) {
-    const before = events.length;
-    consumeSseLine("", current, events);
-    await emitNewEvents(before);
-  }
-  return events;
-}
-
-function bounded(value: string, max = 4_000): string {
-  return value.length <= max ? value : `${value.slice(0, max)}…`;
-}
-
-function abortBundle(input: {
-  timeoutMs: number;
-  externalSignal?: AbortSignal;
-}): {
-  signal: AbortSignal;
-  cleanup: () => void;
-  timedOut: () => boolean;
-} {
-  const controller = new AbortController();
-  let timeoutTriggered = false;
-  const timer = setTimeout(() => {
-    timeoutTriggered = true;
-    controller.abort(new Error("OpenClaw request timeout"));
-  }, input.timeoutMs);
-
-  const forwardExternalAbort = () => {
-    controller.abort(input.externalSignal?.reason);
-  };
-  if (input.externalSignal) {
-    if (input.externalSignal.aborted) forwardExternalAbort();
-    else input.externalSignal.addEventListener("abort", forwardExternalAbort, { once: true });
-  }
-
-  return {
-    signal: controller.signal,
-    cleanup: () => {
-      clearTimeout(timer);
-      input.externalSignal?.removeEventListener("abort", forwardExternalAbort);
-    },
-    timedOut: () => timeoutTriggered,
-  };
-}
-
+/**
+ * Compatibility facade for the retired prompt-to-Gateway integration.
+ *
+ * Every action is deliberately fail-closed before `fetchImpl` can run. The
+ * durable SSCC job queue is the only supported ChannelMAX dispatch path.
+ */
 export class OpenClawChannelMaxAgentClient {
-  private readonly gatewayUrl: string;
-  private readonly gatewayToken: string;
-  private readonly agentId: string;
-  private readonly sessionKey: string;
-  private readonly timeoutMs: number;
-  private readonly fetchImpl: FetchLike;
-  private readonly now: () => Date;
   private readonly newJobId: () => string;
 
   constructor(options: OpenClawChannelMaxAgentClientOptions) {
-    this.gatewayUrl = normalizeGatewayUrl(options.gatewayUrl);
-    this.gatewayToken = requireNonEmpty("gatewayToken", options.gatewayToken);
-    this.agentId = requireNonEmpty(
+    normalizeGatewayUrl(options.gatewayUrl);
+    requireNonEmpty("gatewayToken", options.gatewayToken);
+    requireNonEmpty(
       "agentId",
       options.agentId ?? DEFAULT_OPENCLAW_CHANNELMAX_AGENT_ID,
     );
-    this.sessionKey = validateChannelMaxSessionKey(
+    validateChannelMaxSessionKey(
       options.sessionKey ?? DEFAULT_OPENCLAW_CHANNELMAX_SESSION_KEY,
     );
-    this.timeoutMs = validateTimeoutMs(
-      options.timeoutMs ?? DEFAULT_OPENCLAW_CHANNELMAX_TIMEOUT_MS,
-    );
-    this.fetchImpl = options.fetchImpl ?? fetch;
-    this.now = options.now ?? (() => new Date());
+    validateTimeoutMs(options.timeoutMs ?? DEFAULT_OPENCLAW_CHANNELMAX_TIMEOUT_MS);
     this.newJobId = options.newJobId ?? randomUUID;
   }
 
   audit(input: ChannelMaxReadOnlyInput = {}): Promise<ChannelMaxAgentResult> {
-    return this.executeReadOnly("audit", input);
+    const jobId = validateChannelMaxJobId(input.jobId ?? this.newJobId());
+    return Promise.reject(directDispatchDisabled("audit", jobId));
   }
 
   prepare(input: ChannelMaxReadOnlyInput = {}): Promise<ChannelMaxAgentResult> {
-    return this.executeReadOnly("prepare", input);
+    const jobId = validateChannelMaxJobId(input.jobId ?? this.newJobId());
+    return Promise.reject(directDispatchDisabled("prepare", jobId));
   }
 
   status(input: ChannelMaxStatusInput): Promise<ChannelMaxAgentResult> {
-    return this.execute({
-      action: "status",
-      jobId: input.jobId,
-      request: {
-        ...input.request,
-        status_query_for_job_id: input.jobId,
-      },
-      stream: input.stream,
-      timeoutMs: input.timeoutMs,
-      signal: input.signal,
-      onEvent: input.onEvent,
-    });
+    const jobId = validateChannelMaxJobId(input.jobId);
+    return Promise.reject(directDispatchDisabled("status", jobId));
   }
 
   commit(input: ChannelMaxCommitInput): Promise<ChannelMaxAgentResult> {
-    return this.execute({
-      action: "commit",
-      jobId: input.jobId,
-      request: input.request,
-      planSha256: input.planSha256,
-      approvalToken: input.approvalToken,
-      stream: input.stream,
-      timeoutMs: input.timeoutMs,
-      signal: input.signal,
-      onEvent: input.onEvent,
-    });
-  }
-
-  private executeReadOnly(
-    action: "audit" | "prepare",
-    input: ChannelMaxReadOnlyInput,
-  ): Promise<ChannelMaxAgentResult> {
-    return this.execute({
-      action,
-      jobId: input.jobId ?? this.newJobId(),
-      request: input.request,
-      stream: input.stream,
-      timeoutMs: input.timeoutMs,
-      signal: input.signal,
-      onEvent: input.onEvent,
-    });
-  }
-
-  private async execute(input: {
-    action: ChannelMaxAgentAction;
-    jobId: string;
-    request?: JsonObject;
-    planSha256?: string;
-    approvalToken?: string;
-    stream?: boolean;
-    timeoutMs?: number;
-    signal?: AbortSignal;
-    onEvent?: (event: OpenClawSseEvent) => void | Promise<void>;
-  }): Promise<ChannelMaxAgentResult> {
     const jobId = validateChannelMaxJobId(input.jobId);
-    const secretPayloadPath = findSecretPayloadPath(input.request);
-    if (secretPayloadPath) {
-      throw clientError(
-        `Task request must not contain credential field ${secretPayloadPath}; use the dedicated authentication inputs.`,
-        jobId,
-      );
-    }
-    const serializedRequest = JSON.stringify(input.request ?? {});
-    if (
-      serializedRequest.includes(this.gatewayToken) ||
-      (Boolean(input.approvalToken) && serializedRequest.includes(input.approvalToken!))
-    ) {
-      throw clientError(
-        "Task request contains a credential value and was rejected before network dispatch.",
-        jobId,
-      );
-    }
-    const envelope = buildChannelMaxTaskEnvelope({
-      action: input.action,
-      jobId,
-      request: input.request,
-      requestedAt: this.now().toISOString(),
-      planSha256: input.planSha256,
-      approvalToken: input.approvalToken,
-    });
-    const timeoutMs = validateTimeoutMs(input.timeoutMs ?? this.timeoutMs);
-    const stream = input.stream ?? false;
-    const secrets = [this.gatewayToken, input.approvalToken ?? ""];
-    const abort = abortBundle({ timeoutMs, externalSignal: input.signal });
-
-    let response: Response;
-    try {
-      response = await this.fetchImpl(`${this.gatewayUrl}/v1/responses`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.gatewayToken}`,
-          "Content-Type": "application/json",
-          Accept: stream ? "text/event-stream" : "application/json",
-          "x-openclaw-agent-id": this.agentId,
-          "x-openclaw-session-key": this.sessionKey,
-        },
-        body: JSON.stringify({
-          model: `openclaw/${this.agentId}`,
-          user: this.sessionKey,
-          instructions: FIXED_AGENT_INSTRUCTIONS,
-          input: JSON.stringify(envelope),
-          stream,
-          metadata: {
-            integration: "ss-command-center",
-            action: envelope.action,
-            job_id: envelope.job_id,
-            idempotency_key: envelope.idempotency_key,
-          },
-        }),
-        signal: abort.signal,
-      });
-    } catch (error) {
-      abort.cleanup();
-      if (abort.timedOut()) {
-        throw new OpenClawChannelMaxClientError({
-          code: "TIMEOUT",
-          message: `OpenClaw request timed out after ${timeoutMs}ms; mutation state is unknown and must be reconciled by job_id before retrying.`,
-          jobId,
-        });
-      }
-      if (input.signal?.aborted || abort.signal.aborted) {
-        throw new OpenClawChannelMaxClientError({
-          code: "ABORTED",
-          message: "OpenClaw request was aborted.",
-          jobId,
-        });
-      }
-      const safeMessage = replaceKnownSecrets(
-        error instanceof Error ? error.message : String(error),
-        secrets,
-      );
-      throw new OpenClawChannelMaxClientError({
-        code: "NETWORK_ERROR",
-        message: `OpenClaw network request failed: ${bounded(safeMessage)}.`,
-        jobId,
-      });
-    }
-
-    try {
-      if (!response.ok) {
-        const body = replaceKnownSecrets(bounded(await response.text()), secrets);
-        throw new OpenClawChannelMaxClientError({
-          code: "HTTP_ERROR",
-          message: `OpenClaw HTTP ${response.status}${body ? `: ${body}` : ""}`,
-          httpStatus: response.status,
-          jobId,
-        });
-      }
-
-      if (stream) {
-        const events = await readSseEvents(response, input.onEvent, secrets);
-        const failure = events.find((event) => event.event === "response.failed");
-        if (failure) {
-          throw new OpenClawChannelMaxClientError({
-            code: "REMOTE_FAILURE",
-            message: `OpenClaw response.failed: ${bounded(
-              JSON.stringify(redactChannelMaxSecrets(failure.data, secrets)),
-            )}`,
-            jobId,
-          });
-        }
-
-        let completedResponse: unknown = null;
-        let responseId: string | null = null;
-        let text = "";
-        for (const event of events) {
-          text += eventDelta(event);
-          completedResponse = responseFromCompletedEvent(event) ?? completedResponse;
-          if (event.event === "response.created") {
-            responseId = responseIdOf(recordOf(event.data)?.response) ?? responseId;
-          }
-        }
-        responseId = responseIdOf(completedResponse) ?? responseId;
-        if (!text) text = extractOpenClawResponseText(completedResponse);
-
-        return redactChannelMaxSecrets(
-          {
-            schema: OPENCLAW_CHANNELMAX_RESULT_SCHEMA,
-            job_id: envelope.job_id,
-            idempotency_key: envelope.idempotency_key,
-            action: envelope.action,
-            mode: envelope.mode,
-            session_key: this.sessionKey,
-            agent_id: this.agentId,
-            transport: "sse",
-            response_id: responseId,
-            text,
-            response: completedResponse,
-            events,
-          } satisfies ChannelMaxAgentResult,
-          secrets,
-        ) as ChannelMaxAgentResult;
-      }
-
-      const rawText = await response.text();
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(rawText) as unknown;
-      } catch {
-        throw new OpenClawChannelMaxClientError({
-          code: "INVALID_RESPONSE",
-          message: `OpenClaw returned invalid JSON: ${bounded(
-            replaceKnownSecrets(rawText, secrets),
-          )}`,
-          jobId,
-        });
-      }
-      const safeResponse = redactChannelMaxSecrets(parsed, secrets);
-      return {
-        schema: OPENCLAW_CHANNELMAX_RESULT_SCHEMA,
-        job_id: envelope.job_id,
-        idempotency_key: envelope.idempotency_key,
-        action: envelope.action,
-        mode: envelope.mode,
-        session_key: this.sessionKey,
-        agent_id: this.agentId,
-        transport: "json",
-        response_id: responseIdOf(safeResponse),
-        text: extractOpenClawResponseText(safeResponse),
-        response: safeResponse,
-        events: [],
-      };
-    } finally {
-      abort.cleanup();
-    }
+    return Promise.reject(directDispatchDisabled("commit", jobId));
   }
 }

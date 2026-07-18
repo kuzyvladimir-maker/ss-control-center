@@ -7,6 +7,8 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "channelmax:worker": "node --import tsx scripts/channelmax-browser-worker.ts",
+    "test:channelmax-worker": "node --import tsx --test src/lib/channelmax-agent/__tests__/browser-worker.test.ts",
     "models:check": "npx tsx scripts/check-model-updates.ts",
     "postinstall": "prisma generate"
   },
@@ -44,6 +46,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "tailwindcss": "^4",
+    "tsx": "^4.20.6",
     "typescript": "^5"
   }
 }
