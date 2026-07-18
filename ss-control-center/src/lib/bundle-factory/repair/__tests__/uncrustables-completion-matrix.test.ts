@@ -22,7 +22,19 @@ test("builds the exact conservative 164-row completion matrix", async () => {
   const { matrix } = built;
 
   assert.equal(matrix.summary.total_rows, 164);
-  assert.equal(matrix.deterministic_as_of, "2026-07-18T22:20:27.492Z");
+  assert.equal(matrix.deterministic_as_of, "2026-07-18T23:10:00.000Z");
+  assert.ok(
+    matrix.sources.some(
+      (source) =>
+        source.source_id === "strict_main_v6" &&
+        source.path ===
+          "data/audits/uncrustables-live-main-strict-reaudit-20260718-v6.json" &&
+        source.file_sha256 ===
+          "87d9adf66cc322becccd0eb214e13d073272c3c11405e4bdd15e93c98f08eb4c" &&
+        source.body_sha256 ===
+          "befae9606c9dca01175c555f181cfcff53bd248aa5060ee2194e3e611739ff8e",
+    ),
+  );
   assert.ok(
     matrix.sources.some(
       (source) =>
@@ -85,6 +97,18 @@ test("builds the exact conservative 164-row completion matrix", async () => {
     assert.ok(row, `missing approved ASIN ${asin}`);
     assert.equal(row.main_image.status, "VISUAL_KEEP_PROVENANCE_PENDING");
   }
+  const correctedMainReasons = new Map(
+    matrix.rows
+      .filter((row) => [1, 2, 38, 97].includes(row.ordinal))
+      .map((row) => [row.ordinal, row.main_image.reason_codes]),
+  );
+  assert.deepEqual(correctedMainReasons.get(1), ["RETAILER_BADGE_VISIBLE"]);
+  assert.deepEqual(correctedMainReasons.get(2), ["LOOSE_ICE_VISIBLE"]);
+  assert.deepEqual(correctedMainReasons.get(38), [
+    "LOOSE_ICE_VISIBLE",
+    "VISIBLE_TEXT_INTEGRITY_FAIL",
+  ]);
+  assert.deepEqual(correctedMainReasons.get(97), ["RETAILER_BADGE_VISIBLE"]);
   const qx = matrix.rows.find((row) => row.sku === "QX-AS89-H8YC");
   assert.equal(qx?.amazon_pricing.status, "NO_OFFER_POINT_IN_TIME");
   assert.equal(qx?.amazon_pricing.evidence.observed_at, "2026-07-18T22:19:08.267Z");
