@@ -1,0 +1,54 @@
+{
+  "schema_version": "uncrustables-repair-execution-selection/v1",
+  "immutable": true,
+  "created_at": "2026-07-18T12:50:00.000Z",
+  "profile": "GALLERY_MEDIA_ONLY_V1",
+  "source_plan": {
+    "path": "data/repairs/generated/uncrustables-amazon-final-162-20260718-v8/URP-20260718T083203612Z-8badb989fc9b.json",
+    "sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477"
+  },
+  "requested_skus": [
+    "AJ-ASRB-HKC3",
+    "AN-ASUW-49Y5",
+    "AU-AS97-USX8",
+    "AV-AS7X-8EXK",
+    "AY-AS5F-JEY9"
+  ],
+  "limit": null,
+  "requested_action_kinds": [
+    "MEDIA"
+  ],
+  "selected_skus": [
+    "AJ-ASRB-HKC3",
+    "AN-ASUW-49Y5",
+    "AU-AS97-USX8",
+    "AV-AS7X-8EXK",
+    "AY-AS5F-JEY9"
+  ],
+  "selected_action_ids": [
+    "AJ-ASRB-HKC3:media",
+    "AN-ASUW-49Y5:media",
+    "AU-AS97-USX8:media",
+    "AV-AS7X-8EXK:media",
+    "AY-AS5F-JEY9:media"
+  ],
+  "selected_actions": 5,
+  "forbidden_patch_paths": [
+    "/attributes/allergen_information",
+    "/attributes/bullet_point",
+    "/attributes/each_unit_count",
+    "/attributes/ingredients",
+    "/attributes/is_expiration_dated_product",
+    "/attributes/item_name",
+    "/attributes/item_package_quantity",
+    "/attributes/list_price",
+    "/attributes/main_product_image_locator",
+    "/attributes/merchant_shipping_group",
+    "/attributes/number_of_items",
+    "/attributes/product_description",
+    "/attributes/purchasable_offer",
+    "/attributes/unit_count"
+  ],
+  "sha256": "bef8776b46ce2938be5ce7dc20b0c2de106fa490d8e9147242f8d088c4dacae8",
+  "confirmation_token": "APPLY-UNCRUSTABLES-SELECTION-BEF8776B46CE2938"
+}

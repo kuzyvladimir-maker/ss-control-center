@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "6e299b5c-8afd-4578-9ecf-8f47e16f9dcc",
+  "created_at": "2026-07-18T11:49:10.088Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PW-ASDZ-CSR8:structured_attributes",
+  "sku": "PW-ASDZ-CSR8",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "VERIFIED",
+  "detail": {
+    "submitted_event_id": "55fcbfcf-dc49-4749-9c1f-56186bc32f81",
+    "strategy": "PRIMARY",
+    "stable_post_write_reads": 3,
+    "path_state_sha256": "fed74f0e7acb8d057c72cb29416dbed145d1d73ad8e9169406f1b346087cb385",
+    "checks": [
+      {
+        "field": "ingredients",
+        "ok": true,
+        "expected": "Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Molasses, Sugar, Salt. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Apple Cinnamon Jelly: Sugar, Apple Juice, Contains 2% Or Less Of: Pectin, Citric Acid, Cinnamon, Potassium Sorbate (Preservative).",
+        "actual": "Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Molasses, Sugar, Salt. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Apple Cinnamon Jelly: Sugar, Apple Juice, Contains 2% Or Less Of: Pectin, Citric Acid, Cinnamon, Potassium Sorbate (Preservative)."
+      },
+      {
+        "field": "allergen_information",
+        "ok": true,
+        "expected": [
+          "milk_may_contain",
+          "peanuts",
+          "tree_nuts_may_contain",
+          "wheat"
+        ],
+        "actual": [
+          "milk_may_contain",
+          "peanuts",
+          "tree_nuts_may_contain",
+          "wheat"
+        ]
+      }
+    ]
+  },
+  "sha256": "039c10dec9b891882cc984a9d60a32ddb7c1b951e6b6cb651eb0040214967d87"
+}

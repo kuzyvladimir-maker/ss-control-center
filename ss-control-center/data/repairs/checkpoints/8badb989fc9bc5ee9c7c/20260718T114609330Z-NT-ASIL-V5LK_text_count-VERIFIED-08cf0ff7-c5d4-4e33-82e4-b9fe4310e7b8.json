@@ -1,0 +1,68 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "08cf0ff7-c5d4-4e33-82e4-b9fe4310e7b8",
+  "created_at": "2026-07-18T11:46:09.330Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "NT-ASIL-V5LK:text_count",
+  "sku": "NT-ASIL-V5LK",
+  "kind": "TEXT_COUNT",
+  "status": "VERIFIED",
+  "detail": {
+    "submitted_event_id": "60a021d8-55a8-44cb-8b36-219de5add8f1",
+    "strategy": "PRIMARY",
+    "stable_post_write_reads": 3,
+    "path_state_sha256": "bd75f3269accfa0e1a454c64121768996bb5b7f8f2d57f1d9f7782f202cfcd22",
+    "checks": [
+      {
+        "field": "item_name",
+        "ok": true,
+        "expected": "Smucker's Uncrustables Frozen Sandwich Variety Pack, Peanut Butter & Strawberry Jam – 12g Protein and Peanut Butter & Chocolate Flavored Spread, 24 Count",
+        "actual": "Smucker's Uncrustables Frozen Sandwich Variety Pack, Peanut Butter & Strawberry Jam – 12g Protein and Peanut Butter & Chocolate Flavored Spread, 24 Count"
+      },
+      {
+        "field": "bullet_point",
+        "ok": true,
+        "expected": [
+          "Exact assortment: 24 individually wrapped frozen sandwiches total: 12 Peanut Butter & Strawberry Jam – 12g Protein; 12 Peanut Butter & Chocolate Flavored Spread.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 24 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ],
+        "actual": [
+          "Exact assortment: 24 individually wrapped frozen sandwiches total: 12 Peanut Butter & Strawberry Jam – 12g Protein; 12 Peanut Butter & Chocolate Flavored Spread.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 24 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ]
+      },
+      {
+        "field": "product_description",
+        "ok": true,
+        "expected": "This listing contains 24 individual Smucker's Uncrustables frozen sandwiches: 12 Peanut Butter & Strawberry Jam – 12g Protein; 12 Peanut Butter & Chocolate Flavored Spread. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 24 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use.",
+        "actual": "This listing contains 24 individual Smucker's Uncrustables frozen sandwiches: 12 Peanut Butter & Strawberry Jam – 12g Protein; 12 Peanut Butter & Chocolate Flavored Spread. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 24 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use."
+      },
+      {
+        "field": "unit_count",
+        "ok": true,
+        "expected": 24,
+        "actual": 24
+      },
+      {
+        "field": "unit_count.type",
+        "ok": true,
+        "expected": "Count",
+        "actual": "Count"
+      },
+      {
+        "field": "number_of_items",
+        "ok": true,
+        "expected": 24,
+        "actual": 24
+      }
+    ]
+  },
+  "sha256": "2903ef8788a3603fca2bc55d849e9a02b4fa1e21917594117caab0516c35bb2e"
+}

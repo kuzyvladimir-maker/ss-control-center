@@ -1,0 +1,38 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1ddacc45-5b2d-45ff-ad27-252b6b2ef4a5",
+  "created_at": "2026-07-18T11:58:38.346Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "TL-ASHN-ZRKG:structured_attributes",
+  "sku": "TL-ASHN-ZRKG",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "VERIFIED",
+  "detail": {
+    "checks": [
+      {
+        "field": "ingredients",
+        "ok": true,
+        "expected": "Chocolate Flavored Hazelnut Spread: Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Chocolate Flavored Hazelnut Spread: Sugar, Vegetable Oils (Palm And Canola), Hazelnuts, Cocoa Processed With Alkali And Cocoa, Skim Milk, Whey, Canola Lecithin, Natural Flavor. | Morning Protein Peanut Butter & Mixed Berry Spread: Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Sugar, Salt, Molasses. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Mixed Berry Spread: Sugar, Strawberries, Blueberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative).",
+        "actual": "Chocolate Flavored Hazelnut Spread: Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Chocolate Flavored Hazelnut Spread: Sugar, Vegetable Oils (Palm And Canola), Hazelnuts, Cocoa Processed With Alkali And Cocoa, Skim Milk, Whey, Canola Lecithin, Natural Flavor. | Morning Protein Peanut Butter & Mixed Berry Spread: Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Sugar, Salt, Molasses. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Mixed Berry Spread: Sugar, Strawberries, Blueberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative)."
+      },
+      {
+        "field": "allergen_information",
+        "ok": true,
+        "expected": [
+          "hazelnut",
+          "milk",
+          "peanuts",
+          "wheat"
+        ],
+        "actual": [
+          "hazelnut",
+          "milk",
+          "peanuts",
+          "wheat"
+        ]
+      }
+    ]
+  },
+  "sha256": "9a0accb20a0790078b0df7f0e82b4201b56dbe060a03596e2abd2e6aae356915"
+}

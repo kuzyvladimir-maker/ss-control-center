@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "dc175538-82a2-4e7e-b8cd-7ece25a21f56",
+  "created_at": "2026-07-18T12:05:14.658Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "WR-ASR5-AVWE:structured_attributes",
+  "sku": "WR-ASR5-AVWE",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "VERIFIED",
+  "detail": {
+    "submitted_event_id": "6155a017-018e-4a10-ae06-d102f589155b",
+    "strategy": "PRIMARY",
+    "stable_post_write_reads": 3,
+    "path_state_sha256": "39cb956368333fa36d2a170ebee872a5fa1900ba6389a2e6f2c610f3f1edfee0",
+    "checks": [
+      {
+        "field": "ingredients",
+        "ok": true,
+        "expected": "Peanut Butter & Apple Cinnamon Jelly – 12g Protein: Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Molasses, Sugar, Salt. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Apple Cinnamon Jelly: Sugar, Apple Juice, Contains 2% Or Less Of: Pectin, Citric Acid, Cinnamon, Potassium Sorbate (Preservative). | Chocolate Flavored Hazelnut Spread: Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Chocolate Flavored Hazelnut Spread: Sugar, Vegetable Oils (Palm And Canola), Hazelnuts, Cocoa Processed With Alkali And Cocoa, Skim Milk, Whey, Canola Lecithin, Natural Flavor.",
+        "actual": "Peanut Butter & Apple Cinnamon Jelly – 12g Protein: Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Molasses, Sugar, Salt. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Apple Cinnamon Jelly: Sugar, Apple Juice, Contains 2% Or Less Of: Pectin, Citric Acid, Cinnamon, Potassium Sorbate (Preservative). | Chocolate Flavored Hazelnut Spread: Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Chocolate Flavored Hazelnut Spread: Sugar, Vegetable Oils (Palm And Canola), Hazelnuts, Cocoa Processed With Alkali And Cocoa, Skim Milk, Whey, Canola Lecithin, Natural Flavor."
+      },
+      {
+        "field": "allergen_information",
+        "ok": true,
+        "expected": [
+          "hazelnut",
+          "milk",
+          "peanuts",
+          "wheat"
+        ],
+        "actual": [
+          "hazelnut",
+          "milk",
+          "peanuts",
+          "wheat"
+        ]
+      }
+    ]
+  },
+  "sha256": "f8bd24c34f5eb992a0efa600d5c1e66bba29ccb99259fa3a690acb911d86bdcf"
+}

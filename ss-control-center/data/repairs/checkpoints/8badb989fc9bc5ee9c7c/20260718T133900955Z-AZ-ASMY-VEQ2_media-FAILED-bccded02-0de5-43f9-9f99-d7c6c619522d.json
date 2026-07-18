@@ -1,0 +1,15 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "bccded02-0de5-43f9-9f99-d7c6c619522d",
+  "created_at": "2026-07-18T13:39:00.955Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "AZ-ASMY-VEQ2:media",
+  "sku": "AZ-ASMY-VEQ2",
+  "kind": "MEDIA",
+  "status": "FAILED",
+  "detail": {
+    "error": "Amazon accepted AZ-ASMY-VEQ2:media, but only the stable pre-write state is observable. The submission remains open because a later apply cannot be excluded; no fallback or second write was attempted."
+  },
+  "sha256": "3897b267f79620d1b4b3f40958ea0e3ced8a07d0ef2b17e819da10cb64f817d6"
+}

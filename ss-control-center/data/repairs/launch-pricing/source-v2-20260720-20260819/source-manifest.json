@@ -1,0 +1,46 @@
+{
+  "schema_version": "uncrustables-launch-v2-sources/v1",
+  "immutable": true,
+  "source": {
+    "assignments": {
+      "path": "public/launch-experiment-assignments.csv",
+      "sha256": "7e90340382a45891ca9fca112a6eebf4a2a9c652fad1159cd81e9a6206df6a04"
+    },
+    "coupons": {
+      "path": "public/coupons-uncrustables-launch.csv",
+      "sha256": "7e083cd83da5665615c1115243cec7dd58854497e863c41dff4f384f2207159c"
+    },
+    "sale_prices": {
+      "path": "public/salesprice-uncrustables-launch.csv",
+      "sha256": "0c53d59ef0ba2b2e180ea93b4504d642a92bd4c380998fdd286eea9da4930446"
+    }
+  },
+  "policy": {
+    "start": "2026-07-20",
+    "end": "2026-08-19",
+    "default_discount_percent": 13,
+    "count_45_discount_percent": 12,
+    "count_45_effective_price": 115.27,
+    "coupon_titles_exclude_percent": true
+  },
+  "rows": {
+    "assignments": 163,
+    "coupon_asins": 82,
+    "coupon_groups": 5,
+    "sale_prices": 81
+  },
+  "outputs": {
+    "assignments": {
+      "file": "launch-experiment-assignments-v2.csv",
+      "sha256": "dbf6b4175566194847cf365544f6a69c856225be6f6f3d2849357a7e6c1c8b51"
+    },
+    "coupon_spec": {
+      "file": "coupons-uncrustables-launch-v2-spec.csv",
+      "sha256": "3da9c2d2d8cb2c7d0fc3def8b115d393e09b4b7da8653a551574e36c7371e46a"
+    },
+    "sale_price_spec": {
+      "file": "salesprice-uncrustables-launch-v2-spec.csv",
+      "sha256": "8cbe49a2bccbbbe6ae223aa44cb1635839023c0a51af77a5171a6e9847b418d8"
+    }
+  }
+}

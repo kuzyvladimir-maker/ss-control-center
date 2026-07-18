@@ -197,6 +197,45 @@ test("validator-canonical-price requires exact .99 price and corridor", async ()
   assert.equal((await validatorCanonicalPrice(input)).passed, false);
 });
 
+test("validator-canonical-price validates Layer A and delegates the SKU-specific overlay", async () => {
+  const input = mkInput(mkSku({
+    price_cents: 13099,
+    business_price_cents: 13099,
+    attributes: JSON.stringify({
+      purchasable_offer: [{
+        audience: "ALL",
+        discounted_price: [{
+          schedule: [{
+            value_with_tax: 115.27,
+            start_at: "2026-07-20T00:00:00Z",
+            end_at: "2026-08-19T23:59:59Z",
+          }],
+        }],
+        minimum_seller_allowed_price: [{ schedule: [{ value_with_tax: 114.27 }] }],
+        maximum_seller_allowed_price: [{ schedule: [{ value_with_tax: 130.99 }] }],
+      }],
+    }),
+  }));
+  input.master_bundle = {
+    ...input.master_bundle!,
+    brand: "Uncrustables",
+    category: "FROZEN_GROCERY",
+    pack_count: 45,
+    suggested_price_cents: 13099,
+  };
+  assert.equal((await validatorCanonicalPrice(input)).passed, true);
+  input.sku = {
+    ...input.sku,
+    attributes: input.sku.attributes.replace("115.27", "113.96"),
+  };
+  const delegated = await validatorCanonicalPrice(input);
+  assert.equal(delegated.passed, true);
+  assert.equal(
+    delegated.details?.promotion_overlay_validation,
+    "DELEGATED_TO_SHA_SEALED_LAUNCH_PRICING_PLAN",
+  );
+});
+
 // ── validator-title ───────────────────────────────────────────────────
 
 test("validator-title passes clean Amazon title", async () => {

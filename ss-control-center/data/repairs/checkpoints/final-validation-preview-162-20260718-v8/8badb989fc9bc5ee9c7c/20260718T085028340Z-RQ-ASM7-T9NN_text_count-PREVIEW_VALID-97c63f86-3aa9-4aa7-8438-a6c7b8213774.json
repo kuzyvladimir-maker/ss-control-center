@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "97c63f86-3aa9-4aa7-8438-a6c7b8213774",
+  "created_at": "2026-07-18T08:50:28.340Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RQ-ASM7-T9NN:text_count",
+  "sku": "RQ-ASM7-T9NN",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "9aa1229b592ee6b8a35369d7f1f4d704fb93cfeb9f76006cebf02ee9c6cd7274",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "f54fc91735b64badaaadb542a55a0d8c",
+    "issues": []
+  },
+  "sha256": "e1baed97dd5a74e3d4302d4bd5ee76a1760f7afc3104e983a60fb54e702bea43"
+}

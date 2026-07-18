@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "36127774-4191-4ae5-9176-f3cb7e9e87c3",
+  "created_at": "2026-07-18T08:36:59.428Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "DF-ASQT-BLUQ:text_count",
+  "sku": "DF-ASQT-BLUQ",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "46c750c8235c25e0a8375729763716d08b291e1ac820b8c8262dce3dce32e283",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "13312a368cd1460087509c068a508ad7",
+    "issues": []
+  },
+  "sha256": "e604e03cab817b8550d632c67da9ee739f6b6f45b055aacab7ecbf11ca6cfc7f"
+}

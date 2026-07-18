@@ -1,0 +1,66 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "3b3df609-db1e-4f54-83e4-229c898bcd9b",
+  "created_at": "2026-07-18T12:13:29.011Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "ZY-ASZ4-QM5U:text_count",
+  "sku": "ZY-ASZ4-QM5U",
+  "kind": "TEXT_COUNT",
+  "status": "ALREADY_APPLIED",
+  "detail": {
+    "checks": [
+      {
+        "field": "item_name",
+        "ok": true,
+        "expected": "Smucker's Uncrustables Peanut Butter & Apple Cinnamon Jelly – 12g Protein Frozen Sandwiches, Individually Wrapped, 120 Count",
+        "actual": "Smucker's Uncrustables Peanut Butter & Apple Cinnamon Jelly – 12g Protein Frozen Sandwiches, Individually Wrapped, 120 Count"
+      },
+      {
+        "field": "bullet_point",
+        "ok": true,
+        "expected": [
+          "Exact assortment: 120 individually wrapped frozen sandwiches total: 120 Peanut Butter & Apple Cinnamon Jelly – 12g Protein.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 120 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ],
+        "actual": [
+          "Exact assortment: 120 individually wrapped frozen sandwiches total: 120 Peanut Butter & Apple Cinnamon Jelly – 12g Protein.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 120 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ]
+      },
+      {
+        "field": "product_description",
+        "ok": true,
+        "expected": "This listing contains 120 individual Smucker's Uncrustables frozen sandwiches: 120 Peanut Butter & Apple Cinnamon Jelly – 12g Protein. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 120 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use.",
+        "actual": "This listing contains 120 individual Smucker's Uncrustables frozen sandwiches: 120 Peanut Butter & Apple Cinnamon Jelly – 12g Protein. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 120 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use."
+      },
+      {
+        "field": "unit_count",
+        "ok": true,
+        "expected": 120,
+        "actual": 120
+      },
+      {
+        "field": "unit_count.type",
+        "ok": true,
+        "expected": "Count",
+        "actual": "Count"
+      },
+      {
+        "field": "number_of_items",
+        "ok": true,
+        "expected": 120,
+        "actual": 120
+      }
+    ],
+    "resumed_checkpoint_revalidated": true,
+    "resumed_strategy": "PRIMARY"
+  },
+  "sha256": "717512f2d19a0a91d7597f1d49bce4639cd6b27aea353a2671c86bd8426e8396"
+}

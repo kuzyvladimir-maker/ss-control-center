@@ -1,0 +1,30 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "2a7479cb-afbd-4c2b-b7a2-552198f7c865",
+  "created_at": "2026-07-18T12:31:11.720Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "AC-AS4J-B64F:offer",
+  "sku": "AC-AS4J-B64F",
+  "kind": "OFFER",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "submitted_event_id": "560c9364-bd97-4a28-9266-3516e7259e55",
+    "submitted_at": "2026-07-18T09:11:11.024Z",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "e9e745c87ff1c67657c0506980aaaf2418b78eab3d50d5ea3c9abd76223b423f",
+      "exact_action_paths": [
+        "/attributes/list_price",
+        "/attributes/purchasable_offer"
+      ],
+      "before_path_state_sha256": "4a776c0d5fe43a91eeab25535b57bbe15b31d773906f26c7675859f356f971f1"
+    },
+    "attempts": 4,
+    "delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "bcf407091a1c9e8f111d69f3dd07e2acb3b266cc4134c686518622d335e7aaac"
+}

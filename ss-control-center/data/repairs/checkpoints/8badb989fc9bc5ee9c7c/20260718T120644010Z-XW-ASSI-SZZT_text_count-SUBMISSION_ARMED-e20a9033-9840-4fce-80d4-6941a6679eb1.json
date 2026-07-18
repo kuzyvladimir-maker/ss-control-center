@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "e20a9033-9840-4fce-80d4-6941a6679eb1",
+  "created_at": "2026-07-18T12:06:44.010Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "XW-ASSI-SZZT:text_count",
+  "sku": "XW-ASSI-SZZT",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMISSION_ARMED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "crash_window_guard": true,
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "e63f4839bcb60be41cee77a4f6804fca430aaed02b1c50a2778ea51110dfd0d3",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "112cfb4749174891ca94a9c0c82204bdd40bd9dd14ee062f93c684598db5512a"
+    }
+  },
+  "sha256": "66338bc8c3af15aa31bb84c6e710709f7a0e0e38f3286481fb983d8f79ad4eeb"
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1bc3d7bc-8417-4cdf-8d06-0990b4355df3",
+  "created_at": "2026-07-18T11:51:14.139Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RB-ASVO-GYCY:text_count",
+  "sku": "RB-ASVO-GYCY",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "4b901cb0-0003-4116-8d1c-f90efa641253",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "a903a1cf105482d7c47a3f008c07d79b6765ba91708644e875e48d662359cc35",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "82c58e2e95d87a675f87e5fa84879e42a2d7cee64ce36dae84db02978f30edc5"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "0a2a0a2ad599cc5b0b42c06483ecd78cc36e3e1b1e4d5552394278c22e035c42"
+}

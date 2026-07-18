@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "85c48be6-e7a9-4953-924e-93a8329e4dfc",
+  "created_at": "2026-07-18T08:58:09.442Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "WZ-ASXK-ZFAS:text_count",
+  "sku": "WZ-ASXK-ZFAS",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "f6e80765e143dca14cd59a0519f44a7ac55f71055e5f1079b30eadf690741997",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "8b3fcffabf2749f6b0a494090fa68abb",
+    "issues": []
+  },
+  "sha256": "afa326e9e9ceb953512a86b953f4df4a5b68046b4694531dc5423c16c6d6bb34"
+}

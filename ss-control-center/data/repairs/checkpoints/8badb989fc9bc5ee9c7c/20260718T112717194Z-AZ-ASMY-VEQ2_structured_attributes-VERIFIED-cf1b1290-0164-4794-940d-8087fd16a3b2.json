@@ -1,0 +1,48 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "cf1b1290-0164-4794-940d-8087fd16a3b2",
+  "created_at": "2026-07-18T11:27:17.194Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "AZ-ASMY-VEQ2:structured_attributes",
+  "sku": "AZ-ASMY-VEQ2",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "VERIFIED",
+  "detail": {
+    "submitted_event_id": "cb7dbcfb-f531-42bf-b795-a25ea45dc46d",
+    "strategy": "PRIMARY",
+    "stable_post_write_reads": 3,
+    "path_state_sha256": "75635789d7ee770aad3772bc280d6da2a2081463bcf6d1e242556ee41815da28",
+    "checks": [
+      {
+        "field": "ingredients",
+        "ok": true,
+        "expected": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Salt, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Salt. Strawberry Jam: Sugar, Strawberries, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative).",
+        "actual": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Salt, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Salt. Strawberry Jam: Sugar, Strawberries, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative)."
+      },
+      {
+        "field": "allergen_information",
+        "ok": true,
+        "expected": [
+          "milk_may_contain",
+          "peanuts",
+          "tree_nuts_may_contain",
+          "wheat"
+        ],
+        "actual": [
+          "milk_may_contain",
+          "peanuts",
+          "tree_nuts_may_contain",
+          "wheat"
+        ]
+      },
+      {
+        "field": "merchant_shipping_group",
+        "ok": true,
+        "expected": "27fef112-3cf4-4f8f-b117-7c47254aa16c",
+        "actual": "27fef112-3cf4-4f8f-b117-7c47254aa16c"
+      }
+    ]
+  },
+  "sha256": "158d84623f0dcff31d1f1883a7cf505ef38a36614982ddd2adf19fad753358f9"
+}

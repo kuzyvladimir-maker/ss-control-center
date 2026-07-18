@@ -1,0 +1,33 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "fda6035a-3254-41f6-bae7-ed7eb008115a",
+  "created_at": "2026-07-18T11:38:43.605Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "HU-ASMI-DN3X:structured_attributes",
+  "sku": "HU-ASMI-DN3X",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "a82165ee-a973-425c-ac6b-042e034e4145",
+    "patch_sha256": "b0cb0dc15ce3381136bb87e9b9b8dfce568bf1834c03fcaee695caed4aaff92b",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "b0cb0dc15ce3381136bb87e9b9b8dfce568bf1834c03fcaee695caed4aaff92b",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients"
+      ],
+      "before_path_state_sha256": "0eecea33619d70f70609397cdfc387fbed7f7d819c84aad7d5007608e831e013"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "9d9db0e9b3cb48488cdfef584b8e74fa",
+    "issues": []
+  },
+  "sha256": "a3fa8b728db3060eebc075c458e733aac319ad9be35c2f5dce3b2550cef45558"
+}

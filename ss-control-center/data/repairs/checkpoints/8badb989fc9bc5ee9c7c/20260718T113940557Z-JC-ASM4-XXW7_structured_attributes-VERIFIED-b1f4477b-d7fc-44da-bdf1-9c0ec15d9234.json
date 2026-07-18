@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b1f4477b-d7fc-44da-bdf1-9c0ec15d9234",
+  "created_at": "2026-07-18T11:39:40.557Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "JC-ASM4-XXW7:structured_attributes",
+  "sku": "JC-ASM4-XXW7",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "VERIFIED",
+  "detail": {
+    "submitted_event_id": "cd0f3743-b1d4-45f6-8e16-603b7246b686",
+    "strategy": "PRIMARY",
+    "stable_post_write_reads": 3,
+    "path_state_sha256": "aa5e6fd1e0d739a7b570a1e03c41175f01418aca5c26f79899c3e685fd97fa21",
+    "checks": [
+      {
+        "field": "ingredients",
+        "ok": true,
+        "expected": "Peanut Butter & Apple Cinnamon Jelly – 12g Protein: Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Molasses, Sugar, Salt. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Apple Cinnamon Jelly: Sugar, Apple Juice, Contains 2% Or Less Of: Pectin, Citric Acid, Cinnamon, Potassium Sorbate (Preservative). | Peanut Butter & Blackberry Spread: Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Salt, Molasses. Blackberry Spread: Sugar, Blackberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Natural Flavor, Potassium Sorbate (Preservative).",
+        "actual": "Peanut Butter & Apple Cinnamon Jelly – 12g Protein: Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Molasses, Sugar, Salt. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Apple Cinnamon Jelly: Sugar, Apple Juice, Contains 2% Or Less Of: Pectin, Citric Acid, Cinnamon, Potassium Sorbate (Preservative). | Peanut Butter & Blackberry Spread: Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Salt, Molasses. Blackberry Spread: Sugar, Blackberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Natural Flavor, Potassium Sorbate (Preservative)."
+      },
+      {
+        "field": "allergen_information",
+        "ok": true,
+        "expected": [
+          "milk_may_contain",
+          "peanuts",
+          "tree_nuts_may_contain",
+          "wheat"
+        ],
+        "actual": [
+          "milk_may_contain",
+          "peanuts",
+          "tree_nuts_may_contain",
+          "wheat"
+        ]
+      }
+    ]
+  },
+  "sha256": "6a8f2c73fff632ae8e14cf2a927725bdbf166e261a40327c490606ed34ec799e"
+}

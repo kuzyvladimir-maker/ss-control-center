@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "2ded62ba-cb6f-4ed1-954b-09722bcf3284",
+  "created_at": "2026-07-18T12:02:51.954Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "VK-ASSB-3YFK:structured_attributes",
+  "sku": "VK-ASSB-3YFK",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "b755b666-fff8-4804-9854-dbac1ce75fed",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "f80ab26764c3a59e1f8926a9bafee3210ea562454cf5222870c81a266fc9b5df",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients"
+      ],
+      "before_path_state_sha256": "0eecea33619d70f70609397cdfc387fbed7f7d819c84aad7d5007608e831e013"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "9464d1bf62ad30f566d5e3f14f960ad0526d772dd085802a5fbf2e1c5f0b7e55"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "acf8da08-da63-48c8-84a9-241c72437abd",
+  "created_at": "2026-07-18T10:14:52.682Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "FR-AS6X-5KJY:text_count",
+  "sku": "FR-AS6X-5KJY",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "cc9043e1701e6952970e65c49e3cefa3f428d036a6a8a41f1a55e1083e54fb8b",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "edbedafc607248049548cc1a04e097b2",
+    "issues": []
+  },
+  "sha256": "c1aace89aaff3d7bf3a7a4ec70e5c061ac75ceb0f6623399ebc0baf4bc89f12d"
+}

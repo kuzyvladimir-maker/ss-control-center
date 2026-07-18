@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "a6a0a020-b401-4929-8df2-6831d10c394b",
+  "created_at": "2026-07-18T10:16:31.311Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "HZ-ASPS-4L22:text_count",
+  "sku": "HZ-ASPS-4L22",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "c483ed3f765cfa91af4a1f15e4e6bfcfb83c0702793f122ab59815f1ac9444ca",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "b5f38b1c8163412ca782889c24785f47",
+    "issues": []
+  },
+  "sha256": "bec1f91ba25dd6026d157b3e24f8523d212d33d1d2449643afa499c830487d0b"
+}

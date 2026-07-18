@@ -1,0 +1,38 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "a208a1c7-c168-45bb-8501-a1db15320ae5",
+  "created_at": "2026-07-18T11:32:11.204Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "DY-AS8W-6MJG:structured_attributes",
+  "sku": "DY-AS8W-6MJG",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "VERIFIED",
+  "detail": {
+    "checks": [
+      {
+        "field": "ingredients",
+        "ok": true,
+        "expected": "Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Sugar, Salt, Molasses. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Blueberry Spread: Sugar, Blueberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative), Natural Flavor.",
+        "actual": "Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Sugar, Salt, Molasses. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Blueberry Spread: Sugar, Blueberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative), Natural Flavor."
+      },
+      {
+        "field": "allergen_information",
+        "ok": true,
+        "expected": [
+          "milk_may_contain",
+          "peanuts",
+          "tree_nuts_may_contain",
+          "wheat"
+        ],
+        "actual": [
+          "milk_may_contain",
+          "peanuts",
+          "tree_nuts_may_contain",
+          "wheat"
+        ]
+      }
+    ]
+  },
+  "sha256": "43387d528e7385f0bfb75f8f2438b324a05bc9dc5d17b5076a6458cb7891fb57"
+}

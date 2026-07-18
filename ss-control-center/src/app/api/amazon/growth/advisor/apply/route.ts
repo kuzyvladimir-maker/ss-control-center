@@ -24,6 +24,10 @@ import { scoreListing, type HealthIssue } from "@/lib/amazon/growth/listing-heal
 import { getAttributeForm, buildAttributeEntry } from "@/lib/amazon/growth/product-type-definitions";
 import { logChange, logOptimizerChanges } from "@/lib/amazon/growth/change-log";
 import { listSkus } from "@/lib/amazon-sp-api/listings";
+import {
+  ADVISOR_PRICE_WRITE_BLOCKED_ERROR,
+  isGrowthAdvisorPriceAttribute,
+} from "@/lib/amazon/growth/price-write-guard";
 
 export const maxDuration = 120;
 
@@ -85,6 +89,12 @@ export async function POST(request: NextRequest) {
     if (mode === "set-attribute") {
       if (!attribute || !value) {
         return NextResponse.json({ ok: false, error: "attribute and value required" }, { status: 400 });
+      }
+      if (isGrowthAdvisorPriceAttribute(attribute)) {
+        return NextResponse.json(
+          { ok: false, error: ADVISOR_PRICE_WRITE_BLOCKED_ERROR },
+          { status: 409 },
+        );
       }
       const listing = await getListing(storeIndex, sellerId, sku);
       const summary = listing.summaries?.find((s) => s.marketplaceId === MARKETPLACE_ID) ?? listing.summaries?.[0];

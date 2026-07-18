@@ -10,22 +10,48 @@ import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import type { ListingItem, ListingPatch } from "@/lib/amazon-sp-api/listings";
 import { priceSchedule } from "@/lib/amazon-sp-api/pricing";
 import { BRAND_CARD_COLD_CHAIN_URL } from "@/lib/bundle-factory/attributes/brand-assets";
+import { validateSemanticOutput } from "@/lib/bundle-factory/content-generation";
+import type { Variant } from "@/lib/bundle-factory/variation-matrix";
 import { priceFor } from "@/lib/pricing/cost-model";
 import {
+  UNCRUSTABLES_COUPON_GROUP_POLICIES,
+  UNCRUSTABLES_LAUNCH_COHORT_ROWS,
+  UNCRUSTABLES_LAUNCH_PRICING_SCHEMA,
+  UNCRUSTABLES_REQUIRED_PRE_ASSIGNMENT_EXCLUSION,
+  launchPricingManifestBodySha256,
+  type UncrustablesLaunchPricingExclusion,
+  type UncrustablesLaunchPricingManifest,
+} from "../repair/uncrustables-launch-pricing";
+import {
   applyPurchasableOfferMerge,
+  CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE,
+  EXACT_PATH_SETTLEMENT_GUARD,
+  GALLERY_MEDIA_FORBIDDEN_PATCH_PATHS,
+  GALLERY_MEDIA_ONLY_PROFILE,
   ImmutableCheckpointStore,
   KNOWN_WRONG_SLOT_1_URL,
+  MEDIA_PATCH_PATHS,
+  OFFER_ONLY_EXECUTION_PROFILE,
+  OFFER_ONLY_FORBIDDEN_PATCH_PATHS,
+  OFFER_PATCH_PATHS,
+  REVIEWED_SZ_CATALOG_ALIGNED_MANIFEST_BODY_SHA256,
+  REVIEWED_SZ_CATALOG_ALIGNED_MANIFEST_FILE_SHA256,
   SELECTOR_REPLACE_SURROGATE_FOR_MERGE,
+  TEXT_STRUCTURED_ONLY_PROFILE,
   VERIFIED_BRAND_CARD_REHOST_URL,
   assertValidationPreviewSurrogateMatches,
+  assertRepairPlanLaunchPricingBinding,
   buildActionPatches,
   buildRepairPlan,
   buildValidationPreviewPatchSet,
   confirmationToken,
-  executeRepairPlan,
+  executeRepairPlan as executeRepairPlanSafe,
+  __testOnlyExecuteRepairPlanLegacyUnsafe as executeRepairPlan,
   mergeCanonicalPurchasableOffer,
+  repairExecutionSelection,
   sha256,
   stableJson,
+  verifyRepairExecutionSelection,
   verifyRepairPlan,
   verifyActionState,
   writeImmutableChannelMaxArtifact,
@@ -34,6 +60,33 @@ import {
   type RepairAmazonGateway,
   type UncrustablesRepairPlan,
 } from "../repair/uncrustables-surgical";
+
+function testCheckpointStore(
+  root: string,
+  planSha256: string,
+): ImmutableCheckpointStore {
+  return new ImmutableCheckpointStore(
+    root,
+    planSha256,
+    path.join(root, "test-mutation-coordination"),
+  );
+}
+
+function fixturePreAssignmentExclusions(
+  experimentRows: number,
+): UncrustablesLaunchPricingExclusion[] {
+  const count = UNCRUSTABLES_LAUNCH_COHORT_ROWS - experimentRows;
+  assert.ok(count >= 1);
+  return Array.from({ length: count }, (_, index) =>
+    index === 0
+      ? { ...UNCRUSTABLES_REQUIRED_PRE_ASSIGNMENT_EXCLUSION }
+      : {
+          sku: `PRE-TEST-${String(index).padStart(3, "0")}`,
+          asin: `B0Z${String(index).padStart(7, "0")}`,
+          reason: "AMAZON_CATALOG_IDENTITY_CONFLICT_8541",
+        },
+  );
+}
 
 function ledgerRow(overrides: Record<string, unknown> = {}) {
   return {
@@ -136,6 +189,115 @@ const desiredOffer: DesiredOfferRepair = {
   discounted_price_absent: true,
   list_price_absent: true,
 };
+
+function launchManifestBytes(): Buffer {
+  const rows = UNCRUSTABLES_COUPON_GROUP_POLICIES.flatMap((group) => {
+    const canonical = priceFor(group.count);
+    assert.ok(canonical);
+    const effective =
+      Math.round(canonical.suggested * (1 - group.discount_percent / 100) * 100) /
+      100;
+    const code = String(group.count).padStart(3, "0");
+    const couponIdentity = group.count === 24
+      ? { sku: "AA-ASAA-AAAA", asin: "B000TEST01" }
+      : { sku: `AA-${code}-AAAA`, asin: `B0${code}A0001` };
+    const saleIdentity = group.count === 24
+      ? { sku: "BB-ASBB-BBBB", asin: "B000TEST02" }
+      : { sku: `BB-${code}-BBBB`, asin: `B0${code}B0001` };
+    return [
+      {
+        ...couponIdentity,
+        count: group.count,
+        arm: "A" as const,
+        lever: `COUPON_${group.discount_percent}` as const,
+        base_price: canonical.suggested,
+        floor_price: canonical.floor,
+        effective_price: effective,
+        discount_percent: group.discount_percent,
+        sale_price_schedule: null,
+      },
+      {
+        ...saleIdentity,
+        count: group.count,
+        arm: "B" as const,
+        lever: `SALEPRICE_${group.discount_percent}` as const,
+        base_price: canonical.suggested,
+        floor_price: canonical.floor,
+        effective_price: effective,
+        discount_percent: group.discount_percent,
+        sale_price_schedule: {
+          value_with_tax: effective,
+          start_at: "2026-07-20T00:00:00.000Z",
+          end_at: "2026-08-19T23:59:59.000Z",
+        },
+      },
+    ];
+  });
+  const body: Omit<UncrustablesLaunchPricingManifest, "body_sha256"> = {
+    schema_version: UNCRUSTABLES_LAUNCH_PRICING_SCHEMA,
+    immutable: true,
+    reviewed_at: "2026-07-18T16:30:00.000Z",
+    decision: {
+      original_owner_decision_date: "2026-07-13",
+      revision_status: "PROPOSED_OWNER_APPROVAL_REQUIRED",
+      revision_prepared_at: "2026-07-18T16:30:00.000Z",
+      owner_approved_at: null,
+      changes: {
+        count_45_discount_percent_from_13_to_12: true,
+        synchronized_window_rebased: true,
+        unsafe_historical_coupon_titles_replaced: true,
+        coupon_budget_and_targeting_sealed: true,
+      },
+    },
+    source_artifacts: {
+      assignments: { path: "/tmp/assignments.csv", sha256: "a".repeat(64), rows: 10 },
+      coupon_spec: { path: "/tmp/coupons.csv", sha256: "b".repeat(64), rows: 5 },
+      sale_price_spec: { path: "/tmp/sales.csv", sha256: "c".repeat(64), rows: 5 },
+    },
+    policy: {
+      experiment: "BALANCED_COUPON_VS_SALE_PRICE",
+      base_price_immutable: true,
+      list_price_absent: true,
+      effective_price_not_below_floor: true,
+      equal_effective_price_within_count_tier: true,
+      maximum_discount_percent: 13,
+      excluded_identity_conflicts_not_publishable: true,
+      owner_approval_required_for_execution: true,
+      coupon_budget_is_not_a_hard_spend_cap_acknowledged: true,
+    },
+    coupon_controls: {
+      group_count: 5,
+      total_budget_usd: 1150,
+      groups: UNCRUSTABLES_COUPON_GROUP_POLICIES.map((group) => ({
+        ...group,
+        asin_count: 1,
+        limit_one_per_customer: true,
+        targeted_segment: "All customers",
+      })),
+    },
+    exclusions: [],
+    pre_assignment_exclusions: fixturePreAssignmentExclusions(rows.length),
+    scope: {
+      cohort_rows: UNCRUSTABLES_LAUNCH_COHORT_ROWS,
+      rows: 10,
+      coupon_rows: 5,
+      sale_price_rows: 5,
+      excluded_rows: 0,
+      pre_assignment_excluded_rows:
+        UNCRUSTABLES_LAUNCH_COHORT_ROWS - rows.length,
+      active_rows: 10,
+      active_coupon_rows: 5,
+      active_sale_price_rows: 5,
+      start_at: "2026-07-20T00:00:00.000Z",
+      end_at: "2026-08-19T23:59:59.000Z",
+    },
+    rows,
+  };
+  return Buffer.from(JSON.stringify({
+    ...body,
+    body_sha256: launchPricingManifestBodySha256(body),
+  }));
+}
 
 test("plan repairs B2B drift and only the known wrong slot-1 image", () => {
   const row = ledgerRow();
@@ -475,6 +637,303 @@ test("offer merge removes legacy sale price, preserves metadata, and updates ALL
 
 });
 
+test("offer merge preserves the exact pinned dated Sale Price without changing base", () => {
+  const desiredSale: DesiredOfferRepair = {
+    ...desiredOffer,
+    discounted_price_absent: false,
+    discounted_price_schedule: {
+      value_with_tax: 66.98,
+      start_at: "2026-07-20T00:00:00.000Z",
+      end_at: "2026-08-19T23:59:59.000Z",
+    },
+    launch_lever: "SALEPRICE_13",
+  };
+  const merged = mergeCanonicalPurchasableOffer([], desiredSale);
+  const all = merged.find((entry) => entry.audience === "ALL");
+  assert.ok(all);
+  assert.deepEqual(all.discounted_price, [{
+    schedule: [{
+      value_with_tax: 66.98,
+      start_at: "2026-07-20T00:00:00.000Z",
+      end_at: "2026-08-19T23:59:59.000Z",
+    }],
+  }]);
+  assert.deepEqual(all.our_price, priceSchedule(76.99));
+});
+
+test("launch-aware plan binds every Arm A/B OFFER to the exact source bytes", () => {
+  const rows = [
+    ledgerRow({ asin: "B000TEST01" }),
+    ledgerRow({ sku: "BB-ASBB-BBBB", asin: "B000TEST02" }),
+  ];
+  const sourceLedger = ledgerBytes(rows);
+  const launchBytes = launchManifestBytes();
+  const plan = buildRepairPlan({
+    ledgerPath: "/tmp/ledger.json",
+    ledgerBytes: sourceLedger,
+    launchPricingManifest: {
+      path: "/tmp/launch-pricing.json",
+      bytes: launchBytes,
+    },
+    createdAt: new Date("2026-07-18T16:31:00.000Z"),
+  });
+  assertRepairPlanLaunchPricingBinding(plan, launchBytes);
+  assert.throws(
+    () =>
+      assertRepairPlanLaunchPricingBinding(plan, launchBytes, {
+        requireOwnerApproval: true,
+        now: new Date("2026-07-18T17:00:00.000Z"),
+      }),
+    /requires explicit owner approval/,
+  );
+  const offers = plan.entries.map((entry) => {
+    const action = entry.actions.find((candidate) => candidate.kind === "OFFER");
+    assert.ok(action && action.desired.kind === "OFFER");
+    return action.desired.value;
+  });
+  assert.equal(offers[0].discounted_price_absent, true);
+  assert.equal(offers[0].launch_lever, "COUPON_13");
+  assert.equal(offers[1].discounted_price_absent, false);
+  assert.equal(offers[1].launch_lever, "SALEPRICE_13");
+  assert.equal(offers[1].discounted_price_schedule?.value_with_tax, 66.98);
+
+  const tampered = structuredClone(plan);
+  const tamperedOffer = tampered.entries[1].actions.find(
+    (candidate) => candidate.desired.kind === "OFFER",
+  );
+  assert.ok(tamperedOffer && tamperedOffer.desired.kind === "OFFER");
+  tamperedOffer.desired.value.discounted_price_schedule = {
+    value_with_tax: 66.98,
+    start_at: "2026-07-21T00:00:00.000Z",
+    end_at: "2026-08-20T23:59:59.000Z",
+  };
+  const { sha256: _oldSha, ...tamperedBody } = tampered;
+  tampered.sha256 = sha256(stableJson(tamperedBody));
+  assert.throws(
+    () => assertRepairPlanLaunchPricingBinding(tampered, launchBytes),
+    /does not exactly match/,
+  );
+});
+
+test("launch-aware OFFER executor requires ChannelMAX and Coupon authorization before Amazon", async () => {
+  const sourceLedger = ledgerBytes([ledgerRow({ asin: "B000TEST01" })]);
+  const plan = buildRepairPlan({
+    ledgerPath: "/tmp/ledger.json",
+    ledgerBytes: sourceLedger,
+    launchPricingManifest: {
+      path: "/tmp/launch-pricing.json",
+      bytes: launchManifestBytes(),
+    },
+    createdAt: new Date("2026-07-18T16:31:30.000Z"),
+  });
+  const selection = repairExecutionSelection(plan, {
+    sourcePlanPath: "/tmp/launch-plan.json",
+    createdAt: new Date("2026-07-18T16:32:00.000Z"),
+    actionKinds: ["OFFER"],
+  });
+  let gatewayCalls = 0;
+  const checkpointStore = testCheckpointStore(
+    path.join(tmpdir(), `uncr-launch-auth-${Date.now()}-${Math.random()}`),
+    plan.sha256,
+  );
+  await assert.rejects(
+    executeRepairPlanSafe(
+      plan,
+      {
+        getListing: async () => {
+          gatewayCalls++;
+          return liveListing();
+        },
+        patchListing: async () => {
+          gatewayCalls++;
+          return { status: "ACCEPTED", issues: [] };
+        },
+      },
+      {
+        apply: true,
+        executionPhase: "SUBMIT_ONLY",
+        confirmation: selection.confirmation_token,
+        checkpointStore,
+        executionSelection: selection,
+      },
+    ),
+    /ChannelMAX\+Coupon execution authorization/,
+  );
+  assert.equal(gatewayCalls, 0);
+});
+
+test("launch-aware plan cannot emit a misleading bounds-only ChannelMAX file", async () => {
+  const plan = buildRepairPlan({
+    ledgerPath: "/tmp/ledger.json",
+    ledgerBytes: ledgerBytes([ledgerRow({ asin: "B000TEST01" })]),
+    launchPricingManifest: {
+      path: "/tmp/launch-pricing.json",
+      bytes: launchManifestBytes(),
+    },
+    createdAt: new Date("2026-07-18T16:31:45.000Z"),
+  });
+  await assert.rejects(
+    writeImmutableChannelMaxArtifact(
+      path.join(tmpdir(), `uncr-launch-channelmax-${Date.now()}`),
+      plan,
+    ),
+    /Bounds-only ChannelMAX artifacts are disabled/,
+  );
+});
+
+test("Sale Price verification rejects duplicate, malformed, and wrong-arm structures", async () => {
+  const rows = [
+    ledgerRow({ asin: "B000TEST01" }),
+    ledgerRow({ sku: "BB-ASBB-BBBB", asin: "B000TEST02" }),
+  ];
+  const launchBytes = launchManifestBytes();
+  const plan = buildRepairPlan({
+    ledgerPath: "/tmp/ledger.json",
+    ledgerBytes: ledgerBytes(rows),
+    launchPricingManifest: {
+      path: "/tmp/launch-pricing.json",
+      bytes: launchBytes,
+    },
+    createdAt: new Date("2026-07-18T16:32:00.000Z"),
+  });
+  const couponEntry = plan.entries.find((entry) => entry.sku === "AA-ASAA-AAAA");
+  const saleEntry = plan.entries.find((entry) => entry.sku === "BB-ASBB-BBBB");
+  assert.ok(couponEntry && saleEntry);
+  const couponAction = couponEntry.actions.find((action) => action.kind === "OFFER");
+  const saleAction = saleEntry.actions.find((action) => action.kind === "OFFER");
+  assert.ok(couponAction && saleAction);
+
+  const exactSale = desiredOfferListingForEntry(saleEntry);
+  assert.equal((await verifyActionState(saleAction, exactSale)).ok, true);
+  const duplicatedSchedule = structuredClone(exactSale);
+  const duplicatedOffer = (
+    duplicatedSchedule.attributes?.purchasable_offer as Array<Record<string, unknown>>
+  ).find((entry) => entry.audience === "ALL");
+  assert.ok(duplicatedOffer);
+  const discounted = duplicatedOffer.discounted_price as Array<{
+    schedule: Array<Record<string, unknown>>;
+  }>;
+  discounted[0].schedule.push(structuredClone(discounted[0].schedule[0]));
+  assert.equal(
+    (await verifyActionState(saleAction, duplicatedSchedule)).ok,
+    false,
+  );
+
+  const duplicatedAll = structuredClone(exactSale);
+  const offers = duplicatedAll.attributes?.purchasable_offer as Array<
+    Record<string, unknown>
+  >;
+  offers.push(structuredClone(offers.find((entry) => entry.audience === "ALL")!));
+  assert.equal((await verifyActionState(saleAction, duplicatedAll)).ok, false);
+
+  const crossMarketplace = structuredClone(exactSale);
+  const crossOffers = crossMarketplace.attributes?.purchasable_offer as Array<
+    Record<string, unknown>
+  >;
+  const usAll = crossOffers.find((entry) => entry.audience === "ALL");
+  assert.ok(usAll);
+  const foreignAll = structuredClone(usAll);
+  foreignAll.marketplace_id = "A1F83G8C2ARO7P";
+  crossOffers.unshift(foreignAll);
+  usAll.our_price = priceSchedule(1);
+  assert.equal((await verifyActionState(saleAction, crossMarketplace)).ok, false);
+
+  const duplicateB2b = structuredClone(exactSale);
+  const duplicateB2bOffers = duplicateB2b.offers as Array<
+    Record<string, unknown>
+  >;
+  const exactB2b = duplicateB2bOffers.find(
+    (offer) => offer.offerType === "B2B",
+  );
+  assert.ok(exactB2b);
+  duplicateB2bOffers.push(structuredClone(exactB2b));
+  assert.equal((await verifyActionState(saleAction, duplicateB2b)).ok, false);
+
+  const couponWithNullDiscount = desiredOfferListingForEntry(couponEntry);
+  const couponAll = (
+    couponWithNullDiscount.attributes?.purchasable_offer as Array<Record<string, unknown>>
+  ).find((entry) => entry.audience === "ALL");
+  assert.ok(couponAll);
+  couponAll.discounted_price = null;
+  assert.equal(
+    (await verifyActionState(couponAction, couponWithNullDiscount)).ok,
+    false,
+  );
+});
+
+test("OFFER verification requires an exact converged top-level US B2C/USD offer when offers are present", async () => {
+  const entry = build().entries[0];
+  const action = entry.actions.find((candidate) => candidate.kind === "OFFER");
+  assert.ok(action && action.desired.kind === "OFFER");
+  const exact = desiredOfferListingForEntry(entry);
+  assert.equal((await verifyActionState(action, exact)).ok, true);
+
+  const stale = structuredClone(exact);
+  const staleB2c = (stale.offers as Array<Record<string, unknown>>).find(
+    (offer) => offer.offerType === "B2C",
+  );
+  assert.ok(staleB2c && typeof staleB2c.price === "object");
+  (staleB2c.price as Record<string, unknown>).amount = "77.64";
+  const staleVerification = await verifyActionState(action, stale);
+  assert.equal(staleVerification.ok, false);
+  assert.deepEqual(
+    staleVerification.checks.find(
+      (check) => check.field === "offers.B2C.price",
+    ),
+    {
+      field: "offers.B2C.price",
+      ok: false,
+      expected: 76.99,
+      actual: 77.64,
+    },
+  );
+
+  const duplicate = structuredClone(exact);
+  const duplicateOffers = duplicate.offers as Array<Record<string, unknown>>;
+  const duplicateSource = duplicateOffers.find(
+    (offer) => offer.offerType === "B2C",
+  );
+  assert.ok(duplicateSource);
+  duplicateOffers.push(structuredClone(duplicateSource));
+  const duplicateCheck = (await verifyActionState(action, duplicate)).checks.find(
+    (check) => check.field === "offers.B2C.price",
+  );
+  assert.equal(duplicateCheck?.ok, false);
+  assert.equal(
+    (duplicateCheck?.actual as { state?: unknown } | undefined)?.state,
+    "MALFORMED",
+  );
+
+  const malformed = structuredClone(exact);
+  const malformedB2c = (malformed.offers as Array<Record<string, unknown>>).find(
+    (offer) => offer.offerType === "B2C",
+  );
+  assert.ok(malformedB2c && typeof malformedB2c.price === "object");
+  (malformedB2c.price as Record<string, unknown>).currencyCode = "CAD";
+  (malformedB2c.price as Record<string, unknown>).currency = "CAD";
+  const malformedCheck = (await verifyActionState(action, malformed)).checks.find(
+    (check) => check.field === "offers.B2C.price",
+  );
+  assert.equal(malformedCheck?.ok, false);
+  assert.equal(
+    (malformedCheck?.actual as { state?: unknown } | undefined)?.state,
+    "MALFORMED",
+  );
+
+  const omitted = structuredClone(exact);
+  delete omitted.offers;
+  assert.equal((await verifyActionState(action, omitted)).ok, true);
+
+  const b2bOnly = structuredClone(exact);
+  const b2bOnlyOffers = b2bOnly.offers as Array<Record<string, unknown>>;
+  for (let index = b2bOnlyOffers.length - 1; index >= 0; index -= 1) {
+    if (b2bOnlyOffers[index]?.offerType !== "B2B") {
+      b2bOnlyOffers.splice(index, 1);
+    }
+  }
+  assert.equal((await verifyActionState(action, b2bOnly)).ok, false);
+});
+
 test("offer patch uses selector merge and creates desired B2B when attributes omit it", async () => {
   const live = liveListing();
   const attrs = live.attributes as Record<string, unknown>;
@@ -518,9 +977,16 @@ test("offer patch uses selector merge and creates desired B2B when attributes om
     },
     offers: [
       {
+        marketplaceId: MARKETPLACE_ID,
+        offerType: "B2C",
+        audience: { value: "ALL" },
+        price: { amount: "76.99", currency: "USD", currencyCode: "USD" },
+      },
+      {
+        marketplaceId: MARKETPLACE_ID,
         offerType: "B2B",
         audience: { value: "B2B" },
-        price: { amount: "76.99", currency: "USD" },
+        price: { amount: "76.99", currency: "USD", currencyCode: "USD" },
       },
     ],
   };
@@ -666,9 +1132,104 @@ function liveListing(price = 70, b2b = 69.3): ListingItem {
       ],
     },
     offers: [
-      { offerType: "B2B", audience: { value: "B2B" }, price: { amount: String(b2b) } },
+      {
+        marketplaceId: MARKETPLACE_ID,
+        offerType: "B2C",
+        audience: { value: "ALL" },
+        price: { amount: String(price), currency: "USD", currencyCode: "USD" },
+      },
+      {
+        marketplaceId: MARKETPLACE_ID,
+        offerType: "B2B",
+        audience: { value: "B2B" },
+        price: { amount: String(b2b), currency: "USD", currencyCode: "USD" },
+      },
     ],
   };
+}
+
+function listingForEntry(
+  entry: UncrustablesRepairPlan["entries"][number],
+  price = 70,
+  b2b = 69.3,
+): ListingItem {
+  const listing = liveListing(price, b2b);
+  listing.sku = entry.sku;
+  assert.ok(listing.summaries?.[0]);
+  listing.summaries[0].asin = entry.asin;
+  return listing;
+}
+
+function desiredOfferListingForEntry(
+  entry: UncrustablesRepairPlan["entries"][number],
+  before = listingForEntry(entry),
+): ListingItem {
+  const action = entry.actions.find((candidate) => candidate.kind === "OFFER");
+  assert.ok(action && action.desired.kind === "OFFER");
+  const next = structuredClone(before);
+  const attrs = (next.attributes ??= {}) as Record<string, unknown>;
+  for (const patch of buildActionPatches(action, before)) {
+    if (patch.path === "/attributes/purchasable_offer") {
+      attrs.purchasable_offer = applyPurchasableOfferMerge(
+        attrs.purchasable_offer,
+        patch.value,
+      );
+    } else if (patch.op === "delete") {
+      delete attrs[patch.path.replace("/attributes/", "")];
+    }
+  }
+  next.offers = [
+    {
+      marketplaceId: MARKETPLACE_ID,
+      offerType: "B2C",
+      audience: { value: "ALL" },
+      price: {
+        amount: String(action.desired.value.consumer_price),
+        currency: "USD",
+        currencyCode: "USD",
+      },
+    },
+    {
+      marketplaceId: MARKETPLACE_ID,
+      offerType: "B2B",
+      audience: { value: "B2B" },
+      price: {
+        amount: String(action.desired.value.business_price),
+        currency: "USD",
+        currencyCode: "USD",
+      },
+    },
+  ];
+  return next;
+}
+
+function textAndMediaLedgerRow() {
+  const row = ledgerRow();
+  row.live.title = "Uncrustables Grape, 4 ct - Pack of 6 (24 Total)";
+  row.live.bullets = [
+    "Six boxes contain four sandwiches each.",
+    "Keep frozen.",
+    "Individually wrapped.",
+    "Follow wrapper directions.",
+    "Grape jelly flavor.",
+  ];
+  row.live.description = "Six retail boxes total 24 sandwiches.";
+  row.live.gallery_image_urls = [KNOWN_WRONG_SLOT_1_URL];
+  return row;
+}
+
+function applyTestAttributePatches(
+  listing: ListingItem,
+  patches: ListingPatch[],
+): ListingItem {
+  const next = structuredClone(listing);
+  const attributes = (next.attributes ??= {}) as Record<string, unknown>;
+  for (const patch of patches) {
+    const attribute = patch.path.replace("/attributes/", "");
+    if (patch.op === "delete") delete attributes[attribute];
+    else attributes[attribute] = structuredClone(patch.value);
+  }
+  return next;
 }
 
 test("dry run and wrong confirmation make zero gateway calls", async () => {
@@ -679,7 +1240,7 @@ test("dry run and wrong confirmation make zero gateway calls", async () => {
     patchListing: async () => { calls++; return { status: "VALID" }; },
   };
   const dir = path.join(tmpdir(), `uncr-surgical-${Date.now()}-dry`);
-  const store = new ImmutableCheckpointStore(dir, plan.sha256);
+  const store = testCheckpointStore(dir, plan.sha256);
   const dry = await executeRepairPlan(plan, gateway, { apply: false, checkpointStore: store });
   assert.equal(dry.mode, "DRY_RUN");
   assert.equal(calls, 0);
@@ -692,6 +1253,582 @@ test("dry run and wrong confirmation make zero gateway calls", async () => {
     /requires --confirm/,
   );
   assert.equal(calls, 0);
+});
+
+test("content execution selection is exact, tamper-evident, and rejects the full-plan token", async () => {
+  const row = ledgerRow();
+  row.live.gallery_image_urls = [KNOWN_WRONG_SLOT_1_URL];
+  const plan = build([row]);
+  const selection = repairExecutionSelection(plan, {
+    sourcePlanPath: "/tmp/sealed-plan.json",
+    createdAt: new Date("2026-07-18T05:00:00.000Z"),
+    actionKinds: ["TEXT_COUNT", "STRUCTURED_ATTRIBUTES", "MEDIA"],
+  });
+  verifyRepairExecutionSelection(plan, selection);
+  assert.equal(selection.profile, CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE);
+  assert.deepEqual(selection.forbidden_patch_paths, [
+    "/attributes/list_price",
+    "/attributes/purchasable_offer",
+  ]);
+  assert.equal(selection.selected_actions, 1);
+  assert.deepEqual(
+    selection.selected_action_ids,
+    plan.entries[0].actions
+      .filter((action) => action.kind === "MEDIA")
+      .map((action) => action.action_id),
+  );
+  assert.notEqual(selection.confirmation_token, confirmationToken(plan));
+
+  const tampered = structuredClone(selection);
+  tampered.selected_action_ids = [
+    plan.entries[0].actions.find((action) => action.kind === "OFFER")!
+      .action_id,
+  ];
+  assert.throws(
+    () => verifyRepairExecutionSelection(plan, tampered),
+    /Invalid or tampered|does not exactly match/,
+  );
+
+  let gatewayCalls = 0;
+  const gateway: RepairAmazonGateway = {
+    getListing: async () => {
+      gatewayCalls++;
+      return liveListing();
+    },
+    patchListing: async () => {
+      gatewayCalls++;
+      return { status: "VALID" };
+    },
+  };
+  const root = path.join(
+    tmpdir(),
+    `uncr-selection-token-${Date.now()}-${Math.random()}`,
+  );
+  await assert.rejects(
+    executeRepairPlan(plan, gateway, {
+      apply: true,
+      confirmation: confirmationToken(plan),
+      checkpointStore: testCheckpointStore(root, plan.sha256),
+      executionSelection: selection,
+    }),
+    /requires --confirm=.*SELECTION/,
+  );
+  assert.equal(gatewayCalls, 0);
+});
+
+test("text/structured selection seals an exact profile, token, and OFFER/MEDIA boundary", () => {
+  const plan = build([textAndMediaLedgerRow()]);
+  assert.deepEqual(
+    plan.entries[0].actions.map((action) => action.kind),
+    ["TEXT_COUNT", "MEDIA", "OFFER"],
+  );
+  const selection = repairExecutionSelection(plan, {
+    sourcePlanPath: "/tmp/sealed-plan.json",
+    createdAt: new Date("2026-07-18T06:00:00.000Z"),
+    actionKinds: ["TEXT_COUNT", "STRUCTURED_ATTRIBUTES"],
+  });
+  verifyRepairExecutionSelection(plan, selection);
+  assert.equal(selection.profile, TEXT_STRUCTURED_ONLY_PROFILE);
+  assert.deepEqual(
+    selection.forbidden_patch_paths,
+    [...OFFER_PATCH_PATHS, ...MEDIA_PATCH_PATHS].sort(),
+  );
+  assert.deepEqual(selection.selected_action_ids, [
+    "AA-ASAA-AAAA:text_count",
+  ]);
+  assert.match(
+    selection.confirmation_token,
+    /^APPLY-UNCRUSTABLES-SELECTION-[A-F0-9]{16}$/,
+  );
+  assert.notEqual(selection.confirmation_token, confirmationToken(plan));
+
+  const tampered = structuredClone(selection);
+  tampered.forbidden_patch_paths = [...OFFER_PATCH_PATHS];
+  const {
+    sha256: _claimed,
+    confirmation_token: _claimedToken,
+    ...tamperedBody
+  } = tampered;
+  tampered.sha256 = sha256(stableJson(tamperedBody));
+  tampered.confirmation_token =
+    `APPLY-UNCRUSTABLES-SELECTION-${tampered.sha256.slice(0, 16).toUpperCase()}`;
+  assert.throws(
+    () => verifyRepairExecutionSelection(plan, tampered),
+    /does not exactly match|Text\/structured-only/,
+  );
+});
+
+test("gallery-media-only selection seals exact secondary slots and rejects every MAIN action", () => {
+  const row = ledgerRow();
+  row.live.gallery_image_urls = [KNOWN_WRONG_SLOT_1_URL];
+  const plan = build([row]);
+  const selection = repairExecutionSelection(plan, {
+    sourcePlanPath: "/tmp/sealed-plan.json",
+    createdAt: new Date("2026-07-18T06:02:00.000Z"),
+    skus: [row.sku],
+    actionKinds: ["MEDIA"],
+  });
+  verifyRepairExecutionSelection(plan, selection);
+  assert.equal(selection.profile, GALLERY_MEDIA_ONLY_PROFILE);
+  assert.deepEqual(
+    selection.forbidden_patch_paths,
+    GALLERY_MEDIA_FORBIDDEN_PATCH_PATHS,
+  );
+  assert.deepEqual(selection.selected_skus, [row.sku]);
+  assert.deepEqual(selection.selected_action_ids, [`${row.sku}:media`]);
+  assert.ok(
+    selection.forbidden_patch_paths.includes(
+      "/attributes/main_product_image_locator",
+    ),
+  );
+  assert.ok(
+    selection.forbidden_patch_paths.includes("/attributes/purchasable_offer"),
+  );
+  assert.ok(selection.forbidden_patch_paths.includes("/attributes/item_name"));
+
+  const bytes = ledgerBytes([row]);
+  const mainPlan = buildRepairPlan({
+    ledgerPath: "/tmp/ledger.json",
+    ledgerBytes: bytes,
+    manifest: {
+      schema_version: "uncrustables-surgical-desired/v1",
+      source_ledger_sha256: sha256(bytes),
+      repairs: [
+        {
+          sku: row.sku,
+          media: {
+            main_image_url: "https://assets.example.com/forbidden-main.jpg",
+          },
+        },
+      ],
+    },
+    createdAt: new Date("2026-07-18T06:02:30.000Z"),
+  });
+  assert.throws(
+    () =>
+      repairExecutionSelection(mainPlan, {
+        sourcePlanPath: "/tmp/sealed-main-plan.json",
+        createdAt: new Date("2026-07-18T06:03:00.000Z"),
+        skus: [row.sku],
+        actionKinds: ["MEDIA"],
+      }),
+    /contains MAIN or a non-gallery action\/path/,
+  );
+});
+
+test("OFFER-only selection seals an exact non-content/non-media boundary", () => {
+  const plan = build();
+  const selection = repairExecutionSelection(plan, {
+    sourcePlanPath: "/tmp/sealed-offer-plan.json",
+    createdAt: new Date("2026-07-18T06:04:00.000Z"),
+    actionKinds: ["OFFER"],
+  });
+  verifyRepairExecutionSelection(plan, selection);
+  assert.equal(selection.profile, OFFER_ONLY_EXECUTION_PROFILE);
+  assert.deepEqual(
+    selection.forbidden_patch_paths,
+    OFFER_ONLY_FORBIDDEN_PATCH_PATHS,
+  );
+  assert.deepEqual(selection.selected_action_ids, ["AA-ASAA-AAAA:offer"]);
+  assert.ok(
+    selection.forbidden_patch_paths.includes(
+      "/attributes/main_product_image_locator",
+    ),
+  );
+  assert.ok(selection.forbidden_patch_paths.includes("/attributes/item_name"));
+  assert.equal(
+    selection.forbidden_patch_paths.includes("/attributes/purchasable_offer"),
+    false,
+  );
+});
+
+test("text/structured resume quarantines an AD-like MEDIA submission without polling or closing it", async () => {
+  const plan = build([textAndMediaLedgerRow()]);
+  const selection = repairExecutionSelection(plan, {
+    sourcePlanPath: "/tmp/sealed-plan.json",
+    createdAt: new Date("2026-07-18T06:05:00.000Z"),
+    actionKinds: ["TEXT_COUNT", "STRUCTURED_ATTRIBUTES"],
+  });
+  const textAction = plan.entries[0].actions.find(
+    (action) => action.kind === "TEXT_COUNT",
+  );
+  const mediaAction = plan.entries[0].actions.find(
+    (action) => action.kind === "MEDIA",
+  );
+  assert.ok(textAction && mediaAction);
+
+  const mediaPatches = buildActionPatches(mediaAction, liveListing());
+  const mediaPaths = [...new Set(mediaPatches.map((patch) => patch.path))].sort();
+  const mediaPatchSha = sha256(stableJson(mediaPatches));
+  const root = path.join(
+    tmpdir(),
+    `uncr-text-structured-media-quarantine-${Date.now()}-${Math.random()}`,
+  );
+  const checkpointStore = testCheckpointStore(root, plan.sha256);
+  const submitted = await checkpointStore.append({
+    action_id: mediaAction.action_id,
+    sku: plan.entries[0].sku,
+    kind: mediaAction.kind,
+    status: "SUBMITTED",
+    detail: {
+      strategy: "PRIMARY",
+      patch_sha256: mediaPatchSha,
+      patch_paths: mediaPaths,
+      settlement_guard: {
+        schema_version: EXACT_PATH_SETTLEMENT_GUARD,
+        actual_patch_sha256: mediaPatchSha,
+        exact_action_paths: mediaPaths,
+        before_path_state_sha256: "b".repeat(64),
+      },
+    },
+  });
+
+  const desiredTextListing = applyTestAttributePatches(
+    liveListing(),
+    buildActionPatches(textAction, liveListing()),
+  );
+  assert.equal((await verifyActionState(textAction, desiredTextListing)).ok, true);
+  let gets = 0;
+  let patches = 0;
+  const gateway: RepairAmazonGateway = {
+    getListing: async () => {
+      gets++;
+      return structuredClone(desiredTextListing);
+    },
+    patchListing: async () => {
+      patches++;
+      throw new Error("already-applied TEXT must not PATCH");
+    },
+  };
+  const result = await executeRepairPlan(plan, gateway, {
+    apply: true,
+    confirmation: selection.confirmation_token,
+    checkpointStore,
+    executionSelection: selection,
+    requestDelayMs: 200,
+    sleep: async () => {},
+  });
+  assert.equal(result.selected_actions, 1);
+  assert.equal(result.quarantined_pending_actions, 1);
+  assert.equal(result.already_applied_actions, 1);
+  assert.equal(gets, 1);
+  assert.equal(patches, 0);
+  const pending = await checkpointStore.pendingSubmissions();
+  assert.equal(pending.size, 1);
+  assert.equal(
+    pending.get(mediaAction.action_id)?.submitted_event_id,
+    submitted.event_id,
+  );
+  await readFile(
+    path.join(root, "test-mutation-coordination", "pending-mutation-fence.json"),
+    "utf8",
+  );
+
+});
+
+test("MEDIA quarantine path overlap and recorded SHA tampering hard-stop before Amazon", async () => {
+  const plan = build([textAndMediaLedgerRow()]);
+  const selection = repairExecutionSelection(plan, {
+    sourcePlanPath: "/tmp/sealed-plan.json",
+    createdAt: new Date("2026-07-18T06:10:00.000Z"),
+    actionKinds: ["TEXT_COUNT", "STRUCTURED_ATTRIBUTES"],
+  });
+  const mediaAction = plan.entries[0].actions.find(
+    (action) => action.kind === "MEDIA",
+  );
+  assert.ok(mediaAction);
+
+  for (const scenario of [
+    {
+      name: "selected-path-overlap",
+      recordedSha: "c".repeat(64),
+      evidenceSha: "c".repeat(64),
+      paths: ["/attributes/item_name"],
+      pattern: /outside its sealed action boundary/,
+    },
+    {
+      name: "recorded-sha-mismatch",
+      recordedSha: "d".repeat(64),
+      evidenceSha: "e".repeat(64),
+      paths: ["/attributes/other_product_image_locator_1"],
+      pattern: /patch SHA conflicts/,
+    },
+  ]) {
+    const root = path.join(
+      tmpdir(),
+      `uncr-media-quarantine-${scenario.name}-${Date.now()}-${Math.random()}`,
+    );
+    const checkpointStore = testCheckpointStore(root, plan.sha256);
+    await checkpointStore.append({
+      action_id: mediaAction.action_id,
+      sku: plan.entries[0].sku,
+      kind: mediaAction.kind,
+      status: "SUBMITTED",
+      detail: {
+        strategy: "PRIMARY",
+        patch_sha256: scenario.recordedSha,
+        patch_paths: scenario.paths,
+        settlement_guard: {
+          schema_version: EXACT_PATH_SETTLEMENT_GUARD,
+          actual_patch_sha256: scenario.evidenceSha,
+          exact_action_paths: scenario.paths,
+          before_path_state_sha256: "f".repeat(64),
+        },
+      },
+    });
+    let gatewayCalls = 0;
+    const gateway: RepairAmazonGateway = {
+      getListing: async () => {
+        gatewayCalls++;
+        return liveListing();
+      },
+      patchListing: async () => {
+        gatewayCalls++;
+        return { status: "VALID" };
+      },
+    };
+    await assert.rejects(
+      executeRepairPlan(plan, gateway, {
+        apply: true,
+        confirmation: selection.confirmation_token,
+        checkpointStore,
+        executionSelection: selection,
+        requestDelayMs: 200,
+        sleep: async () => {},
+      }),
+      scenario.pattern,
+    );
+    assert.equal(gatewayCalls, 0);
+    assert.equal((await checkpointStore.pendingSubmissions()).size, 1);
+  }
+});
+
+test("content-only resume quarantines a disjoint pending OFFER without closing or polling it", async () => {
+  const row = ledgerRow();
+  row.live.gallery_image_urls = [KNOWN_WRONG_SLOT_1_URL];
+  const plan = build([row]);
+  const selection = repairExecutionSelection(plan, {
+    sourcePlanPath: "/tmp/sealed-plan.json",
+    createdAt: new Date("2026-07-18T05:05:00.000Z"),
+    actionKinds: ["TEXT_COUNT", "STRUCTURED_ATTRIBUTES", "MEDIA"],
+  });
+  const mediaAction = plan.entries[0].actions.find(
+    (action) => action.kind === "MEDIA",
+  );
+  const offerAction = plan.entries[0].actions.find(
+    (action) => action.kind === "OFFER",
+  );
+  assert.ok(mediaAction && mediaAction.desired.kind === "MEDIA");
+  assert.ok(offerAction);
+
+  const beforeOffer = liveListing();
+  const offerPatches = buildActionPatches(offerAction, beforeOffer);
+  const offerPaths = [...new Set(offerPatches.map((patch) => patch.path))].sort();
+  const offerPatchSha = sha256(stableJson(offerPatches));
+  const root = path.join(
+    tmpdir(),
+    `uncr-selection-quarantine-${Date.now()}-${Math.random()}`,
+  );
+  const checkpointStore = testCheckpointStore(root, plan.sha256);
+  const submitted = await checkpointStore.append({
+    action_id: offerAction.action_id,
+    sku: plan.entries[0].sku,
+    kind: offerAction.kind,
+    status: "SUBMITTED",
+    detail: {
+      strategy: SELECTOR_REPLACE_SURROGATE_FOR_MERGE,
+      actual_request_patch_sha256: offerPatchSha,
+      actual_request_patch_paths: offerPaths,
+      settlement_guard: {
+        schema_version: EXACT_PATH_SETTLEMENT_GUARD,
+        actual_patch_sha256: offerPatchSha,
+        exact_action_paths: offerPaths,
+        before_path_state_sha256: "a".repeat(64),
+      },
+    },
+  });
+
+  const desiredMediaUrl = mediaAction.desired.value.gallery_slots[0].url;
+  const current = liveListing();
+  current.attributes = {
+    ...current.attributes,
+    other_product_image_locator_1: [
+      {
+        marketplace_id: MARKETPLACE_ID,
+        media_location: desiredMediaUrl,
+      },
+    ],
+  };
+  let gets = 0;
+  let patches = 0;
+  const gateway: RepairAmazonGateway = {
+    getListing: async () => {
+      gets++;
+      return structuredClone(current);
+    },
+    patchListing: async () => {
+      patches++;
+      throw new Error("already-applied MEDIA must not PATCH");
+    },
+  };
+  const result = await executeRepairPlan(plan, gateway, {
+    apply: true,
+    confirmation: selection.confirmation_token,
+    checkpointStore,
+    executionSelection: selection,
+    requestDelayMs: 200,
+    sleep: async () => {},
+  });
+  assert.equal(result.selection_sha256, selection.sha256);
+  assert.equal(result.selected_actions, 1);
+  assert.equal(result.quarantined_pending_actions, 1);
+  assert.equal(result.already_applied_actions, 1);
+  assert.equal(gets, 1);
+  assert.equal(patches, 0);
+
+  const pending = await checkpointStore.pendingSubmissions();
+  assert.equal(pending.size, 1);
+  assert.equal(pending.get(offerAction.action_id)?.submitted_event_id, submitted.event_id);
+  await readFile(
+    path.join(
+      root,
+      "test-mutation-coordination",
+      "pending-mutation-fence.json",
+    ),
+    "utf8",
+  );
+  const checkpointEvents = await Promise.all(
+    (await readdir(path.join(root, plan.sha256.slice(0, 20))))
+      .filter((name) => name.endsWith(".json"))
+      .map(async (name) =>
+        JSON.parse(
+          await readFile(
+            path.join(root, plan.sha256.slice(0, 20), name),
+            "utf8",
+          ),
+        ) as { status: string; detail: Record<string, unknown> }
+      ),
+  );
+  const quarantine = checkpointEvents.find(
+    (event) => event.status === "PENDING_QUARANTINED",
+  );
+  assert.equal(quarantine?.detail.selection_sha256, selection.sha256);
+  assert.equal(quarantine?.detail.submitted_event_id, submitted.event_id);
+});
+
+test("pending OFFER with a non-selector submission strategy hard-stops before Amazon", async () => {
+  const row = ledgerRow();
+  row.live.gallery_image_urls = [KNOWN_WRONG_SLOT_1_URL];
+  const plan = build([row]);
+  const selection = repairExecutionSelection(plan, {
+    sourcePlanPath: "/tmp/sealed-plan.json",
+    createdAt: new Date("2026-07-18T05:07:00.000Z"),
+    actionKinds: ["TEXT_COUNT", "STRUCTURED_ATTRIBUTES", "MEDIA"],
+  });
+  const offerAction = plan.entries[0].actions.find(
+    (action) => action.kind === "OFFER",
+  );
+  assert.ok(offerAction);
+  const offerPatches = buildActionPatches(offerAction, liveListing());
+  const offerPatchSha = sha256(stableJson(offerPatches));
+  const offerPaths = [...new Set(offerPatches.map((patch) => patch.path))].sort();
+  const root = path.join(
+    tmpdir(),
+    `uncr-selection-wrong-offer-strategy-${Date.now()}-${Math.random()}`,
+  );
+  const checkpointStore = testCheckpointStore(root, plan.sha256);
+  await checkpointStore.append({
+    action_id: offerAction.action_id,
+    sku: plan.entries[0].sku,
+    kind: offerAction.kind,
+    status: "SUBMITTED",
+    detail: {
+      strategy: "PRIMARY",
+      actual_request_patch_sha256: offerPatchSha,
+      actual_request_patch_paths: offerPaths,
+      settlement_guard: {
+        schema_version: EXACT_PATH_SETTLEMENT_GUARD,
+        actual_patch_sha256: offerPatchSha,
+        exact_action_paths: offerPaths,
+        before_path_state_sha256: "9".repeat(64),
+      },
+    },
+  });
+  let gatewayCalls = 0;
+  const gateway: RepairAmazonGateway = {
+    getListing: async () => {
+      gatewayCalls++;
+      return liveListing();
+    },
+    patchListing: async () => {
+      gatewayCalls++;
+      return { status: "VALID" };
+    },
+  };
+  await assert.rejects(
+    executeRepairPlan(plan, gateway, {
+      apply: true,
+      confirmation: selection.confirmation_token,
+      checkpointStore,
+      executionSelection: selection,
+      requestDelayMs: 200,
+      sleep: async () => {},
+    }),
+    /documented strategy/,
+  );
+  assert.equal(gatewayCalls, 0);
+  assert.equal((await checkpointStore.pendingSubmissions()).size, 1);
+});
+
+test("invalid unselected pending evidence hard-stops content execution before Amazon", async () => {
+  const row = ledgerRow();
+  row.live.gallery_image_urls = [KNOWN_WRONG_SLOT_1_URL];
+  const plan = build([row]);
+  const selection = repairExecutionSelection(plan, {
+    sourcePlanPath: "/tmp/sealed-plan.json",
+    createdAt: new Date("2026-07-18T05:10:00.000Z"),
+    actionKinds: ["TEXT_COUNT", "STRUCTURED_ATTRIBUTES", "MEDIA"],
+  });
+  const offerAction = plan.entries[0].actions.find(
+    (action) => action.kind === "OFFER",
+  );
+  assert.ok(offerAction);
+  const root = path.join(
+    tmpdir(),
+    `uncr-selection-invalid-pending-${Date.now()}-${Math.random()}`,
+  );
+  const checkpointStore = testCheckpointStore(root, plan.sha256);
+  await checkpointStore.append({
+    action_id: offerAction.action_id,
+    sku: plan.entries[0].sku,
+    kind: offerAction.kind,
+    status: "SUBMITTED",
+    detail: { strategy: SELECTOR_REPLACE_SURROGATE_FOR_MERGE },
+  });
+  let gatewayCalls = 0;
+  const gateway: RepairAmazonGateway = {
+    getListing: async () => {
+      gatewayCalls++;
+      return liveListing();
+    },
+    patchListing: async () => {
+      gatewayCalls++;
+      return { status: "VALID" };
+    },
+  };
+  await assert.rejects(
+    executeRepairPlan(plan, gateway, {
+      apply: true,
+      confirmation: selection.confirmation_token,
+      checkpointStore,
+      executionSelection: selection,
+      requestDelayMs: 200,
+      sleep: async () => {},
+    }),
+    /no exact-path settlement evidence/,
+  );
+  assert.equal(gatewayCalls, 0);
+  assert.equal((await checkpointStore.pendingSubmissions()).size, 1);
 });
 
 test("executor revalidates a completed checkpoint and repairs subsequent live drift", async () => {
@@ -767,14 +1904,25 @@ test("executor revalidates a completed checkpoint and repairs subsequent live dr
         ...current,
         attributes: nextAttributes,
         offers: [
-          { offerType: "B2B", audience: { value: "B2B" }, price: { amount: "76.99" } },
+          {
+            marketplaceId: MARKETPLACE_ID,
+            offerType: "B2C",
+            audience: { value: "ALL" },
+            price: { amount: "76.99", currency: "USD", currencyCode: "USD" },
+          },
+          {
+            marketplaceId: MARKETPLACE_ID,
+            offerType: "B2B",
+            audience: { value: "B2B" },
+            price: { amount: "76.99", currency: "USD", currencyCode: "USD" },
+          },
         ],
       } as ListingItem;
       return { status: "ACCEPTED", submissionId: "submission-1", issues: [] };
     },
   };
   const dir = path.join(tmpdir(), `uncr-surgical-${Date.now()}-apply`);
-  const checkpointStore = new ImmutableCheckpointStore(dir, plan.sha256);
+  const checkpointStore = testCheckpointStore(dir, plan.sha256);
   await checkpointStore.append({
     action_id: plan.entries[0].actions[0].action_id,
     sku: plan.entries[0].sku,
@@ -881,7 +2029,7 @@ test("executor resumes a completed action only after a fresh live verification",
     },
   };
   const dir = path.join(tmpdir(), `uncr-surgical-${Date.now()}-resume`);
-  const checkpointStore = new ImmutableCheckpointStore(dir, plan.sha256);
+  const checkpointStore = testCheckpointStore(dir, plan.sha256);
   await checkpointStore.append({
     action_id: plan.entries[0].actions[0].action_id,
     sku: plan.entries[0].sku,
@@ -936,9 +2084,16 @@ test("an unresolved accepted PATCH is recovered to stable desired state without 
         attributes: attrs,
         offers: [
           {
+            marketplaceId: MARKETPLACE_ID,
+            offerType: "B2C",
+            audience: { value: "ALL" },
+            price: { amount: "76.99", currency: "USD", currencyCode: "USD" },
+          },
+          {
+            marketplaceId: MARKETPLACE_ID,
             offerType: "B2B",
             audience: { value: "B2B" },
-            price: { amount: "76.99" },
+            price: { amount: "76.99", currency: "USD", currencyCode: "USD" },
           },
         ],
       } as ListingItem;
@@ -950,7 +2105,7 @@ test("an unresolved accepted PATCH is recovered to stable desired state without 
       };
     },
   };
-  const checkpoint = new ImmutableCheckpointStore(
+  const checkpoint = testCheckpointStore(
     path.join(tmpdir(), `uncr-forward-settlement-${Date.now()}-${Math.random()}`),
     plan.sha256,
   );
@@ -990,6 +2145,506 @@ test("an unresolved accepted PATCH is recovered to stable desired state without 
   assert.equal((await checkpoint.pendingSubmissions()).size, 0);
 });
 
+test("OFFER two-phase canary submits once, restart cannot PATCH, and GET-only settlement closes the exact event", async () => {
+  const plan = build();
+  const entry = plan.entries[0];
+  const selection = repairExecutionSelection(plan, {
+    sourcePlanPath: "/tmp/two-phase-canary.json",
+    createdAt: new Date("2026-07-18T13:45:00.000Z"),
+    actionKinds: ["OFFER"],
+  });
+  const before = listingForEntry(entry);
+  const desired = desiredOfferListingForEntry(entry, before);
+  const root = path.join(
+    tmpdir(),
+    `uncr-offer-two-phase-canary-${Date.now()}-${Math.random()}`,
+  );
+  const checkpointStore = testCheckpointStore(root, plan.sha256);
+  let writeAccepted = false;
+  let submitGets = 0;
+  let previews = 0;
+  let realWrites = 0;
+  const submitGateway: RepairAmazonGateway = {
+    getListing: async () => {
+      assert.equal(
+        writeAccepted,
+        false,
+        "SUBMIT_ONLY must make zero GETs after the real PATCH",
+      );
+      submitGets++;
+      return structuredClone(before);
+    },
+    patchListing: async (_store, _sku, _type, _patches, preview) => {
+      if (preview) {
+        previews++;
+        return { status: "VALID", issues: [] };
+      }
+      realWrites++;
+      writeAccepted = true;
+      return {
+        status: "IN_PROGRESS",
+        submissionId: "two-phase-canary-submit",
+        issues: [],
+      };
+    },
+  };
+  const submitted = await executeRepairPlan(plan, submitGateway, {
+    apply: true,
+    executionPhase: "SUBMIT_ONLY",
+    confirmation: selection.confirmation_token,
+    checkpointStore,
+    executionSelection: selection,
+    requestDelayMs: 200,
+    sleep: async () => {},
+  });
+  assert.equal(submitted.mode, "OFFER_SUBMIT_ONLY");
+  assert.equal(submitted.submitted_actions, 1);
+  assert.equal(submitted.verified_actions, 0);
+  assert.equal(submitGets, 3);
+  assert.equal(previews, 1);
+  assert.equal(realWrites, 1);
+  const pendingAfterSubmit = await checkpointStore.pendingSubmissions();
+  assert.equal(pendingAfterSubmit.size, 1);
+  const pendingEvent = pendingAfterSubmit.get("AA-ASAA-AAAA:offer");
+  assert.ok(pendingEvent);
+
+  let restartCalls = 0;
+  const restartGateway: RepairAmazonGateway = {
+    getListing: async () => {
+      restartCalls++;
+      return structuredClone(before);
+    },
+    patchListing: async () => {
+      restartCalls++;
+      return { status: "ACCEPTED" };
+    },
+  };
+  await assert.rejects(
+    executeRepairPlan(plan, restartGateway, {
+      apply: true,
+      executionPhase: "SUBMIT_ONLY",
+      confirmation: selection.confirmation_token,
+      checkpointStore,
+      executionSelection: selection,
+      requestDelayMs: 200,
+      sleep: async () => {},
+    }),
+    /persistent pending action.*no PATCH is authorized/i,
+  );
+  assert.equal(restartCalls, 0);
+  assert.equal(realWrites, 1);
+
+  let settlementReads = 0;
+  let settlementPatches = 0;
+  const settlementSignals: AbortSignal[] = [];
+  const settlementGateway: RepairAmazonGateway = {
+    getListing: async (_store, _sku, signal) => {
+      assert.ok(signal);
+      settlementSignals.push(signal);
+      settlementReads++;
+      return structuredClone(settlementReads <= 2 ? before : desired);
+    },
+    patchListing: async () => {
+      settlementPatches++;
+      throw new Error("SETTLE_ONLY must never PATCH");
+    },
+  };
+  const settled = await executeRepairPlan(plan, settlementGateway, {
+    apply: false,
+    executionPhase: "SETTLE_ONLY",
+    checkpointStore,
+    executionSelection: selection,
+    offerSettlementPolicy: {
+      horizonMs: 1_000,
+      pollIntervalMs: 1,
+      requestDelayMs: 1,
+      observationTimeoutMs: 100,
+      stableReads: 2,
+      maxReadsPerSubmission: 6,
+    },
+  });
+  assert.equal(settled.mode, "OFFER_SETTLE_ONLY");
+  assert.equal(settled.verified_actions, 1);
+  assert.equal(settled.unresolved_settlements, 0);
+  assert.equal(settlementReads, 4);
+  assert.equal(settlementPatches, 0);
+  assert.equal(settlementSignals.every((signal) => !signal.aborted), true);
+  assert.equal((await checkpointStore.pendingSubmissions()).size, 0);
+
+  const events = await Promise.all(
+    (await readdir(path.join(root, plan.sha256.slice(0, 20))))
+      .filter((name) => name.endsWith(".json"))
+      .map(async (name) =>
+        JSON.parse(
+          await readFile(path.join(root, plan.sha256.slice(0, 20), name), "utf8"),
+        ) as { status: string; detail: Record<string, unknown> }
+      ),
+  );
+  const verified = events.find(
+    (event) =>
+      event.status === "VERIFIED" &&
+      event.detail.trigger === "OFFER_SETTLE_ONLY",
+  );
+  assert.equal(
+    verified?.detail.submitted_event_id,
+    pendingEvent.submitted_event_id,
+  );
+  await assert.rejects(
+    readFile(
+      path.join(root, "test-mutation-coordination", "pending-mutation-fence.json"),
+      "utf8",
+    ),
+    /ENOENT/,
+  );
+});
+
+test("OFFER settle-only keeps stable NON_DESIRED state pending and preserves the fence", async () => {
+  const plan = build();
+  const entry = plan.entries[0];
+  const selection = repairExecutionSelection(plan, {
+    sourcePlanPath: "/tmp/two-phase-non-desired.json",
+    createdAt: new Date("2026-07-18T13:46:00.000Z"),
+    actionKinds: ["OFFER"],
+  });
+  const before = listingForEntry(entry);
+  const root = path.join(
+    tmpdir(),
+    `uncr-offer-two-phase-non-desired-${Date.now()}-${Math.random()}`,
+  );
+  const checkpointStore = testCheckpointStore(root, plan.sha256);
+  await executeRepairPlan(
+    plan,
+    {
+      getListing: async () => structuredClone(before),
+      patchListing: async (_store, _sku, _type, _patches, preview) =>
+        preview
+          ? { status: "VALID", issues: [] }
+          : { status: "ACCEPTED", submissionId: "non-desired-submit", issues: [] },
+    },
+    {
+      apply: true,
+      executionPhase: "SUBMIT_ONLY",
+      confirmation: selection.confirmation_token,
+      checkpointStore,
+      executionSelection: selection,
+      requestDelayMs: 200,
+      sleep: async () => {},
+    },
+  );
+
+  let patches = 0;
+  const nonDesired = listingForEntry(entry, 71, 71);
+  const result = await executeRepairPlan(
+    plan,
+    {
+      getListing: async (_store, _sku, signal) => {
+        assert.ok(signal);
+        return structuredClone(nonDesired);
+      },
+      patchListing: async () => {
+        patches++;
+        throw new Error("read-only settlement must not PATCH");
+      },
+    },
+    {
+      apply: false,
+      executionPhase: "SETTLE_ONLY",
+      checkpointStore,
+      executionSelection: selection,
+      offerSettlementPolicy: {
+        horizonMs: 1_000,
+        pollIntervalMs: 1,
+        requestDelayMs: 1,
+        observationTimeoutMs: 100,
+        stableReads: 2,
+        maxReadsPerSubmission: 3,
+      },
+    },
+  );
+  assert.equal(result.verified_actions, 0);
+  assert.equal(result.unresolved_settlements, 1);
+  assert.equal(result.stopped_early, true);
+  assert.equal(patches, 0);
+  assert.equal((await checkpointStore.pendingSubmissions()).size, 1);
+  await readFile(
+    path.join(root, "test-mutation-coordination", "pending-mutation-fence.json"),
+    "utf8",
+  );
+
+  const events = await Promise.all(
+    (await readdir(path.join(root, plan.sha256.slice(0, 20))))
+      .filter((name) => name.endsWith(".json"))
+      .map(async (name) =>
+        JSON.parse(
+          await readFile(path.join(root, plan.sha256.slice(0, 20), name), "utf8"),
+        ) as { status: string; detail: Record<string, unknown> }
+      ),
+  );
+  const settlementPending = events.find(
+    (event) =>
+      event.status === "SETTLEMENT_PENDING" &&
+      event.detail.trigger === "OFFER_SETTLE_ONLY",
+  );
+  assert.deepEqual(settlementPending?.detail.failed_check_names, []);
+  assert.deepEqual(settlementPending?.detail.desired_price_values, {
+    attribute_consumer_price: 76.99,
+    top_level_consumer_price: 76.99,
+    business_price: 76.99,
+    minimum_seller_allowed_price: 66.95,
+    maximum_seller_allowed_price: 76.99,
+    discounted_price: null,
+    list_price: null,
+  });
+  assert.equal(settlementPending?.detail.actual_price_values, null);
+
+  const unresolved = events.find(
+    (event) => event.status === "SETTLEMENT_UNRESOLVED",
+  );
+  assert.deepEqual(unresolved?.detail.failed_check_names, [
+    "purchasable_offer.our_price",
+    "offers.B2C.price",
+    "business_price",
+    "purchasable_offer.minimum_seller_allowed_price",
+    "purchasable_offer.maximum_seller_allowed_price",
+    "purchasable_offer.discounted_price",
+    "list_price",
+  ]);
+  assert.deepEqual(unresolved?.detail.actual_price_values, {
+    attribute_consumer_price: 71,
+    top_level_consumer_price: 71,
+    business_price: 71,
+    minimum_seller_allowed_price: 60,
+    maximum_seller_allowed_price: 80,
+    discounted_price: null,
+    list_price: 71.35,
+  });
+  const unresolvedSerialized = JSON.stringify(unresolved?.detail);
+  assert.doesNotMatch(unresolvedSerialized, /preserve-me|quantity_tier|offerType/);
+  assert.equal(Object.hasOwn(unresolved?.detail ?? {}, "checks"), false);
+});
+
+test("OFFER settle-only sweeps multiple persistent submissions round-robin", async () => {
+  const secondRow = ledgerRow({ sku: "BB-ASBB-BBBB", asin: "B000TEST002" });
+  const plan = build([ledgerRow(), secondRow]);
+  const selection = repairExecutionSelection(plan, {
+    sourcePlanPath: "/tmp/two-phase-batch.json",
+    createdAt: new Date("2026-07-18T13:47:00.000Z"),
+    actionKinds: ["OFFER"],
+  });
+  const entryBySku = new Map(plan.entries.map((entry) => [entry.sku, entry]));
+  const root = path.join(
+    tmpdir(),
+    `uncr-offer-two-phase-batch-${Date.now()}-${Math.random()}`,
+  );
+  const checkpointStore = testCheckpointStore(root, plan.sha256);
+  const written = new Set<string>();
+  let realWrites = 0;
+  await executeRepairPlan(
+    plan,
+    {
+      getListing: async (_store, sku) => {
+        assert.equal(written.has(sku), false, `post-write GET for ${sku}`);
+        const entry = entryBySku.get(sku);
+        assert.ok(entry);
+        return listingForEntry(entry);
+      },
+      patchListing: async (_store, sku, _type, _patches, preview) => {
+        if (preview) return { status: "VALID", issues: [] };
+        realWrites++;
+        written.add(sku);
+        return { status: "IN_PROGRESS", submissionId: `submit-${sku}`, issues: [] };
+      },
+    },
+    {
+      apply: true,
+      executionPhase: "SUBMIT_ONLY",
+      confirmation: selection.confirmation_token,
+      checkpointStore,
+      executionSelection: selection,
+      requestDelayMs: 200,
+      sleep: async () => {},
+    },
+  );
+  assert.equal(realWrites, 2);
+  assert.equal((await checkpointStore.pendingSubmissions()).size, 2);
+
+  const order: string[] = [];
+  let settlePatches = 0;
+  const result = await executeRepairPlan(
+    plan,
+    {
+      getListing: async (_store, sku, signal) => {
+        assert.ok(signal);
+        order.push(sku);
+        const entry = entryBySku.get(sku);
+        assert.ok(entry);
+        return desiredOfferListingForEntry(entry);
+      },
+      patchListing: async () => {
+        settlePatches++;
+        throw new Error("round-robin settlement must never PATCH");
+      },
+    },
+    {
+      apply: false,
+      executionPhase: "SETTLE_ONLY",
+      checkpointStore,
+      executionSelection: selection,
+      offerSettlementPolicy: {
+        horizonMs: 1_000,
+        pollIntervalMs: 1,
+        requestDelayMs: 1,
+        observationTimeoutMs: 100,
+        stableReads: 2,
+        maxReadsPerSubmission: 2,
+      },
+    },
+  );
+  assert.equal(result.verified_actions, 2);
+  assert.equal(settlePatches, 0);
+  assert.deepEqual(order.slice(0, 4), [
+    "AA-ASAA-AAAA",
+    "BB-ASBB-BBBB",
+    "AA-ASAA-AAAA",
+    "BB-ASBB-BBBB",
+  ]);
+  assert.equal((await checkpointStore.pendingSubmissions()).size, 0);
+});
+
+test("pre-PATCH armed checkpoint closes the response/checkpoint crash window", async () => {
+  const plan = build();
+  let current = liveListing();
+  let writes = 0;
+  let throwAfterMutation = true;
+  const gateway: RepairAmazonGateway = {
+    getListing: async () => structuredClone(current),
+    patchListing: async (_store, _sku, _type, patches, preview) => {
+      if (preview) return { status: "VALID", issues: [] };
+      writes++;
+      const offer = patches.find(
+        (patch) => patch.path === "/attributes/purchasable_offer",
+      );
+      assert.ok(offer);
+      const attrs = structuredClone(current.attributes) as Record<string, unknown>;
+      attrs.purchasable_offer = applyPurchasableOfferMerge(
+        attrs.purchasable_offer,
+        offer.value,
+      );
+      delete attrs.list_price;
+      current = {
+        ...current,
+        attributes: attrs,
+        offers: [
+          {
+            marketplaceId: MARKETPLACE_ID,
+            offerType: "B2C",
+            audience: { value: "ALL" },
+            price: { amount: "76.99", currency: "USD", currencyCode: "USD" },
+          },
+          {
+            marketplaceId: MARKETPLACE_ID,
+            offerType: "B2B",
+            audience: { value: "B2B" },
+            price: { amount: "76.99", currency: "USD", currencyCode: "USD" },
+          },
+        ],
+      } as ListingItem;
+      if (throwAfterMutation) {
+        throwAfterMutation = false;
+        throw new Error("connection dropped after Amazon received PATCH");
+      }
+      return { status: "ACCEPTED", issues: [] };
+    },
+  };
+  const checkpoint = testCheckpointStore(
+    path.join(tmpdir(), `uncr-armed-crash-${Date.now()}-${Math.random()}`),
+    plan.sha256,
+  );
+  const first = await executeRepairPlan(plan, gateway, {
+    apply: true,
+    confirmation: confirmationToken(plan),
+    checkpointStore: checkpoint,
+    requestDelayMs: 200,
+    settlementAttempts: 3,
+    settlementDelayMs: 1,
+    settlementStableReads: 2,
+    sleep: async () => {},
+  });
+  assert.equal(first.failed_actions, 1);
+  assert.equal(first.stopped_early, true);
+  assert.equal(writes, 1);
+  assert.equal((await checkpoint.pendingSubmissions()).size, 1);
+
+  const recovered = await executeRepairPlan(plan, gateway, {
+    apply: true,
+    confirmation: confirmationToken(plan),
+    checkpointStore: checkpoint,
+    requestDelayMs: 200,
+    settlementAttempts: 3,
+    settlementDelayMs: 1,
+    settlementStableReads: 2,
+    sleep: async () => {},
+  });
+  assert.equal(recovered.recovered_pending_actions, 1);
+  assert.equal(recovered.resumed_actions, 1);
+  assert.equal(writes, 1, "armed recovery must not issue a duplicate PATCH");
+  assert.equal((await checkpoint.pendingSubmissions()).size, 0);
+});
+
+test("per-plan execution lease rejects a concurrent mutating executor", async () => {
+  const plan = build();
+  const checkpoint = testCheckpointStore(
+    path.join(tmpdir(), `uncr-lease-${Date.now()}-${Math.random()}`),
+    plan.sha256,
+  );
+  const release = await checkpoint.acquireExecutionLease("TEST_FIRST");
+  await assert.rejects(
+    checkpoint.acquireExecutionLease("TEST_CONCURRENT"),
+    /execution lease already exists/,
+  );
+  await release();
+  const releaseAgain = await checkpoint.acquireExecutionLease("TEST_AFTER_RELEASE");
+  await releaseAgain();
+});
+
+test("marketplace fence blocks a different plan SHA after the first process exits", async () => {
+  const firstPlan = build();
+  const secondPlan = structuredClone(firstPlan);
+  secondPlan.plan_id = `${firstPlan.plan_id}-REVISION`;
+  const { sha256: _oldSha, ...secondBody } = secondPlan;
+  secondPlan.sha256 = sha256(stableJson(secondBody));
+  const base = path.join(
+    tmpdir(),
+    `uncr-cross-plan-fence-${Date.now()}-${Math.random()}`,
+  );
+  const coordination = path.join(base, "shared-marketplace-coordination");
+  const firstStore = new ImmutableCheckpointStore(
+    path.join(base, "first-checkpoints"),
+    firstPlan.sha256,
+    coordination,
+  );
+  const secondStore = new ImmutableCheckpointStore(
+    path.join(base, "second-checkpoints"),
+    secondPlan.sha256,
+    coordination,
+  );
+  const releaseFirst = await firstStore.acquireExecutionLease("FIRST_PLAN");
+  await firstStore.claimPendingMutationFence("FIRST_PLAN");
+  await releaseFirst();
+
+  const releaseSecond = await secondStore.acquireExecutionLease("SECOND_PLAN");
+  await assert.rejects(
+    secondStore.claimPendingMutationFence("SECOND_PLAN"),
+    /fence belongs to unresolved repair plan/,
+  );
+  await releaseSecond();
+
+  const releaseRecovery = await firstStore.acquireExecutionLease("FIRST_RECOVERY");
+  await firstStore.claimPendingMutationFence("FIRST_RECOVERY");
+  await firstStore.releasePendingMutationFence();
+  await releaseRecovery();
+});
+
 test("validation-only mode calls VALIDATION_PREVIEW and never a real PATCH", async () => {
   const plan = build();
   const calls: string[] = [];
@@ -1007,7 +2662,7 @@ test("validation-only mode calls VALIDATION_PREVIEW and never a real PATCH", asy
   const result = await executeRepairPlan(plan, gateway, {
     apply: false,
     validationOnly: true,
-    checkpointStore: new ImmutableCheckpointStore(dir, plan.sha256),
+    checkpointStore: testCheckpointStore(dir, plan.sha256),
     requestDelayMs: 200,
     sleep: async () => {},
   });
@@ -1040,7 +2695,7 @@ test("INVALID preview fails closed before a real PATCH", async () => {
   const result = await executeRepairPlan(plan, gateway, {
     apply: true,
     confirmation: confirmationToken(plan),
-    checkpointStore: new ImmutableCheckpointStore(dir, plan.sha256),
+    checkpointStore: testCheckpointStore(dir, plan.sha256),
     requestDelayMs: 200,
     sleep: async () => {},
   });
@@ -1074,7 +2729,7 @@ test("ignored-attribute warning 90000900 fails preview closed before a real PATC
   const result = await executeRepairPlan(plan, gateway, {
     apply: true,
     confirmation: confirmationToken(plan),
-    checkpointStore: new ImmutableCheckpointStore(dir, plan.sha256),
+    checkpointStore: testCheckpointStore(dir, plan.sha256),
     requestDelayMs: 200,
     sleep: async () => {},
   });
@@ -1106,7 +2761,7 @@ test("ignored-attribute warning 90000900 also rejects an accepted real PATCH", a
   const result = await executeRepairPlan(plan, gateway, {
     apply: true,
     confirmation: confirmationToken(plan),
-    checkpointStore: new ImmutableCheckpointStore(dir, plan.sha256),
+    checkpointStore: testCheckpointStore(dir, plan.sha256),
     requestDelayMs: 200,
     sleep: async () => {},
   });
@@ -1133,7 +2788,7 @@ test("unrelated VALID warning remains nonblocking and recorded", async () => {
   const result = await executeRepairPlan(plan, gateway, {
     apply: false,
     validationOnly: true,
-    checkpointStore: new ImmutableCheckpointStore(dir, plan.sha256),
+    checkpointStore: testCheckpointStore(dir, plan.sha256),
     requestDelayMs: 200,
     sleep: async () => {},
   });
@@ -1141,7 +2796,7 @@ test("unrelated VALID warning remains nonblocking and recorded", async () => {
   assert.equal(result.preview_valid_actions, 1);
 });
 
-test("KP fallback finishes PASTRY, then structured repair previews against fresh PASTRY", async () => {
+test("KP accepted primary timeout never starts fallback while the submission can still apply late", async () => {
   const row = ledgerRow();
   row.sku = "KP-ASYC-RN84";
   row.asin = "B0H83FYZR3";
@@ -1319,13 +2974,14 @@ test("KP fallback finishes PASTRY, then structured repair previews against fresh
           },
         } as ListingItem;
       }
-      // The accepted GROCERY primary intentionally remains PASTRY + issue 90244,
-      // forcing the reviewed post-verification fallback.
+      // The accepted GROCERY primary intentionally remains PASTRY + issue
+      // 90244. Because Amazon accepted it, the executor must keep polling and
+      // must not launch the reviewed fallback while a late primary is possible.
       return { status: preview ? "VALID" : "ACCEPTED", issues: [] };
     },
   };
   const dir = path.join(tmpdir(), `uncr-surgical-${Date.now()}-fallback`);
-  const checkpointStore = new ImmutableCheckpointStore(dir, plan.sha256);
+  const checkpointStore = testCheckpointStore(dir, plan.sha256);
   const result = await executeRepairPlan(plan, gateway, {
     apply: true,
     confirmation: confirmationToken(plan),
@@ -1338,19 +2994,18 @@ test("KP fallback finishes PASTRY, then structured repair previews against fresh
     settlementStableReads: 2,
     sleep: async () => {},
   });
-  assert.equal(result.verified_actions, 2);
-  assert.equal(result.failed_actions, 0);
+  assert.equal(result.verified_actions, 0);
+  assert.equal(result.failed_actions, 1);
+  assert.equal(result.stopped_early, true);
+  assert.equal(result.unresolved_settlements, 1);
   assert.deepEqual(
     calls.filter((call) => call !== "GET"),
     [
       "PREVIEW:GROCERY",
       "PATCH:GROCERY",
-      "PREVIEW:PASTRY",
-      "PATCH:PASTRY",
-      "PREVIEW:PASTRY",
-      "PATCH:PASTRY",
     ],
   );
+  assert.equal((await checkpointStore.pendingSubmissions()).size, 1);
   const callsBeforeResume = calls.length;
   const resumed = await executeRepairPlan(plan, gateway, {
     apply: true,
@@ -1364,9 +3019,15 @@ test("KP fallback finishes PASTRY, then structured repair previews against fresh
     settlementStableReads: 2,
     sleep: async () => {},
   });
-  assert.equal(resumed.resumed_actions, 2);
+  assert.equal(resumed.resumed_actions, 0);
   assert.equal(resumed.verified_actions, 0);
-  assert.deepEqual(calls.slice(callsBeforeResume), ["GET", "GET"]);
+  assert.equal(resumed.failed_actions, 1);
+  assert.equal(resumed.stopped_early, true);
+  assert.equal(resumed.recovered_pending_actions, 1);
+  assert.equal(
+    calls.slice(callsBeforeResume).some((call) => call.startsWith("PATCH:")),
+    false,
+  );
 });
 
 test("direct PASTRY Ounce repair keeps 90 sandwiches as the semantic and price count", async () => {
@@ -1414,6 +3075,175 @@ test("direct PASTRY Ounce repair keeps 90 sandwiches as the semantic and price c
   if (offer?.desired.kind === "OFFER") {
     assert.equal(offer.desired.value.consumer_price, priceFor(90)?.suggested);
   }
+});
+
+test("exact sealed catalog alignment admits only SZ's proven 4ct x 6 = 24 title", async () => {
+  const ledgerPath =
+    "data/audits/uncrustables-ledger-20260717T232140568Z-offline.json";
+  const manifestPath =
+    "data/repairs/aligned/uncrustables-amazon-162-20260718-v8/" +
+    "uncrustables-amazon-catalog-title-aligned-20260718T075736000Z-068d4fa70d67.json";
+  const donorPath =
+    "data/repairs/uncrustables-donor-enrichment-20260717.json";
+  const ptdPath =
+    "data/audits/amazon-food-ptd-attribute-proof-20260718T010205Z.json";
+  const [ledger, manifestBytes, donorBytes, ptdBytes] = await Promise.all([
+    readFile(ledgerPath),
+    readFile(manifestPath),
+    readFile(donorPath),
+    readFile(ptdPath),
+  ]);
+  assert.equal(sha256(manifestBytes), REVIEWED_SZ_CATALOG_ALIGNED_MANIFEST_FILE_SHA256);
+  const manifest = JSON.parse(manifestBytes.toString("utf8")) as
+    DesiredRepairManifest & { body_sha256: string };
+  assert.equal(
+    manifest.body_sha256,
+    REVIEWED_SZ_CATALOG_ALIGNED_MANIFEST_BODY_SHA256,
+  );
+
+  const parsedLedger = JSON.parse(ledger.toString("utf8")) as {
+    rows: Array<{
+      sku: string;
+      asin: string;
+      db: {
+        draft: {
+          brand: string;
+          selected_variant: {
+            name: string;
+            composition: Variant["composition"];
+          };
+        };
+      };
+    }>;
+  };
+  const alignedRepairs = manifest.repairs.filter(
+    (repair) => repair.review?.catalog_title_alignment != null,
+  );
+  assert.equal(alignedRepairs.length, 34);
+  const genericFailures: Array<{ sku: string; error: string }> = [];
+  for (const repair of alignedRepairs) {
+    const row = parsedLedger.rows.find((candidate) => candidate.sku === repair.sku);
+    assert.ok(row?.db.draft.selected_variant);
+    assert.ok(repair.text_count?.title);
+    const intendedCount = repair.text_count.unit_count_type === "Ounce"
+      ? repair.text_count.number_of_items
+      : repair.text_count.unit_count ?? repair.text_count.number_of_items;
+    assert.ok(intendedCount);
+    const selectedVariant: Variant = {
+      idx: 0,
+      name: row.db.draft.selected_variant.name,
+      composition: row.db.draft.selected_variant.composition,
+      cost_cents: 0,
+      suggested_price_cents: 0,
+      margin_cents: 0,
+      margin_pct: 0,
+      feasibility_score: 0,
+      notes: "catalog-alignment semantic audit",
+    };
+    const error = validateSemanticOutput(
+      {
+        title: repair.text_count.title,
+        bullets: repair.text_count.bullets,
+        description: repair.text_count.description,
+      },
+      {
+        brand: row.db.draft.brand,
+        pack_count: intendedCount,
+        selected_variant: selectedVariant,
+      },
+    );
+    if (error) genericFailures.push({ sku: repair.sku, error });
+  }
+  assert.deepEqual(genericFailures, [
+    {
+      sku: "SZ-ASPI-JFAT",
+      error:
+        "own-brand title must contain exactly one count claim equal to 24; found 4",
+    },
+  ]);
+
+  const selectedSkus = manifest.repairs
+    .map((repair) => repair.sku)
+    .filter((sku) => sku !== "TY-AST2-JE9P" && sku !== "VN-AS1A-D572");
+  const plan = buildRepairPlan({
+    ledgerPath,
+    ledgerBytes: ledger,
+    manifest,
+    manifestSource: { path: manifestPath, bytes: manifestBytes },
+    donorManifest: { path: donorPath, bytes: donorBytes },
+    ptdProof: { path: ptdPath, bytes: ptdBytes },
+    skus: selectedSkus,
+    createdAt: new Date("2026-07-18T08:20:00.000Z"),
+  });
+  assert.equal(plan.scope.entries, 162);
+  assert.equal(plan.scope.actions, 605);
+  assert.equal(plan.semantic_audit.blocked, 0);
+  assert.deepEqual(plan.semantic_audit.failures, [
+    {
+      sku: "SZ-ASPI-JFAT",
+      intended_pack_count: 24,
+      error:
+        "own-brand title must contain exactly one count claim equal to 24; found 4",
+      disposition: "EXPLICIT_TEXT_COUNT_REPAIR",
+    },
+  ]);
+  const szText = plan.entries
+    .find((entry) => entry.sku === "SZ-ASPI-JFAT")
+    ?.actions.find((action) => action.desired.kind === "TEXT_COUNT");
+  assert.ok(szText?.desired.kind === "TEXT_COUNT");
+  if (szText?.desired.kind === "TEXT_COUNT") {
+    assert.equal(
+      szText.desired.value.title,
+      "Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwiches, 8oz/4ct - Pack of 6 (24 Sandwiches Total)",
+    );
+  }
+
+  // The same customer copy without its exact source bytes is not eligible.
+  assert.throws(
+    () => buildRepairPlan({
+      ledgerPath,
+      ledgerBytes: ledger,
+      manifest,
+      donorManifest: { path: donorPath, bytes: donorBytes },
+      ptdProof: { path: ptdPath, bytes: ptdBytes },
+      skus: ["SZ-ASPI-JFAT"],
+    }),
+    /Reviewed text_count manifest does not repair semantic failure/,
+  );
+
+  // A self-resealed counterfeit identifier row still changes the exact file
+  // SHA and cannot reuse the reviewed exception.
+  const counterfeit = structuredClone(manifest);
+  const counterfeitSz = counterfeit.repairs.find(
+    (repair) => repair.sku === "SZ-ASPI-JFAT",
+  );
+  assert.ok(
+    counterfeitSz?.review?.catalog_title_alignment
+      ?.reviewed_catalog_override,
+  );
+  counterfeitSz.review.catalog_title_alignment.reviewed_catalog_override
+    .catalog_api_identifiers[1].value = "664554043947";
+  const counterfeitBody = { ...counterfeit } as Record<string, unknown>;
+  delete counterfeitBody.body_sha256;
+  counterfeit.body_sha256 = sha256(stableJson(counterfeitBody));
+  const counterfeitBytes = Buffer.from(
+    `${JSON.stringify(counterfeit, null, 2)}\n`,
+  );
+  assert.throws(
+    () => buildRepairPlan({
+      ledgerPath,
+      ledgerBytes: ledger,
+      manifest: counterfeit,
+      manifestSource: {
+        path: "/tmp/counterfeit-catalog-alignment.json",
+        bytes: counterfeitBytes,
+      },
+      donorManifest: { path: donorPath, bytes: donorBytes },
+      ptdProof: { path: ptdPath, bytes: ptdBytes },
+      skus: ["SZ-ASPI-JFAT"],
+    }),
+    /Reviewed text_count manifest does not repair semantic failure/,
+  );
 });
 
 test("real 164-ASIN plan seals all prices and emits a 164-row ChannelMAX artifact", async () => {

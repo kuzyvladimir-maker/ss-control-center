@@ -1,0 +1,704 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.03261856291029197,
+            "width" : 0.12951761881510415,
+            "x" : 0.12201444548261564,
+            "y" : 0.8761325789638553
+          },
+          "confidence" : 1,
+          "text" : "MGRAIN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.021709654066297768,
+            "width" : 0.05974422454833983,
+            "x" : 0.2917902284399328,
+            "y" : 0.8868376378303764
+          },
+          "confidence" : 1,
+          "text" : "DOUBLE WRI"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010174418555365716,
+            "width" : 0.058139533996582005,
+            "x" : 0.2921511631634562,
+            "y" : 0.8779069767818729
+          },
+          "confidence" : 1,
+          "text" : "FRESHN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00872092988755968,
+            "width" : 0.03343023088243274,
+            "x" : 0.3168604659299077,
+            "y" : 0.8880813956666853
+          },
+          "confidence" : 1,
+          "text" : "-FOR-!"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03197674433390307,
+            "width" : 0.03197674433390302,
+            "x" : 0.35610465103435657,
+            "y" : 0.8735465117538334
+          },
+          "confidence" : 1,
+          "text" : "M"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03237174140082466,
+            "width" : 0.12945754157172318,
+            "x" : 0.5842537868148219,
+            "y" : 0.876255989714608
+          },
+          "confidence" : 1,
+          "text" : "MURAIN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.020415920681423616,
+            "width" : 0.059078712463378924,
+            "x" : 0.755925759378916,
+            "y" : 0.8870304114418012
+          },
+          "confidence" : 1,
+          "text" : "DOUBLE WRI"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.030523255666096927,
+            "width" : 0.029069766998291002,
+            "x" : 0.8197674420095753,
+            "y" : 0.8750000002646986
+          },
+          "confidence" : 1,
+          "text" : "M"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010917364756266368,
+            "width" : 0.055364574856228366,
+            "x" : 0.7557479458589874,
+            "y" : 0.878988992200242
+          },
+          "confidence" : 1,
+          "text" : "FRESHN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441749572723,
+            "width" : 0.026162789662679042,
+            "x" : 0.7848837210116837,
+            "y" : 0.888081395331609
+          },
+          "confidence" : 1,
+          "text" : "FOR-"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014625323083665709,
+            "width" : 0.19331395467122395,
+            "x" : 0.17151162570460124,
+            "y" : 0.845930232644807
+          },
+          "confidence" : 1,
+          "text" : "OT PORCHASE I5 PACKAGE ISVORN."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014625323083665598,
+            "width" : 0.19476743910047734,
+            "x" : 0.6337209335602264,
+            "y" : 0.8459302326981016
+          },
+          "confidence" : 1,
+          "text" : "OT PORCHASE IF PACKAGE ISVORN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03130285157097701,
+            "width" : 0.17164866129557288,
+            "x" : 0.15545473997730386,
+            "y" : 0.4051334584831633
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03197911792331265,
+            "width" : 0.17176474677191844,
+            "x" : 0.6176059995647765,
+            "y" : 0.40479532477379054
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06831395467122403,
+            "width" : 0.2630813937717014,
+            "x" : 0.13081395502350446,
+            "y" : 0.3212209299516501
+          },
+          "confidence" : 1,
+          "text" : "FARMHOUSE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.066860466003418,
+            "width" : 0.26308139377170137,
+            "x" : 0.5944767440976764,
+            "y" : 0.3212209296436398
+          },
+          "confidence" : 1,
+          "text" : "FARMHOUSE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010200258360968717,
+            "width" : 0.13081395467122395,
+            "x" : 0.13808139344927176,
+            "y" : 0.28924418602754964
+          },
+          "confidence" : 1,
+          "text" : "CRAFTED BAKED GOODS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008888888888888946,
+            "width" : 0.13081395467122392,
+            "x" : 0.6017441867632253,
+            "y" : 0.2905555554535173
+          },
+          "confidence" : 1,
+          "text" : "CRAFTED BAKED GOODS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04583333333333339,
+            "width" : 0.19999999999999998,
+            "x" : 0.1625000015972222,
+            "y" : 0.2166666662847222
+          },
+          "confidence" : 1,
+          "text" : "MULTIGRAIN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.048716604444715705,
+            "width" : 0.20064098782009554,
+            "x" : 0.6246795069165804,
+            "y" : 0.21522503064065635
+          },
+          "confidence" : 1,
+          "text" : "MULTIGRAIN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01777777777777778,
+            "width" : 0.2369186062282986,
+            "x" : 0.14534883811301016,
+            "y" : 0.18888888900046674
+          },
+          "confidence" : 1,
+          "text" : "FRESH FRM OVEN TASTE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.019124926461113856,
+            "width" : 0.10614529079861101,
+            "x" : 0.6075378206440813,
+            "y" : 0.18738521195205293
+          },
+          "confidence" : 1,
+          "text" : "FRESH FHE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.016259689860873783,
+            "width" : 0.14244186401367187,
+            "x" : 0.703488368894327,
+            "y" : 0.19040697669268702
+          },
+          "confidence" : 1,
+          "text" : "MOVEN TASTE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.016111111111111076,
+            "width" : 0.3023255750868055,
+            "x" : 0.11337209632287625,
+            "y" : 0.1627777777997077
+          },
+          "confidence" : 1,
+          "text" : "NO HIGH FRUCTOSE CORN SYRUP | NO COLORS OR FLAVORS FROM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017777777247958704,
+            "width" : 0.3037790595160591,
+            "x" : 0.5755814035123191,
+            "y" : 0.16111111162610114
+          },
+          "confidence" : 1,
+          "text" : "NO HIGH FRUCTOSE CORN SYRUP | NO COLORS OR FLAVORS FROM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01027131769392231,
+            "width" : 0.09593022664388023,
+            "x" : 0.29941860640916457,
+            "y" : 0.15833333335338262
+          },
+          "confidence" : 1,
+          "text" : "FARTIFICIAL SOURCES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013081394831339521,
+            "width" : 0.09738371955023861,
+            "x" : 0.7616279087023515,
+            "y" : 0.15697674460831268
+          },
+          "confidence" : 1,
+          "text" : "FARTIFICIAL SOURCES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013081394831339521,
+            "width" : 0.029069766998291016,
+            "x" : 0.1148255818351568,
+            "y" : 0.13662790739901043
+          },
+          "confidence" : 1,
+          "text" : "B'NEAU"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00742894040213693,
+            "width" : 0.02034883711073135,
+            "x" : 0.11627907015587463,
+            "y" : 0.14534883733742288
+          },
+          "confidence" : 1,
+          "text" : "D DEN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01744185977511936,
+            "width" : 0.03488371955023872,
+            "x" : 0.5741279073760435,
+            "y" : 0.1366279072732931
+          },
+          "confidence" : 1,
+          "text" : "BREAD"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.020709241231282483,
+            "width" : 0.11975959777832035,
+            "x" : 0.13349662275239804,
+            "y" : 0.1035193213304898
+          },
+          "confidence" : 1,
+          "text" : "WT 24 OZI115 LBSI 6800M"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.021879844665527393,
+            "width" : 0.13372092352973086,
+            "x" : 0.5813953535258323,
+            "y" : 0.10166666707548555
+          },
+          "confidence" : 0.5,
+          "text" : "ETWT 24 0Z/1 5 1BS1 (680g)"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-3be5bf8a414806e81fb675b8de6068a877e3a5a074b21cbe2913962c2760f8a7.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 2048,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.03241446614265442,
+            "width" : 0.2864132835751488,
+            "x" : 0.1735136166400798,
+            "y" : 0.8820485809530105
+          },
+          "confidence" : 1,
+          "text" : "MGRAIN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02170477621257305,
+            "width" : 0.1341532257212189,
+            "x" : 0.5497364378491362,
+            "y" : 0.8924467377655205
+          },
+          "confidence" : 1,
+          "text" : "DOUBLEWR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.031976744532585144,
+            "width" : 0.08360128691702184,
+            "x" : 0.6977491954884344,
+            "y" : 0.8793604651428644
+          },
+          "confidence" : 1,
+          "text" : "M"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010545476339757442,
+            "width" : 0.12233619359664594,
+            "x" : 0.5529798125245591,
+            "y" : 0.8835354012397818
+          },
+          "confidence" : 1,
+          "text" : "FRESHN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441600561142,
+            "width" : 0.06109324368563562,
+            "x" : 0.617363347021062,
+            "y" : 0.8938953490398357
+          },
+          "confidence" : 1,
+          "text" : "-FOR-"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.016170058399438858,
+            "width" : 0.4372990265553132,
+            "x" : 0.2797427688766843,
+            "y" : 0.8515625000265853
+          },
+          "confidence" : 1,
+          "text" : "OT PURCHASE IF PAC AGE IS ORN."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.033706244081258774,
+            "width" : 0.3833309024959415,
+            "x" : 0.24402586436791548,
+            "y" : 0.40320501724003865
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07386235147714615,
+            "width" : 0.5939562248461175,
+            "x" : 0.19176786643991553,
+            "y" : 0.31626649834394627
+          },
+          "confidence" : 1,
+          "text" : "FARMHOUSE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08032496273517609,
+            "width" : 0.022492816437890473,
+            "x" : 0.9009789187823513,
+            "y" : 0.31529088816742235
+          },
+          "confidence" : 1,
+          "text" : "ODERIDGE FARN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011627906933426857,
+            "width" : 0.061093247814095974,
+            "x" : 0.5916398718807333,
+            "y" : 0.30232558150421673
+          },
+          "confidence" : 0.3,
+          "text" : "#-#"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008902615867555141,
+            "width" : 0.2958199306999966,
+            "x" : 0.20578778680434245,
+            "y" : 0.28906250022057955
+          },
+          "confidence" : 1,
+          "text" : "CRAFTED BAKED GOODS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.037790697067976,
+            "width" : 0.42443728756594973,
+            "x" : 0.2700964700055631,
+            "y" : 0.21802325619412422
+          },
+          "confidence" : 1,
+          "text" : "MULTIGRAIN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01904296875,
+            "width" : 0.5337620524616985,
+            "x" : 0.22186496114857182,
+            "y" : 0.18603515621787114
+          },
+          "confidence" : 1,
+          "text" : "FRESH TO\" OVEN TASTE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017668968066573143,
+            "width" : 0.6816720012978558,
+            "x" : 0.14790998687518783,
+            "y" : 0.1582031246038822
+          },
+          "confidence" : 0.3,
+          "text" : "NO HIGH FRACTOSE CORSYRAP|NOCOLORS OR ELAYORRONE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01308139506727457,
+            "width" : 0.21864951327765658,
+            "x" : 0.5659164027180849,
+            "y" : 0.1540697677134557
+          },
+          "confidence" : 1,
+          "text" : "FARTIFICIAL SOURCES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.018895348533988,
+            "width" : 0.07395498267499917,
+            "x" : 0.15112540213516928,
+            "y" : 0.1337209305731223
+          },
+          "confidence" : 1,
+          "text" : "BREADI"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.026301013305783272,
+            "width" : 0.22278690750980787,
+            "x" : 0.23939464320809142,
+            "y" : 0.09680350382002878
+          },
+          "confidence" : 1,
+          "text" : "240Z11 5 LBS 680g"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-f965810b5825fdea42300a8a88789699e25d28ba5a0eeedfa46a3cba02063d4c.png",
+      "width" : 923
+    },
+    {
+      "height" : 1818,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.1619283174655356,
+            "width" : 0.025345833972096443,
+            "x" : 0.9030091559697335,
+            "y" : 0.8324886857014869
+          },
+          "confidence" : 1,
+          "text" : "RIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.15981097163671443,
+            "width" : 0.571014404296875,
+            "x" : 0.20577186885381005,
+            "y" : 0.8088015523247514
+          },
+          "confidence" : 1,
+          "text" : "FARMHOUSE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03436988520018991,
+            "width" : 0.029069766402244568,
+            "x" : 0.7514534888111517,
+            "y" : 0.8052373161833202
+          },
+          "confidence" : 1,
+          "text" : "®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011456629099494409,
+            "width" : 0.00872093066573143,
+            "x" : 0.9113372089985297,
+            "y" : 0.8216039277906784
+          },
+          "confidence" : 1,
+          "text" : "E"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04746317260205024,
+            "width" : 0.013081398792564869,
+            "x" : 0.9098837190811884,
+            "y" : 0.7577741426065036
+          },
+          "confidence" : 1,
+          "text" : "PEP"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02310231023102305,
+            "width" : 0.29360464215278625,
+            "x" : 0.20784884334544151,
+            "y" : 0.7233223321531421
+          },
+          "confidence" : 1,
+          "text" : "CRAFTED BAKED GOODS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.031096562300578334,
+            "width" : 0.029069766402244568,
+            "x" : 0.7529069774093429,
+            "y" : 0.6890343703308892
+          },
+          "confidence" : 1,
+          "text" : "®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.09911677965892285,
+            "width" : 0.42894399166107183,
+            "x" : 0.2673593987279214,
+            "y" : 0.549459613734375
+          },
+          "confidence" : 1,
+          "text" : "MULTIGRAIN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03764320600150828,
+            "width" : 0.24273255467414856,
+            "x" : 0.22238372064015444,
+            "y" : 0.4746317519774236
+          },
+          "confidence" : 1,
+          "text" : "FRESH FROM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.028481354414433113,
+            "width" : 0.06275388598442078,
+            "x" : 0.3923974306824135,
+            "y" : 0.46624088710958256
+          },
+          "confidence" : 1,
+          "text" : "THE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.029459901899918983,
+            "width" : 0.2848837077617645,
+            "x" : 0.47093024070487355,
+            "y" : 0.4729950901506952
+          },
+          "confidence" : 1,
+          "text" : "oVEN TaSTE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.037574178445981876,
+            "width" : 0.6749999523162842,
+            "x" : 0.1541667017585242,
+            "y" : 0.4037403745659941
+          },
+          "confidence" : 1,
+          "text" : "NO HIGH FRUCTOSE CORN SYRUP | NO COLORS OR FLAVORS FROM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.024752475247524774,
+            "width" : 0.20930232107639313,
+            "x" : 0.575581399096355,
+            "y" : 0.3910891084099696
+          },
+          "confidence" : 1,
+          "text" : "ARTIFICIAL SOURCES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.044474955308030806,
+            "width" : 0.07716356217861176,
+            "x" : 0.14673798587088,
+            "y" : 0.332099674485657
+          },
+          "confidence" : 1,
+          "text" : "BREAD"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07098149466435899,
+            "width" : 0.3182734251022339,
+            "x" : 0.14806893190392445,
+            "y" : 0.23696655445004278
+          },
+          "confidence" : 0.5,
+          "text" : "NETWT 24 OZ1 5 LBS, 680g"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-100e1888b0c381d6e2eda11e308857c29e39267a7ec56865a3b0ad1814aad90d.png",
+      "width" : 2048
+    },
+    {
+      "height" : 2048,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.07122092694044113,
+            "width" : 0.49465241081196704,
+            "x" : 0.30213903389047375,
+            "y" : 0.75290697861281
+          },
+          "confidence" : 1,
+          "text" : "MGRAIN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01308139506727457,
+            "width" : 0.02406417017993212,
+            "x" : 0.959893048499606,
+            "y" : 0.761627907281043
+          },
+          "confidence" : 1,
+          "text" : "F"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02606890257447958,
+            "width" : 0.5092420595124552,
+            "x" : 0.4887953560174087,
+            "y" : 0.6974646146929022
+          },
+          "confidence" : 1,
+          "text" : "OT PURCHASE TE PACKA"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-59fe7f0600a45359f302b0afba847729d1221226f9199438204dd8ba75c30de1.png",
+      "width" : 1114
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

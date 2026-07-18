@@ -31,11 +31,13 @@
  */
 const http = require("http");
 const { spawn } = require("child_process");
+const { createHash } = require("crypto");
 const fs = require("fs");
 const fsp = require("fs/promises");
 const path = require("path");
 const os = require("os");
 const { buildPrompt, REQUIRED_IMAGE_MODEL } = require("./prompt");
+const { hasSupportedImageSignature } = require("./image-preflight");
 
 const PORT = parseInt(process.env.PORT || "8791", 10);
 const HOST = process.env.HOST || "127.0.0.1";
@@ -48,6 +50,12 @@ const GEN_DIR = path.join(CODEX_HOME, "generated_images");
 // caller's fetch timeout (290s). The old 240s SIGKILLed generations right at the
 // finish line (a 241s run died). Override via RUN_TIMEOUT_MS in the box .env.
 const RUN_TIMEOUT_MS = parseInt(process.env.RUN_TIMEOUT_MS || "285000", 10);
+const WORKER_BUILD =
+  "sha256:" + createHash("sha256")
+    .update(fs.readFileSync(__filename))
+    .update("\0")
+    .update(fs.readFileSync(require.resolve("./image-preflight")))
+    .digest("hex");
 
 if (!TOKEN) {
   console.error("FATAL: CODEX_IMAGE_WORKER_TOKEN is not set");
@@ -121,6 +129,7 @@ async function writeRefs(refs, urls, runDir, options = {}) {
       const clean = String(b64).replace(/^data:image\/\w+;base64,/, "");
       const buf = Buffer.from(clean, "base64");
       if (buf.length === 0) throw new Error("decoded image is empty");
+      if (!hasSupportedImageSignature(buf)) throw new Error("decoded bytes are not a supported raster image");
       const p = path.join(runDir, `ref-${++i}.png`);
       await fsp.writeFile(p, buf);
       files.push(p);
@@ -135,6 +144,7 @@ async function writeRefs(refs, urls, runDir, options = {}) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const buf = Buffer.from(await res.arrayBuffer());
       if (buf.length === 0) throw new Error("downloaded image is empty");
+      if (!hasSupportedImageSignature(buf)) throw new Error("downloaded bytes are not a supported raster image");
       const p = path.join(runDir, `ref-${++i}.png`);
       await fsp.writeFile(p, buf);
       files.push(p);
@@ -146,6 +156,28 @@ async function writeRefs(refs, urls, runDir, options = {}) {
     throw new Error(`reference preflight failed: ${failures.join("; ")}`);
   }
   return files;
+}
+
+async function stageVisionImages(body, runDir) {
+  const refs = body && (body.images || body.reference_images);
+  const urls = body && (body.image_urls || body.reference_urls);
+  const expected =
+    (Array.isArray(refs) ? refs.length : 0) +
+    (Array.isArray(urls) ? urls.length : 0);
+  if (expected < 1) throw new Error("no images");
+  const files = await writeRefs(refs, urls, runDir, { strict: true });
+  if (files.length !== expected) {
+    throw new Error(`input image count mismatch: expected ${expected}, staged ${files.length}`);
+  }
+  return files;
+}
+
+function visionMetadata(provider, inputImageCount) {
+  return {
+    input_image_count: inputImageCount,
+    vision_provider: provider,
+    worker_build: WORKER_BUILD,
+  };
 }
 
 // --- run codex exec with the paid path disabled -------------------------------
@@ -316,9 +348,18 @@ async function handleAnalyze(body) {
   const runDir = await fsp.mkdtemp(path.join(os.tmpdir(), "codex-vis-"));
   let imgFiles = [];
   try {
-    imgFiles = await writeRefs(body && (body.images || body.reference_images), body && (body.image_urls || body.reference_urls), runDir);
-  } catch { /* best-effort */ }
-  if (!imgFiles.length) { try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {} return { status: 400, json: { error: "no images" } }; }
+    imgFiles = await stageVisionImages(body, runDir);
+  } catch (error) {
+    try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {}
+    return {
+      status: 422,
+      json: {
+        ok: false,
+        error: error && error.message ? error.message : "image preflight failed",
+        ...visionMetadata("codex_cli_subscription", 0),
+      },
+    };
+  }
 
   const names = imgFiles.map((f) => path.basename(f)).join(", ");
   const wrapped =
@@ -330,11 +371,41 @@ async function handleAnalyze(body) {
   const { code, stdout, stderr } = await runCodexVision(imgFiles, wrapped, runDir);
   try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {}
 
-  const result = extractLastJson(stdout);
-  if (!result) {
-    return { status: 502, json: { error: "codex produced no json", code, stderr: stderr.slice(-1500), stdout: stdout.slice(-1500) } };
+  if (code !== 0) {
+    return {
+      status: 502,
+      json: {
+        ok: false,
+        error: `codex vision exited with code ${code}`,
+        ...visionMetadata("codex_cli_subscription", imgFiles.length),
+        stderr: stderr.slice(-1500),
+        stdout: stdout.slice(-1500),
+      },
+    };
   }
-  return { status: 200, json: { ok: true, result } };
+
+  const result = extractLastJson(stdout);
+  if (!result || typeof result !== "object" || Array.isArray(result)) {
+    return {
+      status: 502,
+      json: {
+        ok: false,
+        error: "codex produced no json object",
+        ...visionMetadata("codex_cli_subscription", imgFiles.length),
+        code,
+        stderr: stderr.slice(-1500),
+        stdout: stdout.slice(-1500),
+      },
+    };
+  }
+  return {
+    status: 200,
+    json: {
+      ok: true,
+      result,
+      ...visionMetadata("codex_cli_subscription", imgFiles.length),
+    },
+  };
 }
 
 // --- VISION via the Claude Code CLI (SECOND subscription worker) ----------------
@@ -372,8 +443,19 @@ async function handleAnalyzeClaude(body) {
   if (!prompt) return { status: 400, json: { error: "missing prompt" } };
   const runDir = await fsp.mkdtemp(path.join(os.tmpdir(), "claude-vis-"));
   let imgFiles = [];
-  try { imgFiles = await writeRefs(body && (body.images || body.reference_images), body && (body.image_urls || body.reference_urls), runDir); } catch { /* best-effort */ }
-  if (!imgFiles.length) { try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {} return { status: 400, json: { error: "no images" } }; }
+  try {
+    imgFiles = await stageVisionImages(body, runDir);
+  } catch (error) {
+    try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {}
+    return {
+      status: 422,
+      json: {
+        ok: false,
+        error: error && error.message ? error.message : "image preflight failed",
+        ...visionMetadata("claude_cli_subscription", 0),
+      },
+    };
+  }
 
   const wrapped =
     `${prompt}\n\n` +
@@ -384,14 +466,44 @@ async function handleAnalyzeClaude(body) {
   const { code, stdout, stderr } = await runClaudeVision(imgFiles, wrapped);
   try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {}
 
+  if (code !== 0) {
+    return {
+      status: 502,
+      json: {
+        ok: false,
+        error: `claude vision exited with code ${code}`,
+        ...visionMetadata("claude_cli_subscription", imgFiles.length),
+        stderr: stderr.slice(-1500),
+        stdout: stdout.slice(-1500),
+      },
+    };
+  }
+
   // Unwrap the Claude Code JSON envelope, then pull the JSON object out of .result.
   let text = stdout;
   try { const envlp = JSON.parse(stdout); if (envlp && typeof envlp.result === "string") text = envlp.result; } catch { /* not the envelope — scan raw */ }
   const result = extractLastJson(text) || extractLastJson(stdout);
-  if (!result) {
-    return { status: 502, json: { error: "claude produced no json", code, stderr: stderr.slice(-1500), stdout: stdout.slice(-1500) } };
+  if (!result || typeof result !== "object" || Array.isArray(result)) {
+    return {
+      status: 502,
+      json: {
+        ok: false,
+        error: "claude produced no json object",
+        ...visionMetadata("claude_cli_subscription", imgFiles.length),
+        code,
+        stderr: stderr.slice(-1500),
+        stdout: stdout.slice(-1500),
+      },
+    };
   }
-  return { status: 200, json: { ok: true, result } };
+  return {
+    status: 200,
+    json: {
+      ok: true,
+      result,
+      ...visionMetadata("claude_cli_subscription", imgFiles.length),
+    },
+  };
 }
 
 const server = http.createServer((req, res) => {
@@ -399,7 +511,13 @@ const server = http.createServer((req, res) => {
 
   if (req.method === "GET" && url.pathname === "/health") {
     res.writeHead(200, { "content-type": "application/json" });
-    res.end(JSON.stringify({ ok: true, genDir: GEN_DIR, vision: true }));
+    res.end(JSON.stringify({
+      ok: true,
+      genDir: GEN_DIR,
+      vision: true,
+      worker_build: WORKER_BUILD,
+      vision_providers: ["codex_cli_subscription", "claude_cli_subscription"],
+    }));
     return;
   }
 

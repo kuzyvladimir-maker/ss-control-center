@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "670a8c2d-6587-4977-a898-1864883a152d",
+  "created_at": "2026-07-18T11:39:05.676Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "HX-ASO8-XCL2:structured_attributes",
+  "sku": "HX-ASO8-XCL2",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "VERIFIED",
+  "detail": {
+    "submitted_event_id": "8b056e23-5f29-4e32-b9be-22b5efa087c8",
+    "strategy": "PRIMARY",
+    "stable_post_write_reads": 3,
+    "path_state_sha256": "283ff265914d574f15f72e7d6179b10618a42e0b625cb0d162de546b287c7aa4",
+    "checks": [
+      {
+        "field": "ingredients",
+        "ok": true,
+        "expected": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Salt, Molasses. Grape Jelly: Sugar, Grape Juice, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative).",
+        "actual": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Salt, Molasses. Grape Jelly: Sugar, Grape Juice, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative)."
+      },
+      {
+        "field": "allergen_information",
+        "ok": true,
+        "expected": [
+          "milk_may_contain",
+          "peanuts",
+          "tree_nuts_may_contain",
+          "wheat"
+        ],
+        "actual": [
+          "milk_may_contain",
+          "peanuts",
+          "tree_nuts_may_contain",
+          "wheat"
+        ]
+      }
+    ]
+  },
+  "sha256": "49e42962438bf61f09f5c0e8a3f7c45d33e2290acb0966185d66908cba505ac0"
+}

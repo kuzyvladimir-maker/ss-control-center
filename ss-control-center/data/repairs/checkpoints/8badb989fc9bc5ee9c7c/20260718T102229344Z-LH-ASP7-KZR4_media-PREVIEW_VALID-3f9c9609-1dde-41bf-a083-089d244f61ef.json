@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "3f9c9609-1dde-41bf-a083-089d244f61ef",
+  "created_at": "2026-07-18T10:22:29.344Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "LH-ASP7-KZR4:media",
+  "sku": "LH-ASP7-KZR4",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "75372db2463e42f06bb1441866669c46a0a529b4fb2db5cb9a1b57b489b67fc5",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "a519c19f086445669c30b77a88564faf",
+    "issues": []
+  },
+  "sha256": "915214e2d191c28e7f60d56b918cd620c87b95c312bb836288d6eee26abbb909"
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "cca2338e-f318-4923-b5a4-d4a5ae10bc4e",
+  "created_at": "2026-07-18T12:05:43.926Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "WZ-ASXK-ZFAS:structured_attributes",
+  "sku": "WZ-ASXK-ZFAS",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "523b53ee-5ce1-450b-aa30-7979705d2535",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "23761f989bea30ad1d0530bcfbe1e6366bebe4325c31c67ada5e999cef75a3ab",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients"
+      ],
+      "before_path_state_sha256": "0eecea33619d70f70609397cdfc387fbed7f7d819c84aad7d5007608e831e013"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "961db945ec5f5e0db29e85e017b1e3b9898f461cd1a24f65b8938f74ca6c4d91"
+}

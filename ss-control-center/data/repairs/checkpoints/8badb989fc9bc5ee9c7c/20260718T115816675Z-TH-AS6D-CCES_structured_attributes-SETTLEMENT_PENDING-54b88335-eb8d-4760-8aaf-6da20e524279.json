@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "54b88335-eb8d-4760-8aaf-6da20e524279",
+  "created_at": "2026-07-18T11:58:16.675Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "TH-AS6D-CCES:structured_attributes",
+  "sku": "TH-AS6D-CCES",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "9b69f1cb-430f-48c7-8219-8ffb124ee737",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "b803d7fa20a6fda696f4b72b027e2ca229ef94d5446f8bd683a94b7ce5af1765",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients"
+      ],
+      "before_path_state_sha256": "2ada4b2b94ad0726c957a6dbab6d67b72cc0fb52e84ce9a51ba1c7408bbfc996"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "69acde5e7899ed07bc14fa0a28bd677966eaf21217526a909a4af290619b1b00"
+}

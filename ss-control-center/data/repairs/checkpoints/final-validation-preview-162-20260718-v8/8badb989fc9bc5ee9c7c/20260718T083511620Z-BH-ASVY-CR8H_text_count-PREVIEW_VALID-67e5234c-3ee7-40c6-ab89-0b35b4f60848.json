@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "67e5234c-3ee7-40c6-ab89-0b35b4f60848",
+  "created_at": "2026-07-18T08:35:11.620Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "BH-ASVY-CR8H:text_count",
+  "sku": "BH-ASVY-CR8H",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "4755485481eb19b730c5bfb603d0e7830b901bb8e600d5032817df82a505b648",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "ecb3659fad44444b858acca5457e8e23",
+    "issues": []
+  },
+  "sha256": "022f8345c431d6e3812bf2e9d4cf00d6105f893625948f5ce2c96d04d005b829"
+}

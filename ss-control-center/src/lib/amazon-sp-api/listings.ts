@@ -74,10 +74,12 @@ export interface ListSkusOptions {
   pageSize?: number;
   pageToken?: string;
   includedData?: ListingsIncludedData[];
+  signal?: AbortSignal;
 }
 
 export interface GetListingOptions {
   includedData?: ListingsIncludedData[];
+  signal?: AbortSignal;
 }
 
 export interface ListSkusResponse {
@@ -100,7 +102,7 @@ export async function listSkus(
 
   const resp = await spApiGet(
     `/listings/2021-08-01/items/${encodeURIComponent(sellerId)}`,
-    { storeId: `store${storeIndex}`, params },
+    { storeId: `store${storeIndex}`, params, signal: opts.signal },
   );
 
   return {
@@ -122,7 +124,7 @@ export async function getListing(
   };
   const resp = await spApiGet(
     `/listings/2021-08-01/items/${encodeURIComponent(sellerId)}/${encodeURIComponent(sku)}`,
-    { storeId: `store${storeIndex}`, params },
+    { storeId: `store${storeIndex}`, params, signal: opts.signal },
   );
   // Single-item endpoint returns the listing directly (no items array).
   return { sku, ...(resp as Partial<ListingItem>) } as ListingItem;
@@ -142,6 +144,12 @@ export interface PatchListingOptions {
   validationPreview?: boolean;
   /** Marketplace IDs the patch applies to. Defaults to US Amazon.com. */
   marketplaceIds?: string;
+  /** Transport attempts. Mutating callers that persist an ambiguity fence
+   * before PATCH should set this to 1 so a lost response cannot duplicate the
+   * physical submission. Validation-preview callers may retain the default. */
+  retries?: number;
+  signal?: AbortSignal;
+  beforeRequest?: () => void;
 }
 
 /**
@@ -171,7 +179,13 @@ export async function patchListing(
   return spApiPatch(
     `/listings/2021-08-01/items/${encodeURIComponent(sellerId)}/${encodeURIComponent(sku)}`,
     body,
-    { storeId: `store${storeIndex}`, params },
+    {
+      storeId: `store${storeIndex}`,
+      params,
+      retries: opts.retries,
+      signal: opts.signal,
+      beforeRequest: opts.beforeRequest,
+    },
   );
 }
 

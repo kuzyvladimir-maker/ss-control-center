@@ -18,6 +18,7 @@ import { tools as walmartLabels } from "./walmart-labels";
 import { tools as walmartShipping } from "./walmart-shipping";
 import { tools as walmartFeeds } from "./walmart-feeds";
 import { tools as carrier } from "./carrier";
+import { tools as channelMax } from "./channelmax";
 
 const ALL_TOOLS = [
   ...listings,
@@ -33,6 +34,7 @@ const ALL_TOOLS = [
   ...walmartShipping,
   ...walmartFeeds,
   ...carrier,
+  ...channelMax,
 ];
 
 let registered = false;

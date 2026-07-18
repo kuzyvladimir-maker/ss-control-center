@@ -1,0 +1,68 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "26e438ff-37cc-48ef-9b55-e64d9ef28a6d",
+  "created_at": "2026-07-18T12:05:57.161Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "XE-ASK1-BNRB:text_count",
+  "sku": "XE-ASK1-BNRB",
+  "kind": "TEXT_COUNT",
+  "status": "VERIFIED",
+  "detail": {
+    "submitted_event_id": "42867f85-48ee-4252-a364-2f738ae6a0d9",
+    "strategy": "PRIMARY",
+    "stable_post_write_reads": 3,
+    "path_state_sha256": "2cb1025b0f327d9c9a686f9abcb8203e18ae32950b3ee1448b7b1b0fa6fbb2c7",
+    "checks": [
+      {
+        "field": "item_name",
+        "ok": true,
+        "expected": "Smucker's Uncrustables Peanut Butter & Raspberry Spread Frozen Sandwiches, Individually Wrapped, 45 Count",
+        "actual": "Smucker's Uncrustables Peanut Butter & Raspberry Spread Frozen Sandwiches, Individually Wrapped, 45 Count"
+      },
+      {
+        "field": "bullet_point",
+        "ok": true,
+        "expected": [
+          "Exact assortment: 45 individually wrapped frozen sandwiches total: 45 Peanut Butter & Raspberry Spread.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 45 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ],
+        "actual": [
+          "Exact assortment: 45 individually wrapped frozen sandwiches total: 45 Peanut Butter & Raspberry Spread.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 45 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ]
+      },
+      {
+        "field": "product_description",
+        "ok": true,
+        "expected": "This listing contains 45 individual Smucker's Uncrustables frozen sandwiches: 45 Peanut Butter & Raspberry Spread. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 45 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use.",
+        "actual": "This listing contains 45 individual Smucker's Uncrustables frozen sandwiches: 45 Peanut Butter & Raspberry Spread. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 45 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use."
+      },
+      {
+        "field": "unit_count",
+        "ok": true,
+        "expected": 45,
+        "actual": 45
+      },
+      {
+        "field": "unit_count.type",
+        "ok": true,
+        "expected": "Count",
+        "actual": "Count"
+      },
+      {
+        "field": "number_of_items",
+        "ok": true,
+        "expected": 45,
+        "actual": 45
+      }
+    ]
+  },
+  "sha256": "908ec80395f3a701ce2c76733a23ac7d93500a6716253658f27dd35593385342"
+}

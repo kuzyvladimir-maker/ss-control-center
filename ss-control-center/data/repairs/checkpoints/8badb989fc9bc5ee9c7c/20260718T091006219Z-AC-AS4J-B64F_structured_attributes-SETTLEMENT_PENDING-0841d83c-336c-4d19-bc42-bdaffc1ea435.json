@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "0841d83c-336c-4d19-bc42-bdaffc1ea435",
+  "created_at": "2026-07-18T09:10:06.219Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "AC-AS4J-B64F:structured_attributes",
+  "sku": "AC-AS4J-B64F",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "0cf08d3c-e017-4cb1-9fd9-55cb59fd9e29",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "b363b779c5f44723c38bfbf10585457c2e2fc4697d7f098c46711db8d3380101",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients"
+      ],
+      "before_path_state_sha256": "7edb11cb9fd9e5e5fac58d3abd473fe01b7baabfa87905fbbfc03a885e71275f"
+    },
+    "fast_verify_attempts": 10,
+    "extended_attempts": 20,
+    "extended_delay_ms": 30000,
+    "stable_reads_required": 3
+  },
+  "sha256": "cc9c28b2bd18482cebc93ebe40b652dbe236ee4135625d8d8356b9c5ea93c46c"
+}

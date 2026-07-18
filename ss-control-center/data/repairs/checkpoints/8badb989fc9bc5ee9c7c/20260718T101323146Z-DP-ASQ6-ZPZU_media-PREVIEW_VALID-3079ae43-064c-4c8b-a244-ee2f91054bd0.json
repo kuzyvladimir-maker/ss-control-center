@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "3079ae43-064c-4c8b-a244-ee2f91054bd0",
+  "created_at": "2026-07-18T10:13:23.146Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "DP-ASQ6-ZPZU:media",
+  "sku": "DP-ASQ6-ZPZU",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "98039f7d8f9270262b57e39d04a52377c3471bcabf39bea4fa1ee703dcc9f182",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "864e0801116640c684f34965ecbd172d",
+    "issues": []
+  },
+  "sha256": "215da5d829c73ab428f6918c5c624368b493bcdc37c7327a478aa3cf02da954d"
+}

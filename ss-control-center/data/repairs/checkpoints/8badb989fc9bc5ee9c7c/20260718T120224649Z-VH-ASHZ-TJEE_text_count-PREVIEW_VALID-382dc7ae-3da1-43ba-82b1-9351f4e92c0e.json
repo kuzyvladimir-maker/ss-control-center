@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "382dc7ae-3da1-43ba-82b1-9351f4e92c0e",
+  "created_at": "2026-07-18T12:02:24.649Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "VH-ASHZ-TJEE:text_count",
+  "sku": "VH-ASHZ-TJEE",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "f97a6b013f76226766b50b056f48ef7a0103f70b179c38df65e1cbe97c1c2cd9",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "ed94c9f0175c4bc1821a3696622233f5",
+    "issues": []
+  },
+  "sha256": "8da0127f9e4e6901d8c23d3307ea4712421ebff5d01c8cf6afd497c02d216d8e"
+}

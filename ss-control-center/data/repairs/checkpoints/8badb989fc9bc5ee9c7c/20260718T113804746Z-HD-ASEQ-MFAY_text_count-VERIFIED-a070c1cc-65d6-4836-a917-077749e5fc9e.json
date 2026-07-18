@@ -1,0 +1,68 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "a070c1cc-65d6-4836-a917-077749e5fc9e",
+  "created_at": "2026-07-18T11:38:04.746Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "HD-ASEQ-MFAY:text_count",
+  "sku": "HD-ASEQ-MFAY",
+  "kind": "TEXT_COUNT",
+  "status": "VERIFIED",
+  "detail": {
+    "submitted_event_id": "0c52b9ea-bb68-4c9d-b07b-08f3e2fe4a39",
+    "strategy": "PRIMARY",
+    "stable_post_write_reads": 3,
+    "path_state_sha256": "e31c9a967261764a4f81adee2c1204e1d4ba01da85781b0dc827b1b97e63905c",
+    "checks": [
+      {
+        "field": "item_name",
+        "ok": true,
+        "expected": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz, 90 Count",
+        "actual": "Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich, 12g Protein, 2.8 oz, 90 Count"
+      },
+      {
+        "field": "bullet_point",
+        "ok": true,
+        "expected": [
+          "Exact assortment: 90 individually wrapped frozen sandwiches total: 90 Peanut Butter & Apple Cinnamon Jelly – 12g Protein.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 90 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ],
+        "actual": [
+          "Exact assortment: 90 individually wrapped frozen sandwiches total: 90 Peanut Butter & Apple Cinnamon Jelly – 12g Protein.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 90 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ]
+      },
+      {
+        "field": "product_description",
+        "ok": true,
+        "expected": "This listing contains 90 individual Smucker's Uncrustables frozen sandwiches: 90 Peanut Butter & Apple Cinnamon Jelly – 12g Protein. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 90 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use.",
+        "actual": "This listing contains 90 individual Smucker's Uncrustables frozen sandwiches: 90 Peanut Butter & Apple Cinnamon Jelly – 12g Protein. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 90 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use."
+      },
+      {
+        "field": "unit_count",
+        "ok": true,
+        "expected": 90,
+        "actual": 90
+      },
+      {
+        "field": "unit_count.type",
+        "ok": true,
+        "expected": "Count",
+        "actual": "Count"
+      },
+      {
+        "field": "number_of_items",
+        "ok": true,
+        "expected": 90,
+        "actual": 90
+      }
+    ]
+  },
+  "sha256": "f9b1742ed816c908c9dfb16d3bf366a42a00b7eb8d8c3c1680682559c1a18d60"
+}

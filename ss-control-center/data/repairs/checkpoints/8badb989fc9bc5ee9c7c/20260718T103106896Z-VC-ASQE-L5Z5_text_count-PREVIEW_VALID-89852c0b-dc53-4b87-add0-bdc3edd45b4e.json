@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "89852c0b-dc53-4b87-add0-bdc3edd45b4e",
+  "created_at": "2026-07-18T10:31:06.896Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "VC-ASQE-L5Z5:text_count",
+  "sku": "VC-ASQE-L5Z5",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "f2f8b32979b887d7159ed963edfc4e9160578ff6c32b28a4352bc0f791dfdfdb",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "84a6c4bf644b4c0f80f71f41fe3ff0b9",
+    "issues": []
+  },
+  "sha256": "ebaf874fea1403fed7bd9b27e75581caa5c58bd94034868c0bf6af0bc2911e9e"
+}

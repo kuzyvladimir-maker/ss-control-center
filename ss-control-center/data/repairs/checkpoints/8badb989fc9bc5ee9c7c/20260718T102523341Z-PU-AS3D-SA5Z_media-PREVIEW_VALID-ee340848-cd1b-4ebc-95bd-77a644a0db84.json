@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "ee340848-cd1b-4ebc-95bd-77a644a0db84",
+  "created_at": "2026-07-18T10:25:23.341Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PU-AS3D-SA5Z:media",
+  "sku": "PU-AS3D-SA5Z",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "2f76794b146da1c621f432ad04765dec07e3c405a0930ee824bf416c779723f1",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "d3c1f7f6381e402b9e9a6dbe1f5d70b5",
+    "issues": []
+  },
+  "sha256": "6ed18c2fffe78b7675d7363d834888a47fc61e70ba78c8bd715398c964f1437b"
+}

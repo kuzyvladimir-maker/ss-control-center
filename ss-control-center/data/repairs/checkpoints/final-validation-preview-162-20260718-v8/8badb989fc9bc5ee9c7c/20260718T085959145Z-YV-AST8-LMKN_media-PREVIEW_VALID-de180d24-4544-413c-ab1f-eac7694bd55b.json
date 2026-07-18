@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "de180d24-4544-413c-ab1f-eac7694bd55b",
+  "created_at": "2026-07-18T08:59:59.145Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "YV-AST8-LMKN:media",
+  "sku": "YV-AST8-LMKN",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "f640ce911f6fe4702d24dd58e40a17ccf54f4b9f566ef1acf347a4f165a7cb20",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "f476c918635e4de1b1b5dd7b9bfb3ac2",
+    "issues": []
+  },
+  "sha256": "314b5e8cc35ecbc0d5c3f37c9f922a26117db1dd301a76f333586b96ad512e5b"
+}

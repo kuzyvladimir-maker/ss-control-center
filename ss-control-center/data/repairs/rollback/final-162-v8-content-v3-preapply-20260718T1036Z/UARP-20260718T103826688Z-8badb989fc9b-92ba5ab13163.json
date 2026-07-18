@@ -1,0 +1,419 @@
+{
+  "schema_version": "uncrustables-amazon-rollback-plan/v3",
+  "immutable": true,
+  "rollback_plan_id": "UARP-20260718T103826688Z-8badb989fc9b",
+  "created_at": "2026-07-18T10:38:26.688Z",
+  "apply_eligible": true,
+  "source_snapshot": {
+    "path": "data/repairs/rollback/final-162-v8-content-v3-preapply-20260718T1036Z/UAPS-20260718T103756854Z-46a80e727880-e935338955d7.json",
+    "sha256": "e935338955d716ce28ab00d08cf1f7d4c92702ed19a76b89d0872fbad24bb190",
+    "snapshot_id": "UAPS-20260718T103756854Z-46a80e727880",
+    "capture_mode": "LIVE_SP_API",
+    "completed_at": "2026-07-18T10:37:56.854Z",
+    "exact_scope": 164
+  },
+  "source_repair_plan": {
+    "path": "data/repairs/generated/uncrustables-amazon-final-162-20260718-v8/URP-20260718T083203612Z-8badb989fc9b.json",
+    "sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+    "plan_id": "URP-20260718T083203612Z",
+    "source_ledger_sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f"
+  },
+  "source_execution_selection": {
+    "path": "data/repairs/execution-selections/uncrustables-kp-content-canary-20260718-v1/URES-20260718T103601894Z-6bd54992f19b.json",
+    "sha256": "6bd54992f19be7ff87ba87516a0394ae027c5a7e1b2d652247eda56a01282d84",
+    "profile": "CONTENT_STRUCTURED_MEDIA_ONLY_V1",
+    "selected_actions": 2,
+    "selected_action_ids_sha256": "eb10ca113a73307695ac68ec76af7ee54226c8e0e0d042a36f6e125f7a652c41"
+  },
+  "policy": {
+    "marketplace_id": "ATVPDKIKX0DER",
+    "patch_only": true,
+    "path_level_compare_and_swap": true,
+    "validation_preview_required": true,
+    "fresh_get_guard_required": true,
+    "post_write_readback_required": true,
+    "cli_confirmation_required": true,
+    "environment_confirmation_required": true,
+    "default_scope": "CANARY",
+    "maximum_errors_default": 1
+  },
+  "canary": {
+    "method": "ACTION_KIND_COVERAGE_THEN_SHA256",
+    "size": 1,
+    "skus": [
+      "KP-ASYC-RN84"
+    ],
+    "covered_action_kinds": [
+      "TEXT_COUNT",
+      "STRUCTURED_ATTRIBUTES"
+    ]
+  },
+  "scope": {
+    "snapshot_entries": 164,
+    "repair_entries": 1,
+    "repair_actions": 2,
+    "rollback_entries": 1,
+    "inverse_operations": 7,
+    "missing_media_binary_evidence": 0
+  },
+  "entries": [
+    {
+      "rollback_entry_id": "RB-eefbfa2b7fe8d67a0339",
+      "sku": "KP-ASYC-RN84",
+      "asin": "B0H83FYZR3",
+      "store_index": 1,
+      "before_product_type": "PASTRY",
+      "forward_action_ids": [
+        "KP-ASYC-RN84:text_count",
+        "KP-ASYC-RN84:structured_attributes"
+      ],
+      "forward_action_kinds": [
+        "TEXT_COUNT",
+        "STRUCTURED_ATTRIBUTES"
+      ],
+      "operations": [
+        {
+          "operation_id": "INV-1ed88f4e545b87614b12",
+          "path": "/attributes/allergen_information",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": false,
+            "sha256": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "value": "peanuts",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "wheat",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "milk_may_contain",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "tree_nuts_may_contain",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "a0ace45fae1b3d69e361057443a89eb34c71d5bfe801181050a85b48b5fa35b4"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "delete",
+            "path": "/attributes/allergen_information",
+            "value": [
+              {
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": []
+        },
+        {
+          "operation_id": "INV-51d7ac4b4fe2587bc4fb",
+          "path": "/attributes/bullet_point",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "value": "Contains 90 individually packaged Smucker's Uncrustables Peanut Butter & Blueberry Sandwiches, each 2.8 oz — 90 single sandwiches total",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "Crustless soft bread filled with peanut butter and blueberry jam, pre-made and sealed — no assembly or preparation required",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "Thaw at room temperature for 30 to 60 minutes before serving; keep frozen until ready to use",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "Each sandwich is individually wrapped, making portions straightforward to pack, distribute, or store in lunchboxes and breakrooms",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "Bulk count of 90 units suits school programs, childcare facilities, foodservice operations, or household stocking",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "d24d4d520d25061df6ff82a16852b4222a2c01b4d8bd5ca4861bc341eccec11d"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "value": "Exact assortment: 90 individually wrapped frozen sandwiches total: 90 Peanut Butter & Blueberry.",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 90 Count refers only to individual sandwiches.",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use.",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "bd103d994661b0993a0a500c0c16cfebefe02d10f692ea16a1e1349f8e075c4d"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "replace",
+            "path": "/attributes/bullet_point",
+            "value": [
+              {
+                "value": "Contains 90 individually packaged Smucker's Uncrustables Peanut Butter & Blueberry Sandwiches, each 2.8 oz — 90 single sandwiches total",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "Crustless soft bread filled with peanut butter and blueberry jam, pre-made and sealed — no assembly or preparation required",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "Thaw at room temperature for 30 to 60 minutes before serving; keep frozen until ready to use",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "Each sandwich is individually wrapped, making portions straightforward to pack, distribute, or store in lunchboxes and breakrooms",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              },
+              {
+                "value": "Bulk count of 90 units suits school programs, childcare facilities, foodservice operations, or household stocking",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": []
+        },
+        {
+          "operation_id": "INV-4c57d8b73418f8d0c030",
+          "path": "/attributes/ingredients",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": false,
+            "sha256": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "value": "Peanut Butter: Peanuts, Contains 2% Or Less Of: Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Sugar, Salt, Molasses. Bread: Unbleached Whole Wheat Flour, Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Dough Conditioner (Mono And Diglycerides, Sodium Stearoyl Lactylate, DATEM, Enzymes, Ascorbic Acid, Calcium Peroxide). Blueberry Spread: Sugar, Blueberries, Water, Contains 2% Or Less Of: Pectin, Citric Acid, Potassium Sorbate (Preservative), Natural Flavor.",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "681d9b410531f350fe0941f81de30f0b393ab5f5a28f8f1405322a84bfb93dec"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "delete",
+            "path": "/attributes/ingredients",
+            "value": [
+              {
+                "marketplace_id": "ATVPDKIKX0DER",
+                "language_tag": "en_US"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": []
+        },
+        {
+          "operation_id": "INV-e014abe7ba5183ab1f4c",
+          "path": "/attributes/item_name",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "value": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich, 2.8 oz Each, 90 Count",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "dc9e34f4019ab3a8a2a0427ad7745834aeb7e450bce984865285839e6b8dca21"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "value": "Smucker's Uncrustables Peanut Butter & Blueberry Frozen Sandwiches, Individually Wrapped, 90 Count",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "5ee8e81eda51728103d6834f8036041a220195fdd0136ec9fc5a71af45392367"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "replace",
+            "path": "/attributes/item_name",
+            "value": [
+              {
+                "value": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich, 2.8 oz Each, 90 Count",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": []
+        },
+        {
+          "operation_id": "INV-b872eda9b79650f66b5c",
+          "path": "/attributes/number_of_items",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "value": 90,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "1af1176de10572017aa281f6733c45d5f7eb823d8935107a203a1c760eece083"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "value": 90,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "1af1176de10572017aa281f6733c45d5f7eb823d8935107a203a1c760eece083"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "replace",
+            "path": "/attributes/number_of_items",
+            "value": [
+              {
+                "value": 90,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": []
+        },
+        {
+          "operation_id": "INV-53bfd56e9b25855f2980",
+          "path": "/attributes/product_description",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "value": "Smucker's Uncrustables Peanut Butter & Blueberry Sandwiches are pre-made on soft, crustless bread and arrive frozen for straightforward storage and extended shelf life. This listing contains 90 individual sandwiches, each weighing 2.8 oz.\n\nTo serve, remove from the freezer and thaw at room temperature for approximately 30 to 60 minutes. No heating, no utensils, and no preparation steps are needed.\n\nEach sandwich is individually wrapped. The peanut butter and blueberry jam filling is sealed within the crustless bread round using Smucker's standard production process, consistent with the retail Uncrustables product.\n\nSuitable for school cafeterias, childcare programs, food banks, office breakrooms, or bulk household purchasing.",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "4677352300c9b809f37f9f49138552d7117368fc3348caf601faffb03915da8f"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "value": "This listing contains 90 individual Smucker's Uncrustables frozen sandwiches: 90 Peanut Butter & Blueberry. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 90 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use.",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "5e867874559bad05817f3f2341f2dfa26a5992bd887f09a07c69f416986ef05e"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "replace",
+            "path": "/attributes/product_description",
+            "value": [
+              {
+                "value": "Smucker's Uncrustables Peanut Butter & Blueberry Sandwiches are pre-made on soft, crustless bread and arrive frozen for straightforward storage and extended shelf life. This listing contains 90 individual sandwiches, each weighing 2.8 oz.\n\nTo serve, remove from the freezer and thaw at room temperature for approximately 30 to 60 minutes. No heating, no utensils, and no preparation steps are needed.\n\nEach sandwich is individually wrapped. The peanut butter and blueberry jam filling is sealed within the crustless bread round using Smucker's standard production process, consistent with the retail Uncrustables product.\n\nSuitable for school cafeterias, childcare programs, food banks, office breakrooms, or bulk household purchasing.",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": []
+        },
+        {
+          "operation_id": "INV-752355bc59ba8428c5bd",
+          "path": "/attributes/unit_count",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "type": {
+                  "value": "Count",
+                  "language_tag": "en_US"
+                },
+                "value": 90,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "a281e08aa3fe4f7b587572f402195e9288ded7a405a900385be8731eff701a6d"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "type": {
+                  "value": "Ounce",
+                  "language_tag": "en_US"
+                },
+                "value": 252,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "771284d0ebf69ccfd35738a12eee91c297452b8289e5fa0ecebec4239e8642ec"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "replace",
+            "path": "/attributes/unit_count",
+            "value": [
+              {
+                "type": {
+                  "value": "Count",
+                  "language_tag": "en_US"
+                },
+                "value": 90,
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": []
+        }
+      ]
+    }
+  ],
+  "sha256": "92ba5ab13163dfd64932638bd71017d64d125df069d5a76adae4eeb035ecc490"
+}

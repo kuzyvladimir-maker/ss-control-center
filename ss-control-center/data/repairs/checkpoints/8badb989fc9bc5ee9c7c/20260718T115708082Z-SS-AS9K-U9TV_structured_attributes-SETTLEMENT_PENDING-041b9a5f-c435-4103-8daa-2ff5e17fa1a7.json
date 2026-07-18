@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "041b9a5f-c435-4103-8daa-2ff5e17fa1a7",
+  "created_at": "2026-07-18T11:57:08.082Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "SS-AS9K-U9TV:structured_attributes",
+  "sku": "SS-AS9K-U9TV",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "bb2bedb3-5f5c-4cb7-bae5-1d5944faac49",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "b363b779c5f44723c38bfbf10585457c2e2fc4697d7f098c46711db8d3380101",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients"
+      ],
+      "before_path_state_sha256": "7edb11cb9fd9e5e5fac58d3abd473fe01b7baabfa87905fbbfc03a885e71275f"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "02594371bcce7f69c029ecd405c2fc260beaa53a81cec80292fad1262821767d"
+}

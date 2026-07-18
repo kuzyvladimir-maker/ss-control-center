@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "15b6aa9f-b72e-433a-8fad-8459c4f444b7",
+  "created_at": "2026-07-18T08:47:03.930Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PL-ASR9-U94A:text_count",
+  "sku": "PL-ASR9-U94A",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "0999cdbff7c1a4368c3dfe0ee37f574b2beb4bc7c4d56708b3f984cb500eb781",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "66bd1b795698456e8db99a5be81e157c",
+    "issues": []
+  },
+  "sha256": "de899fcbd3c87d49c7c1194090c8bd7546e7d320fb2e5a81a5fdc4178ff178b8"
+}

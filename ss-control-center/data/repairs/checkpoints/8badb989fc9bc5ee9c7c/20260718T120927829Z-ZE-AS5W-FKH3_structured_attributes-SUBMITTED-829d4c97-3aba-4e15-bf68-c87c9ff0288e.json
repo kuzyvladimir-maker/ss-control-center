@@ -1,0 +1,33 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "829d4c97-3aba-4e15-bf68-c87c9ff0288e",
+  "created_at": "2026-07-18T12:09:27.829Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "ZE-AS5W-FKH3:structured_attributes",
+  "sku": "ZE-AS5W-FKH3",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "14456241-ed7d-44c5-aa26-6d47f987da7c",
+    "patch_sha256": "a5158e87b0fe067cd488b1b7a7dab78cf0eed32d637c7e3aa7ecca505192b80f",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "a5158e87b0fe067cd488b1b7a7dab78cf0eed32d637c7e3aa7ecca505192b80f",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients"
+      ],
+      "before_path_state_sha256": "0eecea33619d70f70609397cdfc387fbed7f7d819c84aad7d5007608e831e013"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "7e4d1e86f58b44ab85e13fda42697926",
+    "issues": []
+  },
+  "sha256": "021860a9c02ef28a450f4c353ff0a9df1e123318f7e18f32e52cf4c3b3a48a69"
+}

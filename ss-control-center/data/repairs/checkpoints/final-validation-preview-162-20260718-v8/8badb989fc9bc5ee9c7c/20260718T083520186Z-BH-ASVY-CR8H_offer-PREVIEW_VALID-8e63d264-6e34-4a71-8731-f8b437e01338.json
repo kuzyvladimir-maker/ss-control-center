@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "8e63d264-6e34-4a71-8731-f8b437e01338",
+  "created_at": "2026-07-18T08:35:20.186Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "BH-ASVY-CR8H:offer",
+  "sku": "BH-ASVY-CR8H",
+  "kind": "OFFER",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "strategy": "SELECTOR_REPLACE_SURROGATE_FOR_MERGE",
+    "actual_merge_patch_sha256": "e3f30fee59a91c8be299234ef795b2c89cc7d340b8fd69ac01b4a5c6ab0a2b38",
+    "actual_merge_patch_path": "/attributes/purchasable_offer",
+    "actual_merge_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "preview_surrogate_patch_sha256": "63ed97d3e42ae630aa9623da77967fb68d248979042c39b0ce00bae985683776",
+    "preview_surrogate_patch_path": "/attributes/purchasable_offer",
+    "preview_surrogate_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "actual_request_patch_sha256": "49bd670ccf772993e19fd182062a82b4f2cfc81644738e298868123c4e4f2c40",
+    "actual_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "preview_request_patch_sha256": "342bdb0091dc947412abce3d4dea039a37e42699a146f2e4446ea044c22b7b8f",
+    "preview_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "omitted_null_members": [
+      "ALL.discounted_price"
+    ],
+    "status": "VALID",
+    "submission_id": "0d0f315de9f2409faa0b61e0a19136c8",
+    "issues": []
+  },
+  "sha256": "8f5680ffabdcbe7761347ed1cfbe576f64361fdfc6e72540cea6ec86ab9c4ae5"
+}

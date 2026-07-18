@@ -31,11 +31,29 @@ import {
   buildActionPatches,
   buildRepairPlan,
   buildValidationPreviewPatchSet,
+  CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE,
+  EXACT_PATH_SETTLEMENT_GUARD,
   ImmutableCheckpointStore,
+  MEDIA_PATCH_PATHS,
+  repairExecutionSelection,
   SELECTOR_REPLACE_SURROGATE_FOR_MERGE,
   sha256,
+  stableJson,
+  TEXT_STRUCTURED_ONLY_PROFILE,
+  type RepairExecutionSelection,
   type UncrustablesRepairPlan,
 } from "../repair/uncrustables-surgical";
+
+function testCheckpointStore(
+  root: string,
+  planSha256: string,
+): ImmutableCheckpointStore {
+  return new ImmutableCheckpointStore(
+    root,
+    planSha256,
+    path.join(root, "test-mutation-coordination"),
+  );
+}
 
 function sku(index: number): string {
   return `UT-AS${String(index).padStart(3, "0")}-SAFE`;
@@ -261,6 +279,60 @@ function repairPlan(): UncrustablesRepairPlan {
     },
     createdAt: new Date("2026-07-18T00:03:00.000Z"),
   });
+}
+
+async function contentSelectionFixture(): Promise<{
+  repair: UncrustablesRepairPlan;
+  snapshot: UncrustablesPreChangeSnapshot;
+  selection: RepairExecutionSelection;
+  repairPlanPath: string;
+  selectionPath: string;
+}> {
+  const bytes = fixtureBytes();
+  const manifest = {
+    schema_version: "uncrustables-surgical-desired/v1" as const,
+    immutable: true as const,
+    reviewed_at: "2026-07-18T00:01:00.000Z",
+    source_ledger_sha256: sha256(bytes.ledgerBytes),
+    repairs: [
+      {
+        sku: sku(1),
+        review: {
+          confidence: "HIGH" as const,
+          rationale: "Test-only exact count repair.",
+          evidence: ["Captured GROCERY before state."],
+        },
+        text_count: {
+          unit_count: 24,
+          unit_count_type: "Count" as const,
+          number_of_items: 24,
+          request_product_type: "GROCERY",
+          expected_product_type: "GROCERY",
+        },
+      },
+    ],
+  };
+  const manifestBytes = Buffer.from(JSON.stringify(manifest));
+  const manifestPath = "/tmp/content-selection-overrides.json";
+  const repairPlanPath = "/tmp/content-selection-repair.json";
+  const selectionPath = "/tmp/content-selection.json";
+  const repair = buildRepairPlan({
+    ledgerPath: "/tmp/ledger.json",
+    ledgerBytes: bytes.ledgerBytes,
+    manifest,
+    manifestSource: { path: manifestPath, bytes: manifestBytes },
+    createdAt: new Date("2026-07-18T00:03:00.000Z"),
+  });
+  const snapshot = await liveSnapshot({
+    overridesBytes: manifestBytes,
+    overridesPath: manifestPath,
+  });
+  const selection = repairExecutionSelection(repair, {
+    sourcePlanPath: repairPlanPath,
+    createdAt: new Date("2026-07-18T00:06:00.000Z"),
+    actionKinds: ["TEXT_COUNT", "STRUCTURED_ATTRIBUTES", "MEDIA"],
+  });
+  return { repair, snapshot, selection, repairPlanPath, selectionPath };
 }
 
 async function liveSnapshot(options?: {
@@ -516,6 +588,122 @@ test("rollback plan restores exact before fields and selects deterministic actio
   );
 });
 
+test("selection-scoped rollback binds and covers exactly the content action subset", async () => {
+  const {
+    repair,
+    snapshot,
+    selection,
+    repairPlanPath,
+    selectionPath,
+  } = await contentSelectionFixture();
+  assert.equal(selection.profile, CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE);
+  assert.equal(selection.selected_actions, 1);
+
+  const scoped = buildRollbackPlan({
+    snapshotPath: "/tmp/content-selection-snapshot.json",
+    snapshot,
+    repairPlanPath,
+    repairPlan: repair,
+    executionSelectionPath: selectionPath,
+    executionSelection: selection,
+    canarySize: 1,
+  });
+  assert.equal(scoped.entries.length, 1);
+  assert.deepEqual(
+    scoped.entries.flatMap((entry) => entry.forward_action_ids),
+    selection.selected_action_ids,
+  );
+  assert.equal(scoped.source_execution_selection?.path, selectionPath);
+  assert.equal(scoped.source_execution_selection?.sha256, selection.sha256);
+  assert.equal(
+    scoped.entries.some((entry) =>
+      entry.operations.some((operation) =>
+        [
+          "/attributes/purchasable_offer",
+          "/attributes/list_price",
+        ].includes(operation.path),
+      ),
+    ),
+    false,
+  );
+
+  const oldestCapturedAt = Math.min(
+    ...snapshot.entries.map((entry) => new Date(entry.captured_at).getTime()),
+  );
+  assert.doesNotThrow(() =>
+    assertForwardApplyRollbackCoverage({
+      repairPlan: repair,
+      snapshot,
+      rollbackPlan: scoped,
+      executionSelection: selection,
+      executionSelectionPath: selectionPath,
+      now: new Date(oldestCapturedAt + 60_000),
+    }),
+  );
+
+  const wholePlan = buildRollbackPlan({
+    snapshotPath: "/tmp/content-selection-snapshot.json",
+    snapshot,
+    repairPlanPath,
+    repairPlan: repair,
+  });
+  assert.throws(
+    () =>
+      assertForwardApplyRollbackCoverage({
+        repairPlan: repair,
+        snapshot,
+        rollbackPlan: wholePlan,
+        executionSelection: selection,
+        executionSelectionPath: selectionPath,
+        now: new Date(oldestCapturedAt + 60_000),
+      }),
+    /not covered by an apply-eligible exact live rollback set/,
+  );
+  assert.throws(
+    () =>
+      assertForwardApplyRollbackCoverage({
+        repairPlan: repair,
+        snapshot,
+        rollbackPlan: scoped,
+        now: new Date(oldestCapturedAt + 60_000),
+      }),
+    /not covered by an apply-eligible exact live rollback set/,
+  );
+
+  const textStructuredSelection = repairExecutionSelection(repair, {
+    sourcePlanPath: repairPlanPath,
+    createdAt: new Date("2026-07-18T00:07:00.000Z"),
+    actionKinds: ["TEXT_COUNT", "STRUCTURED_ATTRIBUTES"],
+  });
+  assert.equal(
+    textStructuredSelection.profile,
+    TEXT_STRUCTURED_ONLY_PROFILE,
+  );
+  const textStructuredRollback = buildRollbackPlan({
+    snapshotPath: "/tmp/content-selection-snapshot.json",
+    snapshot,
+    repairPlanPath,
+    repairPlan: repair,
+    executionSelectionPath: "/tmp/text-structured-selection.json",
+    executionSelection: textStructuredSelection,
+    canarySize: 1,
+  });
+  assert.equal(
+    textStructuredRollback.entries.some((entry) =>
+      entry.forward_action_kinds.includes("MEDIA") ||
+      entry.forward_action_kinds.includes("OFFER") ||
+      entry.operations.some((operation) =>
+        (MEDIA_PATCH_PATHS as readonly string[]).includes(operation.path) ||
+        [
+          "/attributes/purchasable_offer",
+          "/attributes/list_price",
+        ].includes(operation.path)
+      )
+    ),
+    false,
+  );
+});
+
 test("rollback planning fails closed when an omitted attribute has no observed B2B before price", async () => {
   const snapshot = await liveSnapshot({
     listingFactory: (index) => {
@@ -658,7 +846,7 @@ test("rollback requires dual confirmation, is idempotent, and verifies readback"
     rollback.sha256,
   );
   const token = rollbackConfirmationToken(rollback);
-  const forwardCheckpoint = new ImmutableCheckpointStore(
+  const forwardCheckpoint = testCheckpointStore(
     path.join(tmpdir(), `uncr-forward-guard-${Date.now()}-${Math.random()}`),
     repair.sha256,
   );
@@ -837,7 +1025,7 @@ test("rollback rejects an invalid inverse offer surrogate before any real merge"
       rollback.sha256,
     ),
     forwardRepairPlan: repair,
-    forwardCheckpointStore: new ImmutableCheckpointStore(
+    forwardCheckpointStore: testCheckpointStore(
       path.join(tmpdir(), `uncr-forward-invalid-${Date.now()}-${Math.random()}`),
       repair.sha256,
     ),
@@ -914,7 +1102,7 @@ test("an unresolved accepted rollback is settled by readback without a duplicate
     path.join(tmpdir(), `uncr-late-rollback-${Date.now()}-${Math.random()}`),
     rollback.sha256,
   );
-  const forwardCheckpoint = new ImmutableCheckpointStore(
+  const forwardCheckpoint = testCheckpointStore(
     path.join(tmpdir(), `uncr-late-forward-${Date.now()}-${Math.random()}`),
     repair.sha256,
   );
@@ -985,7 +1173,7 @@ test("rollback never reports before-state as restored while a forward submission
   );
   assert.ok(before);
   assert.ok(selectedRepair);
-  const forwardCheckpoint = new ImmutableCheckpointStore(
+  const forwardCheckpoint = testCheckpointStore(
     path.join(tmpdir(), `uncr-open-forward-${Date.now()}-${Math.random()}`),
     repair.sha256,
   );
@@ -1033,6 +1221,117 @@ test("rollback never reports before-state as restored while a forward submission
   assert.equal(writes, 0);
 });
 
+test("selection rollback quarantines a disjoint open OFFER and leaves its forward fence open", async () => {
+  const {
+    repair,
+    snapshot,
+    selection,
+    repairPlanPath,
+    selectionPath,
+  } = await contentSelectionFixture();
+  const rollback = buildRollbackPlan({
+    snapshotPath: "/tmp/content-selection-snapshot.json",
+    snapshot,
+    repairPlanPath,
+    repairPlan: repair,
+    executionSelectionPath: selectionPath,
+    executionSelection: selection,
+    canarySize: 1,
+  });
+  const rollbackEntry = rollback.entries[0];
+  const repairEntry = repair.entries.find(
+    (entry) => entry.sku === rollbackEntry.sku,
+  );
+  const before = snapshot.entries.find(
+    (entry) => entry.sku === rollbackEntry.sku,
+  )?.listing;
+  const offerAction = repairEntry?.actions.find(
+    (action) => action.kind === "OFFER",
+  );
+  assert.ok(before);
+  assert.ok(offerAction);
+
+  const offerPatches = buildActionPatches(offerAction, before);
+  const offerPaths = [...new Set(offerPatches.map((patch) => patch.path))].sort();
+  const offerPatchSha = sha256(stableJson(offerPatches));
+  const testRoot = path.join(
+    tmpdir(),
+    `uncr-selection-rollback-${Date.now()}-${Math.random()}`,
+  );
+  const coordinationDir = path.join(testRoot, "coordination");
+  const forwardCheckpoint = new ImmutableCheckpointStore(
+    path.join(testRoot, "forward"),
+    repair.sha256,
+    coordinationDir,
+  );
+  const pendingOffer = await forwardCheckpoint.append({
+    action_id: offerAction.action_id,
+    sku: rollbackEntry.sku,
+    kind: "OFFER",
+    status: "SUBMITTED",
+    detail: {
+      strategy: SELECTOR_REPLACE_SURROGATE_FOR_MERGE,
+      actual_request_patch_sha256: offerPatchSha,
+      actual_request_patch_paths: offerPaths,
+      settlement_guard: {
+        schema_version: EXACT_PATH_SETTLEMENT_GUARD,
+        actual_patch_sha256: offerPatchSha,
+        exact_action_paths: offerPaths,
+        before_path_state_sha256: "a".repeat(64),
+      },
+    },
+  });
+  let gets = 0;
+  let writes = 0;
+  const gateway: RollbackGateway = {
+    getListing: async () => {
+      gets++;
+      return structuredClone(before);
+    },
+    patchListing: async () => {
+      writes++;
+      throw new Error("already-restored content paths must not PATCH");
+    },
+  };
+  const token = rollbackConfirmationToken(rollback);
+  const result = await executeRollbackPlan(rollback, gateway, {
+    apply: true,
+    scope: "ALL",
+    confirmation: token,
+    environmentConfirmation: token,
+    checkpointStore: new ImmutableRollbackCheckpointStore(
+      path.join(testRoot, "rollback"),
+      rollback.sha256,
+      coordinationDir,
+    ),
+    forwardRepairPlan: repair,
+    forwardExecutionSelection: selection,
+    forwardExecutionSelectionPath: selectionPath,
+    forwardCheckpointStore: forwardCheckpoint,
+    requestDelayMs: 200,
+    settlementAttempts: 3,
+    settlementDelayMs: 1,
+    settlementStableReads: 2,
+    sleep: async () => undefined,
+  });
+  assert.equal(result.quarantined_pending_forward_actions, 1);
+  assert.equal(result.recovered_pending_forward_actions, 0);
+  assert.equal(result.already_rolled_back_entries, 1);
+  assert.equal(result.failed_entries, 0);
+  assert.equal(gets, 1);
+  assert.equal(writes, 0);
+  const pending = await forwardCheckpoint.pendingSubmissions();
+  assert.equal(pending.size, 1);
+  assert.equal(
+    pending.get(offerAction.action_id)?.submitted_event_id,
+    pendingOffer.event_id,
+  );
+  await readFile(
+    path.join(coordinationDir, "pending-mutation-fence.json"),
+    "utf8",
+  );
+});
+
 test("compare-and-swap conflict blocks mutation and trips the one-error fuse", async () => {
   const snapshot = await liveSnapshot();
   const repair = repairPlan();
@@ -1071,7 +1370,7 @@ test("compare-and-swap conflict blocks mutation and trips the one-error fuse", a
     environmentConfirmation: token,
     checkpointStore: checkpoint,
     forwardRepairPlan: repair,
-    forwardCheckpointStore: new ImmutableCheckpointStore(
+    forwardCheckpointStore: testCheckpointStore(
       path.join(tmpdir(), `uncr-forward-conflict-${Date.now()}-${Math.random()}`),
       repair.sha256,
     ),

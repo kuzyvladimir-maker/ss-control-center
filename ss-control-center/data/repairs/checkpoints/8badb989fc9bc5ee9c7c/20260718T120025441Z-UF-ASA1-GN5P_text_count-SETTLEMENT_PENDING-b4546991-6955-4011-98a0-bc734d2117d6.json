@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b4546991-6955-4011-98a0-bc734d2117d6",
+  "created_at": "2026-07-18T12:00:25.441Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "UF-ASA1-GN5P:text_count",
+  "sku": "UF-ASA1-GN5P",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "5115728c-1554-4e98-8b59-a7e98004f82c",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "32ca011630a61dfc84172a58cd1d9f5338114b0f7083f3b53f8ec58dd64c15a4",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "5b32014e52f5d21c58da5a4abcfac4133b5d5c45d41057992b372effe8e58ea1"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "d15f891c49d0d64a63ae17aed8a9f81fde8b3e4c6e29fad59649ee760f0b0c42"
+}

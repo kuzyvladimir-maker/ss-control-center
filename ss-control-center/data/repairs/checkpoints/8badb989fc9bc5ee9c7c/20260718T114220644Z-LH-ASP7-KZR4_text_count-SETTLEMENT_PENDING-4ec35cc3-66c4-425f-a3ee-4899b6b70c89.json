@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "4ec35cc3-66c4-425f-a3ee-4899b6b70c89",
+  "created_at": "2026-07-18T11:42:20.644Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "LH-ASP7-KZR4:text_count",
+  "sku": "LH-ASP7-KZR4",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "775b6261-0624-4953-a2ea-46a33ae3ffe6",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "3d84dbb47d041a7f213e8eebd720da99092f9e69d9bd135bea41c2197f7ce09f",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "2bd9fe0e15dd612b2e19af5e08d5afd23fa648c12f4ede6f10d1cb0f02ea4e2c"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "a2d89f47ec38f682ff1feb2b26dc590aae3450396fdecda9376e76b1e8d62d0c"
+}

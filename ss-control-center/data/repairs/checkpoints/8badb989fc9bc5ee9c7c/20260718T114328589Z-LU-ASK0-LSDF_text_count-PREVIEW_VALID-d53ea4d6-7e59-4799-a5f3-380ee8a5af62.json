@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d53ea4d6-7e59-4799-a5f3-380ee8a5af62",
+  "created_at": "2026-07-18T11:43:28.589Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "LU-ASK0-LSDF:text_count",
+  "sku": "LU-ASK0-LSDF",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "f443f6e8264d8dd3f384c803fa3ce1925472e691a78acac5095f8dec1ad04b9d",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "c86141f4406e4e21807a80a865465afe",
+    "issues": []
+  },
+  "sha256": "677d53dc5667307f9a24db26eb67a27056d42fb3ee7a168fb05601427da7d394"
+}

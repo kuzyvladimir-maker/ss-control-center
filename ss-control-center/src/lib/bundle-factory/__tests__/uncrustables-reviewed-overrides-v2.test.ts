@@ -112,7 +112,7 @@ test("v2 plan keeps KP full text/fallback compatible with its structured action"
   assert.ok(kp);
   assert.deepEqual(
     kp.actions.map((action) => action.kind),
-    ["OFFER", "TEXT_COUNT", "STRUCTURED_ATTRIBUTES"],
+    ["TEXT_COUNT", "STRUCTURED_ATTRIBUTES", "OFFER"],
   );
   const text = kp.actions.find((action) => action.kind === "TEXT_COUNT");
   const structured = kp.actions.find(

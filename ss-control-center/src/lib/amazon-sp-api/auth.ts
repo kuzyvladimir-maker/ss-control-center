@@ -34,7 +34,11 @@ export function getStoreCredentials(storeIndex: number): StoreCredentials | null
 }
 
 /** Exchange refresh token for access token via LWA */
-async function exchangeToken(creds: StoreCredentials): Promise<string> {
+async function exchangeToken(
+  creds: StoreCredentials,
+  signal?: AbortSignal,
+): Promise<string> {
+  signal?.throwIfAborted();
   const response = await fetch(LWA_ENDPOINT, {
     method: "POST",
     headers: {
@@ -46,6 +50,7 @@ async function exchangeToken(creds: StoreCredentials): Promise<string> {
       client_id: creds.clientId,
       client_secret: creds.clientSecret,
     }).toString(),
+    signal,
   });
 
   if (!response.ok) {
@@ -60,7 +65,11 @@ async function exchangeToken(creds: StoreCredentials): Promise<string> {
 }
 
 /** Get cached access token for a storeId like "store1" */
-export async function getCachedAccessToken(storeId: string): Promise<string> {
+export async function getCachedAccessToken(
+  storeId: string,
+  signal?: AbortSignal,
+): Promise<string> {
+  signal?.throwIfAborted();
   const now = Date.now();
   const cached = tokenCache.get(storeId);
 
@@ -80,7 +89,8 @@ export async function getCachedAccessToken(storeId: string): Promise<string> {
     throw new Error(`No credentials configured for ${storeId}`);
   }
 
-  const accessToken = await exchangeToken(creds);
+  const accessToken = await exchangeToken(creds, signal);
+  signal?.throwIfAborted();
 
   tokenCache.set(storeId, {
     token: accessToken,

@@ -1,0 +1,68 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "7673b298-f8bc-454a-8191-b77e24fcffe5",
+  "created_at": "2026-07-18T11:59:38.573Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "UA-ASAO-RE7Q:text_count",
+  "sku": "UA-ASAO-RE7Q",
+  "kind": "TEXT_COUNT",
+  "status": "VERIFIED",
+  "detail": {
+    "submitted_event_id": "0255994b-e41c-478a-a6e2-3ed5fa1884a2",
+    "strategy": "PRIMARY",
+    "stable_post_write_reads": 3,
+    "path_state_sha256": "8d8be07a40e204e72a882a6d7903bd51ada656183a6d1a52561c5d7cc5457c44",
+    "checks": [
+      {
+        "field": "item_name",
+        "ok": true,
+        "expected": "Uncrustables Peanut Butter & Strawberry Jam Sandwiches, Frozen, 2 oz Each, 45 Count Multipack",
+        "actual": "Uncrustables Peanut Butter & Strawberry Jam Sandwiches, Frozen, 2 oz Each, 45 Count Multipack"
+      },
+      {
+        "field": "bullet_point",
+        "ok": true,
+        "expected": [
+          "Exact assortment: 45 individually wrapped frozen sandwiches total: 45 Peanut Butter & Strawberry Jam.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 45 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ],
+        "actual": [
+          "Exact assortment: 45 individually wrapped frozen sandwiches total: 45 Peanut Butter & Strawberry Jam.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 45 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ]
+      },
+      {
+        "field": "product_description",
+        "ok": true,
+        "expected": "This listing contains 45 individual Smucker's Uncrustables frozen sandwiches: 45 Peanut Butter & Strawberry Jam. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 45 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use.",
+        "actual": "This listing contains 45 individual Smucker's Uncrustables frozen sandwiches: 45 Peanut Butter & Strawberry Jam. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 45 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use."
+      },
+      {
+        "field": "unit_count",
+        "ok": true,
+        "expected": 45,
+        "actual": 45
+      },
+      {
+        "field": "unit_count.type",
+        "ok": true,
+        "expected": "Count",
+        "actual": "Count"
+      },
+      {
+        "field": "number_of_items",
+        "ok": true,
+        "expected": 45,
+        "actual": 45
+      }
+    ]
+  },
+  "sha256": "82fadf14a40b505369a9de0c9b08e776c999961808ada91e6e7dfaa3127243ef"
+}

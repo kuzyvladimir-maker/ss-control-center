@@ -23,6 +23,7 @@ import {
   sha256,
   stableJson,
   verifyRepairPlan,
+  type CatalogTitleAlignmentSemanticEvidence,
 } from "./uncrustables-surgical";
 
 export const CATALOG_TITLE_ALIGNMENT_SCHEMA =
@@ -220,6 +221,7 @@ export interface CatalogTitleAlignedManifest extends DesiredRepairManifest {
   repairs: Array<
     DesiredRepairManifest["repairs"][number] & {
       review?: NonNullable<DesiredRepairManifest["repairs"][number]["review"]> & {
+        catalog_title_alignment?: CatalogTitleAlignmentSemanticEvidence;
         supersedes?: Array<{
           field: "text_count.title";
           prior_value: string;
@@ -1530,6 +1532,23 @@ export async function prepareCatalogTitleAlignment(
         `VALIDATION_PREVIEW submission IDs: ${review.evidence.map((item) => item.submission_id).join(", ")}.`,
         `Sealed checkpoint event SHA-256 values: ${review.evidence.map((item) => item.checkpoint_event_sha256).join(", ")}.`,
       ],
+      catalog_title_alignment: {
+        schema_version: CATALOG_TITLE_ALIGNMENT_SCHEMA,
+        sku: review.sku,
+        asin: review.asin,
+        intended_count: review.intended_count,
+        catalog_title: review.catalog_title,
+        recipe_identities: [...review.recipe_identities],
+        identity_validation: review.identity_validation,
+        catalog_conflict_evidence_sha256: sha256(stableJson(review.evidence)),
+        ...(review.reviewed_catalog_override
+          ? {
+              reviewed_catalog_override: deepClone(
+                review.reviewed_catalog_override,
+              ),
+            }
+          : {}),
+      },
       supersedes: [
         ...((originalReview as typeof repair.review | undefined)?.supersedes ?? []),
         {

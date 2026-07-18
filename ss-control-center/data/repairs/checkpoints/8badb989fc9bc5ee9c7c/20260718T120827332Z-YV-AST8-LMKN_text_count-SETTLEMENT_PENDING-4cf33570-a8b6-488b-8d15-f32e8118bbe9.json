@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "4cf33570-a8b6-488b-8d15-f32e8118bbe9",
+  "created_at": "2026-07-18T12:08:27.332Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "YV-AST8-LMKN:text_count",
+  "sku": "YV-AST8-LMKN",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "03542770-7d9a-4d8c-8664-6e8e3f9839cd",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "af55cd87f57f337edf37af87654c9da6e914364b1aec82c5d14b308b3b8a1187",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "fa708dd34b543f9ae4bd97fb0b84ba9b5ff6b219c39473b030ef114ed0d168e7"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "d4fc43f5c8ac7abfd3f37a2e4c2150c80416e390881bf77a7a09cad5f45f9428"
+}

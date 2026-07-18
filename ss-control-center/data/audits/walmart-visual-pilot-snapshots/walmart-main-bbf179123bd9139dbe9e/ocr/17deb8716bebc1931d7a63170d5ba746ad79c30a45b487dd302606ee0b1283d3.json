@@ -1,0 +1,434 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.01598837216695148,
+            "width" : 0.1540697564019097,
+            "x" : 0.2020348905248203,
+            "y" : 0.7965116279063498
+          },
+          "confidence" : 1,
+          "text" : "HYDRATES BETTER THAN WATEP"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01598837216695148,
+            "width" : 0.15406975640190973,
+            "x" : 0.4258720983615452,
+            "y" : 0.7965116280698673
+          },
+          "confidence" : 1,
+          "text" : "HYDRATES BETTER THAN WATER."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01598837216695148,
+            "width" : 0.15406975640190967,
+            "x" : 0.648255818189549,
+            "y" : 0.7965116277852258
+          },
+          "confidence" : 1,
+          "text" : "HYDRATES BETTER THAN WATER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013494886822170704,
+            "width" : 0.05532902611626522,
+            "x" : 0.2790215327637884,
+            "y" : 0.6218862774231335
+          },
+          "confidence" : 1,
+          "text" : "ADVANCED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013081394831339521,
+            "width" : 0.055232556660970156,
+            "x" : 0.5029069770231971,
+            "y" : 0.6220930234297759
+          },
+          "confidence" : 1,
+          "text" : "ADVANCED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01416254361470548,
+            "width" : 0.05547858344184031,
+            "x" : 0.726621173949004,
+            "y" : 0.6215524491847035
+          },
+          "confidence" : 1,
+          "text" : "ADVANCED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00872092988755968,
+            "width" : 0.04941860198974607,
+            "x" : 0.2863372114566773,
+            "y" : 0.6119186049205614
+          },
+          "confidence" : 1,
+          "text" : "REHYDRANON"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00872092988755968,
+            "width" : 0.049418601989746125,
+            "x" : 0.5101744207590029,
+            "y" : 0.6119186049205614
+          },
+          "confidence" : 1,
+          "text" : "REHYDRANON"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00872092988755968,
+            "width" : 0.049418601989746125,
+            "x" : 0.7325581400419486,
+            "y" : 0.6119186047752123
+          },
+          "confidence" : 1,
+          "text" : "REHYDRATION"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00872092988755968,
+            "width" : 0.03197674221462676,
+            "x" : 0.30232558291400435,
+            "y" : 0.595930232827538
+          },
+          "confidence" : 1,
+          "text" : "L BLUEIE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011873384581671864,
+            "width" : 0.03779069688585068,
+            "x" : 0.52034883807597,
+            "y" : 0.592777777911432
+          },
+          "confidence" : 1,
+          "text" : "OL BLUE'"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00872092988755968,
+            "width" : 0.03343023088243269,
+            "x" : 0.7470930246508379,
+            "y" : 0.595930232827538
+          },
+          "confidence" : 0.5,
+          "text" : "IL BLUEIE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02116983837551545,
+            "width" : 0.126582997639974,
+            "x" : 0.23540036006331388,
+            "y" : 0.5708104294780372
+          },
+          "confidence" : 0.3,
+          "text" : "©SОRНЕ* THRS ИE NE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.020555555555555438,
+            "width" : 0.12499999999999994,
+            "x" : 0.45930232685319766,
+            "y" : 0.5711111107001174
+          },
+          "confidence" : 0.3,
+          "text" : "@SATCRLE THRST MENCAE NSEE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008992247581482093,
+            "width" : 0.0915697648790148,
+            "x" : 0.6845930256818589,
+            "y" : 0.5726744188498247
+          },
+          "confidence" : 1,
+          "text" : "( GATORADE® TH RST GUENCEER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014554263750712115,
+            "width" : 0.15406975640190973,
+            "x" : 0.20203489113044043,
+            "y" : 0.30377906969664814
+          },
+          "confidence" : 1,
+          "text" : "HYDRATES BETTER THAN WATEP"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014554263750712115,
+            "width" : 0.15406975640190967,
+            "x" : 0.425872100432766,
+            "y" : 0.30377906969664814
+          },
+          "confidence" : 1,
+          "text" : "HYDRATES BETTER THAN WATER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014554263750712115,
+            "width" : 0.15552325778537335,
+            "x" : 0.6482558148754819,
+            "y" : 0.30377906969664814
+          },
+          "confidence" : 1,
+          "text" : "HYDRATES BETTER THAN WATER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013232395384046747,
+            "width" : 0.05526812659369579,
+            "x" : 0.27905198252462404,
+            "y" : 0.12928496500594355
+          },
+          "confidence" : 1,
+          "text" : "ADVANCED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013223829269409126,
+            "width" : 0.05526611751980248,
+            "x" : 0.5028901976061885,
+            "y" : 0.12928924823009214
+          },
+          "confidence" : 1,
+          "text" : "ADVANCED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013081394831339521,
+            "width" : 0.055232556660970045,
+            "x" : 0.7267441872460654,
+            "y" : 0.12936046543559
+          },
+          "confidence" : 1,
+          "text" : "ADVANCED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.012730339898003429,
+            "width" : 0.05111269632975257,
+            "x" : 0.2847634195291795,
+            "y" : 0.11718134178130746
+          },
+          "confidence" : 1,
+          "text" : "REHYDRATION"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01162790722317164,
+            "width" : 0.05087209065755205,
+            "x" : 0.5087209319241309,
+            "y" : 0.11773255807446059
+          },
+          "confidence" : 1,
+          "text" : "REHYDRATION"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01162790722317164,
+            "width" : 0.052325579325358085,
+            "x" : 0.731104652721042,
+            "y" : 0.11773255807446059
+          },
+          "confidence" : 1,
+          "text" : "REHYDRATION"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01162790722317164,
+            "width" : 0.03924418555365666,
+            "x" : 0.2950581393888693,
+            "y" : 0.1002906974930654
+          },
+          "confidence" : 0.5,
+          "text" : "IOLBLUE'!"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011627906163533486,
+            "width" : 0.03779069688585068,
+            "x" : 0.518895349703877,
+            "y" : 0.10029069819003555
+          },
+          "confidence" : 1,
+          "text" : "IOL BLUEL"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01162790722317164,
+            "width" : 0.03924418555365672,
+            "x" : 0.741279070057474,
+            "y" : 0.1002906974349258
+          },
+          "confidence" : 1,
+          "text" : "IOL BLUE\""
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.020776191287570578,
+            "width" : 0.12506885952419705,
+            "x" : 0.23543068526638206,
+            "y" : 0.07827469488374628
+          },
+          "confidence" : 0.3,
+          "text" : "@ GACRLE® THRST UENCAE NIFTE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02147981643676755,
+            "width" : 0.12663054572211369,
+            "x" : 0.45921379564033965,
+            "y" : 0.07792288231619704
+          },
+          "confidence" : 0.3,
+          "text" : "• STRUЕ* THEST ENCER NCN"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02148811764187286,
+            "width" : 0.12518040127224395,
+            "x" : 0.68304933320465,
+            "y" : 0.07791873174089636
+          },
+          "confidence" : 0.3,
+          "text" : "® SCRLЕ THRST NCE NIEE"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-d60d059b9fcac720b1d429e7a8d4ba2f258cb4d2ed3f6bf547b13599f1a49918.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 2048,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.0322265625,
+            "width" : 0.710097731205455,
+            "x" : 0.16612376928326605,
+            "y" : 0.6044921876293774
+          },
+          "confidence" : 1,
+          "text" : "HYDRATES BETTER THAN WATER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.026556696742773056,
+            "width" : 0.2640400100172612,
+            "x" : 0.524331787842179,
+            "y" : 0.24108211683013114
+          },
+          "confidence" : 1,
+          "text" : "ADVANCED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.021190183237195015,
+            "width" : 0.23814236490350016,
+            "x" : 0.5503099267399946,
+            "y" : 0.21905607124913995
+          },
+          "confidence" : 1,
+          "text" : "REHYDRATION"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0205078125,
+            "width" : 0.24104233791953644,
+            "x" : 0.5472312760456607,
+            "y" : 0.1831054689170074
+          },
+          "confidence" : 1,
+          "text" : "ENOL BLUE'E"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02616279013454914,
+            "width" : 0.5830618875068532,
+            "x" : 0.31596091740292515,
+            "y" : 0.13662790747633013
+          },
+          "confidence" : 0.5,
+          "text" : "@ GATORADE* THIRST GUENCHER NSFSH"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-0eba5723b3e2665f39ec0ef606e4b7ef3c1367e901fdb8e5681b5404ce799b69.png",
+      "width" : 912
+    },
+    {
+      "height" : 1263,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.07352932797202583,
+            "width" : 0.25742968645962794,
+            "x" : 0.5217212025254351,
+            "y" : 0.5999667274691499
+          },
+          "confidence" : 1,
+          "text" : "ADVANCED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05064521258390409,
+            "width" : 0.22564844651655724,
+            "x" : 0.5521467077100936,
+            "y" : 0.5491110509018342
+          },
+          "confidence" : 1,
+          "text" : "REHYDRATION"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05177993412259263,
+            "width" : 0.1991279125213623,
+            "x" : 0.5683139514272342,
+            "y" : 0.46116504925862967
+          },
+          "confidence" : 1,
+          "text" : "GOL BLUET"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05825242513342743,
+            "width" : 0.579941836270419,
+            "x" : 0.31976745642213716,
+            "y" : 0.34627831844240664
+          },
+          "confidence" : 1,
+          "text" : "@ GATORADE* TH PST CUENCRER 1LSFS1"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-cf2bdfef7e7aa76fb056c49c43841427c336bd149ddf30471ecf89b73192ad89.png",
+      "width" : 1407
+    },
+    {
+      "height" : 1515,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.058707124010554,
+            "width" : 0.7131782980526196,
+            "x" : 0.2790697612450081,
+            "y" : 0.18733509170027962
+          },
+          "confidence" : 1,
+          "text" : "HYDRATES BETTEI"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-eafc2196401733aac9fadf8cf98657333d5de192ab6be6956684dfc8e8682997.png",
+      "width" : 816
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

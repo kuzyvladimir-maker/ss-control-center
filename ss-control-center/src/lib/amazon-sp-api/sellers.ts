@@ -74,7 +74,11 @@ function extractSellerIdFromParticipations(
   return null;
 }
 
-export async function getMerchantToken(storeIndex: number): Promise<string> {
+export async function getMerchantToken(
+  storeIndex: number,
+  signal?: AbortSignal,
+): Promise<string> {
+  signal?.throwIfAborted();
   const cached = merchantTokenCache.get(storeIndex);
   if (cached) return cached;
 
@@ -89,7 +93,9 @@ export async function getMerchantToken(storeIndex: number): Promise<string> {
   // participations response so the seller ID is useless.
   const resp = await spApiGet("/sellers/v1/marketplaceParticipations", {
     storeId,
+    signal,
   });
+  signal?.throwIfAborted();
 
   const list: MarketplaceParticipation[] = Array.isArray(resp?.payload)
     ? resp.payload

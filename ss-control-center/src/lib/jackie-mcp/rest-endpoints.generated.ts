@@ -527,6 +527,12 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     ]
   },
   {
+    "path": "/api/bundle-factory/drafts/[id]/qualify",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
     "path": "/api/bundle-factory/drafts/[id]/regenerate-content",
     "methods": [
       "POST"
@@ -534,6 +540,12 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
   },
   {
     "path": "/api/bundle-factory/drafts/[id]/regenerate-image",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/drafts/[id]/ship-specs",
     "methods": [
       "POST"
     ]
@@ -574,6 +586,19 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     "path": "/api/bundle-factory/master-bundles",
     "methods": [
       "GET",
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/pricing",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/bundle-factory/pricing/preview",
+    "methods": [
       "POST"
     ]
   },
@@ -653,6 +678,12 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     ]
   },
   {
+    "path": "/api/catalog-status",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
     "path": "/api/claims/atoz",
     "methods": [
       "GET",
@@ -664,6 +695,12 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     "methods": [
       "GET",
       "PATCH"
+    ]
+  },
+  {
+    "path": "/api/cogs/catalog",
+    "methods": [
+      "GET"
     ]
   },
   {
@@ -716,6 +753,30 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
   },
   {
     "path": "/api/cron/amazon-snapshots",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/cron/bundle-factory-poll-pending",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/cron/bundle-factory-tick",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/cron/catalog-snapshot",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/cron/cogs-sweep",
     "methods": [
       "GET"
     ]
@@ -800,6 +861,12 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
   },
   {
     "path": "/api/cron/walmart-cancellation-watchdog",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/cron/walmart-catalog-report",
     "methods": [
       "GET"
     ]
@@ -1114,6 +1181,12 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     ]
   },
   {
+    "path": "/api/finance/funds/transfer",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
     "path": "/api/finance/payouts",
     "methods": [
       "GET",
@@ -1251,6 +1324,78 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     "methods": [
       "POST",
       "GET"
+    ]
+  },
+  {
+    "path": "/api/openclaw/channelmax/jobs",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/openclaw/channelmax/jobs/[id]",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/openclaw/channelmax/jobs/[id]/approve",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/openclaw/channelmax/jobs/[id]/complete",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/openclaw/channelmax/jobs/[id]/event",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/openclaw/channelmax/jobs/[id]/heartbeat",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/openclaw/channelmax/jobs/claim",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/personal/calendar",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/personal/cards",
+    "methods": [
+      "GET",
+      "POST",
+      "PATCH",
+      "DELETE"
+    ]
+  },
+  {
+    "path": "/api/personal/cards/[id]",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/personal/income",
+    "methods": [
+      "GET",
+      "POST"
     ]
   },
   {
@@ -1605,6 +1750,12 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     ]
   },
   {
+    "path": "/api/walmart/compliance-removals",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
     "path": "/api/walmart/growth/buybox",
     "methods": [
       "GET"
@@ -1648,6 +1799,25 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
     ]
   },
   {
+    "path": "/api/walmart/growth/remediation/apply-generated",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/walmart/growth/remediation/generate-image",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/walmart/growth/remediation/review",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
     "path": "/api/walmart/retire-listing/execute",
     "methods": [
       "POST"
@@ -1667,4 +1837,4 @@ export const REST_ENDPOINTS: RestEndpoint[] = [
   }
 ];
 
-export const REST_ENDPOINTS_COUNT = 264;
+export const REST_ENDPOINTS_COUNT = 291;

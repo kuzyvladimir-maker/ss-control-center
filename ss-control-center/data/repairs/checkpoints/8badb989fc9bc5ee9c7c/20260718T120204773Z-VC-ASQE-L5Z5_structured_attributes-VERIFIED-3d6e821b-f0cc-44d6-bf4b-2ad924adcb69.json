@@ -1,0 +1,38 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "3d6e821b-f0cc-44d6-bf4b-2ad924adcb69",
+  "created_at": "2026-07-18T12:02:04.773Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "VC-ASQE-L5Z5:structured_attributes",
+  "sku": "VC-ASQE-L5Z5",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "VERIFIED",
+  "detail": {
+    "checks": [
+      {
+        "field": "ingredients",
+        "ok": true,
+        "expected": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Chocolate Flavored Hazelnut Spread: Sugar, Vegetable Oils (Palm And Canola), Hazelnuts, Cocoa Processed With Alkali And Cocoa, Skim Milk, Whey, Canola Lecithin, Natural Flavor.",
+        "actual": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Wheat Gluten, Salt, Guar Gum, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Chocolate Flavored Hazelnut Spread: Sugar, Vegetable Oils (Palm And Canola), Hazelnuts, Cocoa Processed With Alkali And Cocoa, Skim Milk, Whey, Canola Lecithin, Natural Flavor."
+      },
+      {
+        "field": "allergen_information",
+        "ok": true,
+        "expected": [
+          "hazelnut",
+          "milk",
+          "peanuts_may_contain",
+          "wheat"
+        ],
+        "actual": [
+          "hazelnut",
+          "milk",
+          "peanuts_may_contain",
+          "wheat"
+        ]
+      }
+    ]
+  },
+  "sha256": "2b0e1f7c8061053168217103cb28b67f09caebe43c8b32f1fb3c4c6b9d66b75c"
+}

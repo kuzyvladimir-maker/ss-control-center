@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "05c407d3-406c-43be-a2cf-07aa8c980a1e",
+  "created_at": "2026-07-18T08:54:47.341Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "UE-ASA6-CLLY:media",
+  "sku": "UE-ASA6-CLLY",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "582b7e72fc34b3678b17d664d6014fa2c8f9d167fb16b174573067dc3d74dfe9",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "4a4978d15ae6426ba6ca62f4dc2e4af6",
+    "issues": []
+  },
+  "sha256": "bb33062c26f9c60fb3084fa27acaa2f990f23ae7ea0322f05d6469d3ab2f9c78"
+}

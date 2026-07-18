@@ -1,0 +1,23 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b361c0d5-3ef7-4c24-b0de-38f6c1fb3ef9",
+  "created_at": "2026-07-18T10:25:20.628Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PU-AS3D-SA5Z:structured_attributes",
+  "sku": "PU-AS3D-SA5Z",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "c6f2da3d109bc4a4e1d0987d6a20c65613a50bd3a5d1680c7a1bede256e1d772",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "status": "VALID",
+    "submission_id": "c98b330de20f4f41884d05db24a8798a",
+    "issues": []
+  },
+  "sha256": "2acfce3c2f36eddc6cc91018fe380100763e7a85d74e795af316eaaabaed2170"
+}

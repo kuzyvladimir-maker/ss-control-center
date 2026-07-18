@@ -1,0 +1,39 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "c73c4039-1d0d-4935-a9cd-8449e570085c",
+  "created_at": "2026-07-18T12:05:01.315Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "WR-ASR5-AVWE:text_count",
+  "sku": "WR-ASR5-AVWE",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "1902e266-30a1-456e-9dfc-3f33c15eca72",
+    "patch_sha256": "f90b9ee1d9427375e4799306dfac7d3de4587af55118767352a35c1374772483",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "f90b9ee1d9427375e4799306dfac7d3de4587af55118767352a35c1374772483",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "174c3ac899c2018753ee87381aacf7a27e620fe01b556e16e4fd7bac8c487b40"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "94b1eaf65c344cd382cc4c13ab9273f1",
+    "issues": []
+  },
+  "sha256": "7b7ea4f2ee835bc3fc9554dda1312131e9008945f9efb87dc0ed6c23ea3ed127"
+}

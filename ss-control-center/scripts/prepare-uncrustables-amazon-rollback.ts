@@ -27,7 +27,10 @@ import {
   type SnapshotImageLoader,
   type SnapshotReadGateway,
 } from "@/lib/bundle-factory/repair/uncrustables-amazon-rollback";
-import { readRepairPlan } from "@/lib/bundle-factory/repair/uncrustables-surgical";
+import {
+  readRepairExecutionSelection,
+  readRepairPlan,
+} from "@/lib/bundle-factory/repair/uncrustables-surgical";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -42,6 +45,7 @@ interface CliOptions {
   ledgerPath: string;
   overridesPath: string;
   repairPlanPath: string | null;
+  executionSelectionPath: string | null;
   outputDir: string;
   captureLive: boolean;
   downloadImages: boolean;
@@ -67,6 +71,7 @@ function usage(): string {
     "",
     "Inverse plan:",
     "  --repair-plan=PATH     Bind snapshot to an existing reviewed repair plan.",
+    "  --execution-selection=PATH Bind inverse operations to this exact sealed action selection.",
     "  --canary-size=N        Deterministic representative canary size (default 3).",
     "  --help                 Show this help.",
     "",
@@ -87,6 +92,7 @@ function parseArgs(argv: string[]): CliOptions {
     ledgerPath: DEFAULT_LEDGER,
     overridesPath: DEFAULT_OVERRIDES,
     repairPlanPath: null,
+    executionSelectionPath: null,
     outputDir: DEFAULT_OUTPUT_DIR,
     captureLive: false,
     downloadImages: true,
@@ -108,6 +114,10 @@ function parseArgs(argv: string[]): CliOptions {
       options.overridesPath = arg.slice("--overrides=".length).trim();
     } else if (arg.startsWith("--repair-plan=")) {
       options.repairPlanPath = arg.slice("--repair-plan=".length).trim();
+    } else if (arg.startsWith("--execution-selection=")) {
+      options.executionSelectionPath = arg
+        .slice("--execution-selection=".length)
+        .trim();
     } else if (arg.startsWith("--output-dir=")) {
       options.outputDir = arg.slice("--output-dir=".length).trim();
     } else if (arg.startsWith("--request-delay-ms=")) {
@@ -134,6 +144,9 @@ function parseArgs(argv: string[]): CliOptions {
   }
   if (!options.ledgerPath || !options.overridesPath || !options.outputDir) {
     throw new Error("Ledger, overrides, and output paths must be non-empty.");
+  }
+  if (options.executionSelectionPath && !options.repairPlanPath) {
+    throw new Error("--execution-selection requires --repair-plan.");
   }
   return options;
 }
@@ -253,6 +266,13 @@ async function main(): Promise<void> {
   const repairPlan = options.repairPlanPath
     ? await readRepairPlan(options.repairPlanPath)
     : null;
+  const executionSelection =
+    options.executionSelectionPath && repairPlan
+      ? await readRepairExecutionSelection(
+          options.executionSelectionPath,
+          repairPlan,
+        )
+      : null;
   if (
     repairPlan?.desired_manifest_source &&
     (path.resolve(options.overridesPath) !==
@@ -295,6 +315,8 @@ async function main(): Promise<void> {
       snapshot,
       repairPlanPath: options.repairPlanPath,
       repairPlan,
+      executionSelectionPath: options.executionSelectionPath,
+      executionSelection,
       canarySize: options.canarySize,
     });
     rollbackPath = await writeImmutableRollbackPlan(options.outputDir, rollback);
@@ -307,6 +329,7 @@ async function main(): Promise<void> {
       inverse_operations: rollback.scope.inverse_operations,
       missing_media_binary_evidence:
         rollback.scope.missing_media_binary_evidence,
+      source_execution_selection: rollback.source_execution_selection,
     };
   }
   console.log(

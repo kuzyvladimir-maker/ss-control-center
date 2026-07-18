@@ -1,10 +1,11 @@
 /**
  * Phase 2.5 Stage 7 — Amazon publish via Listings Items 2021-08-01 PUT.
  *
- * PUT vs PATCH: we use PUT here because this is a CREATE-OR-REPLACE on
- * the seller-owned SKU listing. PUT is idempotent per Amazon docs —
- * the same payload to the same SKU produces the same submission_id on
- * retry, so re-running publish on an already-LIVE SKU is a safe no-op.
+ * PUT vs PATCH: this path is for CREATE-OR-REPLACE. Replacing an existing
+ * Uncrustables listing is deliberately forbidden here because a full payload
+ * can erase promotion fields (for example discounted_price) that are owned by
+ * the sealed launch workflow. Existing Uncrustables listings use the surgical
+ * PATCH executor instead.
  *
  * Flow:
  *   1. Build the attributes block from ChannelSKU
@@ -103,6 +104,8 @@ export interface AmazonPublishResult {
 
 /** Safety policy is exported so tests and orchestration diagnostics can pin it. */
 export const AMAZON_VALIDATION_PREVIEW_REQUIRED = true as const;
+export const UNCRUSTABLES_EXISTING_LISTING_REQUIRES_SURGICAL_PATCH =
+  true as const;
 
 /**
  * Build the attributes block. Each value array is shape
@@ -475,6 +478,30 @@ export async function submitToAmazon(
       : "";
   const uncrustablesListing =
     isOwnBrandPassthrough(input.brand) || isOwnBrandPassthrough(payloadBrand);
+
+  // A complete PUT replaces the listing contribution represented by this
+  // payload. buildAmazonAttributes intentionally does not carry a launch Sale
+  // Price, so using this generic path on an existing ASIN could silently remove
+  // an active discounted_price schedule. New listings (no ASIN yet) may still
+  // use the normal create path; every later Uncrustables mutation must use the
+  // sealed surgical PATCH workflow with exact offer preservation/rollback.
+  if (
+    UNCRUSTABLES_EXISTING_LISTING_REQUIRES_SURGICAL_PATCH &&
+    uncrustablesListing &&
+    !input.dryRun &&
+    Boolean(input.sku.asin?.trim())
+  ) {
+    return {
+      ok: false,
+      submission_id: null,
+      amazon_status: null,
+      payload,
+      issues: [],
+      error:
+        "Existing Uncrustables ASINs require the sealed surgical PATCH workflow; generic PUT could erase Sale Price or coupon launch controls",
+      dry_run: false,
+    };
+  }
 
   if (
     !input.physicalPackageSpecs ||

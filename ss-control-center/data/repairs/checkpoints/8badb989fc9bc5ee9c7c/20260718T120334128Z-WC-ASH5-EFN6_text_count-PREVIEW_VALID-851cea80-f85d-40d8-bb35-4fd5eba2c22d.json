@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "851cea80-f85d-40d8-bb35-4fd5eba2c22d",
+  "created_at": "2026-07-18T12:03:34.128Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "WC-ASH5-EFN6:text_count",
+  "sku": "WC-ASH5-EFN6",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "cb326d2077b729a179423385cd76399f76a6ec784b02ba8c1efc94916933e3fe",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "1c2e1f72c58b40eeb9b8232c6eef11f7",
+    "issues": []
+  },
+  "sha256": "9b9c55c7ec2bbf7ad727a2b02521f319908079c7c0b8b7c7de6f090bcf88c6c7"
+}

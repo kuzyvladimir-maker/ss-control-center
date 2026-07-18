@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "31656c48-1014-4a90-b98e-9a331298f828",
+  "created_at": "2026-07-18T10:26:28.343Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RH-ASWA-ER34:text_count",
+  "sku": "RH-ASWA-ER34",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "73eb9e0b9ab533934abfe9d8ab95c3b6595886d363efa8c113ed86c52b66058c",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "17ffcbabeb804e80b62501dc7624878f",
+    "issues": []
+  },
+  "sha256": "e7015b7441574380f58ec1844028ffdf9c666c05e145c51309b7958e69a4e8e5"
+}

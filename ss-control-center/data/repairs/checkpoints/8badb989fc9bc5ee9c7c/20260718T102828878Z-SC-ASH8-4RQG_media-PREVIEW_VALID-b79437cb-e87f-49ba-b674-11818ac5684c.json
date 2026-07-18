@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b79437cb-e87f-49ba-b674-11818ac5684c",
+  "created_at": "2026-07-18T10:28:28.878Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "SC-ASH8-4RQG:media",
+  "sku": "SC-ASH8-4RQG",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "887934e79de2fd797cf90a1c1fdcc3183d48a386f1a23a087e9610a09b9e602f",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "9b18d64baad64cef8f921e4f32eb0f25",
+    "issues": []
+  },
+  "sha256": "eef626e625352e37bd1a83f316fa7d4cf1cd656330b5cef183c490553f8d458d"
+}

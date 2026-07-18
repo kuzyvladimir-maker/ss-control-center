@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "130f682b-d803-4995-bc24-5ad3eb6a5624",
+  "created_at": "2026-07-18T12:05:51.278Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "XE-ASK1-BNRB:text_count",
+  "sku": "XE-ASK1-BNRB",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "34a3aea59fc2c9382791f497f30a378454ce92b238f75f18cfa1f17fe542c435",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "ee340b6f8fc9487498a10c07c368a08c",
+    "issues": []
+  },
+  "sha256": "5fa04cfe83cff12a289b99337e20e6eb3228e9d13f0714828dc8b0d7a57d823b"
+}

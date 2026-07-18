@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "888d879f-1996-4699-8f0c-c56f0cb0a3a1",
+  "created_at": "2026-07-18T10:23:20.096Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "MP-ASYO-QNU2:text_count",
+  "sku": "MP-ASYO-QNU2",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "d42d759418af341becffac246deb2b97cd9a24c8f91a71fb4620f1604aa771dc",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "c392fde4748441a3adb35ebf42d011e8",
+    "issues": []
+  },
+  "sha256": "b699e40d0d18e67fef85ca27305f42ef94a6b9c00a17aeaae89f50232a917c10"
+}

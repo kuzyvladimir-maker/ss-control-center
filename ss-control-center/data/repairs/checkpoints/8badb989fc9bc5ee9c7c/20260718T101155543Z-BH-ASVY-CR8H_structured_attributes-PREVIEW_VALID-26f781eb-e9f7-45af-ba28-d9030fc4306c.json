@@ -1,0 +1,23 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "26f781eb-e9f7-45af-ba28-d9030fc4306c",
+  "created_at": "2026-07-18T10:11:55.543Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "BH-ASVY-CR8H:structured_attributes",
+  "sku": "BH-ASVY-CR8H",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "35f179f99ac44d0fa2c1f86e4417c28c51461fb64bc8745f0be46ba2c2eec788",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "status": "VALID",
+    "submission_id": "f0066076c44e4c4790556540978e5b3c",
+    "issues": []
+  },
+  "sha256": "dfbca0f40868bdffa8aca547b40f0a8f328c22138c4746808e0439871808140e"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "311d5191-e44a-47d6-8428-a853bcdd0c39",
+  "created_at": "2026-07-18T10:24:24.675Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PB-ASAF-G2T6:text_count",
+  "sku": "PB-ASAF-G2T6",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "f9918e2c1b550906b8174ce16581dfa61f97d248edbb45e087b6bc0184430cc0",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "46158fdf41104d78b35bd419425d5ed6",
+    "issues": []
+  },
+  "sha256": "641edaab717d6d176a149f3db06ce4e2aa921e88581d04a48778dc4002cd9c7e"
+}

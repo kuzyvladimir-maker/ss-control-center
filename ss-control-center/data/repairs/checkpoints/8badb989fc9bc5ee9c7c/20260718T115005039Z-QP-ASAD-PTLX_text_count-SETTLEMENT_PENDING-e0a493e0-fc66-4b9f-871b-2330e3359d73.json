@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "e0a493e0-fc66-4b9f-871b-2330e3359d73",
+  "created_at": "2026-07-18T11:50:05.039Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "QP-ASAD-PTLX:text_count",
+  "sku": "QP-ASAD-PTLX",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "4fba6bd3-6f64-45ee-9d8e-5d7de056bbc8",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "706f60a5d5d9d30994ad8737097536cd11f0ac842f52b4513fcf1b172df7b225",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "4f14571bf77a3367817d43627b32b445bbab0103fd0137dd4bedc3338dc322ef"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "166cd8e70e6d2112820e822e84ce0f45a7cb8a7c7636a011f1b18e8352fb35a9"
+}

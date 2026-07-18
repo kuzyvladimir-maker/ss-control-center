@@ -1,0 +1,51 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "560c9364-bd97-4a28-9266-3516e7259e55",
+  "created_at": "2026-07-18T09:11:11.024Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "AC-AS4J-B64F:offer",
+  "sku": "AC-AS4J-B64F",
+  "kind": "OFFER",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "SELECTOR_REPLACE_SURROGATE_FOR_MERGE",
+    "armed_event_id": "89dc820d-136d-4b87-80e9-ab562cd1a5fd",
+    "actual_merge_patch_sha256": "a986c5057e300ae2248d21778bc17a06594ada89b0a4361f98020999912fe9c8",
+    "actual_merge_patch_path": "/attributes/purchasable_offer",
+    "actual_merge_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "preview_surrogate_patch_sha256": "2cd1fa46a8ace147c5b8ec2c2e74bf13a28dcde9fd38d953119d1c3bba925837",
+    "preview_surrogate_patch_path": "/attributes/purchasable_offer",
+    "preview_surrogate_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "actual_request_patch_sha256": "e9e745c87ff1c67657c0506980aaaf2418b78eab3d50d5ea3c9abd76223b423f",
+    "actual_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "preview_request_patch_sha256": "f75891eb14200ae59f2af0104d4d53e7dbe9d8953dbdc9e73ce3c3dd4da5f170",
+    "preview_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "omitted_null_members": [
+      "ALL.discounted_price"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "e9e745c87ff1c67657c0506980aaaf2418b78eab3d50d5ea3c9abd76223b423f",
+      "exact_action_paths": [
+        "/attributes/list_price",
+        "/attributes/purchasable_offer"
+      ],
+      "before_path_state_sha256": "4a776c0d5fe43a91eeab25535b57bbe15b31d773906f26c7675859f356f971f1"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "4d2762ab08ca43e2a5317a4be140295d",
+    "issues": []
+  },
+  "sha256": "01e67334b2f60570c2ca27ff0fe4f31b1954b2d37eb451084f0a943d0edb386c"
+}

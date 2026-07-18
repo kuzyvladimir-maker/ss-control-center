@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "80a741d6-d02f-4eee-87cc-6f0d5cd4f995",
+  "created_at": "2026-07-18T11:45:47.007Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "NS-ASSD-B3JJ:text_count",
+  "sku": "NS-ASSD-B3JJ",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMISSION_ARMED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "crash_window_guard": true,
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "d24fd4d184fed5f9605b4f3d5764eefbe6275fdd2db37ec5a69de922ced39540",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "06d84473444ee8b33674a48375404bc318173dc6b46734a68968b224b00e5b26"
+    }
+  },
+  "sha256": "5c094392d60e3de2047b3b1d868e594d197bbf074bc19887c54525da17bb7d2f"
+}

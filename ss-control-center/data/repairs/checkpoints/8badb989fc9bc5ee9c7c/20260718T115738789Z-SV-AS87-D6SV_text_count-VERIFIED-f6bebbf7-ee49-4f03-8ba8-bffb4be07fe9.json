@@ -1,0 +1,64 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "f6bebbf7-ee49-4f03-8ba8-bffb4be07fe9",
+  "created_at": "2026-07-18T11:57:38.789Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "SV-AS87-D6SV:text_count",
+  "sku": "SV-AS87-D6SV",
+  "kind": "TEXT_COUNT",
+  "status": "VERIFIED",
+  "detail": {
+    "checks": [
+      {
+        "field": "item_name",
+        "ok": true,
+        "expected": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, 24 Count – Classic & 12g Protein Varieties, Individually Wrapped",
+        "actual": "Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwiches, 24 Count – Classic & 12g Protein Varieties, Individually Wrapped"
+      },
+      {
+        "field": "bullet_point",
+        "ok": true,
+        "expected": [
+          "Exact assortment: 24 individually wrapped frozen sandwiches total: 12 Peanut Butter & Strawberry Jam – 12g Protein; 12 Peanut Butter & Strawberry Jam.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 24 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ],
+        "actual": [
+          "Exact assortment: 24 individually wrapped frozen sandwiches total: 12 Peanut Butter & Strawberry Jam – 12g Protein; 12 Peanut Butter & Strawberry Jam.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 24 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ]
+      },
+      {
+        "field": "product_description",
+        "ok": true,
+        "expected": "This listing contains 24 individual Smucker's Uncrustables frozen sandwiches: 12 Peanut Butter & Strawberry Jam – 12g Protein; 12 Peanut Butter & Strawberry Jam. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 24 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use.",
+        "actual": "This listing contains 24 individual Smucker's Uncrustables frozen sandwiches: 12 Peanut Butter & Strawberry Jam – 12g Protein; 12 Peanut Butter & Strawberry Jam. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 24 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use."
+      },
+      {
+        "field": "unit_count",
+        "ok": true,
+        "expected": 24,
+        "actual": 24
+      },
+      {
+        "field": "unit_count.type",
+        "ok": true,
+        "expected": "Count",
+        "actual": "Count"
+      },
+      {
+        "field": "number_of_items",
+        "ok": true,
+        "expected": 24,
+        "actual": 24
+      }
+    ]
+  },
+  "sha256": "1cd7116803025e6b47c260b2cbe19e609045c73efccb5c9c11aa51d69f21a115"
+}

@@ -1,0 +1,274 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.066860466003418,
+            "width" : 0.09156976487901478,
+            "x" : 0.05813953667386471,
+            "y" : 0.5901162789168957
+          },
+          "confidence" : 1,
+          "text" : "Оriginal"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04949612299601236,
+            "width" : 0.12936046176486543,
+            "x" : 0.18895349076646906,
+            "y" : 0.5988372107945327
+          },
+          "confidence" : 1,
+          "text" : "Sara fee"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.066860466003418,
+            "width" : 0.0915697648790148,
+            "x" : 0.5508720939322223,
+            "y" : 0.59011627820832
+          },
+          "confidence" : 1,
+          "text" : "Оriginal"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05087209065755216,
+            "width" : 0.1293604617648655,
+            "x" : 0.6816860483508521,
+            "y" : 0.5988372106971445
+          },
+          "confidence" : 1,
+          "text" : "Sara fee"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06246000925699868,
+            "width" : 0.2518020968967014,
+            "x" : 0.1304341685534794,
+            "y" : 0.4870713834590422
+          },
+          "confidence" : 1,
+          "text" : "Artesano®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06833792792426219,
+            "width" : 0.25396057128906246,
+            "x" : 0.6228887055722006,
+            "y" : 0.48454524849501346
+          },
+          "confidence" : 1,
+          "text" : "artesano"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03661738501654732,
+            "width" : 0.2008756171332465,
+            "x" : 0.1510156797302836,
+            "y" : 0.4468075862714357
+          },
+          "confidence" : 1,
+          "text" : "bakerybread"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03747879240247942,
+            "width" : 0.19933305528428813,
+            "x" : 0.6423392866158864,
+            "y" : 0.4471036284152805
+          },
+          "confidence" : 1,
+          "text" : "bakery bread"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05671799553765189,
+            "width" : 0.2750040859646267,
+            "x" : 0.11758516517501372,
+            "y" : 0.3742572812344608
+          },
+          "confidence" : 1,
+          "text" : "I BAKERY BUNSI"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05837446848551442,
+            "width" : 0.2753237236870659,
+            "x" : 0.6087044180330731,
+            "y" : 0.37342904493030493
+          },
+          "confidence" : 1,
+          "text" : "JBAKERY BUNS I"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.044502285851372614,
+            "width" : 0.1514192708333333,
+            "x" : 0.1801043174627158,
+            "y" : 0.26117909088667834
+          },
+          "confidence" : 1,
+          "text" : "8 COUNT"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.043604651557074714,
+            "width" : 0.16133721245659727,
+            "x" : 0.662790695200965,
+            "y" : 0.2616279067150027
+          },
+          "confidence" : 1,
+          "text" : "8 COUNT"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-c6751da2bb33991feaef4e343de85a963e609df4f8b5ba75e2819c4f89987fdc.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 2048,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.15611205995082855,
+            "width" : 0.2283568427869288,
+            "x" : 0.07858009101912161,
+            "y" : 0.6475178392705844
+          },
+          "confidence" : 1,
+          "text" : "Original"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05523255839943886,
+            "width" : 0.08069620325005397,
+            "x" : 0.1329113919379765,
+            "y" : 0.7485465112468979
+          },
+          "confidence" : 1,
+          "text" : "the"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.09447674453258514,
+            "width" : 0.2958860812861151,
+            "x" : 0.3591772133434052,
+            "y" : 0.6874999998388431
+          },
+          "confidence" : 1,
+          "text" : "Sara lee"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.11618723720312119,
+            "width" : 0.5130176442842553,
+            "x" : 0.25140257154966145,
+            "y" : 0.47606335778721287
+          },
+          "confidence" : 1,
+          "text" : "Ortesano®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06266923993825912,
+            "width" : 0.4037681847145657,
+            "x" : 0.2894133782042461,
+            "y" : 0.406165380403535
+          },
+          "confidence" : 1,
+          "text" : "bakery bread"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.1094004362821579,
+            "width" : 0.5785292200783742,
+            "x" : 0.2036151387198665,
+            "y" : 0.26216024713638797
+          },
+          "confidence" : 1,
+          "text" : "IBAKERY BUNSZ"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08681239187717438,
+            "width" : 0.31679308705831566,
+            "x" : 0.3431857342532193,
+            "y" : 0.04743682754523526
+          },
+          "confidence" : 1,
+          "text" : "8 COUNT"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-e536eb8108e9b8baa7ab40d836d959ec1fbdca4ad74eaa2adf1fff5e21c2a5b6.png",
+      "width" : 1882
+    },
+    {
+      "height" : 892,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.2570104641764688,
+            "width" : 0.569767415523529,
+            "x" : 0.21366280514521213,
+            "y" : 0.6566666653554285
+          },
+          "confidence" : 1,
+          "text" : "J BAKERY BUNSI"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.21235266715421797,
+            "width" : 0.3103055953979492,
+            "x" : 0.3484809224068971,
+            "y" : 0.12382366705358694
+          },
+          "confidence" : 1,
+          "text" : "8 COUNT"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-df02ff3aa7bc3fccd2adcc9f0793794a3a2e49fe5651a0978d6b1a1a61af8437.png",
+      "width" : 2048
+    },
+    {
+      "height" : 1674,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.33417900203946393,
+            "width" : 0.39236486330227394,
+            "x" : 0.13925531508503985,
+            "y" : 0.2630893534000236
+          },
+          "confidence" : 1,
+          "text" : "Original"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.13960451151165343,
+            "width" : 0.13953751973623352,
+            "x" : 0.2265574004678026,
+            "y" : 0.4595481985015928
+          },
+          "confidence" : 1,
+          "text" : "the."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.19907407407407407,
+            "width" : 0.36666666447667184,
+            "x" : 0.6291666684127059,
+            "y" : 0.3472222228443287
+          },
+          "confidence" : 1,
+          "text" : "Saraf"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-468ee823646fba51ba945b44bcf35fb72ffd08180b77e0dc4b38cf3229627fe4.png",
+      "width" : 1857
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

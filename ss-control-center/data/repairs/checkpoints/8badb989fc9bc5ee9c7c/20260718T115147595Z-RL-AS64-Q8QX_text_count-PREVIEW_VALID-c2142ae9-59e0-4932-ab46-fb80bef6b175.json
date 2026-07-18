@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "c2142ae9-59e0-4932-ab46-fb80bef6b175",
+  "created_at": "2026-07-18T11:51:47.595Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RL-AS64-Q8QX:text_count",
+  "sku": "RL-AS64-Q8QX",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "343a101232d6719f6a1abb51f1494e08b2f2cd0fe3b6b244a50a1c7784391646",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "a91fded095e9404eb9a33eedcf4e1991",
+    "issues": []
+  },
+  "sha256": "9b7b0460c883fee647e52a35b1739049d643008437d5bdab4165b2db0430298f"
+}

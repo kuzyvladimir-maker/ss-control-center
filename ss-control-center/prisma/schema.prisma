@@ -2188,6 +2188,128 @@ model EnrichmentJob {
   @@index([targetType, target])
 }
 
+// Durable command/evidence bridge for the OpenClaw worker that controls the
+// owner's already-authenticated ChannelMAX Chrome profile. Commands are a
+// small, schema-validated allow-list; this is deliberately not a generic
+// browser-automation or arbitrary-JavaScript queue.
+model ChannelMaxAgentJob {
+  id String @id @default(cuid())
+
+  operation      String
+  mutation       Boolean @default(false)
+  status         String  @default("QUEUED") // PENDING_APPROVAL | QUEUED | RUNNING | SUCCEEDED | FAILED | AMBIGUOUS
+  priority       Int     @default(0)
+  accountId      String
+  payloadJson    String
+  payloadSha256  String
+  requestSha256  String
+  mutationPlanSha256 String?
+  mutationPlanLock   String? @unique
+  idempotencyKey String  @unique
+  requestedBy    String
+
+  // Mutation commands are accepted only with an exact owner-approved
+  // assignment digest. Read-only commands keep these fields null/false.
+  ownerApproved            Boolean   @default(false)
+  ownerApprovedBy          String?
+  ownerApprovedById        String?
+  ownerApprovedAt          DateTime?
+  assignmentArtifactSha256 String?
+  approvalSubjectJson      String?
+  approvalSha256           String?
+  approvalExpiresAt        DateTime?
+  approvalNonce            String?   @unique
+  approvalStepUpAssertionId String?  @unique
+  approvalStepUpMethod      String?
+  approvalStepUpCeremonyId  String?
+  approvalStepUpVerifiedAt  DateTime?
+
+  // Lease token itself is returned once to the worker; only its SHA-256 is
+  // stored. A mutation must record MUTATION_STARTED before the browser click.
+  workerId          String?
+  workerActorId     String?
+  accountLeaseKey   String?   @unique
+  browserLeaseKey   String?   @unique
+  leaseTokenSha256  String?
+  leaseExpiresAt    DateTime?
+  lastHeartbeatAt   DateTime?
+  attempts          Int       @default(0)
+  maxAttempts       Int       @default(3)
+  mutationStartedAt DateTime?
+  mutationOutcome   String? // CONFIRMED_APPLIED | CONFIRMED_NOT_APPLIED | AMBIGUOUS
+  ambiguityReason   String?
+  eventSequence     Int       @default(0)
+
+  cancelledAt     DateTime?
+  cancelledBy     String?
+  cancellationReason String?
+  reconcilesJobId   String?
+  reconciledByJobId String?
+
+  resultJson   String?
+  resultSha256 String?
+  error        String?
+
+  queuedAt    DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  events ChannelMaxAgentEvent[]
+
+  @@index([status, priority, queuedAt])
+  @@index([leaseExpiresAt])
+  @@index([operation, status])
+  @@index([mutationPlanSha256])
+  @@index([reconcilesJobId])
+}
+
+// Append-only structured progress and evidence metadata. The migration adds
+// SQLite triggers that reject UPDATE/DELETE, so screenshots/downloads/run-log
+// references cannot be silently rewritten after a worker reports them.
+model ChannelMaxAgentEvent {
+  id String @id @default(cuid())
+
+  jobId String
+  job   ChannelMaxAgentJob @relation(fields: [jobId], references: [id], onDelete: Restrict)
+
+  sequence       Int
+  eventKey       String
+  type           String
+  source         String
+  message        String?
+  metadataJson   String
+  metadataSha256 String
+  evidenceJson   String
+  evidenceSha256 String
+  occurredAt     DateTime
+  createdAt      DateTime @default(now())
+
+  @@unique([jobId, sequence])
+  @@unique([jobId, eventKey])
+  @@index([jobId, occurredAt])
+}
+
+// Populated only by a future real WebAuthn/TOTP verifier. There is
+// deliberately no API in this bridge that can mint a verified assertion.
+// Mutation approval stays feature-flagged off until that verifier exists.
+model ChannelMaxStepUpAssertion {
+  id String @id @default(cuid())
+
+  userId     String
+  method     String // PASSWORD_REAUTH | WEBAUTHN | TOTP
+  ceremonyId String @unique
+  verifiedAt DateTime
+  expiresAt  DateTime
+  usedAt     DateTime?
+  jobId      String
+  createdAt  DateTime @default(now())
+
+  @@index([userId, expiresAt])
+  @@index([jobId, expiresAt])
+}
+
 // ─── Frozen Analytics v2.0 — Proactive Risk Prediction ─────────────────────
 // Nightly pipeline fetches Veeqo orders that will ship in the next 1-3 days,
 // pulls Open-Meteo forecast for Tampa (origin) and the destination ZIP, runs

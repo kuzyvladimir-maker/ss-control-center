@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1f4d380e-1853-47e8-af3b-48e98b2069b5",
+  "created_at": "2026-07-18T10:31:49.257Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "VT-ASTH-B6LM:text_count",
+  "sku": "VT-ASTH-B6LM",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "0953bca5d3615ba130e080d43c7590d7859ae3cbd55e2de2eba1f6d0d0200e4b",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "43daffc7193e420896c37263fe438708",
+    "issues": []
+  },
+  "sha256": "e8aa70db8848f8033186b8a1d915802da58e10fe8410eb6a323b542ba051469c"
+}

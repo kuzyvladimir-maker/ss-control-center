@@ -26,6 +26,10 @@ export interface SpApiOptions {
   params?: Record<string, string>;
   body?: object;
   retries?: number;
+  signal?: AbortSignal;
+  /** Synchronous last-moment safety gate. It runs after token and URL
+   * preparation and immediately before each physical fetch attempt. */
+  beforeRequest?: () => void;
 }
 
 export async function spApiGet(
@@ -85,9 +89,18 @@ async function spApiRequest(
   options: SpApiOptions = {}
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
-  const { storeId = "store1", params, body, retries = 3 } = options;
+  const {
+    storeId = "store1",
+    params,
+    body,
+    retries = 3,
+    signal,
+    beforeRequest,
+  } = options;
 
-  const accessToken = await getCachedAccessToken(storeId);
+  signal?.throwIfAborted();
+  const accessToken = await getCachedAccessToken(storeId, signal);
+  signal?.throwIfAborted();
 
   const url = new URL(SP_API_ENDPOINT + path);
   if (params) {
@@ -99,6 +112,9 @@ async function spApiRequest(
   }
 
   for (let attempt = 1; attempt <= retries; attempt++) {
+    signal?.throwIfAborted();
+    const requestBody = body ? JSON.stringify(body) : undefined;
+    beforeRequest?.();
     try {
       const response = await fetch(url.toString(), {
         method,
@@ -107,18 +123,24 @@ async function spApiRequest(
           "Content-Type": "application/json",
           "user-agent": "SS-Control-Center/1.0",
         },
-        body: body ? JSON.stringify(body) : undefined,
+        body: requestBody,
+        signal,
       });
 
       // Handle rate limiting
       if (response.status === 429) {
-        const retryAfter = parseInt(
-          response.headers.get("retry-after") || "5"
+        const retryAfterMs = retryAfterMilliseconds(
+          response.headers.get("retry-after"),
         );
+        if (attempt === retries) {
+          throw new Error(
+            `SP-API rate limited on final attempt ${attempt}/${retries} for ${method} ${path}`,
+          );
+        }
         console.warn(
-          `SP-API rate limited, waiting ${retryAfter}s (attempt ${attempt}/${retries})`
+          `SP-API rate limited, waiting ${retryAfterMs}ms (attempt ${attempt}/${retries})`
         );
-        await sleep(retryAfter * 1000);
+        await sleep(retryAfterMs, signal);
         continue;
       }
 
@@ -135,12 +157,51 @@ async function spApiRequest(
 
       return await response.json();
     } catch (err) {
+      if (
+        signal?.aborted ||
+        (err instanceof Error && err.name === "AbortError")
+      ) {
+        throw err;
+      }
       if (attempt === retries) throw err;
-      await sleep(1000 * attempt);
+      await sleep(1000 * attempt, signal);
     }
   }
+  throw new Error(`SP-API exhausted retries for ${method} ${path}`);
 }
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function retryAfterMilliseconds(raw: string | null): number {
+  if (!raw) return 5_000;
+  const seconds = Number(raw);
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return Math.ceil(seconds * 1_000);
+  }
+  const dateMs = Date.parse(raw);
+  if (Number.isFinite(dateMs)) {
+    return Math.max(0, dateMs - Date.now());
+  }
+  return 5_000;
+}
+
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  signal?.throwIfAborted();
+  if (!signal) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+  return new Promise<void>((resolve, reject) => {
+    const cleanup = () => {
+      clearTimeout(timer);
+      signal.removeEventListener("abort", onAbort);
+    };
+    const onAbort = () => {
+      cleanup();
+      reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
+    };
+    const timer = setTimeout(() => {
+      cleanup();
+      resolve();
+    }, ms);
+    signal.addEventListener("abort", onAbort, { once: true });
+    if (signal.aborted) onAbort();
+  });
 }

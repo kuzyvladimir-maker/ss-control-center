@@ -5,7 +5,8 @@ box (`104.219.53.204`) and serves FREE ChatGPT-subscription image generation to
 the SS Command Center app. See `docs/wiki/codex-image-generation.md` for the full
 picture.
 
-`server.js` here is the same file deployed at `/root/codex-image-worker/server.js`.
+`server.js` and `image-preflight.js` here are the source files deployed under
+`/root/codex-image-worker/`.
 
 ## What it does
 
@@ -31,7 +32,7 @@ It strips `OPENAI_API_KEY` / `CODEX_API_KEY` from the child env so the paid
 ## Deploy / update on the box
 
 ```bash
-scp ops/codex-image-worker/server.js openclaw:/root/codex-image-worker/server.js
+scp ops/codex-image-worker/server.js ops/codex-image-worker/image-preflight.js openclaw:/root/codex-image-worker/
 ssh openclaw 'systemctl restart codex-image-worker && systemctl status codex-image-worker --no-pager'
 ```
 

@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "c8708150-cf01-4501-a027-1b89243d111b",
+  "created_at": "2026-07-18T11:45:47.411Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "NS-ASSD-B3JJ:text_count",
+  "sku": "NS-ASSD-B3JJ",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "c8b73083-cfc5-454f-9872-5cb9dea18a7e",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "d24fd4d184fed5f9605b4f3d5764eefbe6275fdd2db37ec5a69de922ced39540",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "06d84473444ee8b33674a48375404bc318173dc6b46734a68968b224b00e5b26"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "2611310bf9e1612df4eadcd5792038febfe575dd77947f38b9e559623a9a332d"
+}

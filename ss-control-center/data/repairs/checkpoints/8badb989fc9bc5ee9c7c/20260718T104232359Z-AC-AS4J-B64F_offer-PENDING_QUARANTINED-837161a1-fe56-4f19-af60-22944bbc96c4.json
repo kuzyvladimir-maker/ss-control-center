@@ -1,0 +1,33 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "837161a1-fe56-4f19-af60-22944bbc96c4",
+  "created_at": "2026-07-18T10:42:32.359Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "AC-AS4J-B64F:offer",
+  "sku": "AC-AS4J-B64F",
+  "kind": "OFFER",
+  "status": "PENDING_QUARANTINED",
+  "detail": {
+    "selection_sha256": "01e78380d5f5bd770767144f3bfd7f893160e5d1637a6354e1abd69d95e4b34a",
+    "submitted_event_id": "560c9364-bd97-4a28-9266-3516e7259e55",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "e9e745c87ff1c67657c0506980aaaf2418b78eab3d50d5ea3c9abd76223b423f",
+      "exact_action_paths": [
+        "/attributes/list_price",
+        "/attributes/purchasable_offer"
+      ],
+      "before_path_state_sha256": "4a776c0d5fe43a91eeab25535b57bbe15b31d773906f26c7675859f356f971f1"
+    },
+    "isolation_scope": {
+      "store_index": 1,
+      "sku": "AC-AS4J-B64F",
+      "exact_action_paths": [
+        "/attributes/list_price",
+        "/attributes/purchasable_offer"
+      ]
+    }
+  },
+  "sha256": "96fa6d8aeffb7fdfe124eabadcc1a06bbe08aa226a240348d711692c9f39ad2d"
+}

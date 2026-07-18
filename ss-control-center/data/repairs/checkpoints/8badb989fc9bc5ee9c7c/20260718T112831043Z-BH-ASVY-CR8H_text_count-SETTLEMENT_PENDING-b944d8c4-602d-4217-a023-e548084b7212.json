@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b944d8c4-602d-4217-a023-e548084b7212",
+  "created_at": "2026-07-18T11:28:31.043Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "BH-ASVY-CR8H:text_count",
+  "sku": "BH-ASVY-CR8H",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "fbeedd28-e5f0-43b5-b8c2-fa9451e2c33c",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "4755485481eb19b730c5bfb603d0e7830b901bb8e600d5032817df82a505b648",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "5219dbec01dd530e5622ea8e76f5b9882299fec6b625d790b4aa33abbb15a515"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "c5f1c33bdfa9fc1ca2f151ad4802b567508f9aa6c2e39b2a9a66faf3edfead5a"
+}

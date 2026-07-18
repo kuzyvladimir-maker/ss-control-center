@@ -18,6 +18,7 @@ import { config } from "dotenv";
 import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 
+import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import {
   getListing,
   patchListing,
@@ -25,6 +26,13 @@ import {
 } from "@/lib/amazon-sp-api/listings";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { PerceptualMediaEquivalence } from "@/lib/bundle-factory/repair/media-equivalence";
+import {
+  verifyUncrustablesLaunchExecutionAuthorization,
+  type LaunchExecutionAuthorizationRuntimeInput,
+} from "@/lib/bundle-factory/repair/uncrustables-launch-execution-authorization";
+import {
+  verifyUncrustablesLaunchPricingManifest,
+} from "@/lib/bundle-factory/repair/uncrustables-launch-pricing";
 import {
   assertRollbackMediaEvidenceFiles,
   assertForwardApplyRollbackCoverage,
@@ -34,18 +42,24 @@ import {
   type UncrustablesRollbackPlan,
 } from "@/lib/bundle-factory/repair/uncrustables-amazon-rollback";
 import {
+  CANONICAL_UNCRUSTABLES_FORWARD_CHECKPOINT_ROOT,
+  OFFER_ONLY_EXECUTION_PROFILE,
   ImmutableCheckpointStore,
   assertValidationPreviewSurrogateMatches,
+  assertRepairPlanLaunchPricingBinding,
   buildRepairPlan,
   confirmationToken,
   executeRepairPlan,
+  readRepairExecutionSelection,
   readRepairPlan,
   sha256,
   writeImmutableChannelMaxArtifact,
   writeImmutablePlan,
   type DesiredRepairManifest,
+  type RepairExecutionSelection,
   type RepairAmazonGateway,
   type RepairValidationPreviewContext,
+  type OfferExecutionPhase,
 } from "@/lib/bundle-factory/repair/uncrustables-surgical";
 
 config({ path: ".env.local" });
@@ -53,17 +67,21 @@ config({ path: ".env" });
 
 const DEFAULT_AUDIT_DIR = "data/audits";
 const DEFAULT_OUTPUT_DIR = "data/repairs/generated";
-const DEFAULT_CHECKPOINT_DIR = "data/repairs/checkpoints";
+const DEFAULT_CHECKPOINT_DIR = CANONICAL_UNCRUSTABLES_FORWARD_CHECKPOINT_ROOT;
 const DEFAULT_MANIFEST = "data/repairs/uncrustables-reviewed-overrides-20260717.json";
 const DEFAULT_DONOR_MANIFEST =
   "data/repairs/uncrustables-donor-enrichment-20260717.json";
 const DEFAULT_PTD_PROOF =
   "data/audits/amazon-food-ptd-attribute-proof-20260718T010205Z.json";
+const SURGICAL_MUTATING_PATCH_TIMEOUT_MS = 60_000;
 
 interface CliOptions {
   planPath: string | null;
+  executionSelectionPath: string | null;
   ledgerPath: string | null;
   manifestPath: string | null;
+  launchPricingManifestPath: string | null;
+  launchExecutionAuthorizationPath: string | null;
   heroManifestPath: string | null;
   galleryManifestPath: string | null;
   donorManifestPath: string | null;
@@ -76,6 +94,9 @@ interface CliOptions {
   rollbackSnapshotMaxAgeMinutes: number;
   apply: boolean;
   preview: boolean;
+  submitOnly: boolean;
+  settleOnly: boolean;
+  recoverPendingOnly: boolean;
   confirmation: string | null;
   skus: string[] | null;
   limit: number | null;
@@ -85,6 +106,16 @@ interface CliOptions {
   settlementAttempts: number;
   settlementDelayMs: number;
   settlementStableReads: number;
+  offerSettlementHorizonHours: number;
+  offerSettlementPollIntervalMs: number;
+  offerSettlementRequestDelayMs: number;
+  offerSettlementObservationTimeoutMs: number;
+  offerSettlementMaxReadsPerSubmission: number | null;
+  pendingRecoveryHorizonHours: number;
+  pendingRecoveryPollIntervalMs: number;
+  pendingRecoveryRequestDelayMs: number;
+  pendingRecoveryObservationTimeoutMs: number;
+  pendingRecoveryMaxReadsPerSubmission: number | null;
   maxErrors: number;
 }
 
@@ -95,6 +126,7 @@ function usage(): string {
     "Offline planning (default; zero Amazon/DB calls):",
     "  --ledger=PATH          Immutable live ledger or its sealed resummary.",
     `  --manifest=PATH        Reviewed overrides (default ${DEFAULT_MANIFEST}).`,
+    "  --launch-pricing-manifest=PATH Pinned Coupon-vs-Sale-Price Layer B manifest.",
     "  --media-manifest=PATH  Complete 164-row QA-verified hero manifest.",
     "  --gallery-manifest=PATH Complete 164-row verified 4-6-image gallery manifest.",
     `  --donor-manifest=PATH Pinned reviewed donor facts (default ${DEFAULT_DONOR_MANIFEST}).`,
@@ -107,8 +139,13 @@ function usage(): string {
     "",
     "Existing-plan inspection/execution:",
     "  --plan=PATH            Read an existing SHA-sealed plan.",
+    "  --execution-selection=PATH Read a SHA-sealed exact action selection; forbids --skus/--limit.",
+    "  --launch-execution-authorization=PATH Current sealed ChannelMAX Manual + Coupon activation proof for OFFER apply.",
     "  --preview              Live GET + VALIDATION_PREVIEW only; no real PATCH.",
     "  --apply                Enable Amazon calls; requires --plan and --confirm.",
+    "  --submit-only          With --apply, submit each exact OFFER once and leave it pending; zero post-write GETs.",
+    "  --settle-only          GET-only settlement of an exact pending OFFER selection; forbids --apply/--preview.",
+    "  --recover-pending-only GET-only settlement of any exact pending selection; forbids all write/preview/narrowing options.",
     "  --confirm=TOKEN        Exact plan-specific token printed in dry mode.",
     "  --rollback-plan=PATH   Apply-eligible inverse plan from a fresh exact 164-row live snapshot.",
     "  --rollback-snapshot-max-age-min=N Freshness gate before first write (default 60).",
@@ -119,6 +156,16 @@ function usage(): string {
     "  --settlement-attempts=N Extended exact-path polls after timeout, 3-60 (default 20).",
     "  --settlement-delay-ms=N Delay between extended polls, >=5000 (default 30000).",
     "  --settlement-stable-reads=N Consecutive identical reads, 2-10 (default 3).",
+    "  --offer-settlement-horizon-hours=N GET-only horizon, 1-72 (default 6).",
+    "  --offer-settlement-poll-interval-ms=N Delay between full pending sweeps, >=5000 (default 300000).",
+    "  --offer-settlement-request-delay-ms=N Global GET start pacing, >=200 (default 5000).",
+    "  --offer-settlement-observation-timeout-ms=N Abort one hung GET, >=1000 (default 60000).",
+    "  --offer-settlement-max-reads-per-submission=N Optional short-probe cap, >=3 (default unlimited within horizon).",
+    "  --pending-recovery-horizon-hours=N Generic GET-only horizon, 1-72 (default 6).",
+    "  --pending-recovery-poll-interval-ms=N Delay between generic pending sweeps, >=5000 (default 300000).",
+    "  --pending-recovery-request-delay-ms=N Generic GET start pacing, >=200 (default 5000).",
+    "  --pending-recovery-observation-timeout-ms=N Abort one generic recovery GET, >=1000 (default 60000).",
+    "  --pending-recovery-max-reads-per-submission=N Optional short-probe cap, >=3 (default unlimited within horizon).",
     "  --max-errors=N         Fail-closed fuse (default 1).",
     "  --help                  Show this help.",
     "",
@@ -138,8 +185,11 @@ function positiveInt(flag: string, raw: string | undefined): number {
 function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = {
     planPath: null,
+    executionSelectionPath: null,
     ledgerPath: null,
     manifestPath: DEFAULT_MANIFEST,
+    launchPricingManifestPath: null,
+    launchExecutionAuthorizationPath: null,
     heroManifestPath: null,
     galleryManifestPath: null,
     donorManifestPath: DEFAULT_DONOR_MANIFEST,
@@ -152,6 +202,9 @@ function parseArgs(argv: string[]): CliOptions {
     rollbackSnapshotMaxAgeMinutes: 60,
     apply: false,
     preview: false,
+    submitOnly: false,
+    settleOnly: false,
+    recoverPendingOnly: false,
     confirmation: null,
     skus: null,
     limit: null,
@@ -161,6 +214,16 @@ function parseArgs(argv: string[]): CliOptions {
     settlementAttempts: 20,
     settlementDelayMs: 30_000,
     settlementStableReads: 3,
+    offerSettlementHorizonHours: 6,
+    offerSettlementPollIntervalMs: 5 * 60_000,
+    offerSettlementRequestDelayMs: 5_000,
+    offerSettlementObservationTimeoutMs: 60_000,
+    offerSettlementMaxReadsPerSubmission: null,
+    pendingRecoveryHorizonHours: 6,
+    pendingRecoveryPollIntervalMs: 5 * 60_000,
+    pendingRecoveryRequestDelayMs: 5_000,
+    pendingRecoveryObservationTimeoutMs: 60_000,
+    pendingRecoveryMaxReadsPerSubmission: null,
     maxErrors: 1,
   };
   for (const arg of argv) {
@@ -171,6 +234,12 @@ function parseArgs(argv: string[]): CliOptions {
       options.apply = true;
     } else if (arg === "--preview") {
       options.preview = true;
+    } else if (arg === "--submit-only") {
+      options.submitOnly = true;
+    } else if (arg === "--settle-only") {
+      options.settleOnly = true;
+    } else if (arg === "--recover-pending-only") {
+      options.recoverPendingOnly = true;
     } else if (arg === "--no-manifest") {
       options.manifestPath = null;
     } else if (arg === "--no-media-manifest") {
@@ -182,10 +251,22 @@ function parseArgs(argv: string[]): CliOptions {
       options.ptdProofPath = null;
     } else if (arg.startsWith("--plan=")) {
       options.planPath = arg.slice("--plan=".length).trim();
+    } else if (arg.startsWith("--execution-selection=")) {
+      options.executionSelectionPath = arg
+        .slice("--execution-selection=".length)
+        .trim();
     } else if (arg.startsWith("--ledger=")) {
       options.ledgerPath = arg.slice("--ledger=".length).trim();
     } else if (arg.startsWith("--manifest=")) {
       options.manifestPath = arg.slice("--manifest=".length).trim();
+    } else if (arg.startsWith("--launch-pricing-manifest=")) {
+      options.launchPricingManifestPath = arg
+        .slice("--launch-pricing-manifest=".length)
+        .trim();
+    } else if (arg.startsWith("--launch-execution-authorization=")) {
+      options.launchExecutionAuthorizationPath = arg
+        .slice("--launch-execution-authorization=".length)
+        .trim();
     } else if (arg.startsWith("--media-manifest=")) {
       options.heroManifestPath = arg.slice("--media-manifest=".length).trim();
       options.requireCompleteMedia = true;
@@ -250,6 +331,64 @@ function parseArgs(argv: string[]): CliOptions {
         "--settlement-stable-reads",
         arg.split("=", 2)[1],
       );
+    } else if (arg.startsWith("--offer-settlement-horizon-hours=")) {
+      options.offerSettlementHorizonHours = positiveInt(
+        "--offer-settlement-horizon-hours",
+        arg.split("=", 2)[1],
+      );
+    } else if (arg.startsWith("--offer-settlement-poll-interval-ms=")) {
+      options.offerSettlementPollIntervalMs = positiveInt(
+        "--offer-settlement-poll-interval-ms",
+        arg.split("=", 2)[1],
+      );
+    } else if (arg.startsWith("--offer-settlement-request-delay-ms=")) {
+      options.offerSettlementRequestDelayMs = positiveInt(
+        "--offer-settlement-request-delay-ms",
+        arg.split("=", 2)[1],
+      );
+    } else if (
+      arg.startsWith("--offer-settlement-observation-timeout-ms=")
+    ) {
+      options.offerSettlementObservationTimeoutMs = positiveInt(
+        "--offer-settlement-observation-timeout-ms",
+        arg.split("=", 2)[1],
+      );
+    } else if (
+      arg.startsWith("--offer-settlement-max-reads-per-submission=")
+    ) {
+      options.offerSettlementMaxReadsPerSubmission = positiveInt(
+        "--offer-settlement-max-reads-per-submission",
+        arg.split("=", 2)[1],
+      );
+    } else if (arg.startsWith("--pending-recovery-horizon-hours=")) {
+      options.pendingRecoveryHorizonHours = positiveInt(
+        "--pending-recovery-horizon-hours",
+        arg.split("=", 2)[1],
+      );
+    } else if (arg.startsWith("--pending-recovery-poll-interval-ms=")) {
+      options.pendingRecoveryPollIntervalMs = positiveInt(
+        "--pending-recovery-poll-interval-ms",
+        arg.split("=", 2)[1],
+      );
+    } else if (arg.startsWith("--pending-recovery-request-delay-ms=")) {
+      options.pendingRecoveryRequestDelayMs = positiveInt(
+        "--pending-recovery-request-delay-ms",
+        arg.split("=", 2)[1],
+      );
+    } else if (
+      arg.startsWith("--pending-recovery-observation-timeout-ms=")
+    ) {
+      options.pendingRecoveryObservationTimeoutMs = positiveInt(
+        "--pending-recovery-observation-timeout-ms",
+        arg.split("=", 2)[1],
+      );
+    } else if (
+      arg.startsWith("--pending-recovery-max-reads-per-submission=")
+    ) {
+      options.pendingRecoveryMaxReadsPerSubmission = positiveInt(
+        "--pending-recovery-max-reads-per-submission",
+        arg.split("=", 2)[1],
+      );
     } else if (arg.startsWith("--max-errors=")) {
       options.maxErrors = positiveInt("--max-errors", arg.split("=", 2)[1]);
     } else {
@@ -258,6 +397,30 @@ function parseArgs(argv: string[]): CliOptions {
   }
   if (options.planPath && options.ledgerPath) {
     throw new Error("Use either --plan or --ledger, not both.");
+  }
+  if (options.planPath && options.launchPricingManifestPath) {
+    throw new Error(
+      "--launch-pricing-manifest is a plan-build input and cannot accompany --plan.",
+    );
+  }
+  if (
+    options.launchExecutionAuthorizationPath &&
+    (!options.planPath || !options.apply || !options.submitOnly)
+  ) {
+    throw new Error(
+      "--launch-execution-authorization is accepted only with --plan --apply --submit-only.",
+    );
+  }
+  if (options.executionSelectionPath && !options.planPath) {
+    throw new Error("--execution-selection requires an existing --plan file.");
+  }
+  if (
+    options.executionSelectionPath &&
+    (options.skus !== null || options.limit !== null)
+  ) {
+    throw new Error(
+      "--execution-selection is already an exact sealed action set; --skus and --limit are forbidden.",
+    );
   }
   if (options.apply && !options.planPath) {
     throw new Error(
@@ -270,12 +433,60 @@ function parseArgs(argv: string[]): CliOptions {
   if (options.apply && options.preview) {
     throw new Error("--apply and --preview are mutually exclusive.");
   }
+  if (
+    Number(options.submitOnly) +
+      Number(options.settleOnly) +
+      Number(options.recoverPendingOnly) >
+    1
+  ) {
+    throw new Error(
+      "--submit-only, --settle-only, and --recover-pending-only are mutually exclusive.",
+    );
+  }
+  if (options.submitOnly && !options.apply) {
+    throw new Error("--submit-only requires --apply.");
+  }
+  if (options.settleOnly && (options.apply || options.preview)) {
+    throw new Error("--settle-only forbids --apply and --preview.");
+  }
+  if (options.recoverPendingOnly && (options.apply || options.preview)) {
+    throw new Error(
+      "--recover-pending-only forbids --apply and --preview.",
+    );
+  }
+  if (
+    (options.submitOnly || options.settleOnly || options.recoverPendingOnly) &&
+    (!options.planPath || !options.executionSelectionPath)
+  ) {
+    throw new Error(
+      "Two-phase/recovery execution requires --plan and --execution-selection.",
+    );
+  }
+  if (options.settleOnly && options.rollbackPlanPath) {
+    throw new Error("--settle-only is read-only and forbids --rollback-plan.");
+  }
+  if (
+    options.recoverPendingOnly &&
+    (options.rollbackPlanPath || options.confirmation)
+  ) {
+    throw new Error(
+      "--recover-pending-only is read-only and forbids --rollback-plan/--confirm.",
+    );
+  }
   if (options.apply && !options.confirmation) {
     throw new Error("--apply requires --confirm=TOKEN.");
   }
   if (options.apply && !options.rollbackPlanPath) {
     throw new Error(
       "--apply requires --rollback-plan=PATH built from a fresh exact 164-row LIVE_SP_API snapshot.",
+    );
+  }
+  if (
+    (options.apply || options.settleOnly || options.recoverPendingOnly) &&
+    path.resolve(options.checkpointDir) !== path.resolve(DEFAULT_CHECKPOINT_DIR)
+  ) {
+    throw new Error(
+      `Live apply/settle requires canonical --checkpoint-dir=${DEFAULT_CHECKPOINT_DIR} so rollback cannot miss armed/submitted forward mutations.`,
     );
   }
   if (options.rollbackSnapshotMaxAgeMinutes > 24 * 60) {
@@ -300,6 +511,77 @@ function parseArgs(argv: string[]): CliOptions {
   ) {
     throw new Error(
       "--settlement-stable-reads must be 2-10 and <= --settlement-attempts.",
+    );
+  }
+  if (
+    options.offerSettlementHorizonHours < 1 ||
+    options.offerSettlementHorizonHours > 72
+  ) {
+    throw new Error("--offer-settlement-horizon-hours must be 1-72.");
+  }
+  if (options.offerSettlementPollIntervalMs < 5_000) {
+    throw new Error("--offer-settlement-poll-interval-ms must be >=5000.");
+  }
+  if (options.offerSettlementRequestDelayMs < 200) {
+    throw new Error("--offer-settlement-request-delay-ms must be >=200.");
+  }
+  if (options.offerSettlementObservationTimeoutMs < 1_000) {
+    throw new Error(
+      "--offer-settlement-observation-timeout-ms must be >=1000.",
+    );
+  }
+  if (
+    options.offerSettlementMaxReadsPerSubmission != null &&
+    options.offerSettlementMaxReadsPerSubmission < 3
+  ) {
+    throw new Error(
+      "--offer-settlement-max-reads-per-submission must be >=3.",
+    );
+  }
+  if (
+    options.offerSettlementMaxReadsPerSubmission != null &&
+    !options.settleOnly
+  ) {
+    throw new Error(
+      "--offer-settlement-max-reads-per-submission requires --settle-only.",
+    );
+  }
+  if (
+    options.pendingRecoveryHorizonHours < 1 ||
+    options.pendingRecoveryHorizonHours > 72
+  ) {
+    throw new Error("--pending-recovery-horizon-hours must be 1-72.");
+  }
+  if (options.pendingRecoveryPollIntervalMs < 5_000) {
+    throw new Error("--pending-recovery-poll-interval-ms must be >=5000.");
+  }
+  if (options.pendingRecoveryRequestDelayMs < 200) {
+    throw new Error("--pending-recovery-request-delay-ms must be >=200.");
+  }
+  if (options.pendingRecoveryObservationTimeoutMs < 1_000) {
+    throw new Error(
+      "--pending-recovery-observation-timeout-ms must be >=1000.",
+    );
+  }
+  if (
+    options.pendingRecoveryMaxReadsPerSubmission != null &&
+    options.pendingRecoveryMaxReadsPerSubmission < 3
+  ) {
+    throw new Error(
+      "--pending-recovery-max-reads-per-submission must be >=3.",
+    );
+  }
+  if (
+    options.pendingRecoveryMaxReadsPerSubmission != null &&
+    !options.recoverPendingOnly
+  ) {
+    throw new Error(
+      "--pending-recovery-max-reads-per-submission requires --recover-pending-only.",
+    );
+  }
+  if (options.recoverPendingOnly && options.settlementStableReads !== 3) {
+    throw new Error(
+      "--recover-pending-only requires --settlement-stable-reads=3.",
     );
   }
   return options;
@@ -390,6 +672,8 @@ async function latestCompleteGalleryManifest(): Promise<string | null> {
 }
 
 class LiveGateway implements RepairAmazonGateway {
+  readonly physicalMutationGuardContract =
+    "CALL_IMMEDIATELY_BEFORE_REQUEST_V1" as const;
   private readonly sellerIds = new Map<number, string>();
   private readonly lastListings = new Map<
     string,
@@ -398,25 +682,55 @@ class LiveGateway implements RepairAmazonGateway {
 
   constructor(
     private readonly rollbackPlan: UncrustablesRollbackPlan | null = null,
-  ) {}
+    forbiddenPatchPaths: string[] = [],
+  ) {
+    this.forbiddenPatchPaths = new Set(forbiddenPatchPaths);
+  }
+
+  private readonly forbiddenPatchPaths: Set<string>;
+
+  private assertNoForbiddenPatches(
+    sku: string,
+    patches: ListingPatch[],
+    context: string,
+  ): void {
+    const forbidden = patches
+      .map((patch) => patch.path)
+      .filter((patchPath) => this.forbiddenPatchPaths.has(patchPath));
+    if (forbidden.length > 0) {
+      throw new Error(
+        `${context} for ${sku} contains selection-forbidden exact patch path(s): ${[
+          ...new Set(forbidden),
+        ].join(", ")}. No Amazon PATCH was made.`,
+      );
+    }
+  }
 
   private listingKey(storeIndex: number, sku: string): string {
     return `${storeIndex}:${sku}`;
   }
 
-  private async sellerId(storeIndex: number): Promise<string> {
+  private async sellerId(
+    storeIndex: number,
+    signal?: AbortSignal,
+  ): Promise<string> {
+    signal?.throwIfAborted();
     let sellerId = this.sellerIds.get(storeIndex);
     if (!sellerId) {
-      sellerId = await getMerchantToken(storeIndex);
+      sellerId = await getMerchantToken(storeIndex, signal);
+      signal?.throwIfAborted();
       this.sellerIds.set(storeIndex, sellerId);
     }
     return sellerId;
   }
 
-  async getListing(storeIndex: number, sku: string) {
+  async getListing(storeIndex: number, sku: string, signal?: AbortSignal) {
+    signal?.throwIfAborted();
+    const sellerId = await this.sellerId(storeIndex, signal);
+    signal?.throwIfAborted();
     const listing = await getListing(
       storeIndex,
-      await this.sellerId(storeIndex),
+      sellerId,
       sku,
       {
         includedData: [
@@ -426,6 +740,7 @@ class LiveGateway implements RepairAmazonGateway {
           "offers",
           "fulfillmentAvailability",
         ],
+        signal,
       },
     );
     this.lastListings.set(this.listingKey(storeIndex, sku), listing);
@@ -439,7 +754,22 @@ class LiveGateway implements RepairAmazonGateway {
     patches: ListingPatch[],
     validationPreview: boolean,
     previewContext?: RepairValidationPreviewContext,
+    beforeMutatingRequest?: Parameters<
+      RepairAmazonGateway["patchListing"]
+    >[6],
   ) {
+    this.assertNoForbiddenPatches(
+      sku,
+      patches,
+      validationPreview ? "VALIDATION_PREVIEW" : "Mutating PATCH",
+    );
+    if (previewContext) {
+      this.assertNoForbiddenPatches(
+        sku,
+        previewContext.actual_patches,
+        "Sealed actual patch behind VALIDATION_PREVIEW",
+      );
+    }
     if (!validationPreview && previewContext) {
       throw new Error(
         `Preview-surrogate context is forbidden on a mutating PATCH for ${sku}.`,
@@ -462,36 +792,78 @@ class LiveGateway implements RepairAmazonGateway {
         context: previewContext.offer_merge_context,
       });
     }
-    if (this.rollbackPlan) {
-      // VALIDATION_PREVIEW is not an optimistic lock. Close the avoidable
-      // preview-to-write window with one final GET immediately before every
-      // mutating PATCH, then re-run the sealed path-level CAS against it.
-      const live = validationPreview
-        ? this.lastListings.get(this.listingKey(storeIndex, sku))
-        : await this.getListing(storeIndex, sku);
-      if (!live) {
+    const mutatingController = validationPreview ? null : new AbortController();
+    const mutatingTimeout = mutatingController
+      ? setTimeout(() => {
+          mutatingController.abort(
+            new DOMException(
+              `Surgical mutating PATCH timed out after ${SURGICAL_MUTATING_PATCH_TIMEOUT_MS}ms.`,
+              "AbortError",
+            ),
+          );
+        }, SURGICAL_MUTATING_PATCH_TIMEOUT_MS)
+      : null;
+    try {
+      if (this.rollbackPlan) {
+        // VALIDATION_PREVIEW is not an optimistic lock. Close the avoidable
+        // preview-to-write window with one final GET immediately before every
+        // mutating PATCH, then re-run the sealed path-level CAS against it.
+        // For a real submission, the same deadline covers this final GET,
+        // cold seller lookup, and the one physical PATCH attempt.
+        const live = validationPreview
+          ? this.lastListings.get(this.listingKey(storeIndex, sku))
+          : await this.getListing(storeIndex, sku, mutatingController?.signal);
+        if (!live) {
+          throw new Error(
+            `Forward rollback guard has no fresh GET for ${sku}; refusing PATCH.`,
+          );
+        }
+        assertForwardPatchRollbackCovered({
+          rollbackPlan: this.rollbackPlan,
+          storeIndex,
+          sku,
+          live,
+          // Rollback/CAS coverage is intentionally bound to the actual merge,
+          // never to the non-mutating selector-replace preview surrogate.
+          patches: previewContext?.actual_patches ?? patches,
+        });
+      }
+      const sellerId = await this.sellerId(
+        storeIndex,
+        mutatingController?.signal,
+      );
+      if (validationPreview && beforeMutatingRequest) {
         throw new Error(
-          `Forward rollback guard has no fresh GET for ${sku}; refusing PATCH.`,
+          `A physical mutation guard is invalid for VALIDATION_PREVIEW on ${sku}.`,
         );
       }
-      assertForwardPatchRollbackCovered({
-        rollbackPlan: this.rollbackPlan,
+      return await patchListing(
         storeIndex,
+        sellerId,
         sku,
-        live,
-        // Rollback/CAS coverage is intentionally bound to the actual merge,
-        // never to the non-mutating selector-replace preview surrogate.
-        patches: previewContext?.actual_patches ?? patches,
-      });
+        productType,
+        patches,
+        {
+          validationPreview,
+          // A mutating Listings PATCH is physically attempted once. If its
+          // response is lost, the preceding SUBMISSION_ARMED event and pending
+          // fence force GET-only recovery instead of a transport-level replay.
+          retries: validationPreview ? undefined : 1,
+          signal: mutatingController?.signal,
+          beforeRequest:
+            !validationPreview && beforeMutatingRequest
+              ? () =>
+                  beforeMutatingRequest({
+                    store_index: storeIndex,
+                    marketplace_id: MARKETPLACE_ID,
+                    amazon_merchant_id: sellerId,
+                  })
+              : undefined,
+        },
+      ) as Record<string, unknown>;
+    } finally {
+      if (mutatingTimeout != null) clearTimeout(mutatingTimeout);
     }
-    return patchListing(
-      storeIndex,
-      await this.sellerId(storeIndex),
-      sku,
-      productType,
-      patches,
-      { validationPreview },
-    ) as Promise<Record<string, unknown>>;
   }
 }
 
@@ -512,6 +884,12 @@ async function main(): Promise<void> {
       manifest = JSON.parse(manifestBytes.toString("utf8")) as DesiredRepairManifest;
       manifestSource = { path: options.manifestPath, bytes: manifestBytes };
     }
+    const launchPricingManifest = options.launchPricingManifestPath
+      ? {
+          path: options.launchPricingManifestPath,
+          bytes: await readFile(options.launchPricingManifestPath),
+        }
+      : null;
     const heroManifestPath = options.requireCompleteMedia
       ? options.heroManifestPath ?? await latestCompleteHeroManifest()
       : null;
@@ -534,6 +912,7 @@ async function main(): Promise<void> {
       ledgerBytes,
       manifest,
       manifestSource,
+      launchPricingManifest,
       heroManifest: heroManifestPath
         ? { path: heroManifestPath, bytes: await readFile(heroManifestPath) }
         : null,
@@ -550,20 +929,109 @@ async function main(): Promise<void> {
       limit: options.limit,
     });
     planPath = await writeImmutablePlan(options.outputDir, plan);
-    const channelMax = await writeImmutableChannelMaxArtifact(options.outputDir, plan);
     console.log(`Immutable repair plan: ${planPath}`);
-    console.log(`ChannelMAX TSV (not uploaded): ${channelMax.tsvPath}`);
-    console.log(`ChannelMAX manifest: ${channelMax.manifestPath}`);
+    if (plan.launch_pricing_source) {
+      console.log(
+        "ChannelMAX bounds-only TSV intentionally not generated for a launch-aware plan; use a separately verified Manual-model assignment artifact.",
+      );
+    } else {
+      const channelMax = await writeImmutableChannelMaxArtifact(
+        options.outputDir,
+        plan,
+      );
+      console.log(`ChannelMAX TSV (not uploaded): ${channelMax.tsvPath}`);
+      console.log(`ChannelMAX manifest: ${channelMax.manifestPath}`);
+    }
+  }
+
+  const executionSelection: RepairExecutionSelection | null =
+    options.executionSelectionPath
+      ? await readRepairExecutionSelection(options.executionSelectionPath, plan)
+      : null;
+  const selectedActionIds = executionSelection
+    ? new Set(executionSelection.selected_action_ids)
+    : null;
+  let selectedEntries = plan.entries.filter(
+    (entry) => !options.skus || options.skus.includes(entry.sku),
+  );
+  if (!executionSelection && options.limit != null) {
+    selectedEntries = selectedEntries.slice(0, options.limit);
+  }
+  const selectedHasOffer = selectedEntries.some((entry) =>
+    entry.actions.some(
+      (action) =>
+        action.kind === "OFFER" &&
+        (!selectedActionIds || selectedActionIds.has(action.action_id)),
+    ),
+  );
+  if (
+    selectedHasOffer &&
+    !plan.launch_pricing_source &&
+    (options.apply || options.preview || options.submitOnly)
+  ) {
+    throw new Error(
+      "Legacy OFFER mutation/preview is disabled: the sealed plan has no pinned Coupon-vs-Sale-Price launch source. Build a new launch-aware plan. No Amazon call was made.",
+    );
+  }
+  if (
+    options.apply &&
+    selectedHasOffer &&
+    (!options.submitOnly ||
+      executionSelection?.profile !== OFFER_ONLY_EXECUTION_PROFILE)
+  ) {
+    throw new Error(
+      `Every live OFFER write requires --submit-only and an exact ${OFFER_ONLY_EXECUTION_PROFILE} selection. Mixed or inline submit-and-settle execution is disabled. No Amazon call was made.`,
+    );
+  }
+  if (
+    options.recoverPendingOnly &&
+    executionSelection?.source_plan.path != null &&
+    path.resolve(executionSelection.source_plan.path) !== path.resolve(planPath)
+  ) {
+    throw new Error(
+      "--recover-pending-only plan path does not match the exact source_plan.path sealed in its execution selection. No Amazon call was made.",
+    );
+  }
+  const executionPhase: OfferExecutionPhase = options.submitOnly
+    ? "SUBMIT_ONLY"
+    : options.settleOnly
+      ? "SETTLE_ONLY"
+      : "SUBMIT_AND_SETTLE";
+  if (
+    (options.submitOnly || options.settleOnly) &&
+    executionSelection?.profile !== OFFER_ONLY_EXECUTION_PROFILE
+  ) {
+    throw new Error(
+      `OFFER ${executionPhase} requires an ${OFFER_ONLY_EXECUTION_PROFILE} selection. No Amazon call was made.`,
+    );
+  }
+  const requiredConfirmation = executionSelection?.confirmation_token ??
+    confirmationToken(plan);
+  if (
+    options.apply &&
+    selectedHasOffer &&
+    !options.launchExecutionAuthorizationPath
+  ) {
+    throw new Error(
+      "Live OFFER apply requires --launch-execution-authorization with current ChannelMAX Manual and Arm A Coupon evidence. No Amazon call was made.",
+    );
   }
 
   console.log(
     JSON.stringify(
       {
-        mode: options.apply
-          ? "APPLY"
-          : options.preview
-            ? "VALIDATION_PREVIEW"
-            : "DRY_RUN_OFFLINE",
+        mode: options.recoverPendingOnly
+          ? "PENDING_SETTLE_ONLY"
+          : options.submitOnly
+          ? "OFFER_SUBMIT_ONLY"
+          : options.settleOnly
+            ? "OFFER_SETTLE_ONLY"
+            : options.apply
+              ? "APPLY"
+              : options.preview
+                ? "VALIDATION_PREVIEW"
+                : "DRY_RUN_OFFLINE",
+        execution_phase: executionPhase,
         plan_id: plan.plan_id,
         plan_sha256: plan.sha256,
         entries: plan.scope.entries,
@@ -572,8 +1040,15 @@ async function main(): Promise<void> {
         semantic_audit: plan.semantic_audit,
         selected_skus: options.skus,
         limit: options.limit,
+        execution_selection: options.executionSelectionPath,
+        execution_selection_sha256: executionSelection?.sha256 ?? null,
+        execution_profile: executionSelection?.profile ?? null,
+        execution_selection_actions:
+          executionSelection?.selected_actions ?? null,
+        forbidden_patch_paths:
+          executionSelection?.forbidden_patch_paths ?? [],
         rollback_plan: options.rollbackPlanPath,
-        required_confirmation: confirmationToken(plan),
+        required_confirmation: options.apply ? requiredConfirmation : null,
       },
       null,
       2,
@@ -584,12 +1059,19 @@ async function main(): Promise<void> {
     options.checkpointDir,
     plan.sha256,
   );
-  if (!options.apply && !options.preview) {
+  if (
+    !options.apply &&
+    !options.preview &&
+    !options.settleOnly &&
+    !options.recoverPendingOnly
+  ) {
     const dry = await executeRepairPlan(plan, {} as RepairAmazonGateway, {
       apply: false,
+      executionPhase,
       checkpointStore,
       skus: options.planPath ? options.skus : null,
       limit: options.planPath ? options.limit : null,
+      executionSelection,
     });
     console.log(JSON.stringify(dry, null, 2));
     console.log("No Amazon call, database call, upload, or marketplace mutation was made.");
@@ -598,7 +1080,7 @@ async function main(): Promise<void> {
 
   let forwardRollbackPlan: UncrustablesRollbackPlan | null = null;
   if (options.apply) {
-    const expectedApplyToken = confirmationToken(plan);
+    const expectedApplyToken = requiredConfirmation;
     if (
       process.env.BF_UNCRUSTABLES_ENABLE_AMAZON_APPLY !== expectedApplyToken
     ) {
@@ -620,8 +1102,10 @@ async function main(): Promise<void> {
       repairPlan: plan,
       snapshot: preChangeSnapshot,
       rollbackPlan,
-      selectedSkus: options.skus,
-      limit: options.limit,
+      selectedSkus: executionSelection ? null : options.skus,
+      limit: executionSelection ? null : options.limit,
+      executionSelection,
+      executionSelectionPath: options.executionSelectionPath,
       maxSnapshotAgeMinutes: options.rollbackSnapshotMaxAgeMinutes,
     });
     await assertRollbackMediaEvidenceFiles({
@@ -658,6 +1142,89 @@ async function main(): Promise<void> {
       );
     }
   }
+  let launchExecutionAuthorization:
+    | LaunchExecutionAuthorizationRuntimeInput
+    | undefined;
+  if (plan.launch_pricing_source) {
+    const launchPricingBytes = await readFile(plan.launch_pricing_source.path);
+    if (sha256(launchPricingBytes) !== plan.launch_pricing_source.sha256) {
+      throw new Error(
+        "Launch-pricing manifest no longer matches the SHA-256 sealed in the plan.",
+      );
+    }
+    assertRepairPlanLaunchPricingBinding(plan, launchPricingBytes, {
+      requireOwnerApproval: options.apply && selectedHasOffer,
+    });
+    if (options.apply && selectedHasOffer) {
+      if (!options.launchExecutionAuthorizationPath || !executionSelection) {
+        throw new Error(
+          "Launch execution authorization and exact OFFER selection are required. No Amazon call was made.",
+        );
+      }
+      let authorizationRaw: unknown;
+      try {
+        authorizationRaw = JSON.parse(
+          (
+            await readFile(options.launchExecutionAuthorizationPath)
+          ).toString("utf8"),
+        );
+      } catch {
+        throw new Error(
+          "Launch execution authorization is missing or invalid JSON. No Amazon call was made.",
+        );
+      }
+      const launchPricingManifest = verifyUncrustablesLaunchPricingManifest(
+        JSON.parse(launchPricingBytes.toString("utf8")),
+      );
+      const authorization = verifyUncrustablesLaunchExecutionAuthorization(
+        authorizationRaw,
+        {
+          planSha256: plan.sha256,
+          executionSelectionSha256: executionSelection.sha256,
+          launchPricingSourceSha256: plan.launch_pricing_source.sha256,
+          launchPricingManifest,
+        },
+      );
+      const channelMaxSourceExportBytes = await readFile(
+        authorization.channelmax.source_export.path,
+      );
+      const channelMaxAssignmentUploadBytes = await readFile(
+        authorization.channelmax.assignment_upload.path,
+      );
+      const couponSourceEvidenceBytes = await readFile(
+        authorization.coupons.source_evidence.path,
+      );
+      const evidenceArtifacts = [
+        [
+          authorization.channelmax.source_export,
+          channelMaxSourceExportBytes,
+        ],
+        [
+          authorization.channelmax.assignment_upload,
+          channelMaxAssignmentUploadBytes,
+        ],
+        [authorization.coupons.source_evidence, couponSourceEvidenceBytes],
+      ] as const;
+      for (const [evidence, evidenceBytes] of evidenceArtifacts) {
+        if (sha256(evidenceBytes) !== evidence.sha256) {
+          throw new Error(
+            `Launch execution evidence no longer matches its sealed SHA-256: ${evidence.path}. No Amazon call was made.`,
+          );
+        }
+      }
+      launchExecutionAuthorization = {
+        authorization,
+        launchPricingManifest,
+        launchPricingSourceSha256: plan.launch_pricing_source.sha256,
+        launchPricingSourceBytes: launchPricingBytes,
+        evidence_bytes: {
+          channelmax_source_export: channelMaxSourceExportBytes,
+          channelmax_assignment_upload: channelMaxAssignmentUploadBytes,
+          coupon_source_evidence: couponSourceEvidenceBytes,
+        },
+      };
+    }
+  }
   if (plan.media_asset_source) {
     const mediaBytes = await readFile(plan.media_asset_source.path);
     if (sha256(mediaBytes) !== plan.media_asset_source.sha256) {
@@ -691,23 +1258,66 @@ async function main(): Promise<void> {
       );
     }
   }
+  const liveGateway = new LiveGateway(
+    forwardRollbackPlan,
+    executionSelection?.forbidden_patch_paths ?? [],
+  );
+  const gateway: RepairAmazonGateway = options.recoverPendingOnly
+    ? {
+        getListing: (storeIndex, sku, signal) =>
+          liveGateway.getListing(storeIndex, sku, signal),
+        patchListing: (_storeIndex, sku) => {
+          throw new Error(
+            `CLI PENDING_SETTLE_ONLY trap forbids every PATCH for ${sku}.`,
+          );
+        },
+      }
+    : liveGateway;
   const result = await executeRepairPlan(
     plan,
-    new LiveGateway(forwardRollbackPlan),
+    gateway,
     {
       apply: options.apply,
+      executionPhase,
+      recoverPendingOnly: options.recoverPendingOnly,
       validationOnly: options.preview,
       confirmation: options.confirmation,
       checkpointStore,
       mediaEquivalence: new PerceptualMediaEquivalence(),
       skus: options.skus,
       limit: options.limit,
+      executionSelection,
+      launchExecutionAuthorization,
       requestDelayMs: options.requestDelayMs,
       verifyAttempts: options.verifyAttempts,
       verifyDelayMs: options.verifyDelayMs,
       settlementAttempts: options.settlementAttempts,
       settlementDelayMs: options.settlementDelayMs,
       settlementStableReads: options.settlementStableReads,
+      offerSettlementPolicy: options.settleOnly
+        ? {
+            horizonMs: options.offerSettlementHorizonHours * 60 * 60_000,
+            pollIntervalMs: options.offerSettlementPollIntervalMs,
+            requestDelayMs: options.offerSettlementRequestDelayMs,
+            observationTimeoutMs:
+              options.offerSettlementObservationTimeoutMs,
+            maxReadsPerSubmission:
+              options.offerSettlementMaxReadsPerSubmission,
+            stableReads: options.settlementStableReads,
+          }
+        : undefined,
+      pendingRecoveryPolicy: options.recoverPendingOnly
+        ? {
+            horizonMs: options.pendingRecoveryHorizonHours * 60 * 60_000,
+            pollIntervalMs: options.pendingRecoveryPollIntervalMs,
+            requestDelayMs: options.pendingRecoveryRequestDelayMs,
+            observationTimeoutMs:
+              options.pendingRecoveryObservationTimeoutMs,
+            maxReadsPerSubmission:
+              options.pendingRecoveryMaxReadsPerSubmission,
+            stableReads: 3,
+          }
+        : undefined,
       maxErrors: options.maxErrors,
     },
   );

@@ -10,17 +10,21 @@
  *    `merge` in preview mode, so selector-aware offer merges use a sealed
  *    selector `replace` surrogate while every other operation stays exact;
  *  - offer patches merge into the latest live offer, preserving quantity
- *    discounts, metadata, and unrelated entries while removing the legacy
- *    sale/list-price fields that contradict the coupon-only launch model;
- *  - every accepted write is followed by a Listings Items GET verification;
+ *    discounts, metadata, and unrelated entries. The owner-reviewed launch
+ *    layer decides per SKU whether discounted_price is absent (coupon arm) or
+ *    is an exact dated Sale Price schedule (sale arm); list_price stays absent;
+ *  - legacy execution verifies accepted writes inline; OFFER production uses
+ *    persistent submit-only evidence followed by a separate GET-only settle;
  *  - progress is append-only: each checkpoint event is its own immutable JSON.
  *
  * This module never imports Prisma and never performs a Listings Items PUT.
  */
 
 import { createHash, randomUUID } from "node:crypto";
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import type { Dirent } from "node:fs";
+import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import {
@@ -52,7 +56,38 @@ import {
   renderUncrustablesRepairContent,
   uncrustablesFlavorLabel,
 } from "./uncrustables-content";
+import {
+  UNCRUSTABLES_LAUNCH_PRICING_SCHEMA,
+  launchPricingRowsBySku,
+  verifyUncrustablesLaunchPricingManifest,
+  type UncrustablesLaunchLever,
+  type UncrustablesLaunchPricingManifest,
+  type UncrustablesLaunchPricingRow,
+  type UncrustablesSalePriceSchedule,
+} from "./uncrustables-launch-pricing";
+import {
+  verifyUncrustablesLaunchExecutionAuthorization,
+  verifyUncrustablesLaunchExecutionEvidenceBytes,
+  type LaunchExecutionAuthorizationRuntimeInput,
+} from "./uncrustables-launch-execution-authorization";
+import {
+  DEFAULT_OFFER_SETTLEMENT_POLICY,
+  OFFER_ONLY_EXECUTION_PROFILE,
+  assertOfferOnlyExecutionSelection,
+  assertOfferSubmitOnlyMayStart,
+  resolveOfferSettlementPolicy,
+  runReadOnlyOfferSettlement,
+  runReadOnlySettlementScheduler,
+  type OfferExecutionPhase,
+  type OfferSettlementPolicyInput,
+} from "./uncrustables-offer-two-phase";
 import { preflightDeclaredUncrustablesMainHash } from "../audit/uncrustables-main-production-preflight";
+
+export {
+  DEFAULT_OFFER_SETTLEMENT_POLICY,
+  OFFER_ONLY_EXECUTION_PROFILE,
+} from "./uncrustables-offer-two-phase";
+export type { OfferExecutionPhase } from "./uncrustables-offer-two-phase";
 
 export const REPAIR_PLAN_SCHEMA = "uncrustables-surgical-repair/v2" as const;
 export const DESIRED_MANIFEST_SCHEMA =
@@ -61,6 +96,17 @@ export const CHECKPOINT_SCHEMA =
   "uncrustables-surgical-checkpoint/v1" as const;
 export const SELECTOR_REPLACE_SURROGATE_FOR_MERGE =
   "SELECTOR_REPLACE_SURROGATE_FOR_MERGE" as const;
+export const UNCRUSTABLES_APP_ROOT = fileURLToPath(
+  new URL("../../../../", import.meta.url),
+);
+export const CANONICAL_UNCRUSTABLES_FORWARD_CHECKPOINT_ROOT = path.join(
+  UNCRUSTABLES_APP_ROOT,
+  "data/repairs/checkpoints",
+);
+export const CANONICAL_UNCRUSTABLES_AMAZON_COORDINATION_DIR = path.join(
+  UNCRUSTABLES_APP_ROOT,
+  "data/repairs/runtime-locks/uncrustables-amazon-us",
+);
 export const HERO_MANIFEST_SCHEMA =
   "uncrustables-hero-generation-manifest/v1.0" as const;
 export const GALLERY_MANIFEST_SCHEMA =
@@ -143,7 +189,9 @@ export interface DesiredOfferRepair {
   business_price: number;
   minimum_seller_allowed_price: number;
   maximum_seller_allowed_price: number;
-  discounted_price_absent: true;
+  discounted_price_absent: boolean;
+  discounted_price_schedule?: UncrustablesSalePriceSchedule;
+  launch_lever?: UncrustablesLaunchLever;
   list_price_absent: true;
 }
 
@@ -225,6 +273,35 @@ export interface RepairPlanBlocker {
   message: string;
 }
 
+/** Structured, SHA-bound evidence emitted only by the offline catalog-title
+ * alignment workflow. Generic semantic validation does not consume this
+ * object; the one reviewed Amazon package-arithmetic compatibility rule below
+ * validates every member independently before allowing its narrow exception. */
+export interface CatalogTitleAlignmentSemanticEvidence {
+  schema_version: "uncrustables-amazon-catalog-title-alignment/v1";
+  sku: string;
+  asin: string;
+  intended_count: number;
+  catalog_title: string;
+  recipe_identities: string[];
+  identity_validation:
+    | "GENERIC_STRICT"
+    | "REVIEWED_CATALOG_API_EVIDENCE";
+  catalog_conflict_evidence_sha256: string;
+  reviewed_catalog_override?: {
+    policy: "EXACT_REVIEWED_CATALOG_API_EVIDENCE_V1";
+    catalog_evidence_path: string;
+    catalog_evidence_file_sha256: string;
+    catalog_evidence_body_sha256: string;
+    catalog_evidence_row_sha256: string;
+    catalog_api_identifiers: Array<{ type: string; value: string }>;
+    exact_unit_count: number;
+    exact_number_of_items: number | null;
+    recipe_components_sha256: string;
+    generic_rejection: string;
+  };
+}
+
 export interface UncrustablesRepairPlan {
   schema_version: typeof REPAIR_PLAN_SCHEMA;
   immutable: true;
@@ -247,6 +324,19 @@ export interface UncrustablesRepairPlan {
     schema_version: typeof DESIRED_MANIFEST_SCHEMA;
     reviewed_at: string;
     source_ledger_sha256: string;
+  } | null;
+  /** Independent, owner-reviewed Layer B source. Keeping it separate from the
+   * content manifest prevents a pricing experiment change from invalidating
+   * catalog-title evidence or silently changing copy/media review lineage. */
+  launch_pricing_source?: {
+    path: string;
+    sha256: string;
+    schema_version: typeof UNCRUSTABLES_LAUNCH_PRICING_SCHEMA;
+    reviewed_at: string;
+    body_sha256: string;
+    rows: number;
+    coupon_rows: number;
+    sale_price_rows: number;
   } | null;
   media_asset_source?: {
     path: string;
@@ -288,7 +378,8 @@ export interface UncrustablesRepairPlan {
     validation_preview_required: true;
     post_get_verification_required: true;
     business_price_equals_consumer_price: true;
-    discounted_price_absent: true;
+    discounted_price_absent: boolean;
+    launch_pricing_overlay_pinned?: boolean;
     list_price_absent: true;
     structured_attributes_donor_reviewed: true;
     structured_attributes_ptd_proof_required: true;
@@ -341,6 +432,14 @@ export interface DesiredRepairManifest {
       confidence: "HIGH" | "MEDIUM" | "LOW";
       rationale: string;
       evidence: string[];
+      catalog_title_alignment?: CatalogTitleAlignmentSemanticEvidence;
+      supersedes?: Array<{
+        field: "text_count.title";
+        prior_value: string;
+        source_manifest_path: string;
+        source_manifest_sha256: string;
+        reason: "AMAZON_CATALOG_ITEM_NAME_CONFLICT";
+      }>;
     };
     media?: {
       main_image_url?: string;
@@ -541,6 +640,10 @@ export interface BuildRepairPlanOptions {
   ledgerBytes: Buffer;
   manifest?: DesiredRepairManifest | null;
   manifestSource?: { path: string; bytes: Buffer } | null;
+  launchPricingManifest?: {
+    path: string;
+    bytes: Buffer;
+  } | null;
   heroManifest?: { path: string; bytes: Buffer } | null;
   galleryManifest?: { path: string; bytes: Buffer } | null;
   donorManifest?: { path: string; bytes: Buffer } | null;
@@ -622,6 +725,31 @@ export function verifyRepairPlan(plan: UncrustablesRepairPlan): void {
   ) {
     throw new Error("Repair plan desired-manifest source is invalid or unbound.");
   }
+  if (
+    plan.launch_pricing_source != null &&
+    (plan.launch_pricing_source.schema_version !==
+      UNCRUSTABLES_LAUNCH_PRICING_SCHEMA ||
+      !/^[a-f0-9]{64}$/i.test(plan.launch_pricing_source.sha256) ||
+      !/^[a-f0-9]{64}$/i.test(plan.launch_pricing_source.body_sha256) ||
+      !nonEmptyString(plan.launch_pricing_source.path) ||
+      !nonEmptyString(plan.launch_pricing_source.reviewed_at) ||
+      plan.launch_pricing_source.rows <= 0 ||
+      plan.launch_pricing_source.coupon_rows <= 0 ||
+      plan.launch_pricing_source.sale_price_rows <= 0 ||
+      plan.launch_pricing_source.coupon_rows +
+        plan.launch_pricing_source.sale_price_rows !==
+        plan.launch_pricing_source.rows)
+  ) {
+    throw new Error("Repair plan launch-pricing source is invalid or unbound.");
+  }
+  if (
+    Boolean(plan.launch_pricing_source) !==
+      (plan.policy.launch_pricing_overlay_pinned === true) ||
+    (plan.launch_pricing_source != null &&
+      plan.policy.discounted_price_absent !== false)
+  ) {
+    throw new Error("Repair plan launch-pricing policy/source binding is inconsistent.");
+  }
   if (plan.structured_attribute_source) {
     if (
       plan.structured_attribute_source.donor_manifest.sha256 !==
@@ -690,6 +818,56 @@ export function verifyRepairPlan(plan: UncrustablesRepairPlan): void {
         }
         if (media.main_image_sha256 && !/^[a-f0-9]{64}$/i.test(media.main_image_sha256)) {
           throw new Error(`Invalid MAIN SHA-256 in ${action.action_id}.`);
+        }
+      } else if (action.desired.kind === "OFFER") {
+        const offer = action.desired.value;
+        for (const [field, amount] of [
+          ["consumer_price", offer.consumer_price],
+          ["business_price", offer.business_price],
+          ["minimum_seller_allowed_price", offer.minimum_seller_allowed_price],
+          ["maximum_seller_allowed_price", offer.maximum_seller_allowed_price],
+        ] as const) {
+          validateMoney(`${action.action_id}.${field}`, amount);
+        }
+        if (
+          offer.currency !== "USD" ||
+          offer.list_price_absent !== true ||
+          differs(offer.business_price, offer.consumer_price) ||
+          offer.minimum_seller_allowed_price > offer.consumer_price ||
+          differs(offer.maximum_seller_allowed_price, offer.consumer_price)
+        ) {
+          throw new Error(`Invalid canonical offer state in ${action.action_id}.`);
+        }
+        const schedule = offer.discounted_price_schedule;
+        if (Boolean(offer.launch_lever) !== Boolean(plan.launch_pricing_source)) {
+          throw new Error(
+            `Offer launch lever/source binding is inconsistent in ${action.action_id}.`,
+          );
+        }
+        if (schedule) {
+          validateMoney(
+            `${action.action_id}.discounted_price_schedule.value_with_tax`,
+            schedule.value_with_tax,
+          );
+        }
+        if (offer.discounted_price_absent) {
+          if (schedule != null || offer.launch_lever?.startsWith("SALEPRICE_")) {
+            throw new Error(
+              `Contradictory absent Sale Price policy in ${action.action_id}.`,
+            );
+          }
+        } else if (
+          !plan.launch_pricing_source ||
+          !offer.launch_lever?.startsWith("SALEPRICE_") ||
+          !schedule ||
+          schedule.value_with_tax + 0.005 <
+            offer.minimum_seller_allowed_price ||
+          schedule.value_with_tax >= offer.consumer_price ||
+          !Number.isFinite(Date.parse(schedule.start_at)) ||
+          !Number.isFinite(Date.parse(schedule.end_at)) ||
+          Date.parse(schedule.end_at) <= Date.parse(schedule.start_at)
+        ) {
+          throw new Error(`Invalid pinned Sale Price in ${action.action_id}.`);
         }
       } else if (action.desired.kind === "STRUCTURED_ATTRIBUTES") {
         structuredActions++;
@@ -786,6 +964,403 @@ export function verifyRepairPlan(plan: UncrustablesRepairPlan): void {
 export function confirmationToken(plan: UncrustablesRepairPlan): string {
   verifyRepairPlan(plan);
   return `APPLY-UNCRUSTABLES-${plan.sha256.slice(0, 16).toUpperCase()}`;
+}
+
+export const REPAIR_EXECUTION_SELECTION_SCHEMA =
+  "uncrustables-repair-execution-selection/v1" as const;
+export const CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE =
+  "CONTENT_STRUCTURED_MEDIA_ONLY_V1" as const;
+export const TEXT_STRUCTURED_ONLY_PROFILE =
+  "TEXT_STRUCTURED_ONLY_V1" as const;
+export const GALLERY_MEDIA_ONLY_PROFILE =
+  "GALLERY_MEDIA_ONLY_V1" as const;
+export const OFFER_PATCH_PATHS = [
+  "/attributes/list_price",
+  "/attributes/purchasable_offer",
+] as const;
+export const MEDIA_PATCH_PATHS = [
+  "/attributes/main_product_image_locator",
+  ...Array.from(
+    { length: 8 },
+    (_, index) => `/attributes/other_product_image_locator_${index + 1}`,
+  ),
+] as const;
+/** Independent fail-closed boundary for OFFER-only execution. The exact
+ * selected-action guard is still authoritative; this blacklist prevents a
+ * future dispatcher regression from reaching any current content or media
+ * attribute through the same gateway. */
+export const OFFER_ONLY_FORBIDDEN_PATCH_PATHS = [
+  "/attributes/allergen_information",
+  "/attributes/bullet_point",
+  "/attributes/each_unit_count",
+  "/attributes/ingredients",
+  "/attributes/is_expiration_dated_product",
+  "/attributes/item_name",
+  "/attributes/item_package_quantity",
+  "/attributes/merchant_shipping_group",
+  "/attributes/number_of_items",
+  "/attributes/product_description",
+  "/attributes/unit_count",
+  ...MEDIA_PATCH_PATHS,
+].sort();
+/** Fail-closed profile boundary for secondary-gallery-only execution. The
+ * exact selected action guard remains authoritative, while this blacklist
+ * independently prevents MAIN, content, structured, and offer mutations. */
+export const GALLERY_MEDIA_FORBIDDEN_PATCH_PATHS = [
+  "/attributes/allergen_information",
+  "/attributes/bullet_point",
+  "/attributes/each_unit_count",
+  "/attributes/ingredients",
+  "/attributes/is_expiration_dated_product",
+  "/attributes/item_name",
+  "/attributes/item_package_quantity",
+  "/attributes/main_product_image_locator",
+  "/attributes/merchant_shipping_group",
+  "/attributes/number_of_items",
+  "/attributes/product_description",
+  "/attributes/unit_count",
+  ...OFFER_PATCH_PATHS,
+].sort();
+
+export interface RepairExecutionSelectionInput {
+  sourcePlanPath?: string | null;
+  createdAt?: Date;
+  skus?: string[] | null;
+  limit?: number | null;
+  /** An explicit subset is sealed into a selection-specific confirmation
+   * token. Omitting this field preserves the legacy whole-action selection. */
+  actionKinds?: RepairActionKind[] | null;
+}
+
+export interface RepairExecutionSelection {
+  schema_version: typeof REPAIR_EXECUTION_SELECTION_SCHEMA;
+  immutable: true;
+  created_at: string;
+  profile:
+    | typeof CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE
+    | typeof TEXT_STRUCTURED_ONLY_PROFILE
+    | typeof GALLERY_MEDIA_ONLY_PROFILE
+    | typeof OFFER_ONLY_EXECUTION_PROFILE
+    | "EXACT_ACTION_SUBSET_V1";
+  source_plan: { path: string | null; sha256: string };
+  requested_skus: string[] | null;
+  limit: number | null;
+  requested_action_kinds: RepairActionKind[] | null;
+  selected_skus: string[];
+  selected_action_ids: string[];
+  selected_actions: number;
+  forbidden_patch_paths: string[];
+  sha256: string;
+  confirmation_token: string;
+}
+
+function resolveRepairExecutionSelection(
+  plan: UncrustablesRepairPlan,
+  input: RepairExecutionSelectionInput = {},
+): { entries: RepairPlanEntry[]; selection: RepairExecutionSelection } {
+  verifyRepairPlan(plan);
+  const requestedSkus = input.skus?.length
+    ? [...new Set(input.skus.map((sku) => sku.trim()).filter(Boolean))]
+    : null;
+  const requested = requestedSkus ? new Set(requestedSkus) : null;
+  let entries = plan.entries.filter(
+    (entry) => !requested || requested.has(entry.sku),
+  );
+  if (requested) {
+    const found = new Set(entries.map((entry) => entry.sku));
+    const missing = requestedSkus!.filter((sku) => !found.has(sku));
+    if (missing.length) {
+      throw new Error(
+        `Requested SKU(s) absent from plan entries: ${missing.join(", ")}`,
+      );
+    }
+  }
+  const limit = input.limit ?? null;
+  if (limit != null) {
+    if (!Number.isInteger(limit) || limit <= 0) {
+      throw new Error("Execution limit must be a positive integer.");
+    }
+    entries = entries.slice(0, limit);
+  }
+
+  let requestedKinds: RepairActionKind[] | null = null;
+  if (input.actionKinds != null) {
+    if (input.actionKinds.length === 0) {
+      throw new Error("Explicit actionKinds selection cannot be empty.");
+    }
+    const validKinds = new Set<RepairActionKind>(
+      Object.keys(REPAIR_ACTION_EXECUTION_ORDER) as RepairActionKind[],
+    );
+    for (const kind of input.actionKinds) {
+      if (!validKinds.has(kind)) {
+        throw new Error(`Unknown repair action kind: ${String(kind)}.`);
+      }
+    }
+    requestedKinds = [...new Set(input.actionKinds)].sort(
+      (left, right) =>
+        REPAIR_ACTION_EXECUTION_ORDER[left] -
+        REPAIR_ACTION_EXECUTION_ORDER[right],
+    );
+    const allowed = new Set(requestedKinds);
+    entries = entries
+      .map((entry) => ({
+        ...entry,
+        actions: entry.actions.filter((action) => allowed.has(action.kind)),
+      }))
+      .filter((entry) => entry.actions.length > 0);
+  }
+  const actionIds = entries.flatMap((entry) =>
+    entry.actions.map((action) => action.action_id),
+  );
+  if (actionIds.length === 0) {
+    throw new Error("Execution selection contains no repair actions.");
+  }
+  const nonOfferKinds: RepairActionKind[] = [
+    "TEXT_COUNT",
+    "STRUCTURED_ATTRIBUTES",
+    "MEDIA",
+  ];
+  const textStructuredKinds: RepairActionKind[] = [
+    "TEXT_COUNT",
+    "STRUCTURED_ATTRIBUTES",
+  ];
+  const galleryMediaKinds: RepairActionKind[] = ["MEDIA"];
+  const offerKinds: RepairActionKind[] = ["OFFER"];
+  const isContentOnly =
+    requestedKinds != null &&
+    stableJson(requestedKinds) === stableJson(nonOfferKinds);
+  const isTextStructuredOnly =
+    requestedKinds != null &&
+    stableJson(requestedKinds) === stableJson(textStructuredKinds);
+  const isGalleryMediaOnly =
+    requestedKinds != null &&
+    stableJson(requestedKinds) === stableJson(galleryMediaKinds);
+  const isOfferOnly =
+    requestedKinds != null &&
+    stableJson(requestedKinds) === stableJson(offerKinds);
+  if (
+    isGalleryMediaOnly &&
+    entries.some((entry) =>
+      entry.actions.some(
+        (action) =>
+          action.kind !== "MEDIA" ||
+          action.desired.kind !== "MEDIA" ||
+          action.desired.value.main_image_url != null ||
+          action.desired.value.main_image_sha256 != null ||
+          potentialActionPatchPaths(action).some(
+            (patchPath) =>
+              !/^\/attributes\/other_product_image_locator_[1-8]$/.test(
+                patchPath,
+              ),
+          ),
+      ),
+    )
+  ) {
+    throw new Error(
+      "Gallery-media-only execution selection contains MAIN or a non-gallery action/path.",
+    );
+  }
+  const body = {
+    schema_version: REPAIR_EXECUTION_SELECTION_SCHEMA,
+    immutable: true as const,
+    created_at: (input.createdAt ?? new Date()).toISOString(),
+    profile: isContentOnly
+      ? CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE
+      : isTextStructuredOnly
+        ? TEXT_STRUCTURED_ONLY_PROFILE
+        : isGalleryMediaOnly
+          ? GALLERY_MEDIA_ONLY_PROFILE
+          : isOfferOnly
+            ? OFFER_ONLY_EXECUTION_PROFILE
+            : ("EXACT_ACTION_SUBSET_V1" as const),
+    source_plan: {
+      path: input.sourcePlanPath?.trim() || null,
+      sha256: plan.sha256,
+    },
+    requested_skus: requestedSkus,
+    limit,
+    requested_action_kinds: requestedKinds,
+    selected_skus: entries.map((entry) => entry.sku),
+    selected_action_ids: actionIds,
+    selected_actions: actionIds.length,
+    forbidden_patch_paths: isContentOnly
+      ? [...OFFER_PATCH_PATHS]
+      : isTextStructuredOnly
+        ? [...OFFER_PATCH_PATHS, ...MEDIA_PATCH_PATHS].sort()
+        : isGalleryMediaOnly
+          ? [...GALLERY_MEDIA_FORBIDDEN_PATCH_PATHS]
+          : isOfferOnly
+            ? [...OFFER_ONLY_FORBIDDEN_PATCH_PATHS]
+            : [],
+  };
+  const digest = sha256(stableJson(body));
+  return {
+    entries,
+    selection: {
+      ...body,
+      sha256: digest,
+      confirmation_token: requestedKinds == null
+        ? confirmationToken(plan)
+        : `APPLY-UNCRUSTABLES-SELECTION-${digest.slice(0, 16).toUpperCase()}`,
+    },
+  };
+}
+
+export function repairExecutionSelection(
+  plan: UncrustablesRepairPlan,
+  input: RepairExecutionSelectionInput = {},
+): RepairExecutionSelection {
+  return resolveRepairExecutionSelection(plan, input).selection;
+}
+
+export function verifyRepairExecutionSelection(
+  plan: UncrustablesRepairPlan,
+  selection: RepairExecutionSelection,
+): void {
+  verifyRepairPlan(plan);
+  const { sha256: claimed, confirmation_token: claimedToken, ...body } =
+    selection;
+  if (
+    selection.schema_version !== REPAIR_EXECUTION_SELECTION_SCHEMA ||
+    selection.immutable !== true ||
+    !Number.isFinite(new Date(selection.created_at).getTime()) ||
+    selection.source_plan.sha256 !== plan.sha256 ||
+    claimed !== sha256(stableJson(body)) ||
+    claimedToken !==
+      `APPLY-UNCRUSTABLES-SELECTION-${claimed.slice(0, 16).toUpperCase()}`
+  ) {
+    throw new Error("Invalid or tampered repair execution selection.");
+  }
+  if (selection.requested_action_kinds == null) {
+    throw new Error("Persisted execution selection must contain explicit action kinds.");
+  }
+  const recomputed = resolveRepairExecutionSelection(plan, {
+    sourcePlanPath: selection.source_plan.path,
+    createdAt: new Date(selection.created_at),
+    skus: selection.requested_skus,
+    limit: selection.limit,
+    actionKinds: selection.requested_action_kinds,
+  }).selection;
+  if (stableJson(recomputed) !== stableJson(selection)) {
+    throw new Error(
+      "Repair execution selection does not exactly match its sealed source plan.",
+    );
+  }
+  if (selection.profile === CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE) {
+    if (
+      selection.requested_action_kinds.includes("OFFER") ||
+      stableJson(selection.forbidden_patch_paths) !==
+        stableJson([...OFFER_PATCH_PATHS]) ||
+      selection.selected_action_ids.some((actionId) =>
+        plan.entries.some((entry) =>
+          entry.actions.some(
+            (action) => action.action_id === actionId && action.kind === "OFFER",
+          ),
+        ),
+      )
+    ) {
+      throw new Error("Content-only execution selection contains an OFFER action.");
+    }
+  } else if (selection.profile === TEXT_STRUCTURED_ONLY_PROFILE) {
+    const excludedKinds = new Set<RepairActionKind>(["MEDIA", "OFFER"]);
+    if (
+      selection.requested_action_kinds.some((kind) => excludedKinds.has(kind)) ||
+      stableJson(selection.forbidden_patch_paths) !==
+        stableJson([...OFFER_PATCH_PATHS, ...MEDIA_PATCH_PATHS].sort()) ||
+      selection.selected_action_ids.some((actionId) =>
+        plan.entries.some((entry) =>
+          entry.actions.some(
+            (action) =>
+              action.action_id === actionId && excludedKinds.has(action.kind),
+          ),
+        ),
+      )
+    ) {
+      throw new Error(
+        "Text/structured-only execution selection contains a MEDIA or OFFER action.",
+      );
+    }
+  } else if (selection.profile === GALLERY_MEDIA_ONLY_PROFILE) {
+    const selectedActionIds = new Set(selection.selected_action_ids);
+    const selectedActions = plan.entries.flatMap((entry) =>
+      entry.actions.filter((action) => selectedActionIds.has(action.action_id)),
+    );
+    if (
+      stableJson(selection.requested_action_kinds) !== stableJson(["MEDIA"]) ||
+      stableJson(selection.forbidden_patch_paths) !==
+        stableJson(GALLERY_MEDIA_FORBIDDEN_PATCH_PATHS) ||
+      selectedActions.length !== selection.selected_action_ids.length ||
+      selectedActions.some(
+        (action) =>
+          action.kind !== "MEDIA" ||
+          action.desired.kind !== "MEDIA" ||
+          action.desired.value.main_image_url != null ||
+          action.desired.value.main_image_sha256 != null ||
+          potentialActionPatchPaths(action).some(
+            (patchPath) =>
+              !/^\/attributes\/other_product_image_locator_[1-8]$/.test(
+                patchPath,
+              ),
+          ),
+      )
+    ) {
+      throw new Error(
+        "Gallery-media-only execution selection contains MAIN or a non-gallery action/path.",
+      );
+    }
+  } else if (selection.profile === OFFER_ONLY_EXECUTION_PROFILE) {
+    const selectedActionIds = new Set(selection.selected_action_ids);
+    const selectedActions = plan.entries.flatMap((entry) =>
+      entry.actions.filter((action) => selectedActionIds.has(action.action_id)),
+    );
+    if (
+      stableJson(selection.requested_action_kinds) !== stableJson(["OFFER"]) ||
+      stableJson(selection.forbidden_patch_paths) !==
+        stableJson(OFFER_ONLY_FORBIDDEN_PATCH_PATHS) ||
+      selectedActions.length !== selection.selected_action_ids.length ||
+      selectedActions.some(
+        (action) =>
+          action.kind !== "OFFER" ||
+          action.desired.kind !== "OFFER" ||
+          potentialActionPatchPaths(action).some(
+            (patchPath) =>
+              !(OFFER_PATCH_PATHS as readonly string[]).includes(patchPath),
+          ),
+      )
+    ) {
+      throw new Error(
+        "OFFER-only execution selection contains a non-OFFER action/path.",
+      );
+    }
+    assertOfferOnlyExecutionSelection({ plan, selection });
+  }
+}
+
+export async function writeImmutableRepairExecutionSelection(
+  outputDir: string,
+  selection: RepairExecutionSelection,
+): Promise<string> {
+  const file = path.join(
+    outputDir,
+    `URES-${selection.created_at.replace(/[-:.]/g, "")}-${selection.sha256.slice(0, 12)}.json`,
+  );
+  await mkdir(outputDir, { recursive: true });
+  await writeFile(file, `${JSON.stringify(selection, null, 2)}\n`, {
+    encoding: "utf8",
+    flag: "wx",
+  });
+  return file;
+}
+
+export async function readRepairExecutionSelection(
+  file: string,
+  plan: UncrustablesRepairPlan,
+): Promise<RepairExecutionSelection> {
+  const selection = JSON.parse(
+    await readFile(file, "utf8"),
+  ) as RepairExecutionSelection;
+  verifyRepairExecutionSelection(plan, selection);
+  return selection;
 }
 
 function assertHttpsUrl(label: string, value: string): void {
@@ -914,6 +1489,291 @@ function semanticComponentsForRow(row: LedgerRowLike): VariantComponent[] {
   return rawComponents
     .map(semanticComponent)
     .filter((component): component is VariantComponent => component != null);
+}
+
+/**
+ * Amazon's exact catalog title for this one reviewed ASIN exposes both the
+ * manufacturer retail configuration (4ct × pack of 6) and the sellable total
+ * (24 sandwiches).  The generic validator must continue to reject that shape
+ * everywhere else: this compatibility record is pinned to the immutable
+ * 2026-07-18 alignment output and its Catalog Items identifier evidence.
+ */
+export const REVIEWED_SZ_CATALOG_ALIGNED_MANIFEST_FILE_SHA256 =
+  "b3cb16800c6ef286fcb0df00e0e8d4c6fde0829fd91869f2f768c57d6d9ad2b6" as const;
+export const REVIEWED_SZ_CATALOG_ALIGNED_MANIFEST_BODY_SHA256 =
+  "068d4fa70d67eee64d05caedd1fd2c38208ec5de9ef30ca8f5ad64ee00c20ed0" as const;
+
+const REVIEWED_SZ_CATALOG_PACKAGING = {
+  sku: "SZ-ASPI-JFAT",
+  asin: "B0H776M5B5",
+  title:
+    "Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwiches, 8oz/4ct - Pack of 6 (24 Sandwiches Total)",
+  semantic_error:
+    "own-brand title must contain exactly one count claim equal to 24; found 4",
+  semantic_title:
+    "Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwiches, 24 Count",
+  intended_count: 24,
+  product_id: "03eba512-c138-4942-bd34-177fae87c91b",
+  product_name:
+    "Smucker's Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwich - 8oz/4ct",
+  unit_price_cents: 97,
+  source_ledger_sha256:
+    "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f",
+  source_plan_internal_sha256:
+    "0ed98236c3d0331da923c7227bd62791d9c50307ffcf0ad5ccf9f8104567ebae",
+  source_plan_file_sha256:
+    "9c243c8b2295916f7ceb5fa0d8f7e3043ca0b7ad93013552f65ba00cee17e469",
+  source_manifest_file_sha256:
+    "f7e02809067844330baf60f8cc1b886d15ab6154d72eff77b7b3a56715629dea",
+  source_manifest_body_sha256:
+    "82d59b1d3795f7b058204c4ca7848a4372e61fc1559799aac933cb67bf120e61",
+  checkpoint_set_sha256:
+    "f95618bc5f5c4e9cfafd4c2df80867ea9027432673cf5051a420d2d701594565",
+  catalog_evidence_file_sha256:
+    "b26c6933c301cec61a03a143d39c646e87943db7e4411e43129314918be86c49",
+  catalog_evidence_body_sha256:
+    "2ffb50e1c21fd060a0b1f49a0bae39981f87d5288b55429e504c0f71992e1b3e",
+  catalog_evidence_row_sha256:
+    "133f947f3d38ccfe81c92b585cf85eea29d2e8094e163275502b37e52688809e",
+  catalog_conflict_evidence_sha256:
+    "86f2db04540db6e84ae520c3611d93c4fcc8affb0db2ddc6f87b4badd955abaa",
+  recipe_components_sha256:
+    "07279ea01794a3c090cc46e81bd042554554a9f21171184f5d2af502e686f93b",
+  prior_title:
+    "Smucker's Uncrustables Peanut Butter & Blackberry Spread Frozen Sandwiches, Individually Wrapped, 24 Count",
+  identifiers: [
+    { type: "ean", value: "0664554043946" },
+    { type: "upc", value: "664554043946" },
+  ],
+} as const;
+
+function exactRecord(value: unknown): UnknownRecord | null {
+  return isRecord(value) ? value : null;
+}
+
+function exactStringList(value: unknown): string[] | null {
+  return Array.isArray(value) && value.every((item) => typeof item === "string")
+    ? value
+    : null;
+}
+
+function canonicalDesiredManifestBodySha256(
+  manifest: DesiredRepairManifest,
+): string | null {
+  const record = manifest as unknown as UnknownRecord;
+  if (typeof record.body_sha256 !== "string") return null;
+  const body = { ...record };
+  delete body.body_sha256;
+  return sha256(stableJson(body));
+}
+
+function exactRecipeComponentProjection(value: unknown): UnknownRecord | null {
+  if (!isRecord(value)) return null;
+  return {
+    product_id: value.product_id,
+    product_name: value.product_name,
+    brand: value.brand,
+    flavor: value.flavor ?? null,
+    qty: value.qty,
+    unit_price_cents: value.unit_price_cents,
+  };
+}
+
+/**
+ * Fail-closed compatibility gate for the one exact catalog-owned title that
+ * legitimately contains retail-package numerals.  It does not change
+ * `validateSemanticOutput`; it merely proves that removing Amazon's package
+ * arithmetic makes the otherwise exact recipe/count content pass unchanged.
+ */
+function acceptsReviewedSzCatalogPackagingTitle(input: {
+  manifest: DesiredRepairManifest | null | undefined;
+  manifestSourceSha256: string | null;
+  ledgerSha256: string;
+  row: LedgerRowLike;
+  explicit: DesiredRepairManifest["repairs"][number];
+  intendedPackCount: number;
+  semanticError: string;
+  variant: Variant;
+}): boolean {
+  const policy = REVIEWED_SZ_CATALOG_PACKAGING;
+  const manifest = input.manifest;
+  if (
+    !manifest ||
+    manifest.immutable !== true ||
+    manifest.repairs.length !== 164 ||
+    manifest.source_ledger_sha256 !== policy.source_ledger_sha256 ||
+    input.ledgerSha256 !== policy.source_ledger_sha256 ||
+    input.manifestSourceSha256 !==
+      REVIEWED_SZ_CATALOG_ALIGNED_MANIFEST_FILE_SHA256 ||
+    (manifest as unknown as UnknownRecord).body_sha256 !==
+      REVIEWED_SZ_CATALOG_ALIGNED_MANIFEST_BODY_SHA256 ||
+    canonicalDesiredManifestBodySha256(manifest) !==
+      REVIEWED_SZ_CATALOG_ALIGNED_MANIFEST_BODY_SHA256 ||
+    input.semanticError !== policy.semantic_error ||
+    input.intendedPackCount !== policy.intended_count ||
+    input.explicit.sku !== policy.sku ||
+    input.row.sku !== policy.sku ||
+    input.row.asin !== policy.asin ||
+    input.explicit.text_count?.title !== policy.title ||
+    input.explicit.text_count.unit_count !== policy.intended_count ||
+    input.explicit.text_count.unit_count_type !== "Count" ||
+    input.explicit.text_count.number_of_items !== policy.intended_count ||
+    input.explicit.review?.confidence !== "HIGH"
+  ) {
+    return false;
+  }
+
+  const sourceArtifacts = exactRecord(
+    (manifest as unknown as UnknownRecord).source_artifacts,
+  );
+  const alignment = exactRecord(
+    sourceArtifacts?.amazon_catalog_title_alignment,
+  );
+  const sourcePlan = exactRecord(alignment?.source_plan);
+  const sourceManifest = exactRecord(alignment?.source_desired_manifest);
+  const sourceLedger = exactRecord(alignment?.source_ledger);
+  const checkpointSet = exactRecord(alignment?.checkpoint_set);
+  const catalogEvidence = exactRecord(
+    alignment?.reviewed_catalog_api_evidence,
+  );
+  if (
+    alignment?.schema_version !==
+      "uncrustables-amazon-catalog-title-alignment/v1" ||
+    alignment.offline_only !== true ||
+    sourcePlan?.internal_sha256 !== policy.source_plan_internal_sha256 ||
+    sourcePlan.file_sha256 !== policy.source_plan_file_sha256 ||
+    sourceManifest?.file_sha256 !== policy.source_manifest_file_sha256 ||
+    sourceManifest.body_sha256 !== policy.source_manifest_body_sha256 ||
+    sourceLedger?.file_sha256 !== policy.source_ledger_sha256 ||
+    checkpointSet?.sha256 !== policy.checkpoint_set_sha256 ||
+    checkpointSet.files !== 605 ||
+    checkpointSet.selected_actions !== 605 ||
+    checkpointSet.terminal_preview_valid !== 569 ||
+    checkpointSet.terminal_failed_catalog_title_conflict !== 34 ||
+    checkpointSet.terminal_staged_dependency_exceptions !== 2 ||
+    catalogEvidence?.schema_version !==
+      "uncrustables-catalog-title-api-evidence/v1" ||
+    catalogEvidence.file_sha256 !== policy.catalog_evidence_file_sha256 ||
+    catalogEvidence.body_sha256 !== policy.catalog_evidence_body_sha256 ||
+    alignment.aligned_rows !== 34 ||
+    alignment.generic_strict_alignments !== 29 ||
+    alignment.reviewed_catalog_api_overrides !== 5 ||
+    stableJson(exactStringList(catalogEvidence.exact_override_skus)) !==
+      stableJson([
+        "KD-AS12-8HZ3",
+        "RL-AS64-Q8QX",
+        "SZ-ASPI-JFAT",
+        "VA-ASOK-QJCA",
+        "WK-AS2R-FJUW",
+      ])
+  ) {
+    return false;
+  }
+
+  const rowEvidence = input.explicit.review.catalog_title_alignment;
+  const override = rowEvidence?.reviewed_catalog_override;
+  if (
+    rowEvidence?.schema_version !==
+      "uncrustables-amazon-catalog-title-alignment/v1" ||
+    rowEvidence.sku !== policy.sku ||
+    rowEvidence.asin !== policy.asin ||
+    rowEvidence.intended_count !== policy.intended_count ||
+    rowEvidence.catalog_title !== policy.title ||
+    stableJson(rowEvidence.recipe_identities) !== stableJson(["BLACKBERRY"]) ||
+    rowEvidence.identity_validation !== "REVIEWED_CATALOG_API_EVIDENCE" ||
+    rowEvidence.catalog_conflict_evidence_sha256 !==
+      policy.catalog_conflict_evidence_sha256 ||
+    override?.policy !== "EXACT_REVIEWED_CATALOG_API_EVIDENCE_V1" ||
+    override.catalog_evidence_file_sha256 !==
+      policy.catalog_evidence_file_sha256 ||
+    override.catalog_evidence_body_sha256 !==
+      policy.catalog_evidence_body_sha256 ||
+    override.catalog_evidence_row_sha256 !==
+      policy.catalog_evidence_row_sha256 ||
+    stableJson(override.catalog_api_identifiers) !==
+      stableJson(policy.identifiers) ||
+    override.exact_unit_count !== policy.intended_count ||
+    override.exact_number_of_items !== null ||
+    override.recipe_components_sha256 !== policy.recipe_components_sha256 ||
+    override.generic_rejection !==
+      "Amazon catalog title must contain exactly one exact 24 Count claim."
+  ) {
+    return false;
+  }
+
+  const supersedes = input.explicit.review.supersedes;
+  if (
+    !Array.isArray(supersedes) ||
+    supersedes.length !== 1 ||
+    supersedes[0].field !== "text_count.title" ||
+    supersedes[0].prior_value !== policy.prior_title ||
+    supersedes[0].source_manifest_sha256 !==
+      policy.source_manifest_file_sha256 ||
+    supersedes[0].reason !== "AMAZON_CATALOG_ITEM_NAME_CONFLICT"
+  ) {
+    return false;
+  }
+
+  const expectedComponent = {
+    product_id: policy.product_id,
+    product_name: policy.product_name,
+    brand: "Uncrustables",
+    flavor: null,
+    qty: policy.intended_count,
+    unit_price_cents: policy.unit_price_cents,
+  };
+  const selectedComponents = input.row.db?.draft?.selected_variant?.composition;
+  const canonicalComponents = input.row.canonical?.components;
+  if (
+    input.row.db?.draft?.pack_count !== policy.intended_count ||
+    !Array.isArray(selectedComponents) ||
+    selectedComponents.length !== 1 ||
+    !Array.isArray(canonicalComponents) ||
+    canonicalComponents.length !== 1 ||
+    stableJson(exactRecipeComponentProjection(selectedComponents[0])) !==
+      stableJson(expectedComponent) ||
+    stableJson(exactRecipeComponentProjection(canonicalComponents[0])) !==
+      stableJson(expectedComponent)
+  ) {
+    return false;
+  }
+
+  const packageMatch = policy.title.match(
+    /^Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwiches, (\d+(?:\.\d+)?)oz\/(\d+)ct - Pack of (\d+) \((\d+) Sandwiches Total\)$/,
+  );
+  if (!packageMatch) return false;
+  const [, ouncesRaw, retailCountRaw, retailPacksRaw, totalRaw] = packageMatch;
+  const ounces = Number(ouncesRaw);
+  const retailCount = Number(retailCountRaw);
+  const retailPacks = Number(retailPacksRaw);
+  const explicitTotal = Number(totalRaw);
+  if (
+    ounces !== 8 ||
+    retailCount !== 4 ||
+    retailPacks !== 6 ||
+    explicitTotal !== policy.intended_count ||
+    retailCount * retailPacks !== explicitTotal
+  ) {
+    return false;
+  }
+
+  return (
+    validateSemanticOutput(
+      {
+        title: policy.semantic_title,
+        bullets: input.explicit.text_count.bullets,
+        description: input.explicit.text_count.description,
+      },
+      {
+        brand:
+          nonEmptyString(input.row.db?.draft?.brand) ??
+          nonEmptyString(input.row.live?.brand) ??
+          "Uncrustables",
+        pack_count: policy.intended_count,
+        selected_variant: input.variant,
+      },
+    ) === null
+  );
 }
 
 function semanticAuditForRow(
@@ -1098,6 +1958,39 @@ function parseManifest(
     result.set(sku, item);
   }
   return result;
+}
+
+interface ParsedLaunchPricingSource {
+  manifest: UncrustablesLaunchPricingManifest;
+  rowsBySku: Map<string, UncrustablesLaunchPricingRow>;
+  source: NonNullable<UncrustablesRepairPlan["launch_pricing_source"]>;
+}
+
+function parseLaunchPricingSource(
+  source: { path: string; bytes: Buffer } | null | undefined,
+): ParsedLaunchPricingSource | null {
+  if (!source) return null;
+  let raw: unknown;
+  try {
+    raw = JSON.parse(source.bytes.toString("utf8"));
+  } catch {
+    throw new Error("Launch-pricing manifest is not valid JSON.");
+  }
+  const manifest = verifyUncrustablesLaunchPricingManifest(raw);
+  return {
+    manifest,
+    rowsBySku: launchPricingRowsBySku(manifest),
+    source: {
+      path: path.resolve(source.path),
+      sha256: sha256(source.bytes),
+      schema_version: UNCRUSTABLES_LAUNCH_PRICING_SCHEMA,
+      reviewed_at: manifest.reviewed_at,
+      body_sha256: manifest.body_sha256,
+      rows: manifest.scope.rows,
+      coupon_rows: manifest.scope.coupon_rows,
+      sale_price_rows: manifest.scope.sale_price_rows,
+    },
+  };
 }
 
 interface ParsedPtdProof {
@@ -1821,23 +2714,313 @@ function anomalyCodes(row: LedgerRowLike): string[] {
     .filter((value): value is string => value != null);
 }
 
-function observedBusinessPrice(row: LedgerRowLike): number | null {
-  const offers = row.live?.raw_offers;
-  if (!Array.isArray(offers)) return null;
-  for (const offer of offers) {
-    if (!isRecord(offer)) continue;
-    const audience = isRecord(offer.audience)
-      ? nonEmptyString(offer.audience.value)
-      : null;
-    if (offer.offerType !== "B2B" && audience !== "B2B") continue;
-    const price = isRecord(offer.price) ? finiteNumber(offer.price.amount) : null;
-    if (price != null) return price;
-  }
-  return null;
-}
-
 function differs(left: number | null, right: number): boolean {
   return left == null || Math.abs(left - right) >= 0.005;
+}
+
+type SalePriceObservation =
+  | { state: "ABSENT"; schedule: null; diagnostic: null }
+  | {
+      state: "PRESENT";
+      schedule: UncrustablesSalePriceSchedule;
+      diagnostic: UncrustablesSalePriceSchedule;
+    }
+  | {
+      state: "MALFORMED";
+      schedule: null;
+      diagnostic: { state: "MALFORMED"; reason: string; actual: unknown };
+    };
+
+type ExactSelectorObservation =
+  | { state: "PRESENT"; entry: UnknownRecord; diagnostic: UnknownRecord }
+  | {
+      state: "MALFORMED";
+      entry: null;
+      diagnostic: { state: "MALFORMED"; reason: string; actual: unknown };
+    };
+
+type MoneyObservation =
+  | { state: "PRESENT"; value: number; diagnostic: number }
+  | {
+      state: "MALFORMED";
+      value: null;
+      diagnostic: { state: "MALFORMED"; reason: string; actual: unknown };
+    };
+
+function malformedSelector(reason: string, actual: unknown): ExactSelectorObservation {
+  return {
+    state: "MALFORMED",
+    entry: null,
+    diagnostic: { state: "MALFORMED", reason, actual: structuredClone(actual) },
+  };
+}
+
+function observeExactAttributeSelector(
+  rawPurchasableOffer: unknown,
+  audience: "ALL" | "B2B",
+): ExactSelectorObservation {
+  if (!Array.isArray(rawPurchasableOffer)) {
+    return malformedSelector("purchasable_offer is not an array", rawPurchasableOffer);
+  }
+  const marketplaceAudienceMatches = rawPurchasableOffer.filter((entry) => {
+    if (!isRecord(entry)) return false;
+    const actualAudience = isRecord(entry.audience)
+      ? entry.audience.value
+      : entry.audience;
+    return actualAudience === audience && entry.marketplace_id === MARKETPLACE_ID;
+  });
+  if (
+    marketplaceAudienceMatches.length !== 1 ||
+    !isRecord(marketplaceAudienceMatches[0])
+  ) {
+    return malformedSelector(
+      `expected one exact ${audience}/${MARKETPLACE_ID} selector; found ${marketplaceAudienceMatches.length}`,
+      marketplaceAudienceMatches,
+    );
+  }
+  const entry = marketplaceAudienceMatches[0];
+  if (entry.currency !== "USD") {
+    return malformedSelector(
+      `exact ${audience}/${MARKETPLACE_ID} selector must use USD`,
+      entry,
+    );
+  }
+  return { state: "PRESENT", entry, diagnostic: entry };
+}
+
+function malformedMoney(reason: string, actual: unknown): MoneyObservation {
+  return {
+    state: "MALFORMED",
+    value: null,
+    diagnostic: { state: "MALFORMED", reason, actual: structuredClone(actual) },
+  };
+}
+
+function observeExactScheduledMoney(
+  selector: ExactSelectorObservation,
+  key: string,
+): MoneyObservation {
+  if (selector.state !== "PRESENT") {
+    return malformedMoney(selector.diagnostic.reason, selector.diagnostic.actual);
+  }
+  const rows = selector.entry[key];
+  if (
+    !Array.isArray(rows) ||
+    rows.length !== 1 ||
+    !isRecord(rows[0]) ||
+    !Array.isArray(rows[0].schedule) ||
+    rows[0].schedule.length !== 1 ||
+    !isRecord(rows[0].schedule[0])
+  ) {
+    return malformedMoney(
+      `${key} must contain exactly one row and one schedule`,
+      rows,
+    );
+  }
+  const value = finiteNumber(rows[0].schedule[0].value_with_tax);
+  if (value == null || value <= 0) {
+    return malformedMoney(`${key} has an invalid value_with_tax`, rows[0].schedule[0]);
+  }
+  return { state: "PRESENT", value, diagnostic: value };
+}
+
+function observeExactBusinessPrice(
+  rawOffers: unknown,
+  rawPurchasableOffer: unknown,
+): MoneyObservation {
+  if (Array.isArray(rawOffers)) {
+    const marketplaceB2b = rawOffers.filter((offer) => {
+      if (!isRecord(offer)) return false;
+      const audience = isRecord(offer.audience)
+        ? offer.audience.value
+        : offer.audience;
+      return (
+        (offer.offerType === "B2B" || audience === "B2B") &&
+        offer.marketplaceId === MARKETPLACE_ID
+      );
+    });
+    if (marketplaceB2b.length > 0) {
+      if (marketplaceB2b.length !== 1 || !isRecord(marketplaceB2b[0])) {
+        return malformedMoney(
+          `expected one exact top-level B2B/${MARKETPLACE_ID} offer; found ${marketplaceB2b.length}`,
+          marketplaceB2b,
+        );
+      }
+      const price = isRecord(marketplaceB2b[0].price)
+        ? marketplaceB2b[0].price
+        : null;
+      const currency = price
+        ? nonEmptyString(price.currencyCode) ?? nonEmptyString(price.currency)
+        : null;
+      const value = price ? finiteNumber(price.amount) : null;
+      if (currency !== "USD" || value == null || value <= 0) {
+        return malformedMoney(
+          "exact top-level B2B offer has an invalid USD price",
+          marketplaceB2b[0],
+        );
+      }
+      return { state: "PRESENT", value, diagnostic: value };
+    }
+  }
+  return observeExactScheduledMoney(
+    observeExactAttributeSelector(rawPurchasableOffer, "B2B"),
+    "our_price",
+  );
+}
+
+/** Top-level B2C is Amazon's marketplace-facing projection. Listings Items
+ * may omit the whole `offers` collection, but once it is present we require
+ * exactly one internally consistent US B2C/USD row. This prevents an
+ * attribute-level price from closing settlement while the observable B2C
+ * offer is stale, duplicated, or malformed. */
+function observeExactTopLevelConsumerPrice(
+  rawOffers: unknown,
+): MoneyObservation | null {
+  if (rawOffers == null) return null;
+  if (!Array.isArray(rawOffers)) {
+    return malformedMoney("top-level offers is not an array", {
+      value_type: typeof rawOffers,
+    });
+  }
+  if (rawOffers.length === 0) return null;
+  if (rawOffers.some((offer) => !isRecord(offer))) {
+    return malformedMoney("top-level offers contains a non-object row", {
+      offer_count: rawOffers.length,
+    });
+  }
+  const marketplaceB2c = rawOffers.filter((offer) => {
+    if (!isRecord(offer)) return false;
+    const audience = isRecord(offer.audience)
+      ? offer.audience.value
+      : offer.audience;
+    return (
+      (offer.offerType === "B2C" || audience === "ALL") &&
+      offer.marketplaceId === MARKETPLACE_ID
+    );
+  });
+  if (marketplaceB2c.length !== 1 || !isRecord(marketplaceB2c[0])) {
+    return malformedMoney(
+      `expected one exact top-level B2C/${MARKETPLACE_ID} offer; found ${marketplaceB2c.length}`,
+      {
+        offer_count: rawOffers.length,
+        matching_offer_count: marketplaceB2c.length,
+      },
+    );
+  }
+  const offer = marketplaceB2c[0];
+  const audience = isRecord(offer.audience)
+    ? offer.audience.value
+    : offer.audience;
+  if (offer.offerType !== "B2C" || audience !== "ALL") {
+    return malformedMoney(
+      "exact top-level B2C offer must identify both B2C and ALL",
+      {
+        offer_type: nonEmptyString(offer.offerType),
+        audience: nonEmptyString(audience),
+      },
+    );
+  }
+  const price = isRecord(offer.price) ? offer.price : null;
+  const currency = price
+    ? nonEmptyString(price.currencyCode) ?? nonEmptyString(price.currency)
+    : null;
+  const value = price ? finiteNumber(price.amount) : null;
+  if (currency !== "USD" || value == null || value <= 0) {
+    return malformedMoney("exact top-level B2C offer has an invalid USD price", {
+      currency,
+      value,
+    });
+  }
+  return { state: "PRESENT", value, diagnostic: value };
+}
+
+function malformedSalePrice(reason: string, actual: unknown): SalePriceObservation {
+  return {
+    state: "MALFORMED",
+    schedule: null,
+    diagnostic: { state: "MALFORMED", reason, actual: structuredClone(actual) },
+  };
+}
+
+function observeSalePrice(rawPurchasableOffer: unknown): SalePriceObservation {
+  const selector = observeExactAttributeSelector(rawPurchasableOffer, "ALL");
+  if (selector.state !== "PRESENT") {
+    return malformedSalePrice(
+      selector.diagnostic.reason,
+      selector.diagnostic.actual,
+    );
+  }
+  const consumer = selector.entry;
+  if (!Object.prototype.hasOwnProperty.call(consumer, "discounted_price")) {
+    return { state: "ABSENT", schedule: null, diagnostic: null };
+  }
+  if (
+    !Array.isArray(consumer.discounted_price) ||
+    consumer.discounted_price.length !== 1 ||
+    !isRecord(consumer.discounted_price[0])
+  ) {
+    return malformedSalePrice(
+      "discounted_price must contain exactly one row when present",
+      consumer.discounted_price,
+    );
+  }
+  const discounted = consumer.discounted_price[0];
+  if (
+    !Array.isArray(discounted.schedule) ||
+    discounted.schedule.length !== 1 ||
+    !isRecord(discounted.schedule[0])
+  ) {
+    return malformedSalePrice(
+      "discounted_price row must contain exactly one schedule",
+      discounted.schedule,
+    );
+  }
+  const rawSchedule = discounted.schedule[0];
+  const value = finiteNumber(rawSchedule.value_with_tax);
+  const startAt = nonEmptyString(rawSchedule.start_at);
+  const endAt = nonEmptyString(rawSchedule.end_at);
+  if (
+    value == null ||
+    value <= 0 ||
+    !startAt ||
+    !endAt ||
+    !Number.isFinite(Date.parse(startAt)) ||
+    !Number.isFinite(Date.parse(endAt)) ||
+    Date.parse(endAt) <= Date.parse(startAt)
+  ) {
+    return malformedSalePrice(
+      "discounted_price schedule has an invalid amount or date range",
+      rawSchedule,
+    );
+  }
+  const schedule = {
+    value_with_tax: value,
+    start_at: startAt,
+    end_at: endAt,
+  };
+  return { state: "PRESENT", schedule, diagnostic: schedule };
+}
+
+function sameInstant(left: string, right: string): boolean {
+  const leftMs = Date.parse(left);
+  const rightMs = Date.parse(right);
+  return Number.isFinite(leftMs) && Number.isFinite(rightMs) && leftMs === rightMs;
+}
+
+function salePriceMatches(
+  actual: SalePriceObservation,
+  desired: DesiredOfferRepair,
+): boolean {
+  if (desired.discounted_price_absent) return actual.state === "ABSENT";
+  const expected = desired.discounted_price_schedule;
+  return Boolean(
+    actual.state === "PRESENT" &&
+      actual.schedule &&
+      expected &&
+      !differs(actual.schedule.value_with_tax, expected.value_with_tax) &&
+      sameInstant(actual.schedule.start_at, expected.start_at) &&
+      sameInstant(actual.schedule.end_at, expected.end_at),
+  );
 }
 
 function actionId(sku: string, kind: RepairActionKind): string {
@@ -1873,10 +3056,12 @@ function buildExplicitOffer(
   const rawOverride = override as Record<string, unknown>;
   if (
     rawOverride.discounted_price_absent === false ||
+    rawOverride.discounted_price_schedule != null ||
+    rawOverride.launch_lever != null ||
     rawOverride.list_price_absent === false
   ) {
     throw new Error(
-      `Manifest offer for ${sku} cannot retain legacy discounted/list pricing.`,
+      `Manifest offer for ${sku} cannot define launch pricing; use the independent pinned launch-pricing source.`,
     );
   }
   if (value.currency !== "USD") {
@@ -1914,6 +3099,144 @@ function buildExplicitOffer(
   return value;
 }
 
+function applyPinnedLaunchPricing(
+  sku: string,
+  asin: string,
+  reviewedCount: number,
+  canonical: DesiredOfferRepair,
+  row: UncrustablesLaunchPricingRow,
+): DesiredOfferRepair {
+  if (
+    row.sku !== sku ||
+    row.asin !== asin ||
+    row.count !== reviewedCount ||
+    differs(canonical.consumer_price, row.base_price) ||
+    differs(canonical.business_price, row.base_price) ||
+    differs(canonical.minimum_seller_allowed_price, row.floor_price) ||
+    differs(canonical.maximum_seller_allowed_price, row.base_price)
+  ) {
+    throw new Error(
+      `Pinned launch-pricing identity or Layer A values do not match ${sku}/${asin}.`,
+    );
+  }
+  if (row.arm === "A") {
+    if (row.sale_price_schedule !== null || !row.lever.startsWith("COUPON_")) {
+      throw new Error(`Pinned coupon launch row is contradictory for ${sku}.`);
+    }
+    return {
+      ...canonical,
+      discounted_price_absent: true,
+      launch_lever: row.lever,
+    };
+  }
+  const schedule = row.sale_price_schedule;
+  if (!schedule || !row.lever.startsWith("SALEPRICE_")) {
+    throw new Error(`Pinned Sale Price launch row is incomplete for ${sku}.`);
+  }
+  if (
+    differs(schedule.value_with_tax, row.effective_price) ||
+    schedule.value_with_tax + 0.005 < canonical.minimum_seller_allowed_price ||
+    schedule.value_with_tax >= canonical.consumer_price ||
+    !Number.isFinite(Date.parse(schedule.start_at)) ||
+    !Number.isFinite(Date.parse(schedule.end_at)) ||
+    Date.parse(schedule.end_at) <= Date.parse(schedule.start_at)
+  ) {
+    throw new Error(`Pinned Sale Price schedule is unsafe for ${sku}.`);
+  }
+  return {
+    ...canonical,
+    discounted_price_absent: false,
+    discounted_price_schedule: structuredClone(schedule),
+    launch_lever: row.lever,
+  };
+}
+
+/** Re-prove every sealed OFFER against the exact launch-manifest bytes before
+ * any live credential or marketplace call. A recomputed repair-plan digest is
+ * not sufficient authority to change coupon/Sale Price routing. */
+export function assertRepairPlanLaunchPricingBinding(
+  plan: UncrustablesRepairPlan,
+  launchManifestBytes: Buffer,
+  options: { requireOwnerApproval?: boolean; now?: Date } = {},
+): void {
+  verifyRepairPlan(plan);
+  if (!plan.launch_pricing_source) {
+    throw new Error("Repair plan has no pinned launch-pricing source.");
+  }
+  if (sha256(launchManifestBytes) !== plan.launch_pricing_source.sha256) {
+    throw new Error("Launch-pricing source bytes do not match the repair plan.");
+  }
+  let raw: unknown;
+  try {
+    raw = JSON.parse(launchManifestBytes.toString("utf8"));
+  } catch {
+    throw new Error("Launch-pricing source bytes are not valid JSON.");
+  }
+  const manifest = verifyUncrustablesLaunchPricingManifest(raw);
+  if (options.requireOwnerApproval) {
+    const now = options.now ?? new Date();
+    if (
+      manifest.decision.revision_status !== "OWNER_APPROVED" ||
+      manifest.decision.owner_approved_at == null
+    ) {
+      throw new Error(
+        "Launch-pricing safety revision still requires explicit owner approval.",
+      );
+    }
+    if (Date.parse(manifest.decision.owner_approved_at) > now.getTime()) {
+      throw new Error("Launch-pricing owner approval timestamp is in the future.");
+    }
+    if (now.getTime() >= Date.parse(manifest.scope.end_at)) {
+      throw new Error(
+        "Launch-pricing schedule has expired; rebuild and re-approve a fresh synchronized window.",
+      );
+    }
+  }
+  if (
+    manifest.body_sha256 !== plan.launch_pricing_source.body_sha256 ||
+    manifest.reviewed_at !== plan.launch_pricing_source.reviewed_at ||
+    manifest.scope.rows !== plan.launch_pricing_source.rows ||
+    manifest.scope.coupon_rows !== plan.launch_pricing_source.coupon_rows ||
+    manifest.scope.sale_price_rows !==
+      plan.launch_pricing_source.sale_price_rows
+  ) {
+    throw new Error("Launch-pricing manifest metadata does not match the repair plan.");
+  }
+  const rowsBySku = launchPricingRowsBySku(manifest);
+  for (const entry of plan.entries) {
+    for (const action of entry.actions) {
+      if (action.desired.kind !== "OFFER") continue;
+      const row = rowsBySku.get(entry.sku);
+      if (!row || row.asin !== entry.asin) {
+        throw new Error(
+          `Repair OFFER ${action.action_id} is absent or excluded in the launch-pricing source.`,
+        );
+      }
+      const canonical: DesiredOfferRepair = {
+        currency: "USD",
+        consumer_price: row.base_price,
+        business_price: row.base_price,
+        minimum_seller_allowed_price: row.floor_price,
+        maximum_seller_allowed_price: row.base_price,
+        discounted_price_absent: true,
+        list_price_absent: true,
+      };
+      const expected = applyPinnedLaunchPricing(
+        entry.sku,
+        entry.asin,
+        row.count,
+        canonical,
+        row,
+      );
+      if (stableJson(action.desired.value) !== stableJson(expected)) {
+        throw new Error(
+          `Repair OFFER ${action.action_id} does not exactly match its pinned launch-pricing row.`,
+        );
+      }
+    }
+  }
+}
+
 /** Build and seal a repair plan without making any network or database calls. */
 export function buildRepairPlan(
   options: BuildRepairPlanOptions,
@@ -1949,6 +3272,9 @@ export function buildRepairPlan(
 
   const ledgerSha256 = sha256(options.ledgerBytes);
   const manifest = parseManifest(options.manifest);
+  const launchPricing = parseLaunchPricingSource(
+    options.launchPricingManifest,
+  );
   if (
     options.manifest?.source_ledger_sha256 &&
     options.manifest.source_ledger_sha256 !== ledgerSha256
@@ -2100,7 +3426,20 @@ export function buildRepairPlan(
       if (semantic.error) {
         if (explicit?.text_count) {
           const corrected = semanticAuditForRow(row, explicit, true);
-          if (!corrected || corrected.error) {
+          const acceptsReviewedCatalogPackaging = Boolean(
+            corrected?.error &&
+              acceptsReviewedSzCatalogPackagingTitle({
+                manifest: options.manifest,
+                manifestSourceSha256: desiredManifestSource?.sha256 ?? null,
+                ledgerSha256,
+                row,
+                explicit,
+                intendedPackCount: corrected.intendedPackCount,
+                semanticError: corrected.error,
+                variant: corrected.variant,
+              }),
+          );
+          if (!corrected || (corrected.error && !acceptsReviewedCatalogPackaging)) {
             throw new Error(
               `Reviewed text_count manifest does not repair semantic failure for ${sku}: ${corrected?.error ?? "no semantic recipe"}`,
             );
@@ -2254,6 +3593,28 @@ export function buildRepairPlan(
             },
           )
         : null;
+    const launchRow = launchPricing?.rowsBySku.get(sku) ?? null;
+    if (launchPricing && !launchRow) {
+      throw new Error(
+        `Pinned launch-pricing source has no exact row for selected SKU ${sku}.`,
+      );
+    }
+    const launchCount = reviewedPriceCount ?? semantic?.intendedPackCount ?? null;
+    if (launchRow && launchCount == null) {
+      throw new Error(
+        `Pinned launch-pricing row for ${sku} has no independently derived sellable count.`,
+      );
+    }
+    const launchAwareCanonicalOffer =
+      canonicalOffer && launchRow && launchCount != null
+        ? applyPinnedLaunchPricing(
+            sku,
+            asin,
+            launchCount,
+            canonicalOffer,
+            launchRow,
+          )
+        : canonicalOffer;
     const unsafeCanonical = codes.filter((code) => unsafeCanonicalCodes.has(code));
     let offer: DesiredOfferRepair | null = null;
     if (explicit?.offer) {
@@ -2262,7 +3623,20 @@ export function buildRepairPlan(
           `Unsafe canonical override for ${sku} requires HIGH-confidence review evidence.`,
         );
       }
-      offer = buildExplicitOffer(sku, canonicalOffer, explicit.offer);
+      const explicitBaseOffer = buildExplicitOffer(
+        sku,
+        canonicalOffer,
+        explicit.offer,
+      );
+      offer = launchRow && launchCount != null
+        ? applyPinnedLaunchPricing(
+            sku,
+            asin,
+            launchCount,
+            explicitBaseOffer,
+            launchRow,
+          )
+        : explicitBaseOffer;
       if (
         reviewedPricing &&
         (differs(offer.consumer_price, reviewedPricing.suggested) ||
@@ -2275,45 +3649,69 @@ export function buildRepairPlan(
         );
       }
     } else if (
-      canonicalOffer &&
+      launchAwareCanonicalOffer &&
       (unsafeCanonical.length === 0 || reviewedPricing != null)
     ) {
-      const liveConsumer = row.live?.consumer_offer;
       const rawAttributes = isRecord(row.live?.raw_attributes)
         ? row.live.raw_attributes
         : {};
-      const rawPurchasableOffer = rawAttributes.purchasable_offer;
-      const hasDiscountedPrice =
-        liveConsumer?.discounted_price != null ||
-        (Array.isArray(rawPurchasableOffer) &&
-          rawPurchasableOffer.some(
-            (entry) => isRecord(entry) && entry.discounted_price != null,
-          ));
+      const liveConsumerSelector = observeExactAttributeSelector(
+        rawAttributes.purchasable_offer,
+        "ALL",
+      );
+      const liveOurPrice = observeExactScheduledMoney(
+        liveConsumerSelector,
+        "our_price",
+      );
+      const liveMinimum = observeExactScheduledMoney(
+        liveConsumerSelector,
+        "minimum_seller_allowed_price",
+      );
+      const liveMaximum = observeExactScheduledMoney(
+        liveConsumerSelector,
+        "maximum_seller_allowed_price",
+      );
+      const liveBusiness = observeExactBusinessPrice(
+        row.live?.raw_offers,
+        rawAttributes.purchasable_offer,
+      );
+      const liveSalePrice = observeSalePrice(
+        rawAttributes.purchasable_offer,
+      );
       const hasListPrice = rawAttributes.list_price != null;
       const needsOffer =
-        differs(finiteNumber(liveConsumer?.our_price), canonicalOffer.consumer_price) ||
         differs(
-          finiteNumber(liveConsumer?.minimum_seller_allowed_price),
-          canonicalOffer.minimum_seller_allowed_price,
+          liveOurPrice.value,
+          launchAwareCanonicalOffer.consumer_price,
         ) ||
         differs(
-          finiteNumber(liveConsumer?.maximum_seller_allowed_price),
-          canonicalOffer.maximum_seller_allowed_price,
+          liveMinimum.value,
+          launchAwareCanonicalOffer.minimum_seller_allowed_price,
         ) ||
-        differs(observedBusinessPrice(row), canonicalOffer.business_price) ||
-        hasDiscountedPrice ||
+        differs(
+          liveMaximum.value,
+          launchAwareCanonicalOffer.maximum_seller_allowed_price,
+        ) ||
+        differs(
+          liveBusiness.value,
+          launchAwareCanonicalOffer.business_price,
+        ) ||
+        !salePriceMatches(liveSalePrice, launchAwareCanonicalOffer) ||
         hasListPrice;
-      if (needsOffer) offer = canonicalOffer;
+      if (needsOffer) offer = launchAwareCanonicalOffer;
     }
     if (offer) {
       actions.push({
         action_id: actionId(sku, "OFFER"),
         kind: "OFFER",
-        reasons: explicit?.offer
-          ? ["EXPLICIT_REVIEWED_OFFER_MANIFEST"]
-          : reviewedPricing
-            ? ["HIGH_REVIEWED_COUNT_PRICE_MODEL_MISMATCH"]
-            : ["CANONICAL_PRICE_OR_B2B_MISMATCH"],
+        reasons: [
+          ...(explicit?.offer
+            ? ["EXPLICIT_REVIEWED_OFFER_MANIFEST"]
+            : reviewedPricing
+              ? ["HIGH_REVIEWED_COUNT_PRICE_MODEL_MISMATCH"]
+              : ["CANONICAL_PRICE_OR_B2B_MISMATCH"]),
+          ...(launchRow ? ["PINNED_COUPON_VS_SALE_PRICE_LAUNCH"] : []),
+        ],
         ...(explicit?.review ? { review: explicit.review } : {}),
         desired: { kind: "OFFER", value: offer },
       });
@@ -2466,6 +3864,7 @@ export function buildRepairPlan(
       completed_at: nonEmptyString(ledger.completed_at),
     },
     desired_manifest_source: desiredManifestSource,
+    launch_pricing_source: launchPricing?.source ?? null,
     media_asset_source: hero?.source ?? null,
     structured_attribute_source:
       donorSource && ptdSource
@@ -2480,7 +3879,8 @@ export function buildRepairPlan(
       validation_preview_required: true,
       post_get_verification_required: true,
       business_price_equals_consumer_price: true,
-      discounted_price_absent: true,
+      discounted_price_absent: launchPricing == null,
+      launch_pricing_overlay_pinned: launchPricing != null,
       list_price_absent: true,
       structured_attributes_donor_reviewed: true,
       structured_attributes_ptd_proof_required: true,
@@ -2514,7 +3914,14 @@ export function buildRepairPlan(
     entries,
     blockers,
   };
-  return { ...body, sha256: planDigest(body) };
+  const plan = { ...body, sha256: planDigest(body) };
+  if (options.launchPricingManifest) {
+    assertRepairPlanLaunchPricingBinding(
+      plan,
+      options.launchPricingManifest.bytes,
+    );
+  }
+  return plan;
 }
 
 export async function writeImmutablePlan(
@@ -2568,6 +3975,11 @@ export async function writeImmutableChannelMaxArtifact(
   plan: UncrustablesRepairPlan,
 ): Promise<{ tsvPath: string; manifestPath: string; manifest: ChannelMaxArtifactManifest }> {
   verifyRepairPlan(plan);
+  if (plan.launch_pricing_source) {
+    throw new Error(
+      "Bounds-only ChannelMAX artifacts are disabled for launch-aware plans: they do not park SKU repricing or prove a Manual model. Build a separately verified Manual-model assignment artifact.",
+    );
+  }
   const offerRows = plan.entries
     .flatMap((entry) =>
       entry.actions
@@ -2648,7 +4060,9 @@ export async function readRepairPlan(file: string): Promise<UncrustablesRepairPl
 
 export type CheckpointStatus =
   | "PREVIEW_VALID"
+  | "SUBMISSION_ARMED"
   | "SUBMITTED"
+  | "PENDING_QUARANTINED"
   | "SETTLEMENT_PENDING"
   | "SETTLED_BEFORE"
   | "SETTLED_NON_DESIRED"
@@ -2675,22 +4089,129 @@ export interface PendingRepairSubmission {
   action_id: string;
   sku: string;
   kind: RepairActionKind;
+  source_status: "SUBMISSION_ARMED" | "SUBMITTED";
   submitted_event_id: string;
   submitted_at: string;
   detail: UnknownRecord;
+  armed_event_id?: string;
+  armed_detail?: UnknownRecord;
 }
 
 export class ImmutableCheckpointStore {
   private readonly rootDir: string;
   private readonly planSha256: string;
 
-  constructor(rootDir: string, planSha256: string) {
+  constructor(
+    rootDir: string,
+    planSha256: string,
+    private readonly coordinationDir: string =
+      CANONICAL_UNCRUSTABLES_AMAZON_COORDINATION_DIR,
+  ) {
     this.rootDir = rootDir;
     this.planSha256 = planSha256;
   }
 
   private directory(): string {
     return path.join(this.rootDir, this.planSha256.slice(0, 20));
+  }
+
+  /** Exclusive marketplace/scope process lease. There is intentionally no automatic
+   * stale-lock eviction: after a crash, an operator must first settle every
+   * armed/submitted mutation before manually removing the lease file. */
+  async acquireExecutionLease(purpose: string): Promise<() => Promise<void>> {
+    const coordinationDir = path.resolve(this.coordinationDir);
+    await mkdir(coordinationDir, { recursive: true });
+    const leasePath = path.join(coordinationDir, "active-execution.lock");
+    const leaseId = randomUUID();
+    const body = {
+      schema_version: "uncrustables-amazon-mutation-lease/v1",
+      immutable_plan_sha256: this.planSha256,
+      lease_id: leaseId,
+      acquired_at: new Date().toISOString(),
+      process_id: process.pid,
+      purpose,
+    };
+    try {
+      await writeFile(leasePath, `${JSON.stringify(body, null, 2)}\n`, {
+        encoding: "utf8",
+        flag: "wx",
+      });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "EEXIST") {
+        throw new Error(
+          `Amazon mutation execution lease already exists for plan ${this.planSha256}. Refusing concurrent or post-crash execution; inspect ${leasePath} and pending settlement checkpoints before manual lease removal.`,
+        );
+      }
+      throw error;
+    }
+    let released = false;
+    return async () => {
+      if (released) return;
+      const current = JSON.parse(await readFile(leasePath, "utf8")) as {
+        lease_id?: unknown;
+      };
+      if (current.lease_id !== leaseId) {
+        throw new Error(
+          `Amazon mutation execution lease ownership changed for ${this.planSha256}; refusing to remove it.`,
+        );
+      }
+      await unlink(leasePath);
+      released = true;
+    };
+  }
+
+  /** Persistent cross-plan fence. It remains while an armed/submitted write
+   * is unresolved, preventing a newer repair-plan SHA from ignoring the older
+   * plan's checkpoint journal after the active process exits. */
+  async claimPendingMutationFence(purpose: string): Promise<void> {
+    const coordinationDir = path.resolve(this.coordinationDir);
+    await mkdir(coordinationDir, { recursive: true });
+    const fencePath = path.join(coordinationDir, "pending-mutation-fence.json");
+    const body = {
+      schema_version: "uncrustables-amazon-pending-mutation-fence/v1",
+      repair_plan_sha256: this.planSha256,
+      claimed_at: new Date().toISOString(),
+      process_id: process.pid,
+      purpose,
+    };
+    try {
+      await writeFile(fencePath, `${JSON.stringify(body, null, 2)}\n`, {
+        encoding: "utf8",
+        flag: "wx",
+      });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+      const existing = JSON.parse(await readFile(fencePath, "utf8")) as {
+        repair_plan_sha256?: unknown;
+      };
+      if (existing.repair_plan_sha256 !== this.planSha256) {
+        throw new Error(
+          `Amazon mutation fence belongs to unresolved repair plan ${String(existing.repair_plan_sha256 ?? "unknown")}; refusing plan ${this.planSha256}. Inspect ${fencePath} and settle the older plan first.`,
+        );
+      }
+    }
+  }
+
+  async releasePendingMutationFence(): Promise<void> {
+    const fencePath = path.join(
+      path.resolve(this.coordinationDir),
+      "pending-mutation-fence.json",
+    );
+    let existing: { repair_plan_sha256?: unknown };
+    try {
+      existing = JSON.parse(await readFile(fencePath, "utf8")) as {
+        repair_plan_sha256?: unknown;
+      };
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
+      throw error;
+    }
+    if (existing.repair_plan_sha256 !== this.planSha256) {
+      throw new Error(
+        "Refusing to remove Amazon mutation fence owned by another repair plan.",
+      );
+    }
+    await unlink(fencePath);
   }
 
   async append(
@@ -2786,26 +4307,164 @@ export class ImmutableCheckpointStore {
         left.event.created_at.localeCompare(right.event.created_at) ||
         left.name.localeCompare(right.name),
     );
+    const submittedByEventId = new Map(
+      events
+        .filter(({ event }) =>
+          event.status === "SUBMISSION_ARMED" || event.status === "SUBMITTED"
+        )
+        .map(({ event }) => [event.event_id, event] as const),
+    );
     for (const { event } of events) {
       if (event.status === "SUBMITTED") {
+        const armedEventId = event.detail.armed_event_id;
+        if (typeof armedEventId === "string" && armedEventId.length > 0) {
+          const armed = submittedByEventId.get(armedEventId);
+          if (
+            !armed ||
+            armed.status !== "SUBMISSION_ARMED" ||
+            armed.action_id !== event.action_id ||
+            armed.sku !== event.sku ||
+            armed.kind !== event.kind ||
+            (armed.detail.launch_execution_authorization_body_sha256 != null ||
+            event.detail.launch_execution_authorization_body_sha256 != null
+              ? armed.detail.launch_execution_authorization_body_sha256 !==
+                event.detail.launch_execution_authorization_body_sha256
+              : false)
+          ) {
+            throw new Error(
+              `SUBMITTED checkpoint ${event.event_id} has invalid armed-event lineage.`,
+            );
+          }
+        }
+      }
+      if (event.status === "VERIFIED" || event.status === "ALREADY_APPLIED") {
+        const closedEventId = event.detail.submitted_event_id;
+        if (typeof closedEventId === "string" && closedEventId.length > 0) {
+          const submitted = submittedByEventId.get(closedEventId);
+          if (
+            !submitted ||
+            submitted.action_id !== event.action_id ||
+            submitted.sku !== event.sku ||
+            submitted.kind !== event.kind
+          ) {
+            throw new Error(
+              `Terminal checkpoint ${event.event_id} cross-closes an invalid submitted event.`,
+            );
+          }
+        }
+      }
+    }
+    const explicitlyClosedSubmissionIds = new Set(
+      events
+        .filter(({ event }) =>
+          event.status === "VERIFIED" ||
+          event.status === "ALREADY_APPLIED")
+        .map(({ event }) => event.detail.submitted_event_id)
+        .filter(
+          (eventId): eventId is string =>
+            typeof eventId === "string" && eventId.length > 0,
+        ),
+    );
+    const supersededArmedEventIds = new Set(
+      events
+        .filter(({ event }) => event.status === "SUBMITTED")
+        .map(({ event }) => event.detail.armed_event_id)
+        .filter(
+          (eventId): eventId is string =>
+            typeof eventId === "string" && eventId.length > 0,
+        ),
+    );
+    for (const { event } of events) {
+      if (event.status === "SUBMISSION_ARMED" || event.status === "SUBMITTED") {
+        if (
+          explicitlyClosedSubmissionIds.has(event.event_id) ||
+          (event.status === "SUBMISSION_ARMED" &&
+            supersededArmedEventIds.has(event.event_id))
+        ) continue;
+        if (pending.has(event.action_id)) {
+          throw new Error(
+            `Multiple unresolved submissions exist for action ${event.action_id}; refusing ambiguous recovery.`,
+          );
+        }
         pending.set(event.action_id, {
           action_id: event.action_id,
           sku: event.sku,
           kind: event.kind,
+          source_status: event.status,
           submitted_event_id: event.event_id,
           submitted_at: event.created_at,
           detail: structuredClone(event.detail),
+          ...(event.status === "SUBMITTED" &&
+          typeof event.detail.armed_event_id === "string" &&
+          event.detail.armed_event_id.length > 0
+            ? {
+                armed_event_id: event.detail.armed_event_id,
+                armed_detail: structuredClone(
+                  submittedByEventId.get(event.detail.armed_event_id)?.detail ?? {},
+                ),
+              }
+            : event.status === "SUBMISSION_ARMED"
+              ? {
+                  armed_event_id: event.event_id,
+                  armed_detail: structuredClone(event.detail),
+                }
+              : {}),
         });
-      } else if (
-        event.status === "VERIFIED" ||
-        event.status === "ALREADY_APPLIED" ||
-        event.status === "SETTLED_BEFORE" ||
-        event.status === "SETTLED_NON_DESIRED"
-      ) {
-        pending.delete(event.action_id);
+      } else if (event.status === "VERIFIED" || event.status === "ALREADY_APPLIED") {
+        const current = pending.get(event.action_id);
+        const closedEventId = event.detail.submitted_event_id;
+        if (
+          current &&
+          typeof closedEventId === "string" &&
+          closedEventId === current.submitted_event_id
+        ) {
+          pending.delete(event.action_id);
+        }
       }
     }
     return pending;
+  }
+
+  /** Check every canonical SHA-addressed forward journal below this checkpoint
+   * root. The marketplace fence is process-global, so it may be removed only
+   * when no repair plan still has an armed/submitted mutation. Diagnostic
+   * preview directories are intentionally excluded: canonical live journals
+   * are named by the first 20 hex characters of their sealed plan SHA. */
+  async hasGlobalPendingSubmissions(): Promise<boolean> {
+    let entries: Dirent[];
+    try {
+      entries = await readdir(this.rootDir, { withFileTypes: true });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
+      throw error;
+    }
+    for (const entry of entries) {
+      if (!entry.isDirectory() || !/^[a-f0-9]{20}$/.test(entry.name)) continue;
+      const directory = path.join(this.rootDir, entry.name);
+      const names = (await readdir(directory))
+        .filter((name) => name.endsWith(".json"))
+        .sort();
+      if (names.length === 0) continue;
+      const first = JSON.parse(
+        await readFile(path.join(directory, names[0]), "utf8"),
+      ) as CheckpointEvent;
+      if (
+        typeof first.plan_sha256 !== "string" ||
+        !/^[a-f0-9]{64}$/.test(first.plan_sha256) ||
+        first.plan_sha256.slice(0, 20) !== entry.name
+      ) {
+        throw new Error(
+          `Canonical checkpoint directory ${entry.name} is not bound to a valid plan SHA-256.`,
+        );
+      }
+      const store = new ImmutableCheckpointStore(
+        this.rootDir,
+        first.plan_sha256,
+        this.coordinationDir,
+      );
+      if ((await store.pendingSubmissions()).size > 0) return true;
+    }
+    return false;
   }
 }
 
@@ -2906,6 +4565,23 @@ export function applyPurchasableOfferMerge(
 export function canonicalPurchasableOfferMergeValue(
   desired: DesiredOfferRepair,
 ): Record<string, unknown>[] {
+  const saleSchedule = desired.discounted_price_schedule;
+  if (!desired.discounted_price_absent && !saleSchedule) {
+    throw new Error("Pinned Sale Price desired state is missing its schedule.");
+  }
+  const discountedPrice: unknown = desired.discounted_price_absent
+    ? null
+    : [
+        {
+          schedule: [
+            {
+              value_with_tax: saleSchedule?.value_with_tax,
+              start_at: saleSchedule?.start_at,
+              end_at: saleSchedule?.end_at,
+            },
+          ],
+        },
+      ];
   return [
     {
       marketplace_id: MARKETPLACE_ID,
@@ -2918,9 +4594,10 @@ export function canonicalPurchasableOfferMergeValue(
       maximum_seller_allowed_price: priceSchedule(
         desired.maximum_seller_allowed_price,
       ),
-      // A null member in a selector-aware merge removes only this field from
-      // the ALL instance; it does not replace the whole offer array.
-      discounted_price: null,
+      // Coupon arm: null removes only this field from the ALL selector. Sale
+      // arm: the exact owner-reviewed schedule is written without changing
+      // StandardPrice/our_price, min/max, or unrelated offer metadata.
+      discounted_price: discountedPrice,
     },
     {
       marketplace_id: MARKETPLACE_ID,
@@ -3009,12 +4686,19 @@ function offerMergePreviewSurrogate(
     );
   }
   const sortedOmissions = [...omittedNullMembers].sort();
+  const forwardOmissionsValid =
+    stableJson(sortedOmissions) === stableJson(["ALL.discounted_price"]) ||
+    (sortedOmissions.length === 0 &&
+      updates.some((entry) => {
+        const selector = purchasableOfferSelector(entry, true);
+        return selector.audience === "ALL" && entry.discounted_price != null;
+      }));
   if (
     context === "FORWARD_OFFER" &&
-    stableJson(sortedOmissions) !== stableJson(["ALL.discounted_price"])
+    !forwardOmissionsValid
   ) {
     throw new Error(
-      "Forward OFFER preview may omit only discounted_price:null from the ALL selector.",
+      "Forward OFFER preview must either omit discounted_price:null for the coupon arm or include a non-null pinned Sale Price for the sale arm.",
     );
   }
   return {
@@ -3635,64 +5319,6 @@ function unitCountType(value: unknown): string | null {
   return nonEmptyString(item.type.value);
 }
 
-function schedulePrice(value: unknown, key: string): number | null {
-  if (!isRecord(value)) return null;
-  const blocks = value[key];
-  if (!Array.isArray(blocks)) return null;
-  for (const block of blocks) {
-    if (!isRecord(block) || !Array.isArray(block.schedule)) continue;
-    for (const schedule of block.schedule) {
-      if (!isRecord(schedule)) continue;
-      const parsed = finiteNumber(schedule.value_with_tax);
-      if (parsed != null) return parsed;
-    }
-  }
-  return null;
-}
-
-function liveConsumerOffer(live: ListingItem): UnknownRecord | null {
-  const value = (live.attributes as UnknownRecord | undefined)?.purchasable_offer;
-  if (!Array.isArray(value)) return null;
-  return (
-    value.filter(isRecord).find((entry) => entry.audience === "ALL") ??
-    value.filter(isRecord).find((entry) => entry.audience == null) ??
-    null
-  );
-}
-
-function liveObservedBusinessPrice(live: ListingItem): number | null {
-  const attrs = (live.attributes ?? {}) as UnknownRecord;
-  // Top-level `offers` is the marketplace-observed B2B amount and therefore
-  // wins when present. The legacy `business_price` attribute is read-only here:
-  // Amazon ignores writes to it for these listings (issue 90000900).
-  const offers = live.offers;
-  if (Array.isArray(offers)) {
-    for (const offer of offers) {
-      if (!isRecord(offer)) continue;
-      const audience = isRecord(offer.audience)
-        ? nonEmptyString(offer.audience.value)
-        : null;
-      if (offer.offerType !== "B2B" && audience !== "B2B") continue;
-      const parsed = isRecord(offer.price)
-        ? finiteNumber(offer.price.amount)
-        : null;
-      if (parsed != null) return parsed;
-    }
-  }
-  const business = attrs.business_price;
-  if (Array.isArray(business)) {
-    for (const entry of business) {
-      if (!isRecord(entry) || !Array.isArray(entry.schedule)) continue;
-      for (const schedule of entry.schedule) {
-        if (!isRecord(schedule)) continue;
-        const parsed = finiteNumber(schedule.value_with_tax);
-        if (parsed != null) return parsed;
-      }
-    }
-  }
-  return null;
-}
-
 export interface MediaEquivalence {
   equivalent(expectedUrl: string, actualUrl: string): Promise<boolean>;
 }
@@ -3704,6 +5330,101 @@ const exactMediaEquivalence: MediaEquivalence = {
 export interface VerificationResult {
   ok: boolean;
   checks: Array<{ field: string; ok: boolean; expected: unknown; actual: unknown }>;
+}
+
+const OFFER_PRICE_CHECK_KEYS = [
+  ["purchasable_offer.our_price", "attribute_consumer_price"],
+  ["offers.B2C.price", "top_level_consumer_price"],
+  ["business_price", "business_price"],
+  [
+    "purchasable_offer.minimum_seller_allowed_price",
+    "minimum_seller_allowed_price",
+  ],
+  [
+    "purchasable_offer.maximum_seller_allowed_price",
+    "maximum_seller_allowed_price",
+  ],
+  ["purchasable_offer.discounted_price", "discounted_price"],
+  ["list_price", "list_price"],
+] as const;
+
+type OfferPriceValueKey = (typeof OFFER_PRICE_CHECK_KEYS)[number][1];
+
+function safeObservedOfferPrice(field: string, actual: unknown): number | null {
+  if (typeof actual === "number" && Number.isFinite(actual) && actual > 0) {
+    return actual;
+  }
+  if (
+    field === "purchasable_offer.discounted_price" &&
+    isRecord(actual)
+  ) {
+    const value = finiteNumber(actual.value_with_tax);
+    return value != null && value > 0 ? value : null;
+  }
+  if (field === "list_price" && Array.isArray(actual)) {
+    const rows = actual.filter(
+      (row) =>
+        isRecord(row) &&
+        row.marketplace_id === MARKETPLACE_ID &&
+        row.currency === "USD",
+    );
+    if (rows.length !== 1 || !isRecord(rows[0])) return null;
+    const value = finiteNumber(rows[0].value);
+    return value != null && value > 0 ? value : null;
+  }
+  return null;
+}
+
+/** Persist only allowlisted price scalars and check names. In-memory verifier
+ * diagnostics can contain selector rows, but an unresolved checkpoint must
+ * never become a copy of Amazon's raw listing payload. */
+function safeOfferPriceSettlementDiagnostics(
+  action: PlannedRepairAction,
+  verification: VerificationResult | null,
+): UnknownRecord {
+  if (action.desired.kind !== "OFFER") {
+    throw new Error(
+      `Offer price diagnostics require an OFFER action, got ${action.kind}.`,
+    );
+  }
+  const desired = action.desired.value;
+  const desiredPriceValues: Record<OfferPriceValueKey, number | null> = {
+    attribute_consumer_price: desired.consumer_price,
+    top_level_consumer_price: desired.consumer_price,
+    business_price: desired.business_price,
+    minimum_seller_allowed_price: desired.minimum_seller_allowed_price,
+    maximum_seller_allowed_price: desired.maximum_seller_allowed_price,
+    discounted_price: desired.discounted_price_absent
+      ? null
+      : desired.discounted_price_schedule?.value_with_tax ?? null,
+    list_price: null,
+  };
+  if (!verification) {
+    return {
+      failed_check_names: [],
+      desired_price_values: desiredPriceValues,
+      actual_price_values: null,
+    };
+  }
+  const checksByField = new Map(
+    verification.checks.map((check) => [check.field, check] as const),
+  );
+  const actualPriceValues = Object.fromEntries(
+    OFFER_PRICE_CHECK_KEYS.map(([field, key]) => [
+      key,
+      safeObservedOfferPrice(field, checksByField.get(field)?.actual ?? null),
+    ]),
+  ) as Record<OfferPriceValueKey, number | null>;
+  const allowlistedFields = new Set<string>(
+    OFFER_PRICE_CHECK_KEYS.map(([field]) => field),
+  );
+  return {
+    failed_check_names: verification.checks
+      .filter((check) => !check.ok && allowlistedFields.has(check.field))
+      .map((check) => check.field),
+    desired_price_values: desiredPriceValues,
+    actual_price_values: actualPriceValues,
+  };
 }
 
 export async function verifyActionState(
@@ -3744,27 +5465,54 @@ export async function verifyActionState(
     }
   } else if (action.desired.kind === "OFFER") {
     const desired = action.desired.value;
-    const consumer = liveConsumerOffer(live);
+    const consumer = observeExactAttributeSelector(
+      attrs.purchasable_offer,
+      "ALL",
+    );
+    const ourPrice = observeExactScheduledMoney(consumer, "our_price");
+    const topLevelConsumer = observeExactTopLevelConsumerPrice(live.offers);
+    const business = observeExactBusinessPrice(
+      live.offers,
+      attrs.purchasable_offer,
+    );
+    const minimum = observeExactScheduledMoney(
+      consumer,
+      "minimum_seller_allowed_price",
+    );
+    const maximum = observeExactScheduledMoney(
+      consumer,
+      "maximum_seller_allowed_price",
+    );
     const values = [
-      ["purchasable_offer.our_price", desired.consumer_price, schedulePrice(consumer, "our_price")],
-      ["business_price", desired.business_price, liveObservedBusinessPrice(live)],
-      ["purchasable_offer.minimum_seller_allowed_price", desired.minimum_seller_allowed_price, schedulePrice(consumer, "minimum_seller_allowed_price")],
-      ["purchasable_offer.maximum_seller_allowed_price", desired.maximum_seller_allowed_price, schedulePrice(consumer, "maximum_seller_allowed_price")],
+      ["purchasable_offer.our_price", desired.consumer_price, ourPrice],
+      ["business_price", desired.business_price, business],
+      ["purchasable_offer.minimum_seller_allowed_price", desired.minimum_seller_allowed_price, minimum],
+      ["purchasable_offer.maximum_seller_allowed_price", desired.maximum_seller_allowed_price, maximum],
     ] as const;
-    for (const [field, expected, actual] of values) {
-      checks.push({ field, ok: !differs(actual, expected), expected, actual });
+    for (const [field, expected, observation] of values) {
+      checks.push({
+        field,
+        ok: !differs(observation.value, expected),
+        expected,
+        actual: observation.diagnostic,
+      });
     }
-    const purchasableOffer = attrs.purchasable_offer;
-    const discountedPricePresent =
-      Array.isArray(purchasableOffer) &&
-      purchasableOffer.some(
-        (entry) => isRecord(entry) && entry.discounted_price != null,
-      );
+    if (topLevelConsumer != null) {
+      checks.splice(1, 0, {
+        field: "offers.B2C.price",
+        ok: !differs(topLevelConsumer.value, desired.consumer_price),
+        expected: desired.consumer_price,
+        actual: topLevelConsumer.diagnostic,
+      });
+    }
+    const actualSalePrice = observeSalePrice(attrs.purchasable_offer);
     checks.push({
       field: "purchasable_offer.discounted_price",
-      ok: !discountedPricePresent,
-      expected: null,
-      actual: discountedPricePresent ? "present" : null,
+      ok: salePriceMatches(actualSalePrice, desired),
+      expected: desired.discounted_price_absent
+        ? null
+        : desired.discounted_price_schedule ?? null,
+      actual: actualSalePrice.diagnostic,
     });
     checks.push({
       field: "list_price",
@@ -3869,8 +5617,21 @@ export async function verifyActionState(
   return { ok: checks.length > 0 && checks.every((check) => check.ok), checks };
 }
 
+export interface PhysicalMutationContext {
+  store_index: number;
+  marketplace_id: string;
+  amazon_merchant_id: string;
+}
+
 export interface RepairAmazonGateway {
-  getListing(storeIndex: number, sku: string): Promise<ListingItem>;
+  /** The concrete transport invokes the supplied synchronous guard only after
+   * all async preflight work and immediately before a real marketplace write. */
+  physicalMutationGuardContract?: "CALL_IMMEDIATELY_BEFORE_REQUEST_V1";
+  getListing(
+    storeIndex: number,
+    sku: string,
+    signal?: AbortSignal,
+  ): Promise<ListingItem>;
   patchListing(
     storeIndex: number,
     sku: string,
@@ -3878,6 +5639,7 @@ export interface RepairAmazonGateway {
     patches: ListingPatch[],
     validationPreview: boolean,
     previewContext?: RepairValidationPreviewContext,
+    beforeMutatingRequest?: (context: PhysicalMutationContext) => void,
   ): Promise<UnknownRecord>;
 }
 
@@ -3964,10 +5726,12 @@ function parseSettlementEvidence(
       `Pending Amazon submission ${pending.action_id} has no exact-path settlement evidence.`,
     );
   }
-  const paths = Array.isArray(raw.exact_action_paths)
-    ? raw.exact_action_paths.filter(
+  const rawPaths = raw.exact_action_paths;
+  const paths = Array.isArray(rawPaths) &&
+      rawPaths.every(
         (item): item is string => typeof item === "string" && item.length > 0,
       )
+    ? rawPaths
     : [];
   for (const patchPath of paths) exactAttributePath(patchPath);
   if (
@@ -4061,10 +5825,27 @@ async function pollActionSettlement(input: {
 
 export interface ExecuteRepairOptions {
   apply: boolean;
+  /** Legacy mode submits and waits inline. OFFER production rollout uses the
+   * explicit two-phase modes so a slow B2B projection can never authorize a
+   * second PATCH after a process restart. */
+  executionPhase?: OfferExecutionPhase;
+  /** Dedicated exact-selection recovery for any already-pending action kind.
+   * It is GET-only and cannot be combined with apply/preview/OFFER phases. */
+  recoverPendingOnly?: boolean;
   validationOnly?: boolean;
   confirmation?: string | null;
   checkpointStore: ImmutableCheckpointStore;
   mediaEquivalence?: MediaEquivalence;
+  /** Immutable, plan-bound positive action selection. Runtime SKU/limit
+   * narrowing is forbidden when this artifact is supplied. */
+  executionSelection?: RepairExecutionSelection | null;
+  /** Short-lived, exact plan/selection-bound proof that every active SKU is
+   * parked in ChannelMAX Manual with skip rules enabled and every Arm A coupon
+   * is SCHEDULED before the synchronized start. Required for launch-aware
+   * OFFER writes only. */
+  launchExecutionAuthorization?:
+    | LaunchExecutionAuthorizationRuntimeInput
+    | null;
   skus?: string[] | null;
   limit?: number | null;
   requestDelayMs?: number;
@@ -4074,22 +5855,151 @@ export interface ExecuteRepairOptions {
   settlementAttempts?: number;
   settlementDelayMs?: number;
   settlementStableReads?: number;
+  offerSettlementPolicy?: OfferSettlementPolicyInput;
+  pendingRecoveryPolicy?: OfferSettlementPolicyInput;
   maxErrors?: number;
   sleep?: (milliseconds: number) => Promise<void>;
 }
 
 export interface ExecuteRepairResult {
-  mode: "DRY_RUN" | "VALIDATION_PREVIEW" | "APPLY";
+  mode:
+    | "DRY_RUN"
+    | "VALIDATION_PREVIEW"
+    | "APPLY"
+    | "OFFER_SUBMIT_ONLY"
+    | "OFFER_SETTLE_ONLY"
+    | "PENDING_SETTLE_ONLY";
+  selection_sha256: string | null;
   selected_entries: number;
   selected_actions: number;
+  quarantined_pending_actions: number;
   resumed_actions: number;
   verified_actions: number;
   already_applied_actions: number;
   preview_valid_actions: number;
+  submitted_actions: number;
   failed_actions: number;
   recovered_pending_actions: number;
   unresolved_settlements: number;
   stopped_early: boolean;
+}
+
+function guardRepairGatewayPatchPaths(
+  gateway: RepairAmazonGateway,
+  forbiddenPatchPaths: readonly string[],
+): RepairAmazonGateway {
+  if (forbiddenPatchPaths.length === 0) return gateway;
+  const forbidden = new Set(forbiddenPatchPaths);
+  return {
+    physicalMutationGuardContract: gateway.physicalMutationGuardContract,
+    getListing: (storeIndex, sku, signal) =>
+      gateway.getListing(storeIndex, sku, signal),
+    patchListing: (
+      storeIndex,
+      sku,
+      productType,
+      patches,
+      validationPreview,
+      previewContext,
+      beforeMutatingRequest,
+    ) => {
+      const inspectedPatches = [
+        ...patches,
+        ...(previewContext?.actual_patches ?? []),
+      ];
+      const blocked = inspectedPatches
+        .map((patch) => patch.path)
+        .filter((patchPath) => forbidden.has(patchPath));
+      if (blocked.length > 0) {
+        throw new SettlementGuardError(
+          `Execution selection forbids ${[...new Set(blocked)].sort().join(", ")} for ${sku}; no Amazon call was made.`,
+        );
+      }
+      return gateway.patchListing(
+        storeIndex,
+        sku,
+        productType,
+        patches,
+        validationPreview,
+        previewContext,
+        beforeMutatingRequest,
+      );
+    },
+  };
+}
+
+/** Bind every selected gateway call to the conservative path set of its exact
+ * sealed plan action. This is deliberately stronger than the profile-level
+ * blacklist: a future patch-builder regression cannot smuggle another
+ * selected action's attribute (or a preview-surrogate actual payload) through
+ * the same SKU invocation. */
+function guardRepairGatewayActionPatchPaths(
+  gateway: RepairAmazonGateway,
+  entry: RepairPlanEntry,
+  action: PlannedRepairAction,
+): RepairAmazonGateway {
+  const allowed = new Set(potentialActionPatchPaths(action));
+  return {
+    physicalMutationGuardContract: gateway.physicalMutationGuardContract,
+    getListing: (storeIndex, sku, signal) =>
+      gateway.getListing(storeIndex, sku, signal),
+    patchListing: (
+      storeIndex,
+      sku,
+      productType,
+      patches,
+      validationPreview,
+      previewContext,
+      beforeMutatingRequest,
+    ) => {
+      if (storeIndex !== entry.store_index || sku !== entry.sku) {
+        throw new SettlementGuardError(
+          `Selected action ${action.action_id} was invoked for unexpected listing ${storeIndex}:${sku}; no Amazon call was made.`,
+        );
+      }
+      const inspectedPatches = [
+        ...patches,
+        ...(previewContext?.actual_patches ?? []),
+      ];
+      const blocked = inspectedPatches
+        .map((patch) => patch.path)
+        .filter((patchPath) => !allowed.has(patchPath));
+      if (blocked.length > 0) {
+        throw new SettlementGuardError(
+          `Selected action ${action.action_id} contains path(s) outside its sealed boundary: ${[
+            ...new Set(blocked),
+          ].sort().join(", ")}; no Amazon call was made.`,
+        );
+      }
+      return gateway.patchListing(
+        storeIndex,
+        sku,
+        productType,
+        patches,
+        validationPreview,
+        previewContext,
+        beforeMutatingRequest,
+      );
+    },
+  };
+}
+
+/** Defense in depth for every read-only settlement mode. Its adapter has no
+ * write capability, and
+ * this gateway trap independently rejects both validation previews and real
+ * PATCHes if future control-flow changes accidentally reach a mutating path. */
+function guardRepairGatewayReadOnly(
+  gateway: RepairAmazonGateway,
+): RepairAmazonGateway {
+  return {
+    getListing: (storeIndex, sku, signal) =>
+      gateway.getListing(storeIndex, sku, signal),
+    patchListing: (_storeIndex, sku) => {
+      throw new SettlementGuardError(
+        `Read-only settlement forbids every PATCH for ${sku}; no Amazon PATCH was made.`,
+      );
+    },
+  };
 }
 
 function responseDetail(response: UnknownRecord): UnknownRecord {
@@ -4122,6 +6032,35 @@ function listingIdentity(entry: RepairPlanEntry, live: ListingItem): string {
   const productType = nonEmptyString(summary.productType);
   if (!productType) throw new Error(`Live productType missing for ${entry.sku}.`);
   return productType;
+}
+
+/** Settlement is scoped to Amazon US. Remove every attribute/summarization
+ * row that is not explicitly bound to that marketplace before evaluating a
+ * terminal DESIRED state; a first-row fallback from another marketplace must
+ * never close a US submission. Top-level offers are retained because the
+ * Listings Items GET itself is marketplace-scoped and those rows do not carry
+ * a marketplace selector. */
+function exactMarketplaceListing(live: ListingItem): ListingItem {
+  const attributes = Object.fromEntries(
+    Object.entries((live.attributes ?? {}) as UnknownRecord).map(
+      ([attribute, value]) => [
+        attribute,
+        Array.isArray(value)
+          ? value.filter(
+              (item) =>
+                isRecord(item) && item.marketplace_id === MARKETPLACE_ID,
+            )
+          : value,
+      ],
+    ),
+  );
+  return {
+    ...live,
+    summaries: live.summaries?.filter(
+      (summary) => summary.marketplaceId === MARKETPLACE_ID,
+    ),
+    attributes,
+  };
 }
 
 function patchDigest(patches: ListingPatch[]): string {
@@ -4189,16 +6128,927 @@ export interface PendingRepairSettlementOutcome {
   verification: VerificationResult | null;
 }
 
+function potentialActionPatchPaths(
+  action: PlannedRepairAction,
+): string[] {
+  const paths = new Set<string>();
+  if (action.desired.kind === "OFFER") {
+    paths.add("/attributes/purchasable_offer");
+    // list_price is conditional on live state, so it must still be included in
+    // the conservative preflight path set.
+    paths.add("/attributes/list_price");
+  } else if (action.desired.kind === "MEDIA") {
+    const desired = action.desired.value;
+    if (desired.main_image_url) {
+      paths.add("/attributes/main_product_image_locator");
+    }
+    for (const item of desired.gallery_slots) {
+      paths.add(`/attributes/other_product_image_locator_${item.slot}`);
+    }
+    for (const slot of desired.delete_gallery_slots ?? []) {
+      paths.add(`/attributes/other_product_image_locator_${slot}`);
+    }
+  } else if (action.desired.kind === "STRUCTURED_ATTRIBUTES") {
+    const desired = action.desired.value;
+    paths.add("/attributes/ingredients");
+    paths.add("/attributes/allergen_information");
+    if (desired.item_package_quantity != null) {
+      paths.add("/attributes/item_package_quantity");
+    }
+    if (
+      desired.each_unit_count != null ||
+      desired.each_unit_count_absent === true
+    ) {
+      paths.add("/attributes/each_unit_count");
+    }
+    if (desired.is_expiration_dated_product === true) {
+      paths.add("/attributes/is_expiration_dated_product");
+    }
+    if (desired.merchant_shipping_group != null) {
+      paths.add("/attributes/merchant_shipping_group");
+    }
+  } else {
+    const desired = action.desired.value;
+    if (desired.title != null) paths.add("/attributes/item_name");
+    if (desired.bullets != null) paths.add("/attributes/bullet_point");
+    if (desired.description != null) {
+      paths.add("/attributes/product_description");
+    }
+    if (desired.unit_count != null) paths.add("/attributes/unit_count");
+    if (desired.number_of_items != null) {
+      paths.add("/attributes/number_of_items");
+    }
+    const fallback = fallbackAction(action);
+    if (fallback) {
+      for (const fallbackPath of potentialActionPatchPaths(fallback)) {
+        paths.add(fallbackPath);
+      }
+    }
+  }
+  return [...paths].sort();
+}
+
+function scopedPatchPathKey(
+  storeIndex: number,
+  sku: string,
+  patchPath: string,
+): string {
+  return stableJson([storeIndex, sku, patchPath]);
+}
+
+export interface QuarantinedPendingRepairSubmission {
+  action_id: string;
+  sku: string;
+  submitted_event_id: string;
+  exact_action_paths: string[];
+}
+
+/** Authorize a disjoint same-plan resume without pretending that an
+ * unselected accepted write has settled. This function is filesystem-only:
+ * every guard is evaluated before the executor is allowed to make an Amazon
+ * GET, preview, or PATCH. PENDING_QUARANTINED is evidence, not a closing
+ * status, so the global mutation fence deliberately remains in place. */
+export async function quarantineUnselectedPendingRepairSubmissions(input: {
+  plan: UncrustablesRepairPlan;
+  selection: RepairExecutionSelection;
+  checkpointStore: ImmutableCheckpointStore;
+}): Promise<QuarantinedPendingRepairSubmission[]> {
+  verifyRepairExecutionSelection(input.plan, input.selection);
+  const selectedActionIds = new Set(input.selection.selected_action_ids);
+  const plannedByActionId = new Map(
+    input.plan.entries.flatMap((entry) =>
+      entry.actions.map(
+        (action) => [action.action_id, { entry, action }] as const,
+      ),
+    ),
+  );
+  const selectedPathKeys = new Set<string>();
+  for (const actionId of selectedActionIds) {
+    const planned = plannedByActionId.get(actionId);
+    if (!planned) {
+      throw new SettlementGuardError(
+        `Selected action ${actionId} is absent from the sealed repair plan.`,
+      );
+    }
+    for (const patchPath of potentialActionPatchPaths(planned.action)) {
+      selectedPathKeys.add(
+        scopedPatchPathKey(
+          planned.entry.store_index,
+          planned.entry.sku,
+          patchPath,
+        ),
+      );
+    }
+  }
+
+  const quarantined: QuarantinedPendingRepairSubmission[] = [];
+  const pending = await input.checkpointStore.pendingSubmissions();
+  for (const submission of [...pending.values()].sort((left, right) =>
+    left.action_id.localeCompare(right.action_id)
+  )) {
+    if (selectedActionIds.has(submission.action_id)) continue;
+    const planned = plannedByActionId.get(submission.action_id);
+    const quarantinableKinds =
+      input.selection.profile === CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE ||
+      input.selection.profile === GALLERY_MEDIA_ONLY_PROFILE
+        ? new Set<RepairActionKind>(["OFFER"])
+        : input.selection.profile === TEXT_STRUCTURED_ONLY_PROFILE
+          ? new Set<RepairActionKind>(["MEDIA", "OFFER"])
+          : null;
+    const expectedSubmissionStrategy = submission.kind === "OFFER"
+      ? SELECTOR_REPLACE_SURROGATE_FOR_MERGE
+      : submission.kind === "MEDIA"
+        ? "PRIMARY"
+        : null;
+    if (
+      !quarantinableKinds ||
+      !planned ||
+      planned.entry.sku !== submission.sku ||
+      planned.action.kind !== submission.kind ||
+      !quarantinableKinds.has(submission.kind) ||
+      expectedSubmissionStrategy == null ||
+      submission.detail.strategy !== expectedSubmissionStrategy
+    ) {
+      throw new SettlementGuardError(
+        `Unselected pending submission ${submission.action_id} is not an exact same-plan OFFER/MEDIA action with its documented strategy eligible for ${input.selection.profile} quarantine.`,
+      );
+    }
+
+    let evidence: ExactPathSettlementEvidence;
+    try {
+      evidence = parseSettlementEvidence(submission);
+    } catch (error) {
+      throw new SettlementGuardError(
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+    const allowedBoundaryPaths = new Set<string>(
+      submission.kind === "OFFER" ? OFFER_PATCH_PATHS : MEDIA_PATCH_PATHS,
+    );
+    const plannedPaths = new Set(potentialActionPatchPaths(planned.action));
+    if (
+      evidence.exact_action_paths.some(
+        (patchPath) =>
+          !allowedBoundaryPaths.has(patchPath) || !plannedPaths.has(patchPath),
+      )
+    ) {
+      throw new SettlementGuardError(
+        `Pending ${submission.kind} ${submission.action_id} contains a path outside its sealed action boundary.`,
+      );
+    }
+    const recordedPatchSha =
+      typeof submission.detail.actual_request_patch_sha256 === "string"
+        ? submission.detail.actual_request_patch_sha256
+        : typeof submission.detail.patch_sha256 === "string"
+          ? submission.detail.patch_sha256
+          : null;
+    if (recordedPatchSha !== evidence.actual_patch_sha256) {
+      throw new SettlementGuardError(
+        `Pending ${submission.kind} ${submission.action_id} patch SHA conflicts with its settlement evidence.`,
+      );
+    }
+    const recordedPaths = Array.isArray(
+      submission.detail.actual_request_patch_paths,
+    )
+      ? submission.detail.actual_request_patch_paths.filter(
+          (item): item is string => typeof item === "string",
+        ).sort()
+      : Array.isArray(submission.detail.patch_paths)
+        ? submission.detail.patch_paths.filter(
+            (item): item is string => typeof item === "string",
+          ).sort()
+        : null;
+    if (
+      recordedPaths == null ||
+      stableJson(recordedPaths) !== stableJson(evidence.exact_action_paths)
+    ) {
+      throw new SettlementGuardError(
+        `Pending ${submission.kind} ${submission.action_id} path list conflicts with its settlement evidence.`,
+      );
+    }
+    for (const patchPath of evidence.exact_action_paths) {
+      const key = scopedPatchPathKey(
+        planned.entry.store_index,
+        planned.entry.sku,
+        patchPath,
+      );
+      if (selectedPathKeys.has(key)) {
+        throw new SettlementGuardError(
+          `Pending ${submission.kind} ${submission.action_id} overlaps selected path ${patchPath}; no Amazon call was made.`,
+        );
+      }
+    }
+    await input.checkpointStore.append({
+      action_id: submission.action_id,
+      sku: submission.sku,
+      kind: submission.kind,
+      status: "PENDING_QUARANTINED",
+      detail: {
+        selection_sha256: input.selection.sha256,
+        submitted_event_id: submission.submitted_event_id,
+        settlement_guard: evidence,
+        isolation_scope: {
+          store_index: planned.entry.store_index,
+          sku: planned.entry.sku,
+          exact_action_paths: evidence.exact_action_paths,
+        },
+      },
+    });
+    quarantined.push({
+      action_id: submission.action_id,
+      sku: submission.sku,
+      submitted_event_id: submission.submitted_event_id,
+      exact_action_paths: evidence.exact_action_paths,
+    });
+  }
+  return quarantined;
+}
+
+interface BoundPendingOfferSubmission {
+  submission: PendingRepairSubmission;
+  entry: RepairPlanEntry;
+  action: PlannedRepairAction & { desired: { kind: "OFFER"; value: DesiredOfferRepair } };
+  evidence: ExactPathSettlementEvidence;
+}
+
+function assertPendingLaunchAuthorizationLineage(
+  plan: UncrustablesRepairPlan,
+  submission: PendingRepairSubmission,
+): void {
+  if (!plan.launch_pricing_source || submission.kind !== "OFFER") return;
+  const submittedDigest =
+    submission.detail.launch_execution_authorization_body_sha256;
+  const armedDigest =
+    submission.armed_detail?.launch_execution_authorization_body_sha256;
+  if (
+    typeof submittedDigest !== "string" ||
+    !/^[a-f0-9]{64}$/.test(submittedDigest) ||
+    typeof armedDigest !== "string" ||
+    armedDigest !== submittedDigest
+  ) {
+    throw new SettlementGuardError(
+      `Pending launch OFFER ${submission.action_id} is missing exact execution-authorization lineage; no Amazon call was made.`,
+    );
+  }
+}
+
+/** Validate every immutable pending row before SETTLE_ONLY performs its first
+ * GET. This is deliberately stricter than ordinary recovery: the entire
+ * canonical pending set must be explained by the exact OFFER selection (or by
+ * already-terminal actions from that same selection), and every path/digest
+ * must remain inside the sealed action boundary. */
+function bindPendingOfferSubmissions(input: {
+  plan: UncrustablesRepairPlan;
+  selection: RepairExecutionSelection;
+  pending: Map<string, PendingRepairSubmission>;
+  terminalActionIds: Set<string>;
+}): BoundPendingOfferSubmission[] {
+  const selected = assertOfferOnlyExecutionSelection(input);
+  const selectedIds = new Set(selected.map((action) => action.action_id));
+  const selectedTerminal = new Set(
+    [...input.terminalActionIds].filter((actionId) => selectedIds.has(actionId)),
+  );
+  if (selected.length !== input.pending.size + selectedTerminal.size) {
+    throw new SettlementGuardError(
+      `OFFER settle-only selection covers ${selected.length} action(s), but canonical pending/terminal state accounts for ${input.pending.size + selectedTerminal.size}; no Amazon call was made.`,
+    );
+  }
+  const plannedByActionId = new Map(
+    input.plan.entries.flatMap((entry) =>
+      entry.actions.map((action) => [action.action_id, { entry, action }] as const),
+    ),
+  );
+  const bindings: BoundPendingOfferSubmission[] = [];
+  for (const submission of [...input.pending.values()].sort((left, right) =>
+    left.action_id < right.action_id ? -1 : left.action_id > right.action_id ? 1 : 0
+  )) {
+    const planned = plannedByActionId.get(submission.action_id);
+    if (
+      !selectedIds.has(submission.action_id) ||
+      !planned ||
+      planned.entry.sku !== submission.sku ||
+      submission.kind !== "OFFER" ||
+      planned.action.kind !== "OFFER" ||
+      planned.action.desired.kind !== "OFFER"
+    ) {
+      throw new SettlementGuardError(
+        `Canonical pending submission ${submission.action_id}/${submission.sku} is outside the exact OFFER settle-only selection; no Amazon call was made.`,
+      );
+    }
+    assertPendingLaunchAuthorizationLineage(input.plan, submission);
+    const armedCrashWindow =
+      submission.detail.crash_window_guard === true &&
+      submission.detail.strategy === "PRIMARY";
+    if (
+      !armedCrashWindow &&
+      submission.detail.strategy !== SELECTOR_REPLACE_SURROGATE_FOR_MERGE
+    ) {
+      throw new SettlementGuardError(
+        `Pending OFFER ${submission.action_id} has an undocumented submission strategy; no Amazon call was made.`,
+      );
+    }
+    let evidence: ExactPathSettlementEvidence;
+    try {
+      evidence = parseSettlementEvidence(submission);
+    } catch (error) {
+      throw new SettlementGuardError(
+        `${error instanceof Error ? error.message : String(error)} No Amazon call was made.`,
+      );
+    }
+    const plannedPaths = new Set(potentialActionPatchPaths(planned.action));
+    if (
+      evidence.exact_action_paths.some(
+        (patchPath) =>
+          !(OFFER_PATCH_PATHS as readonly string[]).includes(patchPath) ||
+          !plannedPaths.has(patchPath),
+      )
+    ) {
+      throw new SettlementGuardError(
+        `Pending OFFER ${submission.action_id} contains a path outside its sealed action boundary; no Amazon call was made.`,
+      );
+    }
+    const recordedPatchSha =
+      typeof submission.detail.actual_request_patch_sha256 === "string"
+        ? submission.detail.actual_request_patch_sha256
+        : typeof submission.detail.patch_sha256 === "string"
+          ? submission.detail.patch_sha256
+          : armedCrashWindow
+            ? evidence.actual_patch_sha256
+            : null;
+    const recordedPaths = Array.isArray(
+      submission.detail.actual_request_patch_paths,
+    )
+      ? submission.detail.actual_request_patch_paths.filter(
+          (item): item is string => typeof item === "string",
+        ).sort()
+      : Array.isArray(submission.detail.patch_paths)
+        ? submission.detail.patch_paths.filter(
+            (item): item is string => typeof item === "string",
+          ).sort()
+        : armedCrashWindow
+          ? evidence.exact_action_paths
+          : null;
+    if (
+      recordedPatchSha !== evidence.actual_patch_sha256 ||
+      recordedPaths == null ||
+      stableJson(recordedPaths) !== stableJson(evidence.exact_action_paths)
+    ) {
+      throw new SettlementGuardError(
+        `Pending OFFER ${submission.action_id} conflicts with its exact settlement evidence; no Amazon call was made.`,
+      );
+    }
+    bindings.push({
+      submission,
+      entry: planned.entry,
+      action: planned.action as BoundPendingOfferSubmission["action"],
+      evidence,
+    });
+  }
+  return bindings;
+}
+
+async function settlePendingOfferSelection(input: {
+  plan: UncrustablesRepairPlan;
+  selection: RepairExecutionSelection;
+  gateway: RepairAmazonGateway;
+  checkpointStore: ImmutableCheckpointStore;
+  mediaEquivalence: MediaEquivalence;
+  policy: OfferSettlementPolicyInput;
+  sleep?: (milliseconds: number) => Promise<void>;
+}): Promise<{
+  verified: number;
+  terminal: number;
+  unresolved: number;
+}> {
+  const policy = resolveOfferSettlementPolicy(input.policy);
+  const pending = await input.checkpointStore.pendingSubmissions();
+  const terminalActionIds = await input.checkpointStore.verifiedActionIds();
+  const bindings = bindPendingOfferSubmissions({
+    plan: input.plan,
+    selection: input.selection,
+    pending,
+    terminalActionIds,
+  });
+  const byActionId = new Map(
+    bindings.map((binding) => [binding.submission.action_id, binding] as const),
+  );
+  const latestVerificationByActionId = new Map<string, VerificationResult>();
+  for (const binding of bindings) {
+    await input.checkpointStore.append({
+      action_id: binding.submission.action_id,
+      sku: binding.submission.sku,
+      kind: "OFFER",
+      status: "SETTLEMENT_PENDING",
+      detail: {
+        recovery: true,
+        trigger: "OFFER_SETTLE_ONLY",
+        submitted_event_id: binding.submission.submitted_event_id,
+        submitted_at: binding.submission.submitted_at,
+        settlement_guard: binding.evidence,
+        horizon_ms: policy.horizonMs,
+        poll_interval_ms: policy.pollIntervalMs,
+        request_delay_ms: policy.requestDelayMs,
+        observation_timeout_ms: policy.observationTimeoutMs,
+        stable_reads_required: policy.stableReads,
+        ...safeOfferPriceSettlementDiagnostics(binding.action, null),
+      },
+    });
+  }
+  const outcomes = await runReadOnlyOfferSettlement({
+    plan: input.plan,
+    selection: input.selection,
+    pending: bindings.map(({ submission }) => ({
+      action_id: submission.action_id,
+      sku: submission.sku,
+      submitted_event_id: submission.submitted_event_id,
+      submitted_at: submission.submitted_at,
+    })),
+    terminalActionIds,
+    policy,
+    dependencies: {
+      ...(input.sleep ? { sleep: input.sleep } : {}),
+      observe: async (submission, _progress, signal) => {
+        const binding = byActionId.get(submission.action_id);
+        if (
+          !binding ||
+          binding.submission.submitted_event_id !==
+            submission.submitted_event_id
+        ) {
+          throw new SettlementGuardError(
+            `OFFER settlement identity changed for ${submission.action_id}.`,
+          );
+        }
+        const live = await input.gateway.getListing(
+          binding.entry.store_index,
+          binding.entry.sku,
+          signal,
+        );
+        listingIdentity(binding.entry, live);
+        const verification = await verifyActionState(
+          binding.action,
+          live,
+          input.mediaEquivalence,
+        );
+        latestVerificationByActionId.set(submission.action_id, verification);
+        const pathStateSha256 = exactActionPathStateSha256(
+          live,
+          binding.evidence.exact_action_paths,
+        );
+        return {
+          classification: verification.ok
+            ? "DESIRED"
+            : pathStateSha256 === binding.evidence.before_path_state_sha256
+              ? "BEFORE"
+              : "NON_DESIRED",
+          path_state_sha256: pathStateSha256,
+          verification,
+        };
+      },
+      onVerified: async (submission, observation, progress) => {
+        const verification = observation.verification as VerificationResult;
+        await input.checkpointStore.append({
+          action_id: submission.action_id,
+          sku: submission.sku,
+          kind: "OFFER",
+          status: "VERIFIED",
+          detail: {
+            recovery: true,
+            trigger: "OFFER_SETTLE_ONLY",
+            submitted_event_id: submission.submitted_event_id,
+            stable_post_write_reads: progress.consecutive_identical_reads,
+            polling_reads: progress.reads,
+            polling_sweep: progress.sweep,
+            elapsed_ms: progress.elapsed_ms,
+            path_state_sha256: observation.path_state_sha256,
+            checks: verification.checks,
+          },
+        });
+      },
+      onPending: async (submission, outcome) => {
+        const binding = byActionId.get(submission.action_id);
+        if (!binding) {
+          throw new SettlementGuardError(
+            `OFFER settlement lost binding ${submission.action_id}.`,
+          );
+        }
+        await input.checkpointStore.append({
+          action_id: submission.action_id,
+          sku: submission.sku,
+          kind: "OFFER",
+          status: "SETTLEMENT_UNRESOLVED",
+          detail: {
+            recovery: true,
+            trigger: "OFFER_SETTLE_ONLY",
+            submitted_event_id: submission.submitted_event_id,
+            disposition: outcome.disposition,
+            polling_reads: outcome.reads,
+            read_errors: outcome.read_errors,
+            consecutive_stable_reads: outcome.consecutive_identical_reads,
+            last_classification: outcome.last_classification,
+            last_path_state_sha256: outcome.last_path_state_sha256,
+            remains_pending: true,
+            automatic_resubmission_authorized: false,
+            ...safeOfferPriceSettlementDiagnostics(
+              binding.action,
+              latestVerificationByActionId.get(submission.action_id) ?? null,
+            ),
+          },
+        });
+      },
+    },
+  });
+  return {
+    verified: outcomes.filter((outcome) => outcome.disposition === "VERIFIED")
+      .length,
+    terminal: input.selection.selected_action_ids.filter((actionId) =>
+      terminalActionIds.has(actionId)
+    ).length,
+    unresolved: outcomes.filter((outcome) => outcome.disposition !== "VERIFIED")
+      .length,
+  };
+}
+
+interface BoundPendingRepairSubmission {
+  submission: PendingRepairSubmission;
+  entry: RepairPlanEntry;
+  action: PlannedRepairAction;
+  evidence: ExactPathSettlementEvidence;
+}
+
+/** Bind a sealed positive selection to the complete canonical pending set
+ * before generic recovery is allowed to perform its first GET. Unlike OFFER
+ * settle-only, this accepts every repair action kind, while retaining exact
+ * action/SKU/kind/path/digest/submission identity. */
+function bindPendingRepairSelection(input: {
+  plan: UncrustablesRepairPlan;
+  selection: RepairExecutionSelection;
+  pending: Map<string, PendingRepairSubmission>;
+  terminalActionIds: Set<string>;
+}): BoundPendingRepairSubmission[] {
+  verifyRepairExecutionSelection(input.plan, input.selection);
+  const selectedIds = new Set(input.selection.selected_action_ids);
+  const selectedTerminal = new Set(
+    [...input.terminalActionIds].filter((actionId) => selectedIds.has(actionId)),
+  );
+  if (
+    input.selection.selected_action_ids.length !==
+      input.pending.size + selectedTerminal.size
+  ) {
+    throw new SettlementGuardError(
+      `Generic pending recovery selection covers ${input.selection.selected_action_ids.length} action(s), but canonical pending/terminal state accounts for ${input.pending.size + selectedTerminal.size}; no Amazon call was made.`,
+    );
+  }
+  const plannedByActionId = new Map(
+    input.plan.entries.flatMap((entry) =>
+      entry.actions.map((action) => [action.action_id, { entry, action }] as const),
+    ),
+  );
+  for (const actionId of input.selection.selected_action_ids) {
+    if (input.pending.has(actionId) && selectedTerminal.has(actionId)) {
+      throw new SettlementGuardError(
+        `Selected action ${actionId} is both pending and terminal; no Amazon call was made.`,
+      );
+    }
+    if (!input.pending.has(actionId) && !selectedTerminal.has(actionId)) {
+      throw new SettlementGuardError(
+        `Selected action ${actionId} is neither canonical pending nor terminal; no Amazon call was made.`,
+      );
+    }
+  }
+
+  const bindings: BoundPendingRepairSubmission[] = [];
+  for (const submission of [...input.pending.values()].sort((left, right) =>
+    left.action_id.localeCompare(right.action_id)
+  )) {
+    const planned = plannedByActionId.get(submission.action_id);
+    if (
+      !selectedIds.has(submission.action_id) ||
+      !planned ||
+      planned.entry.sku !== submission.sku ||
+      planned.action.kind !== submission.kind
+    ) {
+      throw new SettlementGuardError(
+        `Canonical pending submission ${submission.action_id}/${submission.sku}/${submission.kind} is outside the exact recovery selection; no Amazon call was made.`,
+      );
+    }
+    assertPendingLaunchAuthorizationLineage(input.plan, submission);
+
+    const strategy = submission.detail.strategy;
+    const armedCrashWindow =
+      submission.detail.crash_window_guard === true &&
+      (strategy === "PRIMARY" || strategy === "REVIEWED_FALLBACK");
+    let action: PlannedRepairAction | null = planned.action;
+    if (strategy === "REVIEWED_FALLBACK") {
+      action = fallbackAction(planned.action);
+    } else if (
+      strategy !== "PRIMARY" &&
+      !(
+        submission.kind === "OFFER" &&
+        strategy === SELECTOR_REPLACE_SURROGATE_FOR_MERGE
+      )
+    ) {
+      action = null;
+    }
+    if (!action || action.kind !== submission.kind) {
+      throw new SettlementGuardError(
+        `Pending ${submission.kind} ${submission.action_id} has no matching documented submission strategy in the sealed plan; no Amazon call was made.`,
+      );
+    }
+    if (submission.source_status === "SUBMITTED") {
+      const armedEventId = submission.detail.armed_event_id;
+      const armedDetail = submission.armed_detail;
+      if (
+        typeof armedEventId !== "string" ||
+        armedEventId.length === 0 ||
+        submission.armed_event_id !== armedEventId ||
+        !armedDetail ||
+        armedDetail.crash_window_guard !== true ||
+        armedDetail.strategy !== strategy ||
+        stableJson(armedDetail.settlement_guard) !==
+          stableJson(submission.detail.settlement_guard)
+      ) {
+        throw new SettlementGuardError(
+          `Pending ${submission.kind} ${submission.action_id} is SUBMITTED without exact matching SUBMISSION_ARMED lineage; no Amazon call was made.`,
+        );
+      }
+    }
+    if (
+      submission.source_status === "SUBMISSION_ARMED" &&
+      !armedCrashWindow
+    ) {
+      throw new SettlementGuardError(
+        `Pending ${submission.kind} ${submission.action_id} has an unguarded standalone SUBMISSION_ARMED event; no Amazon call was made.`,
+      );
+    }
+
+    let evidence: ExactPathSettlementEvidence;
+    try {
+      evidence = parseSettlementEvidence(submission);
+    } catch (error) {
+      throw new SettlementGuardError(
+        `${error instanceof Error ? error.message : String(error)} No Amazon call was made.`,
+      );
+    }
+    const plannedPaths = new Set(potentialActionPatchPaths(action));
+    const violatesKindBoundary = (patchPath: string): boolean =>
+      submission.kind === "MEDIA"
+        ? !(MEDIA_PATCH_PATHS as readonly string[]).includes(patchPath)
+        : submission.kind === "OFFER"
+          ? !(OFFER_PATCH_PATHS as readonly string[]).includes(patchPath)
+          : false;
+    if (
+      evidence.exact_action_paths.some(
+        (patchPath) =>
+          !plannedPaths.has(patchPath) ||
+          violatesKindBoundary(patchPath) ||
+          (input.selection.profile === GALLERY_MEDIA_ONLY_PROFILE &&
+            !/^\/attributes\/other_product_image_locator_[1-8]$/.test(
+              patchPath,
+            )),
+      )
+    ) {
+      throw new SettlementGuardError(
+        `Pending ${submission.kind} ${submission.action_id} contains a path outside its sealed action boundary; no Amazon call was made.`,
+      );
+    }
+    const hasActualPatchSha = Object.prototype.hasOwnProperty.call(
+      submission.detail,
+      "actual_request_patch_sha256",
+    );
+    const recordedPatchSha = hasActualPatchSha
+      ? typeof submission.detail.actual_request_patch_sha256 === "string"
+        ? submission.detail.actual_request_patch_sha256
+        : null
+      : typeof submission.detail.patch_sha256 === "string"
+        ? submission.detail.patch_sha256
+        : armedCrashWindow
+          ? evidence.actual_patch_sha256
+          : null;
+    const hasActualPaths = Object.prototype.hasOwnProperty.call(
+      submission.detail,
+      "actual_request_patch_paths",
+    );
+    const rawRecordedPaths = hasActualPaths
+      ? submission.detail.actual_request_patch_paths
+      : Object.prototype.hasOwnProperty.call(submission.detail, "patch_paths")
+        ? submission.detail.patch_paths
+        : armedCrashWindow
+          ? evidence.exact_action_paths
+          : null;
+    const recordedPaths = Array.isArray(rawRecordedPaths) &&
+        rawRecordedPaths.every((item): item is string => typeof item === "string")
+      ? [...rawRecordedPaths].sort()
+      : null;
+    if (
+      recordedPatchSha !== evidence.actual_patch_sha256 ||
+      recordedPaths == null ||
+      stableJson(recordedPaths) !== stableJson(evidence.exact_action_paths)
+    ) {
+      throw new SettlementGuardError(
+        `Pending ${submission.kind} ${submission.action_id} conflicts with its exact settlement evidence; no Amazon call was made.`,
+      );
+    }
+    bindings.push({
+      submission,
+      entry: planned.entry,
+      action,
+      evidence,
+    });
+  }
+  return bindings;
+}
+
+async function settlePendingRepairSelection(input: {
+  plan: UncrustablesRepairPlan;
+  selection: RepairExecutionSelection;
+  gateway: RepairAmazonGateway;
+  checkpointStore: ImmutableCheckpointStore;
+  mediaEquivalence: MediaEquivalence;
+  policy: OfferSettlementPolicyInput;
+  sleep?: (milliseconds: number) => Promise<void>;
+}): Promise<{
+  verified: number;
+  terminal: number;
+  unresolved: number;
+}> {
+  const policy = resolveOfferSettlementPolicy(input.policy);
+  if (policy.stableReads !== 3) {
+    throw new SettlementGuardError(
+      "Generic pending recovery requires exactly 3 stable DESIRED reads; no Amazon call was made.",
+    );
+  }
+  const pending = await input.checkpointStore.pendingSubmissions();
+  const terminalActionIds = await input.checkpointStore.verifiedActionIds();
+  const bindings = bindPendingRepairSelection({
+    plan: input.plan,
+    selection: input.selection,
+    pending,
+    terminalActionIds,
+  });
+  const byActionId = new Map(
+    bindings.map((binding) => [binding.submission.action_id, binding] as const),
+  );
+  const latestVerificationByActionId = new Map<string, VerificationResult>();
+  for (const binding of bindings) {
+    await input.checkpointStore.append({
+      action_id: binding.submission.action_id,
+      sku: binding.submission.sku,
+      kind: binding.submission.kind,
+      status: "SETTLEMENT_PENDING",
+      detail: {
+        recovery: true,
+        trigger: "PENDING_SETTLE_ONLY",
+        selection_sha256: input.selection.sha256,
+        submitted_event_id: binding.submission.submitted_event_id,
+        submitted_at: binding.submission.submitted_at,
+        settlement_guard: binding.evidence,
+        horizon_ms: policy.horizonMs,
+        poll_interval_ms: policy.pollIntervalMs,
+        request_delay_ms: policy.requestDelayMs,
+        observation_timeout_ms: policy.observationTimeoutMs,
+        stable_reads_required: policy.stableReads,
+        ...(binding.action.desired.kind === "OFFER"
+          ? safeOfferPriceSettlementDiagnostics(binding.action, null)
+          : {}),
+      },
+    });
+  }
+  const outcomes = await runReadOnlySettlementScheduler({
+    pending: bindings.map(({ submission }) => ({
+      action_id: submission.action_id,
+      sku: submission.sku,
+      submitted_event_id: submission.submitted_event_id,
+      submitted_at: submission.submitted_at,
+    })),
+    policy,
+    requireUniqueSkus: false,
+    dependencies: {
+      ...(input.sleep ? { sleep: input.sleep } : {}),
+      observe: async (submission, _progress, signal) => {
+        const binding = byActionId.get(submission.action_id);
+        if (
+          !binding ||
+          binding.submission.submitted_event_id !==
+            submission.submitted_event_id
+        ) {
+          throw new SettlementGuardError(
+            `Pending recovery identity changed for ${submission.action_id}.`,
+          );
+        }
+        const rawLive = await input.gateway.getListing(
+          binding.entry.store_index,
+          binding.entry.sku,
+          signal,
+        );
+        const live = exactMarketplaceListing(rawLive);
+        listingIdentity(binding.entry, live);
+        const verification = await verifyActionState(
+          binding.action,
+          live,
+          input.mediaEquivalence,
+        );
+        latestVerificationByActionId.set(submission.action_id, verification);
+        const pathStateSha256 = exactActionPathStateSha256(
+          live,
+          binding.evidence.exact_action_paths,
+        );
+        return {
+          classification: verification.ok
+            ? "DESIRED"
+            : pathStateSha256 === binding.evidence.before_path_state_sha256
+              ? "BEFORE"
+              : "NON_DESIRED",
+          path_state_sha256: pathStateSha256,
+          verification,
+        };
+      },
+      onVerified: async (submission, observation, progress) => {
+        const binding = byActionId.get(submission.action_id);
+        if (!binding) {
+          throw new SettlementGuardError(
+            `Pending recovery lost binding ${submission.action_id}.`,
+          );
+        }
+        const verification = observation.verification as VerificationResult;
+        await input.checkpointStore.append({
+          action_id: submission.action_id,
+          sku: submission.sku,
+          kind: binding.submission.kind,
+          status: "VERIFIED",
+          detail: {
+            recovery: true,
+            trigger: "PENDING_SETTLE_ONLY",
+            selection_sha256: input.selection.sha256,
+            submitted_event_id: submission.submitted_event_id,
+            stable_post_write_reads: progress.consecutive_identical_reads,
+            polling_reads: progress.reads,
+            polling_sweep: progress.sweep,
+            elapsed_ms: progress.elapsed_ms,
+            path_state_sha256: observation.path_state_sha256,
+            checks: verification.checks,
+          },
+        });
+      },
+      onPending: async (submission, outcome) => {
+        const binding = byActionId.get(submission.action_id);
+        if (!binding) {
+          throw new SettlementGuardError(
+            `Pending recovery lost binding ${submission.action_id}.`,
+          );
+        }
+        await input.checkpointStore.append({
+          action_id: submission.action_id,
+          sku: submission.sku,
+          kind: binding.submission.kind,
+          status: "SETTLEMENT_UNRESOLVED",
+          detail: {
+            recovery: true,
+            trigger: "PENDING_SETTLE_ONLY",
+            selection_sha256: input.selection.sha256,
+            submitted_event_id: submission.submitted_event_id,
+            disposition: outcome.disposition,
+            polling_reads: outcome.reads,
+            read_errors: outcome.read_errors,
+            consecutive_stable_reads: outcome.consecutive_identical_reads,
+            last_classification: outcome.last_classification,
+            last_path_state_sha256: outcome.last_path_state_sha256,
+            remains_pending: true,
+            automatic_resubmission_authorized: false,
+            ...(binding.action.desired.kind === "OFFER"
+              ? safeOfferPriceSettlementDiagnostics(
+                  binding.action,
+                  latestVerificationByActionId.get(submission.action_id) ?? null,
+                )
+              : {}),
+          },
+        });
+      },
+    },
+  });
+  return {
+    verified: outcomes.filter((outcome) => outcome.disposition === "VERIFIED")
+      .length,
+    terminal: input.selection.selected_action_ids.filter((actionId) =>
+      terminalActionIds.has(actionId)
+    ).length,
+    unresolved: outcomes.filter((outcome) => outcome.disposition !== "VERIFIED")
+      .length,
+  };
+}
+
 /** Read-only recovery for accepted Listings Items submissions left open by a
- * prior process/readback timeout. It never PATCHes. A stable desired, stable
- * before, or stable non-desired state receives an immutable closing marker;
- * an unstable result remains pending and therefore blocks every later write. */
+ * prior process/readback timeout. It never PATCHes. Only stable desired closes
+ * a submission; stable before/non-desired and unstable results remain pending
+ * and therefore block every later write. */
 export async function recoverPendingRepairSettlements(input: {
   plan: UncrustablesRepairPlan;
   gateway: RepairAmazonGateway;
   checkpointStore: ImmutableCheckpointStore;
   mediaEquivalence?: MediaEquivalence;
   skus?: string[] | null;
+  /** Optional exact action selection. Pending submissions outside this set
+   * remain open and are never polled, closed, or resubmitted. */
+  actionIds?: string[] | null;
   attempts?: number;
   delayMs?: number;
   stableReads?: number;
@@ -4223,6 +7073,9 @@ export async function recoverPendingRepairSettlements(input: {
   const selectedSkus = input.skus?.length
     ? new Set(input.skus.map((sku) => sku.trim()).filter(Boolean))
     : null;
+  const selectedActionIds = input.actionIds?.length
+    ? new Set(input.actionIds.map((actionId) => actionId.trim()).filter(Boolean))
+    : null;
   const actionById = new Map(
     input.plan.entries.flatMap((entry) =>
       entry.actions.map((action) => [action.action_id, { entry, action }] as const),
@@ -4237,6 +7090,9 @@ export async function recoverPendingRepairSettlements(input: {
     (left, right) => left.action_id.localeCompare(right.action_id),
   )) {
     if (selectedSkus && !selectedSkus.has(submission.sku)) continue;
+    if (selectedActionIds && !selectedActionIds.has(submission.action_id)) {
+      continue;
+    }
     const planned = actionById.get(submission.action_id);
     if (
       !planned ||
@@ -4371,6 +7227,7 @@ async function verifySubmittedActionSettlement(input: {
   checkpointStore: ImmutableCheckpointStore;
   mediaEquivalence: MediaEquivalence;
   evidence: ExactPathSettlementEvidence;
+  submittedEventId: string;
   strategy: "PRIMARY" | "REVIEWED_FALLBACK";
   requestDelayMs: number;
   verifyAttempts: number;
@@ -4378,7 +7235,6 @@ async function verifySubmittedActionSettlement(input: {
   settlementAttempts: number;
   settlementDelayMs: number;
   settlementStableReads: number;
-  allowReviewedFallback: boolean;
   sleep: (milliseconds: number) => Promise<void>;
 }): Promise<VerificationResult> {
   await input.checkpointStore.append({
@@ -4388,6 +7244,7 @@ async function verifySubmittedActionSettlement(input: {
     status: "SETTLEMENT_PENDING",
     detail: {
       recovery: false,
+      submitted_event_id: input.submittedEventId,
       trigger: "ACCEPTED_WRITE_POST_GET",
       strategy: input.strategy,
       settlement_guard: input.evidence,
@@ -4426,6 +7283,19 @@ async function verifySubmittedActionSettlement(input: {
       : 1;
     previousDesiredDigest = digest;
     if (stableDesiredReads >= input.settlementStableReads) {
+      await input.checkpointStore.append({
+        action_id: input.action.action_id,
+        sku: input.entry.sku,
+        kind: input.action.kind,
+        status: "VERIFIED",
+        detail: {
+          submitted_event_id: input.submittedEventId,
+          strategy: input.strategy,
+          stable_post_write_reads: stableDesiredReads,
+          path_state_sha256: digest,
+          checks: lastVerification.checks,
+        },
+      });
       return lastVerification;
     }
   }
@@ -4443,6 +7313,7 @@ async function verifySubmittedActionSettlement(input: {
   });
   const detail = {
     recovery: false,
+    submitted_event_id: input.submittedEventId,
     strategy: input.strategy,
     settlement_guard: input.evidence,
     fast_verify_attempts: input.verifyAttempts,
@@ -4453,6 +7324,16 @@ async function verifySubmittedActionSettlement(input: {
     checks: settled.last?.verification.checks ?? lastVerification?.checks ?? [],
   };
   if (settled.state === "DESIRED" && settled.last) {
+    await input.checkpointStore.append({
+      action_id: input.action.action_id,
+      sku: input.entry.sku,
+      kind: input.action.kind,
+      status: "VERIFIED",
+      detail: {
+        ...detail,
+        recovered_late_submission: true,
+      },
+    });
     return settled.last.verification;
   }
   if (settled.state === "STABLE_BEFORE") {
@@ -4463,14 +7344,8 @@ async function verifySubmittedActionSettlement(input: {
       status: "SETTLED_BEFORE",
       detail,
     });
-    if (input.allowReviewedFallback) {
-      throw new PostGetVerificationError(
-        `Primary submission settled at the exact pre-write state for ${input.action.action_id}; reviewed fallback is now safe to evaluate.`,
-        settled.last?.verification ?? lastVerification,
-      );
-    }
     throw new SettlementGuardError(
-      `Amazon submission ${input.action.action_id} remained at a stable pre-write state after bounded settlement polling; no second write was attempted.`,
+      `Amazon accepted ${input.action.action_id}, but only the stable pre-write state is observable. The submission remains open because a later apply cannot be excluded; no fallback or second write was attempted.`,
     );
   }
   if (settled.state === "STABLE_NON_DESIRED") {
@@ -4481,14 +7356,8 @@ async function verifySubmittedActionSettlement(input: {
       status: "SETTLED_NON_DESIRED",
       detail,
     });
-    if (input.allowReviewedFallback) {
-      throw new PostGetVerificationError(
-        `Primary submission reached a stable non-desired state for ${input.action.action_id}; reviewed fallback is now safe to evaluate.`,
-        settled.last?.verification ?? lastVerification,
-      );
-    }
     throw new SettlementGuardError(
-      `Amazon submission ${input.action.action_id} settled in a non-desired state; no automatic resubmission was attempted.`,
+      `Amazon submission ${input.action.action_id} is stable but non-desired. It remains open because a later apply cannot be excluded; no fallback or automatic resubmission was attempted.`,
     );
   }
   await input.checkpointStore.append({
@@ -4601,6 +7470,17 @@ async function executeFallbackAction(input: {
   }
   patches = immediatelyFresh;
   const exactSettlementEvidence = settlementEvidence(live, patches);
+  const armedCheckpoint = await checkpointStore.append({
+    action_id: action.action_id,
+    sku: entry.sku,
+    kind: action.kind,
+    status: "SUBMISSION_ARMED",
+    detail: {
+      strategy: "REVIEWED_FALLBACK",
+      crash_window_guard: true,
+      settlement_guard: exactSettlementEvidence,
+    },
+  });
   const submitted = await gateway.patchListing(
     entry.store_index,
     entry.sku,
@@ -4616,7 +7496,7 @@ async function executeFallbackAction(input: {
       `Amazon did not accept fallback ${action.action_id}: ${JSON.stringify(responseDetail(submitted))}`,
     );
   }
-  await checkpointStore.append({
+  const submittedCheckpoint = await checkpointStore.append({
     action_id: action.action_id,
     sku: entry.sku,
     kind: action.kind,
@@ -4625,6 +7505,7 @@ async function executeFallbackAction(input: {
       strategy: "REVIEWED_FALLBACK",
       patch_sha256: patchDigest(patches),
       patch_paths: patches.map((patch) => patch.path),
+      armed_event_id: armedCheckpoint.event_id,
       settlement_guard: exactSettlementEvidence,
       ...responseDetail(submitted),
     },
@@ -4636,6 +7517,7 @@ async function executeFallbackAction(input: {
     checkpointStore,
     mediaEquivalence,
     evidence: exactSettlementEvidence,
+    submittedEventId: submittedCheckpoint.event_id,
     strategy: "REVIEWED_FALLBACK",
     requestDelayMs,
     verifyAttempts,
@@ -4643,63 +7525,297 @@ async function executeFallbackAction(input: {
     settlementAttempts,
     settlementDelayMs,
     settlementStableReads,
-    allowReviewedFallback: false,
     sleep,
   });
 }
 
 /** Execute a sealed plan. `apply=false` is a pure offline dry run: the gateway
  * is never touched. */
-export async function executeRepairPlan(
+async function executeRepairPlanInternal(
   plan: UncrustablesRepairPlan,
   gateway: RepairAmazonGateway,
   options: ExecuteRepairOptions,
 ): Promise<ExecuteRepairResult> {
   verifyRepairPlan(plan);
+  const executionPhase = options.executionPhase ?? "SUBMIT_AND_SETTLE";
+  const recoverPendingOnly = options.recoverPendingOnly === true;
   if (options.apply && options.validationOnly) {
     throw new Error("apply and validationOnly are mutually exclusive.");
   }
-  if (options.apply && options.confirmation !== confirmationToken(plan)) {
+  const executionSelection = options.executionSelection ?? null;
+  if (
+    executionSelection &&
+    ((options.skus?.length ?? 0) > 0 || options.limit != null)
+  ) {
     throw new Error(
-      `Live apply requires --confirm=${confirmationToken(plan)}. No Amazon call was made.`,
+      "A sealed execution selection cannot be combined with runtime skus/limit narrowing.",
     );
   }
-  const requested = options.skus?.length
-    ? new Set(options.skus.map((sku) => sku.trim()).filter(Boolean))
-    : null;
-  let entries = plan.entries.filter((entry) => !requested || requested.has(entry.sku));
-  if (options.limit != null) {
-    if (!Number.isInteger(options.limit) || options.limit <= 0) {
-      throw new Error("Execution limit must be a positive integer.");
-    }
-    entries = entries.slice(0, options.limit);
+  if (executionSelection) {
+    verifyRepairExecutionSelection(plan, executionSelection);
   }
-  if (requested) {
-    const found = new Set(entries.map((entry) => entry.sku));
-    const missing = [...requested].filter((sku) => !found.has(sku));
-    if (missing.length) {
-      throw new Error(`Requested SKU(s) absent from plan entries: ${missing.join(", ")}`);
+  if (recoverPendingOnly) {
+    if (options.apply || options.validationOnly) {
+      throw new Error(
+        "PENDING_SETTLE_ONLY is read-only and forbids apply/validationOnly. No Amazon call was made.",
+      );
+    }
+    if (executionPhase !== "SUBMIT_AND_SETTLE") {
+      throw new Error(
+        "PENDING_SETTLE_ONLY cannot be combined with an OFFER execution phase. No Amazon call was made.",
+      );
+    }
+    if (!executionSelection) {
+      throw new Error(
+        "PENDING_SETTLE_ONLY requires an exact sealed execution selection. No Amazon call was made.",
+      );
+    }
+    if (options.offerSettlementPolicy) {
+      throw new Error(
+        "PENDING_SETTLE_ONLY accepts pendingRecoveryPolicy, not offerSettlementPolicy. No Amazon call was made.",
+      );
+    }
+  } else if (options.pendingRecoveryPolicy) {
+    throw new Error(
+      "pendingRecoveryPolicy is accepted only in PENDING_SETTLE_ONLY mode.",
+    );
+  }
+  if (executionPhase === "SUBMIT_ONLY") {
+    if (!options.apply || options.validationOnly) {
+      throw new Error(
+        "OFFER SUBMIT_ONLY requires apply=true and validationOnly=false. No Amazon call was made.",
+      );
+    }
+    if (
+      !executionSelection ||
+      executionSelection.profile !== OFFER_ONLY_EXECUTION_PROFILE
+    ) {
+      throw new Error(
+        "OFFER SUBMIT_ONLY requires an exact OFFER_ONLY_V1 execution selection. No Amazon call was made.",
+      );
+    }
+    assertOfferOnlyExecutionSelection({ plan, selection: executionSelection });
+  } else if (executionPhase === "SETTLE_ONLY") {
+    if (options.apply || options.validationOnly) {
+      throw new Error(
+        "OFFER SETTLE_ONLY is read-only and forbids apply/validationOnly. No Amazon call was made.",
+      );
+    }
+    if (
+      !executionSelection ||
+      executionSelection.profile !== OFFER_ONLY_EXECUTION_PROFILE
+    ) {
+      throw new Error(
+        "OFFER SETTLE_ONLY requires an exact OFFER_ONLY_V1 execution selection. No Amazon call was made.",
+      );
+    }
+    assertOfferOnlyExecutionSelection({ plan, selection: executionSelection });
+  } else if (options.offerSettlementPolicy) {
+    throw new Error(
+      "offerSettlementPolicy is accepted only in OFFER SETTLE_ONLY mode.",
+    );
+  }
+  const expectedConfirmation = executionSelection?.confirmation_token ??
+    confirmationToken(plan);
+  if (options.apply && options.confirmation !== expectedConfirmation) {
+    throw new Error(
+      `Live apply requires --confirm=${expectedConfirmation}. No Amazon call was made.`,
+    );
+  }
+  let entries: RepairPlanEntry[];
+  if (executionSelection) {
+    const selected = new Set(executionSelection.selected_action_ids);
+    entries = plan.entries
+      .map((entry) => ({
+        ...entry,
+        actions: entry.actions.filter((action) => selected.has(action.action_id)),
+      }))
+      .filter((entry) => entry.actions.length > 0);
+    const resolvedActionIds = entries.flatMap((entry) =>
+      entry.actions.map((action) => action.action_id)
+    );
+    if (
+      stableJson(resolvedActionIds) !==
+      stableJson(executionSelection.selected_action_ids)
+    ) {
+      throw new Error(
+        "Execution selection action order no longer matches its sealed plan.",
+      );
+    }
+  } else {
+    const requested = options.skus?.length
+      ? new Set(options.skus.map((sku) => sku.trim()).filter(Boolean))
+      : null;
+    entries = plan.entries.filter(
+      (entry) => !requested || requested.has(entry.sku),
+    );
+    if (options.limit != null) {
+      if (!Number.isInteger(options.limit) || options.limit <= 0) {
+        throw new Error("Execution limit must be a positive integer.");
+      }
+      entries = entries.slice(0, options.limit);
+    }
+    if (requested) {
+      const found = new Set(entries.map((entry) => entry.sku));
+      const missing = [...requested].filter((sku) => !found.has(sku));
+      if (missing.length) {
+        throw new Error(
+          `Requested SKU(s) absent from plan entries: ${missing.join(", ")}`,
+        );
+      }
     }
   }
   const selectedActions = entries.reduce((sum, entry) => sum + entry.actions.length, 0);
+  const selectedHasOffer = entries.some((entry) =>
+    entry.actions.some((action) => action.kind === "OFFER"),
+  );
+  const selectedOfferStoreIndices = new Set(
+    entries
+      .filter((entry) =>
+        entry.actions.some((action) => action.kind === "OFFER")
+      )
+      .map((entry) => entry.store_index),
+  );
+  const assertCurrentLaunchOfferAuthorization = (
+    action: PlannedRepairAction | null,
+  ): string | null => {
+    if (
+      !plan.launch_pricing_source ||
+      !options.apply ||
+      (action != null && action.kind !== "OFFER")
+    ) {
+      return null;
+    }
+    const runtime = options.launchExecutionAuthorization;
+    if (!runtime || !executionSelection) {
+      throw new Error(
+        "Launch-aware OFFER writes require a current ChannelMAX+Coupon execution authorization bound to the exact selection. No Amazon call was made.",
+      );
+    }
+    if (
+      selectedOfferStoreIndices.size !== 1 ||
+      !selectedOfferStoreIndices.has(runtime.authorization.account.store_index) ||
+      runtime.authorization.account.marketplace_id !== MARKETPLACE_ID
+    ) {
+      throw new Error(
+        "Launch execution authorization is bound to a different store or marketplace. No Amazon call was made.",
+      );
+    }
+    const authorizationNow = new Date();
+    const evidence = [
+      [
+        runtime.authorization.channelmax.source_export,
+        runtime.evidence_bytes.channelmax_source_export,
+      ],
+      [
+        runtime.authorization.channelmax.assignment_upload,
+        runtime.evidence_bytes.channelmax_assignment_upload,
+      ],
+      [
+        runtime.authorization.coupons.source_evidence,
+        runtime.evidence_bytes.coupon_source_evidence,
+      ],
+    ] as const;
+    for (const [reference, bytes] of evidence) {
+      if (!Buffer.isBuffer(bytes) || sha256(bytes) !== reference.sha256) {
+        throw new Error(
+          `Launch execution evidence bytes do not match ${reference.path}. No Amazon call was made.`,
+        );
+      }
+    }
+    verifyUncrustablesLaunchExecutionEvidenceBytes(
+      runtime.authorization,
+      runtime.launchPricingManifest,
+      runtime.evidence_bytes,
+    );
+    if (!Buffer.isBuffer(runtime.launchPricingSourceBytes)) {
+      throw new Error(
+        "Exact launch-pricing source bytes are required at the core execution boundary. No Amazon call was made.",
+      );
+    }
+    assertRepairPlanLaunchPricingBinding(
+      plan,
+      runtime.launchPricingSourceBytes,
+      { requireOwnerApproval: true, now: authorizationNow },
+    );
+    verifyUncrustablesLaunchExecutionAuthorization(
+      runtime.authorization,
+      {
+        planSha256: plan.sha256,
+        executionSelectionSha256: executionSelection.sha256,
+        launchPricingSourceSha256: runtime.launchPricingSourceSha256,
+        launchPricingManifest: runtime.launchPricingManifest,
+        now: authorizationNow,
+      },
+    );
+    if (
+      runtime.launchPricingSourceSha256 !==
+        plan.launch_pricing_source.sha256 ||
+      runtime.launchPricingManifest.body_sha256 !==
+        plan.launch_pricing_source.body_sha256 ||
+      runtime.launchPricingManifest.reviewed_at !==
+        plan.launch_pricing_source.reviewed_at
+    ) {
+      throw new Error(
+        "Launch execution authorization does not match the plan's pinned launch-pricing bytes. No Amazon call was made.",
+      );
+    }
+    return runtime.authorization.body_sha256;
+  };
+  if (
+    plan.launch_pricing_source &&
+    options.apply &&
+    selectedHasOffer &&
+    (executionPhase !== "SUBMIT_ONLY" ||
+      executionSelection?.profile !== OFFER_ONLY_EXECUTION_PROFILE)
+  ) {
+    throw new Error(
+      `Launch-aware OFFER writes require SUBMIT_ONLY and an exact ${OFFER_ONLY_EXECUTION_PROFILE} selection. No Amazon call was made.`,
+    );
+  }
+  if (plan.launch_pricing_source && options.apply && selectedHasOffer) {
+    assertCurrentLaunchOfferAuthorization(null);
+    if (
+      gateway.physicalMutationGuardContract !==
+        "CALL_IMMEDIATELY_BEFORE_REQUEST_V1"
+    ) {
+      throw new Error(
+        "Launch-aware OFFER writes require a gateway that revalidates authorization immediately before the physical request. No Amazon call was made.",
+      );
+    }
+  }
   const result: ExecuteRepairResult = {
-    mode: options.apply
-      ? "APPLY"
-      : options.validationOnly
-        ? "VALIDATION_PREVIEW"
-        : "DRY_RUN",
+    mode: recoverPendingOnly
+      ? "PENDING_SETTLE_ONLY"
+      : executionPhase === "SUBMIT_ONLY"
+      ? "OFFER_SUBMIT_ONLY"
+      : executionPhase === "SETTLE_ONLY"
+        ? "OFFER_SETTLE_ONLY"
+        : options.apply
+          ? "APPLY"
+          : options.validationOnly
+            ? "VALIDATION_PREVIEW"
+            : "DRY_RUN",
+    selection_sha256: executionSelection?.sha256 ?? null,
     selected_entries: entries.length,
     selected_actions: selectedActions,
+    quarantined_pending_actions: 0,
     resumed_actions: 0,
     verified_actions: 0,
     already_applied_actions: 0,
     preview_valid_actions: 0,
+    submitted_actions: 0,
     failed_actions: 0,
     recovered_pending_actions: 0,
     unresolved_settlements: 0,
     stopped_early: false,
   };
-  if (!options.apply && !options.validationOnly) return result;
+  if (
+    !options.apply &&
+    !options.validationOnly &&
+    executionPhase !== "SETTLE_ONLY" &&
+    !recoverPendingOnly
+  ) return result;
 
   const requestDelayMs = options.requestDelayMs ?? 250;
   const verifyAttempts = options.verifyAttempts ?? 6;
@@ -4737,13 +7853,106 @@ export async function executeRepairPlan(
   }
   const sleep = options.sleep ?? ((milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds)));
   const mediaEquivalence = options.mediaEquivalence ?? exactMediaEquivalence;
-  const recovered = options.apply
+  const selectedActionIds = entries.flatMap((entry) =>
+    entry.actions.map((action) => action.action_id)
+  );
+  const executionGateway = guardRepairGatewayPatchPaths(
+    gateway,
+    executionSelection?.forbidden_patch_paths ?? [],
+  );
+  const coordinatedGateway =
+    executionPhase === "SETTLE_ONLY" || recoverPendingOnly
+    ? guardRepairGatewayReadOnly(executionGateway)
+    : executionGateway;
+  const needsMarketplaceCoordination =
+    options.apply || executionPhase === "SETTLE_ONLY" || recoverPendingOnly;
+  const releaseExecutionLease = needsMarketplaceCoordination
+    ? await options.checkpointStore.acquireExecutionLease(
+        recoverPendingOnly
+          ? `PENDING_SETTLE_ONLY:${plan.plan_id}`
+          : executionPhase === "SETTLE_ONLY"
+          ? `OFFER_SETTLE_ONLY:${plan.plan_id}`
+          : executionPhase === "SUBMIT_ONLY"
+            ? `OFFER_SUBMIT_ONLY:${plan.plan_id}`
+            : `FORWARD_APPLY:${plan.plan_id}`,
+      )
+    : null;
+  let mutationFenceClaimed = false;
+  try {
+  if (needsMarketplaceCoordination) {
+    await options.checkpointStore.claimPendingMutationFence(
+      recoverPendingOnly
+        ? `PENDING_SETTLE_ONLY:${plan.plan_id}`
+        : executionPhase === "SETTLE_ONLY"
+        ? `OFFER_SETTLE_ONLY:${plan.plan_id}`
+        : executionPhase === "SUBMIT_ONLY"
+          ? `OFFER_SUBMIT_ONLY:${plan.plan_id}`
+          : `FORWARD_APPLY:${plan.plan_id}`,
+    );
+    mutationFenceClaimed = true;
+    if (recoverPendingOnly && executionSelection) {
+      const settled = await settlePendingRepairSelection({
+        plan,
+        selection: executionSelection,
+        gateway: coordinatedGateway,
+        checkpointStore: options.checkpointStore,
+        // Generic recovery uses exact locators only. This keeps the terminal
+        // decision within the abort-bounded Listings GET and prevents a
+        // secondary image fetch from influencing or outliving the read.
+        mediaEquivalence: exactMediaEquivalence,
+        policy:
+          options.pendingRecoveryPolicy ?? DEFAULT_OFFER_SETTLEMENT_POLICY,
+        sleep: options.sleep,
+      });
+      result.verified_actions = settled.verified;
+      result.resumed_actions = settled.terminal;
+      result.recovered_pending_actions = settled.verified;
+      result.unresolved_settlements = settled.unresolved;
+      result.stopped_early = settled.unresolved > 0;
+      return result;
+    } else if (executionPhase === "SUBMIT_ONLY" && executionSelection) {
+      assertOfferSubmitOnlyMayStart({
+        plan,
+        selection: executionSelection,
+        pendingActionIds: (await options.checkpointStore.pendingSubmissions())
+          .keys(),
+        terminalActionIds: await options.checkpointStore.verifiedActionIds(),
+      });
+    } else if (executionPhase === "SETTLE_ONLY" && executionSelection) {
+      const settled = await settlePendingOfferSelection({
+        plan,
+        selection: executionSelection,
+        gateway: coordinatedGateway,
+        checkpointStore: options.checkpointStore,
+        mediaEquivalence,
+        policy:
+          options.offerSettlementPolicy ?? DEFAULT_OFFER_SETTLEMENT_POLICY,
+        sleep: options.sleep,
+      });
+      result.verified_actions = settled.verified;
+      result.resumed_actions = settled.terminal;
+      result.recovered_pending_actions = settled.verified;
+      result.unresolved_settlements = settled.unresolved;
+      result.stopped_early = settled.unresolved > 0;
+      return result;
+    } else if (executionSelection) {
+      const quarantined =
+        await quarantineUnselectedPendingRepairSubmissions({
+          plan,
+          selection: executionSelection,
+          checkpointStore: options.checkpointStore,
+        });
+      result.quarantined_pending_actions = quarantined.length;
+    }
+  }
+  const recovered = options.apply && executionPhase === "SUBMIT_AND_SETTLE"
     ? await recoverPendingRepairSettlements({
         plan,
-        gateway,
+        gateway: coordinatedGateway,
         checkpointStore: options.checkpointStore,
         mediaEquivalence,
         skus: entries.map((entry) => entry.sku),
+        actionIds: executionSelection ? selectedActionIds : null,
         attempts: settlementAttempts,
         delayMs: settlementDelayMs,
         stableReads: settlementStableReads,
@@ -4757,6 +7966,9 @@ export async function executeRepairPlan(
 
   outer: for (const entry of entries) {
     for (const action of entry.actions) {
+      const actionGateway = executionSelection
+        ? guardRepairGatewayActionPatchPaths(coordinatedGateway, entry, action)
+        : coordinatedGateway;
       try {
         const recoveredSettlement = recoveredByAction.get(action.action_id);
         if (recoveredSettlement) {
@@ -4771,43 +7983,11 @@ export async function executeRepairPlan(
               `Pending Amazon submission ${action.action_id} remains unresolved; no new PATCH was attempted.`,
             );
           }
-          const reviewedFallback = recoveredSettlement.strategy === "PRIMARY"
-            ? fallbackAction(action)
-            : null;
-          if (reviewedFallback) {
-            const fallbackVerification = await executeFallbackAction({
-              entry,
-              action: reviewedFallback,
-              gateway,
-              checkpointStore: options.checkpointStore,
-              mediaEquivalence,
-              requestDelayMs,
-              verifyAttempts,
-              verifyDelayMs,
-              settlementAttempts,
-              settlementDelayMs,
-              settlementStableReads,
-              sleep,
-            });
-            await options.checkpointStore.append({
-              action_id: action.action_id,
-              sku: entry.sku,
-              kind: action.kind,
-              status: "VERIFIED",
-              detail: {
-                strategy: "REVIEWED_FALLBACK",
-                recovered_prior_submission: true,
-                checks: fallbackVerification.checks,
-              },
-            });
-            result.verified_actions++;
-            continue;
-          }
           throw new SettlementGuardError(
-            `Pending Amazon submission ${action.action_id} settled ${recoveredSettlement.state}; this invocation will not resubmit it.`,
+            `Pending Amazon submission ${action.action_id} remains open after ${recoveredSettlement.state}; this invocation will not fallback or resubmit it.`,
           );
         }
-        let live = await gateway.getListing(entry.store_index, entry.sku);
+        let live = await actionGateway.getListing(entry.store_index, entry.sku);
         let productType = requestedProductType(
           action,
           listingIdentity(entry, live),
@@ -4859,7 +8039,7 @@ export async function executeRepairPlan(
             patches,
             action.kind,
           );
-          const preview = await gateway.patchListing(
+          const preview = await actionGateway.patchListing(
             entry.store_index,
             entry.sku,
             productType,
@@ -4887,7 +8067,7 @@ export async function executeRepairPlan(
           if (reviewedFallback) {
             await sleep(requestDelayMs);
             const fallbackPatches = buildActionPatches(reviewedFallback, live);
-            const fallbackPreview = await gateway.patchListing(
+            const fallbackPreview = await actionGateway.patchListing(
               entry.store_index,
               entry.sku,
               requestedProductType(reviewedFallback, listingIdentity(entry, live)),
@@ -4927,7 +8107,7 @@ export async function executeRepairPlan(
             patches,
             action.kind,
           );
-          const preview = await gateway.patchListing(
+          const preview = await actionGateway.patchListing(
             entry.store_index,
             entry.sku,
             productType,
@@ -4953,7 +8133,7 @@ export async function executeRepairPlan(
           });
 
           await sleep(requestDelayMs);
-          live = await gateway.getListing(entry.store_index, entry.sku);
+          live = await actionGateway.getListing(entry.store_index, entry.sku);
           productType = requestedProductType(
             action,
             listingIdentity(entry, live),
@@ -4999,7 +8179,7 @@ export async function executeRepairPlan(
         // Capture and seal the exact action-path state immediately before the
         // real PATCH. This is also a second stale-preview guard; the actual
         // request bytes and the immutable repair plan remain unchanged.
-        live = await gateway.getListing(entry.store_index, entry.sku);
+        live = await actionGateway.getListing(entry.store_index, entry.sku);
         productType = requestedProductType(
           action,
           listingIdentity(entry, live),
@@ -5035,13 +8215,77 @@ export async function executeRepairPlan(
         }
         patches = immediatelyFreshPatches;
         const exactSettlementEvidence = settlementEvidence(live, patches);
-        const submitted = await gateway.patchListing(
+        const launchAuthorizationBodySha256 =
+          assertCurrentLaunchOfferAuthorization(action);
+        const armedCheckpoint = await options.checkpointStore.append({
+          action_id: action.action_id,
+          sku: entry.sku,
+          kind: action.kind,
+          status: "SUBMISSION_ARMED",
+          detail: {
+            strategy: "PRIMARY",
+            crash_window_guard: true,
+            settlement_guard: exactSettlementEvidence,
+            ...(launchAuthorizationBodySha256
+              ? {
+                  launch_execution_authorization_body_sha256:
+                    launchAuthorizationBodySha256,
+                }
+              : {}),
+          },
+        });
+        const patchAuthorizationBodySha256 =
+          assertCurrentLaunchOfferAuthorization(action);
+        if (
+          patchAuthorizationBodySha256 !== launchAuthorizationBodySha256
+        ) {
+          throw new Error(
+            `Launch execution authorization changed between arming and PATCH for ${action.action_id}. No Amazon call was made.`,
+          );
+        }
+        let physicalMutationGuardCalled = false;
+        const submitted = await actionGateway.patchListing(
           entry.store_index,
           entry.sku,
           productType,
           patches,
           false,
+          undefined,
+          (physicalContext) => {
+            const runtime = options.launchExecutionAuthorization;
+            if (
+              !runtime ||
+              physicalContext.store_index !== runtime.authorization.account.store_index ||
+              physicalContext.marketplace_id !==
+                runtime.authorization.account.marketplace_id ||
+              physicalContext.amazon_merchant_id !==
+                runtime.authorization.account.amazon_merchant_id
+            ) {
+              throw new Error(
+                `Physical Amazon account does not match launch authorization for ${action.action_id}. No Amazon call was made.`,
+              );
+            }
+            const physicalRequestAuthorizationBodySha256 =
+              assertCurrentLaunchOfferAuthorization(action);
+            if (
+              physicalRequestAuthorizationBodySha256 !==
+              patchAuthorizationBodySha256
+            ) {
+              throw new Error(
+                `Launch execution authorization changed before the physical request for ${action.action_id}. No Amazon call was made.`,
+              );
+            }
+            physicalMutationGuardCalled = true;
+          },
         );
+        if (
+          launchAuthorizationBodySha256 &&
+          !physicalMutationGuardCalled
+        ) {
+          throw new Error(
+            `Gateway did not invoke the physical mutation guard for ${action.action_id}; submission state is unsafe.`,
+          );
+        }
         if (
           !["ACCEPTED", "IN_PROGRESS"].includes(String(submitted.status ?? "")) ||
           hasBlockingIssues(submitted)
@@ -5050,25 +8294,40 @@ export async function executeRepairPlan(
             `Amazon did not accept ${action.action_id}: ${JSON.stringify(responseDetail(submitted))}`,
           );
         }
-        await options.checkpointStore.append({
+        const submittedCheckpoint = await options.checkpointStore.append({
           action_id: action.action_id,
           sku: entry.sku,
           kind: action.kind,
           status: "SUBMITTED",
           detail: {
             strategy: "PRIMARY",
+            armed_event_id: armedCheckpoint.event_id,
             ...validationPreviewCheckpointDetail(guardedPreviewSet),
             settlement_guard: exactSettlementEvidence,
+            ...(patchAuthorizationBodySha256
+              ? {
+                  launch_execution_authorization_body_sha256:
+                    patchAuthorizationBodySha256,
+                }
+              : {}),
             ...responseDetail(submitted),
           },
         });
+        if (executionPhase === "SUBMIT_ONLY") {
+          // Deliberately stop this action at persistent SUBMITTED evidence.
+          // Settlement is a separate GET-only invocation; no post-write GET or
+          // retrying PATCH is reachable from this branch.
+          result.submitted_actions++;
+          continue;
+        }
         const finalVerification = await verifySubmittedActionSettlement({
           entry,
           action,
-          gateway,
+          gateway: actionGateway,
           checkpointStore: options.checkpointStore,
           mediaEquivalence,
           evidence: exactSettlementEvidence,
+          submittedEventId: submittedCheckpoint.event_id,
           strategy: "PRIMARY",
           requestDelayMs,
           verifyAttempts,
@@ -5076,7 +8335,6 @@ export async function executeRepairPlan(
           settlementAttempts,
           settlementDelayMs,
           settlementStableReads,
-          allowReviewedFallback: fallbackAction(action) != null,
           sleep,
         });
         await options.checkpointStore.append({
@@ -5109,7 +8367,7 @@ export async function executeRepairPlan(
             const fallbackVerification = await executeFallbackAction({
               entry,
               action: reviewedFallback,
-              gateway,
+              gateway: actionGateway,
               checkpointStore: options.checkpointStore,
               mediaEquivalence,
               requestDelayMs,
@@ -5160,5 +8418,79 @@ export async function executeRepairPlan(
       }
     }
   }
-  return result;
+    return result;
+  } finally {
+    try {
+      if (
+        mutationFenceClaimed &&
+        !(await options.checkpointStore.hasGlobalPendingSubmissions())
+      ) {
+        await options.checkpointStore.releasePendingMutationFence();
+      }
+    } finally {
+      await releaseExecutionLease?.();
+    }
+  }
+}
+
+function runtimeSelectionContainsOffer(
+  plan: UncrustablesRepairPlan,
+  options: ExecuteRepairOptions,
+): boolean {
+  const selection = options.executionSelection ?? null;
+  if (selection) {
+    verifyRepairExecutionSelection(plan, selection);
+    const selected = new Set(selection.selected_action_ids);
+    return plan.entries.some((entry) =>
+      entry.actions.some(
+        (action) => action.kind === "OFFER" && selected.has(action.action_id),
+      ),
+    );
+  }
+  const requested = options.skus?.length
+    ? new Set(options.skus.map((sku) => sku.trim()).filter(Boolean))
+    : null;
+  let entries = plan.entries.filter(
+    (entry) => !requested || requested.has(entry.sku),
+  );
+  if (options.limit != null) entries = entries.slice(0, options.limit);
+  return entries.some((entry) =>
+    entry.actions.some((action) => action.kind === "OFFER"),
+  );
+}
+
+/** Canonical executor. Legacy OFFER plans remain readable/settleable, but no
+ * direct caller can mutate them after the launch-specific safety contract was
+ * introduced. */
+export async function executeRepairPlan(
+  plan: UncrustablesRepairPlan,
+  gateway: RepairAmazonGateway,
+  options: ExecuteRepairOptions,
+): Promise<ExecuteRepairResult> {
+  verifyRepairPlan(plan);
+  if (
+    options.apply &&
+    !plan.launch_pricing_source &&
+    runtimeSelectionContainsOffer(plan, options)
+  ) {
+    throw new Error(
+      "Legacy OFFER writes are disabled in the canonical executor: build a launch-aware plan with current ChannelMAX+Coupon authorization. No Amazon call was made.",
+    );
+  }
+  return executeRepairPlanInternal(plan, gateway, options);
+}
+
+/** @internal Unit tests for pre-launch checkpoint mechanics only. The runtime
+ * guard makes an accidental production import fail before any gateway call. */
+export async function __testOnlyExecuteRepairPlanLegacyUnsafe(
+  plan: UncrustablesRepairPlan,
+  gateway: RepairAmazonGateway,
+  options: ExecuteRepairOptions,
+): Promise<ExecuteRepairResult> {
+  if (!process.env.NODE_TEST_CONTEXT) {
+    throw new Error(
+      "The legacy unsafe executor is available only inside the Node test runner. No Amazon call was made.",
+    );
+  }
+  return executeRepairPlanInternal(plan, gateway, options);
 }

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "395cede9-4e5e-49f8-a815-04bb9685e772",
+  "created_at": "2026-07-18T10:33:33.337Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "YA-ASX6-PZE7:text_count",
+  "sku": "YA-ASX6-PZE7",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "d32fdb786ffbc618b55c72a88baab8615dfdf46628bbd0d8e43dc28b654113bc",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "13b790d57b5348519d7037531f992fd1",
+    "issues": []
+  },
+  "sha256": "c299b1b8a225065c38067e517aec2f84db2d5dea60eef4fb245a76b50d3ef0b7"
+}

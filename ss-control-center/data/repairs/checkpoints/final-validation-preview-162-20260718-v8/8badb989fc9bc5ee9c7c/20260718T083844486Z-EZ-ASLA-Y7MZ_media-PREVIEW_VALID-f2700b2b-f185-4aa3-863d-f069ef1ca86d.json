@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "f2700b2b-f185-4aa3-863d-f069ef1ca86d",
+  "created_at": "2026-07-18T08:38:44.486Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "EZ-ASLA-Y7MZ:media",
+  "sku": "EZ-ASLA-Y7MZ",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "75372db2463e42f06bb1441866669c46a0a529b4fb2db5cb9a1b57b489b67fc5",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "8b63f10480194c64a2c575eaf0a68320",
+    "issues": []
+  },
+  "sha256": "4fd4a5b99cee0e45318bd571350ed615d6a47adfa660b5f460abc2434a649690"
+}

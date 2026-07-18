@@ -1,0 +1,39 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "7863bcac-2f00-42ff-89a0-68820222943d",
+  "created_at": "2026-07-18T11:37:08.088Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "GU-ASQ1-S7M6:text_count",
+  "sku": "GU-ASQ1-S7M6",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "9ff105e3-3f0f-40b8-a3d7-29e38396dfa7",
+    "patch_sha256": "eb4d12670855890173797e89fe0283deef3c036214671bab574420559279f733",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "eb4d12670855890173797e89fe0283deef3c036214671bab574420559279f733",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "9f28a76e86e45dc456332e0f71b5cc53893838f2c48fba46f4955c457ffeac7d"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "660c104b2c664871a7556ae1a0bbac65",
+    "issues": []
+  },
+  "sha256": "4337d80c19860ea7fd70cad2e693d94fa4857830b94033722b87b4518bd6cd0b"
+}

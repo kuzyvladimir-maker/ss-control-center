@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "c230fad3-6a90-4a30-a571-b5bf5c6ef2ef",
+  "created_at": "2026-07-18T11:54:24.742Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RY-ASMO-6N4F:text_count",
+  "sku": "RY-ASMO-6N4F",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "e46562d1-f005-4928-bedd-e87548c8c329",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "95d559044106dc088848413acc87fc4cea0253817a35289e195f54f818cbd459",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "53923a80a44f95e6d3530b33adaeddf7e846c01a1989cc7268022d7e7a733883"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "2bf6b5d3ee96a1e428405daa9fedf20fef924095e06b980828fb1d4dadf8d43f"
+}

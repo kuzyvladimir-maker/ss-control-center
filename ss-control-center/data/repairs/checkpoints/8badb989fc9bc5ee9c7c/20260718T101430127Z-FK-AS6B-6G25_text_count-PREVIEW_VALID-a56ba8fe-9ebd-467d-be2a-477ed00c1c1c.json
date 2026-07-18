@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "a56ba8fe-9ebd-467d-be2a-477ed00c1c1c",
+  "created_at": "2026-07-18T10:14:30.127Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "FK-AS6B-6G25:text_count",
+  "sku": "FK-AS6B-6G25",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "691a64dd5ff8e01376ead7ace8348137865b3e143a10508af7e9637e545e0cd2",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "e26121b0bdd840b985a90b974b6f75f0",
+    "issues": []
+  },
+  "sha256": "b96f5c99af00c4c2d10cceba4217230603de95bf1a056f5864c78232e7e638b2"
+}

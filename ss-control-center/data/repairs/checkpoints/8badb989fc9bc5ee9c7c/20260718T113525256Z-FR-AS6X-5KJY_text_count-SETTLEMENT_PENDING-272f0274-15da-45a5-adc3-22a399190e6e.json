@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "272f0274-15da-45a5-adc3-22a399190e6e",
+  "created_at": "2026-07-18T11:35:25.256Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "FR-AS6X-5KJY:text_count",
+  "sku": "FR-AS6X-5KJY",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "43129101-caf7-4f3d-8d7f-0c9e396943f6",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "cc9043e1701e6952970e65c49e3cefa3f428d036a6a8a41f1a55e1083e54fb8b",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "b81f0d574b074d5c9cd30ab0b42631cfaa32022be0905ec5968ad46b6ec36a93"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "3c223d248bc61b328521b6954037e2f5b8308db5ddb9d599c47998d8598f1646"
+}

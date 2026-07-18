@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "ba74b525-3f11-4f00-90ef-18e6c6861998",
+  "created_at": "2026-07-18T12:09:52.278Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "ZP-ASJD-X7ZD:text_count",
+  "sku": "ZP-ASJD-X7ZD",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "f97a6b013f76226766b50b056f48ef7a0103f70b179c38df65e1cbe97c1c2cd9",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "d2768c1bbf5b46d699c54710e9bef0aa",
+    "issues": []
+  },
+  "sha256": "c811bb679e9339c2db3d0e43d8f045148bb46879271a89c4880e5f6f4b812be6"
+}

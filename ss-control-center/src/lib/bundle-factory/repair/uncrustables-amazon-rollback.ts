@@ -21,7 +21,7 @@
  */
 
 import { createHash, randomUUID } from "node:crypto";
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
@@ -35,17 +35,25 @@ import {
   buildSelectorDeletePatch,
   buildValidationPreviewPatchSet,
   canonicalPurchasableOfferStateValue,
+  CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE,
   hasBlockingIssues,
+  MEDIA_PATCH_PATHS,
+  OFFER_PATCH_PATHS,
+  quarantineUnselectedPendingRepairSubmissions,
   recoverPendingRepairSettlements,
   purchasableOfferRestoreMergeValue,
   sha256,
   stableJson,
+  TEXT_STRUCTURED_ONLY_PROFILE,
   validationPreviewCheckpointDetail,
   validationPreviewGatewayContext,
+  verifyRepairExecutionSelection,
   verifyRepairPlan,
+  CANONICAL_UNCRUSTABLES_AMAZON_COORDINATION_DIR,
   ImmutableCheckpointStore,
   type RepairValidationPreviewContext,
   type RepairActionKind,
+  type RepairExecutionSelection,
   type UncrustablesRepairPlan,
 } from "./uncrustables-surgical";
 
@@ -53,7 +61,7 @@ export const UNCRUSTABLES_AMAZON_SCOPE = 164 as const;
 export const PRECHANGE_SNAPSHOT_SCHEMA =
   "uncrustables-amazon-prechange-snapshot/v1" as const;
 export const ROLLBACK_PLAN_SCHEMA =
-  "uncrustables-amazon-rollback-plan/v2" as const;
+  "uncrustables-amazon-rollback-plan/v3" as const;
 export const ROLLBACK_CHECKPOINT_SCHEMA =
   "uncrustables-amazon-rollback-checkpoint/v1" as const;
 
@@ -799,6 +807,16 @@ export interface UncrustablesRollbackPlan {
     plan_id: string;
     source_ledger_sha256: string;
   };
+  /** Null only for a legacy whole-plan rollback. A scoped forward execution
+   * must be covered by the exact sealed selection artifact, never by a
+   * superset rollback whose operator-facing token says something different. */
+  source_execution_selection: {
+    path: string;
+    sha256: string;
+    profile: RepairExecutionSelection["profile"];
+    selected_actions: number;
+    selected_action_ids_sha256: string;
+  } | null;
   policy: {
     marketplace_id: string;
     patch_only: true;
@@ -1043,11 +1061,32 @@ export function buildRollbackPlan(input: {
   snapshot: UncrustablesPreChangeSnapshot;
   repairPlanPath: string;
   repairPlan: UncrustablesRepairPlan;
+  executionSelectionPath?: string | null;
+  executionSelection?: RepairExecutionSelection | null;
   canarySize?: number;
   createdAt?: Date;
 }): UncrustablesRollbackPlan {
   verifyPreChangeSnapshot(input.snapshot);
   verifyRepairPlan(input.repairPlan);
+  const executionSelection = input.executionSelection ?? null;
+  const executionSelectionPath = input.executionSelectionPath?.trim() || null;
+  if ((executionSelection == null) !== (executionSelectionPath == null)) {
+    throw new Error(
+      "Rollback planning requires both executionSelection and executionSelectionPath, or neither.",
+    );
+  }
+  if (executionSelection) {
+    verifyRepairExecutionSelection(input.repairPlan, executionSelection);
+    if (
+      executionSelection.source_plan.path != null &&
+      path.resolve(executionSelection.source_plan.path) !==
+        path.resolve(input.repairPlanPath)
+    ) {
+      throw new Error(
+        "Execution selection and rollback do not bind the same source repair-plan path.",
+      );
+    }
+  }
   if (input.repairPlan.source_ledger.sha256 !== input.snapshot.source_ledger.sha256) {
     throw new Error("Repair plan and pre-change snapshot do not share the exact source ledger SHA-256.");
   }
@@ -1068,8 +1107,34 @@ export function buildRollbackPlan(input: {
   const evidenceByUrl = new Map(
     input.snapshot.image_capture.evidence.map((item) => [item.url, item]),
   );
+  const selectedActionIds = executionSelection
+    ? new Set(executionSelection.selected_action_ids)
+    : null;
+  const selectedRepairEntries = input.repairPlan.entries
+    .map((entry) => ({
+      ...entry,
+      actions: selectedActionIds
+        ? entry.actions.filter((action) => selectedActionIds.has(action.action_id))
+        : entry.actions,
+    }))
+    .filter((entry) => entry.actions.length > 0);
+  if (executionSelection) {
+    const resolvedActionIds = selectedRepairEntries.flatMap((entry) =>
+      entry.actions.map((action) => action.action_id),
+    );
+    if (
+      stableJson(resolvedActionIds) !==
+      stableJson(executionSelection.selected_action_ids) ||
+      stableJson(selectedRepairEntries.map((entry) => entry.sku)) !==
+      stableJson(executionSelection.selected_skus)
+    ) {
+      throw new Error(
+        "Execution selection is not an exact ordered action subset of the source repair plan.",
+      );
+    }
+  }
   let missingMediaEvidence = 0;
-  const entries: RollbackPlanEntry[] = input.repairPlan.entries.map((repairEntry) => {
+  const entries: RollbackPlanEntry[] = selectedRepairEntries.map((repairEntry) => {
     const beforeEntry = snapshotBySku.get(repairEntry.sku);
     if (
       !beforeEntry ||
@@ -1136,6 +1201,16 @@ export function buildRollbackPlan(input: {
           media_urls_requiring_binary_evidence: mediaUrls,
         };
       });
+    if (
+      executionSelection &&
+      operations.some((operation) =>
+        executionSelection.forbidden_patch_paths.includes(operation.path),
+      )
+    ) {
+      throw new Error(
+        `Selection-scoped rollback for ${repairEntry.sku} contains a forbidden patch path.`,
+      );
+    }
     if (repairEntry.actions.length > 0 && operations.length === 0) {
       throw new Error(`Repair entry ${repairEntry.sku} produced no reversible operations.`);
     }
@@ -1185,6 +1260,17 @@ export function buildRollbackPlan(input: {
       plan_id: input.repairPlan.plan_id,
       source_ledger_sha256: input.repairPlan.source_ledger.sha256,
     },
+    source_execution_selection: executionSelection
+      ? {
+          path: executionSelectionPath as string,
+          sha256: executionSelection.sha256,
+          profile: executionSelection.profile,
+          selected_actions: executionSelection.selected_actions,
+          selected_action_ids_sha256: sha256(
+            stableJson(executionSelection.selected_action_ids),
+          ),
+        }
+      : null,
     policy: {
       marketplace_id: MARKETPLACE_ID,
       patch_only: true,
@@ -1207,8 +1293,11 @@ export function buildRollbackPlan(input: {
     },
     scope: {
       snapshot_entries: UNCRUSTABLES_AMAZON_SCOPE,
-      repair_entries: input.repairPlan.entries.length,
-      repair_actions: input.repairPlan.scope.actions,
+      repair_entries: selectedRepairEntries.length,
+      repair_actions: selectedRepairEntries.reduce(
+        (sum, entry) => sum + entry.actions.length,
+        0,
+      ),
       rollback_entries: entries.length,
       inverse_operations: entries.reduce(
         (sum, entry) => sum + entry.operations.length,
@@ -1240,9 +1329,21 @@ export function verifyRollbackPlan(plan: UncrustablesRollbackPlan): void {
     throw new Error("Rollback plan safety policy or exact scope is invalid.");
   }
   verifySeal(plan as unknown as UnknownRecord, "Rollback plan");
+  const selectionSource = plan.source_execution_selection;
+  if (
+    selectionSource != null &&
+    (!nonEmptyString(selectionSource.path) ||
+      !/^[a-f0-9]{64}$/i.test(selectionSource.sha256) ||
+      !Number.isInteger(selectionSource.selected_actions) ||
+      selectionSource.selected_actions <= 0 ||
+      !/^[a-f0-9]{64}$/i.test(selectionSource.selected_action_ids_sha256))
+  ) {
+    throw new Error("Rollback execution-selection binding is invalid.");
+  }
   const entryIds = new Set<string>();
   const skus = new Set<string>();
   const operationIds = new Set<string>();
+  const forwardActionIds = new Set<string>();
   for (const entry of plan.entries) {
     if (
       entryIds.has(entry.rollback_entry_id) ||
@@ -1253,8 +1354,49 @@ export function verifyRollbackPlan(plan: UncrustablesRollbackPlan): void {
     }
     entryIds.add(entry.rollback_entry_id);
     skus.add(entry.sku);
+    if (!entry.forward_action_ids.length) {
+      throw new Error(`Rollback entry ${entry.sku} has no forward action coverage.`);
+    }
+    for (const actionId of entry.forward_action_ids) {
+      if (!nonEmptyString(actionId) || forwardActionIds.has(actionId)) {
+        throw new Error(`Duplicate or invalid forward action coverage ${actionId}.`);
+      }
+      forwardActionIds.add(actionId);
+    }
+    const contentScoped =
+      selectionSource?.profile === CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE ||
+      selectionSource?.profile === TEXT_STRUCTURED_ONLY_PROFILE;
+    if (contentScoped && entry.forward_action_kinds.includes("OFFER")) {
+      throw new Error(
+        `Content-only rollback entry ${entry.sku} contains OFFER coverage.`,
+      );
+    }
+    if (
+      selectionSource?.profile === TEXT_STRUCTURED_ONLY_PROFILE &&
+      entry.forward_action_kinds.includes("MEDIA")
+    ) {
+      throw new Error(
+        `Text/structured-only rollback entry ${entry.sku} contains MEDIA coverage.`,
+      );
+    }
     for (const operation of entry.operations) {
       attributeName(operation.path);
+      if (
+        contentScoped &&
+        (OFFER_PATCH_PATHS as readonly string[]).includes(operation.path)
+      ) {
+        throw new Error(
+          `Content-only rollback contains forbidden operation ${operation.path}.`,
+        );
+      }
+      if (
+        selectionSource?.profile === TEXT_STRUCTURED_ONLY_PROFILE &&
+        (MEDIA_PATCH_PATHS as readonly string[]).includes(operation.path)
+      ) {
+        throw new Error(
+          `Text/structured-only rollback contains forbidden operation ${operation.path}.`,
+        );
+      }
       if (operationIds.has(operation.operation_id)) {
         throw new Error(`Duplicate rollback operation ${operation.operation_id}.`);
       }
@@ -1289,12 +1431,24 @@ export function verifyRollbackPlan(plan: UncrustablesRollbackPlan): void {
   }
   if (
     plan.scope.rollback_entries !== plan.entries.length ||
+    plan.scope.repair_entries !== plan.entries.length ||
+    plan.scope.repair_actions !== forwardActionIds.size ||
     plan.scope.inverse_operations !==
       plan.entries.reduce((sum, entry) => sum + entry.operations.length, 0) ||
     plan.canary.skus.some((sku) => !skus.has(sku)) ||
     new Set(plan.canary.skus).size !== plan.canary.skus.length
   ) {
     throw new Error("Rollback plan scope/canary summary is inconsistent.");
+  }
+  if (
+    selectionSource &&
+    (selectionSource.selected_actions !== forwardActionIds.size ||
+      selectionSource.selected_action_ids_sha256 !==
+        sha256(stableJson(plan.entries.flatMap((entry) => entry.forward_action_ids))))
+  ) {
+    throw new Error(
+      "Rollback entries do not exactly cover the sealed execution selection action IDs.",
+    );
   }
 }
 
@@ -1382,6 +1536,8 @@ export function assertForwardApplyRollbackCoverage(input: {
   repairPlan: UncrustablesRepairPlan;
   snapshot: UncrustablesPreChangeSnapshot;
   rollbackPlan: UncrustablesRollbackPlan;
+  executionSelection?: RepairExecutionSelection | null;
+  executionSelectionPath?: string | null;
   selectedSkus?: string[] | null;
   limit?: number | null;
   now?: Date;
@@ -1390,6 +1546,25 @@ export function assertForwardApplyRollbackCoverage(input: {
   verifyRepairPlan(input.repairPlan);
   verifyPreChangeSnapshot(input.snapshot);
   verifyRollbackPlan(input.rollbackPlan);
+  const executionSelection = input.executionSelection ?? null;
+  const executionSelectionPath = input.executionSelectionPath?.trim() || null;
+  if (executionSelection) {
+    verifyRepairExecutionSelection(input.repairPlan, executionSelection);
+    if (
+      !executionSelectionPath ||
+      input.selectedSkus?.length ||
+      input.limit != null
+    ) {
+      throw new Error(
+        "Selection-scoped forward apply requires its exact artifact path and cannot be combined with runtime SKU/limit narrowing.",
+      );
+    }
+  } else if (executionSelectionPath) {
+    throw new Error(
+      "executionSelectionPath was supplied without a sealed execution selection.",
+    );
+  }
+  const rollbackSelection = input.rollbackPlan.source_execution_selection;
   if (
     !input.rollbackPlan.apply_eligible ||
     input.snapshot.capture_mode !== "LIVE_SP_API" ||
@@ -1405,17 +1580,51 @@ export function assertForwardApplyRollbackCoverage(input: {
     input.snapshot.reviewed_overrides.sha256 !==
       input.repairPlan.desired_manifest_source.sha256 ||
     path.resolve(input.snapshot.reviewed_overrides.path) !==
-      path.resolve(input.repairPlan.desired_manifest_source.path)
+      path.resolve(input.repairPlan.desired_manifest_source.path) ||
+    (executionSelection == null && rollbackSelection != null) ||
+    (executionSelection != null &&
+      (rollbackSelection == null ||
+        rollbackSelection.sha256 !== executionSelection.sha256 ||
+        path.resolve(rollbackSelection.path) !==
+          path.resolve(executionSelectionPath as string) ||
+        rollbackSelection.profile !== executionSelection.profile ||
+        rollbackSelection.selected_actions !==
+          executionSelection.selected_actions ||
+        rollbackSelection.selected_action_ids_sha256 !==
+          sha256(stableJson(executionSelection.selected_action_ids))))
   ) {
     throw new Error("Forward apply is not covered by an apply-eligible exact live rollback set.");
   }
-  const requested = input.selectedSkus?.length
-    ? new Set(input.selectedSkus)
-    : null;
-  let selected = input.repairPlan.entries.filter(
-    (entry) => !requested || requested.has(entry.sku),
-  );
-  if (input.limit != null) selected = selected.slice(0, input.limit);
+  let selected: UncrustablesRepairPlan["entries"];
+  if (executionSelection) {
+    const actionIds = new Set(executionSelection.selected_action_ids);
+    selected = input.repairPlan.entries
+      .map((entry) => ({
+        ...entry,
+        actions: entry.actions.filter((action) => actionIds.has(action.action_id)),
+      }))
+      .filter((entry) => entry.actions.length > 0);
+    if (
+      stableJson(selected.flatMap((entry) =>
+        entry.actions.map((action) => action.action_id))) !==
+        stableJson(executionSelection.selected_action_ids) ||
+      stableJson(input.rollbackPlan.entries.flatMap((entry) =>
+        entry.forward_action_ids)) !==
+        stableJson(executionSelection.selected_action_ids)
+    ) {
+      throw new Error(
+        "Selection-scoped rollback coverage is not the exact selected action set.",
+      );
+    }
+  } else {
+    const requested = input.selectedSkus?.length
+      ? new Set(input.selectedSkus)
+      : null;
+    selected = input.repairPlan.entries.filter(
+      (entry) => !requested || requested.has(entry.sku),
+    );
+    if (input.limit != null) selected = selected.slice(0, input.limit);
+  }
   const rollbackBySku = new Map(
     input.rollbackPlan.entries.map((entry) => [entry.sku, entry]),
   );
@@ -1548,6 +1757,7 @@ export interface RollbackGateway extends SnapshotReadGateway {
 
 export type RollbackCheckpointStatus =
   | "PREVIEW_VALID"
+  | "SUBMISSION_ARMED"
   | "SUBMITTED"
   | "SETTLEMENT_PENDING"
   | "SETTLED_FORWARD"
@@ -1581,10 +1791,54 @@ export class ImmutableRollbackCheckpointStore {
   constructor(
     private readonly rootDir: string,
     private readonly rollbackPlanSha256: string,
+    private readonly coordinationDir: string =
+      CANONICAL_UNCRUSTABLES_AMAZON_COORDINATION_DIR,
   ) {}
 
   private directory(): string {
     return path.join(this.rootDir, this.rollbackPlanSha256.slice(0, 20));
+  }
+
+  async acquireExecutionLease(purpose: string): Promise<() => Promise<void>> {
+    const coordinationDir = path.resolve(this.coordinationDir);
+    await mkdir(coordinationDir, { recursive: true });
+    const leasePath = path.join(coordinationDir, "active-execution.lock");
+    const leaseId = randomUUID();
+    const body = {
+      schema_version: "uncrustables-amazon-mutation-lease/v1",
+      immutable_rollback_plan_sha256: this.rollbackPlanSha256,
+      lease_id: leaseId,
+      acquired_at: new Date().toISOString(),
+      process_id: process.pid,
+      purpose,
+    };
+    try {
+      await writeFile(leasePath, `${JSON.stringify(body, null, 2)}\n`, {
+        encoding: "utf8",
+        flag: "wx",
+      });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "EEXIST") {
+        throw new Error(
+          `Amazon rollback execution lease already exists for ${this.rollbackPlanSha256}. Refusing concurrent or post-crash execution; inspect ${leasePath} and pending settlement checkpoints before manual lease removal.`,
+        );
+      }
+      throw error;
+    }
+    let released = false;
+    return async () => {
+      if (released) return;
+      const current = JSON.parse(await readFile(leasePath, "utf8")) as {
+        lease_id?: unknown;
+      };
+      if (current.lease_id !== leaseId) {
+        throw new Error(
+          `Amazon rollback execution lease ownership changed for ${this.rollbackPlanSha256}; refusing to remove it.`,
+        );
+      }
+      await unlink(leasePath);
+      released = true;
+    };
   }
 
   async append(
@@ -1677,8 +1931,33 @@ export class ImmutableRollbackCheckpointStore {
         left.event.created_at.localeCompare(right.event.created_at) ||
         left.name.localeCompare(right.name),
     );
+    const explicitlyClosedSubmissionIds = new Set(
+      events
+        .filter(({ event }) =>
+          event.status === "VERIFIED" ||
+          event.status === "ALREADY_ROLLED_BACK")
+        .map(({ event }) => event.detail.submitted_event_id)
+        .filter(
+          (eventId): eventId is string =>
+            typeof eventId === "string" && eventId.length > 0,
+        ),
+    );
+    const supersededArmedEventIds = new Set(
+      events
+        .filter(({ event }) => event.status === "SUBMITTED")
+        .map(({ event }) => event.detail.armed_event_id)
+        .filter(
+          (eventId): eventId is string =>
+            typeof eventId === "string" && eventId.length > 0,
+        ),
+    );
     for (const { event } of events) {
-      if (event.status === "SUBMITTED") {
+      if (event.status === "SUBMISSION_ARMED" || event.status === "SUBMITTED") {
+        if (
+          explicitlyClosedSubmissionIds.has(event.event_id) ||
+          (event.status === "SUBMISSION_ARMED" &&
+            supersededArmedEventIds.has(event.event_id))
+        ) continue;
         pending.set(event.rollback_entry_id, {
           rollback_entry_id: event.rollback_entry_id,
           sku: event.sku,
@@ -1686,12 +1965,16 @@ export class ImmutableRollbackCheckpointStore {
           submitted_at: event.created_at,
           detail: structuredClone(event.detail),
         });
-      } else if (
-        event.status === "VERIFIED" ||
-        event.status === "ALREADY_ROLLED_BACK" ||
-        event.status === "SETTLED_FORWARD"
-      ) {
-        pending.delete(event.rollback_entry_id);
+      } else if (event.status === "VERIFIED" || event.status === "ALREADY_ROLLED_BACK") {
+        const current = pending.get(event.rollback_entry_id);
+        const closedEventId = event.detail.submitted_event_id;
+        if (
+          current &&
+          typeof closedEventId === "string" &&
+          closedEventId === current.submitted_event_id
+        ) {
+          pending.delete(event.rollback_entry_id);
+        }
       }
     }
     return pending;
@@ -1905,6 +2188,8 @@ export interface ExecuteRollbackOptions {
   /** Required for a mutating rollback so a late forward PATCH cannot be
    * mistaken for an already-restored listing. */
   forwardRepairPlan?: UncrustablesRepairPlan;
+  forwardExecutionSelection?: RepairExecutionSelection;
+  forwardExecutionSelectionPath?: string;
   forwardCheckpointStore?: ImmutableCheckpointStore;
   requestDelayMs?: number;
   verifyAttempts?: number;
@@ -1927,6 +2212,7 @@ export interface ExecuteRollbackResult {
   preview_valid_entries: number;
   failed_entries: number;
   recovered_pending_forward_actions: number;
+  quarantined_pending_forward_actions: number;
   recovered_pending_rollback_entries: number;
   unresolved_settlements: number;
   stopped_early: boolean;
@@ -1977,6 +2263,40 @@ export async function executeRollbackPlan(
         "Rollback forward-settlement guard plan SHA-256 differs from the sealed rollback source. No Amazon call was made.",
       );
     }
+    const selectionSource = plan.source_execution_selection;
+    if (selectionSource) {
+      if (!options.forwardExecutionSelection) {
+        throw new Error(
+          "Selection-scoped rollback requires the exact sealed forward execution selection. No Amazon call was made.",
+        );
+      }
+      verifyRepairExecutionSelection(
+        options.forwardRepairPlan,
+        options.forwardExecutionSelection,
+      );
+      if (
+        !options.forwardExecutionSelectionPath ||
+        path.resolve(options.forwardExecutionSelectionPath) !==
+          path.resolve(selectionSource.path) ||
+        selectionSource.sha256 !== options.forwardExecutionSelection.sha256 ||
+        selectionSource.profile !== options.forwardExecutionSelection.profile ||
+        selectionSource.selected_actions !==
+          options.forwardExecutionSelection.selected_actions ||
+        selectionSource.selected_action_ids_sha256 !==
+          sha256(stableJson(options.forwardExecutionSelection.selected_action_ids))
+      ) {
+        throw new Error(
+          "Rollback forward execution selection differs from the sealed rollback source. No Amazon call was made.",
+        );
+      }
+    } else if (
+      options.forwardExecutionSelection ||
+      options.forwardExecutionSelectionPath
+    ) {
+      throw new Error(
+        "A whole-plan rollback cannot execute as a selection-scoped rollback. No Amazon call was made.",
+      );
+    }
   }
   const canarySkus = new Set(plan.canary.skus);
   const entries = requestedSkus
@@ -2009,6 +2329,7 @@ export async function executeRollbackPlan(
     preview_valid_entries: 0,
     failed_entries: 0,
     recovered_pending_forward_actions: 0,
+    quarantined_pending_forward_actions: 0,
     recovered_pending_rollback_entries: 0,
     unresolved_settlements: 0,
     stopped_early: false,
@@ -2055,13 +2376,41 @@ export async function executeRollbackPlan(
     options.sleep ??
     ((milliseconds: number) =>
       new Promise<void>((resolve) => setTimeout(resolve, milliseconds)));
+  let releaseForwardLease: (() => Promise<void>) | null = null;
+  if (options.apply) {
+    releaseForwardLease = await (
+      options.forwardCheckpointStore as ImmutableCheckpointStore
+    ).acquireExecutionLease(`ROLLBACK_FORWARD_SETTLEMENT:${plan.rollback_plan_id}`);
+  }
+  let mutationFenceClaimed = false;
+  try {
+  if (options.apply) {
+    await (
+      options.forwardCheckpointStore as ImmutableCheckpointStore
+    ).claimPendingMutationFence(`ROLLBACK_APPLY:${plan.rollback_plan_id}`);
+    mutationFenceClaimed = true;
+    if (options.forwardExecutionSelection) {
+      const quarantined =
+        await quarantineUnselectedPendingRepairSubmissions({
+          plan: options.forwardRepairPlan as UncrustablesRepairPlan,
+          selection: options.forwardExecutionSelection,
+          checkpointStore:
+            options.forwardCheckpointStore as ImmutableCheckpointStore,
+        });
+      result.quarantined_pending_forward_actions = quarantined.length;
+    }
+  }
   const selectedSkuList = entries.map((entry) => entry.sku);
+  const selectedForwardActionIds = entries.flatMap(
+    (entry) => entry.forward_action_ids,
+  );
   const forwardRecovery = options.apply
     ? await recoverPendingRepairSettlements({
         plan: options.forwardRepairPlan as UncrustablesRepairPlan,
         gateway,
         checkpointStore: options.forwardCheckpointStore as ImmutableCheckpointStore,
         skus: selectedSkuList,
+        actionIds: selectedForwardActionIds,
         attempts: settlementAttempts,
         delayMs: settlementDelayMs,
         stableReads: settlementStableReads,
@@ -2071,15 +2420,11 @@ export async function executeRollbackPlan(
   result.recovered_pending_forward_actions = forwardRecovery.length;
   const forwardBlockedSkus = new Set(
     forwardRecovery
-      .filter(
-        (outcome) =>
-          outcome.state === "UNRESOLVED" ||
-          outcome.state === "STABLE_NON_DESIRED",
-      )
+      .filter((outcome) => outcome.state !== "DESIRED")
       .map((outcome) => outcome.sku),
   );
   result.unresolved_settlements += forwardRecovery.filter(
-    (outcome) => outcome.state === "UNRESOLVED",
+    (outcome) => outcome.state !== "DESIRED",
   ).length;
   const completed = await options.checkpointStore.verifiedEntryIds();
   const pendingRollbacks = options.apply
@@ -2362,6 +2707,15 @@ export async function executeRollbackPlan(
         listing,
         patches,
       );
+      const armedCheckpoint = await options.checkpointStore.append({
+        rollback_entry_id: entry.rollback_entry_id,
+        sku: entry.sku,
+        status: "SUBMISSION_ARMED",
+        detail: {
+          crash_window_guard: true,
+          settlement_guard: exactSettlementEvidence,
+        },
+      });
       const submitted = await gateway.patchListing(
         entry.store_index,
         entry.sku,
@@ -2377,11 +2731,12 @@ export async function executeRollbackPlan(
           `Amazon did not accept rollback ${entry.sku}: ${JSON.stringify(responseDetail(submitted))}`,
         );
       }
-      await options.checkpointStore.append({
+      const submittedCheckpoint = await options.checkpointStore.append({
         rollback_entry_id: entry.rollback_entry_id,
         sku: entry.sku,
         status: "SUBMITTED",
         detail: {
+          armed_event_id: armedCheckpoint.event_id,
           ...validationPreviewCheckpointDetail(guardedPreviewSet),
           settlement_guard: exactSettlementEvidence,
           ...responseDetail(submitted),
@@ -2394,6 +2749,7 @@ export async function executeRollbackPlan(
         status: "SETTLEMENT_PENDING",
         detail: {
           recovery: false,
+          submitted_event_id: submittedCheckpoint.event_id,
           trigger: "ACCEPTED_ROLLBACK_POST_GET",
           settlement_guard: exactSettlementEvidence,
           fast_verify_attempts: verifyAttempts,
@@ -2439,6 +2795,7 @@ export async function executeRollbackPlan(
         });
         const detail = {
           recovery: false,
+          submitted_event_id: submittedCheckpoint.event_id,
           settlement_guard: exactSettlementEvidence,
           fast_verify_attempts: verifyAttempts,
           extended_polling_attempts: settled.attempts,
@@ -2475,7 +2832,10 @@ export async function executeRollbackPlan(
         rollback_entry_id: entry.rollback_entry_id,
         sku: entry.sku,
         status: "VERIFIED",
-        detail: { paths: entry.operations.map((operation) => operation.path) },
+        detail: {
+          submitted_event_id: submittedCheckpoint.event_id,
+          paths: entry.operations.map((operation) => operation.path),
+        },
       });
       result.verified_entries++;
     } catch (error) {
@@ -2498,5 +2858,22 @@ export async function executeRollbackPlan(
       }
     }
   }
-  return result;
+    return result;
+  } finally {
+    try {
+      if (
+        mutationFenceClaimed &&
+        (await (
+          options.forwardCheckpointStore as ImmutableCheckpointStore
+        ).pendingSubmissions()).size === 0 &&
+        (await options.checkpointStore.pendingSubmissions()).size === 0
+      ) {
+        await (
+          options.forwardCheckpointStore as ImmutableCheckpointStore
+        ).releasePendingMutationFence();
+      }
+    } finally {
+      await releaseForwardLease?.();
+    }
+  }
 }

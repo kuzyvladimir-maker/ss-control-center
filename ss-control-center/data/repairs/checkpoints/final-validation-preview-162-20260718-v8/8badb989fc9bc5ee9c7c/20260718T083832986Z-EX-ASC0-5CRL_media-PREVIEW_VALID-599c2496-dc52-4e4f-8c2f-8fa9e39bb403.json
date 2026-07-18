@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "599c2496-dc52-4e4f-8c2f-8fa9e39bb403",
+  "created_at": "2026-07-18T08:38:32.986Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "EX-ASC0-5CRL:media",
+  "sku": "EX-ASC0-5CRL",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "8345276ddf2168e245632783e8ea37e1f7f7dc8b20140017733ac974f1eb13ee",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5"
+    ],
+    "status": "VALID",
+    "submission_id": "28943f1e98d44c6dabaa0b2cc5ad7341",
+    "issues": []
+  },
+  "sha256": "366ec219d04d06a87b885eea25d9ea9d0fc84f3313b097f78e0baa3824ef1bd7"
+}

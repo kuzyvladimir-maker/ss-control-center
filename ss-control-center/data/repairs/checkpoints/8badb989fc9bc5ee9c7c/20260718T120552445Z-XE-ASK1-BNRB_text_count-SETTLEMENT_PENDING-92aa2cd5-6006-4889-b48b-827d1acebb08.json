@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "92aa2cd5-6006-4889-b48b-827d1acebb08",
+  "created_at": "2026-07-18T12:05:52.445Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "XE-ASK1-BNRB:text_count",
+  "sku": "XE-ASK1-BNRB",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "42867f85-48ee-4252-a364-2f738ae6a0d9",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "34a3aea59fc2c9382791f497f30a378454ce92b238f75f18cfa1f17fe542c435",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "c5d2afee7c86799838946eac4364c87162892e2fe3e3a264a0b20f03fd6637e6"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "ec53fd9d7a041afa1fbef567a3b57591e01a727c95fc435f7902d55f8c97855a"
+}

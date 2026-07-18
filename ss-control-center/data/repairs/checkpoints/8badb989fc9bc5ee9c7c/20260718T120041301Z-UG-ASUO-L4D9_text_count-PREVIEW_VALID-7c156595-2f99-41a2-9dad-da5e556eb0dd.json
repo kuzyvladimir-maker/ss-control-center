@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "7c156595-2f99-41a2-9dad-da5e556eb0dd",
+  "created_at": "2026-07-18T12:00:41.301Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "UG-ASUO-L4D9:text_count",
+  "sku": "UG-ASUO-L4D9",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "b90b984836864b5abdd6be202d130485a909f25eda7b605bdd6055577caf778a",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "f7389d48aa6a4365b715eeb9786748b9",
+    "issues": []
+  },
+  "sha256": "9a5a27ec090fb4c412c13d7dc4ca5d47797d0aae1569c5775bd3622773dd4877"
+}

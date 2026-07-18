@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "2e32505e-fa47-48fb-bded-e838b7f03699",
+  "created_at": "2026-07-18T10:39:52.003Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "KP-ASYC-RN84:text_count",
+  "sku": "KP-ASYC-RN84",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "581b1d50-8132-4e72-8f61-909f1f87a732",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "06f7cdf20c0decf838ad18ba6f88d73311c8cefaf2a8f77842e0c0e21b4d658a",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "125177c4f1fc38be88f4e021e909807ebc46f752cc8bc1b1b126d5b3cd732298"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 30000,
+    "stable_reads_required": 3
+  },
+  "sha256": "70e01b650fcaaa67c9659d7ddedab5129a77bec321fa0daebe9368e7f31dc5d0"
+}

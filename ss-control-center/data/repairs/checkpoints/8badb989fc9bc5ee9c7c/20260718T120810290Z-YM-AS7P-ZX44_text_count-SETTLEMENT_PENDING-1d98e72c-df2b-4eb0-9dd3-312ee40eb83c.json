@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1d98e72c-df2b-4eb0-9dd3-312ee40eb83c",
+  "created_at": "2026-07-18T12:08:10.290Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "YM-AS7P-ZX44:text_count",
+  "sku": "YM-AS7P-ZX44",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "56adc89b-bac2-4fc4-828f-98d2ca96f210",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "63976d10ae733250aeb9602afde68ea4b578ec914da4b969f3e2dbba222824d5",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "f75ab1e9e652115fcb970bb56ea1d7653509573879f34bab9d6f28adca1a6e0a"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "39399646adad7e8b739524c9d7551205dd76d581f2771a31e6d328264df90ef2"
+}

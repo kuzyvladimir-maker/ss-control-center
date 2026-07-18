@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "f43c0f34-4244-4a06-8a34-b5f46735ae90",
+  "created_at": "2026-07-18T10:32:37.587Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "WR-ASR5-AVWE:text_count",
+  "sku": "WR-ASR5-AVWE",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "f90b9ee1d9427375e4799306dfac7d3de4587af55118767352a35c1374772483",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "57a14a920cd24267847cff7e98b280dc",
+    "issues": []
+  },
+  "sha256": "d148c1938bf4907ad24de8377a71582627d9297644da361821b8abdb42249307"
+}

@@ -1,0 +1,38 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "377576b3-d61a-4902-bfa8-20c7f4230faf",
+  "created_at": "2026-07-18T15:00:40.437Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "AZ-ASMY-VEQ2:media",
+  "sku": "AZ-ASMY-VEQ2",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "9da5ddee4b991dcc550a68d5fcbd13c08e60388ae4c3eb268d28f9e9b974d19b",
+    "submitted_event_id": "5bb1992e-17aa-4bfd-86c7-5e0d15a376b6",
+    "submitted_at": "2026-07-18T13:07:11.913Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "7b41327eebc2e0c1a180817d1e7d3a34c07eeee3ce7d3f6a58cef0197f0957ac",
+      "exact_action_paths": [
+        "/attributes/other_product_image_locator_1",
+        "/attributes/other_product_image_locator_2",
+        "/attributes/other_product_image_locator_3",
+        "/attributes/other_product_image_locator_4",
+        "/attributes/other_product_image_locator_5",
+        "/attributes/other_product_image_locator_6",
+        "/attributes/other_product_image_locator_7"
+      ],
+      "before_path_state_sha256": "ca84adf37388877ee274b938cd2d9dd82ee7d334ae31a2392af2d76699e55e55"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 5000,
+    "request_delay_ms": 200,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "75d5ed926b73837904e8ccbc88c97c9615959e41f93003cfbe2797abc7ea6d15"
+}

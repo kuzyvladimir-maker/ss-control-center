@@ -1,0 +1,40 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "936080f9-38d6-4449-aac5-34df6396852d",
+  "created_at": "2026-07-18T12:12:44.994Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "ME-AS1I-SEX2:structured_attributes",
+  "sku": "ME-AS1I-SEX2",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "ALREADY_APPLIED",
+  "detail": {
+    "checks": [
+      {
+        "field": "ingredients",
+        "ok": true,
+        "expected": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Salt, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Salt. Chocolate Flavored Spread: Corn Syrup, Sugar, Water, Cocoa Processed With Alkali, Contains 2% Or Less Of: Pectin, Potassium Sorbate (Preservative), Calcium Chloride, Artificial Flavor.",
+        "actual": "Bread: Enriched Unbleached Flour (Wheat Flour, Malted Barley Flour, Niacin, Ferrous Sulfate, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Unbleached Whole Wheat Flour, Sugar, Yeast, Soybean Oil, Contains 2% Or Less Of: Salt, Dough Conditioner (Enzymes, Ascorbic Acid, Calcium Peroxide). Peanut Butter: Peanuts, Sugar, Contains 2% Or Less Of: Molasses, Fully Hydrogenated Vegetable Oils (Rapeseed And Soybean), Mono And Diglycerides, Salt. Chocolate Flavored Spread: Corn Syrup, Sugar, Water, Cocoa Processed With Alkali, Contains 2% Or Less Of: Pectin, Potassium Sorbate (Preservative), Calcium Chloride, Artificial Flavor."
+      },
+      {
+        "field": "allergen_information",
+        "ok": true,
+        "expected": [
+          "milk_may_contain",
+          "peanuts",
+          "tree_nuts_may_contain",
+          "wheat"
+        ],
+        "actual": [
+          "milk_may_contain",
+          "peanuts",
+          "tree_nuts_may_contain",
+          "wheat"
+        ]
+      }
+    ],
+    "resumed_checkpoint_revalidated": true,
+    "resumed_strategy": "PRIMARY"
+  },
+  "sha256": "8cb40e5b247a6f30144faa6d14148fe3aff214c07a39e0a8530b2c7369fc7bac"
+}

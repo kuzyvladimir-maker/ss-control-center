@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9250cdcd-3ac3-416f-9a30-25c85a59580c",
+  "created_at": "2026-07-18T10:17:02.732Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "JS-AS5F-QB8T:text_count",
+  "sku": "JS-AS5F-QB8T",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "4761ed940d58be3e6e8e6358f8c4c3294eed75fa3f951d079fdd94b3d6eca365",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "7aff9f6d17c447bdba5db194d6ce53c2",
+    "issues": []
+  },
+  "sha256": "bd0d06dd3bf73730cc8e4d3b6b2551ed1c5f5cc88c43d096ed4ba5aa7b876f7b"
+}

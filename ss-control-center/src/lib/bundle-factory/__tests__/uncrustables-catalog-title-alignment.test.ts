@@ -676,6 +676,27 @@ test("aligns only title, seals review evidence/supersedes, and writes immutable 
   assert.equal(after.text_count?.title, CATALOG_TITLE);
   assert.equal(after.review?.confidence, "HIGH");
   assert.equal(after.review?.supersedes?.[0]?.prior_value, DESIRED_TITLE);
+  assert.deepEqual(
+    {
+      schema: after.review?.catalog_title_alignment?.schema_version,
+      sku: after.review?.catalog_title_alignment?.sku,
+      asin: after.review?.catalog_title_alignment?.asin,
+      count: after.review?.catalog_title_alignment?.intended_count,
+      identity: after.review?.catalog_title_alignment?.identity_validation,
+    },
+    {
+      schema: "uncrustables-amazon-catalog-title-alignment/v1",
+      sku: SKU,
+      asin: ASIN,
+      count: 24,
+      identity: "GENERIC_STRICT",
+    },
+  );
+  assert.match(
+    after.review?.catalog_title_alignment
+      ?.catalog_conflict_evidence_sha256 ?? "",
+    /^[a-f0-9]{64}$/,
+  );
   assert.match(after.review?.evidence.at(-1) ?? "", /checkpoint event SHA-256/i);
   assert.deepEqual(after.media, before.media);
   assert.deepEqual(after.offer, before.offer);
@@ -718,6 +739,14 @@ test("uses the separately recorded exact KD Catalog API evidence override withou
     /Morning Protein/i,
   );
   assert.equal(prepared.manifest.repairs[0].text_count?.title, KD_CATALOG_TITLE);
+  assert.deepEqual(
+    prepared.manifest.repairs[0].review?.catalog_title_alignment
+      ?.reviewed_catalog_override?.catalog_api_identifiers,
+    [
+      { type: "ean", value: "0756441904598" },
+      { type: "upc", value: "756441904598" },
+    ],
+  );
   const source = prepared.manifest.source_artifacts?.amazon_catalog_title_alignment;
   assert.equal(source?.reviewed_catalog_api_overrides, 1);
   assert.deepEqual(source?.reviewed_catalog_api_evidence?.exact_override_skus, [KD_SKU]);

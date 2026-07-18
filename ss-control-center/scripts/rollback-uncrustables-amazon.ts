@@ -7,6 +7,7 @@
  */
 
 import { config } from "dotenv";
+import path from "node:path";
 
 import {
   getListing,
@@ -24,8 +25,11 @@ import {
   type RollbackGateway,
 } from "@/lib/bundle-factory/repair/uncrustables-amazon-rollback";
 import {
+  CANONICAL_UNCRUSTABLES_FORWARD_CHECKPOINT_ROOT,
   ImmutableCheckpointStore,
+  UNCRUSTABLES_APP_ROOT,
   assertValidationPreviewSurrogateMatches,
+  readRepairExecutionSelection,
   readRepairPlan,
   sha256,
   type RepairValidationPreviewContext,
@@ -35,8 +39,12 @@ import { readFile } from "node:fs/promises";
 config({ path: ".env.local" });
 config({ path: ".env" });
 
-const DEFAULT_CHECKPOINT_DIR = "data/repairs/rollback/checkpoints";
-const DEFAULT_FORWARD_CHECKPOINT_DIR = "data/repairs/checkpoints";
+const DEFAULT_CHECKPOINT_DIR = path.join(
+  UNCRUSTABLES_APP_ROOT,
+  "data/repairs/rollback/checkpoints",
+);
+const DEFAULT_FORWARD_CHECKPOINT_DIR =
+  CANONICAL_UNCRUSTABLES_FORWARD_CHECKPOINT_ROOT;
 
 interface CliOptions {
   planPath: string;
@@ -197,6 +205,23 @@ function parseArgs(argv: string[]): CliOptions {
   if (options.apply && !options.confirmation) {
     throw new Error("--apply requires --confirm=TOKEN.");
   }
+  if (
+    options.apply &&
+    path.resolve(options.checkpointDir) !== path.resolve(DEFAULT_CHECKPOINT_DIR)
+  ) {
+    throw new Error(
+      `Rollback --apply requires canonical --checkpoint-dir=${DEFAULT_CHECKPOINT_DIR}.`,
+    );
+  }
+  if (
+    options.apply &&
+    path.resolve(options.forwardCheckpointDir) !==
+      path.resolve(DEFAULT_FORWARD_CHECKPOINT_DIR)
+  ) {
+    throw new Error(
+      `Rollback --apply requires canonical --forward-checkpoint-dir=${DEFAULT_FORWARD_CHECKPOINT_DIR} so pending forward mutations cannot be hidden.`,
+    );
+  }
   if (options.requestDelayMs < 200) {
     throw new Error("--request-delay-ms must be >=200.");
   }
@@ -305,6 +330,27 @@ async function assertSealedSources(planPath: string) {
       );
     }
   }
+  const executionSelection = plan.source_execution_selection
+    ? await readRepairExecutionSelection(
+        plan.source_execution_selection.path,
+        repairPlan,
+      )
+    : null;
+  if (
+    plan.source_execution_selection &&
+    (!executionSelection ||
+      executionSelection.sha256 !== plan.source_execution_selection.sha256 ||
+      executionSelection.profile !==
+        plan.source_execution_selection.profile ||
+      executionSelection.selected_actions !==
+        plan.source_execution_selection.selected_actions ||
+      sha256(JSON.stringify(executionSelection.selected_action_ids)) !==
+        plan.source_execution_selection.selected_action_ids_sha256)
+  ) {
+    throw new Error(
+      "Rollback source execution selection no longer matches the sealed rollback binding.",
+    );
+  }
   const ledgerBytes = await readFile(snapshot.source_ledger.path);
   const overridesBytes = await readFile(snapshot.reviewed_overrides.path);
   if (
@@ -314,7 +360,7 @@ async function assertSealedSources(planPath: string) {
     throw new Error("Rollback source ledger/overrides bytes no longer match their seals.");
   }
   await assertRollbackMediaEvidenceFiles({ snapshot, rollbackPlan: plan });
-  return { plan, snapshot, repairPlan };
+  return { plan, snapshot, repairPlan, executionSelection };
 }
 
 async function main(): Promise<void> {
@@ -342,6 +388,7 @@ async function main(): Promise<void> {
             : plan.scope.rollback_entries,
         inverse_operations: plan.scope.inverse_operations,
         required_confirmation: token,
+        source_execution_selection: plan.source_execution_selection,
       },
       null,
       2,
@@ -375,6 +422,14 @@ async function main(): Promise<void> {
       process.env.BF_UNCRUSTABLES_ENABLE_AMAZON_ROLLBACK ?? null,
     checkpointStore,
     forwardRepairPlan: options.apply ? sealedSources.repairPlan : undefined,
+    forwardExecutionSelection:
+      options.apply && sealedSources.executionSelection
+        ? sealedSources.executionSelection
+        : undefined,
+    forwardExecutionSelectionPath:
+      options.apply && plan.source_execution_selection
+        ? plan.source_execution_selection.path
+        : undefined,
     forwardCheckpointStore: options.apply
       ? new ImmutableCheckpointStore(
           options.forwardCheckpointDir,

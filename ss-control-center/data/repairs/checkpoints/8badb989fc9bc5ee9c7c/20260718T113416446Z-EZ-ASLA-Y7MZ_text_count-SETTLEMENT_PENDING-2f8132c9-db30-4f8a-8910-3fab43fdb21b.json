@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "2f8132c9-db30-4f8a-8910-3fab43fdb21b",
+  "created_at": "2026-07-18T11:34:16.446Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "EZ-ASLA-Y7MZ:text_count",
+  "sku": "EZ-ASLA-Y7MZ",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "d9d277a8-357c-4991-bfde-aa713b733f3f",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "1d8a6144f9325730b590308e30af710f148ac9be83edce433d9bb9396c8e5cb3",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "c03500d16d7f2309710a8889d5a7f68a1990c62e9e1edbbed36702e9a91f1d0c"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "db65a0ca6a65749bed1a5b7262e1b259964530d6e7592df2aa66700a03eed6c3"
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d723b61e-d454-4cdc-b249-4f7a32072da4",
+  "created_at": "2026-07-18T11:48:22.036Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PT-AS5B-Z2XH:text_count",
+  "sku": "PT-AS5B-Z2XH",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "df62e971-e644-4149-a7ec-a3cf4393e9a3",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "978aa7a86bbab524c1d86e47b5079f67ccbec07b28551d212afca6db2c8557c7",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "777a8bbe5d2888bdc6cbe577c8197aebd3ee11f595ae0d7f59d5a30a5ffe1afc"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "9a52ff4c480b5d5ee252197af62cffd218a2e77e95b3a4bced67ec3ff88e1fff"
+}

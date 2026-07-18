@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "4b78d3ca-fa61-402b-b86b-5be9032b81e4",
+  "created_at": "2026-07-18T11:36:15.366Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "GG-ASNC-C9WA:text_count",
+  "sku": "GG-ASNC-C9WA",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "0472274163e0dbe517425aaba659d7a24975eca8dbc76a47f4f6378320574c44",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "970e842997e145e4b60879559806004d",
+    "issues": []
+  },
+  "sha256": "3f861e83ddfbcd81a2a6837f83dd5dc6bbc64b34a6c55b5a2becdadf7e773074"
+}

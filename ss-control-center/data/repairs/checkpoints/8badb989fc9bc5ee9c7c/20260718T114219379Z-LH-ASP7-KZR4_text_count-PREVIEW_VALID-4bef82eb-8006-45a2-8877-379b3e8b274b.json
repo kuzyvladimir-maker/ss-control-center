@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "4bef82eb-8006-45a2-8877-379b3e8b274b",
+  "created_at": "2026-07-18T11:42:19.379Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "LH-ASP7-KZR4:text_count",
+  "sku": "LH-ASP7-KZR4",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "3d84dbb47d041a7f213e8eebd720da99092f9e69d9bd135bea41c2197f7ce09f",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "3f6c96faa2a641428e2359c112d5c08b",
+    "issues": []
+  },
+  "sha256": "ff73fbc16be23ac0aafd3d5805129ee7a13596d393da0c829ef8cac5b6a55cbe"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "8ba269c7-b7a3-43c6-98cd-f5da7e2e8a99",
+  "created_at": "2026-07-18T11:58:23.975Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "TL-ASHN-ZRKG:text_count",
+  "sku": "TL-ASHN-ZRKG",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "c8951fe37247965335378b696c73d8114d2a407ae7df2c80f7a93b590d7a3bed",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "ec8884601ddb498eb7ff955519b512f2",
+    "issues": []
+  },
+  "sha256": "b1a6031b1a3d4cdf98203bf87ffa248e4ee1a5e045678156dcf3cfdfca3b5c92"
+}

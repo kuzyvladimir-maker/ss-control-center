@@ -1,0 +1,25 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "da068915-2ebd-497a-aa50-0de3e9651255",
+  "created_at": "2026-07-18T11:44:29.543Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "MP-ASYO-QNU2:structured_attributes",
+  "sku": "MP-ASYO-QNU2",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "SUBMISSION_ARMED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "crash_window_guard": true,
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "8dd1dace26dea4617d2f380473c5b06f277c48ce70dfd885baf2cf002a88e05e",
+      "exact_action_paths": [
+        "/attributes/allergen_information",
+        "/attributes/ingredients"
+      ],
+      "before_path_state_sha256": "0eecea33619d70f70609397cdfc387fbed7f7d819c84aad7d5007608e831e013"
+    }
+  },
+  "sha256": "f0f91334d093395216a08aca169b34ba8c35583e8dbc4a34405ba82f37724a3a"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "494d9450-2ca9-4360-911d-f794830c81b3",
+  "created_at": "2026-07-18T11:48:55.468Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PW-ASDZ-CSR8:text_count",
+  "sku": "PW-ASDZ-CSR8",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "dcd0cb1ec95a7a485a0cfa4dc3d79d3d131ff465ecddcb023acdb2adfb2113a3",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "08ddae3509044f95a95c27679a0cb45f",
+    "issues": []
+  },
+  "sha256": "39cd53254ab680556493b994a9b4698deec1868f01b4d81054f3226b2713d5e5"
+}

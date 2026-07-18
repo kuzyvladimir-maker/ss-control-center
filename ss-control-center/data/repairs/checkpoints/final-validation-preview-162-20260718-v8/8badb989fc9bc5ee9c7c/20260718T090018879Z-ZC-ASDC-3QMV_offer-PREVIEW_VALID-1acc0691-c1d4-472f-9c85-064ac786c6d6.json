@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "1acc0691-c1d4-472f-9c85-064ac786c6d6",
+  "created_at": "2026-07-18T09:00:18.879Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "ZC-ASDC-3QMV:offer",
+  "sku": "ZC-ASDC-3QMV",
+  "kind": "OFFER",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "strategy": "SELECTOR_REPLACE_SURROGATE_FOR_MERGE",
+    "actual_merge_patch_sha256": "e3f30fee59a91c8be299234ef795b2c89cc7d340b8fd69ac01b4a5c6ab0a2b38",
+    "actual_merge_patch_path": "/attributes/purchasable_offer",
+    "actual_merge_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "preview_surrogate_patch_sha256": "63ed97d3e42ae630aa9623da77967fb68d248979042c39b0ce00bae985683776",
+    "preview_surrogate_patch_path": "/attributes/purchasable_offer",
+    "preview_surrogate_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "actual_request_patch_sha256": "49bd670ccf772993e19fd182062a82b4f2cfc81644738e298868123c4e4f2c40",
+    "actual_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "preview_request_patch_sha256": "342bdb0091dc947412abce3d4dea039a37e42699a146f2e4446ea044c22b7b8f",
+    "preview_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "omitted_null_members": [
+      "ALL.discounted_price"
+    ],
+    "status": "VALID",
+    "submission_id": "27977f5c67ae41b296656b6f15a2d1a1",
+    "issues": []
+  },
+  "sha256": "79dec40aa4910ab33afdd6f424de5fd3e41acab094065a5ae1bba12d1973a80a"
+}

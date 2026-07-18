@@ -1,0 +1,48 @@
+{
+  "schema_version": "uncrustables-repair-execution-selection/v1",
+  "immutable": true,
+  "created_at": "2026-07-18T15:07:21.039Z",
+  "profile": "OFFER_ONLY_V1",
+  "source_plan": {
+    "path": "data/repairs/generated/uncrustables-amazon-final-162-20260718-v8/URP-20260718T083203612Z-8badb989fc9b.json",
+    "sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477"
+  },
+  "requested_skus": [
+    "JH-ASV9-Z46X"
+  ],
+  "limit": null,
+  "requested_action_kinds": [
+    "OFFER"
+  ],
+  "selected_skus": [
+    "JH-ASV9-Z46X"
+  ],
+  "selected_action_ids": [
+    "JH-ASV9-Z46X:offer"
+  ],
+  "selected_actions": 1,
+  "forbidden_patch_paths": [
+    "/attributes/allergen_information",
+    "/attributes/bullet_point",
+    "/attributes/each_unit_count",
+    "/attributes/ingredients",
+    "/attributes/is_expiration_dated_product",
+    "/attributes/item_name",
+    "/attributes/item_package_quantity",
+    "/attributes/main_product_image_locator",
+    "/attributes/merchant_shipping_group",
+    "/attributes/number_of_items",
+    "/attributes/other_product_image_locator_1",
+    "/attributes/other_product_image_locator_2",
+    "/attributes/other_product_image_locator_3",
+    "/attributes/other_product_image_locator_4",
+    "/attributes/other_product_image_locator_5",
+    "/attributes/other_product_image_locator_6",
+    "/attributes/other_product_image_locator_7",
+    "/attributes/other_product_image_locator_8",
+    "/attributes/product_description",
+    "/attributes/unit_count"
+  ],
+  "sha256": "bd6a2e0fb56845ece7416e6469430b53701b43cad761ec54027eba1e977e6d02",
+  "confirmation_token": "APPLY-UNCRUSTABLES-SELECTION-BD6A2E0FB56845EC"
+}

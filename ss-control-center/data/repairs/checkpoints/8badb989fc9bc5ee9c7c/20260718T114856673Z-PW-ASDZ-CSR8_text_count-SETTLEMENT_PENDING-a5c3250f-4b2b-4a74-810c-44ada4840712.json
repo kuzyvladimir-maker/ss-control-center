@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "a5c3250f-4b2b-4a74-810c-44ada4840712",
+  "created_at": "2026-07-18T11:48:56.673Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "PW-ASDZ-CSR8:text_count",
+  "sku": "PW-ASDZ-CSR8",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "127459ec-c90f-4c2c-bfdf-dcacb79703eb",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "dcd0cb1ec95a7a485a0cfa4dc3d79d3d131ff465ecddcb023acdb2adfb2113a3",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "7b8f21c4095cea5c2f500cf83002e117a2de0514c98a968d889b7965e03141c3"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "ad6ac512df62246d097c4cb3b0913a87ce45f27bc93b540eaface543c3d7ba2c"
+}

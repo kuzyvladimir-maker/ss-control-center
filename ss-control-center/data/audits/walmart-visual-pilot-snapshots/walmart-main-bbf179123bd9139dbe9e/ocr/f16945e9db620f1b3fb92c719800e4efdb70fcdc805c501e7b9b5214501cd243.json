@@ -1,0 +1,634 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.035214344660441044,
+            "width" : 0.10508159213595919,
+            "x" : 0.18892541899515308,
+            "y" : 0.7323335654278774
+          },
+          "confidence" : 0.3,
+          "text" : "БУВЗКУ РАСИАОК/В ОРОНЕВТКЗ"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03608071221245657,
+            "width" : 0.10456566704644099,
+            "x" : 0.6821135419257897,
+            "y" : 0.7318741447351911
+          },
+          "confidence" : 1,
+          "text" : "СУИЗСІЙ РАСКАСКІВ ОРОНЕВ ТОКS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04215116288926879,
+            "width" : 0.17587209065755205,
+            "x" : 0.11627907044157282,
+            "y" : 0.6874999996496347
+          },
+          "confidence" : 0.3,
+          "text" : "El2pg/CED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0422416008843316,
+            "width" : 0.10174418131510415,
+            "x" : 0.2950581419550933,
+            "y" : 0.6933139537025315
+          },
+          "confidence" : 0.3,
+          "text" : "Bк ОР.IP"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06401180055406375,
+            "width" : 0.2870206366644965,
+            "x" : 0.6063053151955895,
+            "y" : 0.6770095874926731
+          },
+          "confidence" : 0.3,
+          "text" : "ElSPSUCED SOPIp"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.020348837110731433,
+            "width" : 0.02906976699829103,
+            "x" : 0.21366279094022325,
+            "y" : 0.667151162985332
+          },
+          "confidence" : 1,
+          "text" : "BUT"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.027616278330485078,
+            "width" : 0.03779069688585068,
+            "x" : 0.7063953491103692,
+            "y" : 0.6671511629302033
+          },
+          "confidence" : 1,
+          "text" : "BUT/R"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.025159154468112455,
+            "width" : 0.14397191365559897,
+            "x" : 0.18164776527668652,
+            "y" : 0.46198437657455105
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.025423569149441105,
+            "width" : 0.14401628282335066,
+            "x" : 0.6743581385572917,
+            "y" : 0.4618521689453702
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441749572834,
+            "width" : 0.027616278330485022,
+            "x" : 0.19331395431828463,
+            "y" : 0.44476744198858564
+          },
+          "confidence" : 1,
+          "text" : "EXTD.,"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.005813953611585876,
+            "width" : 0.0218023257785373,
+            "x" : 0.2877906975031732,
+            "y" : 0.44622093019033104
+          },
+          "confidence" : 0.3,
+          "text" : "2633"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.005813953081766798,
+            "width" : 0.026162789662679042,
+            "x" : 0.6860465125814512,
+            "y" : 0.44622093048431044
+          },
+          "confidence" : 1,
+          "text" : "EXTD."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.005813953611585876,
+            "width" : 0.020348837110731433,
+            "x" : 0.7805232557905646,
+            "y" : 0.4462209301917154
+          },
+          "confidence" : 0.3,
+          "text" : "2833"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01023901780446368,
+            "width" : 0.10901162041558163,
+            "x" : 0.19912791064976734,
+            "y" : 0.4258720932174722
+          },
+          "confidence" : 1,
+          "text" : "BAKERY CLASSICS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01023901780446368,
+            "width" : 0.10901162041558166,
+            "x" : 0.6918604684017055,
+            "y" : 0.4258720932174722
+          },
+          "confidence" : 1,
+          "text" : "BAKERY CLASSICS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02034883711073132,
+            "width" : 0.014534883499145501,
+            "x" : 0.1845930232940319,
+            "y" : 0.2994186048276285
+          },
+          "confidence" : 1,
+          "text" : "8"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017657674683464908,
+            "width" : 0.08725220574273004,
+            "x" : 0.2092808744180574,
+            "y" : 0.3065781397386882
+          },
+          "confidence" : 1,
+          "text" : "TOP SLICED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011899224387274865,
+            "width" : 0.04505814022488064,
+            "x" : 0.31686046533450735,
+            "y" : 0.31976744233974486
+          },
+          "confidence" : 1,
+          "text" : "HADE WITH"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.018288186391194672,
+            "width" : 0.0367357720269097,
+            "x" : 0.3210216486093268,
+            "y" : 0.3048093951202999
+          },
+          "confidence" : 1,
+          "text" : "REAL"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01362268341912154,
+            "width" : 0.042315995958116304,
+            "x" : 0.23102223415853979,
+            "y" : 0.2933340070495565
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.018895348442925286,
+            "width" : 0.013081394831339521,
+            "x" : 0.677325581726772,
+            "y" : 0.2979651162872583
+          },
+          "confidence" : 1,
+          "text" : "8"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01846794976128474,
+            "width" : 0.08885892232259118,
+            "x" : 0.7004833287967297,
+            "y" : 0.30617300179943463
+          },
+          "confidence" : 1,
+          "text" : "TOP SLICED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008888888888888835,
+            "width" : 0.0436046515570746,
+            "x" : 0.8110465119758232,
+            "y" : 0.3211111111714642
+          },
+          "confidence" : 1,
+          "text" : "МАРЕ МIТН"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.016258803473578554,
+            "width" : 0.03500683678521055,
+            "x" : 0.8153454185981864,
+            "y" : 0.3050973423873623
+          },
+          "confidence" : 1,
+          "text" : "REAL"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017767270406087166,
+            "width" : 0.050982738071017775,
+            "x" : 0.31389816586386354,
+            "y" : 0.28908148125034816
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011969594955444363,
+            "width" : 0.04079397837320964,
+            "x" : 0.7252425456242698,
+            "y" : 0.293433807193593
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01598837216695148,
+            "width" : 0.05087209065755205,
+            "x" : 0.8066860471857589,
+            "y" : 0.28924418593687307
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010174418555365716,
+            "width" : 0.06686046176486543,
+            "x" : 0.21947674605555173,
+            "y" : 0.27325581380855746
+          },
+          "confidence" : 1,
+          "text" : "HOT DOG BUNS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011763565805223197,
+            "width" : 0.06831395043267141,
+            "x" : 0.7107558146637515,
+            "y" : 0.2716666664916597
+          },
+          "confidence" : 1,
+          "text" : "HOT DOG BUNS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441749572834,
+            "width" : 0.056686045328776025,
+            "x" : 0.16424418758270498,
+            "y" : 0.25726744198858564
+          },
+          "confidence" : 0.3,
+          "text" : "IKaCaлMe"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0151359298494127,
+            "width" : 0.05973676045735676,
+            "x" : 0.16271882923499056,
+            "y" : 0.23516459333601103
+          },
+          "confidence" : 0.3,
+          "text" : "МW нодту"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013878103892008498,
+            "width" : 0.061212259928385415,
+            "x" : 0.6554403824279177,
+            "y" : 0.23652025046043945
+          },
+          "confidence" : 0.3,
+          "text" : "NFWI HDNADY"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-f73426a5c7b460fc487f4cc50bda690e6d5e1f539eb5ffd2400cbfa2c33a301e.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 2048,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.060448020696640015,
+            "width" : 0.2143288118293486,
+            "x" : 0.3681149511010291,
+            "y" : 0.8864569060913484
+          },
+          "confidence" : 0.3,
+          "text" : "СУАЗСІЙ РАСКАСКТВ СР ОМЕВ ТОКЗ"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0788368321955204,
+            "width" : 0.25560504959290287,
+            "x" : 0.32853887757020184,
+            "y" : 0.8060601767798514
+          },
+          "confidence" : 1,
+          "text" : "Ap SUCED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06990370526909828,
+            "width" : 0.18817204854574554,
+            "x" : 0.605734764236915,
+            "y" : 0.8226744208655846
+          },
+          "confidence" : 0.3,
+          "text" : "Вксл ПР. IР"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04505813866853714,
+            "width" : 0.07885304646319652,
+            "x" : 0.4157706096039254,
+            "y" : 0.7805232564974498
+          },
+          "confidence" : 1,
+          "text" : "ВUТТЯ"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04361600615084171,
+            "width" : 0.29749103224421125,
+            "x" : 0.349462369859575,
+            "y" : 0.4360351561023921
+          },
+          "confidence" : 1,
+          "text" : "PEPPERIDGE FARM"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014684252440929413,
+            "width" : 0.057405099524072856,
+            "x" : 0.37452325611633314,
+            "y" : 0.40544857139432033
+          },
+          "confidence" : 1,
+          "text" : "TXTD."
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008720929734408855,
+            "width" : 0.03942652323159834,
+            "x" : 0.5716845879319052,
+            "y" : 0.4098837211585431
+          },
+          "confidence" : 1,
+          "text" : "3622"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01611328125,
+            "width" : 0.22401433737881216,
+            "x" : 0.3853046576674808,
+            "y" : 0.374999999840691
+          },
+          "confidence" : 1,
+          "text" : "BAKERY CLASSICS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01340593583881855,
+            "width" : 0.08609581453254422,
+            "x" : 0.632579332697137,
+            "y" : 0.20187261360607578
+          },
+          "confidence" : 1,
+          "text" : "MADE WITH"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03488371893763542,
+            "width" : 0.026881721220820776,
+            "x" : 0.3566308238877975,
+            "y" : 0.16279069886451558
+          },
+          "confidence" : 1,
+          "text" : "8"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.026633936911821365,
+            "width" : 0.1828975631530027,
+            "x" : 0.40138275833670384,
+            "y" : 0.17854349659471003
+          },
+          "confidence" : 1,
+          "text" : "TOP SLICED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.025586087256669998,
+            "width" : 0.07035804656614741,
+            "x" : 0.641344274527011,
+            "y" : 0.1754337006263783
+          },
+          "confidence" : 1,
+          "text" : "REAL"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.019037919119000435,
+            "width" : 0.08427795961678747,
+            "x" : 0.4569649636864151,
+            "y" : 0.1569054591163992
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.024999983608722687,
+            "width" : 0.10046690975327088,
+            "x" : 0.6253937856845444,
+            "y" : 0.14811047339185968
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.0146484375,
+            "width" : 0.13620071411132811,
+            "x" : 0.42831541440490944,
+            "y" : 0.12207031235608778
+          },
+          "confidence" : 1,
+          "text" : "HOT DOG BUNS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02660946361720562,
+            "width" : 0.1202188239040145,
+            "x" : 0.3153386169172054,
+            "y" : 0.057916198206657055
+          },
+          "confidence" : 0.3,
+          "text" : "вEиI ноду"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-b565c87cc0876f8b9094fd285f32d3fdfa28a11a675446fb315ca1467633bc9c.png",
+      "width" : 1660
+    },
+    {
+      "height" : 1011,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.03573587477913964,
+            "width" : 0.2252907007932663,
+            "x" : 0.3866279038081011,
+            "y" : 0.943675890002582
+          },
+          "confidence" : 1,
+          "text" : "BAKERY CLASSICS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.042490118577075076,
+            "width" : 0.09583333134651184,
+            "x" : 0.6291666692572995,
+            "y" : 0.5039525689724433
+          },
+          "confidence" : 1,
+          "text" : "MADE WITH"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.07058373553008435,
+            "width" : 0.17614217102527618,
+            "x" : 0.4112021713998033,
+            "y" : 0.4455904853599385
+          },
+          "confidence" : 1,
+          "text" : "TOP SLICED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.08529412039655004,
+            "width" : 0.02761627919971943,
+            "x" : 0.3575581395498496,
+            "y" : 0.4088235276105485
+          },
+          "confidence" : 1,
+          "text" : "8"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06083815653804736,
+            "width" : 0.07017636299133301,
+            "x" : 0.6422374001691113,
+            "y" : 0.4431103336462653
+          },
+          "confidence" : 1,
+          "text" : "REAL"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.048575314608487186,
+            "width" : 0.08450597524642944,
+            "x" : 0.4562935245309141,
+            "y" : 0.3904182252052403
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06772652727813122,
+            "width" : 0.10840930044651031,
+            "x" : 0.6207953511304313,
+            "y" : 0.36949808132516404
+          },
+          "confidence" : 1,
+          "text" : "BUTTER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03529411813487171,
+            "width" : 0.1366278976202011,
+            "x" : 0.4287790734697998,
+            "y" : 0.30882352904180776
+          },
+          "confidence" : 1,
+          "text" : "HOT DOG BUNS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02667984189723327,
+            "width" : 0.10319767147302628,
+            "x" : 0.5130813974272466,
+            "y" : 0.24703557326436631
+          },
+          "confidence" : 0.3,
+          "text" : "BEGEЙ CODAY"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01764705906743591,
+            "width" : 0.037790697067976,
+            "x" : 0.6322674425415934,
+            "y" : 0.25588235293687034
+          },
+          "confidence" : 0.3,
+          "text" : "LIRCe"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-7336fd6d37bef789feb779f36d97ead2eeee6ce31bbe38e209935d27f34c6b7f.png",
+      "width" : 2048
+    },
+    {
+      "height" : 1899,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.15000000000000002,
+            "width" : 0.6212765926693689,
+            "x" : 0.3744680895754809,
+            "y" : 0.6083333341666667
+          },
+          "confidence" : 0.3,
+          "text" : "El3pgICED"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.10829850046258227,
+            "width" : 0.15525164157633375,
+            "x" : 0.7084070294930146,
+            "y" : 0.5306837771484239
+          },
+          "confidence" : 1,
+          "text" : "BUTTR"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-3d5ea4f240ec30da4a64f3e4a470be72917209e2ce783cb2693a642fbcf61421.png",
+      "width" : 1857
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

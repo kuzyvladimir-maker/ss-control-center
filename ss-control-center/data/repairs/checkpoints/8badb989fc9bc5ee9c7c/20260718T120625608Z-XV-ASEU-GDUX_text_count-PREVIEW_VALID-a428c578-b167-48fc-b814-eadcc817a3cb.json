@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "a428c578-b167-48fc-b814-eadcc817a3cb",
+  "created_at": "2026-07-18T12:06:25.608Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "XV-ASEU-GDUX:text_count",
+  "sku": "XV-ASEU-GDUX",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "3ec499f537afa2cf6615b72232867f03e617b4628e0ed59c3a1ec47c437e6fba",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "556195a6efea49b88e34ea367a678cf8",
+    "issues": []
+  },
+  "sha256": "be9b8a034b3b8719bc053fcba14fb91a558a5e805976209f2a752fd4ddcdb38e"
+}

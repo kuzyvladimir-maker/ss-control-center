@@ -13,6 +13,10 @@ import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
 import { getListing, patchListing, type ListingPatch } from "@/lib/amazon-sp-api/listings";
 import { MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import { logChange } from "@/lib/amazon/growth/change-log";
+import {
+  ADVISOR_PRICE_WRITE_BLOCKED_ERROR,
+  isGrowthAdvisorPriceAttribute,
+} from "@/lib/amazon/growth/price-write-guard";
 
 export const maxDuration = 90;
 
@@ -31,6 +35,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: "rollback only supported for attribute changes" }, { status: 422 });
   }
   if (row.rolledBack) return NextResponse.json({ ok: false, error: "already rolled back" }, { status: 409 });
+  if (isGrowthAdvisorPriceAttribute(row.field)) {
+    return NextResponse.json(
+      { ok: false, error: ADVISOR_PRICE_WRITE_BLOCKED_ERROR },
+      { status: 409 },
+    );
+  }
 
   const before = row.beforeValue ? JSON.parse(row.beforeValue) : null;
 

@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 import type { ChannelSKU } from "@/generated/prisma/client";
 import {
   AMAZON_VALIDATION_PREVIEW_REQUIRED,
+  UNCRUSTABLES_EXISTING_LISTING_REQUIRES_SURGICAL_PATCH,
   buildAmazonAttributes,
   buildAmazonPayload,
   submitToAmazon,
@@ -217,6 +218,23 @@ test("submitToAmazon — Uncrustables without structured count fails before any 
 
 test("Amazon publishing requires validation preview before every real PUT", () => {
   assert.equal(AMAZON_VALIDATION_PREVIEW_REQUIRED, true);
+});
+
+test("submitToAmazon — existing Uncrustables ASIN cannot use generic replacement PUT", async () => {
+  assert.equal(UNCRUSTABLES_EXISTING_LISTING_REQUIRES_SURGICAL_PATCH, true);
+  const result = await submitToAmazon({
+    sku: mkSku({
+      asin: "B0H82RQ226",
+      attributes: JSON.stringify({ number_of_items: [{ value: 24 }] }),
+      price_cents: 7699,
+    }),
+    storeIndex: 1,
+    brand: "Uncrustables",
+    category: "FROZEN_GROCERY",
+    dryRun: false,
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.error ?? "", /sealed surgical PATCH workflow/i);
 });
 
 test("buildAmazonAttributes — preserves only an explicit each_unit_count", () => {

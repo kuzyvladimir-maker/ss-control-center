@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "976cc326-2d2d-4c0a-a6a0-2ac764f9e281",
+  "created_at": "2026-07-18T08:49:03.501Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "QX-ASS6-4T4F:text_count",
+  "sku": "QX-ASS6-4T4F",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "e7231e8e678e7ef8b613fa0182934056ff1e3863e4275a644975a0edfe4448f4",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "d09996dc02ac45e2955e0d333cbd7b94",
+    "issues": []
+  },
+  "sha256": "3b9a2bd1f62e7b5d88ed38eaf4208e0f42a16c5a476e9b84ebaf0b624a5c6095"
+}

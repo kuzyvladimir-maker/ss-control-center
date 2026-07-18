@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "2a42c446-dcbb-4e93-a2b0-acb34dae2348",
+  "created_at": "2026-07-18T12:05:17.235Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "WR-ASTH-TPXV:text_count",
+  "sku": "WR-ASTH-TPXV",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "af49d0eec14b616736124fc48b5ffca9d959f78d73d7e2ddeab233390a28b598",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "6dfcfe53a1a94c1cabf5c62020957a82",
+    "issues": []
+  },
+  "sha256": "546e7f36438051781009037bfd626286aeb537000149e707aafec4ec690ff583"
+}

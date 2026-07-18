@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d984094a-a698-456e-8dc7-5abf2a5e18ab",
+  "created_at": "2026-07-18T11:51:48.772Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RL-AS64-Q8QX:text_count",
+  "sku": "RL-AS64-Q8QX",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "9ee265f2-17f9-42ff-952f-24477fe0b61d",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "343a101232d6719f6a1abb51f1494e08b2f2cd0fe3b6b244a50a1c7784391646",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "8880ac0c7c15cbc99b7fef5f01400093249ca4df9f53a2894fd454a3f4cdcece"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "e27dee51f15698d9ba96cae5fc5d283b346bfad49cfe7363a6058b4b3bcb2334"
+}

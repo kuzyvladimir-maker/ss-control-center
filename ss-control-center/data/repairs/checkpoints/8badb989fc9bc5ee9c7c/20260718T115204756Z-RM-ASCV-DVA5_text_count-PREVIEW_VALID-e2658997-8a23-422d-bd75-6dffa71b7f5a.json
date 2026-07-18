@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "e2658997-8a23-422d-bd75-6dffa71b7f5a",
+  "created_at": "2026-07-18T11:52:04.756Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RM-ASCV-DVA5:text_count",
+  "sku": "RM-ASCV-DVA5",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "15899b0fec8537ad79bf0dc3b90a62bd07cd537e90767022168a47d2a7be3b53",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "62208fd92c034c63891d4298969941ba",
+    "issues": []
+  },
+  "sha256": "e9613ace415455c6e699021d0ac850f036f0d578e93eb42f44bb51f5b87fe8ca"
+}

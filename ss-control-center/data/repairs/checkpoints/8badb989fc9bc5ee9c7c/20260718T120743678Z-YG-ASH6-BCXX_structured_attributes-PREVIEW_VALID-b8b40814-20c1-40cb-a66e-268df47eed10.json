@@ -1,0 +1,23 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b8b40814-20c1-40cb-a66e-268df47eed10",
+  "created_at": "2026-07-18T12:07:43.678Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "YG-ASH6-BCXX:structured_attributes",
+  "sku": "YG-ASH6-BCXX",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "c8311b0ef5ebe070057bf8a4ea48a68062d0f21d0d8d5c0087219ff88f012acd",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "status": "VALID",
+    "submission_id": "3692f3e93b434193a3ec2c0b8a7f97e8",
+    "issues": []
+  },
+  "sha256": "7e400bce4ef11686e1d56c8ce6b2139c986a36d035a75cabf424b42cd91e28a5"
+}

@@ -1,0 +1,66 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "2cfdb177-56ef-4972-9316-7de4f1a09c27",
+  "created_at": "2026-07-18T12:13:27.312Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "ZE-AS5W-FKH3:text_count",
+  "sku": "ZE-AS5W-FKH3",
+  "kind": "TEXT_COUNT",
+  "status": "ALREADY_APPLIED",
+  "detail": {
+    "checks": [
+      {
+        "field": "item_name",
+        "ok": true,
+        "expected": "Smucker's Uncrustables Frozen Sandwich Variety Pack, Peanut Butter and Morning Protein Peanut Butter & Mixed Berry Spread, 24 Count",
+        "actual": "Smucker's Uncrustables Frozen Sandwich Variety Pack, Peanut Butter and Morning Protein Peanut Butter & Mixed Berry Spread, 24 Count"
+      },
+      {
+        "field": "bullet_point",
+        "ok": true,
+        "expected": [
+          "Exact assortment: 24 individually wrapped frozen sandwiches total: 12 Peanut Butter; 12 Morning Protein Peanut Butter & Mixed Berry Spread.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 24 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ],
+        "actual": [
+          "Exact assortment: 24 individually wrapped frozen sandwiches total: 12 Peanut Butter; 12 Morning Protein Peanut Butter & Mixed Berry Spread.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 24 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ]
+      },
+      {
+        "field": "product_description",
+        "ok": true,
+        "expected": "This listing contains 24 individual Smucker's Uncrustables frozen sandwiches: 12 Peanut Butter; 12 Morning Protein Peanut Butter & Mixed Berry Spread. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 24 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use.",
+        "actual": "This listing contains 24 individual Smucker's Uncrustables frozen sandwiches: 12 Peanut Butter; 12 Morning Protein Peanut Butter & Mixed Berry Spread. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 24 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use."
+      },
+      {
+        "field": "unit_count",
+        "ok": true,
+        "expected": 24,
+        "actual": 24
+      },
+      {
+        "field": "unit_count.type",
+        "ok": true,
+        "expected": "Count",
+        "actual": "Count"
+      },
+      {
+        "field": "number_of_items",
+        "ok": true,
+        "expected": 24,
+        "actual": 24
+      }
+    ],
+    "resumed_checkpoint_revalidated": true,
+    "resumed_strategy": "PRIMARY"
+  },
+  "sha256": "a1cc8c88eba978733a3cd285081b74cfac235ba72fbe60a99fe8746cd56dc980"
+}

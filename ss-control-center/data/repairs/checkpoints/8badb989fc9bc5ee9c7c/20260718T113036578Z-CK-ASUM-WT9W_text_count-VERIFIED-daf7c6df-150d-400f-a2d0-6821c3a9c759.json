@@ -1,0 +1,68 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "daf7c6df-150d-400f-a2d0-6821c3a9c759",
+  "created_at": "2026-07-18T11:30:36.578Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "CK-ASUM-WT9W:text_count",
+  "sku": "CK-ASUM-WT9W",
+  "kind": "TEXT_COUNT",
+  "status": "VERIFIED",
+  "detail": {
+    "submitted_event_id": "17f9eff6-6790-4afb-ba88-177a7c14a00b",
+    "strategy": "PRIMARY",
+    "stable_post_write_reads": 3,
+    "path_state_sha256": "05bf1ece55da908de76fdce1312a25b358217faa39c2de5fa4dc70aed0fe76bc",
+    "checks": [
+      {
+        "field": "item_name",
+        "ok": true,
+        "expected": "Smucker's Uncrustables Frozen Sandwich Variety Pack, Chocolate Flavored Hazelnut Spread and Peanut Butter & Blueberry, 24 Count",
+        "actual": "Smucker's Uncrustables Frozen Sandwich Variety Pack, Chocolate Flavored Hazelnut Spread and Peanut Butter & Blueberry, 24 Count"
+      },
+      {
+        "field": "bullet_point",
+        "ok": true,
+        "expected": [
+          "Exact assortment: 24 individually wrapped frozen sandwiches total: 12 Chocolate Flavored Hazelnut Spread; 12 Peanut Butter & Blueberry.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 24 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ],
+        "actual": [
+          "Exact assortment: 24 individually wrapped frozen sandwiches total: 12 Chocolate Flavored Hazelnut Spread; 12 Peanut Butter & Blueberry.",
+          "Cold-pack components: An insulated foam cooler and frozen gel packs accompany the sandwiches; the stated 24 Count refers only to individual sandwiches.",
+          "Original wrappers: Every sandwich remains sealed in its original individual manufacturer wrapper, and the assortment contains only the varieties stated above.",
+          "Storage and handling: Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each original wrapper.",
+          "Label details: Review the original wrappers for the current ingredients, allergen statements, nutrition facts, and preparation directions before use."
+        ]
+      },
+      {
+        "field": "product_description",
+        "ok": true,
+        "expected": "This listing contains 24 individual Smucker's Uncrustables frozen sandwiches: 12 Chocolate Flavored Hazelnut Spread; 12 Peanut Butter & Blueberry. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 24 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use.",
+        "actual": "This listing contains 24 individual Smucker's Uncrustables frozen sandwiches: 12 Chocolate Flavored Hazelnut Spread; 12 Peanut Butter & Blueberry. The stated quantity counts individual sandwiches and is not multiplied by a retail-carton count.\n\nAn insulated foam cooler and frozen gel packs accompany the sandwiches as cold-pack components. They are not included in the stated 24 sandwich count.\n\nEvery sandwich remains sealed in its original individual manufacturer wrapper. Keep the sandwiches frozen until ready to use and follow the thawing and handling directions printed on each wrapper.\n\nIngredients, allergen statements, nutrition facts, and preparation directions can vary by variety or manufacturer update. Review each original wrapper before use."
+      },
+      {
+        "field": "unit_count",
+        "ok": true,
+        "expected": 24,
+        "actual": 24
+      },
+      {
+        "field": "unit_count.type",
+        "ok": true,
+        "expected": "Count",
+        "actual": "Count"
+      },
+      {
+        "field": "number_of_items",
+        "ok": true,
+        "expected": 24,
+        "actual": 24
+      }
+    ]
+  },
+  "sha256": "e48c751319294b860675dc1cebb3336b8b4731c946f340711bb221db1145b2c8"
+}

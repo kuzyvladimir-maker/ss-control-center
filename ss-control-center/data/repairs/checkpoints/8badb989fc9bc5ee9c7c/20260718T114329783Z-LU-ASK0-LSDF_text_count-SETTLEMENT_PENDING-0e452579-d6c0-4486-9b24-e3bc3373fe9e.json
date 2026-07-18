@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "0e452579-d6c0-4486-9b24-e3bc3373fe9e",
+  "created_at": "2026-07-18T11:43:29.783Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "LU-ASK0-LSDF:text_count",
+  "sku": "LU-ASK0-LSDF",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "2712b589-5151-4ef9-9cc0-3fe3dcf6f77c",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "f443f6e8264d8dd3f384c803fa3ce1925472e691a78acac5095f8dec1ad04b9d",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "6458e15a48d4ae68d68d547d083ccb57bc5054688f8198bc98af9ba5fc0e9429"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "45fd4a992e4184d86b58866f72a285baa1e62735b27cdde3c9173edcd33de4a3"
+}

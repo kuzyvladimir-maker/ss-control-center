@@ -1,0 +1,23 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "98122035-ccfc-45c2-8ef6-2a4dbc836d47",
+  "created_at": "2026-07-18T10:28:34.385Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "SG-AS32-LZ9Y:structured_attributes",
+  "sku": "SG-AS32-LZ9Y",
+  "kind": "STRUCTURED_ATTRIBUTES",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "274260b031025032ff9163bd2f4c921472dc8797f00bd50ab0a6750c9d58e490",
+    "patch_paths": [
+      "/attributes/ingredients",
+      "/attributes/allergen_information"
+    ],
+    "status": "VALID",
+    "submission_id": "06aac12d35964083bd145960fbc5412b",
+    "issues": []
+  },
+  "sha256": "9a89635622d274a062c44aef4253f0237ea0f9e9d3a86fdd6883f9ad5e74e50b"
+}

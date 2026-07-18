@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "344a294d-698d-4741-82e7-492a93fb24b3",
+  "created_at": "2026-07-18T11:39:09.626Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "HZ-ASPS-4L22:text_count",
+  "sku": "HZ-ASPS-4L22",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "6057930a-1699-4c56-b07f-6bc63ae83e31",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "c483ed3f765cfa91af4a1f15e4e6bfcfb83c0702793f122ab59815f1ac9444ca",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "28d5cf8344d71fd52b51a675f0b90e7ce02a05492653663e005454d464608da5"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "84c3b7dfe2a5a81c78bdc8a31c2685d93ba6a356aa279a364c4548c650c34f84"
+}

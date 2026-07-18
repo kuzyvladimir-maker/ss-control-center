@@ -1,0 +1,39 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b28d8329-58ab-4e6e-bea6-4a16375b1906",
+  "created_at": "2026-07-18T12:09:36.430Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "ZH-AS8W-G5MN:text_count",
+  "sku": "ZH-AS8W-G5MN",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "25b9c18c-f73e-4cb6-b3e5-68fdc74ca106",
+    "patch_sha256": "2fd12393768229cd3c99bf90c0992f6d04cca06246a2d60d2678207e8d25b511",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "2fd12393768229cd3c99bf90c0992f6d04cca06246a2d60d2678207e8d25b511",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "f842897d74aa4a2855f3aba9bcc2fbb546e651110ac8ff084240f0cbe49e90ff"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "47c4dbade5c44b5f86cf94ff8f428b7e",
+    "issues": []
+  },
+  "sha256": "7a390cbbad13db42ed35105446f50b4ce41297fe8475cb61efbd044846a1789d"
+}

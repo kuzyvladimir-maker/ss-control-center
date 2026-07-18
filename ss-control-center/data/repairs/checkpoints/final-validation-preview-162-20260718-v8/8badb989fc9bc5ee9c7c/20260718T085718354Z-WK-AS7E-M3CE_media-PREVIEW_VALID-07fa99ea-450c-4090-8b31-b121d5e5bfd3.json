@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "07fa99ea-450c-4090-8b31-b121d5e5bfd3",
+  "created_at": "2026-07-18T08:57:18.354Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "WK-AS7E-M3CE:media",
+  "sku": "WK-AS7E-M3CE",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "01422e1f78a23d8a1ca7a7b16566cddadd19deac34b653e82a718d2981cfd0fb",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "cee6e8885d6e4da489f3b8155a7ffa69",
+    "issues": []
+  },
+  "sha256": "f4f80b5a78a2066d86579bdf14377db9fc088eb6d774ef16326facf2b5022e4e"
+}

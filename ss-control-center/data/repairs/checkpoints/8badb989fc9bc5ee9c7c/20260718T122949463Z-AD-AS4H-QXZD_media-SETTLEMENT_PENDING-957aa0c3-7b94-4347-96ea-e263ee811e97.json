@@ -1,0 +1,35 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "957aa0c3-7b94-4347-96ea-e263ee811e97",
+  "created_at": "2026-07-18T12:29:49.463Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "AD-AS4H-QXZD:media",
+  "sku": "AD-AS4H-QXZD",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "submitted_event_id": "3547615d-2ea0-4167-97da-9a8caab9f562",
+    "submitted_at": "2026-07-18T10:42:54.171Z",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "51fe86a1daf6d04cad8cf7a03a77606bb04b913c219d9d470ad25fce66f78b0a",
+      "exact_action_paths": [
+        "/attributes/other_product_image_locator_1",
+        "/attributes/other_product_image_locator_2",
+        "/attributes/other_product_image_locator_3",
+        "/attributes/other_product_image_locator_4",
+        "/attributes/other_product_image_locator_5",
+        "/attributes/other_product_image_locator_6",
+        "/attributes/other_product_image_locator_7"
+      ],
+      "before_path_state_sha256": "e29bec2bd6fa4dc1734e535d2122e9a8359eca350238f886d3465b214c7ccf2e"
+    },
+    "attempts": 4,
+    "delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "88e28e372b218becffe3a3966801841130cc3d81fe0d4fb4205cb95d1a76199b"
+}

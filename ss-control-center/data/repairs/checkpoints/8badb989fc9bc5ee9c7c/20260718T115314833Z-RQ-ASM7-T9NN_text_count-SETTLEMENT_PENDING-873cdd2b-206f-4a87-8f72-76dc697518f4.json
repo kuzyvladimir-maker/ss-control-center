@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "873cdd2b-206f-4a87-8f72-76dc697518f4",
+  "created_at": "2026-07-18T11:53:14.833Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RQ-ASM7-T9NN:text_count",
+  "sku": "RQ-ASM7-T9NN",
+  "kind": "TEXT_COUNT",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "8f1063e0-47a0-4ffc-aef8-14cdb8e70db3",
+    "trigger": "ACCEPTED_WRITE_POST_GET",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "9aa1229b592ee6b8a35369d7f1f4d704fb93cfeb9f76006cebf02ee9c6cd7274",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "f3e1c780532186d2df1c94a8c19315333aaba9b34565a66c3bd6522eef64f3b3"
+    },
+    "fast_verify_attempts": 6,
+    "extended_attempts": 20,
+    "extended_delay_ms": 5000,
+    "stable_reads_required": 3
+  },
+  "sha256": "75ef8f20ad6c65cf97083e872e948752d6193ed3b183947898ae4c7d730e57f3"
+}

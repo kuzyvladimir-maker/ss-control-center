@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "f67df0f8-94fc-4c4c-8e75-0d1843af0be5",
+  "created_at": "2026-07-18T08:59:45.016Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "YM-AS7P-ZX44:text_count",
+  "sku": "YM-AS7P-ZX44",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "63976d10ae733250aeb9602afde68ea4b578ec914da4b969f3e2dbba222824d5",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "726c351232624e6297e35d6be8c400fd",
+    "issues": []
+  },
+  "sha256": "b08566d2b2b015c7cb5cd96c97d08986984bdf96c2e5679174ea7cedab1d30ed"
+}

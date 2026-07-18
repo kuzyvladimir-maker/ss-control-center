@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d0f7e188-9804-4b93-a918-a51770579fea",
+  "created_at": "2026-07-18T08:41:12.699Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "HR-AS7Q-7ZDF:media",
+  "sku": "HR-AS7Q-7ZDF",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "fcfb6b147b8e2862d6b54c709b5dcb1c89a615370551f47e8762e48032468e3d",
+    "patch_paths": [
+      "/attributes/other_product_image_locator_1",
+      "/attributes/other_product_image_locator_2",
+      "/attributes/other_product_image_locator_3",
+      "/attributes/other_product_image_locator_4",
+      "/attributes/other_product_image_locator_5",
+      "/attributes/other_product_image_locator_6",
+      "/attributes/other_product_image_locator_7"
+    ],
+    "status": "VALID",
+    "submission_id": "5e04b6d3e3fb4237952ca8c2d18ea90f",
+    "issues": []
+  },
+  "sha256": "6c6e312c942badb5e9575b18c090bf5f84b8d24237765a7504e07c3b225f8cd0"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "8103bed0-6c9f-42d8-8cbf-75afce503b86",
+  "created_at": "2026-07-18T08:36:39.936Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "CN-ASG6-892G:text_count",
+  "sku": "CN-ASG6-892G",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "c3498abfa26184a4e08fce8c2fbcfddae500c061a2d178081a8d00b54f6345ba",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "5ad043076f8a49efada180082b715118",
+    "issues": []
+  },
+  "sha256": "853dce49f19916ed1c7c915df82bac55202f90d84e39257f9d1204f5e9e85604"
+}

@@ -20,22 +20,11 @@ function band(attributes: string, key: string): number | null {
   }
 }
 
-function forbiddenDirectDiscountFields(attributes: string): string[] {
+function canonicalPriceAttributeFailures(attributes: string): string[] {
   try {
     const attrs = JSON.parse(attributes) as Record<string, unknown>;
     const failures: string[] = [];
     if (attrs.list_price != null) failures.push("list_price must be absent");
-    if (
-      Array.isArray(attrs.purchasable_offer) &&
-      attrs.purchasable_offer.some(
-        (offer) =>
-          offer &&
-          typeof offer === "object" &&
-          (offer as Record<string, unknown>).discounted_price != null,
-      )
-    ) {
-      failures.push("discounted_price must be absent (promotions use coupons)");
-    }
     return failures;
   } catch {
     return ["pricing attributes are not valid JSON"];
@@ -105,7 +94,11 @@ export const validatorCanonicalPrice: ValidatorFn = async ({
     );
   }
   if (isOwnBrandPassthrough(master_bundle.brand)) {
-    failures.push(...forbiddenDirectDiscountFields(sku.attributes));
+    // This validator owns Layer A only. Coupon-vs-Sale-Price arm, dates, and
+    // effective price are SKU-specific and must be proven by the independent
+    // SHA-sealed launch-pricing manifest/repair verifier. Guessing an arm from
+    // pack_count here could approve a double discount or a missing Sale Price.
+    failures.push(...canonicalPriceAttributeFailures(sku.attributes));
   }
 
   if (failures.length > 0) {
@@ -120,6 +113,8 @@ export const validatorCanonicalPrice: ValidatorFn = async ({
         actual_price_cents: sku.price_cents,
         min_band_cents: minBand,
         max_band_cents: maxBand,
+        promotion_overlay_validation:
+          "DELEGATED_TO_SHA_SEALED_LAUNCH_PRICING_PLAN",
       },
     };
   }
@@ -129,6 +124,8 @@ export const validatorCanonicalPrice: ValidatorFn = async ({
     details: {
       expected_price_cents: expectedPrice,
       expected_floor_cents: expectedFloor,
+      promotion_overlay_validation:
+        "DELEGATED_TO_SHA_SEALED_LAUNCH_PRICING_PLAN",
     },
   };
 };

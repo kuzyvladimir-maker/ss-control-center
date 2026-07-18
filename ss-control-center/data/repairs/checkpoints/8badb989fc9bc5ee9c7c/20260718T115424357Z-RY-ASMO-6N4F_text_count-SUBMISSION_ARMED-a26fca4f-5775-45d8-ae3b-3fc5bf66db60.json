@@ -1,0 +1,28 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "a26fca4f-5775-45d8-ae3b-3fc5bf66db60",
+  "created_at": "2026-07-18T11:54:24.357Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "RY-ASMO-6N4F:text_count",
+  "sku": "RY-ASMO-6N4F",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMISSION_ARMED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "crash_window_guard": true,
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "95d559044106dc088848413acc87fc4cea0253817a35289e195f54f818cbd459",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "53923a80a44f95e6d3530b33adaeddf7e846c01a1989cc7268022d7e7a733883"
+    }
+  },
+  "sha256": "cc11af51cac63949ba0931ff1e597d8ba8ef0ecd5247dc085fc24206c2c1e5f8"
+}

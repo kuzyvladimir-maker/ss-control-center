@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "fd06c092-afbe-4840-94db-04961f0e5f49",
+  "created_at": "2026-07-18T11:29:39.008Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "BX-AS5P-6WQV:text_count",
+  "sku": "BX-AS5P-6WQV",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "82cc00cc066ccf2b9f29f50876091362aa3a4b91d25064c0d47fc1139e54e8d3",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "f63690d982b846168db25b6ecc6e77b3",
+    "issues": []
+  },
+  "sha256": "ff416ea6817b64e4f4f776cff1ac493181a68621702f244464851c4b70846496"
+}

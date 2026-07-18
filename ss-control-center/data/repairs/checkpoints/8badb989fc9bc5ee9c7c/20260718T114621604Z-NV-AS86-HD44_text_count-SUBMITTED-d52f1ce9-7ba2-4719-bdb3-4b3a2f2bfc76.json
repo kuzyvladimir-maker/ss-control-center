@@ -1,0 +1,39 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d52f1ce9-7ba2-4719-bdb3-4b3a2f2bfc76",
+  "created_at": "2026-07-18T11:46:21.604Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "NV-AS86-HD44:text_count",
+  "sku": "NV-AS86-HD44",
+  "kind": "TEXT_COUNT",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "3da1f1f6-7dcd-46f2-9821-d6fa6e19b3a6",
+    "patch_sha256": "098bf42edaf3f86d9a3727b632ffda9790cf1924ea14c3acabcb12846322e13b",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "098bf42edaf3f86d9a3727b632ffda9790cf1924ea14c3acabcb12846322e13b",
+      "exact_action_paths": [
+        "/attributes/bullet_point",
+        "/attributes/item_name",
+        "/attributes/number_of_items",
+        "/attributes/product_description",
+        "/attributes/unit_count"
+      ],
+      "before_path_state_sha256": "47ab6c2c53e25278f4d50941741a29dafcc21dc7d503fc55f9d78475922f499b"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "96fce38016f34b68bff570be4d81f8c9",
+    "issues": []
+  },
+  "sha256": "f8d4509fdb77585bbbe79901f1b18a9574d2694e459e1d2cb4f36a42219d2b49"
+}

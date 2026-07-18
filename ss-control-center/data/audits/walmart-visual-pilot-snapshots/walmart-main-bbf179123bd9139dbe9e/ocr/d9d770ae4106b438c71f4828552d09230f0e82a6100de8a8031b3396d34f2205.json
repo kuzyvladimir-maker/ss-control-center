@@ -1,0 +1,754 @@
+{
+  "engine" : "apple-vision-accurate-literal",
+  "images" : [
+    {
+      "height" : 1800,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.007493539916144543,
+            "width" : 0.04651162465413411,
+            "x" : 0.21947674503727405,
+            "y" : 0.7861111111185256
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007493539916144432,
+            "width" : 0.04360465155707466,
+            "x" : 0.3197674417048514,
+            "y" : 0.7861111111738966
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00749354018105397,
+            "width" : 0.04651162465413411,
+            "x" : 0.42877907197525855,
+            "y" : 0.7861111109807963
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007493539916144543,
+            "width" : 0.04505814022488064,
+            "x" : 0.5290697671236368,
+            "y" : 0.7861111111720751
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00749354018105397,
+            "width" : 0.04505814022488064,
+            "x" : 0.6395348839391586,
+            "y" : 0.7861111109807963
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.009772503111097453,
+            "width" : 0.04524980333116324,
+            "x" : 0.7382762614433522,
+            "y" : 0.7858114230009986
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04871587965223534,
+            "width" : 0.1267363484700521,
+            "x" : 0.22805624467884172,
+            "y" : 0.668229269696073
+          },
+          "confidence" : 1,
+          "text" : "ZERO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04688942379421657,
+            "width" : 0.12223644680447054,
+            "x" : 0.4374282885645674,
+            "y" : 0.6684157533009698
+          },
+          "confidence" : 1,
+          "text" : "ZERO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05130952199300132,
+            "width" : 0.12624476114908845,
+            "x" : 0.6432729685729998,
+            "y" : 0.6669324483905099
+          },
+          "confidence" : 1,
+          "text" : "ZERO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441749572723,
+            "width" : 0.04505814022488064,
+            "x" : 0.2674418601877802,
+            "y" : 0.6569767442289626
+          },
+          "confidence" : 1,
+          "text" : "GATORADE®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441749572723,
+            "width" : 0.04505814022488064,
+            "x" : 0.4767441862647399,
+            "y" : 0.6569767443323358
+          },
+          "confidence" : 1,
+          "text" : "GATORADE®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441749572612,
+            "width" : 0.04505813598632813,
+            "x" : 0.6860465126512157,
+            "y" : 0.6569767441688183
+          },
+          "confidence" : 1,
+          "text" : "GATORADE®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011841085751851388,
+            "width" : 0.07848837110731335,
+            "x" : 0.2485465124986689,
+            "y" : 0.6148255811558561
+          },
+          "confidence" : 1,
+          "text" : "ZEROSUGAR THIRST QUENCHER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01184108522203231,
+            "width" : 0.07848837110731338,
+            "x" : 0.457848838356227,
+            "y" : 0.6148255813448096
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR THIRST QUENCHER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01184108522203231,
+            "width" : 0.07848837110731333,
+            "x" : 0.6671511625204714,
+            "y" : 0.6148255816566053
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR THIRST QUENCHER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010174418555365827,
+            "width" : 0.0726744164360894,
+            "x" : 0.25290697695637393,
+            "y" : 0.6031976745704275
+          },
+          "confidence" : 1,
+          "text" : "GLACIER CHERRY®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010174418555365716,
+            "width" : 0.07267441643608935,
+            "x" : 0.46220930224707163,
+            "y" : 0.603197674612821
+          },
+          "confidence" : 1,
+          "text" : "GLACIER CHERRY®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.015454651514689166,
+            "width" : 0.077203114827474,
+            "x" : 0.6670670464979371,
+            "y" : 0.5998308139317381
+          },
+          "confidence" : 1,
+          "text" : "GLACIER CHERRY®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007299741639031243,
+            "width" : 0.05959302266438804,
+            "x" : 0.26889535012613924,
+            "y" : 0.5944444444247086
+          },
+          "confidence" : 1,
+          "text" : "AVORED WITH OTHER NATURAL FLAVORS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007299741639031243,
+            "width" : 0.07703487820095489,
+            "x" : 0.4593023296252977,
+            "y" : 0.5944444444247086
+          },
+          "confidence" : 1,
+          "text" : "LATUBALLY FLAVORED WITH OTHER NATUBAL FLAVOR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007299741639031243,
+            "width" : 0.07848837110731344,
+            "x" : 0.6686046529637851,
+            "y" : 0.5944444444247086
+          },
+          "confidence" : 1,
+          "text" : "NATURALLY FLAVORED WITH OTHER NATURAL FLAVORS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014999999999999902,
+            "width" : 0.08430232577853736,
+            "x" : 0.2456395354755569,
+            "y" : 0.5738888891014868
+          },
+          "confidence" : 1,
+          "text" : "28 FLOZ (1.75 PT) 828 ml 0"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.015000000000000013,
+            "width" : 0.08430232577853736,
+            "x" : 0.4549418593127662,
+            "y" : 0.5738888887170166
+          },
+          "confidence" : 1,
+          "text" : "28 FL OZ (175 PT) 828 ml O"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014771030214097758,
+            "width" : 0.08288993835449221,
+            "x" : 0.6656771245361376,
+            "y" : 0.5740098338290276
+          },
+          "confidence" : 1,
+          "text" : "28 FL.OZ (.75 PT) 828 ml ©"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.009106234444512196,
+            "width" : 0.04658232794867623,
+            "x" : 0.2194413934372726,
+            "y" : 0.2934119991961325
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00899224811130106,
+            "width" : 0.04505813598632813,
+            "x" : 0.3197674441919134,
+            "y" : 0.29333333325689737
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.009602355957031183,
+            "width" : 0.04666880289713543,
+            "x" : 0.4287004829962163,
+            "y" : 0.2917104497693417
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00899224811130106,
+            "width" : 0.04505813598632813,
+            "x" : 0.5290697697733088,
+            "y" : 0.29333333325689737
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.009333305358886768,
+            "width" : 0.045172644721137134,
+            "x" : 0.6394776306764727,
+            "y" : 0.291844975175531
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00899224811130106,
+            "width" : 0.04505813598632813,
+            "x" : 0.7383720953547042,
+            "y" : 0.29333333325689737
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04966460757785374,
+            "width" : 0.12853453742133247,
+            "x" : 0.22643040506971873,
+            "y" : 0.1735688588987837
+          },
+          "confidence" : 1,
+          "text" : "ZERO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04970162285698787,
+            "width" : 0.12276472303602426,
+            "x" : 0.43716415029797506,
+            "y" : 0.17355035114684114
+          },
+          "confidence" : 1,
+          "text" : "ZERO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05274031321207684,
+            "width" : 0.12574859619140621,
+            "x" : 0.6435210509263496,
+            "y" : 0.17348449434753266
+          },
+          "confidence" : 1,
+          "text" : "ZERO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441749572723,
+            "width" : 0.04505814022488064,
+            "x" : 0.2674418606833446,
+            "y" : 0.1642441861928008
+          },
+          "confidence" : 1,
+          "text" : "GATORADE®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441749572834,
+            "width" : 0.045058140224880694,
+            "x" : 0.4767441857691756,
+            "y" : 0.1642441860894276
+          },
+          "confidence" : 1,
+          "text" : "GATORADE®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007267441749572834,
+            "width" : 0.04505814022488064,
+            "x" : 0.6860465112126566,
+            "y" : 0.1642441861140701
+          },
+          "confidence" : 1,
+          "text" : "GATORADE®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011795865694681829,
+            "width" : 0.07848837110731338,
+            "x" : 0.2485465115601307,
+            "y" : 0.1220930230703079
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR THIRST QUENCHER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011795865694681829,
+            "width" : 0.07848837110731338,
+            "x" : 0.4578488371415261,
+            "y" : 0.1220930230703079
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR THIRST QUENCHER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008888888623979407,
+            "width" : 0.07558139377170148,
+            "x" : 0.6700581394513585,
+            "y" : 0.12500000001660128
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR THIRST OUENCHER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010174418555365605,
+            "width" : 0.07122093200683594,
+            "x" : 0.2529069765692565,
+            "y" : 0.1104651163763869
+          },
+          "confidence" : 1,
+          "text" : "GLACIER CHERRY®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.00897932794359002,
+            "width" : 0.07122093200683594,
+            "x" : 0.4622093007262332,
+            "y" : 0.11046511639342949
+          },
+          "confidence" : 1,
+          "text" : "GLACIER CHERRY®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007777777777777772,
+            "width" : 0.06976743910047745,
+            "x" : 0.6729651167869707,
+            "y" : 0.11166666667992842
+          },
+          "confidence" : 1,
+          "text" : "GLACIER CHERRY®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.007344961166381836,
+            "width" : 0.07994185553656685,
+            "x" : 0.6671511665873368,
+            "y" : 0.1016666667578231
+          },
+          "confidence" : 1,
+          "text" : "NATURALLY FLAVORED WITH OTHER NATUBAL FLAVORS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014715762138366784,
+            "width" : 0.0857558102077908,
+            "x" : 0.2456395378285174,
+            "y" : 0.08139534902077605
+          },
+          "confidence" : 1,
+          "text" : "28 FLOZ (175 PT) 828 mL0"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014947225782606322,
+            "width" : 0.08437243991427956,
+            "x" : 0.4549068024559455,
+            "y" : 0.08118917774410739
+          },
+          "confidence" : 1,
+          "text" : "28 FL. OZ (175 PT) 828 mL O"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014715762138366784,
+            "width" : 0.08284883287217881,
+            "x" : 0.6656976770595501,
+            "y" : 0.08139534882697763
+          },
+          "confidence" : 1,
+          "text" : "28 FL. OZ (.75 PT) 828 mL 0"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/full-a2d103b782cec3f703d550928e02764e85db5f1a84f85af6a0ef9498bab88400.jpg",
+      "width" : 1800
+    },
+    {
+      "height" : 2048,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.016552279703319073,
+            "width" : 0.216438778963956,
+            "x" : 0.15867250395355523,
+            "y" : 0.5825668839257551
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01744185946881771,
+            "width" : 0.20945946086536749,
+            "x" : 0.6418918933848837,
+            "y" : 0.5828488379254748
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01308139506727457,
+            "width" : 0.05743243044072932,
+            "x" : 0.8783783796107164,
+            "y" : 0.5915697677134557
+          },
+          "confidence" : 0.3,
+          "text" : "CONTENE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008720929734408855,
+            "width" : 0.06756756522438742,
+            "x" : 0.09797297527068913,
+            "y" : 0.5247093026231057
+          },
+          "confidence" : 1,
+          "text" : "RENTORATE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.008720929734408855,
+            "width" : 0.057432430440729335,
+            "x" : 0.1047297297683741,
+            "y" : 0.517441860714191
+          },
+          "confidence" : 1,
+          "text" : "BEPLENISH"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013249105773866177,
+            "width" : 0.06044002446261319,
+            "x" : 0.09497489449608927,
+            "y" : 0.47271914100667933
+          },
+          "confidence" : 0.3,
+          "text" : "LENNOR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.10100597143173218,
+            "width" : 0.6435990073464134,
+            "x" : 0.19002482107380836,
+            "y" : 0.336851665173314
+          },
+          "confidence" : 1,
+          "text" : "ZERO"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.017755143344402313,
+            "width" : 0.21351994601162994,
+            "x" : 0.38817246158890917,
+            "y" : 0.3116166145562196
+          },
+          "confidence" : 1,
+          "text" : "GATORADE®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02197265625,
+            "width" : 0.3817567651922053,
+            "x" : 0.30067567283745583,
+            "y" : 0.22802734410978065
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR THIRST QUENCHER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.020348837599158287,
+            "width" : 0.347972973910245,
+            "x" : 0.31756756672730996,
+            "y" : 0.20058139495042093
+          },
+          "confidence" : 1,
+          "text" : "GLACIER CHERRY®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.01318359375,
+            "width" : 0.3952702608975497,
+            "x" : 0.2905405402860225,
+            "y" : 0.18310546862353805
+          },
+          "confidence" : 1,
+          "text" : "NATURALLY FLAVORED WITH OTHER NATURAL FLAVORS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.013263081200420856,
+            "width" : 0.08108107826926492,
+            "x" : 0.7500000003923946,
+            "y" : 0.16406249992696642
+          },
+          "confidence" : 1,
+          "text" : "PER 12FL.0Z"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.014825580641627312,
+            "width" : 0.0661288911646063,
+            "x" : 0.7574760947262278,
+            "y" : 0.17209302344062727
+          },
+          "confidence" : 1,
+          "text" : "CALDRIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.020348837599158287,
+            "width" : 0.3378378434614701,
+            "x" : 0.2905405405440397,
+            "y" : 0.146802325434917
+          },
+          "confidence" : 1,
+          "text" : "28 FL OZ (1.75 PT) 828 mL"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.010174417868256569,
+            "width" : 0.05405405217950987,
+            "x" : 0.7668918932796145,
+            "y" : 0.1569767447238175
+          },
+          "confidence" : 1,
+          "text" : "SERYINS"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/tile_front-60dd7fa48bd99730b43827527ad8f3356870881dc69524c99646335b72784873.png",
+      "width" : 879
+    },
+    {
+      "height" : 1263,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.03639240506329111,
+            "width" : 0.21238938053097345,
+            "x" : 0.38938053207964607,
+            "y" : 0.7863924052907437
+          },
+          "confidence" : 1,
+          "text" : "GATORADE®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.05221518987341767,
+            "width" : 0.37758112094395274,
+            "x" : 0.30235988278761067,
+            "y" : 0.5712025313844937
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR THIRST QUENCHER"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.04113924050632911,
+            "width" : 0.3436578171091445,
+            "x" : 0.32005899548806654,
+            "y" : 0.5079113923331416
+          },
+          "confidence" : 1,
+          "text" : "GLACIER CHERRY®"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.030063291139240444,
+            "width" : 0.39085545722713866,
+            "x" : 0.2964601737831859,
+            "y" : 0.4620253167062237
+          },
+          "confidence" : 1,
+          "text" : "NATURALLY FLAVORED WITH OTHER NATURAL FLAVORS"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02848101265822789,
+            "width" : 0.06047197640117996,
+            "x" : 0.7625368733120288,
+            "y" : 0.43670886091772143
+          },
+          "confidence" : 1,
+          "text" : "CALDRIES"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.03610788266870035,
+            "width" : 0.08412994677338281,
+            "x" : 0.7516218460560451,
+            "y" : 0.408475527158528
+          },
+          "confidence" : 1,
+          "text" : "PER 12 RL 0Z"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.06272603892072848,
+            "width" : 0.36666665316331354,
+            "x" : 0.2875000099183432,
+            "y" : 0.36607142919642865
+          },
+          "confidence" : 1,
+          "text" : "28 FL.OZ (1.75 PT) 828 mL *"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.032059397878526075,
+            "width" : 0.05895166762810544,
+            "x" : 0.7646471526839567,
+            "y" : 0.3877312555570879
+          },
+          "confidence" : 1,
+          "text" : "SERVINS"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/bottom_label-ab01ee15183f63836039547a78e172c28de2cbc33480b7fc62813c232c3d9499.png",
+      "width" : 1356
+    },
+    {
+      "height" : 1515,
+      "observations" : [
+        {
+          "bounding_box" : {
+            "height" : 0.02912118504104011,
+            "width" : 0.3709344063096374,
+            "x" : 0.2739415038019137,
+            "y" : 0.13259577057222272
+          },
+          "confidence" : 1,
+          "text" : "ZERO SUGAR"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.02176687144981526,
+            "width" : 0.11246547747507654,
+            "x" : 0.1679935401821456,
+            "y" : 0.007923284992543689
+          },
+          "confidence" : 1,
+          "text" : "RENTORNTE"
+        },
+        {
+          "bounding_box" : {
+            "height" : 0.011627906859707493,
+            "width" : 0.09803921454432055,
+            "x" : 0.17647059125725137,
+            "y" : 0.001453488285262483
+          },
+          "confidence" : 0.3,
+          "text" : "TEAFEE"
+        }
+      ],
+      "path" : "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/derived/top_left_badge-a5abb54581d29e7beb09749e59c4321b598f69a098364089185a6fd5152e2417.png",
+      "width" : 786
+    }
+  ],
+  "schema_version" : "walmart-local-ocr/v1"
+}

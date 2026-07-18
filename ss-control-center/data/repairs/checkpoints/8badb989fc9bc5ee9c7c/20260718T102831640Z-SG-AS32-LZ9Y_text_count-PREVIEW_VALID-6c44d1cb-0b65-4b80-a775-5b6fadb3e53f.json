@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "6c44d1cb-0b65-4b80-a775-5b6fadb3e53f",
+  "created_at": "2026-07-18T10:28:31.640Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "SG-AS32-LZ9Y:text_count",
+  "sku": "SG-AS32-LZ9Y",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "f50f018c6753647467ccaa4049cdcb5031224d5986ce425450e3cb045a8d7b76",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "39c1f2503a564c729e73ff629dcbcffb",
+    "issues": []
+  },
+  "sha256": "4c2e5360b33866f2a7ee72be34c5d8138ecf5ac499d706b21daf02122e87bb52"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "4ea32f67-ded1-43c1-a477-a38a5b2f20ae",
+  "created_at": "2026-07-18T11:29:21.720Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "BQ-ASUE-NT37:text_count",
+  "sku": "BQ-ASUE-NT37",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "48597d02972f44f0dca523313aa7e73a54eed4e3c9a09d5b294dcc9e86ec5b24",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "43472cef5c34472592b935ff393b904d",
+    "issues": []
+  },
+  "sha256": "0aa2b796195d581717f65e9b1a898c17505465f64d2b6293cddb4ef46d1ea750"
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d1b2581c-34a6-49f9-a7b8-73722b975b8c",
+  "created_at": "2026-07-18T08:38:47.344Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "EZ-ASLA-Y7MZ:offer",
+  "sku": "EZ-ASLA-Y7MZ",
+  "kind": "OFFER",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "strategy": "SELECTOR_REPLACE_SURROGATE_FOR_MERGE",
+    "actual_merge_patch_sha256": "c191a0b0a53ccbd7af7aabb8287ad44267716f4487cec6545a1ad1e581913a33",
+    "actual_merge_patch_path": "/attributes/purchasable_offer",
+    "actual_merge_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "preview_surrogate_patch_sha256": "afe6af93843d188f08ca3246e3abea2b8e0e8538f290d5d820b2fccaa382c59b",
+    "preview_surrogate_patch_path": "/attributes/purchasable_offer",
+    "preview_surrogate_patch_paths": [
+      "/attributes/purchasable_offer"
+    ],
+    "actual_request_patch_sha256": "0100d5cb060f10eb9f9212bcc9da3a8e4205565d689071b876808be76416be16",
+    "actual_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "preview_request_patch_sha256": "428d4f6df1712645dac1904f408917bf7735b1b4ba08048c48139ad22d3d1531",
+    "preview_request_patch_paths": [
+      "/attributes/purchasable_offer",
+      "/attributes/list_price"
+    ],
+    "omitted_null_members": [
+      "ALL.discounted_price"
+    ],
+    "status": "VALID",
+    "submission_id": "dcd8efbf94324a1290396b39ff230dc4",
+    "issues": []
+  },
+  "sha256": "bbe1d4fffc4953358e5da85fe129c6298dce018751acb43d716efdc779e36135"
+}

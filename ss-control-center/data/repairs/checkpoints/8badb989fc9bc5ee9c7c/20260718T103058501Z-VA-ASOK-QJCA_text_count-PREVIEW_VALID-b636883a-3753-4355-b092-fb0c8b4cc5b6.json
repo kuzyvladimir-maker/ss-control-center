@@ -1,0 +1,26 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b636883a-3753-4355-b092-fb0c8b4cc5b6",
+  "created_at": "2026-07-18T10:30:58.501Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "VA-ASOK-QJCA:text_count",
+  "sku": "VA-ASOK-QJCA",
+  "kind": "TEXT_COUNT",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "f9699b06c180f228c0f40443bc52769291806421be3a53b267ea6ae3e19c71ae",
+    "patch_paths": [
+      "/attributes/item_name",
+      "/attributes/bullet_point",
+      "/attributes/product_description",
+      "/attributes/unit_count",
+      "/attributes/number_of_items"
+    ],
+    "status": "VALID",
+    "submission_id": "75a2c86b153d47d988623a109ec9acd7",
+    "issues": []
+  },
+  "sha256": "b56df7eb51a02934aeb69bf57950b63a8fac31525dc2bf08d8e258195d507418"
+}
