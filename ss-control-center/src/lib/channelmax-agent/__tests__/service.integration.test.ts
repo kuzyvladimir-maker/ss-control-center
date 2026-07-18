@@ -7,7 +7,6 @@ import { after, before, test } from "node:test";
 
 import { createClient } from "@libsql/client";
 import { NextRequest, NextResponse } from "next/server";
-import sharp from "sharp";
 
 import {
   parseApproveChannelMaxAgentJob,
@@ -16,6 +15,7 @@ import {
   parseCompleteChannelMaxAgentJob,
   parseCreateChannelMaxAgentJob,
 } from "../contracts";
+import { testPng } from "./png-fixture";
 
 const ASSIGNMENT_BYTES = Buffer.from(
   "SKU\tManualModel\nUNCRUSTABLES-TEST\t59021\n",
@@ -42,23 +42,17 @@ async function managedEvidence(
   mediaType: string,
 ) {
   assert.ok(leaseToken);
+  const screenshotFill = createHash("sha256").update(content).digest();
   const storedContent =
     kind === "SCREENSHOT"
-      ? await sharp({
-          create: {
-            width: 320,
-            height: 200,
-            channels: 4,
-            background: {
-              r: createHash("sha256").update(content).digest()[0],
-              g: createHash("sha256").update(content).digest()[1],
-              b: createHash("sha256").update(content).digest()[2],
-              alpha: 1,
-            },
-          },
+      ? testPng({
+          fill: [
+            screenshotFill[0],
+            screenshotFill[1],
+            screenshotFill[2],
+            255,
+          ],
         })
-          .png()
-          .toBuffer()
       : content;
   const stored = await service.storeChannelMaxAgentEvidence(
     jobId,

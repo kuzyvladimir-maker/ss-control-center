@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-
-import sharp from "sharp";
+import { deflateSync } from "node:zlib";
 
 import type { ChannelMaxManagedEvidenceUploadInput } from "../contracts";
 import {
   assertChannelMaxManagedEvidenceContent,
   type ChannelMaxEvidenceJobBinding,
 } from "../evidence-content";
+import { testPng, testPngChunk } from "./png-fixture";
 
 const ACCOUNT_ID = "channelmax:amznus:salutem-solutions";
 const CAPTURED_AT = "2026-07-18T20:00:00.000Z";
@@ -42,16 +42,7 @@ function job(
 }
 
 async function png(width = 320, height = 200): Promise<Buffer> {
-  return sharp({
-    create: {
-      width,
-      height,
-      channels: 4,
-      background: { r: 24, g: 91, b: 53, alpha: 1 },
-    },
-  })
-    .png()
-    .toBuffer();
+  return testPng({ width, height });
 }
 
 function inventoryDocument(): Record<string, unknown> {
@@ -136,6 +127,121 @@ test("SCREENSHOT accepts only a decodable, bounded PNG", async () => {
       job("SNAPSHOT_INVENTORY"),
     ),
     /dimensions or page count/i,
+  );
+});
+
+test("SCREENSHOT validates CRCs, chunk order, IEND, and trailing bytes", async () => {
+  const input = uploadInput("SCREENSHOT", "image/png");
+  const valid = testPng({ idatParts: 3 });
+  await assertChannelMaxManagedEvidenceContent(
+    input,
+    valid,
+    job("SNAPSHOT_INVENTORY"),
+  );
+
+  const corruptCrc = Buffer.from(valid);
+  const idat = corruptCrc.indexOf(Buffer.from("IDAT", "ascii"));
+  assert.ok(idat > 0);
+  corruptCrc[idat + 4] ^= 0x01;
+  await assert.rejects(
+    assertChannelMaxManagedEvidenceContent(
+      input,
+      corruptCrc,
+      job("SNAPSHOT_INVENTORY"),
+    ),
+    /invalid CRC/i,
+  );
+
+  await assert.rejects(
+    assertChannelMaxManagedEvidenceContent(
+      input,
+      testPng({ includeIend: false }),
+      job("SNAPSHOT_INVENTORY"),
+    ),
+    /missing.*IEND/i,
+  );
+  await assert.rejects(
+    assertChannelMaxManagedEvidenceContent(
+      input,
+      testPng({ trailing: Buffer.from("untrusted") }),
+      job("SNAPSHOT_INVENTORY"),
+    ),
+    /after IEND/i,
+  );
+  await assert.rejects(
+    assertChannelMaxManagedEvidenceContent(
+      input,
+      testPng({
+        idatParts: 2,
+        chunksBetweenIdat: [testPngChunk("tEXt", Buffer.from("x"))],
+      }),
+      job("SNAPSHOT_INVENTORY"),
+    ),
+    /exact image scanlines|consecutive/i,
+  );
+});
+
+test("SCREENSHOT permits only canonical Chromium PNG encoding", async () => {
+  const input = uploadInput("SCREENSHOT", "image/png");
+  await assertChannelMaxManagedEvidenceContent(
+    input,
+    testPng({ colorType: 2 }),
+    job("SNAPSHOT_INVENTORY"),
+  );
+
+  for (const invalidPng of [
+    testPng({ bitDepth: 16 }),
+    testPng({ colorType: 3 }),
+    testPng({ colorType: 4 }),
+    testPng({ interlaceMethod: 1 }),
+    testPng({ compressionMethod: 1 }),
+    testPng({ filterMethod: 1 }),
+  ]) {
+    await assert.rejects(
+      assertChannelMaxManagedEvidenceContent(
+        input,
+        invalidPng,
+        job("SNAPSHOT_INVENTORY"),
+      ),
+      /8-bit, non-interlaced Chromium RGB or RGBA/i,
+    );
+  }
+});
+
+test("SCREENSHOT requires one complete zlib stream with exact valid scanlines", async () => {
+  const input = uploadInput("SCREENSHOT", "image/png");
+  const exactLength = (320 * 4 + 1) * 200;
+
+  for (const invalidPng of [
+    testPng({ scanlines: Buffer.alloc(exactLength - 1) }),
+    testPng({ scanlines: Buffer.alloc(exactLength + 1) }),
+    testPng({ compressed: Buffer.from([0x78, 0x9c, 0x00]) }),
+    testPng({
+      compressed: Buffer.concat([
+        deflateSync(Buffer.alloc(exactLength)),
+        Buffer.from([0xde, 0xad, 0xbe, 0xef]),
+      ]),
+    }),
+  ]) {
+    await assert.rejects(
+      assertChannelMaxManagedEvidenceContent(
+        input,
+        invalidPng,
+        job("SNAPSHOT_INVENTORY"),
+      ),
+      /exact image scanlines|decodable PNG/i,
+    );
+  }
+
+  const invalidFilterScanlines = Buffer.alloc(exactLength);
+  invalidFilterScanlines[0] = 5;
+  await assert.rejects(
+    assertChannelMaxManagedEvidenceContent(
+      input,
+      testPng({ scanlines: invalidFilterScanlines }),
+      job("SNAPSHOT_INVENTORY"),
+    ),
+    /invalid scanline filter/i,
   );
 });
 
