@@ -1,0 +1,6 @@
+Error: amazon:1:AC-AS4J-B64F:base-offer-preserve fresh rollback state differs from FINAL v3 CAS.
+    at assertEntryMatchesFreshSnapshot (/Users/vladimirkuznetsov/SS Command Center/ss-control-center/src/lib/bundle-factory/repair/uncrustables-base-offer-live-contract.ts:525:11)
+    at <anonymous> (/Users/vladimirkuznetsov/SS Command Center/ss-control-center/src/lib/bundle-factory/repair/uncrustables-base-offer-live-contract.ts:634:5)
+    at Array.map (<anonymous>)
+    at createBaseOfferRollbackBinding (/Users/vladimirkuznetsov/SS Command Center/ss-control-center/src/lib/bundle-factory/repair/uncrustables-base-offer-live-contract.ts:629:59)
+    at main (/Users/vladimirkuznetsov/SS Command Center/ss-control-center/scripts/build-uncrustables-base-offer-rollback-binding.ts:98:19)

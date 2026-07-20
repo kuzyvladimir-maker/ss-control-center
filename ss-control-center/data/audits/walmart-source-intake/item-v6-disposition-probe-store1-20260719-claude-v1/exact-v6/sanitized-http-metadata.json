@@ -1,0 +1,68 @@
+{
+  "schema": "walmart-source-intake-sanitized-http-metadata/v1",
+  "oauth": {
+    "method": "POST",
+    "endpoint": "/v3/token",
+    "observed_at_utc": "2026-07-19T23:13:20.843Z",
+    "http_status": 200,
+    "token_value_retained": false
+  },
+  "get": {
+    "method": "GET",
+    "endpoint": "/v3/reports/reportRequests",
+    "query_ordered": [
+      {
+        "reportType": "ITEM"
+      },
+      {
+        "reportVersion": "v6"
+      },
+      {
+        "src": "API"
+      },
+      {
+        "requestSubmissionStartDate": "2026-07-19T03:55:00Z"
+      },
+      {
+        "requestSubmissionEndDate": "2026-07-19T04:00:00Z"
+      }
+    ],
+    "full_url": "https://marketplace.walmartapis.com/v3/reports/reportRequests?reportType=ITEM&reportVersion=v6&src=API&requestSubmissionStartDate=2026-07-19T03%3A55%3A00Z&requestSubmissionEndDate=2026-07-19T04%3A00%3A00Z",
+    "wm_qos_correlation_id": "e79ba0dc-bd37-4323-9448-1e9a4b2a3df3",
+    "observed_at_utc": "2026-07-19T23:13:21.286Z",
+    "duration_ms": 240,
+    "http_status": 200,
+    "http_status_text": "OK",
+    "safe_response_headers": {
+      "accept-ranges": "bytes",
+      "cache-control": "max-age=0, no-cache, no-store",
+      "connection": "keep-alive",
+      "content-length": "49",
+      "content-type": "application/json",
+      "date": "Sun, 19 Jul 2026 23:13:21 GMT",
+      "expires": "Sun, 19 Jul 2026 23:13:21 GMT",
+      "last-modified": "Sun, 19 Jul 2026 23:13:21 GMT",
+      "pragma": "no-cache",
+      "x-accel-buffering": "no",
+      "x-apigw-env": "env-rest-prod-us-scus",
+      "x-apigw-route-name": "mp-us-on_request-get-all_report_or_report_status",
+      "x-apigw-server-timing": "total:78,proxy:67,target:11",
+      "x-apigw-target-name": "T3-prod.partner.reporting.platform.walmartlabs.com",
+      "x-current-mb-count": "",
+      "x-next-replenishment-time": "0",
+      "x-request-id": "33b6090e-79ec-435b-b435-a10a079a88a5",
+      "x-tb": "1",
+      "x-tb-optimization-total-bytes-saved": "0"
+    },
+    "raw_body_file": "response-raw.bytes",
+    "raw_body_bytes": 49
+  },
+  "budget_actual": {
+    "oauth_token_posts": 1,
+    "report_requests_gets": 1,
+    "retries": 0,
+    "cursor_calls": 0,
+    "report_create_posts": 0
+  },
+  "stopped_without_retry": false
+}

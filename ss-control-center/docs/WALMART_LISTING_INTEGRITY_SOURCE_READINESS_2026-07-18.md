@@ -54,12 +54,18 @@ read-only. Exact timeline and hashes are recorded in
 
 A later independent operator probe queried all ITEM report requests for the preceding
 48 hours and found 18 legacy v2 API requests but no v6 request, including none near the
-ambiguous `03:57Z` attempt. Its newest-first first page crossed the full 24-hour cutoff.
-This materially corroborates that the ambiguous POST created nothing, but the retained
-raw envelope is still in operator scratch custody and the broad query is not the exact
-zero-row v6-filtered shape accepted by the current permit verifier. See
-`WALMART_ITEM_V6_ABSENCE_PROBE_OPERATOR_REPORT_2026-07-19.md`. No owner disposition or
-replacement POST is authorized from the text report alone.
+ambiguous `03:57Z` attempt. The operator then supplied a separate exact ITEM/v6/API GET
+for `03:55Z..04:00Z`; HTTP 200 returned the raw zero-row sentinel. Codex independently
+reviewed all six files and atomically sealed the final content-addressed frozen R4
+source-evidence release. Exact artifact SHA-256 is
+`3efd693468f9c0761d6091d379c06e2daddb7d8dadc908228eb282ddeab4fa31`;
+freshness ends `2026-07-20T23:13:21.286Z`. See
+`WALMART_ITEM_V6_ABSENCE_PROBE_OPERATOR_REPORT_2026-07-19.md`.
+
+The evidence supports `NO_API_VISIBLE_V6_REQUEST_IN_EXACT_QUERY_WINDOW`, but does not
+prove the original POST never reached Walmart. Account equality in the six probe files
+is operator-asserted, and there is no Walmart signature/TLS transcript. Those limits and
+the non-zero duplicate-request risk must be accepted by the owner.
 
 A post-probe audit then reproduced a fail-open in the v1 reissue loader: it accepted
 the prohibited conflicting result/completion hashes `d0a18766…` / `d2b1aef9…`
@@ -74,8 +80,11 @@ The old hash-only reissue permit is additionally retired because its
 did not authenticate owner authorship. A future replacement requires a new immutable
 evidence release bound to exact independent raw probe bytes plus an external Ed25519
 owner disposition bound to the exact replacement request and one-shot limits. The
-quarantined session cannot satisfy that gate, and no executable report-create CLI path
-currently exists.
+evidence release and complete Ed25519 disposition contract now exist in frozen R4;
+the combined suite is 132/132 and the independent frozen-boundary audit is 45/45 with
+0 Critical/High findings. R1–R3 are forbidden. A dedicated production owner key is
+not enrolled, and the one-shot consumption/execution path is intentionally not
+exposed. Therefore no executable report-create CLI path currently exists.
 
 Primary references:
 
@@ -125,8 +134,8 @@ Existing seller WPIDs are not substitutes for numeric buyer item IDs. Legacy don
 
 1. **Done — code only:** build and test the sealed read-only reconciliation adapter. The quarantined live chain is not an authoritative `ABSENCE_ONLY` result.
 2. **Done — containment:** make terminal reconciliation failure irreversible and retire the executable unsigned/unbound reissue-v1 CLI path. Focused evidence/capture/permit suites pass 43/43; the real quarantined session now fails with `RETAINED_TERMINAL_PAGE_FAILURE`.
-3. **In progress — independent evidence:** import the operator's exact raw broad-query bytes into isolated custody and capture one exact v6/API zero-row probe for `03:55Z..04:00Z`. Neither may be written into the quarantined session.
-4. **Not built:** create and certify an immutable raw-evidence release plus external Ed25519 owner-disposition/reissue-v2 contract. Only an explicit owner signature on exact fresh bytes may restore one report-create path.
+3. **Done — independent evidence:** six isolated files, including the exact raw v6/API zero-row response for `03:55Z..04:00Z`, were reviewed without touching the quarantine root and sealed into independently reproduced content-addressed frozen R4.
+4. **Partly complete / owner gate:** immutable raw evidence and the full external Ed25519 owner-disposition v2 verifier are retained in frozen R4 and independently certified. Production trust root is deliberately empty and live create remains absent. Owner must accept the exact residual risks and enroll a dedicated public key before a fresh signing request and one-shot execution release can be built.
 5. **Blocked:** after that separate approval, complete and compile one authoritative ITEM v6 capture for the full current PUBLISHED population.
 6. Build the owner-gated, versioned Product Truth workflow and disposition every PUBLISHED row as `auditable`, `truth_review`, or `unsupported`.
 7. Capture trusted performance/returns evidence needed for frozen selection.

@@ -1,0 +1,79 @@
+{
+  "schema_version": "uncrustables-amazon-base-offer-rollback-binding/v1",
+  "profile": "AMAZON_BASE_OFFER_PRESERVE_PROMO_V1",
+  "immutable": true,
+  "execution_authorized": false,
+  "created_at": "2026-07-19T23:37:54.476Z",
+  "binding_id": "UBORB-20260719T233754476Z-cab70a8c9c97",
+  "source_plan_body_sha256": "d53f1d2ae4337b1a49fefc043c92022394ff4cc764c17aababd423f8230a633d",
+  "source_full_selection_body_sha256": "6e68e4fb39e425130106c4aceb77bec0f4501ecfbf9c5a69e1857d6c80515b34",
+  "source_live_selection_body_sha256": "cab70a8c9c973d17ee9a148edc025441a5eff476c7ac08932465035466505667",
+  "snapshot": {
+    "path": "data/repairs/rollback/UAPS-20260719T233723418Z-46a80e727880-9425d83d2ec5.json",
+    "file_sha256": "f5b1179e38c6a53e53f1b645efb761b9747e9429853fb9a6e310705dc304b5eb",
+    "body_sha256": "9425d83d2ec575fb127f32f6b81e1c96898f50268425066fb862a38a68959643",
+    "snapshot_id": "UAPS-20260719T233723418Z-46a80e727880",
+    "capture_mode": "LIVE_SP_API",
+    "completed_at": "2026-07-19T23:37:23.418Z",
+    "rows": 164
+  },
+  "policy": {
+    "snapshot_max_age_ms": 600000,
+    "snapshot_capture_span_max_ms": 600000,
+    "exact_164_row_scope": true,
+    "inverse_patch_coverage_exact": true,
+    "discounted_price_omitted_from_forward_and_inverse": true,
+    "list_price_omitted_from_forward_and_inverse": true
+  },
+  "entries": [
+    {
+      "action_id": "amazon:1:LK-AS7X-K43B:base-offer-preserve",
+      "sku": "LK-AS7X-K43B",
+      "asin": "B0H84CGGXL",
+      "store_index": 1,
+      "product_type": "GROCERY",
+      "snapshot_listing_sha256": "7da261106d8141490a2dcd7688ad85986f8691370dc914eff82852980d3b5155",
+      "before_purchasable_offer_sha256": "72a4093e3a254cc3fa7b5e4b5de3affc9261e021c2dea16ed83ba1707a9a3719",
+      "before_discounted_price_sha256": "398b676e47d03a29016ee92fe378b8b4f1b3e965390c4c64ce78d27f79df74d1",
+      "before_list_price_sha256": "125ffde88a910ab8616cfa8f8fd958560f4250772ad77a264cf35e61c7a446d1",
+      "before_top_level_b2b_offers_sha256": "5c7bb96e75f8a77a2554914a9fd45c7e08dad249bc9fff8868d72ece5502d463",
+      "forward_patch_sha256": "c00d9b42ee1510961c41691faf090cab4957e28231d4c8cb4e16faa4ceb6e419",
+      "inverse_patch": {
+        "op": "merge",
+        "path": "/attributes/purchasable_offer",
+        "value": [
+          {
+            "marketplace_id": "ATVPDKIKX0DER",
+            "currency": "USD",
+            "audience": "ALL",
+            "our_price": [
+              {
+                "schedule": [
+                  {
+                    "value_with_tax": 78.76
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "marketplace_id": "ATVPDKIKX0DER",
+            "currency": "USD",
+            "audience": "B2B",
+            "our_price": [
+              {
+                "schedule": [
+                  {
+                    "value_with_tax": 76.22
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "inverse_patch_sha256": "c777a3f001c718dde8ed77fceabf3623b20b63b6275517613b8a7dafe142bf62"
+    }
+  ],
+  "body_sha256": "e2e8f30a4835133426272a7efff0ba4c9bbcd96ca88895fc37d1fba8dd624be9"
+}

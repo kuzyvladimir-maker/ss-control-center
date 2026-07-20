@@ -1,0 +1,22 @@
+{
+  "schema_version": "uncrustables-amazon-base-offer-live-checkpoint/v1",
+  "immutable": true,
+  "event_id": "f086978a-8656-4394-9e04-791a4ede73af",
+  "execution_binding_sha256": "082d3f50af5b376c658b9ab7b21d10a3cb50a7f0d99e228c7619f7c438bac353",
+  "sequence": 2,
+  "previous_event_sha256": "cdfd9ca15a546e9fc602f8e63ca74936c42e95a5585221547ddfb674d3d0e3c6",
+  "created_at": "2026-07-20T01:56:14.696Z",
+  "action_id": "amazon:1:LK-AS7X-K43B:base-offer-preserve",
+  "sku": "LK-AS7X-K43B",
+  "status": "SUBMISSION_ARMED",
+  "detail": {
+    "plan_body_sha256": "d53f1d2ae4337b1a49fefc043c92022394ff4cc764c17aababd423f8230a633d",
+    "live_selection_body_sha256": "cab70a8c9c973d17ee9a148edc025441a5eff476c7ac08932465035466505667",
+    "rollback_binding_body_sha256": "cc79fe1555fc371c0b8f436283d233b3531f8cb6b9ed84685023d88c9760c9a4",
+    "authorization_body_sha256": "6e9edbe032d396e82d85e5a88d33e842df5723882ac42896766e7fc863467d97",
+    "before_state_sha256": "d0fb5d16aa8e47b0d616df071e473025d39d1132d2cab62c1888b6f243b059d2",
+    "actual_patch_sha256": "c00d9b42ee1510961c41691faf090cab4957e28231d4c8cb4e16faa4ceb6e419",
+    "preview_patch_sha256": "392d9d2d7f91d0e3d9523fccc3696b688bfed48fe11f8b2e6d0ff56b74a1dec2"
+  },
+  "body_sha256": "77e45e6219df9117efdb7b34b66ccc694244df5cd29d3ea888902225bbd49e97"
+}

@@ -1,0 +1,80 @@
+{
+  "schema": "walmart-source-intake-sanitized-request-metadata/v1",
+  "artifact": "broad-48h",
+  "purpose": "Provenance for the byte-for-byte preserved broad 48h ITEM report-request listing envelope (report-requests-48h.json).",
+  "produced_by": {
+    "operator": "Claude BF-Images (read-only evidence operator)",
+    "producer_script": "scratchpad probe-item-reports2.ts (outside repository), via src/lib/walmart/client.ts requestRaw()",
+    "note": "Raw probe console logs retained in operator scratchpad only; not copied into this evidence root per instruction. Logs contain no OAuth token value, no Authorization header, no secrets."
+  },
+  "store_account": {
+    "store_index": 1,
+    "seller_id": "10001624309",
+    "account_name": "SIRIUS TRADING INTERNATIONAL LLC",
+    "marketplace": "WALMART_US"
+  },
+  "transport": {
+    "base_url": "https://marketplace.walmartapis.com",
+    "oauth": {
+      "method": "POST",
+      "endpoint": "/v3/token",
+      "grant_type": "client_credentials",
+      "calls": 1,
+      "token_value_retained": false
+    },
+    "calls": [
+      {
+        "seq": 1,
+        "method": "GET",
+        "endpoint": "/v3/reports/reportRequests",
+        "query": {
+          "reportType": "ITEM",
+          "requestSubmissionStartDate": "2026-07-17T17:06:01Z",
+          "requestSubmissionEndDate": "2026-07-19T17:06:01Z"
+        },
+        "observed_at_utc": "2026-07-19T17:06:01Z (approx; equals computed window end at invocation)",
+        "http_status": 200,
+        "duration_ms": 681,
+        "wm_qos_correlation_id": "2706fb65-43a9-474d-988e-d10538037ca3",
+        "rate_limit_tokens_remaining": 0,
+        "response_saved_as": "report-requests-48h.json (pages[0]; exact JSON.stringify of parsed body, 2-space indent)"
+      },
+      {
+        "seq": 2,
+        "method": "GET",
+        "endpoint": "/v3/reports/reportRequests",
+        "query_note": "same window plus Walmart-provided nextCursor (page=2, limit=10)",
+        "http_status": 429,
+        "attempts": 5,
+        "attempt_correlation_ids": [
+          "bdf8ee0a-3a1e-4a06-bea6-82621da74072",
+          "9cfbfbbb-a16b-40bf-92d0-5aa4bfff22f2",
+          "0e69c795-871e-4d21-a56b-7bda2a9802eb",
+          "cad958b0-9849-49d3-9795-773f95f69085",
+          "d2e515e7-7824-4d54-8f09-f9a74e744d3d"
+        ],
+        "attempt_note": "Client-internal 429 backoff retries (this probe predates the retries=0 budget of the disposition probe). No page-2 body was returned; probe stopped. No response bytes retained for this call.",
+        "response_saved": false
+      }
+    ]
+  },
+  "response_headers_retained": false,
+  "response_headers_note": "Only the client console summary was retained per call: HTTP status, remaining rate-limit token counter, duration, correlation id. No raw response headers were captured for the broad probe.",
+  "envelope_facts": {
+    "file": "report-requests-48h.json",
+    "sha256": "9ebc02e7db35eb468fb7d76d34347a70bd965d63367654503b79c4fa8ed3fc55",
+    "bytes": 4893,
+    "pages_captured": 1,
+    "walmart_totalCount": 18,
+    "unique_requests_captured": 10,
+    "coverage_note": "Page 1, newest-first, spans 2026-07-19T17:02:02Z .. 2026-07-18T15:01:50Z and therefore fully crosses the 24h freshness cutoff (~2026-07-18T17:06Z). All captured rows are reportType=ITEM, reportVersion=v2, src=API. Zero v6 rows.",
+    "not_raw_bytes_disclosure": "This envelope is JSON.stringify(parsed_body) as saved at capture time, not the raw HTTP body bytes; raw bytes of the broad probe were not separately retained. The exact-v6 probe in ../exact-v6/ preserves raw response bytes."
+  },
+  "external_effects": {
+    "report_create_posts": 0,
+    "model_calls": 0,
+    "db_writes": 0,
+    "walmart_content_writes": 0,
+    "quarantined_session_touched": false
+  }
+}

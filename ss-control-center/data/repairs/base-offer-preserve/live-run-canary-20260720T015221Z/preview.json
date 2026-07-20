@@ -1,0 +1,16 @@
+◇ injected env (15) from .env.local // tip: ⌘ suppress logs { quiet: true }
+◇ injected env (61) from .env // tip: ⌘ override existing { override: true }
+{
+  "mode": "VALIDATION_PREVIEW",
+  "execution_binding_sha256": "27c669d9c89e97d463a83ce5fe42bdaa5f87996ad9a17f61d7dcff2a10dc0733",
+  "selected_actions": 1,
+  "offline_validated_actions": 0,
+  "preview_valid_actions": 1,
+  "submitted_actions": 0,
+  "verified_actions": 0,
+  "already_applied_actions": 0,
+  "pre_request_aborted_actions": 0,
+  "ambiguous_actions": 0,
+  "external_mutations_attempted": 0,
+  "stopped_early": false
+}

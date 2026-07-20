@@ -1,0 +1,34 @@
+{
+  "schema_version": "uncrustables-amazon-base-offer-live-authorization/v1",
+  "profile": "AMAZON_BASE_OFFER_PRESERVE_PROMO_V1",
+  "immutable": true,
+  "authorization_id": "UBOLA-20260720T015608476Z-a86e9445e900",
+  "owner_approved": true,
+  "created_at": "2026-07-20T01:56:08.476Z",
+  "expires_at": "2026-07-20T02:08:08.476Z",
+  "permit": "APPLY_AMAZON_BASE_OFFER_PRESERVE_PROMO_V1",
+  "source_plan_body_sha256": "d53f1d2ae4337b1a49fefc043c92022394ff4cc764c17aababd423f8230a633d",
+  "source_full_selection_body_sha256": "6e68e4fb39e425130106c4aceb77bec0f4501ecfbf9c5a69e1857d6c80515b34",
+  "source_live_selection_body_sha256": "cab70a8c9c973d17ee9a148edc025441a5eff476c7ac08932465035466505667",
+  "source_rollback_binding_body_sha256": "cc79fe1555fc371c0b8f436283d233b3531f8cb6b9ed84685023d88c9760c9a4",
+  "snapshot_file_sha256": "3b55bc0e0907387121655259dc6acbbfd6129163cc63044d522ff25ba1186235",
+  "snapshot_body_sha256": "c4eab7f27de40f895c412c2fe03419e19ca4de308cfc14657715c477f4fbcb6f",
+  "selected_action_ids": [
+    "amazon:1:LK-AS7X-K43B:base-offer-preserve"
+  ],
+  "account": {
+    "store_index": 1,
+    "marketplace_id": "ATVPDKIKX0DER",
+    "amazon_merchant_id": "A3A7A0RDFUSGBS"
+  },
+  "constraints": {
+    "exact_patch_path": "/attributes/purchasable_offer",
+    "discounted_price_action_authorized": false,
+    "list_price_action_authorized": false,
+    "sales_price_action_authorized": false,
+    "coupon_action_authorized": false,
+    "one_patch_attempt_per_action": true,
+    "stable_readback_required": true
+  },
+  "body_sha256": "6e9edbe032d396e82d85e5a88d33e842df5723882ac42896766e7fc863467d97"
+}

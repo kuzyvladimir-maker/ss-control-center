@@ -1,0 +1,31 @@
+◇ injected env (15) from .env.local // tip: ⌘ suppress logs { quiet: true }
+◇ injected env (61) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+{
+  "mode": "READ_ONLY_LIVE_SP_API_CAPTURE",
+  "snapshot_path": "data/repairs/rollback/UAPS-20260720T015337429Z-46a80e727880-be7ff03d4c6b.json",
+  "snapshot_id": "UAPS-20260720T015337429Z-46a80e727880",
+  "snapshot_sha256": "be7ff03d4c6b287914ab94eaa6898ff3860973575213185c64f0ddc09773c12e",
+  "exact_scope": {
+    "expected": 164,
+    "captured": 164,
+    "unique_skus": 164,
+    "unique_asins": 164,
+    "stores": [
+      1
+    ]
+  },
+  "image_capture": {
+    "unique_urls": 248,
+    "captured": 0,
+    "failed": 248,
+    "complete": false
+  },
+  "snapshot_apply_eligible": true,
+  "rollback_path": null,
+  "rollback": null,
+  "external_mutations": {
+    "amazon_writes": 0,
+    "r2_writes": 0,
+    "database_writes": 0
+  }
+}

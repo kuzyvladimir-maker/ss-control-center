@@ -107,6 +107,24 @@ The module, tests, CLI, and real incident session are read-only pending an
 explicit owner disposition. Do not make another network request from this
 session and do not delete the contradictory evidence.
 
+## Independent disposition evidence and v2 status
+
+Claude later captured an isolated exact ITEM/v6/API list GET for the original
+`03:55Z..04:00Z` submission window. Codex independently reviewed its request manifest,
+raw 49-byte zero-row response, HTTP metadata, parsed summary, broad corroborating page,
+and the complete unchanged quarantine inventory. The final content-addressed frozen R4
+release is outside the quarantined session and has exact source-evidence artifact
+SHA-256 `3efd693468f9c0761d6091d379c06e2daddb7d8dadc908228eb282ddeab4fa31`
+and frozen bundle SHA-256
+`49b731c3ad1abe54de6d036a251cdf2731e5dad1bb3bd8797a83a6ed428b0fab`.
+
+This supports `NO_API_VISIBLE_V6_REQUEST_IN_EXACT_QUERY_WINDOW`; it does not overwrite
+the terminal failure or prove the original POST never reached Walmart. Frozen R4
+passed an independent byte-for-byte rebuild/replay with 0 Critical/High findings;
+R1–R3 are forbidden. The Ed25519 v2 owner-disposition contract is implemented, but
+no dedicated production owner key is enrolled and no live replacement command exists.
+The incident therefore remains owner-gated, not automatically resolved.
+
 ## Provenance conclusion
 
 The process identity could not be proven after completion. All agents in the

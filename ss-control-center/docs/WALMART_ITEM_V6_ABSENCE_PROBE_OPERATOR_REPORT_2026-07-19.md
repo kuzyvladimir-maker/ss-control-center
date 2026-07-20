@@ -1,11 +1,11 @@
 # Walmart ITEM v6 absence probe — Claude operator report, 2026-07-19
 
-Status: `CORROBORATING_TEXT_REPORT_RECEIVED / RAW CUSTODY PENDING`
+Status: `RAW CUSTODY REVIEWED / V2 EVIDENCE RELEASE SEALED / OWNER DECISION PENDING`
 
 This file records the operator report supplied by Claude BF-Images through the
-owner in the shared VS Code workspace. It is not yet a source-evidence release,
-an `ABSENCE_ONLY` artifact, an owner disposition, or authorization for another
-report-create POST.
+owner in the shared VS Code workspace. Its exact raw bundle has now been reviewed
+and sealed into a separate v2 source-evidence release. It is still not an owner
+disposition or authorization for another report-create POST.
 
 ## Reported execution
 
@@ -40,9 +40,12 @@ prove, that the ambiguous create attempt did not create an ITEM v6 report.
   cursor and then HTTP 429. This does not affect the operator's 24-hour-window
   observation if the advertised newest-first ordering is trusted, because page
   1 already crosses the cutoff.
-- The operator reported retaining `report-requests-48h.json` and probe logs in
-  a scratchpad outside the repository. Codex has not received or hashed those
-  exact bytes.
+- The operator transferred the broad envelope, sanitized metadata, exact-v6 request
+  manifest, exact raw response, exact HTTP metadata, and parsed summary into the
+  isolated private root
+  `data/audits/walmart-source-intake/item-v6-disposition-probe-store1-20260719-claude-v1/`.
+  Codex independently stable-read and hashed all six files. The broad page remains
+  corroborating only; the exact-v6 response is retained as raw bytes.
 - No Seller Center UI screenshots exist; the operator had no authorized UI
   session and did not attempt to sign in.
 
@@ -67,7 +70,31 @@ Before any owner disposition or replacement POST can be considered:
 5. only after explicit owner approval may a fresh one-shot reissue permit be
    created and consumed.
 
-Until all five steps complete, new ITEM report-create POSTs remain forbidden.
+Steps 1–3 are now complete. The only canonical release is the independently
+reproduced frozen R4 artifact under
+`release-artifacts/walmart-item-report-reissue-v2-private-20260719/`:
+`frozen-engine-r4-final-candidate/` plus
+`evidence-release-r4-final-candidate/`. The names are retained because the exact
+frozen path is integrity-bound. Exact source-evidence artifact SHA-256 is
+`3efd693468f9c0761d6091d379c06e2daddb7d8dadc908228eb282ddeab4fa31`,
+internal release SHA-256 is
+`3b8d784aae2ce25cc534e1630e56633b8b8cfb2e5b28b4f2b2fc4ab8bd9584f8`,
+frozen bundle SHA-256 is
+`49b731c3ad1abe54de6d036a251cdf2731e5dad1bb3bd8797a83a6ed428b0fab`,
+and freshness ends `2026-07-20T23:13:21.286Z`. R1, R2, and R3 are superseded
+and forbidden for signing or execution.
+
+The honest verdict is `NO_API_VISIBLE_V6_REQUEST_IN_EXACT_QUERY_WINDOW`, not proof
+that the original POST never reached Walmart. The retained probe does not contain a
+Walmart signature/TLS transcript and its equality to the original account fingerprint
+is operator-asserted rather than machine-verifiable from the six probe files. Those
+limits and the non-zero duplicate-request risk are mandatory owner acknowledgements.
+
+The full Ed25519 v2 disposition verifier is retained inside the content-addressed
+bundle. The combined local suite passes 132/132 and an independent rebuild/replay
+passes 45/45 with 0 Critical and 0 High findings. The dedicated production owner
+trust root is deliberately empty and the live create command remains absent. Steps
+4–5 therefore remain owner-gated; new ITEM report-create POSTs are still forbidden.
 
 ## Subsequent engine finding
 

@@ -1,0 +1,9 @@
+{
+  "output": "data/repairs/base-offer-preserve/live-run-canary-20260720T015221Z/binding/rollback-binding.json",
+  "body_sha256": "71ed54acfffb936e5881555a5f93b3d333e83468b2304be67cd8a9cac706f7bd",
+  "snapshot_id": "UAPS-20260720T015337429Z-46a80e727880",
+  "snapshot_rows": 164,
+  "selected_actions": 1,
+  "execution_authorized": false,
+  "external_mutations": 0
+}

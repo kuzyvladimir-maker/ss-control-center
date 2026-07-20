@@ -1315,11 +1315,11 @@ async function executeRequestPhase(
   retainedAuthority: SessionAuthority | null,
   verifiedPermit: VerifiedRequestPermit,
 ): Promise<WalmartItemReportCaptureRunResult> {
-  if (await fileExists(sessionDir, REQUEST_COMPLETE)) {
-    throw new WalmartItemReportCaptureError("ILLEGAL_TRANSITION", "request phase is already complete");
-  }
   if (await fileExists(sessionDir, REQUEST_MANUAL_REVIEW)) {
     throw new WalmartItemReportManualReviewRequiredError();
+  }
+  if (await fileExists(sessionDir, REQUEST_COMPLETE)) {
+    throw new WalmartItemReportCaptureError("ILLEGAL_TRANSITION", "request phase is already complete");
   }
   if (await fileExists(sessionDir, REQUEST_RESERVED)) {
     await writeImmutableJson(
@@ -1500,14 +1500,26 @@ function requestIdFromCheckpoint(raw: Record<string, unknown>): string {
   return exactString(raw.request_id, "request checkpoint request_id");
 }
 
+async function assertRequestContinuationAllowed(sessionDir: string): Promise<void> {
+  if (await fileExists(sessionDir, REQUEST_MANUAL_REVIEW)) {
+    throw new WalmartItemReportManualReviewRequiredError(
+      "request session is marked for manual review; every continuation phase is forbidden",
+    );
+  }
+  if (!(await fileExists(sessionDir, REQUEST_COMPLETE))) {
+    throw new WalmartItemReportCaptureError(
+      "ILLEGAL_TRANSITION",
+      "continuation requires a completed request phase",
+    );
+  }
+}
+
 async function executePollPhase(
   sessionDir: string,
   authority: SessionAuthority,
   dependencies: WalmartItemReportCaptureDependencies,
 ): Promise<WalmartItemReportCaptureRunResult> {
-  if (!(await fileExists(sessionDir, REQUEST_COMPLETE))) {
-    throw new WalmartItemReportCaptureError("ILLEGAL_TRANSITION", "poll requires a completed request phase");
-  }
+  await assertRequestContinuationAllowed(sessionDir);
   if (await fileExists(sessionDir, READY_SELECTION)) {
     throw new WalmartItemReportCaptureError("ILLEGAL_TRANSITION", "READY status is already captured");
   }
@@ -2000,6 +2012,7 @@ async function executeDownloadPhase(
   authority: SessionAuthority,
   dependencies: WalmartItemReportCaptureDependencies,
 ): Promise<WalmartItemReportCaptureRunResult> {
+  await assertRequestContinuationAllowed(sessionDir);
   if (!(await fileExists(sessionDir, READY_SELECTION))) {
     throw new WalmartItemReportCaptureError("ILLEGAL_TRANSITION", "download requires a captured READY response");
   }
@@ -2064,6 +2077,7 @@ async function executeCompilePhase(
   storeIndex: number,
   dependencies: WalmartItemReportCaptureDependencies,
 ): Promise<WalmartItemReportCaptureRunResult> {
+  await assertRequestContinuationAllowed(sessionDir);
   if (!(await fileExists(sessionDir, FILE_SELECTION))) {
     throw new WalmartItemReportCaptureError("ILLEGAL_TRANSITION", "compile requires a completed download phase");
   }

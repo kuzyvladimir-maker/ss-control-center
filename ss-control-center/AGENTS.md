@@ -13,6 +13,10 @@ read the workspace-level instructions in `../AGENTS.md` and these documents:
 - `../docs/wiki/product-catalog-architecture.md` — OWNER CANON.
 - `../docs/wiki/donor-catalog-execution-roadmap.md` — current execution plan and gates.
 - `../docs/wiki/enrichment-division-of-labor.md` — one-writer enrichment contract.
+- `../docs/wiki/product-truth-operator-runbook.md` — the only operator workflow;
+  matcher replay v2.2 is wrapper-only, never a direct runner invocation.
+- `../docs/wiki/product-truth-matcher-replay-v2.md` — honest eight-input post-blind
+  Gate 1 provenance and the exact sealed offline command.
 - `../docs/wiki/product-truth-consumer-cutover.md` — required staged consumer cutover;
   exact manifest/DB binding, set-based parity, shadow first, no legacy fallback.
 - `../docs/wiki/product-truth-release-scope.md` — exact Git boundary and mandatory

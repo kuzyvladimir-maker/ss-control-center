@@ -1,0 +1,3 @@
+Error: amazon:1:LK-AS7X-K43B:base-offer-preserve did not reach stable desired readback.
+    at executeBaseOfferLive (/Users/vladimirkuznetsov/SS Command Center/ss-control-center/src/lib/bundle-factory/repair/uncrustables-base-offer-live-executor.ts:954:17)
+    at async main (/Users/vladimirkuznetsov/SS Command Center/ss-control-center/scripts/execute-uncrustables-base-offer-live.ts:253:9)

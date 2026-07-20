@@ -1,0 +1,2 @@
+SKU	ASIN	SellingVenue	MinSellingPrice	MaxSellingPrice	RepricingModelID
+NM-ASEW-S2SK	B0H86TVN3C	AmazonUS	66.95	76.99	59021

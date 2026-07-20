@@ -1,0 +1,31 @@
+◇ injected env (15) from .env.local // tip: ⌘ override existing { override: true }
+◇ injected env (61) from .env // tip: ⌘ suppress logs { quiet: true }
+{
+  "mode": "READ_ONLY_LIVE_SP_API_CAPTURE",
+  "snapshot_path": "data/repairs/rollback/UAPS-20260720T015606462Z-46a80e727880-c4eab7f27de4.json",
+  "snapshot_id": "UAPS-20260720T015606462Z-46a80e727880",
+  "snapshot_sha256": "c4eab7f27de40f895c412c2fe03419e19ca4de308cfc14657715c477f4fbcb6f",
+  "exact_scope": {
+    "expected": 164,
+    "captured": 164,
+    "unique_skus": 164,
+    "unique_asins": 164,
+    "stores": [
+      1
+    ]
+  },
+  "image_capture": {
+    "unique_urls": 248,
+    "captured": 0,
+    "failed": 248,
+    "complete": false
+  },
+  "snapshot_apply_eligible": true,
+  "rollback_path": null,
+  "rollback": null,
+  "external_mutations": {
+    "amazon_writes": 0,
+    "r2_writes": 0,
+    "database_writes": 0
+  }
+}
