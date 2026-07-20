@@ -351,7 +351,15 @@ export function buildAmazonAttributes(
       return typeof v === "number" && Number.isFinite(v) ? v : null;
     };
     const minBand = uncrustablesCanonical?.floor ?? bandVal("minimum_seller_allowed_price");
-    const maxBand = uncrustablesCanonical?.suggested ?? bandVal("maximum_seller_allowed_price");
+    // Max is the model CEILING (landed×1.53), not the .99 price. A band whose max
+    // equals our_price exactly leaves zero tolerance and Amazon intermittently
+    // suppresses the offer with 19038 "selling price is higher than your maximum
+    // price setting" — even when the two numbers are identical (proven live
+    // 2026-07-20 on QW-ASRZ-SYKC + 5 others: DISCOVERABLE but not BUYABLE until
+    // the band was widened to the ceiling). The actual selling price stays at the
+    // canonical .99 via our_price and the ChannelMAX pin; this headroom is only
+    // the guardrail, so nothing commercial changes.
+    const maxBand = uncrustablesCanonical?.ceiling ?? bandVal("maximum_seller_allowed_price");
     // FAIL CLOSED on a price/band contradiction. This is a whole-array PUT, so
     // omitting a contradicting bound would silently strip the listing's
     // guardrails (and hide the upstream drift that caused the contradiction) —
