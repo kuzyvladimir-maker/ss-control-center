@@ -13,6 +13,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import OpenAI from "openai";
+import { withMeteredProviderCall } from "@/lib/sourcing/metered-provider-call";
 
 const ROOT = process.cwd();
 const OUT = join(ROOT, "data", "audits", "uncrustables-gpt-image-2-previews-20260718");
@@ -191,15 +192,26 @@ async function generate(openai: OpenAI, preview: Preview) {
       OpenAI.toFile(readFileSync(ref.path), ref.name, { type: ref.type }),
     ),
   );
-  const response = await openai.images.edit({
-    model: "gpt-image-2",
-    image: images,
-    prompt: preview.prompt,
-    // @ts-expect-error The installed SDK's legacy size union predates the
-    // flexible gpt-image-2 dimensions accepted by the live API.
-    size: "1536x1536",
-    quality: "high",
-  });
+  const response = await withMeteredProviderCall({
+    provider: "openai",
+    operation: "image_generation",
+    requestFingerprint: {
+      previewId: preview.id,
+      model: "gpt-image-2",
+      size: "1536x1536",
+      quality: "high",
+      promptSha256: sha256(preview.prompt),
+      references: preview.refs.map((ref) => ({ name: ref.name, sha256: sha256(readFileSync(ref.path)) })),
+    },
+  }, () => openai.images.edit({
+      model: "gpt-image-2",
+      image: images,
+      prompt: preview.prompt,
+      // @ts-expect-error The installed SDK's legacy size union predates the
+      // flexible gpt-image-2 dimensions accepted by the live API.
+      size: "1536x1536",
+      quality: "high",
+    }));
   const b64 = response.data?.[0]?.b64_json;
   if (!b64) throw new Error(`${preview.id}: gpt-image-2 returned no image data`);
   const png = Buffer.from(b64, "base64");

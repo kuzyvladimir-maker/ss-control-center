@@ -8,7 +8,7 @@
  */
 
 export const WALMART_VISUAL_AUDIT_SCHEMA = "walmart-visual-audit/v3" as const;
-export const WALMART_VISUAL_COMPARATOR_VERSION = "walmart-visual-comparator/v3" as const;
+export const WALMART_VISUAL_COMPARATOR_VERSION = "walmart-visual-comparator/v4" as const;
 export const WALMART_VISUAL_AUXILIARY_OCR_MIN_CONFIDENCE = 0.95 as const;
 export const BLIND_OBSERVATION_SCHEMA = "wm_visual_observation_batch/v3" as const;
 export const BLIND_PROMPT_VERSION = "walmart-visual-blind/v3" as const;
@@ -143,6 +143,18 @@ export interface AuxiliaryOcrText {
   text: string;
   /** Normalized OCR confidence in the inclusive range 0..1. */
   confidence: number;
+  /**
+   * Optional sealed spatial provenance. Cross-line OCR support is disabled
+   * unless all three provenance fields are present and valid.
+   */
+  view_role?: "full" | "tile_front" | "bottom_label" | "top_left_badge";
+  view_sha256?: string;
+  bounding_box?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 export interface AuditAuxiliaryEvidence {
@@ -605,7 +617,10 @@ export function parseVisibleSizeTexts(value: string | null): ExpectedSize[] {
     .replace(/\bfl\.?\s*0z\b/g, "fl oz")
     .replace(/\bfl\.\s*oz\b/g, "fl oz")
     .replace(/\b(\d+)\.0z\b/g, "$1 oz ")
-    .replace(/(\d)0z(?=\d|\b)/g, "$1 oz ")
+    // A single digit followed by "0z" is ambiguous (for example 10z could
+    // be either a corrupted 1 OZ or unrelated text). Only repair the common
+    // compact multi-digit form such as 240Z11 -> 24 OZ 11.
+    .replace(/\b(\d{2,})0z(?=\d|\b)/g, "$1 oz ")
     .replace(/\s+/g, " ")
     .replace(/\b(\d+(?:\.\d+)?)\s*lbs?\s*(\d+(?:\.\d+)?)\s*(?:ounces?|oz)\b/gi, (_all, pounds, ounces) => {
       return `${Number(pounds) * 16 + Number(ounces)} oz`;
@@ -653,21 +668,6 @@ function textContainsAliases(value: string | null, aliases: readonly string[]): 
   });
 }
 
-/** OCR may return a two-word badge as separate lines with intervening noise. */
-function ocrContainsAliases(value: string, aliases: readonly string[]): boolean {
-  const tokens = new Set(normalizeVisibleText(value).split(" ").filter(Boolean));
-  return aliases.some((alias) => {
-    const aliasTokens = normalizeVisibleText(alias).split(" ").filter(Boolean);
-    return aliasTokens.length > 0 && aliasTokens.every((token) => tokens.has(token));
-  });
-}
-
-function roleText(observed: BlindObservation, role: IdentityRole): string | null {
-  if (role === "brand") return observed.visible_brand_text;
-  if (role === "product") return observed.visible_product_text;
-  return observed.visible_variant_text;
-}
-
 function missingRoleMarkerGroups(value: string | null, groups: readonly string[][]): string[] {
   return groups.filter((aliases) => !textContainsAliases(value, aliases)).map((aliases) => aliases.join("|"));
 }
@@ -677,8 +677,16 @@ function hasLexicallySpecificText(value: string | null): boolean {
 }
 
 function presentForbiddenMarkers(expected: AuditIdentityTruth, observed: BlindObservation): ForbiddenIdentityMarker[] {
+  const allBlindIdentity = [
+    observed.visible_brand_text,
+    observed.visible_product_text,
+    observed.visible_variant_text,
+  ].filter((value): value is string => value !== null).join(" ");
   return expected.forbidden_markers
-    .filter((marker) => textContainsAliases(roleText(observed, marker.role), marker.aliases));
+    // Vision role assignment is not authoritative: a wrong variant word can
+    // be transcribed into product_text. A literal forbidden identity marker
+    // anywhere in blind structured identity is still hard evidence.
+    .filter((marker) => textContainsAliases(allBlindIdentity, marker.aliases));
 }
 
 function observedPackageSizes(observed: BlindObservation): Record<PackageFactKind, ExpectedSize[]> {
@@ -696,7 +704,19 @@ function observedPackageSizes(observed: BlindObservation): Record<PackageFactKin
   };
 }
 
-function trustedAuxiliaryOcrTexts(auxiliary: AuditAuxiliaryEvidence | undefined): string[] {
+interface TrustedOcrText extends AuxiliaryOcrText {
+  text: string;
+  confidence: number;
+}
+
+function finiteUnitCoordinate(value: unknown, path: string): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > 1) {
+    throw new Error(`${path} must be a finite number from 0 to 1`);
+  }
+  return value;
+}
+
+function trustedAuxiliaryOcrTexts(auxiliary: AuditAuxiliaryEvidence | undefined): TrustedOcrText[] {
   if (!auxiliary) return [];
   if (!isRecord(auxiliary) || !Array.isArray(auxiliary.ocr_texts) || auxiliary.ocr_texts.length > 100) {
     throw new Error("auxiliary.ocr_texts must be an array with at most 100 items");
@@ -705,7 +725,7 @@ function trustedAuxiliaryOcrTexts(auxiliary: AuditAuxiliaryEvidence | undefined)
   const trustedTexts = auxiliary.ocr_texts.flatMap((item, index) => {
     const path = `auxiliary.ocr_texts[${index}]`;
     if (!isRecord(item)) throw new Error(`${path} must be an object`);
-    assertExactKeys(item, ["text", "confidence"], path);
+    assertExactKeys(item, ["text", "confidence", "view_role", "view_sha256", "bounding_box"], path);
     const text = requiredString(item.text, `${path}.text`);
     if (typeof item.confidence !== "number"
       || !Number.isFinite(item.confidence)
@@ -713,25 +733,164 @@ function trustedAuxiliaryOcrTexts(auxiliary: AuditAuxiliaryEvidence | undefined)
       || item.confidence > 1) {
       throw new Error(`${path}.confidence must be a number from 0 to 1`);
     }
-    return item.confidence >= WALMART_VISUAL_AUXILIARY_OCR_MIN_CONFIDENCE ? [text] : [];
+    const provenanceFields = [item.view_role, item.view_sha256, item.bounding_box]
+      .filter((value) => value !== undefined).length;
+    if (provenanceFields !== 0 && provenanceFields !== 3) {
+      throw new Error(`${path} spatial provenance must be supplied completely or omitted`);
+    }
+    let spatial: Pick<TrustedOcrText, "view_role" | "view_sha256" | "bounding_box"> = {};
+    if (provenanceFields === 3) {
+      if (item.view_role !== "full"
+        && item.view_role !== "tile_front"
+        && item.view_role !== "bottom_label"
+        && item.view_role !== "top_left_badge") {
+        throw new Error(`${path}.view_role is unsupported`);
+      }
+      if (typeof item.view_sha256 !== "string" || !/^[a-f0-9]{64}$/.test(item.view_sha256)) {
+        throw new Error(`${path}.view_sha256 must be a lowercase SHA-256 hex digest`);
+      }
+      if (!isRecord(item.bounding_box)) throw new Error(`${path}.bounding_box must be an object`);
+      assertExactKeys(item.bounding_box, ["x", "y", "width", "height"], `${path}.bounding_box`);
+      const box = {
+        x: finiteUnitCoordinate(item.bounding_box.x, `${path}.bounding_box.x`),
+        y: finiteUnitCoordinate(item.bounding_box.y, `${path}.bounding_box.y`),
+        width: finiteUnitCoordinate(item.bounding_box.width, `${path}.bounding_box.width`),
+        height: finiteUnitCoordinate(item.bounding_box.height, `${path}.bounding_box.height`),
+      };
+      if (box.width <= 0 || box.height <= 0 || box.x + box.width > 1 || box.y + box.height > 1) {
+        throw new Error(`${path}.bounding_box must have positive dimensions within image bounds`);
+      }
+      spatial = {
+        view_role: item.view_role,
+        view_sha256: item.view_sha256,
+        bounding_box: box,
+      };
+    }
+    return item.confidence >= WALMART_VISUAL_AUXILIARY_OCR_MIN_CONFIDENCE
+      ? [{ text, confidence: item.confidence, ...spatial }]
+      : [];
   });
   return trustedTexts;
 }
 
-function auxiliaryPackageSizes(trustedTexts: readonly string[]): Record<PackageFactKind, ExpectedSize[]> {
-  const sizes = dedupeSizes(trustedTexts
+function spatiallyAdjacent(left: TrustedOcrText, right: TrustedOcrText): boolean {
+  if (!left.bounding_box || !right.bounding_box
+    || left.view_sha256 !== right.view_sha256
+    || left.view_role !== right.view_role) return false;
+  const a = left.bounding_box;
+  const b = right.bounding_box;
+  const overlapX = Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x));
+  const narrowWidth = Math.min(a.width, b.width);
+  const horizontalAlignment = narrowWidth > 0 && overlapX / narrowWidth >= 0.5;
+  const gapY = Math.max(0, Math.max(a.y, b.y) - Math.min(a.y + a.height, b.y + b.height));
+  const verticalScale = Math.max(a.height, b.height);
+  return horizontalAlignment && gapY <= Math.max(0.02, verticalScale * 0.5);
+}
+
+/**
+ * OCR rows remain independent literals. The only synthetic literals allowed
+ * are two geometrically adjacent rows from the exact same sealed view. This
+ * supports a stacked badge such as FAMILY / SIZE without combining unrelated
+ * words from elsewhere in the image or from another crop.
+ */
+function auxiliaryOcrPhrases(rows: readonly TrustedOcrText[]): string[] {
+  const phrases = rows.map((row) => row.text);
+  for (let leftIndex = 0; leftIndex < rows.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < rows.length; rightIndex += 1) {
+      const left = rows[leftIndex];
+      const right = rows[rightIndex];
+      if (!spatiallyAdjacent(left, right)) continue;
+      phrases.push(`${left.text} ${right.text}`, `${right.text} ${left.text}`);
+    }
+  }
+  return [...new Set(phrases.map((text) => text.trim()).filter(Boolean))];
+}
+
+interface AuxiliaryOcrPhraseRecord {
+  text: string;
+  view_sha256: string | null;
+}
+
+function auxiliaryOcrPhraseRecords(rows: readonly TrustedOcrText[]): AuxiliaryOcrPhraseRecord[] {
+  const phrases: AuxiliaryOcrPhraseRecord[] = rows.map((row) => ({
+    text: row.text,
+    view_sha256: row.view_sha256 ?? null,
+  }));
+  for (let leftIndex = 0; leftIndex < rows.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < rows.length; rightIndex += 1) {
+      const left = rows[leftIndex];
+      const right = rows[rightIndex];
+      if (!spatiallyAdjacent(left, right)) continue;
+      phrases.push(
+        { text: `${left.text} ${right.text}`, view_sha256: left.view_sha256 ?? null },
+        { text: `${right.text} ${left.text}`, view_sha256: left.view_sha256 ?? null },
+      );
+    }
+  }
+  const seen = new Set<string>();
+  return phrases.filter((phrase) => {
+    const key = `${phrase.view_sha256 ?? "unsealed"}|${phrase.text.trim()}`;
+    if (!phrase.text.trim() || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function ocrContainsAliases(rows: readonly TrustedOcrText[], aliases: readonly string[]): boolean {
+  return auxiliaryOcrPhrases(rows).some((value) => textContainsAliases(value, aliases));
+}
+
+function hasExplicitNetContentContext(literal: string, sizes: readonly ExpectedSize[]): boolean {
+  const text = normalizeVisibleText(literal);
+  if (/\b(?:net wt|net weight|net contents?|wt)\b/.test(text)) return true;
+  const nonCount = sizes.filter((size) => size.unit !== "count");
+  return nonCount.some((left, leftIndex) => nonCount.some((right, rightIndex) =>
+    leftIndex !== rightIndex && left.unit !== right.unit && sizesEquivalent(left, right)));
+}
+
+function auxiliaryPackageSizes(trustedRows: readonly TrustedOcrText[]): Record<PackageFactKind, ExpectedSize[]> {
+  const parsedLiterals = auxiliaryOcrPhrases(trustedRows)
     .filter((literal) => !isNutrientClaim(literal))
-    .flatMap((literal) => parseVisibleSizeTexts(literal))
+    .map((literal) => ({ literal, sizes: parseVisibleSizeTexts(literal) }));
+  const safeNetSizes = parsedLiterals
+    .filter(({ literal, sizes }) => hasExplicitNetContentContext(literal, sizes))
+    .flatMap(({ sizes }) => sizes)
     // Apple Vision may split a nutrition line into a bare "6g" token and its
     // label. Bare small gram values are not safe package-size evidence. Real
     // package metric weights are normally printed alongside oz/lb or are at
     // least 50 g; ignoring smaller standalone grams can only create REVIEW,
     // never a false PASS/BAD.
-    .filter((size) => size.unit !== "g" || size.value >= 50));
+    .filter((size) => size.unit !== "g" || size.value >= 50);
+  const countSizes = parsedLiterals.flatMap(({ sizes }) => sizes)
+    .filter((size) => size.unit === "count");
   return {
-    net_content: sizes.filter((size) => size.unit !== "count"),
-    inner_item_count: sizes.filter((size) => size.unit === "count"),
+    net_content: dedupeSizes(safeNetSizes.filter((size) => size.unit !== "count")),
+    inner_item_count: dedupeSizes(countSizes),
   };
+}
+
+function ocrPackageMatchIsCorroborated(
+  expected: ExpectedPackageFact,
+  trustedRows: readonly TrustedOcrText[],
+): boolean {
+  const matchingViewShas = new Set<string>();
+  for (const phrase of auxiliaryOcrPhraseRecords(trustedRows)) {
+    if (isNutrientClaim(phrase.text)) continue;
+    const parsed = parseVisibleSizeTexts(phrase.text)
+      .filter((size) => size.unit !== "g" || size.value >= 50);
+    const candidates = expected.kind === "net_content"
+      ? (hasExplicitNetContentContext(phrase.text, parsed)
+        ? parsed.filter((size) => size.unit !== "count")
+        : [])
+      : parsed.filter((size) => size.unit === "count");
+    const expectedMatches = candidates.filter((size) => sizeEquals(expected, size));
+    if (expectedMatches.length === 0) continue;
+    const selfCorroborated = expectedMatches.some((match) => candidates.some((other) =>
+      other !== match && other.unit !== match.unit && sizesEquivalent(match, other)));
+    if (selfCorroborated) return true;
+    if (phrase.view_sha256) matchingViewShas.add(phrase.view_sha256);
+  }
+  return matchingViewShas.size >= 2;
 }
 
 type PackageSourceStatus = "ABSENT" | "MATCH" | "MISMATCH" | "CONFLICT";
@@ -748,9 +907,11 @@ function packageSourceStatus(expected: ExpectedPackageFact, values: readonly Exp
 
 function ocrPackageSourceStatus(expected: ExpectedPackageFact, values: readonly ExpectedSize[]): PackageSourceStatus {
   if (values.length === 0) return "ABSENT";
-  // OCR is noisy auxiliary evidence. One exact/safely converted expected
-  // literal can support a match; unrelated OCR outliers may never create BAD.
-  if (values.some((value) => sizeEquals(expected, value))) return "MATCH";
+  // OCR is auxiliary: an expected value mixed with any conflicting comparable
+  // package value is CONFLICT/REVIEW, never a selectively chosen MATCH.
+  if (values.some((value) => sizeEquals(expected, value))) {
+    return values.every((value) => sizeEquals(expected, value)) ? "MATCH" : "CONFLICT";
+  }
   if (values.every((value) => sizesEquivalent(values[0], value))) return "MISMATCH";
   return "CONFLICT";
 }
@@ -783,12 +944,12 @@ export function decideBlind(
   };
 
   const trustedOcrTexts = trustedAuxiliaryOcrTexts(auxiliary);
-  const ocrIdentityText = trustedOcrTexts.join(" ");
   const identity = caseInput.expected.identity;
   const forbiddenMarkers = presentForbiddenMarkers(identity, observed);
+  const ocrForbiddenMarkers = identity.forbidden_markers
+    .filter((marker) => ocrContainsAliases(trustedOcrTexts, marker.aliases));
   const blindBrandMatches = textContainsAliases(observed.visible_brand_text, identity.brand_aliases);
-  const ocrBrandMatches = ocrContainsAliases(ocrIdentityText, identity.brand_aliases);
-  const brandMatches = blindBrandMatches || ocrBrandMatches;
+  const rawOcrBrandMatches = ocrContainsAliases(trustedOcrTexts, identity.brand_aliases);
   const explicitWrongBrand = hasLexicallySpecificText(observed.visible_brand_text) && !blindBrandMatches;
   const blindMissingProductMarkers = missingRoleMarkerGroups(
     observed.visible_product_text,
@@ -798,18 +959,32 @@ export function decideBlind(
     observed.visible_variant_text,
     identity.variant_marker_groups,
   );
+  const blindAllProductMarkersMatch = blindMissingProductMarkers.length === 0;
+  const blindAllVariantMarkersMatch = blindMissingVariantMarkers.length === 0;
+  const hasRequiredNonBrandMarkers = identity.product_marker_groups.length
+    + identity.variant_marker_groups.length > 0;
+  // OCR may recover a logo wordmark only when every required product and
+  // variant group is already present in blind structured evidence. OCR may
+  // recover product/variant text only when the blind observer already read the
+  // expected full brand. Thus OCR can supplement identity, never establish it
+  // on its own.
+  const ocrBrandMatches = rawOcrBrandMatches
+    && hasRequiredNonBrandMarkers
+    && blindAllProductMarkersMatch
+    && blindAllVariantMarkersMatch;
+  const brandMatches = blindBrandMatches || ocrBrandMatches;
   const missingProductMarkers = identity.product_marker_groups
     .filter((aliases) => !textContainsAliases(observed.visible_product_text, aliases)
-      && !ocrContainsAliases(ocrIdentityText, aliases))
+      && !(blindBrandMatches && ocrContainsAliases(trustedOcrTexts, aliases)))
     .map((aliases) => aliases.join("|"));
   const missingVariantMarkers = identity.variant_marker_groups
     .filter((aliases) => !textContainsAliases(observed.visible_variant_text, aliases)
-      && !ocrContainsAliases(ocrIdentityText, aliases))
+      && !(blindBrandMatches && ocrContainsAliases(trustedOcrTexts, aliases)))
     .map((aliases) => aliases.join("|"));
   const ocrSuppliedIdentity = (!blindBrandMatches && ocrBrandMatches)
     || blindMissingProductMarkers.length > missingProductMarkers.length
     || blindMissingVariantMarkers.length > missingVariantMarkers.length;
-  const wrongBrandOcrConflict = explicitWrongBrand && ocrBrandMatches;
+  const wrongBrandOcrConflict = explicitWrongBrand && rawOcrBrandMatches;
   const identityConflict = wrongBrandOcrConflict;
   // An allowed generic marker and a forbidden specific marker can both be
   // literally present (for example "Golden Sandwich Cookies" and "Double
@@ -821,6 +996,9 @@ export function decideBlind(
   } else if (explicitWrongBrand && !wrongBrandOcrConflict) {
     checks.identity = "MISMATCH";
     hard.push(`visible brand is not an allowed alias: ${observed.visible_brand_text}`);
+  } else if (ocrForbiddenMarkers.length > 0) {
+    unknown.push(`OCR-only forbidden identity markers: ${ocrForbiddenMarkers
+      .map((marker) => `${marker.role}:${marker.aliases.join("|")}`).join(", ")}`);
   } else if (!identityConflict
     && brandMatches
     && missingProductMarkers.length === 0
@@ -896,7 +1074,12 @@ export function decideBlind(
       continue;
     }
     if (ocrStatus === "MATCH") {
-      checks.package_facts[fact.kind] = "MATCH";
+      if (ocrPackageMatchIsCorroborated(fact, trustedOcrTexts)) {
+        checks.package_facts[fact.kind] = "MATCH";
+      } else {
+        checks.package_facts[fact.kind] = "UNKNOWN";
+        unknown.push(`OCR-only match for ${fact.kind} lacks independent spatial or dual-unit corroboration`);
+      }
     } else {
       checks.package_facts[fact.kind] = "UNKNOWN";
       unknown.push(`OCR-only mismatch for ${fact.kind}: ${ocrSizes.map((value) => `${value.value} ${value.unit}`).join(", ")}`);

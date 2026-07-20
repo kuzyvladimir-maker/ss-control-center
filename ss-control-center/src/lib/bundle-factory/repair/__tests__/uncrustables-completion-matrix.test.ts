@@ -22,17 +22,17 @@ test("builds the exact conservative 164-row completion matrix", async () => {
   const { matrix } = built;
 
   assert.equal(matrix.summary.total_rows, 164);
-  assert.equal(matrix.deterministic_as_of, "2026-07-18T23:10:00.000Z");
+  assert.equal(matrix.deterministic_as_of, "2026-07-19T00:35:37.000Z");
   assert.ok(
     matrix.sources.some(
       (source) =>
-        source.source_id === "strict_main_v6" &&
+        source.source_id === "strict_main_v8" &&
         source.path ===
-          "data/audits/uncrustables-live-main-strict-reaudit-20260718-v6.json" &&
+          "data/audits/uncrustables-live-main-strict-reaudit-20260718-v8.json" &&
         source.file_sha256 ===
-          "87d9adf66cc322becccd0eb214e13d073272c3c11405e4bdd15e93c98f08eb4c" &&
+          "2d78d37398fff719086435233afa198a5b0a33479535452b6b8652b3558d3c3b" &&
         source.body_sha256 ===
-          "befae9606c9dca01175c555f181cfcff53bd248aa5060ee2194e3e611739ff8e",
+          "b2ca38412c74ace932eca3bf0d14b1e1b40e44443f8c7b1de6185dfbdee7f3bd",
     ),
   );
   assert.ok(
@@ -59,14 +59,14 @@ test("builds the exact conservative 164-row completion matrix", async () => {
     BLOCKED_CATALOG_IDENTITY_CONFLICT_8541: 2,
   });
   assert.deepEqual(matrix.summary.main_image_status, {
-    REPAIR_REQUIRED: 112,
-    VISUAL_KEEP_PROVENANCE_PENDING: 52,
+    REPAIR_REQUIRED: 134,
+    VISUAL_KEEP_PROVENANCE_PENDING: 30,
   });
   assert.deepEqual(matrix.summary.main_repair_readiness, {
-    BLOCKED_AUTHENTICITY_PROVENANCE: 101,
+    BLOCKED_AUTHENTICITY_PROVENANCE: 119,
     BLOCKED_CATALOG_IDENTITY: 2,
-    NOT_APPLICABLE_STRICT_KEEP: 52,
-    REFERENCE_READY_PENDING_EXPLICIT_CONTROLLED_GENERATION: 9,
+    NOT_APPLICABLE_STRICT_KEEP: 30,
+    REFERENCE_READY_PENDING_EXPLICIT_CONTROLLED_GENERATION: 13,
   });
   assert.deepEqual(matrix.summary.gallery_status, {
     KEEP_NO_WRITE_POINT_IN_TIME: 44,
@@ -102,13 +102,13 @@ test("builds the exact conservative 164-row completion matrix", async () => {
       .filter((row) => [1, 2, 38, 97].includes(row.ordinal))
       .map((row) => [row.ordinal, row.main_image.reason_codes]),
   );
-  assert.deepEqual(correctedMainReasons.get(1), ["RETAILER_BADGE_VISIBLE"]);
+  assert.deepEqual(correctedMainReasons.get(1), []);
   assert.deepEqual(correctedMainReasons.get(2), ["LOOSE_ICE_VISIBLE"]);
   assert.deepEqual(correctedMainReasons.get(38), [
     "LOOSE_ICE_VISIBLE",
     "VISIBLE_TEXT_INTEGRITY_FAIL",
   ]);
-  assert.deepEqual(correctedMainReasons.get(97), ["RETAILER_BADGE_VISIBLE"]);
+  assert.deepEqual(correctedMainReasons.get(97), []);
   const qx = matrix.rows.find((row) => row.sku === "QX-AS89-H8YC");
   assert.equal(qx?.amazon_pricing.status, "NO_OFFER_POINT_IN_TIME");
   assert.equal(qx?.amazon_pricing.evidence.observed_at, "2026-07-18T22:19:08.267Z");

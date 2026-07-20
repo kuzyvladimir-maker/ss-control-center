@@ -23,11 +23,11 @@ import { createHash } from "node:crypto";
 export const UNCRUSTABLES_AUTHENTICITY_REGISTRY_SCHEMA =
   "uncrustables-authenticity-registry/v1" as const;
 export const UNCRUSTABLES_MAIN_AUTHENTICITY_SUBJECT_SCHEMA =
-  "uncrustables-main-authenticity-subject/v1" as const;
+  "uncrustables-main-authenticity-subject/v2" as const;
 export const UNCRUSTABLES_MAIN_VISUAL_APPROVAL_SCHEMA =
-  "uncrustables-main-visual-approval/v1" as const;
+  "uncrustables-main-visual-approval/v2" as const;
 export const UNCRUSTABLES_MAIN_AUTHENTICITY_VALIDATOR_ID =
-  "validator-uncrustables-main-authenticity" as const;
+  "validator-uncrustables-main-authenticity-v2" as const;
 
 export type UncrustablesPackMode = "retail-carton" | "individual-wrapper";
 
@@ -133,6 +133,24 @@ export interface UncrustablesMainVisualObservation {
   /** Explicit lists make a positive empty review distinguishable from omission. */
   foreign_items: string[];
   fictional_or_unknown_items: string[];
+  /** Exact frozen-kit scene checks. Empty defect lists are affirmative review,
+   * while omitted fields are invalid and fail closed. */
+  scene: {
+    background_is_pure_white: boolean;
+    square_one_to_one: boolean;
+    cooler_is_white_textured_eps: boolean;
+    cooler_lid_leans_behind: boolean;
+    salutem_cooler_branding_matches_anchor: boolean;
+    gel_packs_total: number;
+    gel_packs_inside: number;
+    gel_packs_outside: number;
+    gel_packs_all_match_anchor: boolean;
+    products_all_seated_inside_behind_front_rim: boolean;
+    product_perspective_contact_and_shadows_believable: boolean;
+    floating_pasted_halo_or_wall_intersection_items: string[];
+    loose_ice_snow_or_water_items: string[];
+    forbidden_overlay_or_extra_prop_items: string[];
+  };
   notes?: string;
 }
 
@@ -142,6 +160,12 @@ export interface HumanVisualApprovalChecklist {
   only_reviewed_brand_art_present: true;
   pack_modes_and_sizes_match_recipe: true;
   no_foreign_or_fictional_items: true;
+  exact_per_variant_package_counts_match_recipe: true;
+  frozen_kit_geometry_and_branding_match_anchor: true;
+  exactly_two_inside_and_two_outside_gel_packs: true;
+  products_physically_seated_without_floating_or_paste: true;
+  pure_white_square_amazon_main_background: true;
+  no_loose_ice_water_overlays_or_extra_props: true;
 }
 
 export interface UncrustablesMainVisualApprovalBody {
@@ -193,6 +217,12 @@ export type UncrustablesAuthenticityFailureCode =
   | "FOREIGN_ITEM"
   | "FICTIONAL_ITEM"
   | "FOREIGN_BRAND_MARK"
+  | "BACKGROUND_INVALID"
+  | "COOLER_GEOMETRY_INVALID"
+  | "GEL_PACK_LAYOUT_MISMATCH"
+  | "PRODUCT_PHYSICAL_SEATING_INVALID"
+  | "LOOSE_ICE_VISIBLE"
+  | "FORBIDDEN_OVERLAY_VISIBLE"
   | "HUMAN_APPROVAL_REQUIRED"
   | "HUMAN_APPROVAL_INVALID"
   | "HUMAN_APPROVAL_STALE"
@@ -770,6 +800,9 @@ export function evaluateUncrustablesMainAuthenticity(
   }
 
   const observation = input.visual_observation;
+  const scene = isRecord(observation) && isRecord(observation.scene)
+    ? observation.scene
+    : null;
   const observationIsValid =
     isRecord(observation) &&
     nonEmpty(observation.observer) &&
@@ -781,7 +814,28 @@ export function evaluateUncrustablesMainAuthenticity(
     Array.isArray(observation.foreign_items) &&
     observation.foreign_items.every((item) => nonEmpty(item)) &&
     Array.isArray(observation.fictional_or_unknown_items) &&
-    observation.fictional_or_unknown_items.every((item) => nonEmpty(item));
+    observation.fictional_or_unknown_items.every((item) => nonEmpty(item)) &&
+    scene !== null &&
+    typeof scene.background_is_pure_white === "boolean" &&
+    typeof scene.square_one_to_one === "boolean" &&
+    typeof scene.cooler_is_white_textured_eps === "boolean" &&
+    typeof scene.cooler_lid_leans_behind === "boolean" &&
+    typeof scene.salutem_cooler_branding_matches_anchor === "boolean" &&
+    Number.isInteger(scene.gel_packs_total) &&
+    Number(scene.gel_packs_total) >= 0 &&
+    Number.isInteger(scene.gel_packs_inside) &&
+    Number(scene.gel_packs_inside) >= 0 &&
+    Number.isInteger(scene.gel_packs_outside) &&
+    Number(scene.gel_packs_outside) >= 0 &&
+    typeof scene.gel_packs_all_match_anchor === "boolean" &&
+    typeof scene.products_all_seated_inside_behind_front_rim === "boolean" &&
+    typeof scene.product_perspective_contact_and_shadows_believable === "boolean" &&
+    Array.isArray(scene.floating_pasted_halo_or_wall_intersection_items) &&
+    scene.floating_pasted_halo_or_wall_intersection_items.every((item) => nonEmpty(item)) &&
+    Array.isArray(scene.loose_ice_snow_or_water_items) &&
+    scene.loose_ice_snow_or_water_items.every((item) => nonEmpty(item)) &&
+    Array.isArray(scene.forbidden_overlay_or_extra_prop_items) &&
+    scene.forbidden_overlay_or_extra_prop_items.every((item) => nonEmpty(item));
   if (!observationIsValid) {
     hardFails.push(
       finding(
@@ -807,6 +861,82 @@ export function evaluateUncrustablesMainAuthenticity(
         finding("FICTIONAL_ITEM", "Visual review found fictional or unknown items.", {
           items: observation.fictional_or_unknown_items,
         }),
+      );
+    }
+    if (!scene!.background_is_pure_white || !scene!.square_one_to_one) {
+      hardFails.push(
+        finding(
+          "BACKGROUND_INVALID",
+          "MAIN must use a pure-white square 1:1 Amazon background.",
+          {
+            background_is_pure_white: scene!.background_is_pure_white,
+            square_one_to_one: scene!.square_one_to_one,
+          },
+        ),
+      );
+    }
+    if (
+      !scene!.cooler_is_white_textured_eps ||
+      !scene!.cooler_lid_leans_behind ||
+      !scene!.salutem_cooler_branding_matches_anchor
+    ) {
+      hardFails.push(
+        finding(
+          "COOLER_GEOMETRY_INVALID",
+          "Cooler material, lid geometry, or Salutem branding differs from the immutable anchor.",
+        ),
+      );
+    }
+    if (
+      scene!.gel_packs_total !== 4 ||
+      scene!.gel_packs_inside !== 2 ||
+      scene!.gel_packs_outside !== 2 ||
+      !scene!.gel_packs_all_match_anchor
+    ) {
+      hardFails.push(
+        finding(
+          "GEL_PACK_LAYOUT_MISMATCH",
+          "Exactly four anchor-matching gel packs are required in the 2-inside + 2-outside layout.",
+          {
+            total: scene!.gel_packs_total,
+            inside: scene!.gel_packs_inside,
+            outside: scene!.gel_packs_outside,
+            all_match_anchor: scene!.gel_packs_all_match_anchor,
+          },
+        ),
+      );
+    }
+    if (
+      !scene!.products_all_seated_inside_behind_front_rim ||
+      !scene!.product_perspective_contact_and_shadows_believable ||
+      scene!.floating_pasted_halo_or_wall_intersection_items.length > 0
+    ) {
+      hardFails.push(
+        finding(
+          "PRODUCT_PHYSICAL_SEATING_INVALID",
+          "All products must be physically seated behind the cooler rim with believable contact, perspective, and shadows.",
+          {
+            defect_items: scene!.floating_pasted_halo_or_wall_intersection_items,
+          },
+        ),
+      );
+    }
+    if (scene!.loose_ice_snow_or_water_items.length > 0) {
+      hardFails.push(
+        finding(
+          "LOOSE_ICE_VISIBLE",
+          "Loose ice, snow piles, crushed ice, or water is visible.",
+          { items: scene!.loose_ice_snow_or_water_items },
+        ),
+      );
+    }
+    if (scene!.forbidden_overlay_or_extra_prop_items.length > 0) {
+      hardFails.push(
+        finding(
+          "FORBIDDEN_OVERLAY_VISIBLE",
+          "A forbidden overlay, UI element, watermark, price mark, or extra prop is visible.",
+          { items: scene!.forbidden_overlay_or_extra_prop_items },
+        ),
       );
     }
     if (index) {
@@ -1025,7 +1155,13 @@ export function evaluateUncrustablesMainAuthenticity(
       approval.checklist.all_required_flavors_present === true &&
       approval.checklist.only_reviewed_brand_art_present === true &&
       approval.checklist.pack_modes_and_sizes_match_recipe === true &&
-      approval.checklist.no_foreign_or_fictional_items === true;
+      approval.checklist.no_foreign_or_fictional_items === true &&
+      approval.checklist.exact_per_variant_package_counts_match_recipe === true &&
+      approval.checklist.frozen_kit_geometry_and_branding_match_anchor === true &&
+      approval.checklist.exactly_two_inside_and_two_outside_gel_packs === true &&
+      approval.checklist.products_physically_seated_without_floating_or_paste === true &&
+      approval.checklist.pure_white_square_amazon_main_background === true &&
+      approval.checklist.no_loose_ice_water_overlays_or_extra_props === true;
     if (!approvalStructureValid) {
       hardFails.push(
         finding(

@@ -11,6 +11,12 @@
 // CALIBRATED against live responses once the key is active (see calibrateOxylabs()).
 
 import { extractPackSize, type RetailOffer } from "./retail-fetch";
+import {
+  throwIfMeteredProviderControlError,
+  withMeteredProviderCall,
+  type MeteredProviderAuthorization,
+} from "./metered-provider-call";
+import { PRODUCT_TRUTH_PROCUREMENT_ZIP } from "./price-evidence-policy";
 
 export type OxylabsRetailer = "bjs" | "publix" | "aldi" | "instacart";
 
@@ -24,24 +30,108 @@ export function oxylabsEnabled(): boolean {
   return oxylabsCreds() != null;
 }
 
+export interface OxylabsWalmartLocalityProof {
+  requestedZip: string | null;
+  responseZip: string | null;
+  localityProven: boolean;
+}
+
+function normalizeUsZip(value: unknown): string | null {
+  if (typeof value !== "string" && typeof value !== "number") return null;
+  const raw = String(value).trim();
+  const match = raw.match(/^(\d{5})(?:-\d{4})?$/);
+  return match?.[1] ?? null;
+}
+
+/**
+ * Prove Walmart localization from the parsed provider response, never from the
+ * requested parameter. Oxylabs documents that Walmart can silently fall back to
+ * default results when localization fails, so `delivery_zip=33765` alone is not
+ * evidence that the returned price or stock belongs to Clearwater.
+ *
+ * `zip_code` is the documented key; `zipcode` is accepted because it appears in
+ * older structured-response examples from the same provider.
+ */
+export function proveOxylabsWalmartLocality(
+  result: unknown,
+  requestedZip: unknown = PRODUCT_TRUTH_PROCUREMENT_ZIP,
+): OxylabsWalmartLocalityProof {
+  const requested = normalizeUsZip(requestedZip);
+  const content = result && typeof result === "object"
+    ? (result as { content?: unknown }).content
+    : null;
+  const location = content && typeof content === "object"
+    ? (content as { location?: unknown }).location
+    : null;
+  const locationRecord = location && typeof location === "object"
+    ? location as { zip_code?: unknown; zipcode?: unknown }
+    : null;
+  const responseZip = normalizeUsZip(
+    locationRecord?.zip_code ?? locationRecord?.zipcode,
+  );
+
+  return {
+    requestedZip: requested,
+    responseZip,
+    localityProven: requested !== null && responseZip !== null && responseZip === requested,
+  };
+}
+
+/** Require an explicit Walmart availability signal; missing fields are unknown. */
+export function inferOxylabsWalmartInStock(item: unknown): boolean | null {
+  if (!item || typeof item !== "object") return null;
+  const record = item as {
+    general?: { out_of_stock?: unknown };
+    fulfillment?: { pickup?: unknown; delivery?: unknown; shipping?: unknown };
+  };
+  if (record.general?.out_of_stock === true) return false;
+  if (record.general?.out_of_stock === false) return true;
+
+  const flags = [
+    record.fulfillment?.pickup,
+    record.fulfillment?.delivery,
+    record.fulfillment?.shipping,
+  ].filter((value): value is boolean => typeof value === "boolean");
+  if (!flags.length) return null;
+  return flags.some(Boolean);
+}
+
 // One Oxylabs Realtime query. `source: "universal"` scrapes an arbitrary URL and
 // (with parse/render) returns the page content. Returns the raw result payload.
-async function oxylabsQuery(body: Record<string, any>): Promise<any | null> {
+type OxylabsQueryResult = {
+  result: any | null;
+  authorization: MeteredProviderAuthorization | null;
+};
+
+async function oxylabsQuery(body: Record<string, any>): Promise<OxylabsQueryResult> {
   const creds = oxylabsCreds();
-  if (!creds) return null;
+  if (!creds) return { result: null, authorization: null };
   const auth = Buffer.from(`${creds.user}:${creds.pass}`).toString("base64");
+  let authorization: MeteredProviderAuthorization | null = null;
   try {
-    const res = await fetch("https://realtime.oxylabs.io/v1/queries", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Basic ${auth}` },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(60000),
-    });
-    if (!res.ok) return null;
-    const j: any = await res.json();
-    return j?.results?.[0] ?? null;
-  } catch {
-    return null;
+    const result = await withMeteredProviderCall(
+      {
+        provider: "oxylabs",
+        operation: "query",
+        requestFingerprint: body,
+        onAuthorized: (value) => { authorization = value; },
+      },
+      async () => {
+        const res = await fetch("https://realtime.oxylabs.io/v1/queries", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Basic ${auth}` },
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(60000),
+        });
+        if (!res.ok) throw new Error(`Oxylabs HTTP ${res.status}`);
+        const j: any = await res.json();
+        return j?.results?.[0] ?? null;
+      },
+    );
+    return { result, authorization };
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
+    throw new Error("OXYLABS_SOURCE_FAILED", { cause: error });
   }
 }
 
@@ -86,11 +176,41 @@ function parseSearch(retailer: OxylabsRetailer, result: any): RetailOffer[] {
 // source (BlueCart is dropped; Unwrangle-walmart was slow and 3P-skewed).
 export async function oxylabsWalmartSearch(
   query: string,
-): Promise<{ creditsRemaining: number | null; offers: RetailOffer[]; trialExhausted: boolean }> {
-  if (!oxylabsEnabled()) return { creditsRemaining: null, offers: [], trialExhausted: true };
-  const result = await oxylabsQuery({ source: "walmart_search", query, parse: true });
+): Promise<{
+  creditsRemaining: number | null;
+  offers: RetailOffer[];
+  trialExhausted: boolean;
+  responseZip: string | null;
+  localityProven: boolean;
+}> {
+  if (!oxylabsEnabled()) {
+    return {
+      creditsRemaining: null,
+      offers: [],
+      trialExhausted: true,
+      responseZip: null,
+      localityProven: false,
+    };
+  }
+  const queryResult = await oxylabsQuery({
+    source: "walmart_search",
+    query,
+    parse: true,
+    delivery_zip: PRODUCT_TRUTH_PROCUREMENT_ZIP,
+  });
+  const { result, authorization } = queryResult;
+  const locality = proveOxylabsWalmartLocality(result);
   const raw = result?.content?.results;
-  if (!raw) return { creditsRemaining: null, offers: [], trialExhausted: false };
+  if (!raw) {
+    return {
+      creditsRemaining: null,
+      offers: [],
+      trialExhausted: false,
+      responseZip: locality.responseZip,
+      localityProven: locality.localityProven,
+    };
+  }
+  const observedAt = new Date().toISOString();
   const items = (Array.isArray(raw) ? raw : Object.values(raw)).filter((x: any) => x && typeof x === "object");
   const offers: RetailOffer[] = [];
   for (const it of items as any[]) {
@@ -105,8 +225,11 @@ export async function oxylabsWalmartSearch(
       retailerProductId: String(g.product_id || url || ""),
       price: it.price?.price ?? null,
       currency: it.price?.currency || "USD",
-      inStock: g.out_of_stock === true ? false : true,
+      inStock: inferOxylabsWalmartInStock(it),
       productUrl: url,
+      zip: locality.localityProven ? locality.responseZip : null,
+      localityEvidence: locality.localityProven ? "zip_scoped" : "national_unscoped",
+      observedAt,
       title,
       description: null,
       keyFeatures: [],
@@ -116,9 +239,20 @@ export async function oxylabsWalmartSearch(
       isMarketplaceItem: sellerName ? !/^walmart\.com$/i.test(sellerName.trim()) : null,
       sellerName,
       sourceApi: "oxylabs",
+      ...(authorization ? {
+        meteredReceiptId: authorization.receiptId,
+        meteredRunId: authorization.runId,
+        meteredApprovalId: authorization.approvalId,
+      } : {}),
     } as RetailOffer);
   }
-  return { creditsRemaining: null, offers, trialExhausted: false };
+  return {
+    creditsRemaining: null,
+    offers,
+    trialExhausted: false,
+    responseZip: locality.responseZip,
+    localityProven: locality.localityProven,
+  };
 }
 
 // ── Google Shopping via Oxylabs STRUCTURED source ────────────────────────────
@@ -131,10 +265,13 @@ export async function oxylabsGoogleShoppingSearch(
   query: string,
 ): Promise<{ offers: RetailOffer[] }> {
   if (!oxylabsEnabled()) return { offers: [] };
-  const result = await oxylabsQuery({ source: "google_shopping_search", query, parse: true });
+  const { result, authorization } = await oxylabsQuery({
+    source: "google_shopping_search", query, parse: true,
+  });
   const organic = result?.content?.results?.organic;
   const items = Array.isArray(organic) ? organic : [];
   const offers: RetailOffer[] = [];
+  const observedAt = new Date().toISOString();
   for (const it of items as any[]) {
     const title: string = it?.title || "";
     const price = typeof it?.price === "number" ? it.price : null;
@@ -146,6 +283,9 @@ export async function oxylabsGoogleShoppingSearch(
       currency: it.currency || "USD",
       inStock: true,
       productUrl: typeof it.url === "string" ? it.url : null,
+      zip: null,
+      localityEvidence: "national_unscoped",
+      observedAt,
       title,
       description: null,
       keyFeatures: [],
@@ -155,6 +295,11 @@ export async function oxylabsGoogleShoppingSearch(
       isMarketplaceItem: null,
       sellerName: it.merchant?.name ?? null,
       sourceApi: "oxylabs-google",
+      ...(authorization ? {
+        meteredReceiptId: authorization.receiptId,
+        meteredRunId: authorization.runId,
+        meteredApprovalId: authorization.approvalId,
+      } : {}),
     } as RetailOffer);
   }
   return { offers };
@@ -167,7 +312,17 @@ export async function oxylabsSearch(
   query: string,
 ): Promise<{ creditsRemaining: number | null; offers: RetailOffer[]; trialExhausted: boolean }> {
   if (!oxylabsEnabled()) return { creditsRemaining: null, offers: [], trialExhausted: true };
-  const result = await oxylabsQuery({ source: "universal", url: searchUrl(retailer, query), render: "html", parse: false });
+  const { result, authorization } = await oxylabsQuery({
+    source: "universal", url: searchUrl(retailer, query), render: "html", parse: false,
+  });
   if (!result) return { creditsRemaining: null, offers: [], trialExhausted: false };
-  return { creditsRemaining: null, offers: parseSearch(retailer, result), trialExhausted: false };
+  const offers = parseSearch(retailer, result).map((offer) => ({
+    ...offer,
+    ...(authorization ? {
+      meteredReceiptId: authorization.receiptId,
+      meteredRunId: authorization.runId,
+      meteredApprovalId: authorization.approvalId,
+    } : {}),
+  }));
+  return { creditsRemaining: null, offers, trialExhausted: false };
 }

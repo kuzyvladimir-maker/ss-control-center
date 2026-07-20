@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "7ad20473-74bc-4b27-a0c7-1d76b98f3ba1",
+  "created_at": "2026-07-19T04:56:30.275Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "ER-ASRK-TPYQ:media",
+  "sku": "ER-ASRK-TPYQ",
+  "kind": "MEDIA",
+  "status": "VERIFIED",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "737ccea5-5533-4e72-a01f-7090c34f75bc",
+    "stable_post_write_reads": 3,
+    "polling_reads": 13,
+    "polling_sweep": 13,
+    "elapsed_ms": 361224.944833,
+    "path_state_sha256": "d11621b19e0370a28e66e78a1a738428b1cd0116bd29d219cd7d1e8f29fbae62",
+    "checks": [
+      {
+        "field": "main_product_image_buyer_summary",
+        "ok": true,
+        "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/38100c77a7995f81d3948533b2ba7f6c464739fcae838d4eb743133956c9367c.png",
+        "actual": "https://m.media-amazon.com/images/I/51FRtDkcVzL.jpg"
+      }
+    ]
+  },
+  "sha256": "704cd307e83ebd3a3ecb78a6d387732ab4d926bb20ea32866119563f2a73b409"
+}

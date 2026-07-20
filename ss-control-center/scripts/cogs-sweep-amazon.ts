@@ -6,6 +6,14 @@ import { config } from "dotenv"; config({ path: ".env.local" }); config({ path: 
 process.env.SS_VISION_FREE_ONLY = "1";
 import { createClient } from "@libsql/client";
 import { costOneSku, amazonSkus } from "@/lib/sourcing/cogs-engine";
+import { assertMeteredProviderCall } from "@/lib/sourcing/metered-call-guard";
+
+throw new Error("LEGACY_METERED_SCRIPT_DISABLED: use the durable Product Truth queue and budget ledger");
+
+const STORE_INDEX = Number(process.env.STORE_INDEX);
+if (!Number.isSafeInteger(STORE_INDEX) || STORE_INDEX <= 0) {
+  throw new Error("STORE_INDEX=<positive integer> is required; account scope is never inferred");
+}
 
 const CAP = Math.max(1, parseInt(process.env.CAP || "600", 10));
 const MAX_HOURS = parseFloat(process.env.MAX_HOURS || "10");
@@ -14,6 +22,7 @@ const CONC = 2, PAUSE_MIN = 3_000, PAUSE_MAX = 300_000;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 async function credits(): Promise<number> {
   const K = (process.env.UNWRANGLE_API_KEY || "").trim().replace(/^['"]|['"]$/g, "");
+  assertMeteredProviderCall({ provider: "unwrangle", operation: "balance_probe" });
   return fetch(`https://data.unwrangle.com/api/getter/?platform=target_search&search=water&api_key=${K}`, { signal: AbortSignal.timeout(20000) })
     .then((r) => r.json()).then((j: any) => Number(j?.remaining_credits ?? 0)).catch(() => Infinity);
 }
@@ -43,7 +52,7 @@ async function credits(): Promise<number> {
       if (i >= todo.length || written >= CAP || Date.now() - startedAt > MAX_HOURS * 3_600_000) break;
       if (i % 30 === 0 && (await credits()) < CREDIT_FLOOR) { console.log("credit floor — stopping"); break; }
       try {
-        const res = await costOneSku(db, { sku: todo[i], channel: "amazon" });
+        const res = await costOneSku(db, { sku: todo[i], channel: "amazon", storeIndex: STORE_INDEX });
         if (res.status === "costed") { written++; real++; consecSkips = 0; pause = Math.max(PAUSE_MIN, pause / 2); }
         else if (res.status === "no-price") { written++; uns++; consecSkips = 0; pause = Math.max(PAUSE_MIN, pause / 2); }
         else { skipped++; consecSkips++; pause = Math.min(PAUSE_MAX, pause * 2); }

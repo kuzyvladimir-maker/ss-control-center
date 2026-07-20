@@ -76,6 +76,16 @@ function caseWith(expectedOverrides) {
   };
 }
 
+function spatialOcr(text, boundingBox, confidence = 1) {
+  return {
+    text,
+    confidence,
+    view_role: "full",
+    view_sha256: "a".repeat(64),
+    bounding_box: boundingBox,
+  };
+}
+
 function bunCase(netRequirement = "if_visible") {
   return caseWith({
     title: "Sara Lee Artesano Bakery Buns, 8 Count, 19 oz (Pack of 2)",
@@ -232,7 +242,7 @@ test("logo-only brand is REVIEW, never an inferred brand match", () => {
   assert.deepEqual(decision.hard_failures, []);
 });
 
-test("high-confidence generic OCR can support missing allowed identity markers", () => {
+test("OCR can recover a logo wordmark only after blind product and variant match", () => {
   const gatoradeCase = caseWith({
     title: "Gatorade Cool Blue Sports Drink, 28 Fl Oz Bottle, Quantity of 6",
     outer_units: 6,
@@ -252,7 +262,7 @@ test("high-confidence generic OCR can support missing allowed identity markers",
   const decision = decideBlind(gatoradeCase, image, observation({
     visible_brand_text: "G",
     visible_product_text: "Advanced Rehydration",
-    visible_variant_text: null,
+    visible_variant_text: "COOL BLUE",
     visible_size_texts: [],
     inner_contents_claims: [],
     external_package_count: { mode: "exact", value: 6, min: null, max: null },
@@ -260,14 +270,13 @@ test("high-confidence generic OCR can support missing allowed identity markers",
   }), {
     ocr_texts: [
       { text: "GATORADE", confidence: 1 },
-      { text: "COOL BLUE", confidence: 0.99 },
     ],
   });
   assert.equal(decision.verdict, "PASS");
   assert.equal(decision.checks.identity, "MATCH");
 });
 
-test("separate OCR badge words can support a multiword allowed marker", () => {
+test("only spatially adjacent OCR badge words can support a multiword allowed marker", () => {
   const familyCase = caseWith({
     identity: {
       ...teaCase.expected.identity,
@@ -278,12 +287,40 @@ test("separate OCR badge words can support a multiword allowed marker", () => {
     visible_variant_text: null,
   }), {
     ocr_texts: [
-      { text: "FAMILY", confidence: 1 },
-      { text: "20", confidence: 1 },
-      { text: "SIZE", confidence: 1 },
+      spatialOcr("FAMILY", { x: 0.1, y: 0.1, width: 0.1, height: 0.08 }),
+      spatialOcr("20", { x: 0.8, y: 0.8, width: 0.05, height: 0.03 }),
+      spatialOcr("SIZE", { x: 0.1, y: 0.185, width: 0.1, height: 0.03 }),
     ],
   });
   assert.equal(decision.verdict, "PASS");
+
+  const unlocated = decideBlind(familyCase, image, observation({
+    visible_variant_text: null,
+  }), {
+    ocr_texts: [
+      { text: "FAMILY", confidence: 1 },
+      { text: "SIZE", confidence: 1 },
+    ],
+  });
+  assert.equal(unlocated.verdict, "REVIEW");
+  assert.match(unlocated.unknowns.join(" "), /required variant markers missing/);
+});
+
+test("OCR cannot be the sole source of product identity", () => {
+  const decision = decideBlind(teaCase, image, observation({
+    visible_brand_text: null,
+    visible_product_text: null,
+    visible_variant_text: null,
+    readable_identity: "none",
+  }), {
+    ocr_texts: [
+      { text: "BIGELOW", confidence: 1 },
+      { text: "HERBAL TEA", confidence: 1 },
+      { text: "PEPPERMINT", confidence: 1 },
+    ],
+  });
+  assert.equal(decision.verdict, "REVIEW");
+  assert.equal(decision.checks.identity, "UNKNOWN");
 });
 
 test("an explicit wrong brand is BAD", () => {
@@ -326,7 +363,25 @@ test("a visible role-scoped forbidden marker is BAD", () => {
   assert.match(decision.hard_failures.join(" "), /variant:diet\|zero/);
 });
 
-test("OCR-only forbidden text is support-ineligible and cannot create BAD", () => {
+test("a blind forbidden marker remains BAD when vision assigns it to the wrong identity field", () => {
+  const guardedTea = caseWith({
+    identity: {
+      ...teaCase.expected.identity,
+      forbidden_markers: [{ role: "variant", aliases: ["chamomile"] }],
+    },
+  });
+  const decision = decideBlind(guardedTea, image, observation({
+    visible_product_text: "Herbal Tea Chamomile",
+    visible_variant_text: null,
+  }), {
+    ocr_texts: [{ text: "PEPPERMINT", confidence: 1 }],
+  });
+  assert.equal(decision.verdict, "BAD");
+  assert.equal(decision.checks.identity, "MISMATCH");
+  assert.match(decision.hard_failures.join(" "), /variant:chamomile/);
+});
+
+test("OCR-only forbidden text forces REVIEW and cannot create BAD", () => {
   const guardedTea = caseWith({
     identity: {
       ...teaCase.expected.identity,
@@ -336,8 +391,10 @@ test("OCR-only forbidden text is support-ineligible and cannot create BAD", () =
   const decision = decideBlind(guardedTea, image, observation(), {
     ocr_texts: [{ text: "CHAMOMILE", confidence: 1 }],
   });
-  assert.equal(decision.verdict, "PASS");
-  assert.equal(decision.checks.identity, "MATCH");
+  assert.equal(decision.verdict, "REVIEW");
+  assert.equal(decision.checks.identity, "UNKNOWN");
+  assert.deepEqual(decision.hard_failures, []);
+  assert.match(decision.unknowns.join(" "), /OCR-only forbidden identity markers/);
 });
 
 test("OCR-supported generic identity cannot erase a visible forbidden marker", () => {
@@ -424,6 +481,26 @@ test("high-confidence OCR can support a required package fact match", () => {
   });
   assert.equal(decision.verdict, "PASS");
   assert.equal(decision.checks.package_facts.net_content, "MATCH");
+});
+
+test("an OCR expected size mixed with a conflicting package size forces REVIEW", () => {
+  const breadCase = caseWith({
+    package_facts: [
+      { kind: "net_content", value: 22, unit: "oz", requirement: "required" },
+    ],
+  });
+  const decision = decideBlind(breadCase, image, observation({
+    visible_size_texts: [],
+    inner_contents_claims: [],
+  }), {
+    ocr_texts: [
+      { text: "NET WT 22 OZ (624g)", confidence: 1 },
+      { text: "NET WT 24 OZ", confidence: 1 },
+    ],
+  });
+  assert.equal(decision.verdict, "REVIEW");
+  assert.equal(decision.checks.package_facts.net_content, "UNKNOWN");
+  assert.match(decision.unknowns.join(" "), /conflicting OCR values/);
 });
 
 test("OCR-only mismatch can produce only REVIEW", () => {
@@ -525,6 +602,7 @@ test("all sizes in a literal are parsed, compound pounds are aggregated, and dup
   assert.deepEqual(parseVisibleSizeText("64 fl_oz (2 L)"), { value: 64, unit: "fl_oz" });
   assert.deepEqual(parseVisibleSizeText("240Z11 5 LBS 680g"), { value: 24, unit: "oz" });
   assert.deepEqual(parseVisibleSizeText("NET WT 22.0Z (624g)"), { value: 22, unit: "oz" });
+  assert.equal(parseVisibleSizeText("10z"), null);
 });
 
 test("same-unit values are exact while cross-unit rounding tolerance is at most 0.5%", () => {
@@ -577,7 +655,7 @@ test("OCR-split small nutrition grams cannot conflict with a real net weight", (
     inner_contents_claims: [],
   }), {
     ocr_texts: [
-      { text: "NET WT 22 OZ", confidence: 1 },
+      { text: "NET WT 22 OZ (624g)", confidence: 1 },
       { text: "6g", confidence: 1 },
       { text: "4g", confidence: 1 },
       { text: "27g", confidence: 1 },
@@ -587,10 +665,10 @@ test("OCR-split small nutrition grams cannot conflict with a real net weight", (
   assert.equal(decision.checks.package_facts.net_content, "MATCH");
 });
 
-test("blind prompt and observation schema remain independent of comparator v3", () => {
+test("blind prompt and observation schema remain independent of comparator v4", () => {
   const prompt = buildBlindObservationPrompt(["i_a", "i_b"]);
   assert.equal(BLIND_OBSERVATION_SCHEMA, "wm_visual_observation_batch/v3");
-  assert.equal(WALMART_VISUAL_COMPARATOR_VERSION, "walmart-visual-comparator/v3");
+  assert.equal(WALMART_VISUAL_COMPARATOR_VERSION, "walmart-visual-comparator/v4");
   assert.match(prompt, /i_a/);
   assert.match(prompt, /inner_contents_claims/);
   assert.doesNotMatch(prompt, /Bigelow|SKU-1|Peppermint/);

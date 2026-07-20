@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d53839c5-38c0-43a0-99d0-778bbb0d880b",
+  "created_at": "2026-07-19T04:49:19.371Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "SU-ASS4-RV6R:media",
+  "sku": "SU-ASS4-RV6R",
+  "kind": "MEDIA",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "512465e2-31f2-46db-900a-056a190bc6fe",
+    "patch_sha256": "6e71471cceef83eea4faceb93d8b2f228cd1ce73505899d203743155b1c89c6a",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "6e71471cceef83eea4faceb93d8b2f228cd1ce73505899d203743155b1c89c6a",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "9f2a9a7f16ab639b8d303aea4aefaa5e5b437b979e100c807b0dba034e8c557a"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "c051b4aea23d4fa494d89ca49c210694",
+    "issues": []
+  },
+  "sha256": "29b0b0c844d5bce2973cfea194677d554b11e33b2c17bcd768c885e5b6810bcc"
+}

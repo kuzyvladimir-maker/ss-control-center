@@ -20,6 +20,17 @@ export const validatorComplianceRerun: ValidatorFn = async ({
   bundle_components,
   draft_brand,
 }) => {
+  // This legacy gate contains Amazon browse-node/disclaimer/brand rules and
+  // has no channel input. Walmart is now covered by its dedicated Product
+  // Truth, static-policy and prepublication validators; running Amazon rules
+  // here would reject legitimate exact manufacturer-brand Walmart offers.
+  if (sku.channel === "WALMART") {
+    return {
+      validator_id: "validator-compliance-rerun",
+      passed: true,
+      details: { skipped: true, reason: "dedicated_walmart_compliance_gates" },
+    };
+  }
   let bullets: string[] = [];
   try {
     const parsed = JSON.parse(sku.bullets || "[]");

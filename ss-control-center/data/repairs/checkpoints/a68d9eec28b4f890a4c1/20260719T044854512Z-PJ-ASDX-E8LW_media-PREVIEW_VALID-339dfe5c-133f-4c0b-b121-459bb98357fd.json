@@ -1,0 +1,22 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "339dfe5c-133f-4c0b-b121-459bb98357fd",
+  "created_at": "2026-07-19T04:48:54.512Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "PJ-ASDX-E8LW:media",
+  "sku": "PJ-ASDX-E8LW",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "e2b8abf69488f5779fa0b8f83b1cbf8646aa13e1d22eda5cc2310a4670ea8b0a",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "status": "VALID",
+    "submission_id": "e0caefca7fae430591a7a87a18151b94",
+    "issues": []
+  },
+  "sha256": "ae18741956f826a64d63b4126db4f0c58e19904848f73ed98689d395dd6565fc"
+}

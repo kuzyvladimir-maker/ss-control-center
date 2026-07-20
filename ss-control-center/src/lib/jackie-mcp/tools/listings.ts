@@ -2,14 +2,13 @@
  * Jackie MCP tools — Listings.
  *
  * Read paths query our ChannelSKU + ListingAuditResult tables (already
- * synced from marketplaces). Write path wraps `patchListing` with the
- * existing dry-run / VALIDATION_PREVIEW behaviour from Phase 2.6.2.
+ * synced from marketplaces). The former generic write path is preview-only
+ * until Listing Improvement has a Product Truth-bound owner action gate.
  */
 
 import { prisma } from "@/lib/prisma";
 import {
   getListing,
-  patchListing,
   flattenListing,
 } from "@/lib/amazon-sp-api/listings";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
@@ -125,7 +124,7 @@ function readPrice(v: unknown): number | null {
 const listingsUpdate: JackieTool = {
   name: "listings_update",
   description:
-    "PATCH an existing Amazon listing's attributes: title, bullets, description, main image, PRICE (purchasable_offer, merged so the B2B offer and min/max bounds survive) and GALLERY images (other_product_image_locator_1..8). product_type is auto-resolved from the live listing when omitted. Server runs Amazon VALIDATION_PREVIEW first. dry_run=true returns the payload without calling Amazon. Amazon-only for now.",
+    "Preview a proposed Amazon listing attribute patch. Live generic PATCH is retired until a manifest-bound Product Truth plan and separate owner action gate exist. dry_run defaults to true; dry_run=false returns a fail-closed retirement result and performs no marketplace call.",
   write: true,
   input_schema: {
     type: "object",
@@ -155,7 +154,7 @@ const listingsUpdate: JackieTool = {
       /** Must equal the listing's real productType (e.g. ICE_CHEST, GROCERY).
        *  Omit to auto-resolve from the live listing summary — recommended. */
       product_type: { type: "string" },
-      dry_run: { type: "boolean", default: false },
+      dry_run: { type: "boolean", default: true },
     },
     required: ["channel", "sku", "patches"],
     additionalProperties: false,
@@ -165,7 +164,16 @@ const listingsUpdate: JackieTool = {
     const skip = channelSkipReason(channel);
     if (skip) return { skipped: true, reason: skip };
     const sku = requireString(args, "sku");
-    const dry_run = args.dry_run === true;
+    const dry_run = args.dry_run !== false;
+    if (!dry_run) {
+      return {
+        ok: false,
+        retired: true,
+        code: "LEGACY_AMAZON_MCP_LISTINGS_UPDATE_RETIRED",
+        reason:
+          "Generic Amazon listing PATCH is disabled. Use manifest-bound Product Truth preview plus a separate owner action gate.",
+      };
+    }
     const patches = (args.patches ?? {}) as Record<string, unknown>;
 
     const price = readPrice(patches.price);
@@ -257,27 +265,7 @@ const listingsUpdate: JackieTool = {
       );
     }
 
-    if (dry_run) {
-      return { dry_run: true, product_type, would_patch: { product_type, patches: jsonPatches } };
-    }
-
-    const sellerId = await getMerchantToken(storeIndex);
-    // VALIDATION_PREVIEW first.
-    const preview = await patchListing(storeIndex, sellerId, sku, product_type, jsonPatches, {
-      validationPreview: true,
-    });
-    if (preview?.status === "INVALID") {
-      return { ok: false, stage: "validation_preview", product_type, issues: preview.issues ?? [] };
-    }
-    const real = await patchListing(storeIndex, sellerId, sku, product_type, jsonPatches);
-    return {
-      ok: real?.status === "ACCEPTED" || real?.status === "IN_PROGRESS",
-      stage: "submitted",
-      product_type,
-      submission_id: real?.submissionId ?? null,
-      amazon_status: real?.status ?? null,
-      issues: real?.issues ?? [],
-    };
+    return { dry_run: true, product_type, would_patch: { product_type, patches: jsonPatches } };
   },
 };
 

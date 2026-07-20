@@ -14,7 +14,7 @@
  *   5. Skip channels already LIVE (idempotent).
  *   6. Per-marketplace rate limit + sleep.
  *   7. Auto-abort if batch error rate exceeds threshold.
- *   8. PUT is idempotent — re-running on already-submitted SKU is safe.
+ *   8. Walmart POST is fenced by a durable payload-bound claim before network.
  */
 
 import { prisma } from "@/lib/prisma";
@@ -34,6 +34,15 @@ import {
   type WalmartPublishResult,
 } from "./walmart-publish";
 import {
+  acceptWalmartSubmission,
+  assertWalmartPublishLifecycleSchema,
+  claimWalmartSubmission,
+  hashWalmartPayload,
+  recordWalmartSynchronousFailure,
+  type WalmartPilotSubmissionPermit,
+  WALMART_PILOT_MAX_APPLY_SKUS,
+} from "./walmart-publish-lifecycle";
+import {
   INVENTORY_MAX_AGE_MS,
   inventoryIsFresh,
 } from "../inventory-policy";
@@ -44,6 +53,11 @@ import {
   preflightProductionUncrustablesMain,
   type UncrustablesMainPublishPermit,
 } from "../audit/uncrustables-main-production-preflight";
+import { assertValidWalmartDistributionApproval } from "../walmart-listing-contract";
+import {
+  assertWalmartOwnerPermitSignature,
+  walmartOwnerPermitTransportEnvironment,
+} from "../walmart-owner-permit";
 
 // Amazon SP-API Listings PUT: 5 req/sec per store; we use 4 to leave
 // headroom. Walmart: 8 req/sec per store; we use 6.
@@ -71,6 +85,10 @@ export interface RunDistributionInput {
    *  See scripts/_img_replace.ts (the composite image-replacement driver). */
   republish?: boolean;
   actor?: string;
+  walmartPilotPermit?: WalmartPilotSubmissionPermit;
+  /** Engine-only mutation-adjacent guard. It runs after the durable claim and
+   * immediately before Walmart POST /feeds. */
+  beforeWalmartFeedPost?: () => void | Promise<void>;
 }
 
 export interface ChannelDistributionOutcome {
@@ -78,7 +96,13 @@ export interface ChannelDistributionOutcome {
   sku: string;
   channel: string;
   marketplace_kind: string;
-  status: "SUBMITTED" | "LIVE" | "FAILED" | "SKIPPED";
+  status:
+    | "SUBMITTED"
+    | "SUBMISSION_UNKNOWN"
+    | "RETRYABLE"
+    | "LIVE"
+    | "FAILED"
+    | "SKIPPED";
   submission_id: string | null;
   issues: Array<{ code?: string; message?: string; severity?: string }>;
   marketplace_status: string | null;
@@ -98,6 +122,36 @@ export interface RunDistributionResult {
   aborted: boolean;
   aborted_reason?: string;
   duration_ms: number;
+}
+
+export interface RunWalmartPilotDistributionInput {
+  bundle_draft_id: string;
+  /** Defaults to false and therefore performs no DB or marketplace write. */
+  apply?: boolean;
+  actor?: string;
+  walmartPilotPermit?: WalmartPilotSubmissionPermit;
+  beforeWalmartFeedPost?: () => void | Promise<void>;
+}
+
+async function assertCurrentWalmartDistributionApproval(
+  channelSkuId: string,
+  expectedPublishableContentSha256: string,
+  expectedMarketplacePayloadSha256: string,
+): Promise<void> {
+  const currentSku = await prisma.channelSKU.findUniqueOrThrow({
+    where: { id: channelSkuId },
+  });
+  const currentApproval = assertValidWalmartDistributionApproval(currentSku);
+  if (
+    currentApproval.publishable_content_sha256 !==
+      expectedPublishableContentSha256 ||
+    currentApproval.marketplace_payload_sha256 !==
+      expectedMarketplacePayloadSha256
+  ) {
+    throw new Error(
+      "Walmart distribution approval was replaced after the durable submission claim",
+    );
+  }
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -301,6 +355,100 @@ export async function runDistribution(
     };
   }
 
+  // Owner-gated pilot wave: a single invocation may create at most two real
+  // Walmart submissions. Dry-runs remain unrestricted because they have no DB
+  // or marketplace side effects.
+  const walmartApplyCandidates = skus.filter((sku) => {
+    const target = channelTarget(sku.channel);
+    return (
+      target.kind === "walmart" &&
+      !target.skipReason &&
+      !isColdBundle &&
+      (sku.listing_status !== "LIVE" || input.republish === true) &&
+      !["SUBMITTING", "SUBMITTED", "PENDING_REVIEW", "SUBMISSION_UNKNOWN"].includes(
+        sku.listing_status,
+      )
+    );
+  });
+  if (apply && walmartApplyCandidates.length > WALMART_PILOT_MAX_APPLY_SKUS) {
+    throw new Error(
+      `Walmart publish pilot is capped at ${WALMART_PILOT_MAX_APPLY_SKUS} SKU per apply run; requested ${walmartApplyCandidates.length}.`,
+    );
+  }
+  if (apply && walmartApplyCandidates.length > 0) {
+    if (!input.walmartPilotPermit) {
+      throw new Error(
+        "Real Walmart distribution requires an external owner pilot permit",
+      );
+    }
+    if (walmartApplyCandidates.length !== 1) {
+      throw new Error(
+        "One signed Walmart owner permit authorizes exactly one SKU submission",
+      );
+    }
+    assertWalmartOwnerPermitSignature(input.walmartPilotPermit.signedPermit, {
+      expectedEnvironment: walmartOwnerPermitTransportEnvironment(),
+    });
+    await assertWalmartPublishLifecycleSchema();
+  }
+  // Validate every sealed approval before changing the draft to PUBLISHING.
+  // The same assertion runs again after the durable claim, immediately before
+  // the network-bound submit, to catch content drift during orchestration.
+  if (apply) {
+    for (const sku of walmartApplyCandidates) {
+      assertValidWalmartDistributionApproval(sku);
+    }
+  }
+  const preparedWalmartPayloads = new Map<string, WalmartPublishResult>();
+  if (apply) {
+    for (const sku of walmartApplyCandidates) {
+      const target = channelTarget(sku.channel);
+      const prepared = await submitToWalmart({
+        sku,
+        storeIndex: target.storeIndex,
+        brand: masterBundle?.brand,
+        packCount: masterBundle?.pack_count,
+        physicalPackageSpecs: verifiedPhysicalSpecs,
+        dryRun: true,
+      });
+      if (!prepared.ok) {
+        throw new Error(
+          `Walmart payload preflight failed for ${sku.sku}: ${prepared.error ?? "unknown error"}`,
+        );
+      }
+      const approval = assertValidWalmartDistributionApproval(sku);
+      if (
+        hashWalmartPayload(prepared.payload) !==
+        approval.marketplace_payload_sha256
+      ) {
+        throw new Error(
+          `Walmart payload for ${sku.sku} changed after distribution approval`,
+        );
+      }
+      preparedWalmartPayloads.set(sku.id, prepared);
+    }
+    if (walmartApplyCandidates.length > 0) {
+      const sku = walmartApplyCandidates[0]!;
+      const prepared = preparedWalmartPayloads.get(sku.id)!;
+      const target = channelTarget(sku.channel);
+      const permit = input.walmartPilotPermit!;
+      const body = permit.signedPermit.signed_body;
+      if (
+        body.channel_sku_id !== sku.id ||
+        body.sku !== sku.sku ||
+        body.upc !== sku.upc ||
+        body.store_index !== target.storeIndex ||
+        body.payload_sha256 !== hashWalmartPayload(prepared.payload) ||
+        body.engine_release_sha256 !== permit.engineReleaseSha256 ||
+        body.approval_sha256 !== permit.approvalSha256 ||
+        body.seller_account_fingerprint_sha256 !==
+          permit.sellerAccountFingerprintSha256
+      ) {
+        throw new Error("Signed Walmart owner permit does not bind the prepared SKU");
+      }
+    }
+  }
+
   // Fail closed before the first distribution mutation. For Uncrustables, a
   // generic image QA flag is insufficient: read the exact R2 MAIN bytes and
   // require a sealed owner approval for this SKU, hash, physical count, exact
@@ -489,6 +637,27 @@ export async function runDistribution(
         });
         continue;
       }
+      if (
+        target.kind === "walmart" &&
+        ["SUBMITTING", "SUBMITTED", "PENDING_REVIEW", "SUBMISSION_UNKNOWN"].includes(
+          sku.listing_status,
+        )
+      ) {
+        per_sku.push({
+          sku_id: sku.id,
+          sku: sku.sku,
+          channel: sku.channel,
+          marketplace_kind: "walmart",
+          status: "SKIPPED",
+          submission_id: sku.submission_id,
+          issues: [],
+          marketplace_status: sku.listing_status,
+          skip_reason: `${sku.listing_status} is already protected by the durable submission lifecycle`,
+          dry_run: !apply,
+          payload: {},
+        });
+        continue;
+      }
 
       let outcome: ChannelDistributionOutcome;
       if (target.kind === "amazon") {
@@ -525,27 +694,155 @@ export async function runDistribution(
         };
         await sleep(SLEEP_MS_AMAZON);
       } else if (target.kind === "walmart") {
-        const r: WalmartPublishResult = await submitToWalmart({
-          sku,
-          storeIndex: target.storeIndex,
-          brand: masterBundle?.brand,
-          packCount: masterBundle?.pack_count,
-          physicalPackageSpecs: verifiedPhysicalSpecs,
-          dryRun: !apply,
-        });
-        outcome = {
-          sku_id: sku.id,
-          sku: sku.sku,
-          channel: sku.channel,
-          marketplace_kind: "walmart",
-          status: r.ok ? "SUBMITTED" : "FAILED",
-          submission_id: r.feed_id,
-          issues: r.issues,
-          marketplace_status: r.walmart_status,
-          dry_run: r.dry_run,
-          payload: r.payload,
-          error: r.error,
-        };
+        // Build and validate the exact payload without network first. Its hash
+        // becomes the stable idempotency boundary for the durable claim.
+        const prepared: WalmartPublishResult =
+          preparedWalmartPayloads.get(sku.id) ??
+          (await submitToWalmart({
+            sku,
+            storeIndex: target.storeIndex,
+            brand: masterBundle?.brand,
+            packCount: masterBundle?.pack_count,
+            physicalPackageSpecs: verifiedPhysicalSpecs,
+            dryRun: true,
+          }));
+        if (!apply || !prepared.ok) {
+          outcome = {
+            sku_id: sku.id,
+            sku: sku.sku,
+            channel: sku.channel,
+            marketplace_kind: "walmart",
+            status: prepared.ok ? "SUBMITTED" : "FAILED",
+            submission_id: null,
+            issues: prepared.issues,
+            marketplace_status: prepared.walmart_status,
+            dry_run: true,
+            payload: prepared.payload,
+            error: prepared.error,
+          };
+        } else {
+          const claim = await claimWalmartSubmission({
+            channelSkuId: sku.id,
+            payload: prepared.payload,
+            pilotPermit: input.walmartPilotPermit!,
+            allowLiveRepublish: input.republish === true,
+          });
+          if (!claim.claimed || !claim.attempt_id || !claim.claim_token) {
+            outcome = {
+              sku_id: sku.id,
+              sku: sku.sku,
+              channel: sku.channel,
+              marketplace_kind: "walmart",
+              status: "SKIPPED",
+              submission_id: sku.submission_id,
+              issues: [],
+              marketplace_status: claim.prior_state ?? null,
+              skip_reason: claim.reason ?? "durable Walmart claim not acquired",
+              dry_run: false,
+              payload: prepared.payload,
+            };
+          } else {
+            let r: WalmartPublishResult | null = null;
+            let submitError: string | undefined;
+            try {
+              // Final approval/content fingerprint fence. This is intentionally
+              // adjacent to the network call and runs after the atomic claim.
+              // Re-read the row so a revoked/resealed approval cannot pass via
+              // the ChannelSKU snapshot loaded at orchestration start.
+              const claimedApproval = assertValidWalmartDistributionApproval(sku);
+              await assertCurrentWalmartDistributionApproval(
+                sku.id,
+                claimedApproval.publishable_content_sha256,
+                claimedApproval.marketplace_payload_sha256,
+              );
+              r = await submitToWalmart({
+                sku,
+                storeIndex: target.storeIndex,
+                brand: masterBundle?.brand,
+                packCount: masterBundle?.pack_count,
+                physicalPackageSpecs: verifiedPhysicalSpecs,
+                dryRun: false,
+                beforeFeedPost: async () => {
+                  await assertCurrentWalmartDistributionApproval(
+                    sku.id,
+                    claimedApproval.publishable_content_sha256,
+                    claimedApproval.marketplace_payload_sha256,
+                  );
+                  await input.beforeWalmartFeedPost?.();
+                },
+                ownerPermitAuthorization: {
+                  signedPermit: input.walmartPilotPermit!.signedPermit,
+                  engineReleaseSha256:
+                    input.walmartPilotPermit!.engineReleaseSha256,
+                  approvalSha256: input.walmartPilotPermit!.approvalSha256,
+                  sellerAccountFingerprintSha256:
+                    input.walmartPilotPermit!.sellerAccountFingerprintSha256,
+                },
+                lifecyclePostClaim: {
+                  attemptId: claim.attempt_id,
+                  claimToken: claim.claim_token,
+                },
+              });
+              if (hashWalmartPayload(r.payload) !== claim.payload_hash) {
+                submitError =
+                  "Walmart POST payload hash changed after durable claim";
+              } else if (!r.ok || !r.feed_id) {
+                submitError = r.error ?? "Walmart submission returned no feedId";
+              }
+            } catch (error) {
+              submitError = error instanceof Error ? error.message : String(error);
+            }
+
+            if (r?.ok && r.feed_id && !submitError) {
+              await acceptWalmartSubmission({
+                channelSkuId: sku.id,
+                attemptId: claim.attempt_id,
+                claimToken: claim.claim_token,
+                feedId: r.feed_id,
+                marketplaceStatus: r.walmart_status,
+              });
+              outcome = {
+                sku_id: sku.id,
+                sku: sku.sku,
+                channel: sku.channel,
+                marketplace_kind: "walmart",
+                status: "SUBMITTED",
+                submission_id: r.feed_id,
+                issues: r.issues,
+                marketplace_status: r.walmart_status,
+                dry_run: false,
+                payload: r.payload,
+              };
+            } else {
+              const failure = await recordWalmartSynchronousFailure({
+                channelSkuId: sku.id,
+                attemptId: claim.attempt_id,
+                claimToken: claim.claim_token,
+                feedId: r?.feed_id,
+                error: submitError,
+              });
+              outcome = {
+                sku_id: sku.id,
+                sku: sku.sku,
+                channel: sku.channel,
+                marketplace_kind: "walmart",
+                status: failure.listingStatus,
+                submission_id: r?.feed_id ?? null,
+                issues: r?.issues ?? [
+                  {
+                    code: failure.listingStatus,
+                    message: submitError,
+                    severity: "WARNING",
+                  },
+                ],
+                marketplace_status: r?.walmart_status ?? null,
+                dry_run: false,
+                payload: r?.payload ?? prepared.payload,
+                error: submitError,
+              };
+            }
+          }
+        }
         await sleep(SLEEP_MS_WALMART);
       } else {
         outcome = {
@@ -564,10 +861,21 @@ export async function runDistribution(
       }
 
       per_sku.push(outcome);
-      if (outcome.status === "FAILED") batchFailed++;
+      if (
+        outcome.status === "FAILED" ||
+        outcome.status === "SUBMISSION_UNKNOWN" ||
+        outcome.status === "RETRYABLE"
+      ) {
+        batchFailed++;
+      }
       else if (outcome.status === "SUBMITTED" || outcome.status === "LIVE") batchSuccess++;
 
-      await persistOutcome(sku, outcome);
+      // Real Walmart outcomes are already persisted atomically with their
+      // durable attempt row. Legacy persistence remains for other channels;
+      // dry-run is a no-op in either path.
+      if (target.kind !== "walmart" || outcome.dry_run) {
+        await persistOutcome(sku, outcome);
+      }
 
       if (apply && outcome.status === "SUBMITTED") {
         await sendSuccessAlert(draft.id, outcome).catch(() => {});
@@ -592,12 +900,15 @@ export async function runDistribution(
     const live = per_sku.filter((s) => s.status === "LIVE").length;
     const submitted = per_sku.filter((s) => s.status === "SUBMITTED").length;
     const failed = per_sku.filter((s) => s.status === "FAILED").length;
+    const recoveryPending = per_sku.filter(
+      (s) => s.status === "SUBMISSION_UNKNOWN" || s.status === "RETRYABLE",
+    ).length;
     if (live === per_sku.length && per_sku.length > 0) {
       nextStatus = "PUBLISHED";
     } else if (failed === per_sku.length && workingStatus === "PUBLISHING") {
       nextStatus = "ERROR";
     } else if (
-      (live > 0 || submitted > 0) &&
+      (live > 0 || submitted > 0 || recoveryPending > 0) &&
       workingStatus === "PUBLISHING" &&
       !aborted
     ) {
@@ -614,7 +925,7 @@ export async function runDistribution(
         entity_id: draft.id,
         from_status: workingStatus,
         to_status: nextStatus,
-        reason: `Distribution finished — ${live} LIVE, ${submitted} SUBMITTED, ${failed} FAILED${aborted ? " (aborted)" : ""}`,
+        reason: `Distribution finished — ${live} LIVE, ${submitted} SUBMITTED, ${recoveryPending} RECOVERY, ${failed} FAILED${aborted ? " (aborted)" : ""}`,
         actor: input.actor ?? "system",
       });
     }
@@ -630,4 +941,19 @@ export async function runDistribution(
     aborted_reason: abortedReason,
     duration_ms: Date.now() - startMs,
   };
+}
+
+/** Engine-facing bounded entry point for the owner-gated 1–2 SKU pilot. */
+export async function runWalmartPilotDistribution(
+  input: RunWalmartPilotDistributionInput,
+): Promise<RunDistributionResult> {
+  return runDistribution({
+    bundle_draft_id: input.bundle_draft_id,
+    channels: ["WALMART"],
+    apply: input.apply === true,
+    batchSize: WALMART_PILOT_MAX_APPLY_SKUS,
+    actor: input.actor ?? "walmart-pilot-engine",
+    walmartPilotPermit: input.walmartPilotPermit,
+    beforeWalmartFeedPost: input.beforeWalmartFeedPost,
+  });
 }

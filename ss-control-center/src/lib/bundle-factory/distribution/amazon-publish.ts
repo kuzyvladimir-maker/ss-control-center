@@ -27,7 +27,7 @@
 
 import { spApiPut, MARKETPLACE_ID } from "@/lib/amazon-sp-api/client";
 import { getMerchantToken } from "@/lib/amazon-sp-api/sellers";
-import { isOwnBrandPassthrough, resolveListingBrand } from "../own-brand";
+import { isOwnBrandPassthrough, resolveListingBrand, textSaysUncrustables } from "../own-brand";
 import { isColdCategory } from "../category";
 import { appendColdChainBrandCard } from "../attributes/brand-assets";
 import { buildSearchTerms } from "../attributes/search-terms";
@@ -313,7 +313,11 @@ export function buildAmazonAttributes(
   // Structured number_of_items is the recipe fact; title parsing is
   // deliberately forbidden here because legacy titles contained retail-carton
   // counts (for example "4 ct, Pack of 45") that inflated the bundle count.
-  const uncrustablesListing = isOwnBrandPassthrough(listingBrand);
+  // Identity by brand OR title: a null/misspelled brand field must never let an
+  // Uncrustables listing fall through to the generic cached price (the 2026-07
+  // price-above-max birth cohort).
+  const uncrustablesListing =
+    isOwnBrandPassthrough(listingBrand) || textSaysUncrustables(sku.title);
   const uncrustablesCanonical =
     uncrustablesListing && totalUnits != null
       ? priceFor(totalUnits)
@@ -348,15 +352,31 @@ export function buildAmazonAttributes(
     };
     const minBand = uncrustablesCanonical?.floor ?? bandVal("minimum_seller_allowed_price");
     const maxBand = uncrustablesCanonical?.suggested ?? bandVal("maximum_seller_allowed_price");
+    // FAIL CLOSED on a price/band contradiction. This is a whole-array PUT, so
+    // omitting a contradicting bound would silently strip the listing's
+    // guardrails (and hide the upstream drift that caused the contradiction) —
+    // publishing an unbounded offer is worse than failing this publish.
+    if (minBand != null && minBand > priceUsd) {
+      throw new Error(
+        `${sku.sku}: price $${priceUsd} is below the stored min band $${minBand}; ` +
+          "refusing to publish without guardrails — fix the price/band pair upstream",
+      );
+    }
+    if (maxBand != null && maxBand < priceUsd) {
+      throw new Error(
+        `${sku.sku}: price $${priceUsd} is above the stored max band $${maxBand}; ` +
+          "refusing to publish without guardrails — fix the price/band pair upstream",
+      );
+    }
     attrs.purchasable_offer = [
       {
         currency: "USD",
         marketplace_id: MARKETPLACE_ID,
         our_price: [{ schedule: [{ value_with_tax: priceUsd }] }],
-        ...(minBand != null && minBand <= priceUsd
+        ...(minBand != null
           ? { minimum_seller_allowed_price: [{ schedule: [{ value_with_tax: minBand }] }] }
           : {}),
-        ...(maxBand != null && maxBand >= priceUsd
+        ...(maxBand != null
           ? { maximum_seller_allowed_price: [{ schedule: [{ value_with_tax: maxBand }] }] }
           : {}),
       },
@@ -476,8 +496,19 @@ export async function submitToAmazon(
       "string"
       ? (payloadMainRows[0] as { media_location: string }).media_location
       : "";
+  const payloadTitleRows = payloadAttributes?.item_name;
+  const payloadTitle =
+    Array.isArray(payloadTitleRows) &&
+    payloadTitleRows[0] &&
+    typeof payloadTitleRows[0] === "object" &&
+    typeof (payloadTitleRows[0] as { value?: unknown }).value === "string"
+      ? ((payloadTitleRows[0] as { value: string }).value)
+      : null;
   const uncrustablesListing =
-    isOwnBrandPassthrough(input.brand) || isOwnBrandPassthrough(payloadBrand);
+    isOwnBrandPassthrough(input.brand) ||
+    isOwnBrandPassthrough(payloadBrand) ||
+    textSaysUncrustables(payloadTitle) ||
+    textSaysUncrustables(input.sku.title);
 
   // A complete PUT replaces the listing contribution represented by this
   // payload. buildAmazonAttributes intentionally does not carry a launch Sale

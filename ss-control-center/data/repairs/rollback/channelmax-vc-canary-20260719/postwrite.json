@@ -1,0 +1,54 @@
+{
+  "schema_version": "channelmax-vc-inline-canary-postwrite/v1",
+  "confirmed_at": "2026-07-19T02:10:55Z",
+  "account": {
+    "host": "selling.channelmax.net",
+    "selected_site_id": 300,
+    "selected_site_name": "AmznUS [Salutem Solutions]",
+    "seller_id": "A3A7A0RDFUSGBS"
+  },
+  "row": {
+    "item_id": 171037335,
+    "sku": "VC-ASV1-378P",
+    "asin": "B0H786L5MW"
+  },
+  "write": {
+    "action": "setitmsitevalues",
+    "mode": "inline",
+    "site_id": 300,
+    "minimum_price": 219.57,
+    "maximum_price": 252.99,
+    "response_is_valid": true,
+    "response_item_is_valid": true,
+    "response_message": "SUCCESS",
+    "updated_rows": 1
+  },
+  "readback": {
+    "action": "inventoryitemsite",
+    "response_is_valid": true,
+    "site_id": 300,
+    "site_name": "Amzn US",
+    "item_id": 171037335,
+    "asin": "B0H786L5MW",
+    "minimum_price": 219.57,
+    "maximum_price": 252.99,
+    "last_updated_by": "salutem-MB"
+  },
+  "repricing_model_control": {
+    "grid_model_id_after": 59021,
+    "grid_model_name_after": "Manual min/max",
+    "model_changed_by_canary": false
+  },
+  "cache_observation": {
+    "grid_snapshot_minimum": 251.32,
+    "grid_snapshot_maximum": 289.28,
+    "meaning": "Last repricing-cycle snapshot is stale; it is not the persisted site-value source of truth."
+  },
+  "rollback": {
+    "minimum_price": 251.32,
+    "maximum_price": 289.28,
+    "required": false,
+    "reason": "Forward values were independently confirmed."
+  },
+  "result": "PASS"
+}

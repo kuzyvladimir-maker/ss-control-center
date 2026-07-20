@@ -25,24 +25,28 @@ interface EconomicsRow {
   sku: string;
   title: string | null;
   marketplace: Marketplace;
-  profit: number;
-  marginPct: number;
-  referralFee: number;
+  economicsStatus: "CALCULATED" | "BLOCKED";
+  blockers: string[];
+  profit: number | null;
+  marginPct: number | null;
+  referralFee: number | null;
   revenue: number;
   cooler: string | null;
   cogsSource: string | null;
   breakdown: {
     itemPrice: number;
     shippingCharged: number;
-    cogs: number;
+    cogs: number | null;
     packaging: number;
-    referralFee: number;
+    referralFee: number | null;
     ownShipping: number;
   };
   flags: string[];
 }
 
 interface Summary {
+  truthMode: "LEGACY_UNSCOPED_TRANSITIONAL";
+  authoritative: false;
   storeIndex: number;
   marketplace: Marketplace;
   total: number;
@@ -57,6 +61,7 @@ const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
 
 const FLAG_LABEL: Record<string, string> = {
   cogs_missing: "COGS missing",
+  cogs_unsourceable: "COGS unsourceable",
   cogs_stale: "COGS stale",
   packaging_estimated: "Packaging est.",
   own_shipping_missing: "Own ship missing",
@@ -141,10 +146,22 @@ export default function EconomicsPage() {
 
       {data && (
         <>
+          {!data.authoritative && (
+            <Card className="border-amber-500/60 bg-amber-50/60 dark:bg-amber-950/20">
+              <CardContent className="flex items-start gap-2 py-4 text-sm">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <span>
+                  Transitional legacy view: COGS is still resolved by raw SKU and is not
+                  authoritative Product Truth. Missing or unsourceable COGS blocks profit;
+                  do not use this page for repricing until the manifest-bound cutover.
+                </span>
+              </CardContent>
+            </Card>
+          )}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <Kpi label="Live SKUs" value={data.total.toString()} />
             <Kpi
-              label="COGS missing"
+              label="COGS unavailable"
               value={data.cogsMissing.toString()}
               warn={data.cogsMissing > 0}
             />
@@ -158,7 +175,7 @@ export default function EconomicsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">
-                {data.rows.length} SKUs — worst margin first
+                {data.rows.length} SKUs — blocked first, then worst margin
               </CardTitle>
             </CardHeader>
             <CardContent className="overflow-x-auto p-0">
@@ -191,31 +208,36 @@ export default function EconomicsPage() {
                         {usd(r.breakdown.shippingCharged)}
                       </td>
                       <td className="px-3 py-2">
-                        {r.flags.includes("cogs_missing") ? (
+                        {r.breakdown.cogs == null ? (
                           <span className="text-muted-foreground">—</span>
                         ) : (
-                          usd(r.breakdown.cogs)
+                          r.breakdown.cogs == null ? "—" : usd(r.breakdown.cogs)
                         )}
                       </td>
                       <td className="px-3 py-2 text-muted-foreground">{usd(r.breakdown.packaging)}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{usd(r.breakdown.referralFee)}</td>
+                      <td className="px-3 py-2 text-muted-foreground">
+                        {r.breakdown.referralFee == null ? "—" : usd(r.breakdown.referralFee)}
+                      </td>
                       <td className="px-3 py-2 text-muted-foreground">{usd(r.breakdown.ownShipping)}</td>
                       <td
                         className={cn(
                           "px-3 py-2 text-right font-medium",
-                          r.profit < 0 ? "text-destructive" : "text-emerald-600",
+                          r.profit == null
+                            ? "text-muted-foreground"
+                            : r.profit < 0 ? "text-destructive" : "text-emerald-600",
                         )}
                       >
-                        {r.flags.includes("cogs_missing") ? "≤ " : ""}
-                        {usd(r.profit)}
+                        {r.profit == null ? "BLOCKED" : usd(r.profit)}
                       </td>
                       <td
                         className={cn(
                           "px-3 py-2 text-right font-medium",
-                          r.marginPct < 0.2 ? "text-destructive" : "text-emerald-600",
+                          r.marginPct == null
+                            ? "text-muted-foreground"
+                            : r.marginPct < 0.2 ? "text-destructive" : "text-emerald-600",
                         )}
                       >
-                        {pct(r.marginPct)}
+                        {r.marginPct == null ? "—" : pct(r.marginPct)}
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex flex-wrap gap-1">
@@ -224,12 +246,12 @@ export default function EconomicsPage() {
                               key={f}
                               className={cn(
                                 "inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px]",
-                                f === "cogs_missing" || f === "below_target_margin"
+                                f === "cogs_missing" || f === "cogs_unsourceable" || f === "below_target_margin"
                                   ? "bg-destructive/10 text-destructive"
                                   : "bg-muted text-muted-foreground",
                               )}
                             >
-                              {(f === "cogs_missing" || f === "below_target_margin") && (
+                              {(f === "cogs_missing" || f === "cogs_unsourceable" || f === "below_target_margin") && (
                                 <AlertTriangle className="h-2.5 w-2.5" />
                               )}
                               {FLAG_LABEL[f] ?? f}

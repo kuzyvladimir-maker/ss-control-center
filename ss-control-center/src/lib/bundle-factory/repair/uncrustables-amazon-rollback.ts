@@ -560,6 +560,11 @@ export interface SnapshotReadGateway {
 export async function captureLivePreChangeSnapshot(input: BuildSnapshotInput & {
   gateway: SnapshotReadGateway;
   imageLoader?: SnapshotImageLoader;
+  /** Optional evidence scope. Every listing/image URL remains in the immutable
+   * snapshot, but only returned URLs are handed to the binary loader. */
+  imageUrlSelector?: (
+    entries: readonly PreChangeSnapshotEntry[],
+  ) => Iterable<string>;
   requestDelayMs?: number;
   sleep?: (milliseconds: number) => Promise<void>;
 }): Promise<UncrustablesPreChangeSnapshot> {
@@ -592,7 +597,18 @@ export async function captureLivePreChangeSnapshot(input: BuildSnapshotInput & {
   const allUrls = [...new Set(entries.flatMap((entry) => entry.image_urls))].sort();
   const imageEvidence: SnapshotImageEvidence[] = [];
   if (input.imageLoader) {
-    for (const url of allUrls) {
+    const selectedUrls = input.imageUrlSelector
+      ? new Set(input.imageUrlSelector(entries))
+      : new Set(allUrls);
+    const unknownSelected = [...selectedUrls].filter(
+      (url) => !allUrls.includes(url),
+    );
+    if (unknownSelected.length > 0) {
+      throw new Error(
+        `Image evidence selector returned ${unknownSelected.length} URL(s) absent from the live snapshot.`,
+      );
+    }
+    for (const url of allUrls.filter((item) => selectedUrls.has(item))) {
       try {
         const loaded = await input.imageLoader.load(url);
         if (loaded.url !== url || !loaded.sha256 || loaded.error) {

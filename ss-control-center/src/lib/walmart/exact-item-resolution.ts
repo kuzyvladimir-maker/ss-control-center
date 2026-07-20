@@ -63,6 +63,12 @@ interface SellerIdentity {
   row_index: number;
 }
 
+export interface ExactSellerCatalogLookup {
+  sku: string;
+  upc: string;
+  gtin14: string;
+}
+
 interface CatalogCandidate {
   item_id: string;
   title: string;
@@ -152,6 +158,26 @@ function resolveSeller(payload: unknown, sku: string): SellerIdentity {
     published_status: nonEmpty(row.publishedStatus),
     lifecycle_status: nonEmpty(row.lifecycleStatus),
     row_index: rowIndex,
+  };
+}
+
+/**
+ * Extract only the exact identifier needed for the second read-only request.
+ * This shares the resolver's fail-closed SKU and UPC/GTIN validation and never
+ * falls back to another seller row.
+ */
+export function extractExactSellerCatalogLookup(
+  sku: string,
+  sellerPayload: unknown,
+): ExactSellerCatalogLookup {
+  if (typeof sku !== "string" || !sku || sku !== sku.trim()) {
+    throw new Error("SKU must be non-empty and already trimmed");
+  }
+  const seller = resolveSeller(sellerPayload, sku);
+  return {
+    sku: seller.sku,
+    upc: seller.upc,
+    gtin14: seller.gtin14,
   };
 }
 

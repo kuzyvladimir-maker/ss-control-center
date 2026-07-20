@@ -1,0 +1,33 @@
+{
+  "schema_version": "uncrustables-amazon-base-offer-live-selection/v1",
+  "profile": "AMAZON_BASE_OFFER_PRESERVE_PROMO_V1",
+  "immutable": true,
+  "offline_only": true,
+  "execution_authorized": false,
+  "created_at": "2026-07-19T04:30:00.000Z",
+  "selection_id": "UBOLS-LK-FIRST-CANARY-20260719-V1",
+  "kind": "CANARY",
+  "source_plan_body_sha256": "d53f1d2ae4337b1a49fefc043c92022394ff4cc764c17aababd423f8230a633d",
+  "source_full_selection_body_sha256": "6e68e4fb39e425130106c4aceb77bec0f4501ecfbf9c5a69e1857d6c80515b34",
+  "selected_action_ids": [
+    "amazon:1:LK-AS7X-K43B:base-offer-preserve"
+  ],
+  "selected_skus": [
+    "LK-AS7X-K43B"
+  ],
+  "selected_actions": 1,
+  "first_action_id": "amazon:1:LK-AS7X-K43B:base-offer-preserve",
+  "policy": {
+    "serial_execution": true,
+    "one_patch_attempt_per_action": true,
+    "fresh_164_row_snapshot_required": true,
+    "validation_preview_required": true,
+    "immediate_prewrite_cas_required": true,
+    "stable_readback_required": true,
+    "discounted_price_must_be_preserved": true,
+    "top_level_list_price_must_be_preserved": true,
+    "top_level_b2b_cas_required": true,
+    "exact_patch_path": "/attributes/purchasable_offer"
+  },
+  "body_sha256": "cab70a8c9c973d17ee9a148edc025441a5eff476c7ac08932465035466505667"
+}

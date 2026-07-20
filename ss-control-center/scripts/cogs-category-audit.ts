@@ -14,6 +14,9 @@ loadEnv({ path: ".env" });
 import { createClient } from "@libsql/client";
 import Anthropic from "@anthropic-ai/sdk";
 import { CLAUDE } from "@/lib/ai-models";
+import { assertMeteredProviderCall } from "@/lib/sourcing/metered-call-guard";
+
+throw new Error("LEGACY_METERED_SCRIPT_DISABLED: migrate this audit to the durable Product Truth budget ledger before use");
 
 const DRY = process.argv.includes("--dry-run");
 const APPLY_AT = 0.92;
@@ -40,6 +43,7 @@ const chunk = <T>(a: T[], n: number) => Array.from({ length: Math.ceil(a.length 
     const b = batches[i];
     const list = b.map((r) => `${r.sku}\t${String(r.productTitle).slice(0, 90)}`).join("\n");
     try {
+      assertMeteredProviderCall({ provider: "anthropic", operation: "classification" });
       const resp = await anthropic.messages.create({
         model: MODEL, max_tokens: 4096,
         thinking: { type: "disabled" },

@@ -1,0 +1,51 @@
+{
+  "schema_version": "channelmax-qx-fence-recovery-prewrite/v1",
+  "captured_at": "2026-07-19T02:24:00Z",
+  "mutation_status": "CONFIRMED_POSTWRITE",
+  "row": {
+    "item_id": 171129419,
+    "sku": "QX-AS89-H8YC",
+    "asin": "B0H82RQ226",
+    "site_id": 300,
+    "repricing_model_id": null,
+    "repricing_model_name": "Default"
+  },
+  "before": {
+    "minimum_price": null,
+    "maximum_price": 85.70,
+    "price": 85.70
+  },
+  "forward": {
+    "minimum_price": 66.95,
+    "maximum_price": 76.99
+  },
+  "rollback": {
+    "minimum_price": null,
+    "maximum_price": 85.70
+  },
+  "amazon_pending_fence": {
+    "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+    "action_id": "QX-AS89-H8YC:offer",
+    "stable_non_desired_regular_price": 77.64,
+    "desired_regular_price": 76.99,
+    "automatic_resubmission_authorized": false
+  },
+  "guardrails": {
+    "single_row_only": true,
+    "preserve_default_repricing_model": true,
+    "no_amazon_resubmission": true,
+    "independent_channelmax_readback_required": true,
+    "amazon_get_only_settlement_after": true
+  },
+  "channelmax_result": {
+    "confirmed_at": "2026-07-19T02:26:03Z",
+    "write_response": "SUCCESS",
+    "updated_rows": 1,
+    "persisted_minimum_price": 66.95,
+    "persisted_maximum_price": 76.99,
+    "persisted_price": 76.99,
+    "last_updated_by": "salutem-MB",
+    "repricing_model_changed": false,
+    "result": "PASS"
+  }
+}

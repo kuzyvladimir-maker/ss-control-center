@@ -1,0 +1,2705 @@
+{
+  "schema_version": "uncrustables-safe-launch-promo-ab/v1",
+  "immutable": true,
+  "offline_only": true,
+  "prepared_at": "2026-07-19T06:00:00.000Z",
+  "authority": {
+    "owner_approval_received": false,
+    "execution_authorized": false,
+    "amazon_live_mutations_performed": false,
+    "channelmax_live_mutations_performed": false,
+    "external_mutations": 0
+  },
+  "strategy": {
+    "experiment": "BALANCED_COUPON_VS_SALE_PRICE",
+    "source_revision_status": "PROPOSED_OWNER_APPROVAL_REQUIRED",
+    "source_original_owner_decision_date": "2026-07-13",
+    "assignments_preserved": true,
+    "arm_rebalancing_performed": false,
+    "base_price_immutable": true,
+    "equal_effective_price_within_count_tier": true
+  },
+  "sources": {
+    "launch_manifest": {
+      "path": "data/repairs/launch-pricing/manifests-v4-proposal/uncrustables-launch-pricing-20260718T181103000Z-75cebdca9037.json",
+      "file_sha256": "1f41574bde29108050a16ca0980a4fb8206200a4d26314e07d04a09cf0898f9b"
+    },
+    "assignments": {
+      "path": "data/repairs/launch-pricing/source-v2-20260720-20260819/launch-experiment-assignments-v2.csv",
+      "file_sha256": "dbf6b4175566194847cf365544f6a69c856225be6f6f3d2849357a7e6c1c8b51"
+    },
+    "coupon_spec": {
+      "path": "data/repairs/launch-pricing/source-v2-20260720-20260819/coupons-uncrustables-launch-v2-spec.csv",
+      "file_sha256": "3da9c2d2d8cb2c7d0fc3def8b115d393e09b4b7da8653a551574e36c7371e46a"
+    },
+    "sale_price_spec": {
+      "path": "data/repairs/launch-pricing/source-v2-20260720-20260819/salesprice-uncrustables-launch-v2-spec.csv",
+      "file_sha256": "8cbe49a2bccbbbe6ae223aa44cb1635839023c0a51af77a5171a6e9847b418d8"
+    },
+    "safe_base_offer_manifest": {
+      "path": "data/repairs/channelmax-manual/uncrustables-safe-base-offer-161-20260719-v1/manifest.json",
+      "file_sha256": "627c3c17b854801392864366e37617f7aa226e30835c6342c8b66c673660479e"
+    },
+    "safe_base_offer_tsv": {
+      "path": "data/repairs/channelmax-manual/uncrustables-safe-base-offer-161-20260719-v1/uncrustables-channelmax-safe-manual-161-20260719T055000000Z-1475cf783747.txt",
+      "file_sha256": "1475cf7837478c91ec2b69be52b5da3e4ca58dfaacc69e8c81eadc133b8d0753"
+    }
+  },
+  "scope": {
+    "cohort_rows": 164,
+    "source_assigned_rows": 163,
+    "identity_hold_rows": 3,
+    "safe_promo_rows": 161,
+    "coupon_rows": 81,
+    "sale_price_rows": 80,
+    "coupon_group_rows": 5,
+    "exact_safe_base_offer_scope_match": true,
+    "no_extra_or_missing_skus": true
+  },
+  "window": {
+    "start_date": "2026-07-20",
+    "end_date": "2026-08-19",
+    "start_at": "2026-07-20T00:00:00.000Z",
+    "end_at": "2026-08-19T23:59:59.000Z"
+  },
+  "identity_holds": [
+    {
+      "sku": "SZ-ASPI-JFAT",
+      "asin": "B0H776M5B5",
+      "source_arm": "A",
+      "reason": "IDENTITY_HOLD_NO_PROMO"
+    },
+    {
+      "sku": "TY-AST2-JE9P",
+      "asin": "B0H84WQRXB",
+      "source_arm": "B",
+      "reason": "IDENTITY_HOLD_NO_PROMO"
+    },
+    {
+      "sku": "VN-AS1A-D572",
+      "asin": "B0H82PKK18",
+      "source_arm": null,
+      "reason": "IDENTITY_HOLD_NO_PROMO"
+    }
+  ],
+  "tier_policy": [
+    {
+      "count": 24,
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13
+    },
+    {
+      "count": 30,
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13
+    },
+    {
+      "count": 45,
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12
+    },
+    {
+      "count": 90,
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13
+    },
+    {
+      "count": 120,
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13
+    }
+  ],
+  "coupon_controls": {
+    "total_budget_usd": 1150,
+    "budget_is_not_a_hard_spend_cap_acknowledged": true,
+    "groups": [
+      {
+        "count": 24,
+        "discount_percent": 13,
+        "title": "Uncrustables 24 Count Launch Savings",
+        "budget_usd": 110,
+        "asin_count": 46,
+        "asins": [
+          "B0H8259J9G",
+          "B0H827V9DJ",
+          "B0H82B7KK1",
+          "B0H82CBLRM",
+          "B0H82K7Y7S",
+          "B0H82NHQCL",
+          "B0H82RQ226",
+          "B0H82X48CD",
+          "B0H8369PMK",
+          "B0H83SJFR7",
+          "B0H83XBXHX",
+          "B0H83Y8JH7",
+          "B0H83ZH3TB",
+          "B0H83ZRNCS",
+          "B0H843Q9B5",
+          "B0H84547PM",
+          "B0H845JBM6",
+          "B0H8462L4S",
+          "B0H8493HNR",
+          "B0H84CGGXL",
+          "B0H84JH1WN",
+          "B0H84PVG1G",
+          "B0H84XMG42",
+          "B0H84Z6QWY",
+          "B0H84ZL156",
+          "B0H8531B8B",
+          "B0H853HGHC",
+          "B0H853SHVC",
+          "B0H854C7SZ",
+          "B0H8564C6D",
+          "B0H856RRRK",
+          "B0H857K38C",
+          "B0H859JMGJ",
+          "B0H859VYXH",
+          "B0H85CF81Y",
+          "B0H85DF1R7",
+          "B0H85DRT93",
+          "B0H85GR968",
+          "B0H85JF1V1",
+          "B0H85KQJKS",
+          "B0H85MQLHG",
+          "B0H85N7X8W",
+          "B0H85PJ516",
+          "B0H85V287S",
+          "B0H86PRTWS",
+          "B0H86Z59DW"
+        ],
+        "limit_one_per_customer": true,
+        "targeted_segment": "All customers"
+      },
+      {
+        "count": 30,
+        "discount_percent": 13,
+        "title": "Uncrustables 30 Count Launch Savings",
+        "budget_usd": 120,
+        "asin_count": 10,
+        "asins": [
+          "B0H788M8WM",
+          "B0H822MPKC",
+          "B0H828GQLP",
+          "B0H82JYZQH",
+          "B0H82L74PL",
+          "B0H82LZLM2",
+          "B0H82YB4PD",
+          "B0H833W54L",
+          "B0H83789KC",
+          "B0H83D8TFQ"
+        ],
+        "limit_one_per_customer": true,
+        "targeted_segment": "All customers"
+      },
+      {
+        "count": 45,
+        "discount_percent": 12,
+        "title": "Uncrustables 45 Count Launch Savings",
+        "budget_usd": 180,
+        "asin_count": 10,
+        "asins": [
+          "B0H784LMG6",
+          "B0H82JTY19",
+          "B0H82MKPRJ",
+          "B0H82QPCJL",
+          "B0H82SMZ2M",
+          "B0H82XP1MM",
+          "B0H831889Q",
+          "B0H832SD15",
+          "B0H839TPC5",
+          "B0H83RR2XQ"
+        ],
+        "limit_one_per_customer": true,
+        "targeted_segment": "All customers"
+      },
+      {
+        "count": 90,
+        "discount_percent": 13,
+        "title": "Uncrustables 90 Count Launch Savings",
+        "budget_usd": 340,
+        "asin_count": 8,
+        "asins": [
+          "B0H786L5MW",
+          "B0H82T12L7",
+          "B0H82XNFRW",
+          "B0H839G6RQ",
+          "B0H83FP8WW",
+          "B0H83GBJLW",
+          "B0H83LSCQQ",
+          "B0H83RVHNF"
+        ],
+        "limit_one_per_customer": true,
+        "targeted_segment": "All customers"
+      },
+      {
+        "count": 120,
+        "discount_percent": 13,
+        "title": "Uncrustables 120 Count Launch Savings",
+        "budget_usd": 400,
+        "asin_count": 7,
+        "asins": [
+          "B0H83H71F8",
+          "B0H83MDDBL",
+          "B0H83NM5PX",
+          "B0H83RCTVV",
+          "B0H83S368B",
+          "B0H83TQPJB",
+          "B0H83Z6S3Q"
+        ],
+        "limit_one_per_customer": true,
+        "targeted_segment": "All customers"
+      }
+    ]
+  },
+  "rows": [
+    {
+      "ordinal": 1,
+      "sku": "FK-AS6B-6G25",
+      "asin": "B0H8259J9G",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 2,
+      "sku": "FR-AS6X-5KJY",
+      "asin": "B0H827V9DJ",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 3,
+      "sku": "LP-AS9J-HSVB",
+      "asin": "B0H82B7KK1",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 4,
+      "sku": "QE-ASEQ-4YV5",
+      "asin": "B0H82CBLRM",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 5,
+      "sku": "PB-ASAF-G2T6",
+      "asin": "B0H82K7Y7S",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 6,
+      "sku": "MF-AS0J-YRT4",
+      "asin": "B0H82NHQCL",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 7,
+      "sku": "QX-AS89-H8YC",
+      "asin": "B0H82RQ226",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 8,
+      "sku": "NJ-ASAC-PTK2",
+      "asin": "B0H82X48CD",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 9,
+      "sku": "JH-ASV9-Z46X",
+      "asin": "B0H8369PMK",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 10,
+      "sku": "RU-ASC3-4TUS",
+      "asin": "B0H83SJFR7",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 11,
+      "sku": "KN-ASYZ-ST4M",
+      "asin": "B0H83XBXHX",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 12,
+      "sku": "DP-ASQ6-ZPZU",
+      "asin": "B0H83Y8JH7",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 13,
+      "sku": "SH-ASO0-PW37",
+      "asin": "B0H83ZH3TB",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 14,
+      "sku": "BH-ASTN-S4XJ",
+      "asin": "B0H83ZRNCS",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 15,
+      "sku": "AU-AS97-USX8",
+      "asin": "B0H843Q9B5",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 16,
+      "sku": "NT-ASIL-V5LK",
+      "asin": "B0H84547PM",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 17,
+      "sku": "KD-AS12-8HZ3",
+      "asin": "B0H845JBM6",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 18,
+      "sku": "JU-ASM0-KV4Z",
+      "asin": "B0H8462L4S",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 19,
+      "sku": "RY-ASMO-6N4F",
+      "asin": "B0H8493HNR",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 20,
+      "sku": "LK-AS7X-K43B",
+      "asin": "B0H84CGGXL",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 21,
+      "sku": "ER-ASRK-TPYQ",
+      "asin": "B0H84JH1WN",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 22,
+      "sku": "ZX-ASQU-TKU9",
+      "asin": "B0H84PVG1G",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 23,
+      "sku": "RY-ASO3-24Q2",
+      "asin": "B0H84XMG42",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 24,
+      "sku": "PT-AS5B-Z2XH",
+      "asin": "B0H84Z6QWY",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 25,
+      "sku": "JC-ASM4-XXW7",
+      "asin": "B0H84ZL156",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 26,
+      "sku": "ZE-AS5W-FKH3",
+      "asin": "B0H8531B8B",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 27,
+      "sku": "SU-ASS4-RV6R",
+      "asin": "B0H853HGHC",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 28,
+      "sku": "LJ-ASYO-FWJK",
+      "asin": "B0H853SHVC",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 29,
+      "sku": "JU-ASYC-SSJD",
+      "asin": "B0H854C7SZ",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 30,
+      "sku": "SG-AS32-LZ9Y",
+      "asin": "B0H8564C6D",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 31,
+      "sku": "HR-AS7Q-7ZDF",
+      "asin": "B0H856RRRK",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 32,
+      "sku": "HZ-ASPS-4L22",
+      "asin": "B0H857K38C",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 33,
+      "sku": "YV-AST8-LMKN",
+      "asin": "B0H859JMGJ",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 34,
+      "sku": "WR-ASR5-AVWE",
+      "asin": "B0H859VYXH",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 35,
+      "sku": "WK-ASPD-G9HL",
+      "asin": "B0H85CF81Y",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 36,
+      "sku": "WZ-ASXK-ZFAS",
+      "asin": "B0H85DF1R7",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 37,
+      "sku": "WR-ASTH-TPXV",
+      "asin": "B0H85DRT93",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 38,
+      "sku": "RQ-AS78-STLZ",
+      "asin": "B0H85GR968",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 39,
+      "sku": "BK-AS5Z-8UY5",
+      "asin": "B0H85JF1V1",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 40,
+      "sku": "NV-AS86-HD44",
+      "asin": "B0H85KQJKS",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 41,
+      "sku": "RQ-AS0L-9B45",
+      "asin": "B0H85MQLHG",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 42,
+      "sku": "ZP-ASJD-X7ZD",
+      "asin": "B0H85N7X8W",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 43,
+      "sku": "RZ-AS26-WLRM",
+      "asin": "B0H85PJ516",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 44,
+      "sku": "HA-ASCR-ME3A",
+      "asin": "B0H85V287S",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 45,
+      "sku": "CK-ASUM-WT9W",
+      "asin": "B0H86PRTWS",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 46,
+      "sku": "BD-ASGH-LREJ",
+      "asin": "B0H86Z59DW",
+      "count": 24,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 47,
+      "sku": "AZ-ASMY-VEQ2",
+      "asin": "B0H788M8WM",
+      "count": 30,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 48,
+      "sku": "YF-ASZJ-8BBH",
+      "asin": "B0H822MPKC",
+      "count": 30,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 49,
+      "sku": "GU-ASQ1-S7M6",
+      "asin": "B0H828GQLP",
+      "count": 30,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 50,
+      "sku": "RN-ASLP-VH3X",
+      "asin": "B0H82JYZQH",
+      "count": 30,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 51,
+      "sku": "PR-AS79-8SDF",
+      "asin": "B0H82L74PL",
+      "count": 30,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 52,
+      "sku": "RL-AS64-Q8QX",
+      "asin": "B0H82LZLM2",
+      "count": 30,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 53,
+      "sku": "YA-ASX6-PZE7",
+      "asin": "B0H82YB4PD",
+      "count": 30,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 54,
+      "sku": "WC-ASH5-EFN6",
+      "asin": "B0H833W54L",
+      "count": 30,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 55,
+      "sku": "BY-ASY2-8UJJ",
+      "asin": "B0H83789KC",
+      "count": 30,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 56,
+      "sku": "ES-AS8A-3W3M",
+      "asin": "B0H83D8TFQ",
+      "count": 30,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 57,
+      "sku": "UA-ASAO-RE7Q",
+      "asin": "B0H784LMG6",
+      "count": 45,
+      "arm": "A",
+      "lever": "COUPON_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 58,
+      "sku": "AV-AS7X-8EXK",
+      "asin": "B0H82JTY19",
+      "count": 45,
+      "arm": "A",
+      "lever": "COUPON_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 59,
+      "sku": "DY-AS8W-6MJG",
+      "asin": "B0H82MKPRJ",
+      "count": 45,
+      "arm": "A",
+      "lever": "COUPON_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 60,
+      "sku": "YH-ASQ8-45ED",
+      "asin": "B0H82QPCJL",
+      "count": 45,
+      "arm": "A",
+      "lever": "COUPON_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 61,
+      "sku": "SA-ASDW-SNEW",
+      "asin": "B0H82SMZ2M",
+      "count": 45,
+      "arm": "A",
+      "lever": "COUPON_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 62,
+      "sku": "SA-ASCK-J2B2",
+      "asin": "B0H82XP1MM",
+      "count": 45,
+      "arm": "A",
+      "lever": "COUPON_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 63,
+      "sku": "SS-AS9K-U9TV",
+      "asin": "B0H831889Q",
+      "count": 45,
+      "arm": "A",
+      "lever": "COUPON_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 64,
+      "sku": "HX-ASO8-XCL2",
+      "asin": "B0H832SD15",
+      "count": 45,
+      "arm": "A",
+      "lever": "COUPON_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 65,
+      "sku": "PW-ASDZ-CSR8",
+      "asin": "B0H839TPC5",
+      "count": 45,
+      "arm": "A",
+      "lever": "COUPON_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 66,
+      "sku": "PL-ASR9-U94A",
+      "asin": "B0H83RR2XQ",
+      "count": 45,
+      "arm": "A",
+      "lever": "COUPON_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 67,
+      "sku": "VC-ASV1-378P",
+      "asin": "B0H786L5MW",
+      "count": 90,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 68,
+      "sku": "PJ-ASAX-6LTG",
+      "asin": "B0H82T12L7",
+      "count": 90,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 69,
+      "sku": "LH-ASP7-KZR4",
+      "asin": "B0H82XNFRW",
+      "count": 90,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 70,
+      "sku": "TQ-ASC4-P2NP",
+      "asin": "B0H839G6RQ",
+      "count": 90,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 71,
+      "sku": "UG-ASUO-L4D9",
+      "asin": "B0H83FP8WW",
+      "count": 90,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 72,
+      "sku": "EZ-ASLA-Y7MZ",
+      "asin": "B0H83GBJLW",
+      "count": 90,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 73,
+      "sku": "BM-AS5J-3MQY",
+      "asin": "B0H83LSCQQ",
+      "count": 90,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 74,
+      "sku": "ME-AS1I-SEX2",
+      "asin": "B0H83RVHNF",
+      "count": 90,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 75,
+      "sku": "PU-AS3D-SA5Z",
+      "asin": "B0H83H71F8",
+      "count": 120,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 76,
+      "sku": "QW-ASRZ-SYKC",
+      "asin": "B0H83MDDBL",
+      "count": 120,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 77,
+      "sku": "BX-AS5P-6WQV",
+      "asin": "B0H83NM5PX",
+      "count": 120,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 78,
+      "sku": "WN-AS33-UFEA",
+      "asin": "B0H83RCTVV",
+      "count": 120,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 79,
+      "sku": "BH-ASVY-CR8H",
+      "asin": "B0H83S368B",
+      "count": 120,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 80,
+      "sku": "QC-ASX2-RHPA",
+      "asin": "B0H83TQPJB",
+      "count": 120,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 81,
+      "sku": "JT-ASKD-KS8T",
+      "asin": "B0H83Z6S3Q",
+      "count": 120,
+      "arm": "A",
+      "lever": "COUPON_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": null
+    },
+    {
+      "ordinal": 82,
+      "sku": "RM-ASCV-DVA5",
+      "asin": "B0H822CVVL",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 83,
+      "sku": "FX-AS2W-KHZT",
+      "asin": "B0H827J2XZ",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 84,
+      "sku": "PY-ASBM-WX6W",
+      "asin": "B0H82B7GV5",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 85,
+      "sku": "TQ-ASBR-96TC",
+      "asin": "B0H82BCZ44",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 86,
+      "sku": "AD-AS4H-QXZD",
+      "asin": "B0H82J6V9T",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 87,
+      "sku": "NS-ASSD-B3JJ",
+      "asin": "B0H82L945T",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 88,
+      "sku": "UJ-ASQ1-9FNR",
+      "asin": "B0H82P651P",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 89,
+      "sku": "GR-AS1P-DBB2",
+      "asin": "B0H82S7TFG",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 90,
+      "sku": "AC-AS4J-B64F",
+      "asin": "B0H82ZZS2P",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 91,
+      "sku": "NC-ASPL-EXE8",
+      "asin": "B0H83QRV43",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 92,
+      "sku": "EF-AS4A-JCLU",
+      "asin": "B0H83XB855",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 93,
+      "sku": "GX-ASTJ-WHV3",
+      "asin": "B0H83XV9WX",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 94,
+      "sku": "SV-AS87-D6SV",
+      "asin": "B0H83ZGN22",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 95,
+      "sku": "UE-ASA6-CLLY",
+      "asin": "B0H83ZHZ4S",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 96,
+      "sku": "BQ-ASUE-NT37",
+      "asin": "B0H842HL49",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 97,
+      "sku": "WK-AS7E-M3CE",
+      "asin": "B0H843R64X",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 98,
+      "sku": "TH-AS6D-CCES",
+      "asin": "B0H845HSDZ",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 99,
+      "sku": "JY-ASPW-LB4K",
+      "asin": "B0H84621N6",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 100,
+      "sku": "CE-ASGK-ZRHM",
+      "asin": "B0H84651LM",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 101,
+      "sku": "PP-AS23-SPLQ",
+      "asin": "B0H84CDNQG",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 102,
+      "sku": "AJ-ASRB-HKC3",
+      "asin": "B0H84G7DHC",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 103,
+      "sku": "SG-ASLB-M2DG",
+      "asin": "B0H84PFKYC",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 104,
+      "sku": "LU-ASK0-LSDF",
+      "asin": "B0H84YZDB7",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 105,
+      "sku": "MP-ASYO-QNU2",
+      "asin": "B0H84Z9KWL",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 106,
+      "sku": "YG-ASH6-BCXX",
+      "asin": "B0H8511Y5G",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 107,
+      "sku": "VN-AS6Q-5AE9",
+      "asin": "B0H8538L32",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 108,
+      "sku": "BH-AS7H-D4FV",
+      "asin": "B0H853MCYZ",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 109,
+      "sku": "FM-AS51-S4MT",
+      "asin": "B0H853VHRF",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 110,
+      "sku": "UF-ASA1-GN5P",
+      "asin": "B0H854DM3X",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 111,
+      "sku": "SC-ASH8-4RQG",
+      "asin": "B0H856DWVS",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 112,
+      "sku": "VH-ASHZ-TJEE",
+      "asin": "B0H856VWD6",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 113,
+      "sku": "XW-ASSI-SZZT",
+      "asin": "B0H858GF4N",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 114,
+      "sku": "RB-ASVO-GYCY",
+      "asin": "B0H859N8VM",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 115,
+      "sku": "AG-ASKV-W9EN",
+      "asin": "B0H85B64V2",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 116,
+      "sku": "VT-ASTH-B6LM",
+      "asin": "B0H85CL8JD",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 117,
+      "sku": "QP-ASAD-PTLX",
+      "asin": "B0H85DG2JQ",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 118,
+      "sku": "VK-ASSB-3YFK",
+      "asin": "B0H85FY28F",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 119,
+      "sku": "FN-ASVM-UWAG",
+      "asin": "B0H85J88LJ",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 120,
+      "sku": "RH-ASWA-ER34",
+      "asin": "B0H85JR6WN",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 121,
+      "sku": "PJ-ASDX-E8LW",
+      "asin": "B0H85MGP35",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 122,
+      "sku": "BD-AS8P-XAW5",
+      "asin": "B0H85MXFH8",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 123,
+      "sku": "TL-ASHN-ZRKG",
+      "asin": "B0H85P9F3R",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 124,
+      "sku": "VA-ASOK-QJCA",
+      "asin": "B0H85RZDX5",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 125,
+      "sku": "AN-ASUW-49Y5",
+      "asin": "B0H8628LW3",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 126,
+      "sku": "NM-ASEW-S2SK",
+      "asin": "B0H86TVN3C",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 127,
+      "sku": "RS-AS47-M3K3",
+      "asin": "B0H87748WJ",
+      "count": 24,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 76.99,
+      "floor_price": 66.95,
+      "effective_price": 66.98,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 66.98,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 128,
+      "sku": "GG-ASNC-C9WA",
+      "asin": "B0H8219Z7T",
+      "count": 30,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 74.81,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 129,
+      "sku": "JS-AS5F-QB8T",
+      "asin": "B0H822TJ7C",
+      "count": 30,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 74.81,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 130,
+      "sku": "GR-AS0R-YPCF",
+      "asin": "B0H82GJ292",
+      "count": 30,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 74.81,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 131,
+      "sku": "ZX-AS2C-GT8Q",
+      "asin": "B0H82L3LRT",
+      "count": 30,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 74.81,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 132,
+      "sku": "ZH-AS8W-G5MN",
+      "asin": "B0H82LMD9Z",
+      "count": 30,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 74.81,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 133,
+      "sku": "EW-ASJ9-E79N",
+      "asin": "B0H82MT74H",
+      "count": 30,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 74.81,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 134,
+      "sku": "HU-ASMI-DN3X",
+      "asin": "B0H82YMT6K",
+      "count": 30,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 74.81,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 135,
+      "sku": "TP-AS91-8PAZ",
+      "asin": "B0H835T5HN",
+      "count": 30,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 74.81,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 136,
+      "sku": "MP-ASZ9-TKE7",
+      "asin": "B0H837HLKC",
+      "count": 30,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 74.81,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 137,
+      "sku": "EW-ASWP-PMZX",
+      "asin": "B0H891WSZ9",
+      "count": 30,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 85.99,
+      "floor_price": 74.75,
+      "effective_price": 74.81,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 74.81,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 138,
+      "sku": "XE-ASK1-BNRB",
+      "asin": "B0H81WMJBP",
+      "count": 45,
+      "arm": "B",
+      "lever": "SALEPRICE_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": {
+        "value_with_tax": 115.27,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 139,
+      "sku": "ZB-ASKL-9W8G",
+      "asin": "B0H82LKBYH",
+      "count": 45,
+      "arm": "B",
+      "lever": "SALEPRICE_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": {
+        "value_with_tax": 115.27,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 140,
+      "sku": "XJ-ASVD-CDMW",
+      "asin": "B0H82MSTD9",
+      "count": 45,
+      "arm": "B",
+      "lever": "SALEPRICE_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": {
+        "value_with_tax": 115.27,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 141,
+      "sku": "VC-ASQE-L5Z5",
+      "asin": "B0H82QYM85",
+      "count": 45,
+      "arm": "B",
+      "lever": "SALEPRICE_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": {
+        "value_with_tax": 115.27,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 142,
+      "sku": "FV-AS47-EJZW",
+      "asin": "B0H82SZSYJ",
+      "count": 45,
+      "arm": "B",
+      "lever": "SALEPRICE_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": {
+        "value_with_tax": 115.27,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 143,
+      "sku": "XV-ASEU-GDUX",
+      "asin": "B0H82YRTS3",
+      "count": 45,
+      "arm": "B",
+      "lever": "SALEPRICE_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": {
+        "value_with_tax": 115.27,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 144,
+      "sku": "JL-ASUC-JUZE",
+      "asin": "B0H831MXGD",
+      "count": 45,
+      "arm": "B",
+      "lever": "SALEPRICE_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": {
+        "value_with_tax": 115.27,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 145,
+      "sku": "RR-ASG1-JVKV",
+      "asin": "B0H8361PYX",
+      "count": 45,
+      "arm": "B",
+      "lever": "SALEPRICE_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": {
+        "value_with_tax": 115.27,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 146,
+      "sku": "DF-ASQT-BLUQ",
+      "asin": "B0H83FKSN6",
+      "count": 45,
+      "arm": "B",
+      "lever": "SALEPRICE_12",
+      "base_price": 130.99,
+      "floor_price": 114.27,
+      "effective_price": 115.27,
+      "discount_percent": 12,
+      "sale_price_schedule": {
+        "value_with_tax": 115.27,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 147,
+      "sku": "EJ-ASCD-8K87",
+      "asin": "B0H82PXWKS",
+      "count": 90,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 220.1,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 148,
+      "sku": "WK-AS2R-FJUW",
+      "asin": "B0H82XBNVN",
+      "count": 90,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 220.1,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 149,
+      "sku": "UD-AS9J-QNY6",
+      "asin": "B0H834L7P6",
+      "count": 90,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 220.1,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 150,
+      "sku": "QX-ASS6-4T4F",
+      "asin": "B0H83B6TYP",
+      "count": 90,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 220.1,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 151,
+      "sku": "KP-ASYC-RN84",
+      "asin": "B0H83FYZR3",
+      "count": 90,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 220.1,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 152,
+      "sku": "RQ-ASM7-T9NN",
+      "asin": "B0H83HNB3B",
+      "count": 90,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 220.1,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 153,
+      "sku": "HD-ASEQ-MFAY",
+      "asin": "B0H83QW85C",
+      "count": 90,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 220.1,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 154,
+      "sku": "DA-ASF0-D7RG",
+      "asin": "B0H83VBTLT",
+      "count": 90,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 252.99,
+      "floor_price": 219.57,
+      "effective_price": 220.1,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 220.1,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 155,
+      "sku": "EX-ASC0-5CRL",
+      "asin": "B0H83JJW1F",
+      "count": 120,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 259.25,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 156,
+      "sku": "AY-AS5F-JEY9",
+      "asin": "B0H83MWTM7",
+      "count": 120,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 259.25,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 157,
+      "sku": "UY-AS5N-A2E4",
+      "asin": "B0H83R4M3R",
+      "count": 120,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 259.25,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 158,
+      "sku": "YM-AS7P-ZX44",
+      "asin": "B0H83S1LDG",
+      "count": 120,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 259.25,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 159,
+      "sku": "ZY-ASZ4-QM5U",
+      "asin": "B0H83T9QZV",
+      "count": 120,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 259.25,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 160,
+      "sku": "ZC-ASDC-3QMV",
+      "asin": "B0H83TSB5J",
+      "count": 120,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 259.25,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    },
+    {
+      "ordinal": 161,
+      "sku": "CN-ASG6-892G",
+      "asin": "B0H8422DQ1",
+      "count": 120,
+      "arm": "B",
+      "lever": "SALEPRICE_13",
+      "base_price": 297.99,
+      "floor_price": 258.57,
+      "effective_price": 259.25,
+      "discount_percent": 13,
+      "sale_price_schedule": {
+        "value_with_tax": 259.25,
+        "start_at": "2026-07-20T00:00:00.000Z",
+        "end_at": "2026-08-19T23:59:59.000Z"
+      }
+    }
+  ],
+  "files": {
+    "assignments": {
+      "file": "uncrustables-safe-launch-promo-assignments-161.csv",
+      "rows": 161,
+      "sha256": "e90a63d95f87a94a807da83c49378f92220f1d203c8f5e5154d8eece4cbc481f"
+    },
+    "coupons": {
+      "file": "uncrustables-safe-launch-promo-coupons-81.csv",
+      "group_rows": 5,
+      "asin_rows": 81,
+      "sha256": "fcc9e30980c143b304a24b0033164d60484f6bfb49439a9b7c468b6d95188548"
+    },
+    "sale_prices": {
+      "file": "uncrustables-safe-launch-promo-sales-price-80.csv",
+      "rows": 80,
+      "sha256": "b40254aa120584a8dec0c34a4fb30e1d5549089329373d9c536e7afbb2db194d"
+    }
+  },
+  "execution_gate": {
+    "this_artifact_does_not_authorize_execution": true,
+    "separate_current_owner_approval_required": true,
+    "fresh_amazon_preflight_required": true,
+    "fresh_channelmax_manual_readback_required": true,
+    "identity_holds_must_remain_excluded": true
+  },
+  "body_sha256": "869328ee0bcce272815f3e462743a1312b3d0dee15c1e835e92166828d621b69"
+}

@@ -29,6 +29,16 @@ function db(): Client {
 
 const num = (v: any): number => Number(v || 0);
 
+const LATEST_RETAIL_COST = `WITH latest_cost AS (
+  SELECT * FROM (
+    SELECT c.*, ROW_NUMBER() OVER (
+      PARTITION BY c.sku
+      ORDER BY COALESCE(c.effectiveDate,'') DESC, c.updatedAt DESC, c.createdAt DESC
+    ) AS rn
+    FROM "SkuCost" c WHERE c.source='retail:batch'
+  ) ranked WHERE rn=1
+)`;
+
 export async function GET(request: NextRequest) {
   try {
     return await handle(request);
@@ -49,10 +59,10 @@ async function handle(request: NextRequest) {
   const offset = Math.max(0, parseInt(p.get("offset") || "0", 10));
 
   // ── Summary (coverage + method mix) ──────────────────────────────────────
-  const wmRem = await conn.execute(`SELECT COUNT(*) AS n FROM WalmartCatalogItem w LEFT JOIN "SkuCost" c ON c.sku=w.sku AND c.source='retail:batch' WHERE w.publishedStatus='PUBLISHED' AND c.sku IS NULL`);
+  const wmRem = await conn.execute(`${LATEST_RETAIL_COST} SELECT COUNT(*) AS n FROM WalmartCatalogItem w LEFT JOIN latest_cost c ON c.sku=w.sku WHERE w.publishedStatus='PUBLISHED' AND c.sku IS NULL`);
   const wmTot = await conn.execute(`SELECT COUNT(*) AS n FROM WalmartCatalogItem WHERE publishedStatus='PUBLISHED'`);
-  const costedTot = await conn.execute(`SELECT COUNT(*) AS n FROM "SkuCost" WHERE source='retail:batch'`);
-  const reviewTot = await conn.execute(`SELECT COUNT(*) AS n FROM "SkuCost" WHERE source='retail:batch' AND needsReview=1`);
+  const costedTot = await conn.execute(`${LATEST_RETAIL_COST} SELECT COUNT(*) AS n FROM latest_cost`);
+  const reviewTot = await conn.execute(`${LATEST_RETAIL_COST} SELECT COUNT(*) AS n FROM latest_cost WHERE needsReview=1`);
   const byMethodRows = (await conn.execute(`SELECT costMethod AS m, COUNT(DISTINCT sku) AS n FROM "SkuComponent" GROUP BY costMethod`)).rows;
   const byMethod: Record<string, number> = {};
   for (const r of byMethodRows as any[]) byMethod[r.m || "none"] = num(r.n);
@@ -75,8 +85,8 @@ async function handle(request: NextRequest) {
     let where = `w.publishedStatus='PUBLISHED' AND c.sku IS NULL`;
     if (q) { where += ` AND (lower(w.sku) LIKE ? OR lower(w.title) LIKE ?)`; args.push(`%${q}%`, `%${q}%`); }
     const rows = (await conn.execute({
-      sql: `SELECT w.sku, w.title FROM WalmartCatalogItem w
-            LEFT JOIN "SkuCost" c ON c.sku=w.sku AND c.source='retail:batch'
+      sql: `${LATEST_RETAIL_COST} SELECT w.sku, w.title FROM WalmartCatalogItem w
+            LEFT JOIN latest_cost c ON c.sku=w.sku
             WHERE ${where} ORDER BY w.syncedAt DESC LIMIT ? OFFSET ?`,
       args: [...args, limit, offset],
     })).rows;
@@ -99,12 +109,12 @@ async function handle(request: NextRequest) {
   else if (channel === "amazon") conds.push(`w.sku IS NULL`);
 
   const rows = (await conn.execute({
-    sql: `SELECT c.sku, c.totalCost, c.costPerUnit, c.packSize, c.confidence, c.needsReview, c.notes, c.updatedAt,
+    sql: `${LATEST_RETAIL_COST} SELECT c.sku, c.totalCost, c.costPerUnit, c.packSize, c.confidence, c.needsReview, c.notes, c.updatedAt,
                  COALESCE(w.title, ssd.productTitle, ssd.baseUnitDesc) AS title,
                  (SELECT COUNT(*) FROM "SkuComponent" sc WHERE sc.sku=c.sku) AS compCount,
                  (SELECT GROUP_CONCAT(DISTINCT sc.costMethod) FROM "SkuComponent" sc WHERE sc.sku=c.sku) AS methods,
                  CASE WHEN w.sku IS NOT NULL THEN 'walmart' ELSE 'amazon' END AS channel
-          FROM "SkuCost" c
+          FROM latest_cost c
           LEFT JOIN WalmartCatalogItem w ON w.sku=c.sku
           LEFT JOIN SkuShippingData ssd ON ssd.sku=c.sku
           WHERE ${conds.join(" AND ")}

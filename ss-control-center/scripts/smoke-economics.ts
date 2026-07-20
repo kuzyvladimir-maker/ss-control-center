@@ -9,12 +9,13 @@ import { loadSkuEconomics } from "@/lib/economics/resolve-sku";
   console.log(
     `store ${store} / ${marketplace}: total=${s.total} cogsMissing=${s.cogsMissing} belowTarget=${s.belowTargetMargin}`,
   );
-  console.log("\nFirst 8 rows (worst margin first):");
+  console.log("\nFirst 8 rows (blocked first, then worst margin):");
   for (const r of s.rows.slice(0, 8)) {
+    const margin = r.marginPct == null ? "BLOCKED" : `${(r.marginPct * 100).toFixed(1)}%`;
     console.log(
       `  ${r.sku.padEnd(16)} price=${r.breakdown.itemPrice} cogs=${r.breakdown.cogs} ` +
         `pkg=${r.breakdown.packaging} ref=${r.breakdown.referralFee} ship=${r.breakdown.ownShipping} ` +
-        `profit=${r.profit} margin=${(r.marginPct * 100).toFixed(1)}% [${r.flags.join(",")}]`,
+        `profit=${r.profit ?? "BLOCKED"} margin=${margin} [${r.flags.join(",")}]`,
     );
   }
   process.exit(0);

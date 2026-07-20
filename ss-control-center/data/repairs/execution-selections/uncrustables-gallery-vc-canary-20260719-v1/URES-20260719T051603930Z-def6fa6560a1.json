@@ -1,0 +1,42 @@
+{
+  "schema_version": "uncrustables-repair-execution-selection/v1",
+  "immutable": true,
+  "created_at": "2026-07-19T05:16:03.930Z",
+  "profile": "GALLERY_MEDIA_ONLY_V1",
+  "source_plan": {
+    "path": "data/repairs/gallery-minimal/uncrustables-minimal-gallery-repair-3-20260719-v1/URP-20260719T043835682Z-f8f6e736cb20.json",
+    "sha256": "f8f6e736cb2009291f2d0f1c34f9f2e5390a7b1322ab77d2a67e545019570e3e"
+  },
+  "requested_skus": [
+    "VC-ASV1-378P"
+  ],
+  "limit": null,
+  "requested_action_kinds": [
+    "MEDIA"
+  ],
+  "selected_skus": [
+    "VC-ASV1-378P"
+  ],
+  "selected_action_ids": [
+    "VC-ASV1-378P:media"
+  ],
+  "selected_actions": 1,
+  "forbidden_patch_paths": [
+    "/attributes/allergen_information",
+    "/attributes/bullet_point",
+    "/attributes/each_unit_count",
+    "/attributes/ingredients",
+    "/attributes/is_expiration_dated_product",
+    "/attributes/item_name",
+    "/attributes/item_package_quantity",
+    "/attributes/list_price",
+    "/attributes/main_product_image_locator",
+    "/attributes/merchant_shipping_group",
+    "/attributes/number_of_items",
+    "/attributes/product_description",
+    "/attributes/purchasable_offer",
+    "/attributes/unit_count"
+  ],
+  "sha256": "def6fa6560a1936c6898913b4d20923bba21f06effb650fb76729001d360f83d",
+  "confirmation_token": "APPLY-UNCRUSTABLES-SELECTION-DEF6FA6560A1936C"
+}

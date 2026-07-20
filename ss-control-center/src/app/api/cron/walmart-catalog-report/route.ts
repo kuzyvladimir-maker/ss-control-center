@@ -1,11 +1,10 @@
 /**
  * GET /api/cron/walmart-catalog-report
  *
- * Drives the FULL-catalog ITEM report state machine one step per tick (request →
- * poll → download → replace the WalmartCatalogItem mirror). This is the AUTHORITATIVE
- * catalog source — it matches Seller Center (all statuses), unlike the /v3/items sync
- * which under-reports. The /reports rate bucket is tiny, so one step per tick + a
- * ~daily re-request keeps us well under it.
+ * Continues an already-existing FULL-catalog ITEM report one step per tick
+ * (poll → download → replace the WalmartCatalogItem mirror). Legacy report-create
+ * POSTs are retired: this route never originates a new ITEM report. A replacement
+ * request is allowed only through the owner-permitted canonical capture engine.
  *
  * We have one Walmart account (store 1). Auth: Bearer CRON_SECRET like the others.
  */

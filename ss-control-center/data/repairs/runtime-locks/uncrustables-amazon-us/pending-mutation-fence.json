@@ -1,7 +1,0 @@
-{
-  "schema_version": "uncrustables-amazon-pending-mutation-fence/v1",
-  "repair_plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
-  "claimed_at": "2026-07-18T15:13:25.321Z",
-  "process_id": 72037,
-  "purpose": "OFFER_SUBMIT_ONLY:URP-20260718T083203612Z"
-}

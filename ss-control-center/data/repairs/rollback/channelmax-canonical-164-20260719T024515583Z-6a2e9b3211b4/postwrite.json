@@ -1,0 +1,1641 @@
+{
+  "confirmed_at": "2026-07-19T02:45:32.375Z",
+  "identity_holds": [
+    {
+      "asin": "B0H75VN18Z",
+      "reason": "AMAZON_8541_PRODUCT_IDENTITY_BLOCKER",
+      "sku": "SZ-ASPI-JFAT"
+    },
+    {
+      "asin": "B0H84WQRXB",
+      "reason": "AMAZON_8541_PRODUCT_IDENTITY_BLOCKER",
+      "sku": "TY-AST2-JE9P"
+    },
+    {
+      "asin": "B0H82PKK18",
+      "reason": "CHANNELMAX_ASIN_IDENTITY_MISMATCH",
+      "sku": "VN-AS1A-D572"
+    }
+  ],
+  "prewrite": {
+    "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/rollback/channelmax-canonical-164-20260719T024515583Z-6a2e9b3211b4/prewrite.json",
+    "sha256": "ad5481a12b1543f5508e37723844f0c78077d8991d3cb24d49818fc6a4f31da7"
+  },
+  "schema_version": "channelmax-uncrustables-canonical-postwrite/v1",
+  "source": {
+    "matrix": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/audits/uncrustables-price-action-matrix-20260719-v1/uncrustables-price-action-matrix-20260719-v1.csv",
+    "matrix_sha256": "6783173b9b3903db5ac53976dfb4e7286b04cf6e4b36e3d7be7ef1310eccce55",
+    "policy_sha256": "6a2e9b3211b45c839b03ac71344ce5ef101c592715a3d9f3106008fecf20a391"
+  },
+  "summary": {
+    "already_canonical_before": 9,
+    "amazon_mutations": 0,
+    "cohort_rows": 164,
+    "final_candidate_mismatches": 0,
+    "identity_hold_rows": 3,
+    "repricing_model_changes": 0,
+    "result": "PASS",
+    "updated_rows": 152,
+    "wave_count": 13
+  },
+  "waves": [
+    {
+      "confirmed_at": "2026-07-19T02:45:16.580Z",
+      "rows": [
+        {
+          "asin": "B0H82ZZS2P",
+          "item_id": 171130303,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "AC-AS4J-B64F",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82J6V9T",
+          "item_id": 171127875,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "AD-AS4H-QXZD",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85B64V2",
+          "item_id": 171137191,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "AG-ASKV-W9EN",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H84G7DHC",
+          "item_id": 171136197,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "AJ-ASRB-HKC3",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H8628LW3",
+          "item_id": 171141049,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "AN-ASUW-49Y5",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H843Q9B5",
+          "item_id": 171136198,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "AU-AS97-USX8",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82JTY19",
+          "item_id": 171129824,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "AV-AS7X-8EXK",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83MWTM7",
+          "item_id": 171135452,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "AY-AS5F-JEY9",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H788M8WM",
+          "item_id": 171037333,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "AZ-ASMY-VEQ2",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H86Z59DW",
+          "item_id": 171152946,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "BD-ASGH-LREJ",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H853MCYZ",
+          "item_id": 171137192,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "BH-AS7H-D4FV",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83S368B",
+          "item_id": 171134976,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "BH-ASVY-CR8H",
+          "write": "SUCCESS"
+        }
+      ],
+      "wave": 1
+    },
+    {
+      "confirmed_at": "2026-07-19T02:45:17.501Z",
+      "rows": [
+        {
+          "asin": "B0H85JF1V1",
+          "item_id": 171138012,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "BK-AS5Z-8UY5",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83LSCQQ",
+          "item_id": 171134977,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "BM-AS5J-3MQY",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H842HL49",
+          "item_id": 171135454,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "BQ-ASUE-NT37",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83NM5PX",
+          "item_id": 171135455,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "BX-AS5P-6WQV",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83789KC",
+          "item_id": 171131789,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "BY-ASY2-8UJJ",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H84651LM",
+          "item_id": 171135456,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "CE-ASGK-ZRHM",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H86PRTWS",
+          "item_id": 171152947,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "CK-ASUM-WT9W",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H8422DQ1",
+          "item_id": 171135457,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "CN-ASG6-892G",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83VBTLT",
+          "item_id": 171134978,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "DA-ASF0-D7RG",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83FKSN6",
+          "item_id": 171134979,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "DF-ASQT-BLUQ",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83Y8JH7",
+          "item_id": 171135458,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "DP-ASQ6-ZPZU",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82MKPRJ",
+          "item_id": 171130304,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "DY-AS8W-6MJG",
+          "write": "SUCCESS"
+        }
+      ],
+      "wave": 2
+    },
+    {
+      "confirmed_at": "2026-07-19T02:45:18.836Z",
+      "rows": [
+        {
+          "asin": "B0H83XB855",
+          "item_id": 171135459,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "EF-AS4A-JCLU",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82PXWKS",
+          "item_id": 171130305,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "EJ-ASCD-8K87",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H84JH1WN",
+          "item_id": 171136199,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "ER-ASRK-TPYQ",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83D8TFQ",
+          "item_id": 171134980,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "ES-AS8A-3W3M",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82MT74H",
+          "item_id": 171129825,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "EW-ASJ9-E79N",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H891WSZ9",
+          "item_id": 171168993,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "EW-ASWP-PMZX",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83JJW1F",
+          "item_id": 171135460,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "EX-ASC0-5CRL",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83GBJLW",
+          "item_id": 171134981,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "EZ-ASLA-Y7MZ",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H8259J9G",
+          "item_id": 171129415,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "FK-AS6B-6G25",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H853VHRF",
+          "item_id": 171138013,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "FM-AS51-S4MT",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85J88LJ",
+          "item_id": 171140439,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "FN-ASVM-UWAG",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H827V9DJ",
+          "item_id": 171129416,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "FR-AS6X-5KJY",
+          "write": "SUCCESS"
+        }
+      ],
+      "wave": 3
+    },
+    {
+      "confirmed_at": "2026-07-19T02:45:20.010Z",
+      "rows": [
+        {
+          "asin": "B0H82SZSYJ",
+          "item_id": 171130306,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "FV-AS47-EJZW",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H827J2XZ",
+          "item_id": 171127876,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "FX-AS2W-KHZT",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H8219Z7T",
+          "item_id": 171127751,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "GG-ASNC-C9WA",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82GJ292",
+          "item_id": 171129826,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "GR-AS0R-YPCF",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82S7TFG",
+          "item_id": 171129827,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "GR-AS1P-DBB2",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H828GQLP",
+          "item_id": 171127877,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "GU-ASQ1-S7M6",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83XV9WX",
+          "item_id": 171135461,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "GX-ASTJ-WHV3",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85V287S",
+          "item_id": 171141051,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "HA-ASCR-ME3A",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83QW85C",
+          "item_id": 171134982,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "HD-ASEQ-MFAY",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H856RRRK",
+          "item_id": 171140440,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "HR-AS7Q-7ZDF",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82YMT6K",
+          "item_id": 171131790,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "HU-ASMI-DN3X",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H832SD15",
+          "item_id": 171130307,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "HX-ASO8-XCL2",
+          "write": "SUCCESS"
+        }
+      ],
+      "wave": 4
+    },
+    {
+      "confirmed_at": "2026-07-19T02:45:20.915Z",
+      "rows": [
+        {
+          "asin": "B0H857K38C",
+          "item_id": 171138014,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "HZ-ASPS-4L22",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H84ZL156",
+          "item_id": 171140441,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "JC-ASM4-XXW7",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H8369PMK",
+          "item_id": 171130308,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "JH-ASV9-Z46X",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H831MXGD",
+          "item_id": 171130309,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "JL-ASUC-JUZE",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H822TJ7C",
+          "item_id": 171129828,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "JS-AS5F-QB8T",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83Z6S3Q",
+          "item_id": 171135462,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "JT-ASKD-KS8T",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H8462L4S",
+          "item_id": 171136200,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "JU-ASM0-KV4Z",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H854C7SZ",
+          "item_id": 171138015,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "JU-ASYC-SSJD",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H84621N6",
+          "item_id": 171136201,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "JY-ASPW-LB4K",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83XBXHX",
+          "item_id": 171135463,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "KN-ASYZ-ST4M",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83FYZR3",
+          "item_id": 171134983,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "KP-ASYC-RN84",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82XNFRW",
+          "item_id": 171130310,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "LH-ASP7-KZR4",
+          "write": "SUCCESS"
+        }
+      ],
+      "wave": 5
+    },
+    {
+      "confirmed_at": "2026-07-19T02:45:21.955Z",
+      "rows": [
+        {
+          "asin": "B0H853SHVC",
+          "item_id": 171138016,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "LJ-ASYO-FWJK",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H84CGGXL",
+          "item_id": 171136203,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "LK-AS7X-K43B",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82B7KK1",
+          "item_id": 171129417,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "LP-AS9J-HSVB",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H84YZDB7",
+          "item_id": 171140442,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "LU-ASK0-LSDF",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83RVHNF",
+          "item_id": 171134984,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "ME-AS1I-SEX2",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82NHQCL",
+          "item_id": 171127878,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "MF-AS0J-YRT4",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H84Z9KWL",
+          "item_id": 171138017,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "MP-ASYO-QNU2",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H837HLKC",
+          "item_id": 171131791,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "MP-ASZ9-TKE7",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83QRV43",
+          "item_id": 171135464,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "NC-ASPL-EXE8",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82X48CD",
+          "item_id": 171134985,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "NJ-ASAC-PTK2",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H86TVN3C",
+          "item_id": 171152948,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "NM-ASEW-S2SK",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82L945T",
+          "item_id": 171129829,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "NS-ASSD-B3JJ",
+          "write": "SUCCESS"
+        }
+      ],
+      "wave": 6
+    },
+    {
+      "confirmed_at": "2026-07-19T02:45:22.741Z",
+      "rows": [
+        {
+          "asin": "B0H85KQJKS",
+          "item_id": 171141052,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "NV-AS86-HD44",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82K7Y7S",
+          "item_id": 171129418,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "PB-ASAF-G2T6",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82T12L7",
+          "item_id": 171130311,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "PJ-ASAX-6LTG",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85MGP35",
+          "item_id": 171138018,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "PJ-ASDX-E8LW",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83RR2XQ",
+          "item_id": 171134986,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "PL-ASR9-U94A",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H84CDNQG",
+          "item_id": 171136205,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "PP-AS23-SPLQ",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82L74PL",
+          "item_id": 171129830,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "PR-AS79-8SDF",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H84Z6QWY",
+          "item_id": 171138019,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "PT-AS5B-Z2XH",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83H71F8",
+          "item_id": 171135465,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "PU-AS3D-SA5Z",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H839TPC5",
+          "item_id": 171134987,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "PW-ASDZ-CSR8",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82B7GV5",
+          "item_id": 171129831,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "PY-ASBM-WX6W",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83TQPJB",
+          "item_id": 171135466,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "QC-ASX2-RHPA",
+          "write": "SUCCESS"
+        }
+      ],
+      "wave": 7
+    },
+    {
+      "confirmed_at": "2026-07-19T02:45:23.726Z",
+      "rows": [
+        {
+          "asin": "B0H82CBLRM",
+          "item_id": 171129832,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "QE-ASEQ-4YV5",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85DG2JQ",
+          "item_id": 171138020,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "QP-ASAD-PTLX",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83MDDBL",
+          "item_id": 171135467,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "QW-ASRZ-SYKC",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83B6TYP",
+          "item_id": 171134988,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "QX-ASS6-4T4F",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H859N8VM",
+          "item_id": 171140443,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "RB-ASVO-GYCY",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85JR6WN",
+          "item_id": 171137193,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "RH-ASWA-ER34",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82LZLM2",
+          "item_id": 171129833,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "RL-AS64-Q8QX",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H822CVVL",
+          "item_id": 171129834,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "RM-ASCV-DVA5",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82JYZQH",
+          "item_id": 171129835,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "RN-ASLP-VH3X",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85GR968",
+          "item_id": 171140444,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "RQ-AS78-STLZ",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83HNB3B",
+          "item_id": 171134989,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "RQ-ASM7-T9NN",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H8361PYX",
+          "item_id": 171134990,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "RR-ASG1-JVKV",
+          "write": "SUCCESS"
+        }
+      ],
+      "wave": 8
+    },
+    {
+      "confirmed_at": "2026-07-19T02:45:24.951Z",
+      "rows": [
+        {
+          "asin": "B0H87748WJ",
+          "item_id": 171152949,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "RS-AS47-M3K3",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83SJFR7",
+          "item_id": 171135468,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "RU-ASC3-4TUS",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H8493HNR",
+          "item_id": 171136206,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "RY-ASMO-6N4F",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H84XMG42",
+          "item_id": 171137195,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "RY-ASO3-24Q2",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85PJ516",
+          "item_id": 171141053,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "RZ-AS26-WLRM",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82XP1MM",
+          "item_id": 171129836,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "SA-ASCK-J2B2",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82SMZ2M",
+          "item_id": 171130312,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "SA-ASDW-SNEW",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H856DWVS",
+          "item_id": 171141054,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "SC-ASH8-4RQG",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H8564C6D",
+          "item_id": 171136207,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "SG-AS32-LZ9Y",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H84PFKYC",
+          "item_id": 171136208,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "SG-ASLB-M2DG",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83ZH3TB",
+          "item_id": 171136209,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "SH-ASO0-PW37",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H831889Q",
+          "item_id": 171130313,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "SS-AS9K-U9TV",
+          "write": "SUCCESS"
+        }
+      ],
+      "wave": 9
+    },
+    {
+      "confirmed_at": "2026-07-19T02:45:25.733Z",
+      "rows": [
+        {
+          "asin": "B0H853HGHC",
+          "item_id": 171140445,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "SU-ASS4-RV6R",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83ZGN22",
+          "item_id": 171135469,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "SV-AS87-D6SV",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H845HSDZ",
+          "item_id": 171136210,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "TH-AS6D-CCES",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85P9F3R",
+          "item_id": 171141055,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "TL-ASHN-ZRKG",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H835T5HN",
+          "item_id": 171129837,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "TP-AS91-8PAZ",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82BCZ44",
+          "item_id": 171129838,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "TQ-ASBR-96TC",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H839G6RQ",
+          "item_id": 171134991,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "TQ-ASC4-P2NP",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H784LMG6",
+          "item_id": 171037334,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "UA-ASAO-RE7Q",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H834L7P6",
+          "item_id": 171130314,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "UD-AS9J-QNY6",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83ZHZ4S",
+          "item_id": 171136211,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "UE-ASA6-CLLY",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H854DM3X",
+          "item_id": 171140446,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "UF-ASA1-GN5P",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83FP8WW",
+          "item_id": 171134992,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "UG-ASUO-L4D9",
+          "write": "SUCCESS"
+        }
+      ],
+      "wave": 10
+    },
+    {
+      "confirmed_at": "2026-07-19T02:45:26.973Z",
+      "rows": [
+        {
+          "asin": "B0H82P651P",
+          "item_id": 171129420,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "UJ-ASQ1-9FNR",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83R4M3R",
+          "item_id": 171135470,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "UY-AS5N-A2E4",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85RZDX5",
+          "item_id": 171141056,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "VA-ASOK-QJCA",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82QYM85",
+          "item_id": 171129839,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "VC-ASQE-L5Z5",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H856VWD6",
+          "item_id": 171138021,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "VH-ASHZ-TJEE",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85FY28F",
+          "item_id": 171137197,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "VK-ASSB-3YFK",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H8538L32",
+          "item_id": 171140447,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "VN-AS6Q-5AE9",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85CL8JD",
+          "item_id": 171138022,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "VT-ASTH-B6LM",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H833W54L",
+          "item_id": 171131792,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "WC-ASH5-EFN6",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82XBNVN",
+          "item_id": 171130316,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 252.99,
+          "minimum_price": 219.57,
+          "price": 252.99,
+          "sku": "WK-AS2R-FJUW",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H843R64X",
+          "item_id": 171135471,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "WK-AS7E-M3CE",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85CF81Y",
+          "item_id": 171138023,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "WK-ASPD-G9HL",
+          "write": "SUCCESS"
+        }
+      ],
+      "wave": 11
+    },
+    {
+      "confirmed_at": "2026-07-19T02:45:27.764Z",
+      "rows": [
+        {
+          "asin": "B0H83RCTVV",
+          "item_id": 171135472,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "WN-AS33-UFEA",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H859VYXH",
+          "item_id": 171140448,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "WR-ASR5-AVWE",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H85DF1R7",
+          "item_id": 171137198,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "WZ-ASXK-ZFAS",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H81WMJBP",
+          "item_id": 171127879,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "XE-ASK1-BNRB",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82MSTD9",
+          "item_id": 171129840,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "XJ-ASVD-CDMW",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82YRTS3",
+          "item_id": 171130317,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "XV-ASEU-GDUX",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H858GF4N",
+          "item_id": 171137199,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "XW-ASSI-SZZT",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82YB4PD",
+          "item_id": 171129841,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "YA-ASX6-PZE7",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H822MPKC",
+          "item_id": 171129842,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "YF-ASZJ-8BBH",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H8511Y5G",
+          "item_id": 171138024,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "YG-ASH6-BCXX",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82QPCJL",
+          "item_id": 171130318,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "YH-ASQ8-45ED",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83S1LDG",
+          "item_id": 171135473,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "YM-AS7P-ZX44",
+          "write": "SUCCESS"
+        }
+      ],
+      "wave": 12
+    },
+    {
+      "confirmed_at": "2026-07-19T02:45:28.402Z",
+      "rows": [
+        {
+          "asin": "B0H859JMGJ",
+          "item_id": 171138025,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "YV-AST8-LMKN",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82LKBYH",
+          "item_id": 171130319,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 130.99,
+          "minimum_price": 114.27,
+          "price": 130.99,
+          "sku": "ZB-ASKL-9W8G",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83TSB5J",
+          "item_id": 171135474,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "ZC-ASDC-3QMV",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H8531B8B",
+          "item_id": 171140450,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "ZE-AS5W-FKH3",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82LMD9Z",
+          "item_id": 171129843,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "ZH-AS8W-G5MN",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H82L3LRT",
+          "item_id": 171129844,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 85.99,
+          "minimum_price": 74.75,
+          "price": 85.99,
+          "sku": "ZX-AS2C-GT8Q",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H84PVG1G",
+          "item_id": 171138027,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 76.99,
+          "minimum_price": 66.95,
+          "price": 76.99,
+          "sku": "ZX-ASQU-TKU9",
+          "write": "SUCCESS"
+        },
+        {
+          "asin": "B0H83T9QZV",
+          "item_id": 171135475,
+          "last_updated_by": "salutem-MB",
+          "maximum_price": 297.99,
+          "minimum_price": 258.57,
+          "price": 297.99,
+          "sku": "ZY-ASZ4-QM5U",
+          "write": "SUCCESS"
+        }
+      ],
+      "wave": 13
+    }
+  ]
+}

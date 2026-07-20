@@ -16,6 +16,9 @@
 import { config } from "dotenv";
 config({ path: ".env.local" }); config({ path: ".env" });
 import { createClient } from "@libsql/client";
+import { assertMeteredProviderCall } from "@/lib/sourcing/metered-call-guard";
+
+throw new Error("LEGACY_COGS_MUTATION_SCRIPT_DISABLED: use immutable Product Truth observations and append-only SkuCost");
 
 const clean = (v?: string) => (v || "").trim().replace(/^['"]|['"]$/g, "");
 const KEY = clean(process.env.UNWRANGLE_API_KEY);
@@ -29,6 +32,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 async function liveDetail(retailer: string, url: string): Promise<{ price: number | null; is1P: boolean; inStock: boolean } | null> {
   const platform = DETAIL[retailer];
   if (!platform || !url) return null;
+  assertMeteredProviderCall({ provider: "unwrangle", operation: "detail", units: retailer === "walmart" ? 2.5 : 1 });
   try {
     const r = await fetch(`https://data.unwrangle.com/api/getter/?platform=${platform}&url=${encodeURIComponent(url)}&api_key=${KEY}`, { signal: AbortSignal.timeout(25000) });
     if (!r.ok) return null;
@@ -60,6 +64,7 @@ async function liveDetail(retailer: string, url: string): Promise<{ price: numbe
 
   let idx = 0, confirmed = 0, corrected = 0, rejected = 0, skipped = 0;
   // Seed the real credit balance so the FLOOR guard actually protects the pool.
+  assertMeteredProviderCall({ provider: "unwrangle", operation: "balance_probe" });
   let credits = await fetch(`https://data.unwrangle.com/api/getter/?platform=target_search&search=water&api_key=${KEY}`, { signal: AbortSignal.timeout(20000) })
     .then((r) => r.json()).then((j: any) => Number(j?.remaining_credits ?? 0)).catch(() => 0);
   console.log(`starting credits: ${credits}`);

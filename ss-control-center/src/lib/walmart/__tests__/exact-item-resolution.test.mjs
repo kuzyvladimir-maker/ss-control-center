@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   EXACT_ITEM_RESOLUTION_SCHEMA,
+  extractExactSellerCatalogLookup,
   resolveExactWalmartItemCandidate,
 } from "../exact-item-resolution.ts";
 
@@ -36,6 +37,20 @@ function catalogItem(overrides = {}) {
     ...overrides,
   };
 }
+
+test("extracts the exact seller UPC/GTIN for catalog search without choosing another row", () => {
+  const lookup = extractExactSellerCatalogLookup(sku, {
+    ItemResponse: [
+      { ...seller().ItemResponse[0], sku: "Wrong-SKU", upc: "111111111111" },
+      seller().ItemResponse[0],
+    ],
+  });
+  assert.deepEqual(lookup, {
+    sku,
+    upc: "684611898401",
+    gtin14: "00684611898401",
+  });
+});
 
 test("resolves exact GTIN duplicates to one catalog candidate, never a PDP verification", () => {
   const result = resolveExactWalmartItemCandidate(sku, seller(), {

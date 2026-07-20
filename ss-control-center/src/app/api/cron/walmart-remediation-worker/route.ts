@@ -1,212 +1,52 @@
 /**
- * GET /api/cron/walmart-remediation-worker
+ * RETIRED: legacy Walmart remediation worker.
  *
- * Drains WalmartRemediationQueue — this is the always-on engine behind the
- * Listing Optimizer's "Run optimization" button. Vercel is serverless (no
- * persistent loop), so a frequent cron tick gives the same effect: each run
- * peeks at the queue and, if there's work, advances it.
- *
- * Because Walmart processes feeds asynchronously (minutes→hours), the heavy
- * pipeline is split across ticks so each stays inside the serverless budget:
- *   1. FINALIZE — for rows already 'submitted', poll the feed once; terminal →
- *      mark done/error + flip the analytics row to ok so measure-after runs.
- *   2. DRAIN    — take a few 'queued' rows, build + submit the partial feed
- *      (scope-aware), log the before-snapshot, mark 'submitted' with the feedId.
- *
- * Auth: same Bearer CRON_SECRET gate as the other crons.
+ * This route previously combined ad-hoc retailer enrichment with Walmart feed
+ * submission. That bypasses the manifest-bound Product Truth read contract,
+ * owner-sealed consumer activation, the durable metered ledger, and the
+ * separate marketplace-mutation gate. Runtime configuration must not be able
+ * to revive that path. A future Listing Improvement apply flow must be exposed
+ * through a new, reviewed Product Truth entrypoint; it must not reuse this
+ * legacy route.
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@libsql/client";
-import { getWalmartClient } from "@/lib/walmart/client";
-import { buildAndSubmitOne, checkFeed, RemediateScope } from "@/lib/walmart/multipack/remediate";
-import { logRemediation } from "@/lib/walmart/multipack/analytics";
-import { bluecartCreditsRemaining } from "@/lib/sourcing/enrich";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 300;
 
-const STORE = 1;
-const DRAIN_PER_TICK = 3;       // lower rate: Wave 1 at 6/tick + overlapping ticks tripped Walmart's feed threshold (REQUEST_THRESHOLD_VIOLATED) hundreds of times
-const FINALIZE_PER_TICK = 25;   // feed-status GETs are cheap
-const TIME_BUDGET_MS = 110_000; // < the 2-min cron interval, so ticks don't overlap and burst Walmart calls
-const BLUECART_CREDIT_FLOOR = 300; // stop on-demand enrichment below this to protect the monthly allotment
-const MAX_ATTEMPTS = 6;         // give a rate-limited SKU several retries before giving up
-const INTER_SKU_MS = 2000;      // space out SKUs so a burst doesn't trip the threshold
-const BATCH_TARGET = 120;       // account safety: never expose more than this many listings in-flight at once
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-// Walmart "REQUEST_THRESHOLD_VIOLATED" / 429 are transient — retry, don't fail.
-const isRetryable = (s: string) => /REQUEST_THRESHOLD_VIOLATED|threshold|too many requests|rate.?limit|\b429\b/i.test(s || "");
+const RETIREMENT_CODE = "LEGACY_WALMART_REMEDIATION_RETIRED";
 
 function requireCronAuth(request: NextRequest): NextResponse | null {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return null; // dev/local: no gate
-  if (request.headers.get("authorization") !== `Bearer ${secret}`) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!secret) {
+    return process.env.NODE_ENV === "production"
+      ? NextResponse.json(
+          { error: "CRON_SECRET is required in production" },
+          { status: 503 },
+        )
+      : null;
+  }
+  if (request.headers.get("authorization") !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   return null;
-}
-
-function db() {
-  const url = (process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || "").trim().replace(/^['"]|['"]$/g, "");
-  const authToken = (process.env.TURSO_AUTH_TOKEN || "").trim().replace(/^['"]|['"]$/g, "") || undefined;
-  return createClient({ url, authToken });
 }
 
 export async function GET(request: NextRequest) {
   const authFail = requireCronAuth(request);
   if (authFail) return authFail;
-  const started = Date.now();
-  const conn = db();
-  const client = getWalmartClient(STORE);
-  const out = { finalized: 0, done: 0, errored: 0, submitted: 0, skipped: 0, requeued: 0, processed: [] as any[] };
 
-  // ── 0. REAP stuck 'running' rows ─────────────────────────────────────────
-  // A tick killed mid-build (serverless timeout, or the read-block outage) leaves
-  // a claimed row stuck 'running'. No tick runs >300s, so anything 'running' for
-  // 10+ min is orphaned — return it to the queue (no feed was sent yet).
-  try {
-    const reap = await conn.execute({ sql: `UPDATE WalmartRemediationQueue SET status='queued', startedAt=NULL WHERE storeIndex=? AND status='running' AND startedAt < datetime('now','-10 minutes')`, args: [STORE] });
-    (out as any).reaped = reap.rowsAffected || 0;
-  } catch { /* ignore */ }
-
-  // ── 1. FINALIZE submitted feeds ──────────────────────────────────────────
-  try {
-    const subs = await conn.execute({
-      sql: `SELECT id, sku, feedId, result FROM WalmartRemediationQueue WHERE storeIndex=? AND status='submitted' AND feedId IS NOT NULL ORDER BY finishedAt ASC LIMIT ?`,
-      args: [STORE, FINALIZE_PER_TICK],
-    });
-    for (const row of subs.rows as any[]) {
-      const feedId = String(row.feedId);
-      try {
-        const res = await checkFeed(client, feedId);
-        if (!res) continue; // still processing — leave 'submitted'
-        out.finalized++;
-
-        // Catalog-conflict (QARTH / ERR_EXT_DATA): Walmart rejects content edits
-        // on cards we don't own. Fall back to IMAGE-ONLY (the priority fix — the
-        // tiled main image isn't "product identity" so it isn't blocked). Only
-        // retry once; if image-only also fails, it's truly locked → error.
-        let imageRetry = false;
-        try { imageRetry = !!JSON.parse(row.result || "{}").imageRetry; } catch {}
-        const conflict = !res.ok && /ERR_EXT_DATA|EXT_DATA_ERROR|0101119|QARTH/i.test(res.detail);
-        if (conflict && !imageRetry) {
-          out.requeued++;
-          await conn.execute({
-            sql: `UPDATE WalmartRemediationQueue SET status='queued', startedAt=NULL, finishedAt=NULL, feedId=NULL, attempts=0, result=?, error=? WHERE id=?`,
-            args: [JSON.stringify({ scope: { image: true }, imageRetry: true }), `catalog-locked → image-only retry`, row.id],
-          });
-          await conn.execute({ sql: `UPDATE WalmartListingRemediation SET feedStatus=?, ok=0 WHERE feedId=?`, args: [res.status, feedId] });
-          continue;
-        }
-
-        if (res.ok) out.done++; else out.errored++;
-        await conn.execute({
-          sql: `UPDATE WalmartRemediationQueue SET status=?, finishedAt=CURRENT_TIMESTAMP, error=? WHERE id=?`,
-          args: [res.ok ? "done" : "error", res.ok ? (imageRetry ? "image-only applied (content catalog-locked)" : null) : res.detail, row.id],
-        });
-        // Flip the analytics row so measure-after will compute the delta.
-        await conn.execute({
-          sql: `UPDATE WalmartListingRemediation SET feedStatus=?, ok=? WHERE feedId=?`,
-          args: [res.status, res.ok ? 1 : 0, feedId],
-        });
-      } catch { /* transient feed read — retry next tick */ }
-    }
-  } catch (e) { /* table/permission issue — surfaced below via empty counts */ }
-
-  // ── 2. DRAIN queued rows: build + submit ─────────────────────────────────
-  // Budget guard: only allow on-demand BlueCart enrichment while credits are
-  // comfortably above the floor (protects the monthly allotment / $ ceiling).
-  const credits = await bluecartCreditsRemaining();
-  const allowEnrich = credits == null ? true : credits > BLUECART_CREDIT_FLOOR;
-  (out as any).bluecartCredits = credits;
-  (out as any).enrichEnabled = allowEnrich;
-  try {
-    const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + String(Date.now()).slice(-5);
-
-    // Batch gate: bound how many we're ACTIVELY pushing (queued + running) to
-    // BATCH_TARGET. 'submitted' feeds are already accepted by Walmart and just
-    // await its slow (~100min) async finalize — they're not new catalog risk, so
-    // they don't count here (otherwise they'd throttle us to Walmart's pace).
-    const activeRow = await conn.execute({ sql: `SELECT COUNT(*) c FROM WalmartRemediationQueue WHERE storeIndex=? AND status IN ('queued','running')`, args: [STORE] });
-    const active = Number((activeRow.rows[0] as any)?.c || 0);
-    if (active < BATCH_TARGET) {
-      const held = await conn.execute({ sql: `SELECT id FROM WalmartRemediationQueue WHERE storeIndex=? AND status='held' ORDER BY queuedAt ASC LIMIT ?`, args: [STORE, BATCH_TARGET - active] });
-      const ids = (held.rows as any[]).map((r) => r.id);
-      if (ids.length) {
-        await conn.execute({ sql: `UPDATE WalmartRemediationQueue SET status='queued' WHERE id IN (${ids.map(() => "?").join(",")})`, args: ids });
-        (out as any).promoted = ids.length;
-      }
-    }
-
-    while (Date.now() - started < TIME_BUDGET_MS) {
-      const q = await conn.execute({
-        // attempts ASC first: a row re-queued this tick (rate-limit) has a higher
-        // attempt count, so fresh rows are picked before it — preventing the same
-        // SKU from being re-processed (double enrichment) within one tick.
-        sql: `SELECT id, sku, result, attempts FROM WalmartRemediationQueue WHERE storeIndex=? AND status='queued' ORDER BY attempts ASC, queuedAt ASC LIMIT 1`,
-        args: [STORE],
-      });
-      const job = (q.rows as any[])[0];
-      if (!job) break;
-      // Claim it (counting the attempt) so a concurrent tick can't grab the row.
-      const attempt = Number(job.attempts || 0) + 1;
-      const claim = await conn.execute({
-        sql: `UPDATE WalmartRemediationQueue SET status='running', startedAt=CURRENT_TIMESTAMP, attempts=? WHERE id=? AND status='queued'`,
-        args: [attempt, job.id],
-      });
-      if (claim.rowsAffected === 0) continue;
-
-      let scope: RemediateScope | null = null;
-      let forceImage = false;
-      try { const r = JSON.parse(job.result || "{}"); if (r && typeof r.scope === "object") scope = r.scope; forceImage = !!r?.forceImage; } catch {}
-
-      // Transient (rate-limit) failures go back to the queue for a later tick;
-      // give up only after MAX_ATTEMPTS or for non-retryable errors.
-      const fail = async (msg: string) => {
-        if (isRetryable(msg) && attempt < MAX_ATTEMPTS) {
-          out.requeued++;
-          await conn.execute({ sql: `UPDATE WalmartRemediationQueue SET status='queued', startedAt=NULL, error=? WHERE id=?`, args: [msg.slice(0, 200), job.id] });
-        } else {
-          out.errored++;
-          await conn.execute({ sql: `UPDATE WalmartRemediationQueue SET status='error', finishedAt=CURRENT_TIMESTAMP, error=? WHERE id=?`, args: [msg.slice(0, 200), job.id] });
-        }
-      };
-
-      try {
-        const r = await buildAndSubmitOne(conn, client, job.sku, { scope, stamp, enrich: allowEnrich, storeIndex: STORE, forceImage });
-        if (r.feedId && r.meta) {
-          // Persist the generated Visible block so the QC review screen shows the
-          // full before/after without waiting on Walmart propagation.
-          const vis = r.mpItem?.Visible ? Object.values(r.mpItem.Visible)[0] : null;
-          await logRemediation(conn, {
-            sku: job.sku, wpid: r.meta.wpid, upc: r.meta.upc, buyerItemId: (r.url.match(/ip\/(\d+)/) || [])[1] || null,
-            changeType: "multipack", feedId: r.feedId, feedType: "MP_MAINTENANCE", feedStatus: "SUBMITTED", ok: false,
-            packCount: r.meta.packCount, newTitle: r.meta.newTitle ?? undefined, titleChanged: !!r.meta.newTitle,
-            bulletsCount: r.meta.bulletsCount, imagesCount: r.meta.imagesCount, descriptionLength: r.meta.descriptionLength,
-            mainImageUrl: r.meta.mainImageUrl ?? undefined, usedAiPolish: r.meta.usedAiPolish,
-            changeSummary: { contentIssues: r.meta.contentIssues, gaps: r.meta.gaps, attributesCount: r.meta.attributesCount ?? 0, content: vis },
-            notes: r.meta.gaps?.length ? `content gaps: ${r.meta.gaps.map((g: any) => g.issue).join("; ")}` : "no content gaps",
-          });
-          await conn.execute({
-            sql: `UPDATE WalmartRemediationQueue SET status='submitted', feedId=?, result=? WHERE id=?`,
-            args: [r.feedId, r.url, job.id],
-          });
-          out.submitted++;
-        } else if (r.status === "SKIP") {
-          out.skipped++;
-          await conn.execute({ sql: `UPDATE WalmartRemediationQueue SET status='skipped', finishedAt=CURRENT_TIMESTAMP, error=? WHERE id=?`, args: [r.detail || "skip", job.id] });
-        } else {
-          await fail(r.detail || r.status); // POST_FAILED — may be a transient threshold hit
-        }
-        out.processed.push({ sku: job.sku, status: r.status, feedId: r.feedId, url: r.url });
-      } catch (e: any) {
-        await fail(String(e?.message || "exception"));
-      }
-
-      await sleep(INTER_SKU_MS); // space out so a burst doesn't trip Walmart's threshold
-      if (out.submitted + out.skipped + out.errored + out.requeued >= DRAIN_PER_TICK) break;
-    }
-  } catch (e) { /* drain loop guard */ }
-
-  return NextResponse.json({ ok: true, tookMs: Date.now() - started, ...out });
+  return NextResponse.json(
+    {
+      ok: false,
+      retired: true,
+      code: RETIREMENT_CODE,
+      reason:
+        "Legacy paid sourcing and Walmart feed submission are disabled. Use the owner-gated Product Truth cutover path.",
+    },
+    {
+      status: 410,
+      headers: { "cache-control": "no-store" },
+    },
+  );
 }

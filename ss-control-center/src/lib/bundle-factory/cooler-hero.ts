@@ -553,6 +553,14 @@ export async function buildCoolerHeroWithQA(args: {
       });
       const expectedFlavors = built.plan.map((p) => packageQaFlavorLabel(p.flavor));
       const visibleBoxes = built.plan.reduce((sum, p) => sum + p.visible_boxes, 0);
+      const expectedFlavorBoxCounts = built.plan.reduce<Record<string, number>>(
+        (counts, item) => {
+          const label = packageQaFlavorLabel(item.flavor);
+          counts[label] = (counts[label] ?? 0) + item.visible_boxes;
+          return counts;
+        },
+        {},
+      );
       const qaKey = [
         built.sha256,
         String(visibleBoxes),
@@ -563,6 +571,7 @@ export async function buildCoolerHeroWithQA(args: {
         image_url: built.url,
         expected_flavors: expectedFlavors,
         expected_visible_boxes: visibleBoxes,
+        expected_flavor_box_counts: expectedFlavorBoxCounts,
       });
       last = {
         ok: qa.pass && qa.verified,

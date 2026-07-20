@@ -38,9 +38,10 @@ export async function openClawSearch(
       body: JSON.stringify({ retailer, query, zip }),
       signal: AbortSignal.timeout(90000), // a real browser is slower than an API
     });
-    if (!res.ok) return { creditsRemaining: null, offers: [], trialExhausted: false };
+    if (!res.ok) throw new Error(`OPENCLAW_GROCERY_HTTP_${res.status}`);
     const j: any = await res.json();
     const raw: any[] = Array.isArray(j?.offers) ? j.offers : [];
+    const observedAt = new Date().toISOString();
     const offers: RetailOffer[] = raw
       .filter((o) => o && o.productId && o.title)
       .map((o) => ({
@@ -50,6 +51,9 @@ export async function openClawSearch(
         currency: o.currency || "USD",
         inStock: typeof o.inStock === "boolean" ? o.inStock : null,
         productUrl: o.url || null,
+        zip,
+        localityEvidence: "zip_scoped",
+        observedAt,
         title: String(o.title),
         description: o.description || null,
         keyFeatures: Array.isArray(o.keyFeatures) ? o.keyFeatures : [],
@@ -60,7 +64,7 @@ export async function openClawSearch(
         sourceApi: "openclaw",
       } as RetailOffer));
     return { creditsRemaining: null, offers, trialExhausted: false };
-  } catch {
-    return { creditsRemaining: null, offers: [], trialExhausted: false };
+  } catch (error) {
+    throw new Error("OPENCLAW_GROCERY_SOURCE_FAILED", { cause: error });
   }
 }

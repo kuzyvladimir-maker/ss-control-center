@@ -5,8 +5,9 @@
  * - Cached access token, refreshes 60s before expiry.
  * - Rate-limit aware: respects x-current-token-count + x-next-replenish-time
  *   (sleeps automatically if tokens < 2). Exponential backoff on 429/5xx.
- * - Adds the full required header set (Authorization + WM_SEC.ACCESS_TOKEN
- *   + WM_QOS.CORRELATION_ID per request + WM_SVC.NAME + Accept) on every call.
+ * - Adds the full required US/global header set (WM_SEC.ACCESS_TOKEN,
+ *   WM_QOS.CORRELATION_ID, WM_SVC.NAME, WM_GLOBAL_VERSION, WM_MARKET, Accept)
+ *   on every business API call.
  *
  * Per-store credentials: WALMART_CLIENT_ID_STORE{N},
  * WALMART_CLIENT_SECRET_STORE{N}, WALMART_STORE{N}_NAME,
@@ -19,6 +20,8 @@ const DEFAULT_BASE_URL =
   process.env.WALMART_API_BASE_URL || "https://marketplace.walmartapis.com";
 const API_VERSION = process.env.WALMART_API_VERSION || "v3";
 const SVC_NAME = "Walmart Marketplace";
+const GLOBAL_API_VERSION = "3.1";
+const MARKET = "us";
 
 const TOKEN_REFRESH_BUFFER_MS = 60 * 1000; // refresh 60s before expiry
 const MIN_TOKENS_BEFORE_SLEEP = 2;
@@ -38,9 +41,22 @@ export interface WalmartTokenInfo {
   expiresAt: Date;
 }
 
-interface RequestOptions {
+export interface WalmartRequestOptions {
   params?: Record<string, string | number | boolean | undefined>;
   body?: unknown;
+  /**
+   * Multipart file upload. Walmart's item-feed endpoints require a
+   * `multipart/form-data` request with a binary `file` part; sending the JSON
+   * document as an `application/json` request body is not the same API
+   * contract. `fetch` owns the multipart boundary, so callers must not set a
+   * Content-Type header when this option is used.
+   */
+  file?: {
+    content: string;
+    filename: string;
+    contentType?: string;
+    fieldName?: string;
+  };
   /** Override Accept header (default application/json). */
   accept?: string;
   /** Return raw Response (e.g. for binary downloads like XLSX). */
@@ -140,6 +156,96 @@ function buildQueryString(params?: Record<string, string | number | boolean | un
   return `?${search.toString()}`;
 }
 
+/**
+ * The generic/retrying client is never an authorized Walmart ITEM report-create
+ * transport. The canonical one-shot capture engine uses its own bounded native
+ * transport after owner-permit verification. Keep this guard before OAuth so a
+ * stale route, diagnostic, JS caller, or type cast cannot bypass that engine.
+ */
+function assertLegacyItemReportCreateRetired(
+  method: string,
+  requestPath: string,
+  exactQueryString: string,
+): void {
+  if (String(method).trim().toUpperCase() !== "POST") return;
+  const rawPath = String(requestPath);
+  let decodedPath = rawPath;
+  for (let pass = 0; pass < 2; pass += 1) {
+    let next: string;
+    try {
+      next = decodeURIComponent(decodedPath);
+    } catch {
+      throw new Error("AMBIGUOUS_WALMART_REPORT_PATH: request path has invalid encoding");
+    }
+    if (next === decodedPath) break;
+    decodedPath = next;
+  }
+  const queryOffset = decodedPath.indexOf("?");
+  const pathOnly = queryOffset < 0 ? decodedPath : decodedPath.slice(0, queryOffset);
+  const leadingSlashPath = pathOnly.startsWith("/") ? pathOnly : `/${pathOnly}`;
+  const collapsedPath = leadingSlashPath.replace(/\/{2,}/gu, "/");
+  const effectivePath = new URL(
+    `/${API_VERSION}${collapsedPath}`,
+    "https://walmart-report-policy.invalid",
+  ).pathname.replace(/\/+$/gu, "");
+  if (!effectivePath.endsWith("/reports/reportRequests")) return;
+
+  const embedded = queryOffset < 0
+    ? []
+    : new URLSearchParams(decodedPath.slice(queryOffset + 1)).getAll("reportType");
+  const appended = new URLSearchParams(
+    exactQueryString.startsWith("?") ? exactQueryString.slice(1) : exactQueryString,
+  ).getAll("reportType");
+  const advertised = [
+    ...embedded,
+    ...appended,
+  ].map((value) => String(value).trim().toUpperCase());
+  const distinct = new Set(advertised);
+  if (distinct.size > 1) {
+    throw new Error(
+      "AMBIGUOUS_WALMART_REPORT_TYPE: embedded and parameter reportType values conflict",
+    );
+  }
+  if (advertised.includes("ITEM")) {
+    throw new Error(
+      "LEGACY_ITEM_REPORT_CREATE_RETIRED_OWNER_PERMIT_REQUIRED: use the canonical one-shot capture engine",
+    );
+  }
+}
+
+/** Convert the caller's body contract to a fetch BodyInit. Shared by
+ * `request` and `requestRaw` so the two paths cannot drift into different feed
+ * transports. It creates a fresh FormData for every retry attempt. */
+function buildRequestBody(
+  options: WalmartRequestOptions,
+  headers: Record<string, string>,
+): BodyInit | undefined {
+  if (options.file && options.body !== undefined) {
+    throw new Error("Walmart request cannot contain both body and file");
+  }
+  if (options.file) {
+    const filename = options.file.filename.trim();
+    if (!filename) throw new Error("Walmart multipart filename is required");
+    for (const key of Object.keys(headers)) {
+      if (key.toLowerCase() === "content-type") delete headers[key];
+    }
+    const form = new FormData();
+    form.append(
+      options.file.fieldName?.trim() || "file",
+      new Blob([options.file.content], {
+        type: options.file.contentType || "application/json",
+      }),
+      filename,
+    );
+    // Do not set Content-Type: fetch adds the required multipart boundary.
+    return form;
+  }
+  if (options.body === undefined) return undefined;
+  if (typeof options.body === "string") return options.body;
+  headers["Content-Type"] = "application/json";
+  return JSON.stringify(options.body);
+}
+
 export class WalmartClient {
   readonly storeIndex: number;
   readonly credentials: WalmartCredentials;
@@ -207,8 +313,12 @@ export class WalmartClient {
   async request<T = unknown>(
     method: string,
     path: string,
-    options: RequestOptions = {}
+    options: WalmartRequestOptions = {}
   ): Promise<T> {
+    method = String(method);
+    path = String(path);
+    const queryString = buildQueryString(options.params);
+    assertLegacyItemReportCreateRetired(method, path, queryString);
     const tokenInfo = await this.getAccessToken();
 
     // Rate-limit gate — sleep if previous response told us we're nearly out
@@ -223,7 +333,6 @@ export class WalmartClient {
       this.rateLimitWaitUntil = null;
     }
 
-    const queryString = buildQueryString(options.params);
     const fullPath = `/${API_VERSION}${path.startsWith("/") ? path : `/${path}`}${queryString}`;
     const url = `${DEFAULT_BASE_URL}${fullPath}`;
 
@@ -236,19 +345,13 @@ export class WalmartClient {
         "WM_SEC.ACCESS_TOKEN": tokenInfo.accessToken,
         "WM_QOS.CORRELATION_ID": correlationId,
         "WM_SVC.NAME": SVC_NAME,
+        "WM_GLOBAL_VERSION": GLOBAL_API_VERSION,
+        "WM_MARKET": MARKET,
         Accept: options.accept || "application/json",
         ...options.headers,
       };
 
-      let body: BodyInit | undefined;
-      if (options.body !== undefined) {
-        if (typeof options.body === "string") {
-          body = options.body;
-        } else {
-          body = JSON.stringify(options.body);
-          headers["Content-Type"] = "application/json";
-        }
-      }
+      const body = buildRequestBody(options, headers);
 
       const startedAt = Date.now();
       let res: Response;
@@ -367,8 +470,12 @@ export class WalmartClient {
   async requestRaw(
     method: string,
     path: string,
-    options: RequestOptions = {}
+    options: WalmartRequestOptions = {}
   ): Promise<{ status: number; ok: boolean; body: unknown; correlationId: string }> {
+    method = String(method);
+    path = String(path);
+    const queryString = buildQueryString(options.params);
+    assertLegacyItemReportCreateRetired(method, path, queryString);
     const tokenInfo = await this.getAccessToken();
 
     if (this.rateLimitWaitUntil) {
@@ -382,7 +489,6 @@ export class WalmartClient {
       this.rateLimitWaitUntil = null;
     }
 
-    const queryString = buildQueryString(options.params);
     const fullPath = `/${API_VERSION}${path.startsWith("/") ? path : `/${path}`}${queryString}`;
     const url = `${DEFAULT_BASE_URL}${fullPath}`;
 
@@ -400,19 +506,13 @@ export class WalmartClient {
         "WM_SEC.ACCESS_TOKEN": tokenInfo.accessToken,
         "WM_QOS.CORRELATION_ID": correlationId,
         "WM_SVC.NAME": SVC_NAME,
+        "WM_GLOBAL_VERSION": GLOBAL_API_VERSION,
+        "WM_MARKET": MARKET,
         Accept: options.accept || "application/json",
         ...options.headers,
       };
 
-      let body: BodyInit | undefined;
-      if (options.body !== undefined) {
-        if (typeof options.body === "string") {
-          body = options.body;
-        } else {
-          body = JSON.stringify(options.body);
-          headers["Content-Type"] = "application/json";
-        }
-      }
+      const body = buildRequestBody(options, headers);
 
       const startedAt = Date.now();
       let res: Response;

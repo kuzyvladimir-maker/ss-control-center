@@ -4,23 +4,38 @@
  * GET  → filtered candidate listings + live match counts (driven by the
  *        Builder's sliders: pack size, listing-quality, content score, has-gaps,
  *        exclude-bundles), plus the before/after history and a summary.
- * POST → enqueue selected SKUs for optimization (drained by
- *        walmart-multipack-batch.ts --from-queue; heavy work off the request path).
+ * POST → RETIRED. The legacy queue was drained by the now-retired remediation
+ *        worker and bypassed Product Truth/owner action gates.
  *
  * Reads WalmartListingRemediation + WalmartListingQualityItem via raw SQL.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { randomUUID } from "crypto";
-import { buildFilter, OPTIMIZER_JOIN } from "@/lib/walmart/optimizer-filter";
+import { buildFilter } from "@/lib/walmart/optimizer-filter";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
-const ENQUEUE_CAP = 3000;
+const RETIREMENT_CODE = "LEGACY_WALMART_REMEDIATION_ENQUEUE_RETIRED";
 
-type Row = Record<string, any>;
-const delta = (a: any, b: any): number | null => (a != null && b != null ? Number(a) - Number(b) : null);
+type Row = Record<string, unknown>;
+const delta = (a: unknown, b: unknown): number | null =>
+  a != null && b != null ? Number(a) - Number(b) : null;
+
+function issueRows(value: unknown): Row[] {
+  if (typeof value !== "string") return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed)
+      ? parsed.filter(
+        (item): item is Row =>
+          typeof item === "object" && item !== null && !Array.isArray(item),
+      )
+      : [];
+  } catch {
+    return [];
+  }
+}
 
 async function queueProgress(storeIndex: number) {
   const statRows = (await prisma.$queryRawUnsafe(
@@ -56,7 +71,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ light: true, queueStats, progress });
   }
 
-  const { whereSql, args, packExpr, period, S, U, O, R, VIEWS, sortSql } = buildFilter(p);
+  const { whereSql, args, packExpr, period, S, U, O, R, sortSql } = buildFilter(p);
   const JOIN = `LEFT JOIN WalmartListingQualityItem q ON q.sku=w.sku AND q.storeIndex=w.storeIndex
                 LEFT JOIN WalmartSkuPerf perf ON perf.sku=w.sku AND perf.storeIndex=w.storeIndex`;
 
@@ -84,18 +99,22 @@ export async function GET(request: NextRequest) {
   const candidates = cand.map((r) => {
     let contentIssues: string[] = [];
     let issues: { component: string; label: string; title: string; detail: string; impact: string }[] = [];
-    try {
-      const j = JSON.parse(r.issuesSummary || "[]");
-      if (Array.isArray(j)) {
-        contentIssues = j.filter((x: any) => x?.component === "content").map((x: any) => x.title).filter(Boolean);
-        // Full per-issue list (all components) — Walmart's own diagnosis, surfaced
-        // inline so the Optimizer is both the diagnosis and the fix.
-        issues = j.filter((x: any) => x?.title).map((x: any) => ({
-          component: String(x.component || ""), label: String(x.componentLabel || x.component || ""),
-          title: String(x.title || ""), detail: String(x.detail || ""), impact: String(x.impact || ""),
-        })).slice(0, 20);
-      }
-    } catch {}
+    const parsedIssues = issueRows(r.issuesSummary);
+    contentIssues = parsedIssues
+      .filter((item) => item.component === "content" && item.title)
+      .map((item) => String(item.title));
+    // Full per-issue list (all components) — Walmart's own diagnosis, surfaced
+    // inline so the Optimizer is both the diagnosis and the fix.
+    issues = parsedIssues
+      .filter((item) => item.title)
+      .map((item) => ({
+        component: String(item.component || ""),
+        label: String(item.componentLabel || item.component || ""),
+        title: String(item.title || ""),
+        detail: String(item.detail || ""),
+        impact: String(item.impact || ""),
+      }))
+      .slice(0, 20);
     const units = Number(r.units || 0), views = Number(r.pageViews30d || 0), returns = Number(r.returns || 0);
     const conv = views > 0 ? units / views : null;
     const returnRate = units > 0 ? returns / units : null;
@@ -119,7 +138,13 @@ export async function GET(request: NextRequest) {
     storeIndex,
   )) as Row[];
   const heat: Record<string, number> = {};
-  for (const r of heatRows) { try { const j = JSON.parse(r.issuesSummary || "[]"); if (Array.isArray(j)) for (const x of j) if (x?.component === "content" && x.title) heat[x.title] = (heat[x.title] || 0) + 1; } catch {} }
+  for (const row of heatRows) {
+    for (const issue of issueRows(row.issuesSummary)) {
+      if (issue.component !== "content" || !issue.title) continue;
+      const title = String(issue.title);
+      heat[title] = (heat[title] || 0) + 1;
+    }
+  }
   const contentGapHeatmap = Object.entries(heat).map(([title, count]) => ({ title, count })).sort((a, b) => b.count - a.count).slice(0, 10);
 
   // History + summary (before/after impact).
@@ -178,36 +203,18 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ period, counts, candidates, contentGapHeatmap, summary, history, queue, queueStats, progress, sellerScore, page: { limit, offset, total: counts.match } });
 }
 
-export async function POST(request: NextRequest) {
-  const body = await request.json().catch(() => ({}));
-  const scope = body?.scope && typeof body.scope === "object" ? body.scope : null; // {image,gallery,title,bullets,description,attributes}
-  const storeIndex = Number(body?.storeIndex || 1);
-
-  // Two modes: explicit `skus` (checked rows), or `allMatching` → enqueue the
-  // ENTIRE filtered pool (thousands), resolved server-side from the same filter.
-  let skus: string[] = Array.isArray(body?.skus) ? body.skus.filter((s: any) => typeof s === "string") : [];
-  if (body?.allMatching) {
-    const { whereSql, args } = buildFilter(new URL(request.url).searchParams);
-    const rows = (await prisma.$queryRawUnsafe(
-      `SELECT w.sku FROM WalmartCatalogItem w ${OPTIMIZER_JOIN} WHERE ${whereSql} LIMIT ${ENQUEUE_CAP}`,
-      storeIndex, ...args,
-    )) as Row[];
-    skus = rows.map((r) => String(r.sku));
-  }
-  if (!skus.length) return NextResponse.json({ error: "no skus" }, { status: 400 });
-
-  // Batched, dedup-tolerant insert (OR IGNORE skips SKUs already queued/running).
-  const requested = Math.min(skus.length, ENQUEUE_CAP);
-  let queued = 0;
-  for (let i = 0; i < requested; i += 100) {
-    const chunk = skus.slice(i, i + 100);
-    const values = chunk.map(() => "(?, ?, ?, 'queued', 'ui', ?)").join(", ");
-    const flat: any[] = [];
-    for (const sku of chunk) flat.push(randomUUID(), storeIndex, sku, scope ? JSON.stringify({ scope }) : null);
-    try {
-      const r = await prisma.$executeRawUnsafe(`INSERT OR IGNORE INTO WalmartRemediationQueue (id, storeIndex, sku, status, requestedBy, result) VALUES ${values}`, ...flat);
-      queued += Number(r) || 0;
-    } catch { /* chunk-level guard */ }
-  }
-  return NextResponse.json({ queued, requested });
+export async function POST() {
+  return NextResponse.json(
+    {
+      ok: false,
+      retired: true,
+      code: RETIREMENT_CODE,
+      reason:
+        "Legacy Walmart remediation enqueue is disabled. Use the manifest-bound Product Truth preview and a separate owner action gate.",
+    },
+    {
+      status: 410,
+      headers: { "cache-control": "no-store" },
+    },
+  );
 }

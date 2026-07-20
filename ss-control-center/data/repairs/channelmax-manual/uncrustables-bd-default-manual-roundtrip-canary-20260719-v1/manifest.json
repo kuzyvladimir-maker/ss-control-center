@@ -1,0 +1,116 @@
+{
+  "schema_version": "channelmax-bd-default-manual-roundtrip-canary-package/v1",
+  "immutable": true,
+  "offline_only": true,
+  "execution_authorized": false,
+  "uploaded": false,
+  "external_mutations": 0,
+  "created_at": "2026-07-19T06:18:00.000Z",
+  "verdict": "BLOCKED_DEFAULT_ROLLBACK_ENCODING_UNPROVEN",
+  "sources": {
+    "safe_manual_manifest": {
+      "path": "data/repairs/channelmax-manual/uncrustables-safe-base-offer-161-20260719-v1/manifest.json",
+      "file_sha256": "627c3c17b854801392864366e37617f7aa226e30835c6342c8b66c673660479e",
+      "byte_size": 82797
+    },
+    "safe_manual_tsv": {
+      "path": "data/repairs/channelmax-manual/uncrustables-safe-base-offer-161-20260719-v1/uncrustables-channelmax-safe-manual-161-20260719T055000000Z-1475cf783747.txt",
+      "file_sha256": "1475cf7837478c91ec2b69be52b5da3e4ca58dfaacc69e8c81eadc133b8d0753",
+      "byte_size": 8542
+    },
+    "bd_prewrite": {
+      "path": "data/repairs/rollback/channelmax-bd-default-canary-20260719/prewrite.json",
+      "file_sha256": "cbf1342660f785e86aa217c0265cea54124a7e50a9c465ccb314a0157edf08a9",
+      "byte_size": 1586
+    },
+    "bd_postwrite": {
+      "path": "data/repairs/rollback/channelmax-bd-default-canary-20260719/postwrite.json",
+      "file_sha256": "2e4179e492357e6f9331315d094101d3efa9cf6c9b01883bb4b2d3a3a4df566c",
+      "byte_size": 899
+    },
+    "manual_model_discovery": {
+      "path": "data/audits/channelmax-manual-model-discovery-20260718T220023Z.json",
+      "file_sha256": "14124ed5f78d1d407911f02f2844da0ffdf2bb8c82f8ad4c470b262ee6e31815",
+      "byte_size": 687
+    },
+    "channelmax_guide": {
+      "path": "../docs/wiki/channelmax-guide.md",
+      "file_sha256": "28e37e2291c2d29b07de78021220f76d004937889548fcfcee23ec77bdc217a8",
+      "byte_size": 16754
+    },
+    "automation_architecture": {
+      "path": "../docs/CHANNELMAX_AUTOMATION_ARCHITECTURE.md",
+      "file_sha256": "e154a9e64be23677a884ffe2356d9813024742fd1c51255f67d7f63bf0354f9e",
+      "byte_size": 10312
+    },
+    "current_preflight_source": {
+      "path": "src/lib/channelmax-agent/uncrustables-mutation-preflight.ts",
+      "file_sha256": "a32baa3d243fe99e6e3786606b4133133b25ae8377d2b897e6e5b8f3b87e0ba3",
+      "byte_size": 33730
+    }
+  },
+  "account": {
+    "account_id": "channelmax:amznus:salutem-solutions",
+    "host": "selling.channelmax.net",
+    "seller_id": "A3A7A0RDFUSGBS",
+    "site_id": 300,
+    "site_name": "AmznUS [Salutem Solutions]"
+  },
+  "target": {
+    "item_id": 171141050,
+    "sku": "BD-AS8P-XAW5",
+    "asin": "B0H85MXFH8",
+    "minimum_price": 66.95,
+    "maximum_price": 76.99,
+    "selling_venue": "AmazonUS",
+    "before_model_id": null,
+    "before_model_name": "Default",
+    "forward_model_id": "59021",
+    "forward_model_name": "Manual min/max"
+  },
+  "forward_artifact": {
+    "file": "forward-to-manual-59021.tsv",
+    "sha256": "d708407a88702a4f80aae3e2c3d0353c41a64f2f264ed64d50783f6cdb45e2fa",
+    "byte_size": 124,
+    "columns": [
+      "SKU",
+      "ASIN",
+      "SellingVenue",
+      "MinSellingPrice",
+      "MaxSellingPrice",
+      "RepricingModelID"
+    ],
+    "exact_rows": 1,
+    "may_upload": false
+  },
+  "rollback_artifact": null,
+  "rollback_evidence_requirements": {
+    "file": "default-rollback-evidence-required.json",
+    "file_sha256": "0c2ce758b7fda53b38b0a290aac12b8da004c202c1e10f9c1625e09c17aea032",
+    "body_sha256": "a9513d7b609a0424a9058cd48b11d6a3c3423fc5ad75a214790f79530b71475d"
+  },
+  "protocol": {
+    "max_forward_uploads": 0,
+    "max_rollback_uploads": 0,
+    "forward_must_not_start_without_prearmed_exact_rollback": true,
+    "bounds_must_remain_unchanged_in_both_directions": true,
+    "fresh_prewrite_max_age_ms": 900000,
+    "delayed_readback_minimum_ms": 3900000,
+    "ambiguity_policy": "TERMINAL_NO_RETRY"
+  },
+  "blockers": [
+    {
+      "code": "DEFAULT_MODEL_IMPORT_ENCODING_UNPROVEN",
+      "detail": "No existing authenticated artifact proves the exact RepricingModelID encoding that restores ChannelMAX null/Default."
+    },
+    {
+      "code": "EXACT_ROLLBACK_ARTIFACT_ABSENT",
+      "detail": "A rollback TSV is intentionally not emitted until the required read-only model-registry and Analyze evidence exists."
+    },
+    {
+      "code": "OWNER_APPROVAL_NOT_REQUESTED",
+      "detail": "This offline package is diagnostic only and cannot be used as a mutation approval request."
+    }
+  ],
+  "body_sha256": "b077131d22b58b0bc984743b4a57e685477b461a5bc2cfaf9b9ef9c20044427d"
+}

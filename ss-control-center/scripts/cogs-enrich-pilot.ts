@@ -22,6 +22,8 @@ import {
   type CanonicalProduct, type ScoredOffer,
 } from "@/lib/sourcing/retail-fetch";
 
+throw new Error("LEGACY_COGS_MUTATION_SCRIPT_DISABLED: use the canonical queued Product Truth pipeline");
+
 const DEFAULT_POOL = [
   "FaisalX-1241", "FaisalX-1229", "RizwanX-4597", "RizwanX-2168", "RizwanX-199",
   "FaisalX-1646", "FaisalX-1215", "FaisalX-1121", "FaisalX-1142", "FaisalX-1268",

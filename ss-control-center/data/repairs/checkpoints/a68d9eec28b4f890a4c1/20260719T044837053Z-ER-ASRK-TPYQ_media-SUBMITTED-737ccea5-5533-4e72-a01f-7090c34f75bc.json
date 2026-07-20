@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "737ccea5-5533-4e72-a01f-7090c34f75bc",
+  "created_at": "2026-07-19T04:48:37.053Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "ER-ASRK-TPYQ:media",
+  "sku": "ER-ASRK-TPYQ",
+  "kind": "MEDIA",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "f1c305b0-fe54-4fd1-90e5-113dc25907a3",
+    "patch_sha256": "1df67ba6a309cde4613d5215c8bfe4f5476ff36d262572d0d4eaea7c5d053e72",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "1df67ba6a309cde4613d5215c8bfe4f5476ff36d262572d0d4eaea7c5d053e72",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "d11621b19e0370a28e66e78a1a738428b1cd0116bd29d219cd7d1e8f29fbae62"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "ac07be9f5919428a9e1cad587259ad6a",
+    "issues": []
+  },
+  "sha256": "c5b50128004a2c87054dbf9c14ab1b389915eff5c7e254a2bf691ed2d79d2c8a"
+}

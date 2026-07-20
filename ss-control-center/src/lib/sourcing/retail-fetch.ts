@@ -10,6 +10,18 @@
 //   - Unwrangle                → Target / Sam's / Costco (+ Walmart, but no 1P filter)
 // Oxylabs+Instacart (Publix/BJ's/ALDI) is a separate scrape path, added later.
 
+import {
+  throwIfMeteredProviderControlError,
+  withMeteredProviderCall,
+  type MeteredProviderAuthorization,
+} from "./metered-provider-call";
+import {
+  matchCanonicalProductTitle,
+  normalizeIdentityTokens,
+  type CanonicalProductIdentity,
+  type CanonicalProductMatchResult,
+} from "./canonical-product-match";
+
 export type RetailOffer = {
   retailer: string; // walmart | target | samsclub | costco | ...
   retailerProductId: string;
@@ -17,6 +29,10 @@ export type RetailOffer = {
   currency: string;
   inStock: boolean | null;
   productUrl: string | null;
+  /** ZIP/store scope proven by the transport; never copied from the caller's wish. */
+  zip: string | null;
+  localityEvidence: "zip_scoped" | "store_scoped" | "national_unscoped" | null;
+  observedAt: string;
   title: string | null;
   description: string | null;
   keyFeatures: string[];
@@ -26,16 +42,33 @@ export type RetailOffer = {
   sellerName: string | null;
   sourceApi: string; // bluecart | unwrangle | oxylabs
   via?: "direct" | "instacart"; // instacart prices are inflated → de-marked-up downstream
+  /** Exact durable paid-call receipt that produced this source observation. */
+  meteredReceiptId?: string | null;
+  meteredRunId?: string | null;
+  meteredApprovalId?: string | null;
 };
+
+function meteredOfferProvenance(
+  authorization: MeteredProviderAuthorization | null,
+): Pick<RetailOffer, "meteredReceiptId" | "meteredRunId" | "meteredApprovalId"> {
+  return authorization ? {
+    meteredReceiptId: authorization.receiptId,
+    meteredRunId: authorization.runId,
+    meteredApprovalId: authorization.approvalId,
+  } : {};
+}
 
 // Canonical product the brain produced (subset we need here).
 export type CanonicalProduct = {
   brand?: string;
   product_line?: string;
   flavor?: string;
+  modifiers?: string | readonly string[];
   size?: string;
   retail_search_query?: string;
   base_unit?: string;
+  container_type?: string;
+  outer_pack_count?: number;
 };
 
 // Our own storefronts + the resellers we've seen polluting search — never a COGS source.
@@ -108,29 +141,44 @@ export function priceSuspect(price: number | null, hint?: string): boolean {
   return price < lo || price > hi;
 }
 
-// Token gate: candidate title must carry the brand (and flavor/line if the brain gave one),
-// and must not be a *different* named brand. Cheap deterministic guard for the 4 misses.
+function canonicalIdentity(cp: CanonicalProduct): CanonicalProductIdentity {
+  return {
+    brand: cp.brand,
+    productLine: cp.product_line,
+    flavor: cp.flavor,
+    modifiers: cp.modifiers,
+    form: cp.container_type || cp.base_unit,
+    size: cp.size,
+    outerPackCount: cp.outer_pack_count,
+  };
+}
+
+function hasStructuredDiscriminator(cp: CanonicalProduct): boolean {
+  return !!(cp.product_line || cp.flavor || cp.container_type || cp.base_unit);
+}
+
+// SKU-specific searches use the canonical title bridge. Brand-only campaigns
+// use a narrow whole-token discovery gate; those rows remain isolated candidates
+// and cannot become exact content/cost evidence until separately certified.
 export function tokenGate(
   offerTitle: string | null,
   cp: CanonicalProduct
-): { ok: boolean; reason: string } {
-  const t = (offerTitle || "").toLowerCase();
-  if (!t) return { ok: false, reason: "no title" };
-  const need: string[] = [];
-  if (cp.brand) need.push(...cp.brand.toLowerCase().split(/\s+/).slice(0, 2));
-  // distinctive flavor/line words (drop generic filler)
-  const filler = new Set(["the", "and", "with", "bread", "soup", "classics", "variety", "original", "&"]);
-  for (const src of [cp.product_line, cp.flavor]) {
-    if (!src) continue;
-    for (const w of src.toLowerCase().split(/\s+/)) if (w.length > 2 && !filler.has(w)) need.push(w);
+): { ok: boolean; reason: string; identityMatch: CanonicalProductMatchResult | null } {
+  if (!offerTitle?.trim()) return { ok: false, reason: "no title", identityMatch: null };
+  if (hasStructuredDiscriminator(cp)) {
+    const identityMatch = matchCanonicalProductTitle(canonicalIdentity(cp), { title: offerTitle });
+    return identityMatch.verdict === "REJECT"
+      ? { ok: false, reason: `canonical reject: ${identityMatch.reasonCodes.join(",")}`, identityMatch }
+      : { ok: true, reason: identityMatch.verdict, identityMatch };
   }
-  const missing = need.filter((w) => !t.includes(w));
-  // allow one miss (titles abbreviate), but brand word must be present
-  const brandWord = cp.brand?.toLowerCase().split(/\s+/)[0];
-  if (brandWord && !t.includes(brandWord)) return { ok: false, reason: `brand "${brandWord}" absent` };
-  if (missing.length > Math.max(1, Math.floor(need.length / 2)))
-    return { ok: false, reason: `missing tokens: ${missing.join(",")}` };
-  return { ok: true, reason: "ok" };
+
+  const brandTokens = normalizeIdentityTokens(cp.brand);
+  const titleTokens = new Set(normalizeIdentityTokens(offerTitle));
+  if (!brandTokens.length) return { ok: false, reason: "brand missing", identityMatch: null };
+  const missing = brandTokens.filter((token) => !titleTokens.has(token));
+  return missing.length
+    ? { ok: false, reason: `brand tokens absent: ${missing.join(",")}`, identityMatch: null }
+    : { ok: true, reason: "brand discovery candidate", identityMatch: null };
 }
 
 // Dedup image URLs (BlueCart often returns main_image === images[0], which showed
@@ -141,6 +189,8 @@ function dedupImages(arr: (string | null | undefined)[]): string[] {
   return out;
 }
 
+// Raw metered-provider transport. Every call site below invokes it only as the
+// network executor of withMeteredProviderCall after a durable reservation.
 async function getJson(url: string, timeoutMs = 20000): Promise<any> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -173,13 +223,24 @@ export async function bluecartWalmartSearch(
   if (!key) throw new Error("BLUECART_API_KEY missing");
   const url = `https://api.bluecartapi.com/request?api_key=${key}&type=search&search_term=${encodeURIComponent(query)}&walmart_domain=walmart.com`;
   let j: any;
+  let authorization: MeteredProviderAuthorization | null = null;
   try {
-    j = await getJson(url);
+    j = await withMeteredProviderCall(
+      {
+        provider: "bluecart",
+        operation: "search",
+        requestFingerprint: { query, type: "search", walmartDomain: "walmart.com" },
+        onAuthorized: (value) => { authorization = value; },
+      },
+      () => getJson(url),
+    );
   } catch (e: any) {
+    throwIfMeteredProviderControlError(e);
     if (e.status === 401 || e.status === 402 || /credit|quota|limit/i.test(e.message))
       return { creditsRemaining: 0, offers: [], trialExhausted: true };
     throw e;
   }
+  const observedAt = new Date().toISOString();
   const offers: RetailOffer[] = (j.search_results || []).map((x: any) => {
     const p = x.product || {};
     const o = x.offers?.primary || x.offers || {};
@@ -190,6 +251,9 @@ export async function bluecartWalmartSearch(
       currency: o.currency || "USD",
       inStock: x.inventory?.in_stock ?? null,
       productUrl: p.link ?? null,
+      zip: null,
+      localityEvidence: "national_unscoped",
+      observedAt,
       title: p.title ?? null,
       description: p.description ?? null,
       keyFeatures: Array.isArray(p.feature_bullets) ? p.feature_bullets : [],
@@ -198,6 +262,7 @@ export async function bluecartWalmartSearch(
       isMarketplaceItem: x.offers?.is_marketplace_item ?? null,
       sellerName: o.seller?.name ?? x.seller?.name ?? null,
       sourceApi: "bluecart",
+      ...meteredOfferProvenance(authorization),
     } as RetailOffer;
   });
   return { creditsRemaining: j.request_info?.credits_remaining ?? null, offers, trialExhausted: false };
@@ -206,6 +271,15 @@ export async function bluecartWalmartSearch(
 // --- Unwrangle (Target / Sam's / Costco / Walmart) ----------------------------
 const UNWRANGLE_PLATFORM: Record<string, string> = {
   target: "target_search", samsclub: "samsclub_search", costco: "costco_search", walmart: "walmart_search",
+};
+// Conservative credit reservations from the source capability contract. Club
+// calls are deliberately charged at the known 10-credit tier so a maxUnits cap
+// cannot authorize 10× more spend than the owner approved.
+const UNWRANGLE_CREDIT_UNITS: Record<"target" | "samsclub" | "costco" | "walmart", number> = {
+  target: 1,
+  samsclub: 10,
+  costco: 10,
+  walmart: 2.5,
 };
 export async function unwrangleSearch(
   retailer: "target" | "samsclub" | "costco" | "walmart",
@@ -216,13 +290,24 @@ export async function unwrangleSearch(
   const platform = UNWRANGLE_PLATFORM[retailer];
   const url = `https://data.unwrangle.com/api/getter/?platform=${platform}&search=${encodeURIComponent(query)}&api_key=${key}`;
   let j: any;
+  let authorization: MeteredProviderAuthorization | null = null;
   try {
     // Unwrangle search routinely takes 30-60s (it scrapes live), so the default
     // 20s cap was ABORTING every call → the enrichment thought "no product found"
     // when the request simply hadn't returned yet (root cause of the 2026-07-01
     // "Unwrangle finds nothing" symptom). Give it a real 90s budget.
-    j = await getJson(url, 90000);
+    j = await withMeteredProviderCall(
+      {
+        provider: "unwrangle",
+        operation: "search",
+        units: UNWRANGLE_CREDIT_UNITS[retailer],
+        requestFingerprint: { platform, query, retailer },
+        onAuthorized: (value) => { authorization = value; },
+      },
+      () => getJson(url, 90000),
+    );
   } catch (e: any) {
+    throwIfMeteredProviderControlError(e);
     if (e.status === 401 || e.status === 402 || /credit|quota|limit|insufficient/i.test(e.message))
       return { creditsRemaining: 0, offers: [], trialExhausted: true };
     throw e;
@@ -231,6 +316,7 @@ export async function unwrangleSearch(
     return { creditsRemaining: j.remaining_credits ?? 0, offers: [], trialExhausted: true };
   // Unwrangle returns its array under `results` (not `products`), HTML-encodes
   // names (Bush&#39;s), and uses per-platform field names. Decode + normalize.
+  const observedAt = new Date().toISOString();
   const decode = (s: string | null): string | null =>
     s == null ? null : s
       .replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&").replace(/&quot;|&#34;/g, '"')
@@ -256,6 +342,9 @@ export async function unwrangleSearch(
       currency: x.currency || "USD",
       inStock: x.in_stock ?? null,
       productUrl: x.url || x.link || null,
+      zip: null,
+      localityEvidence: "national_unscoped",
+      observedAt,
       title,
       description: decode(x.description ?? null),
       keyFeatures: Array.isArray(x.features) ? x.features : [],
@@ -264,6 +353,7 @@ export async function unwrangleSearch(
       isMarketplaceItem: isMkt,
       sellerName: x.seller_name ?? (retailer === "walmart" ? null : retailer),
       sourceApi: "unwrangle",
+      ...meteredOfferProvenance(authorization),
     } as RetailOffer;
   });
   return { creditsRemaining: j.remaining_credits ?? null, offers, trialExhausted: false };
@@ -275,16 +365,17 @@ export type ScoredOffer = RetailOffer & {
   accepted: boolean;
   rejectReason: string | null;
   isBaseUnit: boolean;
+  identityMatch: CanonicalProductMatchResult | null;
 };
 export function scoreOffer(offer: RetailOffer, cp: CanonicalProduct): ScoredOffer {
-  const base = { ...offer, accepted: false, rejectReason: null as string | null, isBaseUnit: false };
+  const base = { ...offer, accepted: false, rejectReason: null as string | null, isBaseUnit: false, identityMatch: null as CanonicalProductMatchResult | null };
   if (isOwnOrReseller(offer.sellerName)) return { ...base, rejectReason: `own/reseller (${offer.sellerName})` };
   if (!isFirstParty(offer)) return { ...base, rejectReason: `not first-party (${offer.sellerName || "unknown seller"})` };
   const tg = tokenGate(offer.title, cp);
-  if (!tg.ok) return { ...base, rejectReason: tg.reason };
+  if (!tg.ok) return { ...base, rejectReason: tg.reason, identityMatch: tg.identityMatch };
   if (offer.price === null) return { ...base, rejectReason: "no price" };
   const isBase = (offer.packSizeSeen ?? 1) === 1;
   if (priceSuspect(offer.price, `${offer.title} ${cp.base_unit || ""}`))
-    return { ...base, isBaseUnit: isBase, rejectReason: `price suspect ($${offer.price})` };
-  return { ...base, accepted: true, rejectReason: null, isBaseUnit: isBase };
+    return { ...base, isBaseUnit: isBase, rejectReason: `price suspect ($${offer.price})`, identityMatch: tg.identityMatch };
+  return { ...base, accepted: true, rejectReason: null, isBaseUnit: isBase, identityMatch: tg.identityMatch };
 }

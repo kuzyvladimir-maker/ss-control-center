@@ -8,6 +8,10 @@ import type { Client } from "@libsql/client";
 import { unwrangleSearch, isOwnOrReseller, type RetailOffer } from "./retail-fetch";
 import { oxylabsWalmartSearch } from "./oxylabs-fetch";
 import { normUrl, htmlToText, liItems } from "../walmart/multipack/donor";
+import {
+  throwIfMeteredProviderControlError,
+  withMeteredProviderCall,
+} from "./metered-provider-call";
 
 export interface DetailResult { title: string; images: string[]; bullets: string[]; description: string; }
 
@@ -74,10 +78,23 @@ export async function fetchAndStoreDetail(db: Client, sku: string, itemId: strin
   } catch {}
   let j: any;
   try {
-    const res = await fetch(`https://api.bluecartapi.com/request?api_key=${key}&type=product&item_id=${encodeURIComponent(itemId)}&walmart_domain=walmart.com`, { signal: AbortSignal.timeout(20000) });
-    if (!res.ok) return null;
-    j = await res.json();
-  } catch { return null; }
+    j = await withMeteredProviderCall(
+      {
+        provider: "bluecart",
+        operation: "detail",
+        requestFingerprint: { itemId, type: "product", walmartDomain: "walmart.com" },
+      },
+      async () => {
+        const res = await fetch(`https://api.bluecartapi.com/request?api_key=${key}&type=product&item_id=${encodeURIComponent(itemId)}&walmart_domain=walmart.com`, { signal: AbortSignal.timeout(20000) });
+        if (!res.ok) throw new Error(`BlueCart detail HTTP ${res.status}`);
+        return res.json();
+      },
+    );
+    if (!j) return null;
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
+    return null;
+  }
   const p = j?.product || {};
   if (!p || (!p.main_image && !(p.images || []).length)) return null;
 
@@ -182,7 +199,7 @@ export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: st
     return fp.filter((o) => titleMatchesListing(title, o.title || ""));
   };
 
-  let creditsRemaining: number | null = null;
+  const creditsRemaining: number | null = null;
   let totalInserted = 0;
   let anyFound = false;
   const via: string[] = [];
@@ -200,7 +217,10 @@ export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: st
       // retailer's photos (one may have the clean front the others lack).
       if (found && !opts.deep) return { found: true, alreadyHad: false, creditsRemaining, offers: inserted, reason: "via walmart(oxylabs)" };
     }
-  } catch { /* fall through to Unwrangle retailers */ }
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
+    // Ordinary provider/network miss: fall through to Unwrangle retailers.
+  }
 
   // 2) Unwrangle retailers (Target / Sam's / Costco) — for products those clubs
   //    carry with a clean 1P photo that walmart.com itself lacks.
@@ -211,7 +231,10 @@ export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: st
       const { inserted, found } = await storeOffers(db, opts.sku, opts.upc, gate(res.offers), `ondemand-${retailer}`);
       totalInserted += inserted; if (found) { anyFound = true; via.push(retailer); }
       if (found && !opts.deep) return { found: true, alreadyHad: false, creditsRemaining, offers: inserted, reason: `via ${retailer}` };
-    } catch { /* try next retailer */ }
+    } catch (error) {
+      throwIfMeteredProviderControlError(error);
+      // Ordinary provider/network miss: try the next retailer.
+    }
   }
 
   return anyFound
@@ -224,6 +247,8 @@ export async function ensureDonorImage(db: Client, opts: { sku: string; upc?: st
 export async function bluecartCreditsRemaining(): Promise<number | null> {
   const key = process.env.BLUECART_API_KEY;
   if (!key) return null;
+  // /account is a documented free balance read, not a metered product request;
+  // it intentionally does not consume a search/detail ledger reservation.
   try {
     const r = await fetch(`https://api.bluecartapi.com/account?api_key=${key}`, { signal: AbortSignal.timeout(10000) });
     const j: any = await r.json();

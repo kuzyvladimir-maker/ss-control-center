@@ -20,15 +20,18 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 
+import sharp from "sharp";
+
 import type { ExactWalmartItemResolution } from "./exact-item-resolution";
 
 const EXACT_ITEM_RESOLUTION_SCHEMA = "walmart-exact-item-resolution/v1";
 
 export const BUYER_SNAPSHOT_REQUEST_SCHEMA =
   "walmart-buyer-facing-snapshot-request/v1";
-export const BUYER_SNAPSHOT_SCHEMA = "walmart-buyer-facing-snapshot/v2";
+export const BUYER_SNAPSHOT_SCHEMA = "walmart-buyer-facing-snapshot/v3";
 
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
+const MAX_IMAGE_PIXELS = 40_000_000;
 
 type JsonObject = Record<string, unknown>;
 
@@ -84,6 +87,9 @@ export interface WalmartBuyerSnapshotAsset {
   bytes: number;
   media_type: "image/jpeg" | "image/png" | "image/webp";
   extension: "jpg" | "png" | "webp";
+  decoded_format: "jpeg" | "png" | "webp";
+  decoded_width: number;
+  decoded_height: number;
 }
 
 export interface WalmartBuyerSnapshotDraft {
@@ -336,6 +342,68 @@ function detectImage(bytes: Uint8Array): Pick<WalmartBuyerSnapshotAsset, "media_
   throw new Error("downloaded bytes are not a supported raster image");
 }
 
+type DecodedRaster = Pick<WalmartBuyerSnapshotAsset,
+  "media_type" | "extension" | "decoded_format" | "decoded_width" | "decoded_height">;
+
+async function decodeImage(bytes: Uint8Array, label: string): Promise<DecodedRaster> {
+  const detected = detectImage(bytes);
+  let metadata: sharp.Metadata;
+  const input = Buffer.from(bytes);
+  const sharpOptions = {
+    limitInputPixels: MAX_IMAGE_PIXELS,
+    sequentialRead: true,
+    failOn: "warning",
+  } as const;
+  try {
+    metadata = await sharp(input, sharpOptions).metadata();
+    // metadata() alone can accept a truncated raster whose header still has
+    // dimensions. Force a real pixel decode while bounding output to 1x1.
+    await sharp(input, sharpOptions)
+      .resize(1, 1, { fit: "fill", kernel: sharp.kernel.nearest })
+      .raw()
+      .toBuffer();
+  } catch (error) {
+    throw new Error(`${label}: image decode failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  const expectedFormat = detected.extension === "jpg" ? "jpeg" : detected.extension;
+  if (metadata.format !== expectedFormat) {
+    throw new Error(`${label}: raster signature/decoded format mismatch (${detected.extension}/${metadata.format ?? "unknown"})`);
+  }
+  if (!Number.isInteger(metadata.width) || !Number.isInteger(metadata.height)
+    || Number(metadata.width) < 1 || Number(metadata.height) < 1) {
+    throw new Error(`${label}: decoded image dimensions are unavailable`);
+  }
+  return {
+    ...detected,
+    decoded_format: expectedFormat,
+    decoded_width: Number(metadata.width),
+    decoded_height: Number(metadata.height),
+  };
+}
+
+function assertAssetMatchesBytes(
+  asset: WalmartBuyerSnapshotAsset,
+  bytes: Uint8Array,
+  decoded: DecodedRaster,
+  label: string,
+): void {
+  if (bytes.length !== asset.bytes) {
+    throw new Error(`${label}: byte length ${bytes.length} != manifest ${asset.bytes}`);
+  }
+  if (sha256(bytes) !== asset.sha256) {
+    throw new Error(`${label}: byte SHA-256 mismatch`);
+  }
+  if (decoded.media_type !== asset.media_type
+    || decoded.extension !== asset.extension
+    || decoded.decoded_format !== asset.decoded_format) {
+    throw new Error(`${label}: decoded raster format does not match manifest`);
+  }
+  if (decoded.decoded_width !== asset.decoded_width
+    || decoded.decoded_height !== asset.decoded_height) {
+    throw new Error(`${label}: decoded dimensions ${decoded.decoded_width}x${decoded.decoded_height} != manifest ${asset.decoded_width}x${asset.decoded_height}`);
+  }
+}
+
 export function sha256(value: Uint8Array | string): string {
   return createHash("sha256").update(value).digest("hex");
 }
@@ -509,7 +577,7 @@ export async function captureWalmartBuyerSnapshot(
     if (!bytes.length || bytes.length > MAX_IMAGE_BYTES) {
       throw new Error(`${target.sku} ${entry.slot}: invalid image byte length ${bytes.length}`);
     }
-    const kind = detectImage(bytes);
+    const decoded = await decodeImage(bytes, `${target.sku} ${entry.slot}`);
     const finalUrl = assertHttpsImageUrl(response.final_url || entry.url, `${target.sku} ${entry.slot} final URL`);
     const digest = sha256(bytes);
     binaries.set(digest, bytes);
@@ -519,7 +587,7 @@ export async function captureWalmartBuyerSnapshot(
       final_url: finalUrl,
       sha256: digest,
       bytes: bytes.length,
-      ...kind,
+      ...decoded,
     });
   }
 
@@ -608,21 +676,46 @@ export async function writeImmutableWalmartBuyerSnapshot(
     if (existing.body_sha256 !== bodySha || canonicalJson(existing) !== canonicalJson(snapshot)) {
       throw new Error(`${snapshotId}: existing immutable snapshot differs`);
     }
+    for (const asset of existing.assets) {
+      const assetPath = path.join(directory, asset.local_path);
+      let bytes: Uint8Array;
+      try {
+        bytes = await readFile(assetPath);
+      } catch (error) {
+        const code = isObject(error) ? nonEmpty(error.code) : null;
+        if (code === "ENOENT") {
+          throw new Error(`${snapshotId} ${asset.slot}: immutable asset is missing`);
+        }
+        throw error;
+      }
+      if (sha256(bytes) !== asset.sha256) {
+        throw new Error(`${snapshotId} ${asset.slot}: immutable asset byte SHA-256 mismatch`);
+      }
+      const decoded = await decodeImage(bytes, `${snapshotId} ${asset.slot}`);
+      assertAssetMatchesBytes(asset, bytes, decoded, `${snapshotId} ${asset.slot}`);
+    }
     return { directory, manifest_path: manifestPath, snapshot: existing };
   } catch (error) {
     const code = isObject(error) ? nonEmpty(error.code) : null;
     if (code !== "ENOENT") throw error;
   }
 
+  const verifiedBinaries = new Map<string, { asset: WalmartBuyerSnapshotAsset; bytes: Uint8Array }>();
+  for (const asset of draft.assets) {
+    const bytes = draft.binary_assets.get(asset.sha256);
+    if (!bytes) {
+      throw new Error(`${asset.slot}: binary missing or hash mismatch before write`);
+    }
+    const decoded = await decodeImage(bytes, `${asset.slot} pre-write`);
+    assertAssetMatchesBytes(asset, bytes, decoded, `${asset.slot} pre-write`);
+    verifiedBinaries.set(asset.sha256, { asset, bytes });
+  }
+
   await mkdir(outputRoot, { recursive: true });
   const temporary = path.resolve(outputRoot, `.${snapshotId}.tmp-${process.pid}`);
   await mkdir(temporary, { recursive: false });
   await mkdir(path.join(temporary, "assets"), { recursive: false });
-  for (const asset of draft.assets) {
-    const bytes = draft.binary_assets.get(asset.sha256);
-    if (!bytes || sha256(bytes) !== asset.sha256) {
-      throw new Error(`${asset.slot}: binary missing or hash mismatch before write`);
-    }
+  for (const { asset, bytes } of verifiedBinaries.values()) {
     await writeFile(path.join(temporary, "assets", `${asset.sha256}.${asset.extension}`), bytes, { flag: "wx" });
   }
   await writeFile(path.join(temporary, "manifest.json"), `${JSON.stringify(snapshot, null, 2)}\n`, { flag: "wx" });

@@ -1,0 +1,15 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "55a18989-6652-4343-8eac-dd32734c3753",
+  "created_at": "2026-07-19T04:03:50.441Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "LK-AS7X-K43B:media",
+  "sku": "LK-AS7X-K43B",
+  "kind": "MEDIA",
+  "status": "FAILED",
+  "detail": {
+    "error": "Amazon accepted LK-AS7X-K43B:media, but only the stable pre-write state is observable. The submission remains open because a later apply cannot be excluded; no fallback or second write was attempted."
+  },
+  "sha256": "4afba7385311e67e65e8f52473a7de5b06a3d672ef528ec680794bfa8c260b26"
+}

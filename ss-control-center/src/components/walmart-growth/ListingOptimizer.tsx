@@ -98,6 +98,7 @@ function RangeTwo({ label, max, lo, hi, onLo, onHi, suffix }: { label: string; m
 
 const HEALTH_CHIPS = [{ id: "", label: "All health" }, { id: "winner", label: "Winner" }, { id: "leaky", label: "Leaky" }, { id: "high-return", label: "High-return" }, { id: "dead", label: "Dead" }, { id: "new", label: "New" }];
 const STATUS_OPTS = [{ id: "all", label: "All status" }, { id: "published", label: "Published" }, { id: "unpublished", label: "Unpublished" }, { id: "error", label: "Error" }];
+const LEGACY_MUTATIONS_RETIRED = true;
 
 function DeltaCell({ before, after, d, digits = 0, suffix = "" }: { before: number | null; after: number | null; d: number | null; digits?: number; suffix?: string }) {
   if (after == null) return <span className="text-ink-3 text-[11px]">{fmt(before, digits)}{suffix} · pending</span>;
@@ -309,6 +310,11 @@ export function ListingOptimizer() {
 
   return (
     <div className="space-y-5">
+      <div className="rounded-lg border border-rule bg-warn-tint px-4 py-3 text-[12px] text-warn-strong">
+        Read-only audit mode. Legacy queue, image apply, and feed mutations are retired
+        until the manifest-bound Product Truth preview and a separate owner action gate
+        are active.
+      </div>
       {/* Listing-quality health strip — Walmart's own seller score + 6 components.
           (Folds in the old Listing Quality tab so this is the single hub.) */}
       {data?.sellerScore && (
@@ -462,7 +468,7 @@ export function ListingOptimizer() {
                               </ul>
                             ) : <div className="text-[12px] text-ink-3">No issues flagged by Walmart for this listing.</div>}
                             <div className="mt-3 flex flex-wrap items-center gap-2">
-                              <Btn size="sm" variant="primary" icon={<Play size={12} />} onClick={() => fixOne(c.sku)}>Fix this listing</Btn>
+                              <Btn size="sm" variant="primary" icon={<Play size={12} />} disabled={LEGACY_MUTATIONS_RETIRED} onClick={() => fixOne(c.sku)}>Fix disabled</Btn>
                               <Btn size="sm" icon={<Sparkles size={12} />} loading={ai?.loading} onClick={() => askAiOne(c.sku)}>Ask AI</Btn>
                               <Btn size="sm" icon={<Sparkles size={12} />} loading={gen?.loading} onClick={() => genImageOne(c.sku)}>Generate AI image</Btn>
                               <Btn size="sm" icon={<ListChecks size={12} />} loading={review?.loading} onClick={() => reviewOne(c.sku)}>Review fix</Btn>
@@ -480,7 +486,7 @@ export function ListingOptimizer() {
                                       {gen.feedId ? (
                                         <span className="rounded bg-green-soft px-2 py-0.5 text-[11px] text-green-ink">Published — feed {gen.feedId}</span>
                                       ) : (
-                                        <Btn size="sm" variant="primary" loading={gen.applying} onClick={() => applyGenOne(c.sku, gen.previewUrl!)}>Use this image (publish)</Btn>
+                                        <Btn size="sm" variant="primary" disabled={LEGACY_MUTATIONS_RETIRED} loading={gen.applying} onClick={() => applyGenOne(c.sku, gen.previewUrl!)}>Publish disabled</Btn>
                                       )}
                                       <a href={gen.previewUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[12px] text-ink-3 hover:text-ink"><ExternalLink size={12} /> Full size</a>
                                       <Btn size="sm" onClick={() => genImageOne(c.sku)}>Regenerate</Btn>
@@ -525,7 +531,7 @@ export function ListingOptimizer() {
                                   <input value={review.note || ""} onChange={(e) => setRowReview((s) => ({ ...s, [c.sku]: { ...s[c.sku], note: e.target.value } }))} placeholder="Note what to fix on re-do (optional)…" className="flex-1 rounded border border-rule bg-bg px-2 py-1 text-[12px] text-ink placeholder:text-ink-3" />
                                   {review.redone
                                     ? <span className="whitespace-nowrap rounded bg-green-soft px-2 py-1 text-[11px] text-green-ink">Sent back — worker will re-do it</span>
-                                    : <Btn size="sm" loading={review.redoing} onClick={() => sendRedo(c.sku)}>Send back for re-do</Btn>}
+                                    : <Btn size="sm" disabled={LEGACY_MUTATIONS_RETIRED} loading={review.redoing} onClick={() => sendRedo(c.sku)}>Re-do disabled</Btn>}
                                 </div>
                               </div>
                             )}
@@ -582,13 +588,13 @@ export function ListingOptimizer() {
               <div className="flex items-center gap-3">
                 <span className="text-[12px] text-ink-3">{selected.size} selected · {scopeCount} field{scopeCount === 1 ? "" : "s"}</span>
                 <label className="flex items-center gap-1.5 text-[12px] text-ink-2">
-                  <input type="checkbox" checked={allMatching} onChange={(e) => setAllMatching(e.target.checked)} />
+                  <input type="checkbox" disabled={LEGACY_MUTATIONS_RETIRED} checked={allMatching} onChange={(e) => setAllMatching(e.target.checked)} />
                   Apply to all {data?.counts.match ? data.counts.match.toLocaleString() : ""} matching
                 </label>
               </div>
               <Btn variant="primary" icon={<Play size={13} />} loading={running}
-                disabled={scopeCount === 0 || (allMatching ? !(data?.counts.match) : !selected.size)} onClick={run}>
-                {allMatching ? `Run on all ${data?.counts.match ? data.counts.match.toLocaleString() : 0}` : `Run optimization${selected.size ? ` · ${selected.size}` : ""}`}
+                disabled={LEGACY_MUTATIONS_RETIRED || scopeCount === 0 || (allMatching ? !(data?.counts.match) : !selected.size)} onClick={run}>
+                Product Truth cutover required
               </Btn>
             </div>
             {msg && <div className="mt-2 rounded-lg border border-rule bg-green-soft px-3 py-2 text-[12px] text-green-ink">{msg}</div>}
@@ -668,7 +674,7 @@ export function ListingOptimizer() {
               {analysis.recommendations.some((r) => r.type === "auto" && r.skus.length) && (
                 <div className="flex items-center justify-between">
                   <span className="text-[12px] text-ink-3">{recSel.size} recommendation(s) selected</span>
-                  <Btn variant="primary" icon={<Play size={13} />} disabled={!recSel.size} onClick={applyRecs}>Apply selected</Btn>
+                  <Btn variant="primary" icon={<Play size={13} />} disabled={LEGACY_MUTATIONS_RETIRED || !recSel.size} onClick={applyRecs}>Apply disabled</Btn>
                 </div>
               )}
               {applyMsg && <div className="rounded-lg border border-rule bg-green-soft px-3 py-2 text-[12px] text-green-ink">{applyMsg}</div>}

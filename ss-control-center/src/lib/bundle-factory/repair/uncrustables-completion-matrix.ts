@@ -3,7 +3,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 export const UNCRUSTABLES_COMPLETION_MATRIX_SCHEMA =
-  "uncrustables-completion-matrix/v4" as const;
+  "uncrustables-completion-matrix/v5" as const;
 
 const CHECKPOINT_PLAN_SHA256 =
   "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477";
@@ -18,20 +18,20 @@ const DEFAULT_SOURCE_SPECS = {
       "480ed383f6963ac4983c142085599ee1877e12343a63be55eec4e6d1cecdebe3",
   },
   strict_main: {
-    path: "data/audits/uncrustables-live-main-strict-reaudit-20260718-v6.json",
+    path: "data/audits/uncrustables-live-main-strict-reaudit-20260718-v8.json",
     file_sha256:
-      "87d9adf66cc322becccd0eb214e13d073272c3c11405e4bdd15e93c98f08eb4c",
+      "2d78d37398fff719086435233afa198a5b0a33479535452b6b8652b3558d3c3b",
     seal_field: "body_sha256",
     seal_algorithm: "json",
     body_sha256:
-      "befae9606c9dca01175c555f181cfcff53bd248aa5060ee2194e3e611739ff8e",
+      "b2ca38412c74ace932eca3bf0d14b1e1b40e44443f8c7b1de6185dfbdee7f3bd",
   },
   main_repair_readiness: {
-    path: "data/audits/uncrustables-main-repair-readiness-20260718-v6.json",
+    path: "data/audits/uncrustables-main-repair-readiness-20260718-v8.json",
     file_sha256:
-      "1d308f001bcb88656a849b2e5b81073e1f30d96331139c8c8902a9783be0a429",
+      "55e3fd2a6af431b2f1b5463e29ef3b1bd42dc994500dd153d1921c21b6a7772d",
     body_sha256:
-      "e64df30b219a79c9c4d66e41ca4dc238266d8411b45f6fa14900fd7b24509d7f",
+      "e3c96d5a105d2cc9020c9da72cd28f323b16319b741769dca28919f7f32c24de",
   },
   gallery_plan: {
     path: "data/audits/uncrustables-live-gallery-surgical-plan-20260718-v4.json",
@@ -811,10 +811,10 @@ export async function buildDefaultUncrustablesCompletionMatrix(
     .filter(([, row]) => row.decision === "REPAIR")
     .map(([sku]) => sku);
   if (
-    mainReadinessRows.size !== 112 ||
+    mainReadinessRows.size !== 134 ||
     !exactSet(mainReadinessRows.keys(), strictRepairSkus)
   ) {
-    throw new Error("MAIN repair readiness must cover the exact strict 112 REPAIR rows.");
+    throw new Error("MAIN repair readiness must cover the exact strict 134 REPAIR rows.");
   }
   const galleryRows = indexRows(galleryPlan.value.rows, "gallery rows", identityBySku);
   const pricingRows = indexRows(livePricing.value.rows, "pricing rows", identityBySku);
@@ -927,11 +927,11 @@ export async function buildDefaultUncrustablesCompletionMatrix(
 
   const sourceEvidence: SourceEvidence[] = [
     source(authoritative, "authoritative_plan", authoritativeCreatedAt),
-    source(strictMain, "strict_main_v6", mainReviewedAt),
+    source(strictMain, "strict_main_v8", mainReviewedAt),
     {
       ...source(
         mainRepairReadiness,
-        "main_repair_readiness_v6",
+        "main_repair_readiness_v8",
         mainReviewedAt,
       ),
       body_sha256: readinessBodySha,
@@ -1214,17 +1214,17 @@ export async function buildDefaultUncrustablesCompletionMatrix(
             mainEvidence.asset_sha256,
             `${entry.sku} MAIN asset SHA`,
           ),
-          evidence: evidence("strict_main_v6", mainReviewedAt, {
+          evidence: evidence("strict_main_v8", mainReviewedAt, {
             row_evidence_sha256: sha256(stableJson(main)),
           }),
           repair_readiness:
             mainRepairReadiness as UncrustablesCompletionMatrixRow["main_image"]["repair_readiness"],
           repair_readiness_blockers: mainRepairReadinessBlockers,
           repair_readiness_evidence: mainReadiness
-            ? evidence("main_repair_readiness_v6", mainReviewedAt, {
+            ? evidence("main_repair_readiness_v8", mainReviewedAt, {
                 row_evidence_sha256: sha256(stableJson(mainReadiness)),
               })
-            : evidence("strict_main_v6", mainReviewedAt),
+            : evidence("strict_main_v8", mainReviewedAt),
         },
         gallery: {
           status: galleryStatus,

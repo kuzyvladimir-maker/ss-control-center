@@ -1,75 +1,29 @@
 /**
- * Bulk remediation — filter the catalog → see the pool → enqueue for fixing.
+ * Bulk remediation read-only pool and queue status.
  *
  * Mirrors the Walmart Listing Optimizer's "filter → pool → fix" builder, but on
  * Amazon's own data (health/opportunity + the Sales & Traffic funnel we mirror).
  *
- * POST : enqueue the chosen listings for the chosen fixes.
- *        Body: { storeIndex?, filter?, scope:{dedupe,brandVoice,suppression},
- *                skus?:string[], allMatching?:boolean }
- *        - skus[]        → enqueue exactly those rows
- *        - allMatching   → enqueue the whole filtered pool (server-side)
+ * POST : RETIRED. Enqueueing fed a worker capable of live Amazon writes without
+ *        a manifest-bound Product Truth snapshot and owner action permit.
  * GET  : pool count + the matching candidates (sortable, paginated) + queue
  *        progress + recent results. Query = the filter + sort/limit/offset.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { retiredAmazonListingImprovementResponse } from "@/lib/amazon/growth/product-truth-containment";
 import {
-  type HealthFilter as BulkFilter,
   buildHealthWhere as buildWhere,
   healthFilterFromParams as filterFromParams,
   HEALTH_SORTS as SORTS,
   bucketOf,
 } from "@/lib/amazon/growth/health-filters";
 
-export async function POST(request: NextRequest) {
-  let storeIndex = 1;
-  let filter: BulkFilter = {};
-  let scope = { dedupe: true, brandVoice: true, suppression: true };
-  let skus: string[] | undefined;
-  let allMatching = false;
-  try {
-    const body = await request.json();
-    if (body?.storeIndex) storeIndex = Number(body.storeIndex);
-    if (body?.filter) filter = body.filter;
-    if (body?.scope) scope = { ...scope, ...body.scope };
-    if (Array.isArray(body?.skus)) skus = body.skus.map(String);
-    if (body?.allMatching) allMatching = true;
-  } catch {
-    /* defaults */
-  }
-  if (!scope.dedupe && !scope.brandVoice && !scope.suppression) {
-    return NextResponse.json({ ok: false, error: "select at least one fix" }, { status: 400 });
-  }
-
-  // Either an explicit list of checked rows, or the whole filtered pool.
-  let rows: { sku: string; asin: string | null; itemName: string | null }[];
-  if (skus && skus.length && !allMatching) {
-    rows = await prisma.amazonListingHealthItem.findMany({
-      where: { storeIndex, sku: { in: skus } },
-      select: { sku: true, asin: true, itemName: true },
-    });
-  } else {
-    rows = await prisma.amazonListingHealthItem.findMany({
-      where: buildWhere(storeIndex, filter),
-      select: { sku: true, asin: true, itemName: true },
-      take: 3000,
-    });
-  }
-
-  const scopeJson = JSON.stringify(scope);
-  let queued = 0;
-  for (const r of rows) {
-    await prisma.amazonRemediationQueue.upsert({
-      where: { amazon_remediation_queue_dedup: { storeIndex, sku: r.sku } },
-      create: { storeIndex, sku: r.sku, asin: r.asin, itemName: r.itemName, scope: scopeJson, status: "REQUESTED" },
-      update: { scope: scopeJson, status: "REQUESTED", changesApplied: 0, result: null, error: null, processedAt: null, queuedAt: new Date() },
-    });
-    queued++;
-  }
-
-  return NextResponse.json({ ok: true, storeIndex, queued, matched: rows.length });
+export async function POST() {
+  return retiredAmazonListingImprovementResponse(
+    "LEGACY_AMAZON_BULK_FIX_ENQUEUE_RETIRED",
+  );
 }
 
 export async function GET(request: NextRequest) {

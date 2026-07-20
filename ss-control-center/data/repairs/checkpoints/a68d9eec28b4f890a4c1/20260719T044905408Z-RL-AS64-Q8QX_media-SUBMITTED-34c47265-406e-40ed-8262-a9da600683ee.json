@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "34c47265-406e-40ed-8262-a9da600683ee",
+  "created_at": "2026-07-19T04:49:05.408Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "RL-AS64-Q8QX:media",
+  "sku": "RL-AS64-Q8QX",
+  "kind": "MEDIA",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "8dd81064-de3b-48d8-a178-fb5eaf2b81ca",
+    "patch_sha256": "4dec6de0f0d7b6408bb40af9d261274641880fefddb598f8fd65244c67b9a9af",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "4dec6de0f0d7b6408bb40af9d261274641880fefddb598f8fd65244c67b9a9af",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "601f82a21b8f1cb6eee1514547137f2310cfccfb6552e1b5d21880533e0e34cc"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "e26383cd7d8e4065afd4443e4822a11f",
+    "issues": []
+  },
+  "sha256": "b4349545ae49d244a57bdefa304ae993fff55efca434d66b7c72e9e720364291"
+}

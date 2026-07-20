@@ -124,7 +124,7 @@ export interface WalmartReturnLine {
   returnReasonCode?: string;
   customerReturnReason?: string;
   returnQuantity?: number;
-  returnType?: string;          // RETURN | REFUND | REPLACEMENT
+  returnType?: string;          // PREORDER | REFUND | REPLACEMENT
   refund?: { refundComments?: string; refundCharges: WalmartCharge[] };
   returnTrackingDetail?: WalmartReturnTrackingDetail;
   status?: string;              // INITIATED | DELIVERED | COMPLETED | ...

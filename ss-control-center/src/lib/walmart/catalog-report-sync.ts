@@ -5,9 +5,9 @@
  * returned ~2981 published for an account the Seller Center UI shows 3895 published.
  * The authoritative full catalog (all statuses, matching the UI) comes from the
  * On-Request **ITEM report** (`POST /reports/reportRequests?reportType=ITEM`). It's
- * async (report generates in ~15-45 min) and the /reports rate bucket is TINY, so
- * this runs as a poll-driven state machine across cron ticks — exactly like the Buy
- * Box report (driveBuyBoxReport), which this mirrors.
+ * async (report generates in ~15-45 min). Legacy ITEM report creation is now
+ * retired; this module may only poll/download an already-retained in-flight
+ * request. A new request belongs to the owner-permitted canonical capture engine.
  *
  * Safety: the mirror is REPLACED (delete-then-insert) only when the parsed report has
  * a sane row count (>= MIN_SANE_ROWS) — a short/garbled report never wipes the mirror
@@ -24,37 +24,20 @@ import {
   parseCsv,
   col,
   ReportRateLimitedError,
-} from "./reports-insights";
+} from "./reports-insights.ts";
 
 export const ITEM_CATALOG_REPORT_TYPE = "ITEM_CATALOG"; // WalmartReport.reportType tag
-const ITEM_REPORT_VERSION = "4"; // Walmart's Item Report is version 4
 const REFRESH_AFTER_MS = 20 * 60 * 60 * 1000; // re-request ~daily after a good run
 const ERROR_RETRY_AFTER_MS = 60 * 60 * 1000; // a failed report retries after ~1h, not 20h
-const INFLIGHT_TIMEOUT_MS = 3 * 60 * 60 * 1000; // a report stuck in-flight >3h is presumed dropped → re-request
 const IN_FLIGHT = new Set(["REQUESTED", "INPROGRESS", "RECEIVED", "SUBMITTED"]);
 const INSERT_CHUNK = 500;
 const TX_TIMEOUT_MS = 120_000;
+export const ITEM_REPORT_CREATE_RETIRED_REASON =
+  "LEGACY_ITEM_REPORT_CREATE_RETIRED_OWNER_PERMIT_REQUIRED" as const;
 // Guard: refuse to replace the mirror with fewer than this many rows (protects the
 // shared cache from a wrong-columns / truncated report). Our catalog is ~4-5k items.
 // Exported so the /v3/items fallback (syncWalmartCatalog) applies the SAME floor.
 export const MIN_SANE_ROWS = 2500;
-
-/** Request a fresh ITEM report. Returns the requestId to poll. Separate from the
- *  insights requestReport because the ITEM report uses reportVersion 4 (not v1). */
-async function requestItemReport(client: WalmartClient): Promise<string> {
-  const res = await client.requestRaw("POST", "/reports/reportRequests", {
-    params: { reportType: "ITEM", reportVersion: ITEM_REPORT_VERSION },
-    body: {},
-    headers: { "Content-Type": "application/json" },
-    noRetryOn429: true, // tiny rate bucket — defer to next tick rather than hammer
-  } as any);
-  if (res.status === 429) throw new ReportRateLimitedError();
-  if (!res.ok) throw new Error(`requestItemReport ${res.status}: ${JSON.stringify(res.body).slice(0, 300)}`);
-  const b = res.body as { requestId?: string; requestID?: string } | undefined;
-  const id = b?.requestId ?? b?.requestID;
-  if (!id) throw new Error(`requestItemReport: no requestId in ${JSON.stringify(res.body).slice(0, 300)}`);
-  return id;
-}
 
 export interface ItemCatalogRow {
   sku: string;
@@ -176,16 +159,17 @@ export async function itemReportIsFresh(prisma: PrismaClient, storeIndex: number
 }
 
 export interface ItemReportDriveResult {
-  action: "requested" | "polled" | "downloaded" | "errored" | "rateLimited" | "idle";
+  action: "polled" | "downloaded" | "errored" | "rateLimited" | "idle";
   status?: string;
   requestId?: string;
   written?: number;
   publishedCount?: number;
   headers?: string[];
   message?: string;
+  reason?: typeof ITEM_REPORT_CREATE_RETIRED_REASON;
 }
 
-/** Advance the ITEM report state machine by one step. Mirrors driveBuyBoxReport. */
+/** Poll/download one already-existing ITEM report request; never create one. */
 export async function driveItemCatalogReport(
   prisma: PrismaClient,
   client: WalmartClient,
@@ -198,26 +182,22 @@ export async function driveItemCatalogReport(
 
   const now = Date.now();
   const age = latest ? now - latest.requestedAt.getTime() : Infinity;
-  // Self-healing: re-request after a good run (daily), sooner after an ERROR, and if a
-  // report has been stuck in-flight too long (Walmart dropped it) so it can't wedge.
-  const needFresh =
+  // Legacy report creation is permanently retired. This reader may continue an
+  // already-retained in-flight request, but it must never originate a new ITEM
+  // report. A replacement create attempt belongs only to the canonical capture
+  // engine and its externally owner-authorized one-shot permit.
+  const needsNewRequest =
     !latest ||
     (latest.status === "DOWNLOADED" && age > REFRESH_AFTER_MS) ||
-    (latest.status === "ERROR" && age > ERROR_RETRY_AFTER_MS) ||
-    (IN_FLIGHT.has(latest.status) && age > INFLIGHT_TIMEOUT_MS);
+    (latest.status === "ERROR" && age > ERROR_RETRY_AFTER_MS);
 
-  // ── Need a fresh request? ──
-  if (needFresh) {
-    try {
-      const requestId = await requestItemReport(client);
-      await prisma.walmartReport.create({
-        data: { storeIndex, reportType: ITEM_CATALOG_REPORT_TYPE, requestId, status: "REQUESTED" },
-      });
-      return { action: "requested", requestId, status: "REQUESTED" };
-    } catch (err) {
-      if (err instanceof ReportRateLimitedError) return { action: "rateLimited", message: "request deferred" };
-      throw err;
-    }
+  if (needsNewRequest) {
+    return {
+      action: "idle",
+      status: latest?.status,
+      reason: ITEM_REPORT_CREATE_RETIRED_REASON,
+      message: "legacy ITEM report creation is retired; an owner-permitted canonical capture is required",
+    };
   }
 
   // ── In-flight → poll ──

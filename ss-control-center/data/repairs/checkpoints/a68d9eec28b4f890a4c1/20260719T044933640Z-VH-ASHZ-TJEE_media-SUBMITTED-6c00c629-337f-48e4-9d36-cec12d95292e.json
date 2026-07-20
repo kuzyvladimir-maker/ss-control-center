@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "6c00c629-337f-48e4-9d36-cec12d95292e",
+  "created_at": "2026-07-19T04:49:33.640Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "VH-ASHZ-TJEE:media",
+  "sku": "VH-ASHZ-TJEE",
+  "kind": "MEDIA",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "cf86f961-88af-4b08-94f4-cf08c9b05783",
+    "patch_sha256": "754d7a07d632251d4ac80ae22d5682932a5f703c6ea13c02247802189f556411",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "754d7a07d632251d4ac80ae22d5682932a5f703c6ea13c02247802189f556411",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "0ba4580f2e7c994222ed695d36cf3e0eb78c67bef1f44bc13691714aa4e9ccb2"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "a996bad56b9e4c8ba2e653cb601889f5",
+    "issues": []
+  },
+  "sha256": "6041f426fd4a794678bd3ae77f91748be45923d751f94f277e342203b7453670"
+}

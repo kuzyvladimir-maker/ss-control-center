@@ -12,6 +12,11 @@
 // consensus over any one lane. `responseMimeType: application/json` makes Gemini
 // return a clean JSON object (no code fences), so callers' parseJson works.
 
+import {
+  throwIfMeteredProviderControlError,
+  withMeteredProviderCall,
+} from "./metered-provider-call";
+
 const GEMINI_KEY = () => (process.env.GEMINI_API_KEY || "").trim().replace(/^['"]|['"]$/g, "");
 const GEMINI_MODEL = () => (process.env.GEMINI_VISION_MODEL || "gemini-2.5-flash").trim();
 
@@ -40,24 +45,34 @@ export async function identifyImageViaGemini(
   const parts: any[] = b64Images.map((b) => ({ inline_data: { mime_type: mediaType(b), data: b } }));
   parts.push({ text: prompt });
   try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts }],
-        generationConfig: { temperature: 0, responseMimeType: "application/json", maxOutputTokens: 700 },
-      }),
-      signal: AbortSignal.timeout(opts?.timeoutMs ?? 60000),
-    });
-    if (!res.ok) return null;
-    const j: any = await res.json();
-    const text: string | undefined = j?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text).filter(Boolean).join("") || undefined;
-    if (!text) return null;
-    // responseMimeType=json → text IS the JSON object; parse defensively anyway.
-    try { return JSON.parse(text); } catch {}
-    const m = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
-    try { return JSON.parse(m); } catch { return null; }
-  } catch {
+    return await withMeteredProviderCall(
+      {
+        provider: "gemini",
+        operation: "vision",
+        requestFingerprint: { images: b64Images, maxOutputTokens: 700, model, prompt },
+      },
+      async () => {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts }],
+            generationConfig: { temperature: 0, responseMimeType: "application/json", maxOutputTokens: 700 },
+          }),
+          signal: AbortSignal.timeout(opts?.timeoutMs ?? 60000),
+        });
+        if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`);
+        const j: any = await res.json();
+        const text: string | undefined = j?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text).filter(Boolean).join("") || undefined;
+        if (!text) return null;
+        // responseMimeType=json → text IS the JSON object; parse defensively anyway.
+        try { return JSON.parse(text); } catch {}
+        const m = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+        try { return JSON.parse(m); } catch { return null; }
+      },
+    );
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
     return null;
   }
 }

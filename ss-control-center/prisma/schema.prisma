@@ -1955,14 +1955,69 @@ model SkuCost {
   needsReview Boolean @default(false)
   notes       String?
 
+  // Reproducibility of the recipe/evidence used for this effective period.
+  observationKey     String? @unique // idempotent immutable evidence fingerprint
+  recipeHash         String?
+  evidenceJson       String?
+  evidenceOutcome    String? // FACT | ESTIMATE | UNSOURCEABLE (required for retail:batch)
+  matcherVersion     String?
+  pricePolicyVersion String?
+  runId              String?
+  approvalId         String?
+
+  componentEvidence SkuComponentEvidence[]
+  listingScopeLink  SkuCostListingScopeLink?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Idempotent upsert key for re-ingesting the same source+period.
-  @@unique([sku, source, effectiveDate], name: "sku_cost_period")
+  // Multiple immutable observations may describe the same business period;
+  // observationKey, not the period, is the idempotency boundary.
+  @@index([sku, source, effectiveDate], map: "SkuCost_period_lookup_idx")
   @@index([sku])
   @@index([asin])
   @@index([source])
+}
+
+// Immutable canonical marketplace listing registry. Rows are admitted only
+// from a checksummed authoritative Phase 1 manifest; raw-SKU legacy tables and
+// historical costs are never guessed/backfilled into this registry.
+model ProductTruthListingScope {
+  listingKey            String   @id
+  keyVersion            String
+  channel               String
+  storeIndex            Int
+  sku                   String
+  registrationKind      String
+  manifestSchemaVersion String
+  manifestSha256        String
+  manifestAsOf          DateTime
+  ownerDecisionId       String
+  sourceReportId        String
+  sourceContentSha256   String
+  sourceCapturedAt      DateTime
+  createdAt             DateTime @default(now())
+
+  costLinks      SkuCostListingScopeLink[]
+  enrichmentJobs EnrichmentJob[]
+  operationalItems ProductTruthOperationalRunItem[]
+
+  @@unique([channel, storeIndex, sku], map: "ProductTruthListingScope_channel_store_sku_key")
+  @@index([manifestSha256, listingKey], map: "ProductTruthListingScope_manifest_idx")
+}
+
+// One append-only retail:batch cost observation belongs to one exact listing
+// scope. The migration seals this child-first link atomically with SkuCost.
+model SkuCostListingScopeLink {
+  skuCostId   String   @id
+  listingKey  String
+  linkVersion String
+  createdAt   DateTime @default(now())
+
+  skuCost      SkuCost                  @relation(fields: [skuCostId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  listingScope ProductTruthListingScope @relation(fields: [listingKey], references: [listingKey], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([listingKey, skuCostId], map: "SkuCostListingScopeLink_listing_cost_idx")
 }
 
 // SkuComponent — the STRUCTURAL bill-of-materials behind one of our listings.
@@ -1998,8 +2053,17 @@ model SkuComponent {
   retailer     String? // walmart | target | samsclub | costco | google | own-brand
   matchedTitle String? // the donor/offer title we priced off
 
-  donorProductId    String? // link into DonorProduct for full content
-  isBundleComponent Boolean @default(false) // true when part of a decomposed bundle
+  donorProductId              String? // DEPRECATED exact-only content link during migration
+  contentDonorProductId       String? // exact identity only
+  priceEvidenceDonorProductId String? // exact or typed price proxy
+  priceEvidenceOfferId        String?
+  priceEvidenceObservationId  String? // immutable DonorOfferObservation evidence
+  matchTier                   String? // EXACT_IDENTITY | CROSS_SIZE_ESTIMATE | ...
+  matcherVersion              String?
+  priceEvidenceStatus         String? // FACT | ESTIMATE | REJECT
+  pricePolicyVersion          String?
+  priceEvidenceJson           String?
+  isBundleComponent           Boolean @default(false) // true when part of a decomposed bundle
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2007,6 +2071,10 @@ model SkuComponent {
   @@unique([sku, idx], name: "sku_component_idx")
   @@index([sku])
   @@index([donorProductId])
+  @@index([contentDonorProductId])
+  @@index([priceEvidenceDonorProductId])
+  @@index([priceEvidenceOfferId])
+  @@index([priceEvidenceObservationId])
 }
 
 // CatalogSnapshot — one hourly capture of catalog / COGS / enrichment progress.
@@ -2074,12 +2142,11 @@ model RetailPrice {
 }
 
 // ─── Reference Catalog (Donor DB) — product-centric knowledge base ─────────
-// DonorProduct = one row per DISTINCT real retail single-unit product (NOT per
-// our SKU). Harvested from donor retailers (Walmart/Target/Publix/BJ's/Sam's…)
-// and reused by every module: COGS, listing-improvement, Bundle Factory, new
-// listings. DonorOffer holds per-retailer prices — the cheapest CLEAN first-party
-// DIRECT offer is the procurement cost. EnrichmentJob is the work queue (cron +
-// manual "vector" + Bundle Factory producers). See docs/wiki/reference-catalog-engine.md.
+// DonorProduct is a retailer/source product record, not the cross-retailer
+// identity itself. Exact source records map through an immutable decision to
+// CanonicalProductVariant, so one real variant can have many retailer sources.
+// Consumers reuse that channel-independent variant for COGS, procurement,
+// listing improvement, Bundle Factory, and new listings.
 model DonorProduct {
   id String @id @default(cuid())
 
@@ -2113,18 +2180,109 @@ model DonorProduct {
   currency        String  @default("USD")
 
   // Dedup key: normalized brand+line+size+container so 1 real product = 1 row.
-  identityKey String  @unique
-  confidence  Float? // identify confidence
-  needsReview Boolean @default(false)
+  identityKey            String    @unique
+  identityStatus         String    @default("legacy_unverified") // candidate | exact_confirmed | legacy_unverified | rejected
+  identityMatcherVersion String?
+  identityEvidenceJson   String?
+  identityConfirmedAt    DateTime?
+  confidence             Float? // identify confidence
+  needsReview            Boolean   @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  offers DonorOffer[]
+  offers              DonorOffer[]
+  harvestStates       DonorHarvestState[]
+  offerObservations   DonorOfferObservation[]
+  variantDecisions    DonorProductVariantDecision[]
+  contentObservations ProductContentObservation[]
 
   @@index([brand])
   @@index([category])
   @@index([bestPrice])
+  @@index([identityStatus])
+}
+
+// Immutable channel-independent identity of one sellable package/variant.
+// `variantKey` is derived by canonical-product-variant.ts from normalized
+// identity; retailer source rows never manufacture their own cross-source key.
+model CanonicalProductVariant {
+  id                      String   @id
+  variantKey              String   @unique
+  identityHash            String   @unique
+  keyVersion              String
+  normalizedBrand         String
+  normalizedProductLine   String?
+  normalizedFlavor        String?
+  normalizedModifiersJson String   @default("[]")
+  normalizedForm          String?
+  sizeDimension           String
+  sizeBaseAmount          Float
+  sizeBaseUnit            String
+  outerPackCount          Int      @default(1)
+  identityJson            String
+  createdAt               DateTime @default(now())
+
+  sourceDecisions          DonorProductVariantDecision[]
+  contentObservations      ProductContentObservation[]
+  offerObservations        DonorOfferObservation[]
+  targetComponentEvidence  SkuComponentEvidence[]        @relation("SkuComponentEvidenceTargetVariant")
+  contentComponentEvidence SkuComponentEvidence[]        @relation("SkuComponentEvidenceContentVariant")
+  priceComponentEvidence   SkuComponentEvidence[]        @relation("SkuComponentEvidencePriceVariant")
+
+  @@index([normalizedBrand, normalizedProductLine])
+}
+
+// Append-only matcher decisions. The migration enforces a partial unique index
+// allowing at most one exact_confirmed canonical variant per DonorProduct.
+model DonorProductVariantDecision {
+  id                 String                   @id
+  decisionKey        String                   @unique
+  donorProductId     String
+  donorProduct       DonorProduct             @relation(fields: [donorProductId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  canonicalVariantId String?
+  canonicalVariant   CanonicalProductVariant? @relation(fields: [canonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  decisionStatus     String
+  matcherVersion     String
+  evidenceHash       String
+  evidenceJson       String
+  decidedAt          DateTime
+  runId              String?
+  approvalId         String?
+  createdAt          DateTime                 @default(now())
+
+  contentObservations ProductContentObservation[]
+  offerObservations   DonorOfferObservation[]
+
+  @@index([canonicalVariantId, decisionStatus])
+  @@index([donorProductId, decidedAt])
+}
+
+// Immutable full-content snapshot from one exact retailer source record.
+model ProductContentObservation {
+  id                 String                      @id
+  observationKey     String                      @unique
+  donorProductId     String
+  donorProduct       DonorProduct                @relation(fields: [donorProductId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  canonicalVariantId String
+  canonicalVariant   CanonicalProductVariant     @relation(fields: [canonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  variantDecisionId  String
+  variantDecision    DonorProductVariantDecision @relation(fields: [variantDecisionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  sourceUrl          String
+  sourceApi          String
+  contentHash        String
+  fieldHashesJson    String
+  contentJson        String
+  observedAt         DateTime
+  runId              String?
+  approvalId         String?
+  meteredReceiptId   String?
+  createdAt          DateTime                    @default(now())
+
+  componentEvidence SkuComponentEvidence[]
+
+  @@index([canonicalVariantId, observedAt])
+  @@index([donorProductId, observedAt])
 }
 
 // DonorOffer — one price per retailer for a DonorProduct. Idempotent on
@@ -2139,12 +2297,13 @@ model DonorOffer {
   retailerProductId String // item_id / TCIN / url-slug — cached forever
   via               String @default("direct") // direct | instacart (instacart ≈ +15% markup)
 
-  price        Float? // price of the matched listing
-  packSizeSeen Int? // units in the matched listing (>1 = multipack)
-  pricePerUnit Float? // price / packSizeSeen — per base-unit cost
-  currency     String   @default("USD")
-  zip          String? // regional pricing (required for bjs/publix/aldi)
-  inStock      Boolean?
+  price            Float? // price of the matched listing
+  packSizeSeen     Int? // units in the matched listing (>1 = multipack)
+  pricePerUnit     Float? // price / packSizeSeen — per base-unit cost
+  currency         String   @default("USD")
+  zip              String? // regional pricing (required for bjs/publix/aldi)
+  localityEvidence String? // zip_scoped | store_scoped | national_unscoped
+  inStock          Boolean?
 
   productUrl   String?
   sellerName   String?
@@ -2156,9 +2315,186 @@ model DonorOffer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  observations DonorOfferObservation[]
+
   @@unique([retailer, retailerProductId], name: "donor_offer_dedup")
   @@index([donorProductId])
   @@index([retailer])
+}
+
+// Append-only source observations. DonorOffer is the current materialized row;
+// this table preserves the price/stock/locality evidence used by historical COGS.
+model DonorOfferObservation {
+  id                 String                       @id
+  observationKey     String                       @unique
+  donorOfferId       String
+  donorOffer         DonorOffer                   @relation(fields: [donorOfferId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  donorProductId     String
+  donorProduct       DonorProduct                 @relation(fields: [donorProductId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  canonicalVariantId String?
+  canonicalVariant   CanonicalProductVariant?     @relation(fields: [canonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  variantDecisionId  String?
+  variantDecision    DonorProductVariantDecision? @relation(fields: [variantDecisionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  retailer          String
+  retailerProductId String
+  via               String
+  title             String?
+  price             Float?
+  packSizeSeen      Int?
+  pricePerUnit      Float?
+  currency          String   @default("USD")
+  zip               String?
+  localityEvidence  String?
+  inStock           Boolean?
+  productUrl        String?
+  sellerName        String?
+  isFirstParty      Boolean
+  sourceApi         String?
+  observedAt        DateTime
+  runId             String?
+  approvalId        String?
+  meteredReceiptId  String?
+  createdAt         DateTime @default(now())
+
+  componentEvidence SkuComponentEvidence[]
+
+  @@index([donorOfferId, observedAt])
+  @@index([donorProductId, observedAt])
+  @@index([canonicalVariantId, observedAt])
+  @@index([retailer, retailerProductId, observedAt])
+}
+
+// Authoritative append-only component evidence for one immutable SkuCost row.
+// evidenceStatus governs only the price/manual-cost axis. The optional content
+// pair is exact-target-only and may coexist with FACT, ESTIMATE, REJECT, or
+// MANUAL_FACT, so content readiness never depends on price availability.
+model SkuComponentEvidence {
+  id                        String                     @id
+  evidenceKey               String                     @unique
+  skuCostId                 String
+  skuCost                   SkuCost                    @relation(fields: [skuCostId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  componentIndex            Int
+  evidenceStatus            String // price axis: FACT | MANUAL_FACT | ESTIMATE | REJECT
+  targetCanonicalVariantId  String
+  targetCanonicalVariant    CanonicalProductVariant    @relation("SkuComponentEvidenceTargetVariant", fields: [targetCanonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  contentCanonicalVariantId String?
+  contentCanonicalVariant   CanonicalProductVariant?   @relation("SkuComponentEvidenceContentVariant", fields: [contentCanonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  priceCanonicalVariantId   String?
+  priceCanonicalVariant     CanonicalProductVariant?   @relation("SkuComponentEvidencePriceVariant", fields: [priceCanonicalVariantId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  contentObservationId      String?
+  contentObservation        ProductContentObservation? @relation(fields: [contentObservationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  priceObservationId        String?
+  priceObservation          DonorOfferObservation?     @relation(fields: [priceObservationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  matchTier                 String
+  matcherVersion            String
+  pricePolicyVersion        String
+  evidenceHash              String
+  evidenceJson              String
+  createdAt                 DateTime                   @default(now())
+
+  @@unique([skuCostId, componentIndex])
+  @@index([targetCanonicalVariantId, evidenceStatus])
+  @@index([contentObservationId])
+  @@index([priceObservationId])
+}
+
+// Distributed owner-approved hard caps for paid Product Truth providers.
+// Safety triggers and immutable transition rules live in migration
+// 20260719000000_metered_budget_ledger and are intentionally stricter than the
+// application model below.
+model MeteredProviderBudget {
+  id                  String   @id
+  permitVersion       Int
+  runId               String
+  approvalId          String
+  approvedBy          String
+  provider            String
+  issuedAt            DateTime
+  expiresAt           DateTime
+  operations          String
+  maxCalls            Int
+  maxUnitsMicros      BigInt?
+  reservedCalls       Int      @default(0)
+  reservedUnitsMicros BigInt   @default(0)
+  createdAt           DateTime
+  updatedAt           DateTime
+
+  receipts MeteredReservationReceipt[]
+
+  @@unique([runId, provider], map: "MeteredProviderBudget_run_provider_key")
+  @@index([approvalId, expiresAt], map: "MeteredProviderBudget_approval_idx")
+}
+
+model MeteredReservationReceipt {
+  id             String                @id
+  budgetId       String
+  budget         MeteredProviderBudget @relation(fields: [budgetId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  reservationKey String
+  operation      String
+  unitsMicros    BigInt
+  status         String
+  failureCode    String?
+  createdAt      DateTime
+  reservedAt     DateTime?
+  settledAt      DateTime?
+  updatedAt      DateTime
+
+  settlement MeteredReservationSettlement?
+
+  @@unique([budgetId, reservationKey], map: "MeteredReservationReceipt_budget_key")
+  @@index([budgetId, status, createdAt], map: "MeteredReservationReceipt_budget_status_idx")
+}
+
+model MeteredReservationSettlement {
+  id            String                    @id
+  reservationId String                    @unique(map: "MeteredReservationSettlement_reservation_key")
+  reservation   MeteredReservationReceipt @relation(fields: [reservationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  outcome       String
+  detail        String?
+  settledAt     DateTime
+}
+
+// Bounded content-harvest lifecycle for one concrete donor/source/item.
+// Scheduler claims and budget denials do not count as source attempts; workers
+// claim with version-based CAS and never select terminal rows again.
+model DonorHarvestState {
+  id String @id
+
+  donorProductId    String
+  donorProduct      DonorProduct @relation(fields: [donorProductId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  source            String
+  retailerProductId String
+
+  status            String @default("pending")
+  requestedFields   String
+  completedFields   String @default("[]")
+  unavailableFields String @default("[]")
+
+  attempts        Int       @default(0)
+  maxAttempts     Int       @default(3)
+  nextEligibleAt  DateTime?
+  terminalReason  String?
+  lastError       String?
+  lastBlockReason String?
+
+  runId                  String?
+  approvalId             String?
+  leaseOwner             String?
+  leaseToken             String?
+  leaseExpiresAt         DateTime?
+  claimedAt              DateTime?
+  sourceAttemptStartedAt DateTime?
+  finishedAt             DateTime?
+
+  version   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([donorProductId, source, retailerProductId], name: "DonorHarvestState_identity_key")
+  @@index([status, nextEligibleAt, attempts])
+  @@index([status, leaseExpiresAt])
+  @@index([runId])
 }
 
 // EnrichmentJob — the Reference Catalog work queue. Drained by a Vercel-cron
@@ -2167,16 +2503,41 @@ model DonorOffer {
 model EnrichmentJob {
   id String @id @default(cuid())
 
-  targetType  String // brand | product | sku | query
-  target      String // "Jimmy Dean" | "Uncrustables" | a sku | a search query
-  status      String  @default("queued") // queued | running | done | error
+  targetType       String // brand | product | sku | query
+  target           String // "Jimmy Dean" | "Uncrustables" | a sku | a search query
+  normalizedTarget String?
+  // Required for targetType=sku by the queue-v3 DB contract; forbidden for
+  // channel-independent brand/product/query work.
+  listingKey       String?
+  listingScope     ProductTruthListingScope? @relation(fields: [listingKey], references: [listingKey], onDelete: Restrict, onUpdate: Restrict)
+  idempotencyKey   String?
+  requestedFields  String                    @default("[]") // canonical sorted JSON array
+
+  status      String  @default("queued") // queued | running | retry_wait | partial | source_unavailable | done | error | cancelled
   source      String  @default("manual") // cron | manual | bundle-factory
   priority    Int     @default(0)
   requestedBy String?
 
-  attempts Int     @default(0)
-  result   String? // JSON: { productsFound, offersFound, ... }
-  error    String?
+  runId      String?
+  approvalId String?
+
+  estimatedSpendUnits Float @default(0)
+  actualSpendUnits    Float @default(0)
+
+  attempts          Int     @default(0)
+  providerAttempts  String? // JSON object keyed by provider/operation
+  result            String? // JSON: { productsFound, offersFound, ... }
+  error             String?
+  terminalReason    String?
+  completedFields   String? // JSON array
+  unavailableFields String? // JSON array
+  checkpoint        String? // JSON provider receipt / resumable state
+
+  nextEligibleAt DateTime?
+  leaseOwner     String?
+  leaseToken     String?
+  leaseExpiresAt DateTime?
+  heartbeatAt    DateTime?
 
   queuedAt   DateTime  @default(now())
   startedAt  DateTime?
@@ -2184,8 +2545,100 @@ model EnrichmentJob {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
+  operationalRunItem ProductTruthOperationalRunItem?
+
   @@index([status, queuedAt])
+  @@index([status, nextEligibleAt])
+  @@index([leaseExpiresAt])
+  @@index([idempotencyKey])
+  @@index([listingKey, status], map: "EnrichmentJob_listing_scope_status_idx")
   @@index([targetType, target])
+}
+
+// Sealed, owner-approved execution journal for the Product Truth runner.
+// Cross-table transition, lease, budget, and append-only event-chain rules are
+// enforced by 20260719004000_product_truth_operational_run.
+model ProductTruthOperationalRun {
+  runId                String   @id
+  approvalId           String   @unique
+  planSchemaVersion    String
+  planSha256           String   @unique
+  planJson             String
+  mode                 String
+  environment          String
+  targetFingerprint    String
+  manifestSha256       String
+  targetSetSha256      String
+  targetCount          Int
+  sourcePolicyJson     String
+  providerCeilingsJson String
+  status               String   @default("prepared")
+  leaseOwner           String?
+  leaseToken           String?
+  leaseExpiresAt       DateTime?
+  heartbeatAt          DateTime?
+  startedAt            DateTime?
+  finishedAt           DateTime?
+  eventChainHead       String   @default("0000000000000000000000000000000000000000000000000000000000000000")
+  reportSha256         String?
+  artifactIndexSha256  String?
+  createdAt            DateTime
+  updatedAt            DateTime
+
+  items  ProductTruthOperationalRunItem[]
+  events ProductTruthOperationalEvent[]
+
+  @@index([status, updatedAt], map: "ProductTruthOperationalRun_status_updated_idx")
+}
+
+model ProductTruthOperationalRunItem {
+  id               String   @id
+  runId            String
+  run              ProductTruthOperationalRun @relation(fields: [runId], references: [runId], onDelete: Restrict, onUpdate: Restrict)
+  listingKey       String
+  listingScope     ProductTruthListingScope @relation(fields: [listingKey], references: [listingKey], onDelete: Restrict, onUpdate: Restrict)
+  ordinal          Int
+  requestedFields  String
+  queueJobId       String?  @unique
+  queueJob         EnrichmentJob? @relation(fields: [queueJobId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  status           String   @default("pending")
+  stage            String   @default("QUEUED")
+  attempts         Int      @default(0)
+  leaseToken       String?
+  leaseExpiresAt   DateTime?
+  checkpointJson   String?
+  checkpointSha256 String?
+  resultJson       String?
+  resultSha256     String?
+  lastError        String?
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  createdAt        DateTime
+  updatedAt        DateTime
+
+  events ProductTruthOperationalEvent[]
+
+  @@unique([runId, listingKey])
+  @@unique([runId, ordinal])
+  @@index([runId, status, ordinal], map: "ProductTruthOperationalRunItem_claim_idx")
+}
+
+model ProductTruthOperationalEvent {
+  id            String   @id
+  runId         String
+  run           ProductTruthOperationalRun @relation(fields: [runId], references: [runId], onDelete: Restrict, onUpdate: Restrict)
+  eventIndex    Int
+  eventType     String
+  itemId        String?
+  item          ProductTruthOperationalRunItem? @relation(fields: [itemId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  previousHash  String
+  payloadJson   String
+  payloadSha256 String
+  eventHash     String   @unique
+  createdAt     DateTime
+
+  @@unique([runId, eventIndex])
+  @@index([runId, eventIndex], map: "ProductTruthOperationalEvent_run_idx")
 }
 
 // Durable command/evidence bridge for the OpenClaw worker that controls the
@@ -2257,8 +2710,8 @@ model ChannelMaxAgentJob {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  events    ChannelMaxAgentEvent[]
-  evidence  ChannelMaxAgentEvidence[]
+  events   ChannelMaxAgentEvent[]
+  evidence ChannelMaxAgentEvidence[]
 
   @@index([status, priority, queuedAt])
   @@index([leaseExpiresAt])
@@ -2307,7 +2760,7 @@ model ChannelMaxAgentEvidence {
   byteSize   Int
   mediaType  String
   capturedAt DateTime
-  uri        String @unique
+  uri        String   @unique
   content    Bytes
   uploadedBy String
   createdAt  DateTime @default(now())
@@ -2680,8 +3133,10 @@ model ChannelSKU {
   last_status_check_at       DateTime?
 
   // Relations
-  lifecycle_logs    ListingLifecycleLog[]
-  compliance_checks ComplianceCheck[]
+  lifecycle_logs          ListingLifecycleLog[]
+  compliance_checks       ComplianceCheck[]
+  marketplace_submissions MarketplaceSubmissionAttempt[]
+  walmart_buyer_evidence  WalmartBuyerPublicationEvidence[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -2694,6 +3149,75 @@ model ChannelSKU {
   @@index([compliance_status])
   @@index([validation_status])
   @@index([listing_status])
+}
+
+// Durable marketplace submission ledger. The stable idempotency key binds one
+// ChannelSKU to one canonical payload hash. `active_key` is the concurrency
+// fence: it equals channel_sku_id while an attempt can still have marketplace
+// side effects and becomes NULL only after terminal/retry-safe disposition.
+model MarketplaceSubmissionAttempt {
+  id                        String     @id
+  channel_sku_id            String
+  channel_sku               ChannelSKU @relation(fields: [channel_sku_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  marketplace               String
+  idempotency_key           String     @unique
+  active_key                String?    @unique
+  pilot_permit_sha256       String     @unique
+  pilot_permit_id           String     @unique
+  owner_key_id              String
+  owner_signature_sha256    String     @unique
+  pilot_slot                Int        @unique
+  pilot_approval_sha256     String
+  certification_sha256      String
+  seller_account_fingerprint_sha256 String
+  payload_hash              String
+  claim_token               String     @unique
+  state                     String // CLAIMED | REQUESTING | ACCEPTED | UNKNOWN | PENDING_REVIEW | BUYER_VERIFIED | REJECTED | RETRYABLE
+  request_count             Int        @default(0)
+  recovery_count            Int        @default(0)
+  marketplace_submission_id String?
+  marketplace_disposition   String?
+  error_json                String?
+  claimed_at                DateTime
+  requested_at              DateTime?
+  accepted_at               DateTime?
+  terminal_at               DateTime?
+  retry_after               DateTime?
+  created_at                DateTime   @default(now())
+  updated_at                DateTime   @updatedAt
+
+  walmart_buyer_evidence WalmartBuyerPublicationEvidence[]
+
+  @@index([channel_sku_id, state])
+  @@index([state, retry_after])
+  @@index([marketplace_submission_id])
+}
+
+// Immutable proof that an exact Walmart seller SKU/item identity was observed
+// on the buyer-facing PDP as both published and buyable. A processed feed alone
+// never creates this row and can never promote ChannelSKU to LIVE.
+model WalmartBuyerPublicationEvidence {
+  id                    String                       @id
+  channel_sku_id        String
+  channel_sku           ChannelSKU                   @relation(fields: [channel_sku_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  submission_attempt_id String
+  submission_attempt    MarketplaceSubmissionAttempt @relation(fields: [submission_attempt_id], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  sku                   String
+  walmart_item_id       String
+  source_url            String
+  source_kind           String
+  captured_at           DateTime
+  exact_sku_match       Boolean
+  exact_item_id_match   Boolean
+  published             Boolean
+  buyable               Boolean
+  evidence_hash         String                       @unique
+  raw_evidence          String
+  created_at            DateTime                     @default(now())
+
+  @@index([channel_sku_id, captured_at])
+  @@index([submission_attempt_id, captured_at])
+  @@index([sku, walmart_item_id, captured_at])
 }
 
 // ResearchPool — products discovered by Stage 2 (Research). One row per
@@ -2811,9 +3335,9 @@ model BundleDraft {
   compliance_blocked_reasons String? // JSON array of failed rule IDs
 
   // Relations
-  compliance_checks ComplianceCheck[]
-  variation_matrix  VariationMatrix?
-  generated_content GeneratedContent[]
+  compliance_checks     ComplianceCheck[]
+  variation_matrix      VariationMatrix?
+  generated_content     GeneratedContent[]
   generation_work_items GenerationWorkItem[]
 
   created_at DateTime @default(now())
@@ -2953,7 +3477,9 @@ model UPCPool {
   assigned_to    ChannelSKU?
 
   // If RESERVED — which BundleDraft holds it (with TTL)
-  reserved_for_id String?
+  // One draft may hold at most one UPC. The unique constraint is also the
+  // database-level race fence used by the Walmart new-SKU engine.
+  reserved_for_id String? @unique
   reserved_at     DateTime?
   reserved_until  DateTime?
 
@@ -3071,8 +3597,8 @@ model GenerationWorkItem {
   spec_index      Int
   spec_json       String
   fingerprint     String
-  status          String    @default("PENDING") // PENDING | RUNNING | SUCCEEDED | FAILED | SKIPPED
-  attempts        Int       @default(0)
+  status          String       @default("PENDING") // PENDING | RUNNING | SUCCEEDED | FAILED | SKIPPED
+  attempts        Int          @default(0)
   locked_at       DateTime?
   last_error      String?
   bundle_draft_id String?

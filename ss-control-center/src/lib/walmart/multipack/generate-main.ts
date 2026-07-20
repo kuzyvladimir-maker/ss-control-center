@@ -13,7 +13,7 @@ async function resolvePack(db: Client, sku: string, storeIndex = 1): Promise<num
   const p = await db.execute({
     sql: `SELECT COALESCE(
             (SELECT unitsInListing FROM SkuShippingData WHERE sku=? LIMIT 1),
-            (SELECT packSize FROM SkuCost WHERE sku=? LIMIT 1),
+            (SELECT packSize FROM SkuCost WHERE sku=? ORDER BY COALESCE(effectiveDate,'') DESC, updatedAt DESC LIMIT 1),
             (SELECT titlePackCount FROM WalmartCatalogItem WHERE sku=? AND storeIndex=? LIMIT 1),
             (SELECT titlePackCount FROM WalmartListingQualityItem WHERE sku=? AND storeIndex=? LIMIT 1)
           ) AS pack`,

@@ -10,6 +10,9 @@ import { config as loadEnv } from "dotenv";
 loadEnv({ path: ".env.local" }); loadEnv({ path: ".env" });
 import { createClient } from "@libsql/client";
 import { writeFileSync } from "fs";
+import { assertMeteredProviderCall } from "@/lib/sourcing/metered-call-guard";
+
+throw new Error("LEGACY_METERED_SCRIPT_DISABLED: direct paid audit transports are quarantined");
 
 const db = createClient({ url: process.env.TURSO_DATABASE_URL!, authToken: process.env.TURSO_AUTH_TOKEN });
 const OKEY = process.env.OPENAI_API_KEY!;
@@ -19,6 +22,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Live PDP content (title, bullets, description) as the BUYER sees it now. */
 async function liveContent(buyerItemId: string) {
+  assertMeteredProviderCall({ provider: "bluecart", operation: "detail" });
   try {
     const j: any = await (await fetch(`https://api.bluecartapi.com/request?api_key=${BKEY}&type=product&item_id=${buyerItemId}&walmart_domain=walmart.com`)).json();
     const p = j?.product || {};
@@ -39,6 +43,7 @@ async function classifyImage(url: string) {
       { type: "text", text: 'This is a marketplace MAIN product image (often a grid of the SAME photo repeated to show a multipack). Judge the underlying photo. JSON only: {"kind":"front|back|nutrition|lifestyle|promo|other","acceptable_main":true|false}. acceptable_main=true only if it is a clean product shot (front of the product, plain/white background) — NOT a nutrition-facts/back/lifestyle/promo image.' },
       { type: "image_url", image_url: { url } }] }],
   };
+  assertMeteredProviderCall({ provider: "openai", operation: "vision" });
   try {
     const r = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + OKEY }, body: JSON.stringify(body) });
     const j: any = await r.json();

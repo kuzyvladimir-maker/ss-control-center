@@ -166,6 +166,36 @@ function buildMediaPlan(
   });
 }
 
+function buildMainPlan(): UncrustablesRepairPlan {
+  const row = ledgerRow("LK-AS7X-K43B", "B000TEST001");
+  const ledger = Buffer.from(JSON.stringify({
+    schema_version: "uncrustables-ledger/v1.2",
+    audit_id: "UL-PENDING-MAIN-RECOVERY-TEST",
+    complete: true,
+    immutable: true,
+    mode: "live",
+    external_mutations: false,
+    completed_at: "2026-07-19T04:00:00.000Z",
+    rows: [row],
+  }));
+  return buildRepairPlan({
+    ledgerPath: "/tmp/uncr-pending-main-recovery-ledger.json",
+    ledgerBytes: ledger,
+    manifest: {
+      schema_version: "uncrustables-surgical-desired/v1",
+      source_ledger_sha256: sha256(ledger),
+      repairs: [{
+        sku: row.sku,
+        media: {
+          main_image_url:
+            "https://pub-test.r2.dev/uncrustables/desired-main.png",
+        },
+      }],
+    },
+    createdAt: new Date("2026-07-19T04:00:00.000Z"),
+  });
+}
+
 function mediaAction(entry: RepairPlanEntry): PlannedRepairAction {
   const action = entry.actions.find((candidate) => candidate.kind === "MEDIA");
   assert.ok(action && action.desired.kind === "MEDIA");
@@ -193,6 +223,29 @@ function listing(
         [{ marketplace_id: marketplaceId, media_location: url }],
       ]),
     ),
+  };
+}
+
+function mainListing(
+  entry: RepairPlanEntry,
+  buyerMain: string,
+  attributeMain: string,
+): ListingItem {
+  return {
+    sku: entry.sku,
+    summaries: [{
+      marketplaceId: MARKETPLACE_ID,
+      asin: entry.asin,
+      productType: "GROCERY",
+      itemName: "Uncrustables test listing",
+      mainImage: { link: buyerMain },
+    }],
+    attributes: {
+      main_product_image_locator: [{
+        marketplace_id: MARKETPLACE_ID,
+        media_location: attributeMain,
+      }],
+    },
   };
 }
 
@@ -397,6 +450,53 @@ test("PENDING_SETTLE_ONLY closes exact MEDIA submission after 3 new exact US rea
     readFile(path.join(root, "coordination", "active-execution.lock")),
     /ENOENT/,
   );
+});
+
+test("PENDING_SETTLE_ONLY closes MAIN after 3 buyer-summary rehost reads while the authoring locator lags", async () => {
+  const plan = buildMainPlan();
+  const entry = plan.entries[0];
+  const action = mediaAction(entry);
+  assert.equal(action.desired.kind, "MEDIA");
+  const desiredUrl = action.desired.value.main_image_url;
+  assert.ok(desiredUrl);
+  const selection = selectionFor(plan);
+  const root = uniqueRoot("main-buyer-summary");
+  const store = checkpointStore(root, plan.sha256);
+  const oldAttribute =
+    "https://m.media-amazon.com/images/I/OLD-AUTHORING.jpg";
+  const oldBuyer = "https://m.media-amazon.com/images/I/OLD-BUYER.jpg";
+  const newBuyer = "https://m.media-amazon.com/images/I/NEW-BUYER.jpg";
+  await appendPending(
+    store,
+    entry,
+    action,
+    mainListing(entry, oldBuyer, oldAttribute),
+  );
+  let gets = 0;
+  let patches = 0;
+  const gateway: RepairAmazonGateway = {
+    getListing: async () => {
+      gets++;
+      return mainListing(entry, newBuyer, oldAttribute);
+    },
+    patchListing: async () => {
+      patches++;
+      throw new Error("buyer-summary recovery must never PATCH");
+    },
+  };
+  const result = await executeRepairPlan(plan, gateway, {
+    ...recoveryOptions(store, selection, 3),
+    mediaEquivalence: {
+      equivalent: async (expected, actual) =>
+        expected === desiredUrl && actual === newBuyer,
+    },
+  });
+  assert.equal(result.verified_actions, 1);
+  assert.equal(result.recovered_pending_actions, 1);
+  assert.equal(result.unresolved_settlements, 0);
+  assert.equal(gets, 3);
+  assert.equal(patches, 0);
+  assert.equal((await store.pendingSubmissions()).size, 0);
 });
 
 test("PENDING_SETTLE_ONLY fails before GET when exact selection omits canonical pending", async () => {
@@ -894,5 +994,72 @@ test("PENDING_SETTLE_ONLY current AZ plan/selection/submission shape is accepted
   );
   assert.equal(result.verified_actions, 1);
   assert.equal(result.selection_sha256, selection.sha256);
+  assert.equal(patches, 0);
+});
+
+test("PENDING_SETTLE_ONLY accepts the current QX OFFER surrogate lineage and never PATCHes", async () => {
+  const planPath =
+    "data/repairs/generated/uncrustables-amazon-final-162-20260718-v8/URP-20260718T083203612Z-8badb989fc9b.json";
+  const selectionPath =
+    "data/repairs/execution-selections/uncrustables-offer-canary-qx-20260718-v1/URES-20260718T150721047Z-b249fc715064.json";
+  const armedPath =
+    "data/repairs/checkpoints/8badb989fc9bc5ee9c7c/20260718T151330175Z-QX-AS89-H8YC_offer-SUBMISSION_ARMED-704900c2-dad7-4c0f-9353-e01160eb1430.json";
+  const submittedPath =
+    "data/repairs/checkpoints/8badb989fc9bc5ee9c7c/20260718T151330520Z-QX-AS89-H8YC_offer-SUBMITTED-f349faa9-366c-4dea-a9f1-678906ded957.json";
+  const snapshotPath =
+    "data/repairs/rollback/offer-canary-qx-v1-preapply-20260718T1511Z/UAPS-20260718T151233207Z-46a80e727880-8096129d8101.json";
+  const plan = await readRepairPlan(planPath);
+  const selection = await readRepairExecutionSelection(selectionPath, plan);
+  const entry = plan.entries.find((candidate) => candidate.sku === "QX-AS89-H8YC");
+  assert.ok(entry);
+  const action = entry.actions.find((candidate) => candidate.kind === "OFFER");
+  assert.ok(action);
+  const armedFixture = JSON.parse(await readFile(armedPath, "utf8")) as CheckpointEvent;
+  const submittedFixture = JSON.parse(
+    await readFile(submittedPath, "utf8"),
+  ) as CheckpointEvent;
+  const snapshot = JSON.parse(await readFile(snapshotPath, "utf8")) as {
+    entries: Array<{ sku: string; listing: ListingItem }>;
+  };
+  const before = snapshot.entries.find((candidate) => candidate.sku === entry.sku);
+  assert.ok(before);
+  const root = uniqueRoot("current-qx-offer");
+  const store = checkpointStore(root, plan.sha256);
+  const armed = await store.append({
+    action_id: action.action_id,
+    sku: entry.sku,
+    kind: action.kind,
+    status: "SUBMISSION_ARMED",
+    detail: structuredClone(armedFixture.detail),
+  });
+  await store.append({
+    action_id: action.action_id,
+    sku: entry.sku,
+    kind: action.kind,
+    status: "SUBMITTED",
+    detail: {
+      ...structuredClone(submittedFixture.detail),
+      armed_event_id: armed.event_id,
+    },
+  });
+  let gets = 0;
+  let patches = 0;
+  const result = await executeRepairPlan(
+    plan,
+    {
+      getListing: async (_store, _sku, signal) => {
+        assert.ok(signal);
+        gets++;
+        return structuredClone(before.listing);
+      },
+      patchListing: async () => {
+        patches++;
+        return {};
+      },
+    },
+    recoveryOptions(store, selection, 3),
+  );
+  assert.equal(result.unresolved_settlements, 1);
+  assert.equal(gets, 3);
   assert.equal(patches, 0);
 });

@@ -17,7 +17,7 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "..");
 const defaultOutputDir = path.join(
   repoRoot,
-  "data/audits/uncrustables-completion-matrix-20260718-v4",
+  "data/audits/uncrustables-completion-matrix-20260718-v5",
 );
 
 function parseOutputDir(argv: readonly string[]): string {

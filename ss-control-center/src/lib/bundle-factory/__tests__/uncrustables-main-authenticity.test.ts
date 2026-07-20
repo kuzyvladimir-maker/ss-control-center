@@ -137,6 +137,12 @@ function approvalFor(
       only_reviewed_brand_art_present: true,
       pack_modes_and_sizes_match_recipe: true,
       no_foreign_or_fictional_items: true,
+      exact_per_variant_package_counts_match_recipe: true,
+      frozen_kit_geometry_and_branding_match_anchor: true,
+      exactly_two_inside_and_two_outside_gel_packs: true,
+      products_physically_seated_without_floating_or_paste: true,
+      pure_white_square_amazon_main_background: true,
+      no_loose_ice_water_overlays_or_extra_props: true,
     },
   });
   return { ...sealed, ...overrides };
@@ -203,6 +209,22 @@ function validMixedInput(): UncrustablesMainAuthenticityInput {
       ],
       foreign_items: [],
       fictional_or_unknown_items: [],
+      scene: {
+        background_is_pure_white: true,
+        square_one_to_one: true,
+        cooler_is_white_textured_eps: true,
+        cooler_lid_leans_behind: true,
+        salutem_cooler_branding_matches_anchor: true,
+        gel_packs_total: 4,
+        gel_packs_inside: 2,
+        gel_packs_outside: 2,
+        gel_packs_all_match_anchor: true,
+        products_all_seated_inside_behind_front_rim: true,
+        product_perspective_contact_and_shadows_believable: true,
+        floating_pasted_halo_or_wall_intersection_items: [],
+        loose_ice_snow_or_water_items: [],
+        forbidden_overlay_or_extra_prop_items: [],
+      },
     },
     human_approval: null,
   };
@@ -322,6 +344,36 @@ test("rejects a visible product count that does not equal recipe quantity divide
   input.visual_observation.items[0].visible_package_count = 2;
   input.human_approval = approvalFor(input);
   assert.ok(codes(input).has("PRODUCT_COUNT_MISMATCH"));
+});
+
+test("rejects wrong gel-pack arithmetic and layout", () => {
+  const input = validMixedInput();
+  input.visual_observation.scene.gel_packs_total = 5;
+  input.visual_observation.scene.gel_packs_inside = 3;
+  input.human_approval = approvalFor(input);
+  assert.ok(codes(input).has("GEL_PACK_LAYOUT_MISMATCH"));
+});
+
+test("rejects loose ice and physically floating or pasted products", () => {
+  const input = validMixedInput();
+  input.visual_observation.scene.loose_ice_snow_or_water_items = [
+    "blue crushed ice beneath the cartons",
+  ];
+  input.visual_observation.scene.products_all_seated_inside_behind_front_rim = false;
+  input.visual_observation.scene.floating_pasted_halo_or_wall_intersection_items = [
+    "front-right carton has a visible gap beneath it",
+  ];
+  input.human_approval = approvalFor(input);
+  const found = codes(input);
+  assert.ok(found.has("LOOSE_ICE_VISIBLE"));
+  assert.ok(found.has("PRODUCT_PHYSICAL_SEATING_INVALID"));
+});
+
+test("rejects malformed or omitted structured scene evidence", () => {
+  const input = validMixedInput();
+  delete (input.visual_observation as Partial<typeof input.visual_observation>).scene;
+  input.human_approval = approvalFor(input);
+  assert.ok(codes(input).has("VISUAL_OBSERVATION_INVALID"));
 });
 
 test("rejects foreign, fictional, and unreviewed brand observations", () => {

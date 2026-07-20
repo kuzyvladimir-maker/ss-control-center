@@ -15,10 +15,18 @@
 // Costs provided by Vladimir 2026-07-04 (memory: reference_own_brand_costs).
 // To add a new own-brand SKU: add a row to OWN_BRAND_COSTS below.
 
+export const OWN_BRAND_COST_POLICY_VERSION = "owner-manual-cost/1.0.0" as const;
+export const OWN_BRAND_COST_EFFECTIVE_AT = "2026-07-04" as const;
+
 export type OwnBrandCostHit = {
   perUnit: number; // landed cost of ONE base unit ($)
   label: string; // human label for logs / notes
   method: "own-brand"; // provenance tag written to SkuCost.notes / SkuComponent.costMethod
+  ruleKey: string;
+  policyVersion: typeof OWN_BRAND_COST_POLICY_VERSION;
+  effectiveAt: typeof OWN_BRAND_COST_EFFECTIVE_AT;
+  source: "owner-provided-cost-table";
+  approvalRef: "owner:vladimir:2026-07-04";
 };
 
 type OwnBrandRule = {
@@ -95,7 +103,16 @@ export function ownBrandCost(parts: {
     if (!r.product.test(text)) continue;
     const isPack = r.packWhen != null && r.packPerUnit != null && r.packWhen.test(packCtx);
     const perUnit = isPack ? (r.packPerUnit as number) : r.perUnit;
-    return { perUnit, label: `${r.key}${isPack ? " (pack)" : ""}`, method: "own-brand" };
+    return {
+      perUnit,
+      label: `${r.key}${isPack ? " (pack)" : ""}`,
+      method: "own-brand",
+      ruleKey: r.key,
+      policyVersion: OWN_BRAND_COST_POLICY_VERSION,
+      effectiveAt: OWN_BRAND_COST_EFFECTIVE_AT,
+      source: "owner-provided-cost-table",
+      approvalRef: "owner:vladimir:2026-07-04",
+    };
   }
   return null;
 }

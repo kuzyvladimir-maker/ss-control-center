@@ -6,10 +6,9 @@
  *   - subscription/connection healthy (a cheap live ping)
  *   - remaining usage where the vendor exposes it (credits / balance)
  *
- * BlueCart has a free /account endpoint (real plan + credits). Anthropic/OpenAI
- * are validated with a free models ping. Unwrangle has no balance endpoint, so
- * its last-seen credits (recorded by enrichment calls) are read from Setting and
- * only re-probed live on explicit ?refresh=unwrangle (costs 1 credit).
+ * BlueCart has a free /account endpoint (real plan + credits). Unwrangle has no
+ * free balance endpoint, so its last-seen credits are read from Setting. GET
+ * never performs a paid search or billed Anthropic message.
  *
  * PUT updates the monthly budget ceiling (Setting: paid_monthly_budget_usd).
  */
@@ -56,60 +55,19 @@ async function probeBluecart(): Promise<Svc> {
 async function probeUnwrangle(refresh: boolean): Promise<Svc> {
   const s: Svc = { key: "unwrangle", name: "Unwrangle (Target/Sam's/Costco)", group: "Data & sourcing", configured: !!process.env.UNWRANGLE_API_KEY, status: "unknown", unit: "credits" };
   if (!s.configured) return s;
-  // Cached last-seen credits (recorded by enrichment), unless an explicit live refresh.
+  // Cached last-seen credits from an approved provider call. A status page must
+  // never spend a sourcing credit merely to report status.
   const cached = await prisma.setting.findUnique({ where: { key: "svc_unwrangle_credits" } }).catch(() => null);
   if (cached?.value) { try { const c = JSON.parse(cached.value); s.remaining = c.remaining ?? null; s.asOf = c.at ?? null; s.status = "ok"; } catch {} }
-  if (refresh) {
-    try {
-      const { ok, j } = await getJson(`https://data.unwrangle.com/api/getter/?platform=target_search&search=water&api_key=${process.env.UNWRANGLE_API_KEY}`);
-      if (ok || j?.remaining_credits != null) {
-        s.remaining = j?.remaining_credits ?? s.remaining; s.status = "ok"; s.asOf = new Date().toISOString();
-        await prisma.setting.upsert({ where: { key: "svc_unwrangle_credits" }, create: { key: "svc_unwrangle_credits", value: JSON.stringify({ remaining: s.remaining, at: s.asOf }) }, update: { value: JSON.stringify({ remaining: s.remaining, at: s.asOf }) } });
-      } else { s.detail = "live check failed"; }
-    } catch (e: any) { s.detail = e?.message?.slice(0, 100); }
-  } else if (!cached) { s.detail = "balance shown after first enrichment call (or click Check)"; }
+  if (refresh) s.detail = "live paid refresh disabled; showing last provider receipt";
+  else if (!cached) s.detail = "balance appears after an owner-approved provider run";
   return s;
 }
 
 async function probeAnthropic(): Promise<Svc> {
   const s: Svc = { key: "anthropic", name: "Anthropic Claude", group: "AI", configured: !!process.env.ANTHROPIC_API_KEY, status: "unknown", unit: "pay-as-you-go" };
   if (!s.configured) return s;
-  try {
-    // A free /v1/models ping only proves the key is valid — it returns 200 even
-    // when the credit balance is EXHAUSTED (which silently breaks every AI
-    // feature). So we make the smallest possible real message (Haiku, 1 token,
-    // ≈$0.000005) and read the "credit balance is too low" 400 Anthropic returns
-    // BEFORE billing — the real exhaustion signal.
-    const { ok, status, j } = await getJson(
-      "https://api.anthropic.com/v1/messages",
-      {
-        method: "POST",
-        headers: {
-          "x-api-key": process.env.ANTHROPIC_API_KEY!,
-          "anthropic-version": "2023-06-01",
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "claude-haiku-4-5-20251001",
-          max_tokens: 1,
-          messages: [{ role: "user", content: "ping" }],
-        }),
-      },
-    );
-    if (ok) {
-      s.status = "ok"; s.detail = "credits available";
-    } else {
-      const msg = String(j?.error?.message ?? "").toLowerCase();
-      if (status === 400 && /credit balance|too low|insufficient/.test(msg)) {
-        s.status = "error"; s.balanceUsd = 0;
-        s.detail = "Credit balance too low — top up or AI features stop working";
-      } else if (status === 401) {
-        s.status = "error"; s.detail = "invalid API key";
-      } else {
-        s.status = "error"; s.detail = (j?.error?.message ?? `HTTP ${status}`).slice(0, 120);
-      }
-    }
-  } catch (e: any) { s.status = "error"; s.detail = e?.message?.slice(0, 100); }
+  s.detail = "configured; billed message probe disabled";
   return s;
 }
 

@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 for (const f of [".env",".env.local"]) { let t=""; try{t=readFileSync(f,"utf8");}catch{continue;} for (const l of t.split("\n")){const m=l.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/); if(m) process.env[m[1]]=m[2].trim().replace(/^['"]|['"]$/g,"");} }
+throw new Error("LEGACY_METERED_SCRIPT_DISABLED: _gen.ts has unbounded direct Oxylabs calls; migrate it to guarded provider adapters before reuse");
 async function main(){
   const { createClient } = await import("@libsql/client");
   const sharp=(await import("sharp")).default;

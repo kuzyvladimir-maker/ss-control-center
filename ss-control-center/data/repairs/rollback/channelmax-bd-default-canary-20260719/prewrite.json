@@ -1,0 +1,57 @@
+{
+  "schema_version": "channelmax-bd-default-inline-canary-prewrite/v1",
+  "captured_at": "2026-07-19T02:15:17Z",
+  "mutation_status": "CONFIRMED_POSTWRITE",
+  "account": {
+    "host": "selling.channelmax.net",
+    "selected_site_id": 300,
+    "selected_site_name": "AmznUS [Salutem Solutions]",
+    "seller_id": "A3A7A0RDFUSGBS"
+  },
+  "row": {
+    "item_id": 171141050,
+    "sku": "BD-AS8P-XAW5",
+    "asin": "B0H85MXFH8",
+    "repricing_model_id": null,
+    "repricing_model_name": "Default"
+  },
+  "before": {
+    "minimum_price": null,
+    "maximum_price": 78.25,
+    "price": 78.25
+  },
+  "forward": {
+    "minimum_price": 66.95,
+    "maximum_price": 76.99
+  },
+  "rollback": {
+    "minimum_price": null,
+    "maximum_price": 78.25
+  },
+  "amazon_canary_after_channelmax": {
+    "regular_before": 70.88,
+    "regular_target": 76.99,
+    "minimum_target": 66.95,
+    "maximum_target": 76.99,
+    "preserve_live_sale_price": 66.98,
+    "live_sale_start_at": "2026-07-14T00:00:00Z",
+    "live_sale_end_at": "2026-08-13T23:59:59Z"
+  },
+  "guardrails": {
+    "single_row_only": true,
+    "preserve_default_repricing_model": true,
+    "channelmax_readback_required_before_amazon": true,
+    "amazon_sale_price_readback_required_after_amazon": true
+  },
+  "channelmax_result": {
+    "confirmed_at": "2026-07-19T02:16:54Z",
+    "write_response": "SUCCESS",
+    "updated_rows": 1,
+    "persisted_minimum_price": 66.95,
+    "persisted_maximum_price": 76.99,
+    "persisted_price": 76.99,
+    "last_updated_by": "salutem-MB",
+    "repricing_model_changed": false,
+    "result": "PASS"
+  }
+}

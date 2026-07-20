@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "11849a08-dcf3-446e-86f3-1dd8393c5b8e",
+  "created_at": "2026-07-19T04:31:04.352Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "PT-AS5B-Z2XH:media",
+  "sku": "PT-AS5B-Z2XH",
+  "kind": "MEDIA",
+  "status": "VERIFIED",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "7f25eef26c9a70f52e726a02ce8e37ac33b43b2a3a496b1d7240e22de40aa392",
+    "submitted_event_id": "e743a4d0-c8ea-4e86-9b3a-8e1f9da0a54d",
+    "stable_post_write_reads": 3,
+    "polling_reads": 3,
+    "polling_sweep": 3,
+    "elapsed_ms": 10245.705833,
+    "path_state_sha256": "bc78a48b80233a401c8059ed24edf40bae2da69f37b6b03fcafe369a3e7ae06c",
+    "checks": [
+      {
+        "field": "main_product_image_buyer_summary",
+        "ok": true,
+        "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/f5d846ad2aa9c48efe4730f19004f848a56dc0b260d879c76b69f10a928f0bcc.png",
+        "actual": "https://m.media-amazon.com/images/I/51J7EGYCZ0L.jpg"
+      }
+    ]
+  },
+  "sha256": "b6726197380c149f9a0cc7446d68a715ce6cf86d97c177f7123dca04f2bb9414"
+}

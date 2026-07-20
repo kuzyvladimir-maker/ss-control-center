@@ -163,18 +163,14 @@ export async function identifyProduct(inp: IdentifyInputs): Promise<ProductIdent
 
 // --- per-channel input gathering -------------------------------------------
 
-// Stores we can read via SP-API today (store2 no US seller_id, store4 no SP-API
-// app, store5 US-suspended — getMerchantToken throws for those, we skip).
-const AMAZON_STORES = [1, 3, 5];
-
 export async function gatherAmazonInputs(
   sku: string,
+  storeIndex: number,
 ): Promise<(IdentifyInputs & { found: true; store: number }) | { found: false }> {
-  for (const store of AMAZON_STORES) {
-    try {
-      const sellerId = await getMerchantToken(store);
-      const listing = await getListing(store, sellerId, sku);
-      if (!listing || (!listing.attributes && !listing.summaries)) continue;
+  try {
+      const sellerId = await getMerchantToken(storeIndex);
+      const listing = await getListing(storeIndex, sellerId, sku);
+      if (!listing || (!listing.attributes && !listing.summaries)) return { found: false };
       const f = flattenListing(listing);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const attrs = (listing.attributes ?? {}) as Record<string, any>;
@@ -189,29 +185,32 @@ export async function gatherAmazonInputs(
       }
 
       const title = f.title || "";
-      if (!title && !imgs.length) continue;
+      if (!title && !imgs.length) return { found: false };
       return {
         found: true,
-        store,
+        store: storeIndex,
         title,
         description: f.description || null,
         bullets: f.bullets || [],
         imageUrls: imgs,
       };
-    } catch {
-      /* store not accessible / SKU not there — try next */
-    }
+  } catch {
+    return { found: false };
   }
-  return { found: false };
 }
 
 export async function gatherWalmartInputs(
   db: Client,
   sku: string,
+  storeIndex: number,
 ): Promise<(IdentifyInputs & { found: true }) | { found: false }> {
-  const cat = await db.execute({ sql: `SELECT title, mainImageUrl FROM WalmartCatalogItem WHERE sku=? LIMIT 1`, args: [sku] });
-  const ship = await db.execute({ sql: `SELECT productTitle FROM SkuShippingData WHERE sku=? LIMIT 1`, args: [sku] });
-  let title = (cat.rows[0]?.title as string) || (ship.rows[0]?.productTitle as string) || "";
+  const cat = await db.execute({
+    sql: `SELECT title, mainImageUrl FROM WalmartCatalogItem
+          WHERE storeIndex=? AND sku=? LIMIT 1`,
+    args: [storeIndex, sku],
+  });
+  if (!cat.rows[0]) return { found: false };
+  let title = (cat.rows[0].title as string) || "";
 
   const imgs: string[] = [];
   const catImg = cat.rows[0]?.mainImageUrl as string | undefined;

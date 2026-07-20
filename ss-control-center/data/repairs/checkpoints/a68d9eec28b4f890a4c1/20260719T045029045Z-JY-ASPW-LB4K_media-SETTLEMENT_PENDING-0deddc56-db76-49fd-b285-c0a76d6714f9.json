@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "0deddc56-db76-49fd-b285-c0a76d6714f9",
+  "created_at": "2026-07-19T04:50:29.045Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "JY-ASPW-LB4K:media",
+  "sku": "JY-ASPW-LB4K",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "689cc3d4-53db-4513-8331-8e6926eeddf8",
+    "submitted_at": "2026-07-19T04:48:46.531Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "58462fd758a37883f68e94a788f362d41627ee5968b626cfaa156339b9d7204a",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "39a36b36fcaa041a8045a2f79f50645ca0b6e2ed950a9522c2a3b79211c4cf7e"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 30000,
+    "request_delay_ms": 500,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "2570cdf7feaef270f9e3902c247bfd440389a0a0731e6cf16558da331cbf4fb5"
+}

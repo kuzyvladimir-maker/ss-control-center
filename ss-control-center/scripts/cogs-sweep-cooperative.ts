@@ -25,6 +25,14 @@ process.env.SS_VISION_FREE_ONLY = "1";
 import { createClient } from "@libsql/client";
 import { costOneSku, enrichPrioritySkus } from "@/lib/sourcing/cogs-engine";
 import { harvestDonorDetail } from "@/lib/sourcing/donor-catalog";
+import { assertMeteredProviderCall } from "@/lib/sourcing/metered-call-guard";
+
+throw new Error("LEGACY_METERED_SCRIPT_DISABLED: use the durable Product Truth queue and budget ledger");
+
+const STORE_INDEX = Number(process.env.STORE_INDEX);
+if (!Number.isSafeInteger(STORE_INDEX) || STORE_INDEX <= 0) {
+  throw new Error("STORE_INDEX=<positive integer> is required; account scope is never inferred");
+}
 
 const CAP = Math.max(1, parseInt(process.env.CAP || "400", 10));
 const MAX_HOURS = parseFloat(process.env.MAX_HOURS || "8");
@@ -35,6 +43,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const CREDIT_FLOOR = Math.max(0, parseInt(process.env.CREDIT_FLOOR || "3000", 10));
 async function unwrangleCredits(): Promise<number> {
   const KEY = (process.env.UNWRANGLE_API_KEY || "").trim().replace(/^['"]|['"]$/g, "");
+  assertMeteredProviderCall({ provider: "unwrangle", operation: "balance_probe" });
   return fetch(`https://data.unwrangle.com/api/getter/?platform=target_search&search=water&api_key=${KEY}`, { signal: AbortSignal.timeout(20000) })
     .then((r) => r.json()).then((j: any) => Number(j?.remaining_credits ?? 0)).catch(() => Infinity);
 }
@@ -105,7 +114,7 @@ async function unwrangleCredits(): Promise<number> {
         const sku = skus[i];
         attempted.add(sku);
         try {
-          const res = await costOneSku(db, { sku, channel: "walmart" });
+          const res = await costOneSku(db, { sku, channel: "walmart", storeIndex: STORE_INDEX });
           if (res.status === "costed") { written++; real++; consecutiveSkips = 0; pause = Math.max(PAUSE_MIN, pause / 2); }
           else if (res.status === "no-price") { written++; uns++; consecutiveSkips = 0; pause = Math.max(PAUSE_MIN, pause / 2); }
           else { skipped++; consecutiveSkips++; pause = Math.min(PAUSE_MAX, pause * 2); } // lanes busy → retried later

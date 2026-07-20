@@ -1,5 +1,10 @@
 # Walmart Marketplace — Multipack Policy
 
+> **ARCHIVED SNAPSHOT — NOT A RUNTIME POLICY SOURCE.** The GS1/GEPIR, account
+> status, category and brand statements below are historical assumptions and
+> are excluded from the KB loader. Owner-managed UPCs follow the separately
+> tested assignment/checksum/uniqueness gate; use `prepublication-compliance.md`.
+
 > **Source:** https://sellercentral.walmart.com/help (Walmart Marketplace Seller Help)
 > **Last verified:** 2026-05-17
 > **Priority:** P0

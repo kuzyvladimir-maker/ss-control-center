@@ -1,0 +1,228 @@
+{
+  "schema_version": "uncrustables-amazon-rollback-plan/v3",
+  "immutable": true,
+  "rollback_plan_id": "UARP-20260719T030526510Z-a68d9eec28b4",
+  "created_at": "2026-07-19T03:05:26.510Z",
+  "apply_eligible": true,
+  "source_snapshot": {
+    "path": "data/repairs/rollback/uncrustables-owner-relaxed-main-canary-3-live-20260719-v1/UAPS-20260719T030526249Z-46a80e727880-04aae9895c43.json",
+    "sha256": "04aae9895c43c9c05bfa8ce3279b082ed4dd96d3ea0ee02757a1144def28a6f7",
+    "snapshot_id": "UAPS-20260719T030526249Z-46a80e727880",
+    "capture_mode": "LIVE_SP_API",
+    "completed_at": "2026-07-19T03:05:26.249Z",
+    "exact_scope": 164
+  },
+  "source_repair_plan": {
+    "path": "data/repairs/generated/uncrustables-owner-relaxed-main-24-20260719-v1/URP-20260719T024117003Z-a68d9eec28b4.json",
+    "sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+    "plan_id": "URP-20260719T024117003Z",
+    "source_ledger_sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f"
+  },
+  "source_execution_selection": {
+    "path": "data/repairs/execution-selections/uncrustables-owner-relaxed-main-canary-3-20260719-v1/URES-20260719T030348679Z-979e928c9a6b.json",
+    "sha256": "979e928c9a6b78d0dbc4745492b4d692c8bb897d0da2dc31335c332b8279b7c9",
+    "profile": "MAIN_MEDIA_ONLY_V1",
+    "selected_actions": 3,
+    "selected_action_ids_sha256": "ca9ab9713ed0c58cce9914f41cdeec71697964cfd82e84fa9655b20c2c75e4d7"
+  },
+  "policy": {
+    "marketplace_id": "ATVPDKIKX0DER",
+    "patch_only": true,
+    "path_level_compare_and_swap": true,
+    "validation_preview_required": true,
+    "fresh_get_guard_required": true,
+    "post_write_readback_required": true,
+    "cli_confirmation_required": true,
+    "environment_confirmation_required": true,
+    "default_scope": "CANARY",
+    "maximum_errors_default": 1
+  },
+  "canary": {
+    "method": "ACTION_KIND_COVERAGE_THEN_SHA256",
+    "size": 3,
+    "skus": [
+      "LK-AS7X-K43B",
+      "PT-AS5B-Z2XH",
+      "BK-AS5Z-8UY5"
+    ],
+    "covered_action_kinds": [
+      "MEDIA"
+    ]
+  },
+  "scope": {
+    "snapshot_entries": 164,
+    "repair_entries": 3,
+    "repair_actions": 3,
+    "rollback_entries": 3,
+    "inverse_operations": 3,
+    "missing_media_binary_evidence": 0
+  },
+  "entries": [
+    {
+      "rollback_entry_id": "RB-3b362c8c8fd1ce971fac",
+      "sku": "BK-AS5Z-8UY5",
+      "asin": "B0H85JF1V1",
+      "store_index": 1,
+      "before_product_type": "GROCERY",
+      "forward_action_ids": [
+        "BK-AS5Z-8UY5:media"
+      ],
+      "forward_action_kinds": [
+        "MEDIA"
+      ],
+      "operations": [
+        {
+          "operation_id": "INV-0cd542c91c0d53c1334c",
+          "path": "/attributes/main_product_image_locator",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81haelWUh9L.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "a12afdfbd5d01af913a8fc00a7da4cb3819188374c4b3a39f92bdcfab4a9bc70"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/57fc179261984befc7b191564bef970ae09dcb0b715ef42378f36142f8f727b4.png",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "dc304d8a87ad1d5bcfd28fcbfe8300eda8c3636cdfa8577b11c38813b4410340"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "replace",
+            "path": "/attributes/main_product_image_locator",
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81haelWUh9L.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": [
+            "https://m.media-amazon.com/images/I/81haelWUh9L.jpg"
+          ]
+        }
+      ]
+    },
+    {
+      "rollback_entry_id": "RB-ea3a81e67be879987def",
+      "sku": "LK-AS7X-K43B",
+      "asin": "B0H84CGGXL",
+      "store_index": 1,
+      "before_product_type": "GROCERY",
+      "forward_action_ids": [
+        "LK-AS7X-K43B:media"
+      ],
+      "forward_action_kinds": [
+        "MEDIA"
+      ],
+      "operations": [
+        {
+          "operation_id": "INV-ae5be5c4796e923f4f93",
+          "path": "/attributes/main_product_image_locator",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81MY2tqxphL.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "a10dc9b0421d2220ed8af960becc08eb4ff317c18e7a908803f0e61daf7d18fa"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/f9064dc0f6ac52eebd53e9f4b253f9c2dd7a92b7148c703a70d30199af315fbe.png",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "dc57a006fd5ea7cbd4e2c6007066ceaf358e4845ca3e1466ba558797e7bb66d2"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "replace",
+            "path": "/attributes/main_product_image_locator",
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81MY2tqxphL.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": [
+            "https://m.media-amazon.com/images/I/81MY2tqxphL.jpg"
+          ]
+        }
+      ]
+    },
+    {
+      "rollback_entry_id": "RB-c444927f44f308d6d9d0",
+      "sku": "PT-AS5B-Z2XH",
+      "asin": "B0H84Z6QWY",
+      "store_index": 1,
+      "before_product_type": "GROCERY",
+      "forward_action_ids": [
+        "PT-AS5B-Z2XH:media"
+      ],
+      "forward_action_kinds": [
+        "MEDIA"
+      ],
+      "operations": [
+        {
+          "operation_id": "INV-8aa9c29cdea9454de9ab",
+          "path": "/attributes/main_product_image_locator",
+          "forward_patch_op": "replace",
+          "before": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81hSiHcy+uL.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "f2f94859fafe119b022b1ddde62c4ef154638c238310dcea3ec620858e86cf84"
+          },
+          "expected_after": {
+            "present": true,
+            "value": [
+              {
+                "media_location": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/f5d846ad2aa9c48efe4730f19004f848a56dc0b260d879c76b69f10a928f0bcc.png",
+                "language_tag": "en_US",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ],
+            "sha256": "3d68093b9ceaff7a1246ec50ce129ae46f07857ad4e8f33e514813a7d1f0b6a4"
+          },
+          "alternate_expected_after": [],
+          "inverse_patch": {
+            "op": "replace",
+            "path": "/attributes/main_product_image_locator",
+            "value": [
+              {
+                "media_location": "https://m.media-amazon.com/images/I/81hSiHcy+uL.jpg",
+                "marketplace_id": "ATVPDKIKX0DER"
+              }
+            ]
+          },
+          "media_urls_requiring_binary_evidence": [
+            "https://m.media-amazon.com/images/I/81hSiHcy+uL.jpg"
+          ]
+        }
+      ]
+    }
+  ],
+  "sha256": "0e5b560b95db2a44170e583dd60e2924e97709dcf467cdbc29a72c6ae5996976"
+}

@@ -21,13 +21,23 @@ export interface CatalogStats {
 
 const n = (r: any): number => Number(r?.rows?.[0]?.n ?? 0);
 
+const LATEST_RETAIL_COST = `WITH latest_cost AS (
+  SELECT * FROM (
+    SELECT c.*, ROW_NUMBER() OVER (
+      PARTITION BY c.sku
+      ORDER BY COALESCE(c.effectiveDate,'') DESC, c.updatedAt DESC, c.createdAt DESC
+    ) AS rn
+    FROM "SkuCost" c WHERE c.source='retail:batch'
+  ) ranked WHERE rn=1
+)`;
+
 export async function computeCatalogStats(db: Client): Promise<CatalogStats> {
   const [wTot, wPub, cTot, cPub, rev, donP, donO, bom, methods] = await Promise.all([
     db.execute(`SELECT COUNT(*) n FROM WalmartCatalogItem`),
     db.execute(`SELECT COUNT(*) n FROM WalmartCatalogItem WHERE publishedStatus='PUBLISHED'`),
-    db.execute(`SELECT COUNT(*) n FROM "SkuCost" WHERE source='retail:batch' AND totalCost IS NOT NULL`),
-    db.execute(`SELECT COUNT(*) n FROM WalmartCatalogItem w JOIN "SkuCost" c ON c.sku=w.sku AND c.source='retail:batch' WHERE w.publishedStatus='PUBLISHED' AND c.totalCost IS NOT NULL`),
-    db.execute(`SELECT COUNT(*) n FROM "SkuCost" WHERE source='retail:batch' AND needsReview=1`),
+    db.execute(`${LATEST_RETAIL_COST} SELECT COUNT(*) n FROM latest_cost WHERE totalCost IS NOT NULL`),
+    db.execute(`${LATEST_RETAIL_COST} SELECT COUNT(*) n FROM WalmartCatalogItem w JOIN latest_cost c ON c.sku=w.sku WHERE w.publishedStatus='PUBLISHED' AND c.totalCost IS NOT NULL`),
+    db.execute(`${LATEST_RETAIL_COST} SELECT COUNT(*) n FROM latest_cost WHERE needsReview=1`),
     db.execute(`SELECT COUNT(*) n FROM "DonorProduct"`).catch(() => ({ rows: [{ n: 0 }] })),
     db.execute(`SELECT COUNT(*) n FROM "DonorOffer"`).catch(() => ({ rows: [{ n: 0 }] })),
     db.execute(`SELECT COUNT(DISTINCT sku) n FROM "SkuComponent"`),

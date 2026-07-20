@@ -51,6 +51,17 @@ const CANONICAL_DISPLAY: Record<(typeof OWN_BRAND_PASSTHROUGH_BRANDS)[number], s
   "Uncrustables": "Uncrustables",
 };
 
+/** Brand-string-independent Uncrustables identity: any listing/draft text that
+ *  names Uncrustables. The allowlist above is how the own-brand MODE is chosen;
+ *  this is the safety net for PRICING and publish guards — a null or misspelled
+ *  brand field ("J.M. Smucker", "") must never route an actual Uncrustables
+ *  bundle onto the generic markup path. That exact gap birthed the 2026-07
+ *  price-above-max cohort: price landed×~1.53 from the generic engine while the
+ *  band stayed canonical 1.3/1.5 → Amazon suppressed the offer. */
+export function textSaysUncrustables(text: string | null | undefined): boolean {
+  return /uncrustables/i.test(text ?? "");
+}
+
 /** The brand the listing publishes under: the donor's own brand for an
  *  allowlisted donor (in its CANONICAL spelling — never the raw donor casing),
  *  otherwise the Salutem house brand. */

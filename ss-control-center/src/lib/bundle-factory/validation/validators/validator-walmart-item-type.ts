@@ -2,15 +2,19 @@
  * Phase 2.4 Stage 6 — Validator 9: Walmart item type.
  *
  * Only fires for WALMART channel. Walmart taxonomy requires item_type
- * to be one of the grocery-relevant slugs below. We keep the list local
- * (instead of a Walmart-API live lookup) because Walmart's taxonomy
- * API is unreliable and the slugs change rarely — when they do,
- * Vladimir bumps the list manually.
+ * to be proven by current Get Spec evidence for the exact product type.
+ * The local list below is retained only as a legacy diagnostic snapshot;
+ * it must never reject a product type accepted by the versioned live spec.
  *
  * Non-Walmart channels skip cleanly.
  */
 
 import type { ValidatorFn } from "../types";
+import {
+  WALMART_ITEM_MATCH_SPEC_VERSION,
+  WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION,
+  parseWalmartAttributes,
+} from "../walmart-prepublication-policy";
 
 // Walmart Marketplace product type slugs that match Salutem's bundle
 // catalogue (frozen meals, refrigerated lunches, shelf-stable snacks,
@@ -54,18 +58,38 @@ export const validatorWalmartItemType: ValidatorFn = async ({ sku }) => {
       message: "Walmart ChannelSKU is missing item_type — required by Walmart taxonomy.",
     };
   }
+  const parsed = parseWalmartAttributes(sku.attributes);
+  const spec = parsed.walmart_prepublication?.item_spec;
+  const publicContract = parsed.walmart;
+  const currentSpecEvidence =
+    spec?.product_type === itemType &&
+    publicContract?.product_type === itemType &&
+    publicContract.spec_version === spec.version &&
+    (spec.version === WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION ||
+      spec.version === WALMART_ITEM_MATCH_SPEC_VERSION);
+  if (currentSpecEvidence) {
+    return {
+      validator_id: "validator-walmart-item-type",
+      passed: true,
+      details: {
+        item_type: itemType,
+        source: "versioned_get_spec_evidence",
+        spec_version: spec.version,
+      },
+    };
+  }
   if (!WALMART_ITEM_TYPES_LOWER.has(itemType.toLowerCase())) {
     return {
       validator_id: "validator-walmart-item-type",
       passed: false,
       severity: "error",
-      message: `item_type "${itemType}" not in the Walmart grocery taxonomy.`,
-      details: { item_type: itemType, allowed: WALMART_ITEM_TYPES },
+      message: `item_type "${itemType}" has neither current Get Spec evidence nor a legacy snapshot match.`,
+      details: { item_type: itemType, legacy_snapshot: WALMART_ITEM_TYPES },
     };
   }
   return {
     validator_id: "validator-walmart-item-type",
     passed: true,
-    details: { item_type: itemType },
+    details: { item_type: itemType, source: "legacy_snapshot_only" },
   };
 };

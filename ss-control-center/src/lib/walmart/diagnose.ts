@@ -52,7 +52,7 @@ export const OTD_URL_VARIANTS = [
  * are SCREAMING_SNAKE_CASE per Walmart's documented convention for other
  * report types like RECONCILIATION / ITEM / INVENTORY.
  */
-export const REPORT_TYPES_TO_TRY = [
+export const REPORT_TYPES_TO_TRY = Object.freeze([
   "CANCELLATION",
   "DELIVERY_DEFECT",
   "ITEM_PERFORMANCE",
@@ -66,7 +66,7 @@ export const REPORT_TYPES_TO_TRY = [
   // Additional plausible names worth probing.
   "PERFORMANCE",
   "SCORECARD",
-];
+]);
 
 export interface ProbeResult {
   url: string;
@@ -243,6 +243,9 @@ export async function runDiagnostic(storeIndex = 1): Promise<DiagnosticFindings>
   // reportType. Don't poll for results yet — we only want to know which
   // reportType values Walmart accepts at request time.
   for (const reportType of REPORT_TYPES_TO_TRY) {
+    if (reportType === "ITEM") {
+      throw new Error("legacy diagnostic ITEM report creation is retired");
+    }
     const result = await probe(client, "POST", "/reports/reportRequests", {
       reportType,
       reportVersion: "v1",

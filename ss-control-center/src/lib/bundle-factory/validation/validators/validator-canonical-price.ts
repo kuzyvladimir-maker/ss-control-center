@@ -70,6 +70,33 @@ export const validatorCanonicalPrice: ValidatorFn = async ({
     }
   }
 
+  // Amazon min/max bands are not Walmart offer fields. Walmart still needs
+  // the canonical listing price and the independent margin validator, but it
+  // must not be failed for lacking Amazon `purchasable_offer` attributes.
+  if (sku.channel === "WALMART") {
+    if (sku.price_cents !== expectedPrice) {
+      return {
+        validator_id: "validator-canonical-price",
+        passed: false,
+        severity: "error",
+        message: `Canonical Walmart price mismatch: ${sku.price_cents} != ${expectedPrice}.`,
+        details: {
+          expected_price_cents: expectedPrice,
+          actual_price_cents: sku.price_cents,
+          amazon_price_bands_skipped: true,
+        },
+      };
+    }
+    return {
+      validator_id: "validator-canonical-price",
+      passed: true,
+      details: {
+        expected_price_cents: expectedPrice,
+        amazon_price_bands_skipped: true,
+      },
+    };
+  }
+
   const minBand = band(sku.attributes, "minimum_seller_allowed_price");
   const maxBand = band(sku.attributes, "maximum_seller_allowed_price");
   const failures: string[] = [];

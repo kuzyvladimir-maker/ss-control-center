@@ -12,6 +12,10 @@ import { config } from "dotenv"; config({ path: ".env.local" }); config({ path: 
 import { createClient } from "@libsql/client";
 import { unwrangleSearch } from "@/lib/sourcing/retail-fetch";
 
+throw new Error(
+  "LEGACY_METERED_SCRIPT_DISABLED: target-fronts bypasses the canonical matcher, durable queue, and owner budget gate",
+);
+
 const GENERIC = new Set(["the", "and", "with", "for", "of", "a", "an", "size", "oz", "lb", "lbs", "fl", "ml", "g", "kg", "ct", "count", "pack", "pk", "box", "boxes", "can", "cans", "bag", "bags", "cup", "cups", "pouch", "pouches", "jar", "bottle", "bottles", "loaf", "tray", "case", "each", "sticks", "stick", "family", "sharing", "share", "value", "twin", "snack", "snacks", "brand", "new", "hanover", "inc", "llc"]);
 const isBanner = (u: string) => /i5\.walmartimages|\/seo\/|\/asr\//i.test(u || "");
 const words = (s: string) => (s || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean);
@@ -77,7 +81,7 @@ function sameVariant(donorTitle: string, targetTitle: string): boolean {
       else noMatch++;
 
       if (didMerge || hadTarget) {
-        await db.execute({ sql: `UPDATE "DonorProduct" SET imageUrls=?, mainImageUrl=?, needsReview=0, updatedAt=? WHERE id=?`, args: [JSON.stringify(newGallery), newMain, new Date().toISOString(), dp.id] });
+        await db.execute({ sql: `UPDATE "DonorProduct" SET imageUrls=?, mainImageUrl=?, needsReview=1, updatedAt=? WHERE id=?`, args: [JSON.stringify(newGallery), newMain, new Date().toISOString(), dp.id] });
       }
       if ((merged + reverted + noMatch + skip) % 20 === 0) console.log(`  ${merged + reverted + noMatch + skip}/${skus.length} | merged ${merged} | reverted-bad ${reverted} | no-match ${noMatch}`);
     }

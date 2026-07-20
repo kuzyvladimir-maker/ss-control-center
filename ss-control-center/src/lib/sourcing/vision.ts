@@ -13,6 +13,11 @@ import Anthropic from "@anthropic-ai/sdk";
 import { CLAUDE } from "@/lib/ai-models";
 import { identifyImageViaCodex, identifyImageViaClaudeCli } from "@/lib/image-gen/codex-worker";
 import { identifyImageViaGemini } from "./gemini-vision";
+import {
+  throwIfMeteredProviderControlError,
+  withMeteredProviderCall,
+} from "./metered-provider-call";
+import { currentMeteredRunPermit } from "./metered-call-guard";
 
 const MODEL = CLAUDE.cheap; // cheap + vision-capable (legacy pickers)
 // Quality-critical selection/verification uses a stronger model: Haiku could not
@@ -42,6 +47,18 @@ function getClient(): Anthropic | null {
 function visionProvider(): "codex" | "claude" | "gemini" | "anthropic" | "auto" {
   const p = (process.env.SS_VISION_PROVIDER || "auto").toLowerCase();
   return p === "codex" || p === "claude" || p === "gemini" || p === "anthropic" ? p : "auto";
+}
+
+// Phase 0 is subscription-only by default. A paid fallback requires both an
+// explicit opt-out and a valid owner-approved metered run permit.
+export function visionFreeOnly(env?: { SS_VISION_FREE_ONLY?: string }): boolean {
+  const value = env ? env.SS_VISION_FREE_ONLY : process.env.SS_VISION_FREE_ONLY;
+  return (value || "1").trim() !== "0";
+}
+
+function meteredVisionPermitConfigured(): boolean {
+  const permit = currentMeteredRunPermit();
+  return permit?.providers.gemini?.operations.includes("vision") === true;
 }
 // In-flight counters for the THREE free lanes (Codex + Claude CLI + Gemini API).
 // The dispatcher sends each call to the lane with FEWER calls in flight (load-
@@ -87,6 +104,8 @@ async function downscaleForVision(raw: Buffer): Promise<Buffer> {
 }
 
 async function fetchB64(url: string): Promise<string | null> {
+  // Public image download only: this is input transport, not a paid AI/provider
+  // operation, so it intentionally stays outside the metered budget ledger.
   // Retry transient failures. The R2 public dev endpoint (pub-*.r2.dev) intermittently
   // returns a Cloudflare 5xx "Internal Error" HTML page under load, and a single-shot
   // fetch would return null → the caller skips the free lanes → the whole qualify call
@@ -120,7 +139,11 @@ async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: s
     if (b64s.length === imageUrls.length && b64s.length > 0) {
       const codex = async () => { _codexInflight++; try { return await identifyImageViaCodex(b64s, prompt); } finally { _codexInflight--; } };
       const claude = async () => { _claudeInflight++; try { return await identifyImageViaClaudeCli(b64s, prompt); } finally { _claudeInflight--; } };
-      const gemini = async () => { _geminiInflight++; try { return await identifyImageViaGemini(b64s, prompt); } finally { _geminiInflight--; } };
+      const gemini = async () => {
+        _geminiInflight++;
+        try { return await identifyImageViaGemini(b64s, prompt); }
+        finally { _geminiInflight--; }
+      };
       const once = async (): Promise<Record<string, unknown> | null> => {
         if (provider === "claude") return claude();
         if (provider === "codex") return codex();
@@ -144,7 +167,12 @@ async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: s
           { fn: claude, score: (_claudeInflight + 1) * W_CLAUDE, down: _claudeDownUntil, cool: () => { _claudeDownUntil = Date.now() + COOLDOWN; }, clear: () => { _claudeDownUntil = 0; } },
           { fn: gemini, score: (_geminiInflight + 1) * W_GEMINI, down: _geminiDownUntil, cool: () => { _geminiDownUntil = Date.now() + COOLDOWN; }, clear: () => { _geminiDownUntil = 0; } },
           { fn: codex, score: (_codexInflight + 1) * W_CODEX, down: _codexDownUntil, cool: () => { _codexDownUntil = Date.now() + COOLDOWN; }, clear: () => { _codexDownUntil = 0; } },
-        ].filter((_, i) => b64s.length <= 2 || i !== 0); // multi-image: drop serial Claude (index 0)
+        ].filter((_, i) =>
+          // Auto mode skips the metered Gemini lane when no owner permit is
+          // configured; forced Gemini still preserves the guard error.
+          (i !== 1 || meteredVisionPermitConfigured())
+          && (b64s.length <= 2 || i !== 0)
+        ); // multi-image: drop serial Claude (index 0)
         let avail = all.filter((l) => now >= l.down);
         if (!avail.length) avail = all; // all cooling → try anyway (may have recovered)
         avail.sort((a, b) => a.score - b.score);
@@ -153,7 +181,13 @@ async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: s
         return r;
       };
       for (let a = 0; a <= RETRIES; a++) {
-        try { const r = await once(); if (r && typeof r === "object") return JSON.stringify(r); } catch { /* transient */ }
+        try {
+          const r = await once();
+          if (r && typeof r === "object") return JSON.stringify(r);
+        } catch (error) {
+          throwIfMeteredProviderControlError(error);
+          // Subscription/free-lane transport failure: retry within this call.
+        }
         if (a < RETRIES) await new Promise((res) => setTimeout(res, 2500 * (a + 1) * (a + 1))); // 2.5s, 10s, 22.5s …
       }
     }
@@ -161,11 +195,19 @@ async function ask(imageUrls: string[], prompt: string, maxTokens = 80, model: s
   }
   // TIER 2 — paid Anthropic reserve (Sonnet). Only for "auto" (after free retries) or
   // forced "anthropic". Sends image URLs directly.
+  if (visionFreeOnly()) throw new Error("VISION_UNAVAILABLE: paid Anthropic fallback is disabled by SS_VISION_FREE_ONLY");
   const c = getClient();
   if (!c) throw new Error("ANTHROPIC_API_KEY missing");
   const content: any[] = imageUrls.map((u) => ({ type: "image", source: { type: "url", url: u } }));
   content.push({ type: "text", text: prompt });
-  const res = await c.messages.create({ model, max_tokens: maxTokens, thinking: { type: "disabled" }, messages: [{ role: "user", content }] });
+  const res = await withMeteredProviderCall(
+    {
+      provider: "anthropic",
+      operation: "vision",
+      requestFingerprint: { imageUrls, maxTokens, model, prompt },
+    },
+    () => c.messages.create({ model, max_tokens: maxTokens, thinking: { type: "disabled" }, messages: [{ role: "user", content }] }),
+  );
   return res.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
 }
 function parseJson(t: string): any { try { return JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1)); } catch { return null; } }
@@ -235,7 +277,10 @@ export async function pickCleanFrontIndex(urls: string[]): Promise<number> {
     const j = parseJson(await ask(cands, prompt, 50));
     const b = Number(j?.best);
     return Number.isInteger(b) && b >= 0 && b < cands.length ? b : -1;
-  } catch { return -1; }
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
+    return -1;
+  }
 }
 
 /**
@@ -254,7 +299,10 @@ export async function pickFrontRanked(urls: string[], top = 3): Promise<number[]
     const j = parseJson(await ask(cands, prompt, 60));
     const arr = Array.isArray(j?.ranked) ? j.ranked : [];
     return arr.map((x: any) => Number(x)).filter((i: number) => Number.isInteger(i) && i >= 0 && i < cands.length).slice(0, top);
-  } catch { return []; }
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
+    return [];
+  }
 }
 
 /**
@@ -270,7 +318,8 @@ export async function verifyMainImage(url: string, packCount?: number): Promise<
   try {
     const j = parseJson(await ask([url], prompt, 40, STRONG_MODEL));
     return { ok: j?.ok === true, kind: String(j?.kind || "other") };
-  } catch {
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
     return { ok: false, kind: "error" }; // can't verify → do not publish
   }
 }
@@ -316,7 +365,10 @@ export async function classifyProductPhoto(url: string): Promise<PhotoClass> {
     };
     await classToCache(url, CLASSIFY_KEY, out);
     return out;
-  } catch { return fallback; }
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
+    return fallback;
+  }
 }
 
 /** From a MIXED-variant pool (e.g. many Nissin flavors), keep only the fronts that
@@ -330,7 +382,10 @@ async function filterMatchingVariant(urls: string[], listingTitle: string): Prom
     const j = parseJson(await ask(cands, prompt, 60, STRONG_MODEL));
     const arr = Array.isArray(j?.match) ? j.match : [];
     return arr.map((i: any) => cands[Number(i)]).filter((u: any): u is string => typeof u === "string");
-  } catch { return []; }
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
+    return [];
+  }
 }
 
 /** Pick the single best UPRIGHT FRONT photo to tile. Returns its url + class, or
@@ -415,7 +470,10 @@ It is BETTER to return {"index": -1} (we will then search other retailers) than 
     const j = parseJson(await ask(cands, prompt, 40, STRONG_MODEL));
     const i = Number(j?.index);
     return Number.isInteger(i) && i >= 0 && i < cands.length ? cands[i] : null;
-  } catch { return null; }
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
+    return null;
+  }
 }
 
 /** Keep/replace gate: is the CURRENT main image already an acceptable multipack
@@ -429,7 +487,8 @@ Return JSON only: {"subject":"front|lying|back|nutrition|infographic|serving|oth
   try {
     const j = parseJson(await ask([url], prompt, 50, STRONG_MODEL));
     return { good: j?.good === true, subject: String(j?.subject || "other") };
-  } catch {
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
     return { good: false, subject: "error" };
   }
 }
@@ -458,7 +517,8 @@ Return JSON only: {"match": true|false, "brandOnPackage": "<brand>", "variantOnP
     const j = parseJson(await ask([url], prompt, 150, STRONG_MODEL));
     const reason = String(j?.reason || [j?.brandOnPackage, j?.variantOnPackage].filter(Boolean).join(" ") || "").slice(0, 90);
     return { match: j?.match === true, reason };
-  } catch {
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
     return { match: false, reason: "identity check error" };
   }
 }
@@ -533,7 +593,8 @@ The image above is ONE candidate photo we may TILE to build the multipack main i
     };
     const pass = v.brand && v.type && v.variant && v.singleUnit && v.front && v.whiteBg;
     return { ...v, pass, reason: String(j.reason || "").slice(0, 100) };
-  } catch {
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
     return fail("donor qualify error");
   }
 }
@@ -541,7 +602,12 @@ The image above is ONE candidate photo we may TILE to build the multipack main i
 /** Generic JSON vision question over image URLs — for one-off qualification passes
  *  (e.g. the promo-banner sweep) so scripts don't re-implement lane dispatch. */
 export async function askVisionJson(imageUrls: string[], prompt: string, maxTokens = 140): Promise<any> {
-  try { return parseJson(await ask(imageUrls, prompt, maxTokens, STRONG_MODEL)); } catch { return null; }
+  try {
+    return parseJson(await ask(imageUrls, prompt, maxTokens, STRONG_MODEL));
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
+    return null;
+  }
 }
 
 export interface TileVerdict {
@@ -576,7 +642,8 @@ Judge each point strictly and INDEPENDENTLY. Return JSON only:
     };
     const pass = v.identity && v.eachCellSingle && v.countOk && v.front && v.whiteBg;
     return { ...v, pass, reason: String(j.reason || "").slice(0, 100) };
-  } catch {
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
     return fail("tile qualify error");
   }
 }

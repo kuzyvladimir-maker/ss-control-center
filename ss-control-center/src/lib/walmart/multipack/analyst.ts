@@ -12,6 +12,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { WALMART_CONTENT_RULES } from "./guidelines";
 import { CLAUDE } from "@/lib/ai-models";
+import { withMeteredProviderCall } from "@/lib/sourcing/metered-provider-call";
 
 const MODEL = CLAUDE.balanced;
 
@@ -57,7 +58,11 @@ Group recommendations sensibly: pool-wide where it applies, or call out sub-grou
 Return ONLY valid JSON:
 {"narrative":"2-6 sentence diagnosis of the pool","recommendations":[{"type":"auto|advisory","title":"short","detail":"what & why","skus":["..."],"fields":["title","bullets"]}]}`;
 
-  const res = await c.messages.create({ model: MODEL, max_tokens: 2500, thinking: { type: "disabled" }, messages: [{ role: "user", content: prompt }] });
+  const res = await withMeteredProviderCall({
+    provider: "anthropic",
+    operation: "analysis",
+    requestFingerprint: { model: MODEL, period: input.period, aggregates: input.aggregates, listings: input.listings.slice(0, 60) },
+  }, () => c.messages.create({ model: MODEL, max_tokens: 2500, thinking: { type: "disabled" }, messages: [{ role: "user", content: prompt }] }));
   const text = res.content.filter((b) => b.type === "text").map((b: any) => b.text).join("");
   const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
   let parsed: PoolAnalysis;

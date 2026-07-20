@@ -1,0 +1,22 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "9d0c67dd-be78-483d-a2bc-569b50456d03",
+  "created_at": "2026-07-19T02:51:22.773Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "FX-AS2W-KHZT:media",
+  "sku": "FX-AS2W-KHZT",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "validation_only": true,
+    "patch_sha256": "f21ebaae03b0c8e88389662b05aae0b5c6949d5e24db0be47ed9aa3aa9167538",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "status": "VALID",
+    "submission_id": "6a6a9ca9441344f099fb21bb534d0891",
+    "issues": []
+  },
+  "sha256": "2dbaa7e3461dd673f656226273a03144f23710d5932b4b77f42bbd72fb0ec07c"
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "50924f5c-b869-40c6-a9d6-3fcb49d4e100",
+  "created_at": "2026-07-19T05:09:32.407Z",
+  "plan_sha256": "f8f6e736cb2009291f2d0f1c34f9f2e5390a7b1322ab77d2a67e545019570e3e",
+  "action_id": "UA-ASAO-RE7Q:media",
+  "sku": "UA-ASAO-RE7Q",
+  "kind": "MEDIA",
+  "status": "FAILED",
+  "detail": {
+    "error": "Amazon submission UA-ASAO-RE7Q:media did not reach a stable exact-path state after bounded settlement polling."
+  },
+  "sha256": "5b98b5a26988e3e20570ffb6fd33fd6731c13cb436ebb5ae5e0f4aaff26b46a9"
+}

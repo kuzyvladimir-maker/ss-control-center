@@ -49,6 +49,11 @@ next-env.d.ts
 # listing data, regenerated on demand. Do not commit.
 /data/imports/
 
+# Immutable Walmart source captures can contain short-lived signed download
+# URLs and raw Orders/Returns customer data. They stay local and must never be
+# swept into version control; only sanitized seals/reconciliation may be shared.
+/data/audits/walmart-source-captures/
+
 # Throwaway test SQLite DBs (e.g. tmp-lqtest.db) created by diag scripts.
 tmp-*.db
 tmp-aplus-test/

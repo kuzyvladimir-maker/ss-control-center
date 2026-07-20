@@ -13,6 +13,9 @@ import OpenAI from "openai";
 import { createClient } from "@libsql/client";
 import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
+import { assertMeteredProviderCall } from "@/lib/sourcing/metered-call-guard";
+
+throw new Error("LEGACY_METERED_SCRIPT_DISABLED: migrate image generation to the durable budget ledger before use");
 
 const db = createClient({
   url: process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL!,
@@ -51,6 +54,7 @@ async function main() {
     `Keep the product's real label, colors, and shape exactly as in the reference — do not invent or alter packaging. ` +
     `No added text, no badges, no logos other than the product's own. Square 1:1 framing, product fills ~85% of the frame.`;
 
+  assertMeteredProviderCall({ provider: "openai", operation: "image_generation" });
   const resp = await openai.images.edit({
     model: "gpt-image-1",
     image: await OpenAI.toFile(refBuf, "ref.png", { type: "image/png" }),

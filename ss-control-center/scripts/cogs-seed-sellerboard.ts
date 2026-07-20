@@ -10,6 +10,8 @@ import { createClient } from "@libsql/client";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+throw new Error("LEGACY_COGS_MUTATION_SCRIPT_DISABLED: migration requires an append-only evidence importer");
+
 const COVERAGE = resolve(__dirname, "../../docs/cogs-coverage.json");
 const DRY = process.argv.includes("--dry-run");
 

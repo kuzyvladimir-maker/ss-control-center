@@ -49,6 +49,7 @@ interface CliOptions {
   outputDir: string;
   captureLive: boolean;
   downloadImages: boolean;
+  pinnedMediaEvidencePath: string | null;
   requestDelayMs: number;
   canarySize: number;
   maxImageBytes: number;
@@ -66,6 +67,7 @@ function usage(): string {
     "Read-only pre-change capture:",
     "  --capture-live         GET exact current JSON/offers/images for all 164; no mutations.",
     "  --no-download-images   Keep image URLs but skip local binary evidence.",
+    "  --pinned-media-evidence=PATH Verify selected current MAIN binaries from an exact preflight manifest; fetch only selected locators that changed.",
     "  --request-delay-ms=N   SP-API pacing, >=200 (default 250).",
     "  --max-image-bytes=N    Per-image safety cap (default 26214400).",
     "",
@@ -96,6 +98,7 @@ function parseArgs(argv: string[]): CliOptions {
     outputDir: DEFAULT_OUTPUT_DIR,
     captureLive: false,
     downloadImages: true,
+    pinnedMediaEvidencePath: null,
     requestDelayMs: 250,
     canarySize: 3,
     maxImageBytes: 25 * 1024 * 1024,
@@ -108,6 +111,10 @@ function parseArgs(argv: string[]): CliOptions {
       options.captureLive = true;
     } else if (arg === "--no-download-images") {
       options.downloadImages = false;
+    } else if (arg.startsWith("--pinned-media-evidence=")) {
+      options.pinnedMediaEvidencePath = arg
+        .slice("--pinned-media-evidence=".length)
+        .trim();
     } else if (arg.startsWith("--ledger=")) {
       options.ledgerPath = arg.slice("--ledger=".length).trim();
     } else if (arg.startsWith("--overrides=")) {
@@ -147,6 +154,16 @@ function parseArgs(argv: string[]): CliOptions {
   }
   if (options.executionSelectionPath && !options.repairPlanPath) {
     throw new Error("--execution-selection requires --repair-plan.");
+  }
+  if (options.pinnedMediaEvidencePath && !options.executionSelectionPath) {
+    throw new Error(
+      "--pinned-media-evidence requires --repair-plan and --execution-selection.",
+    );
+  }
+  if (options.pinnedMediaEvidencePath && !options.downloadImages) {
+    throw new Error(
+      "--pinned-media-evidence cannot be combined with --no-download-images.",
+    );
   }
   return options;
 }
@@ -259,6 +276,164 @@ class LocalImageLoader implements SnapshotImageLoader {
   }
 }
 
+interface PinnedMediaEvidenceRow {
+  sku: string;
+  asin: string;
+  current_main_locator: string;
+  rollback_main: {
+    relative_path: string;
+    sha256: string;
+    byte_size: number;
+  };
+}
+
+class PinnedSelectedMediaLoader implements SnapshotImageLoader {
+  constructor(
+    private readonly byUrl: Map<string, PinnedMediaEvidenceRow>,
+    private readonly fallback: SnapshotImageLoader,
+  ) {}
+
+  async load(rawUrl: string): Promise<SnapshotImageEvidence> {
+    const pinned = this.byUrl.get(rawUrl);
+    if (!pinned) {
+      return this.fallback.load(rawUrl);
+    }
+    safeImageUrl(rawUrl);
+    const localPath = path.resolve(pinned.rollback_main.relative_path);
+    const bytes = await readFile(localPath);
+    const digest = createHash("sha256").update(bytes).digest("hex");
+    if (
+      digest !== pinned.rollback_main.sha256 ||
+      bytes.length !== pinned.rollback_main.byte_size
+    ) {
+      throw new Error(
+        `Pinned rollback binary failed SHA/size verification for ${pinned.sku}.`,
+      );
+    }
+    const extension = path.extname(localPath).toLowerCase();
+    const contentType = extension === ".png"
+      ? "image/png"
+      : extension === ".webp"
+        ? "image/webp"
+        : extension === ".gif"
+          ? "image/gif"
+          : "image/jpeg";
+    return {
+      url: rawUrl,
+      sha256: digest,
+      bytes: bytes.length,
+      content_type: contentType,
+      local_path: localPath,
+      error: null,
+    };
+  }
+}
+
+function selectedMainImageUrls(
+  entries: readonly {
+    sku: string;
+    listing: { attributes?: Record<string, unknown> };
+  }[],
+  selectedSkus: readonly string[],
+): Set<string> {
+  const selected = new Set(selectedSkus);
+  const urls = new Set<string>();
+  for (const entry of entries) {
+    if (!selected.has(entry.sku)) continue;
+    const values = entry.listing.attributes?.main_product_image_locator;
+    if (!Array.isArray(values)) {
+      throw new Error(`Live MAIN locator is missing for selected SKU ${entry.sku}.`);
+    }
+    const marketplaceRows = values.filter(
+      (value): value is Record<string, unknown> =>
+        value != null &&
+        typeof value === "object" &&
+        !Array.isArray(value) &&
+        value.marketplace_id === "ATVPDKIKX0DER",
+    );
+    const locators = marketplaceRows
+      .map((value) => value.media_location)
+      .filter((value): value is string =>
+        typeof value === "string" && value.trim().length > 0
+      );
+    if (locators.length !== 1) {
+      throw new Error(
+        `Expected exactly one Amazon US MAIN locator for selected SKU ${entry.sku}, got ${locators.length}.`,
+      );
+    }
+    safeImageUrl(locators[0]);
+    urls.add(locators[0]);
+  }
+  if (urls.size === 0) {
+    throw new Error("Selected MAIN evidence scope is empty.");
+  }
+  return urls;
+}
+
+async function readPinnedSelectedMedia(input: {
+  manifestPath: string;
+  repairPlan: NonNullable<Awaited<ReturnType<typeof readRepairPlan>>>;
+  executionSelection: NonNullable<
+    Awaited<ReturnType<typeof readRepairExecutionSelection>>
+  >;
+}): Promise<Map<string, PinnedMediaEvidenceRow>> {
+  const raw = JSON.parse(await readFile(input.manifestPath, "utf8")) as {
+    rows?: unknown;
+  };
+  if (!Array.isArray(raw.rows)) {
+    throw new Error("Pinned media evidence manifest must contain rows[].");
+  }
+  const selected = new Set(input.executionSelection.selected_skus);
+  const planBySku = new Map(
+    input.repairPlan.entries.map((entry) => [entry.sku, entry]),
+  );
+  const bySku = new Map<string, PinnedMediaEvidenceRow>();
+  for (const value of raw.rows) {
+    if (!value || typeof value !== "object") continue;
+    const row = value as Partial<PinnedMediaEvidenceRow>;
+    if (!row.sku || !selected.has(row.sku)) continue;
+    const planEntry = planBySku.get(row.sku);
+    const rollback = row.rollback_main;
+    if (
+      !planEntry ||
+      row.asin !== planEntry.asin ||
+      typeof row.current_main_locator !== "string" ||
+      !rollback ||
+      typeof rollback.relative_path !== "string" ||
+      !/^[a-f0-9]{64}$/.test(rollback.sha256 ?? "") ||
+      !Number.isInteger(rollback.byte_size) ||
+      rollback.byte_size <= 0 ||
+      bySku.has(row.sku)
+    ) {
+      throw new Error(`Invalid pinned rollback row for selected SKU ${row.sku}.`);
+    }
+    bySku.set(row.sku, row as PinnedMediaEvidenceRow);
+  }
+  if (
+    bySku.size !== selected.size ||
+    [...selected].some((sku) => !bySku.has(sku))
+  ) {
+    throw new Error(
+      `Pinned media evidence covers ${bySku.size} selected SKU(s), expected ${selected.size}.`,
+    );
+  }
+  const byUrl = new Map<string, PinnedMediaEvidenceRow>();
+  for (const row of bySku.values()) {
+    safeImageUrl(row.current_main_locator);
+    const existing = byUrl.get(row.current_main_locator);
+    if (
+      existing &&
+      existing.rollback_main.sha256 !== row.rollback_main.sha256
+    ) {
+      throw new Error(
+        `Pinned URL has conflicting rollback binaries: ${row.current_main_locator}`,
+      );
+    }
+    byUrl.set(row.current_main_locator, row);
+  }
+  return byUrl;
+}
+
 async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2));
   const ledgerBytes = await readFile(options.ledgerPath);
@@ -273,6 +448,15 @@ async function main(): Promise<void> {
           repairPlan,
         )
       : null;
+  const pinnedSelectedMedia = options.pinnedMediaEvidencePath &&
+      repairPlan &&
+      executionSelection
+    ? await readPinnedSelectedMedia({
+        manifestPath: options.pinnedMediaEvidencePath,
+        repairPlan,
+        executionSelection,
+      })
+    : null;
   if (
     repairPlan?.desired_manifest_source &&
     (path.resolve(options.overridesPath) !==
@@ -295,11 +479,27 @@ async function main(): Promise<void> {
         ...common,
         gateway: new LiveReadGateway(),
         imageLoader: options.downloadImages
-          ? new LocalImageLoader(
-              path.join(options.outputDir, "assets"),
-              options.maxImageBytes,
-            )
+          ? pinnedSelectedMedia
+            ? new PinnedSelectedMediaLoader(
+                pinnedSelectedMedia,
+                new LocalImageLoader(
+                  path.join(options.outputDir, "assets"),
+                  options.maxImageBytes,
+                ),
+              )
+            : new LocalImageLoader(
+                path.join(options.outputDir, "assets"),
+                options.maxImageBytes,
+              )
           : undefined,
+        imageUrlSelector:
+          pinnedSelectedMedia && executionSelection
+            ? (entries) =>
+                selectedMainImageUrls(
+                  entries,
+                  executionSelection.selected_skus,
+                )
+            : undefined,
         requestDelayMs: options.requestDelayMs,
       })
     : buildLedgerBootstrapSnapshot(common);

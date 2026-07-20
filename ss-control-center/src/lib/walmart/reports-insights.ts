@@ -26,6 +26,25 @@ import type { WalmartClient } from "./client";
 
 export type InsightsReportType = "BUYBOX" | "ITEM_PERFORMANCE";
 
+const INSIGHTS_REPORT_TYPES: ReadonlySet<string> = new Set([
+  "BUYBOX",
+  "ITEM_PERFORMANCE",
+]);
+
+/**
+ * TypeScript annotations are not a runtime authorization boundary. Keep this
+ * guard immediately before the generic Walmart client so a JS caller, env cast,
+ * or stale diagnostic script cannot turn this helper into an ungated ITEM
+ * report-create path.
+ */
+function assertInsightsReportType(reportType: unknown): asserts reportType is InsightsReportType {
+  if (typeof reportType !== "string" || !INSIGHTS_REPORT_TYPES.has(reportType)) {
+    throw new Error(
+      "UNAUTHORIZED_WALMART_REPORT_TYPE: insights helper allows only BUYBOX or ITEM_PERFORMANCE",
+    );
+  }
+}
+
 /** Custom error so the cron can detect rate-limit and back off vs. hard-fail. */
 export class ReportRateLimitedError extends Error {
   constructor() {
@@ -39,6 +58,7 @@ export async function requestReport(
   client: WalmartClient,
   reportType: InsightsReportType
 ): Promise<string> {
+  assertInsightsReportType(reportType);
   const res = await client.requestRaw("POST", "/reports/reportRequests", {
     params: { reportType, reportVersion: "v1" },
     body: {},

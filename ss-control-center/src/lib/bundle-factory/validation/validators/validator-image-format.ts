@@ -1,10 +1,10 @@
 /**
  * Phase 2.4 Stage 6 — Validator 7: Image format + size.
  *
- * Amazon + Walmart both accept JPEG and PNG only (WebP is allowed for
- * secondaries but not the main image — main must be JPEG/PNG so the
- * marketplace can re-render to multiple sizes). File size cap is 10 MB
- * across both marketplaces.
+ * The pilot intentionally uses the common JPEG/PNG subset. Walmart's current
+ * public guide also permits BMP, but the pilot excludes it because the local
+ * dimension gate does not parse BMP. Walmart caps files at 5 MB; the existing
+ * Amazon path keeps its 10 MB cap.
  *
  * We use a HEAD request (cheap, no body download) — falls back to
  * NEEDS_REVIEW if the server doesn't support HEAD or doesn't return
@@ -13,11 +13,16 @@
 
 import type { ValidatorFn } from "../types";
 
-const MAX_BYTES = 10 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png"];
+
+export function maxImageBytesForChannel(channel: string): number {
+  return channel === "WALMART" ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
+}
 
 export const validatorImageFormat: ValidatorFn = async ({ sku }) => {
   const url = sku.main_image_url;
+  const maxBytes = maxImageBytesForChannel(sku.channel);
+  const maxMegabytes = maxBytes / (1024 * 1024);
   if (!url) {
     // validator-image-dimensions already raises the missing-URL error;
     // skip cleanly to avoid duplicate noise.
@@ -52,7 +57,7 @@ export const validatorImageFormat: ValidatorFn = async ({ sku }) => {
       validator_id: "validator-image-format",
       passed: false,
       severity: "warning",
-      message: `HEAD failed for image (${e instanceof Error ? e.message : String(e)}). Manually verify JPEG/PNG and <10 MB.`,
+      message: `HEAD failed for image (${e instanceof Error ? e.message : String(e)}). Manually verify JPEG/PNG and ≤${maxMegabytes} MB.`,
     };
   }
   if (!res.ok) {
@@ -84,18 +89,27 @@ export const validatorImageFormat: ValidatorFn = async ({ sku }) => {
       details: { content_type: ct },
     };
   }
-  if (length !== null && length > MAX_BYTES) {
+  if (length === null || !Number.isFinite(length) || length < 0) {
+    return {
+      validator_id: "validator-image-format",
+      passed: false,
+      severity: "warning",
+      message: `HEAD returned no valid Content-Length. Manually verify image is ≤${maxMegabytes} MB.`,
+      details: { bytes: length, max: maxBytes },
+    };
+  }
+  if (length > maxBytes) {
     return {
       validator_id: "validator-image-format",
       passed: false,
       severity: "error",
-      message: `Image is ${length} bytes; 10 MB max.`,
-      details: { bytes: length, max: MAX_BYTES },
+      message: `Image is ${length} bytes; ${maxMegabytes} MB max for ${sku.channel}.`,
+      details: { bytes: length, max: maxBytes },
     };
   }
   return {
     validator_id: "validator-image-format",
     passed: true,
-    details: { content_type: ct, bytes: length },
+    details: { content_type: ct, bytes: length, max: maxBytes },
   };
 };

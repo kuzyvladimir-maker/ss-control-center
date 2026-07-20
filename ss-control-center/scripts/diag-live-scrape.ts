@@ -1,9 +1,12 @@
 import { config } from "dotenv"; config({ path: ".env.local" }); config({ path: ".env" });
+import { assertMeteredProviderCall } from "@/lib/sourcing/metered-call-guard";
+throw new Error("LEGACY_METERED_SCRIPT_DISABLED: direct paid diagnostic transport is quarantined");
 const ITEMS:[string,string][]=[
 ["BODYARMOR","10126870205"],["Bush's","14806018179"],["Progresso","11399410693"],
 ["Barilla","14675822737"],["Contadina","14822705333"]];
 async function scrape(id:string){
   const key=process.env.BLUECART_API_KEY;
+  assertMeteredProviderCall({ provider: "bluecart", operation: "detail" });
   const url=`https://api.bluecartapi.com/request?api_key=${key}&type=product&item_id=${id}&walmart_domain=walmart.com`;
   const r=await fetch(url); if(!r.ok) return null; const j:any=await r.json(); return j.product||null;
 }

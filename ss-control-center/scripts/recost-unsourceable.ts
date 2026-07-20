@@ -4,9 +4,16 @@ import { config } from "dotenv"; config({ path: ".env.local" }); config({ path: 
 process.env.SS_VISION_FREE_ONLY = "1";
 import { createClient } from "@libsql/client";
 import { costOneSku } from "@/lib/sourcing/cogs-engine";
+import { assertMeteredProviderCall } from "@/lib/sourcing/metered-call-guard";
+throw new Error("LEGACY_METERED_SCRIPT_DISABLED: use the durable Product Truth queue and budget ledger");
+const STORE_INDEX = Number(process.env.STORE_INDEX);
+if (!Number.isSafeInteger(STORE_INDEX) || STORE_INDEX <= 0) {
+  throw new Error("STORE_INDEX=<positive integer> is required; account scope is never inferred");
+}
 const CONC = 3, CREDIT_FLOOR = Math.max(0, parseInt(process.env.CREDIT_FLOOR || "5000", 10));
 async function credits(): Promise<number> {
   const K = (process.env.UNWRANGLE_API_KEY || "").trim().replace(/^['"]|['"]$/g, "");
+  assertMeteredProviderCall({ provider: "unwrangle", operation: "balance_probe" });
   return fetch(`https://data.unwrangle.com/api/getter/?platform=target_search&search=water&api_key=${K}`, { signal: AbortSignal.timeout(20000) })
     .then((r) => r.json()).then((j: any) => Number(j?.remaining_credits ?? 0)).catch(() => Infinity);
 }
@@ -25,7 +32,11 @@ async function credits(): Promise<number> {
       // channel: Walmart mirror knows its SKUs; else Amazon.
       const isW = (await db.execute({ sql: `SELECT 1 FROM WalmartCatalogItem WHERE sku=? LIMIT 1`, args: [skus[i]] })).rows.length > 0;
       try {
-        const r: any = await costOneSku(db, { sku: skus[i], channel: isW ? "walmart" : "amazon" });
+        const r: any = await costOneSku(db, {
+          sku: skus[i],
+          channel: isW ? "walmart" : "amazon",
+          storeIndex: STORE_INDEX,
+        });
         done++;
         if (r.status === "costed") { revived++; console.log(`  ✅ ${skus[i]}: $${r.total} [${(r.methods || []).join(",")}]`); }
         else if (r.status === "no-price") still++; else err++;

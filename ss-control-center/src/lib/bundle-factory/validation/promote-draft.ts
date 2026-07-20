@@ -298,6 +298,7 @@ async function ensureMasterBundle(
   const priceCalc = computeListingPrice(
     {
       brand: draft.brand,
+      title: draft.draft_name,
       cogs_cents: estimatedCost,
       weight_lb: null,
       unit_count: draft.pack_count, // count-based cooler (fixes always-M when weight is null)
@@ -522,6 +523,7 @@ export async function promoteDraftToChannelSkus(
     where: { id: masterBundleId },
     select: {
       brand: true,
+      name: true,
       estimated_cost_cents: true,
       category: true,
       total_weight_oz: true,
@@ -532,6 +534,7 @@ export async function promoteDraftToChannelSkus(
   const autoPrice = computeListingPrice(
     {
       brand: masterForPrice?.brand ?? null,
+      title: masterForPrice?.name ?? null,
       cogs_cents: masterForPrice?.estimated_cost_cents ?? 0,
       weight_lb: masterForPrice?.total_weight_oz
         ? masterForPrice.total_weight_oz / 16

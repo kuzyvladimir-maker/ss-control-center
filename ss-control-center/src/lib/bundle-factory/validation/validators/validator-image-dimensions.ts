@@ -156,6 +156,15 @@ export const validatorImageDimensions: ValidatorFn = async ({
       details: { width: dims.width, height: dims.height, min: minDim },
     };
   }
+  if (sku.channel === "WALMART" && dims.width !== dims.height) {
+    return {
+      validator_id: "validator-image-dimensions",
+      passed: false,
+      severity: "error",
+      message: `Image is ${dims.width}×${dims.height}; Walmart requires a 1:1 square image.`,
+      details: { width: dims.width, height: dims.height, aspect_ratio: "1:1" },
+    };
+  }
   return {
     validator_id: "validator-image-dimensions",
     passed: true,

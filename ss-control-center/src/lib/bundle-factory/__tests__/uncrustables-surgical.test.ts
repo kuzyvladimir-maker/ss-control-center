@@ -30,6 +30,8 @@ import {
   GALLERY_MEDIA_ONLY_PROFILE,
   ImmutableCheckpointStore,
   KNOWN_WRONG_SLOT_1_URL,
+  MAIN_MEDIA_FORBIDDEN_PATCH_PATHS,
+  MAIN_MEDIA_ONLY_PROFILE,
   MEDIA_PATCH_PATHS,
   OFFER_ONLY_EXECUTION_PROFILE,
   OFFER_ONLY_FORBIDDEN_PATCH_PATHS,
@@ -1148,6 +1150,78 @@ function liveListing(price = 70, b2b = 69.3): ListingItem {
   };
 }
 
+function mainMediaPlanForVerification(): {
+  plan: UncrustablesRepairPlan;
+  action: UncrustablesRepairPlan["entries"][number]["actions"][number];
+  desiredUrl: string;
+} {
+  const row = ledgerRow();
+  const bytes = ledgerBytes([row]);
+  const desiredUrl = "https://assets.example.com/desired-main.jpg";
+  const plan = buildRepairPlan({
+    ledgerPath: "/tmp/main-verification-ledger.json",
+    ledgerBytes: bytes,
+    manifest: {
+      schema_version: "uncrustables-surgical-desired/v1",
+      source_ledger_sha256: sha256(bytes),
+      repairs: [{ sku: row.sku, media: { main_image_url: desiredUrl } }],
+    },
+    createdAt: new Date("2026-07-19T04:00:00.000Z"),
+  });
+  const action = plan.entries[0].actions.find(
+    (candidate) => candidate.kind === "MEDIA",
+  );
+  assert.ok(action && action.desired.kind === "MEDIA");
+  return { plan, action, desiredUrl };
+}
+
+test("MEDIA verification treats the Amazon summary MAIN as buyer-facing truth", async () => {
+  const { action, desiredUrl } = mainMediaPlanForVerification();
+  const buyerUrl = "https://m.media-amazon.com/images/I/rehosted-desired.jpg";
+  const live = liveListing();
+  assert.ok(live.summaries?.[0]);
+  live.summaries[0].mainImage = { link: buyerUrl };
+  live.attributes = {
+    ...live.attributes,
+    main_product_image_locator: [{
+      marketplace_id: MARKETPLACE_ID,
+      media_location: "https://m.media-amazon.com/images/I/stale-authoring.jpg",
+    }],
+  };
+  const verification = await verifyActionState(action, live, {
+    equivalent: async (expected, actual) =>
+      expected === desiredUrl && actual === buyerUrl,
+  });
+  assert.equal(verification.ok, true);
+  assert.deepEqual(verification.checks, [{
+    field: "main_product_image_buyer_summary",
+    ok: true,
+    expected: desiredUrl,
+    actual: buyerUrl,
+  }]);
+});
+
+test("MEDIA verification does not hide a stale buyer MAIN behind a desired authoring locator", async () => {
+  const { action, desiredUrl } = mainMediaPlanForVerification();
+  const buyerUrl = "https://m.media-amazon.com/images/I/stale-buyer.jpg";
+  const live = liveListing();
+  assert.ok(live.summaries?.[0]);
+  live.summaries[0].mainImage = { link: buyerUrl };
+  live.attributes = {
+    ...live.attributes,
+    main_product_image_locator: [{
+      marketplace_id: MARKETPLACE_ID,
+      media_location: desiredUrl,
+    }],
+  };
+  const verification = await verifyActionState(action, live, {
+    equivalent: async () => false,
+  });
+  assert.equal(verification.ok, false);
+  assert.equal(verification.checks[0]?.field, "main_product_image_buyer_summary");
+  assert.equal(verification.checks[0]?.actual, buyerUrl);
+});
+
 function listingForEntry(
   entry: UncrustablesRepairPlan["entries"][number],
   price = 70,
@@ -1358,7 +1432,7 @@ test("text/structured selection seals an exact profile, token, and OFFER/MEDIA b
   );
 });
 
-test("gallery-media-only selection seals exact secondary slots and rejects every MAIN action", () => {
+test("MEDIA-only selections distinguish and seal exact gallery-only and MAIN-only boundaries", () => {
   const row = ledgerRow();
   row.live.gallery_image_urls = [KNOWN_WRONG_SLOT_1_URL];
   const plan = build([row]);
@@ -1386,7 +1460,8 @@ test("gallery-media-only selection seals exact secondary slots and rejects every
   );
   assert.ok(selection.forbidden_patch_paths.includes("/attributes/item_name"));
 
-  const bytes = ledgerBytes([row]);
+  const mainRow = ledgerRow();
+  const bytes = ledgerBytes([mainRow]);
   const mainPlan = buildRepairPlan({
     ledgerPath: "/tmp/ledger.json",
     ledgerBytes: bytes,
@@ -1395,7 +1470,7 @@ test("gallery-media-only selection seals exact secondary slots and rejects every
       source_ledger_sha256: sha256(bytes),
       repairs: [
         {
-          sku: row.sku,
+          sku: mainRow.sku,
           media: {
             main_image_url: "https://assets.example.com/forbidden-main.jpg",
           },
@@ -1404,15 +1479,57 @@ test("gallery-media-only selection seals exact secondary slots and rejects every
     },
     createdAt: new Date("2026-07-18T06:02:30.000Z"),
   });
+  const mainSelection = repairExecutionSelection(mainPlan, {
+    sourcePlanPath: "/tmp/sealed-main-plan.json",
+    createdAt: new Date("2026-07-18T06:03:00.000Z"),
+    skus: [mainRow.sku],
+    actionKinds: ["MEDIA"],
+  });
+  verifyRepairExecutionSelection(mainPlan, mainSelection);
+  assert.equal(mainSelection.profile, MAIN_MEDIA_ONLY_PROFILE);
+  assert.deepEqual(
+    mainSelection.forbidden_patch_paths,
+    MAIN_MEDIA_FORBIDDEN_PATCH_PATHS,
+  );
+  assert.deepEqual(mainSelection.selected_action_ids, [`${mainRow.sku}:media`]);
+  assert.ok(
+    !mainSelection.forbidden_patch_paths.includes(
+      "/attributes/main_product_image_locator",
+    ),
+  );
+  assert.ok(
+    mainSelection.forbidden_patch_paths.includes(
+      "/attributes/other_product_image_locator_1",
+    ),
+  );
+
+  const mixedBytes = ledgerBytes([row]);
+  const mixedPlan = buildRepairPlan({
+    ledgerPath: "/tmp/ledger.json",
+    ledgerBytes: mixedBytes,
+    manifest: {
+      schema_version: "uncrustables-surgical-desired/v1",
+      source_ledger_sha256: sha256(mixedBytes),
+      repairs: [
+        {
+          sku: row.sku,
+          media: {
+            main_image_url: "https://assets.example.com/mixed-main.jpg",
+          },
+        },
+      ],
+    },
+    createdAt: new Date("2026-07-18T06:03:30.000Z"),
+  });
   assert.throws(
     () =>
-      repairExecutionSelection(mainPlan, {
-        sourcePlanPath: "/tmp/sealed-main-plan.json",
-        createdAt: new Date("2026-07-18T06:03:00.000Z"),
+      repairExecutionSelection(mixedPlan, {
+        sourcePlanPath: "/tmp/sealed-mixed-plan.json",
+        createdAt: new Date("2026-07-18T06:04:00.000Z"),
         skus: [row.sku],
         actionKinds: ["MEDIA"],
       }),
-    /contains MAIN or a non-gallery action\/path/,
+    /uniformly MAIN-only or gallery-only/,
   );
 });
 

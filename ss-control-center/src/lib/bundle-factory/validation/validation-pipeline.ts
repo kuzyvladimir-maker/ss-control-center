@@ -58,6 +58,9 @@ import { validatorCountryOfOrigin } from "./validators/validator-country-of-orig
 import { validatorMarginFloor } from "./validators/validator-margin-floor";
 import { validatorRecipeContent } from "./validators/validator-recipe-content";
 import { validatorCanonicalPrice } from "./validators/validator-canonical-price";
+import { validatorWalmartProductTruth } from "./validators/validator-walmart-product-truth";
+import { validatorWalmartStaticPolicy } from "./validators/validator-walmart-static-policy";
+import { validatorWalmartPrepublication } from "./validators/validator-walmart-prepublication";
 import { getMarginFloorPct } from "../margin-config";
 import { INVENTORY_MAX_AGE_MS } from "../inventory-policy";
 
@@ -71,11 +74,14 @@ export const VALIDATORS: Array<{ id: string; fn: ValidatorFn }> = [
   { id: "validator-description",          fn: validatorDescription },
   { id: "validator-brand-field",          fn: validatorBrandField },
   { id: "validator-recipe-content",       fn: validatorRecipeContent },
+  { id: "validator-walmart-product-truth", fn: validatorWalmartProductTruth },
   { id: "validator-compliance-rerun",     fn: validatorComplianceRerun },
   { id: "validator-image-dimensions",     fn: validatorImageDimensions },
   { id: "validator-image-format",         fn: validatorImageFormat },
   { id: "validator-amazon-browse-node",   fn: validatorAmazonBrowseNode },
   { id: "validator-walmart-item-type",    fn: validatorWalmartItemType },
+  { id: "validator-walmart-static-policy", fn: validatorWalmartStaticPolicy },
+  { id: "validator-walmart-prepublication", fn: validatorWalmartPrepublication },
   { id: "validator-upc-format",           fn: validatorUpcFormat },
   { id: "validator-sku-pattern",          fn: validatorSkuPattern },
   { id: "validator-inventory",            fn: validatorInventory },
@@ -111,11 +117,18 @@ export async function runValidation(
       estimated_cost_cents: true,
       components: {
         select: {
+          id: true,
           product_name: true,
           manufacturer_brand: true,
           manufacturer_upc: true,
           flavor: true,
           qty: true,
+          source_url: true,
+          ingredients: true,
+          allergens: true,
+          storage_temp: true,
+          expiration_days: true,
+          donor_image_urls: true,
         },
       },
     },
@@ -274,7 +287,7 @@ export interface RunForDraftResult {
     warnings: string[];
     duration_ms: number;
     /** Full per-validator output. Lets clients (smoke tests, the UI,
-     *  Jackie) inspect what each of the 15 validators reported without
+     *  Jackie) inspect what each registered validator reported without
      *  re-querying the SKU and JSON-parsing validation_errors. */
     results: ValidatorResult[];
   }>;
@@ -363,7 +376,6 @@ export async function runValidationForDraft(
     });
   }
 
-  const publishable = per_sku.filter((s) => s.status === "PASSED").length;
   const failed = per_sku.filter((s) => s.status === "FAILED").length;
   const [allSkuCount, allReadyCount] = await Promise.all([
     prisma.channelSKU.count({

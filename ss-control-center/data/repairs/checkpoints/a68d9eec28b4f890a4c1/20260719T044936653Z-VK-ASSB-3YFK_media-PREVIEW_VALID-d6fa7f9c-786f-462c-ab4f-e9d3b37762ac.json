@@ -1,0 +1,22 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "d6fa7f9c-786f-462c-ab4f-e9d3b37762ac",
+  "created_at": "2026-07-19T04:49:36.653Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "VK-ASSB-3YFK:media",
+  "sku": "VK-ASSB-3YFK",
+  "kind": "MEDIA",
+  "status": "PREVIEW_VALID",
+  "detail": {
+    "guard_attempt": 1,
+    "patch_sha256": "8939d8195805461a1c84e1da73720c77302c9db63246c8229ca8941eb07f8d56",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "status": "VALID",
+    "submission_id": "e13195b3e26a44129408b76f2f1882cf",
+    "issues": []
+  },
+  "sha256": "d36d7b17265a4f695b09964a4c075d1df846d4eba179ff5b70c606544f4671a7"
+}

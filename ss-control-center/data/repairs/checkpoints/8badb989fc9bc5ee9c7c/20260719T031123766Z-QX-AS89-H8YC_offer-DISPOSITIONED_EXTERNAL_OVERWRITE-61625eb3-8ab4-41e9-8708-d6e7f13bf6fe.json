@@ -1,0 +1,130 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "61625eb3-8ab4-41e9-8708-d6e7f13bf6fe",
+  "created_at": "2026-07-19T03:11:23.766Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "QX-AS89-H8YC:offer",
+  "sku": "QX-AS89-H8YC",
+  "kind": "OFFER",
+  "status": "DISPOSITIONED_EXTERNAL_OVERWRITE",
+  "detail": {
+    "schema_version": "uncrustables-amazon-external-overwrite-terminal-detail/v1",
+    "submitted_event_id": "f349faa9-366c-4dea-a9f1-678906ded957",
+    "proposal": {
+      "schema_version": "uncrustables-amazon-external-overwrite-disposition/v1",
+      "immutable": true,
+      "created_at": "2026-07-19T03:07:01.236Z",
+      "disposition": "ACCEPTED_OFFER_EXTERNALLY_OVERWRITTEN_BY_CHANNELMAX",
+      "marketplace": "AmazonUS",
+      "plan": {
+        "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/generated/uncrustables-amazon-final-162-20260718-v8/URP-20260718T083203612Z-8badb989fc9b.json",
+        "sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477"
+      },
+      "selection": {
+        "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/execution-selections/uncrustables-offer-canary-qx-20260718-v1/URES-20260718T150721047Z-b249fc715064.json",
+        "sha256": "b249fc715064a074365cb71513907cce8e27edbaf3d878f98fb717444b60eb3e",
+        "profile": "OFFER_ONLY_V1",
+        "selected_action_ids": [
+          "QX-AS89-H8YC:offer"
+        ]
+      },
+      "action": {
+        "action_id": "QX-AS89-H8YC:offer",
+        "sku": "QX-AS89-H8YC",
+        "asin": "B0H82RQ226",
+        "store_index": 1,
+        "kind": "OFFER",
+        "desired_offer": {
+          "currency": "USD",
+          "consumer_price": 76.99,
+          "business_price": 76.99,
+          "minimum_seller_allowed_price": 66.95,
+          "maximum_seller_allowed_price": 76.99
+        },
+        "desired_offer_sha256": "f436e0923e878e710ce4868d76054be079e2053d7ca0b5e834f977a22a0db3ec"
+      },
+      "pending_submission": {
+        "event_id": "f349faa9-366c-4dea-a9f1-678906ded957",
+        "event_sha256": "e8e5e424f6f58529a4beae4e93ced1e1d9be526873381729e6a3d277d04c5aca",
+        "created_at": "2026-07-18T15:13:30.520Z",
+        "source_status": "SUBMITTED",
+        "amazon_status": "ACCEPTED",
+        "amazon_submission_id": "6862e11e12934cb58464f6ed83f6e5c7"
+      },
+      "settlement": {
+        "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/checkpoints/8badb989fc9bc5ee9c7c/20260719T024725027Z-QX-AS89-H8YC_offer-SETTLEMENT_UNRESOLVED-7063828f-6c95-431d-ba5c-04d35f9f5b5b.json",
+        "file_sha256": "38b5c9f42a7ecbcdd1b8208df23d8e57f060639f75e0e4391a0e67b54c5d60a6",
+        "event_id": "7063828f-6c95-431d-ba5c-04d35f9f5b5b",
+        "event_sha256": "2b2ac7333651af381473488293cd9aedf41fa21e1109c4249cbdbb0adcd5bc01",
+        "created_at": "2026-07-19T02:47:25.027Z",
+        "submitted_event_id": "f349faa9-366c-4dea-a9f1-678906ded957",
+        "selection_sha256": "b249fc715064a074365cb71513907cce8e27edbaf3d878f98fb717444b60eb3e",
+        "polling_reads": 3,
+        "read_errors": 0,
+        "consecutive_stable_reads": 3,
+        "last_classification": "NON_DESIRED",
+        "last_path_state_sha256": "70c361510dbfa0961b1e33bcd8ae478d327dd4104900d6dd61725ecb40f1284a",
+        "remains_pending": true,
+        "automatic_resubmission_authorized": false
+      },
+      "channelmax_postwrite": {
+        "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/rollback/channelmax-qx-fence-recovery-20260719/postwrite.json",
+        "file_sha256": "022facb0428760c48f661f0f1f28d488068c21aff7c13e4f7359d9e03f5d4b99",
+        "schema_version": "channelmax-qx-fence-recovery-postwrite/v1",
+        "confirmed_at": "2026-07-19T02:26:03Z",
+        "row": {
+          "item_id": 171129419,
+          "sku": "QX-AS89-H8YC",
+          "asin": "B0H82RQ226",
+          "site_id": 300
+        },
+        "before": {
+          "minimum_price": null,
+          "maximum_price": 85.7,
+          "price": 85.7,
+          "repricing_model_name": "Default"
+        },
+        "after": {
+          "minimum_price": 66.95,
+          "maximum_price": 76.99,
+          "price": 76.99,
+          "repricing_model_name": "Default"
+        },
+        "write_response": {
+          "is_valid": true,
+          "message": "SUCCESS",
+          "updated_rows": 1
+        },
+        "independent_readback": {
+          "action": "inventoryitemsite",
+          "is_valid": true,
+          "minimum_price": 66.95,
+          "maximum_price": 76.99,
+          "last_updated_by": "salutem-MB"
+        },
+        "amazon_next_action": "GET_ONLY_PENDING_SETTLEMENT",
+        "amazon_resubmission_performed": false,
+        "result": "PASS"
+      },
+      "fence": {
+        "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/runtime-locks/uncrustables-amazon-us/pending-mutation-fence.json",
+        "file_sha256": "d44213f9d6f8dd288db62e73c606c6c1fac3956daada5cc75cb4488f2f498c13",
+        "schema_version": "uncrustables-amazon-pending-mutation-fence/v1",
+        "repair_plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+        "claimed_at": "2026-07-18T15:13:25.321Z",
+        "purpose": "OFFER_SUBMIT_ONLY:URP-20260718T083203612Z"
+      },
+      "guarantees": {
+        "amazon_calls_performed": 0,
+        "channelmax_calls_performed": 0,
+        "automatic_resubmission_authorized": false,
+        "fence_release_authorized": false,
+        "terminalizes_only_submitted_event_id": "f349faa9-366c-4dea-a9f1-678906ded957"
+      },
+      "sha256": "83be0aee88e7b0465a6a2c44f32eaf64c259e999fd94a4db40cbb8daabdf279a",
+      "confirmation_token": "DISPOSITION-EXTERNAL-OVERWRITE-83BE0AEE88E7B0465A6A"
+    }
+  },
+  "sha256": "67b3e973639171b3f53b33987f22a00bfde72a8022a1bdca41e2e0f52b487d46"
+}

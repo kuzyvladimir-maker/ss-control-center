@@ -1,5 +1,10 @@
 # Walmart Marketplace — Title Policy
 
+> **ARCHIVED SNAPSHOT — NOT A RUNTIME POLICY SOURCE.** This file contains
+> unversioned 2026-05 planning assumptions and is excluded from the KB loader.
+> Use `prepublication-compliance.md` plus the exact current Get Spec; do not use
+> the fixed limits, brand assumptions or adaptation code below for publication.
+
 > **Source:** https://sellercentral.walmart.com/help/grocery-listing-quality (Walmart Help Center)
 > **Last verified:** 2026-05-17
 > **Priority:** P0

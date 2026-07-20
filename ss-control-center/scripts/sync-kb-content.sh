@@ -32,6 +32,7 @@ AMAZON_FILES=(
   "gift-set-policy.md"
 )
 WALMART_FILES=(
+  "prepublication-compliance.md"
   "title-policy.md"
   "food-gift-baskets-deep-dive.md"
   "category-grocery.md"

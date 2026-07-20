@@ -1,5 +1,10 @@
 # Walmart Marketplace — Category Grocery
 
+> **ARCHIVED SNAPSHOT — NOT A RUNTIME POLICY SOURCE.** The account/category
+> access table and static attribute examples below are historical assumptions,
+> not current evidence. This file is excluded from the KB loader. Use
+> `prepublication-compliance.md`, Seller Center evidence and live Get Spec.
+
 > **Source:** https://sellercentral.walmart.com/help
 > **Last verified:** 2026-05-17
 > **Priority:** P0

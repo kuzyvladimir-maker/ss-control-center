@@ -81,6 +81,20 @@ import {
   type OfferExecutionPhase,
   type OfferSettlementPolicyInput,
 } from "./uncrustables-offer-two-phase";
+import {
+  EXTERNAL_OVERWRITE_TERMINAL_DETAIL_SCHEMA,
+  EXTERNAL_OVERWRITE_TERMINAL_STATUS,
+  verifyExternalOverwriteDispositionProposal,
+  verifyExternalOverwriteTerminalEvent,
+  type ExternalOverwriteDispositionProposal,
+} from "./uncrustables-external-overwrite-disposition-contract";
+import {
+  PRE_REQUEST_ABORT_TERMINAL_DETAIL_SCHEMA,
+  PRE_REQUEST_ABORT_TERMINAL_STATUS,
+  verifyPreRequestAbortDispositionProposal,
+  verifyPreRequestAbortTerminalEvent,
+  type PreRequestAbortDispositionProposal,
+} from "./uncrustables-pre-request-abort-disposition-contract";
 import { preflightDeclaredUncrustablesMainHash } from "../audit/uncrustables-main-production-preflight";
 
 export {
@@ -972,6 +986,8 @@ export const CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE =
   "CONTENT_STRUCTURED_MEDIA_ONLY_V1" as const;
 export const TEXT_STRUCTURED_ONLY_PROFILE =
   "TEXT_STRUCTURED_ONLY_V1" as const;
+export const MAIN_MEDIA_ONLY_PROFILE =
+  "MAIN_MEDIA_ONLY_V1" as const;
 export const GALLERY_MEDIA_ONLY_PROFILE =
   "GALLERY_MEDIA_ONLY_V1" as const;
 export const OFFER_PATCH_PATHS = [
@@ -1021,6 +1037,26 @@ export const GALLERY_MEDIA_FORBIDDEN_PATCH_PATHS = [
   "/attributes/unit_count",
   ...OFFER_PATCH_PATHS,
 ].sort();
+/** Fail-closed profile boundary for MAIN-only execution. The exact selected
+ * action guard remains authoritative, while this blacklist independently
+ * prevents gallery, content, structured, and offer mutations. */
+export const MAIN_MEDIA_FORBIDDEN_PATCH_PATHS = [
+  "/attributes/allergen_information",
+  "/attributes/bullet_point",
+  "/attributes/each_unit_count",
+  "/attributes/ingredients",
+  "/attributes/is_expiration_dated_product",
+  "/attributes/item_name",
+  "/attributes/item_package_quantity",
+  "/attributes/merchant_shipping_group",
+  "/attributes/number_of_items",
+  "/attributes/product_description",
+  "/attributes/unit_count",
+  ...MEDIA_PATCH_PATHS.filter(
+    (patchPath) => patchPath !== "/attributes/main_product_image_locator",
+  ),
+  ...OFFER_PATCH_PATHS,
+].sort();
 
 export interface RepairExecutionSelectionInput {
   sourcePlanPath?: string | null;
@@ -1039,6 +1075,7 @@ export interface RepairExecutionSelection {
   profile:
     | typeof CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE
     | typeof TEXT_STRUCTURED_ONLY_PROFILE
+    | typeof MAIN_MEDIA_ONLY_PROFILE
     | typeof GALLERY_MEDIA_ONLY_PROFILE
     | typeof OFFER_ONLY_EXECUTION_PROFILE
     | "EXACT_ACTION_SUBSET_V1";
@@ -1124,7 +1161,7 @@ function resolveRepairExecutionSelection(
     "TEXT_COUNT",
     "STRUCTURED_ATTRIBUTES",
   ];
-  const galleryMediaKinds: RepairActionKind[] = ["MEDIA"];
+  const mediaKinds: RepairActionKind[] = ["MEDIA"];
   const offerKinds: RepairActionKind[] = ["OFFER"];
   const isContentOnly =
     requestedKinds != null &&
@@ -1132,32 +1169,40 @@ function resolveRepairExecutionSelection(
   const isTextStructuredOnly =
     requestedKinds != null &&
     stableJson(requestedKinds) === stableJson(textStructuredKinds);
-  const isGalleryMediaOnly =
+  const isMediaOnly =
     requestedKinds != null &&
-    stableJson(requestedKinds) === stableJson(galleryMediaKinds);
+    stableJson(requestedKinds) === stableJson(mediaKinds);
   const isOfferOnly =
     requestedKinds != null &&
     stableJson(requestedKinds) === stableJson(offerKinds);
-  if (
-    isGalleryMediaOnly &&
-    entries.some((entry) =>
-      entry.actions.some(
-        (action) =>
-          action.kind !== "MEDIA" ||
-          action.desired.kind !== "MEDIA" ||
-          action.desired.value.main_image_url != null ||
-          action.desired.value.main_image_sha256 != null ||
-          potentialActionPatchPaths(action).some(
-            (patchPath) =>
-              !/^\/attributes\/other_product_image_locator_[1-8]$/.test(
-                patchPath,
-              ),
-          ),
-      ),
-    )
-  ) {
+  const selectedMediaActions = entries.flatMap((entry) => entry.actions);
+  const isMainMediaOnly =
+    isMediaOnly &&
+    selectedMediaActions.every(
+      (action) =>
+        action.kind === "MEDIA" &&
+        action.desired.kind === "MEDIA" &&
+        action.desired.value.main_image_url != null &&
+        action.desired.value.gallery_slots.length === 0 &&
+        (action.desired.value.delete_gallery_slots?.length ?? 0) === 0 &&
+        stableJson(potentialActionPatchPaths(action)) ===
+          stableJson(["/attributes/main_product_image_locator"]),
+    );
+  const isGalleryMediaOnly =
+    isMediaOnly &&
+    selectedMediaActions.every(
+      (action) =>
+        action.kind === "MEDIA" &&
+        action.desired.kind === "MEDIA" &&
+        action.desired.value.main_image_url == null &&
+        action.desired.value.main_image_sha256 == null &&
+        potentialActionPatchPaths(action).every((patchPath) =>
+          /^\/attributes\/other_product_image_locator_[1-8]$/.test(patchPath),
+        ),
+    );
+  if (isMediaOnly && !isMainMediaOnly && !isGalleryMediaOnly) {
     throw new Error(
-      "Gallery-media-only execution selection contains MAIN or a non-gallery action/path.",
+      "MEDIA-only execution selection must contain uniformly MAIN-only or gallery-only actions/paths.",
     );
   }
   const body = {
@@ -1168,11 +1213,13 @@ function resolveRepairExecutionSelection(
       ? CONTENT_STRUCTURED_MEDIA_ONLY_PROFILE
       : isTextStructuredOnly
         ? TEXT_STRUCTURED_ONLY_PROFILE
-        : isGalleryMediaOnly
-          ? GALLERY_MEDIA_ONLY_PROFILE
-          : isOfferOnly
-            ? OFFER_ONLY_EXECUTION_PROFILE
-            : ("EXACT_ACTION_SUBSET_V1" as const),
+        : isMainMediaOnly
+          ? MAIN_MEDIA_ONLY_PROFILE
+          : isGalleryMediaOnly
+            ? GALLERY_MEDIA_ONLY_PROFILE
+            : isOfferOnly
+              ? OFFER_ONLY_EXECUTION_PROFILE
+              : ("EXACT_ACTION_SUBSET_V1" as const),
     source_plan: {
       path: input.sourcePlanPath?.trim() || null,
       sha256: plan.sha256,
@@ -1187,11 +1234,13 @@ function resolveRepairExecutionSelection(
       ? [...OFFER_PATCH_PATHS]
       : isTextStructuredOnly
         ? [...OFFER_PATCH_PATHS, ...MEDIA_PATCH_PATHS].sort()
-        : isGalleryMediaOnly
-          ? [...GALLERY_MEDIA_FORBIDDEN_PATCH_PATHS]
-          : isOfferOnly
-            ? [...OFFER_ONLY_FORBIDDEN_PATCH_PATHS]
-            : [],
+        : isMainMediaOnly
+          ? [...MAIN_MEDIA_FORBIDDEN_PATCH_PATHS]
+          : isGalleryMediaOnly
+            ? [...GALLERY_MEDIA_FORBIDDEN_PATCH_PATHS]
+            : isOfferOnly
+              ? [...OFFER_ONLY_FORBIDDEN_PATCH_PATHS]
+              : [],
   };
   const digest = sha256(stableJson(body));
   return {
@@ -1278,6 +1327,31 @@ export function verifyRepairExecutionSelection(
     ) {
       throw new Error(
         "Text/structured-only execution selection contains a MEDIA or OFFER action.",
+      );
+    }
+  } else if (selection.profile === MAIN_MEDIA_ONLY_PROFILE) {
+    const selectedActionIds = new Set(selection.selected_action_ids);
+    const selectedActions = plan.entries.flatMap((entry) =>
+      entry.actions.filter((action) => selectedActionIds.has(action.action_id)),
+    );
+    if (
+      stableJson(selection.requested_action_kinds) !== stableJson(["MEDIA"]) ||
+      stableJson(selection.forbidden_patch_paths) !==
+        stableJson(MAIN_MEDIA_FORBIDDEN_PATCH_PATHS) ||
+      selectedActions.length !== selection.selected_action_ids.length ||
+      selectedActions.some(
+        (action) =>
+          action.kind !== "MEDIA" ||
+          action.desired.kind !== "MEDIA" ||
+          action.desired.value.main_image_url == null ||
+          action.desired.value.gallery_slots.length !== 0 ||
+          (action.desired.value.delete_gallery_slots?.length ?? 0) !== 0 ||
+          stableJson(potentialActionPatchPaths(action)) !==
+            stableJson(["/attributes/main_product_image_locator"]),
+      )
+    ) {
+      throw new Error(
+        "MAIN-media-only execution selection contains gallery or a non-MAIN action/path.",
       );
     }
   } else if (selection.profile === GALLERY_MEDIA_ONLY_PROFILE) {
@@ -4067,6 +4141,10 @@ export type CheckpointStatus =
   | "SETTLED_BEFORE"
   | "SETTLED_NON_DESIRED"
   | "SETTLEMENT_UNRESOLVED"
+  | typeof EXTERNAL_OVERWRITE_TERMINAL_STATUS
+  | typeof PRE_REQUEST_ABORT_TERMINAL_STATUS
+  | "FENCE_RELEASE_ARMED"
+  | "FENCE_RELEASED"
   | "VERIFIED"
   | "ALREADY_APPLIED"
   | "FAILED";
@@ -4214,7 +4292,7 @@ export class ImmutableCheckpointStore {
     await unlink(fencePath);
   }
 
-  async append(
+  private async appendUnchecked(
     input: Omit<
       CheckpointEvent,
       "schema_version" | "immutable" | "event_id" | "created_at" | "plan_sha256" | "sha256"
@@ -4245,6 +4323,227 @@ export class ImmutableCheckpointStore {
     return event;
   }
 
+  async append(
+    input: Omit<
+      CheckpointEvent,
+      "schema_version" | "immutable" | "event_id" | "created_at" | "plan_sha256" | "sha256"
+    >,
+  ): Promise<CheckpointEvent> {
+    if (
+      input.status === EXTERNAL_OVERWRITE_TERMINAL_STATUS ||
+      input.status === PRE_REQUEST_ABORT_TERMINAL_STATUS
+    ) {
+      throw new Error(
+        "Evidence-bound disposition terminal checkpoints require their exact disposition method.",
+      );
+    }
+    return this.appendUnchecked(input);
+  }
+
+  /** Terminalize one accepted OFFER only after a separately sealed, exact
+   * ChannelMAX-overwrite proposal has been confirmed. This appends evidence but
+   * intentionally never releases the process-global pending fence. */
+  async dispositionExternallyOverwrittenOffer(input: {
+    proposal: ExternalOverwriteDispositionProposal;
+    confirmation: string;
+  }): Promise<CheckpointEvent> {
+    verifyExternalOverwriteDispositionProposal(input.proposal);
+    if (input.confirmation !== input.proposal.confirmation_token) {
+      throw new Error("External-overwrite disposition confirmation mismatch.");
+    }
+    if (input.proposal.plan.sha256 !== this.planSha256) {
+      throw new Error(
+        "External-overwrite disposition belongs to another repair plan.",
+      );
+    }
+    const pending = await this.pendingSubmissions();
+    const submission = pending.get(input.proposal.action.action_id);
+    if (
+      pending.size !== 1 ||
+      !submission ||
+      submission.source_status !== "SUBMITTED" ||
+      submission.submitted_event_id !==
+        input.proposal.pending_submission.event_id ||
+      submission.sku !== input.proposal.action.sku ||
+      submission.kind !== "OFFER"
+    ) {
+      throw new Error(
+        "External-overwrite disposition no longer matches the one canonical pending OFFER.",
+      );
+    }
+
+    const fencePath = path.join(
+      path.resolve(this.coordinationDir),
+      "pending-mutation-fence.json",
+    );
+    if (path.resolve(input.proposal.fence.path) !== fencePath) {
+      throw new Error("Disposition proposal is not bound to the canonical fence path.");
+    }
+    const fenceBefore = await readFile(fencePath);
+    if (sha256(fenceBefore) !== input.proposal.fence.file_sha256) {
+      throw new Error("Pending mutation fence changed after disposition planning.");
+    }
+
+    const names = (await readdir(this.directory()))
+      .filter((name) => name.endsWith(".json"))
+      .sort();
+    const eventsById = new Map<string, CheckpointEvent>();
+    for (const name of names) {
+      const event = JSON.parse(
+        await readFile(path.join(this.directory(), name), "utf8"),
+      ) as CheckpointEvent;
+      const { sha256: claimed, ...body } = event;
+      if (
+        event.schema_version !== CHECKPOINT_SCHEMA ||
+        event.immutable !== true ||
+        event.plan_sha256 !== this.planSha256 ||
+        claimed !== sha256(stableJson(body)) ||
+        eventsById.has(event.event_id)
+      ) {
+        throw new Error(`Invalid/tampered checkpoint event: ${name}`);
+      }
+      eventsById.set(event.event_id, event);
+    }
+    verifyExternalOverwriteTerminalEvent({
+      terminalEvent: {
+        plan_sha256: this.planSha256,
+        action_id: input.proposal.action.action_id,
+        sku: input.proposal.action.sku,
+        kind: "OFFER",
+        status: EXTERNAL_OVERWRITE_TERMINAL_STATUS,
+        detail: {
+          schema_version: EXTERNAL_OVERWRITE_TERMINAL_DETAIL_SCHEMA,
+          submitted_event_id: input.proposal.pending_submission.event_id,
+          proposal: input.proposal,
+        },
+      },
+      eventsById,
+    });
+
+    const event = await this.appendUnchecked({
+      action_id: input.proposal.action.action_id,
+      sku: input.proposal.action.sku,
+      kind: "OFFER",
+      status: EXTERNAL_OVERWRITE_TERMINAL_STATUS,
+      detail: {
+        schema_version: EXTERNAL_OVERWRITE_TERMINAL_DETAIL_SCHEMA,
+        submitted_event_id: input.proposal.pending_submission.event_id,
+        proposal: input.proposal,
+      },
+    });
+    const fenceAfter = await readFile(fencePath);
+    if (!fenceAfter.equals(fenceBefore)) {
+      throw new Error(
+        "Pending mutation fence changed during disposition; manual review required.",
+      );
+    }
+    if ((await this.pendingSubmissions()).has(input.proposal.action.action_id)) {
+      throw new Error("External-overwrite terminal checkpoint did not close its exact submission.");
+    }
+    return event;
+  }
+
+  /** Close only a proven synchronous pre-request abort. This status is
+   * intentionally not VERIFIED/ALREADY_APPLIED: it clears ambiguity so a new
+   * exact execution may retry the action, while preserving the fence until a
+   * separate confirmed release step. */
+  async dispositionPreRequestAbort(input: {
+    proposal: PreRequestAbortDispositionProposal;
+    confirmation: string;
+  }): Promise<CheckpointEvent> {
+    verifyPreRequestAbortDispositionProposal(input.proposal);
+    if (input.confirmation !== input.proposal.confirmation_token) {
+      throw new Error("Pre-request abort disposition confirmation mismatch.");
+    }
+    if (input.proposal.plan.sha256 !== this.planSha256) {
+      throw new Error("Pre-request abort disposition belongs to another plan.");
+    }
+    const pending = await this.pendingSubmissions();
+    const submission = pending.get(input.proposal.action.action_id);
+    if (
+      pending.size !== 1 ||
+      !submission ||
+      submission.source_status !== "SUBMISSION_ARMED" ||
+      submission.submitted_event_id !== input.proposal.armed.event_id ||
+      submission.sku !== input.proposal.action.sku ||
+      submission.kind !== "MEDIA"
+    ) {
+      throw new Error(
+        "Pre-request abort disposition no longer matches the one canonical armed action.",
+      );
+    }
+
+    const fencePath = path.join(
+      path.resolve(this.coordinationDir),
+      "pending-mutation-fence.json",
+    );
+    if (path.resolve(input.proposal.fence.path) !== fencePath) {
+      throw new Error("Pre-request abort proposal is not bound to the canonical fence path.");
+    }
+    const fenceBefore = await readFile(fencePath);
+    if (sha256(fenceBefore) !== input.proposal.fence.file_sha256) {
+      throw new Error("Pending mutation fence changed after abort planning.");
+    }
+
+    const names = (await readdir(this.directory()))
+      .filter((name) => name.endsWith(".json"))
+      .sort();
+    const eventsById = new Map<string, CheckpointEvent>();
+    for (const name of names) {
+      const event = JSON.parse(
+        await readFile(path.join(this.directory(), name), "utf8"),
+      ) as CheckpointEvent;
+      const { sha256: claimed, ...body } = event;
+      if (
+        event.schema_version !== CHECKPOINT_SCHEMA ||
+        event.immutable !== true ||
+        event.plan_sha256 !== this.planSha256 ||
+        claimed !== sha256(stableJson(body)) ||
+        eventsById.has(event.event_id)
+      ) {
+        throw new Error(`Invalid/tampered checkpoint event: ${name}`);
+      }
+      eventsById.set(event.event_id, event);
+    }
+    verifyPreRequestAbortTerminalEvent({
+      terminalEvent: {
+        plan_sha256: this.planSha256,
+        action_id: input.proposal.action.action_id,
+        sku: input.proposal.action.sku,
+        kind: "MEDIA",
+        status: PRE_REQUEST_ABORT_TERMINAL_STATUS,
+        detail: {
+          schema_version: PRE_REQUEST_ABORT_TERMINAL_DETAIL_SCHEMA,
+          armed_event_id: input.proposal.armed.event_id,
+          proposal: input.proposal,
+        },
+      },
+      eventsById,
+    });
+
+    const event = await this.appendUnchecked({
+      action_id: input.proposal.action.action_id,
+      sku: input.proposal.action.sku,
+      kind: "MEDIA",
+      status: PRE_REQUEST_ABORT_TERMINAL_STATUS,
+      detail: {
+        schema_version: PRE_REQUEST_ABORT_TERMINAL_DETAIL_SCHEMA,
+        armed_event_id: input.proposal.armed.event_id,
+        proposal: input.proposal,
+      },
+    });
+    const fenceAfter = await readFile(fencePath);
+    if (!fenceAfter.equals(fenceBefore)) {
+      throw new Error(
+        "Pending mutation fence changed during abort disposition; manual review required.",
+      );
+    }
+    if ((await this.pendingSubmissions()).has(input.proposal.action.action_id)) {
+      throw new Error("Pre-request abort checkpoint did not close its exact armed event.");
+    }
+    return event;
+  }
+
   async verifiedActionIds(): Promise<Set<string>> {
     const complete = new Set<string>();
     let names: string[];
@@ -4254,6 +4553,7 @@ export class ImmutableCheckpointStore {
       if ((error as NodeJS.ErrnoException).code === "ENOENT") return complete;
       throw error;
     }
+    const events: CheckpointEvent[] = [];
     for (const name of names.filter((item) => item.endsWith(".json")).sort()) {
       const event = JSON.parse(
         await readFile(path.join(this.directory(), name), "utf8"),
@@ -4267,7 +4567,21 @@ export class ImmutableCheckpointStore {
       ) {
         throw new Error(`Invalid/tampered checkpoint event: ${name}`);
       }
-      if (event.status === "VERIFIED" || event.status === "ALREADY_APPLIED") {
+      events.push(event);
+    }
+    const eventsById = new Map(events.map((event) => [event.event_id, event]));
+    for (const event of events) {
+      if (event.status === EXTERNAL_OVERWRITE_TERMINAL_STATUS) {
+        verifyExternalOverwriteTerminalEvent({ terminalEvent: event, eventsById });
+      }
+      if (event.status === PRE_REQUEST_ABORT_TERMINAL_STATUS) {
+        verifyPreRequestAbortTerminalEvent({ terminalEvent: event, eventsById });
+      }
+      if (
+        event.status === "VERIFIED" ||
+        event.status === "ALREADY_APPLIED" ||
+        event.status === EXTERNAL_OVERWRITE_TERMINAL_STATUS
+      ) {
         complete.add(event.action_id);
       }
     }
@@ -4314,6 +4628,9 @@ export class ImmutableCheckpointStore {
         )
         .map(({ event }) => [event.event_id, event] as const),
     );
+    const eventsById = new Map(
+      events.map(({ event }) => [event.event_id, event] as const),
+    );
     for (const { event } of events) {
       if (event.status === "SUBMITTED") {
         const armedEventId = event.detail.armed_event_id;
@@ -4337,7 +4654,18 @@ export class ImmutableCheckpointStore {
           }
         }
       }
-      if (event.status === "VERIFIED" || event.status === "ALREADY_APPLIED") {
+      if (event.status === EXTERNAL_OVERWRITE_TERMINAL_STATUS) {
+        verifyExternalOverwriteTerminalEvent({ terminalEvent: event, eventsById });
+      }
+      if (event.status === PRE_REQUEST_ABORT_TERMINAL_STATUS) {
+        verifyPreRequestAbortTerminalEvent({ terminalEvent: event, eventsById });
+      }
+      if (
+        event.status === "VERIFIED" ||
+        event.status === "ALREADY_APPLIED" ||
+        event.status === EXTERNAL_OVERWRITE_TERMINAL_STATUS ||
+        event.status === PRE_REQUEST_ABORT_TERMINAL_STATUS
+      ) {
         const closedEventId = event.detail.submitted_event_id;
         if (typeof closedEventId === "string" && closedEventId.length > 0) {
           const submitted = submittedByEventId.get(closedEventId);
@@ -4358,8 +4686,14 @@ export class ImmutableCheckpointStore {
       events
         .filter(({ event }) =>
           event.status === "VERIFIED" ||
-          event.status === "ALREADY_APPLIED")
-        .map(({ event }) => event.detail.submitted_event_id)
+          event.status === "ALREADY_APPLIED" ||
+          event.status === EXTERNAL_OVERWRITE_TERMINAL_STATUS ||
+          event.status === PRE_REQUEST_ABORT_TERMINAL_STATUS)
+        .map(({ event }) =>
+          event.status === PRE_REQUEST_ABORT_TERMINAL_STATUS
+            ? event.detail.armed_event_id
+            : event.detail.submitted_event_id
+        )
         .filter(
           (eventId): eventId is string =>
             typeof eventId === "string" && eventId.length > 0,
@@ -4410,9 +4744,16 @@ export class ImmutableCheckpointStore {
                 }
               : {}),
         });
-      } else if (event.status === "VERIFIED" || event.status === "ALREADY_APPLIED") {
+      } else if (
+        event.status === "VERIFIED" ||
+        event.status === "ALREADY_APPLIED" ||
+        event.status === EXTERNAL_OVERWRITE_TERMINAL_STATUS ||
+        event.status === PRE_REQUEST_ABORT_TERMINAL_STATUS
+      ) {
         const current = pending.get(event.action_id);
-        const closedEventId = event.detail.submitted_event_id;
+        const closedEventId = event.status === PRE_REQUEST_ABORT_TERMINAL_STATUS
+          ? event.detail.armed_event_id
+          : event.detail.submitted_event_id;
         if (
           current &&
           typeof closedEventId === "string" &&
@@ -5441,10 +5782,20 @@ export async function verifyActionState(
       checks.push({ field, ok, expected, actual });
     };
     if (desired.main_image_url) {
+      // Amazon can accept a source locator, rehost it, and expose the new
+      // asset in summaries before (or instead of) echoing that locator back in
+      // attributes. The summary MAIN is the buyer-facing truth. Prefer it
+      // whenever present; fall back to the seller attribute only when Amazon
+      // omits the summary image entirely. This also prevents us from replacing
+      // a MAIN that is already correct for buyers merely because the authoring
+      // locator is stale.
+      const buyerMain = nonEmptyString(summaryFor(live)?.mainImage?.link);
       await compare(
-        "main_product_image_locator",
+        buyerMain == null
+          ? "main_product_image_locator"
+          : "main_product_image_buyer_summary",
         desired.main_image_url,
-        mediaUrl(attrs.main_product_image_locator),
+        buyerMain ?? mediaUrl(attrs.main_product_image_locator),
       );
     }
     for (const item of desired.gallery_slots) {
@@ -5825,9 +6176,9 @@ async function pollActionSettlement(input: {
 
 export interface ExecuteRepairOptions {
   apply: boolean;
-  /** Legacy mode submits and waits inline. OFFER production rollout uses the
-   * explicit two-phase modes so a slow B2B projection can never authorize a
-   * second PATCH after a process restart. */
+  /** Legacy mode submits and waits inline. OFFER and exact MAIN-media
+   * production rollouts may use explicit two-phase modes so a delayed Amazon
+   * projection can never authorize a second PATCH after a process restart. */
   executionPhase?: OfferExecutionPhase;
   /** Dedicated exact-selection recovery for any already-pending action kind.
    * It is GET-only and cannot be combined with apply/preview/OFFER phases. */
@@ -5867,6 +6218,7 @@ export interface ExecuteRepairResult {
     | "VALIDATION_PREVIEW"
     | "APPLY"
     | "OFFER_SUBMIT_ONLY"
+    | "MEDIA_SUBMIT_ONLY"
     | "OFFER_SETTLE_ONLY"
     | "PENDING_SETTLE_ONLY";
   selection_sha256: string | null;
@@ -6757,13 +7109,18 @@ function bindPendingRepairSelection(input: {
     if (submission.source_status === "SUBMITTED") {
       const armedEventId = submission.detail.armed_event_id;
       const armedDetail = submission.armed_detail;
+      const armedStrategyMatches =
+        armedDetail?.strategy === strategy ||
+        (submission.kind === "OFFER" &&
+          strategy === SELECTOR_REPLACE_SURROGATE_FOR_MERGE &&
+          armedDetail?.strategy === "PRIMARY");
       if (
         typeof armedEventId !== "string" ||
         armedEventId.length === 0 ||
         submission.armed_event_id !== armedEventId ||
         !armedDetail ||
         armedDetail.crash_window_guard !== true ||
-        armedDetail.strategy !== strategy ||
+        !armedStrategyMatches ||
         stableJson(armedDetail.settlement_guard) !==
           stableJson(submission.detail.settlement_guard)
       ) {
@@ -7529,6 +7886,42 @@ async function executeFallbackAction(input: {
   });
 }
 
+/** Fail closed before the first marketplace read of an exact MAIN submit-only
+ * wave. A single invocation may submit every action in its sealed selection,
+ * but no restart may proceed while any canonical forward journal is pending.
+ * Terminal actions are also non-repeatable with the same selection. */
+async function assertMainMediaSubmitOnlyMayStart(input: {
+  plan: UncrustablesRepairPlan;
+  selection: RepairExecutionSelection;
+  checkpointStore: ImmutableCheckpointStore;
+}): Promise<void> {
+  verifyRepairExecutionSelection(input.plan, input.selection);
+  if (input.selection.profile !== MAIN_MEDIA_ONLY_PROFILE) {
+    throw new SettlementGuardError(
+      `MAIN submit-only requires an exact ${MAIN_MEDIA_ONLY_PROFILE} execution selection. No Amazon call was made.`,
+    );
+  }
+  const pending = await input.checkpointStore.pendingSubmissions();
+  const globalPending = await input.checkpointStore.hasGlobalPendingSubmissions();
+  if (pending.size > 0 || globalPending) {
+    const localIds = [...pending.keys()].sort();
+    throw new SettlementGuardError(
+      localIds.length > 0
+        ? `Submit-only MAIN execution is blocked by persistent pending action(s): ${localIds.join(", ")}. Run exact --recover-pending-only settlement first; no PATCH is authorized.`
+        : "Submit-only MAIN execution is blocked by a pending action in another canonical forward journal. Settle that exact selection first; no PATCH is authorized.",
+    );
+  }
+  const terminal = await input.checkpointStore.verifiedActionIds();
+  const repeated = input.selection.selected_action_ids.filter((actionId) =>
+    terminal.has(actionId)
+  );
+  if (repeated.length > 0) {
+    throw new SettlementGuardError(
+      `Submit-only MAIN execution includes terminal action(s): ${repeated.join(", ")}. Build a new exact selection; no PATCH is authorized.`,
+    );
+  }
+}
+
 /** Execute a sealed plan. `apply=false` is a pure offline dry run: the gateway
  * is never touched. */
 async function executeRepairPlanInternal(
@@ -7583,18 +7976,21 @@ async function executeRepairPlanInternal(
   if (executionPhase === "SUBMIT_ONLY") {
     if (!options.apply || options.validationOnly) {
       throw new Error(
-        "OFFER SUBMIT_ONLY requires apply=true and validationOnly=false. No Amazon call was made.",
+        "SUBMIT_ONLY requires apply=true and validationOnly=false. No Amazon call was made.",
       );
     }
-    if (
-      !executionSelection ||
-      executionSelection.profile !== OFFER_ONLY_EXECUTION_PROFILE
-    ) {
+    if (!executionSelection) {
       throw new Error(
-        "OFFER SUBMIT_ONLY requires an exact OFFER_ONLY_V1 execution selection. No Amazon call was made.",
+        `SUBMIT_ONLY requires an exact ${OFFER_ONLY_EXECUTION_PROFILE} or ${MAIN_MEDIA_ONLY_PROFILE} execution selection. No Amazon call was made.`,
       );
     }
-    assertOfferOnlyExecutionSelection({ plan, selection: executionSelection });
+    if (executionSelection.profile === OFFER_ONLY_EXECUTION_PROFILE) {
+      assertOfferOnlyExecutionSelection({ plan, selection: executionSelection });
+    } else if (executionSelection.profile !== MAIN_MEDIA_ONLY_PROFILE) {
+      throw new Error(
+        `SUBMIT_ONLY forbids profile ${executionSelection.profile}; only ${OFFER_ONLY_EXECUTION_PROFILE} and ${MAIN_MEDIA_ONLY_PROFILE} are eligible. No Amazon call was made.`,
+      );
+    }
   } else if (executionPhase === "SETTLE_ONLY") {
     if (options.apply || options.validationOnly) {
       throw new Error(
@@ -7788,7 +8184,9 @@ async function executeRepairPlanInternal(
     mode: recoverPendingOnly
       ? "PENDING_SETTLE_ONLY"
       : executionPhase === "SUBMIT_ONLY"
-      ? "OFFER_SUBMIT_ONLY"
+      ? executionSelection?.profile === MAIN_MEDIA_ONLY_PROFILE
+        ? "MEDIA_SUBMIT_ONLY"
+        : "OFFER_SUBMIT_ONLY"
       : executionPhase === "SETTLE_ONLY"
         ? "OFFER_SETTLE_ONLY"
         : options.apply
@@ -7866,6 +8264,9 @@ async function executeRepairPlanInternal(
     : executionGateway;
   const needsMarketplaceCoordination =
     options.apply || executionPhase === "SETTLE_ONLY" || recoverPendingOnly;
+  const submitOnlyPurpose = executionSelection?.profile === MAIN_MEDIA_ONLY_PROFILE
+    ? `MEDIA_SUBMIT_ONLY:${plan.plan_id}`
+    : `OFFER_SUBMIT_ONLY:${plan.plan_id}`;
   const releaseExecutionLease = needsMarketplaceCoordination
     ? await options.checkpointStore.acquireExecutionLease(
         recoverPendingOnly
@@ -7873,7 +8274,7 @@ async function executeRepairPlanInternal(
           : executionPhase === "SETTLE_ONLY"
           ? `OFFER_SETTLE_ONLY:${plan.plan_id}`
           : executionPhase === "SUBMIT_ONLY"
-            ? `OFFER_SUBMIT_ONLY:${plan.plan_id}`
+            ? submitOnlyPurpose
             : `FORWARD_APPLY:${plan.plan_id}`,
       )
     : null;
@@ -7886,7 +8287,7 @@ async function executeRepairPlanInternal(
         : executionPhase === "SETTLE_ONLY"
         ? `OFFER_SETTLE_ONLY:${plan.plan_id}`
         : executionPhase === "SUBMIT_ONLY"
-          ? `OFFER_SUBMIT_ONLY:${plan.plan_id}`
+          ? submitOnlyPurpose
           : `FORWARD_APPLY:${plan.plan_id}`,
     );
     mutationFenceClaimed = true;
@@ -7896,10 +8297,13 @@ async function executeRepairPlanInternal(
         selection: executionSelection,
         gateway: coordinatedGateway,
         checkpointStore: options.checkpointStore,
-        // Generic recovery uses exact locators only. This keeps the terminal
-        // decision within the abort-bounded Listings GET and prevents a
-        // secondary image fetch from influencing or outliving the read.
-        mediaEquivalence: exactMediaEquivalence,
+        // MAIN recovery must follow Amazon's source -> CDN rehost and buyer
+        // summary projection. The production comparator independently bounds
+        // every allow-listed image GET; tests may inject an exact comparator.
+        // Gallery comparisons remain exact whenever both sides are Amazon CDN
+        // locators, as enforced by PerceptualMediaEquivalence.
+        mediaEquivalence:
+          options.mediaEquivalence ?? exactMediaEquivalence,
         policy:
           options.pendingRecoveryPolicy ?? DEFAULT_OFFER_SETTLEMENT_POLICY,
         sleep: options.sleep,
@@ -7911,13 +8315,21 @@ async function executeRepairPlanInternal(
       result.stopped_early = settled.unresolved > 0;
       return result;
     } else if (executionPhase === "SUBMIT_ONLY" && executionSelection) {
-      assertOfferSubmitOnlyMayStart({
-        plan,
-        selection: executionSelection,
-        pendingActionIds: (await options.checkpointStore.pendingSubmissions())
-          .keys(),
-        terminalActionIds: await options.checkpointStore.verifiedActionIds(),
-      });
+      if (executionSelection.profile === MAIN_MEDIA_ONLY_PROFILE) {
+        await assertMainMediaSubmitOnlyMayStart({
+          plan,
+          selection: executionSelection,
+          checkpointStore: options.checkpointStore,
+        });
+      } else {
+        assertOfferSubmitOnlyMayStart({
+          plan,
+          selection: executionSelection,
+          pendingActionIds: (await options.checkpointStore.pendingSubmissions())
+            .keys(),
+          terminalActionIds: await options.checkpointStore.verifiedActionIds(),
+        });
+      }
     } else if (executionPhase === "SETTLE_ONLY" && executionSelection) {
       const settled = await settlePendingOfferSelection({
         plan,
@@ -8244,6 +8656,10 @@ async function executeRepairPlanInternal(
           );
         }
         let physicalMutationGuardCalled = false;
+        const physicalMutationGuardRequired =
+          launchAuthorizationBodySha256 != null ||
+          actionGateway.physicalMutationGuardContract ===
+            "CALL_IMMEDIATELY_BEFORE_REQUEST_V1";
         const submitted = await actionGateway.patchListing(
           entry.store_index,
           entry.sku,
@@ -8252,34 +8668,50 @@ async function executeRepairPlanInternal(
           false,
           undefined,
           (physicalContext) => {
-            const runtime = options.launchExecutionAuthorization;
             if (
-              !runtime ||
-              physicalContext.store_index !== runtime.authorization.account.store_index ||
-              physicalContext.marketplace_id !==
-                runtime.authorization.account.marketplace_id ||
-              physicalContext.amazon_merchant_id !==
-                runtime.authorization.account.amazon_merchant_id
+              physicalContext.store_index !== entry.store_index ||
+              physicalContext.marketplace_id !== MARKETPLACE_ID ||
+              typeof physicalContext.amazon_merchant_id !== "string" ||
+              physicalContext.amazon_merchant_id.trim().length === 0
             ) {
               throw new Error(
-                `Physical Amazon account does not match launch authorization for ${action.action_id}. No Amazon call was made.`,
+                `Physical Amazon account context does not match the selected listing for ${action.action_id}. No Amazon call was made.`,
               );
             }
-            const physicalRequestAuthorizationBodySha256 =
-              assertCurrentLaunchOfferAuthorization(action);
-            if (
-              physicalRequestAuthorizationBodySha256 !==
-              patchAuthorizationBodySha256
-            ) {
-              throw new Error(
-                `Launch execution authorization changed before the physical request for ${action.action_id}. No Amazon call was made.`,
-              );
+            // Launch authorization is an OFFER-only contract. MEDIA/content/
+            // structured writes still receive the immediate physical store +
+            // marketplace guard above, but must never require pricing runtime.
+            if (action.kind === "OFFER") {
+              const runtime = options.launchExecutionAuthorization;
+              if (
+                !runtime ||
+                physicalContext.store_index !==
+                  runtime.authorization.account.store_index ||
+                physicalContext.marketplace_id !==
+                  runtime.authorization.account.marketplace_id ||
+                physicalContext.amazon_merchant_id !==
+                  runtime.authorization.account.amazon_merchant_id
+              ) {
+                throw new Error(
+                  `Physical Amazon account does not match launch authorization for ${action.action_id}. No Amazon call was made.`,
+                );
+              }
+              const physicalRequestAuthorizationBodySha256 =
+                assertCurrentLaunchOfferAuthorization(action);
+              if (
+                physicalRequestAuthorizationBodySha256 !==
+                patchAuthorizationBodySha256
+              ) {
+                throw new Error(
+                  `Launch execution authorization changed before the physical request for ${action.action_id}. No Amazon call was made.`,
+                );
+              }
             }
             physicalMutationGuardCalled = true;
           },
         );
         if (
-          launchAuthorizationBodySha256 &&
+          physicalMutationGuardRequired &&
           !physicalMutationGuardCalled
         ) {
           throw new Error(

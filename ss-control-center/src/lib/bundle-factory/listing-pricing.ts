@@ -10,7 +10,7 @@
 
 import { referralFee } from "@/lib/economics/fee-tables";
 import { priceFor } from "@/lib/pricing/cost-model";
-import { isOwnBrandPassthrough } from "./own-brand";
+import { isOwnBrandPassthrough, textSaysUncrustables } from "./own-brand";
 import {
   computeBundlePrice,
   type BundlePriceInput,
@@ -24,6 +24,11 @@ export type ListingPricingSource =
 
 export interface ListingPriceInput extends BundlePriceInput {
   brand: string | null;
+  /** Any product-identifying text (draft/bundle/variant name). Second identity
+   *  net beside the brand field: a null/misspelled brand must never route an
+   *  Uncrustables bundle onto the generic markup (the 2026-07 price-above-max
+   *  birth bug). */
+  title?: string | null;
 }
 
 export interface ListingPriceResult extends BundlePriceResult {
@@ -36,18 +41,29 @@ export function computeListingPrice(
 ): ListingPriceResult {
   const base = computeBundlePrice(input, model);
   const unitCount = input.unit_count;
-  if (
-    !isOwnBrandPassthrough(input.brand) ||
-    unitCount == null ||
-    !Number.isInteger(unitCount) ||
-    unitCount <= 0
-  ) {
+  const uncrustables =
+    isOwnBrandPassthrough(input.brand) || textSaysUncrustables(input.title);
+  if (!uncrustables) {
     return { ...base, pricing_source: "BUNDLE_FACTORY_CONFIG" };
   }
 
+  // FAIL CLOSED: an Uncrustables bundle must never silently price on the
+  // generic markup — that mismatch (generic price ~landed×1.53 vs canonical
+  // band 1.3/1.5) birthed the 2026-07 price-above-max cohort that Amazon
+  // suppressed. A missing/invalid count is a data bug to surface, not a
+  // reason to fall back.
+  if (unitCount == null || !Number.isInteger(unitCount) || unitCount <= 0) {
+    throw new Error(
+      `Uncrustables bundle has no valid unit_count (${String(unitCount)}); ` +
+        "cannot price canonically and refusing the generic markup fallback",
+    );
+  }
   const canonical = priceFor(unitCount);
   if (!canonical) {
-    return { ...base, pricing_source: "BUNDLE_FACTORY_CONFIG" };
+    throw new Error(
+      `Uncrustables bundle unit_count ${unitCount} has no canonical price; ` +
+        "refusing the generic markup fallback",
+    );
   }
 
   const sellingPriceCents = Math.round(canonical.suggested * 100);

@@ -6,6 +6,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { generateKeyPairSync, sign } from "node:crypto";
 
 import type { ChannelSKU } from "@/generated/prisma/client";
 import {
@@ -16,6 +17,7 @@ import {
   submitToAmazon,
 } from "@/lib/bundle-factory/distribution/amazon-publish";
 import {
+  buildWalmartMultipartBody,
   buildWalmartPayload,
   submitToWalmart,
 } from "@/lib/bundle-factory/distribution/walmart-publish";
@@ -24,6 +26,33 @@ import {
   VERIFIED_PHYSICAL_PACKAGE_SCHEMA,
   type VerifiedPhysicalPackageSpecs,
 } from "@/lib/bundle-factory/physical-package-specs";
+import {
+  sha256WalmartJson,
+  WALMART_PUBLIC_CONTRACT_SCHEMA,
+  type WalmartPublicListingContract,
+} from "@/lib/bundle-factory/walmart-listing-contract";
+import { WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION } from
+  "@/lib/bundle-factory/validation/walmart-prepublication-policy";
+import {
+  assembleWalmartOwnerPermit,
+  buildWalmartOwnerPermitSigningRequest,
+} from "@/lib/bundle-factory/walmart-owner-permit";
+import { hashWalmartPayload } from
+  "@/lib/bundle-factory/distribution/walmart-payload-hash";
+
+const OWNER_KEYS = generateKeyPairSync("ed25519");
+const OWNER_PUBLIC_DER = OWNER_KEYS.publicKey.export({
+  format: "der",
+  type: "spki",
+}) as Buffer;
+Object.assign(process.env, {
+  NODE_ENV: "test",
+  WALMART_NEW_SKU_TEST_MODE: "1",
+  WALMART_API_BASE_URL: "https://walmart.fixture.test",
+  WALMART_NEW_SKU_TEST_OWNER_KEY_ID: "owner-payload-fixture-key",
+  WALMART_NEW_SKU_TEST_OWNER_PUBLIC_KEY_SPKI_DER_BASE64:
+    OWNER_PUBLIC_DER.toString("base64"),
+});
 
 const VERIFIED_PHYSICAL: VerifiedPhysicalPackageSpecs = {
   schema_version: VERIFIED_PHYSICAL_PACKAGE_SCHEMA,
@@ -435,43 +464,212 @@ test("buildAmazonPayload — wraps attributes + productType + LISTING requiremen
 
 // ── Walmart payload builder ──────────────────────────────────────────
 
-test("buildWalmartPayload — has spec header + single MPItem entry", () => {
-  const payload = buildWalmartPayload(mkSku());
+function walmartContract(
+  overrides: Partial<WalmartPublicListingContract> = {},
+): WalmartPublicListingContract {
+  return {
+    contract_version: WALMART_PUBLIC_CONTRACT_SCHEMA,
+    spec_version: WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION,
+    spec_schema_hash: "a".repeat(64),
+    spec_fetched_at: "2026-07-18T12:00:00.000Z",
+    product_type: "Food And Beverage",
+    country_of_origin_substantial_transformation: "US",
+    secondary_image_urls: [
+      "https://example.com/secondary-1.png",
+      "https://example.com/secondary-2.png",
+    ],
+    public_attributes: { flavor: "Variety" },
+    offer_handoff: {
+      mode: "STAGED_AFTER_ITEM_SETUP",
+      quantity: 7,
+      fulfillment_center_id: "DEFAULT",
+      fulfillment_lag_time: 1,
+    },
+    ...overrides,
+  };
+}
+
+function walmartSku(
+  overrides: Partial<ChannelSKU> = {},
+  contract = walmartContract(),
+): ChannelSKU {
+  return mkSku({
+    channel: "WALMART",
+    price_cents: 7999,
+    attributes: JSON.stringify({
+      product_truth_manifest: { must_not_leak: true },
+      walmart: contract,
+      walmart_prepublication: { must_not_leak: true },
+    }),
+    ...overrides,
+  });
+}
+
+const WALMART_BUILD_OPTIONS = {
+  brand: "Salutem Vita",
+  packCount: 9,
+  physicalPackageSpecs: VERIFIED_PHYSICAL,
+} as const;
+
+function ownerAuthorization(sku: ChannelSKU) {
+  const now = new Date();
+  const approvalSha256 = "2".repeat(64);
+  const sellerFingerprint = "7".repeat(64);
+  const request = buildWalmartOwnerPermitSigningRequest({
+    key_id: "owner-payload-fixture-key",
+    signed_body: {
+      permit_id: `owner-permit://payload-test/${sku.id}`,
+      action: "WALMART_MP_ITEM_SUBMIT",
+      environment: "TEST_FIXTURE_ONLY",
+      engine_release_sha256: "1".repeat(64),
+      approval_sha256: approvalSha256,
+      doctor_receipt_sha256: "3".repeat(64),
+      apply_preview_receipt_sha256: "4".repeat(64),
+      certification_sha256: "5".repeat(64),
+      candidate_key: "candidate-payload-test",
+      channel_sku_id: sku.id,
+      sku: sku.sku,
+      upc: sku.upc!,
+      payload_sha256: hashWalmartPayload(
+        buildWalmartPayload(sku, WALMART_BUILD_OPTIONS),
+      ),
+      store_index: 1,
+      seller_account_fingerprint_sha256: sellerFingerprint,
+      database_target_fingerprint_sha256: "8".repeat(64),
+      pilot_slot: 1,
+      max_pilot_skus: 2,
+      issued_at: now.toISOString(),
+      expires_at: new Date(now.getTime() + 20 * 60_000).toISOString(),
+      approved_by: "fixture-owner",
+      decision_ref: "owner-decision://payload-test/one",
+      live_submission_authorized: true,
+      claims: {
+        exact_one_sku: true,
+        marketplace_submission_max: 1,
+        delist: false,
+        reprice: false,
+        purchase: false,
+        schedule: false,
+      },
+    },
+  });
+  const signedPermit = assembleWalmartOwnerPermit({
+    request,
+    signature_base64: sign(
+      null,
+      Buffer.from(request.signing_message_base64, "base64"),
+      OWNER_KEYS.privateKey,
+    ).toString("base64"),
+  });
+  return {
+    signedPermit,
+    engineReleaseSha256: signedPermit.signed_body.engine_release_sha256,
+    approvalSha256,
+    sellerAccountFingerprintSha256: sellerFingerprint,
+  };
+}
+
+function unconsumedLifecycleClaim() {
+  return {
+    attemptId: "attempt-payload-fixture",
+    claimToken: "claim-payload-fixture",
+  };
+}
+
+function walmartParts(payload: Record<string, unknown>): {
+  item: Record<string, unknown>;
+  orderable: Record<string, unknown>;
+  visible: Record<string, unknown>;
+} {
+  const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
+  return {
+    item,
+    orderable: item.Orderable as Record<string, unknown>,
+    visible: (item.Visible as Record<string, Record<string, unknown>>)[
+      "Food And Beverage"
+    ],
+  };
+}
+
+test("buildWalmartPayload — emits the full pinned MP_ITEM 5.0 header", () => {
+  const payload = buildWalmartPayload(walmartSku(), WALMART_BUILD_OPTIONS);
   const header = payload.MPItemFeedHeader as Record<string, unknown>;
-  assert.equal(header.sellingChannel, "marketplace");
+  assert.deepEqual(header, {
+    sellingChannel: "marketplace",
+    feedType: "MP_ITEM",
+    processMode: "REPLACE",
+    locale: "en",
+    version: WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION,
+    subset: "EXTERNAL",
+    subCategory: "product_content_and_site_exp",
+  });
   assert.ok(Array.isArray(payload.MPItem));
   assert.equal((payload.MPItem as unknown[]).length, 1);
 });
 
-test("buildWalmartPayload — UPC in productIdentifiers as UPC type", () => {
-  const payload = buildWalmartPayload(mkSku({ upc: "012345678905" }));
-  const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
-  const ids = item.productIdentifiers as Array<{ productIdType: string; productId: string }>;
-  assert.equal(ids[0].productIdType, "UPC");
-  assert.equal(ids[0].productId, "012345678905");
-});
-
-test("buildWalmartPayload — weight converted oz → lb", () => {
-  const payload = buildWalmartPayload(mkSku(), {
-    physicalPackageSpecs: VERIFIED_PHYSICAL,
+test("buildWalmartPayload — uses nested Orderable/Visible and typed UPC", () => {
+  const payload = buildWalmartPayload(
+    walmartSku({ upc: "012345678905" }),
+    WALMART_BUILD_OPTIONS,
+  );
+  const { item, orderable, visible } = walmartParts(payload);
+  assert.deepEqual(orderable.productIdentifiers, {
+    productIdType: "UPC",
+    productId: "012345678905",
   });
-  const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
-  const sw = item.shippingWeight as { value: number; unit: string };
-  assert.equal(sw.unit, "LB");
-  assert.equal(sw.value, 2); // 32 oz / 16 = 2 lb
+  assert.equal(orderable.specProductType, "Food And Beverage");
+  assert.equal(orderable.price, 79.99);
+  assert.equal(visible.productName, walmartSku().title);
+  assert.equal(visible.brand, "Salutem Vita");
+  assert.equal(item.productIdentifiers, undefined);
 });
 
-test("buildWalmartPayload — legacy package columns do not invent shipping facts", () => {
-  const payload = buildWalmartPayload(mkSku());
-  const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
-  assert.equal(item.shippingWeight, undefined);
-  assert.equal(item.assembledProductDimensions, undefined);
+test("buildWalmartPayload — carries exact verified package facts", () => {
+  const payload = buildWalmartPayload(walmartSku(), WALMART_BUILD_OPTIONS);
+  const { orderable } = walmartParts(payload);
+  assert.equal(orderable.ShippingWeight, 2);
+  assert.deepEqual(orderable.productPackageDimensionsAndWeight, {
+    productPackageDimensionsDepth: 14,
+    productPackageDimensionsHeight: 6,
+    productPackageDimensionsWidth: 10,
+    productPackageWeight: 2,
+  });
+});
+
+test("buildWalmartPayload — refuses all former defaults", () => {
+  assert.throws(
+    () => buildWalmartPayload(walmartSku(), {
+      packCount: 9,
+      physicalPackageSpecs: VERIFIED_PHYSICAL,
+    }),
+    /brand.*no default/i,
+  );
+  assert.throws(
+    () => buildWalmartPayload(walmartSku(), {
+      brand: "Salutem Vita",
+      physicalPackageSpecs: VERIFIED_PHYSICAL,
+    }),
+    /packCount is required/i,
+  );
+  assert.throws(
+    () => buildWalmartPayload(walmartSku(), {
+      brand: "Salutem Vita",
+      packCount: 9,
+    }),
+    /operator-verified package/i,
+  );
+  assert.throws(
+    () => buildWalmartPayload(mkSku({ price_cents: 7999 }), WALMART_BUILD_OPTIONS),
+    /attributes\.walmart is required/i,
+  );
 });
 
 test("submitToWalmart — rejects measurement proof that does not match the SKU", async () => {
   const result = await submitToWalmart({
-    sku: mkSku({ package_weight_oz: 31 }),
+    sku: walmartSku({ package_weight_oz: 31 }),
     storeIndex: 1,
+    brand: "Salutem Vita",
+    packCount: 9,
     physicalPackageSpecs: VERIFIED_PHYSICAL,
     dryRun: true,
   });
@@ -479,49 +677,307 @@ test("submitToWalmart — rejects measurement proof that does not match the SKU"
   assert.match(result.error ?? "", /operator-verified package weight and dimensions/i);
 });
 
-test("buildWalmartPayload — keyFeatures parsed from bullets_json", () => {
-  const payload = buildWalmartPayload(mkSku());
-  const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
-  const kf = item.keyFeatures as string[];
+test("buildWalmartPayload — sends public attributes and never root evidence", () => {
+  const payload = buildWalmartPayload(walmartSku(), WALMART_BUILD_OPTIONS);
+  const { visible } = walmartParts(payload);
+  const kf = visible.keyFeatures as string[];
   assert.equal(kf.length, 3);
   assert.match(kf[0], /single-serve/);
+  assert.equal(visible.flavor, "Variety");
+  const serialized = JSON.stringify(payload);
+  assert.doesNotMatch(serialized, /product_truth_manifest/);
+  assert.doesNotMatch(serialized, /walmart_prepublication/);
 });
 
-test("buildWalmartPayload — productType defaults to 'Gift Baskets' when item_type empty", () => {
-  const payload = buildWalmartPayload(mkSku({ item_type: null }));
-  const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
-  assert.equal(item.productType, "Gift Baskets");
+test("buildWalmartPayload — rejects old 4.7 even when passed as typed contract", () => {
+  const old = {
+    ...walmartContract(),
+    spec_version: "4.7",
+  } as WalmartPublicListingContract;
+  assert.throws(
+    () => buildWalmartPayload(walmartSku(), {
+      ...WALMART_BUILD_OPTIONS,
+      walmart: old,
+    }),
+    /exact MP_ITEM 5\.0/i,
+  );
 });
 
-test("buildWalmartPayload — brand defaults to 'Salutem Vita' when not supplied", () => {
-  const payload = buildWalmartPayload(mkSku());
-  const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
-  assert.equal(item.brand, "Salutem Vita");
+test("buildWalmartPayload — MATCH_EXISTING is routed away from MP_ITEM", () => {
+  const sku = walmartSku({
+    attributes: JSON.stringify({
+      walmart: walmartContract(),
+      walmart_prepublication: {
+        catalog_search: {
+          result: "EXACT_MATCH",
+          setup_method: "MATCH_EXISTING",
+        },
+        item_spec: { feed_type: "MP_ITEM_MATCH" },
+      },
+    }),
+  });
+  assert.throws(
+    () => buildWalmartPayload(sku, WALMART_BUILD_OPTIONS),
+    /supports only NO_EXACT_MATCH -> FULL_ITEM -> MP_ITEM 5\.0/i,
+  );
 });
 
-test("buildWalmartPayload — brand passes through (own-brand multipack)", () => {
-  const payload = buildWalmartPayload(mkSku(), { brand: "Uncrustables" });
-  const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
-  assert.equal(item.brand, "Uncrustables");
+test("buildWalmartPayload — adapter-owned core fields cannot be overridden", () => {
+  const bad = walmartContract({
+    public_attributes: { brand: "Fake Brand" },
+  });
+  assert.throws(
+    () => buildWalmartPayload(walmartSku({}, bad), WALMART_BUILD_OPTIONS),
+    /public_attributes\.brand is adapter-owned/i,
+  );
+  const snakeCase = walmartContract({
+    public_attributes: { main_image_url: "https://example.com/fake.png" },
+  });
+  assert.throws(
+    () => buildWalmartPayload(walmartSku({}, snakeCase), WALMART_BUILD_OPTIONS),
+    /public_attributes\.main_image_url is adapter-owned/i,
+  );
 });
 
-test("buildWalmartPayload — quantity trio emitted for a real multipack (packCount≥2)", () => {
-  const payload = buildWalmartPayload(mkSku(), { packCount: 30 });
-  const item = (payload.MPItem as Array<Record<string, unknown>>)[0];
-  assert.equal(item.multipackQuantity, 30);
-  assert.equal(item.countPerPack, 1);
-  assert.equal(item.count, 30);
+test("buildWalmartPayload — exact quantity trio is derived from recipe", () => {
+  const payload = buildWalmartPayload(walmartSku(), WALMART_BUILD_OPTIONS);
+  const { visible } = walmartParts(payload);
+  assert.equal(visible.multipackQuantity, 9);
+  assert.equal(visible.countPerPack, 1);
+  assert.equal(visible.count, 9);
 });
 
-test("buildWalmartPayload — no quantity trio for a single unit / missing count", () => {
-  const single = buildWalmartPayload(mkSku(), { packCount: 1 });
-  const s = (single.MPItem as Array<Record<string, unknown>>)[0];
-  assert.equal(s.multipackQuantity, undefined);
-  assert.equal(s.count, undefined);
+test("buildWalmartPayload — conflicting quantity truth fails closed", () => {
+  const bad = walmartContract({
+    public_attributes: { multipackQuantity: 6 },
+  });
+  assert.throws(
+    () => buildWalmartPayload(walmartSku({}, bad), WALMART_BUILD_OPTIONS),
+    /conflicts with exact packCount 9/i,
+  );
+});
 
-  const none = buildWalmartPayload(mkSku());
-  const n = (none.MPItem as Array<Record<string, unknown>>)[0];
-  assert.equal(n.multipackQuantity, undefined);
+test("buildWalmartPayload — inventory follows explicit handoff mode", () => {
+  const staged = buildWalmartPayload(walmartSku(), WALMART_BUILD_OPTIONS);
+  assert.equal(walmartParts(staged).orderable.inventory, undefined);
+
+  const inlineContract = walmartContract({
+    offer_handoff: {
+      mode: "INLINE",
+      quantity: 11,
+      fulfillment_center_id: "FC-1",
+      fulfillment_lag_time: 2,
+    },
+  });
+  const inline = buildWalmartPayload(
+    walmartSku({}, inlineContract),
+    WALMART_BUILD_OPTIONS,
+  );
+  assert.deepEqual(walmartParts(inline).orderable.inventory, [
+    { fulfillmentCenterID: "FC-1", quantity: 11 },
+  ]);
+});
+
+test("buildWalmartMultipartBody — is a pure JSON file request contract", () => {
+  const body = buildWalmartMultipartBody(walmartSku(), WALMART_BUILD_OPTIONS);
+  assert.deepEqual(body.params, { feedType: "MP_ITEM" });
+  assert.equal(body.file.contentType, "application/json");
+  assert.match(body.file.filename, /SV-AS01-A1B2-mp-item\.json$/);
+  assert.deepEqual(JSON.parse(body.file.content), body.payload);
+});
+
+test("submitToWalmart — local dry run performs no API request", async () => {
+  let calls = 0;
+  const result = await submitToWalmart({
+    sku: walmartSku(),
+    storeIndex: 1,
+    ...WALMART_BUILD_OPTIONS,
+    dryRun: true,
+    client: {
+      async requestRaw() {
+        calls += 1;
+        throw new Error("must not be called");
+      },
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.walmart_status, "DRY_RUN_LOCAL_ONLY");
+  assert.equal(result.schema_validation, null);
+  assert.equal(calls, 0);
+});
+
+test("submitToWalmart — live schema failure prevents the feed call", async () => {
+  const schema = {
+    type: "object",
+    required: ["fieldThatPayloadCannotHave"],
+  };
+  const contract = walmartContract({ spec_schema_hash: sha256WalmartJson(schema) });
+  const calls: string[] = [];
+  const sku = walmartSku({}, contract);
+  const result = await submitToWalmart({
+    sku,
+    storeIndex: 1,
+    ...WALMART_BUILD_OPTIONS,
+    dryRun: false,
+    beforeFeedPost() {},
+    ownerPermitAuthorization: ownerAuthorization(sku),
+    lifecyclePostClaim: unconsumedLifecycleClaim(),
+    client: {
+      async requestRaw(_method, path) {
+        calls.push(path);
+        return {
+          status: 200,
+          ok: true,
+          body: { schema },
+          correlationId: "cid-invalid",
+        };
+      },
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.deepEqual(calls, ["/items/spec"]);
+  assert.equal(result.issues[0]?.code, "WALMART_SPEC_VALIDATION_FAILED");
+});
+
+test("submitToWalmart — real submission cannot omit the approval fence", async () => {
+  let calls = 0;
+  const result = await submitToWalmart({
+    sku: walmartSku(),
+    storeIndex: 1,
+    ...WALMART_BUILD_OPTIONS,
+    dryRun: false,
+    client: {
+      async requestRaw() {
+        calls += 1;
+        throw new Error("must not be called");
+      },
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.issues[0]?.code, "WALMART_MUTATION_FENCE_MISSING");
+  assert.equal(calls, 0);
+});
+
+test("submitToWalmart — callback without a signed permit cannot post", async () => {
+  let calls = 0;
+  const result = await submitToWalmart({
+    sku: walmartSku(),
+    storeIndex: 1,
+    ...WALMART_BUILD_OPTIONS,
+    dryRun: false,
+    beforeFeedPost() {},
+    client: {
+      async requestRaw() {
+        calls += 1;
+        throw new Error("must not be called");
+      },
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.issues[0]?.code, "WALMART_MUTATION_FENCE_MISSING");
+  assert.equal(calls, 0);
+});
+
+test("submitToWalmart — a signed permit alone cannot bypass the durable claim", async () => {
+  let calls = 0;
+  const sku = walmartSku();
+  const result = await submitToWalmart({
+    sku,
+    storeIndex: 1,
+    ...WALMART_BUILD_OPTIONS,
+    dryRun: false,
+    beforeFeedPost() {},
+    ownerPermitAuthorization: ownerAuthorization(sku),
+    client: {
+      async requestRaw() {
+        calls += 1;
+        throw new Error("must not be called");
+      },
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.issues[0]?.code, "WALMART_MUTATION_FENCE_MISSING");
+  assert.equal(calls, 0);
+});
+
+test("submitToWalmart — production transport rejects a test-fixture permit", async () => {
+  const schema = { type: "object", required: ["MPItemFeedHeader", "MPItem"] };
+  const contract = walmartContract({ spec_schema_hash: sha256WalmartJson(schema) });
+  const calls: Array<{ path: string; options: Record<string, unknown> }> = [];
+  const sequence: string[] = [];
+  const sku = walmartSku({}, contract);
+  const result = await submitToWalmart({
+    sku,
+    storeIndex: 1,
+    ...WALMART_BUILD_OPTIONS,
+    dryRun: false,
+    beforeFeedPost() {
+      sequence.push("approval-fence");
+    },
+    ownerPermitAuthorization: ownerAuthorization(sku),
+    lifecyclePostClaim: unconsumedLifecycleClaim(),
+    client: {
+      async requestRaw(_method, path, options) {
+        sequence.push(path);
+        calls.push({ path, options: options as Record<string, unknown> });
+        if (path === "/items/spec") {
+          return {
+            status: 200,
+            ok: true,
+            body: { schema },
+            correlationId: "cid-spec",
+          };
+        }
+        return {
+          status: 200,
+          ok: true,
+          body: { feedId: "feed-123", status: "RECEIVED" },
+          correlationId: "cid-feed",
+        };
+      },
+    },
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.feed_id, null);
+  assert.deepEqual(sequence, ["/items/spec", "approval-fence"]);
+  assert.deepEqual(calls.map((call) => call.path), ["/items/spec"]);
+  assert.equal(result.issues[0]?.code, "WALMART_MUTATION_FENCE_FAILED");
+  assert.match(result.error ?? "", /KEY_UNTRUSTED_OR_REVOKED/);
+});
+
+test("submitToWalmart — mutation-adjacent fence can still block the feed", async () => {
+  const schema = { type: "object" };
+  const contract = walmartContract({ spec_schema_hash: sha256WalmartJson(schema) });
+  const calls: string[] = [];
+  const sku = walmartSku({}, contract);
+  const result = await submitToWalmart({
+    sku,
+    storeIndex: 1,
+    ...WALMART_BUILD_OPTIONS,
+    dryRun: false,
+    beforeFeedPost() {
+      throw new Error("approval fingerprint drifted");
+    },
+    ownerPermitAuthorization: ownerAuthorization(sku),
+    lifecyclePostClaim: unconsumedLifecycleClaim(),
+    client: {
+      async requestRaw(_method, path) {
+        calls.push(path);
+        return {
+          status: 200,
+          ok: true,
+          body: { schema },
+          correlationId: "cid-spec",
+        };
+      },
+    },
+  });
+
+  assert.equal(result.ok, false);
+  assert.deepEqual(calls, ["/items/spec"]);
+  assert.equal(result.issues[0]?.code, "WALMART_MUTATION_FENCE_FAILED");
+  assert.match(result.error ?? "", /approval fingerprint drifted/i);
 });
 
 // ── channelTarget — skip set + marketplace mapping ────────────────────

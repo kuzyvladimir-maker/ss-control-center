@@ -1,0 +1,1163 @@
+{
+  "schema_version": "walmart-visual-pilot-checkpoint/v1",
+  "manifest_sha256": "8997a46fe8ef9ecccb165cc9548e0097d07561c2daa9079c09a17d3e25f2d403",
+  "provider": "codex",
+  "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+  "preprocessor_version": "walmart-visual-preprocess/2026-07-18-v1",
+  "subscription_calls_consumed": 6,
+  "calls": {
+    "0545bddf846a3b0cf9239c7221c8cc658abfc10065e4fb7760ade12044589368": {
+      "call_key": "0545bddf846a3b0cf9239c7221c8cc658abfc10065e4fb7760ade12044589368",
+      "provider": "codex",
+      "prompt_version": "walmart-visual-blind/v3",
+      "prompt_sha256": "2d021e0ee04ba833e4892cf4afd9f0c40354934bfb63b5b61dad1d7242c1e602",
+      "preprocessor_version": "walmart-visual-preprocess/2026-07-18-v1",
+      "image_ids": [
+        "i_10672c33ff510746",
+        "i_b19840e0471f7784",
+        "i_d77709648da5d416",
+        "i_652a07d086861fd5"
+      ],
+      "full_view_sha256": [
+        "a2d103b782cec3f703d550928e02764e85db5f1a84f85af6a0ef9498bab88400",
+        "df859229ae95e471356e469d28ef59ac6bea80d72efaac4eb2640ffbe558b4f1",
+        "3be5bf8a414806e81fb675b8de6068a877e3a5a074b21cbe2913962c2760f8a7",
+        "c6751da2bb33991feaef4e343de85a963e609df4f8b5ba75e2819c4f89987fdc"
+      ],
+      "transport_attempts": [
+        {
+          "attempt": 1,
+          "status": 200,
+          "duration_ms": 31563,
+          "ok": true,
+          "error": null,
+          "attested_image_count": 4,
+          "worker_provider": "codex_cli_subscription",
+          "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+          "vision_model": "gpt-5.6-sol",
+          "vision_reasoning_effort": "medium",
+          "cli_version": "codex-cli 0.144.5",
+          "node_version": "v20.20.1",
+          "runtime_platform": "linux",
+          "runtime_arch": "x64",
+          "worker_model_runtime_attested": true,
+          "worker_contract_attested": true
+        }
+      ],
+      "transport_ok": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "image_count_attested": true,
+      "worker_contract_attested": true,
+      "worker_provider": "codex_cli_subscription",
+      "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+      "vision_model": "gpt-5.6-sol",
+      "vision_reasoning_effort": "medium",
+      "cli_version": "codex-cli 0.144.5",
+      "node_version": "v20.20.1",
+      "runtime_platform": "linux",
+      "runtime_arch": "x64",
+      "worker_model_runtime_attested": true,
+      "observations": {
+        "schema_version": "wm_visual_observation_batch/v3",
+        "observations": [
+          {
+            "image_id": "i_10672c33ff510746",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "GATORADE",
+            "visible_product_text": "ZERO",
+            "visible_variant_text": "GLACIER CHERRY",
+            "visible_size_texts": [
+              "28 FL OZ",
+              "1.75 PT",
+              "828 mL"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 6,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "G ZERO",
+              "GLACIER CHERRY",
+              "28 FL OZ (1.75 PT) 828 mL"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_b19840e0471f7784",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "JACK LINK'S",
+            "visible_product_text": "BEEF JERKY",
+            "visible_variant_text": "TERIYAKI",
+            "visible_size_texts": [
+              "NET WT. 2.85 OZ (81g)"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 4,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "JACK LINK'S",
+              "BEEF JERKY",
+              "TERIYAKI",
+              "NET WT. 2.85 OZ (81g)"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_d77709648da5d416",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "PEPPERIDGE FARM",
+            "visible_product_text": "FARMHOUSE",
+            "visible_variant_text": "MULTIGRAIN",
+            "visible_size_texts": [
+              "NET WT 24 OZ (1.5 LBS) 680g"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 2,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "PEPPERIDGE FARM",
+              "FARMHOUSE",
+              "MULTIGRAIN",
+              "NET WT 24 OZ (1.5 LBS) 680g"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_652a07d086861fd5",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Sara Lee",
+            "visible_product_text": "Artesano bakery bread",
+            "visible_variant_text": "BAKERY BUNS",
+            "visible_size_texts": [
+              "8 COUNT"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 2,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "8 COUNT"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "Sara Lee",
+              "Artesano bakery bread",
+              "BAKERY BUNS",
+              "8 COUNT"
+            ],
+            "flags": []
+          }
+        ]
+      },
+      "completed_at": "2026-07-18T20:41:06.756Z"
+    },
+    "24bb4105dcff951149a4cd627af691bbac1d7869a24cd73b55209dbd5cd66d36": {
+      "call_key": "24bb4105dcff951149a4cd627af691bbac1d7869a24cd73b55209dbd5cd66d36",
+      "provider": "codex",
+      "prompt_version": "walmart-visual-blind/v3",
+      "prompt_sha256": "f666e6048d5e2402c072b928235e6630753ffdfb4ecd862feba6e49b0f1562ba",
+      "preprocessor_version": "walmart-visual-preprocess/2026-07-18-v1",
+      "image_ids": [
+        "i_321e5e95771c76d8",
+        "i_194c854a38a65d23",
+        "i_988bf79cfbfccbca",
+        "i_68efe8296feccc65"
+      ],
+      "full_view_sha256": [
+        "8a9315f6160caa49d7265c3d7838ecbf8cec5bbd8787c1e04d40eb409798d215",
+        "e7d55226232c1f77d9859f1851131d06529b9831d5323298f78b0d6628aacf74",
+        "8ab75df61fab13bb458d6cc13f2c3dd26b21435a064b9de70f50e0ff2fd217c1",
+        "0ec4b7befc65050dcdc722ccf43db9be51ffef14c8d89645fc40400a7cab60df"
+      ],
+      "transport_attempts": [
+        {
+          "attempt": 1,
+          "status": 200,
+          "duration_ms": 40151,
+          "ok": true,
+          "error": null,
+          "attested_image_count": 4,
+          "worker_provider": "codex_cli_subscription",
+          "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+          "vision_model": "gpt-5.6-sol",
+          "vision_reasoning_effort": "medium",
+          "cli_version": "codex-cli 0.144.5",
+          "node_version": "v20.20.1",
+          "runtime_platform": "linux",
+          "runtime_arch": "x64",
+          "worker_model_runtime_attested": true,
+          "worker_contract_attested": true
+        }
+      ],
+      "transport_ok": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "image_count_attested": true,
+      "worker_contract_attested": true,
+      "worker_provider": "codex_cli_subscription",
+      "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+      "vision_model": "gpt-5.6-sol",
+      "vision_reasoning_effort": "medium",
+      "cli_version": "codex-cli 0.144.5",
+      "node_version": "v20.20.1",
+      "runtime_platform": "linux",
+      "runtime_arch": "x64",
+      "worker_model_runtime_attested": true,
+      "observations": {
+        "schema_version": "wm_visual_observation_batch/v3",
+        "observations": [
+          {
+            "image_id": "i_321e5e95771c76d8",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "HERSHEY'S",
+            "visible_product_text": "KISSES",
+            "visible_variant_text": "milk chocolate",
+            "visible_size_texts": [
+              "4.84 OZ"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 6,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "HERSHEY'S",
+              "KISSES",
+              "milk chocolate",
+              "4.84 OZ"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_194c854a38a65d23",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "OLD EL PASO",
+            "visible_product_text": "STAND 'N STUFF",
+            "visible_variant_text": "FAMILY SIZE",
+            "visible_size_texts": [
+              "20 SHELLS"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 4,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [
+              "FAMILY SIZE",
+              "GLUTEN FREE"
+            ],
+            "inner_contents_claims": [
+              "20 SHELLS"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "OLD EL PASO",
+              "STAND 'N STUFF",
+              "FAMILY SIZE",
+              "20 SHELLS",
+              "GLUTEN FREE"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_988bf79cfbfccbca",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "NABISCO",
+            "visible_product_text": "OREO",
+            "visible_variant_text": "GOLDEN DOUBLE STUF",
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 4,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [
+              "FAMILY SIZE",
+              "33% MORE COOKIES"
+            ],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [
+              "33% MORE COOKIES"
+            ],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "NABISCO",
+              "GOLDEN DOUBLE STUF",
+              "OREO",
+              "FAMILY SIZE",
+              "33% MORE COOKIES",
+              "SANDWICH COOKIES"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_68efe8296feccc65",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "HERSHEY'S",
+            "visible_product_text": "KISSES",
+            "visible_variant_text": "milk chocolate with almonds",
+            "visible_size_texts": [
+              "4.48 OZ"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 6,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "HERSHEY'S",
+              "KISSES",
+              "milk chocolate with almonds",
+              "4.48 OZ"
+            ],
+            "flags": []
+          }
+        ]
+      },
+      "completed_at": "2026-07-18T20:41:46.920Z"
+    },
+    "3ac28177e92f0eb27504f45eac3bcecfff975262d38b248995268439ba44f44b": {
+      "call_key": "3ac28177e92f0eb27504f45eac3bcecfff975262d38b248995268439ba44f44b",
+      "provider": "codex",
+      "prompt_version": "walmart-visual-blind/v3",
+      "prompt_sha256": "ea6eacaa43343732b48903f88d9416133d5bc8cbad6056e521152dd69bf5969b",
+      "preprocessor_version": "walmart-visual-preprocess/2026-07-18-v1",
+      "image_ids": [
+        "i_4913067df7d6098d",
+        "i_a7d7ba655d772c37",
+        "i_5940fe024bd68bf7",
+        "i_afe07d9f59ad552a"
+      ],
+      "full_view_sha256": [
+        "814da3699ca6c55c4a7e75b877c61fd2c980e607061047d8de727323c9b0cd8b",
+        "f73426a5c7b460fc487f4cc50bda690e6d5e1f539eb5ffd2400cbfa2c33a301e",
+        "d5b866add869df4478af99002d91273e073aa6973bf0750d9bd8ae1b20370457",
+        "d557ef1b817914b39a9b8834290b4e6cad1dfe2db949a67415f37be5647b4d0e"
+      ],
+      "transport_attempts": [
+        {
+          "attempt": 1,
+          "status": 200,
+          "duration_ms": 54086,
+          "ok": true,
+          "error": null,
+          "attested_image_count": 4,
+          "worker_provider": "codex_cli_subscription",
+          "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+          "vision_model": "gpt-5.6-sol",
+          "vision_reasoning_effort": "medium",
+          "cli_version": "codex-cli 0.144.5",
+          "node_version": "v20.20.1",
+          "runtime_platform": "linux",
+          "runtime_arch": "x64",
+          "worker_model_runtime_attested": true,
+          "worker_contract_attested": true
+        }
+      ],
+      "transport_ok": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "image_count_attested": true,
+      "worker_contract_attested": true,
+      "worker_provider": "codex_cli_subscription",
+      "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+      "vision_model": "gpt-5.6-sol",
+      "vision_reasoning_effort": "medium",
+      "cli_version": "codex-cli 0.144.5",
+      "node_version": "v20.20.1",
+      "runtime_platform": "linux",
+      "runtime_arch": "x64",
+      "worker_model_runtime_attested": true,
+      "observations": {
+        "schema_version": "wm_visual_observation_batch/v3",
+        "observations": [
+          {
+            "image_id": "i_4913067df7d6098d",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Old El Paso",
+            "visible_product_text": "FLAVORED TACO SHELLS",
+            "visible_variant_text": "Zesty RANCH",
+            "visible_size_texts": [
+              "10 SHELLS"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 4,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "10 SHELLS"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "Old El Paso",
+              "Zesty RANCH",
+              "FLAVORED TACO SHELLS",
+              "10 SHELLS"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_a7d7ba655d772c37",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Pepperidge Farm",
+            "visible_product_text": "HOT DOG BUNS",
+            "visible_variant_text": "TOP SLICED BUTTER",
+            "visible_size_texts": [
+              "8"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 2,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "8"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "PEPPERIDGE FARM",
+              "8 TOP SLICED BUTTER",
+              "HOT DOG BUNS",
+              "MADE WITH REAL BUTTER"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_5940fe024bd68bf7",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Pepperidge Farm",
+            "visible_product_text": "Chessmen",
+            "visible_variant_text": "BUTTER",
+            "visible_size_texts": [
+              "24 COOKIES",
+              "7.25 oz"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 6,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "24 COOKIES"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "PEPPERIDGE FARM",
+              "Chessmen",
+              "BUTTER",
+              "24 COOKIES",
+              "7.25 oz"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_afe07d9f59ad552a",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "JACK LINK'S",
+            "visible_product_text": "DUOS",
+            "visible_variant_text": "ORIGINAL BEEF JERKY / TERIYAKI BEEF JERKY",
+            "visible_size_texts": [
+              "NET WT. 2.85 OZ (81g)"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 4,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "TWO FLAVORS ONE BAG"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "JACK LINK'S",
+              "TWO FLAVORS ONE BAG",
+              "DUOS",
+              "ORIGINAL BEEF JERKY",
+              "TERIYAKI BEEF JERKY",
+              "NET WT. 2.85 OZ (81g)"
+            ],
+            "flags": []
+          }
+        ]
+      },
+      "completed_at": "2026-07-18T20:42:41.015Z"
+    },
+    "ed0b9114946912442244f2bd9187fb3616b4d2730bdfa40aaf9ffebde81595d5": {
+      "call_key": "ed0b9114946912442244f2bd9187fb3616b4d2730bdfa40aaf9ffebde81595d5",
+      "provider": "codex",
+      "prompt_version": "walmart-visual-blind/v3",
+      "prompt_sha256": "82ab86610eb713e3c8f1f231dd44b0334f134bfa249bb533f7018999a8ddbbf7",
+      "preprocessor_version": "walmart-visual-preprocess/2026-07-18-v1",
+      "image_ids": [
+        "i_5a3378e47a184c5e",
+        "i_5ab0e63351e1488c",
+        "i_f253bbcadd292a41",
+        "i_77a6648c7d1daf81"
+      ],
+      "full_view_sha256": [
+        "d60d059b9fcac720b1d429e7a8d4ba2f258cb4d2ed3f6bf547b13599f1a49918",
+        "65a5ac65b37ccae96c860245d8da57f2b9fedd30a0af6268a503011879eb07ab",
+        "df9b5f14e96dabe65b03c1d86d06a9e1e26596660ef44bbf575c2f1b7c7115c3",
+        "573deaa9b1c027efcc06affe07253e88bd98df66fd347c277a50c35212794484"
+      ],
+      "transport_attempts": [
+        {
+          "attempt": 1,
+          "status": 200,
+          "duration_ms": 51848,
+          "ok": true,
+          "error": null,
+          "attested_image_count": 4,
+          "worker_provider": "codex_cli_subscription",
+          "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+          "vision_model": "gpt-5.6-sol",
+          "vision_reasoning_effort": "medium",
+          "cli_version": "codex-cli 0.144.5",
+          "node_version": "v20.20.1",
+          "runtime_platform": "linux",
+          "runtime_arch": "x64",
+          "worker_model_runtime_attested": true,
+          "worker_contract_attested": true
+        }
+      ],
+      "transport_ok": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "image_count_attested": true,
+      "worker_contract_attested": true,
+      "worker_provider": "codex_cli_subscription",
+      "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+      "vision_model": "gpt-5.6-sol",
+      "vision_reasoning_effort": "medium",
+      "cli_version": "codex-cli 0.144.5",
+      "node_version": "v20.20.1",
+      "runtime_platform": "linux",
+      "runtime_arch": "x64",
+      "worker_model_runtime_attested": true,
+      "observations": {
+        "schema_version": "wm_visual_observation_batch/v3",
+        "observations": [
+          {
+            "image_id": "i_5a3378e47a184c5e",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "GATORADE",
+            "visible_product_text": "ADVANCED REHYDRATION",
+            "visible_variant_text": "COOL BLUE",
+            "visible_size_texts": [
+              "28 FL OZ",
+              "1.75 PT",
+              "828 mL"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 6,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "G",
+              "ADVANCED REHYDRATION",
+              "COOL BLUE"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_5ab0e63351e1488c",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "PEPPERIDGE FARM",
+            "visible_product_text": "HAMBURGER BUNS",
+            "visible_variant_text": "SESAME",
+            "visible_size_texts": [
+              "NET WT 15 OZ"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 2,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "8 SESAME HAMBURGER BUNS"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "PEPPERIDGE FARM",
+              "8 SESAME",
+              "HAMBURGER BUNS"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_f253bbcadd292a41",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Sara Lee",
+            "visible_product_text": "CLASSIC WHITE",
+            "visible_variant_text": null,
+            "visible_size_texts": [
+              "20 oz"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 2,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "Sara Lee",
+              "CLASSIC WHITE",
+              "20 oz"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_77a6648c7d1daf81",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "HAMBURGER HELPER",
+            "visible_product_text": "Four Cheese Lasagna",
+            "visible_variant_text": "VALUE SIZE",
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 8,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "ABOUT 6 SERVINGS"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "VALUE SIZE",
+              "HAMBURGER HELPER",
+              "Four Cheese Lasagna",
+              "ABOUT 6 SERVINGS"
+            ],
+            "flags": []
+          }
+        ]
+      },
+      "completed_at": "2026-07-18T20:43:32.870Z"
+    },
+    "5f582f9efe3cbba9867ae3921389f38ecbfb3a98ab6a9fcca62e4c590f942075": {
+      "call_key": "5f582f9efe3cbba9867ae3921389f38ecbfb3a98ab6a9fcca62e4c590f942075",
+      "provider": "codex",
+      "prompt_version": "walmart-visual-blind/v3",
+      "prompt_sha256": "33fe5873b82cbef492d2867c1f82cf1acb14391acdf884bd1a518a783d968629",
+      "preprocessor_version": "walmart-visual-preprocess/2026-07-18-v1",
+      "image_ids": [
+        "i_6803e6cbb63b55ae",
+        "i_9ada03df8d4c12dc",
+        "i_2c73a3b38c39ca48",
+        "i_b19d4f06a0d42d54"
+      ],
+      "full_view_sha256": [
+        "b7fae358a7788c9c764b70cb96e601a15d47f862e80238438f0a787296d17b17",
+        "21af8041b2b2be30422ea19c333aeb4ed3bad85568dc707a81bb5326196650bd",
+        "c5e35b26d500984979224ca3adf1f9e4db4b0d1364dab90a067237987d57355d",
+        "eb85311985a7994ef0cb0a89bcbd788b7b2405ce494adc4401c3983486eff2a4"
+      ],
+      "transport_attempts": [
+        {
+          "attempt": 1,
+          "status": 200,
+          "duration_ms": 31698,
+          "ok": true,
+          "error": null,
+          "attested_image_count": 4,
+          "worker_provider": "codex_cli_subscription",
+          "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+          "vision_model": "gpt-5.6-sol",
+          "vision_reasoning_effort": "medium",
+          "cli_version": "codex-cli 0.144.5",
+          "node_version": "v20.20.1",
+          "runtime_platform": "linux",
+          "runtime_arch": "x64",
+          "worker_model_runtime_attested": true,
+          "worker_contract_attested": true
+        }
+      ],
+      "transport_ok": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "image_count_attested": true,
+      "worker_contract_attested": true,
+      "worker_provider": "codex_cli_subscription",
+      "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+      "vision_model": "gpt-5.6-sol",
+      "vision_reasoning_effort": "medium",
+      "cli_version": "codex-cli 0.144.5",
+      "node_version": "v20.20.1",
+      "runtime_platform": "linux",
+      "runtime_arch": "x64",
+      "worker_model_runtime_attested": true,
+      "observations": {
+        "schema_version": "wm_visual_observation_batch/v3",
+        "observations": [
+          {
+            "image_id": "i_6803e6cbb63b55ae",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "OREO",
+            "visible_product_text": "SANDWICH COOKIES",
+            "visible_variant_text": "GOLDEN",
+            "visible_size_texts": [
+              "FAMILY SIZE"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 4,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [
+              "36% MORE COOKIES"
+            ],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "GOLDEN OREO",
+              "FAMILY SIZE",
+              "36% MORE COOKIES",
+              "SANDWICH COOKIES"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_9ada03df8d4c12dc",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "PEPPERIDGE FARM",
+            "visible_product_text": "FARMHOUSE BREAD",
+            "visible_variant_text": "HOMESTYLE OAT",
+            "visible_size_texts": [
+              "24oz"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 2,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "PEPPERIDGE FARM",
+              "FARMHOUSE",
+              "HOMESTYLE OAT",
+              "24oz",
+              "BREAD"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_2c73a3b38c39ca48",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "PEPPERIDGE FARM",
+            "visible_product_text": "Whole Grain",
+            "visible_variant_text": "THIN SLICED 15 GRAIN",
+            "visible_size_texts": [
+              "NET WT 22 OZ (1.37 LBS) (624g)"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 2,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "PEPPERIDGE FARM",
+              "Whole Grain",
+              "THIN SLICED",
+              "15 GRAIN",
+              "NET WT 22 OZ (1.37 LBS) (624g)"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_b19d4f06a0d42d54",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Dr Pepper",
+            "visible_product_text": "Diet",
+            "visible_variant_text": null,
+            "visible_size_texts": [
+              "2 LITERS"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 4,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "Dr Pepper",
+              "Diet",
+              "2 LITERS"
+            ],
+            "flags": []
+          }
+        ]
+      },
+      "completed_at": "2026-07-18T20:44:04.573Z"
+    },
+    "122ee65fa25584567bbd9478e6f828cc78db2858dc852409a865db18dfab144d": {
+      "call_key": "122ee65fa25584567bbd9478e6f828cc78db2858dc852409a865db18dfab144d",
+      "provider": "codex",
+      "prompt_version": "walmart-visual-blind/v3",
+      "prompt_sha256": "173bed68a910204fee357de6aa7733e3feefd020778340f8b3373b90afe5751c",
+      "preprocessor_version": "walmart-visual-preprocess/2026-07-18-v1",
+      "image_ids": [
+        "i_fe81dea284488568",
+        "i_db6dc25babef947a",
+        "i_bee0e66aad1eca8f",
+        "i_e76f7328832bc37c"
+      ],
+      "full_view_sha256": [
+        "9e7f78980e0301886570a607793839cc44b3c8c1e2833d0d781fd875376f5618",
+        "662497a256ea8eebdeb7c64b00cd19b7367f948564e8de5a4bcd2471945945df",
+        "d33f58b819db518b6c7e2936b8551c1d842dbcb1aacdacf822c758aadd2a7140",
+        "68f4bfd1c167fe6e0fc93bcf321dbb1a857542332fb90c1b97966f0e10f455f6"
+      ],
+      "transport_attempts": [
+        {
+          "attempt": 1,
+          "status": 200,
+          "duration_ms": 29546,
+          "ok": true,
+          "error": null,
+          "attested_image_count": 4,
+          "worker_provider": "codex_cli_subscription",
+          "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+          "vision_model": "gpt-5.6-sol",
+          "vision_reasoning_effort": "medium",
+          "cli_version": "codex-cli 0.144.5",
+          "node_version": "v20.20.1",
+          "runtime_platform": "linux",
+          "runtime_arch": "x64",
+          "worker_model_runtime_attested": true,
+          "worker_contract_attested": true
+        }
+      ],
+      "transport_ok": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "image_count_attested": true,
+      "worker_contract_attested": true,
+      "worker_provider": "codex_cli_subscription",
+      "worker_build": "sha256:5813f5bae69c9f5144060c3eb434d821893220d84342ea0bbdcc8542938f4235",
+      "vision_model": "gpt-5.6-sol",
+      "vision_reasoning_effort": "medium",
+      "cli_version": "codex-cli 0.144.5",
+      "node_version": "v20.20.1",
+      "runtime_platform": "linux",
+      "runtime_arch": "x64",
+      "worker_model_runtime_attested": true,
+      "observations": {
+        "schema_version": "wm_visual_observation_batch/v3",
+        "observations": [
+          {
+            "image_id": "i_fe81dea284488568",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Dr Pepper",
+            "visible_product_text": "Dr Pepper",
+            "visible_variant_text": null,
+            "visible_size_texts": [
+              "2 LITERS"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 4,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "Dr Pepper",
+              "23",
+              "2 LITERS"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_db6dc25babef947a",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Pepperidge Farm",
+            "visible_product_text": "Whole Grain",
+            "visible_variant_text": "Oatmeal",
+            "visible_size_texts": [
+              "NET WT 24 OZ (1.5 LBS) (680g)"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 2,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "PER 2 SLICES"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "PEPPERIDGE FARM",
+              "Whole Grain",
+              "OATMEAL",
+              "PER 2 SLICES"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_bee0e66aad1eca8f",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Pepperidge Farm",
+            "visible_product_text": "Hot Dog Buns",
+            "visible_variant_text": "Top Sliced Butter",
+            "visible_size_texts": [],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 6,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [
+              "8"
+            ],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "PEPPERIDGE FARM",
+              "8",
+              "TOP SLICED BUTTER",
+              "HOT DOG BUNS"
+            ],
+            "flags": []
+          },
+          {
+            "image_id": "i_e76f7328832bc37c",
+            "visual_role": "tiled_main",
+            "visible_brand_text": "Hamburger Helper",
+            "visible_product_text": "Four Cheese Lasagna",
+            "visible_variant_text": null,
+            "visible_size_texts": [
+              "NET WT 5.5 OZ (156g)"
+            ],
+            "external_package_count": {
+              "mode": "exact",
+              "value": 8,
+              "min": null,
+              "max": null
+            },
+            "outer_package_claims": [],
+            "inner_contents_claims": [],
+            "case_package_claims": [],
+            "unclear_quantity_claims": [],
+            "grid_cell_kind": "single_sellable_package",
+            "front_visibility": "all",
+            "background": "white",
+            "multiple_distinct_products": "no",
+            "readable_identity": "clear",
+            "evidence": [
+              "HAMBURGER HELPER",
+              "Four Cheese Lasagna",
+              "MADE WITH REAL CHEESE",
+              "NET WT 5.5 OZ (156g)"
+            ],
+            "flags": []
+          }
+        ]
+      },
+      "completed_at": "2026-07-18T20:44:34.124Z"
+    }
+  }
+}

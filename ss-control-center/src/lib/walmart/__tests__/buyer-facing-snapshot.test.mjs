@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+
+import sharp from "sharp";
 
 import {
   BUYER_SNAPSHOT_SCHEMA,
@@ -21,11 +23,12 @@ const target = {
   expected_title: "Brand Blue 4 Pack",
 };
 const sellerTitle = "Brand Blue 4 Pack";
-const png = Uint8Array.from([
-  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-  0, 0, 0, 0,
-]);
-const jpeg = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0]);
+const png = await sharp({
+  create: { width: 4, height: 3, channels: 3, background: "#2244aa" },
+}).png().toBuffer();
+const jpeg = await sharp({
+  create: { width: 5, height: 2, channels: 3, background: "#aa4422" },
+}).jpeg().toBuffer();
 
 function exactResolution() {
   return resolveExactWalmartItemCandidate(target.sku, {
@@ -167,6 +170,17 @@ test("operational capture proves seller -> GTIN -> catalog itemId -> PDP chain",
   assert.deepEqual(draft.assets.map((asset) => asset.slot), ["MAIN", "GALLERY_1"]);
   assert.equal(draft.assets[0].sha256, sha256(png));
   assert.equal(draft.assets[1].sha256, sha256(jpeg));
+  assert.deepEqual(
+    draft.assets.map((asset) => ({
+      format: asset.decoded_format,
+      width: asset.decoded_width,
+      height: asset.decoded_height,
+    })),
+    [
+      { format: "png", width: 4, height: 3 },
+      { format: "jpeg", width: 5, height: 2 },
+    ],
+  );
   assert.deepEqual(draft.source_contract, {
     seller: "walmart_marketplace_exact_sku_get",
     candidate: "walmart_catalog_search_exact_upc",
@@ -261,6 +275,24 @@ test("image endpoint returning HTML fails raster preflight", async () => {
   }), /not a supported raster image/);
 });
 
+test("raster magic without a decodable image fails closed", async () => {
+  // This retains a valid PNG header/IHDR, so metadata alone succeeds while a
+  // real pixel decode fails.
+  const truncatedPng = png.subarray(0, png.length - 20);
+  assert.equal((await sharp(truncatedPng).metadata()).width, 4);
+  await assert.rejects(() => captureWalmartBuyerSnapshot(target, {
+    async getExactItemResolution() { return exactResolution(); },
+    async getBuyerPdpByItemId() {
+      return { product: {
+        item_id: target.item_id,
+        title: "Buyer title",
+        main_image: "https://i5.walmartimages.com/main.png",
+      } };
+    },
+    async getImage() { return { status: 200, bytes: truncatedPng }; },
+  }), /image decode failed/);
+});
+
 test("immutable writer content-seals assets and reuses only an identical snapshot", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "wm-buyer-snapshot-test-"));
   try {
@@ -283,6 +315,71 @@ test("immutable writer content-seals assets and reuses only an identical snapsho
       path.join(first.directory, first.snapshot.assets[0].local_path),
     );
     assert.equal(sha256(bytes), first.snapshot.assets[0].sha256);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("immutable reuse re-reads assets and rejects tamper or missing bytes", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "wm-buyer-snapshot-reuse-test-"));
+  const mainOnlyDraft = async (capturedAt) => captureWalmartBuyerSnapshot(target, {
+    async getExactItemResolution() { return exactResolution(); },
+    async getBuyerPdpByItemId() {
+      return { product: {
+        item_id: target.item_id,
+        title: "Buyer title",
+        main_image: "https://i5.walmartimages.com/main.png",
+      } };
+    },
+    async getImage() { return { status: 200, bytes: png }; },
+  }, capturedAt);
+  try {
+    const tamperDraft = await mainOnlyDraft(new Date("2026-07-18T20:01:00.000Z"));
+    const tamperSnapshot = await writeImmutableWalmartBuyerSnapshot(root, tamperDraft);
+    const tamperPath = path.join(
+      tamperSnapshot.directory,
+      tamperSnapshot.snapshot.assets[0].local_path,
+    );
+    await writeFile(tamperPath, jpeg);
+    await assert.rejects(
+      () => writeImmutableWalmartBuyerSnapshot(root, tamperDraft),
+      /immutable asset byte SHA-256 mismatch/,
+    );
+
+    const missingDraft = await mainOnlyDraft(new Date("2026-07-18T20:02:00.000Z"));
+    const missingSnapshot = await writeImmutableWalmartBuyerSnapshot(root, missingDraft);
+    await rm(path.join(
+      missingSnapshot.directory,
+      missingSnapshot.snapshot.assets[0].local_path,
+    ));
+    await assert.rejects(
+      () => writeImmutableWalmartBuyerSnapshot(root, missingDraft),
+      /immutable asset is missing/,
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("pre-write verification rejects manifest dimension drift", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "wm-buyer-snapshot-dimension-test-"));
+  try {
+    const draft = await captureWalmartBuyerSnapshot(target, {
+      async getExactItemResolution() { return exactResolution(); },
+      async getBuyerPdpByItemId() {
+        return { product: {
+          item_id: target.item_id,
+          title: "Buyer title",
+          main_image: "https://i5.walmartimages.com/main.png",
+        } };
+      },
+      async getImage() { return { status: 200, bytes: png }; },
+    }, new Date("2026-07-18T20:03:00.000Z"));
+    draft.assets[0].decoded_width += 1;
+    await assert.rejects(
+      () => writeImmutableWalmartBuyerSnapshot(root, draft),
+      /decoded dimensions 4x3 != manifest 5x3/,
+    );
   } finally {
     await rm(root, { recursive: true, force: true });
   }

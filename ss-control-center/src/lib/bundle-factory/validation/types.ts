@@ -1,5 +1,5 @@
 /**
- * Phase 2.4 Stage 6 — shared types for the 15 validators + orchestrator.
+ * Phase 2.4 Stage 6 — shared types for the validator registry + orchestrator.
  *
  * Each validator is a pure function returning a ValidatorResult; the
  * orchestrator (validation-pipeline.ts) bundles them into a ValidationOutcome
@@ -50,11 +50,18 @@ export interface ValidatorInput {
   } | null;
   /** Bundle components for inventory + multi-brand checks. */
   bundle_components: Array<{
+    id?: string;
     product_name: string;
     manufacturer_brand: string;
     manufacturer_upc: string | null;
     flavor: string | null;
     qty: number;
+    source_url?: string | null;
+    ingredients?: string | null;
+    allergens?: string | null;
+    storage_temp?: string | null;
+    expiration_days?: number | null;
+    donor_image_urls?: string | null;
   }>;
   /** `compliance-rerun` validator needs the parent BundleDraft brand so it
    *  can hand the gate a real `ComplianceInput.brand`. */

@@ -1,0 +1,163 @@
+{
+  "schema_version": "uncrustables-main-image-qa/v1",
+  "evaluated_at": "2026-07-18T22:52:40Z",
+  "evaluation_mode": "independent_fail_closed",
+  "scope": {
+    "sku": "FR-AS6X-5KJY",
+    "asin": "B0H827V9DJ",
+    "intended_variant": "Smucker's Uncrustables Chocolate Flavored Hazelnut Spread Sandwich",
+    "intended_cartons": 6,
+    "units_per_carton": 4,
+    "intended_total_units": 24,
+    "intended_gel_packs_inside": 2,
+    "intended_gel_packs_outside": 2
+  },
+  "candidate": {
+    "path": "ss-control-center/data/audits/uncrustables-main-image-candidates-20260718/FR-AS6X-5KJY-B0H827V9DJ-candidate-02.png",
+    "sha256": "3a62536982abe4ab15b22159a27312bf3692899606e79c9105b8c4dbdf8520b0",
+    "width": 1254,
+    "height": 1254,
+    "format": "png",
+    "color_model": "RGB"
+  },
+  "references": [
+    {
+      "role": "approved_kit_anchor",
+      "path": "ss-control-center/public/bundle-factory/frozen-refs/ref-uncrustables.png",
+      "sha256": "9c45164a56e3cda1e9e0c2590e7d75d94e6320af012b841bc9e5b73594a1fd33",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "role": "exact_product_variant_front",
+      "path": "ss-control-center/data/audits/uncrustables-approved-reference-qa-20260718/product-hazelnut-target.jpg",
+      "sha256": "4d42bd45bb25aa1b3dfb7937590de1db68fcd8aca50502636d05b4c5efe54e27",
+      "width": 1600,
+      "height": 1600
+    }
+  ],
+  "verdict": {
+    "status": "REJECTED_TEXT_INTEGRITY",
+    "production_eligible": false,
+    "owner_approval_recorded": false,
+    "external_mutation_allowed": false,
+    "summary": "Composition and flavor identity are correct, but the rendered asset contains a visually confirmed gel-pack typo and unresolved/inconsistent carton microcopy. It fails the no-invented-text requirement."
+  },
+  "checks": [
+    {
+      "id": "exact_product_variant",
+      "status": "PASS",
+      "evidence": "All six visible cartons use the brown Chocolate Flavored Hazelnut Spread design; no other flavor or invented product is visible."
+    },
+    {
+      "id": "carton_count",
+      "status": "PASS",
+      "observed": 6,
+      "expected": 6
+    },
+    {
+      "id": "units_per_carton",
+      "status": "PASS_VISUAL_COUNT_ONLY",
+      "observed": 4,
+      "expected": 4,
+      "evidence": "Each carton has a blue 4-count badge, but the surrounding badge microcopy is not character-identical across cartons and is not accepted as proven text."
+    },
+    {
+      "id": "total_units",
+      "status": "PASS_CALCULATED",
+      "observed": 24,
+      "calculation": "6 cartons x 4 sandwiches"
+    },
+    {
+      "id": "gel_packs_inside",
+      "status": "PASS_COUNT",
+      "observed": 2,
+      "expected": 2
+    },
+    {
+      "id": "gel_packs_outside",
+      "status": "PASS_COUNT",
+      "observed": 2,
+      "expected": 2
+    },
+    {
+      "id": "gel_pack_text_integrity",
+      "status": "FAIL",
+      "evidence": "Original-resolution enlargement visually shows the left internal gel pack as 'FOR FROZEN SIPMENTS', missing the H in SHIPMENTS. Apple Vision independently recognized the same literal string at confidence 1.0. The approved kit anchor reads 'FOR FROZEN SHIPMENTS'."
+    },
+    {
+      "id": "cooler_and_primary_logo",
+      "status": "PASS_PRIMARY_ONLY",
+      "evidence": "The cooler's green Salutem emblem, SALUTEM SOLUTIONS wordmark, and OUR BEST SOLUTIONS FOR YOU line match the kit anchor and were recognized at confidence 1.0. The malformed copy is on the left internal gel pack, not the cooler front."
+    },
+    {
+      "id": "no_extra_or_invented_products",
+      "status": "PASS",
+      "evidence": "Only the intended hazelnut cartons, the approved cooler, and four gel packs are visible."
+    },
+    {
+      "id": "physical_grounding",
+      "status": "PASS",
+      "evidence": "Cartons are supported inside the cooler and the two external gel packs contact the ground plane; no obvious floating item is visible."
+    },
+    {
+      "id": "canvas_edge_crop",
+      "status": "PASS",
+      "evidence": "All bundle components remain inside the canvas with white margin. Natural in-cooler overlap is not an edge crop."
+    },
+    {
+      "id": "package_text_character_integrity",
+      "status": "FAIL",
+      "evidence": "Carton lower claims and microcopy are inconsistent and not source-faithful. High-confidence OCR examples include 'Ne High Fruetase'/'CornSerop', 'Comt Syrup', 'NO Kigh Pructoze'/'Conre Seren', 'NOWeh Froctase'/'Cont Syrep', 'HO lligh frectose'/'Cern Seree', and 'Ne Kigh Frucbse'/'Cers Sprop'. The main flavor name is correct, but this does not cure malformed secondary copy."
+    },
+    {
+      "id": "owner_approval",
+      "status": "BLOCKED",
+      "evidence": "No owner approval is recorded for this exact candidate SHA-256. The confirmed text defect requires replacement rather than silent publication."
+    }
+  ],
+  "ocr": {
+    "engine": "apple-vision-accurate-literal",
+    "status": "SUCCESS",
+    "candidate_positive_evidence": [
+      "Chocolate Flavored",
+      "Hazelnut Spread",
+      "Sandwich",
+      "FROZEN",
+      "GEL PACK",
+      "KEEP FROZEN",
+      "SALUTEM SOLUTIONS",
+      "OUR BEST SOLUTIONS FOR YOU"
+    ],
+    "confirmed_defect": {
+      "text": "FOR FROZEN SIPMENTS",
+      "confidence": 1.0,
+      "bounding_box": {
+        "x": 0.13454926326507438,
+        "y": 0.51384091974323898,
+        "width": 0.07200309230189955,
+        "height": 0.03508147098230974
+      },
+      "manual_original_resolution_confirmation": true
+    },
+    "additional_conflicting_evidence": [
+      "OUR BEST HOLLIONS FOR IOU",
+      "Ne High Fruetase",
+      "CornSerop",
+      "Comt Syrup",
+      "NO Kigh Pructoze",
+      "Conre Seren",
+      "NOWeh Froctase",
+      "Cont Syrep",
+      "HO lligh frectose",
+      "Cern Seree",
+      "Ne Kigh Frucbse",
+      "Cers Sprop"
+    ],
+    "interpretation": "OCR is auxiliary evidence, not the sole verdict source. Here the critical gel-pack typo is also visible in the original-resolution crop, so it is treated as a confirmed image defect."
+  },
+  "required_next_action": {
+    "action": "REGENERATE_OR_SOURCE_FAITHFULLY_RECOMPOSE",
+    "details": "Do not publish or owner-approve this exact file for production. Replace the malformed gel-pack and carton text with source-faithful artwork, then rerun independent QA on the new SHA-256."
+  }
+}

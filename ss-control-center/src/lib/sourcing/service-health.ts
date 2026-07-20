@@ -27,9 +27,9 @@ export interface ServiceHealthSnapshot {
 
 const UNWRANGLE_LOW_FLOOR = 5000; // warn below this many credits
 
-/** Probe each paid service, persist the snapshot to Setting `svc_health`, return it.
- *  Unwrangle exposes remaining_credits (and 403s when dry — free). Oxylabs has no
- *  cheap balance API, so we report configured/liveness only. BlueCart is dead. */
+/** Build a paid-service snapshot without making billable synthetic requests.
+ *  Unwrangle has no free balance endpoint, so only its last provider receipt is
+ *  reported. Oxylabs has no cheap balance API; configured does not mean live. */
 export async function probePaidServices(db: Client): Promise<ServiceHealthSnapshot> {
   const at = new Date().toISOString();
   const services: ServiceHealth[] = [];
@@ -41,21 +41,22 @@ export async function probePaidServices(db: Client): Promise<ServiceHealthSnapsh
   } else {
     const h: ServiceHealth = { key: "unwrangle", name: "Unwrangle (Target/Sam's/Costco/Instacart)", status: "unknown", remaining: null, at };
     try {
-      const r = await fetch(`https://data.unwrangle.com/api/getter/?platform=target_search&search=water&api_key=${uw}`, { signal: AbortSignal.timeout(20000) });
-      if (r.status === 403) { h.status = "dry"; h.remaining = 0; h.note = "credits quota consumed — top up"; }
-      else {
-        const j: any = await r.json().catch(() => null);
-        const rem = typeof j?.remaining_credits === "number" ? j.remaining_credits : null;
-        h.remaining = rem;
-        h.status = rem === 0 ? "dry" : rem != null && rem < UNWRANGLE_LOW_FLOOR ? "low" : rem != null ? "ok" : "unknown";
-      }
-    } catch { h.status = "unknown"; h.note = "probe failed"; }
+      const cached = await db.execute(`SELECT value FROM "Setting" WHERE key='svc_unwrangle_credits' LIMIT 1`);
+      const raw = cached.rows[0]?.value;
+      const receipt: any = raw ? JSON.parse(String(raw)) : null;
+      const rem = typeof receipt?.remaining === "number" ? receipt.remaining : null;
+      h.remaining = rem;
+      h.status = rem === 0 ? "dry" : rem != null && rem < UNWRANGLE_LOW_FLOOR ? "low" : rem != null ? "ok" : "unknown";
+      h.note = rem == null
+        ? "live paid probe disabled; no cached provider receipt"
+        : `cached provider receipt${receipt?.at ? ` from ${receipt.at}` : ""}; live paid probe disabled`;
+    } catch { h.status = "unknown"; h.note = "cached provider receipt unavailable; live paid probe disabled"; }
     services.push(h);
   }
 
   // ── Oxylabs (Walmart 1P + Google Shopping) — no cheap balance API; liveness only ──
   const ox = clean(process.env.OXYLABS_USERNAME);
-  services.push({ key: "oxylabs", name: "Oxylabs (Walmart 1P + Google)", status: ox ? "ok" : "unconfigured", remaining: null, note: ox ? "active (no balance API — monitor usage in Oxylabs dashboard)" : undefined, at });
+  services.push({ key: "oxylabs", name: "Oxylabs (Walmart 1P + Google)", status: ox ? "unknown" : "unconfigured", remaining: null, note: ox ? "configured; live paid probe disabled" : undefined, at });
 
   // ── BlueCart — deactivated permanently ──
   services.push({ key: "bluecart", name: "BlueCart", status: "dead", remaining: null, note: "deactivated permanently", at });

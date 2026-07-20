@@ -16,7 +16,8 @@ import type { WalmartReturn } from "./types";
 export interface ReturnsListParams {
   returnCreationStartDate?: string;
   returnCreationEndDate?: string;
-  returnType?: "RETURN" | "REFUND" | "REPLACEMENT";
+  /** Walmart's documented returnType values. */
+  returnType?: "PREORDER" | "REFUND" | "REPLACEMENT";
   status?: "INITIATED" | "DELIVERED" | "COMPLETED";
   returnOrderId?: string;
   customerOrderId?: string;

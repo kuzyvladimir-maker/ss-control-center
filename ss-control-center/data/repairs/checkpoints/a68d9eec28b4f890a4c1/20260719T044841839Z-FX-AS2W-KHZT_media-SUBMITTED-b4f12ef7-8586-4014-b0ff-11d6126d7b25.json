@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "b4f12ef7-8586-4014-b0ff-11d6126d7b25",
+  "created_at": "2026-07-19T04:48:41.839Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "FX-AS2W-KHZT:media",
+  "sku": "FX-AS2W-KHZT",
+  "kind": "MEDIA",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "3cff6f43-157f-45a2-9e50-91922c321144",
+    "patch_sha256": "f21ebaae03b0c8e88389662b05aae0b5c6949d5e24db0be47ed9aa3aa9167538",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "f21ebaae03b0c8e88389662b05aae0b5c6949d5e24db0be47ed9aa3aa9167538",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "f8d37cd6892b1b68a10dfa47c5e6f1bf47a7df388ed647c89493527cbac883df"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "6d2e5c82610b4ba7a7d1fe58794a19d7",
+    "issues": []
+  },
+  "sha256": "e94b9f6e9cfa4db79016e6e98ad25888a7ccb8e5cc0b839fe5403d8c2e4ddc75"
+}

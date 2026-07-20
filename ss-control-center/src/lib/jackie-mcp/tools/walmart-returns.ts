@@ -11,7 +11,7 @@ import type { JackieTool } from "../registry";
 const walmartReturnsList: JackieTool = {
   name: "walmart_returns_list",
   description:
-    "List Walmart return orders. Filters: returnType (RETURN|REFUND|REPLACEMENT), status (INITIATED|DELIVERED|COMPLETED), date range. Default last 30 days.",
+    "List Walmart return orders. Filters: returnType (PREORDER|REFUND|REPLACEMENT), status (INITIATED|DELIVERED|COMPLETED), date range. Default last 30 days.",
   write: false,
   input_schema: {
     type: "object",
@@ -29,7 +29,7 @@ const walmartReturnsList: JackieTool = {
     const api = new WalmartReturnsApi(getWalmartClient(1));
     const page = await api.getAllReturns({
       returnCreationStartDate: start.toISOString().slice(0, 10),
-      returnType: optionalString(args, "return_type") as "RETURN" | "REFUND" | "REPLACEMENT" | undefined,
+      returnType: optionalString(args, "return_type") as "PREORDER" | "REFUND" | "REPLACEMENT" | undefined,
       status: optionalString(args, "status") as "INITIATED" | "DELIVERED" | "COMPLETED" | undefined,
       limit: optionalNumber(args, "limit") ?? 100,
     });

@@ -23,14 +23,14 @@
  *   bundle of 6 channels × ~1000 bundles/month, prompt caching is the
  *   single biggest cost lever — see PHASE_2_6_2 findings.
  *
- * Anthropic enforces a max of 4 cache_control markers per request. The
- * channel KB bundles below stay within that limit; if you add files,
- * either merge them or rotate by category.
+ * Anthropic enforces a max of 4 cache_control markers per request. Callers use
+ * `enforceCacheMarkerLimit` after adding their dynamic style block.
  */
 
 import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { WALMART_POLICY_VERSION } from "./validation/walmart-prepublication-policy";
 
 export type KbChannelTemplate = "amazon" | "walmart";
 
@@ -50,7 +50,7 @@ export interface SystemBlockWithCache {
  * should go FIRST (their cache lives longest). The category-specific
  * files come after the template-wide ones.
  *
- * Cap at 4 entries — Anthropic's per-request cache_control marker limit.
+ * This list may exceed four entries; the caller merges tail markers.
  */
 const KB_FILES_BY_TEMPLATE: Record<KbChannelTemplate, string[]> = {
   amazon: [
@@ -60,10 +60,7 @@ const KB_FILES_BY_TEMPLATE: Record<KbChannelTemplate, string[]> = {
     "amazon/gift-set-policy.md",
   ],
   walmart: [
-    "walmart/title-policy.md",
-    "walmart/food-gift-baskets-deep-dive.md",
-    "walmart/category-grocery.md",
-    "walmart/multipack-policy.md",
+    "walmart/prepublication-compliance.md",
   ],
 };
 
@@ -81,6 +78,7 @@ interface KbFileLoad {
   path: string;
   text: string;
   loaded: boolean;
+  policy_version?: string;
   error?: string;
 }
 
@@ -96,7 +94,13 @@ async function loadOne(path: string): Promise<KbFileLoad> {
   }
   try {
     const raw = await readFile(absolute, "utf8");
-    return { path, text: raw.trim(), loaded: true };
+    const policyVersion = raw.match(/^\*\*Policy version:\*\*\s*`([^`]+)`/m)?.[1];
+    return {
+      path,
+      text: raw.trim(),
+      loaded: true,
+      ...(policyVersion ? { policy_version: policyVersion } : {}),
+    };
   } catch (e) {
     return {
       path,
@@ -112,6 +116,10 @@ export interface LoadKbResult {
   blocks: SystemBlockWithCache[];
   /** Files that were requested but missing — caller can log/skip. */
   missing: string[];
+  /** Versioned policy docs loaded by path. */
+  policy_versions: Record<string, string>;
+  /** Required policy docs whose declared version differs from code. */
+  stale: string[];
   /** Total bytes of KB text loaded (rough cache-write cost driver). */
   total_bytes: number;
 }
@@ -134,12 +142,21 @@ export async function loadKnowledgeBase(
 
   const blocks: SystemBlockWithCache[] = [];
   const missing: string[] = [];
+  const stale: string[] = [];
+  const policyVersions: Record<string, string> = {};
   let totalBytes = 0;
 
   for (const file of loaded) {
     if (!file.loaded) {
       missing.push(file.path);
       continue;
+    }
+    if (file.policy_version) policyVersions[file.path] = file.policy_version;
+    if (
+      file.path === "walmart/prepublication-compliance.md" &&
+      file.policy_version !== WALMART_POLICY_VERSION
+    ) {
+      stale.push(file.path);
     }
     const block: SystemBlockWithCache = {
       type: "text",
@@ -150,7 +167,23 @@ export async function loadKnowledgeBase(
     totalBytes += block.text.length;
   }
 
-  return { template, blocks, missing, total_bytes: totalBytes };
+  if (
+    template === "walmart" &&
+    (missing.includes("walmart/prepublication-compliance.md") || stale.length > 0)
+  ) {
+    throw new Error(
+      `Walmart compliance KB is unavailable or stale; expected ${WALMART_POLICY_VERSION}`,
+    );
+  }
+
+  return {
+    template,
+    blocks,
+    missing,
+    policy_versions: policyVersions,
+    stale,
+    total_bytes: totalBytes,
+  };
 }
 
 /**

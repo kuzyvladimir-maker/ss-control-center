@@ -105,6 +105,24 @@ test("a nutrition panel without enough product identity is REVIEW", () => {
   assert.equal(decision.verdict, "REVIEW");
   assert.equal(decision.checks.identity, "UNKNOWN");
   assert.match(decision.review_reasons.join(" "), /brand evidence missing/);
+
+  const genericPanelHeading = auditGallerySlot(observedInput({
+    visual_role: "nutrition",
+    visible_brand_text: null,
+    visible_product_text: "Nutrition Facts",
+    visible_variant_text: null,
+    readable_identity: "partial",
+    evidence: ["Nutrition Facts"],
+  }));
+  assert.equal(genericPanelHeading.verdict, "REVIEW");
+  assert.deepEqual(genericPanelHeading.hard_failures, []);
+
+  const servingSizeOnly = auditGallerySlot(observedInput({
+    visual_role: "back",
+    visible_size_texts: ["Serving size 12 oz"],
+  }));
+  assert.equal(servingSizeOnly.verdict, "PASS");
+  assert.equal(servingSizeOnly.checks.package_facts.net_content, "NOT_VISIBLE");
 });
 
 test("synthetic injected foreign brand, product, and variant are each BAD", () => {
@@ -158,6 +176,54 @@ test("only blind package contradiction can be BAD; OCR-only mismatch is REVIEW",
   }));
   assert.equal(conflict.verdict, "REVIEW");
   assert.match(conflict.review_reasons.join(" "), /vision and OCR conflict/);
+});
+
+test("gallery accepts source-bound spatial OCR rows emitted by the listing observer", () => {
+  const spatialRow = {
+    text: "NET WT 12 OZ",
+    confidence: 1,
+    view_role: "bottom_label",
+    view_sha256: "a".repeat(64),
+    bounding_box: { x: 0.1, y: 0.2, width: 0.4, height: 0.1 },
+  };
+  const decision = auditGallerySlot(observedInput({}, { ocr_texts: [spatialRow] }));
+  assert.equal(decision.verdict, "REVIEW");
+  assert.match(decision.review_reasons.join(" "), /OCR-only mismatch/);
+
+  assert.throws(() => auditGallerySlot(observedInput({}, {
+    ocr_texts: [{ ...spatialRow, view_sha256: "not-a-sha" }],
+  })), /view_sha256/);
+});
+
+test("OCR cannot synthesize a full identity or combine aliases across unrelated rows", () => {
+  const input = observedInput({
+    visible_brand_text: null,
+    visible_product_text: null,
+    visible_variant_text: null,
+    readable_identity: "none",
+  }, {
+    ocr_texts: [
+      { text: "BIGELOW", confidence: 1 },
+      { text: "HERBAL", confidence: 1 },
+      { text: "TEA", confidence: 1 },
+      { text: "PEPPERMINT", confidence: 1 },
+    ],
+  });
+  input.expected = structuredClone(expected);
+  input.expected.identity.product_marker_groups = [["herbal tea"]];
+  const ocrOnly = auditGallerySlot(input);
+  assert.equal(ocrOnly.verdict, "REVIEW");
+  assert.match(ocrOnly.review_reasons.join(" "), /sole source/);
+  assert.match(ocrOnly.review_reasons.join(" "), /product evidence missing/);
+});
+
+test("multiple distinct products are BAD for same-product truth", () => {
+  const decision = auditGallerySlot(observedInput({
+    multiple_distinct_products: "yes",
+    visual_role: "mixed_products",
+  }));
+  assert.equal(decision.verdict, "BAD");
+  assert.match(decision.hard_failures.join(" "), /multiple distinct products/);
 });
 
 test("mixed bundles fail closed without explicit components and match an explicit component", () => {

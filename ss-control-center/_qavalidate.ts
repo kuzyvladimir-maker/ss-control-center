@@ -5,6 +5,7 @@
 // case) plus single-unit controls. No writes to Walmart.
 import { readFileSync } from "node:fs";
 for (const f of [".env", ".env.local"]) { let t = ""; try { t = readFileSync(f, "utf8"); } catch { continue; } for (const l of t.split("\n")) { const m = l.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/); if (m) process.env[m[1]] = m[2].trim().replace(/^['"]|['"]$/g, ""); } }
+throw new Error("LEGACY_METERED_SCRIPT_DISABLED: _qavalidate.ts has unbounded direct Oxylabs calls; migrate it to guarded provider adapters before reuse");
 
 // SKUs to validate. flagged = should now be REJECTED (donor was a multipack) OR
 // re-sourced to a real single unit; control = should still PASS honestly.

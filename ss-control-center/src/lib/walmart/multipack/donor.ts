@@ -6,6 +6,8 @@
 // keeps real product imagery and real bullets — not just our two generated
 // images. Keyed by the BlueCart item_id we already stored in RetailPrice.
 
+import { withMeteredProviderCall } from "@/lib/sourcing/metered-provider-call";
+
 interface DonorDetail {
   title: string;
   images: string[];        // de-duped, full-res product gallery (excludes nothing — caller orders/caps)
@@ -45,7 +47,11 @@ export async function fetchDonorDetail(itemId: string): Promise<DonorDetail | nu
   const key = process.env.BLUECART_API_KEY;
   if (!key) throw new Error("BLUECART_API_KEY missing");
   const url = `https://api.bluecartapi.com/request?api_key=${key}&type=product&item_id=${encodeURIComponent(itemId)}&walmart_domain=walmart.com`;
-  const res = await fetch(url);
+  const res = await withMeteredProviderCall({
+    provider: "bluecart",
+    operation: "detail",
+    requestFingerprint: { itemId, type: "product", walmartDomain: "walmart.com" },
+  }, () => fetch(url));
   if (!res.ok) return null;
   const j: any = await res.json();
   const p = j.product || {};

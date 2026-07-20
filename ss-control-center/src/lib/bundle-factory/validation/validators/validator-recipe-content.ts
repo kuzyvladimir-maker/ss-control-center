@@ -3,6 +3,7 @@
 import { parseTotal } from "@/lib/pricing/cost-model";
 import { isOwnBrandPassthrough } from "../../own-brand";
 import type { ValidatorFn } from "../types";
+import { isRecord, parseWalmartAttributes } from "../walmart-prepublication-policy";
 
 const FLAVOR_STOP = new Set([
   "smucker", "smuckers", "uncrustables", "frozen", "sandwich",
@@ -21,7 +22,23 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function numberOfItems(attributes: string): number | null {
+function titlePackCount(title: string): number | null {
+  // Net weight/count commonly appears before the commercial pack claim. For
+  // example, generic parseTotal("8 oz (Pack of 2)") can see 8 first even
+  // though the listing quantity is 2. An explicit pack claim is authoritative
+  // for this title/recipe comparison; the contradiction checks below still
+  // reject titles that multiply a retail count by a pack count.
+  const explicit =
+    title.match(/\bpack\s+of\s+(\d{1,3})\b/i) ??
+    title.match(/\b(\d{1,3})\s*(?:-|\s)?pack\b/i);
+  if (explicit) {
+    const value = Number(explicit[1]);
+    return Number.isInteger(value) && value > 0 ? value : null;
+  }
+  return parseTotal(title);
+}
+
+function amazonNumberOfItems(attributes: string): number | null {
   try {
     const attrs = JSON.parse(attributes) as Record<string, unknown>;
     const rows = attrs.number_of_items;
@@ -31,6 +48,51 @@ function numberOfItems(attributes: string): number | null {
   } catch {
     return null;
   }
+}
+
+function structuredCount(
+  channel: string,
+  attributes: string,
+): { value: number | null; source: string; failures: string[] } {
+  if (channel !== "WALMART") {
+    return {
+      value: amazonNumberOfItems(attributes),
+      source: "number_of_items",
+      failures: [],
+    };
+  }
+  const publicAttrs = parseWalmartAttributes(attributes).walmart?.public_attributes;
+  if (!isRecord(publicAttrs)) {
+    return {
+      value: null,
+      source: "attributes.walmart.public_attributes.count",
+      failures: ["Walmart public quantity attributes are missing"],
+    };
+  }
+  const count = Number(publicAttrs.count);
+  const multipackQuantity = Number(publicAttrs.multipackQuantity);
+  const countPerPack = Number(publicAttrs.countPerPack);
+  const failures: string[] = [];
+  if (!Number.isInteger(count) || count <= 0) failures.push("Walmart count is missing or invalid");
+  if (!Number.isInteger(multipackQuantity) || multipackQuantity <= 0) {
+    failures.push("Walmart multipackQuantity is missing or invalid");
+  }
+  if (!Number.isInteger(countPerPack) || countPerPack <= 0) {
+    failures.push("Walmart countPerPack is missing or invalid");
+  }
+  if (
+    failures.length === 0 &&
+    multipackQuantity * countPerPack !== count
+  ) {
+    failures.push(
+      `Walmart quantity trio ${multipackQuantity} × ${countPerPack} != ${count}`,
+    );
+  }
+  return {
+    value: Number.isInteger(count) && count > 0 ? count : null,
+    source: "attributes.walmart.public_attributes.count",
+    failures,
+  };
 }
 
 export const validatorRecipeContent: ValidatorFn = async ({
@@ -55,14 +117,15 @@ export const validatorRecipeContent: ValidatorFn = async ({
   if (recipeTotal !== master_bundle.pack_count) {
     failures.push(`component total ${recipeTotal} != pack_count ${master_bundle.pack_count}`);
   }
-  const titleTotal = parseTotal(sku.title);
+  const titleTotal = titlePackCount(sku.title);
   if (titleTotal !== master_bundle.pack_count) {
     failures.push(`title total ${titleTotal} != pack_count ${master_bundle.pack_count}`);
   }
-  const structuredCount = numberOfItems(sku.attributes);
-  if (structuredCount !== master_bundle.pack_count) {
+  const structured = structuredCount(sku.channel, sku.attributes);
+  failures.push(...structured.failures);
+  if (structured.value !== master_bundle.pack_count) {
     failures.push(
-      `number_of_items ${structuredCount ?? "missing"} != pack_count ${master_bundle.pack_count}`,
+      `${structured.source} ${structured.value ?? "missing"} != pack_count ${master_bundle.pack_count}`,
     );
   }
 
@@ -129,7 +192,9 @@ export const validatorRecipeContent: ValidatorFn = async ({
         recipe_total: recipeTotal,
         pack_count: master_bundle.pack_count,
         title_total: titleTotal,
-        number_of_items: structuredCount,
+        number_of_items: sku.channel === "WALMART" ? null : structured.value,
+        structured_count: structured.value,
+        structured_count_source: structured.source,
         failures,
       },
     };

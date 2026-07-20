@@ -1,0 +1,38 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "2f297d2d-eb83-4640-a740-29b29af765f0",
+  "created_at": "2026-07-19T04:24:04.658Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "PT-AS5B-Z2XH:media",
+  "sku": "PT-AS5B-Z2XH",
+  "kind": "MEDIA",
+  "status": "SETTLED_BEFORE",
+  "detail": {
+    "recovery": false,
+    "submitted_event_id": "e743a4d0-c8ea-4e86-9b3a-8e1f9da0a54d",
+    "strategy": "PRIMARY",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "555dd585eef836c3dd927218ad08fcc57b876b053f779ce061ed8730b05abe80",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "bc78a48b80233a401c8059ed24edf40bae2da69f37b6b03fcafe369a3e7ae06c"
+    },
+    "fast_verify_attempts": 6,
+    "extended_polling_attempts": 6,
+    "consecutive_stable_reads": 6,
+    "last_classification": "BEFORE",
+    "last_path_state_sha256": "bc78a48b80233a401c8059ed24edf40bae2da69f37b6b03fcafe369a3e7ae06c",
+    "checks": [
+      {
+        "field": "main_product_image_buyer_summary",
+        "ok": false,
+        "expected": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/bundle-factory/uncrustables/main-repair/20260719-v1/f5d846ad2aa9c48efe4730f19004f848a56dc0b260d879c76b69f10a928f0bcc.png",
+        "actual": "https://m.media-amazon.com/images/I/5158NrTW9XL.jpg"
+      }
+    ]
+  },
+  "sha256": "e10aea126233182d4b65380b04d64ae39f7df5ee35ba807ad34974b535a21426"
+}

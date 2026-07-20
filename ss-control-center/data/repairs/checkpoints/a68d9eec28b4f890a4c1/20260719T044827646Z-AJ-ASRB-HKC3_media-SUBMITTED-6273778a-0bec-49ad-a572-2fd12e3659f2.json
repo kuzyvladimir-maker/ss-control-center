@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "6273778a-0bec-49ad-a572-2fd12e3659f2",
+  "created_at": "2026-07-19T04:48:27.646Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "AJ-ASRB-HKC3:media",
+  "sku": "AJ-ASRB-HKC3",
+  "kind": "MEDIA",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "e7f9e560-a913-4d82-90ce-d3f70be9467f",
+    "patch_sha256": "f62e679e976cbf8538ea0cc6816e7af92b7929ebc04179a38dd7e8ddee2a4d89",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "f62e679e976cbf8538ea0cc6816e7af92b7929ebc04179a38dd7e8ddee2a4d89",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "5a503b6d6fc91cdb744ab3f409472ecc8bb6230872cea144db9090f36754c33e"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "c090a0047a5d43d8876719810f9adc2e",
+    "issues": []
+  },
+  "sha256": "efa0af6f008b0d30a1f3c28a7cf7e245a4ffd6053404eab513223df9232724b6"
+}

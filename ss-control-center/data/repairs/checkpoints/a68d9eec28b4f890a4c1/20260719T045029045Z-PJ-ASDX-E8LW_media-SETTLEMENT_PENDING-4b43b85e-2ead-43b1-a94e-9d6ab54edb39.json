@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "4b43b85e-2ead-43b1-a94e-9d6ab54edb39",
+  "created_at": "2026-07-19T04:50:29.045Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "PJ-ASDX-E8LW:media",
+  "sku": "PJ-ASDX-E8LW",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "055a0115-b42b-4978-ae6c-363dfcbe96a2",
+    "submitted_at": "2026-07-19T04:48:56.223Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "e2b8abf69488f5779fa0b8f83b1cbf8646aa13e1d22eda5cc2310a4670ea8b0a",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "10567861b1fd06109e17c432d79b68ea9b177ec66d966c8454eab20fe7716635"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 30000,
+    "request_delay_ms": 500,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "90f8dcd085d0fd063225470d0b781e301b26c82fa6329ccd021e640867184ed5"
+}

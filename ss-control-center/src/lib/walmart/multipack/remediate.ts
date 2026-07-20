@@ -67,7 +67,7 @@ async function resolvePack(db: Client, sku: string, storeIndex = 1): Promise<num
   const p = await db.execute({
     sql: `SELECT COALESCE(
             (SELECT unitsInListing FROM SkuShippingData WHERE sku=? LIMIT 1),
-            (SELECT packSize FROM SkuCost WHERE sku=? LIMIT 1),
+            (SELECT packSize FROM SkuCost WHERE sku=? ORDER BY COALESCE(effectiveDate,'') DESC, updatedAt DESC LIMIT 1),
             (SELECT titlePackCount FROM WalmartCatalogItem WHERE sku=? AND storeIndex=? LIMIT 1),
             (SELECT titlePackCount FROM WalmartListingQualityItem WHERE sku=? AND storeIndex=? LIMIT 1)
           ) AS pack`,
@@ -86,7 +86,7 @@ async function loadCandidate(db: Client, sku: string, liveTitle: string, storeIn
     sql: `SELECT COALESCE(s.unitsInListing, c.packSize, cat.titlePackCount, q.titlePackCount) AS pack
           FROM (SELECT ? AS sku) k
           LEFT JOIN SkuShippingData s ON s.sku=k.sku
-          LEFT JOIN SkuCost c ON c.sku=k.sku
+          LEFT JOIN SkuCost c ON c.id=(SELECT id FROM SkuCost WHERE sku=k.sku ORDER BY COALESCE(effectiveDate,'') DESC, updatedAt DESC LIMIT 1)
           LEFT JOIN WalmartCatalogItem cat ON cat.sku=k.sku AND cat.storeIndex=?
           LEFT JOIN WalmartListingQualityItem q ON q.sku=k.sku AND q.storeIndex=?
           LIMIT 1`,

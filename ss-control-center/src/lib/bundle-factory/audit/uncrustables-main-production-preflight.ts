@@ -9,7 +9,7 @@
  */
 
 import registryJson from "./data/uncrustables-authenticity-registry-v1.json";
-import approvalsJson from "./data/uncrustables-main-owner-approvals-v1.json";
+import approvalsJson from "./data/uncrustables-main-owner-approvals-v2.json";
 
 import {
   evaluateUncrustablesMainAuthenticity,
@@ -23,9 +23,9 @@ import {
 } from "./uncrustables-main-authenticity";
 
 export const UNCRUSTABLES_MAIN_OWNER_APPROVALS_SCHEMA =
-  "uncrustables-main-owner-approvals/v1" as const;
+  "uncrustables-main-owner-approvals/v2" as const;
 export const UNCRUSTABLES_MAIN_PUBLISH_PERMIT_SCHEMA =
-  "uncrustables-main-publish-permit/v1" as const;
+  "uncrustables-main-publish-permit/v2" as const;
 
 export interface UncrustablesOwnerApprovedMainProof
   extends Omit<UncrustablesMainAuthenticityInput, "registry"> {

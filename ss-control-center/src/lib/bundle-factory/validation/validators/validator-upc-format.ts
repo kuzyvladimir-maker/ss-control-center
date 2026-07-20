@@ -4,19 +4,55 @@
  * Checks all four invariants:
  *   1. 12 digits, no other characters
  *   2. valid GS1 check digit (mod-10 weighted)
- *   3. UPC exists in our UPCPool (i.e. we own it — not a guess)
- *   4. UPC isn't already assigned to a different ChannelSKU
+ *   3. UPC exists in our owner-managed UPCPool and is ASSIGNED to this SKU
+ *   4. UPC isn't marketplace-quarantined or assigned elsewhere
  *
  * Failing #1/#2 is an unrecoverable error (typo or fabricated UPC).
- * Failing #3 is also error — listing with a UPC outside the pool risks
- * marketplace-side suppression for "GTIN ownership not verified".
- * Failing #4 is a hard conflict.
+ * `gs1_validated=false` is evidence, not a standalone publish block: the owner
+ * explicitly chose the existing managed pool and marketplace response is the
+ * collision/ownership authority. An explicit marketplace quarantine is a hard
+ * block until the operator dispositions the code.
  */
 
 import { prisma } from "@/lib/prisma";
 import type { ValidatorFn } from "../types";
 
 const TWELVE_DIGITS = /^\d{12}$/;
+
+export interface ManagedUpcPoolRow {
+  id: string;
+  status: string;
+  assigned_to_id: string | null;
+  gs1_validated: boolean;
+}
+
+export function evaluateManagedUpcAssignment(input: {
+  skuId: string;
+  skuUpcPoolId: string | null;
+  poolRow: ManagedUpcPoolRow;
+}): { ok: true } | { ok: false; code: string; message: string } {
+  const status = input.poolRow.status.trim().toUpperCase();
+  if (["BURNED", "QUARANTINED", "INVALID", "RETIRED"].includes(status)) {
+    return {
+      ok: false,
+      code: "UPC_POOL_QUARANTINED",
+      message: `UPC pool row is ${status} and cannot be submitted.`,
+    };
+  }
+  if (
+    status !== "ASSIGNED" ||
+    input.poolRow.assigned_to_id !== input.skuId ||
+    input.skuUpcPoolId !== input.poolRow.id
+  ) {
+    return {
+      ok: false,
+      code: "UPC_POOL_ASSIGNMENT_MISMATCH",
+      message:
+        "UPC must be atomically ASSIGNED to this ChannelSKU in the owner-managed pool.",
+    };
+  }
+  return { ok: true };
+}
 
 /** Standard UPC-A mod-10 check digit. Sum odd-position digits ×3 + even
  *  positions ×1 over the first 11; check digit makes the total a
@@ -61,13 +97,42 @@ export const validatorUpcFormat: ValidatorFn = async ({ sku }) => {
     };
   }
 
-  const poolRow = await prisma.uPCPool.findUnique({ where: { upc } });
+  const poolRow = await prisma.uPCPool.findUnique({
+    where: { upc },
+    select: {
+      id: true,
+      status: true,
+      assigned_to_id: true,
+      gs1_validated: true,
+    },
+  });
   if (!poolRow) {
     return {
       validator_id: "validator-upc-format",
       passed: false,
       severity: "error",
       message: `UPC "${upc}" is not in our UPCPool — risk of marketplace GTIN-ownership suppression.`,
+    };
+  }
+
+  const assignment = evaluateManagedUpcAssignment({
+    skuId: sku.id,
+    skuUpcPoolId: sku.upc_pool_id,
+    poolRow,
+  });
+  if (!assignment.ok) {
+    return {
+      validator_id: "validator-upc-format",
+      passed: false,
+      severity: "error",
+      message: `${assignment.message} UPC: "${upc}".`,
+      details: {
+        upc,
+        code: assignment.code,
+        pool_status: poolRow.status,
+        pool_assigned_to_id: poolRow.assigned_to_id,
+        sku_upc_pool_id: sku.upc_pool_id,
+      },
     };
   }
 
@@ -92,6 +157,12 @@ export const validatorUpcFormat: ValidatorFn = async ({ sku }) => {
   return {
     validator_id: "validator-upc-format",
     passed: true,
-    details: { upc, gs1_validated: poolRow.gs1_validated },
+    details: {
+      upc,
+      ownership_basis: "OWNER_MANAGED_UPC_POOL",
+      pool_status: poolRow.status,
+      gs1_validated: poolRow.gs1_validated,
+      gs1_validation_is_standalone_gate: false,
+    },
   };
 };

@@ -18,6 +18,8 @@ loadEnv({ path: ".env" });
 import { createClient } from "@libsql/client";
 import { readFileSync } from "node:fs";
 
+throw new Error("LEGACY_COGS_MUTATION_SCRIPT_DISABLED: unversioned RetailPrice/SkuCost upserts are forbidden");
+
 const FILE = process.argv[2];
 const DRY = process.argv.includes("--dry-run");
 if (!FILE) { console.error("usage: cogs-ingest-retail.ts <results.json> [--dry-run]"); process.exit(1); }

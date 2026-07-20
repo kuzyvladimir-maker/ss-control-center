@@ -9,6 +9,7 @@ import {
   enforceCacheMarkerLimit,
   type SystemBlockWithCache,
 } from "../kb-loader";
+import { WALMART_POLICY_VERSION } from "../validation/walmart-prepublication-policy";
 
 test("loadKnowledgeBase('amazon') returns ≥1 block + all four amazon KB files", async () => {
   const r = await loadKnowledgeBase("amazon");
@@ -28,8 +29,21 @@ test("loadKnowledgeBase('amazon') returns ≥1 block + all four amazon KB files"
 test("loadKnowledgeBase('walmart') returns walmart blocks", async () => {
   const r = await loadKnowledgeBase("walmart");
   assert.equal(r.template, "walmart");
-  assert.ok(r.blocks.length >= 3);
+  assert.equal(r.blocks.length, 1);
   assert.equal(r.missing.length, 0);
+  assert.equal(r.stale.length, 0);
+  assert.equal(
+    r.policy_versions["walmart/prepublication-compliance.md"],
+    WALMART_POLICY_VERSION,
+  );
+  assert.ok(
+    r.blocks.some((block) =>
+      block.text.includes("walmart/prepublication-compliance.md")),
+  );
+  assert.ok(
+    r.blocks.every((block) => !block.text.includes("Walmart Marketplace — Title Policy")),
+    "legacy unversioned Walmart snapshots must not enter the runtime prompt",
+  );
 });
 
 test("enforceCacheMarkerLimit collapses tail into one block when over limit", () => {

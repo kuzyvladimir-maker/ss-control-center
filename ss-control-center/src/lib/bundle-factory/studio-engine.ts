@@ -329,6 +329,7 @@ async function ensureDraftForSpec(args: {
   const priced = computeListingPrice(
     {
       brand: listingBrand,
+      title: `${spec.label} ${primary.title ?? ""}`,
       cogs_cents: costCents,
       unit_count: packCount,
       weight_lb: null,

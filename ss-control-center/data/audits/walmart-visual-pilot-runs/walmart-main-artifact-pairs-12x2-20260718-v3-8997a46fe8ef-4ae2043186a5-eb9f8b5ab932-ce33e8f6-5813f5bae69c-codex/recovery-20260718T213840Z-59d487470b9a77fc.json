@@ -1,0 +1,76 @@
+{
+  "schema_version": "walmart-visual-pilot-recovery-receipt/v1",
+  "recovery_id": "singleton-call-21-codex-session-019f770f-b1bf-7841-acfe-ee3b627a70bf",
+  "created_at": "2026-07-18T21:38:40.218Z",
+  "mode": "offline-recover-only",
+  "manifest": {
+    "path": "data/audits/walmart-visual-pilot-golden-pairs-v3.json",
+    "sha256": "8997a46fe8ef9ecccb165cc9548e0097d07561c2daa9079c09a17d3e25f2d403"
+  },
+  "layout": {
+    "name": "singleton",
+    "selected_layout_plan_sha256": "4ae2043186a55cf46614bc165de53da4b34079ff387cf93c376d35948925e652",
+    "batch_index": 20,
+    "call_key": "0cf76a04d8d890574ad33eb4a835d49a7344b71a7be9fc0c4ab31482f35c5138",
+    "image_ids": [
+      "i_0d86a7a177dbc17d"
+    ],
+    "full_view_sha256": [
+      "df859229ae95e471356e469d28ef59ac6bea80d72efaac4eb2640ffbe558b4f1"
+    ]
+  },
+  "checkpoint": {
+    "path": "data/audits/walmart-visual-pilot-runs/walmart-main-artifact-pairs-12x2-20260718-v3-8997a46fe8ef-4ae2043186a5-eb9f8b5ab932-ce33e8f6-5813f5bae69c-codex/checkpoint.json",
+    "before_sha256": "5ffea0500baf70ebd5d3a3f8cebfb8db2549b4190f4228f1b4b94c828f3e1005",
+    "after_sha256": "936a0cba75e40eb2bf9a6723d00aec843a30bba718073d8ac1ea0c4521ecc63f",
+    "consumed_calls": 21,
+    "recorded_attempts": 21
+  },
+  "evidence": {
+    "path": "data/audits/walmart-visual-pilot-recoveries/singleton-call-21-20260718-v2.json",
+    "canonical_sha256": "9b4e28f0f6957d778ad5de9f64b511eeb7a5c3c77f47278144d89a93c4aa5a1d",
+    "session_log_path": "data/audits/walmart-visual-pilot-recoveries/rollout-2026-07-18T17-09-05-019f770f-b1bf-7841-acfe-ee3b627a70bf.jsonl",
+    "session_log_sha256": "d0d0f0a4f138ca3d4862fc87fbfeae3d026c7f203421aa8afcdce9032e6b386c",
+    "source_index_sha256": "03ba6298f6ebf67ea04e5861fd3712abfc22a79e439b0d20d3e4be96f86f2517",
+    "result_canonical_sha256": "8f4a797e0bf8b6d3af20663d803de65e6651f7279718cc1e23807643769f41aa",
+    "image_link": {
+      "kind": "deterministic_canonical_pixel_similarity",
+      "deterministic": true,
+      "cryptographic": false,
+      "byte_identical": false,
+      "reason": "Codex CLI performed a lossy 1800x1800 to 1600x1600 JPEG transform",
+      "policy": {
+        "policy_version": "walmart-recovered-session-visual-link/2026-07-18-v1",
+        "canonical_pixel_size": 256,
+        "resize_kernel": "lanczos3",
+        "colourspace": "srgb",
+        "max_mean_absolute_error": 2,
+        "max_root_mean_square_error": 4,
+        "min_pearson_correlation": 0.998,
+        "max_fraction_absolute_difference_above_8": 0.035,
+        "max_fraction_absolute_difference_above_16": 0.008
+      },
+      "sharp_version": "0.35.1",
+      "libvips_version": "8.18.3",
+      "metrics": {
+        "mean_absolute_error": 1.110107421875,
+        "root_mean_square_error": 2.5775626754170546,
+        "pearson_correlation": 0.9996242958670492,
+        "fraction_absolute_difference_above_8": 0.019251505533854168,
+        "fraction_absolute_difference_above_16": 0.0031077067057291665
+      }
+    }
+  },
+  "execution": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "worker_health_calls": 0,
+    "image_downloads": 0,
+    "walmart_writes": 0,
+    "database_writes": 0
+  },
+  "report_seal": {
+    "schema_version": "walmart-visual-pilot-report-seal/v1",
+    "canonical_body_sha256": "59d487470b9a77fcfa7d6b4c9b91a74f9396c2daba72057e1ba0f119d0f17a12"
+  }
+}

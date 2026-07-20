@@ -1,0 +1,71 @@
+{
+  "schema_version": "channelmax-qx-amazon-readback/v1",
+  "observed_at": "2026-07-19T02:41:59.202Z",
+  "capture_mode": "DIRECT_READ_ONLY_LISTINGS_ITEMS_GET",
+  "row": {
+    "store_index": 1,
+    "sku": "QX-AS89-H8YC",
+    "asin": "B0H82RQ226"
+  },
+  "amazon": {
+    "statuses": [
+      "DISCOVERABLE"
+    ],
+    "attribute_offers": [
+      {
+        "audience": "ALL",
+        "our_price": 77.64,
+        "minimum_seller_allowed_price": 66.95,
+        "maximum_seller_allowed_price": 76.99,
+        "discounted_price": null
+      },
+      {
+        "audience": "B2B",
+        "our_price": 76.99,
+        "minimum_seller_allowed_price": null,
+        "maximum_seller_allowed_price": null,
+        "discounted_price": null
+      }
+    ],
+    "top_level_offers": [
+      {
+        "audience": "ALL",
+        "price": 77.64
+      },
+      {
+        "audience": "B2B",
+        "price": 76.99
+      }
+    ],
+    "issues": [
+      {
+        "code": "19038",
+        "severity": "ERROR"
+      },
+      {
+        "code": "18701",
+        "severity": "ERROR"
+      }
+    ]
+  },
+  "desired": {
+    "consumer_price": 76.99,
+    "business_price": 76.99,
+    "minimum_seller_allowed_price": 66.95,
+    "maximum_seller_allowed_price": 76.99
+  },
+  "classification": "NON_DESIRED",
+  "failed_checks": [
+    "purchasable_offer.our_price",
+    "offers.B2C.price"
+  ],
+  "channelmax_confirmed_at": "2026-07-19T02:26:03Z",
+  "channelmax_to_amazon_elapsed_seconds": 956,
+  "channelmax_propagated_to_amazon": false,
+  "amazon_write_performed": false,
+  "pending_mutation_fence_changed": false,
+  "evidence": {
+    "channelmax_postwrite": "data/repairs/rollback/channelmax-qx-fence-recovery-20260719/postwrite.json",
+    "prior_three_stable_reads": "data/repairs/checkpoints/8badb989fc9bc5ee9c7c/20260719T022235495Z-QX-AS89-H8YC_offer-SETTLEMENT_UNRESOLVED-e072f4ac-b7bd-425b-b9b0-70d5d06c92ac.json"
+  }
+}

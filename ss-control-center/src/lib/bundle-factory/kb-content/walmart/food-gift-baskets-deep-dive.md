@@ -1,5 +1,10 @@
 # Walmart Marketplace — Food Gift Baskets Deep Dive
 
+> **ARCHIVED SNAPSHOT — NOT A RUNTIME POLICY SOURCE.** Category access,
+> multi-brand eligibility, attributes and feed examples below were not backed
+> by current per-account evidence/Get Spec and are excluded from the KB loader.
+> Use `prepublication-compliance.md`; no statement below authorizes a listing.
+
 > **Category Path:** `Food > Gift Baskets`
 > **Last verified:** 2026-05-17
 > **Priority:** P0 — primary Walmart target для Salutem Vita bundles

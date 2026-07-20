@@ -1,0 +1,48 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "7063828f-6c95-431d-ba5c-04d35f9f5b5b",
+  "created_at": "2026-07-19T02:47:25.027Z",
+  "plan_sha256": "8badb989fc9bc5ee9c7ced63029ef9c8cea01d1b494c5766330709dfcf17c477",
+  "action_id": "QX-AS89-H8YC:offer",
+  "sku": "QX-AS89-H8YC",
+  "kind": "OFFER",
+  "status": "SETTLEMENT_UNRESOLVED",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "b249fc715064a074365cb71513907cce8e27edbaf3d878f98fb717444b60eb3e",
+    "submitted_event_id": "f349faa9-366c-4dea-a9f1-678906ded957",
+    "disposition": "PENDING_READ_LIMIT",
+    "polling_reads": 3,
+    "read_errors": 0,
+    "consecutive_stable_reads": 3,
+    "last_classification": "NON_DESIRED",
+    "last_path_state_sha256": "70c361510dbfa0961b1e33bcd8ae478d327dd4104900d6dd61725ecb40f1284a",
+    "remains_pending": true,
+    "automatic_resubmission_authorized": false,
+    "failed_check_names": [
+      "purchasable_offer.our_price",
+      "offers.B2C.price"
+    ],
+    "desired_price_values": {
+      "attribute_consumer_price": 76.99,
+      "top_level_consumer_price": 76.99,
+      "business_price": 76.99,
+      "minimum_seller_allowed_price": 66.95,
+      "maximum_seller_allowed_price": 76.99,
+      "discounted_price": null,
+      "list_price": null
+    },
+    "actual_price_values": {
+      "attribute_consumer_price": 77.64,
+      "top_level_consumer_price": 77.64,
+      "business_price": 76.99,
+      "minimum_seller_allowed_price": 66.95,
+      "maximum_seller_allowed_price": 76.99,
+      "discounted_price": null,
+      "list_price": null
+    }
+  },
+  "sha256": "2b2ac7333651af381473488293cd9aedf41fa21e1109c4249cbdbb0adcd5bc01"
+}

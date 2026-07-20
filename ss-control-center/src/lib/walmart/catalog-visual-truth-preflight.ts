@@ -66,6 +66,7 @@ export type TruthPreflightReasonCode =
   | "INVALID_SOURCE_SHA256"
   | "INVALID_SOURCE_CAPTURED_AT"
   | "SOURCE_SCOPE_MISSING"
+  | "SOURCE_KIND_NOT_AUTHORITATIVE"
   | "DONOR_IMAGE_NOT_AUTHORITATIVE";
 
 export interface TruthSourceEvidence {
@@ -185,6 +186,34 @@ const SOURCE_KINDS = new Set<TruthSourceKind>([
 const EVIDENCE_SCOPES = new Set<TruthEvidenceScope>([
   "current_title", "outer_units", "identity", "package_facts", "component_truth",
 ]);
+
+/**
+ * A source may declare a scope only when that source kind is independent and
+ * competent for the fact. The live seller catalog and buyer PDP describe the
+ * current marketplace surface, so they may prove the current title but may
+ * never bootstrap the product truth used to audit that same surface. Donor
+ * imagery is observation material only and is authoritative for no truth
+ * scope.
+ */
+export const WALMART_TRUTH_SOURCE_AUTHORITY = {
+  seller_catalog: ["current_title"],
+  buyer_pdp: ["current_title"],
+  recipe_record: ["outer_units", "identity", "package_facts", "component_truth"],
+  sku_reference_catalog: ["outer_units", "identity", "package_facts", "component_truth"],
+  manufacturer_page: ["identity", "package_facts", "component_truth"],
+  retailer_page: ["identity", "package_facts", "component_truth"],
+  manual_verification: ["current_title", "outer_units", "identity", "package_facts", "component_truth"],
+  donor_image: [],
+} as const satisfies Record<TruthSourceKind, readonly TruthEvidenceScope[]>;
+
+function sourceKindCanEstablish(
+  sourceKind: TruthSourceKind,
+  scope: TruthEvidenceScope,
+): boolean {
+  const allowed = WALMART_TRUTH_SOURCE_AUTHORITY[sourceKind] as readonly TruthEvidenceScope[];
+  return allowed.includes(scope);
+}
+
 const IDENTITY_ROLES = new Set<IdentityRole>(["brand", "product", "variant"]);
 const PACKAGE_KINDS = new Set<PackageFactKind>(["net_content", "inner_item_count"]);
 const PACKAGE_REQUIREMENTS = new Set<PackageFactRequirement>(["required", "if_visible"]);
@@ -625,9 +654,18 @@ export function preflightWalmartAuditTruth(raw: unknown): TruthPreflightResult {
       }
       return [source];
     });
-    const authoritative = resolved.filter((source) => source.source_kind !== "donor_image");
     for (const scope of requiredScopes) {
-      if (!authoritative.some((source) => source.supports.includes(scope))) {
+      const declaredForScope = resolved.filter((source) => source.supports.includes(scope));
+      for (const source of declaredForScope) {
+        if (!sourceKindCanEstablish(source.source_kind, scope)) {
+          addReason(
+            "SOURCE_KIND_NOT_AUTHORITATIVE",
+            path,
+            `Source ${source.source_ref_id} of kind ${source.source_kind} cannot establish ${scope}`,
+          );
+        }
+      }
+      if (!declaredForScope.some((source) => sourceKindCanEstablish(source.source_kind, scope))) {
         addReason("SOURCE_SCOPE_MISSING", path, `Referenced evidence does not support ${scope}`);
       }
     }

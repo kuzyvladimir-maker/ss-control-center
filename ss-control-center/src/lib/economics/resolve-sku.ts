@@ -13,14 +13,26 @@
 
 import { prisma } from "@/lib/prisma";
 import type { Marketplace, ProfitResult } from "./types";
-import { computeProfit } from "./compute-profit";
 import { getCogsForSkus } from "./cogs";
+import { computeProfitWithProductTruthGuard } from "./product-truth-profit-guard";
 import { resolveSkuCategories } from "./categories";
 import { packagingForSku } from "./packaging";
 import { coolerForWeight } from "./packaging";
 import { LABEL } from "@/lib/pricing/cost-model";
 
-export interface EconomicsRow extends ProfitResult {
+export interface EconomicsRow extends Omit<
+  ProfitResult,
+  "profit" | "marginPct" | "referralFee" | "breakdown"
+> {
+  economicsStatus: "CALCULATED" | "BLOCKED";
+  blockers: string[];
+  profit: number | null;
+  marginPct: number | null;
+  referralFee: number | null;
+  breakdown: Omit<ProfitResult["breakdown"], "cogs" | "referralFee"> & {
+    cogs: number | null;
+    referralFee: number | null;
+  };
   title: string | null;
   cooler: string | null;
   cogsSource: string | null;
@@ -28,6 +40,8 @@ export interface EconomicsRow extends ProfitResult {
 }
 
 export interface EconomicsSummary {
+  truthMode: "LEGACY_UNSCOPED_TRANSITIONAL";
+  authoritative: false;
   storeIndex: number;
   marketplace: Marketplace;
   total: number;
@@ -135,10 +149,12 @@ export async function loadSkuEconomics(opts: {
 
     const flags: string[] = [];
 
-    // COGS (whole-listing, pack-aware). Missing → compute with 0 as an UPPER
-    // BOUND and flag loudly; never fabricate a fake cost.
-    let cogsValue = 0;
-    if (c.missing || c.cost == null) flags.push("cogs_missing");
+    // COGS (whole-listing, pack-aware). Missing/UNSOURCEABLE must block the
+    // numerical profit projection; it is never substituted with zero.
+    let cogsValue: number | null = null;
+    if (c.missing || c.cost == null) {
+      flags.push(c.outcome === "UNSOURCEABLE" ? "cogs_unsourceable" : "cogs_missing");
+    }
     else {
       cogsValue = c.cost;
       if (c.stale) flags.push("cogs_stale");
@@ -176,7 +192,7 @@ export async function loadSkuEconomics(opts: {
       flags.push("shipping_charged_estimated");
     }
 
-    const result = computeProfit(
+    const guarded = computeProfitWithProductTruthGuard(
       {
         sku,
         marketplace,
@@ -189,24 +205,61 @@ export async function loadSkuEconomics(opts: {
       },
       flags,
     );
-
-    rows.push({
-      ...result,
-      title: price.title ?? sd?.productTitle ?? null,
-      cooler: pkg.cooler,
-      cogsSource: c.source,
-      cogsEffectiveDate: c.effectiveDate,
-    });
+    if (guarded.status === "BLOCKED") {
+      rows.push({
+        sku,
+        marketplace,
+        economicsStatus: "BLOCKED",
+        blockers: [
+          ...guarded.blockers,
+          ...(c.outcome === "UNSOURCEABLE" ? ["CURRENT_COGS_UNSOURCEABLE"] : []),
+        ],
+        profit: null,
+        marginPct: null,
+        referralFee: null,
+        revenue: round2(price.itemPrice + shippingCharged),
+        breakdown: {
+          itemPrice: round2(price.itemPrice),
+          shippingCharged: round2(shippingCharged),
+          cogs: null,
+          packaging: pkg.packaging,
+          referralFee: null,
+          ownShipping: round2(ownShipping),
+        },
+        flags,
+        title: price.title ?? sd?.productTitle ?? null,
+        cooler: pkg.cooler,
+        cogsSource: c.source,
+        cogsEffectiveDate: c.effectiveDate,
+      });
+    } else {
+      rows.push({
+        ...guarded.result,
+        economicsStatus: "CALCULATED",
+        blockers: [],
+        title: price.title ?? sd?.productTitle ?? null,
+        cooler: pkg.cooler,
+        cogsSource: c.source,
+        cogsEffectiveDate: c.effectiveDate,
+      });
+    }
   }
 
-  // Sort worst-margin first — that's the worklist.
-  rows.sort((a, b) => a.marginPct - b.marginPct);
+  // Blocked rows are the first worklist; calculated rows follow worst-margin first.
+  rows.sort((a, b) => {
+    if (a.marginPct == null && b.marginPct == null) return a.sku.localeCompare(b.sku);
+    if (a.marginPct == null) return -1;
+    if (b.marginPct == null) return 1;
+    return a.marginPct - b.marginPct;
+  });
 
   return {
+    truthMode: "LEGACY_UNSCOPED_TRANSITIONAL",
+    authoritative: false,
     storeIndex,
     marketplace,
     total: rows.length,
-    cogsMissing: rows.filter((r) => r.flags.includes("cogs_missing")).length,
+    cogsMissing: rows.filter((r) => r.economicsStatus === "BLOCKED").length,
     belowTargetMargin: rows.filter((r) => r.flags.includes("below_target_margin")).length,
     rows,
   };

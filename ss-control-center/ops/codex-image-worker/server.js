@@ -30,32 +30,73 @@
  * driven (low volume), so a queue is fine.
  */
 const http = require("http");
-const { spawn } = require("child_process");
-const { createHash } = require("crypto");
+const { execFileSync, spawn } = require("child_process");
 const fs = require("fs");
 const fsp = require("fs/promises");
 const path = require("path");
 const os = require("os");
 const { buildPrompt, REQUIRED_IMAGE_MODEL } = require("./prompt");
 const { hasSupportedImageSignature } = require("./image-preflight");
+const {
+  buildClaudeSubscriptionEnv,
+  buildCodexVisionArgs,
+  canonicalJson,
+  computeWorkerBuild,
+  configuredVisionReservationLedgerIdentity,
+  createVisionContracts,
+  createVisionReceiptSigner,
+  initializeVisionReservationLedger,
+  parseVisionRequestAttestation,
+  parseVisionTimeoutMs,
+  reserveVisionCallKey,
+  sha256: visionSha256,
+  validateOptionalHealthAuthorization,
+  VisionCallKeyAlreadyReservedError,
+  visionMetadata: buildVisionMetadata,
+} = require("./vision-contract");
 
 const PORT = parseInt(process.env.PORT || "8791", 10);
 const HOST = process.env.HOST || "127.0.0.1";
 const TOKEN = process.env.CODEX_IMAGE_WORKER_TOKEN || "";
 const CODEX_BIN = process.env.CODEX_BIN || "codex";
+const CLAUDE_BIN = process.env.CLAUDE_BIN || "claude";
 const CODEX_HOME = process.env.CODEX_HOME || path.join(os.homedir(), ".codex");
 const GEN_DIR = path.join(CODEX_HOME, "generated_images");
+const VISION_CALL_STATE_DIR = path.join(CODEX_HOME, "vision-call-reservations");
 // Codex image_gen with reference images routinely runs ~4 min. Kill only at
 // 285s — just under the nginx /codex-image/ proxy_read_timeout (300s) and the
 // caller's fetch timeout (290s). The old 240s SIGKILLed generations right at the
 // finish line (a 241s run died). Override via RUN_TIMEOUT_MS in the box .env.
 const RUN_TIMEOUT_MS = parseInt(process.env.RUN_TIMEOUT_MS || "285000", 10);
-const WORKER_BUILD =
-  "sha256:" + createHash("sha256")
-    .update(fs.readFileSync(__filename))
-    .update("\0")
-    .update(fs.readFileSync(require.resolve("./image-preflight")))
-    .digest("hex");
+const VISION_TIMEOUT_MS = parseVisionTimeoutMs(process.env.VISION_TIMEOUT_MS);
+function cliVersion(binary, label) {
+  try {
+    return execFileSync(binary, ["--version"], {
+      encoding: "utf8",
+      timeout: 5_000,
+      stdio: ["ignore", "pipe", "pipe"],
+    }).trim();
+  } catch (error) {
+    throw new Error(`${label} version attestation failed: ${error && error.message ? error.message : error}`);
+  }
+}
+
+const VISION_CONTRACTS = createVisionContracts({
+  codexCliVersion: cliVersion(CODEX_BIN, "Codex CLI"),
+  claudeCliVersion: cliVersion(CLAUDE_BIN, "Claude CLI"),
+});
+const VISION_RECEIPT_SIGNER = createVisionReceiptSigner(
+  process.env.VISION_ATTESTATION_PRIVATE_KEY_PKCS8_B64,
+  process.env.VISION_ATTESTATION_KEY_ID,
+);
+const WORKER_SOURCE_BYTES = [
+  fs.readFileSync(__filename),
+  fs.readFileSync(require.resolve("./prompt")),
+  fs.readFileSync(require.resolve("./image-preflight")),
+  fs.readFileSync(require.resolve("./vision-contract")),
+];
+let VISION_RESERVATION_LEDGER = null;
+let WORKER_BUILD = null;
 
 if (!TOKEN) {
   console.error("FATAL: CODEX_IMAGE_WORKER_TOKEN is not set");
@@ -173,11 +214,68 @@ async function stageVisionImages(body, runDir) {
 }
 
 function visionMetadata(provider, inputImageCount) {
+  if (!VISION_RESERVATION_LEDGER || !WORKER_BUILD) {
+    throw new Error("vision reservation ledger is not initialized");
+  }
   return {
-    input_image_count: inputImageCount,
-    vision_provider: provider,
-    worker_build: WORKER_BUILD,
+    ...buildVisionMetadata(
+      provider,
+      inputImageCount,
+      VISION_CONTRACTS,
+      WORKER_BUILD,
+      VISION_RESERVATION_LEDGER.contract,
+    ),
+    vision_timeout_ms: VISION_TIMEOUT_MS,
   };
+}
+
+async function refreshVisionReservationLedgerCustody() {
+  if (!VISION_RESERVATION_LEDGER) {
+    throw new Error("vision reservation ledger is not initialized");
+  }
+  const expectedContract = VISION_RESERVATION_LEDGER.contract;
+  const current = await initializeVisionReservationLedger(VISION_CALL_STATE_DIR, {
+    expected_identity: {
+      ledger_id: expectedContract.ledger_id,
+      ledger_epoch: expectedContract.ledger_epoch,
+    },
+  });
+  if (canonicalJson(current.contract) !== canonicalJson(expectedContract)) {
+    throw new Error("vision reservation ledger custody changed after worker startup");
+  }
+  VISION_RESERVATION_LEDGER = current;
+}
+
+async function respondHealth(res, healthAuthorization) {
+  try {
+    await refreshVisionReservationLedgerCustody();
+  } catch {
+    res.writeHead(503, { "content-type": "application/json" });
+    res.end(JSON.stringify({
+      ok: false,
+      error: "reservation_ledger_custody_failed",
+      health_authorization_verified: healthAuthorization.auth_verified,
+    }));
+    return;
+  }
+  res.writeHead(200, { "content-type": "application/json" });
+  res.end(JSON.stringify({
+    ok: true,
+    health_authorization_verified: healthAuthorization.auth_verified,
+    genDir: GEN_DIR,
+    vision: true,
+    worker_build: WORKER_BUILD,
+    vision_providers: ["codex_cli_subscription", "claude_cli_subscription"],
+    vision_contracts: VISION_CONTRACTS,
+    vision_timeout_ms: VISION_TIMEOUT_MS,
+    signed_vision_receipts: VISION_RECEIPT_SIGNER ? {
+      schema_version: "vision-worker-receipt/v2",
+      key_id: VISION_RECEIPT_SIGNER.key_id,
+      public_key_spki_sha256: VISION_RECEIPT_SIGNER.public_key_spki_sha256,
+    } : null,
+    durable_call_key_reservations: true,
+    reservation_ledger: VISION_RESERVATION_LEDGER.contract,
+  }));
 }
 
 // --- run codex exec with the paid path disabled -------------------------------
@@ -297,7 +395,6 @@ async function handleGenerate(body) {
 // --- VISION: run codex exec with image(s) attached, return the model's text -----
 // Same subscription path as generation, but here Codex READS the attached images
 // (`-i FILE`) and answers in text. Used for product identification (COGS engine).
-const VISION_TIMEOUT_MS = parseInt(process.env.VISION_TIMEOUT_MS || "180000", 10);
 function runCodexVision(imgFiles, prompt, cwd) {
   return new Promise((resolve) => {
     const env = { ...process.env };
@@ -308,8 +405,7 @@ function runCodexVision(imgFiles, prompt, cwd) {
     // `-i, --image <FILE>...` is VARIADIC — a trailing positional prompt would be
     // swallowed as another image file. So we pass images via -i and feed the PROMPT
     // on STDIN (codex exec reads the prompt from stdin when no positional is given).
-    const args = ["exec", "--skip-git-repo-check"];
-    for (const f of imgFiles) { args.push("-i", f); }
+    const args = buildCodexVisionArgs(imgFiles, VISION_CONTRACTS.codex_cli_subscription);
 
     const child = spawn(CODEX_BIN, args, { env, cwd: cwd || os.tmpdir(), stdio: ["pipe", "pipe", "pipe"] });
     try { child.stdin.write(prompt); child.stdin.end(); } catch { /* child may have exited */ }
@@ -416,16 +512,13 @@ async function handleAnalyze(body) {
 // Uses a STRONG model (sonnet) — cheap tiers mis-identify products. ANTHROPIC_API_KEY
 // is stripped so it uses the subscription OAuth (in ~/.claude/.credentials.json),
 // never the paid API.
-const CLAUDE_BIN = process.env.CLAUDE_BIN || "claude";
-const CLAUDE_VISION_MODEL = process.env.CLAUDE_VISION_MODEL || "sonnet";
 function runClaudeVision(imgFiles, prompt) {
   return new Promise((resolve) => {
-    const env = { ...process.env };
-    delete env.ANTHROPIC_API_KEY; // subscription OAuth only, never the paid API
+    const env = buildClaudeSubscriptionEnv(process.env);
     const args = [
       "-p", prompt, "--output-format", "json",
       "--allowedTools", "Read", "--permission-mode", "bypassPermissions",
-      "--model", CLAUDE_VISION_MODEL, "--max-turns", "6",
+      "--model", VISION_CONTRACTS.claude_cli_subscription.model, "--max-turns", "6",
     ];
     const child = spawn(CLAUDE_BIN, args, { env, cwd: os.tmpdir(), stdio: ["ignore", "pipe", "pipe"] });
     let stdout = "", stderr = "";
@@ -441,10 +534,24 @@ function runClaudeVision(imgFiles, prompt) {
 async function handleAnalyzeClaude(body) {
   const prompt = String((body && body.prompt) || "").trim();
   if (!prompt) return { status: 400, json: { error: "missing prompt" } };
+  const receiptRequested = !!(body && body.request_attestation);
+  if (receiptRequested && !VISION_RECEIPT_SIGNER) {
+    return { status: 503, json: { error: "signed vision receipts are not configured" } };
+  }
   const runDir = await fsp.mkdtemp(path.join(os.tmpdir(), "claude-vis-"));
   let imgFiles = [];
+  let requestAttestation = null;
+  let reservationReservedAt = null;
   try {
     imgFiles = await stageVisionImages(body, runDir);
+    if (receiptRequested) {
+      const imageBytes = await Promise.all(imgFiles.map((file) => fsp.readFile(file)));
+      requestAttestation = parseVisionRequestAttestation(
+        body.request_attestation,
+        prompt,
+        imageBytes,
+      );
+    }
   } catch (error) {
     try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {}
     return {
@@ -455,6 +562,38 @@ async function handleAnalyzeClaude(body) {
         ...visionMetadata("claude_cli_subscription", 0),
       },
     };
+  }
+  if (requestAttestation) {
+    try {
+      const reservation = await reserveVisionCallKey(
+        VISION_CALL_STATE_DIR,
+        requestAttestation,
+        new Date().toISOString(),
+        VISION_RESERVATION_LEDGER,
+      );
+      VISION_RESERVATION_LEDGER = reservation.ledger;
+      reservationReservedAt = reservation.body.reserved_at;
+    } catch (error) {
+      try { await fsp.rm(runDir, { recursive: true, force: true }); } catch {}
+      if (error instanceof VisionCallKeyAlreadyReservedError) {
+        return {
+          status: 409,
+          json: {
+            ok: false,
+            error: "call_key_already_reserved_or_ambiguous",
+            ...visionMetadata("claude_cli_subscription", imgFiles.length),
+          },
+        };
+      }
+      return {
+        status: 503,
+        json: {
+          ok: false,
+          error: "durable_call_key_reservation_failed",
+          ...visionMetadata("claude_cli_subscription", imgFiles.length),
+        },
+      };
+    }
   }
 
   const wrapped =
@@ -496,12 +635,31 @@ async function handleAnalyzeClaude(body) {
       },
     };
   }
+  const metadata = visionMetadata("claude_cli_subscription", imgFiles.length);
+  const workerReceipt = requestAttestation && VISION_RECEIPT_SIGNER
+    ? VISION_RECEIPT_SIGNER.sign({
+      issued_at: new Date().toISOString(),
+      reservation_reserved_at: reservationReservedAt,
+      request_attestation: requestAttestation,
+      result_canonical_sha256: visionSha256(Buffer.from(canonicalJson(result), "utf8")),
+      worker_contract: metadata,
+      subscription_policy: {
+        auth_mode: "claude_subscription_oauth",
+        paid_api_environment_absent: true,
+        alternate_cloud_routing_absent: true,
+      },
+    })
+    : null;
   return {
     status: 200,
     json: {
       ok: true,
       result,
-      ...visionMetadata("claude_cli_subscription", imgFiles.length),
+      ...metadata,
+      ...(requestAttestation ? {
+        request_attestation_verified: true,
+        worker_receipt: workerReceipt,
+      } : {}),
     },
   };
 }
@@ -510,14 +668,20 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url, "http://localhost");
 
   if (req.method === "GET" && url.pathname === "/health") {
-    res.writeHead(200, { "content-type": "application/json" });
-    res.end(JSON.stringify({
-      ok: true,
-      genDir: GEN_DIR,
-      vision: true,
-      worker_build: WORKER_BUILD,
-      vision_providers: ["codex_cli_subscription", "claude_cli_subscription"],
-    }));
+    const healthAuthorization = validateOptionalHealthAuthorization(
+      req.headers["authorization"],
+      TOKEN,
+    );
+    if (!healthAuthorization.allowed) {
+      res.writeHead(401, { "content-type": "application/json" });
+      res.end(JSON.stringify({
+        ok: false,
+        error: "unauthorized",
+        health_authorization_verified: false,
+      }));
+      return;
+    }
+    void respondHealth(res, healthAuthorization);
     return;
   }
 
@@ -575,6 +739,23 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, HOST, () => {
-  console.log(`codex-image-worker listening on ${HOST}:${PORT} (CODEX_HOME=${CODEX_HOME})`);
+async function startServer() {
+  const expectedIdentity = configuredVisionReservationLedgerIdentity(process.env);
+  VISION_RESERVATION_LEDGER = await initializeVisionReservationLedger(
+    VISION_CALL_STATE_DIR,
+    { expected_identity: expectedIdentity, env: process.env },
+  );
+  WORKER_BUILD = computeWorkerBuild(
+    WORKER_SOURCE_BYTES,
+    VISION_CONTRACTS,
+    VISION_RESERVATION_LEDGER.contract,
+  );
+  server.listen(PORT, HOST, () => {
+    console.log(`codex-image-worker listening on ${HOST}:${PORT}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error(`FATAL: ${String((error && error.message) || error)}`);
+  process.exitCode = 1;
 });

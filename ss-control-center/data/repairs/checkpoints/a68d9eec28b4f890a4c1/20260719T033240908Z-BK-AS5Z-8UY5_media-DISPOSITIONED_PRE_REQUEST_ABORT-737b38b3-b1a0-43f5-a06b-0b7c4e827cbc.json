@@ -1,0 +1,103 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "737b38b3-b1a0-43f5-a06b-0b7c4e827cbc",
+  "created_at": "2026-07-19T03:32:40.908Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "BK-AS5Z-8UY5:media",
+  "sku": "BK-AS5Z-8UY5",
+  "kind": "MEDIA",
+  "status": "DISPOSITIONED_PRE_REQUEST_ABORT",
+  "detail": {
+    "schema_version": "uncrustables-amazon-pre-request-abort-terminal-detail/v1",
+    "armed_event_id": "c3c85f31-6e06-4ef0-8b0b-e243acd79596",
+    "proposal": {
+      "schema_version": "uncrustables-amazon-pre-request-abort-disposition/v1",
+      "immutable": true,
+      "created_at": "2026-07-19T03:26:16.945Z",
+      "disposition": "SYNC_PRE_REQUEST_GUARD_ABORT_PROVEN_NO_AMAZON_PATCH",
+      "marketplace": "AmazonUS",
+      "plan": {
+        "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/generated/uncrustables-owner-relaxed-main-24-20260719-v1/URP-20260719T024117003Z-a68d9eec28b4.json",
+        "sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e"
+      },
+      "selection": {
+        "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/execution-selections/uncrustables-owner-relaxed-main-bk-recovery-20260719-v1/URES-20260719T031312719Z-76cd668203a7.json",
+        "sha256": "76cd668203a7d2124aeb9026b2f0fe7776bbbbd3048e506d9232aa3cf7c3611d",
+        "profile": "MAIN_MEDIA_ONLY_V1",
+        "selected_action_ids": [
+          "BK-AS5Z-8UY5:media"
+        ]
+      },
+      "action": {
+        "action_id": "BK-AS5Z-8UY5:media",
+        "sku": "BK-AS5Z-8UY5",
+        "asin": "B0H85JF1V1",
+        "store_index": 1,
+        "kind": "MEDIA",
+        "exact_action_paths": [
+          "/attributes/main_product_image_locator"
+        ],
+        "actual_patch_sha256": "324726dd300ea187f41047860010009a4b49b56c1aa944ec0ac72abcdd2fbde4"
+      },
+      "armed": {
+        "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/checkpoints/a68d9eec28b4f890a4c1/20260719T031228645Z-BK-AS5Z-8UY5_media-SUBMISSION_ARMED-c3c85f31-6e06-4ef0-8b0b-e243acd79596.json",
+        "file_sha256": "a84a6e7c71d3e854e7643104ef87b8249c989b1eb9fcf58f306b27401ab22f1a",
+        "event_id": "c3c85f31-6e06-4ef0-8b0b-e243acd79596",
+        "event_sha256": "b51cbc58b08a5c7fc67702f6b0652e47a03ce7e65b9dd1b649985d84d8b26190",
+        "created_at": "2026-07-19T03:12:28.645Z",
+        "source_status": "SUBMISSION_ARMED",
+        "settlement_guard_schema": "EXACT_ACTION_PATHS_V1",
+        "before_path_state_sha256": "07d04f165ed994c95f7a31da057aa8b4fe48066e2e80f0cef71c234584011c1e"
+      },
+      "failed": {
+        "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/checkpoints/a68d9eec28b4f890a4c1/20260719T031228799Z-BK-AS5Z-8UY5_media-FAILED-fa7c7c2b-6203-4c08-ad5a-84fa6f3e7f7d.json",
+        "file_sha256": "b4b702ba17d3f0b4550a06ca1f6a79211d325156788d9e0317113847889b5343",
+        "event_id": "fa7c7c2b-6203-4c08-ad5a-84fa6f3e7f7d",
+        "event_sha256": "ef93881b038496b7075968b377d1cddaadaba3efbee35427cdb78026ed155d66",
+        "created_at": "2026-07-19T03:12:28.799Z",
+        "source_status": "FAILED",
+        "guard_error_code": "LEGACY_NON_OFFER_LAUNCH_AUTH_CALLBACK_REJECTION",
+        "error": "Physical Amazon account does not match launch authorization for BK-AS5Z-8UY5:media. No Amazon call was made.",
+        "amazon_request_performed": false
+      },
+      "recovery": {
+        "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/checkpoints/a68d9eec28b4f890a4c1/20260719T031343866Z-BK-AS5Z-8UY5_media-SETTLEMENT_UNRESOLVED-cdfc55dd-73c4-45af-90e8-6703e10571c2.json",
+        "file_sha256": "e69057e438e0040ccce72fcf4d52553e1e8faf3a114728b638e6faef584d9a6a",
+        "event_id": "cdfc55dd-73c4-45af-90e8-6703e10571c2",
+        "event_sha256": "6bd4bbfd3b51ed49b4f991539a6f6a7796e81740bf31b80f6c1c416a7d502b1c",
+        "created_at": "2026-07-19T03:13:43.866Z",
+        "source_status": "SETTLEMENT_UNRESOLVED",
+        "armed_event_id": "c3c85f31-6e06-4ef0-8b0b-e243acd79596",
+        "selection_sha256": "76cd668203a7d2124aeb9026b2f0fe7776bbbbd3048e506d9232aa3cf7c3611d",
+        "polling_reads": 3,
+        "read_errors": 0,
+        "consecutive_stable_reads": 3,
+        "last_classification": "BEFORE",
+        "last_path_state_sha256": "07d04f165ed994c95f7a31da057aa8b4fe48066e2e80f0cef71c234584011c1e",
+        "remains_pending": true,
+        "automatic_resubmission_authorized": false
+      },
+      "fence": {
+        "path": "/Users/vladimirkuznetsov/SS Command Center/ss-control-center/data/repairs/runtime-locks/uncrustables-amazon-us/pending-mutation-fence.json",
+        "file_sha256": "1ea5cefdc3647f4fed9c3c055523e3defa809677d1cd0f7a2e53ab971bd797ed",
+        "schema_version": "uncrustables-amazon-pending-mutation-fence/v1",
+        "repair_plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+        "claimed_at": "2026-07-19T03:12:24.242Z",
+        "purpose": "FORWARD_APPLY:URP-20260719T024117003Z"
+      },
+      "guarantees": {
+        "amazon_calls_performed_by_disposition": 0,
+        "channelmax_calls_performed_by_disposition": 0,
+        "historical_amazon_patch_performed": false,
+        "automatic_resubmission_authorized": false,
+        "fence_release_authorized": false,
+        "terminalizes_only_armed_event_id": "c3c85f31-6e06-4ef0-8b0b-e243acd79596",
+        "terminal_status_is_verified": false
+      },
+      "sha256": "613974f7b561e4e5aea0ce885ab448972b07652092a005f365886128643ebfe5",
+      "confirmation_token": "DISPOSITION-PRE-REQUEST-ABORT-613974F7B561E4E5AEA0"
+    }
+  },
+  "sha256": "bb8c7b547c9f86ce3ac02dfd8aa1247f5214a5579e898544cee37eebbada769c"
+}

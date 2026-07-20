@@ -1,0 +1,31 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "31b151e6-4ef9-4877-89dd-3309468e01b0",
+  "created_at": "2026-07-19T04:49:24.623Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "SV-AS87-D6SV:media",
+  "sku": "SV-AS87-D6SV",
+  "kind": "MEDIA",
+  "status": "SUBMITTED",
+  "detail": {
+    "strategy": "PRIMARY",
+    "armed_event_id": "7dfb0821-89c2-4bea-9f5e-437830feb17f",
+    "patch_sha256": "3a126fbc5a7c019eda7e7d8df951f27c4e2f5fe9352525a2e3499753cadf6518",
+    "patch_paths": [
+      "/attributes/main_product_image_locator"
+    ],
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "3a126fbc5a7c019eda7e7d8df951f27c4e2f5fe9352525a2e3499753cadf6518",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "70aac410bc263c0b13a8d470f295bee0396b318be9943993b4aad0211fc1b0f6"
+    },
+    "status": "ACCEPTED",
+    "submission_id": "5a4fab22d7c54f808e6076d4b0a81f9e",
+    "issues": []
+  },
+  "sha256": "561fe24dd49eea910ec89dd9080382f4b44787daac24e062a1f4a5ff4544c163"
+}

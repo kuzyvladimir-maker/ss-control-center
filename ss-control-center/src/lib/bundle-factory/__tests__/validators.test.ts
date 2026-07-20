@@ -23,7 +23,10 @@ import { validatorPackagingDims } from "@/lib/bundle-factory/validation/validato
 import { validatorWeight } from "@/lib/bundle-factory/validation/validators/validator-weight";
 import { validatorCountryOfOrigin } from "@/lib/bundle-factory/validation/validators/validator-country-of-origin";
 import { validatorImageDimensions } from "@/lib/bundle-factory/validation/validators/validator-image-dimensions";
-import { validatorImageFormat } from "@/lib/bundle-factory/validation/validators/validator-image-format";
+import {
+  maxImageBytesForChannel,
+  validatorImageFormat,
+} from "@/lib/bundle-factory/validation/validators/validator-image-format";
 import { validatorMarginFloor } from "@/lib/bundle-factory/validation/validators/validator-margin-floor";
 import { validatorRecipeContent } from "@/lib/bundle-factory/validation/validators/validator-recipe-content";
 import { validatorCanonicalPrice } from "@/lib/bundle-factory/validation/validators/validator-canonical-price";
@@ -559,6 +562,18 @@ test("validator-image-dimensions warns on unmeasurable URL", async () => {
   assert.equal(out.severity, "warning");
 });
 
+test("validator-image-dimensions requires Walmart images to be square", async () => {
+  const out = await validatorImageDimensions(
+    mkInput(mkSku({
+      channel: "WALMART",
+      main_image_url: buildPngWithDims(1600, 1500),
+    })),
+  );
+  assert.equal(out.passed, false);
+  assert.equal(out.severity, "error");
+  assert.match(out.message ?? "", /1:1 square/);
+});
+
 // ── validator-image-format — dataURL inspection path ─────────────────
 
 test("validator-image-format accepts data:image/png", async () => {
@@ -581,6 +596,11 @@ test("validator-image-format fails on missing URL", async () => {
     mkInput(mkSku({ main_image_url: null })),
   );
   assert.equal(out.passed, false);
+});
+
+test("validator-image-format uses Walmart's current 5 MB cap", () => {
+  assert.equal(maxImageBytesForChannel("WALMART"), 5 * 1024 * 1024);
+  assert.equal(maxImageBytesForChannel("AMAZON_SALUTEM"), 10 * 1024 * 1024);
 });
 
 // ── validator-margin-floor (Phase 7) ────────────────────────────────────

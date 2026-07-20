@@ -43,6 +43,7 @@ import {
 } from "@/lib/bundle-factory/repair/uncrustables-amazon-rollback";
 import {
   CANONICAL_UNCRUSTABLES_FORWARD_CHECKPOINT_ROOT,
+  MAIN_MEDIA_ONLY_PROFILE,
   OFFER_ONLY_EXECUTION_PROFILE,
   ImmutableCheckpointStore,
   assertValidationPreviewSurrogateMatches,
@@ -143,7 +144,7 @@ function usage(): string {
     "  --launch-execution-authorization=PATH Current sealed ChannelMAX Manual + Coupon activation proof for OFFER apply.",
     "  --preview              Live GET + VALIDATION_PREVIEW only; no real PATCH.",
     "  --apply                Enable Amazon calls; requires --plan and --confirm.",
-    "  --submit-only          With --apply, submit each exact OFFER once and leave it pending; zero post-write GETs.",
+    `  --submit-only          With --apply, submit each exact ${OFFER_ONLY_EXECUTION_PROFILE} or ${MAIN_MEDIA_ONLY_PROFILE} action once and leave it pending; zero same-action post-write GETs.`,
     "  --settle-only          GET-only settlement of an exact pending OFFER selection; forbids --apply/--preview.",
     "  --recover-pending-only GET-only settlement of any exact pending selection; forbids all write/preview/narrowing options.",
     "  --confirm=TOKEN        Exact plan-specific token printed in dry mode.",
@@ -998,7 +999,16 @@ async function main(): Promise<void> {
       ? "SETTLE_ONLY"
       : "SUBMIT_AND_SETTLE";
   if (
-    (options.submitOnly || options.settleOnly) &&
+    options.submitOnly &&
+    executionSelection?.profile !== OFFER_ONLY_EXECUTION_PROFILE &&
+    executionSelection?.profile !== MAIN_MEDIA_ONLY_PROFILE
+  ) {
+    throw new Error(
+      `SUBMIT_ONLY requires an exact ${OFFER_ONLY_EXECUTION_PROFILE} or ${MAIN_MEDIA_ONLY_PROFILE} selection. Gallery/content profiles are forbidden. No Amazon call was made.`,
+    );
+  }
+  if (
+    options.settleOnly &&
     executionSelection?.profile !== OFFER_ONLY_EXECUTION_PROFILE
   ) {
     throw new Error(
@@ -1023,7 +1033,9 @@ async function main(): Promise<void> {
         mode: options.recoverPendingOnly
           ? "PENDING_SETTLE_ONLY"
           : options.submitOnly
-          ? "OFFER_SUBMIT_ONLY"
+          ? executionSelection?.profile === MAIN_MEDIA_ONLY_PROFILE
+            ? "MEDIA_SUBMIT_ONLY"
+            : "OFFER_SUBMIT_ONLY"
           : options.settleOnly
             ? "OFFER_SETTLE_ONLY"
             : options.apply

@@ -78,7 +78,7 @@ function validInput() {
     source_evidence: [
       source("live-title", "buyer_pdp", SHA_A, ["current_title"]),
       source("recipe", "recipe_record", SHA_B, ["outer_units", "component_truth"]),
-      source("structured", "seller_catalog", SHA_C, ["outer_units", "component_truth"]),
+      source("structured", "sku_reference_catalog", SHA_C, ["outer_units", "component_truth"]),
       source("truth", "sku_reference_catalog", SHA_D, ["outer_units", "identity", "package_facts"]),
     ],
   };
@@ -267,6 +267,46 @@ test("missing, malformed, unscoped, and unknown source evidence all fail closed"
   assert(codes(result).has("UNKNOWN_SOURCE_REFERENCE"));
 });
 
+test("seller catalog and buyer PDP can prove current title but cannot bootstrap product truth", () => {
+  const restrictedScopes = ["outer_units", "identity", "package_facts", "component_truth"];
+  for (const sourceKind of ["seller_catalog", "buyer_pdp"]) {
+    const input = validInput();
+    input.current_title_source_ref_ids = ["self-authorizing-live-source"];
+    input.recipe.source_ref_ids = ["self-authorizing-live-source"];
+    input.recipe.components[0].source_ref_ids = ["self-authorizing-live-source"];
+    input.structured_record.source_ref_ids = ["self-authorizing-live-source"];
+    input.proposed_truth.source_ref_ids = ["self-authorizing-live-source"];
+    input.source_evidence = [source(
+      "self-authorizing-live-source",
+      sourceKind,
+      SHA_A,
+      ["current_title", ...restrictedScopes],
+    )];
+
+    const result = preflightWalmartAuditTruth(input);
+    assert.equal(result.status, "TRUTH_REVIEW", sourceKind);
+    assert.equal(result.expected, null, sourceKind);
+    const authorityReasons = result.reasons.filter((reason) => (
+      reason.code === "SOURCE_KIND_NOT_AUTHORITATIVE"
+    ));
+    for (const scope of restrictedScopes) {
+      assert(
+        authorityReasons.some((reason) => reason.message.endsWith(`cannot establish ${scope}`)),
+        `${sourceKind} must not establish ${scope}`,
+      );
+    }
+    assert(
+      !authorityReasons.some((reason) => reason.message.endsWith("cannot establish current_title")),
+      `${sourceKind} must remain authoritative for current_title`,
+    );
+    assert(
+      !result.reasons.some((reason) => reason.path === "current_title_source_ref_ids"),
+      `${sourceKind} current-title evidence must remain valid`,
+    );
+    assert(codes(result).has("SOURCE_SCOPE_MISSING"), sourceKind);
+  }
+});
+
 test("donor image cannot become product truth and legacy donor fields are rejected", () => {
   const donorOnly = validInput();
   donorOnly.proposed_truth.source_ref_ids = ["donor"];
@@ -279,7 +319,21 @@ test("donor image cannot become product truth and legacy donor fields are reject
   const result = preflightWalmartAuditTruth(donorOnly);
   assert.equal(result.status, "TRUTH_REVIEW");
   assert(codes(result).has("DONOR_IMAGE_NOT_AUTHORITATIVE"));
+  assert(codes(result).has("SOURCE_KIND_NOT_AUTHORITATIVE"));
   assert(codes(result).has("SOURCE_SCOPE_MISSING"));
+
+  const donorAlongsideTruth = validInput();
+  donorAlongsideTruth.proposed_truth.source_ref_ids.push("donor");
+  donorAlongsideTruth.source_evidence.push(source(
+    "donor",
+    "donor_image",
+    "e".repeat(64),
+    ["outer_units", "identity", "package_facts"],
+  ));
+  const mixedResult = preflightWalmartAuditTruth(donorAlongsideTruth);
+  assert.equal(mixedResult.status, "TRUTH_REVIEW");
+  assert(codes(mixedResult).has("DONOR_IMAGE_NOT_AUTHORITATIVE"));
+  assert(codes(mixedResult).has("SOURCE_KIND_NOT_AUTHORITATIVE"));
 
   const legacy = validInput();
   legacy.proposed_truth.donor_image_url = "https://example.test/donor.jpg";

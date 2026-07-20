@@ -14,6 +14,10 @@
 
 import { oxylabsWalmartSearch, oxylabsCreds } from "./oxylabs-fetch";
 import { unwrangleSearch } from "./retail-fetch";
+import {
+  throwIfMeteredProviderControlError,
+  withMeteredProviderCall,
+} from "./metered-provider-call";
 import { openClawSearch, openClawEnabled } from "./openclaw-fetch";
 import { qualifyDonorFront, unitSizeFromTitle, pickBestFront, pickBestFrontFromPool } from "./vision";
 import { highResImageUrl } from "../walmart/multipack/composite";
@@ -51,18 +55,31 @@ async function googleImages(query: string): Promise<string[]> {
   const c = new AbortController();
   const t = setTimeout(() => c.abort(), 90000);
   try {
-    const r = await fetch("https://realtime.oxylabs.io/v1/queries", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Basic ${auth}` },
-      body: JSON.stringify({ source: "google_search", query, parse: true, context: [{ key: "tbm", value: "isch" }] }),
-      signal: c.signal,
+    return await withMeteredProviderCall({
+      provider: "oxylabs",
+      operation: "image_search",
+      requestFingerprint: {
+        context: [{ key: "tbm", value: "isch" }],
+        parse: true,
+        query,
+        source: "google_search",
+      },
+    }, async () => {
+      const r = await fetch("https://realtime.oxylabs.io/v1/queries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Basic ${auth}` },
+        body: JSON.stringify({ source: "google_search", query, parse: true, context: [{ key: "tbm", value: "isch" }] }),
+        signal: c.signal,
+      });
+      if (!r.ok) throw new Error(`Oxylabs image search HTTP ${r.status}`);
+      const j: any = await r.json();
+      const str = JSON.stringify(j?.results?.[0]?.content || {});
+      const imgs = [...str.matchAll(/"(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/g)]
+        .map((m) => m[1]).filter((x) => !/gstatic|googleusercontent|\.gif|logo|sprite/.test(x));
+      return [...new Set(imgs.map((x) => x.split("?")[0]))];
     });
-    const j: any = await r.json();
-    const str = JSON.stringify(j?.results?.[0]?.content || {});
-    const imgs = [...str.matchAll(/"(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/g)]
-      .map((m) => m[1]).filter((x) => !/gstatic|googleusercontent|\.gif|logo|sprite/.test(x));
-    return [...new Set(imgs.map((x) => x.split("?")[0]))];
-  } catch {
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
     return [];
   } finally {
     clearTimeout(t);
@@ -110,7 +127,10 @@ export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: 
       .filter((o) => o.s >= 0.45).sort((a, b) => b.s - a.s).map((o) => o.u);
     const r = await tryPool(imgs, "Walmart 1P");
     if (r) return r;
-  } catch { /* next tier */ }
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
+    // Ordinary provider/network miss: continue to the next tier.
+  }
 
   const storeImgs = (offers: any[]): string[] => offers
     .filter((o) => o.imageUrls?.[0])
@@ -119,7 +139,14 @@ export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: 
 
   // T2: fast API stores (Unwrangle — now paid): Sam's Club, Target, Costco.
   for (const ret of ["samsclub", "target", "costco"] as const) {
-    try { const rr = await unwrangleSearch(ret, q); const r = await tryPool(storeImgs(rr.offers), ret); if (r) return r; } catch { /* next retailer */ }
+    try {
+      const rr = await unwrangleSearch(ret, q);
+      const r = await tryPool(storeImgs(rr.offers), ret);
+      if (r) return r;
+    } catch (error) {
+      throwIfMeteredProviderControlError(error);
+      // Ordinary provider/network miss: continue to the next retailer.
+    }
   }
 
   // T3: Google Images (fast, whole-web) — real retailer photos indexed across the
@@ -135,7 +162,10 @@ export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: 
     if (pool && !picks.includes(pool)) picks.push(pool);
     const r = await tryPool(picks, "Google Images");
     if (r) return r;
-  } catch { /* next tier */ }
+  } catch (error) {
+    throwIfMeteredProviderControlError(error);
+    // Ordinary provider/network miss: continue to the browser tier.
+  }
 
   // T4 (SLOW, LAST before generation): login-gated stores via the OpenClaw browser
   // (~90s each, and it shares the box with Vladimir's OpenClaw agents). Reached ONLY
@@ -144,7 +174,14 @@ export async function resolveDonorPhoto(listingTitle: string, opts: { log?: (m: 
   // source already covers never wastes the slow browser.
   if (openClawEnabled()) {
     for (const ret of ["publix"] as const) { // bjs+aldi disabled: bjs Akamai tripped 2026-07-07; aldi not a buying source
-      try { const rr = await openClawSearch(ret, q); const r = await tryPool(storeImgs(rr.offers), ret); if (r) return r; } catch { /* next retailer */ }
+      try {
+        const rr = await openClawSearch(ret, q);
+        const r = await tryPool(storeImgs(rr.offers), ret);
+        if (r) return r;
+      } catch (error) {
+        throwIfMeteredProviderControlError(error);
+        // Ordinary provider/browser miss: continue to the next retailer.
+      }
     }
   }
 

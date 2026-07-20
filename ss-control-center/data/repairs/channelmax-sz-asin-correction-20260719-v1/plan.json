@@ -1,0 +1,336 @@
+{
+  "schema_version": "channelmax-sz-asin-correction-plan/v1",
+  "immutable": true,
+  "read_only_artifact": true,
+  "created_at": "2026-07-19T04:29:14Z",
+  "external_writes_performed": 0,
+  "status": "SEALED_OFFLINE_PLAN_EXECUTION_BLOCKED",
+  "scope": {
+    "account_id": "channelmax:amznus:salutem-solutions",
+    "host": "selling.channelmax.net",
+    "site_id": "300",
+    "site_name": "AmznUS [Salutem Solutions]",
+    "seller_id": "A3A7A0RDFUSGBS",
+    "selling_venue": "AmazonUS",
+    "rows": 1,
+    "sku": "SZ-ASPI-JFAT",
+    "item_id": "171030888",
+    "old_asin": "B0H75VN18Z",
+    "intended_asin": "B0H776M5B5",
+    "amazon_mutations": 0,
+    "price_mutations": 0,
+    "maximum_submit_attempts": 1
+  },
+  "mechanism_review": {
+    "existing_guarded_price_mechanism": {
+      "path": "../scripts/channelmax_uncrustables_price_wave.py",
+      "file_sha256": "e93558c307a650995011acc8551d36d70249e6dc2e04589d220dfc2abab115e5",
+      "safe_properties": [
+        "Exact HTTPS host, tab, site, account, and seller binding",
+        "Fresh inventorylist plus independent inventoryitemsite reads",
+        "Compare-and-set before each bounded wave",
+        "Deterministic confirmation token plus matching environment arm",
+        "Exclusive immutable prewrite and postwrite artifacts",
+        "Independent persisted-row readback",
+        "No repricing-model fields in the price payload"
+      ],
+      "applicability": "PATTERN_ONLY",
+      "reason": "Its only write endpoint is setitmsitevalues for minimum and maximum price fields. It has no reviewed ASIN-mutation contract and must not be modified or invoked for this identity repair."
+    },
+    "existing_finite_file_uploader_protocol": {
+      "state_machine_path": "src/lib/channelmax-agent/uncrustables-same-model-canary.ts",
+      "state_machine_file_sha256": "46af1f3d0b7066745fef4c42e011992480d88e473f28f032de882340fa887a80",
+      "adapter_path": "src/lib/channelmax-agent/uncrustables-same-model-cdp-adapter.ts",
+      "adapter_file_sha256": "c8748ac0a940c33bb07c30f435368fcf3e59ffc346e455ea31a589e6aa6ecad7",
+      "contract_path": "src/lib/channelmax-agent/contracts.ts",
+      "contract_file_sha256": "f5f8dee08ea861a672aa883be6a6723ca9329e2a8d623f9906d4f9542119d8df",
+      "applicability": "ARTIFACT_AND_SAFETY_PROTOCOL_PATTERN_ONLY",
+      "reason": "The finite uploader implements one-row, content-addressed, one-submit, ambiguity-safe semantics, but its production gate is false, its reviewed DOM contract is null, and its only mutation operation is UPLOAD_MANUAL_ASSIGNMENT. It does not authorize ASIN correction."
+    },
+    "read_only_worker": {
+      "readme_path": "ops/channelmax-browser-worker/README.md",
+      "readme_file_sha256": "71d501ebb86dbb02a9b4342e3421514a43b695630b86b7ebd93b24f061b906d5",
+      "applicability": "PREWRITE_AND_POSTWRITE_EVIDENCE_ONLY",
+      "reason": "The deployed worker accepts SNAPSHOT_INVENTORY and DISCOVER_MANUAL_MODEL only and has no click, fill, navigation, or write contract."
+    },
+    "selected_future_execution_mechanism": "One-row ChannelMAX File Uploader identity-only TSV, executed only through a separately reviewed owner-gated identity adapter or a supervised owner ceremony. The Analyze preview must prove an in-place update of item_id 171030888 and must not create a second row or touch any price/model/inventory field.",
+    "production_safe_asin_executor_found": false
+  },
+  "identity_evidence": {
+    "amazon_identity_status": "RESOLVED_AND_VERIFIED",
+    "intended_asin": "B0H776M5B5",
+    "product_type": "GROCERY",
+    "title": "Uncrustables Frozen Peanut Butter & Blackberry Spread Sandwiches, 8oz/4ct - Pack of 6 (24 Sandwiches Total)",
+    "recipe": "24 individual Peanut Butter & Blackberry Spread sandwiches sourced as six 4-count retail packs",
+    "unit_count": 24,
+    "verified_number_of_items": 24,
+    "authoritative_upc": "664554043946",
+    "authoritative_ean": "0664554043946",
+    "stale_generated_local_upc": "742259000034",
+    "amazon_8541_status": "CLOSED",
+    "verification": {
+      "validation_preview": "VALID",
+      "submission_id": "55f32a08a7134df8bdfe907cea1c43ed",
+      "stable_postwrite_reads": 3,
+      "verification_event_sha256": "90210bcf330f2a1a03af32056f45abe3c496c88cb8dde371483241c60111a805"
+    },
+    "conclusion": "B0H776M5B5 is the exact live Amazon identity. B0H75VN18Z is historical ChannelMAX residue and must not remain attached to SKU SZ-ASPI-JFAT."
+  },
+  "baseline_prewrite_expected": {
+    "source_captured_at": "2026-07-18T21:59:35.225Z",
+    "source_snapshot_sha256": "1f5f43122d35b2c422c6d1c92b6b0fc12cec8b1b4518536059250d89c1860427",
+    "expected_unique_active_row_count_for_sku": 1,
+    "row": {
+      "item_id": "171030888",
+      "sku": "SZ-ASPI-JFAT",
+      "asin": "B0H75VN18Z",
+      "description": "Uncrustables Frozen Peanut Butter & Blac [Grocery]",
+      "base_price": 132.12,
+      "purchase_price": null,
+      "unit_cost": 0,
+      "actual_shipping_cost": null,
+      "qty_in_stock": 100,
+      "quantity_ss": 444,
+      "discontinued": false,
+      "listing_status": "",
+      "repricing_model_id": null,
+      "repricing_model_name": "Default",
+      "repricing_status": "LIVE",
+      "reprice_info": {
+        "my_price": 0,
+        "my_floor": 119.68,
+        "my_ceiling": 145.33,
+        "net_profit_roi": null
+      }
+    },
+    "fresh_compare_and_set_required": true,
+    "cas_rule": "Immediately before Analyze and again immediately before Submit, independently read the selected ChannelMAX account. Abort unless exactly one active row has item_id 171030888, SKU SZ-ASPI-JFAT, old ASIN B0H75VN18Z, and every non-identity value above is unchanged, except for a separately evidenced repricing hold status.",
+    "staleness_rule": "The baseline snapshot is evidence, not permission. A fresh exact prewrite read is mandatory; any drift produces a new plan and a new confirmation token."
+  },
+  "repricing_hold": {
+    "required": true,
+    "current_evidence": "ChannelMAX reports repricing_status LIVE with Default model and noncanonical bounds 119.68 / 145.33.",
+    "canonical_price_policy_reference": {
+      "target_regular": 76.99,
+      "target_minimum": 66.95,
+      "target_maximum": 76.99,
+      "price_matrix_sha256": "6783173b9b3903db5ac53976dfb4e7286b04cf6e4b36e3d7be7ef1310eccce55"
+    },
+    "automation_hold": "Keep SZ-ASPI-JFAT in HOLD_IDENTITY for every SSCC/price-wave job. The existing 164-row price writer already excludes this SKU.",
+    "channelmax_hold_precondition": "Before the ASIN upload, the operator must pause/disable repricing for this exact ChannelMAX row through a separately reviewed supported control and capture a fresh readback proving it is no longer LIVE. No ASIN submit is allowed while repricing_status is LIVE.",
+    "postwrite_hold": "The row remains paused after the identity correction. This plan does not write prices. Repricing may be released only by a separate canonical-price plan after the new ASIN mapping is stable and bounds 66.95 / 76.99 are independently verified.",
+    "blocker": "No reviewed ChannelMAX repricing-pause mutation primitive or exact persisted hold token is pinned in the current offline artifacts. This is an execution blocker, not a reason to change the identity decision."
+  },
+  "forward_artifact": {
+    "path": "data/repairs/channelmax-sz-asin-correction-20260719-v1/forward.tsv",
+    "media_type": "text/tab-separated-values",
+    "line_endings": "CRLF",
+    "byte_size": 57,
+    "sha256": "e33bd2f5081c1888b1f10281d2fd19d1419e6637ace82e100e47d1d1d78dbd5f",
+    "columns": [
+      "SKU",
+      "ASIN",
+      "SellingVenue"
+    ],
+    "row": {
+      "SKU": "SZ-ASPI-JFAT",
+      "ASIN": "B0H776M5B5",
+      "SellingVenue": "AmazonUS"
+    },
+    "forbidden_columns": [
+      "MinSellingPrice",
+      "MaxSellingPrice",
+      "PurchaseCost",
+      "RepricingModelID",
+      "Quantity",
+      "Price"
+    ]
+  },
+  "rollback": {
+    "mode": "QUARANTINE_ONLY",
+    "automatic": false,
+    "reason": "The old ASIN is known to be wrong. Rollback exists only to restore the exact prior ChannelMAX record if the forward change breaks row integrity; it must never restore active repricing or be treated as product truth.",
+    "artifact": {
+      "path": "data/repairs/channelmax-sz-asin-correction-20260719-v1/rollback-quarantine-only.tsv",
+      "media_type": "text/tab-separated-values",
+      "line_endings": "CRLF",
+      "byte_size": 57,
+      "sha256": "928fe96df46e4792457b21ea854c192fc87f4eaf76a70998e01f33af25d86690",
+      "row": {
+        "SKU": "SZ-ASPI-JFAT",
+        "ASIN": "B0H75VN18Z",
+        "SellingVenue": "AmazonUS"
+      }
+    },
+    "old_values": {
+      "item_id": "171030888",
+      "sku": "SZ-ASPI-JFAT",
+      "asin": "B0H75VN18Z",
+      "base_price": 132.12,
+      "purchase_price": null,
+      "unit_cost": 0,
+      "actual_shipping_cost": null,
+      "qty_in_stock": 100,
+      "quantity_ss": 444,
+      "discontinued": false,
+      "listing_status": "",
+      "repricing_model_id": null,
+      "repricing_model_name": "Default",
+      "repricing_status_before_hold": "LIVE",
+      "my_price": 0,
+      "my_floor": 119.68,
+      "my_ceiling": 145.33
+    },
+    "rollback_gate": "Rollback requires its own fresh owner confirmation, a fresh read proving the exact forward result, and proof that the row remains paused. If the forward outcome is ambiguous, read back first; never submit either artifact again until state is known.",
+    "rollback_postcondition": "Exactly one quarantined row for SKU SZ-ASPI-JFAT, old ASIN B0H75VN18Z, all old non-identity values preserved, repricing still paused, and the SKU excluded from every price/inventory automation lane."
+  },
+  "analyze_gate": {
+    "expected_rows": 1,
+    "expected_action": "UPDATE_EXISTING_ROW_IN_PLACE",
+    "expected_item_id": "171030888",
+    "expected_sku": "SZ-ASPI-JFAT",
+    "expected_old_asin": "B0H75VN18Z",
+    "expected_new_asin": "B0H776M5B5",
+    "required_unchanged_fields": [
+      "base_price",
+      "purchase_price",
+      "unit_cost",
+      "actual_shipping_cost",
+      "qty_in_stock",
+      "quantity_ss",
+      "discontinued",
+      "listing_status",
+      "repricing_model_id",
+      "repricing_model_name",
+      "my_price",
+      "my_floor",
+      "my_ceiling",
+      "repricing_hold_status"
+    ],
+    "abort_conditions": [
+      "Analyze proposes CREATE instead of UPDATE",
+      "Analyze does not expose the old and new ASIN mapping unambiguously",
+      "Analyze changes item_id, SKU, price, bounds, cost, quantity, inventory, model, or hold status",
+      "Analyze reports more or fewer than one row",
+      "A second active SZ-ASPI-JFAT row or either-ASIN duplicate exists",
+      "The row is still repricing LIVE",
+      "Any account, site, seller, or venue binding differs"
+    ]
+  },
+  "mutation_fence": {
+    "owner_step_up_required": true,
+    "maximum_submit_calls": 1,
+    "before_submit": "Persist the exact fresh prewrite snapshot and analyzed-preview evidence, verify their hashes, verify the confirmation binding, acknowledge MUTATION_STARTED, and only then allow one Submit.",
+    "after_possible_submit": "Never retry. Record the task receipt and classify the outcome as CONFIRMED_APPLIED, CONFIRMED_NOT_APPLIED, or AMBIGUOUS. An ambiguous result permits read-only reconciliation only."
+  },
+  "postwrite_readback_gate": {
+    "stable_independent_reads_required": 3,
+    "expected_unique_active_row_count_for_sku": 1,
+    "expected": {
+      "item_id": "171030888",
+      "sku": "SZ-ASPI-JFAT",
+      "asin": "B0H776M5B5",
+      "selling_venue": "AmazonUS",
+      "repricing_status": "PAUSED_OR_DISABLED_EXACT_TOKEN_TO_BE_PINNED",
+      "base_price": 132.12,
+      "purchase_price": null,
+      "unit_cost": 0,
+      "actual_shipping_cost": null,
+      "qty_in_stock": 100,
+      "quantity_ss": 444,
+      "discontinued": false,
+      "listing_status": "",
+      "repricing_model_id": null,
+      "repricing_model_name": "Default",
+      "my_price": 0,
+      "my_floor": 119.68,
+      "my_ceiling": 145.33
+    },
+    "duplicate_checks": [
+      "No active SZ-ASPI-JFAT row remains on B0H75VN18Z",
+      "No second SZ-ASPI-JFAT row exists on B0H776M5B5",
+      "No new item_id was created"
+    ],
+    "release_decision": "IDENTITY_CONFIRMED_BUT_REPRICING_REMAINS_HELD",
+    "failure_decision": "AMBIGUOUS_AND_QUARANTINED; do not retry or apply the rollback until read-only reconciliation establishes exact state."
+  },
+  "confirmation": {
+    "schema_version": "channelmax-sz-asin-correction-confirmation/v1",
+    "binding_sha256": "663057c47df2de3acfe13a303d67ce7933d510965de7e4707658b8037b3b1318",
+    "token": "CONFIRM-CHANNELMAX-SZ-ASIN-663057C47DF2DE3ACFE1",
+    "token_is_authorization": false,
+    "required_future_cli_argument": "--confirm=CONFIRM-CHANNELMAX-SZ-ASIN-663057C47DF2DE3ACFE1",
+    "required_future_environment_arm": {
+      "name": "BF_CHANNELMAX_SZ_ASIN_CORRECTION_APPLY",
+      "value": "CONFIRM-CHANNELMAX-SZ-ASIN-663057C47DF2DE3ACFE1"
+    },
+    "binding": {
+      "account_id": "channelmax:amznus:salutem-solutions",
+      "forward_sha256": "e33bd2f5081c1888b1f10281d2fd19d1419e6637ace82e100e47d1d1d78dbd5f",
+      "identity_decision_sha256": "205e195cfc148a3d8871b56c5471f5657e245d9840b5cf6430b7fd3d20d6731a",
+      "item_id": "171030888",
+      "max_attempts": 1,
+      "new_asin": "B0H776M5B5",
+      "old_asin": "B0H75VN18Z",
+      "prewrite_snapshot_sha256": "1f5f43122d35b2c422c6d1c92b6b0fc12cec8b1b4518536059250d89c1860427",
+      "rollback_sha256": "928fe96df46e4792457b21ea854c192fc87f4eaf76a70998e01f33af25d86690",
+      "schema_version": "channelmax-sz-asin-correction-confirmation/v1",
+      "seller_id": "A3A7A0RDFUSGBS",
+      "site_id": "300",
+      "sku": "SZ-ASPI-JFAT",
+      "verified_amazon_checkpoint_sha256": "9fff6c3c9b7800e489bf0242f72bdc2dd1b693373e0a1d0a4b85bc9a2c8c4903"
+    },
+    "use_rule": "The token may be consumed only after the plan is regenerated from a fresh prewrite snapshot, the repricing hold token and identity-upload Analyze contract are pinned, the production identity adapter is independently reviewed, and a real owner step-up approval binds the regenerated plan. This offline token identifies the current proposal; it does not bypass those blockers."
+  },
+  "execution_blockers": [
+    "No production-safe ChannelMAX ASIN mutation executor exists in the repository.",
+    "The current browser worker is read-only.",
+    "The finite File Uploader adapter release gate is false and the reviewed DOM contract is null.",
+    "The current mutation contract supports manual min/max assignment, not ASIN identity correction.",
+    "No reviewed ASIN-only Analyze preview semantics are pinned to prove UPDATE rather than CREATE.",
+    "ChannelMAX currently reports repricing LIVE, and no reviewed pause primitive or exact persisted pause token is pinned.",
+    "The detailed ChannelMAX row snapshot must be refreshed before any execution."
+  ],
+  "evidence_manifest": [
+    {
+      "path": "data/audits/channelmax-live-snapshot-20260718T215936Z.json",
+      "sha256": "1f5f43122d35b2c422c6d1c92b6b0fc12cec8b1b4518536059250d89c1860427"
+    },
+    {
+      "path": "data/audits/uncrustables-catalog-identity-decision-20260718T072304000Z-00afce6e6bf8.json",
+      "sha256": "205e195cfc148a3d8871b56c5471f5657e245d9840b5cf6430b7fd3d20d6731a"
+    },
+    {
+      "path": "data/audits/uncrustables-catalog-title-api-evidence-20260718T065137Z.json",
+      "sha256": "b26c6933c301cec61a03a143d39c646e87943db7e4411e43129314918be86c49"
+    },
+    {
+      "path": "data/audits/uncrustables-ledger-20260717T230418933Z-offline.json",
+      "sha256": "ba512ed927f9881c287d15899f21a99725e8432a4a2f4a736a15db18e7f16279"
+    },
+    {
+      "path": "data/repairs/checkpoints/8badb989fc9bc5ee9c7c/20260718T115755989Z-SZ-ASPI-JFAT_text_count-VERIFIED-3f9e696f-5779-4475-8bc8-a6546c90dd96.json",
+      "sha256": "9fff6c3c9b7800e489bf0242f72bdc2dd1b693373e0a1d0a4b85bc9a2c8c4903"
+    },
+    {
+      "path": "data/repairs/generated/uncrustables-amazon-launch-aware-162-20260718-v10/URP-20260718T162541078Z-2af6e0a671b7.json",
+      "sha256": "5ca0ff37abed701253a5a735b7d4ba90dc980569d1503deadb73bd1a91514bf6"
+    },
+    {
+      "path": "data/audits/uncrustables-price-action-matrix-20260719-v1/uncrustables-price-action-matrix-20260719-v1.csv",
+      "sha256": "6783173b9b3903db5ac53976dfb4e7286b04cf6e4b36e3d7be7ef1310eccce55"
+    },
+    {
+      "path": "data/repairs/rollback/channelmax-canonical-164-20260719T024515583Z-6a2e9b3211b4/prewrite.json",
+      "sha256": "ad5481a12b1543f5508e37723844f0c78077d8991d3cb24d49818fc6a4f31da7"
+    },
+    {
+      "path": "data/repairs/rollback/channelmax-canonical-164-20260719T024515583Z-6a2e9b3211b4/postwrite.json",
+      "sha256": "94a4da2aad82caba9d127bd19fdf61490ff992b6e934ec8b38fd26dc94de6bc2"
+    },
+    {
+      "path": "data/audits/uncrustables-identity-hold-resolution-20260719-v1.json",
+      "sha256": "e6bdaa58ea0ffca11f58dd5968c710ca33e7afe7599148d13ab68138266317c3"
+    }
+  ]
+}

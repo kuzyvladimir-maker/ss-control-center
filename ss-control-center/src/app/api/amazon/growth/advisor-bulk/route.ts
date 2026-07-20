@@ -1,62 +1,20 @@
 /**
- * Bulk AI-advisor — enqueue a filtered pool for LLM analysis + safe auto-fix,
- * and read worker progress.
+ * Bulk AI-advisor queue status.
  *
- * POST : enqueue listings for the AI advisor.
- *        Body: { storeIndex?, filter?, skus?:string[], allMatching?, autoApply? }
+ * POST : RETIRED. Enqueueing could trigger unmetered paid analysis and optional
+ *        live Amazon writes without Product Truth owner gates.
  * GET  : queue stats + recent analyzed listings (diagnosis + what was applied).
  *        ?storeIndex
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { type HealthFilter, buildHealthWhere } from "@/lib/amazon/growth/health-filters";
+import { retiredAmazonListingImprovementResponse } from "@/lib/amazon/growth/product-truth-containment";
 
-export async function POST(request: NextRequest) {
-  let storeIndex = 1;
-  let filter: HealthFilter = {};
-  let skus: string[] | undefined;
-  let allMatching = false;
-  let autoApply = true;
-  try {
-    const body = await request.json();
-    if (body?.storeIndex) storeIndex = Number(body.storeIndex);
-    if (body?.filter) filter = body.filter;
-    if (Array.isArray(body?.skus)) skus = body.skus.map(String);
-    if (body?.allMatching) allMatching = true;
-    if (body?.autoApply === false) autoApply = false;
-  } catch {
-    /* defaults */
-  }
-
-  let rows: { sku: string; asin: string | null; itemName: string | null }[];
-  if (skus && skus.length && !allMatching) {
-    rows = await prisma.amazonListingHealthItem.findMany({
-      where: { storeIndex, sku: { in: skus } },
-      select: { sku: true, asin: true, itemName: true },
-    });
-  } else {
-    rows = await prisma.amazonListingHealthItem.findMany({
-      where: buildHealthWhere(storeIndex, filter),
-      select: { sku: true, asin: true, itemName: true },
-      take: 1000, // AI is expensive — cap a single enqueue
-    });
-  }
-
-  let queued = 0;
-  for (const r of rows) {
-    await prisma.amazonAdvisorQueue.upsert({
-      where: { amazon_advisor_queue_dedup: { storeIndex, sku: r.sku } },
-      create: { storeIndex, sku: r.sku, asin: r.asin, itemName: r.itemName, status: "REQUESTED", autoApply },
-      update: {
-        status: "REQUESTED", autoApply, actionsApplied: 0, result: null, error: null, processedAt: null,
-        queuedAt: new Date(), diagnosis: null, rootCause: null, expectedOutcome: null, confidence: null, actionsJson: null,
-      },
-    });
-    queued++;
-  }
-
-  return NextResponse.json({ ok: true, storeIndex, queued, matched: rows.length });
+export async function POST() {
+  return retiredAmazonListingImprovementResponse(
+    "LEGACY_AMAZON_ADVISOR_BULK_ENQUEUE_RETIRED",
+  );
 }
 
 export async function GET(request: NextRequest) {

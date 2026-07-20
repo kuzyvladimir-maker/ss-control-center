@@ -1,0 +1,32 @@
+{
+  "schema_version": "uncrustables-surgical-checkpoint/v1",
+  "immutable": true,
+  "event_id": "5d5f5fa7-b12a-453b-aff1-4f821009ba95",
+  "created_at": "2026-07-19T04:50:29.046Z",
+  "plan_sha256": "a68d9eec28b4f890a4c1d5ea5ee9d35b930f671d05e26a599a599ed931b77e4e",
+  "action_id": "VH-ASHZ-TJEE:media",
+  "sku": "VH-ASHZ-TJEE",
+  "kind": "MEDIA",
+  "status": "SETTLEMENT_PENDING",
+  "detail": {
+    "recovery": true,
+    "trigger": "PENDING_SETTLE_ONLY",
+    "selection_sha256": "f59d3de9abd974ad2419d74a5420c3134d40e8e6188bb49467b978417a058d1d",
+    "submitted_event_id": "6c00c629-337f-48e4-9d36-cec12d95292e",
+    "submitted_at": "2026-07-19T04:49:33.640Z",
+    "settlement_guard": {
+      "schema_version": "EXACT_ACTION_PATHS_V1",
+      "actual_patch_sha256": "754d7a07d632251d4ac80ae22d5682932a5f703c6ea13c02247802189f556411",
+      "exact_action_paths": [
+        "/attributes/main_product_image_locator"
+      ],
+      "before_path_state_sha256": "0ba4580f2e7c994222ed695d36cf3e0eb78c67bef1f44bc13691714aa4e9ccb2"
+    },
+    "horizon_ms": 3600000,
+    "poll_interval_ms": 30000,
+    "request_delay_ms": 500,
+    "observation_timeout_ms": 60000,
+    "stable_reads_required": 3
+  },
+  "sha256": "cacc0b0576baa67677780de74be97d051382af14985ddbdbc683dd07d55f6c8c"
+}

@@ -1,0 +1,78 @@
+{
+  "schema_version": "uncrustables-surgical-desired/v1",
+  "immutable": true,
+  "source_ledger_sha256": "46a80e727880d83bd9e52a1c58c753eeeede0cb8cbdd3443e825aba9cbaaa02f",
+  "reviewed_at": "2026-07-19T04:38:35.682Z",
+  "repairs": [
+    {
+      "sku": "SZ-ASPI-JFAT",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-relaxed adjudication proves that the current gallery has zero additional images; add the minimum four exact PB_BLACKBERRY assets while preserving the approved card in slot 1.",
+        "evidence": [
+          "Adjudication file SHA-256 737eae4902f3bc0e618d0b217c17af48565281bfa31f60b9e6b98b6b94e8c145.",
+          "Desired-media file SHA-256 19fd69ac54a51e2cb71ff7b5805771578161ac7a15bbc93180a856beb2b39c42.",
+          "Source adjudication row SHA-256 82b6e45e6f8369f04d1c1b9393e638aeaa64ec317766f08084ee70868f2a76b3.",
+          "Desired action SHA-256 5fe3eff7e6612d28b2ac8f7f23bf963dbe6a210089155c2284a8986851bfd63b."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/818cH7tmqNL.jpg",
+          "https://m.media-amazon.com/images/I/71nZioE2-GL.jpg",
+          "https://m.media-amazon.com/images/I/710y92xndwL.jpg",
+          "https://m.media-amazon.com/images/I/61GZdLgZuzL.jpg"
+        ]
+      }
+    },
+    {
+      "sku": "UA-ASAO-RE7Q",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-relaxed adjudication proves that the only gallery defect is fixed-card placement; preserve every current asset and swap slots 1 and 7 only.",
+        "evidence": [
+          "Adjudication file SHA-256 737eae4902f3bc0e618d0b217c17af48565281bfa31f60b9e6b98b6b94e8c145.",
+          "Desired-media file SHA-256 19fd69ac54a51e2cb71ff7b5805771578161ac7a15bbc93180a856beb2b39c42.",
+          "Source adjudication row SHA-256 d872e9bf4db65e65bc25cb5e0855152250a8b69a2a339e9647366b1c21a758dc.",
+          "Desired action SHA-256 dca7dc373afeee3f555b43695d55340504ed9c2ec72662f8bd1239c8a1025000."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/61IQBt9QAOL.jpg",
+          "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg",
+          "https://m.media-amazon.com/images/I/814OFXhXOAL.jpg",
+          "https://m.media-amazon.com/images/I/81diZ9XbgwL.jpg",
+          "https://m.media-amazon.com/images/I/81oaHODH8RL.jpg",
+          "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg"
+        ]
+      }
+    },
+    {
+      "sku": "VC-ASV1-378P",
+      "review": {
+        "confidence": "HIGH",
+        "rationale": "Owner-relaxed adjudication proves that the only gallery defect is fixed-card placement; preserve every current asset and swap slots 1 and 7 only.",
+        "evidence": [
+          "Adjudication file SHA-256 737eae4902f3bc0e618d0b217c17af48565281bfa31f60b9e6b98b6b94e8c145.",
+          "Desired-media file SHA-256 19fd69ac54a51e2cb71ff7b5805771578161ac7a15bbc93180a856beb2b39c42.",
+          "Source adjudication row SHA-256 8f522a54ac5ee694f37eb470755a4eb92c6b5e94edb7519b147ebecbdce26c6a.",
+          "Desired action SHA-256 266a5b907338f2accbaf3aadc86f91a01d4fee351438e6f176e5a94182aa41a4."
+        ]
+      },
+      "media": {
+        "gallery_image_urls": [
+          "https://m.media-amazon.com/images/I/81OibsvvU0L.jpg",
+          "https://m.media-amazon.com/images/I/61IQBt9QAOL.jpg",
+          "https://m.media-amazon.com/images/I/81x9v1+WzTL.jpg",
+          "https://m.media-amazon.com/images/I/814OFXhXOAL.jpg",
+          "https://m.media-amazon.com/images/I/81diZ9XbgwL.jpg",
+          "https://m.media-amazon.com/images/I/81oaHODH8RL.jpg",
+          "https://m.media-amazon.com/images/I/81+K8ip-dSL.jpg"
+        ]
+      }
+    }
+  ]
+}
