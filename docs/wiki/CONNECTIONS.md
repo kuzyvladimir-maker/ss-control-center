@@ -6,6 +6,22 @@
 
 ## Модули
 
+### [Product Truth Platform — OWNER CANON](product-catalog-architecture.md)
+← Retailer/brand first-party evidence, текущие Amazon/Walmart listings, SKU recipes,
+  фактические покупки и датированные price/availability observations
+→ [Bundle Factory](bundle-factory.md) (новые листинги),
+  [Listing Quality Stack](listing-quality-stack.md) (улучшение текущих),
+  [Economics](economics-profit-engine.md) (unit economics),
+  [Procurement](procurement-module.md) (план закупки после продажи)
+⊂ [Reference Catalog Engine](reference-catalog-engine.md),
+  [Product Sourcing Engine](product-sourcing-engine.md),
+  [Enrichment Contract](enrichment-division-of-labor.md)
+⇔ [Execution Roadmap](donor-catalog-execution-roadmap.md): Phase 1 = весь текущий
+  продаваемый Amazon+Walmart ассортимент; Phase 2 = расширение по бренду,
+  группе/категории, ретейлеру и demand-driven запросам
+⇔ [Product Truth release scope](product-truth-release-scope.md): exact Git boundary
+  и clean-checkout gate перед передачей готового engine Claude Code
+
 ### [Dashboard](dashboard.md)
 ← [Shipping Labels](shipping-labels.md), [Customer Hub](customer-hub.md), [Account Health](account-health.md), [Frozen Analytics](frozen-analytics.md), [Adjustments Monitor](adjustments-monitor.md), [Shipment Monitor](shipment-monitor.md)
 
@@ -15,12 +31,23 @@
 ⊂ [Выбор ставки](shipping-rate-selection.md), [Ship Date Trick](ship-date-trick.md), [Бюджет](budget-check-algorithm.md), [Weekend распределение](weekend-distribution.md), [Carrier rules](carrier-selection-rules.md), [Label filename](label-filename-format.md), [Shipping Labels Page v1](shipping-labels-page-v1.md) (UI и dashboard)
 
 ### [Procurement](procurement-module.md)
-← [Veeqo API](veeqo-api.md) (orders + products + tags + internal notes)
+← [Veeqo API](veeqo-api.md) (текущий mobile execution: orders + products + tags +
+internal notes), [Product Truth Platform](product-catalog-architecture.md) (будущий
+planning: recipe + inventory deficit + fresh local offers + pack/store optimizer)
 → [Shipping Labels](shipping-labels.md) (ставит тег `Placed` → Shipping Labels автоматически видит заказ как готовый к покупке этикетки; раньше тег ставился вручную), [Telegram](telegram-notifications.md) (Phase 7 — уведомления о приоритетных заказах)
 ⊂ SS Control Center (auth, design system, Turso БД)
 ⇔ SKUStorePriority (новая таблица в БД)
 
+### [Product Truth consumer cutover](product-truth-consumer-cutover.md)
+← [Product Truth Platform](product-catalog-architecture.md), [Дорожная карта донорского каталога](donor-catalog-execution-roadmap.md), [Product Truth operator runbook](product-truth-operator-runbook.md)
+→ [Bundle Factory](bundle-factory.md), [Procurement](procurement-module.md), [Economics](economics-profit-engine.md), [Listing Quality Stack](listing-quality-stack.md)
+⊂ Phase 0 contract preparation → owner-gated Phase 1 activation
+⇔ exact listing scope, authoritative manifest SHA, DB target fingerprint, set-based read parity, no legacy fallback
+
 ### [Bundle Factory](bundle-factory.md)
+**Канонический sourcing:** сначала [Product Truth Platform](product-catalog-architecture.md);
+если точного варианта нет — единая enrichment-очередь. Указанный ниже Perplexity research —
+legacy implementation detail, не разрешение строить параллельный каталог.
 ← Perplexity API (research стадия), OpenAI API (image gen + content backup), [Claude AI](claude-ai.md) (primary text generation), Higgsfield (image + video alternative), Cloudflare R2 (CDN storage для bundle images), GS1 GEPIR (UPC validation), [Amazon SP-API](amazon-sp-api.md) (Listings Items API + Brand Registry для Salutem Vita), [Walmart Marketplace API](walmart-api.md) (item listings), **Vladimir's Walmart Business account** (authoritative для Walmart store registry)
 → [Procurement](procurement-module.md) (новый bundle создаёт дефолтный SKUStorePriority с порядком магазинов), [Dashboard](dashboard.md) (Bundle Factory analytics card в Phase 2)
 ⊂ **Marketplace Rules KB** (`docs/marketplace-rules/` — 25 файлов: Amazon Gift Set Policy, browse-nodes-grocery, gtin-exemption-process, category-files, Walmart Multipack, eBay, TikTok), Salutem Vita + Starfit Brand Registry, SS Control Center (auth, design system, Turso БД)
@@ -150,6 +177,11 @@
 ### [Amazon SP-API](amazon-sp-api.md)
 → [Customer Hub](customer-hub.md), [Account Health](account-health.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md), [Adjustments Monitor](adjustments-monitor.md), [Call Center AI Agent](call-center-ai-agent.md) (order lookup + refund processing)
 ⇔ [Gmail API](gmail-api.md), [External API Auth](external-api-auth.md)
+
+### [Walmart Listing Integrity Platform](walmart-listing-integrity-platform.md)
+← [Product Truth Platform — OWNER CANON](product-catalog-architecture.md) (versioned read-contract — единственный источник product facts), [Walmart Marketplace API](walmart-api.md) (published status, item readback, feeds)
+→ [Walmart Growth roadmap](walmart-growth-roadmap.md) (UI-вкладка Listing Integrity в `/walmart-growth`), [Walmart new-SKU operator runbook](walmart-new-sku-operator-runbook.md) (соседний frozen-suite контур; integrity проверяет уже живые SKU)
+⇔ [Task Registry](task-registry.md) (owner-решение 2026-07-19: постоянный модуль, не одноразовый скрипт)
 
 ### [Walmart Marketplace API](walmart-api.md)
 → [Customer Hub](customer-hub.md) (orders + returns sync, заменяет screenshot schema), [Adjustments Monitor](adjustments-monitor.md) (recon reports), [Account Health](account-health.md) (Seller Performance), [Shipment Monitor](shipment-monitor.md) (Level 1.5 tracking), [Shipping Labels](shipping-labels.md) (verification endpoint), [Dashboard](dashboard.md), [Call Center AI Agent](call-center-ai-agent.md) (Walmart order lookup при звонке)
