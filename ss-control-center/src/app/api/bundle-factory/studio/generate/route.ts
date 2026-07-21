@@ -55,6 +55,19 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
   const rawMargin = Number(body.target_margin_pct);
   const targetMarginPct = Number.isFinite(rawMargin) && rawMargin > 0 ? rawMargin : null;
 
+  // Structured self-service knobs (owner 2026-07-21): exact flavors + listing
+  // count from the module UI. Optional — a bare prompt still works.
+  const flavorFilter = Array.isArray(body.flavors)
+    ? (body.flavors as unknown[])
+        .filter((f): f is string => typeof f === "string")
+        .map((f) => f.trim())
+        .filter((f) => f.length >= 2 && f.length <= 80)
+        .slice(0, 40)
+    : [];
+  const rawCount = Number(body.listing_count);
+  const listingCount =
+    Number.isInteger(rawCount) && rawCount >= 1 && rawCount <= 500 ? rawCount : null;
+
   const batchRequest = {
     studio_version: 2,
     source: "prompt",
@@ -66,6 +79,8 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
     image_quality: imageQuality,
     uncrustables_image_mode: uncrustablesImageMode,
     target_margin_pct: targetMarginPct,
+    ...(flavorFilter.length > 0 ? { flavor_filter: flavorFilter } : {}),
+    ...(listingCount != null ? { listing_count: listingCount } : {}),
   };
 
   const job = await prisma.generationJob.create({

@@ -41,11 +41,63 @@ const EXAMPLES = [
   "20 chocolate variety gift baskets",
 ];
 
+interface CatalogFlavor {
+  key: string;
+  label: string;
+  donors: number;
+  unit_price_cents: number | null;
+  pack_sizes: number[];
+  eligible_now: boolean;
+  costable: boolean;
+  missing: { upc: number; ingredients: number; image: number; first_party_offer: number };
+  art_approved: boolean | null;
+}
+
 export default function StudioStartPage() {
   const router = useRouter();
 
   const [prompt, setPrompt] = useState("");
   const [channel, setChannel] = useState("AMAZON_SALUTEM");
+
+  // Flavor picker: real catalog flavors for the typed theme. Selected labels
+  // are sent as an exact structured filter — the engine fails closed on any
+  // flavor it cannot satisfy instead of silently building a different set.
+  const [flavors, setFlavors] = useState<CatalogFlavor[] | null>(null);
+  const [flavorsLoading, setFlavorsLoading] = useState(false);
+  const [flavorsError, setFlavorsError] = useState<string | null>(null);
+  const [selectedFlavors, setSelectedFlavors] = useState<Set<string>>(new Set());
+  const [listingCount, setListingCount] = useState("");
+
+  async function loadFlavors() {
+    const theme = prompt.trim();
+    if (theme.length < 3) {
+      setFlavorsError("Type the brand/theme first (e.g. Uncrustables).");
+      return;
+    }
+    setFlavorsLoading(true);
+    setFlavorsError(null);
+    try {
+      const res = await fetch(`/api/bundle-factory/studio/flavors?theme=${encodeURIComponent(theme)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "Failed to load flavors");
+      setFlavors(data.flavors ?? []);
+      setSelectedFlavors(new Set());
+    } catch (e) {
+      setFlavorsError(e instanceof Error ? e.message : "Failed to load flavors");
+      setFlavors(null);
+    } finally {
+      setFlavorsLoading(false);
+    }
+  }
+
+  function toggleFlavor(key: string) {
+    setSelectedFlavors((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
 
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [houseBrand, setHouseBrand] = useState<HouseBrand>("Salutem Vita");
@@ -78,6 +130,16 @@ export default function StudioStartPage() {
           image_quality: imageQuality,
           uncrustables_image_mode: uncrustablesImageMode,
           target_margin_pct: targetMargin ? Number(targetMargin) : null,
+          ...(selectedFlavors.size > 0 && flavors
+            ? {
+                flavors: flavors
+                  .filter((f) => selectedFlavors.has(f.key))
+                  .map((f) => f.label),
+              }
+            : {}),
+          ...(listingCount && Number(listingCount) >= 1
+            ? { listing_count: Number(listingCount) }
+            : {}),
         }),
       });
       const data = await res.json();
@@ -136,6 +198,99 @@ export default function StudioStartPage() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* FLAVORS — real catalog flavors for the typed theme; pick exactly
+            which to build and how many listings. Optional: skipping it keeps
+            the classic prompt-only behaviour. */}
+        <div className="rounded-[12px] border border-rule bg-surface-tint/40 px-3.5 py-3.5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-[13px] font-semibold text-ink">Flavors from the catalog</div>
+              <p className="mt-0.5 text-[12px] leading-snug text-ink-3">
+                Load every flavor the reference catalog has for this theme, then pick
+                exactly which ones to build.
+              </p>
+            </div>
+            <Btn size="sm" variant="ghost" onClick={loadFlavors} disabled={flavorsLoading}>
+              {flavorsLoading ? "Loading…" : flavors ? "Reload" : "Show flavors"}
+            </Btn>
+          </div>
+
+          {flavorsError && (
+            <p className="mt-2 text-[12px] text-red-500">{flavorsError}</p>
+          )}
+
+          {flavors && flavors.length === 0 && (
+            <p className="mt-2 text-[12px] text-ink-3">
+              No flavors found for this theme in the reference catalog.
+            </p>
+          )}
+
+          {flavors && flavors.length > 0 && (
+            <>
+              <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
+                {flavors.map((f) => {
+                  const blocked = !f.eligible_now || f.art_approved === false;
+                  const notes: string[] = [];
+                  if (!f.costable) notes.push("no unit cost");
+                  if (f.missing.ingredients >= f.donors) notes.push("no ingredients");
+                  if (f.missing.upc >= f.donors) notes.push("no UPC");
+                  if (f.missing.first_party_offer >= f.donors) notes.push("no 1P offer");
+                  if (f.art_approved === false) notes.push("image art not approved");
+                  return (
+                    <label
+                      key={f.key}
+                      className={cn(
+                        "flex cursor-pointer items-start gap-2 rounded-[10px] border px-2.5 py-2 text-[12.5px]",
+                        selectedFlavors.has(f.key)
+                          ? "border-silver-line bg-bg-elev"
+                          : "border-rule bg-surface hover:bg-bg-elev/60",
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedFlavors.has(f.key)}
+                        onChange={() => toggleFlavor(f.key)}
+                        className="mt-0.5"
+                      />
+                      <span className="min-w-0">
+                        <span className={cn("block truncate font-medium", blocked ? "text-ink-3" : "text-ink")}>
+                          {f.label}
+                        </span>
+                        <span className="block text-[11px] leading-snug text-ink-4">
+                          {f.donors} donor{f.donors === 1 ? "" : "s"}
+                          {f.unit_price_cents != null
+                            ? ` · $${(f.unit_price_cents / 100).toFixed(2)}/unit`
+                            : ""}
+                          {f.pack_sizes.length > 0 ? ` · packs ${f.pack_sizes.join("/")}` : ""}
+                          {notes.length > 0 ? ` · ⚠ ${notes.join(", ")}` : " · ✓ ready"}
+                        </span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              <div className="mt-3 flex items-center gap-3">
+                <label className="text-[12.5px] font-medium text-ink-2">Listings to create</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={500}
+                  value={listingCount}
+                  onChange={(e) => setListingCount(e.target.value)}
+                  placeholder="auto"
+                  className="w-24 rounded-[10px] border border-rule bg-surface px-2.5 py-1.5 text-[13px] text-ink outline-none focus:border-silver-line"
+                />
+                <span className="text-[11.5px] text-ink-4">
+                  {selectedFlavors.size > 0
+                    ? `${selectedFlavors.size} flavor${selectedFlavors.size === 1 ? "" : "s"} selected — singles first, then mixes`
+                    : "no flavors selected — the engine uses all it finds"}
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* SELL ON — where it publishes. */}

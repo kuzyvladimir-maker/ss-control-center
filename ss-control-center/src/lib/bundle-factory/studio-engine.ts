@@ -154,7 +154,13 @@ async function sourceDonors(theme: string) {
       needsReview: false,
       bestPrice: { gt: 0 },
       upc: { not: null },
-      flavor: { not: null },
+      // NOTE deliberately NO `flavor: { not: null }` filter. The catalog's
+      // structured `flavor` column is sparsely backfilled (Uncrustables:
+      // 0/38 rows), while flavor identity downstream comes from
+      // dedupeDonorFlavors → canonicalFlavorKey(title) anyway. Requiring the
+      // column here silently starved the studio to zero donors for whole
+      // brands (owner hit this 2026-07-21). Rows whose title yields no flavor
+      // key are still dropped later — fail-closed per donor, not per brand.
       ingredients: { not: null },
       mainImageUrl: { not: null },
       offers: {
@@ -188,6 +194,31 @@ async function sourceDonors(theme: string) {
 }
 
 type SourcedDonor = Awaited<ReturnType<typeof sourceDonors>>[number];
+
+/** Match the owner's requested flavor names against the deduped catalog
+ *  entries. Pure so it is unit-testable. A request matches an entry when it
+ *  equals the key/label (case-insensitive) or one contains the other — the UI
+ *  sends exact labels, but hand-typed prompts stay usable. Fail-closed: the
+ *  caller must treat any `unmatched` as a hard error, never a silent skip. */
+export function matchFlavorFilter<T extends { key: string; label: string }>(
+  entries: T[],
+  requested: string[],
+): { matched: T[]; unmatched: string[] } {
+  const matched = new Map<string, T>();
+  const unmatched: string[] = [];
+  for (const raw of requested) {
+    const r = raw.trim().toLowerCase();
+    if (!r) continue;
+    const hit = entries.filter((e) => {
+      const key = e.key.toLowerCase();
+      const label = e.label.toLowerCase();
+      return key === r || label === r || label.includes(r) || key.includes(r);
+    });
+    if (hit.length === 0) unmatched.push(raw.trim());
+    for (const e of hit) matched.set(e.key, e);
+  }
+  return { matched: Array.from(matched.values()), unmatched };
+}
 
 // ── State (stored as JSON in GenerationJob.notes) ───────────────────────────
 
@@ -485,6 +516,18 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
   const prompt = typeof cfg.prompt === "string" ? cfg.prompt : "";
   const channel = typeof cfg.channel === "string" ? cfg.channel : "AMAZON_SALUTEM";
   const houseBrand = typeof cfg.house_brand === "string" ? cfg.house_brand : "Salutem Vita";
+  // Structured self-service knobs (owner 2026-07-21): the module UI passes the
+  // exact flavors and listing count instead of burying them in prose. Free-text
+  // prompts without these keep the parsePrompt behaviour unchanged.
+  const flavorFilter = Array.isArray(cfg.flavor_filter)
+    ? (cfg.flavor_filter as unknown[])
+        .filter((f): f is string => typeof f === "string" && f.trim().length > 0)
+        .map((f) => f.trim())
+    : [];
+  const listingCountOverride =
+    Number.isInteger(cfg.listing_count) && (cfg.listing_count as number) >= 1
+      ? Math.min(500, cfg.listing_count as number)
+      : null;
 
   const state = readState(job.notes, job.bundles_target);
 
@@ -497,6 +540,7 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
   // ── First tick: parse + source ──
   if (job.status === "PENDING" || !state.plan) {
     const parsed = parsePrompt(prompt);
+    if (listingCountOverride != null) parsed.count = listingCountOverride;
     const planningProgress: BatchProgress = {
       status: "RUNNING",
       phase: "sourcing",
@@ -568,15 +612,37 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
       return progress;
     }
 
+    // Owner-selected flavors (module UI). Fail-closed: a requested flavor the
+    // catalog can't satisfy stops the batch with the exact mismatch — silently
+    // building a subset would ship a different assortment than the owner asked.
+    let pool = costable;
+    if (flavorFilter.length > 0) {
+      const { matched, unmatched } = matchFlavorFilter(costable, flavorFilter);
+      if (unmatched.length > 0 || matched.length === 0) {
+        const available = costable.map((e) => e.label).join(" · ") || "none";
+        const progress: BatchProgress = {
+          status: "FAILED", phase: "error",
+          step: `Requested flavor(s) not found in the catalog: ${unmatched.join(", ") || "(no matches)"}. Available for "${parsed.theme}": ${available}`,
+          total: parsed.count, done: 0, failed: 0, done_flag: true,
+        };
+        await prisma.generationJob.update({
+          where: { id: batchId },
+          data: { status: "FAILED", bundles_target: parsed.count, notes: JSON.stringify({ progress }) },
+        });
+        return progress;
+      }
+      pool = matched;
+    }
+
     // Never switch a mixed donor pool into passthrough mode because one row
     // happened to match the allowlist. Every selected flavor must be eligible.
-    const ownBrand = costable.every((e) => isOwnBrandPassthrough(e.donor.brand));
-    const flavors = costable.map((e) => ({
+    const ownBrand = pool.every((e) => isOwnBrandPassthrough(e.donor.brand));
+    const flavors = pool.map((e) => ({
       id: e.donor.id,
       label: e.label,
       pack_sizes: e.pack_sizes,
     }));
-    const listingBrand = resolveListingBrand(costable[0]?.donor.brand, houseBrand);
+    const listingBrand = resolveListingBrand(pool[0]?.donor.brand, houseBrand);
     const existingDrafts = await prisma.bundleDraft.findMany({
       where: { brand: listingBrand },
       select: { draft_name: true },
