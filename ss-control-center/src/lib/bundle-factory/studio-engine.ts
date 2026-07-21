@@ -133,7 +133,7 @@ export function parsePrompt(prompt: string): { count: number; theme: string; pac
 
 // ── Sourcing ────────────────────────────────────────────────────────────────
 
-async function sourceDonors(theme: string) {
+export async function sourceDonors(theme: string) {
   const tokens = theme
     .split(/\s+/)
     .map((t) => t.trim())
@@ -195,29 +195,43 @@ async function sourceDonors(theme: string) {
 
 type SourcedDonor = Awaited<ReturnType<typeof sourceDonors>>[number];
 
-/** Match the owner's requested flavor names against the deduped catalog
- *  entries. Pure so it is unit-testable. A request matches an entry when it
- *  equals the key/label (case-insensitive) or one contains the other — the UI
- *  sends exact labels, but hand-typed prompts stay usable. Fail-closed: the
- *  caller must treat any `unmatched` as a hard error, never a silent skip. */
+/** Normalise a flavor name for identity comparison: lowercase, punctuation →
+ *  spaces, own-brand words stripped. Exported so the flavors endpoint and the
+ *  UI round-trip the exact same tokens the engine will match. */
+export function normalizeFlavorToken(s: string): string {
+  const flat = s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  return flat
+    .replace(/\b(smucker s|smuckers|smucker|uncrustables|uncrustable)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Match the owner's selected flavors against the deduped catalog entries.
+ *  EXACT normalized equality only (key or label) — review 2026-07-21 proved a
+ *  substring fallback silently over-matches ("Peanut Butter" swallowed 5
+ *  sibling flavors), which violates the fail-closed contract in the sneakier
+ *  direction (superset instead of subset). Output preserves catalog entry
+ *  order, so the produced plan is deterministic regardless of request order.
+ *  Callers must treat any `unmatched` as a hard error. */
 export function matchFlavorFilter<T extends { key: string; label: string }>(
   entries: T[],
   requested: string[],
 ): { matched: T[]; unmatched: string[] } {
-  const matched = new Map<string, T>();
-  const unmatched: string[] = [];
-  for (const raw of requested) {
-    const r = raw.trim().toLowerCase();
-    if (!r) continue;
-    const hit = entries.filter((e) => {
-      const key = e.key.toLowerCase();
-      const label = e.label.toLowerCase();
-      return key === r || label === r || label.includes(r) || key.includes(r);
+  const wanted = requested
+    .map((raw) => ({ raw: raw.trim(), norm: normalizeFlavorToken(raw) }))
+    .filter((w) => w.norm.length > 0);
+  const hit = new Set<number>();
+  const matched: T[] = [];
+  for (const e of entries) {
+    const names = [normalizeFlavorToken(e.key), normalizeFlavorToken(e.label)];
+    let take = false;
+    wanted.forEach((w, i) => {
+      if (names.includes(w.norm)) { hit.add(i); take = true; }
     });
-    if (hit.length === 0) unmatched.push(raw.trim());
-    for (const e of hit) matched.set(e.key, e);
+    if (take) matched.push(e);
   }
-  return { matched: Array.from(matched.values()), unmatched };
+  const unmatched = wanted.filter((_, i) => !hit.has(i)).map((w) => w.raw);
+  return { matched, unmatched };
 }
 
 // ── State (stored as JSON in GenerationJob.notes) ───────────────────────────
@@ -617,12 +631,22 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
     // building a subset would ship a different assortment than the owner asked.
     let pool = costable;
     if (flavorFilter.length > 0) {
-      const { matched, unmatched } = matchFlavorFilter(costable, flavorFilter);
-      if (unmatched.length > 0 || matched.length === 0) {
+      // Match against ALL deduped entries, not just costable ones — the flavors
+      // endpoint (and its UI) shows uncostable flavors too, and "not found in
+      // the catalog" would be a false statement about a flavor the same system
+      // just displayed. Costability is verified as its own step with its own
+      // message (review 2026-07-21).
+      const { matched, unmatched } = matchFlavorFilter(entries, flavorFilter);
+      const uncostableMatched = matched.filter((e) => !e.costable);
+      if (unmatched.length > 0 || matched.length === 0 || uncostableMatched.length > 0) {
         const available = costable.map((e) => e.label).join(" · ") || "none";
+        const parts: string[] = [];
+        if (unmatched.length > 0) parts.push(`not found in the catalog: ${unmatched.join(", ")}`);
+        if (uncostableMatched.length > 0) parts.push(`no per-unit cost yet (needs enrichment): ${uncostableMatched.map((e) => e.label).join(", ")}`);
+        if (parts.length === 0) parts.push("no matches");
         const progress: BatchProgress = {
           status: "FAILED", phase: "error",
-          step: `Requested flavor(s) not found in the catalog: ${unmatched.join(", ") || "(no matches)"}. Available for "${parsed.theme}": ${available}`,
+          step: `Requested flavor(s) ${parts.join("; ")}. Buildable now for "${parsed.theme}": ${available}`,
           total: parsed.count, done: 0, failed: 0, done_flag: true,
         };
         await prisma.generationJob.update({
@@ -632,6 +656,10 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
         return progress;
       }
       pool = matched;
+      // Coverage guarantee: singles are planned counts-outer/flavors-inner, so
+      // a count below the selection size would silently drop selected flavors
+      // (review 2026-07-21). Raise to at least one listing per selected flavor.
+      if (parsed.count < pool.length) parsed.count = pool.length;
     }
 
     // Never switch a mixed donor pool into passthrough mode because one row
@@ -691,7 +719,7 @@ export async function tickBatch(batchId: string): Promise<BatchProgress> {
     const uncosted = entries.length - costable.length;
     const progress: BatchProgress = {
       status: "RUNNING", phase: "sourcing",
-      step: `Found ${donors.length} verified products → ${costable.length} distinct flavors${uncosted ? ` (${uncosted} skipped: no unit cost)` : ""} — queued ${specs.length} new listings`,
+      step: `Found ${donors.length} verified products → ${costable.length} distinct flavors${uncosted ? ` (${uncosted} skipped: no unit cost)` : ""}${flavorFilter.length > 0 ? ` → ${pool.length} selected by flavor filter` : ""} — queued ${specs.length} new listings`,
       total: specs.length, done: 0, failed: 0, done_flag: false,
     };
     await prisma.$transaction(async (tx) => {

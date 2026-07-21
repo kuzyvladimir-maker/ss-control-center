@@ -56,17 +56,29 @@ export const POST = withErrorHandler("studio-generate", async (request: Request)
   const targetMarginPct = Number.isFinite(rawMargin) && rawMargin > 0 ? rawMargin : null;
 
   // Structured self-service knobs (owner 2026-07-21): exact flavors + listing
-  // count from the module UI. Optional — a bare prompt still works.
-  const flavorFilter = Array.isArray(body.flavors)
-    ? (body.flavors as unknown[])
-        .filter((f): f is string => typeof f === "string")
-        .map((f) => f.trim())
-        .filter((f) => f.length >= 2 && f.length <= 80)
-        .slice(0, 40)
-    : [];
-  const rawCount = Number(body.listing_count);
-  const listingCount =
-    Number.isInteger(rawCount) && rawCount >= 1 && rawCount <= 500 ? rawCount : null;
+  // count from the module UI. Optional — a bare prompt still works. Validation
+  // is strict: a malformed knob is a 400, never a silent drop that would make
+  // the engine build a different assortment than the owner submitted
+  // (review 2026-07-21).
+  let flavorFilter: string[] = [];
+  if (body.flavors !== undefined && body.flavors !== null) {
+    if (!Array.isArray(body.flavors)) return badRequest("flavors must be an array of flavor keys/labels.");
+    if (body.flavors.length > 40) return badRequest("Too many flavors selected (max 40).");
+    for (const f of body.flavors as unknown[]) {
+      if (typeof f !== "string" || f.trim().length < 2 || f.trim().length > 120) {
+        return badRequest("Each flavor must be a 2–120 character string.");
+      }
+    }
+    flavorFilter = (body.flavors as string[]).map((f) => f.trim());
+  }
+  let listingCount: number | null = null;
+  if (body.listing_count !== undefined && body.listing_count !== null) {
+    const rawCount = Number(body.listing_count);
+    if (!Number.isInteger(rawCount) || rawCount < 1 || rawCount > 500) {
+      return badRequest("listing_count must be a whole number from 1 to 500.");
+    }
+    listingCount = rawCount;
+  }
 
   const batchRequest = {
     studio_version: 2,

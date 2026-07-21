@@ -47,9 +47,8 @@ interface CatalogFlavor {
   donors: number;
   unit_price_cents: number | null;
   pack_sizes: number[];
-  eligible_now: boolean;
-  costable: boolean;
-  missing: { upc: number; ingredients: number; image: number; first_party_offer: number };
+  buildable: boolean;
+  missing: { upc: number; ingredients: number; image: number; first_party_offer: number; unit_cost: number };
   art_approved: boolean | null;
 }
 
@@ -85,6 +84,7 @@ export default function StudioStartPage() {
     } catch (e) {
       setFlavorsError(e instanceof Error ? e.message : "Failed to load flavors");
       setFlavors(null);
+      setSelectedFlavors(new Set());
     } finally {
       setFlavorsLoading(false);
     }
@@ -132,9 +132,11 @@ export default function StudioStartPage() {
           target_margin_pct: targetMargin ? Number(targetMargin) : null,
           ...(selectedFlavors.size > 0 && flavors
             ? {
+                // Keys are the engine's own identity tokens (same dedupe run) —
+                // labels proved ambiguous across pools (review 2026-07-21).
                 flavors: flavors
                   .filter((f) => selectedFlavors.has(f.key))
-                  .map((f) => f.label),
+                  .map((f) => f.key),
               }
             : {}),
           ...(listingCount && Number(listingCount) >= 1
@@ -231,18 +233,19 @@ export default function StudioStartPage() {
             <>
               <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
                 {flavors.map((f) => {
-                  const blocked = !f.eligible_now || f.art_approved === false;
+                  const blocked = !f.buildable;
                   const notes: string[] = [];
-                  if (!f.costable) notes.push("no unit cost");
-                  if (f.missing.ingredients >= f.donors) notes.push("no ingredients");
-                  if (f.missing.upc >= f.donors) notes.push("no UPC");
-                  if (f.missing.first_party_offer >= f.donors) notes.push("no 1P offer");
-                  if (f.art_approved === false) notes.push("image art not approved");
+                  if (f.missing.unit_cost > 0) notes.push("no unit cost");
+                  if (f.missing.ingredients >= f.donors && f.missing.ingredients > 0) notes.push("no ingredients");
+                  if (f.missing.upc >= f.donors && f.missing.upc > 0) notes.push("no UPC");
+                  if (f.missing.first_party_offer >= f.donors && f.missing.first_party_offer > 0) notes.push("no 1P offer");
+                  if (f.art_approved === false) notes.push("image art not approved yet");
                   return (
                     <label
                       key={f.key}
                       className={cn(
-                        "flex cursor-pointer items-start gap-2 rounded-[10px] border px-2.5 py-2 text-[12.5px]",
+                        "flex items-start gap-2 rounded-[10px] border px-2.5 py-2 text-[12.5px]",
+                        blocked ? "cursor-not-allowed opacity-70" : "cursor-pointer",
                         selectedFlavors.has(f.key)
                           ? "border-silver-line bg-bg-elev"
                           : "border-rule bg-surface hover:bg-bg-elev/60",
@@ -252,6 +255,7 @@ export default function StudioStartPage() {
                         type="checkbox"
                         checked={selectedFlavors.has(f.key)}
                         onChange={() => toggleFlavor(f.key)}
+                        disabled={blocked}
                         className="mt-0.5"
                       />
                       <span className="min-w-0">

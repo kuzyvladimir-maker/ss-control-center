@@ -1,28 +1,30 @@
 /**
- * GET /api/bundle-factory/studio/flavors?theme=uncrustables
+ * GET /api/bundle-factory/studio/flavors?theme=uncrustables[&image_mode=…]
  *
  * Flavor readiness map for the self-service studio (owner 2026-07-21: "я
- * регулирую и вкусы, и количество"). For the requested theme/brand it returns
- * every flavor the donor reference catalog knows, with an honest per-flavor
- * readiness verdict, so the operator picks flavors from REAL catalog data
- * instead of guessing prose the engine may not match:
+ * регулирую и вкусы, и количество").
  *
- *   - eligible_now  — at least one donor row passes the studio's fail-closed
- *                     sourcing gate (UPC + ingredients + image + 1P direct
- *                     offer + parseable per-unit cost);
- *   - missing       — which fields block the remaining donors (feeds the
- *                     enrichment queue decision — enrichment itself stays
- *                     owner-gated, this endpoint only reports);
- *   - art_approved  — own-brand only: whether the flavor has exact reviewed
- *                     package art in the authenticity registry (without it the
- *                     MAIN image stage hard-stops by design).
+ * IDENTITY CONTRACT (review 2026-07-21): the *selectable* list is computed
+ * from the ENGINE'S OWN sourcing + dedupe (`sourceDonors` → `dedupeDonorFlavors`
+ * over the identical strict pool), so the keys/labels shown here are exactly
+ * the entries `tickBatch` will match. Computing them over a different donor
+ * pool changes the shared brand vocabulary and silently shifts labels — that
+ * bug shipped once and is why this route now imports the engine's sourcing.
  *
- * Read-only; no writes, no paid calls.
+ * A second, RELAXED query reports flavors that exist in the catalog but are
+ * not buildable yet (missing ingredients/UPC/offer) — returned with
+ * `buildable: false` so the UI renders them disabled, and with the missing
+ * fields so the owner can order enrichment (enrichment itself stays
+ * owner-gated; this endpoint only reports). Read-only, no paid calls.
  */
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withErrorHandler } from "@/lib/bundle-factory/api-utils";
+import {
+  sourceDonors,
+  normalizeFlavorToken,
+} from "@/lib/bundle-factory/studio-engine";
 import {
   brandTokens,
   canonicalFlavorKey,
@@ -34,136 +36,163 @@ import { resolveReviewedUncrustablesPackageArt } from "@/lib/bundle-factory/audi
 
 export const dynamic = "force-dynamic";
 
+type PackMode = "retail-carton" | "individual-wrapper";
+
+function artApprovedFor(labels: Array<string | null | undefined>, packMode: PackMode): boolean {
+  for (const label of labels) {
+    if (!label) continue;
+    try {
+      if (
+        resolveReviewedUncrustablesPackageArt(
+          PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
+          label,
+          packMode,
+        ) != null
+      ) {
+        return true;
+      }
+    } catch {
+      /* registry invalid → treat as not approved; fail-closed */
+    }
+  }
+  return false;
+}
+
 export const GET = withErrorHandler("studio-flavors", async (request: Request) => {
   const url = new URL(request.url);
   const theme = (url.searchParams.get("theme") ?? "").trim();
-  if (theme.length < 3) {
-    return NextResponse.json({ error: "Pass ?theme= (a brand or product words, ≥3 chars)." }, { status: 400 });
+  // Same tokenization rule the engine's sourcing applies: only ≥3-char tokens
+  // count. "a b" passes a raw length check but sources nothing — reject early.
+  const tokens = theme.split(/\s+/).map((t) => t.trim()).filter((t) => t.length >= 3);
+  if (tokens.length === 0) {
+    return NextResponse.json(
+      { error: "Pass ?theme= with at least one word of 3+ characters (e.g. Uncrustables)." },
+      { status: 400 },
+    );
+  }
+  const packMode: PackMode =
+    url.searchParams.get("image_mode") === "individual_wraps"
+      ? "individual-wrapper"
+      : "retail-carton";
+
+  // ── 1. BUILDABLE set: the engine's exact pool, dedupe, keys and labels. ──
+  const strictDonors = await sourceDonors(theme);
+  const strictEntries = dedupeDonorFlavors(strictDonors);
+  const strictBySku = new Map(strictEntries.map((e) => [e.key, e]));
+  const strictNorms = new Set(
+    strictEntries.flatMap((e) => [normalizeFlavorToken(e.key), normalizeFlavorToken(e.label)]),
+  );
+
+  const buildableRows = strictEntries.map((e) => {
+    const ownBrandish =
+      isOwnBrandPassthrough(e.donor.brand) || textSaysUncrustables(e.donor.title);
+    return {
+      key: e.key,
+      label: e.label,
+      buildable: e.costable,
+      donors: 1, // refined from the per-key census right below
+      unit_price_cents: e.unit_price_cents,
+      pack_sizes: e.pack_sizes,
+      missing: { upc: 0, ingredients: 0, image: 0, first_party_offer: 0, unit_cost: e.costable ? 0 : 1 },
+      art_approved: ownBrandish ? artApprovedFor([e.label, e.donor.title], packMode) : null,
+    };
+  });
+
+  // Per-key donor counts for the strict pool (same grouping rule as dedupe).
+  {
+    const shared = brandTokens(...strictDonors.flatMap((d) => [d.brand, d.productLine]));
+    const counts = new Map<string, number>();
+    for (const d of strictDonors) {
+      const key =
+        (d.flavor ?? "").trim().toLowerCase() ||
+        canonicalFlavorKey(d.title, { brand: d.brand, productLine: d.productLine, extraTokens: shared });
+      if (!key) continue;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    for (const row of buildableRows) row.donors = counts.get(row.key) ?? 1;
   }
 
-  const tokens = theme
-    .split(/\s+/)
-    .map((t) => t.trim())
-    .filter((t) => t.length >= 3)
-    .slice(0, 4);
-  const or = tokens.flatMap((tok) => [
+  // ── 2. GAPS: catalog flavors not buildable yet (relaxed pool), for the
+  //       enrichment decision. Skip anything already covered by a buildable
+  //       entry (compare via the same normalizer the engine matches with). ──
+  const or = tokens.slice(0, 4).flatMap((tok) => [
     { brand: { contains: tok } },
     { title: { contains: tok } },
     { productLine: { contains: tok } },
   ]);
-
-  // Deliberately RELAXED versus the studio's sourcing gate: the whole point is
-  // to show flavors that exist in the catalog but are not yet buildable, with
-  // the reason. needsReview rows stay excluded — their identity is untrusted.
-  const donors = await prisma.donorProduct.findMany({
-    where: { ...(or.length > 0 ? { OR: or } : {}), needsReview: false },
+  const relaxedDonors = await prisma.donorProduct.findMany({
+    where: { OR: or, needsReview: false },
     orderBy: [{ confidence: "desc" }, { updatedAt: "desc" }],
     take: 400,
     select: {
-      id: true,
-      brand: true,
-      productLine: true,
-      flavor: true,
-      title: true,
-      upc: true,
-      ingredients: true,
-      bestPrice: true,
-      mainImageUrl: true,
+      id: true, brand: true, productLine: true, flavor: true, title: true,
+      upc: true, ingredients: true, bestPrice: true, mainImageUrl: true,
       offers: {
         where: { isFirstParty: true, via: "direct", price: { gt: 0 } },
         select: { price: true, packSizeSeen: true, pricePerUnit: true },
       },
     },
   });
-
-  if (donors.length === 0) {
-    return NextResponse.json({ theme, flavors: [], donors_total: 0 });
-  }
-
-  // Same grouping rule the engine uses (flavor column if present, else the
-  // canonical key derived from the title with the shared brand vocabulary).
-  const shared = brandTokens(...donors.flatMap((d) => [d.brand, d.productLine]));
-  const keyOf = (d: (typeof donors)[number]): string =>
-    (d.flavor ?? "").trim().toLowerCase() ||
-    canonicalFlavorKey(d.title, { brand: d.brand, productLine: d.productLine, extraTokens: shared });
-
-  const groups = new Map<string, Array<(typeof donors)[number]>>();
-  for (const d of donors) {
-    const key = keyOf(d);
-    if (!key) continue;
-    const g = groups.get(key);
-    if (g) g.push(d);
-    else groups.set(key, [d]);
-  }
-
-  // Labels / per-unit costs / pack sizes come from the same dedupe the engine
-  // runs, so what the UI shows is exactly what the engine will build from.
-  const entries = new Map(dedupeDonorFlavors(donors).map((e) => [e.key, e]));
-
-  const flavors = Array.from(groups.entries()).map(([key, group]) => {
-    const entry = entries.get(key) ?? null;
-    const eligibleDonors = group.filter(
-      (d) =>
-        d.upc != null &&
-        d.ingredients != null &&
-        d.mainImageUrl != null &&
-        (d.bestPrice ?? 0) > 0 &&
-        d.offers.length > 0,
-    );
-    const missing = {
-      upc: group.filter((d) => d.upc == null).length,
-      ingredients: group.filter((d) => d.ingredients == null).length,
-      image: group.filter((d) => d.mainImageUrl == null).length,
-      first_party_offer: group.filter((d) => d.offers.length === 0).length,
-    };
-    const ownBrandish = group.some(
-      (d) => isOwnBrandPassthrough(d.brand) || textSaysUncrustables(d.title),
-    );
-    let artApproved: boolean | null = null;
-    if (ownBrandish) {
-      artApproved = false;
-      try {
-        const label = entry?.label ?? group[0].title ?? key;
-        artApproved =
-          resolveReviewedUncrustablesPackageArt(
-            PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
-            label,
-            "retail-carton",
-          ) != null ||
-          (group[0].title != null &&
-            resolveReviewedUncrustablesPackageArt(
-              PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
-              group[0].title,
-              "retail-carton",
-            ) != null);
-      } catch {
-        artApproved = false;
-      }
+  const gapRows: typeof buildableRows = [];
+  if (relaxedDonors.length > 0) {
+    const shared = brandTokens(...relaxedDonors.flatMap((d) => [d.brand, d.productLine]));
+    const groups = new Map<string, Array<(typeof relaxedDonors)[number]>>();
+    for (const d of relaxedDonors) {
+      const key =
+        (d.flavor ?? "").trim().toLowerCase() ||
+        canonicalFlavorKey(d.title, { brand: d.brand, productLine: d.productLine, extraTokens: shared });
+      if (!key) continue;
+      const g = groups.get(key);
+      if (g) g.push(d);
+      else groups.set(key, [d]);
     }
-    const costable = entry?.costable ?? false;
-    return {
-      key,
-      label: entry?.label ?? key,
-      donors: group.length,
-      unit_price_cents: entry?.unit_price_cents ?? null,
-      pack_sizes: entry?.pack_sizes ?? [],
-      eligible_now: eligibleDonors.length > 0 && costable,
-      costable,
-      missing,
-      art_approved: artApproved,
-    };
-  });
+    const relaxedEntries = new Map(dedupeDonorFlavors(relaxedDonors).map((e) => [e.key, e]));
+    for (const [key, group] of groups) {
+      const entry = relaxedEntries.get(key) ?? null;
+      const label = entry?.label ?? key;
+      if (
+        strictNorms.has(normalizeFlavorToken(key)) ||
+        strictNorms.has(normalizeFlavorToken(label))
+      ) {
+        continue; // already selectable via the buildable set
+      }
+      const ownBrandish = group.some(
+        (d) => isOwnBrandPassthrough(d.brand) || textSaysUncrustables(d.title),
+      );
+      gapRows.push({
+        key,
+        label,
+        buildable: false,
+        donors: group.length,
+        unit_price_cents: entry?.unit_price_cents ?? null,
+        pack_sizes: entry?.pack_sizes ?? [],
+        missing: {
+          upc: group.filter((d) => d.upc == null).length,
+          ingredients: group.filter((d) => d.ingredients == null).length,
+          image: group.filter((d) => d.mainImageUrl == null).length,
+          first_party_offer: group.filter((d) => d.offers.length === 0).length,
+          unit_cost: entry?.costable ? 0 : 1,
+        },
+        art_approved: ownBrandish
+          ? artApprovedFor([label, group[0]?.title], packMode)
+          : null,
+      });
+    }
+  }
 
+  const flavors = [...buildableRows, ...gapRows];
   flavors.sort((a, b) => {
     const rank = (f: (typeof flavors)[number]) =>
-      (f.eligible_now ? 0 : 2) + (f.art_approved === false ? 1 : 0);
+      (f.buildable ? 0 : 2) + (f.art_approved === false ? 1 : 0);
     return rank(a) - rank(b) || b.donors - a.donors || a.label.localeCompare(b.label);
   });
 
   return NextResponse.json({
     theme,
-    donors_total: donors.length,
-    ready_now: flavors.filter((f) => f.eligible_now && f.art_approved !== false).length,
+    image_mode: packMode,
+    donors_strict: strictDonors.length,
+    donors_total: relaxedDonors.length,
+    ready_now: flavors.filter((f) => f.buildable && f.art_approved !== false).length,
     flavors,
   });
 });
