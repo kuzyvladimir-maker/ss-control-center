@@ -56,6 +56,8 @@ const EXACT_ARGV_ORDER = Object.freeze([
   "--out",
 ]);
 const CERTIFICATION_FILES = Object.freeze([
+  Object.freeze(["ABSENCE_PROBE_EVIDENCE_MODULE", "src/lib/walmart/item-report-reissue-absence-probe-evidence.ts"]),
+  Object.freeze(["ABSENCE_PROBE_EVIDENCE_TEST", "scripts/__tests__/capture-walmart-item-v6-absence-probe.test.mjs"]),
   Object.freeze(["FREEZER_BUILDER", "scripts/freeze-walmart-item-report-reissue-v2-engine.mjs"]),
   Object.freeze(["FREEZER_TEST", "scripts/__tests__/freeze-walmart-item-report-reissue-v2-engine.test.mjs"]),
   Object.freeze(["FROZEN_SEALER", SOURCE_ENTRYPOINT]),
@@ -63,12 +65,16 @@ const CERTIFICATION_FILES = Object.freeze([
   Object.freeze(["OWNER_DISPOSITION_MODULE", "src/lib/walmart/item-report-reissue-owner-disposition-v2.ts"]),
   Object.freeze(["OWNER_DISPOSITION_TEST", "src/lib/walmart/__tests__/item-report-reissue-owner-disposition-v2.test.mjs"]),
   Object.freeze(["SOURCE_EVIDENCE_MODULE", "src/lib/walmart/item-report-reissue-source-evidence-v2.ts"]),
+  Object.freeze(["SOURCE_EVIDENCE_RENEWAL_MODULE", "src/lib/walmart/item-report-reissue-source-evidence-renewal-v1.ts"]),
+  Object.freeze(["SOURCE_EVIDENCE_RENEWAL_TEST", "src/lib/walmart/__tests__/item-report-reissue-source-evidence-renewal-v1.test.mjs"]),
   Object.freeze(["SOURCE_EVIDENCE_TEST", "src/lib/walmart/__tests__/item-report-reissue-source-evidence-v2.test.mjs"]),
 ]);
 const REQUIRED_SOURCE_INPUTS = Object.freeze([
   SOURCE_ENTRYPOINT,
+  "src/lib/walmart/item-report-reissue-absence-probe-evidence.ts",
   "src/lib/walmart/item-report-reissue-owner-disposition-v2.ts",
   "src/lib/walmart/item-report-reissue-source-evidence-v2.ts",
+  "src/lib/walmart/item-report-reissue-source-evidence-renewal-v1.ts",
 ]);
 const BUILTIN_MODULES = new Set(
   builtinModules.map((value) => value.startsWith("node:") ? value : `node:${value}`),

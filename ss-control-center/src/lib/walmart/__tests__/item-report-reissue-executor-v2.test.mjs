@@ -107,14 +107,16 @@ async function engineArtifacts(captureRoot) {
     "src/lib/walmart/item-report-reissue-executor-v2.ts",
     "src/lib/walmart/item-report-reissue-owner-disposition-v2.ts",
     "src/lib/walmart/item-report-reissue-permit.ts",
+    "src/lib/walmart/item-report-reissue-absence-probe-evidence.ts",
     "src/lib/walmart/item-report-reissue-source-evidence-v2.ts",
+    "src/lib/walmart/item-report-reissue-source-evidence-renewal-v1.ts",
     "src/lib/walmart/item-report-capture-session.ts",
     "src/lib/walmart/item-report-published-source.ts",
   ].sort();
   const sourceInputs = sourcePaths.map((relativePath, index) => ({
     relative_path: relativePath,
     byte_length: index + 1,
-    sha256: String(index + 1).repeat(64),
+    sha256: (index + 1).toString(16).padStart(64, "0"),
   }));
   const certificationFiles = [
     ["CAPTURE_SESSION_TEST", "src/lib/walmart/__tests__/item-report-capture-session.test.mjs"],
@@ -130,8 +132,12 @@ async function engineArtifacts(captureRoot) {
     ["LEDGER_TEST", "src/lib/walmart/__tests__/item-report-reissue-consumption-ledger-v2.test.mjs"],
     ["OWNER_DISPOSITION_MODULE", "src/lib/walmart/item-report-reissue-owner-disposition-v2.ts"],
     ["OWNER_DISPOSITION_TEST", "src/lib/walmart/__tests__/item-report-reissue-owner-disposition-v2.test.mjs"],
+    ["ABSENCE_PROBE_EVIDENCE_MODULE", "src/lib/walmart/item-report-reissue-absence-probe-evidence.ts"],
+    ["ABSENCE_PROBE_EVIDENCE_TEST", "scripts/__tests__/capture-walmart-item-v6-absence-probe.test.mjs"],
     ["SOURCE_EVIDENCE_MODULE", "src/lib/walmart/item-report-reissue-source-evidence-v2.ts"],
     ["SOURCE_EVIDENCE_TEST", "src/lib/walmart/__tests__/item-report-reissue-source-evidence-v2.test.mjs"],
+    ["SOURCE_EVIDENCE_RENEWAL_MODULE", "src/lib/walmart/item-report-reissue-source-evidence-renewal-v1.ts"],
+    ["SOURCE_EVIDENCE_RENEWAL_TEST", "src/lib/walmart/__tests__/item-report-reissue-source-evidence-renewal-v1.test.mjs"],
   ].sort(([leftRole, leftPath], [rightRole, rightPath]) => (
     leftRole < rightRole ? -1 : leftRole > rightRole ? 1
       : leftPath < rightPath ? -1 : leftPath > rightPath ? 1 : 0

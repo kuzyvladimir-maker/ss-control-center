@@ -368,6 +368,11 @@ function fixture(options: {
   };
   options.contractMutator?.(contractBody);
   const contract = seal(contractBody) as unknown as WalmartListingSurgicalSchemaContract;
+  const targetImageCertificate = {
+    schema_version: "walmart-listing-repair-target-image-certificate/v1",
+    certificate_id: "image-certificate-1",
+  };
+  const targetImageCertificateBytes = bytes(targetImageCertificate);
   return {
     ...planData,
     schema,
@@ -377,8 +382,10 @@ function fixture(options: {
     getSpecRequestBytes,
     getSpecResponseBytes,
     liveItemResponseBytes,
+    targetImageCertificateBytes,
     request: {
       permit_id: "permit-1",
+      target_image_certificate_sha256: walmartListingSurgicalSha256(targetImageCertificate),
       seller_account_fingerprint_sha256: SELLER,
       request_correlation_id_sha256: H("9"),
       prepared_at: "2026-07-20T12:05:00.000Z",
@@ -393,6 +400,7 @@ function build(value = fixture()) {
     schema_contract: value.contract,
     get_spec_receipt: value.receipt,
     live_item_receipt: value.liveReceipt,
+    target_image_certificate_bytes: value.targetImageCertificateBytes,
     get_spec_request_bytes: value.getSpecRequestBytes,
     get_spec_response_bytes: value.getSpecResponseBytes,
     live_item_response_bytes: value.liveItemResponseBytes,
@@ -401,7 +409,8 @@ function build(value = fixture()) {
 }
 
 test("builds one canonical native MP_MAINTENANCE request and never writes the full QA target", () => {
-  const result = build();
+  const source = fixture();
+  const result = build(source);
   assert.deepEqual(result.payload.MPItemFeedHeader, {
     businessUnit: "WALMART_US",
     locale: "en",
@@ -429,6 +438,27 @@ test("builds one canonical native MP_MAINTENANCE request and never writes the fu
   assert.equal(result.validation.status, "PASSED");
   assert.deepEqual(result.validation.changed_fields, ["title", "attributes", "main"]);
   assert.equal(result.validation.full_target_written, false);
+  assert.deepEqual(Object.keys(result.qualification_support_artifacts).sort(), [
+    "surgical-get-spec-receipt.json",
+    "surgical-get-spec-request.bin",
+    "surgical-get-spec-response.bin",
+    "surgical-live-item-receipt.json",
+    "surgical-live-item-response.bin",
+    "surgical-schema-contract.json",
+    "target-image-certificate.json",
+  ]);
+  assert.deepEqual(
+    Buffer.from(result.qualification_support_artifacts["surgical-get-spec-request.bin"]),
+    Buffer.from(source.getSpecRequestBytes),
+  );
+  assert.deepEqual(
+    Buffer.from(result.qualification_support_artifacts["surgical-get-spec-response.bin"]),
+    Buffer.from(source.getSpecResponseBytes),
+  );
+  assert.deepEqual(
+    Buffer.from(result.qualification_support_artifacts["surgical-live-item-response.bin"]),
+    Buffer.from(source.liveItemResponseBytes),
+  );
 });
 
 test("manifest freezes pre-sign timing, raw spec, identifier, and exact transport semantics", () => {
@@ -469,6 +499,17 @@ test("manifest freezes pre-sign timing, raw spec, identifier, and exact transpor
     productId: "012345678905",
   });
   assert.equal(manifest.request_payload_sha256, result.payload_sha256);
+  assert.equal(
+    manifest.target_image_certificate_sha256,
+    walmartListingSurgicalSha256({
+      schema_version: "walmart-listing-repair-target-image-certificate/v1",
+      certificate_id: "image-certificate-1",
+    }),
+  );
+  assert.equal(
+    result.validation.target_image_certificate_sha256,
+    manifest.target_image_certificate_sha256,
+  );
   assert.equal(result.validation.exact_listing_count, 1);
   assert.equal(result.validation.feed_type, "MP_MAINTENANCE");
   assert.equal(result.request_manifest_sha256, walmartListingSurgicalSha256(manifest));
@@ -748,6 +789,7 @@ test("exact-byte verifier rejects payload or manifest drift", () => {
     schema_contract: value.contract,
     get_spec_receipt: value.receipt,
     live_item_receipt: value.liveReceipt,
+    target_image_certificate_bytes: value.targetImageCertificateBytes,
     get_spec_request_bytes: value.getSpecRequestBytes,
     get_spec_response_bytes: value.getSpecResponseBytes,
     live_item_response_bytes: value.liveItemResponseBytes,

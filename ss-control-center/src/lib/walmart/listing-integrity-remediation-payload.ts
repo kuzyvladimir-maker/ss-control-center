@@ -201,6 +201,7 @@ export interface WalmartListingSurgicalBaselineReference {
 
 export interface WalmartListingSurgicalRequestInput {
   permit_id: string;
+  target_image_certificate_sha256: string;
   seller_account_fingerprint_sha256: string;
   request_correlation_id_sha256: string;
   prepared_at: string;
@@ -229,6 +230,7 @@ export interface WalmartListingSurgicalRequestManifest {
   plan_id: string;
   plan_body_sha256: string;
   target_sha256: string;
+  target_image_certificate_sha256: string;
   permit_id: string;
   apply_engine_release_sha256: string;
   schema_contract_body_sha256: string;
@@ -276,6 +278,7 @@ export interface WalmartListingSurgicalValidation {
   get_spec_request_payload_sha256: string;
   get_spec_response_payload_sha256: string;
   get_spec_schema_sha256: string;
+  target_image_certificate_sha256: string;
   live_item_response_payload_sha256: string;
   live_item_receipt_body_sha256: string;
   spec_version: string;
@@ -303,6 +306,20 @@ export interface BuiltWalmartListingSurgicalRequest {
   request_manifest_json: string;
   request_manifest_bytes: Uint8Array;
   request_manifest_sha256: string;
+  /**
+   * Exact supporting bytes needed to rebuild this request during independent
+   * post-write qualification. They are persisted in the same immutable
+   * PREPARED_REQUEST custody commit as the signed manifest/payload.
+   */
+  qualification_support_artifacts: Readonly<{
+    "surgical-schema-contract.json": Uint8Array;
+    "surgical-get-spec-receipt.json": Uint8Array;
+    "surgical-live-item-receipt.json": Uint8Array;
+    "surgical-get-spec-request.bin": Uint8Array;
+    "surgical-get-spec-response.bin": Uint8Array;
+    "surgical-live-item-response.bin": Uint8Array;
+    "target-image-certificate.json": Uint8Array;
+  }>;
   validation: Readonly<WalmartListingSurgicalValidation>;
 }
 
@@ -1217,6 +1234,7 @@ export function buildWalmartListingSurgicalRequest(input: {
   schema_contract: WalmartListingSurgicalSchemaContract;
   get_spec_receipt: WalmartListingSurgicalGetSpecReceipt;
   live_item_receipt: WalmartListingSurgicalLiveItemReceipt;
+  target_image_certificate_bytes: Uint8Array;
   get_spec_request_bytes: Uint8Array;
   get_spec_response_bytes: Uint8Array;
   live_item_response_bytes: Uint8Array;
@@ -1237,6 +1255,17 @@ export function buildWalmartListingSurgicalRequest(input: {
     request: input.request,
   });
   const preparedAt = instant(input.request.prepared_at, "request prepared_at");
+  const targetImageCertificateBytes = exactBytes(
+    input.target_image_certificate_bytes,
+    "target image certificate bytes",
+  );
+  const targetImageCertificateSha = digest(
+    input.request.target_image_certificate_sha256,
+    "target image certificate SHA",
+  );
+  if (bytesSha256(targetImageCertificateBytes) !== targetImageCertificateSha) {
+    fail("target image certificate bytes differ from request certificate SHA");
+  }
   const sellerFingerprint = digest(
     input.request.seller_account_fingerprint_sha256,
     "seller account fingerprint",
@@ -1303,6 +1332,7 @@ export function buildWalmartListingSurgicalRequest(input: {
     plan_id: input.plan.plan_id,
     plan_body_sha256: input.plan.body_sha256,
     target_sha256: input.plan.target.target_sha256,
+    target_image_certificate_sha256: targetImageCertificateSha,
     permit_id: safeId(input.request.permit_id, "permit_id"),
     apply_engine_release_sha256: input.plan.apply_engine_release_sha256,
     schema_contract_body_sha256: contract.body_sha256,
@@ -1356,6 +1386,7 @@ export function buildWalmartListingSurgicalRequest(input: {
     get_spec_request_payload_sha256: receipt.request_payload_sha256,
     get_spec_response_payload_sha256: receipt.response_payload_sha256,
     get_spec_schema_sha256: contract.spec.schema_sha256,
+    target_image_certificate_sha256: manifest.target_image_certificate_sha256,
     live_item_response_payload_sha256: liveReceipt.response_payload_sha256,
     live_item_receipt_body_sha256: liveReceipt.body_sha256,
     spec_version: contract.spec.version,
@@ -1381,6 +1412,15 @@ export function buildWalmartListingSurgicalRequest(input: {
     request_manifest_json: manifestArtifact.json,
     request_manifest_bytes: manifestArtifact.bytes,
     request_manifest_sha256: manifestArtifact.sha256,
+    qualification_support_artifacts: Object.freeze({
+      "surgical-schema-contract.json": canonicalBytes(contract).bytes,
+      "surgical-get-spec-receipt.json": canonicalBytes(receipt).bytes,
+      "surgical-live-item-receipt.json": canonicalBytes(liveReceipt).bytes,
+      "surgical-get-spec-request.bin": Buffer.from(input.get_spec_request_bytes),
+      "surgical-get-spec-response.bin": Buffer.from(input.get_spec_response_bytes),
+      "surgical-live-item-response.bin": Buffer.from(input.live_item_response_bytes),
+      "target-image-certificate.json": targetImageCertificateBytes,
+    }),
     validation: deepFreeze(validation),
   };
 }
@@ -1396,6 +1436,7 @@ export function verifyWalmartListingSurgicalRequestBytes(input: {
   schema_contract: WalmartListingSurgicalSchemaContract;
   get_spec_receipt: WalmartListingSurgicalGetSpecReceipt;
   live_item_receipt: WalmartListingSurgicalLiveItemReceipt;
+  target_image_certificate_bytes: Uint8Array;
   get_spec_request_bytes: Uint8Array;
   get_spec_response_bytes: Uint8Array;
   live_item_response_bytes: Uint8Array;

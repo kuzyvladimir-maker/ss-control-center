@@ -29,6 +29,12 @@ import {
   buildWalmartItemReportReissueReplacementPlanV2,
 } from "../src/lib/walmart/item-report-reissue-owner-disposition-v2.ts";
 import {
+  WALMART_ITEM_V6_ABSENCE_PROBE_ARTIFACT_NAMES,
+} from "../src/lib/walmart/item-report-reissue-absence-probe-evidence.ts";
+import {
+  buildWalmartItemReportReissueSourceEvidenceRenewalV1,
+} from "../src/lib/walmart/item-report-reissue-source-evidence-renewal-v1.ts";
+import {
   canonicalWalmartItemReportJson,
   walmartItemReportUtf8Sha256,
 } from "../src/lib/walmart/item-report-published-source.ts";
@@ -285,6 +291,51 @@ export async function authorWalmartItemReportReissueReplacementPlanV2(input, inj
   };
 }
 
+export async function authorWalmartItemReportReissueRenewalEvidenceV1(input) {
+  const baselinePath = exactAbsolutePath(input.baseline_source_evidence, "baseline source evidence");
+  const probeRoot = exactAbsolutePath(input.fresh_probe_root, "fresh probe root");
+  const probeInfo = await lstat(probeRoot).catch(() => fail(
+    "ARTIFACT_NOT_FOUND",
+    "fresh probe root does not exist",
+  ));
+  if (!probeInfo.isDirectory() || probeInfo.isSymbolicLink() || (probeInfo.mode & 0o077) !== 0
+    || (probeInfo.mode & 0o500) !== 0o500 || await realpath(probeRoot) !== probeRoot) {
+    fail("UNSAFE_ARTIFACT", "fresh probe root must be a private real directory (0700)");
+  }
+  const baselineBytes = await readStableFile(baselinePath, "baseline source evidence");
+  const freshProbeArtifacts = {};
+  for (const name of WALMART_ITEM_V6_ABSENCE_PROBE_ARTIFACT_NAMES) {
+    freshProbeArtifacts[name] = await readStableFile(
+      path.join(probeRoot, name),
+      `fresh probe ${name}`,
+      2 * 1024 * 1024,
+    );
+  }
+  const release = buildWalmartItemReportReissueSourceEvidenceRenewalV1({
+    release_id: exactString(input.release_id, "release_id", 200),
+    reviewed_at: exactInstant(input.reviewed_at, "reviewed_at"),
+    baseline_source_evidence_bytes: baselineBytes,
+    fresh_probe_artifacts: freshProbeArtifacts,
+    expected_probe_id: exactString(input.probe_id, "probe_id", 180),
+  });
+  const artifact = await writeImmutableCanonical(input.out, release);
+  return {
+    schema_version: WALMART_ITEM_REPORT_REISSUE_V2_AUTHORITY_SCHEMA,
+    command: "renewal-evidence",
+    artifact,
+    release_sha256: release.release_sha256,
+    body_sha256: release.body_sha256,
+    baseline_artifact_sha256: release.body.baseline.artifact_sha256,
+    fresh_probe_evidence_family_sha256: release.body.fresh_probe.evidence_family_sha256,
+    fresh_probe_result_artifact_sha256: release.body.fresh_probe.result_artifact_sha256,
+    evidence_fresh_until: release.body.fresh_probe.fresh_until,
+    network_calls: 0,
+    database_calls: 0,
+    model_calls: 0,
+    walmart_content_writes: 0,
+  };
+}
+
 export async function authorWalmartItemReportReissueDispositionRequestV2(input) {
   const [sourceBytes, replacement, ledger] = await Promise.all([
     readStableFile(input.source_evidence, "source evidence"),
@@ -412,7 +463,12 @@ function required(values, names) {
 function help() {
   return {
     schema_version: WALMART_ITEM_REPORT_REISSUE_V2_AUTHORITY_SCHEMA,
-    commands: ["replacement-plan", "disposition-request", "disposition-assemble"],
+    commands: [
+      "renewal-evidence",
+      "replacement-plan",
+      "disposition-request",
+      "disposition-assemble",
+    ],
     live_network_available: false,
     note: "Detached Ed25519 signing occurs outside this repository and outside Claude runtime.",
   };
@@ -421,6 +477,13 @@ function help() {
 export async function runWalmartItemReportReissueV2AuthorityCli(argv) {
   const { command, values } = parseArgs(argv);
   if (command === "help" || command === "--help") return help();
+  if (command === "renewal-evidence") {
+    required(values, [
+      "baseline_source_evidence", "fresh_probe_root", "probe_id", "release_id",
+      "reviewed_at", "out",
+    ]);
+    return authorWalmartItemReportReissueRenewalEvidenceV1(values);
+  }
   if (command === "replacement-plan") {
     required(values, ["session_name", "created_at", "account_fingerprint_sha256", "out"]);
     return authorWalmartItemReportReissueReplacementPlanV2(values);
@@ -441,7 +504,7 @@ export async function runWalmartItemReportReissueV2AuthorityCli(argv) {
     ]);
     return authorWalmartItemReportReissueDispositionV2(values);
   }
-  fail("INVALID_CLI", "command must be replacement-plan, disposition-request, disposition-assemble, or help");
+  fail("INVALID_CLI", "command must be renewal-evidence, replacement-plan, disposition-request, disposition-assemble, or help");
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {

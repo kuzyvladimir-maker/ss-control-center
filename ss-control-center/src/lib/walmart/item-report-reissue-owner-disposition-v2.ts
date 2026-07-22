@@ -28,6 +28,16 @@ import {
   parseWalmartItemReportReissueSourceEvidenceV2Bytes,
   type WalmartItemReportReissueSourceEvidenceV2,
 } from "./item-report-reissue-source-evidence-v2.ts";
+import {
+  WALMART_ITEM_REPORT_REISSUE_SOURCE_EVIDENCE_RENEWAL_V1_SCHEMA,
+  parseWalmartItemReportReissueSourceEvidenceRenewalV1Bytes,
+  walmartItemReportReissueSourceEvidenceRenewalV1BaselineRelease,
+  walmartItemReportReissueSourceEvidenceRenewalV1ProbeInventory,
+  type WalmartItemReportReissueSourceEvidenceRenewalV1,
+} from "./item-report-reissue-source-evidence-renewal-v1.ts";
+import {
+  WALMART_ITEM_V6_ABSENCE_PROBE_ARTIFACT_NAMES,
+} from "./item-report-reissue-absence-probe-evidence.ts";
 
 export const WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_SCHEMA =
   "walmart-item-report-reissue-owner-disposition/v2" as const;
@@ -488,6 +498,34 @@ function parseSourceArtifactInventory(
   return parsed;
 }
 
+function parseCurrentExactProbeInventory(
+  value: unknown,
+): WalmartItemReportReissueSourceArtifactBindingV2[] {
+  const legacy = WALMART_ITEM_REPORT_REISSUE_SOURCE_EVIDENCE_V2_EXPECTED_PROBE_FILES
+    .filter((entry) => entry.path.startsWith("exact-v6/"));
+  if (Array.isArray(value) && exactJsonEqual(value, legacy)) {
+    return parseSourceArtifactInventory(value, legacy, "source_evidence.exact_probe_artifacts");
+  }
+  if (!Array.isArray(value)
+    || value.length !== WALMART_ITEM_V6_ABSENCE_PROBE_ARTIFACT_NAMES.length) {
+    fail("INVALID_DISPOSITION", "source_evidence exact probe artifact count is invalid");
+  }
+  return value.map((entry, index) => {
+    const raw = record(entry, `source_evidence.exact_probe_artifacts[${index}]`);
+    exactKeys(raw, ["byte_length", "path", "sha256"],
+      `source_evidence.exact_probe_artifacts[${index}]`);
+    if (raw.path !== WALMART_ITEM_V6_ABSENCE_PROBE_ARTIFACT_NAMES[index]
+      || !Number.isSafeInteger(raw.byte_length) || Number(raw.byte_length) < 1) {
+      fail("INVALID_DISPOSITION", "source_evidence renewal probe inventory is invalid");
+    }
+    return {
+      path: String(raw.path),
+      byte_length: Number(raw.byte_length),
+      sha256: digest(raw.sha256, `source_evidence exact artifact ${index} SHA-256`),
+    };
+  });
+}
+
 function parseSourceEvidenceBinding(
   value: unknown,
 ): WalmartItemReportReissueSourceEvidenceBindingV2 {
@@ -508,9 +546,6 @@ function parseSourceEvidenceBinding(
     "create_manifest_sha256", "manual_review_sha256", "request_reserved_sha256",
     "session_authority_sha256",
   ], "source_evidence.original_four");
-  const expectedExact =
-    WALMART_ITEM_REPORT_REISSUE_SOURCE_EVIDENCE_V2_EXPECTED_PROBE_FILES
-      .filter((entry) => entry.path.startsWith("exact-v6/"));
   const expectedBroad =
     WALMART_ITEM_REPORT_REISSUE_SOURCE_EVIDENCE_V2_EXPECTED_PROBE_FILES
       .filter((entry) => entry.path.startsWith("broad-48h/"));
@@ -538,10 +573,8 @@ function parseSourceEvidenceBinding(
       raw.exact_probe_fresh_until,
       "source_evidence.exact_probe_fresh_until",
     ),
-    exact_probe_artifacts: parseSourceArtifactInventory(
+    exact_probe_artifacts: parseCurrentExactProbeInventory(
       raw.exact_probe_artifacts,
-      expectedExact,
-      "source_evidence.exact_probe_artifacts",
     ),
     broad_probe_artifacts: parseSourceArtifactInventory(
       raw.broad_probe_artifacts,
@@ -623,27 +656,91 @@ function parsePriorIncidentBinding(
   };
 }
 
-function sourceEvidenceBinding(
-  release: WalmartItemReportReissueSourceEvidenceV2,
-  artifactSha256: string,
-): WalmartItemReportReissueSourceEvidenceBindingV2 {
+interface WalmartItemReportReissueCurrentSourceEvidence {
+  release_sha256: string;
+  body_sha256: string;
+  release_id: string;
+  account_scope: JsonRecord;
+  original_incident: JsonRecord;
+  exact_probe_observed_at: string;
+  exact_probe_fresh_until: string;
+  exact_probe_artifacts: WalmartItemReportReissueSourceArtifactBindingV2[];
+  baseline: WalmartItemReportReissueSourceEvidenceV2;
+}
+
+function parseWalmartItemReportReissueCurrentSourceEvidenceBytes(
+  bytes: Uint8Array,
+): WalmartItemReportReissueCurrentSourceEvidence {
+  let schemaVersion: unknown;
+  try {
+    schemaVersion = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes))
+      ?.schema_version;
+  } catch {
+    fail("INVALID_DISPOSITION", "source evidence bytes are not UTF-8 JSON");
+  }
+  if (schemaVersion === WALMART_ITEM_REPORT_REISSUE_SOURCE_EVIDENCE_RENEWAL_V1_SCHEMA) {
+    const renewal: WalmartItemReportReissueSourceEvidenceRenewalV1 =
+      parseWalmartItemReportReissueSourceEvidenceRenewalV1Bytes(bytes);
+    const baseline = walmartItemReportReissueSourceEvidenceRenewalV1BaselineRelease(renewal);
+    const fresh = renewal.body.fresh_probe;
+    return {
+      release_sha256: renewal.release_sha256,
+      body_sha256: renewal.body_sha256,
+      release_id: safeIdentifier(renewal.body.release_id, "renewal source release_id"),
+      account_scope: record(fresh.account_scope, "renewal fresh account_scope"),
+      original_incident: record(
+        baseline.body.original_ambiguous_post,
+        "renewal baseline original incident",
+      ),
+      exact_probe_observed_at: strictInstant(
+        fresh.observed_at,
+        "renewal exact probe observed_at",
+      ),
+      exact_probe_fresh_until: strictInstant(
+        fresh.fresh_until,
+        "renewal exact probe fresh_until",
+      ),
+      exact_probe_artifacts:
+        walmartItemReportReissueSourceEvidenceRenewalV1ProbeInventory(renewal)
+          .map((entry) => ({ ...entry })),
+      baseline,
+    };
+  }
+  const release = parseWalmartItemReportReissueSourceEvidenceV2Bytes(bytes);
   const exact = record(release.body.exact_probe, "source release exact_probe");
-  const original = record(
-    release.body.original_ambiguous_post,
-    "source release original_ambiguous_post",
-  );
-  return parseSourceEvidenceBinding({
-    artifact_sha256: artifactSha256,
+  return {
     release_sha256: release.release_sha256,
     body_sha256: release.body_sha256,
     release_id: safeIdentifier(release.body.release_id, "source release release_id"),
-    verdict: "NO_API_VISIBLE_V6_REQUEST_IN_EXACT_QUERY_WINDOW",
+    account_scope: record(release.body.account_scope, "source release account_scope"),
+    original_incident: record(
+      release.body.original_ambiguous_post,
+      "source release original incident",
+    ),
     exact_probe_observed_at: strictInstant(exact.observed_at, "exact probe observed_at"),
     exact_probe_fresh_until: strictInstant(exact.fresh_until, "exact probe fresh_until"),
     exact_probe_artifacts:
       WALMART_ITEM_REPORT_REISSUE_SOURCE_EVIDENCE_V2_EXPECTED_PROBE_FILES
         .filter((entry) => entry.path.startsWith("exact-v6/"))
         .map((entry) => ({ ...entry })),
+    baseline: release,
+  };
+}
+
+function sourceEvidenceBinding(
+  evidence: WalmartItemReportReissueCurrentSourceEvidence,
+  artifactSha256: string,
+): WalmartItemReportReissueSourceEvidenceBindingV2 {
+  const original = evidence.original_incident;
+  return parseSourceEvidenceBinding({
+    artifact_sha256: artifactSha256,
+    release_sha256: evidence.release_sha256,
+    body_sha256: evidence.body_sha256,
+    release_id: evidence.release_id,
+    verdict: "NO_API_VISIBLE_V6_REQUEST_IN_EXACT_QUERY_WINDOW",
+    exact_probe_observed_at: evidence.exact_probe_observed_at,
+    exact_probe_fresh_until: evidence.exact_probe_fresh_until,
+    exact_probe_artifacts: evidence.exact_probe_artifacts,
     broad_probe_artifacts:
       WALMART_ITEM_REPORT_REISSUE_SOURCE_EVIDENCE_V2_EXPECTED_PROBE_FILES
         .filter((entry) => entry.path.startsWith("broad-48h/"))
@@ -845,13 +942,12 @@ export function buildWalmartItemReportReissueOwnerDispositionV2Body(input: {
   if (sha256Bytes(input.source_evidence_bytes) !== artifactSha) {
     fail("SOURCE_EVIDENCE_ARTIFACT_HASH_MISMATCH", "source-evidence exact bytes differ");
   }
-  const release = parseWalmartItemReportReissueSourceEvidenceV2Bytes(
+  const evidence = parseWalmartItemReportReissueCurrentSourceEvidenceBytes(
     input.source_evidence_bytes,
   );
-  const sourceBinding = sourceEvidenceBinding(release, artifactSha);
-  const sourceBody = release.body;
-  const sourceAccount = record(sourceBody.account_scope, "source release account_scope");
-  const original = record(sourceBody.original_ambiguous_post, "source release original incident");
+  const sourceBinding = sourceEvidenceBinding(evidence, artifactSha);
+  const sourceAccount = evidence.account_scope;
+  const original = evidence.original_incident;
   const replacement = parseReplacement(input.replacement);
   const accountScope = parseAccountScope({
     channel: sourceAccount.channel,
@@ -869,8 +965,7 @@ export function buildWalmartItemReportReissueOwnerDispositionV2Body(input: {
     || replacement.create_request_manifest_sha256 === original.create_manifest_sha256) {
     fail("INVALID_REPLACEMENT", "replacement is not distinct or account-bound");
   }
-  const exactProbe = record(sourceBody.exact_probe, "source release exact_probe");
-  const evidenceFreshUntil = strictInstant(exactProbe.fresh_until, "evidence fresh_until");
+  const evidenceFreshUntil = evidence.exact_probe_fresh_until;
   const signedBody = {
     disposition_id: input.disposition_id,
     action: WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_ACTION,
@@ -880,7 +975,7 @@ export function buildWalmartItemReportReissueOwnerDispositionV2Body(input: {
     engine_release_sha256: input.engine_release_sha256,
     source_evidence: sourceBinding,
     account_scope: accountScope,
-    prior_incident: priorIncidentBinding(release),
+    prior_incident: priorIncidentBinding(evidence.baseline),
     replacement,
     consumption_ledger: input.consumption_ledger,
     issued_at: input.issued_at,
@@ -979,13 +1074,10 @@ function parseVerificationBindings(
   if (sha256Bytes(options.expected_source_evidence_bytes) !== artifactSha) {
     fail("SOURCE_EVIDENCE_ARTIFACT_HASH_MISMATCH", "expected source-evidence bytes differ");
   }
-  const release = parseWalmartItemReportReissueSourceEvidenceV2Bytes(
+  const evidence = parseWalmartItemReportReissueCurrentSourceEvidenceBytes(
     options.expected_source_evidence_bytes,
   );
-  const sourceAccount = record(
-    release.body.account_scope,
-    "expected source release account_scope",
-  );
+  const sourceAccount = evidence.account_scope;
   const accountScope = parseAccountScope({
     channel: sourceAccount.channel,
     store_index: sourceAccount.store_index,
@@ -1004,13 +1096,10 @@ function parseVerificationBindings(
       options.expected_engine_release_sha256,
       "expected_engine_release_sha256",
     ),
-    source_evidence: sourceEvidenceBinding(release, artifactSha),
+    source_evidence: sourceEvidenceBinding(evidence, artifactSha),
     source_account_scope: accountScope,
-    prior_incident: priorIncidentBinding(release),
-    original_incident: record(
-      release.body.original_ambiguous_post,
-      "expected source release original incident",
-    ),
+    prior_incident: priorIncidentBinding(evidence.baseline),
+    original_incident: evidence.original_incident,
     replacement: parseReplacement(options.expected_replacement),
     consumption_ledger: parseLedgerBinding(options.expected_consumption_ledger),
     now: options.now,

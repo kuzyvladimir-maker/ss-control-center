@@ -31,9 +31,16 @@ import {
   type WalmartListingRepairSequenceSignedBody,
 } from "../listing-integrity-remediation-authority.ts";
 import {
+  WALMART_LISTING_REPAIR_APPLY_EVIDENCE_REFERENCE_SCHEMA,
+} from "../listing-integrity-remediation-apply-evidence-adapter.ts";
+import type {
+  VerifiedWalmartListingRepairCustodyApplyEvidence,
+} from "../listing-integrity-remediation-apply-evidence.ts";
+import {
   buildWalmartListingRepairPlanForTest,
   evaluateWalmartListingRepairSequence,
   evaluateWalmartListingRepairSequenceForTest,
+  inspectWalmartListingRepairQualificationProductionReadiness,
   walmartListingRepairTestRuntime,
   type WalmartListingRepairQualificationEvidencePackage,
   type WalmartListingRepairTargetImage,
@@ -427,10 +434,20 @@ const sourceVerifier = async (report, input) => {
   return report;
 };
 
+const VERIFIED_APPLY_BY_PERMIT = new Map<
+string,
+VerifiedWalmartListingRepairCustodyApplyEvidence
+>();
+
 const RUNTIME = walmartListingRepairTestRuntime({
   verifier_engine_release_sha256: RELEASE_SHA,
   sourceVerifier,
   controlVerifier,
+  verifyApply: async ({ reference }) => {
+    const proof = VERIFIED_APPLY_BY_PERMIT.get(reference.permit_authorization_sha256);
+    if (!proof) throw new Error("fixture verified apply proof is missing");
+    return clone(proof);
+  },
   env: TEST_ENV,
 });
 
@@ -469,8 +486,6 @@ function signPermitBody(signedBody) {
 function buildApplyEvidence({
   sequence,
   plan,
-  payloadMutator = null,
-  statusSku = LISTING_ONE.sku,
 }) {
   const identityBody = {
     ledger_id: "repair-ledger-test",
@@ -492,7 +507,6 @@ function buildApplyEvidence({
     distributed_at_most_once_claimed: false,
   };
   const payload = oneSkuPayload(plan);
-  if (payloadMutator) payloadMutator(payload);
   const requestBytes = jsonBytes(payload);
   const requestCorrelationSha = walmartListingIntegritySha256("correlation-1");
   const manifest = {
@@ -528,6 +542,7 @@ function buildApplyEvidence({
     plan_id: plan.plan_id,
     plan_body_sha256: plan.body_sha256,
     target_sha256: plan.target.target_sha256,
+    target_image_certificate_sha256: "a".repeat(64),
     baseline_capture_exchange_sha256: plan.baseline.live_capture_exchange_sha256,
     product_truth: {
       expected_sha256: plan.product_truth.expected_sha256,
@@ -580,6 +595,11 @@ function buildApplyEvidence({
   const responseBytes = jsonBytes({ feedId: "feed-1" });
   const responseHttpBytes = jsonBytes({
     schema_version: WALMART_LISTING_REPAIR_HTTP_RECEIPT_SCHEMA,
+    operation: "MAINTENANCE_POST",
+    method: "POST",
+    path: "/v3/feeds",
+    query: { feedType: "MP_MAINTENANCE" },
+    feed_id: null,
     status: 202,
     content_type: "application/json",
     content_length: responseBytes.byteLength,
@@ -593,11 +613,16 @@ function buildApplyEvidence({
     itemsSucceeded: 1,
     itemsFailed: 0,
     itemDetails: {
-      itemIngestionStatus: [{ sku: statusSku, ingestionStatus: "SUCCESS" }],
+      itemIngestionStatus: [{ sku: LISTING_ONE.sku, ingestionStatus: "SUCCESS" }],
     },
   });
   const feedStatusHttpBytes = jsonBytes({
     schema_version: WALMART_LISTING_REPAIR_HTTP_RECEIPT_SCHEMA,
+    operation: "FEED_STATUS_GET",
+    method: "GET",
+    path: "/v3/feeds/feed-1",
+    query: { includeDetails: "true" },
+    feed_id: "feed-1",
     status: 200,
     content_type: "application/json",
     content_length: feedStatusBytes.byteLength,
@@ -624,9 +649,59 @@ function buildApplyEvidence({
     consumption_ledger: ledger,
   };
   const terminalBytes = sealLedger(WALMART_LISTING_REPAIR_LEDGER_TERMINAL_SCHEMA, terminalBody);
+  const ledgerHeadSha = rawSha(jsonBytes({ head: "succeeded", permit: permit.authorization_sha256 }));
+  const reference = {
+    schema_version: WALMART_LISTING_REPAIR_APPLY_EVIDENCE_REFERENCE_SCHEMA,
+    permit_authorization_sha256: permit.authorization_sha256,
+    ledger_identity_sha256: rawSha(identityBytes),
+    ledger_terminal_sha256: rawSha(terminalBytes),
+    ledger_head_sha256: ledgerHeadSha,
+    artifact_custody_identity_sha256: rawSha(jsonBytes({ custody: "identity" })),
+    artifact_custody_inventory_sha256: rawSha(jsonBytes({ custody: "inventory" })),
+  };
+  const proof: VerifiedWalmartListingRepairCustodyApplyEvidence = {
+    apply_id: terminalBody.apply_id,
+    consumption_id: terminalBody.consumption_id,
+    permit_authorization_sha256: permit.authorization_sha256,
+    feed_id: terminalBody.feed_id,
+    apply_engine_release_sha256: APPLY_SHA,
+    target_image_certificate_sha256: permitBody.target_image_certificate_sha256,
+    manifest_prepared_at: APPLY_AT,
+    post_response_captured_at: "2026-07-19T12:11:00.000Z",
+    accepted_at: "2026-07-19T12:12:00.000Z",
+    feed_confirmed_at: FEED_AT,
+    request_manifest_sha256: rawSha(manifestBytes),
+    request_payload_sha256: rawSha(requestBytes),
+    post_response_http_receipt_sha256: rawSha(responseHttpBytes),
+    post_response_payload_sha256: rawSha(responseBytes),
+    terminal_feed_status_http_receipt_sha256: rawSha(feedStatusHttpBytes),
+    terminal_feed_status_payload_sha256: rawSha(feedStatusBytes),
+    schema_contract_sha256: rawSha(jsonBytes({ artifact: "schema-contract" })),
+    get_spec_receipt_sha256: rawSha(jsonBytes({ artifact: "get-spec-receipt" })),
+    get_spec_request_sha256: rawSha(jsonBytes({ artifact: "get-spec-request" })),
+    get_spec_response_sha256: rawSha(jsonBytes({ artifact: "get-spec-response" })),
+    live_item_receipt_sha256: rawSha(jsonBytes({ artifact: "live-item-receipt" })),
+    live_item_response_sha256: rawSha(jsonBytes({ artifact: "live-item-response" })),
+    ledger_identity_sha256: reference.ledger_identity_sha256,
+    ledger_claim_sha256: rawSha(claimBytes),
+    ledger_requesting_sha256: rawSha(requestingBytes),
+    ledger_accepted_sha256: rawSha(jsonBytes({ ledger: "accepted" })),
+    ledger_terminal_sha256: reference.ledger_terminal_sha256,
+    ledger_head_sha256: reference.ledger_head_sha256,
+    ledger_head_events_sha256: rawSha(jsonBytes({ ledger: "head-events" })),
+    ledger_head_updated_at: FEED_AT,
+    at_most_once_scope: "INTACT_SINGLE_CUSTODY_DIRECTORY",
+    hostile_same_uid_resistance_claimed: false,
+    distributed_at_most_once_claimed: false,
+    exact_listing_count: 1,
+    marketplace_write_calls: 1,
+  };
+  VERIFIED_APPLY_BY_PERMIT.set(permit.authorization_sha256, proof);
   return {
     permit,
     permitBody,
+    reference,
+    proof,
     bundle: {
       ledger_identity_bytes: identityBytes,
       ledger_claim_bytes: claimBytes,
@@ -642,7 +717,7 @@ function buildApplyEvidence({
   };
 }
 
-async function fixture(options = {}) {
+async function fixture() {
   const sequence = sequenceAuthorization();
   const baseline = makeSource({
     surfaceKind: "baseline",
@@ -663,7 +738,7 @@ async function fixture(options = {}) {
     target_images: targetImages(),
     now: new Date(PLAN_AT),
   }, RUNTIME);
-  const apply = buildApplyEvidence({ sequence, plan, ...options });
+  const apply = buildApplyEvidence({ sequence, plan });
   const post = makeSource({
     surfaceKind: "target",
     capturedAt: POST_CAPTURE,
@@ -675,9 +750,8 @@ async function fixture(options = {}) {
     plan,
     baseline_source_bundle: baseline.bundle,
     one_sku_permit: apply.permit,
-    apply_bundle: apply.bundle,
+    apply_evidence_reference: apply.reference,
     post_source_bundle: post.bundle,
-    qualified_at: QUALIFIED_AT,
   };
   return {
     sequence,
@@ -689,21 +763,28 @@ async function fixture(options = {}) {
   };
 }
 
-async function evaluate(sequence, evidencePackages, at = QUALIFIED_AT) {
+async function evaluate(sequence, evidencePackages, at = QUALIFIED_AT, runtime = RUNTIME) {
   return evaluateWalmartListingRepairSequenceForTest({
     sequence_authorization: sequence,
     evidence_packages: evidencePackages,
     evaluated_at: new Date(at),
-  }, RUNTIME);
+  }, runtime);
 }
 
-test("production remains explicit NO-GO until verifier release and owner root are pinned", async () => {
+test("production verifier is pinned and still rejects an owner key outside the production trust root", async () => {
+  assert.deepEqual(inspectWalmartListingRepairQualificationProductionReadiness(), {
+    verifier_release_pinned: true,
+    verifier_engine_release_sha256:
+      "632bb723353b9e8ae28024631158a6ba4bbd1061efc1195e222b77ae838cc8d8",
+    walmart_native_payload_validator_ready: true,
+    frozen_apply_writer_attestation_ready: true,
+  });
   await assert.rejects(
     evaluateWalmartListingRepairSequence({
-      sequence_authorization: {},
+      sequence_authorization: sequenceAuthorization(),
       evidence_packages: [],
     }),
-    /MISSING_PINNED_VERIFIER_RELEASE/,
+    /owner authorization key is untrusted or revoked/,
   );
 });
 
@@ -765,6 +846,7 @@ test("gate rebuilds PASS from exact evidence and ignores a forged cached PASS/ac
   assert.equal(gate.completed_pass_count, 1);
   assert.equal(gate.next_listing_key, LISTING_TWO.listing_key);
   assert.equal(gate.rebuilt_qualifications[0].verdict, "PASS");
+  assert.equal(gate.rebuilt_qualifications[0].qualified_at, QUALIFIED_AT);
   assert.equal(gate.rebuilt_qualifications[0].facets.published_and_indexed, "PASS");
   assert.equal(
     gate.rebuilt_qualifications[0].exact_evidence
@@ -772,6 +854,46 @@ test("gate rebuilds PASS from exact evidence and ignores a forged cached PASS/ac
     rawSha(fx.post.bundle.catalog_search_payload_bytes),
   );
   assert.equal(gate.rebuilt_qualifications[0].authority.cached_qualification_used_as_authority, false);
+  assert.equal(
+    gate.rebuilt_qualifications[0].exact_evidence.response_payload_sha256,
+    fx.apply.proof.post_response_payload_sha256,
+  );
+  assert.equal(
+    gate.rebuilt_qualifications[0].exact_evidence.request_manifest_sha256,
+    fx.apply.proof.request_manifest_sha256,
+  );
+  assert.equal(
+    gate.rebuilt_qualifications[0].exact_evidence.post_response_http_receipt_sha256,
+    fx.apply.proof.post_response_http_receipt_sha256,
+  );
+  assert.equal(
+    gate.rebuilt_qualifications[0].exact_evidence.terminal_feed_status_http_receipt_sha256,
+    fx.apply.proof.terminal_feed_status_http_receipt_sha256,
+  );
+  assert.equal(
+    gate.rebuilt_qualifications[0].exact_evidence.feed_status_payload_sha256,
+    fx.apply.proof.terminal_feed_status_payload_sha256,
+  );
+  assert.equal(
+    gate.rebuilt_qualifications[0].exact_evidence.target_image_certificate_sha256,
+    fx.apply.proof.target_image_certificate_sha256,
+  );
+  assert.equal(
+    gate.rebuilt_qualifications[0].exact_evidence.ledger_terminal_sha256,
+    fx.apply.reference.ledger_terminal_sha256,
+  );
+  assert.equal(
+    gate.rebuilt_qualifications[0].exact_evidence.ledger_head_sha256,
+    fx.apply.reference.ledger_head_sha256,
+  );
+  assert.equal(
+    gate.rebuilt_qualifications[0].exact_evidence.artifact_custody_identity_sha256,
+    fx.apply.reference.artifact_custody_identity_sha256,
+  );
+  assert.equal(
+    gate.rebuilt_qualifications[0].exact_evidence.artifact_custody_inventory_sha256,
+    fx.apply.reference.artifact_custody_inventory_sha256,
+  );
   assert.equal(gate.marketplace_write_authorized, false);
 
   await assert.rejects(
@@ -802,26 +924,48 @@ test("even valid owner signatures cannot substitute a permit for another positio
   }
 });
 
-test("permit-bound payload still rejects a second SKU, semantic mismatch, and extra mutation field", async () => {
-  const attacks = [
-    (payload) => { payload.MPItem.push(clone(payload.MPItem[0])); },
-    (payload) => { payload.MPItem[0].Visible.Grocery.productName = "Wrong product"; },
-    (payload) => { payload.MPItem[0].Visible.Grocery.price = 0.01; },
-  ];
-  for (const payloadMutator of attacks) {
-    const fx = await fixture({ payloadMutator });
-    await assert.rejects(
-      evaluate(fx.sequence, [fx.evidence]),
-      /exact repair target projection|exactly one MPItem|missing or extra fields/,
-    );
-  }
+test("qualification rejects legacy raw apply bundles and caller-authored qualified_at", async () => {
+  const fx = await fixture();
+  const rawOnly = { ...fx.evidence } as Record<string, unknown>;
+  delete rawOnly.apply_evidence_reference;
+  rawOnly.apply_bundle = fx.apply.bundle;
+  await assert.rejects(
+    evaluate(fx.sequence, [rawOnly]),
+    /MISSING_AUTHENTICATED_APPLY_EVIDENCE/,
+  );
+  await assert.rejects(
+    evaluate(fx.sequence, [{ ...fx.evidence, apply_bundle: fx.apply.bundle }]),
+    /legacy or extra fields/,
+  );
+  await assert.rejects(
+    evaluate(fx.sequence, [{ ...fx.evidence, qualified_at: LATE_QUALIFIED_AT }]),
+    /legacy or extra fields/,
+  );
 });
 
-test("locally self-authored SUCCESS bytes cannot override the exact per-item SKU", async () => {
-  const fx = await fixture({ statusSku: "ATTACKER-SKU" });
+test("apply reference and independently returned verified-proof drift fail closed", async () => {
+  const fx = await fixture();
   await assert.rejects(
-    evaluate(fx.sequence, [fx.evidence]),
-    /per-item result is not SUCCESS for the exact raw SKU/,
+    evaluate(fx.sequence, [{
+      ...fx.evidence,
+      apply_evidence_reference: {
+        ...fx.apply.reference,
+        ledger_terminal_sha256: "f".repeat(64),
+      },
+    }]),
+    /differs from reference\/permit\/plan\/release/,
+  );
+
+  const driftingRuntime = {
+    ...RUNTIME,
+    verifyApply: async (input: Parameters<typeof RUNTIME.verifyApply>[0]) => ({
+      ...await RUNTIME.verifyApply(input),
+      request_payload_sha256: "f".repeat(64),
+    }),
+  };
+  await assert.rejects(
+    evaluate(fx.sequence, [fx.evidence], QUALIFIED_AT, driftingRuntime),
+    /differs from reference\/permit\/plan\/release/,
   );
 });
 
@@ -842,11 +986,11 @@ test("baseline capture reuse is rejected; unchanged authenticated buyer surface 
   const gate = await evaluate(fx.sequence, [{
     ...fx.evidence,
     post_source_bundle: staleLate.bundle,
-    qualified_at: LATE_QUALIFIED_AT,
   }], LATE_QUALIFIED_AT);
   assert.equal(gate.status, "HALTED_ON_FAILURE");
   assert.equal(gate.rebuilt_qualifications[0].verdict, "FAIL");
   assert.equal(gate.rebuilt_qualifications[0].facets.propagation_window_complete, "PASS");
+  assert.equal(gate.rebuilt_qualifications[0].qualified_at, LATE_QUALIFIED_AT);
   assert.equal(gate.marketplace_write_authorized, false);
 });
 

@@ -16,6 +16,7 @@ import path from "node:path";
 import test from "node:test";
 
 import {
+  authorWalmartItemReportReissueRenewalEvidenceV1,
   authorWalmartItemReportReissueDispositionRequestV2,
   authorWalmartItemReportReissueDispositionV2,
   authorWalmartItemReportReissueReplacementPlanV2,
@@ -73,6 +74,38 @@ function ledgerBinding() {
     distributed_at_most_once_claimed: false,
   };
 }
+
+test("renewal authoring embeds exact R4 and fresh probe bytes with zero effects", async (t) => {
+  const root = await privateTemp(t);
+  const out = path.join(root, "renewal-evidence.json");
+  const probeRoot = path.join(
+    PROJECT_ROOT,
+    "data/audits/walmart-source-intake/item-v6-absence-probe-store1-20260722-codex-v2",
+  );
+  const result = await authorWalmartItemReportReissueRenewalEvidenceV1({
+    baseline_source_evidence: path.resolve(
+      PROJECT_ROOT,
+      "../release-artifacts/walmart-item-report-reissue-v2-private-20260719",
+      "evidence-release-r4-final-candidate/source-evidence-release.json",
+    ),
+    fresh_probe_root: probeRoot,
+    probe_id: path.basename(probeRoot),
+    release_id: "walmart-item-v6-reissue-source-renewal-store1-20260722-authority-test",
+    reviewed_at: "2026-07-22T06:40:00.000Z",
+    out,
+  });
+  const bytes = await readFile(out);
+  const parsed = JSON.parse(bytes);
+  assert.equal(bytes.toString("utf8"), canonicalWalmartItemReportJson(parsed));
+  assert.equal(result.artifact.sha256, sha256(bytes));
+  assert.equal(result.baseline_artifact_sha256,
+    "3efd693468f9c0761d6091d379c06e2daddb7d8dadc908228eb282ddeab4fa31");
+  assert.equal(result.fresh_probe_evidence_family_sha256,
+    "fdd883fbe5db6067545a010e0b7df4dce7122803f535f0c0b0a2676313f41e57");
+  assert.equal(result.evidence_fresh_until, "2026-07-23T06:39:07.290Z");
+  assert.equal(result.network_calls, 0);
+  assert.equal(result.walmart_content_writes, 0);
+});
 
 async function sourceEvidenceBytes() {
   const release = await buildWalmartItemReportReissueSourceEvidenceV2({

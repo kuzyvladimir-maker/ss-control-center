@@ -39,7 +39,7 @@ export const WALMART_LISTING_REPAIR_SOURCE_EVIDENCE_SCHEMA =
 export const WALMART_LISTING_REPAIR_REQUEST_MANIFEST_SCHEMA =
   "walmart-listing-repair-feed-request-manifest/v1" as const;
 export const WALMART_LISTING_REPAIR_HTTP_RECEIPT_SCHEMA =
-  "walmart-listing-repair-http-receipt/v1" as const;
+  "walmart-listing-repair-http-receipt/v2" as const;
 export const WALMART_LISTING_REPAIR_LEDGER_IDENTITY_SCHEMA =
   "walmart-listing-repair-consumption-ledger-identity/v1" as const;
 export const WALMART_LISTING_REPAIR_LEDGER_CLAIM_SCHEMA =
@@ -616,6 +616,11 @@ export async function verifyWalmartListingRepairSourceEvidenceForTest(
 }
 
 function parseHttpReceipt(value: unknown, label: string): {
+  operation: "MAINTENANCE_POST" | "FEED_STATUS_GET";
+  method: "POST" | "GET";
+  path: string;
+  query: JsonRecord;
+  feed_id: string | null;
   status: number;
   content_type: string;
   content_length: number;
@@ -624,15 +629,26 @@ function parseHttpReceipt(value: unknown, label: string): {
 } {
   const raw = record(value, label);
   exactKeys(raw, [
-    "schema_version", "status", "content_type", "content_length",
+    "schema_version", "operation", "method", "path", "query", "feed_id",
+    "status", "content_type", "content_length",
     "request_correlation_id_sha256", "captured_at",
   ], label);
+  const operation = raw.operation === "MAINTENANCE_POST"
+    ? "MAINTENANCE_POST" as const : raw.operation === "FEED_STATUS_GET"
+      ? "FEED_STATUS_GET" as const : fail(`${label}.operation is invalid`);
+  const method = raw.method === "POST" ? "POST" as const : raw.method === "GET"
+    ? "GET" as const : fail(`${label}.method is invalid`);
   if (raw.schema_version !== WALMART_LISTING_REPAIR_HTTP_RECEIPT_SCHEMA
     || !Number.isSafeInteger(raw.status) || Number(raw.status) < 100 || Number(raw.status) > 599
     || !Number.isSafeInteger(raw.content_length) || Number(raw.content_length) < 0) {
     fail(`${label} schema/status/content_length is invalid`);
   }
   return {
+    operation,
+    method,
+    path: text(raw.path, `${label}.path`, 2_048),
+    query: record(raw.query, `${label}.query`),
+    feed_id: raw.feed_id === null ? null : safeId(raw.feed_id, `${label}.feed_id`),
     status: Number(raw.status),
     content_type: text(raw.content_type, `${label}.content_type`, 256),
     content_length: Number(raw.content_length),
@@ -832,6 +848,13 @@ export function verifyWalmartListingRepairExactApplyEvidence(input: {
   );
   if (![200, 201, 202].includes(responseHttp.status)
     || statusHttp.status !== 200
+    || responseHttp.operation !== "MAINTENANCE_POST"
+    || responseHttp.method !== "POST"
+    || responseHttp.path !== "/v3/feeds"
+    || responseHttp.feed_id !== null
+    || !canonicalEqual(responseHttp.query, { feedType: "MP_MAINTENANCE" })
+    || statusHttp.operation !== "FEED_STATUS_GET"
+    || statusHttp.method !== "GET"
     || responseHttp.content_length !== exact.response.byteLength
     || statusHttp.content_length !== exact.status.byteLength
     || responseHttp.request_correlation_id_sha256 !== requestCorrelationSha
@@ -842,6 +865,11 @@ export function verifyWalmartListingRepairExactApplyEvidence(input: {
   const responsePayload = parseJsonBytes(exact.response, "Walmart feed response payload");
   const statusPayload = parseJsonBytes(exact.status, "Walmart feed-status payload");
   const feedId = feedIdFromResponse(responsePayload);
+  if (statusHttp.path !== `/v3/feeds/${encodeURIComponent(feedId)}`
+    || statusHttp.feed_id !== feedId
+    || !canonicalEqual(statusHttp.query, { includeDetails: "true" })) {
+    fail("feed-status HTTP receipt does not bind the exact accepted feed GET");
+  }
   const status = successfulFeedRow(statusPayload, permitBody.listing.sku);
   if (status.feed_id !== null && status.feed_id !== feedId) {
     fail("feed-status payload belongs to a different feedId");

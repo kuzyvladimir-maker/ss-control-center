@@ -6,6 +6,7 @@ import { walmartListingIntegritySha256 } from "../listing-integrity-audit.ts";
 import {
   executeWalmartListingRepairOneSku,
   executeWalmartListingRepairOneSkuForTest,
+  inspectWalmartListingRepairWriterProductionReadiness,
   reconcileWalmartListingRepairRequestingNoNetworkForTest,
   resumeWalmartListingRepairFeedPollForTest,
   WALMART_LISTING_REPAIR_HTTP_RECEIPT_SCHEMA,
@@ -78,6 +79,7 @@ interface FixtureOptions {
   sendClockExpired?: boolean;
   sequenceExpiredDuringAsyncGate?: boolean;
   readyPositionDriftOnFinal?: boolean;
+  imageCertificateDriftOnFinal?: boolean;
   underreportReturnedGet?: boolean;
   artifactStore?: Map<string, Uint8Array>;
   correlationNamespace?: string;
@@ -254,6 +256,11 @@ function fixture(options: FixtureOptions = {}) {
     }],
   };
   const payloadBytes = bytes(payload);
+  const targetImageCertificateBytes = bytes({
+    schema_version: "walmart-listing-repair-target-image-certificate/v1",
+    fixture: "exact-target-images",
+  });
+  const targetImageCertificateSha = sha256(targetImageCertificateBytes);
   const requestCorrelationId = "repair-correlation-1";
   const manifestBody = {
     schema_version: WALMART_LISTING_REPAIR_SURGICAL_REQUEST_MANIFEST_SCHEMA,
@@ -272,6 +279,7 @@ function fixture(options: FixtureOptions = {}) {
     plan_id: plan.plan_id,
     plan_body_sha256: plan.body_sha256,
     target_sha256: plan.target.target_sha256,
+    target_image_certificate_sha256: targetImageCertificateSha,
     permit_id: "repair-permit-1",
     apply_engine_release_sha256: H.applyRelease,
     schema_contract_body_sha256: "3".repeat(64),
@@ -313,6 +321,15 @@ function fixture(options: FixtureOptions = {}) {
     request_manifest_json: new TextDecoder().decode(manifestBytes),
     request_manifest_bytes: manifestBytes,
     request_manifest_sha256: sha256(manifestBytes),
+    qualification_support_artifacts: {
+      "surgical-schema-contract.json": bytes({ fixture: "schema-contract" }),
+      "surgical-get-spec-receipt.json": bytes({ fixture: "get-spec-receipt" }),
+      "surgical-live-item-receipt.json": bytes({ fixture: "live-item-receipt" }),
+      "surgical-get-spec-request.bin": bytes({ fixture: "get-spec-request" }),
+      "surgical-get-spec-response.bin": bytes({ fixture: "get-spec-response" }),
+      "surgical-live-item-response.bin": bytes({ fixture: "live-item-response" }),
+      "target-image-certificate.json": targetImageCertificateBytes,
+    },
     filename: "SKU-REPAIR-1-maintenance.json",
     validation: {
       valid: true,
@@ -353,6 +370,7 @@ function fixture(options: FixtureOptions = {}) {
       plan_id: plan.plan_id,
       plan_body_sha256: plan.body_sha256,
       target_sha256: plan.target.target_sha256,
+      target_image_certificate_sha256: targetImageCertificateSha,
       baseline_capture_exchange_sha256: H.baseline,
       product_truth: {
         expected_sha256: H.truthExpected,
@@ -462,6 +480,7 @@ function fixture(options: FixtureOptions = {}) {
     },
   };
   let readyCalls = 0;
+  let imageCertificateCalls = 0;
   const correlationNamespace = options.correlationNamespace ?? `fixture-${++fixtureOrdinal}`;
   const dependencies: WalmartListingRepairWriterDependencies = {
     payload_builder: { build: async () => built },
@@ -540,6 +559,21 @@ function fixture(options: FixtureOptions = {}) {
       };
     },
     read_current_product_truth: async () => ({ ...permit.signed_body.product_truth }),
+    verify_target_image_certificate: async ({ now: verifiedAt }) => {
+      imageCertificateCalls += 1;
+      events.push(`IMAGE_CERTIFICATE:${imageCertificateCalls}`);
+      return {
+        status: "CERTIFIED_EXACT_TARGET_IMAGES",
+        certificate_sha256: options.imageCertificateDriftOnFinal && imageCertificateCalls > 1
+          ? "f".repeat(64) : targetImageCertificateSha,
+        plan_body_sha256: plan.body_sha256,
+        target_sha256: plan.target.target_sha256,
+        listing,
+        verified_at: verifiedAt.toISOString(),
+        expires_at: new Date(verifiedAt.getTime() + 60_000).toISOString(),
+        evidence_only_not_write_authority: true,
+      };
+    },
     open_transport: () => {
       events.push("OPEN_TRANSPORT");
       return transport;
@@ -553,6 +587,7 @@ function fixture(options: FixtureOptions = {}) {
     one_sku_permit: permit,
     plan,
     payload_context: {},
+    target_image_certificate_context: {},
     request_correlation_id: requestCorrelationId,
     poll_policy: { max_attempts: 2, delay_ms: 0 },
   };
@@ -750,6 +785,98 @@ test("fresh readiness position drift after burn blocks POST", async () => {
   assert.equal(f.events.filter((row) => row === "POST").length, 0);
 });
 
+test("target image certificate drift after permit burn blocks POST", async () => {
+  const f = fixture({ imageCertificateDriftOnFinal: true });
+  const result = await executeWalmartListingRepairOneSkuForTest(
+    f.writerInput,
+    f.dependencies,
+    f.runtime,
+  );
+  assert.equal(result.status, "FAILED");
+  assert.equal(result.reason_code, "TARGET_IMAGE_CERTIFICATE_MISMATCH");
+  assert.equal(result.marketplace_write_calls, 0);
+  assert.ok(f.events.includes("REQUESTING"));
+  assert.deepEqual(
+    f.events.filter((row) => row.startsWith("IMAGE_CERTIFICATE:")),
+    ["IMAGE_CERTIFICATE:1", "IMAGE_CERTIFICATE:2"],
+  );
+  assert.equal(f.events.filter((row) => row === "OPEN_TRANSPORT").length, 0);
+  assert.equal(f.events.filter((row) => row === "POST").length, 0);
+  assert.deepEqual(f.terminal.map((row) => row.state), ["FAILED"]);
+});
+
+test("READY or Product Truth drift during deferred final certificate verification blocks POST", async (t) => {
+  for (const driftSource of ["READY", "PRODUCT_TRUTH"] as const) {
+    await t.test(driftSource, async () => {
+      const f = fixture();
+      const verifyCertificate = f.dependencies.verify_target_image_certificate;
+      const rebuildReady = f.dependencies.rebuild_sequence_ready_proof;
+      const readProductTruth = f.dependencies.read_current_product_truth;
+      let certificateCalls = 0;
+      let readyCalls = 0;
+      let productTruthCalls = 0;
+      let sourceDrifted = false;
+      let notifyFinalCertificateStarted!: () => void;
+      let releaseFinalCertificate!: () => void;
+      const finalCertificateStarted = new Promise<void>((resolve) => {
+        notifyFinalCertificateStarted = resolve;
+      });
+      const finalCertificateGate = new Promise<void>((resolve) => {
+        releaseFinalCertificate = resolve;
+      });
+
+      f.dependencies.verify_target_image_certificate = async (input) => {
+        const proof = await verifyCertificate(input);
+        certificateCalls += 1;
+        if (certificateCalls === 2) {
+          notifyFinalCertificateStarted();
+          await finalCertificateGate;
+        }
+        return proof;
+      };
+      f.dependencies.rebuild_sequence_ready_proof = async (input) => {
+        readyCalls += 1;
+        const proof = await rebuildReady(input);
+        return sourceDrifted && driftSource === "READY"
+          ? { ...proof, next_sequence_position: proof.next_sequence_position + 1 }
+          : proof;
+      };
+      f.dependencies.read_current_product_truth = async (input) => {
+        productTruthCalls += 1;
+        f.events.push(`PRODUCT_TRUTH:${productTruthCalls}`);
+        const truth = await readProductTruth(input);
+        return sourceDrifted && driftSource === "PRODUCT_TRUTH"
+          ? { ...truth, truth_revision_body_sha256: "f".repeat(64) }
+          : truth;
+      };
+
+      const execution = executeWalmartListingRepairOneSkuForTest(
+        f.writerInput,
+        f.dependencies,
+        f.runtime,
+      );
+      await finalCertificateStarted;
+      sourceDrifted = true;
+      releaseFinalCertificate();
+      const result = await execution;
+
+      assert.equal(result.status, "FAILED");
+      assert.equal(
+        result.reason_code,
+        driftSource === "READY" ? "SEQUENCE_NOT_READY" : "PRODUCT_TRUTH_DRIFT",
+      );
+      assert.equal(result.marketplace_write_calls, 0);
+      assert.equal(readyCalls, 2);
+      assert.equal(productTruthCalls, 2);
+      assert.ok(f.events.indexOf("IMAGE_CERTIFICATE:2") < f.events.indexOf("READY:2"));
+      assert.ok(f.events.indexOf("IMAGE_CERTIFICATE:2") < f.events.indexOf("PRODUCT_TRUTH:2"));
+      assert.equal(f.events.filter((row) => row === "OPEN_TRANSPORT").length, 0);
+      assert.equal(f.events.filter((row) => row === "POST").length, 0);
+      assert.deepEqual(f.terminal.map((row) => row.state), ["FAILED"]);
+    });
+  }
+});
+
 test("returned feed response must account for exactly one GET", async () => {
   const f = fixture({ underreportReturnedGet: true });
   await assert.rejects(
@@ -776,11 +903,36 @@ test("stranded REQUESTING recovery is no-network manual review and never replays
   assert.equal(f.events.filter((row) => row === "GET").length, 0);
 });
 
-test("production entrypoint is explicit NO-GO until the frozen closure is pinned", async () => {
+test("production entrypoint rejects caller dependency injection", async () => {
   const f = fixture();
   await assert.rejects(
-    executeWalmartListingRepairOneSku(f.writerInput, f.dependencies),
-    /production writer is NO-GO/i,
+    Reflect.apply(executeWalmartListingRepairOneSku, null, [f.writerInput, f.dependencies]),
+    /accepts one data-only execution package and no dependency arguments/i,
+  );
+  assert.equal(f.events.length, 0);
+});
+
+test("production closure is pinned and malformed data cannot reach any executable dependency", async () => {
+  const f = fixture();
+  assert.deepEqual(inspectWalmartListingRepairWriterProductionReadiness(), {
+    apply_writer_release_pinned: true,
+    apply_engine_release_sha256:
+      "632bb723353b9e8ae28024631158a6ba4bbd1061efc1195e222b77ae838cc8d8",
+    fixed_dependency_factory_ready: true,
+    native_one_shot_transport_ready: true,
+    caller_dependency_injection_allowed: false,
+  });
+  await assert.rejects(
+    executeWalmartListingRepairOneSku({
+      writer_input: f.writerInput,
+      production_context: {
+        ledger_state_directory: "/tmp/not-opened-listing-repair-ledger",
+        artifact_custody_root: "/tmp/not-opened-listing-repair-artifacts",
+        sequence_evidence_packages: [],
+        product_truth_binding: { ...f.permit.signed_body.product_truth },
+      },
+    }),
+    /payload_context has unsupported or missing fields/i,
   );
   assert.equal(f.events.length, 0);
 });
@@ -788,6 +940,11 @@ test("production entrypoint is explicit NO-GO until the frozen closure is pinned
 test("HTTP receipt fixture is exact raw-byte JSON, not a caller outcome boolean", () => {
   const receipt = bytes({
     schema_version: WALMART_LISTING_REPAIR_HTTP_RECEIPT_SCHEMA,
+    operation: "MAINTENANCE_POST",
+    method: "POST",
+    path: "/v3/feeds",
+    query: { feedType: "MP_MAINTENANCE" },
+    feed_id: null,
     status: 200,
     content_type: "application/json",
     content_length: 2,

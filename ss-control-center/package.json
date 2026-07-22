@@ -20,6 +20,8 @@
     "walmart-listing-freeze": "node --experimental-strip-types scripts/freeze-walmart-listing-integrity-bundle.mjs",
     "walmart-listing-engine": "node --experimental-strip-types scripts/walmart-listing-integrity-engine.mjs",
     "walmart-listing-observer": "node --experimental-strip-types scripts/walmart-listing-integrity-observer.mjs",
+    "walmart:listing-repair": "node scripts/verify-and-run-walmart-listing-repair.mjs",
+    "walmart:item-v6-absence-probe": "node --env-file=.env --experimental-strip-types scripts/capture-walmart-item-v6-absence-probe.mjs",
     "product-truth": "node --import tsx scripts/product-truth-runner.ts",
     "product-truth:census": "node --import tsx scripts/build-phase1-connected-store-census.ts",
     "product-truth:manifest": "node --import tsx scripts/build-phase1-scope-manifest.ts",

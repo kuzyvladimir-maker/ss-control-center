@@ -4,6 +4,7 @@ import {
   generateKeyPairSync,
   sign,
 } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
@@ -23,6 +24,13 @@ import {
   buildWalmartItemReportReissueSourceEvidenceV2,
   serializeWalmartItemReportReissueSourceEvidenceV2,
 } from "../item-report-reissue-source-evidence-v2.ts";
+import {
+  buildWalmartItemReportReissueSourceEvidenceRenewalV1,
+  serializeWalmartItemReportReissueSourceEvidenceRenewalV1,
+} from "../item-report-reissue-source-evidence-renewal-v1.ts";
+import {
+  WALMART_ITEM_V6_ABSENCE_PROBE_ARTIFACT_NAMES,
+} from "../item-report-reissue-absence-probe-evidence.ts";
 import { walmartItemReportUtf8Sha256 } from "../item-report-published-source.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "../../../..");
@@ -213,6 +221,64 @@ test("assembles and verifies one exact domain-separated Ed25519 disposition", as
     WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_EMPTY_BODY_SHA256,
   );
   assert.equal(verified.signed_body.prior_incident.consume_conflicting_final, false);
+});
+
+test("assembles and verifies against self-contained fresh renewal evidence", async () => {
+  const item = await fixture();
+  const repositoryRoot = path.dirname(PROJECT_ROOT);
+  const baselineBytes = await readFile(path.join(
+    repositoryRoot,
+    "release-artifacts/walmart-item-report-reissue-v2-private-20260719",
+    "evidence-release-r4-final-candidate/source-evidence-release.json",
+  ));
+  const probeRoot = path.join(
+    PROJECT_ROOT,
+    "data/audits/walmart-source-intake/item-v6-absence-probe-store1-20260722-codex-v2",
+  );
+  const probe = {};
+  for (const name of WALMART_ITEM_V6_ABSENCE_PROBE_ARTIFACT_NAMES) {
+    probe[name] = await readFile(path.join(probeRoot, name));
+  }
+  const renewal = buildWalmartItemReportReissueSourceEvidenceRenewalV1({
+    release_id: "walmart-item-v6-reissue-source-renewal-store1-20260722-owner-test",
+    reviewed_at: "2026-07-22T06:40:00.000Z",
+    baseline_source_evidence_bytes: baselineBytes,
+    fresh_probe_artifacts: probe,
+    expected_probe_id: path.basename(probeRoot),
+  });
+  const renewalBytes = serializeWalmartItemReportReissueSourceEvidenceRenewalV1(renewal);
+  const body = buildWalmartItemReportReissueOwnerDispositionV2Body({
+    disposition_id: "item-v6-reissue-owner-disposition-renewal-test",
+    environment: "TEST_FIXTURE_ONLY",
+    approved_by: "owner-test",
+    decision_ref: "urn:ss-command-center:test:item-v6-reissue:renewal",
+    engine_release_sha256: "4".repeat(64),
+    source_evidence_bytes: renewalBytes,
+    expected_source_evidence_artifact_sha256: sha256(renewalBytes),
+    replacement: item.replacement,
+    consumption_ledger: ledger(),
+    issued_at: "2026-07-22T06:45:00.000Z",
+    expires_at: "2026-07-22T07:00:00.000Z",
+  });
+  const signed = signBody(item, body);
+  const disposition = assembleWalmartItemReportReissueOwnerDispositionV2({
+    signing_request: signed.request,
+    detached_signature: signed.detached,
+    env: item.env,
+    expected_engine_release_sha256: "4".repeat(64),
+    expected_source_evidence_bytes: renewalBytes,
+    expected_source_evidence_artifact_sha256: sha256(renewalBytes),
+    expected_replacement: item.replacement,
+    expected_consumption_ledger: ledger(),
+    now: new Date("2026-07-22T06:50:00.000Z"),
+  });
+  assert.equal(disposition.signed_body.source_evidence.release_id,
+    renewal.body.release_id);
+  assert.equal(disposition.signed_body.source_evidence.exact_probe_observed_at,
+    "2026-07-22T06:39:07.290Z");
+  assert.equal(disposition.signed_body.source_evidence.exact_probe_artifacts.length, 6);
+  assert.equal(disposition.signed_body.evidence_fresh_until,
+    "2026-07-23T06:39:07.290Z");
 });
 
 test("rejects a signature from another domain/message", async () => {

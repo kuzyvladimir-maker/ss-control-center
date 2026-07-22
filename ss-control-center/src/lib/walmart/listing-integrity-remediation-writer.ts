@@ -29,16 +29,34 @@ export const WALMART_LISTING_REPAIR_WRITER_POLICY =
 export const WALMART_LISTING_REPAIR_SURGICAL_REQUEST_MANIFEST_SCHEMA =
   "walmart-listing-repair-surgical-request-manifest/v1" as const;
 export const WALMART_LISTING_REPAIR_HTTP_RECEIPT_SCHEMA =
-  "walmart-listing-repair-http-receipt/v1" as const;
+  "walmart-listing-repair-http-receipt/v2" as const;
 export const WALMART_LISTING_REPAIR_MAX_REQUEST_BYTES = 16 * 1024 * 1024;
 export const WALMART_LISTING_REPAIR_MAX_RESPONSE_BYTES = 1024 * 1024;
 export const WALMART_LISTING_REPAIR_MAX_FEED_STATUS_BYTES = 4 * 1024 * 1024;
+export const WALMART_LISTING_REPAIR_MAX_SUPPORT_BYTES = 64 * 1024 * 1024;
 export const WALMART_LISTING_REPAIR_MAX_POLL_ATTEMPTS = 20;
 export const WALMART_LISTING_REPAIR_MAX_POLL_DELAY_MS = 60_000;
 export const WALMART_LISTING_REPAIR_REQUEST_TIMEOUT_MS = 60_000;
 
 /** Filled only by the final frozen release. Null is an intentional production NO-GO. */
-const PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256: string | null = null;
+const PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256: string | null =
+  "632bb723353b9e8ae28024631158a6ba4bbd1061efc1195e222b77ae838cc8d8";
+
+export function inspectWalmartListingRepairWriterProductionReadiness(): {
+  apply_writer_release_pinned: boolean;
+  apply_engine_release_sha256: string | null;
+  fixed_dependency_factory_ready: true;
+  native_one_shot_transport_ready: true;
+  caller_dependency_injection_allowed: false;
+} {
+  return Object.freeze({
+    apply_writer_release_pinned: PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256 !== null,
+    apply_engine_release_sha256: PINNED_PRODUCTION_APPLY_ENGINE_RELEASE_SHA256,
+    fixed_dependency_factory_ready: true,
+    native_one_shot_transport_ready: true,
+    caller_dependency_injection_allowed: false,
+  });
+}
 
 const SHA256 = /^[a-f0-9]{64}$/u;
 const SAFE_TEXT = /^[^\u0000-\u001f\u007f]+$/u;
@@ -46,10 +64,20 @@ const TERMINAL_FEED_STATES = new Set(["PROCESSED", "ERROR"]);
 const SURGICAL_MANIFEST_KEYS = Object.freeze([
   "schema_version", "method", "path", "feed_type", "store_index",
   "seller_account_fingerprint_sha256", "listing", "native_identity", "plan_id",
-  "plan_body_sha256", "target_sha256", "permit_id", "apply_engine_release_sha256",
+  "plan_body_sha256", "target_sha256", "target_image_certificate_sha256", "permit_id",
+  "apply_engine_release_sha256",
   "schema_contract_body_sha256", "schema_mapping_approval_sha256", "get_spec",
   "transport", "changed_fields", "visible_fields", "full_target_written",
   "request_correlation_id_sha256", "request_payload_sha256", "prepared_at", "body_sha256",
+] as const);
+const QUALIFICATION_SUPPORT_ARTIFACT_NAMES = Object.freeze([
+  "surgical-schema-contract.json",
+  "surgical-get-spec-receipt.json",
+  "surgical-live-item-receipt.json",
+  "surgical-get-spec-request.bin",
+  "surgical-get-spec-response.bin",
+  "surgical-live-item-response.bin",
+  "target-image-certificate.json",
 ] as const);
 
 type JsonRecord = Record<string, unknown>;
@@ -77,6 +105,10 @@ export interface BuiltWalmartListingRepairSurgicalRequest {
   request_manifest_json: string;
   request_manifest_bytes: Uint8Array;
   request_manifest_sha256: string;
+  qualification_support_artifacts: Readonly<Record<
+    typeof QUALIFICATION_SUPPORT_ARTIFACT_NAMES[number],
+    Uint8Array
+  >>;
   filename?: string;
   validation: {
     valid: true;
@@ -270,16 +302,45 @@ export interface WalmartListingRepairSequenceReadyProof {
   separate_signed_one_sku_permit_required: true;
 }
 
+export interface WalmartListingRepairTargetImageCertificateProof {
+  status: "CERTIFIED_EXACT_TARGET_IMAGES";
+  certificate_sha256: string;
+  plan_body_sha256: string;
+  target_sha256: string;
+  listing: WalmartListingRepairListingIdentity;
+  verified_at: string;
+  expires_at: string;
+  evidence_only_not_write_authority: true;
+}
+
 export interface WalmartListingRepairWriterInput {
   sequence_authorization: unknown;
   one_sku_permit: unknown;
   plan: SealedWalmartListingRepairPlan;
   payload_context: unknown;
+  target_image_certificate_context: unknown;
   request_correlation_id: string;
   poll_policy: {
     max_attempts: number;
     delay_ms: number;
   };
+}
+
+/**
+ * Data-only production boundary. Every executable dependency is selected by
+ * the frozen engine itself; callers may provide evidence and custody locations
+ * but cannot provide builders, verifiers, clocks, transports, or retry policy.
+ */
+export interface WalmartListingRepairProductionContext {
+  ledger_state_directory: string;
+  artifact_custody_root: string;
+  sequence_evidence_packages: readonly unknown[];
+  product_truth_binding: WalmartListingRepairProductTruthBinding;
+}
+
+export interface WalmartListingRepairProductionExecutionInput {
+  writer_input: WalmartListingRepairWriterInput;
+  production_context: WalmartListingRepairProductionContext;
 }
 
 export interface WalmartListingRepairAcceptedPostEvidence {
@@ -342,6 +403,13 @@ export interface WalmartListingRepairWriterDependencies {
   read_current_product_truth(input: {
     plan: SealedWalmartListingRepairPlan;
   }): Promise<WalmartListingRepairProductTruthBinding>;
+  /** Rebuilds the exact certificate from immutable image/lineage/rights/vision evidence. */
+  verify_target_image_certificate(input: {
+    plan: SealedWalmartListingRepairPlan;
+    certificate_bytes: Uint8Array;
+    context: unknown;
+    now: Date;
+  }): Promise<WalmartListingRepairTargetImageCertificateProof>;
   /** Factory must be side-effect free; OAuth may begin only in a transport method. */
   open_transport(): WalmartListingRepairOneShotTransport;
   now?: () => Date;
@@ -639,6 +707,34 @@ function assertProductTruth(
   }
 }
 
+function assertTargetImageCertificate(
+  proof: WalmartListingRepairTargetImageCertificateProof,
+  plan: SealedWalmartListingRepairPlan,
+  permit: WalmartListingRepairOneSkuPermit,
+  certificateBytes: Uint8Array,
+  verifiedFor: Date,
+  currentAt: Date = verifiedFor,
+): void {
+  if (!proof) {
+    fail("TARGET_IMAGE_CERTIFICATE_MISMATCH", "target image certificate proof is missing");
+  }
+  const verifiedAt = Date.parse(instant(proof.verified_at, "image certificate proof verified_at"));
+  const expiresAt = Date.parse(instant(proof.expires_at, "image certificate proof expires_at"));
+  if (proof.status !== "CERTIFIED_EXACT_TARGET_IMAGES"
+    || proof.certificate_sha256 !== permit.signed_body.target_image_certificate_sha256
+    || proof.certificate_sha256 !== sha256(certificateBytes)
+    || proof.plan_body_sha256 !== plan.body_sha256
+    || proof.target_sha256 !== plan.target.target_sha256
+    || !canonicalEqual(proof.listing, listingIdentity(plan))
+    || verifiedAt !== verifiedFor.getTime() || expiresAt <= currentAt.getTime()
+    || proof.evidence_only_not_write_authority !== true) {
+    fail(
+      "TARGET_IMAGE_CERTIFICATE_MISMATCH",
+      "target image certificate is not exact current plan/Product Truth visual evidence",
+    );
+  }
+}
+
 function assertPollPolicy(policy: WalmartListingRepairWriterInput["poll_policy"]): void {
   if (!policy || !Number.isSafeInteger(policy.max_attempts) || policy.max_attempts < 1
     || policy.max_attempts > WALMART_LISTING_REPAIR_MAX_POLL_ATTEMPTS
@@ -666,6 +762,30 @@ function validateBuiltRequest(input: {
     "surgical request manifest",
     WALMART_LISTING_REPAIR_MAX_RESPONSE_BYTES,
   );
+  const rawSupport = built.qualification_support_artifacts;
+  if (!rawSupport || typeof rawSupport !== "object" || Array.isArray(rawSupport)) {
+    fail("REQUEST_MISMATCH", "surgical qualification support artifacts are missing");
+  }
+  exactKeys(
+    rawSupport as unknown as JsonRecord,
+    QUALIFICATION_SUPPORT_ARTIFACT_NAMES,
+    "surgical qualification support artifacts",
+  );
+  const support = Object.fromEntries(QUALIFICATION_SUPPORT_ARTIFACT_NAMES.map((name) => [
+    name,
+    boundedBytes(
+      rawSupport[name],
+      `surgical qualification support artifact ${name}`,
+      WALMART_LISTING_REPAIR_MAX_SUPPORT_BYTES,
+    ),
+  ])) as unknown as BuiltWalmartListingRepairSurgicalRequest["qualification_support_artifacts"];
+  if (sha256(support["target-image-certificate.json"])
+      !== permit.signed_body.target_image_certificate_sha256) {
+    fail(
+      "TARGET_IMAGE_CERTIFICATE_MISMATCH",
+      "immutable target image certificate bytes differ from signed one-SKU permit",
+    );
+  }
   if (sha256(payloadBytes) !== built.payload_sha256
     || sha256(manifestBytes) !== built.request_manifest_sha256
     || built.payload_sha256 !== permit.signed_body.request_payload_sha256
@@ -770,6 +890,8 @@ function validateBuiltRequest(input: {
     || !canonicalEqual(manifest.listing, listingIdentity(plan))
     || manifest.plan_id !== plan.plan_id || manifest.plan_body_sha256 !== plan.body_sha256
     || manifest.target_sha256 !== plan.target.target_sha256
+    || manifest.target_image_certificate_sha256
+      !== permit.signed_body.target_image_certificate_sha256
     || manifest.permit_id !== permit.signed_body.permit_id
     || manifest.apply_engine_release_sha256 !== plan.apply_engine_release_sha256
     || manifest.request_correlation_id_sha256 !== input.request_correlation_id_sha256
@@ -785,6 +907,7 @@ function validateBuiltRequest(input: {
     ...built,
     payload_bytes: payloadBytes,
     request_manifest_bytes: manifestBytes,
+    qualification_support_artifacts: support,
     filename: manifestFilename,
   };
 }
@@ -917,6 +1040,21 @@ function feedStatusArtifactStem(input: {
 
 function responseReceiptBytes(input: {
   response: WalmartListingRepairTransportResponse;
+  request:
+    | {
+      operation: "MAINTENANCE_POST";
+      method: "POST";
+      path: "/v3/feeds";
+      query: { feedType: "MP_MAINTENANCE" };
+      feed_id: null;
+    }
+    | {
+      operation: "FEED_STATUS_GET";
+      method: "GET";
+      path: string;
+      query: { includeDetails: "true" };
+      feed_id: string;
+    };
   request_correlation_id_sha256: string;
   captured_at: string;
 }): Uint8Array {
@@ -930,6 +1068,11 @@ function responseReceiptBytes(input: {
   )?.[1] ?? "application/octet-stream";
   return canonicalBytes({
     schema_version: WALMART_LISTING_REPAIR_HTTP_RECEIPT_SCHEMA,
+    operation: input.request.operation,
+    method: input.request.method,
+    path: input.request.path,
+    query: input.request.query,
+    feed_id: input.request.feed_id,
     status: input.response.status,
     content_type: text(contentType, "response content-type", 256),
     content_length: body.byteLength,
@@ -1217,6 +1360,13 @@ async function pollAccepted(input: {
     const capturedAt = nowDate(input.dependencies.now).toISOString();
     const http = responseReceiptBytes({
       response: { ...response, body },
+      request: {
+        operation: "FEED_STATUS_GET",
+        method: "GET",
+        path: `/v3/feeds/${encodeURIComponent(input.accepted.feed_id)}`,
+        query: { includeDetails: "true" },
+        feed_id: input.accepted.feed_id,
+      },
       request_correlation_id_sha256: sha256(id),
       captured_at: capturedAt,
     });
@@ -1360,9 +1510,26 @@ async function executeInternal(
     request_payload_sha256: built.payload_sha256,
     request_manifest_sha256: built.request_manifest_sha256,
   });
+  const initialCertificateCheckAt = nowDate(dependencies.now);
+  const initialCertificateProof = await dependencies.verify_target_image_certificate({
+    plan,
+    certificate_bytes: Uint8Array.from(
+      built.qualification_support_artifacts["target-image-certificate.json"],
+    ),
+    context: input.target_image_certificate_context,
+    now: initialCertificateCheckAt,
+  });
+  assertTargetImageCertificate(
+    initialCertificateProof,
+    plan,
+    permit,
+    built.qualification_support_artifacts["target-image-certificate.json"],
+    initialCertificateCheckAt,
+  );
   await dependencies.artifact_sink.persist("PREPARED_REQUEST", {
     "request-manifest.json": built.request_manifest_bytes,
     "request-payload.json": built.payload_bytes,
+    ...built.qualification_support_artifacts,
   });
   const applyId = `repair-apply-${permit.authorization_sha256}`;
 
@@ -1385,17 +1552,31 @@ async function executeInternal(
   try {
     // Rebuild the mutable source-aware position after the permit has burned.
     // A stale pre-build READY proof is never sufficient at the write boundary.
-    const finalReady = await dependencies.rebuild_sequence_ready_proof({
-      sequence_authorization: input.sequence_authorization,
-      sequence,
+    const finalCertificateCheckAt = nowDate(dependencies.now);
+    const finalCertificateProof = await dependencies.verify_target_image_certificate({
       plan,
+      certificate_bytes: Uint8Array.from(
+        built.qualification_support_artifacts["target-image-certificate.json"],
+      ),
+      context: input.target_image_certificate_context,
+      now: finalCertificateCheckAt,
     });
-    const finalProductTruth = await dependencies.read_current_product_truth({ plan });
-    transport = dependencies.open_transport();
-    validateCounts(transport.getCallCounts(), { post: 0, gets: 0 });
+
+    // The certificate verifier may perform slow external work. Re-read both mutable
+    // authorities only after it returns so drift during that await cannot survive as
+    // a stale snapshot. Promise.all makes these the final awaited reads; all checks
+    // below remain synchronous through the exact POST invocation.
+    const [finalReady, finalProductTruth] = await Promise.all([
+      dependencies.rebuild_sequence_ready_proof({
+        sequence_authorization: input.sequence_authorization,
+        sequence,
+        plan,
+      }),
+      dependencies.read_current_product_truth({ plan }),
+    ]);
 
     // Final synchronous boundary: current sequence, plan, permit, fresh READY,
-    // Product Truth, and credential account are all rebound at one clock value.
+    // Product Truth, and target-image certificate are rebound before transport opens.
     // There is deliberately no await between this block and POST invocation.
     const finalNow = nowDate(dependencies.now);
     const finalSequence = runtime.verifySequence(input.sequence_authorization, finalNow);
@@ -1410,6 +1591,16 @@ async function executeInternal(
     assertPermitBinding(finalSequence, finalPermit, finalPlan);
     assertReadyProof(finalReady, finalSequence, finalPlan);
     assertProductTruth(finalProductTruth, finalPlan);
+    assertTargetImageCertificate(
+      finalCertificateProof,
+      finalPlan,
+      finalPermit,
+      built.qualification_support_artifacts["target-image-certificate.json"],
+      finalCertificateCheckAt,
+      finalNow,
+    );
+    transport = dependencies.open_transport();
+    validateCounts(transport.getCallCounts(), { post: 0, gets: 0 });
     assertAccountBinding(transport, finalSequence, finalPlan);
     validateCounts(transport.getCallCounts(), { post: 0, gets: 0 });
 
@@ -1517,6 +1708,13 @@ async function executeInternal(
   const responseCapturedAt = nowDate(dependencies.now).toISOString();
   const responseHttp = responseReceiptBytes({
     response: { ...response, body: responseBody },
+    request: {
+      operation: "MAINTENANCE_POST",
+      method: "POST",
+      path: "/v3/feeds",
+      query: { feedType: "MP_MAINTENANCE" },
+      feed_id: null,
+    },
     request_correlation_id_sha256: sha256(requestCorrelationId),
     captured_at: responseCapturedAt,
   });
@@ -1650,6 +1848,19 @@ function productionAuthorityRuntime(): WriterAuthorityRuntime {
   };
 }
 
+function snapshotProductionExecutionInput(
+  input: WalmartListingRepairProductionExecutionInput,
+): WalmartListingRepairProductionExecutionInput {
+  try {
+    return structuredClone(input);
+  } catch {
+    return fail(
+      "INVALID_PRODUCTION_EXECUTION_PACKAGE",
+      "production execution input must be snapshot-safe data without functions or mutable handles",
+    );
+  }
+}
+
 async function reconcileRequestingInternal(
   input: { writer_input: WalmartListingRepairWriterInput },
   dependencies: WalmartListingRepairRequestingRecoveryDependencies,
@@ -1726,10 +1937,21 @@ async function reconcileRequestingInternal(
  * payload builder, ledger, sink, or retrying transport.
  */
 export async function executeWalmartListingRepairOneSku(
-  input: WalmartListingRepairWriterInput,
-  dependencies: WalmartListingRepairWriterDependencies,
+  input: WalmartListingRepairProductionExecutionInput,
 ): Promise<WalmartListingRepairWriterResult> {
-  return executeInternal(input, dependencies, productionAuthorityRuntime());
+  if (arguments.length !== 1) {
+    fail(
+      "CALLER_DEPENDENCY_INJECTION_FORBIDDEN",
+      "production writer accepts one data-only execution package and no dependency arguments",
+    );
+  }
+  const execution = snapshotProductionExecutionInput(input);
+  const runtime = productionAuthorityRuntime();
+  const { createWalmartListingRepairProductionDependencies } = await import(
+    "./listing-integrity-remediation-production-dependencies.ts"
+  );
+  const dependencies = createWalmartListingRepairProductionDependencies(execution);
+  return executeInternal(execution.writer_input, dependencies, runtime);
 }
 
 /** Test-only execution of the real orchestration state machine. */
@@ -1860,6 +2082,11 @@ async function resumeInternal(input: {
   );
   const postResponseStatus = Number(httpReceipt.status);
   if (httpReceipt.schema_version !== WALMART_LISTING_REPAIR_HTTP_RECEIPT_SCHEMA
+    || httpReceipt.operation !== "MAINTENANCE_POST"
+    || httpReceipt.method !== "POST"
+    || httpReceipt.path !== "/v3/feeds"
+    || httpReceipt.feed_id !== null
+    || !canonicalEqual(httpReceipt.query, { feedType: "MP_MAINTENANCE" })
     || !Number.isSafeInteger(postResponseStatus) || postResponseStatus < 200
     || postResponseStatus >= 300
     || httpReceipt.content_length !== responseBody.byteLength
@@ -1909,4 +2136,23 @@ export async function resumeWalmartListingRepairFeedPollForTest(
     fail("TEST_INJECTION_DISABLED", "writer test continuation injection is disabled");
   }
   return resumeInternal(input, dependencies, runtime);
+}
+
+/** Production GET-only continuation using the same non-injectable dependency closure. */
+export async function resumeWalmartListingRepairFeedPoll(
+  input: WalmartListingRepairProductionExecutionInput,
+): Promise<WalmartListingRepairWriterResult> {
+  if (arguments.length !== 1) {
+    fail(
+      "CALLER_DEPENDENCY_INJECTION_FORBIDDEN",
+      "production continuation accepts one data-only execution package and no dependencies",
+    );
+  }
+  const execution = snapshotProductionExecutionInput(input);
+  const runtime = productionAuthorityRuntime();
+  const { createWalmartListingRepairProductionDependencies } = await import(
+    "./listing-integrity-remediation-production-dependencies.ts"
+  );
+  const dependencies = createWalmartListingRepairProductionDependencies(execution);
+  return resumeInternal({ writer_input: execution.writer_input }, dependencies, runtime);
 }

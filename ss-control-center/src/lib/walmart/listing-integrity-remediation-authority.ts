@@ -104,6 +104,7 @@ export interface WalmartListingRepairOneSkuPermitSignedBody {
   plan_id: string;
   plan_body_sha256: string;
   target_sha256: string;
+  target_image_certificate_sha256: string;
   baseline_capture_exchange_sha256: string;
   product_truth: {
     expected_sha256: string;
@@ -162,6 +163,18 @@ interface TrustedOwnerKey {
 
 /** Dedicated domain, but it may enroll the same owner public key used elsewhere. */
 const PINNED_OWNER_KEYS: readonly TrustedOwnerKey[] = Object.freeze([]);
+
+export function inspectWalmartListingRepairOwnerTrustReadiness(): {
+  owner_trust_root_ready: boolean;
+  enrolled_owner_key_count: number;
+  enrolled_owner_key_ids: readonly string[];
+} {
+  return Object.freeze({
+    owner_trust_root_ready: PINNED_OWNER_KEYS.length > 0,
+    enrolled_owner_key_count: PINNED_OWNER_KEYS.length,
+    enrolled_owner_key_ids: Object.freeze(PINNED_OWNER_KEYS.map((key) => key.key_id)),
+  });
+}
 
 function fail(message: string): never {
   const error = new Error(message);
@@ -447,7 +460,8 @@ export function parseWalmartListingRepairOneSkuPermitSignedBody(
     "action", "environment", "permit_id", "issued_at", "expires_at", "approved_by",
     "decision_ref", "sequence_authorization_sha256", "sequence_id", "sequence_epoch",
     "sequence_position", "listing", "plan_id", "plan_body_sha256", "target_sha256",
-    "baseline_capture_exchange_sha256", "product_truth", "apply_engine_release_sha256",
+    "target_image_certificate_sha256", "baseline_capture_exchange_sha256", "product_truth",
+    "apply_engine_release_sha256",
     "request_manifest_sha256", "request_payload_sha256", "consumption_ledger", "claims",
   ], "one-SKU permit signed body");
   if (raw.action !== WALMART_LISTING_REPAIR_ONE_SKU_ACTION
@@ -482,6 +496,10 @@ export function parseWalmartListingRepairOneSkuPermitSignedBody(
     plan_id: safeId(raw.plan_id, "permit plan_id"),
     plan_body_sha256: digest(raw.plan_body_sha256, "permit plan_body_sha256"),
     target_sha256: digest(raw.target_sha256, "permit target_sha256"),
+    target_image_certificate_sha256: digest(
+      raw.target_image_certificate_sha256,
+      "permit target_image_certificate_sha256",
+    ),
     baseline_capture_exchange_sha256: digest(
       raw.baseline_capture_exchange_sha256,
       "permit baseline_capture_exchange_sha256",

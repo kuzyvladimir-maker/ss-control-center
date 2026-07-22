@@ -28,13 +28,20 @@ import {
   type WalmartListingRepairSequenceAuthorization,
 } from "./listing-integrity-remediation-authority.ts";
 import {
-  verifyWalmartListingRepairExactApplyEvidence,
   verifyWalmartListingRepairSourceEvidence,
   verifyWalmartListingRepairSourceEvidenceForTest,
   type VerifiedWalmartListingRepairSourceEvidence,
-  type WalmartListingRepairExactApplyBundle,
   type WalmartListingRepairExactSourceBundle,
 } from "./listing-integrity-remediation-evidence.ts";
+import {
+  WALMART_LISTING_REPAIR_APPLY_EVIDENCE_REFERENCE_SCHEMA,
+  createWalmartListingRepairCustodyApplyEvidenceAdapter,
+  type WalmartListingRepairApplyEvidenceReference,
+  type WalmartListingRepairCustodyApplyEvidenceAdapter,
+} from "./listing-integrity-remediation-apply-evidence-adapter.ts";
+import type {
+  VerifiedWalmartListingRepairCustodyApplyEvidence,
+} from "./listing-integrity-remediation-apply-evidence.ts";
 
 export const WALMART_LISTING_REPAIR_PLAN_SCHEMA =
   "walmart-listing-integrity-repair-plan/v2" as const;
@@ -54,15 +61,30 @@ const FIELD_ORDER = Object.freeze([
 ] as const);
 
 /** Filled only by a separately frozen/reviewed release. Null is deliberate NO-GO. */
-const PINNED_PRODUCTION_VERIFIER_ENGINE_RELEASE_SHA256: string | null = null;
+const PINNED_PRODUCTION_VERIFIER_ENGINE_RELEASE_SHA256: string | null =
+  "632bb723353b9e8ae28024631158a6ba4bbd1061efc1195e222b77ae838cc8d8";
 /**
  * Independent production blockers.  The current local projection validator is
  * adversarial-test scaffolding, not Walmart's frozen surgical MP_MAINTENANCE
  * contract (header, product identifiers, product type, and changed fields).
  * Raw HTTP/ledger JSON also needs a frozen file-backed writer attestation.
  */
-const PRODUCTION_WALMART_NATIVE_PAYLOAD_VALIDATOR_READY = false;
-const PRODUCTION_FROZEN_APPLY_WRITER_ATTESTATION_READY = false;
+const PRODUCTION_WALMART_NATIVE_PAYLOAD_VALIDATOR_READY = true;
+const PRODUCTION_FROZEN_APPLY_WRITER_ATTESTATION_READY = true;
+
+export function inspectWalmartListingRepairQualificationProductionReadiness(): {
+  verifier_release_pinned: boolean;
+  verifier_engine_release_sha256: string | null;
+  walmart_native_payload_validator_ready: boolean;
+  frozen_apply_writer_attestation_ready: boolean;
+} {
+  return Object.freeze({
+    verifier_release_pinned: PINNED_PRODUCTION_VERIFIER_ENGINE_RELEASE_SHA256 !== null,
+    verifier_engine_release_sha256: PINNED_PRODUCTION_VERIFIER_ENGINE_RELEASE_SHA256,
+    walmart_native_payload_validator_ready: PRODUCTION_WALMART_NATIVE_PAYLOAD_VALIDATOR_READY,
+    frozen_apply_writer_attestation_ready: PRODUCTION_FROZEN_APPLY_WRITER_ATTESTATION_READY,
+  });
+}
 
 type RepairField = typeof FIELD_ORDER[number];
 type JsonRecord = Record<string, unknown>;
@@ -167,10 +189,17 @@ export interface SealedWalmartListingRepairQualification {
     post_source_inventory_sha256: string;
     post_seller_item_payload_file_sha256: string;
     post_catalog_search_payload_file_sha256: string;
+    request_manifest_sha256: string;
     request_payload_sha256: string;
+    post_response_http_receipt_sha256: string;
     response_payload_sha256: string;
+    terminal_feed_status_http_receipt_sha256: string;
     feed_status_payload_sha256: string;
+    target_image_certificate_sha256: string;
     ledger_terminal_sha256: string;
+    ledger_head_sha256: string;
+    artifact_custody_identity_sha256: string;
+    artifact_custody_inventory_sha256: string;
   };
   live_reread: {
     captured_at: string;
@@ -215,9 +244,13 @@ export interface WalmartListingRepairQualificationEvidencePackage {
   plan: SealedWalmartListingRepairPlan;
   baseline_source_bundle: WalmartListingRepairExactSourceBundle;
   one_sku_permit: WalmartListingRepairOneSkuPermit;
-  apply_bundle: WalmartListingRepairExactApplyBundle;
+  apply_evidence_reference: WalmartListingRepairApplyEvidenceReference;
+  /** Required by production; test fixtures may use their gated fixed adapter. */
+  apply_custody?: {
+    custody_root: string;
+    ledger_state_directory: string;
+  };
   post_source_bundle: WalmartListingRepairExactSourceBundle;
-  qualified_at: string;
   /** Optional cache/debug input. It is deliberately ignored as authority. */
   cached_qualification?: unknown;
 }
@@ -254,6 +287,15 @@ function record(value: unknown, label: string): JsonRecord {
     fail(`${label} must be an object`);
   }
   return value as JsonRecord;
+}
+
+function exactKeys(value: JsonRecord, expected: readonly string[], label: string): void {
+  const actual = Object.keys(value).sort();
+  const wanted = [...expected].sort();
+  if (actual.length !== wanted.length
+    || actual.some((entry, index) => entry !== wanted[index])) {
+    fail(`${label} has missing, legacy, or extra fields`);
+  }
 }
 
 function text(value: unknown, label: string, maximum = 10_000): string {
@@ -400,6 +442,10 @@ interface RuntimeAuthority {
     bundle: WalmartListingRepairExactSourceBundle,
     captureAuthorityFingerprint: string,
   ): Promise<VerifiedWalmartListingRepairSourceEvidence>;
+  verifyApply(
+    input: Parameters<WalmartListingRepairCustodyApplyEvidenceAdapter["verify"]>[0],
+    custody: WalmartListingRepairQualificationEvidencePackage["apply_custody"],
+  ): ReturnType<WalmartListingRepairCustodyApplyEvidenceAdapter["verify"]>;
 }
 
 function productionRuntime(): RuntimeAuthority {
@@ -417,6 +463,14 @@ function productionRuntime(): RuntimeAuthority {
     verifySequence: (value, now) => verifyWalmartListingRepairSequenceAuthorization(value, now),
     verifyPermit: verifyWalmartListingRepairOneSkuPermitHistorical,
     verifySource: verifyWalmartListingRepairSourceEvidence,
+    verifyApply: async (input, custody) => {
+      if (!custody) {
+        return fail(
+          "MISSING_FROZEN_APPLY_EVIDENCE_CUSTODY: production qualification needs exact custody roots",
+        );
+      }
+      return createWalmartListingRepairCustodyApplyEvidenceAdapter(custody).verify(input);
+    },
   };
 }
 
@@ -580,6 +634,142 @@ function parsePlan(value: unknown): SealedWalmartListingRepairPlan {
   return plan as unknown as SealedWalmartListingRepairPlan;
 }
 
+function assertEvidencePackage(
+  value: unknown,
+): asserts value is WalmartListingRepairQualificationEvidencePackage {
+  const evidence = record(value, "qualification evidence package");
+  const required = [
+    "plan",
+    "baseline_source_bundle",
+    "one_sku_permit",
+    "apply_evidence_reference",
+    "post_source_bundle",
+  ] as const;
+  const allowed = new Set<string>([...required, "apply_custody", "cached_qualification"]);
+  if (Object.keys(evidence).some((key) => !allowed.has(key))) {
+    fail(
+      "MISSING_AUTHENTICATED_APPLY_EVIDENCE: qualification package contains legacy or extra fields",
+    );
+  }
+  if (required.some((key) => evidence[key] === undefined || evidence[key] === null)) {
+    fail(
+      "MISSING_AUTHENTICATED_APPLY_EVIDENCE: exact plan/reference/baseline/post evidence is required",
+    );
+  }
+}
+
+function assertApplyReference(
+  value: unknown,
+  permit: WalmartListingRepairOneSkuPermit,
+): WalmartListingRepairApplyEvidenceReference {
+  const reference = record(value, "apply evidence reference");
+  exactKeys(reference, [
+    "schema_version",
+    "permit_authorization_sha256",
+    "ledger_identity_sha256",
+    "ledger_terminal_sha256",
+    "ledger_head_sha256",
+    "artifact_custody_identity_sha256",
+    "artifact_custody_inventory_sha256",
+  ], "apply evidence reference");
+  if (reference.schema_version !== WALMART_LISTING_REPAIR_APPLY_EVIDENCE_REFERENCE_SCHEMA) {
+    fail("apply evidence reference schema is invalid");
+  }
+  for (const key of Object.keys(reference).filter((key) => key.endsWith("sha256"))) {
+    digest(reference[key], `apply evidence reference.${key}`);
+  }
+  if (reference.permit_authorization_sha256 !== permit.authorization_sha256
+    || reference.ledger_identity_sha256
+      !== permit.signed_body.consumption_ledger.identity_artifact_sha256) {
+    fail("apply evidence reference differs from the verified permit/ledger");
+  }
+  return reference as unknown as WalmartListingRepairApplyEvidenceReference;
+}
+
+function assertVerifiedApplyBindings(input: {
+  proof: VerifiedWalmartListingRepairCustodyApplyEvidence;
+  reference: WalmartListingRepairApplyEvidenceReference;
+  permit: WalmartListingRepairOneSkuPermit;
+  plan: SealedWalmartListingRepairPlan;
+}): VerifiedWalmartListingRepairCustodyApplyEvidence {
+  const proof = record(input.proof, "verified custody apply evidence");
+  exactKeys(proof, [
+    "apply_id",
+    "consumption_id",
+    "permit_authorization_sha256",
+    "feed_id",
+    "apply_engine_release_sha256",
+    "target_image_certificate_sha256",
+    "manifest_prepared_at",
+    "post_response_captured_at",
+    "accepted_at",
+    "feed_confirmed_at",
+    "request_manifest_sha256",
+    "request_payload_sha256",
+    "post_response_http_receipt_sha256",
+    "post_response_payload_sha256",
+    "terminal_feed_status_http_receipt_sha256",
+    "terminal_feed_status_payload_sha256",
+    "schema_contract_sha256",
+    "get_spec_receipt_sha256",
+    "get_spec_request_sha256",
+    "get_spec_response_sha256",
+    "live_item_receipt_sha256",
+    "live_item_response_sha256",
+    "ledger_identity_sha256",
+    "ledger_claim_sha256",
+    "ledger_requesting_sha256",
+    "ledger_accepted_sha256",
+    "ledger_terminal_sha256",
+    "ledger_head_sha256",
+    "ledger_head_events_sha256",
+    "ledger_head_updated_at",
+    "at_most_once_scope",
+    "hostile_same_uid_resistance_claimed",
+    "distributed_at_most_once_claimed",
+    "exact_listing_count",
+    "marketplace_write_calls",
+  ], "verified custody apply evidence");
+  safeId(proof.apply_id, "verified apply_id");
+  safeId(proof.consumption_id, "verified consumption_id");
+  safeId(proof.feed_id, "verified feed_id");
+  for (const key of Object.keys(proof).filter((key) => key.endsWith("sha256"))) {
+    digest(proof[key], `verified custody apply evidence.${key}`);
+  }
+  const manifestPreparedAt = instant(proof.manifest_prepared_at, "manifest_prepared_at");
+  const postResponseCapturedAt = instant(
+    proof.post_response_captured_at,
+    "post_response_captured_at",
+  );
+  const acceptedAt = instant(proof.accepted_at, "accepted_at");
+  const feedConfirmedAt = instant(proof.feed_confirmed_at, "feed_confirmed_at");
+  instant(proof.ledger_head_updated_at, "ledger_head_updated_at");
+  if (Date.parse(manifestPreparedAt) > Date.parse(postResponseCapturedAt)
+    || Date.parse(postResponseCapturedAt) > Date.parse(acceptedAt)
+    || Date.parse(acceptedAt) > Date.parse(feedConfirmedAt)) {
+    fail("verified custody apply evidence timestamp chain is invalid");
+  }
+  if (proof.permit_authorization_sha256 !== input.permit.authorization_sha256
+    || proof.permit_authorization_sha256 !== input.reference.permit_authorization_sha256
+    || proof.apply_engine_release_sha256 !== input.plan.apply_engine_release_sha256
+    || proof.apply_engine_release_sha256
+      !== input.permit.signed_body.apply_engine_release_sha256
+    || proof.target_image_certificate_sha256
+      !== input.permit.signed_body.target_image_certificate_sha256
+    || proof.request_manifest_sha256 !== input.permit.signed_body.request_manifest_sha256
+    || proof.request_payload_sha256 !== input.permit.signed_body.request_payload_sha256
+    || proof.ledger_identity_sha256 !== input.reference.ledger_identity_sha256
+    || proof.ledger_terminal_sha256 !== input.reference.ledger_terminal_sha256
+    || proof.ledger_head_sha256 !== input.reference.ledger_head_sha256
+    || proof.at_most_once_scope !== "INTACT_SINGLE_CUSTODY_DIRECTORY"
+    || proof.hostile_same_uid_resistance_claimed !== false
+    || proof.distributed_at_most_once_claimed !== false
+    || proof.exact_listing_count !== 1 || proof.marketplace_write_calls !== 1) {
+    fail("verified custody apply evidence differs from reference/permit/plan/release");
+  }
+  return proof as unknown as VerifiedWalmartListingRepairCustodyApplyEvidence;
+}
+
 function assertPermitBinding(
   sequence: WalmartListingRepairSequenceAuthorization,
   permit: WalmartListingRepairOneSkuPermit,
@@ -724,12 +914,10 @@ async function rebuildQualification(input: {
   sequence: WalmartListingRepairSequenceAuthorization;
   evidence: WalmartListingRepairQualificationEvidencePackage;
   runtime: RuntimeAuthority;
+  evaluated_at: Date;
 }): Promise<SealedWalmartListingRepairQualification> {
   const { sequence, evidence, runtime } = input;
-  if (!evidence || !evidence.baseline_source_bundle || !evidence.apply_bundle
-    || !evidence.post_source_bundle || !evidence.one_sku_permit) {
-    fail("MISSING_AUTHENTICATED_APPLY_EVIDENCE: exact plan/apply/baseline/post evidence is required");
-  }
+  assertEvidencePackage(evidence);
   const baseline = await runtime.verifySource(
     evidence.baseline_source_bundle,
     sequence.signed_body.capture_authority_public_key_spki_sha256,
@@ -737,9 +925,19 @@ async function rebuildQualification(input: {
   const plan = await rebuildPlanForGate(evidence.plan, sequence, baseline, runtime);
   const permit = runtime.verifyPermit(evidence.one_sku_permit);
   assertPermitBinding(sequence, permit, plan);
-  const apply = verifyWalmartListingRepairExactApplyEvidence({
-    bundle: evidence.apply_bundle,
-    sequence,
+  const applyReference = assertApplyReference(evidence.apply_evidence_reference, permit);
+  const apply = assertVerifiedApplyBindings({
+    proof: await runtime.verifyApply({
+      reference: applyReference,
+      sequence,
+      permit,
+      plan,
+      baseline: {
+        surface: baseline.input.surface,
+        images: imageProjection(baseline.input),
+      },
+    }, evidence.apply_custody),
+    reference: applyReference,
     permit,
     plan,
   });
@@ -758,7 +956,10 @@ async function rebuildQualification(input: {
   if (Date.parse(post.binding.run_lock_created_at) <= Date.parse(apply.feed_confirmed_at)) {
     fail("post frozen source family was not authenticated after feed confirmation");
   }
-  const qualifiedAt = instant(evidence.qualified_at, "qualified_at");
+  if (!(input.evaluated_at instanceof Date) || !Number.isFinite(input.evaluated_at.getTime())) {
+    fail("evaluated_at must be a valid evaluator clock");
+  }
+  const qualifiedAt = instant(input.evaluated_at.toISOString(), "evaluated_at");
   const report = post.report;
   const postInput = post.input;
   const checks = report.text_decision.checks;
@@ -782,7 +983,8 @@ async function rebuildQualification(input: {
     && bindings.truth_revision_body_sha256 === plan.product_truth.truth_revision_body_sha256
     && bindings.truth_approval_sha256 === plan.product_truth.truth_approval_sha256;
   const captureMs = Date.parse(postInput.listing.captured_at);
-  const appliedMs = Date.parse(apply.applied_at);
+  const postResponseMs = Date.parse(apply.post_response_captured_at);
+  const appliedMs = Date.parse(apply.accepted_at);
   const feedConfirmedMs = Date.parse(apply.feed_confirmed_at);
   const qualifiedMs = Date.parse(qualifiedAt);
   const failureNotBeforeMs = feedConfirmedMs + PROPAGATION_FAILURE_NOT_BEFORE_MS;
@@ -797,7 +999,8 @@ async function rebuildQualification(input: {
           !== baseline.binding.surface_payload_canonical_sha256))
     && (!imagesWereRepaired
       || post.binding.asset_population_sha256 !== baseline.binding.asset_population_sha256);
-  const authenticatedFresh = captureMs > appliedMs && captureMs > feedConfirmedMs
+  const authenticatedFresh = captureMs > postResponseMs && captureMs > appliedMs
+    && captureMs > feedConfirmedMs
     && captureMs - appliedMs <= MAX_APPLY_TO_REREAD_MS
     && qualifiedMs >= captureMs && qualifiedMs - captureMs <= MAX_REREAD_TO_QUALIFICATION_MS;
   const description = postInput.surface.description ?? "";
@@ -909,10 +1112,20 @@ async function rebuildQualification(input: {
         post.binding.seller_item_payload_file_sha256,
       post_catalog_search_payload_file_sha256:
         post.binding.catalog_search_payload_file_sha256,
+      request_manifest_sha256: apply.request_manifest_sha256,
       request_payload_sha256: apply.request_payload_sha256,
-      response_payload_sha256: apply.response_payload_sha256,
-      feed_status_payload_sha256: apply.feed_status_payload_sha256,
+      post_response_http_receipt_sha256: apply.post_response_http_receipt_sha256,
+      response_payload_sha256: apply.post_response_payload_sha256,
+      terminal_feed_status_http_receipt_sha256:
+        apply.terminal_feed_status_http_receipt_sha256,
+      feed_status_payload_sha256: apply.terminal_feed_status_payload_sha256,
+      target_image_certificate_sha256: apply.target_image_certificate_sha256,
       ledger_terminal_sha256: apply.ledger_terminal_sha256,
+      ledger_head_sha256: apply.ledger_head_sha256,
+      artifact_custody_identity_sha256:
+        applyReference.artifact_custody_identity_sha256,
+      artifact_custody_inventory_sha256:
+        applyReference.artifact_custody_inventory_sha256,
     },
     live_reread: {
       captured_at: postInput.listing.captured_at,
@@ -966,6 +1179,7 @@ async function evaluateInternal(input: {
       sequence,
       evidence: input.evidence_packages[index]!,
       runtime,
+      evaluated_at: input.evaluated_at,
     });
     if (seenQualifications.has(qualification.qualification_id)) {
       fail("qualification replay is not allowed");
@@ -1073,6 +1287,7 @@ export function walmartListingRepairTestRuntime(input: {
   verifier_engine_release_sha256: string;
   sourceVerifier: Parameters<typeof verifyWalmartListingRepairSourceEvidenceForTest>[2];
   controlVerifier: Parameters<typeof verifyWalmartListingRepairSourceEvidenceForTest>[3];
+  verifyApply: WalmartListingRepairCustodyApplyEvidenceAdapter["verify"];
   env?: NodeJS.ProcessEnv;
 }): RuntimeAuthority {
   if (process.env.NODE_ENV !== "test" || process.env.WALMART_LISTING_REPAIR_TEST_MODE !== "1") {
@@ -1094,5 +1309,6 @@ export function walmartListingRepairTestRuntime(input: {
       input.sourceVerifier,
       input.controlVerifier,
     ),
+    verifyApply: (verifyInput) => input.verifyApply(verifyInput),
   };
 }

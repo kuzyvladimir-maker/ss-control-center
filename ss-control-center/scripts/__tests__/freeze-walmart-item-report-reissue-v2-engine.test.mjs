@@ -214,6 +214,8 @@ test("actual freezer publishes exact manifest inputs and private immutable outpu
   assert.deepEqual(
     manifest.certification_files.map((entry) => entry.role),
     [
+      "ABSENCE_PROBE_EVIDENCE_MODULE",
+      "ABSENCE_PROBE_EVIDENCE_TEST",
       "FREEZER_BUILDER",
       "FREEZER_TEST",
       "FROZEN_SEALER",
@@ -221,6 +223,8 @@ test("actual freezer publishes exact manifest inputs and private immutable outpu
       "OWNER_DISPOSITION_MODULE",
       "OWNER_DISPOSITION_TEST",
       "SOURCE_EVIDENCE_MODULE",
+      "SOURCE_EVIDENCE_RENEWAL_MODULE",
+      "SOURCE_EVIDENCE_RENEWAL_TEST",
       "SOURCE_EVIDENCE_TEST",
     ],
   );
@@ -286,8 +290,12 @@ const CERTIFICATION_PATHS = [
   "scripts/__tests__/walmart-item-report-reissue-v2-frozen-sealer.test.mjs",
   "src/lib/walmart/item-report-reissue-owner-disposition-v2.ts",
   "src/lib/walmart/__tests__/item-report-reissue-owner-disposition-v2.test.mjs",
+  "src/lib/walmart/item-report-reissue-absence-probe-evidence.ts",
+  "scripts/__tests__/capture-walmart-item-v6-absence-probe.test.mjs",
   "src/lib/walmart/item-report-reissue-source-evidence-v2.ts",
   "src/lib/walmart/__tests__/item-report-reissue-source-evidence-v2.test.mjs",
+  "src/lib/walmart/item-report-reissue-source-evidence-renewal-v1.ts",
+  "src/lib/walmart/__tests__/item-report-reissue-source-evidence-renewal-v1.test.mjs",
 ];
 
 async function fixtureProject(marker) {
