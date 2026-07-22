@@ -12,12 +12,15 @@ import {
   WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_EMPTY_BODY_SHA256,
   WalmartItemReportReissueOwnerDispositionV2Error,
   assembleWalmartItemReportReissueOwnerDispositionV2,
+  assertWalmartItemReportReissueAuthorizationCurrent,
   assertWalmartItemReportReissueOwnerDispositionV2Current,
+  buildWalmartItemReportReissueDelegatedAuthorizationV1,
   buildWalmartItemReportReissueOwnerDispositionV2Body,
   buildWalmartItemReportReissueOwnerDispositionV2SigningRequest,
   buildWalmartItemReportReissueReplacementPlanV2,
   inspectWalmartItemReportReissueOwnerDispositionV2TrustRoot,
   verifyWalmartItemReportReissueOwnerDispositionV2,
+  verifyWalmartItemReportReissueDelegatedAuthorizationV1,
   walmartItemReportReissueOwnerDispositionV2SigningMessage,
 } from "../item-report-reissue-owner-disposition-v2.ts";
 import {
@@ -279,6 +282,64 @@ test("assembles and verifies against self-contained fresh renewal evidence", asy
   assert.equal(disposition.signed_body.source_evidence.exact_probe_artifacts.length, 6);
   assert.equal(disposition.signed_body.evidence_fresh_until,
     "2026-07-23T06:39:07.290Z");
+});
+
+test("delegated source-only authorization needs no password or private key", async () => {
+  const item = await fixture();
+  const renewalBytes = await readFile(path.join(
+    PROJECT_ROOT,
+    "data/audits/walmart-source-intake",
+    "item-v6-reissue-renewal-store1-20260722-codex-v1",
+    "source-evidence-renewal.json",
+  ));
+  const authorization = buildWalmartItemReportReissueDelegatedAuthorizationV1({
+    disposition_id: "item-v6-reissue-delegated-pilot-20260722-test",
+    approved_by: "Walmart catalog owner delegated automation",
+    decision_ref: "urn:ss-command-center:owner-delegation:walmart-listing-integrity:20260722",
+    engine_release_sha256: "4".repeat(64),
+    source_evidence_bytes: renewalBytes,
+    expected_source_evidence_artifact_sha256: sha256(renewalBytes),
+    replacement: item.replacement,
+    consumption_ledger: ledger(),
+    issued_at: "2026-07-22T06:45:00.000Z",
+    expires_at: "2026-07-22T07:00:00.000Z",
+  });
+  const verified = verifyWalmartItemReportReissueDelegatedAuthorizationV1(
+    authorization,
+    {
+      expected_environment: "PRODUCTION",
+      expected_engine_release_sha256: "4".repeat(64),
+      expected_source_evidence_bytes: renewalBytes,
+      expected_source_evidence_artifact_sha256: sha256(renewalBytes),
+      expected_replacement: item.replacement,
+      expected_consumption_ledger: ledger(),
+      now: new Date("2026-07-22T06:50:00.000Z"),
+    },
+  );
+  assert.equal(verified.authorization_mode, "OWNER_DELEGATED_AUTOMATION");
+  assert.equal(verified.signed_body.authorization.maximum_create_post_calls, 1);
+  assert.equal(verified.signed_body.authorization.listing_content_writes_allowed, 0);
+  assert.equal(
+    assertWalmartItemReportReissueAuthorizationCurrent(
+      verified,
+      new Date("2026-07-22T06:50:00.000Z"),
+    ),
+    "2026-07-22T07:00:00.000Z",
+  );
+  assert.throws(
+    () => verifyWalmartItemReportReissueDelegatedAuthorizationV1({
+      ...authorization,
+      body_sha256: "f".repeat(64),
+    }, {
+      expected_environment: "PRODUCTION",
+      expected_engine_release_sha256: "4".repeat(64),
+      expected_source_evidence_bytes: renewalBytes,
+      expected_source_evidence_artifact_sha256: sha256(renewalBytes),
+      expected_replacement: item.replacement,
+      expected_consumption_ledger: ledger(),
+    }),
+    (error) => error?.code === "AUTHORIZATION_HASH_MISMATCH",
+  );
 });
 
 test("rejects a signature from another domain/message", async () => {

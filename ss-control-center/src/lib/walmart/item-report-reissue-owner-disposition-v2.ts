@@ -45,6 +45,10 @@ export const WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_ALGORITHM =
   "Ed25519" as const;
 export const WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_ACTION =
   "WALMART_ITEM_V6_REPORT_CREATE_REISSUE" as const;
+export const WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_SCHEMA =
+  "walmart-item-report-reissue-delegated-authorization/v1" as const;
+export const WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_MODE =
+  "OWNER_DELEGATED_AUTOMATION" as const;
 export const WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_MAX_TTL_MS =
   30 * 60 * 1000;
 export const WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_CLOCK_SKEW_MS =
@@ -171,6 +175,28 @@ export interface WalmartItemReportReissueOwnerDispositionV2
   signature_sha256: string;
   authorization_sha256: string;
 }
+
+/**
+ * Non-secret, hash-bound authorization for the source-capture pilot only.
+ *
+ * This is deliberately not an owner signature and must never be accepted for
+ * listing/content writes.  It records the owner's explicit delegation of the
+ * zero-listing-write report acquisition step while retaining the exact source,
+ * account, engine, replacement-session, freshness and one-shot-ledger binds.
+ */
+export interface WalmartItemReportReissueDelegatedAuthorizationV1 {
+  schema_version:
+    typeof WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_SCHEMA;
+  authorization_mode:
+    typeof WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_MODE;
+  signed_body: WalmartItemReportReissueOwnerDispositionV2SignedBody;
+  body_sha256: string;
+  authorization_sha256: string;
+}
+
+export type WalmartItemReportReissueExecutionAuthorization =
+  | WalmartItemReportReissueOwnerDispositionV2
+  | WalmartItemReportReissueDelegatedAuthorizationV1;
 
 export interface WalmartItemReportReissueOwnerDispositionV2SigningRequest
   extends WalmartItemReportReissueOwnerDispositionV2SigningEnvelope {
@@ -1123,6 +1149,126 @@ function assertReplacementBoundToSourceEvidence(
   }
 }
 
+function delegatedAuthorizationPreimage(
+  body: WalmartItemReportReissueOwnerDispositionV2SignedBody,
+  bodySha256: string,
+) {
+  return {
+    schema_version: WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_SCHEMA,
+    authorization_mode:
+      WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_MODE,
+    signed_body: body,
+    body_sha256: bodySha256,
+  } as const;
+}
+
+export function buildWalmartItemReportReissueDelegatedAuthorizationV1(input: {
+  /** Test fixtures may set TEST_FIXTURE_ONLY; production callers omit this. */
+  environment?: WalmartItemReportReissueOwnerDispositionV2Environment;
+  disposition_id: string;
+  approved_by: string;
+  decision_ref: string;
+  engine_release_sha256: string;
+  source_evidence_bytes: Uint8Array;
+  expected_source_evidence_artifact_sha256: string;
+  replacement: WalmartItemReportReissueReplacementPlanV2;
+  consumption_ledger: WalmartItemReportReissueConsumptionLedgerBindingV2;
+  issued_at: string;
+  expires_at: string;
+}): WalmartItemReportReissueDelegatedAuthorizationV1 {
+  const body = buildWalmartItemReportReissueOwnerDispositionV2Body({
+    ...input,
+    environment: input.environment ?? "PRODUCTION",
+  });
+  const bodySha256 = sha256Bytes(canonicalWalmartItemReportJson(body));
+  const preimage = delegatedAuthorizationPreimage(body, bodySha256);
+  return {
+    ...preimage,
+    authorization_sha256: sha256Bytes(canonicalWalmartItemReportJson(preimage)),
+  };
+}
+
+export function verifyWalmartItemReportReissueDelegatedAuthorizationV1(
+  value: unknown,
+  options: WalmartItemReportReissueOwnerDispositionV2VerificationBindings,
+): WalmartItemReportReissueDelegatedAuthorizationV1 {
+  const expected = parseVerificationBindings({
+    ...options,
+    expected_environment: options.expected_environment ?? "PRODUCTION",
+  });
+  const raw = record(value, "delegated authorization");
+  exactKeys(raw, [
+    "authorization_mode", "authorization_sha256", "body_sha256",
+    "schema_version", "signed_body",
+  ], "delegated authorization");
+  if (raw.schema_version
+      !== WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_SCHEMA
+    || raw.authorization_mode
+      !== WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_MODE) {
+    fail("INVALID_DELEGATED_AUTHORIZATION", "delegated authorization schema/mode is invalid");
+  }
+  const suppliedBody = record(raw.signed_body, "delegated authorization signed_body");
+  const expectedBody = buildWalmartItemReportReissueOwnerDispositionV2Body({
+    disposition_id: exactString(
+      suppliedBody.disposition_id,
+      "delegated authorization disposition_id",
+      200,
+    ),
+    environment: expected.environment,
+    approved_by: exactString(
+      suppliedBody.approved_by,
+      "delegated authorization approved_by",
+      256,
+    ),
+    decision_ref: decisionReference(suppliedBody.decision_ref),
+    engine_release_sha256: expected.engine_release_sha256,
+    source_evidence_bytes: options.expected_source_evidence_bytes,
+    expected_source_evidence_artifact_sha256:
+      options.expected_source_evidence_artifact_sha256,
+    replacement: expected.replacement,
+    consumption_ledger: expected.consumption_ledger,
+    issued_at: strictInstant(
+      suppliedBody.issued_at,
+      "delegated authorization issued_at",
+    ),
+    expires_at: strictInstant(
+      suppliedBody.expires_at,
+      "delegated authorization expires_at",
+    ),
+  });
+  if (!exactJsonEqual(suppliedBody, expectedBody)) {
+    fail(
+      "BINDING_MISMATCH",
+      "delegated authorization body differs from exact source/execution bindings",
+    );
+  }
+  const bodySha256 = digest(raw.body_sha256, "delegated authorization body_sha256");
+  if (bodySha256 !== sha256Bytes(canonicalWalmartItemReportJson(expectedBody))) {
+    fail("AUTHORIZATION_HASH_MISMATCH", "delegated authorization body hash is invalid");
+  }
+  const preimage = delegatedAuthorizationPreimage(expectedBody, bodySha256);
+  const authorizationSha256 = digest(
+    raw.authorization_sha256,
+    "delegated authorization authorization_sha256",
+  );
+  if (authorizationSha256 !== sha256Bytes(canonicalWalmartItemReportJson(preimage))) {
+    fail("AUTHORIZATION_HASH_MISMATCH", "delegated authorization envelope hash is invalid");
+  }
+  assertReplacementBoundToSourceEvidence(
+    expectedBody.replacement,
+    expected.source_account_scope,
+    expected.original_incident,
+  );
+  const parsed: WalmartItemReportReissueDelegatedAuthorizationV1 = {
+    ...preimage,
+    authorization_sha256: authorizationSha256,
+  };
+  if (expected.now !== undefined) {
+    assertWalmartItemReportReissueAuthorizationCurrent(parsed, expected.now);
+  }
+  return parsed;
+}
+
 export function verifyWalmartItemReportReissueOwnerDispositionV2(
   value: unknown,
   options: WalmartItemReportReissueOwnerDispositionV2VerificationBindings,
@@ -1266,20 +1412,27 @@ export function assertWalmartItemReportReissueOwnerDispositionV2Current(
   disposition: WalmartItemReportReissueOwnerDispositionV2,
   now: Date = new Date(),
 ): string {
+  return assertWalmartItemReportReissueAuthorizationCurrent(disposition, now);
+}
+
+export function assertWalmartItemReportReissueAuthorizationCurrent(
+  authorization: WalmartItemReportReissueExecutionAuthorization,
+  now: Date = new Date(),
+): string {
   if (!(now instanceof Date) || !Number.isFinite(now.getTime())) {
-    fail("INVALID_CLOCK", "owner disposition clock is invalid");
+    fail("INVALID_CLOCK", "authorization clock is invalid");
   }
-  const issuedAt = Date.parse(disposition.signed_body.issued_at);
+  const issuedAt = Date.parse(authorization.signed_body.issued_at);
   const effectiveDeadline = Math.min(
-    Date.parse(disposition.signed_body.expires_at),
-    Date.parse(disposition.signed_body.evidence_fresh_until),
+    Date.parse(authorization.signed_body.expires_at),
+    Date.parse(authorization.signed_body.evidence_fresh_until),
   );
   if (issuedAt > now.getTime() + WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_CLOCK_SKEW_MS
     || now.getTime() < issuedAt - WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_CLOCK_SKEW_MS) {
-    fail("AUTHORIZATION_NOT_CURRENT", "owner disposition issuance window has not opened");
+    fail("AUTHORIZATION_NOT_CURRENT", "authorization issuance window has not opened");
   }
   if (now.getTime() >= effectiveDeadline) {
-    fail("AUTHORIZATION_EXPIRED", "owner disposition or source evidence has expired");
+    fail("AUTHORIZATION_EXPIRED", "authorization or source evidence has expired");
   }
   return new Date(effectiveDeadline).toISOString();
 }

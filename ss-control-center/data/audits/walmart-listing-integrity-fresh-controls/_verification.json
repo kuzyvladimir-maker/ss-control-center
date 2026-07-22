@@ -1,0 +1,24 @@
+{
+  "schema_version": "walmart-listing-integrity-shadow-verification/v1",
+  "verified_at": "2026-07-22T12:39:18Z",
+  "release_certification": {
+    "closed_loop_assertions_passed": 109,
+    "closed_loop_assertions_failed": 0,
+    "release_id": "632bb723353b9e8ae28024631158a6ba4bbd1061efc1195e222b77ae838cc8d8",
+    "source": "docs/wiki/walmart-listing-integrity-operator-runbook.md"
+  },
+  "current_verification": {
+    "fresh_detector_assertions_passed": 37,
+    "shadow_loader_assertions_passed": 3,
+    "shadow_ui_assertions_passed": 1,
+    "targeted_typescript": "PASS",
+    "targeted_eslint": "PASS",
+    "diff_check": "PASS"
+  },
+  "historical_controls": 24,
+  "external_effects": {
+    "walmart_listing_writes": 0,
+    "model_calls": 0,
+    "paid_api_calls": 0
+  }
+}

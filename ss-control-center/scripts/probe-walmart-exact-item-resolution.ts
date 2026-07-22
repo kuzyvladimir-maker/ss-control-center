@@ -325,7 +325,7 @@ async function runProbe(args: ExactItemProbeArgs): Promise<string> {
   const { config } = await import("dotenv");
   config({ path: ".env.local", quiet: true });
   config({ path: ".env", quiet: true });
-  const { getWalmartClient } = await import("../src/lib/walmart/client");
+  const { getWalmartClient } = await import("../src/lib/walmart/client.ts");
   const client = getWalmartClient(args.store_index);
 
   const sellerPath = `/items/${encodeURIComponent(args.sku)}`;

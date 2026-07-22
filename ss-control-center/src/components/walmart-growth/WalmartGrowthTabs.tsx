@@ -5,14 +5,20 @@ import { PageHead } from "@/components/kit";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActionCenter } from "./ActionCenter";
 import { BuyBoxPanel } from "./BuyBoxPanel";
+import { ListingIntegrityPanel } from "./ListingIntegrityPanel";
 import { ListingOptimizer } from "./ListingOptimizer";
+import type { ListingIntegrityShadowData } from "@/lib/walmart/listing-integrity-shadow-contract";
 
-export function WalmartGrowthTabs() {
-  // Three tabs. The old "Listing Quality" tab is folded into the Optimizer: its
+export function WalmartGrowthTabs({
+  integrityData,
+}: {
+  integrityData: ListingIntegrityShadowData;
+}) {
+  // The old "Listing Quality" tab is folded into the Optimizer: its
   // seller score + 6 component gauges live in the health strip, and Walmart's
   // per-listing issues are now inline + actionable (Fix / Ask AI) in the
   // candidate table. Action Center is renamed "Overview".
-  const [tab, setTab] = useState("optimizer");
+  const [tab, setTab] = useState("integrity");
 
   return (
     <div className="space-y-5">
@@ -22,11 +28,15 @@ export function WalmartGrowthTabs() {
       />
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList>
+          <TabsTrigger value="integrity">Listing Integrity</TabsTrigger>
           <TabsTrigger value="optimizer">Listing Optimizer</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="buy-box">Buy Box</TabsTrigger>
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
         </TabsList>
+        <TabsContent value="integrity" className="mt-4">
+          <ListingIntegrityPanel data={integrityData} />
+        </TabsContent>
         <TabsContent value="optimizer" className="mt-4">
           <ListingOptimizer />
         </TabsContent>

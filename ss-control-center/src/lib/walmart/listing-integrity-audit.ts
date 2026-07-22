@@ -381,7 +381,9 @@ function structuredNetContent(value: unknown): { value: number; unit: Exclude<Si
     rawValue = value.value;
     rawUnit = value.unit;
   } else if (typeof value === "string") {
-    const match = value.trim().match(/^(\d+(?:\.\d+)?)\s*(fl\.?\s*oz|oz|lb|lbs|g|kg|ml|l)$/iu);
+    const match = value.trim().match(
+      /^(\d+(?:\.\d+)?)\s*(fl\.?\s*oz|fluid ounces?|ounces?|oz|pounds?|lbs?|lb|grams?|g|kilograms?|kg|milliliters?|ml|liters?|l)$/iu,
+    );
     if (!match) return null;
     rawValue = Number(match[1]);
     rawUnit = match[2];
@@ -392,10 +394,19 @@ function structuredNetContent(value: unknown): { value: number; unit: Exclude<Si
     : typeof rawValue === "string" && /^\d+(?:\.\d+)?$/u.test(rawValue.trim())
       ? Number(rawValue.trim()) : NaN;
   if (!Number.isFinite(numeric) || numeric <= 0 || typeof rawUnit !== "string") return null;
-  const normalized = rawUnit.toLowerCase().replace(/[.\s]+/gu, "_").replace(/lbs?$/u, "lb");
-  const unit = normalized === "fl_oz" ? "fl_oz" : normalized;
-  if (!new Set(["oz", "fl_oz", "lb", "g", "kg", "ml", "l"]).has(unit)) return null;
-  return { value: numeric, unit: unit as Exclude<SizeUnit, "count"> };
+  const normalized = rawUnit.toLowerCase().replace(/[.\s]+/gu, "_");
+  const unitAliases: Record<string, Exclude<SizeUnit, "count">> = {
+    fl_oz: "fl_oz", fluid_ounce: "fl_oz", fluid_ounces: "fl_oz",
+    ounce: "oz", ounces: "oz", oz: "oz",
+    pound: "lb", pounds: "lb", lb: "lb", lbs: "lb",
+    gram: "g", grams: "g", g: "g",
+    kilogram: "kg", kilograms: "kg", kg: "kg",
+    milliliter: "ml", milliliters: "ml", ml: "ml",
+    liter: "l", liters: "l", l: "l",
+  };
+  const unit = unitAliases[normalized];
+  if (!unit) return null;
+  return { value: numeric, unit };
 }
 
 const BUYER_SURFACE_CONSUMED_KEYS = new Set([
@@ -441,7 +452,8 @@ function projectAttribute(
     return count === null ? null
       : { field_path: fieldPath, kind: "inner_item_count", value: count, unit: "count" };
   }
-  if (name === "net content" || name === "net weight" || name === "net volume") {
+  if (name === "net content" || name === "net weight" || name === "net volume"
+    || name === "product net content parent") {
     const parsed = structuredNetContent(value);
     return parsed === null ? null
       : { field_path: fieldPath, kind: "net_content", ...parsed };
@@ -1016,17 +1028,19 @@ function auditText(input: WalmartListingIntegrityInput): ListingTextAuditDecisio
     .map((marker) => `${claim.field_path}:${marker.role}:${marker.aliases.join("|")}`));
   if (forbiddenAttributeClaims.length) {
     hard.push(`typed identity attributes contain forbidden markers: ${forbiddenAttributeClaims.join(",")}`);
+    checks.attributes_identity = "MISMATCH";
   }
   let identityUnknown = false;
   for (const { role, groups: required } of groups) {
     if (!required.length) continue;
     const claims = identityClaims.filter((claim) => claim.kind === role);
     if (!claims.length) { identityUnknown = true; continue; }
-    const roleMatches = claims.every((claim) => required.some((aliases) => containsAlias(claim.text, aliases)));
-    if (!roleMatches) {
-      hard.push(`typed ${role} attribute contradicts expected ${role}`);
-      checks.attributes_identity = "MISMATCH";
-    } else if (required.some((aliases) => !claims.some((claim) => containsAlias(claim.text, aliases)))) {
+    // A broad marketplace attribute such as Flavor="Grain" is incomplete
+    // evidence for expected "15 Grain / Thin Sliced", not proof of a different
+    // variant. Only an explicit Product Truth forbidden marker is a hard
+    // identity contradiction. Otherwise fail closed to REVIEW instead of
+    // producing a false BAD that could drive an unnecessary repair.
+    if (required.some((aliases) => !claims.some((claim) => containsAlias(claim.text, aliases)))) {
       identityUnknown = true;
     }
   }

@@ -551,7 +551,20 @@ export async function main(argv = process.argv.slice(2), injected = {}) {
   return result;
 }
 
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+// The source is bundled into the frozen one-shot executor. esbuild rewrites
+// import.meta.url to the bundle URL, so a path-only comparison would make this
+// helper falsely execute its own CLI when the bundle is launched. Require the
+// real source basename as well as the canonical path match.
+export function isWalmartItemReportCaptureDirectEntrypoint(
+  invokedPath,
+  modulePath = fileURLToPath(import.meta.url),
+) {
+  return typeof invokedPath === "string"
+    && path.basename(invokedPath) === "capture-walmart-item-report-source.mjs"
+    && path.resolve(invokedPath) === modulePath;
+}
+
+const isMain = isWalmartItemReportCaptureDirectEntrypoint(process.argv[1]);
 if (isMain) {
   main().catch((error) => {
     const code = error instanceof WalmartItemReportCaptureError ? error.code : "UNEXPECTED_ERROR";

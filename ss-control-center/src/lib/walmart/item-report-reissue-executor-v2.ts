@@ -30,11 +30,13 @@ import {
 } from "./item-report-reissue-consumption-ledger-v2.ts";
 import {
   WALMART_ITEM_REPORT_REISSUE_OWNER_DISPOSITION_V2_EMPTY_BODY_SHA256,
-  assertWalmartItemReportReissueOwnerDispositionV2Current,
+  WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_SCHEMA,
+  assertWalmartItemReportReissueAuthorizationCurrent,
   buildWalmartItemReportReissueReplacementPlanV2,
+  verifyWalmartItemReportReissueDelegatedAuthorizationV1,
   verifyWalmartItemReportReissueOwnerDispositionV2,
   type WalmartItemReportReissueConsumptionLedgerBindingV2,
-  type WalmartItemReportReissueOwnerDispositionV2,
+  type WalmartItemReportReissueExecutionAuthorization,
   type WalmartItemReportReissueOwnerDispositionV2Environment,
   type WalmartItemReportReissueReplacementPlanV2,
 } from "./item-report-reissue-owner-disposition-v2.ts";
@@ -592,10 +594,10 @@ function nowDate(now: (() => Date) | undefined): Date {
 }
 
 function assertFullExecutionHeadroom(
-  disposition: WalmartItemReportReissueOwnerDispositionV2,
+  disposition: WalmartItemReportReissueExecutionAuthorization,
   now: Date,
 ): string {
-  const effectiveDeadline = assertWalmartItemReportReissueOwnerDispositionV2Current(
+  const effectiveDeadline = assertWalmartItemReportReissueAuthorizationCurrent(
     disposition,
     now,
   );
@@ -857,10 +859,20 @@ function sameJson(left: unknown, right: unknown): boolean {
 
 interface PreparedExecution {
   preflight: WalmartItemReportReissueExecutorV2Preflight;
-  disposition: WalmartItemReportReissueOwnerDispositionV2;
+  disposition: WalmartItemReportReissueExecutionAuthorization;
   owner_disposition_bytes: Buffer;
   capture_root: string;
   capture_root_custody: StableDirectoryCustody;
+}
+
+function verifyExecutionAuthorization(
+  raw: JsonRecord,
+  options: Parameters<typeof verifyWalmartItemReportReissueOwnerDispositionV2>[1],
+): WalmartItemReportReissueExecutionAuthorization {
+  return raw.schema_version
+      === WALMART_ITEM_REPORT_REISSUE_DELEGATED_AUTHORIZATION_V1_SCHEMA
+    ? verifyWalmartItemReportReissueDelegatedAuthorizationV1(raw, options)
+    : verifyWalmartItemReportReissueOwnerDispositionV2(raw, options);
 }
 
 async function prepareWalmartItemReportReissueExecutorV2(
@@ -883,7 +895,7 @@ async function prepareWalmartItemReportReissueExecutorV2(
 
   const expectedReplacement = expectedReplacementFromRawDisposition(rawDisposition);
   const signedLedger = expectedLedgerFromRawDisposition(rawDisposition);
-  const firstVerification = verifyWalmartItemReportReissueOwnerDispositionV2(
+  const firstVerification = verifyExecutionAuthorization(
     rawDisposition,
     {
       expected_environment: environment,
@@ -906,7 +918,7 @@ async function prepareWalmartItemReportReissueExecutorV2(
     expected_binding: firstVerification.signed_body.consumption_ledger,
   });
   const actualLedger = ledger.binding;
-  const disposition = verifyWalmartItemReportReissueOwnerDispositionV2(
+  const disposition = verifyExecutionAuthorization(
     rawDisposition,
     {
       expected_environment: environment,

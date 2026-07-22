@@ -37,6 +37,7 @@ import {
 } from "../item-report-reissue-executor-v2.ts";
 import {
   assembleWalmartItemReportReissueOwnerDispositionV2,
+  buildWalmartItemReportReissueDelegatedAuthorizationV1,
   buildWalmartItemReportReissueOwnerDispositionV2Body,
   buildWalmartItemReportReissueOwnerDispositionV2SigningRequest,
   buildWalmartItemReportReissueReplacementPlanV2,
@@ -228,7 +229,7 @@ async function sourceEvidenceBytes() {
   return Buffer.from(cachedEvidenceBytes);
 }
 
-async function fixture() {
+async function fixture({ delegated = false } = {}) {
   const temporary = await realpath(
     await mkdtemp(path.join(os.tmpdir(), "item-reissue-executor-v2-")),
   );
@@ -289,7 +290,7 @@ async function fixture() {
     walmartItemReportReissueOwnerDispositionV2SigningMessage(envelope),
     keys.privateKey,
   );
-  const disposition = assembleWalmartItemReportReissueOwnerDispositionV2({
+  const signedDisposition = assembleWalmartItemReportReissueOwnerDispositionV2({
     signing_request: signingRequest,
     detached_signature: detachedSignature,
     expected_engine_release_sha256: sha256(engine.manifestBytes),
@@ -300,6 +301,21 @@ async function fixture() {
     env,
     now: NOW,
   });
+  const disposition = delegated
+    ? buildWalmartItemReportReissueDelegatedAuthorizationV1({
+        environment: "TEST_FIXTURE_ONLY",
+        disposition_id: `item-v6-reissue-delegated-executor-${randomUUID()}`,
+        approved_by: "owner-test-delegated",
+        decision_ref: `urn:ss-command-center:test:item-reissue-delegated:${randomUUID()}`,
+        engine_release_sha256: sha256(engine.manifestBytes),
+        source_evidence_bytes: evidenceBytes,
+        expected_source_evidence_artifact_sha256: sha256(evidenceBytes),
+        replacement,
+        consumption_ledger: bootstrapped.binding,
+        issued_at: "2026-07-20T00:00:00.000Z",
+        expires_at: "2026-07-20T00:20:00.000Z",
+      })
+    : signedDisposition;
   const dispositionBytes = canonicalBytes(disposition);
   const input = {
     frozen_engine_manifest: {
@@ -423,6 +439,49 @@ test("offline preflight verifies every binding and performs zero writes/network"
     assert.equal(preflight.external_effects.filesystem_writes, 0);
     assert.equal(preflight.external_effects.oauth_token_calls, 0);
     await assert.rejects(lstat(preflight.replacement_session_directory), { code: "ENOENT" });
+  } finally {
+    await cleanup(item);
+  }
+});
+
+test("delegated pilot authorization preflights without password or owner key", async () => {
+  const item = await fixture({ delegated: true });
+  try {
+    const preflight = await preflightWalmartItemReportReissueExecutorV2(item.input, {
+      now: NOW,
+    });
+    assert.equal(preflight.status, "READY_FOR_IRREVERSIBLE_SINGLE_EXECUTION");
+    assert.equal(preflight.authorization_sha256, item.disposition.authorization_sha256);
+    assert.equal(item.disposition.authorization_mode, "OWNER_DELEGATED_AUTOMATION");
+    assert.equal(preflight.external_effects.listing_content_writes, 0);
+  } finally {
+    await cleanup(item);
+  }
+});
+
+test("delegated pilot authorization burns once and executes the same fixed POST", async () => {
+  const item = await fixture({ delegated: true });
+  try {
+    const transport = successfulTransport();
+    const result = await executeWalmartItemReportReissueExecutorV2(item.input, {
+      now: () => NOW,
+      open_transport: () => transport,
+    });
+    assert.equal(result.status, "REQUESTED");
+    assert.equal(result.authorization_consumed_before_oauth, true);
+    assert.equal(transport.requests.length, 1);
+    assert.equal(transport.requests[0].method, "POST");
+    assert.deepEqual(transport.requests[0].query, {
+      reportType: "ITEM",
+      reportVersion: "v6",
+    });
+    const ledger = await openWalmartItemReportReissueConsumptionLedgerV2({
+      state_directory: item.ledgerDirectory,
+      expected_binding: item.ledgerBinding,
+    });
+    assert.equal(ledger.authorizations[0]?.state, "SUCCEEDED");
+    assert.equal(ledger.authorizations[0]?.authorization_sha256,
+      item.disposition.authorization_sha256);
   } finally {
     await cleanup(item);
   }

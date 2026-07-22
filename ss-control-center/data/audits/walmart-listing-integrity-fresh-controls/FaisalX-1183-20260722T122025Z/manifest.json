@@ -1,0 +1,130 @@
+{
+  "schema_version": "walmart-listing-integrity-fresh-control/v1",
+  "control_id": "FaisalX-1183-20260722T122025Z",
+  "captured_at": "2026-07-22T12:20:25.918Z",
+  "scope": {
+    "channel": "WALMART_US",
+    "store_index": 1,
+    "sku": "FaisalX-1183",
+    "item_id": "8419413379",
+    "upc": "684611898937",
+    "gtin14": "00684611898937",
+    "wpid": "157F37H8RG4R"
+  },
+  "marketplace_source": {
+    "exact_resolution_report": "data/audits/walmart-exact-item-resolution/FaisalX-1183-20260722T122025918Z-509bb1770aefd659.json",
+    "exact_resolution_report_file_sha256": "bf40f769b11e0418ff4beb8eb677e528c99c1a2bc9241ac2c77499263c3b33c3",
+    "seller_published_status": "PUBLISHED",
+    "seller_lifecycle_status": "ACTIVE",
+    "logical_walmart_gets": 2,
+    "walmart_writes": 0
+  },
+  "buyer_source": {
+    "url": "https://www.walmart.com/ip/Pepperidge-Farm-Butter-Hot-Dog-Buns-Top-Sliced-8-Ct-Bag-Pack-of-6/8419413379",
+    "capture_method": "read_only_public_web_extraction",
+    "raw_html_preserved": false,
+    "exact_item_id_visible": true,
+    "selected_variant_count": 6,
+    "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)",
+    "specifications": [
+      { "name": "Brand", "value": "Pepperidge Farm" },
+      { "name": "Bread & bun type", "value": "Hot Dog Buns" },
+      { "name": "Grain type", "value": "Common Wheat" },
+      { "name": "Flavor", "value": "Butter" },
+      { "name": "Count", "value": "8" }
+    ]
+  },
+  "product_truth": {
+    "truth_source": "manual_verified",
+    "title": "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)",
+    "outer_units": 6,
+    "inner_item_count_each": 8,
+    "identity": "Pepperidge Farm Top Sliced Butter Hot Dog Buns"
+  },
+  "current_images": [
+    {
+      "slot": "MAIN",
+      "url": "https://i5.walmartimages.com/seo/Pepperidge-Farm-Butter-Hot-Dog-Buns-Top-Sliced-8-Ct-Bag-Pack-of-6_734d74a7-8310-41ed-8925-3fecc70788f2.a8abe64e760534776a26c10e1a4901b6.jpeg",
+      "sha256": "fc49a951bea9dc1e2bbd73e859a83ad9394889459d76c6f748a00b54572c0736",
+      "dhash64": "00747030ccd4d4cc",
+      "width": 2000,
+      "height": 2000,
+      "manual_visual_facts": {
+        "exact_product_identity": true,
+        "visible_sellable_packages": 1,
+        "visible_inner_count": 8,
+        "visible_net_content_oz": 14
+      },
+      "deterministic_preprocess": {
+        "status": "full_only",
+        "reason": "fewer than two substantial foreground regions",
+        "region_count": 0,
+        "analysis_sha256": "272040290458f885dab588362cd02cccad034d1d2f89add9978b72d41a32c522"
+      }
+    },
+    {
+      "slot": "GALLERY_1",
+      "url": "https://i5.walmartimages.com/asr/6141a75b-b058-4c54-8ced-9b40610023f4.9722f02f31301c22b0a8acba419dcb1d.jpeg",
+      "sha256": "90279ca57aafbdeae82d0966b1e0907d24fa31ff4b6adebf28838024dce59a88",
+      "dhash64": "00b595dbafb5eb99",
+      "width": 2000,
+      "height": 2000,
+      "manual_visual_facts": {
+        "exact_product_identity": true,
+        "visual_role": "lifestyle"
+      }
+    },
+    {
+      "slot": "GALLERY_2",
+      "url": "https://i5.walmartimages.com/asr/a5e9bfe7-7a52-479a-9dce-e8f85cdfa863.92bf704f4fc6dc8f2a2cb00bda67d192.jpeg",
+      "sha256": "bdc800e7445c317a1381a5b922a139d7c0c9c942b7f96bc612414b1aced255dd",
+      "dhash64": "00300020002c1400",
+      "width": 2000,
+      "height": 2000,
+      "manual_visual_facts": {
+        "exact_product_identity": true,
+        "visual_role": "nutrition_facts",
+        "servings_per_container": 8
+      }
+    }
+  ],
+  "approved_repair_candidate": {
+    "changed_fields": ["MAIN"],
+    "asset_path": "data/audits/walmart-visual-pilot-snapshots/walmart-main-bbf179123bd9139dbe9e/raw/faebb77f95afbede68d18abc8a0b5f9b7c34d0a1f0cf9bed9e94a37cdbb57a06.png",
+    "asset_url": "https://pub-6394ee2ba6de41b68a3dcee17c884db8.r2.dev/walmart-multipack/FaisalX-1183/main-fix1.png",
+    "sha256": "faebb77f95afbede68d18abc8a0b5f9b7c34d0a1f0cf9bed9e94a37cdbb57a06",
+    "dhash64": "00801299d29add00",
+    "width": 2200,
+    "height": 2200,
+    "deterministic_repeated_regions": 6,
+    "current_to_candidate_dhash_distance": 26,
+    "manual_visual_facts": {
+      "exact_product_identity": true,
+      "visible_sellable_packages": 6,
+      "layout": "3_by_2_white_background"
+    }
+  },
+  "algorithm_result": {
+    "before": {
+      "verdict": "BAD",
+      "blocking_reason": "MAIN: outer count 1 != 6"
+    },
+    "proposed_after_offline_component": {
+      "main_verdict": "PASS",
+      "blocking_reasons": []
+    },
+    "full_qualification": "PENDING_LIVE_APPLY_AND_FRESH_BUYER_REREAD",
+    "regression_test": "src/lib/walmart/__tests__/listing-integrity-audit.test.mjs#fresh FaisalX-1183 control moves from quantity-confusion BAD to a clean six-pack MAIN"
+  },
+  "limitations": [
+    "The public PDP was extracted through a read-only web renderer because direct curl returned a redirect/block sentinel; raw PDP HTML is not preserved.",
+    "Manual visual facts prove this control case for development but do not substitute for sealed source-aware vision evidence in production Qualification.",
+    "No Walmart listing change has been made; the approved image is only a repair candidate until a one-SKU canary is separately authorized."
+  ],
+  "external_effects": {
+    "model_calls": 0,
+    "paid_api_calls": 0,
+    "database_writes": 0,
+    "walmart_listing_writes": 0
+  }
+}

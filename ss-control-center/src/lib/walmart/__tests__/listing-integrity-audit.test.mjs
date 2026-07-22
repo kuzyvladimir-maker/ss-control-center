@@ -820,6 +820,13 @@ test("typed attributes fail closed on outer quantity, package fact, identity, an
   assert.equal(identity.text_decision.checks.attributes_identity, "MISMATCH");
   assert.equal(identity.overall_verdict, "BAD");
 
+  const broadIdentity = compile((input) => {
+    input.surface.attribute_claims.find((row) => row.kind === "variant").text = "Bread";
+  }).report;
+  assert.equal(broadIdentity.text_decision.checks.attributes_identity, "UNKNOWN");
+  assert.equal(broadIdentity.text_decision.verdict, "REVIEW");
+  assert.equal(broadIdentity.overall_verdict, "REVIEW");
+
   const unmapped = compile((input) => {
     input.surface.unmapped_attributes.push({ field_path: "legacyPackSize", value_sha256: "f".repeat(64) });
   }).report;
@@ -872,6 +879,98 @@ test("MAIN external count and explicit outer/case claims cannot disagree with Pr
   }).report;
   assert.match(caseClaim.blocking_reasons.join(" "), /MAIN case-package text contradicts 2/);
   assert.equal(caseClaim.overall_verdict, "BAD");
+});
+
+test("fresh FaisalX-1183 control moves from quantity-confusion BAD to a clean six-pack MAIN", () => {
+  const listingKey = "walmart:1:FaisalX-1183";
+  const currentMainSha = "fc49a951bea9dc1e2bbd73e859a83ad9394889459d76c6f748a00b54572c0736";
+  const approvedSixPackSha = "faebb77f95afbede68d18abc8a0b5f9b7c34d0a1f0cf9bed9e94a37cdbb57a06";
+  const title = "Pepperidge Farm Butter Hot Dog Buns, Top Sliced, 8-Ct Bag (Pack of 6)";
+  const productTruth = {
+    title,
+    outer_units: 6,
+    identity: {
+      brand_aliases: ["pepperidge farm"],
+      product_marker_groups: [["hot dog buns", "hot dog bun"]],
+      variant_marker_groups: [["butter"], ["top sliced"]],
+      forbidden_markers: [
+        { role: "product", aliases: ["chessmen", "cookies", "cookie"] },
+      ],
+    },
+    package_facts: [
+      { kind: "inner_item_count", value: 8, unit: "count", requirement: "required" },
+    ],
+    truth_source: "manual_verified",
+  };
+  const liveSurface = {
+    title,
+    description: "Pepperidge Farm Butter Hot Dog Buns, Top Sliced. Each package contains 8 buns. Pack of 6.",
+    bullets: [
+      "QUALITY INGREDIENTS: Made with real butter; no high-fructose corn syrup",
+      "PERFECT BUNS: Perfect for hot dogs, sausages, or lobster rolls",
+    ],
+    attribute_claims: [
+      { field_path: "product.specifications[0].Brand", kind: "brand", text: "Pepperidge Farm" },
+      { field_path: "product.specifications[1].Bread & bun type", kind: "product", text: "Hot Dog Buns" },
+      { field_path: "product.specifications[3].Flavor", kind: "variant", text: "Top Sliced Butter" },
+      { field_path: "product.specifications[4].Count", kind: "inner_item_count", value: 8, unit: "count" },
+      { field_path: "product.selectedVariant.Count", kind: "outer_units", value: 6, unit: "count" },
+    ],
+    unmapped_attributes: [],
+  };
+  const makeObservation = (assetSha, visibleCount) => ({
+    ...mainObservation(assetSha),
+    image_id: walmartListingIntegrityImageId(assetSha, "main", listingKey),
+    visible_brand_text: "Pepperidge Farm",
+    visible_product_text: "Hot Dog Buns",
+    visible_variant_text: "Top Sliced Butter",
+    visible_size_texts: ["8 CT", "14 OZ"],
+    external_package_count: {
+      mode: "exact", value: visibleCount, min: null, max: null,
+    },
+    outer_package_claims: [],
+    inner_contents_claims: ["8 CT"],
+    evidence: ["Pepperidge Farm", "Top Sliced", "Butter", "Hot Dog Buns", "8 CT", "14 OZ"],
+  });
+  const run = (assetSha, visibleCount, sourceUrl) => compile((input) => {
+    input.listing = {
+      ...input.listing,
+      sku: "FaisalX-1183",
+      listing_key: listingKey,
+      item_id: "8419413379",
+    };
+    input.expected = productTruth;
+    input.surface = liveSurface;
+    input.images.assets = [{
+      ...asset("main", assetSha),
+      source_url: sourceUrl,
+      byte_length: visibleCount === 1 ? 300_936 : 1_748_014,
+      decoded_width: visibleCount === 1 ? 2_000 : 2_200,
+      decoded_height: visibleCount === 1 ? 2_000 : 2_200,
+    }];
+    input.images.evidence = [
+      observedEvidence("main", assetSha, makeObservation(assetSha, visibleCount)),
+    ];
+  }).report;
+
+  const before = run(
+    currentMainSha,
+    1,
+    "https://i5.walmartimages.com/seo/Pepperidge-Farm-Butter-Hot-Dog-Buns-Pack-of-6.jpeg",
+  );
+  assert.equal(before.main_decision.verdict, "BAD");
+  assert.equal(before.overall_verdict, "BAD");
+  assert.match(before.blocking_reasons.join(" "), /MAIN: outer count 1 != 6/);
+
+  const after = run(
+    approvedSixPackSha,
+    6,
+    "https://assets.example.invalid/FaisalX-1183/approved-six-pack.png",
+  );
+  assert.equal(after.main_decision.verdict, "PASS");
+  assert.equal(after.blocking_reasons.length, 0);
+  assert.equal(after.overall_verdict, "REVIEW");
+  assert.match(after.review_reasons.join(" "), /source artifacts, surface snapshot, and image bytes were not independently verified/);
 });
 
 test("unparsed and unclear MAIN quantity claims remain REVIEW and never PASS", () => {

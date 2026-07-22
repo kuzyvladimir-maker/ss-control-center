@@ -16,10 +16,12 @@ import path from "node:path";
 import test from "node:test";
 
 import {
+  authorWalmartItemReportReissueDelegatedAuthorizationV1,
   authorWalmartItemReportReissueRenewalEvidenceV1,
   authorWalmartItemReportReissueDispositionRequestV2,
   authorWalmartItemReportReissueDispositionV2,
   authorWalmartItemReportReissueReplacementPlanV2,
+  bootstrapWalmartItemReportReissueLedgerArtifactV2,
   createWalmartItemReportReissueReplacementPlanV2,
 } from "../walmart-item-report-reissue-v2-authority.mjs";
 import {
@@ -156,6 +158,53 @@ test("replacement authoring writes one immutable canonical plan with distinct co
     }, { random_uuid: deterministicUuids() }),
     (error) => error?.code === "INVALID_INPUT",
   );
+});
+
+test("ledger bootstrap and delegated authorization require no password or private key", async (t) => {
+  const root = await privateTemp(t);
+  const ledgerState = path.join(root, "ledger-state");
+  const ledgerPath = path.join(root, "ledger-binding.json");
+  const ledgerResult = await bootstrapWalmartItemReportReissueLedgerArtifactV2({
+    state_directory: ledgerState,
+    created_at: "2026-07-20T02:00:00.000Z",
+    out: ledgerPath,
+  }, { random_uuid: deterministicUuids() });
+  assert.equal(ledgerResult.network_calls, 0);
+  assert.equal(ledgerResult.walmart_content_writes, 0);
+
+  const sourceBytes = await sourceEvidenceBytes();
+  const sourcePath = path.join(root, "source-evidence.json");
+  const replacementPath = path.join(root, "replacement.json");
+  await writePrivate(sourcePath, sourceBytes);
+  const replacement = createWalmartItemReportReissueReplacementPlanV2({
+    session_name: "item-v6-store1-20260720-delegated-authority-test",
+    created_at: "2026-07-20T02:05:00.000Z",
+    account_fingerprint_sha256: ACCOUNT_FINGERPRINT,
+  }, { random_uuid: deterministicUuids() });
+  await writePrivate(
+    replacementPath,
+    Buffer.from(canonicalWalmartItemReportJson(replacement)),
+  );
+  const authorizationPath = path.join(root, "delegated-authorization.json");
+  const result = await authorWalmartItemReportReissueDelegatedAuthorizationV1({
+    source_evidence: sourcePath,
+    expected_source_evidence_sha256: sha256(sourceBytes),
+    replacement: replacementPath,
+    ledger_binding: ledgerPath,
+    engine_release_sha256: "4".repeat(64),
+    disposition_id: "item-v6-reissue-delegated-authority-test",
+    approved_by: "Walmart catalog owner delegated automation",
+    decision_ref: "urn:ss-command-center:owner-delegation:walmart-listing-integrity:test",
+    issued_at: "2026-07-20T02:10:00.000Z",
+    expires_at: "2026-07-20T02:30:00.000Z",
+    out: authorizationPath,
+  });
+  const artifact = JSON.parse(await readFile(authorizationPath, "utf8"));
+  assert.equal(result.owner_password_required, false);
+  assert.equal(result.owner_private_key_required, false);
+  assert.equal(artifact.authorization_mode, "OWNER_DELEGATED_AUTOMATION");
+  assert.equal(artifact.signed_body.authorization.listing_content_writes_allowed, 0);
+  assert.equal(result.artifact.sha256, sha256(await readFile(authorizationPath)));
 });
 
 test("request and assembly bind exact evidence, release, replacement, ledger, and owner signature", async (t) => {

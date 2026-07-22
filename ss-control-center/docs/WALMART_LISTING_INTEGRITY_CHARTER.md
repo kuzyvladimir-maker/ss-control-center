@@ -215,6 +215,30 @@
 - 2026-07-18 — исторический Claude handoff принят как карта прежних действий и кандидатов риска, но его утверждение о фактически закрытом live scope отклонено как недоказанное и внутренне противоречивое. Канонический статус определяется только новым source-aware аудитом текущих buyer-facing карточек.
 - 2026-07-18 — ITEM capture прошёл полный цикл «реализация → независимый негативный review → два дополнительных исправления → повторный review»: 44/44 PASS, отдельные последние repro 3/3, strict TypeScript/ESLint/diff-check PASS. Технически разрешён только один контролируемый authoritative ITEM capture при trusted custody; он ещё не запускался и не разрешает mass scan.
 - 2026-07-18 — performance v3 и Shadow v3 прошли независимый data-quality review после исправления exact-180 partitioning и отдельного Shadow deep-JSON `RangeError`: offline contract `GO`, integrated source/truth/Shadow suite 148/148 PASS. Real performance/Shadow остаётся `NO-GO` из-за отсутствия Orders/Returns capture adapter, внешней полноты seller-account registry и MLMQ money calibration.
+- 2026-07-22 — вместо ожидания полного ITEM v6 report выполнены два bounded
+  exact-SKU read-only контроля. `FaisalX-1130` выявил ложный `BAD` на широком
+  атрибуте `Flavor=Grain`; hard identity mismatch ограничен явными запрещёнными
+  Product Truth markers. `FaisalX-1183` выявил настоящий дефект: title =
+  `Pack of 6`, текущая MAIN = одна упаковка. Реальный before-кейс и точная
+  six-pack repair candidate закреплены regression-тестом; expanded detector/
+  exact-resolution/public-PDP suite 37/37,
+  closed-loop suite 109/109, listing/model/paid writes/calls = 0.
+- 2026-07-22 — владелец требует до расширения волн увидеть фактическую галерею
+  `До → После` первых исправленных SKU. Она должна показывать все изображения,
+  text/attribute diff, причину изменения, fresh buyer reread, Qualification и
+  published/indexing status. Proposed payload не может выдаваться за `После`.
+- 2026-07-22 — первая вкладка **Walmart Growth → Listing Integrity** встроена в
+  shadow/read-only режиме на frozen fresh-control evidence. Она показывает
+  current MAIN/gallery и proposed MAIN отдельно, exact diff, Qualification chain
+  и locked canary/mass gates; loader 3/3, server-render 1/1, targeted
+  TypeScript/ESLint PASS. Счётчики берутся из SHA-256-bound verification evidence,
+  а не из UI-констант. Persistent API/state/scheduler ещё не подключены.
+- 2026-07-22 — current MAIN + две gallery `FaisalX-1183` сохранены как exact
+  content-addressed bytes. SHA-bound canary preview фиксирует единственное
+  изменение MAIN `1 → 6` и запрещает drift title/description/bullets/attributes/
+  price/inventory/gallery; shadow loader перечитывает и хеширует все assets.
+  Byte custody complete, fresh signed source-aware visual attestation pending;
+  Walmart/model/paid/DB calls or writes на этом шаге = 0.
 
 ## Следующий контрольный этап
 

@@ -24,10 +24,14 @@ import { fileURLToPath } from "node:url";
 
 import {
   assembleWalmartItemReportReissueOwnerDispositionV2,
+  buildWalmartItemReportReissueDelegatedAuthorizationV1,
   buildWalmartItemReportReissueOwnerDispositionV2Body,
   buildWalmartItemReportReissueOwnerDispositionV2SigningRequest,
   buildWalmartItemReportReissueReplacementPlanV2,
 } from "../src/lib/walmart/item-report-reissue-owner-disposition-v2.ts";
+import {
+  bootstrapWalmartItemReportReissueConsumptionLedgerV2,
+} from "../src/lib/walmart/item-report-reissue-consumption-ledger-v2.ts";
 import {
   WALMART_ITEM_V6_ABSENCE_PROBE_ARTIFACT_NAMES,
 } from "../src/lib/walmart/item-report-reissue-absence-probe-evidence.ts";
@@ -381,6 +385,69 @@ export async function authorWalmartItemReportReissueDispositionRequestV2(input) 
   };
 }
 
+export async function authorWalmartItemReportReissueDelegatedAuthorizationV1(input) {
+  const [sourceBytes, replacement, ledger] = await Promise.all([
+    readStableFile(input.source_evidence, "source evidence"),
+    readCanonicalJson(input.replacement, "replacement plan"),
+    readCanonicalJson(input.ledger_binding, "ledger binding"),
+  ]);
+  const expectedSourceSha = exactSha256(
+    input.expected_source_evidence_sha256,
+    "expected source evidence SHA-256",
+  );
+  if (sha256Bytes(sourceBytes) !== expectedSourceSha) {
+    fail("SOURCE_EVIDENCE_SHA256_MISMATCH", "source evidence differs from expected SHA-256");
+  }
+  const authorization = buildWalmartItemReportReissueDelegatedAuthorizationV1({
+    disposition_id: exactString(input.disposition_id, "disposition_id", 200),
+    approved_by: exactString(input.approved_by, "approved_by", 256),
+    decision_ref: exactString(input.decision_ref, "decision_ref", 2048),
+    engine_release_sha256: exactSha256(input.engine_release_sha256, "engine release SHA-256"),
+    source_evidence_bytes: sourceBytes,
+    expected_source_evidence_artifact_sha256: expectedSourceSha,
+    replacement,
+    consumption_ledger: ledger,
+    issued_at: exactInstant(input.issued_at, "issued_at"),
+    expires_at: exactInstant(input.expires_at, "expires_at"),
+  });
+  return {
+    schema_version: WALMART_ITEM_REPORT_REISSUE_V2_AUTHORITY_SCHEMA,
+    command: "delegated-authorization",
+    artifact: await writeImmutableCanonical(input.out, authorization),
+    authorization_sha256: authorization.authorization_sha256,
+    owner_password_required: false,
+    owner_private_key_required: false,
+    network_calls: 0,
+    database_calls: 0,
+    model_calls: 0,
+    walmart_content_writes: 0,
+  };
+}
+
+export async function bootstrapWalmartItemReportReissueLedgerArtifactV2(input, injected = {}) {
+  await assertPrivateOutputParent(input.out);
+  const ledger = await bootstrapWalmartItemReportReissueConsumptionLedgerV2({
+    state_directory: exactAbsolutePath(input.state_directory, "state directory"),
+    now: input.created_at === undefined
+      ? undefined
+      : exactInstant(input.created_at, "created_at"),
+    random_uuid: injected.random_uuid,
+  });
+  return {
+    schema_version: WALMART_ITEM_REPORT_REISSUE_V2_AUTHORITY_SCHEMA,
+    command: "ledger-bootstrap",
+    artifact: await writeImmutableCanonical(input.out, ledger.binding),
+    state_directory: ledger.state_directory,
+    identity_artifact_path: ledger.identity_artifact_path,
+    head_artifact_path: ledger.head_artifact_path,
+    head_artifact_sha256: ledger.head_artifact_sha256,
+    network_calls: 0,
+    database_calls: 0,
+    model_calls: 0,
+    walmart_content_writes: 0,
+  };
+}
+
 export async function authorWalmartItemReportReissueDispositionV2(input) {
   const dispositionOut = exactAbsolutePath(input.out, "--out");
   if (isWithin(dispositionOut, REPOSITORY_ROOT) || isWithin(dispositionOut, CAPTURE_ROOT)) {
@@ -465,7 +532,9 @@ function help() {
     schema_version: WALMART_ITEM_REPORT_REISSUE_V2_AUTHORITY_SCHEMA,
     commands: [
       "renewal-evidence",
+      "ledger-bootstrap",
       "replacement-plan",
+      "delegated-authorization",
       "disposition-request",
       "disposition-assemble",
     ],
@@ -484,9 +553,21 @@ export async function runWalmartItemReportReissueV2AuthorityCli(argv) {
     ]);
     return authorWalmartItemReportReissueRenewalEvidenceV1(values);
   }
+  if (command === "ledger-bootstrap") {
+    required(values, ["state_directory", "created_at", "out"]);
+    return bootstrapWalmartItemReportReissueLedgerArtifactV2(values);
+  }
   if (command === "replacement-plan") {
     required(values, ["session_name", "created_at", "account_fingerprint_sha256", "out"]);
     return authorWalmartItemReportReissueReplacementPlanV2(values);
+  }
+  if (command === "delegated-authorization") {
+    required(values, [
+      "source_evidence", "expected_source_evidence_sha256", "replacement",
+      "ledger_binding", "engine_release_sha256", "disposition_id",
+      "approved_by", "decision_ref", "issued_at", "expires_at", "out",
+    ]);
+    return authorWalmartItemReportReissueDelegatedAuthorizationV1(values);
   }
   if (command === "disposition-request") {
     required(values, [
@@ -504,7 +585,7 @@ export async function runWalmartItemReportReissueV2AuthorityCli(argv) {
     ]);
     return authorWalmartItemReportReissueDispositionV2(values);
   }
-  fail("INVALID_CLI", "command must be renewal-evidence, replacement-plan, disposition-request, disposition-assemble, or help");
+  fail("INVALID_CLI", "command must be renewal-evidence, ledger-bootstrap, replacement-plan, delegated-authorization, disposition-request, disposition-assemble, or help");
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {

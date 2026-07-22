@@ -40,6 +40,7 @@ import {
   DEFAULT_CAPTURE_ROOT,
   WALMART_ITEM_REPORT_REISSUE_V1_RETIRED_CODE,
   createWalmartItemReportCliTransport,
+  isWalmartItemReportCaptureDirectEntrypoint,
   main as cliMain,
   parseWalmartItemReportCaptureCliArgs,
 } from "../../../../scripts/capture-walmart-item-report-source.mjs";
@@ -447,6 +448,16 @@ test("default plan and CLI default perform zero network and zero filesystem writ
     ]),
     (error) => error.code === WALMART_ITEM_REPORT_REISSUE_V1_RETIRED_CODE,
   );
+});
+
+test("bundled helper never mistakes the frozen executor for its own CLI", () => {
+  const frozenBundle = "/private/tmp/release/walmart-item-report-reissue-v2-frozen-executor.bundle.mjs";
+  assert.equal(
+    isWalmartItemReportCaptureDirectEntrypoint(frozenBundle, frozenBundle),
+    false,
+  );
+  const direct = "/private/tmp/release/capture-walmart-item-report-source.mjs";
+  assert.equal(isWalmartItemReportCaptureDirectEntrypoint(direct, direct), true);
 });
 
 test("full phased capture follows manual redirects without auth and compiles through strongest verifier", async (t) => {
