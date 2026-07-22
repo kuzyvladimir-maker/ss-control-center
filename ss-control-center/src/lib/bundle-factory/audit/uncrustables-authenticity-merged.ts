@@ -67,13 +67,27 @@ export function resolveMergedUncrustablesPackageArt(
     packMode,
   );
   if (direct) return direct;
+  // Candidate 2: leading brand words stripped ("Smuckers Uncrustables X" → "X").
+  // Candidate 3: additionally cut the marketing tail donor titles carry after
+  // the flavor phrase ("X Sandwiches, 10 Count, 2 Oz Each (Frozen)" → "X",
+  // "X Sandwich - 8oz/4ct" → "X"). Both transforms are deterministic and can
+  // only ever normalize toward a flavor phrase; the alias map stays exact, so
+  // no fuzzy matching is introduced.
   const stripped = label
-    .replace(/^\s*(?:smucker[’'`]?s?\s+)?(?:uncrustables?\s+)?/i, "")
+    .replace(/^\s*(?:smucker[’'`]?s?\s+)?(?:uncrustables?\s+)?(?:frozen\s+)?/i, "")
     .trim();
-  if (!stripped || stripped === label) return null;
-  return resolveReviewedUncrustablesPackageArt(
-    MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
-    stripped,
-    packMode,
-  );
+  const tailCut = stripped
+    .replace(/\s+sandwich(?:es)?\b[\s\S]*$/i, "")
+    .replace(/\s*[-–—,].*$/, "")
+    .trim();
+  for (const candidate of [stripped, tailCut]) {
+    if (!candidate || candidate === label) continue;
+    const art = resolveReviewedUncrustablesPackageArt(
+      MERGED_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
+      candidate,
+      packMode,
+    );
+    if (art) return art;
+  }
+  return null;
 }
