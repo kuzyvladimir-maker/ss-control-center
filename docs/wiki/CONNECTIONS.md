@@ -178,6 +178,11 @@ legacy implementation detail, не разрешение строить пара�
 → [Customer Hub](customer-hub.md), [Account Health](account-health.md), [A-to-Z & Chargeback](atoz-chargeback.md), [Feedback Manager](feedback-manager.md), [Adjustments Monitor](adjustments-monitor.md), [Call Center AI Agent](call-center-ai-agent.md) (order lookup + refund processing)
 ⇔ [Gmail API](gmail-api.md), [External API Auth](external-api-auth.md)
 
+### [Uncrustables — упаковочная логика кулеров](uncrustables-cooler-packing.md)
+← опыт владельца (физика упаковки S/M/L/XL, 2026-07-22)
+→ [Bundle Factory — Ценообразование, Картинки, Вместимость](bundle-factory-pricing-and-images.md) (дополняет таблицу вместимости рациональными диапазонами), [Pricing Module](pricing-module.md) (cost-model cooler bands — физические пределы совпадают)
+⇔ [Bundle Factory](bundle-factory.md) (планировщик вариаций обязан генерировать счётчики только из рациональных диапазонов)
+
 ### [Walmart Listing Integrity Platform](walmart-listing-integrity-platform.md)
 ← [Product Truth Platform — OWNER CANON](product-catalog-architecture.md) (versioned read-contract — единственный источник product facts), [Walmart Marketplace API](walmart-api.md) (published status, item readback, feeds)
 → [Walmart Growth roadmap](walmart-growth-roadmap.md) (UI-вкладка Listing Integrity в `/walmart-growth`), [Walmart new-SKU operator runbook](walmart-new-sku-operator-runbook.md) (соседний frozen-suite контур; integrity проверяет уже живые SKU)
