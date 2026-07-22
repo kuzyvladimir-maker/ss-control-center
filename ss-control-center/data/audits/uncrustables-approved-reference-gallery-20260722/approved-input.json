@@ -1,0 +1,101 @@
+[
+ {
+  "n": 1,
+  "label": "Peanut Butter & Strawberry Jam",
+  "donor_title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+  "upc": null,
+  "file": "data/audits/uncrustables-approved-reference-gallery-20260722/01-peanut-butter-strawberry-jam.jpg",
+  "sha256": "6ec1287fa7f5ddfa5e00511bf8d8123e63c30c37317e365ed64381dbe4d2b74f",
+  "pack_size": 4
+ },
+ {
+  "n": 2,
+  "label": "Peanut Butter & Grape Jelly",
+  "donor_title": "Smucker's Uncrustables Frozen Peanut Butter & Grape Jelly Sandwich - 8oz/4ct",
+  "upc": null,
+  "file": "data/audits/uncrustables-approved-reference-gallery-20260722/02-peanut-butter-grape-jelly.jpg",
+  "sha256": "ce7b6466391e77af3690c93746cb6ab30c1a5710fb98fb752db73b374d04be2d",
+  "pack_size": 4
+ },
+ {
+  "n": 3,
+  "label": "Peanut Butter & Raspberry Spread",
+  "donor_title": "Smucker's Uncrustables PB & Raspberry Spread — чистая коробка 4ct (Target), замена по твоему Reject",
+  "upc": "051500261248",
+  "file": "data/audits/uncrustables-approved-reference-gallery-20260722/03-peanut-butter-raspberry-spread.jpg",
+  "sha256": "ec18c8cf6fef595c937c4ff4ed66ecc80ba4b556a1b367cd752b8843d1dc74f2",
+  "pack_size": 4
+ },
+ {
+  "n": 4,
+  "label": "Peanut Butter & Honey Spread",
+  "donor_title": "Smucker's Uncrustables Frozen Peanut Butter & Honey Spread Sandwich - 20oz/10ct",
+  "upc": "051500241738",
+  "file": "data/audits/uncrustables-approved-reference-gallery-20260722/04-peanut-butter-honey-spread.jpg",
+  "sha256": "c1e65e50ed643f2c351628863031b1218a484bb44539a35fa5e4c9c91532fa7d",
+  "pack_size": 10
+ },
+ {
+  "n": 5,
+  "label": "Peanut Butter & Chocolate Flavored Spread",
+  "donor_title": "Smuckers Uncrustables Peanut Butter & Chocolate Flavored Spread Sandwiches, 10 Count, 2 oz Each (Frozen)",
+  "upc": "051500862988",
+  "file": "data/audits/uncrustables-approved-reference-gallery-20260722/05-peanut-butter-chocolate-flavored-spread.jpg",
+  "sha256": "837c61b9d078b6171160cc87bc2a57df120a451fd8828d3605b31112b5a172d4",
+  "pack_size": 10
+ },
+ {
+  "n": 6,
+  "label": "Peanut Butter & Strawberry Jam Protein",
+  "donor_title": "Smucker's Uncrustables Frozen Peanut Butter & Strawberry Jam Sandwich – 12g Protein 22.4oz/8ct",
+  "upc": "051500516508",
+  "file": "data/audits/uncrustables-approved-reference-gallery-20260722/06-peanut-butter-strawberry-jam-protein.jpg",
+  "sha256": "866c1a1f32d8801f8a5efe77e83501038b5ae6a12b9eb7e9d773a6bce6aefe36",
+  "pack_size": 8
+ },
+ {
+  "n": 7,
+  "label": "Whole Wheat Peanut Butter & Strawberry Jam",
+  "donor_title": "Smucker's Uncrustables Frozen Whole Wheat Peanut Butter & Strawberry Jam Sandwich - 8oz/4ct",
+  "upc": "051500041383",
+  "file": "data/audits/uncrustables-approved-reference-gallery-20260722/07-whole-wheat-peanut-butter-strawberry-jam.jpg",
+  "sha256": "467c42745d30b082801d46a44cf2a03013b77c9e60cab888ab8a462d20310f9b",
+  "pack_size": 4
+ },
+ {
+  "n": 8,
+  "label": "Peanut Butter & Apple Cinnamon Jelly Protein",
+  "donor_title": "Smucker's Uncrustables Frozen Peanut Butter & Apple Cinnamon Jelly Sandwich – 12g Protein 22.4oz/8ct",
+  "upc": "051500018453",
+  "file": "data/audits/uncrustables-approved-reference-gallery-20260722/08-peanut-butter-apple-cinnamon-jelly-protein.jpg",
+  "sha256": "641f7cb6484dc3b009edd3f3bc7010028d14536b6d7ad2aba01b832531a0791b",
+  "pack_size": 8
+ },
+ {
+  "n": 9,
+  "label": "Whole Wheat Peanut Butter & Grape Jelly",
+  "donor_title": "Smucker's Uncrustables Frozen  Whole Wheat Peanut Butter & Grape Jelly Sandwiches - 8oz/4ct",
+  "upc": "051500041369",
+  "file": "data/audits/uncrustables-approved-reference-gallery-20260722/09-whole-wheat-peanut-butter-grape-jelly.jpg",
+  "sha256": "806cb10ae5156efdbd2561556289ac2408546fc0a820d0edfe66446d81a19279",
+  "pack_size": 4
+ },
+ {
+  "n": 10,
+  "label": "Peanut Butter & Blueberry",
+  "donor_title": "Smucker's Uncrustables Frozen Peanut Butter & Blueberry Sandwich - 22.4oz/8ct",
+  "upc": "051500549469",
+  "file": "data/audits/uncrustables-approved-reference-gallery-20260722/10-peanut-butter-blueberry.jpg",
+  "sha256": "52060c93abe80c3d6391b6ef99f9d69d559cd50d1df94e13073278dc15512129",
+  "pack_size": 8
+ },
+ {
+  "n": 11,
+  "label": "Peanut Butter & Mixed Berry Spread",
+  "donor_title": "Smucker's Uncrustables Frozen Peanut Butter & Mixed Berry Spread Sandwich - 8oz/4ct",
+  "upc": "051500319543",
+  "file": "data/audits/uncrustables-approved-reference-gallery-20260722/11-peanut-butter-mixed-berry-spread.jpg",
+  "sha256": "12923576c5011c332eb5a1b2e82c6e7ac1934e0c02a53f8c5fda63d0abd5f78d",
+  "pack_size": 4
+ }
+]

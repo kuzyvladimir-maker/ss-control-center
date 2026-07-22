@@ -228,7 +228,15 @@ test("reviewed Uncrustables planner — PB chocolate never aliases to chocolate 
   });
   assert.equal(plan.ok, false);
   if (!plan.ok) {
-    assert.match(plan.errors.join("; "), /reviewed retail-carton art is missing/i);
+    // Since the 2026-07-22 owner-approved registry extension, PB & Chocolate
+    // has its OWN reviewed 10-count carton art. The invariant under test is
+    // unchanged — it must never resolve to chocolate-hazelnut's art — but the
+    // failure reason is now the honest divisibility stop (24 % 10 != 0), not
+    // "art is missing".
+    assert.match(
+      plan.errors.join("; "),
+      /not divisible by reviewed 10-count carton|reviewed retail-carton art is missing/i,
+    );
     assert.doesNotMatch(plan.errors.join("; "), /chocolate-hazelnut-carton/i);
   }
 });

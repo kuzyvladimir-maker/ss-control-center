@@ -57,7 +57,10 @@ import {
   type AuthenticityEvidence,
   type UncrustablesPackMode,
 } from "./audit/uncrustables-main-authenticity";
-import { PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY } from "./audit/uncrustables-main-production-preflight";
+// MERGED registry (sealed v1 + owner-approved 2026-07-22 extension): newly
+// approved flavors resolve here while the sealed MAIN-approvals manifest
+// keeps binding v1 untouched.
+import { resolveMergedUncrustablesPackageArt } from "./audit/uncrustables-authenticity-merged";
 
 export const UNCRUSTABLES_FROZEN_ANCHOR_SHA256 =
   "9c45164a56e3cda1e9e0c2590e7d75d94e6320af012b841bc9e5b73594a1fd33";
@@ -143,13 +146,7 @@ export function planReviewedUncrustablesImage(args: {
     > = [];
     try {
       candidates = labels
-        .map((label) =>
-          resolveReviewedUncrustablesPackageArt(
-            PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
-            label,
-            packMode,
-          ),
-        )
+        .map((label) => resolveMergedUncrustablesPackageArt(label, packMode))
         .filter((art): art is NonNullable<typeof art> => art !== null);
     } catch (error) {
       errors.push(

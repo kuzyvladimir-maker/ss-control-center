@@ -31,8 +31,7 @@ import {
   dedupeDonorFlavors,
 } from "@/lib/bundle-factory/donor-dedup";
 import { isOwnBrandPassthrough, textSaysUncrustables } from "@/lib/bundle-factory/own-brand";
-import { PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY } from "@/lib/bundle-factory/audit/uncrustables-main-production-preflight";
-import { resolveReviewedUncrustablesPackageArt } from "@/lib/bundle-factory/audit/uncrustables-main-authenticity";
+import { resolveMergedUncrustablesPackageArt } from "@/lib/bundle-factory/audit/uncrustables-authenticity-merged";
 
 export const dynamic = "force-dynamic";
 
@@ -42,13 +41,7 @@ function artApprovedFor(labels: Array<string | null | undefined>, packMode: Pack
   for (const label of labels) {
     if (!label) continue;
     try {
-      if (
-        resolveReviewedUncrustablesPackageArt(
-          PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY,
-          label,
-          packMode,
-        ) != null
-      ) {
+      if (resolveMergedUncrustablesPackageArt(label, packMode) != null) {
         return true;
       }
     } catch {
