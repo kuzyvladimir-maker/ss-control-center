@@ -24,7 +24,7 @@ import { PRODUCTION_UNCRUSTABLES_AUTHENTICITY_REGISTRY } from "../src/lib/bundle
 
 const INPUT = "data/audits/uncrustables-approved-reference-gallery-20260722/approved-input.json";
 const OUT = "src/lib/bundle-factory/audit/data/uncrustables-authenticity-registry-v2-extension.json";
-const PENDING = new Set(["Peanut Butter & Raspberry Spread"]); // №3 awaits re-verdict
+const PENDING = new Set<string>(); // 2026-07-22: owner approved all 11 incl. raspberry (clean 4ct carton)
 
 function normalizeLabel(value: string): string {
   return value

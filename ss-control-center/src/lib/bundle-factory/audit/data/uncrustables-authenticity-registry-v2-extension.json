@@ -76,6 +76,36 @@
    ]
   },
   {
+   "flavor_id": "peanut-butter-and-raspberry-spread",
+   "display_name": "Peanut Butter & Raspberry Spread",
+   "aliases": [
+    "Peanut Butter & Raspberry Spread",
+    "Smuckers Peanut Butter & Raspberry Spread",
+    "Smucker's Peanut Butter & Raspberry Spread",
+    "Smuckers Uncrustables Peanut Butter & Raspberry Spread",
+    "Smucker's Uncrustables PB & Raspberry Spread — чистая коробка 4ct (Target), замена по твоему Reject"
+   ],
+   "art": [
+    {
+     "art_id": "peanut-butter-and-raspberry-spread-carton-us-4ct-2026-v2",
+     "pack_mode": "retail-carton",
+     "retail_pack_size": 4,
+     "market": "US",
+     "brand_marks": [
+      "Smucker's",
+      "Uncrustables"
+     ],
+     "evidence": [
+      {
+       "kind": "reviewed-artifact",
+       "locator": "data/audits/uncrustables-approved-reference-gallery-20260722/03-peanut-butter-raspberry-spread.jpg",
+       "sha256": "ec18c8cf6fef595c937c4ff4ed66ecc80ba4b556a1b367cd752b8843d1dc74f2"
+      }
+     ]
+    }
+   ]
+  },
+  {
    "flavor_id": "peanut-butter-and-honey-spread",
    "display_name": "Peanut Butter & Honey Spread",
    "aliases": [
@@ -316,5 +346,5 @@
    ]
   }
  ],
- "sha256": "192b913684e7a3caaeaa65dc06f27d24539fdc304e693d0f747c85f786285de9"
+ "sha256": "ff262480e20a0dc4a50c50505f5bec6505910aa80df8fb1002552484e13dd49f"
 }
