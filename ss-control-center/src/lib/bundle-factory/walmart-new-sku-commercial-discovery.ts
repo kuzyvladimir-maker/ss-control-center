@@ -1,5 +1,10 @@
+import {
+  minimumWalmartNewSkuPriceForTargetMargin,
+  walmartNewSkuComparableSignal,
+} from "./walmart-new-sku-economics";
+
 export const WALMART_NEW_SKU_COMMERCIAL_DISCOVERY_SCHEMA =
-  "walmart-new-sku-commercial-discovery/1.0.0" as const;
+  "walmart-new-sku-commercial-discovery/1.1.0" as const;
 
 export const WALMART_NEW_SKU_DISCOVERY_AUTHORITY =
   "PROVISIONAL_PRODUCT_TRUTH_GAP_PRIORITY_ONLY_NOT_LISTING_TRUTH" as const;
@@ -11,7 +16,6 @@ const EXCLUDED_SOURCE_RETAILERS = new Set([
   "bjs",
   "costco",
   "samsclub",
-  "walmart",
 ]);
 
 export interface WalmartNewSkuCommercialDiscoveryRow {
@@ -71,11 +75,13 @@ export interface WalmartNewSkuCommercialDiscoveryCandidate {
     packaging_cents: 150;
     seller_shipping_label_cents: 878;
     referral_fee_bps: 1500;
-    target_margin_bps: 2000;
-    internal_comparable_ceiling_bps: 12500;
+    target_margin_bps: 3000;
     minimum_item_price_cents: number;
-    maximum_internal_ceiling_cents: number;
-    headroom_cents: number;
+    linearized_walmart_comparable_cents: number;
+    proposed_to_comparable_ratio_bps: number;
+    price_competitiveness_signal:
+      | "AT_OR_BELOW_EXACT_COMPARABLE"
+      | "ABOVE_EXACT_COMPARABLE_WARNING";
     source_discount_bps: number;
   };
   evidence_status: "SHORTLIST_ONLY_REQUIRES_FRESH_EXACT_EVIDENCE";
@@ -95,6 +101,8 @@ export interface WalmartNewSkuCommercialDiscovery {
     candidates_are_not_canonical_listing_inputs: true;
     fresh_exact_product_truth_evidence_required: true;
     fresh_exact_walmart_comparable_required: true;
+    walmart_comparable_is_informational_not_candidate_rejection: true;
+    walmart_pricing_rule_can_still_unpublish: true;
     exact_dimensions_and_shipping_quote_required: true;
     clubs_require_separate_owner_approved_plan: true;
   };
@@ -323,19 +331,20 @@ export function buildWalmartNewSkuCommercialDiscovery(input: {
     if (!samePhysicalSize(product, source, comparable)) continue;
     const comparableUnitCents = unitPriceCents(comparable)!;
     const sourceUnitCents = unitPriceCents(source)!;
-    if (sourceUnitCents >= comparableUnitCents) continue;
 
     const goodsCents = sourceUnitCents * input.packCount;
-    const fixedCostsCents = 150 + 878;
-    const minimumItemPriceCents = Math.ceil(
-      (goodsCents + fixedCostsCents) * 10_000 / (10_000 - 1_500 - 2_000),
-    );
-    const maximumInternalCeilingCents = Math.floor(
-      comparableUnitCents * input.packCount * 12_500 / 10_000,
-    );
-    const headroomCents =
-      maximumInternalCeilingCents - minimumItemPriceCents;
-    if (headroomCents < 0) continue;
+    const economics = minimumWalmartNewSkuPriceForTargetMargin({
+      goodsCostCents: goodsCents,
+      packagingCostCents: 150,
+      shippingLabelCents: 878,
+    });
+    const minimumItemPriceCents = economics.item_price_cents;
+    const linearizedWalmartComparableCents =
+      comparableUnitCents * input.packCount;
+    const comparableSignal = walmartNewSkuComparableSignal({
+      itemPriceCents: minimumItemPriceCents,
+      linearizedComparableCents: linearizedWalmartComparableCents,
+    });
 
     candidates.push({
       donor_product_id: donorProductId,
@@ -371,11 +380,11 @@ export function buildWalmartNewSkuCommercialDiscovery(input: {
         packaging_cents: 150,
         seller_shipping_label_cents: 878,
         referral_fee_bps: 1500,
-        target_margin_bps: 2000,
-        internal_comparable_ceiling_bps: 12500,
+        target_margin_bps: 3000,
         minimum_item_price_cents: minimumItemPriceCents,
-        maximum_internal_ceiling_cents: maximumInternalCeilingCents,
-        headroom_cents: headroomCents,
+        linearized_walmart_comparable_cents:
+          linearizedWalmartComparableCents,
+        ...comparableSignal,
         source_discount_bps: Math.round(
           (comparableUnitCents - sourceUnitCents) * 10_000 /
           comparableUnitCents,
@@ -386,10 +395,14 @@ export function buildWalmartNewSkuCommercialDiscovery(input: {
   }
 
   candidates.sort((left, right) =>
-    right.provisional_economics.headroom_cents -
-      left.provisional_economics.headroom_cents ||
+    Number(left.source_offer.stale_or_unparseable) -
+      Number(right.source_offer.stale_or_unparseable) ||
+    Number(left.walmart_comparable.stale_or_unparseable) -
+      Number(right.walmart_comparable.stale_or_unparseable) ||
     right.provisional_economics.source_discount_bps -
       left.provisional_economics.source_discount_bps ||
+    left.provisional_economics.minimum_item_price_cents -
+      right.provisional_economics.minimum_item_price_cents ||
     left.title.localeCompare(right.title, "en-US") ||
     left.donor_product_id.localeCompare(right.donor_product_id, "en-US")
   );
@@ -408,6 +421,8 @@ export function buildWalmartNewSkuCommercialDiscovery(input: {
       candidates_are_not_canonical_listing_inputs: true,
       fresh_exact_product_truth_evidence_required: true,
       fresh_exact_walmart_comparable_required: true,
+      walmart_comparable_is_informational_not_candidate_rejection: true,
+      walmart_pricing_rule_can_still_unpublish: true,
       exact_dimensions_and_shipping_quote_required: true,
       clubs_require_separate_owner_approved_plan: true,
     },

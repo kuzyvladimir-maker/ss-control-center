@@ -99,7 +99,7 @@ const walmart: WalmartPublicListingContract = {
 
 const prepublication: WalmartPrepublicationEvidence = {
   schema_version: WALMART_PREPUBLICATION_EVIDENCE_SCHEMA,
-  policy_version: "walmart-us-prepublication/2026-07-23.3",
+  policy_version: "walmart-us-prepublication/2026-07-23.4",
   generated_at: "2026-07-19T11:40:00.000Z",
   store_index: 1,
   sku: "SV-WM01-TEST",

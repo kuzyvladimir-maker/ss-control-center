@@ -44,7 +44,7 @@ function row(input: Partial<WalmartNewSkuCommercialDiscoveryRow> & {
   };
 }
 
-test("commercial discovery keeps only a source-discount candidate with real headroom", () => {
+test("commercial discovery prices to 30% margin and keeps the comparable informational", () => {
   const discovery = buildWalmartNewSkuCommercialDiscovery({
     rows: [
       row({ offer_id: "walmart", retailer: "walmart", price: 10 }),
@@ -65,28 +65,42 @@ test("commercial discovery keeps only a source-discount candidate with real head
     packaging_cents: 150,
     seller_shipping_label_cents: 878,
     referral_fee_bps: 1500,
-    target_margin_bps: 2000,
-    internal_comparable_ceiling_bps: 12500,
-    minimum_item_price_cents: 2197,
-    maximum_internal_ceiling_cents: 2500,
-    headroom_cents: 303,
+    target_margin_bps: 3000,
+    minimum_item_price_cents: 2598,
+    linearized_walmart_comparable_cents: 2000,
+    proposed_to_comparable_ratio_bps: 12990,
+    price_competitiveness_signal: "ABOVE_EXACT_COMPARABLE_WARNING",
     source_discount_bps: 8000,
   });
+  assert.equal(
+    discovery.claims.walmart_comparable_is_informational_not_candidate_rejection,
+    true,
+  );
+  assert.equal(discovery.claims.walmart_pricing_rule_can_still_unpublish, true);
 });
 
-test("same-price retail sourcing is rejected before paid evidence", () => {
+test("same-price Walmart sourcing remains viable when 30% margin determines price", () => {
   const discovery = buildWalmartNewSkuCommercialDiscovery({
     rows: [
       row({ offer_id: "walmart", retailer: "walmart", price: 3.97 }),
-      row({ offer_id: "target", retailer: "target", price: 3.97 }),
     ],
     asOf: AS_OF,
     packCount: 2,
   });
-  assert.deepEqual(discovery.candidates, []);
+  assert.equal(discovery.candidates.length, 1);
+  assert.equal(discovery.candidates[0]!.source_offer.retailer, "walmart");
+  assert.equal(
+    discovery.candidates[0]!.provisional_economics.minimum_item_price_cents,
+    3313,
+  );
+  assert.equal(
+    discovery.candidates[0]!.provisional_economics
+      .price_competitiveness_signal,
+    "ABOVE_EXACT_COMPARABLE_WARNING",
+  );
 });
 
-test("Amazon and club offers cannot become the pilot procurement source", () => {
+test("Amazon and club offers cannot displace an allowed Walmart source", () => {
   const discovery = buildWalmartNewSkuCommercialDiscovery({
     rows: [
       row({ offer_id: "walmart", retailer: "walmart", price: 20 }),
@@ -98,7 +112,8 @@ test("Amazon and club offers cannot become the pilot procurement source", () => 
     asOf: AS_OF,
     packCount: 3,
   });
-  assert.deepEqual(discovery.candidates, []);
+  assert.equal(discovery.candidates.length, 1);
+  assert.equal(discovery.candidates[0]!.source_offer.retailer, "walmart");
   assert.equal(discovery.claims.clubs_require_separate_owner_approved_plan, true);
 });
 

@@ -40,6 +40,18 @@ import {
   WALMART_POLICY_SOURCES,
   WALMART_POLICY_VERSION,
 } from "./validation/walmart-prepublication-policy";
+import {
+  calculateWalmartNewSkuEconomics,
+  SSCC_WALMART_NEW_SKU_REFERRAL_FEE_BPS,
+  SSCC_WALMART_NEW_SKU_TARGET_MARGIN_BPS,
+  walmartNewSkuComparableSignal,
+  type WalmartNewSkuPriceCompetitivenessSignal,
+} from "./walmart-new-sku-economics";
+
+export {
+  SSCC_WALMART_NEW_SKU_REFERRAL_FEE_BPS,
+  SSCC_WALMART_NEW_SKU_TARGET_MARGIN_BPS,
+} from "./walmart-new-sku-economics";
 
 export const WALMART_NEW_SKU_PLAN_SCHEMA =
   "walmart-new-sku-plan/1.7.0" as const;
@@ -50,9 +62,9 @@ export const WALMART_NEW_SKU_STAGE_SCHEMA =
 export const WALMART_NEW_SKU_UPC_ROTATION_RECEIPT_SCHEMA =
   "walmart-new-sku-upc-rotation-receipt/1.0.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_INPUT_SCHEMA =
-  "walmart-new-sku-certification-input/1.5.0" as const;
+  "walmart-new-sku-certification-input/1.6.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_SCHEMA =
-  "walmart-new-sku-certification/1.7.0" as const;
+  "walmart-new-sku-certification/1.8.0" as const;
 export const WALMART_NEW_SKU_CERTIFICATION_RECEIPT_SCHEMA =
   "walmart-new-sku-certification-receipt/1.0.0" as const;
 export const WALMART_NEW_SKU_DRY_RUN_RECEIPT_SCHEMA =
@@ -69,13 +81,6 @@ export const WALMART_NEW_SKU_PILOT_PACK_COUNTS = [2, 3] as const;
 export const WALMART_NEW_SKU_DRY_RUN_MAX_AGE_MS = 30 * 60 * 1_000;
 export const WALMART_NEW_SKU_APPROVAL_MAX_AGE_MS = 30 * 60 * 1_000;
 export const WALMART_NEW_SKU_DOCTOR_MAX_AGE_MS = 30 * 60 * 1_000;
-/**
- * SSCC pilot safeguard, not a Walmart-published threshold. The customer total
- * for a new multipack may not exceed 125% of a fresh, exact-variant comparable
- * normalized to the same unit count.
- */
-export const SSCC_WALMART_NEW_SKU_PILOT_PRICE_CEILING_BPS = 12_500;
-
 export type WalmartNewSkuPlanBlocker =
   | "COUNT_ACCURATE_RIGHTS_CLEARED_MAIN_IMAGE"
   | "RIGHTS_CLEARED_SECONDARY_IMAGE"
@@ -93,7 +98,7 @@ export type WalmartNewSkuPlanBlocker =
   | "EXPLICIT_DISTRIBUTION_APPROVAL";
 
 export interface DeterministicWalmartContent {
-  generator: "deterministic-product-truth-multipack/v2";
+  generator: "deterministic-product-truth-multipack/v4";
   title: string;
   bullets: string[];
   description: string;
@@ -257,7 +262,7 @@ export interface WalmartNewSkuEvidenceArtifactInput {
 }
 
 export interface WalmartNewSkuPricingCompetitivenessInput {
-  status: "CLEARED";
+  status: "REVIEWED";
   policy_source_id: "pricing-rules";
   basis: "EXACT_COMPONENT_VARIANT_LINEARIZED";
   proposed_item_price_cents: number;
@@ -274,8 +279,16 @@ export interface WalmartNewSkuPricingCompetitivenessInput {
   };
   linearized_comparable_total_cents: number;
   proposed_to_comparable_ratio_bps: number;
-  internal_pilot_ceiling_bps:
-    typeof SSCC_WALMART_NEW_SKU_PILOT_PRICE_CEILING_BPS;
+  price_competitiveness_signal: WalmartNewSkuPriceCompetitivenessSignal;
+  risk_disposition: "WARNING_ACKNOWLEDGED_NOT_HARD_REJECT";
+  goods_cost_cents: number;
+  packaging_cost_cents: number;
+  shipping_label_cents: number;
+  referral_fee_bps: typeof SSCC_WALMART_NEW_SKU_REFERRAL_FEE_BPS;
+  referral_fee_cents: number;
+  target_margin_bps: typeof SSCC_WALMART_NEW_SKU_TARGET_MARGIN_BPS;
+  contribution_profit_cents: number;
+  contribution_margin_bps: number;
   reviewed_at: string;
   reviewer: string;
   evidence_ref: string;
@@ -1205,7 +1218,7 @@ function assertLength(value: string, max: number, label: string): string {
 }
 
 function contentIdentityLabel(
-  component: ProductTruthRecipeComponentEvidence,
+  component: Pick<ProductTruthRecipeComponentEvidence, "product_name">,
 ): string {
   return cleanPlainText(component.product_name, "PRODUCT_NAME")
     .replace(/[.,;:!\s]+$/g, "")
@@ -1217,7 +1230,10 @@ function contentIdentityLabel(
  * No model, retailer harvest or inferred benefit/claim participates here.
  */
 export function buildDeterministicWalmartMultipackContent(input: {
-  component: ProductTruthRecipeComponentEvidence;
+  component: Pick<
+    ProductTruthRecipeComponentEvidence,
+    "product_name" | "manufacturer_brand" | "flavor" | "qty"
+  >;
   packCount: number;
 }): DeterministicWalmartContent {
   if (!WALMART_NEW_SKU_PILOT_PACK_COUNTS.includes(
@@ -1234,46 +1250,53 @@ export function buildDeterministicWalmartMultipackContent(input: {
   }
 
   const identity = contentIdentityLabel(input.component);
+  const displayIdentity = identity
+    .replace(/\s*-\s*(?=\d)/g, ", ")
+    .replace(/(\d)\s*(fl\s*oz|oz|lb|ct)\b/gi, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim();
   const brand = cleanPlainText(input.component.manufacturer_brand, "BRAND");
   const flavor = input.component.flavor
     ? cleanPlainText(input.component.flavor, "FLAVOR")
     : null;
   const title = assertLength(
-    `${identity} (Pack of ${input.packCount})`,
+    `${displayIdentity} (Pack of ${input.packCount})`,
     150,
     "WALMART_TITLE",
   );
   const bullets = [
-    `${input.packCount} identical new retail packages in one sellable multipack`,
-    `Manufacturer brand: ${brand}`,
-    flavor ? `Exact flavor or variant: ${flavor}` : "Exact variant shown in images",
-    "Ingredients and allergen details remain on each original package",
-    `Main image shows the complete ${input.packCount}-package quantity`,
+    `Includes ${input.packCount} identical retail packages`,
+    `Same ${brand} product, size and variant in every package`,
+    flavor
+      ? `Exact flavor or variant: ${flavor}`
+      : "Homogeneous multipack; not a mixed assortment",
+    "Original package labels provide ingredients, allergens and nutrition facts",
+    `Main image represents all ${input.packCount} packages included`,
   ].map((bullet, index) =>
-    assertLength(cleanPlainText(bullet, `BULLET_${index + 1}`), 80, `BULLET_${index + 1}`),
+    assertLength(cleanPlainText(bullet, `BULLET_${index + 1}`), 100, `BULLET_${index + 1}`),
   );
   const description = assertLength(
     cleanPlainText(
-      `This listing contains ${input.packCount} identical, new retail packages of ${identity}. ` +
-        `Each package is the same ${brand} product and the exact variant identified in the title and images. ` +
-        "The offer is a homogeneous multipack and is not a mixed assortment. " +
-        `The stated quantity means ${input.packCount} complete retail packages are delivered together as one sellable unit. ` +
-        "It does not change the serving count, piece count, net content, formula, or package size printed by the manufacturer on each individual package. " +
-        "Original package labels remain the controlling source for ingredients, allergen statements, nutrition facts, directions, warnings, storage instructions, lot codes, and expiration information. " +
-        "Read every package label before use, especially when checking dietary restrictions, allergens, preparation directions, storage needs, or other product-specific information. " +
-        "The main image must show the complete sellable quantity described in this listing. " +
-        "Secondary images provide additional views of the same exact product and must not substitute another size, flavor, formula, count, or package design. " +
-        "All included units must be supplied in new condition and in their original retail packaging. " +
-        "Compare the delivered brand, variant, package identity, and quantity with the title and listing images before use. " +
-        "If the item received does not match these details, use the order support options available through the marketplace.",
+      `Stock up with ${input.packCount} identical retail packages of ${displayIdentity}. ` +
+        `This homogeneous multipack contains the same ${brand} product, size and variant in every package; it is not a mixed assortment. ` +
+        `You receive ${input.packCount} complete packages together as one sellable unit. ` +
+        "Each package remains separate, so the contents can be stored and opened one package at a time. " +
+        "This format makes it straightforward to keep an unopened package available while another package is in use. " +
+        "The package count in the title and main image refers to the total number of individual retail packages included. " +
+        "Products arrive new in their original retail packaging. " +
+        "Check every package before use and follow the information printed by the manufacturer. " +
+        "Refer to each package label for current ingredients, allergen statements, nutrition facts, directions, storage instructions, lot codes and expiration information. " +
+        "Package design and labeling may change when the manufacturer updates them. " +
+        `The main image represents the full ${input.packCount}-package quantity included in the order. ` +
+        "Compare the delivered product name, size, variant and package count with the order details.",
       "DESCRIPTION",
     ),
-    4_000,
+    1_500,
     "DESCRIPTION",
   );
 
   return {
-    generator: "deterministic-product-truth-multipack/v2",
+    generator: "deterministic-product-truth-multipack/v4",
     title,
     bullets,
     description,
@@ -2163,15 +2186,47 @@ export function assertWalmartNewSkuCertificationInput(input: {
   const proposedCustomerTotal =
     certification.price_cents +
     Number(pricing?.customer_shipping_charge_cents);
-  const proposedToComparableRatioBps =
+  const comparableSignal =
     Number.isSafeInteger(linearizedComparableTotal) &&
-    linearizedComparableTotal > 0
-      ? Math.ceil(
-        proposedCustomerTotal * 10_000 / linearizedComparableTotal,
-      )
-      : Number.NaN;
+      linearizedComparableTotal > 0 &&
+      Number.isSafeInteger(proposedCustomerTotal) &&
+      proposedCustomerTotal > 0
+      ? walmartNewSkuComparableSignal({
+        itemPriceCents: proposedCustomerTotal,
+        linearizedComparableCents: linearizedComparableTotal,
+      })
+      : null;
+  const proposedToComparableRatioBps =
+    comparableSignal?.proposed_to_comparable_ratio_bps ?? Number.NaN;
+  const goodsCostCents = candidate.recipe_input.components.reduce(
+    (total, recipeComponent) =>
+      total +
+      Math.round(recipeComponent.price_evidence.price_per_unit * 100) *
+        recipeComponent.qty,
+    0,
+  );
+  let derivedEconomics:
+    ReturnType<typeof calculateWalmartNewSkuEconomics> | null = null;
+  try {
+    derivedEconomics = calculateWalmartNewSkuEconomics({
+      goodsCostCents,
+      packagingCostCents: certification.packaging_cost_cents,
+      shippingLabelCents: certification.shipping_label_cents,
+      itemPriceCents: certification.price_cents,
+    });
+  } catch {
+    derivedEconomics = null;
+  }
+  const referralFeeCents =
+    derivedEconomics?.referral_fee_cents ?? Number.NaN;
+  const contributionProfitCents =
+    derivedEconomics?.contribution_profit_cents ?? Number.NaN;
+  const contributionMarginBps =
+    derivedEconomics?.contribution_margin_bps ?? Number.NaN;
+  const priceCompetitivenessSignal =
+    comparableSignal?.price_competitiveness_signal ?? null;
   if (
-    pricing?.status !== "CLEARED" ||
+    pricing?.status !== "REVIEWED" ||
     pricing?.policy_source_id !== "pricing-rules" ||
     pricing?.basis !== "EXACT_COMPONENT_VARIANT_LINEARIZED" ||
     pricing?.proposed_item_price_cents !== certification.price_cents ||
@@ -2196,10 +2251,25 @@ export function assertWalmartNewSkuCertificationInput(input: {
       linearizedComparableTotal ||
     pricing?.proposed_to_comparable_ratio_bps !==
       proposedToComparableRatioBps ||
-    pricing?.internal_pilot_ceiling_bps !==
-      SSCC_WALMART_NEW_SKU_PILOT_PRICE_CEILING_BPS ||
-    proposedToComparableRatioBps >
-      SSCC_WALMART_NEW_SKU_PILOT_PRICE_CEILING_BPS ||
+    pricing?.price_competitiveness_signal !==
+      priceCompetitivenessSignal ||
+    pricing?.risk_disposition !==
+      "WARNING_ACKNOWLEDGED_NOT_HARD_REJECT" ||
+    pricing?.goods_cost_cents !== goodsCostCents ||
+    pricing?.packaging_cost_cents !==
+      certification.packaging_cost_cents ||
+    pricing?.shipping_label_cents !== certification.shipping_label_cents ||
+    pricing?.referral_fee_bps !==
+      SSCC_WALMART_NEW_SKU_REFERRAL_FEE_BPS ||
+    pricing?.referral_fee_cents !== referralFeeCents ||
+    pricing?.target_margin_bps !==
+      SSCC_WALMART_NEW_SKU_TARGET_MARGIN_BPS ||
+    pricing?.contribution_profit_cents !== contributionProfitCents ||
+    pricing?.contribution_margin_bps !== contributionMarginBps ||
+    contributionProfitCents < 0 ||
+    contributionProfitCents * 10_000 <
+      certification.price_cents *
+        SSCC_WALMART_NEW_SKU_TARGET_MARGIN_BPS ||
     !isFreshPastIso(
       pricing?.reviewed_at,
       WALMART_PRICE_EVIDENCE_MAX_AGE_MS,
@@ -3310,7 +3380,7 @@ export function buildWalmartNewSkuCertificationTemplate(input: {
         evidence_ref: "TODO_EVIDENCE_REF_POLICY_REVIEW",
       },
       pricing_competitiveness: {
-        status: "TODO_CLEARED_AFTER_CURRENT_COMPARABLE_REVIEW",
+        status: "TODO_REVIEWED_AFTER_CURRENT_COMPARABLE_REVIEW",
         policy_source_id: "pricing-rules",
         basis: "EXACT_COMPONENT_VARIANT_LINEARIZED",
         proposed_item_price_cents: null,
@@ -3327,8 +3397,17 @@ export function buildWalmartNewSkuCertificationTemplate(input: {
         },
         linearized_comparable_total_cents: null,
         proposed_to_comparable_ratio_bps: null,
-        internal_pilot_ceiling_bps:
-          SSCC_WALMART_NEW_SKU_PILOT_PRICE_CEILING_BPS,
+        price_competitiveness_signal:
+          "TODO_AT_OR_BELOW_OR_ABOVE_COMPARABLE_WARNING",
+        risk_disposition: "WARNING_ACKNOWLEDGED_NOT_HARD_REJECT",
+        goods_cost_cents: null,
+        packaging_cost_cents: null,
+        shipping_label_cents: null,
+        referral_fee_bps: SSCC_WALMART_NEW_SKU_REFERRAL_FEE_BPS,
+        referral_fee_cents: null,
+        target_margin_bps: SSCC_WALMART_NEW_SKU_TARGET_MARGIN_BPS,
+        contribution_profit_cents: null,
+        contribution_margin_bps: null,
         reviewed_at: "TODO_CANONICAL_UTC_AFTER_PRICE_REVIEW",
         reviewer: "TODO_HUMAN_REVIEWER_ID",
         evidence_ref: "TODO_EVIDENCE_REF_PRICE_COMPETITIVENESS",

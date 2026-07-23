@@ -1228,7 +1228,7 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     generatedPolicyReviewTemplatePath,
   );
   const evidenceAt = new Date().toISOString();
-  certification.price_cents = 2499;
+  certification.price_cents = 3000;
   certification.packaging_cost_cents = 100;
   certification.shipping_label_cents = 700;
   certification.shipping_in_price = true;
@@ -1307,12 +1307,12 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
       evidence_ref: "fixture-evidence://policy-review/walmart-v1",
     },
     pricing_competitiveness: {
-      status: "CLEARED",
+      status: "REVIEWED",
       policy_source_id: "pricing-rules",
       basis: "EXACT_COMPONENT_VARIANT_LINEARIZED",
-      proposed_item_price_cents: 2499,
+      proposed_item_price_cents: 3000,
       customer_shipping_charge_cents: 0,
-      proposed_customer_total_cents: 2499,
+      proposed_customer_total_cents: 3000,
       comparable: {
         canonical_variant_id: String(candidates[0].canonical_variant_id),
         url: "https://www.walmart.com/ip/fixture-comparable-1",
@@ -1323,8 +1323,17 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
         customer_total_cents: 1100,
       },
       linearized_comparable_total_cents: 2200,
-      proposed_to_comparable_ratio_bps: 11_360,
-      internal_pilot_ceiling_bps: 12_500,
+      proposed_to_comparable_ratio_bps: 13_637,
+      price_competitiveness_signal: "ABOVE_EXACT_COMPARABLE_WARNING",
+      risk_disposition: "WARNING_ACKNOWLEDGED_NOT_HARD_REJECT",
+      goods_cost_cents: 798,
+      packaging_cost_cents: 100,
+      shipping_label_cents: 700,
+      referral_fee_bps: 1_500,
+      referral_fee_cents: 450,
+      target_margin_bps: 3_000,
+      contribution_profit_cents: 952,
+      contribution_margin_bps: 3_173,
       reviewed_at: evidenceAt,
       reviewer: "fixture-human-pricing-reviewer",
       evidence_ref: "fixture-evidence://pricing/current-comparable-v1",
@@ -1610,17 +1619,27 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
     }),
     /PRICE_COMPETITIVENESS_EVIDENCE_INVALID/,
   );
-  const overpriced = structuredClone(sealedCertification);
-  overpriced.prepublication.pricing_competitiveness.proposed_item_price_cents =
-    3000;
-  overpriced.prepublication.pricing_competitiveness
-    .proposed_customer_total_cents = 3000;
-  overpriced.prepublication.pricing_competitiveness
-    .proposed_to_comparable_ratio_bps = 13_637;
-  overpriced.price_cents = 3000;
+  assert.equal(
+    sealedCertification.prepublication.pricing_competitiveness
+      .price_competitiveness_signal,
+    "ABOVE_EXACT_COMPARABLE_WARNING",
+  );
+  const belowMargin = structuredClone(sealedCertification);
+  belowMargin.prepublication.pricing_competitiveness.proposed_item_price_cents =
+    2500;
+  belowMargin.prepublication.pricing_competitiveness
+    .proposed_customer_total_cents = 2500;
+  belowMargin.prepublication.pricing_competitiveness
+    .proposed_to_comparable_ratio_bps = 11_364;
+  belowMargin.prepublication.pricing_competitiveness.referral_fee_cents = 375;
+  belowMargin.prepublication.pricing_competitiveness
+    .contribution_profit_cents = 527;
+  belowMargin.prepublication.pricing_competitiveness
+    .contribution_margin_bps = 2_108;
+  belowMargin.price_cents = 2500;
   assert.throws(
     () => assertWalmartNewSkuCertificationInput({
-      certification: overpriced,
+      certification: belowMargin,
       plan: plan as never,
       stage: stage as never,
     }),
@@ -1875,7 +1894,7 @@ test("isolated CLI runs plan through verify status without a Walmart mutation", 
   ) as WalmartNewSkuCertificationArtifact;
   assert.equal(
     certificationArtifact.schema_version,
-    "walmart-new-sku-certification/1.7.0",
+    "walmart-new-sku-certification/1.8.0",
   );
   const buyerAttemptId = "fixture-buyer-seal-attempt";
   const buyerItemId = "123456789";

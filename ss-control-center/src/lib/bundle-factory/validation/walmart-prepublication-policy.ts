@@ -37,7 +37,7 @@ export type {
 };
 
 export const WALMART_POLICY_VERSION =
-  "walmart-us-prepublication/2026-07-23.3" as const;
+  "walmart-us-prepublication/2026-07-23.4" as const;
 export const WALMART_RECOMMENDED_MP_ITEM_SPEC_VERSION =
   "5.0.20260501-19_21_29-api" as const;
 export const WALMART_ITEM_MATCH_SPEC_VERSION = "MP_ITEM_MATCHv4.2" as const;

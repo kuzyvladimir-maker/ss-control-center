@@ -1,6 +1,6 @@
 # Walmart US — pre-publication compliance contract
 
-**Policy version:** `walmart-us-prepublication/2026-07-23.3`
+**Policy version:** `walmart-us-prepublication/2026-07-23.4`
 **Contract schemas:** `product-truth-listing-manifest/1.1.0`,
 `walmart-mp-item-public/1.0.0`, `walmart-prepublication-evidence/1.2.0`
 **Current recommended SFF new-item spec:** `MP_ITEM 5.0.20260501-19_21_29-api`
@@ -145,10 +145,16 @@ override this contract, Seller Center evidence or the current live Get Spec.
   label must reconcile exactly. Customer shipping charge is zero for this pilot, so
   the seller shipping label must be included in the item price rather than hidden
   outside the economics.
-- The normalized proposed total may not exceed `12500 bps` of the exact comparable.
-  This is SSCC's conservative internal pilot stop, not a claim that Walmart publishes
-  a universal 125% enforcement threshold. Walmart may still unpublish an offer under
-  its current pricing rules even when this internal check passes.
+- The target contribution margin is `3000 bps` after exact component goods cost,
+  packaging, the positive seller shipping label and the `1500 bps` referral fee.
+- The exact comparable remains mandatory and the normalized price ratio is recorded
+  as either `AT_OR_BELOW_EXACT_COMPARABLE` or
+  `ABOVE_EXACT_COMPARABLE_WARNING`. It is an informational risk signal, not an
+  internal candidate rejection threshold.
+- An above-comparable warning must be visibly acknowledged in the sealed pricing
+  review. Walmart may still remove the Buy Box or unpublish an offer under its
+  current Pricing Rules; the business margin rule never represents Walmart
+  clearance.
 
 The exact candidate review must cover all of these independent surfaces, not only
 title keywords:

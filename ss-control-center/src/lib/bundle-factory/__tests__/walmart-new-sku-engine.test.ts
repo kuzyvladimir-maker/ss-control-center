@@ -247,10 +247,11 @@ test("deterministic content uses exact identity without an LLM", () => {
     "Example Brand Crunchy Snack 8 oz (Pack of 2)",
   );
   assert.equal(output.bullets.length, 5);
-  assert.match(output.description, /2 identical, new retail packages/);
-  assert.equal(output.generator, "deterministic-product-truth-multipack/v2");
-  assert.ok(output.description.split(/\s+/).length >= 150);
-  assert.ok(output.bullets.every((bullet) => bullet.length <= 80));
+  assert.match(output.description, /2 identical retail packages/);
+  assert.equal(output.generator, "deterministic-product-truth-multipack/v4");
+  const descriptionWords = output.description.split(/\s+/).length;
+  assert.ok(descriptionWords >= 150 && descriptionWords <= 220);
+  assert.ok(output.bullets.every((bullet) => bullet.length <= 100));
 });
 
 test("pilot plan is hash-sealed and cannot authorize a marketplace mutation", () => {
@@ -516,7 +517,12 @@ test("certification template is bound to the sealed plan, stage and exact image 
   assert.match(String(templatePolicy.status), /^TODO_/);
   assert.match(String(templatePolicy.reviewed_at), /^TODO_/);
   assert.match(String(templatePricing.status), /^TODO_/);
-  assert.equal(templatePricing.internal_pilot_ceiling_bps, 12_500);
+  assert.equal(templatePricing.target_margin_bps, 3_000);
+  assert.equal(templatePricing.referral_fee_bps, 1_500);
+  assert.equal(
+    templatePricing.risk_disposition,
+    "WARNING_ACKNOWLEDGED_NOT_HARD_REJECT",
+  );
   assert.equal(templatePricing.customer_shipping_charge_cents, 0);
   assert.match(String(templateRecall.status), /^TODO_/);
   assert.match(String(templateRecall.checked_at), /^TODO_/);
@@ -639,7 +645,7 @@ test("certification template is bound to the sealed plan, stage and exact image 
   );
 
   const certification = sealWalmartNewSkuCertificationArtifact({
-    schema_version: "walmart-new-sku-certification/1.7.0",
+    schema_version: "walmart-new-sku-certification/1.8.0",
     wave_id: plan.wave_id,
     plan_sha256: plan.plan_sha256,
     stage_sha256: stage.stage_sha256,
@@ -683,7 +689,7 @@ test("certification template is bound to the sealed plan, stage and exact image 
   });
   assert.equal(
     certification.schema_version,
-    "walmart-new-sku-certification/1.7.0",
+    "walmart-new-sku-certification/1.8.0",
   );
   assert.deepEqual(
     certification.seller_catalog_authority,
@@ -869,7 +875,7 @@ test("catalog certification accepts only an exact-identifier absence", () => {
 
 test("certification confirmation changes with any operator evidence change", () => {
   const left = {
-    schema_version: "walmart-new-sku-certification-input/1.5.0",
+    schema_version: "walmart-new-sku-certification-input/1.6.0",
     wave_id: "wave",
     candidate_key: "candidate",
     stage_sha256: "stage",
