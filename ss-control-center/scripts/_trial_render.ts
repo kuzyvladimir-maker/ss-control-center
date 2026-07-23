@@ -201,7 +201,7 @@ async function main() {
       refs.push(c._donor_image);
       const boxes = c.qty / c._art.size;
       mapLines.push(
-        `Ref ${refs.length} = the ${c._art.size}-count carton of ${c.flavor}; draw exactly ${boxes} of it, its printed "${c._art.size}" badge unchanged.`,
+        `Ref ${refs.length} = the ${c._art.size}-count carton of ${c.flavor}; draw exactly ${boxes} of it, its printed "${c._art.size}" badge and its own fruit artwork unchanged.`,
       );
     });
 
@@ -229,6 +229,9 @@ async function main() {
       ...rowLines,
       `TOTAL cartons: EXACTLY ${totalBoxes}.`,
       "Unfilled row width stays empty (foam/gel pack) — never add cartons to fill space. Every carton front fully visible; none cropped, slivered, or hidden. Cartons stand side by side only — no depth pairs. Same-count cartons share identical dimensions — no wide or stretched boxes.",
+      "FRUIT ART: every carton front shows ONLY its own flavor's fruit artwork copied from its reference photo (grape cartons show purple grapes, strawberry cartons show strawberries, mixed-berry cartons show strawberries AND blueberries, and so on). NEVER paint fruit from a neighboring row's flavor onto a carton, and never drop a fruit that the reference shows.",
+      "GEL PACKS: EXACTLY four in the scene — one standing inside against the left wall, one inside against the right wall, and two leaning outside at the front right. Never add a fifth gel pack or a duplicate behind another.",
+      "RETAILER FLAGS: if a reference photo carries a retailer-exclusive roundel (such as \"Only at Walmart\"), OMIT it — draw that corner of the carton plain. Never print any retailer's name or logo anywhere in the image.",
       "SCENE: the open white Salutem Solutions foam cooler from Reference 1 with lid and gel packs IS the stage; rows sit inside/above it. Never a flat catalog lineup on plain white.",
       "BRANDING: the cooler front and every gel pack carry the EXACT branding from Reference 1 — the green lotus emblem with the words SALUTEM SOLUTIONS and OUR BEST SOLUTIONS FOR YOU. Copy that logo pixel-faithfully. NEVER invent a different logo, monogram, crest or typography.",
       frontText.join(" "),
@@ -270,7 +273,9 @@ async function main() {
     }
   }
   const wave = process.env.WAVE ?? "custom";
-  writeFileSync(`/private/tmp/claude-501/-Users-vladimirkuznetsov-SS-Command-Center/1dbdc77d-9c20-49be-9e0d-c48b604008f6/scratchpad/trial-wave${wave}.json`, JSON.stringify(out, null, 1));
+  // DRY runs must never write the wave JSON: a file full of null image URLs
+  // would poison the later-wins merge in stage-1 and the proofs minter.
+  if (!DRY) writeFileSync(`/private/tmp/claude-501/-Users-vladimirkuznetsov-SS-Command-Center/1dbdc77d-9c20-49be-9e0d-c48b604008f6/scratchpad/trial-wave${wave}.json`, JSON.stringify(out, null, 1));
   console.log(`готово: ${out.filter((l: any) => l.main_image_url).length}/${out.length}`);
   await prisma.$disconnect();
 }

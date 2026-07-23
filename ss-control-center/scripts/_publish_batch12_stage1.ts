@@ -14,11 +14,14 @@ import { config } from "dotenv"; config({ path: ".env.local" }); config({ path: 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 
 const SCRATCH = "/private/tmp/claude-501/-Users-vladimirkuznetsov-SS-Command-Center/1dbdc77d-9c20-49be-9e0d-c48b604008f6/scratchpad/";
-// later files win per slug
-const FILES = [
-  "preview-final-2.json", "preview-final-4.json", "preview-final-5.json",
-  "preview-final-6.json", "preview-final-7.json", "preview-final-7b.json",
-];
+// later files win per slug. FILES env overrides for other batches (e.g. the
+// trial run: FILES=trial-wave1.json,trial-wavecustom.json OUT_MAP=publish-trial-skus.json)
+const FILES = process.env.FILES
+  ? process.env.FILES.split(",").map((s) => s.trim()).filter(Boolean)
+  : [
+      "preview-final-2.json", "preview-final-4.json", "preview-final-5.json",
+      "preview-final-6.json", "preview-final-7.json", "preview-final-7b.json",
+    ];
 
 const STD_ALLERGENS = { contains: ["Peanuts", "Wheat"], may_contain: ["Hazelnut", "Milk"] };
 // smuckersuncrustables.com/sandwiches/hazelnut-spread-sandwich (verified 2026-07-22):
@@ -293,7 +296,7 @@ async function main() {
   }
 
   if (!DRY) {
-    writeFileSync(SCRATCH + "publish-batch12-skus.json", JSON.stringify(results, null, 1));
+    writeFileSync(SCRATCH + (process.env.OUT_MAP ?? "publish-batch12-skus.json"), JSON.stringify(results, null, 1));
     console.log(`\nготово: ${results.filter((r) => r.sku).length} SKU создано, ${results.filter((r) => r.blocked).length} блокировано`);
   }
   await prisma.$disconnect();
